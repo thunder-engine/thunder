@@ -1,0 +1,24 @@
+{
+    "Blend": 0,
+    "Links": [
+        {
+            "RItem": "Emissive",
+            "Receiver": 0,
+            "SItem": "",
+            "Sender": 1
+        }
+    ],
+    "Model": 0,
+    "Nodes": [
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 1
+            },
+            "X": -200,
+            "Y": 0
+        }
+    ],
+    "Side": true,
+    "Type": 2
+}

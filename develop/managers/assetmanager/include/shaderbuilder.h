@@ -1,0 +1,205 @@
+#ifndef SHADERBUILDER_H
+#define SHADERBUILDER_H
+
+#include <map>
+#include <list>
+
+#include <resources/material.h>
+#include <module.h>
+
+#include "abstractschememodel.h"
+
+class Log;
+class ShaderBuilder;
+
+class ShaderFunction : public QObject {
+    Q_OBJECT
+
+public:
+    virtual AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) {
+        m_pNode     = new AbstractSchemeModel::Node;
+        m_pNode->root   = false;
+        m_pNode->name   = path;
+        m_pNode->ptr    = this;
+        m_pNode->pos    = QPoint();
+
+        m_pModel    = model;
+
+        return m_pNode;
+    }
+
+    virtual bool                        build       (QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) = 0;
+
+    static QString                      convert     (const QString &value, uint8_t current, uint8_t target, uint8_t component = 0) {
+        QString prefix;
+        QString suffix;
+
+        const char *names[] = {".x", ".y", ".z", ".w"};
+
+        switch(target) {
+            case QMetaType::QVector2D: {
+                switch(current) {
+                    case QMetaType::Double:     { prefix = "vec2("; suffix = ")"; } break;
+                    case QMetaType::QVector3D:
+                    case QMetaType::QVector4D:  { prefix = ""; suffix = ".xy"; } break;
+                    default: break;
+                }
+            } break;
+            case QMetaType::QVector3D: {
+                switch(current) {
+                    case QMetaType::Double:     { prefix = "vec3("; suffix = ")"; } break;
+                    case QMetaType::QVector2D:  { prefix = "vec3("; suffix = ", 0.0)"; } break;
+                    case QMetaType::QVector4D:  { prefix = ""; suffix = ".xyz"; } break;
+                    default: break;
+                }
+            } break;
+            case QMetaType::QVector4D: {
+                switch(current) {
+                    case QMetaType::Double:     { prefix = "vec4("; suffix = ")"; } break;
+                    case QMetaType::QVector2D:  { prefix = "vec4("; suffix = ", 0.0, 1.0)"; } break;
+                    case QMetaType::QVector3D:  { prefix = "vec4("; suffix = ", 1.0)"; } break;
+                    default: break;
+                }
+            } break;
+            default: {
+                switch(current) {
+                    case QMetaType::QVector2D:
+                    case QMetaType::QVector3D:
+                    case QMetaType::QVector4D:  { prefix = ""; suffix = names[component]; } break;
+                    default: break;
+                }
+            } break;
+        }
+        return (prefix + value + suffix);
+    }
+
+signals:
+    void                        updated     ();
+
+protected:
+    ShaderBuilder              *m_pModel;
+    AbstractSchemeModel::Node  *m_pNode;
+
+};
+
+class ShaderBuilder : public AbstractSchemeModel {
+    Q_OBJECT
+
+    Q_PROPERTY(Type Material_Type READ materialType WRITE setMaterialType DESIGNABLE true USER true)
+    Q_ENUMS(Type)
+    Q_PROPERTY(Blend Blending_Mode READ blend WRITE setBlend DESIGNABLE true USER true)
+    Q_ENUMS(Blend)
+    Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
+    Q_ENUMS(LightModel)
+    Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
+
+
+public:
+    enum LightModel {
+        Unlit       = Material::Unlit,
+        Lit         = Material::Lit,
+        Subsurface  = Material::Subsurface
+    };
+
+    enum Blend {
+        Opaque      = Material::Opaque,
+        Additive    = Material::Additive,
+        Translucent = Material::Translucent
+    };
+
+    enum Type {
+        Surface         = Material::Surface,
+        PostProcess     = Material::PostProcess,
+        LightFunction   = Material::LightFunction
+    };
+public:
+    ShaderBuilder               ();
+    ~ShaderBuilder              ();
+
+    Node                       *createNode                  (const QString &path);
+    void                        deleteNode                  (Node *node);
+
+    void                        createLink                  (Node *sender, Item *sitem, Node *receiver, Item *ritem);
+    void                        deleteLink                  (Item *item, bool silent = false);
+
+    const AbstractSchemeModel::Link    *findLink            (const AbstractSchemeModel::Node *node, const char *item) {
+        for(const auto it : m_Links) {
+            QString str;
+            str.compare(item);
+            if(it->receiver == node && it->ritem->name.compare(item) == 0) {
+                return it;
+            }
+        }
+        return nullptr;
+    }
+
+    QAbstractItemModel         *components                  () const;
+
+    void                        load                        (const QString &path);
+    void                        save                        (const QString &path);
+
+    AVariant                    object                      () const;
+
+    AVariant                    data                        () const;
+
+    bool                        build                       ();
+
+    QString                     shader                      () const { return m_Shader; }
+
+    bool                        isTangent                   () const { return m_Tangent; }
+
+    bool                        isDoubleSided               () const { return m_DoubleSided; }
+    void                        setDoubleSided              (bool value) { m_DoubleSided = value; emit schemeUpdated(); }
+
+    Type                        materialType                () const { return m_MaterialType; }
+    void                        setMaterialType             (Type type) { m_MaterialType = type; }
+
+    Blend                       blend                       () const { return m_BlendMode; }
+    void                        setBlend                    (Blend mode) { m_BlendMode = mode; emit schemeUpdated(); }
+
+    LightModel                  lightModel                  () const { return m_LightModel; }
+    void                        setLightModel               (LightModel model) { m_LightModel = model; emit schemeUpdated(); }
+
+    int                         setTexture                  (const QString &path, Vector4 &sub, bool cube);
+
+    void                        addUniform                  (const QString &name, uint8_t type);
+
+    void                        reportError                 (QObject *owner, const QString &message) { }
+
+private:
+    bool                        build                       (QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
+
+    void                        addParam                    (const QString &param);
+
+    void                        buildRoot                   (QString &result);
+
+    void                        cleanup                     ();
+
+    typedef map<QString, uint8_t>UniformMap;
+    typedef map<QString, bool>   TextureMap;
+
+    QStringList                 m_Functions;
+
+    /// Shader uniforms
+    UniformMap                  m_Uniforms;
+    /// Shader uniforms
+    TextureMap                  m_Textures;
+    /// Shader params
+    QString                     m_Params;
+    /// Shader source code
+    QString                     m_Shader;
+
+    Blend                       m_BlendMode;
+
+    LightModel                  m_LightModel;
+
+    Type                        m_MaterialType;
+
+    bool                        m_DoubleSided;
+
+    bool                        m_Tangent;
+
+    AbstractSchemeModel::Node  *m_pNode;
+};
+
+#endif // SHADERBUILDER_H

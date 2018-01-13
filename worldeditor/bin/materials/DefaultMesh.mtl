@@ -1,0 +1,23 @@
+{
+    "Blend": 0,
+    "Links": [
+        {
+            "RItem": "Roughness",
+            "Receiver": 0,
+            "SItem": "",
+            "Sender": 1
+        }
+    ],
+    "Model": 1,
+    "Nodes": [
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 0.90000000000000002
+            },
+            "X": -200,
+            "Y": 0
+        }
+    ],
+    "Side": false
+}

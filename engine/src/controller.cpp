@@ -1,0 +1,33 @@
+#include "controller.h"
+
+#include "input.h"
+#include "components/camera.h"
+
+IController::IController(Engine *engine) {
+    m_pEngine   = engine;
+
+    m_pActiveCamera = nullptr;
+
+    m_ObjectsList.clear();
+}
+
+void IController::update() {
+
+}
+
+Camera *IController::activeCamera() const {
+    return m_pActiveCamera;
+}
+
+void IController::setActiveCamera(Camera *camera) {
+    m_pActiveCamera = camera;
+}
+
+void IController::selectGeometry(Vector2 &pos, Vector2 &) {
+    Vector3 result    = Input::instance()->mousePosition();
+    pos = Vector2(result.x, result.y);
+}
+
+void IController::setSelectedObjects(list<uint32_t> &id) {
+    m_ObjectsList   = id;
+}

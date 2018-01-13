@@ -1,0 +1,435 @@
+#define MyAppName \"$${APP_NAME}\"
+#define MyAppVersion \"$${APP_VERSION}\"
+#define MyAppPublisher \"$${COMPANY_NAME}\"
+#define MyAppExeName \"$${EXE_NAME}.exe\"
+#define Copyright \"(c)$$YEAR, $${COMPANY_NAME}. All Rights Reserved.\"
+#define OutputInstallerDirectory \"$${OUT_PWD}\"
+#define OutputInstallerName \"$${APP_NAME}-$${APP_VERSION}-$${BUILD_TYPE}\"
+#define SourcePackageDir \"$${PREFIX}\"
+#define ResourceDir \"$$SRC_DIR/worldbuilder/res\"
+#define ConfigurationDir \"{userappdata}/\" + MyAppPublisher + \"/\" + MyAppName
+
+[Setup]
+; NOTE: The value of AppId uniquely identifies this application.
+; Do not use the same AppId value in installers for other applications.
+; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+AppId={{A5341F76-475A-4E2F-BCF8-0F6ACEAA4959}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppCopyright={#Copyright}
+DefaultDirName={code:definedTargetDir}
+DefaultGroupName={#MyAppName}
+LicenseFile={#ResourceDir}/doc/eula.txt
+SetupIconFile={#ResourceDir}/Thunder.ico
+UninstallDisplayIcon={app}/bin/{#MyAppExeName}
+UninstallDisplayName={#MyAppName}
+WizardSmallImageFile={#ResourceDir}/Thunder.bmp
+OutputDir={#OutputInstallerDirectory}
+OutputBaseFilename={#OutputInstallerName}
+Compression=lzma
+SolidCompression=no
+SetupLogging=yes
+AllowNoIcons=yes
+UninstallLogMode=append
+
+[Languages]
+Name: \"english\"; MessagesFile: \"compiler:Default.isl\"
+
+[Tasks]
+Name: \"desktopicon\"; Description: \"{cm:CreateDesktopIcon}\"; GroupDescription: \"{cm:AdditionalIcons}\"; Flags:
+Name: \"quicklaunchicon\"; Description: \"{cm:CreateQuickLaunchIcon}\"; GroupDescription: \"{cm:AdditionalIcons}\"; Flags: unchecked; OnlyBelowVersion: 0,6.1
+
+[Files]
+Source: \"{#SourcePackageDir}/bin/WorldBuilder.exe\"; DestDir: \"{app}/bin\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/*.dll\"; DestDir: \"{app}/bin/\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/QtQuick/Controls/*\"; DestDir: \"{app}/bin/QtQuick/Controls/\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/QtQuick/Layouts/*\"; DestDir: \"{app}/bin/QtQuick/Layouts/\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/QtQuick/Window.2/*\"; DestDir: \"{app}/bin/QtQuick/Window.2/\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/QtQuick.2/*\"; DestDir: \"{app}/bin/QtQuick.2/\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/sqldrivers/*.dll\"; DestDir: \"{app}/bin/sqldrivers\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/imageformats/*.dll\"; DestDir: \"{app}/bin/imageformats\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/platforms/*.dll\"; DestDir: \"{app}/bin/platforms\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/platforms/*.dll\"; DestDir: \"{app}/bin/platforms\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/plugins/*.dll\"; DestDir: \"{app}/bin/plugins\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/assets/meshes/shapes/*\"; DestDir: \"{app}/bin/assets/meshes/shapes\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/assets/textures/cubemap/*\"; DestDir: \"{app}/bin/assets/textures/cubemap\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/sdk/materials/*.*\"; DestDir: \"{app}/sdk/materials\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/sdk/shaders/*.*\"; DestDir: \"{app}/sdk/shaders\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/aengine.dll\"; DestDir: \"{app}/sdk/libs/vc2013\"; Flags: ignoreversion
+Source: \"{#SourcePackageDir}/bin/aengine.lib\"; DestDir: \"{app}/sdk/libs/vc2013\"; Flags: ignoreversion
+
+[Icons]
+Name: \"{group}\\{#MyAppName}\"; Filename: \"{app}/bin/{#MyAppExeName}\"; MinVersion: 0,5.01; Languages: english
+Name: \"{commondesktop}\\{#MyAppName}\"; Filename: \"{app}/bin/{#MyAppExeName}\"; Tasks: desktopicon
+Name: \"{userappdata}\\Microsoft\\Internet Explorer\\Quick Launch\\{#MyAppName}\"; Filename: \"{app}/bin/{#MyAppExeName}\"; Tasks: quicklaunchicon
+
+[Run]
+
+[UninstallRun]
+
+[Dirs]
+Name: \"{app}\InstallLogs\"; Flags: uninsalwaysuninstall
+Name: \"{userappdata}\\{#MyAppPublisher}\\{#MyAppName}\"; Flags: uninsalwaysuninstall
+
+[UninstallDelete]
+Type: files; Name: \"{app}\\InstallLogs\\system_info.txt\"
+Type: files; Name: \"{app}\\InstallLogs\\installation_log_win.txt\"
+
+[Registry]
+Root: \"HKLM\"; Subkey: \"Software\\{#MyAppPublisher}\\{#MyAppName}\"; ValueType: string; ValueName: \"InstallDir\"; ValueData: \"{app}\"; Flags: createvalueifdoesntexist deletekey
+
+[CustomMessages]
+#include \"english.iss\"
+
+[Code]
+#define A = (Defined UNICODE) ? \"W\" : \"A\"
+const
+    TH32CS_SNAPPROCESS = $2;
+    INVALID_HANDLE_VALUE = -1;
+
+type
+    TPROCESSENTRY32 = record
+        dwSize, cntUsage, th32ProcessID: DWORD;
+        th32DefaultHeapID: Longint;
+        th32ModuleID, cntThreads, th32ParentProcessID: DWORD;
+        pcPriClassBase: Longint;
+        dwFlags: DWORD;
+        szExeFile: array [0..259] of char;
+    end;
+
+    ResultCodes = (
+      Success,
+      SuccessExecutingString,
+      START_OF_ERROR_CODES,
+      StringIsEmpty,
+      ErrorExecutingString,
+      UserDeclined
+    );
+
+    ComparationResults = (
+      EQUAL,
+      FIRST_IS_GREATER,
+      SECOND_IS_GREATER,
+      FIRST_IS_STRING,
+      SECOND_IS_STRING
+    );
+
+function CreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): THandle; external \'CreateToolhelp32Snapshot@kernel32.dll stdcall\';
+#ifdef UNICODE
+function Process32First(hSnapshot: THandle; var lppe: TPROCESSENTRY32): Boolean; external \'Process32First{#A}@kernel32.dll stdcall\';
+function Process32Next(hSnapshot: THandle; var lppe: TPROCESSENTRY32): Boolean; external \'Process32Next{#A}@kernel32.dll stdcall\';
+#else
+function Process32First(hSnapshot: THandle; var lppe: TPROCESSENTRY32): Boolean; external \'Process32First@kernel32.dll stdcall\';
+function Process32Next(hSnapshot: THandle; var lppe: TPROCESSENTRY32): Boolean; external \'Process32Next@kernel32.dll stdcall\';
+#endif
+function CloseHandle(hObject: THandle): Boolean; external \'CloseHandle@kernel32.dll stdcall\';
+
+var
+  sOldVersion: String;
+  bIsUgrade: Boolean;
+  bIsNSISinstaller: Boolean;
+
+// Called just before Setup terminates. Note that this function is called even if the user exits Setup before anything is installed.
+procedure DeinitializeSetup();
+var
+  logfilepathname, logfilename, newfilepathname: string;
+
+begin
+  logfilepathname := expandconstant(\'{log}\');
+  logfilename := ExtractFileName(logfilepathname);
+  // Set the new target path as the directory where the installer is being run from
+  newfilepathname := WizardDirValue() + \'\InstallLogs\installation_log_win.txt\';
+  if ( DirExists( WizardDirValue() ) ) then begin
+    filecopy(logfilepathname, newfilepathname, false);
+  end;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function AddVersionChunk(const S: string; var A: TVariantArray): Integer;
+var
+  Chunk: Integer;
+begin
+  Chunk := StrToIntDef(S, -1);
+  Result := GetArrayLength(A) + 1;
+  SetArrayLength(A, Result);
+
+  if Chunk <> -1 then begin //Integer value
+    A[Result - 1] := Chunk;
+  end else begin //String value
+    A[Result - 1] := S;
+  end;   
+end;
+
+/////////////////////////////////////////////////////////////////////
+function ParseVersionStr(const S: string; var A: TVariantArray): Integer;
+var
+  nCurr: Integer;
+  nCount: Integer;
+  nIndex: Integer;
+begin
+  nCount := 0;
+  nIndex := 1;
+
+  for nCurr := 1 to Length(S) do
+  begin
+    case S[nCurr] of
+      \'.\', \'-\':
+      begin
+        AddVersionChunk(Copy(S, nIndex, nCount), A);
+        nCount := 0;
+        nIndex := nCurr + 1;
+      end;
+    else
+        nCount := nCount + 1;
+    end;
+  end;
+  Result := AddVersionChunk(Copy(S, nIndex, nCount), A);
+end;
+
+/////////////////////////////////////////////////////////////////////
+function CompareVersionStr(const First, Second: TVariantArray): ComparationResults;
+var nSize, nIndex: Integer;
+    nResult: ComparationResults; 
+begin
+  if (GetArrayLength(First) < GetArrayLength(Second) ) then begin
+    nSize := GetArrayLength(First);
+  end else begin
+    nSize := GetArrayLength(Second);
+  end;
+
+  nResult := EQUAL;
+  nIndex := 0;
+  while ((nResult = EQUAL) and (nIndex < nSize)) do
+  begin
+    if (VarType(First[nIndex]) = varInteger) then begin
+      if (VarType(Second[nIndex]) = varInteger) then begin
+        if (First[nIndex] > Second[nIndex]) then begin
+          nResult := FIRST_IS_GREATER;
+        end else if (First[nIndex] < Second[nIndex]) then begin
+          nResult := SECOND_IS_GREATER;
+        end;
+      end else begin
+        nResult := SECOND_IS_STRING;
+      end;
+    end else begin
+      nResult := FIRST_IS_STRING;
+    end;
+    nIndex := nIndex +1;
+  end;
+  Result := nResult;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function GetUninstallString(): String;
+var
+  sUnInstPath: String;
+  sUnInstallString: String;
+begin
+  sUnInstPath := ExpandConstant(\'Software\Microsoft\Windows\CurrentVersion\Uninstall\\{#emit SetupSetting(\"AppId\")}_is1\');
+  sUnInstallString := \'\';
+  if (RegKeyExists(HKLM, sUnInstPath)) and (RegQueryStringValue(HKLM, sUnInstPath, \'UninstallString\', sUnInstallString)) then begin
+    RegQueryStringValue(HKLM, sUnInstPath, \'UninstallString\', sUnInstallString);
+  end;
+  Result := sUnInstallString;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function GetInstalledFolder(): String;
+var
+  sUnInstPath: String;
+  sInstallFolder: String;
+begin
+  sUnInstPath := ExpandConstant(\'Software\Microsoft\Windows\CurrentVersion\Uninstall\\{#emit SetupSetting(\"AppId\")}_is1\');
+  sInstallFolder := \'\';
+  if not RegQueryStringValue(HKLM, sUnInstPath, \'InstallLocation\', sInstallFolder) then
+    RegQueryStringValue(HKLM, sUnInstPath, \'InstallLocation\', sInstallFolder);
+  Result := AddBackslash(sInstallFolder);
+end;
+
+/////////////////////////////////////////////////////////////////////
+function GetInstalledVersion(): String;
+var
+  sUnInstPath: String;
+  sInstalledVersion: String;
+begin
+  sUnInstPath := ExpandConstant(\'Software\Microsoft\Windows\CurrentVersion\Uninstall\\{#emit SetupSetting(\"AppId\")}_is1\');
+  sInstalledVersion := \'\';
+  if (RegKeyExists(HKLM, sUnInstPath)) and (RegQueryStringValue(HKLM, sUnInstPath, \'DisplayVersion\', sInstalledVersion)) then begin
+    RegQueryStringValue(HKLM, sUnInstPath, \'DisplayVersion\', sInstalledVersion);
+  end;
+  Result := sInstalledVersion;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function IsUpgrade(): Boolean;
+begin
+  Result := (GetUninstallString() <> \'\');
+end;
+
+/////////////////////////////////////////////////////////////////////
+procedure RegistryCleanup();
+var sRegPath: String;
+begin
+  sRegPath := ExpandConstant(\'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppName}\');
+  if RegKeyExists(HKLM, sRegPath) then begin
+     RegDeleteKeyIncludingSubkeys(HKLM, sRegPath);
+  end;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function UnInstallOldVersion(): ResultCodes;
+var
+  sUnInstallString: String;
+  nResultCode: Integer;
+  iDialog: Integer;
+  vInstalledVersion, vNewVersion: TVariantArray;
+  nComparer: ComparationResults;
+begin
+  Result := Success;
+
+  // get the uninstall string for the old app
+  sUnInstallString := GetUninstallString();
+  if sUnInstallString <> \'\' then begin
+    sOldVersion := GetInstalledVersion();
+    ParseVersionStr( sOldVersion, vInstalledVersion);
+    ParseVersionStr( ExpandConstant(\'{#MyAppVersion}\'), vNewVersion);
+    nComparer := CompareVersionStr( vInstalledVersion, vNewVersion );
+    case nComparer of
+      SECOND_IS_GREATER, FIRST_IS_STRING, SECOND_IS_STRING: //Installed version lover than version in installer
+      begin
+        iDialog := MsgBox(FmtMessage(ExpandConstant(\'{cm:VERSION_UPGRADE_QUESTION}\'), [sOldVersion]), mbInformation, MB_YESNO); //Custom Message if App version is the same
+        if iDialog = IDYES then begin
+          if bIsNSISinstaller then begin
+            Exec(sUnInstallString, \'/S\',\'\', SW_HIDE, ewWaitUntilTerminated, nResultCode);
+            RegistryCleanup();
+          end else begin
+            Exec(\'net\', \'stop VDIQoSService\', ExpandConstant(\'{win}\'), SW_HIDE, ewWaitUntilTerminated, nResultCode);
+            Exec(ExpandConstant(GetInstalledFolder()+\'bin/QosServInst.exe\'), \'-u\', GetInstalledFolder(), SW_HIDE, ewWaitUntilTerminated, nResultCode);
+          end;
+        end else begin
+          Result := UserDeclined;
+        end;
+      end;
+      EQUAL: //Installed version is the same as version in installer
+      begin
+        iDialog := MsgBox(ExpandConstant(\'{cm:REINSTALL_SAME_VERSION_QUESTION}\'), mbInformation, MB_YESNO); //Custom Message if App version is the same
+        if iDialog = IDYES then begin
+          sUnInstallString := RemoveQuotes(sUnInstallString);
+          if Exec(sUnInstallString, \'/SILENT /NORESTART /SUPPRESSMSGBOXES\',\'\', SW_HIDE, ewWaitUntilTerminated, nResultCode) then begin
+            Result := SuccessExecutingString;
+          end else begin
+            Result := ErrorExecutingString;
+          end;
+        end else begin
+          Result := UserDeclined;
+        end;
+      end;
+      FIRST_IS_GREATER: //Installed version higher than version in installer
+      begin
+        iDialog := MsgBox(FmtMessage(ExpandConstant(\'{cm:VERSION_DOWNGRADE_QUESTION}\'), [sOldVersion]), mbInformation, MB_YESNO); //Custom Message if App version is the same
+        if iDialog = IDYES then begin
+          if bIsNSISinstaller then begin
+            Exec(sUnInstallString, \'/S\',\'\', SW_HIDE, ewWaitUntilTerminated, nResultCode);
+            RegistryCleanup();
+          end else begin
+            Exec(\'net\', \'stop VDIQoSService\', ExpandConstant(\'{win}\'), SW_HIDE, ewWaitUntilTerminated, nResultCode);
+            Exec(ExpandConstant(GetInstalledFolder()+\'bin/QosServInst.exe\'), \'-u\', GetInstalledFolder(), SW_HIDE, ewWaitUntilTerminated, nResultCode);
+          end;
+        end else begin
+          Result := UserDeclined;
+        end;
+      end;
+    end;
+  end else begin
+    Result := StringIsEmpty;
+  end;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function IsProcessRunning(FileName: String): Boolean; //FileName - application to be checked
+var
+  hProcessSnap: THandle;
+  pe32: TPROCESSENTRY32;
+  szExeFile: String;
+begin
+  hProcessSnap := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if hProcessSnap = INVALID_HANDLE_VALUE then Exit;
+  pe32.dwSize := sizeof(pe32);
+  if not Process32First(hProcessSnap, pe32) then Exit;
+  while not Result and Process32Next(hProcessSnap, pe32) do
+  begin
+    szExeFile := \'\';
+    while not (pe32.szExeFile[Length(szExeFile)] = #0) do szExeFile := szExeFile + pe32.szExeFile[Length(szExeFile)];
+    Result := LowerCase(FileName) = LowerCase(szExeFile);
+  end;
+  CloseHandle(hProcessSnap);
+end;
+
+/////////////////////////////////////////////////////////////////////
+procedure InitializeWizard;
+var
+   iDialog: Integer;
+begin
+  bIsUgrade := IsUpgrade();
+  if (bIsUgrade) then
+  begin
+    if IsProcessRunning(ExpandConstant(\'{#MyAppExeName}\')) then begin
+        iDialog := MsgBox(ExpandConstant(\'{cm:APPLICATION_RUNNING}\'), mbInformation, MB_OK); //Custom Message if App is running
+        Abort();
+    end;
+    case UnInstallOldVersion() of
+      UserDeclined:
+      begin
+        Abort();
+      end;
+    end;
+  end;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function ShouldSkipPage (PageID : Integer) : Boolean;
+begin
+  if bIsUgrade then begin
+  // Skip some pages for update
+    case PageID of
+      wpWelcome,
+      wpLicense,
+      wpSelectTasks,
+      wpSelectDir,
+      wpSelectProgramGroup:
+        Result := True;
+      else
+        Result := False;
+    end;
+  end;
+end;
+
+/////////////////////////////////////////////////////////////////////
+function definedTargetDir(Param : string):string;
+var
+  entry: String;
+begin
+  entry := GetInstalledFolder();
+  if (not bIsUgrade) or (entry <> \'\') then begin
+    entry := ExpandConstant(\'{pf}\\{#MyAppPublisher}\\{#MyAppName}\');
+  end;
+  result := entry;
+end;
+
+/////////////////////////////////////////////////////////////////////
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  iDialog: Integer;
+begin
+  if CurUninstallStep=usPostUninstall then  begin
+    if DirExists(ExpandConstant(\'{#ConfigurationDir}\')) then begin
+      iDialog := MsgBox(FmtMessage(ExpandConstant(\'{cm:DELETE_DATA_FILES}\'), [ExpandConstant(\'{#ConfigurationDir}\')]), mbInformation, MB_YESNO); //Custom Message to confirm configuration removal
+      if iDialog = IDYES then begin
+        if not DelTree(ExpandConstant(\'{#ConfigurationDir}\'), True, True, True) then begin
+          MsgBox(ExpandConstant(\'{cm:DATA_FILES_WAS_NOT_DELETED}\'), mbError, MB_OK);
+        end;
+      end;    
+    end;
+  end;
+end;

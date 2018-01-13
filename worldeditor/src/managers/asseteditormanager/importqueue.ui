@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ImportQueue</class>
+ <widget class="QDialog" name="ImportQueue">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>72</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>70</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>500</width>
+    <height>72</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Please Wait...</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Progress</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
+        </property>
+        <property name="textDirection">
+         <enum>QProgressBar::TopToBottom</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

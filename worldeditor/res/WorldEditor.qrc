@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Add.png</file>
+        <file>Remove.png</file>
+        <file>Graph.png</file>
+        <file>Disable.png</file>
+        <file>Enable.png</file>
+        <file>Folder.png</file>
+        <file>Cell.png</file>
+        <file>message/Warning.png</file>
+        <file>message/Information.png</file>
+        <file>message/Error.png</file>
+        <file>editor/Move.png</file>
+        <file>editor/Rotate.png</file>
+        <file>editor/Scale.png</file>
+    </qresource>
+    <qresource prefix="/Style">
+        <file>styles/dark/style.qss</file>
+        <file>styles/dark/icons/close.png</file>
+        <file>styles/dark/icons/close-hover.png</file>
+        <file>styles/dark/icons/arrow-down.png</file>
+        <file>styles/dark/icons/arrow-right.png</file>
+        <file>styles/dark/icons/arrow-up.png</file>
+        <file>styles/dark/icons/revert.png</file>
+        <file>styles/dark/images/cpp.png</file>
+        <file>styles/dark/images/map.png</file>
+    </qresource>
+</RCC>

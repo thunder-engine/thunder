@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MeshEdit</class>
+ <widget class="QMainWindow" name="MeshEdit">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Mesh Edit</string>
+  </property>
+  <widget class="QToolWindowManager" name="centralwidget">
+   <widget class="PropertyEditor" name="treeView">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>300</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>300</width>
+      <height>200</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
+   <addaction name="menuWindow"/>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PropertyEditor</class>
+   <extends>QTreeView</extends>
+   <header>editors/propertyedit/propertyeditor.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QToolWindowManager</class>
+   <extends>QWidget</extends>
+   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

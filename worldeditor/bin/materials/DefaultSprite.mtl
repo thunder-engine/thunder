@@ -1,0 +1,34 @@
+{
+    "Blend": 2,
+    "Links": [
+        {
+            "RItem": "Emissive",
+            "Receiver": 0,
+            "SItem": "",
+            "Sender": 1
+        },
+        {
+            "RItem": "Opacity",
+            "Receiver": 0,
+            "SItem": "A",
+            "Sender": 1
+        }
+    ],
+    "Model": 0,
+    "Nodes": [
+        {
+            "Type": "TextureSample",
+            "Values": {
+                "Texture": [
+                    "Template",
+                    ".embedded/invalid.png",
+                    22
+                ]
+            },
+            "X": -200,
+            "Y": 0
+        }
+    ],
+    "Side": true,
+    "Type": 0
+}
