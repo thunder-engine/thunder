@@ -30,8 +30,8 @@ uint8_t Handles::s_Axes     = 0;
 
 static IRenderSystem *s_System  = nullptr;
 
-float size  = 0.7f;
-float sense =10.0f;
+float length    = 0.7f;
+float sense     = 10.0f;
 
 void *s_Quadric    = gluNewQuadric();
 
@@ -172,12 +172,12 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
         glScalef(scale, scale, scale);
 
-        float conesize  = size / 5.0f;
+        float conesize  = length / 5.0f;
         float consize2  = conesize * 2.0f;
 
-        Vector3 x( size, 0.0f, 0.0f);
-        Vector3 y( 0.0f, size, 0.0f);
-        Vector3 z( 0.0f, 0.0f, size);
+        Vector3 x( length, 0.0f, 0.0f);
+        Vector3 y( 0.0f, length, 0.0f);
+        Vector3 z( 0.0f, 0.0f, length);
 
         Vector3 xy( consize2, consize2, 0.0f);
         Vector3 yz( 0.0f, consize2, consize2);
@@ -237,7 +237,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         s_Color     = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_xColor;
         drawLine(Vector3(consize2, 0, 0), xy);
         s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
-        drawArrow(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 1, 0), 90), size);
+        drawArrow(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 1, 0), 90), length);
 
         s_Second    = s_yColor;
         s_Color = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_yColor;
@@ -245,7 +245,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_yColor;
         drawLine(Vector3(0, consize2, 0), yz);
         s_Color = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
-        drawArrow(Vector3(0, conesize, 0), Quaternion(Vector3(1, 0, 0),-90), size);
+        drawArrow(Vector3(0, conesize, 0), Quaternion(Vector3(1, 0, 0),-90), length);
 
         s_Second    = s_zColor;
         s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_zColor;
@@ -253,7 +253,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         s_Color = (s_Axes == (AXIS_X | AXIS_Z)) ? s_Selected : s_zColor;
         drawLine(Vector3(0, 0, consize2), xz);
         s_Color = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawArrow(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90), size);
+        drawArrow(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90), length);
 
         s_Color = s_Selected;
         s_Color.w = 0.2f;
@@ -276,7 +276,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
     if(s_ActiveCamera) {
         float half      = 180.0f;
-        float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f) * size;
+        float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f) * length;
         Vector3 normal  = position - s_ActiveCamera->actor().position();
         normal.normalize();
 
@@ -365,7 +365,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
                  ((normal.y > 0) ? 1 : -1) * scale,
                  ((normal.z < 0) ? 1 : -1) * scale);
 
-        float half  = size * 0.5;
+        float half  = length * 0.5;
         float hh    = half * 0.5;
         float big   = half * 1.4;
         float hbig  = big  * 0.5;
@@ -376,9 +376,9 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             Vector3 y0  = Vector3(0,-half, 0);
             Vector3 z0  = Vector3(0, 0, half);
 
-            Vector3 x1  = Vector3(size, 0, 0);
-            Vector3 y1  = Vector3(0,-size, 0);
-            Vector3 z1  = Vector3(0, 0, size);
+            Vector3 x1  = Vector3(length, 0, 0);
+            Vector3 y1  = Vector3(0,-length, 0);
+            Vector3 z1  = Vector3(0, 0, length);
 
             if(HandleTools::distanceToLine(x0, y0) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y;
@@ -400,7 +400,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         glPushMatrix();
         glRotatef(90, 0, 1, 0);
         s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor;
-        drawLine(Vector3(), Vector3(0, 0, size));
+        drawLine(Vector3(), Vector3(0, 0, length));
         s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_xColor;
         drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
         drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));
@@ -412,7 +412,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         glPushMatrix();
         glRotatef(90, 1, 0, 0);
         s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor;
-        drawLine(Vector3(), Vector3(0, 0, size));
+        drawLine(Vector3(), Vector3(0, 0, length));
         s_Color = (s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_yColor;
         drawLine(Vector3(0, 0, half), Vector3(0, hh,   hh));
         drawLine(Vector3(0, 0, big),  Vector3(0, hbig, hbig));
@@ -424,7 +424,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         glPushMatrix();
         glRotatef(90, 0, 0, 1);
         s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(), Vector3(0, 0, size));
+        drawLine(Vector3(), Vector3(0, 0, length));
         s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_zColor;
         drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
         drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));

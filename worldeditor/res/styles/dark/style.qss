@@ -45,6 +45,9 @@ QAbstractButton {
     background: #757575;
     border-radius: 3px;
 }
+QAbstractButton:disabled {
+    background: #22757575;
+}
 QAbstractButton:hover {
     background: #9e9e9e;
 }

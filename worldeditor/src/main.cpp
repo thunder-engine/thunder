@@ -19,6 +19,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+#include "managers/projectmanager/projectdialog.h"
+
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
@@ -29,21 +31,31 @@ int main(int argc, char *argv[]) {
     }
 
     ProjectManager *mgr = ProjectManager::instance();
-    mgr->init(QApplication::arguments().at(1));
 
-    IFile *file = new IFile();
-    file->finit(qPrintable(QApplication::arguments().at(0)));
-    file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
+    QString project;
+    if(argc > 1) {
+        project = QApplication::arguments().at(1);
+    } else {
+        project = ProjectDialog::projectPath();
+    }
+    if(!project.isEmpty()) {
+        mgr->init(project);
 
-    Engine engine(file);
-    engine.init();
+        IFile *file = new IFile();
+        file->finit(qPrintable(QApplication::arguments().at(0)));
+        file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
-    SceneComposer w(&engine);
-    QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
+        Engine engine(file);
+        engine.init();
 
-    CodeManager::instance()->init();
-    AssetManager::instance()->init();
-    UndoManager::instance()->init();
+        SceneComposer w(&engine);
+        QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
 
-    return a.exec();
+        CodeManager::instance()->init();
+        AssetManager::instance()->init();
+        UndoManager::instance()->init();
+
+        return a.exec();
+    }
+    return 0;
 }
