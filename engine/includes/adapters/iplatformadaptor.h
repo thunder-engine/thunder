@@ -26,9 +26,9 @@ public:
 
     virtual bool                        key                         (Input::KeyCode code) = 0;
 
-    virtual Vector3                   mousePosition               () = 0;
+    virtual Vector3                     mousePosition               () = 0;
 
-    virtual Vector3                   mouseDelta                  () = 0;
+    virtual Vector3                     mouseDelta                  () = 0;
 
     virtual uint8_t                     mouseButtons                () = 0;
 
@@ -42,9 +42,9 @@ public:
 
     virtual uint16_t                    joystickButtons             (uint8_t index) = 0;
 
-    virtual Vector4                   joystickThumbs              (uint8_t index) = 0;
+    virtual Vector4                     joystickThumbs              (uint8_t index) = 0;
 
-    virtual Vector2                   joystickTriggers            (uint8_t index) = 0;
+    virtual Vector2                     joystickTriggers            (uint8_t index) = 0;
 
     virtual void                       *pluginLoad                  (const char *name) = 0;
 

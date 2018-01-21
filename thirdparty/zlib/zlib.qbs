@@ -12,6 +12,7 @@ Project {
 
     DynamicLibrary {
         name: "zlib-editor"
+        condition: zlib.desktop
         files: zlib.srcFiles
         Depends { name: "cpp" }
 

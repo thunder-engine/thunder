@@ -38,6 +38,15 @@ typedef map<string, AVariant>   AVariantMap;
 typedef list<AVariant>          AVariantList;
 typedef vector<int8_t>          AByteArray;
 
+#if __ANDROID__
+#include <sstream>
+string to_string(auto v) {
+    ostringstream ss;
+    ss << v;
+    return ss.str();
+}
+#endif
+
 class NEXT_LIBRARY_EXPORT AVariant {
 public:
      struct NEXT_LIBRARY_EXPORT Data {

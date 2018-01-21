@@ -7,9 +7,9 @@ class NEXT_LIBRARY_EXPORT LightSource : public Component {
     A_REGISTER(LightSource, Component, Componets)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Cast_shadows, castShadows, setCastShadows),
-        A_PROPERTY(double, Brightness, brightness, setBrightness),
-        A_PROPERTY(double, Radius, radius, setRadius)
+        A_PROPERTY(bool, Cast_shadows, LightSource::castShadows, LightSource::setCastShadows),
+        A_PROPERTY(double, Brightness, LightSource::brightness, LightSource::setBrightness),
+        A_PROPERTY(double, Radius, LightSource::radius, LightSource::setRadius)
     )
 
 public:

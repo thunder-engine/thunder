@@ -43,6 +43,7 @@ Project {
 
     QtApplication {
         name: builder.BUILDER_NAME
+        condition: builder.desktop
         files: builder.srcFiles
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }

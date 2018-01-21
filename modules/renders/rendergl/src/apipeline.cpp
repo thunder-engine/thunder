@@ -64,7 +64,13 @@ APipeline::APipeline(Engine *engine) :
 
     glGenFramebuffers(1, &m_DepthBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_DepthBuffer);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
+
+#ifdef GL_ES_VERSION_2_0
+    uint32_t target = GL_DRAW_FRAMEBUFFER_APPLE;
+#else
+    uint32_t target = GL_DRAW_FRAMEBUFFER;
+#endif
+    glFramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
 
     glGenFramebuffers(1, &m_ScreenBuffer);
 }
@@ -147,35 +153,35 @@ void APipeline::setShaderParams(uint32_t program) {
     int location;
     location	= glGetUniformLocation(program, "light.ambient");
     if(location > -1) {
-        glProgramUniform1f(program, location, m_pScene->ambient());
+        glUniform1f(location, m_pScene->ambient());
     }
     location    = glGetUniformLocation(program, "transform.color");
     if(location > -1) {
-        glProgramUniform4fv(program, location, 1, m_Color.v);
+        glUniform4fv(location, 1, m_Color.v);
     }
     location	= glGetUniformLocation(program, "transform.view");
     if(location > -1) {
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, m_View.mat);
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_View.mat);
     }
     location	= glGetUniformLocation(program, "transform.model");
     if(location > -1) {
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, m_Model.mat);
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_Model.mat);
     }
     location	= glGetUniformLocation(program, "transform.projection");
     if(location > -1) {
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, m_Projection.mat);
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_Projection.mat);
     }
     location	= glGetUniformLocation(program, "transform.mv");
     if(location > -1) {
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, m_ModelView.mat);
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_ModelView.mat);
     }
     location	= glGetUniformLocation(program, "transform.mvpi");
     if(location > -1) {
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, m_ModelViewProjectionInversed.mat);
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_ModelViewProjectionInversed.mat);
     }
     location	= glGetUniformLocation(program, "camera.screen");
     if(location > -1) {
-        glProgramUniform2f(program, location, 1.0f / m_Screen.x, 1.0f / m_Screen.y);
+        glUniform2f(location, 1.0f / m_Screen.x, 1.0f / m_Screen.y);
     }
     ACameraGL *camera   = activeCamera();
     if(camera) {
@@ -218,8 +224,12 @@ void APipeline::drawQuad() {
     PROFILER_STAT(VERTICES,     4);
     PROFILER_STAT(POLYGONS,     2);
     PROFILER_STAT(DRAWCALLS,    1);
-
-    glDrawArrays(GL_QUADS, 0, 4);
+#ifdef GL_ES_VERSION_2_0
+    uint32_t mode   = GL_QUADS_OES;
+#else
+    uint32_t mode   = GL_QUADS;
+#endif
+    glDrawArrays(mode, 0, 4);
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);
@@ -355,34 +365,36 @@ void APipeline::loadMatrix(matrix_types type, const Matrix4 &m) {
 }
 
 void APipeline::initLightMaterial(AMaterialGL *material) {
-    if(material) {
+    if(material && material->bind(*this, IDrawObjectGL::DEFAULT, AMaterialGL::Static)) {
         uint32_t program    = material->getProgram(AMaterialGL::Static);
 
         int location;
         location	= glGetUniformLocation(program, "layer0");
         if(location > -1) {
-            glProgramUniform1i(program, location, 0);
+            glUniform1i(location, 0);
         }
         location	= glGetUniformLocation(program, "layer1");
         if(location > -1) {
-            glProgramUniform1i(program, location, 1);
+            glUniform1i(location, 1);
         }
         location	= glGetUniformLocation(program, "layer2");
         if(location > -1) {
-            glProgramUniform1i(program, location, 2);
+            glUniform1i(location, 2);
         }
         location	= glGetUniformLocation(program, "layer3");
         if(location > -1) {
-            glProgramUniform1i(program, location, 3);
+            glUniform1i(location, 3);
         }
         location	= glGetUniformLocation(program, "depthMap");
         if(location > -1) {
-            glProgramUniform1i(program, location, 4);
+            glUniform1i(location, 4);
         }
         location	= glGetUniformLocation(program, "shadowMap");
         if(location > -1) {
-            glProgramUniform1i(program, location, 5);
+            glUniform1i(location, 5);
         }
+
+        material->unbind(IDrawObjectGL::DEFAULT);
     }
 }
 
@@ -398,7 +410,8 @@ void APipeline::analizeScene(AObject &object, IController *controller) {
 
     Vector2 position;
     if(controller) {
-        controller->selectGeometry(position, Vector2());
+        Vector2 v;
+        controller->selectGeometry(position, v);
     }
     Vector3 screen    = Vector3(position.x, position.y, 0.0f);
     // Screen to world

@@ -28,6 +28,7 @@ Project {
 
     DynamicLibrary {
         name: "rendergl-editor"
+        condition: rendergl.desktop
         files: rendergl.srcFiles
         Depends { name: "cpp" }
         Depends { name: "next-editor" }
@@ -58,6 +59,12 @@ Project {
         Depends { name: "cpp" }
 
         cpp.includePaths: rendergl.incPaths
+        cpp.cxxLanguageVersion: "c++14"
+
+        Properties {
+            condition: qbs.targetOS.contains("android")
+            Android.ndk.appStl: "gnustl_shared"
+        }
 
         Group {
             name: "Install Static RenderGL"

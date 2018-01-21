@@ -5,7 +5,9 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/core/*.cpp",
-        "src/math/*.cpp"
+        "src/math/*.cpp",
+        "inc/core/*.h",
+        "inc/math/*.h"
     ]
 
     property stringList incPaths: [
@@ -16,6 +18,7 @@ Project {
 
     DynamicLibrary {
         name: "next-editor"
+        condition: next.desktop
         files: next.srcFiles
         Depends { name: "cpp" }
 
@@ -37,9 +40,16 @@ Project {
         name: "next"
         files: next.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
 
         cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
+        cpp.cxxLanguageVersion: "c++14"
+
+        Properties {
+            condition: qbs.targetOS.contains("android")
+            Android.ndk.appStl: "gnustl_shared"
+        }
 
         Group {
             name: "Install Static Platform"

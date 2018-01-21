@@ -39,6 +39,7 @@ Product {
 
     Group {
         name: "Qt DLLs"
+        condition: install.desktop
         prefix: {
             if (qbs.targetOS.contains("windows")) {
                 return Qt.core.binPath + "/"
@@ -78,7 +79,7 @@ Product {
 
             return list;
         }
-        qbs.install: true
+        qbs.install: install.editor
         qbs.installDir: install.BIN_PATH
         qbs.installPrefix: install.PREFIX
     }

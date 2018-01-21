@@ -33,7 +33,13 @@ public:
     virtual void                reset               (const string &path) {
         m_pMaterial = Engine::loadResource<AMaterialGL>(path);
 
-        m_ResultTexture.create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
+#ifdef GL_ES_VERSION_2_0
+        uint32_t format  = GL_R11F_G11F_B10F_APPLE;
+#else
+        uint32_t format  = GL_R11F_G11F_B10F;
+#endif
+
+        m_ResultTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     }
 
 protected:

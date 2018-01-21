@@ -52,10 +52,11 @@ bool RenderGLSystem::init() {
     glDepthFunc     (GL_LEQUAL);
     glEnable        (GL_DEPTH_TEST);
 
+    int32_t targets = 1;
+#ifndef GL_ES_VERSION_2_0
     glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-    int32_t targets;
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
+#endif
     if(targets >= ADeferredShading::G_TARGETS) {
         m_pPipeline = new ADeferredShading(m_pEngine);
     } else {
@@ -112,21 +113,22 @@ void RenderGLSystem::drawBillboard(const Vector3 &position, const Vector2 &size,
 
 void RenderGLSystem::drawPath(const Vector3List &points) {
     PROFILER_MARKER
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, &points[0]);
-
+#ifdef GL_ES_VERSION_2_0
+    uint32_t array = GL_VERTEX_ARRAY_KHR;
+#else
+    uint32_t array = GL_VERTEX_ARRAY;
+#endif
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, &points[0]);
     glDrawArrays(GL_LINE_STRIP, 0, points.size());
-
-    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableVertexAttribArray(0);
 }
 
 void RenderGLSystem::setColor(const Vector4 &color) {
     PROFILER_MARKER
 
     if(m_pPipeline) {
-        glColor4fv(color.v);
-        //m_pPipeline->setColor(color);
+        m_pPipeline->setColor(color);
     }
 }
 

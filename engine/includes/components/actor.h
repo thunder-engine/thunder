@@ -10,9 +10,9 @@ class NEXT_LIBRARY_EXPORT Actor : public AObject {
     A_REGISTER(Actor, AObject, Scene)
 
     A_PROPERTIES(
-        A_PROPERTY(Vector3, Position, position, setPosition),
-        A_PROPERTY(Quaternion , Rotation, rotation, setRotation),
-        A_PROPERTY(Vector3, Scale, scale, setScale)
+        A_PROPERTY(Vector3, Position, Actor::position, Actor::setPosition),
+        A_PROPERTY(Quaternion, Rotation, Actor::rotation, Actor::setRotation),
+        A_PROPERTY(Vector3, Scale, Actor::scale, Actor::setScale)
     )
 
 public:

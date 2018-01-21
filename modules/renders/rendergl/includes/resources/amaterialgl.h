@@ -56,14 +56,13 @@ protected:
     string                      loadIncludes    (const string &path, const string &define = string());
 
 private:
-    AVariantMap       mUniforms;
+    AVariantMap                 mUniforms;
 
     typedef map<uint16_t, uint32_t> ProgramMap;
 
     ProgramMap                  m_Programs;
 
-
-    typedef map<string, string>     PragmaMap;
+    typedef map<string, string> PragmaMap;
 
     PragmaMap                   m_Pragmas;
 };

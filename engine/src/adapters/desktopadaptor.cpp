@@ -42,8 +42,6 @@ void DesktopAdaptor::update() {
             m_MouseButtons  |= (1<<i);
         }
     }
-
-
 }
 
 bool DesktopAdaptor::start() {

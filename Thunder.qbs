@@ -20,13 +20,16 @@ Project {
     property string LIB_PATH: SDK_PATH + "/lib/" + PLATFORM
     property string INC_PATH: SDK_PATH + "/include"
 
+    property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios")
+
     references: [
         "thirdparty/thirdparty.qbs",
         "engine/engine.qbs",
         "modules/renders/rendergl/rendergl.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
-        "build/install.qbs"
+        "build/install.qbs",
+        "android/android.qbs"
     ]
 }
 

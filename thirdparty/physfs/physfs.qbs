@@ -16,6 +16,7 @@ Project {
 
     DynamicLibrary {
         name: "physfs-editor"
+        condition: physfs.desktop
         files: physfs.srcFiles
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
@@ -23,7 +24,11 @@ Project {
         cpp.defines: ["PHYSFS_SUPPORTS_ZIP"]
         cpp.includePaths: physfs.incPaths
         cpp.libraryPaths: [ ]
-        cpp.dynamicLibraries: [ "Advapi32" ]
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: [ "Advapi32" ]
+        }
 
         Group {
             name: "Install Dynamic physfs"

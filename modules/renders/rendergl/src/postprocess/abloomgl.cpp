@@ -4,13 +4,21 @@
 
 #include "apipeline.h"
 
+#include <cmath>
+
 ABloomGL::ABloomGL() {
     reset("shaders/Downsample.frag");
 
+#ifdef GL_ES_VERSION_2_0
+        uint32_t format  = GL_R11F_G11F_B10F_APPLE;
+#else
+        uint32_t format  = GL_R11F_G11F_B10F;
+#endif
+
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
+        m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     }
-    m_BlurTemp.create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
+    m_BlurTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
 
     m_Threshold = 1.0f;
 
@@ -22,20 +30,19 @@ ABloomGL::ABloomGL() {
 }
 
 ATextureGL *ABloomGL::draw(ATextureGL &source, APipeline &pipeline) {
-    if(m_pMaterial) {
+    if(m_pMaterial && m_pMaterial->bind(pipeline, IDrawObjectGL::UI, AMaterialGL::Static)) {
         pipeline.makeOrtho();
-        m_pMaterial->bind(pipeline, IDrawObjectGL::UI, AMaterialGL::Static);
-            uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
-            pipeline.setShaderParams(program);
 
-            int location    = glGetUniformLocation(program, "threshold");
-            for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-                if(location > -1) {
-                    glProgramUniform1f(program, location, (i == 0) ? m_Threshold : 0.0f);
-                }
-                pipeline.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
+        uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
+        pipeline.setShaderParams(program);
+
+        int location    = glGetUniformLocation(program, "threshold");
+        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
+            if(location > -1) {
+                glUniform1f(location, (i == 0) ? m_Threshold : 0.0f);
             }
-        glBindProgramPipeline( 0 );
+            pipeline.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
+        }
 
         pipeline.clearScreen(m_ResultTexture);
 

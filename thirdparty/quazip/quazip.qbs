@@ -15,7 +15,9 @@ Project {
 
     DynamicLibrary {
         name: "quazip-editor"
+        condition: quazip.desktop
         files: quazip.srcFiles
+
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["core"]; }

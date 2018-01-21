@@ -5,7 +5,6 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/analytics/*.cpp",
-        "src/adapters/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
 
@@ -24,10 +23,12 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/physfs/src",
         "../thirdparty/glfw/include",
+        "../thirdparty/glfm/include"
     ]
 
     DynamicLibrary {
         name: "engine-editor"
+        condition: engine.desktop
         files: engine.srcFiles
         Depends { name: "cpp" }
         Depends { name: "next-editor" }
@@ -38,6 +39,11 @@ Project {
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
+
+        Properties {
+            condition: engine.desktop
+            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+        }
 
         Group {
             name: "Install Dynamic Engine"
@@ -54,6 +60,22 @@ Project {
         Depends { name: "cpp" }
 
         cpp.includePaths: engine.incPaths
+        cpp.cxxLanguageVersion: "c++14"
+        cpp.defines: ["NEXT_LIBRARY"]
+
+        Properties {
+            condition: engine.desktop
+            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+        }
+        Properties {
+            condition: !engine.desktop
+            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("android")
+            Android.ndk.appStl: "gnustl_shared"
+        }
 
         Group {
             name: "Install Static Engine"

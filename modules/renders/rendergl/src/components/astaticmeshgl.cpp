@@ -50,9 +50,7 @@ void AStaticMeshGL::draw(APipeline &pipeline, int8_t layer) {
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibuffer[surface][lod]);
 
-                    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glDrawElements(GL_TRIANGLES, l->indices.size(), GL_UNSIGNED_INT, 0);
-                    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
                     PROFILER_STAT(VERTICES, l->vertices.size());
                     PROFILER_STAT(POLYGONS, l->indices.size() / 3);

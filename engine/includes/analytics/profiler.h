@@ -28,9 +28,9 @@ public:
     };
 
 public:
-    __forceinline Profiler      (const char *name);
+    Profiler                    (const char *name);
 
-    __forceinline ~Profiler     ();
+    ~Profiler                   ();
 
     static uint32_t             stat                (const char *name);
 

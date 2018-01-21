@@ -4,12 +4,10 @@
 #include "iplatformadaptor.h"
 
 class Log;
-struct GLFWwindow;
-struct GLFWmonitor;
 
-class DesktopAdaptor : public IPlatformAdaptor {
+class MobileAdaptor : public IPlatformAdaptor {
 public:
-    virtual ~DesktopAdaptor     () {}
+    virtual ~MobileAdaptor      () {}
 
     bool                        init                        (Engine *engine);
 
@@ -52,17 +50,9 @@ public:
     void                       *pluginAddress               (void *plugin, const string &name);
 
 protected:
-    static void                 scrollCallback              (GLFWwindow *, double, double yoffset);
 
-    static void                 cursorPositionCallback      (GLFWwindow *, double xpos, double ypos);
-
-    static void                 errorCallback               (int error, const char *description);
 
 protected:
-    GLFWwindow                 *m_pWindow;
-
-    GLFWmonitor                *m_pMonitor;
-
     uint8_t                     m_MouseButtons;
 
     static Vector3              m_MouseDelta;

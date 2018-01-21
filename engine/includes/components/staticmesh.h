@@ -12,8 +12,8 @@ class NEXT_LIBRARY_EXPORT StaticMesh : public Component {
     A_REGISTER(StaticMesh, Component, Components)
 
     A_PROPERTIES (
-        A_PROPERTY(Mesh*, Mesh, mesh, setMesh),
-        A_PROPERTY(MateralArray, Materials, materials, setMaterials)
+        A_PROPERTY(Mesh*, Mesh, StaticMesh::mesh, StaticMesh::setMesh),
+        A_PROPERTY(MateralArray, Materials, StaticMesh::materials, StaticMesh::setMaterials)
     )
     A_NOMETHODS()
 

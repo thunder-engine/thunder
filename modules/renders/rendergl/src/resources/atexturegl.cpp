@@ -85,12 +85,12 @@ void ATextureGL::loadUserData(const AVariantMap &data) {
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
-            AVariantList &surfaces = (*it).second.value<AVariantList>();
+            const AVariantList &surfaces = (*it).second.value<AVariantList>();
             for(auto s : surfaces) {
                 Surface img;
                 uint32_t w  = m_Width;
                 uint32_t h  = m_Height;
-                AVariantList &lods = s.value<AVariantList>();
+                const AVariantList &lods = s.value<AVariantList>();
                 for(auto l : lods) {
                     AByteArray bits = l.toByteArray();
                     uint32_t s  = size(w, h);
@@ -111,10 +111,10 @@ void ATextureGL::loadUserData(const AVariantMap &data) {
 
     m_Target    = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     switch (m_format) {
-        case RGB:       m_Format    = GL_BGR_EXT; break;
+        case RGB:       m_Format    = GL_RGB; break;
         case DXT1:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
         case DXT5:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-        default:        m_Format    = GL_BGRA_EXT; break; // GL_BGRA_EXT
+        default:        m_Format    = GL_RGBA; break;
     }
 
     glBindTexture(m_Target, mID);
@@ -149,7 +149,7 @@ void ATextureGL::loadUserData(const AVariantMap &data) {
     }
     glTexParameteri ( m_Target, GL_TEXTURE_WRAP_S, wrap );
     glTexParameteri ( m_Target, GL_TEXTURE_WRAP_T, wrap );
-    glTexParameteri ( m_Target, GL_TEXTURE_WRAP_R, wrap );
+    //glTexParameteri ( m_Target, GL_TEXTURE_WRAP_R, wrap );
 /*
     float aniso = 0.0f;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
@@ -183,7 +183,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, GLenum
         uint32_t h  = m_Height;
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glTexImage2D(target, i, m_components, w, h, 0, m_Format, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(target, i, (m_components == 3) ?  GL_RGB : GL_RGBA, w, h, 0, m_Format, GL_UNSIGNED_BYTE, data);
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
             delete []data;

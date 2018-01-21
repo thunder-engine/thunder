@@ -39,6 +39,7 @@ Project {
 
     DynamicLibrary {
         name: "glfw-editor"
+        condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
 
@@ -59,6 +60,7 @@ Project {
 
     StaticLibrary {
         name: "glfw"
+        condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
 

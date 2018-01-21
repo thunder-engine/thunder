@@ -45,6 +45,7 @@ Project {
 
     QtGuiApplication {
         name: worldEditor.EDITOR_NAME
+        condition: worldEditor.desktop
         files: worldEditor.srcFiles
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }

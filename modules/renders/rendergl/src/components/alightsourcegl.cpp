@@ -38,10 +38,16 @@ ALightSourceGL::ALightSourceGL() {
         m_Distance[i]   = 5;
     }
 
-    m_ShadowMap.create(GL_TEXTURE_2D, GL_RG32F, GL_RGB, GL_FLOAT);
+#ifdef GL_ES_VERSION_2_0
+    uint32_t format = GL_RG32F_EXT;
+#else
+    uint32_t format = GL_RG32F;
+#endif
+
+    m_ShadowMap.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     m_ShadowMap.resize(m_Resolution, m_Resolution);
 
-    m_ShadowTemp.create(GL_TEXTURE_2D, GL_RG32F, GL_RGB, GL_FLOAT);
+    m_ShadowTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     m_ShadowTemp.resize(m_Resolution, m_Resolution);
 
     m_Steps     = 4;
@@ -132,37 +138,37 @@ void ALightSourceGL::setShaderParams(uint32_t program) {
 
     location	= glGetUniformLocation(program, "light.pos");
     if(location > -1) {
-        glProgramUniform3fv(program, location, 1, a.position().v);
+        glUniform3fv(location, 1, a.position().v);
     }
     location	= glGetUniformLocation(program, "light.dir");
     if(location > -1) {
-        glProgramUniform3fv(program, location, 1, (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)).v);
+        glUniform3fv(location, 1, (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)).v);
     }
     location	= glGetUniformLocation(program, "light.color");
     if(location > -1) {
-        glProgramUniform3fv(program, location, 1, Vector3(1.0f).v);
+        glUniform3fv(location, 1, Vector3(1.0f).v);
     }
     location	= glGetUniformLocation(program, "light.brightness");
     if(location > -1) {
-        glProgramUniform1f(program, location, m_Brightness);
+        glUniform1f(location, m_Brightness);
     }
     location	= glGetUniformLocation(program, "light.radius");
     if(location > -1) {
-        glProgramUniform1f(program, location, m_Radius);
+        glUniform1f(location, m_Radius);
     }
     location	= glGetUniformLocation(program, "light.shadows");
     if(location > -1) {
-        glProgramUniform1f(program, location, (m_Shadows) ? 1.0 : 0.0 );
+        glUniform1f(location, (m_Shadows) ? 1.0 : 0.0 );
     }
     if(m_Shadows) {
         location    = glGetUniformLocation(program, "light.lod");
         if(location > -1) {
-            glProgramUniform3fv(program, location, 1, m_Distance.v);
+            glUniform3fv(location, 1, m_Distance.v);
         }
         location    = glGetUniformLocation(program, "light.matrix");
         if(location > -1) {
             for(uint8_t layer = 0; layer < m_LODCount; layer++) {
-                glProgramUniformMatrix4fv(program, location + layer, 1, false, m_pMatrix[layer].mat);
+                glUniformMatrix4fv(location + layer, 1, false, m_pMatrix[layer].mat);
             }
         }
     }
