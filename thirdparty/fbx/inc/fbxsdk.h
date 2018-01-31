@@ -1,43 +1,17 @@
-/*!  \file fbxsdk.h
- */
-
-#ifndef FBXSDK_H
-#define FBXSDK_H
-
-/**************************************************************************************
-
- Copyright (C) 2001 - 2010 Autodesk, Inc. and/or its licensors.
- All Rights Reserved.
-
- The coded instructions, statements, computer programs, and/or related material 
- (collectively the "Data") in these files contain unpublished information 
- proprietary to Autodesk, Inc. and/or its licensors, which is protected by 
- Canada and United States of America federal copyright law and by international 
- treaties. 
+/****************************************************************************************
  
- The Data may not be disclosed or distributed to third parties, in whole or in
- part, without the prior written consent of Autodesk, Inc. ("Autodesk").
-
- THE DATA IS PROVIDED "AS IS" AND WITHOUT WARRANTY.
- ALL WARRANTIES ARE EXPRESSLY EXCLUDED AND DISCLAIMED. AUTODESK MAKES NO
- WARRANTY OF ANY KIND WITH RESPECT TO THE DATA, EXPRESS, IMPLIED OR ARISING
- BY CUSTOM OR TRADE USAGE, AND DISCLAIMS ANY IMPLIED WARRANTIES OF TITLE, 
- NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE OR USE. 
- WITHOUT LIMITING THE FOREGOING, AUTODESK DOES NOT WARRANT THAT THE OPERATION
- OF THE DATA WILL BE UNINTERRUPTED OR ERROR FREE. 
+   Copyright (C) 2016 Autodesk, Inc.
+   All rights reserved.
  
- IN NO EVENT SHALL AUTODESK, ITS AFFILIATES, PARENT COMPANIES, LICENSORS
- OR SUPPLIERS ("AUTODESK GROUP") BE LIABLE FOR ANY LOSSES, DAMAGES OR EXPENSES
- OF ANY KIND (INCLUDING WITHOUT LIMITATION PUNITIVE OR MULTIPLE DAMAGES OR OTHER
- SPECIAL, DIRECT, INDIRECT, EXEMPLARY, INCIDENTAL, LOSS OF PROFITS, REVENUE
- OR DATA, COST OF COVER OR CONSEQUENTIAL LOSSES OR DAMAGES OF ANY KIND),
- HOWEVER CAUSED, AND REGARDLESS OF THE THEORY OF LIABILITY, WHETHER DERIVED
- FROM CONTRACT, TORT (INCLUDING, BUT NOT LIMITED TO, NEGLIGENCE), OR OTHERWISE,
- ARISING OUT OF OR RELATING TO THE DATA OR ITS USE OR ANY OTHER PERFORMANCE,
- WHETHER OR NOT AUTODESK HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH LOSS
- OR DAMAGE. 
+   Use of this software is subject to the terms of the Autodesk license agreement
+   provided at the time of installation or download, or which otherwise accompanies
+   this software in either electronic or hard copy form.
+ 
+****************************************************************************************/
 
-**************************************************************************************/
+//! \file fbxsdk.h
+#ifndef _FBXSDK_H_
+#define _FBXSDK_H_
 
 /**
   * \mainpage FBX SDK Reference
@@ -64,205 +38,240 @@
   * files compatible with MotionBuilder version 6.0 and up. 
   */
 
-#if defined(_WIN32) || defined(_WIN64)
-	#pragma pack(push, 8)	//FBXSDK is compiled with default value (8)
+#pragma pack(push, 8)	//FBXSDK is compiled with default value (8)
+
+#include <fbxsdk/fbxsdk_def.h>
+
+#ifndef FBXSDK_NAMESPACE_USING
+	#define FBXSDK_NAMESPACE_USING 1
 #endif
 
-#include <fbxfilesdk/fbxfilesdk_def.h>
+//---------------------------------------------------------------------------------------
+//Core Base Includes
+#include <fbxsdk/core/base/fbxarray.h>
+#include <fbxsdk/core/base/fbxbitset.h>
+#include <fbxsdk/core/base/fbxcharptrset.h>
+#include <fbxsdk/core/base/fbxcontainerallocators.h>
+#include <fbxsdk/core/base/fbxdynamicarray.h>
+#include <fbxsdk/core/base/fbxstatus.h>
+#include <fbxsdk/core/base/fbxfile.h>
+#ifndef FBXSDK_ENV_WINSTORE
+	#include <fbxsdk/core/base/fbxfolder.h>
+#endif
+#include <fbxsdk/core/base/fbxhashmap.h>
+#include <fbxsdk/core/base/fbxintrusivelist.h>
+#include <fbxsdk/core/base/fbxmap.h>
+#include <fbxsdk/core/base/fbxmemorypool.h>
+#include <fbxsdk/core/base/fbxpair.h>
+#include <fbxsdk/core/base/fbxset.h>
+#include <fbxsdk/core/base/fbxstring.h>
+#include <fbxsdk/core/base/fbxstringlist.h>
+#include <fbxsdk/core/base/fbxtime.h>
+#include <fbxsdk/core/base/fbxtimecode.h>
+#include <fbxsdk/core/base/fbxutils.h>
 
-#ifndef KFBX_DLL	
-	#define KFBX_DLL KFBX_DLLIMPORT	
+//---------------------------------------------------------------------------------------
+//Core Math Includes
+#include <fbxsdk/core/math/fbxmath.h>
+#include <fbxsdk/core/math/fbxdualquaternion.h>
+#include <fbxsdk/core/math/fbxmatrix.h>
+#include <fbxsdk/core/math/fbxquaternion.h>
+#include <fbxsdk/core/math/fbxvector2.h>
+#include <fbxsdk/core/math/fbxvector4.h>
+
+//---------------------------------------------------------------------------------------
+//Core Sync Includes
+#ifndef FBXSDK_ENV_WINSTORE
+	#include <fbxsdk/core/sync/fbxatomic.h>
+	#include <fbxsdk/core/sync/fbxclock.h>
+	#include <fbxsdk/core/sync/fbxsync.h>
+	#include <fbxsdk/core/sync/fbxthread.h>
+#endif /* !FBXSDK_ENV_WINSTORE */
+
+//---------------------------------------------------------------------------------------
+//Core Includes
+#include <fbxsdk/core/fbxclassid.h>
+#include <fbxsdk/core/fbxconnectionpoint.h>
+#include <fbxsdk/core/fbxdatatypes.h>
+#ifndef FBXSDK_ENV_WINSTORE
+	#include <fbxsdk/core/fbxmodule.h>
+	#include <fbxsdk/core/fbxloadingstrategy.h>
+#endif /* !FBXSDK_ENV_WINSTORE */
+#include <fbxsdk/core/fbxmanager.h>
+#include <fbxsdk/core/fbxobject.h>
+#include <fbxsdk/core/fbxperipheral.h>
+#ifndef FBXSDK_ENV_WINSTORE
+	#include <fbxsdk/core/fbxplugin.h>
+	#include <fbxsdk/core/fbxplugincontainer.h>
+#endif /* !FBXSDK_ENV_WINSTORE */
+#include <fbxsdk/core/fbxproperty.h>
+#include <fbxsdk/core/fbxpropertydef.h>
+#include <fbxsdk/core/fbxpropertyhandle.h>
+#include <fbxsdk/core/fbxpropertypage.h>
+#include <fbxsdk/core/fbxpropertytypes.h>
+#include <fbxsdk/core/fbxquery.h>
+#include <fbxsdk/core/fbxqueryevent.h>
+#ifndef FBXSDK_ENV_WINSTORE
+	#include <fbxsdk/core/fbxscopedloadingdirectory.h>
+	#include <fbxsdk/core/fbxscopedloadingfilename.h>
+#endif /* !FBXSDK_ENV_WINSTORE */
+#include <fbxsdk/core/fbxxref.h>
+
+//---------------------------------------------------------------------------------------
+//File I/O Includes
+#include <fbxsdk/fileio/fbxexporter.h>
+#include <fbxsdk/fileio/fbxexternaldocreflistener.h>
+#include <fbxsdk/fileio/fbxfiletokens.h>
+#include <fbxsdk/fileio/fbxglobalcamerasettings.h>
+#include <fbxsdk/fileio/fbxgloballightsettings.h>
+#include <fbxsdk/fileio/fbxgobo.h>
+#include <fbxsdk/fileio/fbximporter.h>
+#include <fbxsdk/fileio/fbxiobase.h>
+#include <fbxsdk/fileio/fbxiopluginregistry.h>
+#include <fbxsdk/fileio/fbxiosettings.h>
+#include <fbxsdk/fileio/fbxstatisticsfbx.h>
+#include <fbxsdk/fileio/fbxstatistics.h>
+
+//---------------------------------------------------------------------------------------
+//Scene Includes
+#include <fbxsdk/scene/fbxaudio.h>
+#include <fbxsdk/scene/fbxaudiolayer.h>
+#include <fbxsdk/scene/fbxcollection.h>
+#include <fbxsdk/scene/fbxcollectionexclusive.h>
+#include <fbxsdk/scene/fbxcontainer.h>
+#include <fbxsdk/scene/fbxcontainertemplate.h>
+#include <fbxsdk/scene/fbxdisplaylayer.h>
+#include <fbxsdk/scene/fbxdocument.h>
+#include <fbxsdk/scene/fbxdocumentinfo.h>
+#include <fbxsdk/scene/fbxenvironment.h>
+#include <fbxsdk/scene/fbxgroupname.h>
+#include <fbxsdk/scene/fbxlibrary.h>
+#include <fbxsdk/scene/fbxmediaclip.h>
+#include <fbxsdk/scene/fbxobjectmetadata.h>
+#include <fbxsdk/scene/fbxpose.h>
+#include <fbxsdk/scene/fbxreference.h>
+#include <fbxsdk/scene/fbxscene.h>
+#include <fbxsdk/scene/fbxselectionset.h>
+#include <fbxsdk/scene/fbxselectionnode.h>
+#include <fbxsdk/scene/fbxtakeinfo.h>
+#include <fbxsdk/scene/fbxthumbnail.h>
+#include <fbxsdk/scene/fbxvideo.h>
+
+//---------------------------------------------------------------------------------------
+//Scene Animation Includes
+#include <fbxsdk/scene/animation/fbxanimcurve.h>
+#include <fbxsdk/scene/animation/fbxanimcurvebase.h>
+#include <fbxsdk/scene/animation/fbxanimcurvefilters.h>
+#include <fbxsdk/scene/animation/fbxanimcurvenode.h>
+#include <fbxsdk/scene/animation/fbxanimevalclassic.h>
+#include <fbxsdk/scene/animation/fbxanimevalstate.h>
+#include <fbxsdk/scene/animation/fbxanimevaluator.h>
+#include <fbxsdk/scene/animation/fbxanimlayer.h>
+#include <fbxsdk/scene/animation/fbxanimstack.h>
+#include <fbxsdk/scene/animation/fbxanimutilities.h>
+
+//---------------------------------------------------------------------------------------
+//Scene Constraint Includes
+#include <fbxsdk/scene/constraint/fbxcharacternodename.h>
+#include <fbxsdk/scene/constraint/fbxcharacter.h>
+#include <fbxsdk/scene/constraint/fbxcharacterpose.h>
+#include <fbxsdk/scene/constraint/fbxconstraint.h>
+#include <fbxsdk/scene/constraint/fbxconstraintaim.h>
+#include <fbxsdk/scene/constraint/fbxconstraintcustom.h>
+#include <fbxsdk/scene/constraint/fbxconstraintparent.h>
+#include <fbxsdk/scene/constraint/fbxconstraintposition.h>
+#include <fbxsdk/scene/constraint/fbxconstraintrotation.h>
+#include <fbxsdk/scene/constraint/fbxconstraintscale.h>
+#include <fbxsdk/scene/constraint/fbxconstraintsinglechainik.h>
+#include <fbxsdk/scene/constraint/fbxconstraintutils.h>
+#include <fbxsdk/scene/constraint/fbxcontrolset.h>
+#include <fbxsdk/scene/constraint/fbxhik2fbxcharacter.h>
+
+//---------------------------------------------------------------------------------------
+//Scene Geometry Includes
+#include <fbxsdk/scene/geometry/fbxblendshape.h>
+#include <fbxsdk/scene/geometry/fbxblendshapechannel.h>
+#include <fbxsdk/scene/geometry/fbxcache.h>
+#include <fbxsdk/scene/geometry/fbxcachedeffect.h>
+#include <fbxsdk/scene/geometry/fbxcamera.h>
+#include <fbxsdk/scene/geometry/fbxcamerastereo.h>
+#include <fbxsdk/scene/geometry/fbxcameraswitcher.h>
+#include <fbxsdk/scene/geometry/fbxcluster.h>
+#include <fbxsdk/scene/geometry/fbxdeformer.h>
+#include <fbxsdk/scene/geometry/fbxgenericnode.h>
+#include <fbxsdk/scene/geometry/fbxgeometry.h>
+#include <fbxsdk/scene/geometry/fbxgeometrybase.h>
+#include <fbxsdk/scene/geometry/fbxgeometryweightedmap.h>
+#include <fbxsdk/scene/geometry/fbxlight.h>
+#include <fbxsdk/scene/geometry/fbxlimitsutilities.h>
+#include <fbxsdk/scene/geometry/fbxline.h>
+#include <fbxsdk/scene/geometry/fbxlodgroup.h>
+#include <fbxsdk/scene/geometry/fbxmarker.h>
+#include <fbxsdk/scene/geometry/fbxmesh.h>
+#include <fbxsdk/scene/geometry/fbxnode.h>
+#include <fbxsdk/scene/geometry/fbxnodeattribute.h>
+#include <fbxsdk/scene/geometry/fbxnull.h>
+#include <fbxsdk/scene/geometry/fbxnurbs.h>
+#include <fbxsdk/scene/geometry/fbxnurbscurve.h>
+#include <fbxsdk/scene/geometry/fbxnurbssurface.h>
+#include <fbxsdk/scene/geometry/fbxopticalreference.h>
+#include <fbxsdk/scene/geometry/fbxpatch.h>
+#include <fbxsdk/scene/geometry/fbxproceduralgeometry.h>
+#include <fbxsdk/scene/geometry/fbxshape.h>
+#include <fbxsdk/scene/geometry/fbxskeleton.h>
+#include <fbxsdk/scene/geometry/fbxskin.h>
+#include <fbxsdk/scene/geometry/fbxsubdeformer.h>
+#include <fbxsdk/scene/geometry/fbxsubdiv.h>
+#include <fbxsdk/scene/geometry/fbxtrimnurbssurface.h>
+#include <fbxsdk/scene/geometry/fbxvertexcachedeformer.h>
+#include <fbxsdk/scene/geometry/fbxweightedmapping.h>
+
+//---------------------------------------------------------------------------------------
+//Scene Shading Includes
+#include <fbxsdk/scene/shading/fbxshadingconventions.h>
+#include <fbxsdk/scene/shading/fbxbindingsentryview.h>
+#include <fbxsdk/scene/shading/fbxbindingtable.h>
+#include <fbxsdk/scene/shading/fbxbindingtableentry.h>
+#include <fbxsdk/scene/shading/fbxbindingoperator.h>
+#include <fbxsdk/scene/shading/fbxconstantentryview.h>
+#include <fbxsdk/scene/shading/fbxentryview.h>
+#include <fbxsdk/scene/shading/fbxfiletexture.h>
+#include <fbxsdk/scene/shading/fbximplementation.h>
+#include <fbxsdk/scene/shading/fbximplementationfilter.h>
+#include <fbxsdk/scene/shading/fbximplementationutils.h>
+#include <fbxsdk/scene/shading/fbxlayeredtexture.h>
+#include <fbxsdk/scene/shading/fbxoperatorentryview.h>
+#include <fbxsdk/scene/shading/fbxproceduraltexture.h>
+#include <fbxsdk/scene/shading/fbxpropertyentryview.h>
+#include <fbxsdk/scene/shading/fbxsemanticentryview.h>
+#include <fbxsdk/scene/shading/fbxsurfacelambert.h>
+#include <fbxsdk/scene/shading/fbxsurfacematerial.h>
+#include <fbxsdk/scene/shading/fbxsurfacephong.h>
+#include <fbxsdk/scene/shading/fbxtexture.h>
+
+//---------------------------------------------------------------------------------------
+//Utilities Includes
+#include <fbxsdk/utils/fbxdeformationsevaluator.h>
+#include <fbxsdk/utils/fbxprocessor.h>
+#include <fbxsdk/utils/fbxprocessorxref.h>
+#include <fbxsdk/utils/fbxprocessorxrefuserlib.h>
+#include <fbxsdk/utils/fbxprocessorshaderdependency.h>
+#include <fbxsdk/utils/fbxclonemanager.h>
+#include <fbxsdk/utils/fbxgeometryconverter.h>
+#include <fbxsdk/utils/fbxmanipulators.h>
+#include <fbxsdk/utils/fbxmaterialconverter.h>
+#include <fbxsdk/utils/fbxrenamingstrategyfbx5.h>
+#include <fbxsdk/utils/fbxrenamingstrategyfbx6.h>
+#include <fbxsdk/utils/fbxrenamingstrategyutilities.h>
+#include <fbxsdk/utils/fbxrootnodeutility.h>
+#include <fbxsdk/utils/fbxusernotification.h>
+#include <fbxsdk/utils/fbxscenecheckutility.h>
+
+//---------------------------------------------------------------------------------------
+#if defined(FBXSDK_NAMESPACE) && (FBXSDK_NAMESPACE_USING == 1)
+	using namespace FBXSDK_NAMESPACE;
 #endif
 
-// io
-#include <fbxfilesdk/kfbxio/kfbxexporter.h>
-#include <fbxfilesdk/kfbxio/kfbxexternaldocreflistener.h>
-#include <fbxfilesdk/kfbxio/kfbxfiletokenfbx.h>
-#include <fbxfilesdk/kfbxio/kfbxgobo.h>
-#include <fbxfilesdk/kfbxio/kfbximporter.h>
-#include <fbxfilesdk/kfbxio/kfbxio.h>
-#include <fbxfilesdk/kfbxio/kfbxiosettings.h>
-#include <fbxfilesdk/kfbxio/kfbxstatisticsfbx.h>
+#pragma pack(pop)
 
-// math
-#include <fbxfilesdk/kfbxmath/kfbxmatrix.h>
-#include <fbxfilesdk/kfbxmath/kfbxquaternion.h>
-#include <fbxfilesdk/kfbxmath/kfbxdualquaternion.h>
-#include <fbxfilesdk/kfbxmath/kfbxvector2.h>
-#include <fbxfilesdk/kfbxmath/kfbxvector4.h>
-#include <fbxfilesdk/kfbxmath/kfbxxmatrix.h>
-
-// plugins
-#include <fbxfilesdk/kfbxplugins/kfbxanimcurvebase.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimcurve.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimcurvekfcurve.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimcurvenode.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimcurvefilters.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimevalclassic.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimevalstate.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimevaluator.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimlayer.h>
-#include <fbxfilesdk/kfbxplugins/kfbxanimstack.h>
-#include <fbxfilesdk/kfbxplugins/kfbxbindingsentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxbindingtable.h>
-#include <fbxfilesdk/kfbxplugins/kfbxbindingtableentry.h>
-#include <fbxfilesdk/kfbxplugins/kfbxbindingoperator.h>
-#include <fbxfilesdk/kfbxplugins/kfbxblendshape.h>
-#include <fbxfilesdk/kfbxplugins/kfbxblendshapechannel.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcache.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcachedeffect.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcamera.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcamerastereo.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcameraswitcher.h>
-#include <fbxfilesdk/kfbxplugins/kfbxclonemanager.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcluster.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcolor.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstantentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraint.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintaim.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintcustom.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintparent.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintposition.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintrotation.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintscale.h>
-#include <fbxfilesdk/kfbxplugins/kfbxconstraintsinglechainik.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcontainer.h>
-#include <fbxfilesdk/kfbxplugins/kfbxcontainertemplate.h>
-#include <fbxfilesdk/kfbxplugins/kfbxdeformer.h>
-#include <fbxfilesdk/kfbxplugins/kfbxentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxexposurecontrol.h>
-#include <fbxfilesdk/kfbxplugins/kfbxfiletexture.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgenericnode.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgeometry.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgeometrybase.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgeometryconverter.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgeometryweightedmap.h>
-#include <fbxfilesdk/kfbxplugins/kfbxglobalcamerasettings.h>
-#include <fbxfilesdk/kfbxplugins/kfbxgloballightsettings.h>
-#include <fbxfilesdk/kfbxplugins/kfbxglobaltimesettings.h>
-#include <fbxfilesdk/kfbxplugins/kfbximplementation.h>
-#include <fbxfilesdk/kfbxplugins/kfbximplementationfilter.h>
-#include <fbxfilesdk/kfbxplugins/kfbximplementationutils.h>
-#include <fbxfilesdk/kfbxplugins/kfbxiopluginregistry.h>
-#include <fbxfilesdk/kfbxplugins/kfbxkfcurvefilters.h>
-#include <fbxfilesdk/kfbxplugins/kfbxlayeredtexture.h>
-#include <fbxfilesdk/kfbxplugins/kfbxlibrary.h>
-#include <fbxfilesdk/kfbxplugins/kfbxlight.h>
-#include <fbxfilesdk/kfbxplugins/kfbxlimitsutilities.h>
-#include <fbxfilesdk/kfbxplugins/kfbxline.h>
-#include <fbxfilesdk/kfbxplugins/kfbxlodgroup.h>
-#include <fbxfilesdk/kfbxplugins/kfbxmanipulators.h>
-#include <fbxfilesdk/kfbxplugins/kfbxmarker.h>
-#include <fbxfilesdk/kfbxplugins/kfbxmaterialconverter.h>
-#include <fbxfilesdk/kfbxplugins/kfbxmemoryallocator.h>
-#include <fbxfilesdk/kfbxplugins/kfbxmesh.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnode.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnodeattribute.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnull.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnurb.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnurbscurve.h>
-#include <fbxfilesdk/kfbxplugins/kfbxnurbssurface.h>
-#include <fbxfilesdk/kfbxplugins/kfbxobjectmetadata.h>
-#include <fbxfilesdk/kfbxplugins/kfbxoperatorentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxopticalreference.h>
-#include <fbxfilesdk/kfbxplugins/kfbxpatch.h>
-#include <fbxfilesdk/kfbxplugins/kfbxperipheral.h>
-#include <fbxfilesdk/kfbxplugins/kfbxpose.h>
-#include <fbxfilesdk/kfbxplugins/kfbxproceduralgeometry.h>
-#include <fbxfilesdk/kfbxplugins/kfbxproceduraltexture.h>
-#include <fbxfilesdk/kfbxplugins/kfbxproperty.h>
-#include <fbxfilesdk/kfbxplugins/kfbxpropertyentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxrenamingstrategyfbx5.h>
-#include <fbxfilesdk/kfbxplugins/kfbxrenamingstrategyfbx6.h>
-#include <fbxfilesdk/kfbxplugins/kfbxrootnodeutility.h>
-#include <fbxfilesdk/kfbxplugins/kfbxscene.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsdkmanager.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsemanticentryview.h>
-#include <fbxfilesdk/kfbxplugins/kfbxshape.h>
-#include <fbxfilesdk/kfbxplugins/kfbxskeleton.h>
-#include <fbxfilesdk/kfbxplugins/kfbxskin.h>
-#include <fbxfilesdk/kfbxplugins/kfbxstatistics.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsubdeformer.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsubdiv.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsurfacelambert.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsurfacematerial.h>
-#include <fbxfilesdk/kfbxplugins/kfbxsurfacephong.h>
-#include <fbxfilesdk/kfbxplugins/kfbxtakeinfo.h>
-#include <fbxfilesdk/kfbxplugins/kfbxtexture.h>
-#include <fbxfilesdk/kfbxplugins/kfbxthumbnail.h>
-#include <fbxfilesdk/kfbxplugins/kfbxtrimnurbssurface.h>
-#include <fbxfilesdk/kfbxplugins/kfbxusernotification.h>
-#include <fbxfilesdk/kfbxplugins/kfbxutilities.h>
-#include <fbxfilesdk/kfbxplugins/kfbxvertexcachedeformer.h>
-#include <fbxfilesdk/kfbxplugins/kfbxvideo.h>
-#include <fbxfilesdk/kfbxplugins/kfbxweightedmapping.h>
-
-// core
-#include <fbxfilesdk/fbxcore/kfbxquery.h>
-#include <fbxfilesdk/fbxcore/fbxcollection/kfbxdocumentinfo.h>
-#include <fbxfilesdk/fbxcore/fbxcollection/kfbxpropertymap.h>
-#include <fbxfilesdk/fbxcore/fbxcollection/kfbxcollection.h>
-#include <fbxfilesdk/fbxcore/fbxcollection/kfbxcollectionexclusive.h>
-#include <fbxfilesdk/kfbxplugins/kfbxselectionset.h>
-#include <fbxfilesdk/kfbxplugins/kfbxselectionnode.h>
-#include <fbxfilesdk/kfbxplugins/kfbxdisplaylayer.h>
-#include <fbxfilesdk/fbxcore/fbxxref/fbxxref.h>
-
-// character
-#include <fbxfilesdk/kfbxcharacter/kfbxcharacter.h>
-#include <fbxfilesdk/kfbxcharacter/kfbxcharacterpose.h>
-#include <fbxfilesdk/kfbxcharacter/kfbxcontrolset.h>
-
-// components
-#include <fbxfilesdk/components/kbaselib/kfbx/kfbx.h>
-
-#include <fbxfilesdk/components/kbaselib/klib/karrayul.h>
-#include <fbxfilesdk/components/kbaselib/klib/kdynamicarray.h>
-#include <fbxfilesdk/components/kbaselib/klib/kerror.h>
-#include <fbxfilesdk/components/kbaselib/klib/kmap.h>
-#include <fbxfilesdk/components/kbaselib/klib/kmemory.h>
-#include <fbxfilesdk/components/kbaselib/klib/kscopedptr.h>
-#include <fbxfilesdk/components/kbaselib/klib/kset.h>
-#include <fbxfilesdk/components/kbaselib/klib/kstring.h>
-#include <fbxfilesdk/components/kbaselib/klib/ksystemtime.h>
-#include <fbxfilesdk/components/kbaselib/klib/ktime.h>
-
-#include <fbxfilesdk/components/kfcurve/kfcurve.h>
-#include <fbxfilesdk/components/kfcurve/kfcurveglobal.h>
-#include <fbxfilesdk/components/kfcurve/kfcurvenode.h>
-#include <fbxfilesdk/components/kfcurve/kfcurveutils.h>
-// Events
-#include <fbxfilesdk/kfbxevents/includes.h>
-
-// Mp
-#include <fbxfilesdk/kfbxmp/kfbxmutex.h>
-
-// Modules
-#include <fbxfilesdk/kfbxmodules/includes.h>
-
-// Processors
-#include <fbxfilesdk/fbxprocessors/fbxprocessors.h>
-//conventions
-#include <fbxfilesdk/kfbxplugins/conventions.h>
-
-//Scene Reference
-#include <fbxfilesdk/kfbxplugins/kfbxreference.h>
-
-#ifndef MB_FBXSDK
-	using namespace FBXFILESDK_NAMESPACE;
-#endif
-
-/*
-    These files, while not directly included here, are still required to use the
-    FBX SDK, and they are referenced here so that our packaging system pulls them
-    in into the final distribution directory.
-
-    #include <fbxfilesdk/fbxfilesdk_nsuse.h>
-*/
-
-#if defined(_WIN32) || defined(_WIN64)
-	#pragma pack(pop)
-#endif
-
-#endif // FBXSDK_H
-
+#endif /* _FBXSDK_H_ */

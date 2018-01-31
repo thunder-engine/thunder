@@ -38,57 +38,19 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QPushButton" name="infoButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+      <widget class="QToolButton" name="toolButton">
        <property name="text">
         <string>INF</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="warningButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>WRN</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="errorButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>ERR</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="clearButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+      <widget class="QToolButton" name="clearButton">
        <property name="text">
         <string>Clear</string>
        </property>
-       <property name="flat">
-        <bool>false</bool>
+       <property name="popupMode">
+        <enum>QToolButton::DelayedPopup</enum>
        </property>
       </widget>
      </item>

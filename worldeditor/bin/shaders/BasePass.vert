@@ -116,19 +116,19 @@ Vertex billboard(vec4 v, vec3 t, vec3 n, vec4 position) {
 }
 
 void main(void) {
-#if TYPE_STATIC
+#ifdef TYPE_STATIC
     Vertex vert = staticMesh( xyz, tangent, normal );
 #endif
 
-#if TYPE_SKINNED
+#ifdef TYPE_SKINNED
     Vertex vert = skinnedMesh( xyz, tangent, normal, indices, weights );
 #endif
 
-#if TYPE_BILLBOARD
+#ifdef TYPE_BILLBOARD
     Vertex vert = billboard( xyz, tangent, normal, position );
 #endif
 
-#if TYPE_AXISALIGNED
+#ifdef TYPE_AXISALIGNED
     Vertex vert = axisAlignedBillboard( xyz, tangent, normal, position, axis );
 #endif
     gl_Position = transform.projection * ( ( transform.mv * vert.v ) + vert.m );

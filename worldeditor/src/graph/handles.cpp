@@ -1,6 +1,7 @@
 #include "handles.h"
 
-#include <qgl.h>
+#include <windows.h>
+#include <gl/GL.h>
 #include <gl/GLU.h>
 
 #include <rendersystem.h>
@@ -52,13 +53,16 @@ void Handles::beginDraw() {
     glPushMatrix();
     glLoadMatrixf(v.mat);
 
-    glEnable(GL_BLEND);
+    glEnable        (GL_BLEND);
+    glBlendFunc     (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glDisable       (GL_DEPTH_TEST);
 }
 
 void Handles::endDraw() {
-    glDisable(GL_BLEND);
+    glDisable       (GL_BLEND);
+
+    glEnable        (GL_DEPTH_TEST);
 
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -66,14 +70,14 @@ void Handles::endDraw() {
 }
 
 void Handles::drawArrow(const Vector3 &position, const Quaternion &rotation, float size) {
+    Matrix4 transform   = HandleTools::modelView() * Matrix4(position, rotation, 1.0f);
     glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glMultMatrixf(Matrix4(rotation.toMatrix()).mat);
+    glLoadMatrixf(transform.mat);
 
     float conesize  = size / 5.0f;
 
     s_System->setColor(s_Color);
-    drawLine(Vector3(0.0f), Vector3(0, 0, size));
+    s_System->drawStrip(transform, {Vector3(0.0f), Vector3(0, 0, size)}, true);
     s_System->setColor(s_Second);
     drawCone(Vector3(0, 0, size - conesize), Quaternion (), conesize);
 
@@ -85,7 +89,6 @@ void Handles::drawCone(const Vector3 &position, const Quaternion &rotation, floa
     glTranslatef(position.x, position.y, position.z);
     glMultMatrixf(Matrix4(rotation.toMatrix()).mat);
 
-    s_System->setColor(s_Color);
     gluCylinder((GLUquadric *)s_Quadric, size / 4.0f, 0.0f, size, 8, 1);
 
     glPopMatrix();
@@ -113,12 +116,6 @@ void Handles::drawQuad(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, points.size());
 
     glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-void Handles::drawLine(const Vector3 &p1, const Vector3 &p2) {
-    s_System->setColor(s_Color);
-
-    s_System->drawPath({p1, p2});
 }
 
 void Handles::drawFrustum(const Vector3List &points) {
@@ -158,19 +155,22 @@ void Handles::drawBox(const Vector3 &position, const Quaternion &rotation, const
 }
 
 void Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture &texture) {
-    s_System->drawBillboard(position, size, texture);
+    //s_System->drawBillboard(position, size, texture);
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
     Vector3 result    = position;
-
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-
-    float scale = 0.0f;
     if(s_ActiveCamera) {
-        scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
-        glScalef(scale, scale, scale);
+        float scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
+        Matrix4 model(position, Quaternion(), scale);
+
+        Matrix4 v, p;
+        s_ActiveCamera->matrices(v, p);
+
+        HandleTools::pushCamera(*s_ActiveCamera, model);
+
+        glPushMatrix();
+        glLoadMatrixf((v * model).mat);
 
         float conesize  = length / 5.0f;
         float consize2  = conesize * 2.0f;
@@ -184,7 +184,6 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         Vector3 xz( consize2, 0.0f, consize2);
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
             s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
             if(HandleTools::distanceToPoint(xy) <= sense * 2.0) {
                 s_Axes  = AXIS_X | AXIS_Y;
@@ -192,14 +191,13 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
                 s_Axes  = AXIS_Y | AXIS_Z;
             } else if(HandleTools::distanceToPoint(xz) <= sense * 2.0) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if (HandleTools::distanceToLine(Vector3(), x) <= sense) {
+            } else if(HandleTools::distanceToPath({Vector3(), x}) <= sense) {
                 s_Axes  = AXIS_X;
-            } else if (HandleTools::distanceToLine(Vector3(), y) <= sense) {
+            } else if(HandleTools::distanceToPath({Vector3(), y}) <= sense) {
                 s_Axes  = AXIS_Y;
-            } else if(HandleTools::distanceToLine(Vector3(), z) <= sense) {
+            } else if(HandleTools::distanceToPath({Vector3(), z}) <= sense) {
                 s_Axes  = AXIS_Z;
             }
-            HandleTools::popCamera();
         }
 
         Plane plane;
@@ -232,27 +230,28 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         }
 
         s_Second    = s_xColor;
-        s_Color     = (s_Axes == (AXIS_X | AXIS_Z)) ? s_Selected : s_xColor;
-        drawLine(Vector3(consize2, 0, 0), xz);
-        s_Color     = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_xColor;
-        drawLine(Vector3(consize2, 0, 0), xy);
         s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
+        s_System->drawStrip(model, {Vector3(consize2, 0, 0), xz}, true);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
+        s_System->drawStrip(model, {Vector3(consize2, 0, 0), xy}, true);
+
         drawArrow(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 1, 0), 90), length);
 
         s_Second    = s_yColor;
-        s_Color = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, consize2, 0), xy);
-        s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, consize2, 0), yz);
-        s_Color = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
+        s_Color     = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
+        s_System->drawStrip(model, {Vector3(0, consize2, 0), xy}, true);
+        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
+        s_System->drawStrip(model, {Vector3(0, consize2, 0), yz}, true);
         drawArrow(Vector3(0, conesize, 0), Quaternion(Vector3(1, 0, 0),-90), length);
 
         s_Second    = s_zColor;
-        s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, consize2), yz);
-        s_Color = (s_Axes == (AXIS_X | AXIS_Z)) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, consize2), xz);
-        s_Color = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
+        s_Color     = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
+        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawStrip(model, {Vector3(0, 0, consize2), yz}, true);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawStrip(model, {Vector3(0, 0, consize2), xz}, true);
         drawArrow(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90), length);
 
         s_Color = s_Selected;
@@ -267,8 +266,10 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             drawQuad(Vector3(), Vector3(yz.x, 0.0f, yz.z), Vector3(yz.x, yz.y, 0.0f), yz);
         }
         s_Color = s_Normal;
+
+        HandleTools::popCamera();
+        glPopMatrix();
     }
-    glPopMatrix();
 
     return result;
 }
@@ -279,6 +280,8 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f) * length;
         Vector3 normal  = position - s_ActiveCamera->actor().position();
         normal.normalize();
+
+        Matrix4 model;
 
         glPushMatrix();
         glTranslatef(position.x, position.y, position.z);
@@ -291,7 +294,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         Vector3List pz  = IRenderSystem::pointsArc(Quaternion(Vector3(1, 0, 0), 90),   scale, RAD2DEG * atan2(normal.x, normal.y), half);
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
+            HandleTools::pushCamera(*s_ActiveCamera, Matrix4());
             if(HandleTools::distanceToPath(pb) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
             } else if(HandleTools::distanceToPath(px) <= sense) {
@@ -305,23 +308,23 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         }
 
         s_System->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-        s_System->drawPath(pb);
+        s_System->drawStrip(model, pb, true);
         s_System->setColor(grey);
-        s_System->drawPath(IRenderSystem::pointsArc(q, scale, 0, half * 2.0f));
+        s_System->drawStrip(model, IRenderSystem::pointsArc(q, scale, 0, half * 2.0f), true);
 
         if(!locked || s_Axes == AXIS_X) {
             s_System->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
-            s_System->drawPath(px);
+            s_System->drawStrip(model, px, true);
         }
 
         if(!locked || s_Axes == AXIS_Y) {
             s_System->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
-            s_System->drawPath(py);
+            s_System->drawStrip(model, py, true);
         }
 
         if(!locked || s_Axes == AXIS_Z) {
             s_System->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
-            s_System->drawPath(pz);
+            s_System->drawStrip(model, pz, true);
         }
         glPopMatrix();
 /*
@@ -354,16 +357,23 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-
-    float scale = 0.0f;
     if(s_ActiveCamera) {
-        Vector3 normal    = position - s_ActiveCamera->actor().position();
-        scale   = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2;
-        glScalef(((normal.x < 0) ? 1 : -1) * scale,
-                 ((normal.y > 0) ? 1 : -1) * scale,
-                 ((normal.z < 0) ? 1 : -1) * scale);
+        Vector3 normal  = position - s_ActiveCamera->actor().position();
+        float size      = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2;
+
+        Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
+                      ((normal.y > 0) ? 1 : -1) * size,
+                      ((normal.z < 0) ? 1 : -1) * size);
+
+        Matrix4 model(position, Quaternion(), scale);
+
+        HandleTools::pushCamera(*s_ActiveCamera, model);
+
+        Matrix4 v, p;
+        s_ActiveCamera->matrices(v, p);
+
+        glPushMatrix();
+        glLoadMatrixf((v * model).mat);
 
         float half  = length * 0.5;
         float hh    = half * 0.5;
@@ -371,7 +381,6 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         float hbig  = big  * 0.5;
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
             Vector3 x0  = Vector3(half, 0, 0);
             Vector3 y0  = Vector3(0,-half, 0);
             Vector3 z0  = Vector3(0, 0, half);
@@ -380,57 +389,56 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             Vector3 y1  = Vector3(0,-length, 0);
             Vector3 z1  = Vector3(0, 0, length);
 
-            if(HandleTools::distanceToLine(x0, y0) <= sense) {
+            if(HandleTools::distanceToPath({x0, y0}) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y;
-            } else if(HandleTools::distanceToLine(x0, z0) <= sense) {
+            } else if(HandleTools::distanceToPath({x0, z0}) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if(HandleTools::distanceToLine(y0, z0) <= sense) {
+            } else if(HandleTools::distanceToPath({y0, z0}) <= sense) {
                 s_Axes  = AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToLine(x0, x1) <= sense) {
+            } else if(HandleTools::distanceToPath({x0, x1}) <= sense) {
                 s_Axes  = AXIS_X;
-            } else if(HandleTools::distanceToLine(y0, y1) <= sense) {
+            } else if(HandleTools::distanceToPath({y0, y1}) <= sense) {
                 s_Axes  = AXIS_Y;
-            } else if(HandleTools::distanceToLine(z0, z1) <= sense) {
+            } else if(HandleTools::distanceToPath({z0, z1}) <= sense) {
                 s_Axes  = AXIS_Z;
             }
-            HandleTools::popCamera();
         }
 
         // X Axis
         glPushMatrix();
         glRotatef(90, 0, 1, 0);
-        s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_xColor;
-        drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_xColor;
-        drawLine(Vector3(0, 0, half), Vector3(-hh,   0, hh));
-        drawLine(Vector3(0, 0, big),  Vector3(-hbig, 0, hbig));
+        s_System->setColor(s_Axes == AXIS_X ? s_Selected : s_xColor);
+        s_System->drawStrip(model, {Vector3(), Vector3(0, 0, length)}, true);
+        s_System->setColor((s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_xColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(0,-hh,   hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(0,-hbig, hbig)}, true);
+        s_System->setColor((s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_xColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(-hh,   0, hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(-hbig, 0, hbig)}, true);
         glPopMatrix();
         // Y Axis
         glPushMatrix();
         glRotatef(90, 1, 0, 0);
-        s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, 0, half), Vector3(0, hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0, hbig, hbig));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, 0, half), Vector3(hh,   0,  hh));
-        drawLine(Vector3(0, 0, big),  Vector3(hbig, 0, hbig));
+        s_System->setColor(s_Axes == AXIS_Y ? s_Selected : s_yColor);
+        s_System->drawStrip(model, {Vector3(), Vector3(0, 0, length)}, true);
+        s_System->setColor((s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_yColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(0, hh,   hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(0, hbig, hbig)}, true);
+        s_System->setColor((s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_yColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(hh,   0,  hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(hbig, 0, hbig)}, true);
         glPopMatrix();
         // Z Axis
         glPushMatrix();
         glRotatef(90, 0, 0, 1);
-        s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));
-        s_Color = (s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, half), Vector3(-hh,   0, hh));
-        drawLine(Vector3(0, 0, big),  Vector3(-hbig, 0, hbig));
+        s_System->setColor(s_Axes == AXIS_Z ? s_Selected : s_zColor);
+        s_System->drawStrip(model, {Vector3(), Vector3(0, 0, length)}, true);
+        s_System->setColor((s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(0,-hh,   hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(0,-hbig, hbig)}, true);
+        s_System->setColor((s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawStrip(model, {Vector3(0, 0, half), Vector3(-hh,   0, hh)}, true);
+        s_System->drawStrip(model, {Vector3(0, 0, big),  Vector3(-hbig, 0, hbig)}, true);
         glPopMatrix();
 
         s_Color     = s_Selected;
@@ -450,8 +458,10 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             glEnd();
         }
         s_Color = s_Normal;
+
+        HandleTools::popCamera();
+        glPopMatrix();
     }
-    glPopMatrix();
 
     return m_sMouse;
 }

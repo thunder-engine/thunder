@@ -380,7 +380,7 @@ void SchemeEditor::drawNode(QPainter &painter, const AbstractSchemeModel::Node *
     painter.resetTransform();
 }
 
-void SchemeEditor::drawItem(QPainter &painter, const AbstractSchemeModel::Item *item, QSize &size) {
+void SchemeEditor::drawItem(QPainter &painter, const AbstractSchemeModel::Item *item, const QSize &size) {
     switch(item->type) {
         case QMetaType::QVector3D:
         case QMetaType::QColor: {

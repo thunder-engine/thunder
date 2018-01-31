@@ -39,7 +39,7 @@ public:
     void                    resetModified                               () { mModified = false; }
 
 public slots:
-    void                    onObjectSelected                            (AObject::ObjectList &objects);
+    void                    onObjectSelected                            (AObject::ObjectList objects);
 
 private:
     void                    updateTitle                                 ();

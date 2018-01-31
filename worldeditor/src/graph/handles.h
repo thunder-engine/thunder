@@ -34,7 +34,6 @@ public:
 
     static void             drawQuad            (const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4);
 
-    static void             drawLine            (const Vector3 &p1, const Vector3 &p2);
     static void             drawFrustum         (const Vector3List &points);
 
     static void             drawBox             (const Vector3 &position, const Quaternion &rotation, const Vector3 &size);
@@ -61,6 +60,8 @@ public:
     static Camera          *s_ActiveCamera;
 
     static Vector3          m_sMouse;
+
+    static Matrix4          m_Model;
 
     static uint8_t          s_Axes;
 

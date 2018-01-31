@@ -66,18 +66,18 @@ public:
     void                    setObject                   (AObject *object);
 
 signals:
-    void                    selected                    (AObject::ObjectList &objects);
+    void                    selected                    (AObject::ObjectList objects);
 
-    void                    removed                     (AObject::ObjectList &objects);
+    void                    removed                     (AObject::ObjectList objects);
 
     void                    focused                     (AObject *object);
 
-    void                    parented                    (AObject::ObjectList &objects, AObject::ObjectList &parents);
+    void                    parented                    (AObject::ObjectList objects, AObject::ObjectList parents);
 
     void                    updated                     ();
 
 public slots:
-    void                    onSelected                  (AObject::ObjectList &objects);
+    void                    onSelected                  (AObject::ObjectList objects);
 
     void                    onHierarchyUpdated          ();
 

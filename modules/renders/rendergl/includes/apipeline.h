@@ -154,6 +154,8 @@ protected:
 
     Vector4List                 m_Vertices;
     Vector2List                 m_Coords;
+
+    uint32_t                    m_VAO;
 };
 
 class IDrawObjectGL {

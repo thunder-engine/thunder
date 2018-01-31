@@ -14,6 +14,8 @@ public:
     BufferVector                vbuffer;
     BufferVector                ibuffer;
 
+    BufferVector                abuffer;
+
 public:
     AMeshGL                     ();
 

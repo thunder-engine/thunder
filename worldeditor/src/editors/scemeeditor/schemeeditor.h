@@ -44,7 +44,7 @@ protected:
     void                    dropEvent           (QDropEvent *);
 
     void                    drawNode            (QPainter &painter, const AbstractSchemeModel::Node *node);
-    void                    drawItem            (QPainter &painter, const AbstractSchemeModel::Item *item, QSize &size);
+    void                    drawItem            (QPainter &painter, const AbstractSchemeModel::Item *item, const QSize &size);
     void                    drawLink            (QPainter &painter, const QColor &color, const AbstractSchemeModel::Link *link);
 
     QRect                   calcRect            (const AbstractSchemeModel::Node *node);

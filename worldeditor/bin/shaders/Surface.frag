@@ -16,7 +16,6 @@ layout(location = 6) in vec4 _weights;
 layout(location = 7) in vec3 _view;
 layout(location = 8) in vec3 _proj;
 
-uniform sampler2D   depthMap;
 uniform float       _clip;
 uniform float       _time;
 
@@ -29,7 +28,7 @@ out vec4 gbuffer4;
 
 void simpleMode(Params params) {
     float alpha = getOpacity ( params );
-#if BLEND_OPAQUE
+#ifdef BLEND_OPAQUE
     if(_clip >= alpha) {
         discard;
     }
@@ -50,7 +49,7 @@ void passMode(Params params) {
     vec3 albd   = getDiffuse ( params ) * transform.color.xyz;
     vec3 emit   = getEmissive( params ) * transform.color.xyz;
     float alpha = getOpacity ( params ) * transform.color.w;
-#if BLEND_OPAQUE
+#ifdef BLEND_OPAQUE
     if(_clip >= alpha) {
         discard;
     }
@@ -58,7 +57,7 @@ void passMode(Params params) {
     vec3 matv   = vec3(1.0, 1.0, getMetallic( params ));
     float rough = 0.0;
     float model = 0.0;
-    #if MODEL_LIT
+    #ifdef MODEL_LIT
     model       = 0.33;
     norm        = 0.5 * params.normals + vec3( 0.5 );
     rough       = max(0.08, getRoughness( params ));
@@ -69,12 +68,6 @@ void passMode(Params params) {
     gbuffer3    = vec4( matv, rough );
     gbuffer4    = vec4( emit, 0.0   );
 #else
-/*
-    float depth = getLinearDepth( texture( depthMap, params.project.xy ).x, camera.position.w, camera.target.w );
-    if( _xyz.z > depth ) {
-        discard;
-    }
-*/
     gbuffer1    = vec4( emit, alpha );
 #endif
 }
@@ -86,13 +79,13 @@ void main(void) {
     params.weights  = _weights;
     params.normals  = _n;
     params.time     = _time;
-#if TANGENT
+#ifdef TANGENT
     params.normals  = 2.0 * getNormal( params ) - vec3( 1.0 );
     params.normals  = normalize( params.normals.x * _t + params.normals.y * _b + params.normals.z * _n );
 #endif
     params.reflect  = reflect( _view, params.normals );
-#if SIMPLE
-    #if DEPTH
+#ifdef SIMPLE
+    #ifdef DEPTH
     depthMode(params);
     #else
     simpleMode(params);

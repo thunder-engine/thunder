@@ -12,6 +12,8 @@ Product {
     property string suffix: {
         if(qbs.targetOS.contains("windows")) {
             return ".dll";
+        } else if(qbs.targetOS.contains("osx")) {
+            return ".dylib";
         }
         return ".so";
     }
@@ -44,9 +46,10 @@ Product {
             if (qbs.targetOS.contains("windows")) {
                 return Qt.core.binPath + "/"
             } else {
-                return Qt.core.libPath + "/lib"
+                return Qt.core.libPath + "/"
             }
         }
+
         property string postfix: {
             var suffix = "";
             if (qbs.targetOS.contains("windows") && qbs.debugInformation)
@@ -54,34 +57,31 @@ Product {
             return suffix + cpp.dynamicLibrarySuffix;
         }
         files: {
-            function addQtVersions(libs) {
-                var result = [];
-                for (i = 0; i < libs.length; ++i) {
-                    var major = libs[i] + "." + Qt.core.versionMajor;
-                    var minor = major + "." + Qt.core.versionMinor;
-                    var patch = minor + "." + Qt.core.versionPatch;
-                    result.push(libs[i], major, minor, patch);
-                }
-                return result;
-            }
-
             var list = [];
-
             if (!Qt.core.frameworkBuild) {
                 list.push(
                     "Qt5Core" + postfix,
                     "Qt5Gui" + postfix,
-                    "Qt5Network" + postfix,
-                    "Qt5OpenGL" + postfix,
                     "Qt5Widgets" + postfix
                 );
+            } else {
+                list.push("**/QtCore.framework/**");
+                list.push("**/QtGui.framework/**");
+                list.push("**/QtWidgets.framework/**");
             }
-
             return list;
         }
-        qbs.install: install.editor
-        qbs.installDir: install.BIN_PATH
+        qbs.install: install.desktop
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle + (qbs.targetOS.contains("osx") ? "../Frameworks/" : "")
         qbs.installPrefix: install.PREFIX
+
+        excludeFiles: [
+            "**/Headers",
+            "**/Headers/**",
+            "**/*.prl",
+            "**/*_debug"
+        ]
+        qbs.installSourceBase: prefix
     }
 
     Group {
@@ -90,7 +90,7 @@ Product {
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/imageformats"
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/imageformats"
         qbs.installPrefix: install.PREFIX
     }
 
@@ -100,7 +100,7 @@ Product {
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/platforms"
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/platforms"
         qbs.installPrefix: install.PREFIX
     }
 
@@ -124,27 +124,29 @@ Product {
             vspath + "/msvcp140" + ((qbs.debugInformation) ? "d" : "") + ".dll"
         ]
         qbs.install: true
-        qbs.installDir: install.BIN_PATH
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 
     Group {
         name: "FBX Binary"
+        condition: install.desktop
         files: [
-            "../thirdparty/fbx/bin/fbxsdk-2012.1" + suffix
+            "../thirdparty/fbx/lib/libfbxsdk" + suffix
         ]
         qbs.install: true
-        qbs.installDir: install.BIN_PATH
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 
     Group {
         name: "Glew Binary"
+        condition: qbs.targetOS.contains("windows")
         files: [
             "../thirdparty/glew/bin/glew32" + suffix
         ]
         qbs.install: true
-        qbs.installDir: install.BIN_PATH
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 
@@ -218,4 +220,5 @@ Product {
         qbs.installDir: install.INC_PATH + "/engine"
         qbs.installPrefix: install.PREFIX
     }
+
 }

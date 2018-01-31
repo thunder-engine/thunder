@@ -15,14 +15,14 @@
 
 #include "resources/texture.h"
 
-TextureEdit::TextureEdit(Engine *engine, QGLWidget *share) :
-        QMainWindow(NULL),
+TextureEdit::TextureEdit(Engine *engine) :
+        QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::TextureEdit) {
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this, share);
+    glWidget    = new SceneView(engine, this);
     glWidget->setController(new CameraCtrl(m_pEngine));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");

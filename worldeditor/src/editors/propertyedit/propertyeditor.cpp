@@ -106,7 +106,7 @@ public:
         return editor;
     }
 
-    virtual void PropertyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
+    virtual void setEditorData(QWidget *editor, const QModelIndex &index) const {
         m_finishedMapper->blockSignals(true);
         QModelIndex origin  = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
         QVariant data   = origin.model()->data(origin, Qt::EditRole);

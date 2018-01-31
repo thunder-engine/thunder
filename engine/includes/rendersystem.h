@@ -18,9 +18,7 @@ public:
 
     virtual void                setColor                    (const Vector4 &color) = 0;
 
-    virtual void                drawBillboard               (const Vector3 &position, const Vector2 &size, Texture &image) = 0;
-
-    virtual void                drawPath                    (const Vector3List &points) = 0;
+    virtual void                drawStrip                   (const Matrix4 &model, const Vector3List &points, bool line = false) = 0;
 
     static Vector3List          pointsArc                   (const Quaternion &rotation, float size, float start, float angle);
 };

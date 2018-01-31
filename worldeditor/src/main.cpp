@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include <QDialog>
+#include <QSurfaceFormat>
 
 #include <stdio.h>
 
@@ -22,6 +23,12 @@
 #include "managers/projectmanager/projectdialog.h"
 
 int main(int argc, char *argv[]) {
+    QSurfaceFormat format;
+    //format.setVersion(4, 1);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+
+    QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication a(argc, argv);
 
     QFile qss(":/Style/styles/dark/style.qss");

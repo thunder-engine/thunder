@@ -23,7 +23,7 @@
 
 typedef map<uint32_t, AMetaType::Table> TypeMap;
 typedef map<string, uint32_t>           NameMap;
-typedef map<uint32_t, map<uint32_t, AMetaType::converterCallback>> ConverterMap;
+typedef map<uint32_t, map<uint32_t, AMetaType::converterCallback> > ConverterMap;
 
 uint32_t AMetaType::s_NextId = AMetaType::USERTYPE;
 static TypeMap s_Types = {

@@ -9,7 +9,8 @@ Project {
         "physfs/physfs.qbs",
         "glfw/glfw.qbs",
         "glfm/glfm.qbs",
-        "quazip/quazip.qbs"
+        "quazip/quazip.qbs",
+        "glad/glad.qbs"
     ]
 
 

@@ -46,6 +46,8 @@ public:
     QString                     sdkPath                     () const { return m_SDKPath.absoluteFilePath(); }
     QString                     resourcePath                () const { return m_ResourcePath.absoluteFilePath(); }
 
+    QString                     myProjectsPath              () const { return m_MyProjectsPath.absoluteFilePath(); }
+
 public slots:
     void                        loadSettings                ();
     void                        saveSettings                ();
@@ -73,6 +75,8 @@ private:
 
     QFileInfo                   m_SDKPath;
     QFileInfo                   m_ResourcePath;
+
+    QFileInfo                   m_MyProjectsPath;
 
 };
 

@@ -16,9 +16,16 @@ ProjectManager::ProjectManager() {
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
+#if __APPLE__
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+#endif
 
     m_SDKPath       = QFileInfo(dir.absolutePath());
     m_ResourcePath  = QFileInfo(sdkPath() + "/resources");
+
+    m_MyProjectsPath    = QFileInfo(dir.absolutePath());
 }
 
 void ProjectManager::init(const QString &project, const QString &target) {

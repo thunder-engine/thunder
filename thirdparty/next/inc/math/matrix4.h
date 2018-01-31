@@ -25,34 +25,36 @@
 class Vector3;
 class Vector4;
 class Matrix3;
+class Quaternion;
 
 class NEXT_LIBRARY_EXPORT Matrix4 {
 public:
-    Matrix4                   ();
-    Matrix4                   (const Matrix3 &matrix);
+    Matrix4                     ();
+    Matrix4                     (const Matrix3 &matrix);
+    Matrix4                     (const Vector3 &position, const Quaternion &rotation, const Vector3 &scale);
 
     bool                        operator==                  (const Matrix4 &matrix) const;
     bool                        operator!=                  (const Matrix4 &matrix) const;
 
-    const Vector3              operator*                   (const Vector3 &vector) const;
-    const Vector4              operator*                   (const Vector4 &vector) const;
-    const Matrix4              operator*                   (areal factor) const;
-    const Matrix4              operator*                   (const Matrix4 &matrix) const;
-    const Matrix4              operator+                   (const Matrix4 &matrix) const;
-    const Matrix4              operator-                   (const Matrix4 &matrix) const;
+    const Vector3               operator*                   (const Vector3 &vector) const;
+    const Vector4               operator*                   (const Vector4 &vector) const;
+    const Matrix4               operator*                   (areal factor) const;
+    const Matrix4               operator*                   (const Matrix4 &matrix) const;
+    const Matrix4               operator+                   (const Matrix4 &matrix) const;
+    const Matrix4               operator-                   (const Matrix4 &matrix) const;
 
-    Matrix4                   &operator*=                  (areal factor);
-    Matrix4                   &operator*=                  (const Matrix4 &matrix);
-    Matrix4                   &operator+=                  (const Matrix4 &matrix);
-    Matrix4                   &operator-=                  (const Matrix4 &matrix);
+    Matrix4                    &operator*=                  (areal factor);
+    Matrix4                    &operator*=                  (const Matrix4 &matrix);
+    Matrix4                    &operator+=                  (const Matrix4 &matrix);
+    Matrix4                    &operator-=                  (const Matrix4 &matrix);
 
     areal                      &operator[]                  (int i);
-    const areal                 operator[]                  (int i) const;
+    areal                       operator[]                  (int i) const;
 	
-    Matrix3                    rotation                    () const;
-    Matrix4                    transpose                   () const;
+    Matrix3                     rotation                    () const;
+    Matrix4                     transpose                   () const;
     areal                       determinant                 () const;
-    Matrix4                    inverse                     () const;
+    Matrix4                     inverse                     () const;
     void                        reflect                     (const Vector4 &plane);
     void                        direction                   (const Vector3 &direction, Vector3 &up);
 
@@ -67,7 +69,7 @@ public:
     void                        ortho                       (areal left, areal right, areal bottom, areal top, areal znear, areal zfar);
     void                        lookAt                      (Vector3 &eye, Vector3 &target, Vector3 &up);
 
-    Vector3                    euler                       ();
+    Vector3                     euler                       ();
 
     areal                       mat[16];
 };

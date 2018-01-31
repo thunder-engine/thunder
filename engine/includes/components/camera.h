@@ -24,7 +24,7 @@ public:
 
     Camera                      ();
 
-    void                        matrices                (Matrix4 &v, Matrix4 &p);
+    void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
     static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ss);
     static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ws);

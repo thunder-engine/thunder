@@ -44,7 +44,16 @@ ATextureGL *ABloomGL::draw(ATextureGL &source, APipeline &pipeline) {
             pipeline.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
         }
 
-        pipeline.clearScreen(m_ResultTexture);
+        //pipeline.clearScreen(m_ResultTexture);
+/*
+        glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
+        glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear     (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
+*/
 
         ABlurGL *blur   = pipeline.filterBlur();
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {

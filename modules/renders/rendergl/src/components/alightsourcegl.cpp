@@ -105,9 +105,7 @@ void ALightSourceGL::shadowsUpdate(APipeline &pipeline) {
             proj.ortho(-size, size, -size, size, -1000.0f, 1000.0f);
         }
 
-        Matrix4 m;
-        pipeline.setPos(Vector3(0.5f), m);
-        pipeline.setScl(Vector3(0.5f), m);
+        Matrix4 m(Vector3(0.5f), Quaternion(), Vector3(0.5f));
         m   *= proj;
         m   *= view;
         m   *= model;

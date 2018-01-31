@@ -35,15 +35,15 @@ float getShadowVarianceSample(sampler2D map, vec2 coord, float t) {
 }
 
 void main (void) {
-    vec4 slice0 = texture2D( layer0, _uv0 );
-    vec3 emit   = texture2D( layer3, _uv0 ).xyz;
+    vec4 slice0 = texture( layer0, _uv0 );
+    vec3 emit   = texture( layer3, _uv0 ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
     float ln    = dot( light.dir, n );
 
     // Light model LIT
     if(slice0.w > 0.33) {
-        float depth     = texture2D( depthMap, _uv0 ).x;
+        float depth     = texture( depthMap, _uv0 ).x;
         vec4 world      = getWorld(transform.mvpi, _uv0, depth);
 
         float shadow    = 1.0;
@@ -58,8 +58,8 @@ void main (void) {
             }
         }
 
-        vec4 slice1 = texture2D( layer1, _uv0 );
-        vec4 slice2 = texture2D( layer2, _uv0 );
+        vec4 slice1 = texture( layer1, _uv0 );
+        vec4 slice2 = texture( layer2, _uv0 );
         float rough = max( 0.01, slice2.w );
         float spec  = slice2.y;
         float metal = slice2.z;

@@ -13,7 +13,7 @@ Camera::Camera() {
     m_Color     = Vector4();
 }
 
-void Camera::matrices(Matrix4 &v, Matrix4 &p) {
+void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
     if(m_Type == PERSPECTIVE) {
         p.perspective(m_FOV, m_Ratio, m_Near, m_Far);
     } else {

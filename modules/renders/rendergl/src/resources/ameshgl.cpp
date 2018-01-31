@@ -22,26 +22,43 @@ void AMeshGL::loadUserData(const AVariantMap &data) {
         uint8_t lods    = m_Surfaces[s].lods.size();
         uint32_t *vb    = new uint32_t[lods];
         uint32_t *ib    = new uint32_t[lods];
+        uint32_t *ab    = new uint32_t[lods];
+
+        glGenVertexArrays(lods, ab);
+
         glGenBuffers(lods, vb);
         glGenBuffers(lods, ib);
         for(uint32_t l = 0; l < lods; l++) {
             Lod *lod    = &m_Surfaces[s].lods[l];
-            if(vb[l]) {
-                glBindBuffer(GL_ARRAY_BUFFER, vb[l]);
-                glBufferData(GL_ARRAY_BUFFER, lod->vertices.size() * sizeof(Vertex), &lod->vertices[0], GL_STATIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            } else {
-                vbo = false;
-            }
+            if(ab[l]) {
+                glBindVertexArray(ab[l]);
+                if(vb[l]) {
+                    glBindBuffer(GL_ARRAY_BUFFER, vb[l]);
+                    glBufferData(GL_ARRAY_BUFFER, lod->vertices.size() * sizeof(Vertex), &lod->vertices[0], GL_STATIC_DRAW);
 
-            if(ib[l]) {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib[l]);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, lod->indices.size() * sizeof(int), &lod->indices[0], GL_STATIC_DRAW);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            } else {
-                vbo = false;
+                    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, xyz));
+                    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, uv0));
+                    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, n));
+                    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, t));
+                    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, index));
+                    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex), (void *)offsetof(Mesh::Vertex, weight));
+
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                } else {
+                    vbo = false;
+                }
+
+                if(ib[l]) {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib[l]);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, lod->indices.size() * sizeof(int), &lod->indices[0], GL_STATIC_DRAW);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                } else {
+                    vbo = false;
+                }
+                glBindVertexArray(0);
             }
         }
+        abuffer.push_back(ab);
         vbuffer.push_back(vb);
         ibuffer.push_back(ib);
     }
@@ -61,8 +78,13 @@ void AMeshGL::clear() {
 
         uint32_t *ib    = ibuffer[s];
         glDeleteBuffers(lods, ib);
-        delete []vb;
+        delete []ib;
+
+        uint32_t *ab    = abuffer[s];
+        glDeleteVertexArrays(lods, ab);
+        delete []ab;
     }
+    abuffer.clear();
     vbuffer.clear();
     ibuffer.clear();
 }

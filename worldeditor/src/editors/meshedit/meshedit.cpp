@@ -19,8 +19,8 @@
 
 #include "fbxconverter.h"
 
-MeshEdit::MeshEdit(Engine *engine, QGLWidget *share) :
-        QMainWindow(NULL),
+MeshEdit::MeshEdit(Engine *engine) :
+        QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::MeshEdit),
         m_pMesh(nullptr),
@@ -31,7 +31,7 @@ MeshEdit::MeshEdit(Engine *engine, QGLWidget *share) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this, share);
+    glWidget    = new SceneView(engine, this);
     glWidget->setController(new CameraCtrl(m_pEngine));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");

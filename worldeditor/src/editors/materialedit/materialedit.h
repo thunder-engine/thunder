@@ -23,7 +23,7 @@ class MaterialEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
     
 public:
-    MaterialEdit            (Engine *engine, QGLWidget *share);
+    MaterialEdit            (Engine *engine);
     ~MaterialEdit           ();
 
     void                    readSettings                    ();

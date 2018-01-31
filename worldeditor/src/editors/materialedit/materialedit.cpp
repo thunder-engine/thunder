@@ -24,8 +24,8 @@
 
 #include "functionmodel.h"
 
-MaterialEdit::MaterialEdit(Engine *engine, QGLWidget *share) :
-        QMainWindow(NULL),
+MaterialEdit::MaterialEdit(Engine *engine) :
+        QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::MaterialEdit),
         m_pMaterial(nullptr),
@@ -36,7 +36,7 @@ MaterialEdit::MaterialEdit(Engine *engine, QGLWidget *share) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this, share);
+    glWidget    = new SceneView(engine, this);
     CameraCtrl *ctrl    = new CameraCtrl(m_pEngine);
     ctrl->blockFree(true);
     ctrl->blockMovement(true);

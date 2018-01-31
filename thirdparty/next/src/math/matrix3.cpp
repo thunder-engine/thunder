@@ -137,7 +137,7 @@ areal &Matrix3::operator[](int i) {
     \a i must be a valid index position in the matrix (i.e., 0 <= i < 9).
     Data is stored as column-major format so this function retrieving data from rows in colmns.
 */
-const areal Matrix3::operator[](int i) const {
+areal Matrix3::operator[](int i) const {
     return mat[i];
 }
 /*!

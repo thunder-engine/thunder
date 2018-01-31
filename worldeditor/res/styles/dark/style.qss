@@ -41,6 +41,7 @@ QLineEdit {
 }
 
 QAbstractButton {
+    margin: 0px 0px;
     padding: 2px 16px;
     background: #757575;
     border-radius: 3px;
@@ -148,7 +149,7 @@ QListView::item:hover {
     background: #039be5;
 }
 
-QTreeView QLineEdit, QAbstractButton, QCheckBox, QComboBox, QAbstractSpinBox {
+QTreeView QLineEdit, QTreeView QAbstractButton, QTreeView QCheckBox, QTreeView QComboBox, QTreeView QAbstractSpinBox {
     margin: 2px 0px;
 }
 QTreeView {

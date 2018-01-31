@@ -112,8 +112,8 @@ void ATextureGL::loadUserData(const AVariantMap &data) {
     m_Target    = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     switch (m_format) {
         case RGB:       m_Format    = GL_RGB; break;
-        case DXT1:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-        case DXT5:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+        //case DXT1:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
+        //case DXT5:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
         default:        m_Format    = GL_RGBA; break;
     }
 
@@ -158,7 +158,7 @@ void ATextureGL::loadUserData(const AVariantMap &data) {
     glBindTexture(m_Target, 0);
 }
 
-bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, GLenum target) {
+bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target) {
     const Surface &image    = sides[imageIndex];
 
     if(isCompressed()) {

@@ -69,7 +69,7 @@ public:
 
     class SelectObjects : public UndoObject {
     public:
-        SelectObjects           (AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Selection Change"));
+        SelectObjects           (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Selection Change"));
         void                    undo                (bool redo);
         void                    forceUndo           ();
         virtual bool            isValid             () const;
@@ -79,7 +79,7 @@ public:
 
     class CreateObjects : public UndoObject {
     public:
-        CreateObjects           (AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Create Objects"));
+        CreateObjects           (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Create Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
@@ -89,7 +89,7 @@ public:
 
     class DestroyObjects : public UndoObject {
     public:
-        DestroyObjects          (AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Destroy Objects"));
+        DestroyObjects          (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Destroy Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
@@ -99,7 +99,7 @@ public:
 
     class ParentingObjects : public UndoObject {
     public:
-        ParentingObjects        (AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name = tr("Parenting Objects"));
+        ParentingObjects        (const AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name = tr("Parenting Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
@@ -109,7 +109,7 @@ public:
 
     class PropertyObjects : public UndoObject {
     public:
-        PropertyObjects         (AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Change Property"));
+        PropertyObjects         (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Change Property"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:

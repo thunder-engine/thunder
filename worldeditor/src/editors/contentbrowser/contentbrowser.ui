@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>107</height>
+    <width>600</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,19 +65,13 @@
        <item>
         <layout class="QHBoxLayout" name="filterLayout">
          <property name="spacing">
-          <number>4</number>
+          <number>2</number>
          </property>
          <property name="topMargin">
           <number>0</number>
          </property>
          <item>
           <widget class="QToolButton" name="filterButton">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="text">
             <string>Filter</string>
            </property>

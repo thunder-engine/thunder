@@ -21,6 +21,7 @@
 #include "analytics/profiler.h"
 
 APipeline::APipeline(Engine *engine) :
+        m_pScene(nullptr),
         m_pDirect(nullptr),
         m_pPoint(nullptr),
         m_pSpot(nullptr),
@@ -33,17 +34,19 @@ APipeline::APipeline(Engine *engine) :
 
     m_Color     = Vector4(1.0f);
 
-    m_pController   = NULL;
+    m_pController   = nullptr;
 
     m_Coords.push_back(Vector2( 0.0f, 0.0f ));
     m_Coords.push_back(Vector2( 1.0f, 0.0f ));
-    m_Coords.push_back(Vector2( 1.0f, 1.0f ));
     m_Coords.push_back(Vector2( 0.0f, 1.0f ));
+    m_Coords.push_back(Vector2( 1.0f, 1.0f ));
 
     m_Vertices.push_back(Vector4( 0.0f, 0.0f, 0.0f, 0.0f));
     m_Vertices.push_back(Vector4( 1.0f, 0.0f, 0.0f, 0.0f));
-    m_Vertices.push_back(Vector4( 1.0f, 1.0f, 0.0f, 0.0f));
     m_Vertices.push_back(Vector4( 0.0f, 1.0f, 0.0f, 0.0f));
+    m_Vertices.push_back(Vector4( 1.0f, 1.0f, 0.0f, 0.0f));
+
+    glGenVertexArrays(1, &m_VAO);
 
     m_pSprite   = static_cast<ASpriteGL *>(Engine::objectCreate<Sprite>());
     m_pSprite->setMaterial(Engine::loadResource<AMaterialGL>(".embedded/DefaultSprite.mtl"));
@@ -62,6 +65,7 @@ APipeline::APipeline(Engine *engine) :
 
     m_Depth.create(GL_TEXTURE_2D, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_FLOAT);
 
+    m_DepthBuffer   = 0;
     glGenFramebuffers(1, &m_DepthBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_DepthBuffer);
 
@@ -72,6 +76,7 @@ APipeline::APipeline(Engine *engine) :
 #endif
     glFramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
 
+    m_ScreenBuffer  = 0;
     glGenFramebuffers(1, &m_ScreenBuffer);
 }
 
@@ -152,7 +157,7 @@ void APipeline::cameraSet(ACameraGL &camera) {
 void APipeline::setShaderParams(uint32_t program) {
     int location;
     location	= glGetUniformLocation(program, "light.ambient");
-    if(location > -1) {
+    if(location > -1 && m_pScene) {
         glUniform1f(location, m_pScene->ambient());
     }
     location    = glGetUniformLocation(program, "transform.color");
@@ -214,9 +219,11 @@ void APipeline::clearScreen(const ATextureGL &target) {
 }
 
 void APipeline::drawQuad() {
+    //glBindVertexArray(m_VAO);
     // Vertex pos attribute
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, &m_Vertices[0]);
+
     // UV Coords attribute
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, &m_Coords[0]);
@@ -224,15 +231,13 @@ void APipeline::drawQuad() {
     PROFILER_STAT(VERTICES,     4);
     PROFILER_STAT(POLYGONS,     2);
     PROFILER_STAT(DRAWCALLS,    1);
-#ifdef GL_ES_VERSION_2_0
-    uint32_t mode   = GL_QUADS_OES;
-#else
-    uint32_t mode   = GL_QUADS;
-#endif
-    glDrawArrays(mode, 0, 4);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);
+
+    //glBindVertexArray(0);
 }
 
 void APipeline::drawTexturedQuad(const ATextureGL &texture) {
@@ -369,27 +374,27 @@ void APipeline::initLightMaterial(AMaterialGL *material) {
         uint32_t program    = material->getProgram(AMaterialGL::Static);
 
         int location;
-        location	= glGetUniformLocation(program, "layer0");
+        location    = glGetUniformLocation(program, "layer0");
         if(location > -1) {
             glUniform1i(location, 0);
         }
-        location	= glGetUniformLocation(program, "layer1");
+        location    = glGetUniformLocation(program, "layer1");
         if(location > -1) {
             glUniform1i(location, 1);
         }
-        location	= glGetUniformLocation(program, "layer2");
+        location    = glGetUniformLocation(program, "layer2");
         if(location > -1) {
             glUniform1i(location, 2);
         }
-        location	= glGetUniformLocation(program, "layer3");
+        location    = glGetUniformLocation(program, "layer3");
         if(location > -1) {
             glUniform1i(location, 3);
         }
-        location	= glGetUniformLocation(program, "depthMap");
+        location    = glGetUniformLocation(program, "depthMap");
         if(location > -1) {
             glUniform1i(location, 4);
         }
-        location	= glGetUniformLocation(program, "shadowMap");
+        location    = glGetUniformLocation(program, "shadowMap");
         if(location > -1) {
             glUniform1i(location, 5);
         }

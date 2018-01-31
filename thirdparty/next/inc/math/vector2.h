@@ -24,29 +24,29 @@
 
 class NEXT_LIBRARY_EXPORT Vector2 {
 public:
-    Vector2                   ();
-    Vector2                   (areal v);
-    Vector2                   (areal x, areal y);
+    Vector2                     ();
+    Vector2                     (areal v);
+    Vector2                     (areal x, areal y);
 
     bool                        operator==                  (const Vector2 &vector) const;
     bool                        operator!=                  (const Vector2 &vector) const;
     bool                        operator>                   (const Vector2 &vector) const;
     bool                        operator<                   (const Vector2 &vector) const;
 
-    const Vector2              operator*                   (areal factor) const;
-    const Vector2              operator*                   (Vector2 &vector) const;
-    const Vector2              operator/                   (areal factor) const;
-    const Vector2              operator+                   (const Vector2 &vector) const;
-    const Vector2              operator-                   () const;
-    const Vector2              operator-                   (const Vector2 &vector) const;
+    const Vector2               operator*                   (areal factor) const;
+    const Vector2               operator*                   (Vector2 &vector) const;
+    const Vector2               operator/                   (areal factor) const;
+    const Vector2               operator+                   (const Vector2 &vector) const;
+    const Vector2               operator-                   () const;
+    const Vector2               operator-                   (const Vector2 &vector) const;
 
-    Vector2                   &operator*=                  (areal factor);
-    Vector2                   &operator/=                  (areal divisor);
-    Vector2                   &operator+=                  (const Vector2 &vector);
-    Vector2                   &operator-=                  (const Vector2 &vector);
+    Vector2                    &operator*=                  (areal factor);
+    Vector2                    &operator/=                  (areal divisor);
+    Vector2                    &operator+=                  (const Vector2 &vector);
+    Vector2                    &operator-=                  (const Vector2 &vector);
     
     areal                      &operator[]                  (int i);
-    const areal                 operator[]                  (int i) const;
+    areal                       operator[]                  (int i) const;
     
     areal                       length                      () const;
     areal                       sqrLength                   () const;

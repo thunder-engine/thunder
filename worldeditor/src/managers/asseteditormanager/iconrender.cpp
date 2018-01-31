@@ -61,7 +61,7 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->setRotation(rot);
-    m_pLight->addComponent<LightSource>();
+    //m_pLight->addComponent<LightSource>();
 }
 
 const QImage IconRender::render(const QString &resource, uint8_t type) {

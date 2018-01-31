@@ -76,19 +76,19 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
 }
 
 void FBXConverter::importFBX(const string &src, Mesh &mesh) {
-    KFbxSdkManager *lSdkManager = KFbxSdkManager::Create();
+    FbxManager *lSdkManager = FbxManager::Create();
     // Create an IOSettings object.
-    KFbxIOSettings *ios         = KFbxIOSettings::Create( lSdkManager, IOSROOT );
+    FbxIOSettings *ios      = FbxIOSettings::Create( lSdkManager, IOSROOT );
     lSdkManager->SetIOSettings(ios);
 
-    KFbxImporter *lImporter	= KFbxImporter::Create( lSdkManager, "" );
+    FbxImporter *lImporter  = FbxImporter::Create( lSdkManager, "" );
     // Initialize the importer.
     if(lImporter->Initialize(src.c_str(), -1, lSdkManager->GetIOSettings()) == false) {
-        Log(Log::ERR) << "Call to KFbxImporter::Initialize() failed." << lImporter->GetLastErrorString();
+        Log(Log::ERR) << "Call to KFbxImporter::Initialize() failed." ;
         return;
     }
     // Create a new scene so it can be populated by the imported file.
-    KFbxScene *lScene = KFbxScene::Create(lSdkManager, "Scene");
+    FbxScene *lScene    = FbxScene::Create(lSdkManager, "Scene");
     // Import the contents of the file into the scene.
     lImporter->Import(lScene);
 
@@ -99,20 +99,20 @@ void FBXConverter::importFBX(const string &src, Mesh &mesh) {
 
     importDynamic(lScene->GetRootNode(), mesh);
 
-    lScene->Destroy(true, true);
+    lScene->Destroy(true);
     lImporter->Destroy();
     ios->Destroy();
     lSdkManager->Destroy();
 }
 
-void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
-    vector<KFbxCluster *> bones;
+void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
+    vector<FbxCluster *> bones;
 
     for(int n = 0; n < lRootNode->GetChildCount(); n++) {
-        KFbxNode *node              = lRootNode->GetChild(n);
-        KFbxNodeAttribute *attrib   = node->GetNodeAttribute();
-        if(attrib && attrib->GetAttributeType() == KFbxNodeAttribute::eMESH) {
-            KFbxMesh *m = (KFbxMesh *)attrib;
+        FbxNode *node               = lRootNode->GetChild(n);
+        FbxNodeAttribute *attrib    = node->GetNodeAttribute();
+        if(attrib && attrib->GetAttributeType() == FbxNodeAttribute::eMesh) {
+            FbxMesh *m = (FbxMesh *)attrib;
 /*
             bool valid  = false;
             for(int d = 0; d < m->GetDeformerCount(); d++) {
@@ -144,7 +144,7 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
 
             s.collision	= false;
             // Transform marix
-            KFbxXMatrix mTransform	= node->EvaluateGlobalTransform();
+            FbxMatrix mTransform   = node->EvaluateGlobalTransform();
             /// \todo: Is it needed?
             Matrix3 transform;
             transform[0]    = mTransform.mData[0].mData[0];
@@ -167,10 +167,10 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
             l.indices			= Mesh::IndexVector(tCount * 3);
             uint32_t index      = 0;
             // Export
-            KFbxVector4 *verts;
-            KFbxGeometryElementUV *uv;
-            KFbxGeometryElementNormal *normals;
-            KFbxGeometryElementTangent *tangents;
+            FbxVector4 *verts;
+            FbxGeometryElementUV *uv;
+            FbxGeometryElementNormal *normals;
+            FbxGeometryElementTangent *tangents;
 
             verts		= m->GetControlPoints();
             uv			= m->GetElementUV();
@@ -201,18 +201,18 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
                     // Add vertex to array
                     if(create) {
                         Mesh::Vertex vert;
-                        KFbxVector4 v;
+                        FbxVector4 v;
 
-                        v           = mTransform.MultT(verts[data.vIndex]);
-                        vert.xyz    = Vector4(v.GetAt(0), v.GetAt(1), v.GetAt(2), 1.0);
+                        v           = verts[data.vIndex];
+                        vert.xyz    = transform * Vector4(v[0], v[1], v[2], 1.0);
 
                         if(normals) {
-                            bool mode   = (normals->GetMappingMode() == KFbxLayerElement::eBY_CONTROL_POINT);
+                            bool mode   = (normals->GetMappingMode() == FbxLayerElement::eByControlPoint);
                             switch (normals->GetReferenceMode()) {
-                                case KFbxLayerElement::eDIRECT: {
+                                case FbxLayerElement::eDirect: {
                                     v   = normals->GetDirectArray().GetAt(data.xIndex);
                                 } break;
-                                case KFbxLayerElement::eINDEX_TO_DIRECT: {
+                                case FbxLayerElement::eIndexToDirect: {
                                     int index   = normals->GetIndexArray().GetAt(data.xIndex);
                                     v           = normals->GetDirectArray().GetAt(index);
                                 } break;
@@ -221,17 +221,17 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
                                 } break;
 
                             }
-                            vert.n  = Vector3(v.GetAt(0), v.GetAt(1), v.GetAt(2));
+                            vert.n  = Vector3(v[0], v[1], v[2]);
                         } else {
                             Log(Log::WRN) << "No normals exist";
                         }
 
                         if(tangents) {
                             switch (tangents->GetReferenceMode()) {
-                                case KFbxLayerElement::eDIRECT: {
+                                case FbxLayerElement::eDirect: {
                                     v       = tangents->GetDirectArray().GetAt(data.xIndex);
                                 } break;
-                                case KFbxLayerElement::eINDEX_TO_DIRECT: {
+                                case FbxLayerElement::eIndexToDirect: {
                                     int index   = tangents->GetIndexArray().GetAt(data.xIndex);
                                     v           = tangents->GetDirectArray().GetAt(index);
                                 } break;
@@ -240,14 +240,14 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
                                 } break;
 
                             }
-                            vert.t  = Vector3(v.GetAt(0), v.GetAt(1), v.GetAt(2));
+                            vert.t  = Vector3(v[0], v[1], v[2]);
                         } else {
                             Log(Log::WRN) << "No tangents exist";
                         }
 
                         if(uv) {
                             v       = uv->GetDirectArray().GetAt(data.uIndex);
-                            vert.uv0= Vector2(v.GetAt(0), v.GetAt(1));
+                            vert.uv0= Vector2(v[0], v[1]);
                         }
 
                         if(!mesh.isAnimated()) {
@@ -330,7 +330,7 @@ void FBXConverter::importDynamic(KFbxNode *lRootNode, Mesh &mesh) {
 */
 }
 
-void FBXConverter::importAFAnimation(KFbxScene *lScene) {
+void FBXConverter::importAFAnimation(FbxScene *lScene) {
 /*
     KTime gPeriod, gStart, gStop, gCurrent;
     gPeriod.SetTime(0, 0, 0, 1, 0, lScene->GetGlobalSettings().GetTimeMode());

@@ -131,7 +131,7 @@ areal &Quaternion::operator[](int i) {
     Returns the component of the quaternion at index position.
     \a i must be a valid index position in the quaternion (i.e., 0 <= i < 4).
 */
-const areal Quaternion::operator[](int i) const {
+areal Quaternion::operator[](int i) const {
     return q[i];
 }
 /*!

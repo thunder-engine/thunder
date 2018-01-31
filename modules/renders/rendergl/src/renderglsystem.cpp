@@ -14,11 +14,12 @@
 
 #include "components/scene.h"
 
+#include <log.h>
+
 RenderGLSystem::RenderGLSystem(Engine *engine) :
+        m_pPipeline(nullptr),
         IRenderSystem(engine) {
     PROFILER_MARKER
-
-    m_pPipeline = NULL;
 
     ATextureGL::registerClassFactory();
     AMaterialGL::registerClassFactory();
@@ -39,15 +40,22 @@ RenderGLSystem::~RenderGLSystem() {
 
 /*!
     Initialization of render.
-    @return 0               Intialization successful.
-    @return -1              Intialization error ("Unsupported extentions").
 */
 bool RenderGLSystem::init() {
     PROFILER_MARKER
 
 #if (_WIN32)
-    glewInit();
+    //uint32_t err    = glewInit();
+    //if(err != GLEW_OK) {
+    //    Log(Log::ERR) << "[ Render::RenderGLSystem ]" << glewGetErrorString(err);
+    //    return false;
+    //}
 #endif
+
+    if(!gladLoadGL() /*!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)*/) {
+        Log(Log::ERR) << "[ Render::RenderGLSystem ] Failed to initialize OpenGL context";
+        return false;
+    }
 
     glDepthFunc     (GL_LEQUAL);
     glEnable        (GL_DEPTH_TEST);
@@ -88,45 +96,19 @@ void RenderGLSystem::overrideController(IController *controller) {
     }
 }
 
-void RenderGLSystem::drawBillboard(const Vector3 &position, const Vector2 &size, Texture &image) {
+void RenderGLSystem::drawStrip(const Matrix4 &model, const Vector3List &points, bool line) {
     PROFILER_MARKER
 
-    if(m_pPipeline) {
-        Matrix4 result;
-        Matrix4 m;
-        m.translate(position);
-        result *= m;
-        m.scale(Vector3(size, 1.0));
-        result *= m;
-
-        m_pPipeline->setTransform(result);
-        //AMaterialGL *mat    = m_pPipeline->materialSprite();
-        //mat->overrideTexture("texture0", &image);
-
-        //mat->bind(*m_pPipeline, IDrawObjectGL::TRANSLUCENT, AMaterialGL::Billboard);
-        //m_pPipeline->drawQuad();
-        //mat->unbind(IDrawObjectGL::TRANSLUCENT);
-
-        m_pPipeline->resetTransform();
-    }
-}
-
-void RenderGLSystem::drawPath(const Vector3List &points) {
-    PROFILER_MARKER
-#ifdef GL_ES_VERSION_2_0
-    uint32_t array = GL_VERTEX_ARRAY_KHR;
-#else
-    uint32_t array = GL_VERTEX_ARRAY;
-#endif
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, &points[0]);
-    glDrawArrays(GL_LINE_STRIP, 0, points.size());
+    glDrawArrays(line ? GL_LINE_STRIP : GL_TRIANGLE_STRIP, 0, points.size());
     glDisableVertexAttribArray(0);
 }
 
 void RenderGLSystem::setColor(const Vector4 &color) {
     PROFILER_MARKER
 
+    glColor4fv(color.v);
     if(m_pPipeline) {
         m_pPipeline->setColor(color);
     }

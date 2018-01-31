@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#include <QMenu>
+#include <QClipboard>
+
 #include "log.h"
 #include "logmodel.h"
 
@@ -12,9 +15,13 @@ ConsoleManager::ConsoleManager(QWidget *parent) :
         m_pItems(new LogModel()){
     ui->setupUi(this);
     ui->consoleOutput->setModel(m_pItems);
-    ui->infoButton->hide();
-    ui->warningButton->hide();
-    ui->errorButton->hide();
+    ui->toolButton->hide();
+
+    ui->consoleOutput->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    m_pMenu = new QMenu(this);
+    QAction *action = m_pMenu->addAction(tr("Copy"));
+    connect(action, SIGNAL(triggered()), this, SLOT(onCopy()));
 }
 
 ConsoleManager::~ConsoleManager() {
@@ -30,11 +37,16 @@ void ConsoleManager::on_clearButton_clicked() {
     m_pItems->clear();
 }
 
-void ConsoleManager::on_infoButton_clicked() {
+void ConsoleManager::on_consoleOutput_customContextMenuRequested(const QPoint &pos) {
+    m_pMenu->exec(mapToGlobal(pos));
 }
 
-void ConsoleManager::on_warningButton_clicked() {
-}
-
-void ConsoleManager::on_errorButton_clicked() {
+void ConsoleManager::onCopy() {
+    QStringList list;
+    foreach(const QModelIndex &index, ui->consoleOutput->selectionModel()->selectedIndexes()) {
+        list.push_back(m_pItems->data(index, Qt::DisplayRole).toString());
+    }
+    if(!list.isEmpty()) {
+        QApplication::clipboard()->setText(list.join("\n"));
+    }
 }

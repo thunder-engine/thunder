@@ -256,7 +256,8 @@ void NextObject::buildObject(AObject *object, const QString &path) {
         if(data.userType() == AMetaType::type<MaterialArray>()) {
             MaterialArray array = data.value<MaterialArray>();
             for(uint32_t i = 0; i < array.size(); i++) {
-                setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(AVariant::fromValue(array[i]), "") );
+                AVariant v = AVariant::fromValue(array[i]);
+                setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
             }
         } else {
             blockSignals(true);

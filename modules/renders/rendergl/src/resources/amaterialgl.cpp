@@ -240,7 +240,8 @@ void AMaterialGL::clear() {
 #ifdef GL_ES_VERSION_2_0
     addPragma("version", "");
 #else
-    addPragma("version", "#version 450");
+    addPragma("version", "#version 410 core");
+    //addPragma("version", "#version 300 es");
 #endif
     for(auto it : m_Programs) {
         glDeleteProgram(it.second);
@@ -249,7 +250,7 @@ void AMaterialGL::clear() {
 }
 
 uint32_t AMaterialGL::buildShader(uint8_t type, const string &src, const string &path) {
-    uint32_t shader;
+    uint32_t shader = 0;
     switch(type) {
         case Vertex:    shader  = glCreateShader(GL_VERTEX_SHADER);   break;
 #ifndef GL_ES_VERSION_2_0

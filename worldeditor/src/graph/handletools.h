@@ -15,13 +15,13 @@ public:
 
     static float            distanceToPoint     (const Vector3 &position);
 
-    static float            distanceToLine      (const Vector3 &a, const Vector3 &b);
-
     static float            distanceToPath      (const Vector3List &points);
 
-    static void             pushCamera          (const Camera &camera);
+    static void             pushCamera          (const Camera &camera, const Matrix4 &model);
 
     static void             popCamera           ();
+
+    static Matrix4          modelView           ();
 
 protected:
     typedef stack<Matrix4>  MatrixStack;

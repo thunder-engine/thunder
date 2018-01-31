@@ -21,19 +21,23 @@ Project {
         condition: next.desktop
         files: next.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
+        cpp.cxxLanguageVersion: "c++14"
+        cpp.sonamePrefix: "@executable_path"
 
         Group {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: next.BIN_PATH
+            qbs.installDir: next.BIN_PATH + "/" + next.bundle
             qbs.installPrefix: next.PREFIX
         }
+
     }
 
     StaticLibrary {
@@ -41,6 +45,7 @@ Project {
         files: next.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
+        bundle.isBundle: false
 
         cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths

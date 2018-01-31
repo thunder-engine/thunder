@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 
 #include <amath.h>
+#include <float.h>
 
 Q_DECLARE_METATYPE(Vector3)
 

@@ -20,9 +20,7 @@ public:
 
     void                        overrideController          (IController *controller);
 
-    void                        drawBillboard               (const Vector3 &position, const Vector2 &size, Texture &image);
-
-    void                        drawPath                    (const Vector3List &points);
+    void                        drawStrip                   (const Matrix4 &model, const Vector3List &points, bool line = false);
 
     void                        setColor                    (const Vector4 &color);
 

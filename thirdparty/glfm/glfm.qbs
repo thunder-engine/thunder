@@ -20,6 +20,7 @@ Project {
         condition: !glfm.desktop
         files: glfm.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
         cpp.defines: [ ]
         cpp.includePaths: glfm.incPaths

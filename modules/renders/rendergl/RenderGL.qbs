@@ -23,7 +23,9 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../../external/nvidia/inc"
+        "../../../thirdparty/glfw/include",
+        "../../../thirdparty/glew/include",
+        "../../../thirdparty/glad/include",
     ]
 
     DynamicLibrary {
@@ -33,22 +35,36 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "glfw-editor" }
+        Depends { name: "glad" }
+        bundle.isBundle: false
 
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: rendergl.incPaths
-        cpp.libraryPaths: [
-            "../../../../external/nvidia/lib"
-        ]
-        cpp.dynamicLibraries: [
-            "glew32",
-            "opengl32"
-        ]
+        cpp.cxxLanguageVersion: "c++14"
+        cpp.sonamePrefix: "@executable_path"
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.libraryPaths: [
+                //"../../../thirdparty/glew/bin"
+            ]
+            //cpp.dynamicLibraries: outer.concat([
+            //    "glew32",
+            //    "opengl32"
+            //])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
+            cpp.weakFrameworks: ["OpenGL"]
+        }
 
         Group {
             name: "Install Dynamic RenderGL"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: rendergl.BIN_PATH
+            qbs.installDir: rendergl.BIN_PATH + "/" + rendergl.bundle
             qbs.installPrefix: rendergl.PREFIX
         }
     }
@@ -57,6 +73,7 @@ Project {
         name: "rendergl"
         files: rendergl.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
         cpp.includePaths: rendergl.incPaths
         cpp.cxxLanguageVersion: "c++14"
@@ -64,6 +81,11 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: "gnustl_shared"
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
+            cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {

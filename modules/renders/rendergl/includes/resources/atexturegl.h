@@ -33,7 +33,7 @@ private:
     uint32_t                    sizeDXTc                    (uint32_t width, uint32_t height) const;
     uint32_t                    sizeRGB                     (uint32_t width, uint32_t height) const;
 
-    bool                        uploadTexture2D             (const Sides &sides, uint32_t imageIndex = 0, GLenum target = GL_TEXTURE_2D);
+    bool                        uploadTexture2D             (const Sides &sides, uint32_t imageIndex = 0, uint32_t target = GL_TEXTURE_2D);
     bool                        uploadTextureCubemap        (const Sides &sides);
 
     inline bool                 isDwordAligned              ();

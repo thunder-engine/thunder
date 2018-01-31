@@ -1,8 +1,8 @@
 #include "handletools.h"
 
-#include <qgl.h>
-
 #include <components/camera.h>
+
+#include <float.h>
 
 HandleTools::MatrixStack HandleTools::m_sProjection;
 HandleTools::MatrixStack HandleTools::m_sModelView;
@@ -42,17 +42,6 @@ float HandleTools::distanceToPoint(const Vector3 &position) {
     return (Handles::m_sMouse - ssp).length();
 }
 
-float HandleTools::distanceToLine(const Vector3 &a, const Vector3 &b) {
-    Vector3 ssa, ssb;
-    int viewport[4] = {0, 0, m_sWidth, m_sHeight};
-    Camera::project(a, m_sModelView.top(), m_sProjection.top(), viewport, ssa);
-    Camera::project(b, m_sModelView.top(), m_sProjection.top(), viewport, ssb);
-    ssa.y    = m_sHeight - ssa.y;
-    ssb.y    = m_sHeight - ssb.y;
-
-    return distanceToSegment(ssa, ssb, Handles::m_sMouse);
-}
-
 float HandleTools::distanceToPath(const Vector3List &points) {
     int viewport[4] = {0, 0, m_sWidth, m_sHeight};
     float result    = FLT_MAX;
@@ -72,30 +61,22 @@ float HandleTools::distanceToPath(const Vector3List &points) {
     return result;
 }
 
-void HandleTools::pushCamera(const Camera &camera) {
-    Matrix4 mv, p;
-    glGetFloatv(GL_MODELVIEW_MATRIX, mv.mat);
-    glGetFloatv(GL_PROJECTION_MATRIX, p.mat);
+void HandleTools::pushCamera(const Camera &camera, const Matrix4 &model) {
+    Matrix4 v, p;
 
     m_sWidth    = camera.width();
     m_sHeight   = camera.height();
+    camera.matrices(v, p);
 
     m_sProjection.push(p);
-    m_sModelView.push(mv);
-/*
-    Matrix4 v, p;
-    if(camera) {
-        camera->matrices(v, p);
-    }
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(p.mat);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(v.mat);
-*/
+    m_sModelView.push(v * model);
 }
 
 void HandleTools::popCamera() {
     m_sProjection.pop();
     m_sModelView.pop();
+}
+
+Matrix4 HandleTools::modelView() {
+    return m_sModelView.top();
 }

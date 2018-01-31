@@ -12,7 +12,7 @@ Project {
         "includes/analytics/*.h",
         "includes/adapters/*.h",
         "includes/components/*.h",
-        "includes/resources/*.h",
+        "includes/resources/*.h"
     ]
 
     property stringList incPaths: [
@@ -34,11 +34,14 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "physfs-editor" }
+        bundle.isBundle: false
 
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
+        cpp.cxxLanguageVersion: "c++14"
+        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: engine.desktop
@@ -49,7 +52,7 @@ Project {
             name: "Install Dynamic Engine"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: engine.BIN_PATH
+            qbs.installDir: engine.BIN_PATH + "/" + engine.bundle
             qbs.installPrefix: engine.PREFIX
         }
     }
@@ -58,6 +61,7 @@ Project {
         name: "engine"
         files: engine.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
         cpp.includePaths: engine.incPaths
         cpp.cxxLanguageVersion: "c++14"
