@@ -102,7 +102,10 @@ Project {
             name: "Icon"
             qbs.install: qbs.targetOS.contains("osx")
             files: [
-                "res/icons/thunder.icns"
+                "res/icons/thunder.icns",
+                "src/managers/configmanager/configdialog.cpp",
+                "src/managers/configmanager/configdialog.h",
+                "src/managers/configmanager/configdialog.ui",
             ]
             qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
             qbs.installPrefix: worldEditor.PREFIX

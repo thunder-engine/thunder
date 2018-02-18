@@ -16,7 +16,7 @@
 				<string>public.project</string>
 			</array>
 			<key>UTTypeIdentifier</key>
-			<string>com.thunderengine.forge</string>
+			<string>public.forge</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

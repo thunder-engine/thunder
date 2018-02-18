@@ -6,6 +6,7 @@ Project {
         "src/*.cpp",
         "src/core/*.cpp",
         "src/math/*.cpp",
+        "inc/*.h",
         "inc/core/*.h",
         "inc/math/*.h"
     ]

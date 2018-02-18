@@ -70,11 +70,14 @@ AssetManager::~AssetManager() {
 void AssetManager::init() {
     QString target  = m_pProjectManager->targetPath();
 
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/shaders",  !target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/materials",!target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/textures", !target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/meshes",   !target.isEmpty());
-
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/shaders",  !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",!target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   !target.isEmpty());
+#ifndef BUILDER
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/materials",!target.isEmpty());
+#endif
     m_pDirWatcher->addPath(m_pProjectManager->contentPath());
     onDirectoryChanged(m_pProjectManager->contentPath(), !target.isEmpty());
 
@@ -408,6 +411,7 @@ void AssetManager::dumpBundle() {
         root[qPrintable(gContent)]  = m_Paths;
 
         AVariantMap settings;
+
         settings[qPrintable(gEntry)]    = qPrintable(m_pProjectManager->firstMap().path);
         settings[qPrintable(gCompany)]  = qPrintable(m_pProjectManager->projectCompany());
         settings[qPrintable(gProject)]  = qPrintable(m_pProjectManager->projectName());

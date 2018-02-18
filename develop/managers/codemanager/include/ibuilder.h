@@ -18,6 +18,12 @@ public:
 
     virtual bool                    buildProject        () = 0;
 
+    virtual QString                 builderVersion      () = 0;
+
+    virtual void                    builderInit         () = 0;
+
+    virtual QString                 builderToolchains   () = 0;
+
     void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
 
     void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
@@ -31,8 +37,6 @@ signals:
 
 protected:
     StringMap                       m_Values;
-
-    QString                         m_SdkPath;
 
     QStringList                     m_IncludePath;
     QStringList                     m_LibPath;

@@ -18,9 +18,6 @@ public:
 
     void                        draw            (APipeline &pipeline, int8_t layer);
 
-protected:
-    uint32_t                    m_VAO;
-
 };
 
 #endif // SPRITEGL

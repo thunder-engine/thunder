@@ -14,18 +14,18 @@
 #include <components/scene.h>
 #include <components/component.h>
 
-#include "components/alightsourcegl.h"
+#include "components/adirectlightgl.h"
 #include "components/acameragl.h"
 #include "components/aspritegl.h"
 
 #include "analytics/profiler.h"
 
+#include "resources/ameshgl.h"
+
+#define OVERRIDE "texture0"
+
 APipeline::APipeline(Engine *engine) :
-        m_pScene(nullptr),
-        m_pDirect(nullptr),
-        m_pPoint(nullptr),
-        m_pSpot(nullptr),
-        m_pFont(nullptr) {
+        m_pScene(nullptr) {
     m_Screen    = Vector2(64, 64);
 
     m_pEngine   = engine;
@@ -36,26 +36,14 @@ APipeline::APipeline(Engine *engine) :
 
     m_pController   = nullptr;
 
-    m_Coords.push_back(Vector2( 0.0f, 0.0f ));
-    m_Coords.push_back(Vector2( 1.0f, 0.0f ));
-    m_Coords.push_back(Vector2( 0.0f, 1.0f ));
-    m_Coords.push_back(Vector2( 1.0f, 1.0f ));
+    m_pPlane    = Engine::loadResource<AMeshGL>(".embedded/plane.fbx");
+    m_pCube     = Engine::loadResource<AMeshGL>(".embedded/cube.fbx");
 
-    m_Vertices.push_back(Vector4( 0.0f, 0.0f, 0.0f, 0.0f));
-    m_Vertices.push_back(Vector4( 1.0f, 0.0f, 0.0f, 0.0f));
-    m_Vertices.push_back(Vector4( 0.0f, 1.0f, 0.0f, 0.0f));
-    m_Vertices.push_back(Vector4( 1.0f, 1.0f, 0.0f, 0.0f));
+    m_pMesh     = Engine::loadResource<AMaterialGL>(".embedded/DefaultMesh.mtl");
+    m_pMeshInstance = m_pMesh->createInstance();
 
-    glGenVertexArrays(1, &m_VAO);
-
-    m_pSprite   = static_cast<ASpriteGL *>(Engine::objectCreate<Sprite>());
-    m_pSprite->setMaterial(Engine::loadResource<AMaterialGL>(".embedded/DefaultSprite.mtl"));
-
-    m_pDirect   = Engine::loadResource<AMaterialGL>(".embedded/VSM.mtl");
-    initLightMaterial(m_pDirect);
-
-    //loadLightMaterial(m_Point, "shaders/PointLight.frag");
-    //loadLightMaterial(m_Spot, "shaders/SpotLight.frag");
+    m_pSprite   = Engine::loadResource<AMaterialGL>(".embedded/DefaultSprite.mtl");
+    m_pSpriteInstance   = m_pSprite->createInstance();
 
     m_pBlur     = new ABlurGL(this);
     m_pAO       = new AAmbientOcclusionGL();
@@ -69,7 +57,7 @@ APipeline::APipeline(Engine *engine) :
     glGenFramebuffers(1, &m_DepthBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_DepthBuffer);
 
-#ifdef GL_ES_VERSION_2_0
+#if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
     uint32_t target = GL_DRAW_FRAMEBUFFER_APPLE;
 #else
     uint32_t target = GL_DRAW_FRAMEBUFFER;
@@ -102,7 +90,6 @@ void APipeline::draw(Scene &scene, uint32_t) {
         c   = camera->color();
     }
 
-    Profiler::statReset(VERTICES);
     Profiler::statReset(POLYGONS);
     Profiler::statReset(DRAWCALLS);
 
@@ -111,7 +98,7 @@ void APipeline::draw(Scene &scene, uint32_t) {
 
     analizeScene(scene, controller);
 
-    glClearColor(c.x, c.y, c.z, c.w);
+    glClearColor(c.x, c.y, c.z, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     //glDepthFunc(GL_EQUAL);
 
@@ -140,7 +127,7 @@ ACameraGL *APipeline::activeCamera() {
     return dynamic_cast<ACameraGL *>(m_pEngine->controller()->activeCamera());
 }
 
-void APipeline::cameraSet(ACameraGL &camera) {
+void APipeline::cameraSet(const Camera &camera) {
     glViewport(0, 0, m_Screen.x, m_Screen.y);
 
     Matrix4 view;
@@ -194,11 +181,6 @@ void APipeline::setShaderParams(uint32_t program) {
     }
 }
 
-/*!
-    Resizing current texture buffers.
-    @param[in]  width       New screen width.
-    @param[in]  height      New screen height.
-*/
 void APipeline::resize(int32_t width, int32_t height) {
     m_Screen    = Vector2(width, height);
     m_pAO->resize(width, height);
@@ -208,53 +190,106 @@ void APipeline::resize(int32_t width, int32_t height) {
     }
 }
 
-void APipeline::clearScreen(const ATextureGL &target) {
-    glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
-    glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
+void APipeline::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+    material    = (material) ? material : m_pMeshInstance;
+    if(mesh && material) {
+        loadMatrix(MATRIX_MODEL, model);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear     (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());
+        if(mat->bind(*this, layer, Material::Static)) {
+            auto it = m_vaoMap.find(mesh);
+            if(mesh->isModified() || it == m_vaoMap.end()) {
+                uploadMesh(mesh);
+                mesh->setModified(false);
+                it  = m_vaoMap.find(mesh);
+            }
 
-    glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
+            uint32_t lod    = 0;
+            uint8_t flags   = mesh->flags();
+            uint32_t id     = (*it).second[surface][lod];
+
+            glBindVertexArray(id);
+            // vertices
+            glEnableVertexAttribArray(0);
+            if(flags & Mesh::ATTRIBUTE_UV0) {
+                glEnableVertexAttribArray(1);
+            }
+            //// uv1
+            //glEnableVertexAttribArray(2);
+            //// uv2
+            //glEnableVertexAttribArray(3);
+            //// uv3
+            //glEnableVertexAttribArray(4);
+            if(flags & Mesh::ATTRIBUTE_NORMALS) {
+                glEnableVertexAttribArray(5);
+            }
+            if(flags & Mesh::ATTRIBUTE_TANGENTS) {
+                glEnableVertexAttribArray(6);
+            }
+            //// colors
+            //glEnableVertexAttribArray(5);
+            //// indices
+            //glEnableVertexAttribArray(8);
+            //// weights
+            //glEnableVertexAttribArray(9);
+
+            Mesh::Modes mode    = mesh->mode(surface);
+            if(mode > Mesh::MODE_LINES) {
+                uint32_t count  = mesh->vertexCount(surface, lod);
+                glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, count);
+            } else {
+                uint32_t count  = mesh->indexCount(surface, lod);
+                glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES,
+                               count, GL_UNSIGNED_INT, 0);
+
+                PROFILER_STAT(POLYGONS, count / 3);
+            }
+
+            PROFILER_STAT(DRAWCALLS, 1);
+
+            // vertices
+            glDisableVertexAttribArray(0);
+            // uv0
+            glDisableVertexAttribArray(1);
+            // uv1
+            glDisableVertexAttribArray(2);
+            // uv2
+            glDisableVertexAttribArray(3);
+            // uv3
+            glDisableVertexAttribArray(4);
+            // normals
+            glDisableVertexAttribArray(5);
+            // tangents
+            glDisableVertexAttribArray(6);
+            // colors
+            glDisableVertexAttribArray(7);
+            // indices
+            glDisableVertexAttribArray(8);
+            // weights
+            glDisableVertexAttribArray(9);
+
+            glBindVertexArray(0);
+
+            mat->unbind(layer);
+        }
+    }
 }
 
-void APipeline::drawQuad() {
-    //glBindVertexArray(m_VAO);
-    // Vertex pos attribute
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, &m_Vertices[0]);
-
-    // UV Coords attribute
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, &m_Coords[0]);
-
-    PROFILER_STAT(VERTICES,     4);
-    PROFILER_STAT(POLYGONS,     2);
-    PROFILER_STAT(DRAWCALLS,    1);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-
-    //glBindVertexArray(0);
-}
-
-void APipeline::drawTexturedQuad(const ATextureGL &texture) {
-    glActiveTexture (GL_TEXTURE0);
-    texture.bind();
-
-    drawQuad();
-
-    glActiveTexture (GL_TEXTURE0);
-    texture.unbind();
+void APipeline::drawQuad(const Matrix4 &model, uint8_t layer, MaterialInstance *material, const Texture *texture) {
+    Material *m = (material) ? material->material() : m_pSprite;
+    const Texture *t    = m->texture(OVERRIDE);
+    if(texture) {
+        m->overrideTexture(OVERRIDE, texture);
+    }
+    drawMesh(model, m_pPlane, 0, layer, (material) ? material : m_pSpriteInstance);
+    m->overrideTexture(OVERRIDE, t);
 }
 
 void APipeline::drawScreen(const ATextureGL &source, const ATextureGL &target) {
     glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
     glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
 
-    drawTexturedQuad(source);
+    //drawTexturedQuad(source);
 
     glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
 }
@@ -271,11 +306,9 @@ void APipeline::drawComponents(AObject &object, uint8_t layer) {
                 if(!actor->isEnable()) {
                     continue;
                 }
-                setTransform(actor->transform());
             }
             drawComponents(*child, layer);
             if(actor) {
-                resetTransform();
                 resetColor();
             }
         }
@@ -284,7 +317,7 @@ void APipeline::drawComponents(AObject &object, uint8_t layer) {
 
 void APipeline::updateShadows(AObject &object) {
     for(auto &it : object.getChildren()) {
-        ALightSourceGL *light = dynamic_cast<ALightSourceGL *>(it);
+        ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
         if(light) {
             light->shadowsUpdate(*this);
         } else {
@@ -295,7 +328,7 @@ void APipeline::updateShadows(AObject &object) {
 
 void APipeline::updateLights(AObject &object, uint8_t layer) {
     for(auto &it : object.getChildren()) {
-        ALightSourceGL *light = dynamic_cast<ALightSourceGL *>(it);
+        ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
         if(light) {
             light->draw(*this, layer);
         } else {
@@ -314,39 +347,12 @@ Vector4 APipeline::idCode(uint32_t id) {
     return Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f);
 }
 
-void APipeline::setTransform(const Matrix4 &mat) {
-    m_MatrixStack.push(m_Model);
-
-    loadMatrix(MATRIX_MODEL, m_Model * mat);
-}
-
-void APipeline::resetTransform() {
-    loadMatrix(MATRIX_MODEL, m_MatrixStack.top());
-    m_MatrixStack.pop();
-}
-
-void APipeline::setPos(const Vector3 &pos, Matrix4 &m) {
-    Matrix4 t;
-    t.translate(pos);
-    m  *= t;
-}
-
-void APipeline::setScl(const Vector3 &scl, Matrix4 &m) {
-    Matrix4 s;
-    s.scale(scl);
-    m  *= s;
-}
-
 void APipeline::makeOrtho() {
     m_Projection    = Matrix4();
-    m_Projection.ortho(0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f);
+    m_Projection.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
     m_View          = Matrix4();
 
     m_ModelView     = modelView();
-}
-
-Scene *APipeline::scene() {
-    return m_pScene;
 }
 
 void APipeline::loadMatrix(matrix_types type, const Matrix4 &m) {
@@ -370,37 +376,7 @@ void APipeline::loadMatrix(matrix_types type, const Matrix4 &m) {
 }
 
 void APipeline::initLightMaterial(AMaterialGL *material) {
-    if(material && material->bind(*this, IDrawObjectGL::DEFAULT, AMaterialGL::Static)) {
-        uint32_t program    = material->getProgram(AMaterialGL::Static);
 
-        int location;
-        location    = glGetUniformLocation(program, "layer0");
-        if(location > -1) {
-            glUniform1i(location, 0);
-        }
-        location    = glGetUniformLocation(program, "layer1");
-        if(location > -1) {
-            glUniform1i(location, 1);
-        }
-        location    = glGetUniformLocation(program, "layer2");
-        if(location > -1) {
-            glUniform1i(location, 2);
-        }
-        location    = glGetUniformLocation(program, "layer3");
-        if(location > -1) {
-            glUniform1i(location, 3);
-        }
-        location    = glGetUniformLocation(program, "depthMap");
-        if(location > -1) {
-            glUniform1i(location, 4);
-        }
-        location    = glGetUniformLocation(program, "shadowMap");
-        if(location > -1) {
-            glUniform1i(location, 5);
-        }
-
-        material->unbind(IDrawObjectGL::DEFAULT);
-    }
 }
 
 void APipeline::analizeScene(AObject &object, IController *controller) {
@@ -411,7 +387,7 @@ void APipeline::analizeScene(AObject &object, IController *controller) {
 
     cameraReset();
 
-    drawComponents(object, IDrawObjectGL::RAYCAST);
+    drawComponents(object, IRenderSystem::RAYCAST);
 
     Vector2 position;
     if(controller) {
@@ -442,5 +418,75 @@ void APipeline::analizeScene(AObject &object, IController *controller) {
         l.push_back(result);
     }
     controller->setSelectedObjects(l);
+}
+
+void APipeline::uploadMesh(Mesh *mesh) {
+    if(mesh) {
+        clearMesh(mesh);
+
+        AMeshGL *m  = static_cast<AMeshGL *>(mesh);
+        m->createVbo();
+
+        AMeshGL::BufferVector m_vaoVector;
+        for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
+            uint32_t lods   = mesh->lodsCount(s);
+            Mesh::IndexVector vao   = Mesh::IndexVector(lods);
+
+            uint8_t flags   = mesh->flags();
+
+            glGenVertexArrays(lods, &vao[0]);
+            for(uint32_t lod = 0; lod < lods; lod++) {
+                glBindVertexArray(vao[lod]);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->m_triangles[s][lod]);
+                // vertices
+                glBindBuffer(GL_ARRAY_BUFFER, m->m_vertices[s][lod]);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+                if(flags & Mesh::ATTRIBUTE_UV0) {
+                    glBindBuffer(GL_ARRAY_BUFFER, m->m_uv0[s][lod]);
+                    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+                }
+                //// uv1
+                //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+                //// uv2
+                //glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+                //// uv3
+                //glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, 0);
+                if(flags & Mesh::ATTRIBUTE_NORMALS) {
+                    glBindBuffer(GL_ARRAY_BUFFER, m->m_normals[s][lod]);
+                    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                }
+                if(flags & Mesh::ATTRIBUTE_TANGENTS) {
+                    glBindBuffer(GL_ARRAY_BUFFER, m->m_tangents[s][lod]);
+                    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                }
+                //// colors
+                //glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                //// indices
+                //glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                //// weights
+                //glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+                glBindVertexArray(0);
+            }
+            m_vaoVector.push_back(vao);
+        }
+        m_vaoMap[mesh]  = m_vaoVector;
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void APipeline::clearMesh(const Mesh *mesh) {
+    if(mesh) {
+        auto it = m_vaoMap.find(mesh);
+        if(it != m_vaoMap.end()) {
+            for(uint32_t s = 0; s < (*it).second.size(); s++) {
+                glDeleteVertexArrays((*it).second[s].size(), &(*it).second[s][0]);
+            }
+            m_vaoMap.erase(it);
+        }
+    }
 }
 

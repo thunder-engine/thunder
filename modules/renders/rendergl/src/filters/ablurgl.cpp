@@ -19,7 +19,7 @@ ABlurGL::ABlurGL(APipeline *pipeline) {
 }
 
 void ABlurGL::draw(ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points) {
-    if(m_pBlurMaterial && m_pBlurMaterial->bind(*m_pPipeline, IDrawObjectGL::UI, AMaterialGL::Static)) {
+    if(m_pBlurMaterial && m_pBlurMaterial->bind(*m_pPipeline, IRenderSystem::UI, AMaterialGL::Static)) {
         if(u_Steps > -1) {
             glUniform1i(u_Steps, steps);
         }
@@ -41,6 +41,6 @@ void ABlurGL::draw(ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vec
 
             glDisable   ( GL_BLEND );
         }
-        m_pBlurMaterial->unbind(IDrawObjectGL::UI);
+        m_pBlurMaterial->unbind(IRenderSystem::UI);
     }
 }

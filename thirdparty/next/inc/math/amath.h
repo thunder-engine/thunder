@@ -36,6 +36,11 @@
 
 #include "math/ray.h"
 
+#include <vector>
+typedef std::vector<Vector2>    Vector2Vector;
+typedef std::vector<Vector3>    Vector3Vector;
+typedef std::vector<Vector4>    Vector4Vector;
+
 extern "C" {
     namespace amath {
         NEXT_LIBRARY_EXPORT int gausianKernel(areal radius, areal *samples, uint8_t maxSamples);

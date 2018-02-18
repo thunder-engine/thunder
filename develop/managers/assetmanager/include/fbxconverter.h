@@ -5,8 +5,19 @@
 
 #include "baseconvertersettings.h"
 
-class Mesh;
+#include "resources/mesh.h"
+
 class IFile;
+
+class MeshSerial : public Mesh {
+public:
+
+    AVariantMap                 saveUserData                () const;
+
+protected:
+    friend class FBXConverter;
+
+};
 
 class FBXConverter : public IConverter {
 public:

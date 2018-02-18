@@ -61,8 +61,6 @@ SchemeEditor::SchemeEditor(QWidget *parent) :
     m_pAction       = new QWidgetAction(m_pCreateMenu);
     m_pAction->setDefaultWidget(m_pBrowser);
     m_pCreateMenu->addAction(m_pAction);
-
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(on_customContextMenuRequested(const QPoint &)));
 }
 
 void SchemeEditor::init(const QStringList &groups) {
@@ -264,6 +262,8 @@ void SchemeEditor::mouseReleaseEvent(QMouseEvent *pe) {
         if(!m_bCameraMove) {
             x   = pe->pos().x();
             y   = pe->pos().y();
+
+            on_customContextMenuRequested(pe->pos());
         }
     }
     GraphWidget::mouseReleaseEvent(pe);

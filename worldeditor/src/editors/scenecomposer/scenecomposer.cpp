@@ -29,6 +29,7 @@
 
 #include "managers/undomanager/undomanager.h"
 #include "managers/pluginmanager/plugindialog.h"
+#include "managers/configmanager/configdialog.h"
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -459,4 +460,9 @@ void SceneComposer::parseLogs(const QString &log) {
             Log(Log::INF) << qPrintable(it);
         }
     }
+}
+
+void SceneComposer::on_actionOptions_triggered() {
+    ConfigDialog dlg;
+    dlg.exec();
 }

@@ -316,11 +316,25 @@
     </property>
     <addaction name="actionSave_Layout"/>
     <addaction name="actionResore_Layout"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
     <addaction name="actionPlugin_Manager"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionOptions"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuTools"/>
    <addaction name="menuWindow"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="action_New">
    <property name="text">
@@ -482,7 +496,7 @@
   </action>
   <action name="actionPlugin_Manager">
    <property name="text">
-    <string>Plugin Manager...</string>
+    <string>About Plugins...</string>
    </property>
    <property name="toolTip">
     <string>Plugin Manager</string>
@@ -501,6 +515,16 @@
   <action name="actionBuild_Project">
    <property name="text">
     <string>Build Project</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About ThunderEngine...</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options...</string>
    </property>
   </action>
  </widget>

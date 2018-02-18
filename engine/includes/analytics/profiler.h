@@ -8,7 +8,7 @@
 #include "timer.h"
 
 #ifdef PROFILING_ENABLED
-    #define PROFILER_MARKER Profiler MARK(__FUNCTION__);
+    #define PROFILER_MARKER; Profiler MARK(__FUNCTION__);
 
     #define PROFILER_STAT(x, y) Profiler::statAdd(x, y);
 #else

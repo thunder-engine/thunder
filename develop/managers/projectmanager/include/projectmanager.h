@@ -9,6 +9,7 @@
 
 #include <assetmanager.h>
 
+#include <QDebug>
 class ProjectManager : public QObject, public ASingleton<ProjectManager> {
     Q_OBJECT
 
@@ -48,6 +49,10 @@ public:
 
     QString                     myProjectsPath              () const { return m_MyProjectsPath.absoluteFilePath(); }
 
+    QString                     qbsPath                     () const { return m_QBSPath.absoluteFilePath(); }
+
+    void                        setQbsPath                  (const QString &path);
+
 public slots:
     void                        loadSettings                ();
     void                        saveSettings                ();
@@ -77,6 +82,9 @@ private:
     QFileInfo                   m_ResourcePath;
 
     QFileInfo                   m_MyProjectsPath;
+
+    QFileInfo                   m_QBSPath;
+    QFileInfo                   m_QBSDefault;
 
 };
 

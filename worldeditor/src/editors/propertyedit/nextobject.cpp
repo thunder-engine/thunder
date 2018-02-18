@@ -256,7 +256,7 @@ void NextObject::buildObject(AObject *object, const QString &path) {
         if(data.userType() == AMetaType::type<MaterialArray>()) {
             MaterialArray array = data.value<MaterialArray>();
             for(uint32_t i = 0; i < array.size(); i++) {
-                AVariant v = AVariant::fromValue(array[i]);
+                AVariant v = AVariant::fromValue(array[i]->material());
                 setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
             }
         } else {
@@ -289,7 +289,8 @@ bool NextObject::event(QEvent *e) {
                     if(id < array.size()) {
                         Material *m     = aVariant(value, AMetaType::type<Material *>()).value<Material *>();
                         if(m) {
-                            array[id]   = m;
+                            delete []array[id];
+                            array[id]   = m->createInstance();
                         }
                     }
                     target  = AVariant::fromValue(array);

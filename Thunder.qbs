@@ -6,9 +6,9 @@ Project {
     property string COMPANY_NAME: "FrostSpear"
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
-    property string SDK_VERSION: "1.0"
+    property string SDK_VERSION: "2.0"
     property string LAUNCHER_VERSION: "1.0"
-    property string COPYRIGHT_YEAR: "2017"
+    property string COPYRIGHT_YEAR: "2018"
     property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
     property string PLATFORM: {

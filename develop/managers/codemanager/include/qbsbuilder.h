@@ -3,14 +3,22 @@
 
 #include "ibuilder.h"
 
+class QProcess;
+
 class QbsBuilder : public IBuilder {
     Q_OBJECT
 public:
     QbsBuilder                      ();
 
-    virtual void                    generateProject     (const QStringList &code);
+    void                            generateProject     (const QStringList &code);
 
-    virtual bool                    buildProject        ();
+    bool                            buildProject        ();
+
+    QString                         builderVersion      ();
+
+    void                            builderInit         ();
+
+    QString                         builderToolchains   ();
 
 protected slots:
     void                            readOutput          ();
@@ -22,6 +30,7 @@ protected:
 
     void                            parseLogs           (const QString &log);
 
+    QProcess                       *m_pProcess;
 };
 
 #endif // QBSBUILDER_H

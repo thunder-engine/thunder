@@ -1,0 +1,30 @@
+{
+    "Blend": 2,
+    "Links": [
+        {
+            "RItem": "Emissive",
+            "Receiver": 0,
+            "SItem": "",
+            "Sender": 1
+        }
+    ],
+    "Model": 0,
+    "Nodes": [
+        {
+            "Type": "ConstVector3",
+            "Values": {
+                "Value": [
+                    67,
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "X": -157,
+            "Y": -1
+        }
+    ],
+    "Side": false,
+    "Type": 0
+}

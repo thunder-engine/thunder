@@ -9,7 +9,7 @@
 ABloomGL::ABloomGL() {
     reset("shaders/Downsample.frag");
 
-#ifdef GL_ES_VERSION_2_0
+#if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
         uint32_t format  = GL_R11F_G11F_B10F_APPLE;
 #else
         uint32_t format  = GL_R11F_G11F_B10F;
@@ -30,7 +30,7 @@ ABloomGL::ABloomGL() {
 }
 
 ATextureGL *ABloomGL::draw(ATextureGL &source, APipeline &pipeline) {
-    if(m_pMaterial && m_pMaterial->bind(pipeline, IDrawObjectGL::UI, AMaterialGL::Static)) {
+    if(m_pMaterial && m_pMaterial->bind(pipeline, IRenderSystem::UI, AMaterialGL::Static)) {
         pipeline.makeOrtho();
 
         uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);

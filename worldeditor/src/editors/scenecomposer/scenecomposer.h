@@ -76,6 +76,12 @@ private slots:
 
     void                    onUndoRedoUpdated                           ();
 
+    void                    readOutput                                  ();
+
+    void                    readError                                   ();
+
+    void                    parseLogs                                   (const QString &log);
+
     void                    on_action_New_triggered                     ();
     void                    on_action_Open_triggered                    ();
     void                    on_actionSave_triggered                     ();
@@ -99,11 +105,7 @@ private slots:
     void                    on_actionResore_Layout_triggered            ();
     void                    on_actionBuild_Project_triggered            ();
 
-    void                    readOutput                                  ();
-
-    void                    readError                                   ();
-
-    void                    parseLogs                                   (const QString &log);
+    void                    on_actionOptions_triggered                  ();
 };
 
 #endif // WORLDBUILDER_H

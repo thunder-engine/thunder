@@ -38,7 +38,7 @@ public:
 
     void                        loadUserData            (const AVariantMap &data);
 
-    AVariantMap       saveUserData            () const;
+    AVariantMap                 saveUserData            () const;
 
 protected:
     Mesh                       *m_pMesh;

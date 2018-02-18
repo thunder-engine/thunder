@@ -35,7 +35,8 @@ Project {
             "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
             "SDK_VERSION=\"" + SDK_VERSION + "\"",
             "LAUNCHER_VERSION=\"" + LAUNCHER_VERSION + "\"",
-            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR
+            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR,
+            "BUILDER"
         ];
 
         return result;

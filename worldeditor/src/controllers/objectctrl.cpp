@@ -157,7 +157,7 @@ void ObjectCtrl::drawHelpers(AObject &object) {
                 array<Vector3, 4> n = camera->frustumCorners(camera->nearPlane());
                 array<Vector3, 4> f = camera->frustumCorners(camera->farPlane());
 
-                Vector3List points;
+                Vector3Vector points;
                 points.push_back(n[0]);
                 points.push_back(n[1]);
                 points.push_back(n[2]);

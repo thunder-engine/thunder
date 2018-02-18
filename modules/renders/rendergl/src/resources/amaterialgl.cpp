@@ -135,19 +135,19 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
-    if((layer & IDrawObjectGL::DEFAULT || layer & IDrawObjectGL::SHADOWCAST || layer & IDrawObjectGL::RAYCAST) &&
+    if((layer & IRenderSystem::DEFAULT || layer & IRenderSystem::SHADOWCAST || layer & IRenderSystem::RAYCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return false;
     }
-    if(layer & IDrawObjectGL::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & IRenderSystem::TRANSLUCENT && b == Material::Opaque) {
         return false;
     }
 
     switch(layer) {
-        case IDrawObjectGL::RAYCAST:    {
+        case IRenderSystem::RAYCAST:    {
             type   |= AMaterialGL::Simple;
         } break;
-        case IDrawObjectGL::SHADOWCAST: {
+        case IRenderSystem::SHADOWCAST: {
             type   |= AMaterialGL::Depth;
         } break;
         default: break;
@@ -180,7 +180,7 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
         }
     }
 
-    if(!isDoubleSided()) {
+    if(!isDoubleSided() && (!layer & IRenderSystem::RAYCAST)) {
         glEnable    ( GL_CULL_FACE );
         glCullFace  ( GL_BACK );
     }
@@ -189,7 +189,7 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     if(blend != Material::Opaque) {
         glEnable    ( GL_BLEND );
         if(blend == Material::Translucent) {
-            glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+            glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         } else {
             glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
         }
@@ -199,7 +199,7 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     glEnable(GL_TEXTURE_2D);
     uint8_t t   = 0;
     for(auto it : m_Textures) {
-        ATextureGL *texture = static_cast<ATextureGL *>(it.second);
+        const ATextureGL *texture   = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + t);
         if(texture) {
             texture->bind();
@@ -213,7 +213,7 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
 void AMaterialGL::unbind(uint8_t layer) {
     uint8_t t   = 0;
     for(auto it : m_Textures) {
-        ATextureGL *texture = static_cast<ATextureGL *>(it.second);
+        const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + t);
         if(texture) {
             texture->unbind();

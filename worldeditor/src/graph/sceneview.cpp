@@ -57,6 +57,8 @@ void SceneView::addButton(OverlayButton *button) {
 }
 
 void SceneView::initializeGL() {
+    QOpenGLContext *c   = context();
+
     m_pScene    = Engine::objectCreate<Scene>("Scene");
     PluginModel::instance()->addScene(m_pScene);
 
@@ -92,7 +94,7 @@ void SceneView::paintGL() {
     Handles::endDraw();
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
     drawOverlay(painter);
     //painter.setRenderHint(QPainter::HighQualityAntialiasing, false);
 }

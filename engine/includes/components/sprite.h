@@ -19,7 +19,7 @@ public:
 
     void                        update              ();
 
-    Vector2                   center              () const;
+    Vector2                     center              () const;
 
     void                        setCenter           (const Vector2 &value);
 
@@ -33,12 +33,12 @@ public:
 
     void                        loadUserData        (const AVariantMap &data);
 
-    AVariantMap       saveUserData        () const;
+    AVariantMap                 saveUserData        () const;
 
 protected:
-    Vector2                   m_Center;
+    Vector2                     m_Center;
 
-    Material                   *m_Material;
+    MaterialInstance           *m_Material;
 
     Texture                    *m_Texture;
 

@@ -19,7 +19,7 @@ public:
     virtual ATextureGL         *draw                (ATextureGL &source, APipeline &pipeline) {
         if(m_pMaterial) {
             pipeline.makeOrtho();
-            m_pMaterial->bind(pipeline, IDrawObjectGL::UI, AMaterialGL::Static);
+            m_pMaterial->bind(pipeline, IRenderSystem::UI, AMaterialGL::Static);
             pipeline.drawScreen(source, m_ResultTexture);
             return &m_ResultTexture;
         }
@@ -33,7 +33,7 @@ public:
     virtual void                reset               (const string &path) {
         m_pMaterial = Engine::loadResource<AMaterialGL>(path);
 
-#ifdef GL_ES_VERSION_2_0
+#if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
         uint32_t format  = GL_R11F_G11F_B10F_APPLE;
 #else
         uint32_t format  = GL_R11F_G11F_B10F;

@@ -8,7 +8,6 @@
 #include <projectmanager.h>
 
 IBuilder::IBuilder() {
-
     m_pMgr      = ProjectManager::instance();
 
     m_Suffix    = ".dll";
@@ -46,7 +45,6 @@ void IBuilder::copyTemplate(const QString &src, const QString &dst, StringMap &v
 }
 
 void IBuilder::setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs) {
-    m_SdkPath       = ProjectManager::instance()->sdkPath();
     m_IncludePath   = incp;
     m_LibPath       = libp;
     m_Libs          = libs;

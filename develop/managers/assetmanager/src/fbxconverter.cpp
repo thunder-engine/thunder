@@ -11,18 +11,109 @@
 #include "baseconvertersettings.h"
 #include "projectmanager.h"
 
+#define HEADER  "Header"
+#define DATA    "Data"
+
 Matrix3 gInvert;
 
 struct index_data {
-    int             vIndex;
-    int             uIndex;
-    int             xIndex;
+    uint32_t        vIndex;
+    uint32_t        uIndex;
+    uint32_t        xIndex;
 
     bool operator== (const index_data &right) {
-        return (vIndex == right.vIndex) && (uIndex == right.uIndex) && (xIndex == right.xIndex);
+        return (vIndex == right.vIndex) && (uIndex == right.uIndex);
     }
 };
 typedef vector<index_data>  indexVector;
+
+AVariantMap MeshSerial::saveUserData() const {
+    AVariantMap result;
+
+    AVariantList header;
+    header.push_back(m_Flags);
+    result[HEADER]  = header;
+
+    AVariantList surfaces;
+    for(auto s : m_Surfaces) {
+        AVariantList surface;
+        surface.push_back(s.collision);
+        surface.push_back(s.mode);
+
+        for(auto l : s.lods) {
+            AVariantList lod;
+            string path = Engine::reference(l.material);
+            // Push material
+            lod.push_back(path);
+            uint32_t vCount = l.vertices.size();
+            lod.push_back((int)vCount);
+            lod.push_back((int)l.indices.size() / 3);
+
+            { // Required field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l.vertices[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            { // Required field
+                AByteArray buffer;
+                buffer.resize(sizeof(uint32_t) * l.indices.size());
+                memcpy(&buffer[0], &l.indices[0], sizeof(uint32_t) * l.indices.size());
+                lod.push_back(buffer);
+            }
+            if(m_Flags & ATTRIBUTE_COLOR) { // Optional field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector4) * vCount);
+                memcpy(&buffer[0], &l.colors[0], sizeof(Vector4) * vCount);
+                lod.push_back(buffer);
+            }
+            if(m_Flags & ATTRIBUTE_UV0) { // Optional field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l.uv0[0], sizeof(Vector2) * vCount);
+                lod.push_back(buffer);
+            }
+            if(m_Flags & ATTRIBUTE_UV1) { // Optional field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l.uv1[0], sizeof(Vector2) * vCount);
+                lod.push_back(buffer);
+            }
+
+            if(m_Flags & ATTRIBUTE_NORMALS) { // Optional field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l.normals[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            if(m_Flags & ATTRIBUTE_TANGENTS) { // Optional field
+                AByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l.tangents[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            if(m_Flags & ATTRIBUTE_ANIMATED) { // Optional field
+                {
+                    AByteArray buffer;
+                    buffer.resize(sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l.weights[0], sizeof(Vector4) * vCount);
+                    lod.push_back(buffer);
+                }
+                {
+                    AByteArray buffer;
+                    buffer.resize(sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l.bones[0], sizeof(Vector4) * vCount);
+                    lod.push_back(buffer);
+                }
+            }
+            surface.push_back(lod);
+        }
+        surfaces.push_back(surface);
+    }
+    result[DATA]    = surfaces;
+
+    return result;
+}
 
 FBXConverter::FBXConverter() {
     gInvert[0]    =-1.0;
@@ -52,7 +143,7 @@ IConverter::ContentTypes FBXConverter::type() const {
 }
 
 uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
-    Mesh mesh;
+    MeshSerial mesh;
 
     importFBX(settings->source(), mesh);
 
@@ -142,40 +233,21 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
             Mesh::Surface s;
             Mesh::Lod l;
 
+            mesh.setFlags(0);
+
             s.collision	= false;
-            // Transform marix
-            FbxMatrix mTransform   = node->EvaluateGlobalTransform();
-            /// \todo: Is it needed?
-            Matrix3 transform;
-            transform[0]    = mTransform.mData[0].mData[0];
-            transform[1]    = mTransform.mData[0].mData[1];
-            transform[2]    = mTransform.mData[0].mData[2];
-
-            transform[3]    = mTransform.mData[1].mData[0];
-            transform[4]    = mTransform.mData[1].mData[1];
-            transform[5]    = mTransform.mData[1].mData[2];
-
-            transform[6]    = mTransform.mData[2].mData[0];
-            transform[7]    = mTransform.mData[2].mData[1];
-            transform[8]    = mTransform.mData[2].mData[2];
-            transform.orthonormalize();
+            s.mode      = Mesh::MODE_TRIANGLES;
 
             indexVector indices;
 
             // Polygons
             int tCount			= m->GetPolygonCount();
-            l.indices			= Mesh::IndexVector(tCount * 3);
-            uint32_t index      = 0;
+            l.indices			= vector<uint32_t>(tCount * 3);
             // Export
-            FbxVector4 *verts;
-            FbxGeometryElementUV *uv;
-            FbxGeometryElementNormal *normals;
-            FbxGeometryElementTangent *tangents;
-
-            verts		= m->GetControlPoints();
-            uv			= m->GetElementUV();
-            normals		= m->GetElementNormal();
-            tangents	= m->GetElementTangent();
+            FbxVector4 *verts                   = m->GetControlPoints();
+            FbxGeometryElementUV *uv            = m->GetElementUV();
+            FbxGeometryElementNormal *normals   = m->GetElementNormal();
+            FbxGeometryElementTangent *tangents = m->GetElementTangent();
 
             for(int triangle = 0; triangle < tCount; triangle++) {
                 for(int k = 0; k < 3; k++) {
@@ -185,29 +257,30 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
                     data.uIndex	= m->GetTextureUVIndex(triangle, k);
                     data.xIndex = m->GetPolygonVertexIndex(triangle) + k;
 
-                    bool create	= true;
                     int count	= indices.size();
 
-                    for(int vert = 0; vert < count; vert++) {
-                        index_data *it	= &indices[vert];
+                    bool create	= true;
+                    for(int i = 0; i < count; i++) {
+                        index_data *it	= &indices[i];
                         if(*it == data) {
                             // Vertex already exist. Just add it into indices list
-                            l.indices[triangle * 3 + k]	= vert;
+                            l.indices[triangle * 3 + k]   = i;
                             create	= false;
                             break;
                         }
                     }
 
-                    // Add vertex to array
+                    // Add vertex to arrays
                     if(create) {
-                        Mesh::Vertex vert;
-                        FbxVector4 v;
+                        indices.push_back(data);
 
+                        FbxVector4 v;
                         v           = verts[data.vIndex];
-                        vert.xyz    = transform * Vector4(v[0], v[1], v[2], 1.0);
+                        l.vertices.push_back(gInvert * Vector3(v[0], v[1], v[2]));
+                        l.indices[triangle * 3 + k] = count;
 
                         if(normals) {
-                            bool mode   = (normals->GetMappingMode() == FbxLayerElement::eByControlPoint);
+                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_NORMALS);
                             switch (normals->GetReferenceMode()) {
                                 case FbxLayerElement::eDirect: {
                                     v   = normals->GetDirectArray().GetAt(data.xIndex);
@@ -221,12 +294,13 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
                                 } break;
 
                             }
-                            vert.n  = Vector3(v[0], v[1], v[2]);
+                            l.normals.push_back(gInvert * Vector3(v[0], v[1], v[2]));
                         } else {
                             Log(Log::WRN) << "No normals exist";
                         }
 
                         if(tangents) {
+                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_TANGENTS);
                             switch (tangents->GetReferenceMode()) {
                                 case FbxLayerElement::eDirect: {
                                     v       = tangents->GetDirectArray().GetAt(data.xIndex);
@@ -240,29 +314,17 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
                                 } break;
 
                             }
-                            vert.t  = Vector3(v[0], v[1], v[2]);
+                            l.tangents.push_back(gInvert * Vector3(v[0], v[1], v[2]));
                         } else {
                             Log(Log::WRN) << "No tangents exist";
                         }
 
                         if(uv) {
+                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_UV0);
                             v       = uv->GetDirectArray().GetAt(data.uIndex);
-                            vert.uv0= Vector2(v[0], v[1]);
+                            l.uv0.push_back(Vector2(v[0], v[1]));
                         }
-
-                        if(!mesh.isAnimated()) {
-                            vert.n  = transform * vert.n;
-                            vert.t  = transform * vert.t;
-                        }
-
-                        vert.xyz    = Vector4(gInvert * Vector3(vert.xyz.v), vert.xyz.w);
-                        vert.n      = gInvert * vert.n;
-                        vert.t      = gInvert * vert.t;
-
-                        l.indices[triangle * 3 + k]		= count;
-
-                        indices.push_back(data);
-
+/*
                         if(mesh.isAnimated()) {
                             int w	= 0;
                             for(int b = 0; b < bones.size(); b++) {
@@ -279,17 +341,13 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
                                     }
                                 }
                             }
-                            vert.xyz[3]	= (float)w;
                         }
-
-                        l.vertices.push_back(vert);
-
+*/
                     } // end Creation
-                    index++;
                 }
             }
             s.lods.push_back(l);
-            mesh.m_Surfaces.push_back(s);
+            mesh.addSurface(s);
         }
     }
 /*

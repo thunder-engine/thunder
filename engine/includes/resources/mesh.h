@@ -15,28 +15,42 @@
 class NEXT_LIBRARY_EXPORT Mesh : public AObject {
     A_REGISTER(Mesh, AObject, Resources)
 public:
-    /*! \struct Vertex */
-    struct Vertex {
-        Vector4               xyz;
-
-        Vector3               t;
-        Vector3               n;
-
-        Vector2               uv0;
-        Vector2               uv1;
-
-        Vector4               index;
-        Vector4               weight;
+    enum Attributes {
+        ATTRIBUTE_COLOR         = (1<<0),
+        ATTRIBUTE_UV0           = (1<<1),
+        ATTRIBUTE_UV1           = (1<<2),
+        ATTRIBUTE_NORMALS       = (1<<3),
+        ATTRIBUTE_TANGENTS      = (1<<4),
+        ATTRIBUTE_ANIMATED      = (1<<5),
     };
 
-    typedef vector<Vertex>      VertexVector;
+    enum Modes {
+        MODE_TRIANGLES          = 0,
+        MODE_LINES,
+        MODE_TRIANGLE_STRIP,
+        MODE_LINE_STRIP
+    };
+
     typedef vector<uint32_t>    IndexVector;
 
     struct Lod {
-        /// Vertices array
-        VertexVector            vertices;
-        /// Indices array
         IndexVector             indices;
+
+        Vector2Vector           uv0;
+
+        Vector2Vector           uv1;
+
+        Vector3Vector           normals;
+
+        Vector3Vector           tangents;
+
+        Vector3Vector           vertices;
+
+        Vector4Vector           colors;
+
+        Vector4Vector           weights;
+
+        Vector4Vector           bones;
 
         Material               *material;
     };
@@ -48,26 +62,52 @@ public:
         /// Special tag indicating that a given surface in calculation of collision
         bool                    collision;
 
-        OBBox                   obb;
+        Modes                   mode;
+
+        AABBox                  aabb;
     };
     typedef deque<Surface>      SurfaceQueue;
-
-public:
-    SurfaceQueue                m_Surfaces;
 
 public:
     Mesh                        ();
     virtual ~Mesh               ();
 
-    void                        loadUserData        (const AVariantMap &data);
-    AVariantMap                 saveUserData        () const;
+    Material                   *material            (uint32_t surface, uint32_t lod) const;
 
-    bool                        isAnimated          () const;
-    void                        setAnimated         (bool animated);
+    Vector3Vector               vertices            (uint32_t surface, uint32_t lod) const;
+
+    IndexVector                 indices             (uint32_t surface, uint32_t lod) const;
+
+    uint32_t                    surfacesCount       () const;
+
+    uint32_t                    lodsCount           (uint32_t surface) const;
+
+    uint32_t                    vertexCount         (uint32_t surface, uint32_t lod) const;
+
+    uint32_t                    indexCount          (uint32_t surface, uint32_t lod) const;
+
+    AABBox                      bound               (uint32_t surface) const;
+
+    Modes                       mode                (uint32_t surface) const;
+
+    uint8_t                     flags               () const;
+
+    void                        setFlags            (uint8_t flags);
+
+    void                        addSurface          (const Surface &surface);
+
+    bool                        isModified          () const;
+
+    void                        setModified         (bool flag);
 
 protected:
-    bool                        m_Animated;
+    void                        loadUserData        (const AVariantMap &data);
 
+    bool                        m_Modified;
+
+    uint8_t                     m_Flags;
+
+    SurfaceQueue                m_Surfaces;
 };
 
 #endif // MESH_H

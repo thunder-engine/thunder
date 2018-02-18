@@ -140,59 +140,66 @@ Product {
     }
 
     Group {
-        name: "Glew Binary"
-        condition: qbs.targetOS.contains("windows")
+        name: "Shaders Engine"
         files: [
-            "../thirdparty/glew/bin/glew32" + suffix
+            install.RESOURCE_ROOT + "/engine/shaders/*"
         ]
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "Shaders"
-        files: [
-            install.RESOURCE_ROOT + "/shaders/*"
-        ]
-        qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/shaders"
+        qbs.installDir: install.SDK_PATH + "/resources/engine/shaders"
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Materials"
+        name: "Materials Engine"
         files: [
-            install.RESOURCE_ROOT + "/materials/*"
+            install.RESOURCE_ROOT + "/engine/materials/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/materials"
+        qbs.installDir: install.SDK_PATH + "/resources/engine/materials"
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Meshes"
+        name: "Materials Editor"
         files: [
-            install.RESOURCE_ROOT + "/meshes/*"
+            install.RESOURCE_ROOT + "/editor/materials/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/meshes"
+        qbs.installDir: install.SDK_PATH + "/resources/editor/materials"
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Templates"
+        name: "Meshes Engine"
         files: [
-            install.RESOURCE_ROOT + "/templates/*"
+            install.RESOURCE_ROOT + "/engine/meshes/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/templates"
+        qbs.installDir: install.SDK_PATH + "/resources/engine/meshes"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Meshes Editor"
+        files: [
+            install.RESOURCE_ROOT + "/editor/meshes/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/editor/meshes"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Templates Editor"
+        files: [
+            install.RESOURCE_ROOT + "/editor/templates/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/editor/templates"
         qbs.installPrefix: install.PREFIX
     }
     Group {
         name: "Textures"
         files: [
-            install.RESOURCE_ROOT + "/textures/*"
+            install.RESOURCE_ROOT + "/engine/textures/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/textures"
+        qbs.installDir: install.SDK_PATH + "/resources/engine/textures"
         qbs.installPrefix: install.PREFIX
     }
     Group {
@@ -215,6 +222,16 @@ Product {
         excludeFiles: [
             "adapters/*.h",
             "patterns/*.h"
+        ]
+        qbs.install: true
+        qbs.installDir: install.INC_PATH + "/engine"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "RenderGL includes"
+        prefix: "../modules/renders/rendergl/includes/"
+        files: [
+            "**/rendergl.h"
         ]
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/engine"

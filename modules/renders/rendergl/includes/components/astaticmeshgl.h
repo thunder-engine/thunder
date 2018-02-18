@@ -14,8 +14,6 @@ class AStaticMeshGL : public StaticMesh, public IDrawObjectGL {
     A_NOPROPERTIES()
 
 public:
-    AStaticMeshGL               ();
-
     void                        draw                (APipeline &pipeline, int8_t layer);
 
 };

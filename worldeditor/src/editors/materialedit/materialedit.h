@@ -10,7 +10,7 @@
 using namespace std;
 
 class Engine;
-class LightSource;
+class DirectLight;
 
 class SceneView;
 class ShaderBuilder;

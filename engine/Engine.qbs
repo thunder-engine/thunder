@@ -7,7 +7,6 @@ Project {
         "src/analytics/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-
         "includes/*.h",
         "includes/analytics/*.h",
         "includes/adapters/*.h",

@@ -7,7 +7,7 @@
 
 class Engine;
 class Actor;
-class LightSource;
+class DirectLight;
 
 class SceneView;
 class NextObject;

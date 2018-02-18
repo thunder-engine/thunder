@@ -9,12 +9,23 @@
 class AMeshGL : public Mesh {
     A_OVERRIDE(AMeshGL, Mesh, Resources)
 public:
-    typedef vector<uint32_t *>  BufferVector;
+    typedef vector<IndexVector> BufferVector;
 
-    BufferVector                vbuffer;
-    BufferVector                ibuffer;
+    BufferVector                m_triangles;
+    BufferVector                m_uv0;
+    BufferVector                m_uv1;
+    BufferVector                m_uv2;
+    BufferVector                m_uv3;
+    BufferVector                m_normals;
+    BufferVector                m_tangents;
+    BufferVector                m_vertices;
+    BufferVector                m_colors;
+    BufferVector                m_weights;
+    BufferVector                m_indices;
 
-    BufferVector                abuffer;
+    void                        createVbo           ();
+
+    void                        deleteVbo           ();
 
 public:
     AMeshGL                     ();
@@ -22,19 +33,6 @@ public:
     ~AMeshGL                    ();
 
     void                        loadUserData        (const AVariantMap &data);
-
-    bool                        isVBO               ()  { return mVBO; }
-
-protected:
-    void                        clear               ();
-
-    bool                        mVBO;
-
 };
 
 #endif // MESHGL_H
-
-//void                        attach              (mesh_data *ready_mesh, joint_data *ready_array, mesh_data *attach_mesh, joint_data *attach_array, uint8_t proxy);
-//void                        detach              ();
-//void                        cpu_calculation     (mesh_instance_data *instance, joint_data *pArray);
-//void                        load_animation      (char *filename, char *name, mesh_data *pMesh, uint8_t index, unsigned short type, Vector3 *aabb);

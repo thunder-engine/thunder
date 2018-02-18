@@ -8,7 +8,7 @@
 #include <engine.h>
 #include <components/actor.h>
 #include <components/staticmesh.h>
-#include <components/lightsource.h>
+#include <components/directlight.h>
 #include <components/camera.h>
 
 #include "common.h"
@@ -152,7 +152,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
         if(mesh) {
             AVariantMap map   = m_pBuilder->data().toMap();
             for(auto it : mesh->materials()) {
-                it->loadUserData(map);
+                it->material()->loadUserData(map);
             }
         }
         setModified(update);
@@ -163,7 +163,11 @@ void MaterialEdit::changeMesh(const string &path) {
     StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
-        mesh->setMaterial(0, m_pMaterial);
+        if(m_pMaterial) {
+            mesh->setMaterial(0, m_pMaterial);
+        }
+        float bottom;
+        glWidget->controller()->setFocusOn(m_pMesh, bottom);
     }
 }
 
@@ -177,7 +181,7 @@ void MaterialEdit::onGLInit() {
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->setRotation(rot);
-    m_pLight->addComponent<LightSource>();
+    m_pLight->addComponent<DirectLight>();
 
     CameraCtrl *controller  = glWidget->controller();
     Camera *camera  = controller->activeCamera();
