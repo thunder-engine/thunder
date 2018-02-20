@@ -12,7 +12,7 @@ Product {
     property string suffix: {
         if(qbs.targetOS.contains("windows")) {
             return ".dll";
-        } else if(qbs.targetOS.contains("osx")) {
+        } else if(qbs.targetOS.contains("darwin")) {
             return ".dylib";
         }
         return ".so";
@@ -72,7 +72,7 @@ Product {
             return list;
         }
         qbs.install: install.desktop
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle + (qbs.targetOS.contains("osx") ? "../Frameworks/" : "")
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
         qbs.installPrefix: install.PREFIX
 
         excludeFiles: [
