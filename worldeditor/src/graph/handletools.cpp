@@ -1,11 +1,14 @@
 #include "handletools.h"
 
-#include <qgl.h>
-
 #include <components/camera.h>
+#include <resources/mesh.h>
 
-HandleTools::MatrixStack HandleTools::m_sProjection;
-HandleTools::MatrixStack HandleTools::m_sModelView;
+#include <float.h>
+
+#define SIDES 36
+
+Matrix4 HandleTools::s_View;
+Matrix4 HandleTools::s_Projection;
 
 int HandleTools::m_sWidth   = 0;
 int HandleTools::m_sHeight  = 0;
@@ -33,34 +36,50 @@ HandleTools::HandleTools() {
 
 }
 
-float HandleTools::distanceToPoint(const Vector3 &position) {
+Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, float start, float angle) {
+    Vector3Vector result;
+    int sides       = SIDES / 360.0 * angle;
+    float theta     = angle / float(sides - 1) * DEG2RAD;
+    float tfactor   = tanf(theta);
+    float rfactor   = cosf(theta);
+
+    float x = size * cosf(start * DEG2RAD);
+    float y = size * sinf(start * DEG2RAD);
+
+    for(int i = 0; i < sides; i++) {
+        result.push_back(rotation * Vector3(x, 0, y));
+
+        float tx = -y;
+        float ty =  x;
+
+        x += tx * tfactor;
+        y += ty * tfactor;
+
+        x *= rfactor;
+        y *= rfactor;
+    }
+    return result;
+}
+
+float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &position) {
+    Matrix4 mv  = s_View * matrix;
     int viewport[4] = {0, 0, m_sWidth, m_sHeight};
     Vector3 ssp;
-    Camera::project(position, m_sModelView.top(), m_sProjection.top(), viewport, ssp);
+    Camera::project(position, mv, s_Projection, viewport, ssp);
     ssp.y    = m_sHeight - ssp.y;
 
     return (Handles::m_sMouse - ssp).length();
 }
 
-float HandleTools::distanceToLine(const Vector3 &a, const Vector3 &b) {
-    Vector3 ssa, ssb;
-    int viewport[4] = {0, 0, m_sWidth, m_sHeight};
-    Camera::project(a, m_sModelView.top(), m_sProjection.top(), viewport, ssa);
-    Camera::project(b, m_sModelView.top(), m_sProjection.top(), viewport, ssb);
-    ssa.y    = m_sHeight - ssa.y;
-    ssb.y    = m_sHeight - ssb.y;
-
-    return distanceToSegment(ssa, ssb, Handles::m_sMouse);
-}
-
-float HandleTools::distanceToPath(const Vector3List &points) {
+float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points) {
+    Matrix4 mv  = s_View * matrix;
     int viewport[4] = {0, 0, m_sWidth, m_sHeight};
     float result    = FLT_MAX;
     bool first      = true;
     Vector3 back;
     for(auto it : points) {
         Vector3 ss;
-        Camera::project(it, m_sModelView.top(), m_sProjection.top(), viewport, ss);
+        Camera::project(it, mv, s_Projection, viewport, ss);
         ss.y    = m_sHeight - ss.y;
         if(!first) {
             result  = std::min(distanceToSegment(back, ss, Handles::m_sMouse), result);
@@ -72,30 +91,35 @@ float HandleTools::distanceToPath(const Vector3List &points) {
     return result;
 }
 
-void HandleTools::pushCamera(const Camera &camera) {
-    Matrix4 mv, p;
-    glGetFloatv(GL_MODELVIEW_MATRIX, mv.mat);
-    glGetFloatv(GL_PROJECTION_MATRIX, p.mat);
+float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh, uint32_t surface) {
+    Mesh::IndexVector indices   = mesh->indices(surface, 0);
+    Vector3Vector vertices      = mesh->vertices(surface, 0);
+    if(indices.empty()) {
+        return distanceToPath(matrix, vertices);
+    }
+
+    Matrix4 mv  = s_View * matrix;
+
+    float result    = FLT_MAX;
+    if((vertices.size() % 2) == 0) {
+        int viewport[4] = {0, 0, m_sWidth, m_sHeight};
+        for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
+            Vector3 a;
+            Camera::project(vertices[indices[i]], mv, s_Projection, viewport, a);
+            a.y     = m_sHeight - a.y;
+            Vector3 b;
+            Camera::project(vertices[indices[i+1]], mv, s_Projection, viewport, b);
+            b.y     = m_sHeight - b.y;
+            result  = std::min(distanceToSegment(a, b, Handles::m_sMouse), result);
+        }
+    }
+
+    return result;
+}
+
+void HandleTools::setCamera(const Camera &camera) {
+    camera.matrices(s_View, s_Projection);
 
     m_sWidth    = camera.width();
     m_sHeight   = camera.height();
-
-    m_sProjection.push(p);
-    m_sModelView.push(mv);
-/*
-    Matrix4 v, p;
-    if(camera) {
-        camera->matrices(v, p);
-    }
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(p.mat);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(v.mat);
-*/
-}
-
-void HandleTools::popCamera() {
-    m_sProjection.pop();
-    m_sModelView.pop();
 }

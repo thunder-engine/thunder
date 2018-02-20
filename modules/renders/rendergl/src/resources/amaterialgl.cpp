@@ -122,17 +122,6 @@ void AMaterialGL::loadUserData(const AVariantMap &data) {
             m_Programs[Oriented | it.first]     = buildProgram(it.second, "#define TYPE_AXISALIGNED 1");
         }
     }
-
-    for(auto program : m_Programs) {
-        uint8_t t   = 0;
-        for(auto it : m_Textures) {
-            int location    = glGetUniformLocation(program.second, it.first.c_str());
-            if(location > -1) {
-                glProgramUniform1i(program.second, location, t);
-            }
-            t++;
-        }
-    }
 }
 
 uint32_t AMaterialGL::getProgram(uint16_t type) const {
@@ -146,19 +135,19 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
-    if((layer & IDrawObjectGL::DEFAULT || layer & IDrawObjectGL::SHADOWCAST || layer & IDrawObjectGL::RAYCAST) &&
+    if((layer & IRenderSystem::DEFAULT || layer & IRenderSystem::SHADOWCAST || layer & IRenderSystem::RAYCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return false;
     }
-    if(layer & IDrawObjectGL::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & IRenderSystem::TRANSLUCENT && b == Material::Opaque) {
         return false;
     }
 
     switch(layer) {
-        case IDrawObjectGL::RAYCAST:    {
+        case IRenderSystem::RAYCAST:    {
             type   |= AMaterialGL::Simple;
         } break;
-        case IDrawObjectGL::SHADOWCAST: {
+        case IRenderSystem::SHADOWCAST: {
             type   |= AMaterialGL::Depth;
         } break;
         default: break;
@@ -168,12 +157,14 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
         return false;
     }
 
+    glUseProgram(program);
+
     pipeline.setShaderParams(program);
 
     int location    = -1;
     location        = glGetUniformLocation(program, "_time");
     if(location > -1) {
-        glProgramUniform1f(program, location, Timer::time());
+        glUniform1f(location, Timer::time());
     }
     // Push uniform values to shader
     for(const auto &it : mUniforms) {
@@ -181,15 +172,15 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
         if(location > -1) {
             const AVariant &data= it.second;
             switch(data.type()) {
-                case AMetaType::VECTOR2:    glProgramUniform2fv(program, location, 1, data.toVector2().v); break;
-                case AMetaType::VECTOR3:    glProgramUniform3fv(program, location, 1, data.toVector3().v); break;
-                case AMetaType::VECTOR4:    glProgramUniform4fv(program, location, 1, data.toVector4().v); break;
-                default:                    glProgramUniform1f (program, location, data.toDouble()); break;
+                case AMetaType::VECTOR2:    glUniform2fv(location, 1, data.toVector2().v); break;
+                case AMetaType::VECTOR3:    glUniform3fv(location, 1, data.toVector3().v); break;
+                case AMetaType::VECTOR4:    glUniform4fv(location, 1, data.toVector4().v); break;
+                default:                    glUniform1f (location, data.toDouble()); break;
             }
         }
     }
 
-    if(!isDoubleSided()) {
+    if(!isDoubleSided() && (!layer & IRenderSystem::RAYCAST)) {
         glEnable    ( GL_CULL_FACE );
         glCullFace  ( GL_BACK );
     }
@@ -198,7 +189,7 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     if(blend != Material::Opaque) {
         glEnable    ( GL_BLEND );
         if(blend == Material::Translucent) {
-            glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+            glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         } else {
             glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
         }
@@ -206,14 +197,9 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     }
 
     glEnable(GL_TEXTURE_2D);
-    uint8_t t   = 0;//(layer & IDrawObjectGL::DEFAULT) ? 0 : 1;
+    uint8_t t   = 0;
     for(auto it : m_Textures) {
-        int location    = glGetUniformLocation(program, it.first.c_str());
-        if(location > -1) {
-            glProgramUniform1i(program, location, t);
-        }
-
-        ATextureGL *texture = static_cast<ATextureGL *>(it.second);
+        const ATextureGL *texture   = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + t);
         if(texture) {
             texture->bind();
@@ -221,15 +207,13 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
         t++;
     }
 
-    glUseProgram(program);
-
     return true;
 }
 
 void AMaterialGL::unbind(uint8_t layer) {
-    uint8_t t   = 0;//(layer & IDrawObjectGL::DEFAULT) ? 0 : 1;
+    uint8_t t   = 0;
     for(auto it : m_Textures) {
-        ATextureGL *texture = static_cast<ATextureGL *>(it.second);
+        const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + t);
         if(texture) {
             texture->unbind();
@@ -253,8 +237,12 @@ void AMaterialGL::clear() {
     Material::clear();
 
     m_Pragmas.clear();
-    addPragma("version", "#version 450");
-
+#ifdef GL_ES_VERSION_2_0
+    addPragma("version", "");
+#else
+    addPragma("version", "#version 410 core");
+    //addPragma("version", "#version 300 es");
+#endif
     for(auto it : m_Programs) {
         glDeleteProgram(it.second);
     }
@@ -262,10 +250,12 @@ void AMaterialGL::clear() {
 }
 
 uint32_t AMaterialGL::buildShader(uint8_t type, const string &src, const string &path) {
-    uint32_t shader;
+    uint32_t shader = 0;
     switch(type) {
         case Vertex:    shader  = glCreateShader(GL_VERTEX_SHADER);   break;
+#ifndef GL_ES_VERSION_2_0
         case Geometry:  shader  = glCreateShader(GL_GEOMETRY_SHADER); break;
+#endif
         default:        shader  = glCreateShader(GL_FRAGMENT_SHADER); break;
     }
     const char *data    = src.c_str();
@@ -298,14 +288,16 @@ uint32_t AMaterialGL::buildProgram(uint32_t fragment, const string &define) {
             glDetachShader  (program, fragment);
             glDetachShader  (program, vertex);
 
+            glUseProgram(program);
             uint8_t t   = 0;
             for(auto it : m_Textures) {
                 int location    = glGetUniformLocation(program, it.first.c_str());
                 if(location > -1) {
-                    glProgramUniform1i(program, location, (t + 1));
+                    glUniform1i(location, t);
                 }
                 t++;
             }
+            glUseProgram(0);
             return program;
         }
     }

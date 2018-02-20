@@ -19,10 +19,13 @@ Mesh *StaticMesh::mesh() const {
 void StaticMesh::setMesh(Mesh *mesh) {
     m_pMesh    = mesh;
     if(m_pMesh) {
+        for(auto it : m_Materials) {
+            delete []it;
+        }
         m_Materials.clear();
-        for(auto &surface : mesh->m_Surfaces) {
-            for(auto &lod : surface.lods) {
-                m_Materials.push_back(lod.material);
+        for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
+            for(uint32_t l = 0; l < mesh->lodsCount(s); l++) {
+                m_Materials.push_back(mesh->material(s, l)->createInstance());
             }
         }
     }
@@ -38,14 +41,17 @@ void StaticMesh::setMaterials(const MaterialArray &mat) {
 
 Material *StaticMesh::material(uint32_t index) const {
     if(index < m_Materials.size()) {
-        return m_Materials[index];
+        return m_Materials[index]->material();
     }
     return nullptr;
 }
 
 void StaticMesh::setMaterial(uint32_t index, Material *mat) {
     if(index < m_Materials.size()) {
-        m_Materials[index]  = mat;
+        if(m_Materials[index]) {
+            delete m_Materials[index];
+        }
+        m_Materials[index]  = mat->createInstance();
     }
 }
 
@@ -85,8 +91,8 @@ AVariantMap StaticMesh::saveUserData() const {
     }
     {
         AVariantList list;
-        for(Material *it : materials()) {
-            list.push_back(Engine::reference(it));
+        for(MaterialInstance *it : materials()) {
+            list.push_back(Engine::reference(it->material()));
         }
         result[MATERAILS]   = list;
     }

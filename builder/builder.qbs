@@ -35,7 +35,8 @@ Project {
             "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
             "SDK_VERSION=\"" + SDK_VERSION + "\"",
             "LAUNCHER_VERSION=\"" + LAUNCHER_VERSION + "\"",
-            "YEAR=" + YEAR
+            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR,
+            "BUILDER"
         ];
 
         return result;
@@ -43,6 +44,7 @@ Project {
 
     QtApplication {
         name: builder.BUILDER_NAME
+        condition: builder.desktop
         files: builder.srcFiles
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
@@ -51,7 +53,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
 
-        //builtByDefault: false
+        bundle.isBundle: false
 
         cpp.defines: builder.defines
         cpp.includePaths: builder.incPaths
@@ -59,15 +61,18 @@ Project {
             "../thirdparty/fbx/lib"
         ]
 
+        property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.dynamicLibraries: [
-            "fbxsdk-2012.1"
+            prefix + "fbxsdk"
         ]
+        cpp.cxxLanguageVersion: "c++14"
+        cpp.rpaths: "@executable_path/../Frameworks/"
 
         Group {
             name: "Install " + builder.BUILDER_NAME
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: builder.BIN_PATH
+            qbs.installDir: builder.BIN_PATH + "/" + builder.bundle
             qbs.installPrefix: builder.PREFIX
         }
     }

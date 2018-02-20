@@ -1,4 +1,5 @@
 import qbs
+import qbs.FileInfo
 
 Project {
     id: glfw
@@ -29,7 +30,20 @@ Project {
             sources.push("src/win32_joystick.h"),
             sources.push("src/wgl_context.h"),
             sources.push("src/egl_context.h")
+        } else if(qbs.targetOS.contains("osx")) {
+            sources.push("src/cocoa_init.m"),
+            sources.push("src/cocoa_joystick.m"),
+            sources.push("src/cocoa_monitor.m"),
+            sources.push("src/cocoa_time.c"),
+            sources.push("src/posix_tls.c"),
+            sources.push("src/cocoa_window.m"),
+            sources.push("src/nsgl_context.m"),
+
+            sources.push("src/cocoa_platform.h"),
+            sources.push("src/cocoa_joystick.h"),
+            sources.push("src/nsgl_context.h")
         }
+
         return sources;
     }
 
@@ -39,31 +53,55 @@ Project {
 
     DynamicLibrary {
         name: "glfw-editor"
+        condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
-        cpp.defines: ["_GLFW_WIN32", "_GLFW_BUILD_DLL"]
-
+        cpp.defines: ["_GLFW_BUILD_DLL"]
         cpp.includePaths: glfw.incPaths
         cpp.libraryPaths: [ ]
-        cpp.dynamicLibraries: [ "gdi32", "User32", "Shell32" ]
+        cpp.sonamePrefix: "@executable_path"
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.defines: outer.concat(["_GLFW_WIN32"])
+            cpp.dynamicLibraries: [ "gdi32", "User32", "Shell32" ]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
+            cpp.defines: outer.concat(["_GLFW_COCOA"])
+            cpp.weakFrameworks: ["CoreFoundation", "AppKit", "CoreVideo", "IOKit"]
+        }
 
         Group {
             name: "Install Dynamic glfw"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: glfw.BIN_PATH
+            qbs.installDir: glfw.BIN_PATH + "/" + glfw.bundle
             qbs.installPrefix: glfw.PREFIX
         }
     }
 
     StaticLibrary {
         name: "glfw"
+        condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
+        bundle.isBundle: false
 
-        cpp.defines: ["_GLFW_WIN32"]
         cpp.includePaths: glfw.incPaths
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.defines: ["_GLFW_WIN32"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
+            cpp.defines: outer.concat(["_GLFW_COCOA"])
+        }
 
         Group {
             name: "Install Static glfw"

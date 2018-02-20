@@ -27,29 +27,29 @@ class Vector4;
 
 class NEXT_LIBRARY_EXPORT Matrix3 {
 public:
-    Matrix3                   ();
+    Matrix3                     ();
 
     bool                        operator==                  (const Matrix3 &matrix) const;
     bool                        operator!=                  (const Matrix3 &matrix) const;
 
-    const Vector3              operator*                   (const Vector3 &vector) const;
-    const Vector4              operator*                   (const Vector4 &vector) const;
-    const Matrix3              operator*                   (areal factor) const;
-    const Matrix3              operator*                   (const Matrix3 &matrix) const;
-    const Matrix3              operator+                   (const Matrix3 &matrix) const;
-    const Matrix3              operator-                   (const Matrix3 &matrix) const;
+    const Vector3               operator*                   (const Vector3 &vector) const;
+    const Vector4               operator*                   (const Vector4 &vector) const;
+    const Matrix3               operator*                   (areal factor) const;
+    const Matrix3               operator*                   (const Matrix3 &matrix) const;
+    const Matrix3               operator+                   (const Matrix3 &matrix) const;
+    const Matrix3               operator-                   (const Matrix3 &matrix) const;
 	
-    Matrix3                   &operator*=                  (areal factor);
-    Matrix3                   &operator*=                  (const Matrix3 &matrix);
-    Matrix3                   &operator+=                  (const Matrix3 &matrix);
-    Matrix3                   &operator-=                  (const Matrix3 &matrix);
+    Matrix3                    &operator*=                  (areal factor);
+    Matrix3                    &operator*=                  (const Matrix3 &matrix);
+    Matrix3                    &operator+=                  (const Matrix3 &matrix);
+    Matrix3                    &operator-=                  (const Matrix3 &matrix);
 	
     areal                      &operator[]                  (int i);
-    const areal                 operator[]                  (int i) const;
+    areal                       operator[]                  (int i) const;
 	
-    Matrix3                    transpose                   () const;
+    Matrix3                     transpose                   () const;
     areal                       determinant                 () const;
-    Matrix3                    inverse                     () const;
+    Matrix3                     inverse                     () const;
 	
     void                        zero                        ();
     void                        identity                    ();
@@ -59,7 +59,7 @@ public:
 
     void                        orthonormalize              ();
 
-    Vector3                    euler                       ();
+    Vector3                     euler                       ();
 
     areal                       mat[9];
 };

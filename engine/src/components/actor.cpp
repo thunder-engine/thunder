@@ -13,22 +13,14 @@ Actor::Actor() :
 }
 
 Matrix4 Actor::transform() {
-    Matrix4 result;
-    Matrix4 m;
-    m.translate(m_Position);
-    result *= m;
-    result *= Matrix4(m_Rotation.toMatrix());
-    m.scale(m_Scale);
-    result *= m;
-
-    return result;
+    return Matrix4(m_Position, m_Rotation, m_Scale);
 }
 
 Vector3 Actor::position() const {
     return m_Position;
 }
 
-Quaternion  Actor::rotation() const {
+Quaternion Actor::rotation() const {
     return m_Rotation;
 }
 

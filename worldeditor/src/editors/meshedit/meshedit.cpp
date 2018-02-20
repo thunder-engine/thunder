@@ -8,7 +8,7 @@
 
 #include <components/actor.h>
 #include <components/staticmesh.h>
-#include <components/lightsource.h>
+#include <components/directlight.h>
 #include <components/camera.h>
 
 #include "common.h"
@@ -19,8 +19,8 @@
 
 #include "fbxconverter.h"
 
-MeshEdit::MeshEdit(Engine *engine, QGLWidget *share) :
-        QMainWindow(NULL),
+MeshEdit::MeshEdit(Engine *engine) :
+        QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::MeshEdit),
         m_pMesh(nullptr),
@@ -31,7 +31,7 @@ MeshEdit::MeshEdit(Engine *engine, QGLWidget *share) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this, share);
+    glWidget    = new SceneView(engine, this);
     glWidget->setController(new CameraCtrl(m_pEngine));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");
@@ -126,8 +126,9 @@ void MeshEdit::onGLInit() {
     Matrix3 mat;
     mat.rotate(Vector3(-45.0f, 45.0f, 0.0f));//162.0
     m_pLight->setRotation(mat);
-    m_pLight->addComponent<LightSource>()->setCastShadows(true);
-    //m_pLight->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
+    DirectLight *light  = m_pLight->addComponent<DirectLight>();
+    light->setCastShadows(false);
+    light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
     m_pGround   = Engine::objectCreate<Actor>("Ground", scene);
     m_pGround->setScale(Vector3(100.0f, 1.0f, 100.0f));

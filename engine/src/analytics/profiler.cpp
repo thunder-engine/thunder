@@ -7,12 +7,12 @@ typedef unordered_map<const char *, uint32_t>   StatsMap;
 static ThreadMap m_Threads;
 static StatsMap  m_Stats;
 
-__forceinline Profiler::Profiler(const char *name) {
+Profiler::Profiler(const char *name) {
     m_Current.name      = name;
     m_Current.started   = std::chrono::high_resolution_clock::now();
 }
 
-__forceinline Profiler::~Profiler() {
+Profiler::~Profiler() {
     m_Current.stoped    = std::chrono::high_resolution_clock::now();
     m_Threads[this_thread::get_id()].push_back(m_Current);
 }

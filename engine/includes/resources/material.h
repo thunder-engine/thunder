@@ -4,6 +4,24 @@
 #include "engine.h"
 #include "texture.h"
 
+class Material;
+
+class NEXT_LIBRARY_EXPORT MaterialInstance {
+public:
+    MaterialInstance            (Material *material);
+
+    Material                   *material            () const;
+
+    virtual void                setFloat            (const char *name, float value);
+    virtual void                setVector2          (const char *name, const Vector2 &value);
+    virtual void                setVector3          (const char *name, const Vector3 &value);
+    virtual void                setVector4          (const char *name, const Vector4 &value);
+
+    virtual void                setMatrix4          (const char *name, const Vector4 &value);
+protected:
+    Material                   *m_pMaterial;
+};
+
 class NEXT_LIBRARY_EXPORT Material : public AObject {
     A_REGISTER(Material, AObject, Resources)
 public:
@@ -52,15 +70,17 @@ public:
 
     uint8_t                     surfaces                    () const;
 
-    bool                        overrideTexture             (const string &name, Texture *texture);
+    bool                        overrideTexture             (const string &name, const Texture *texture);
 
-    Texture                    *texture                     (const string &name);
+    const Texture              *texture                     (const string &name);
+
+    virtual MaterialInstance   *createInstance              ();
 
 protected:
     virtual void                clear                       ();
 
 protected:
-    typedef map<string, Texture *>  TextureMap;
+    typedef map<string, const Texture *>    TextureMap;
 
     BlendType                   m_BlendMode;
 
@@ -77,7 +97,7 @@ protected:
     uint8_t                     m_Surfaces;
 
 };
-typedef vector<Material*>       MaterialArray;
+typedef vector<MaterialInstance*>   MaterialArray;
 
 #endif // SHADER
 

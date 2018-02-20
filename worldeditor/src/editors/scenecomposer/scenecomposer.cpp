@@ -29,6 +29,7 @@
 
 #include "managers/undomanager/undomanager.h"
 #include "managers/pluginmanager/plugindialog.h"
+#include "managers/configmanager/configdialog.h"
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -58,13 +59,14 @@ Q_DECLARE_METATYPE(Actor *)
 
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
+        m_pImportQueue(new ImportQueue()),
         ui(new Ui::SceneComposer) {
 
-    qRegisterMetaType<Vector2>    ("Vector2");
-    qRegisterMetaType<Vector3>    ("Vector3");
+    qRegisterMetaType<Vector2>  ("Vector2");
+    qRegisterMetaType<Vector3>  ("Vector3");
 
-    qRegisterMetaType<uint8_t>      ("uint8_t");
-    qRegisterMetaType<uint32_t>     ("uint32_t");
+    qRegisterMetaType<uint8_t>  ("uint8_t");
+    qRegisterMetaType<uint32_t> ("uint32_t");
 
     resetModified();
 
@@ -138,13 +140,13 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
 
     connect(ctl, SIGNAL(mapUpdated()), ui->hierarchy, SLOT(onHierarchyUpdated()));
-    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList &)), this, SLOT(onObjectSelected(AObject::ObjectList &)));
-    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList &)), ui->hierarchy, SLOT(onSelected(AObject::ObjectList &)));
+    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList)), this, SLOT(onObjectSelected(AObject::ObjectList)));
+    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList)), ui->hierarchy, SLOT(onSelected(AObject::ObjectList)));
     connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onModified()));
     connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onModified()));
-    connect(ui->hierarchy, SIGNAL(selected(AObject::ObjectList &)), ctl, SLOT(onSelectActor(AObject::ObjectList &)));
-    connect(ui->hierarchy, SIGNAL(removed(AObject::ObjectList &)), ctl, SLOT(onRemoveActor(AObject::ObjectList&)));
-    connect(ui->hierarchy, SIGNAL(parented(AObject::ObjectList &, AObject::ObjectList &)), ctl, SLOT(onParentActor(AObject::ObjectList&,AObject::ObjectList&)));
+    connect(ui->hierarchy, SIGNAL(selected(AObject::ObjectList)), ctl, SLOT(onSelectActor(AObject::ObjectList)));
+    connect(ui->hierarchy, SIGNAL(removed(AObject::ObjectList)), ctl, SLOT(onRemoveActor(AObject::ObjectList)));
+    connect(ui->hierarchy, SIGNAL(parented(AObject::ObjectList, AObject::ObjectList)), ctl, SLOT(onParentActor(AObject::ObjectList,AObject::ObjectList)));
     connect(ui->hierarchy, SIGNAL(focused(AObject*)), ctl, SLOT(onFocusActor(AObject*)));
 
     connect(UndoManager::instance(), SIGNAL(updated()), this, SLOT(onUndoRedoUpdated()));
@@ -152,11 +154,10 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onModified()));
 
+    connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
+
     m_pProperties   = nullptr;
     m_pMap          = nullptr;
-
-    m_pImportQueue  = new ImportQueue();
-    connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
     on_actionEditor_Mode_triggered();
     on_actionResore_Layout_triggered();
@@ -177,7 +178,7 @@ void SceneComposer::timerEvent(QTimerEvent *event) {
     glWidget->update();
 }
 
-void SceneComposer::onObjectSelected(AObject::ObjectList &objects) {
+void SceneComposer::onObjectSelected(AObject::ObjectList objects) {
     if(m_pProperties) {
         delete m_pProperties;
         m_pProperties   = 0;
@@ -195,13 +196,13 @@ void SceneComposer::onObjectSelected(AObject::ObjectList &objects) {
 }
 
 void SceneComposer::onGLInit() {
-    m_pImportQueue->init(new IconRender(m_pEngine, glWidget->context()->contextHandle()));
+    m_pImportQueue->init(new IconRender(m_pEngine, glWidget->context()));
 
     AssetManager *asset = AssetManager::instance();
-    asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine, glWidget));
-    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(m_pEngine, glWidget));
-    asset->addEditor(IConverter::ContentMesh, new MeshEdit(m_pEngine, glWidget));
-    //asset->addEditor(IConverter::ContentEffect, new ParticleEdit(m_pEngine, glWidget));
+    asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine));
+    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(m_pEngine));
+    asset->addEditor(IConverter::ContentMesh, new MeshEdit(m_pEngine));
+    //asset->addEditor(IConverter::ContentEffect, new ParticleEdit(m_pEngine));
 
     ComponentModel::instance()->init(m_pEngine);
     ContentList::instance()->init(m_pEngine);
@@ -268,11 +269,11 @@ void SceneComposer::on_action_New_triggered() {
 void SceneComposer::on_action_Open_triggered() {
     checkSave();
 
-    QString dir     = ProjectManager::instance()->contentPath();
-    mPath           = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Map"),
-                                                    dir + "/maps",
-                                                    tr("Maps (*.map)") );
+    QString dir = ProjectManager::instance()->contentPath();
+    mPath       = QFileDialog::getOpenFileName(this,
+                                               tr("Open Map"),
+                                               dir + "/maps",
+                                               tr("Maps (*.map)") );
     if( !mPath.isEmpty() ) {
         QFile loadFile(mPath);
         if (!loadFile.open(QIODevice::ReadOnly)) {
@@ -353,7 +354,7 @@ void SceneComposer::on_actionGame_Mode_triggered() {
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {
-    QImage result   = glWidget->grabFrameBuffer();
+    QImage result   = glWidget->grabFramebuffer();
     result.save("SceneComposer-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
 }
 
@@ -459,4 +460,9 @@ void SceneComposer::parseLogs(const QString &log) {
             Log(Log::INF) << qPrintable(it);
         }
     }
+}
+
+void SceneComposer::on_actionOptions_triggered() {
+    ConfigDialog dlg;
+    dlg.exec();
 }

@@ -44,11 +44,11 @@ ADeferredShading::ADeferredShading(Engine *engine) :
     glFramebufferTexture2D  (GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
 
     // Summary pass buffer
-    glGenFramebuffers(1, &fb_s_id);
-    glBindFramebuffer(GL_FRAMEBUFFER, fb_s_id);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
+    glGenFramebuffers       (1, &fb_s_id);
+    glBindFramebuffer       (GL_FRAMEBUFFER, fb_s_id);
+    glFramebufferTexture2D  (GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer       (GL_FRAMEBUFFER, 0);
 
 }
 
@@ -66,21 +66,16 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     // Fill G buffer pass
     glBindFramebuffer   (GL_FRAMEBUFFER, fb_g_id);
 
-    glReadBuffer    ( GL_COLOR_ATTACHMENT0 );
-    glDrawBuffer    ( GL_COLOR_ATTACHMENT0 );
     glDrawBuffers   ( G_TARGETS, buffers );
     glClear         ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
     // Draw Opaque pass
-    drawComponents(scene, IDrawObjectGL::DEFAULT);
-
+    drawComponents(scene, IRenderSystem::DEFAULT);
     // Screen Space Ambient Occlusion effect
     ATextureGL *t   = &m_pGBuffer[G_EMISSIVE];//&(m_pAO->draw(m_pGBuffer[G_EMISSIVE], *this));
 
     glBindFramebuffer( GL_FRAMEBUFFER, fb_s_id );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pGBuffer[G_EMISSIVE].id(), 0 );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0 );
-
     // Light pass
     glActiveTexture (GL_TEXTURE0);
     m_pGBuffer[G_NORMALS].bind();
@@ -99,7 +94,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
 
     glDisable(GL_DEPTH_TEST);
 
-    updateLights(scene, IDrawObjectGL::LIGHT);
+    updateLights(scene, IRenderSystem::LIGHT);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -121,7 +116,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     cameraReset();
 
     // Draw Transparent pass
-    drawComponents(scene, IDrawObjectGL::TRANSLUCENT);
+    drawComponents(scene, IRenderSystem::TRANSLUCENT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -132,14 +127,10 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
         glBindFramebuffer(GL_FRAMEBUFFER, resource);
     }
 
-    m_pSprite->setTexture(postProcess(m_pGBuffer[G_EMISSIVE]));
-    m_pSprite->draw(*this, IDrawObjectGL::UI);
+    drawQuad(Matrix4(), IRenderSystem::UI, nullptr, postProcess(m_pGBuffer[G_EMISSIVE]));
 
     //glBlendFunc     (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //drawComponents(scene, IDrawObjectGL::UI);
-
-    glEnable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void ADeferredShading::resize(int32_t width, int32_t height) {

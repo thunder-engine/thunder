@@ -2,7 +2,7 @@
 
 #include <QProcess>
 #include <QDir>
-#include <QDebug>
+#include <QStandardPaths>
 
 #include <log.h>
 
@@ -29,29 +29,34 @@ QbsBuilder::QbsBuilder() :
         m_Artifact  = m_Project + "release/install-root/" + m_pMgr->projectName() + m_Suffix;
     }
 
+    m_pProcess  = new QProcess(this);
+    m_pProcess->setWorkingDirectory(m_Project);
+
+    connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
+    connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
+
+    connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
+
+    if(builderToolchains().isEmpty()) {
+        builderInit();
+    }
 }
 
 void QbsBuilder::generateProject(const QStringList &code) {
     StringMap values(m_Values);
 
-    values[gSdkPath]        = m_SdkPath;
+    values[gSdkPath]        = m_pMgr->sdkPath();
     values[gIncludePaths]   = formatList(m_IncludePath);
     values[gLibraryPaths]   = formatList(m_LibPath);
     values[gFilesList]      = formatList(code);
     values[gLibraries]      = formatList(m_Libs);
 
-    copyTemplate(m_pMgr->resourcePath() + "/templates/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
+    copyTemplate(m_pMgr->resourcePath() + "/editor/templates/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
 }
 
 bool QbsBuilder::buildProject() {
-    QProcess *qbs = new QProcess(this);
-
-    qbs->setWorkingDirectory(m_Project);
-
-    QString tools   = m_SdkPath + "/bin/tools";
-
     QStringList args;
-    args << "build" << "--products";
+    args << "build" << "--products";// << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
     QString mode    = "release";
     QString product = m_pMgr->projectName();
@@ -59,21 +64,51 @@ bool QbsBuilder::buildProject() {
         mode        = "debug";
         product    += gEditorSuffix;
     }
-
     args << product << mode;
 
-    qbs->start(tools + "/qbs/bin/qbs", args);
-    if(!qbs->waitForStarted()) {
-        qDebug() << qbs->errorString();
+    m_pProcess->start(m_pMgr->qbsPath(), args);
+    if(!m_pProcess->waitForStarted()) {
         return false;
     }
 
-    connect( qbs, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
-    connect( qbs, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
-
-    connect( qbs, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
-
     return true;
+}
+
+QString QbsBuilder::builderVersion() {
+    QStringList args;
+    args << "--version";
+
+    QProcess qbs(this);
+
+    qbs.setWorkingDirectory(m_Project);
+    qbs.start(m_pMgr->qbsPath(), args);
+    if(qbs.waitForStarted() && qbs.waitForFinished()) {
+        return qbs.readAll().simplified();
+    }
+    return QString();
+}
+
+void QbsBuilder::builderInit() {
+    QStringList args;
+    args << "setup-toolchains" << "--detect" << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QProcess qbs(this);
+    qbs.setWorkingDirectory(m_Project);
+    qbs.start(m_pMgr->qbsPath(), args);
+    if(qbs.waitForStarted()) {
+        qbs.waitForFinished();
+    }
+}
+
+QString QbsBuilder::builderToolchains() {
+    QStringList args;
+    args << "config" << "--list" << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QProcess qbs(this);
+    qbs.setWorkingDirectory(m_Project);
+    qbs.start(m_pMgr->qbsPath(), args);
+    if(qbs.waitForStarted() && qbs.waitForFinished()) {
+        return qbs.readAll();
+    }
+    return QString();
 }
 
 void QbsBuilder::readOutput() {

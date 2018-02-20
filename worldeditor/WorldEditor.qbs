@@ -9,7 +9,8 @@ Project {
         "../develop/**/*.cpp",
         "../develop/**/*.h",
         "res/icon.rc",
-        "res/WorldEditor.qrc"
+        "res/WorldEditor.qrc",
+        "res/app-Info.plist"
     ]
 
     property stringList incPaths: [
@@ -37,21 +38,28 @@ Project {
             "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
             "SDK_VERSION=\"" + SDK_VERSION + "\"",
             "LAUNCHER_VERSION=\"" + LAUNCHER_VERSION + "\"",
-            "YEAR=" + YEAR
+            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR
         ];
-
         return result;
     }
 
     QtGuiApplication {
         name: worldEditor.EDITOR_NAME
+        condition: worldEditor.desktop
         files: worldEditor.srcFiles
+
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "rendergl-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "opengl"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
+
+        property bool isBundle: qbs.targetOS.contains("osx") && bundle.isBundle
+        bundle.infoPlist: ({
+            "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR
+        })
+        bundle.identifierPrefix: "com.thunderengine"
 
         consoleApplication: false
 
@@ -60,18 +68,46 @@ Project {
         cpp.libraryPaths: [
             "../thirdparty/fbx/lib"
         ]
-
+        property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.dynamicLibraries: [
-            "fbxsdk-2012.1",
-            "opengl32",
-            "glu32"
+            prefix + "fbxsdk"
         ]
+        cpp.cxxLanguageVersion: "c++14"
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "opengl32",
+                "glu32"
+            ])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
+            cpp.rpaths: "@executable_path/../Frameworks/"
+            cpp.weakFrameworks: ["OpenGL"]
+        }
 
         Group {
             name: "Install " + worldEditor.EDITOR_NAME
-            fileTagsFilter: product.type
             qbs.install: true
             qbs.installDir: worldEditor.BIN_PATH
+            qbs.installPrefix: worldEditor.PREFIX
+
+            fileTagsFilter: isBundle ? ["bundle.content"] : ["application"]
+            qbs.installSourceBase: product.buildDirectory
+        }
+
+        Group {
+            name: "Icon"
+            qbs.install: qbs.targetOS.contains("osx")
+            files: [
+                "res/icons/thunder.icns",
+                "src/managers/configmanager/configdialog.cpp",
+                "src/managers/configmanager/configdialog.h",
+                "src/managers/configmanager/configdialog.ui",
+            ]
+            qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
             qbs.installPrefix: worldEditor.PREFIX
         }
     }

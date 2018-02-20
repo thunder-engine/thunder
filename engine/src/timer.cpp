@@ -14,7 +14,7 @@ void Timer::init(double fixed) {
 void Timer::update() {
     TimePoint current   = std::chrono::high_resolution_clock::now();
 
-    m_sDeltaTime    = (std::chrono::duration_cast<std::chrono::duration<double>>(current - m_sLastTime)).count();
+    m_sDeltaTime    = (std::chrono::duration_cast<std::chrono::duration<double> >(current - m_sLastTime)).count();
     m_sTime        += m_sDeltaTime;
     m_sLastTime     = current;
 }

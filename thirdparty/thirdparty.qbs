@@ -8,7 +8,9 @@ Project {
         "zlib/zlib.qbs",
         "physfs/physfs.qbs",
         "glfw/glfw.qbs",
-        "quazip/quazip.qbs"
+        "glfm/glfm.qbs",
+        "quazip/quazip.qbs",
+        "glad/glad.qbs"
     ]
 
 

@@ -9,10 +9,10 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(double, Fov, fov, setFov),
-        A_PROPERTY(double, Near, nearPlane, setNear),
-        A_PROPERTY(double, Far, farPlane, setFar),
-        A_PROPERTY(Color, Background_color, color, setColor)
+        A_PROPERTY(double, Fov, Camera::fov, Camera::setFov),
+        A_PROPERTY(double, Near, Camera::nearPlane, Camera::setNear),
+        A_PROPERTY(double, Far, Camera::farPlane, Camera::setFar),
+        A_PROPERTY(Color, Background_color, Camera::color, Camera::setColor)
     )
 
 public:
@@ -24,7 +24,7 @@ public:
 
     Camera                      ();
 
-    void                        matrices                (Matrix4 &v, Matrix4 &p);
+    void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
     static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ss);
     static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ws);

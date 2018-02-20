@@ -46,7 +46,7 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
         case Qt::ToolTipRole:
         case DirRole:  { return info.absolutePath(); }
         case Qt::DecorationRole: {
-            return QImage(":/Images/Logo.png");
+            return QImage(":/Images/icons/thunder.png").scaled(96, 96);
         }
         default: break;
     }

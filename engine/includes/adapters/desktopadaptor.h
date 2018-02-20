@@ -25,9 +25,9 @@ public:
 
     bool                        key                         (Input::KeyCode code);
 
-    Vector3                   mousePosition               ();
+    Vector3                     mousePosition               ();
 
-    Vector3                   mouseDelta                  ();
+    Vector3                     mouseDelta                  ();
 
     uint8_t                     mouseButtons                ();
 
@@ -41,9 +41,9 @@ public:
 
     uint16_t                    joystickButtons             (uint8_t index);
 
-    Vector4                   joystickThumbs              (uint8_t index);
+    Vector4                     joystickThumbs              (uint8_t index);
 
-    Vector2                   joystickTriggers            (uint8_t index);
+    Vector2                     joystickTriggers            (uint8_t index);
 
     void                       *pluginLoad                  (const char *name);
 
@@ -65,9 +65,9 @@ protected:
 
     uint8_t                     m_MouseButtons;
 
-    static Vector3            m_MouseDelta;
+    static Vector3              m_MouseDelta;
 
-    static Vector3            m_MousePosition;
+    static Vector3              m_MousePosition;
 
 };
 

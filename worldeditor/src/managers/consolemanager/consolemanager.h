@@ -9,6 +9,7 @@ namespace Ui {
 }
 
 class LogModel;
+class QMenu;
 
 class ConsoleManager : public QWidget {
     Q_OBJECT
@@ -22,16 +23,16 @@ public slots:
 private slots:
     void                        on_clearButton_clicked      ();
 
-    void                        on_infoButton_clicked       ();
+    void                        on_consoleOutput_customContextMenuRequested (const QPoint &pos);
 
-    void                        on_warningButton_clicked    ();
-
-    void                        on_errorButton_clicked      ();
+    void                        onCopy                      ();
 
 private:
     Ui::ConsoleManager         *ui;
 
     LogModel                   *m_pItems;
+
+    QMenu                      *m_pMenu;
 };
 
 #endif // CONSOLEMANAGER_H

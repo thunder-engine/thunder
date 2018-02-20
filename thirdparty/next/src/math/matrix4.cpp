@@ -27,6 +27,18 @@ Matrix4::Matrix4(const Matrix3 &matrix) {
     mat[3] = 0.0;       mat[7] = 0.0;       mat[11] = 0.0;       mat[15] = 1.0;
 }
 /*!
+    Constructs matrix by given \a position, \a rotation and \a scale.
+*/
+Matrix4::Matrix4(const Vector3 &position, const Quaternion &rotation, const Vector3 &scale) {
+    identity();
+    Matrix4 m;
+    m.translate(position);
+    *this *= m;
+    *this *= Matrix4(rotation.toMatrix());
+    m.scale(scale);
+    *this *= m;
+}
+/*!
     Returns true if this matrix is equal to given \a matrix; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
@@ -161,7 +173,7 @@ areal &Matrix4::operator[](int i) {
     \a i must be a valid index position in the matrix (i.e., 0 <= i < 16).
     Data is stored as column-major format so this function retrieving data from rows in colmns.
 */
-const areal Matrix4::operator[](int i) const {
+areal Matrix4::operator[](int i) const {
     return mat[i];
 }
 /*!

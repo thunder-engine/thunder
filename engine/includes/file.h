@@ -21,9 +21,9 @@
 #define FILEIO_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string>
 #include <list>
-#include <filesystem>
 
 #include <acommon.h>
 

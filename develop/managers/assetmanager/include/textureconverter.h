@@ -14,6 +14,9 @@ public:
     void                        loadUserData                (const AVariantMap &data);
 
     AVariantMap                 saveUserData                () const;
+protected:
+    friend class TextureConverter;
+
 };
 
 class TextureConverter : public IConverter {

@@ -168,7 +168,7 @@ struct Table {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     static AMetaType::Table *get(const char *typeName) {
-        static AMetaType::Table staticTable {
+        static AMetaType::Table staticTable = {
             TypeFuncs<T_no_cv>::size,
             TypeFuncs<T_no_cv>::static_new,
             TypeFuncs<T_no_cv>::construct,

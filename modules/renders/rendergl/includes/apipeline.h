@@ -11,6 +11,7 @@
 
 #include "resources/atexturegl.h"
 #include "resources/amaterialgl.h"
+#include "resources/ameshgl.h"
 
 class Engine;
 class BaseController;
@@ -24,6 +25,12 @@ class ABlurGL;
 class AAmbientOcclusionGL;
 
 class APostProcessor;
+
+
+class IDrawObjectGL {
+public:
+    virtual void                draw                (APipeline &pipeline, int8_t layer) = 0;
+};
 
 class APipeline {
 public:
@@ -45,19 +52,13 @@ public:
 
     void                        setShaderParams     (uint32_t program);
 
-    /*!
-        Resizing current texture buffers.
-        @param[in]  width       New screen width.
-        @param[in]  height      New screen height.
-    */
     virtual void                resize              (int32_t width, int32_t height);
 
-    void                        clearScreen         (const ATextureGL &target);
     void                        drawScreen          (const ATextureGL &source, const ATextureGL &target);
 
-    void                        drawQuad            ();
+    void                        drawMesh            (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = IRenderSystem::DEFAULT, MaterialInstance *material = 0);
 
-    void                        drawTexturedQuad    (const ATextureGL &texture);
+    void                        drawQuad            (const Matrix4 &model, uint8_t layer, MaterialInstance *material = 0, const Texture *texture = 0);
 
     void                        drawComponents      (AObject &object, uint8_t layer);
 
@@ -69,24 +70,13 @@ public:
 
     Vector4                     idCode              (uint32_t id);
 
-    AMaterialGL                *materialDirect      () const { return m_pDirect; }
-    AMaterialGL                *materialPoint       () const { return m_pPoint; }
-    AMaterialGL                *materialSpot        () const { return m_pSpot; }
-
-    AMaterialGL                *materialFont        () const { return m_pFont; }
+    AMeshGL                    *meshPlane           () const { return m_pPlane; }
+    AMeshGL                    *meshCube            () const { return m_pCube; }
 
     ABlurGL                    *filterBlur          () { return m_pBlur; }
 
     uint32_t                    depthBuffer         () { return m_DepthBuffer; }
     ATextureGL                 &depthTexture        () { return m_Depth; }
-
-    Vector4List                 screenVertices      () const { return m_Vertices; }
-    Vector2List                 screenCoords        () const { return m_Coords; }
-
-    void                        setTransform        (const Matrix4 &mat);
-    void                        resetTransform      ();
-    void                        setPos              (const Vector3 &pos, Matrix4 &m);
-    void                        setScl              (const Vector3 &scl, Matrix4 &m);
 
     void                        makeOrtho           ();
 
@@ -95,13 +85,11 @@ public:
 
     void                        overrideController  (IController *controller) { m_pController = controller; }
 
-    Scene                      *scene               ();
-
     void                        loadMatrix          (matrix_types type, const Matrix4 &m);
 
-protected:
-    void                        cameraSet           (ACameraGL &camera);
+    void                        cameraSet           (const Camera &camera);
 
+protected:
     Matrix4                     modelView           () const { return m_View * m_Model; }
     Matrix4                     projection          () const { return m_Projection; }
 
@@ -111,6 +99,11 @@ protected:
     void                        updateShadows       (AObject &object);
 
     void                        analizeScene        (AObject &object, IController *controller);
+
+    void                        uploadMesh          (Mesh *mesh);
+
+    void                        clearMesh           (const Mesh *mesh);
+
 protected:
     ATextureGL                  m_Depth;
     /// Frame buffers
@@ -132,8 +125,6 @@ protected:
     Matrix4                     m_ModelView;
     Matrix4                     m_ModelViewProjectionInversed;
 
-    stack<Matrix4>              m_MatrixStack;
-
     Engine                     *m_pEngine;
 
     ABlurGL                    *m_pBlur;
@@ -144,30 +135,18 @@ protected:
 
     IController                *m_pController;
 
-    ASpriteGL                  *m_pSprite;
+    AMaterialGL                *m_pSprite;
+    AMaterialGL                *m_pMesh;
 
-    AMaterialGL                *m_pDirect;
-    AMaterialGL                *m_pPoint;
-    AMaterialGL                *m_pSpot;
+    MaterialInstance           *m_pSpriteInstance;
+    MaterialInstance           *m_pMeshInstance;
 
-    AMaterialGL                *m_pFont;
+    AMeshGL                    *m_pPlane;
+    AMeshGL                    *m_pCube;
 
-    Vector4List                 m_Vertices;
-    Vector2List                 m_Coords;
-};
+    typedef unordered_map<const void *, AMeshGL::BufferVector> VAOMap;
 
-class IDrawObjectGL {
-public:
-    enum LayerTypes {
-        DEFAULT     = (1<<0),
-        RAYCAST     = (1<<1),
-        SHADOWCAST  = (1<<2),
-        LIGHT       = (1<<3),
-        TRANSLUCENT = (1<<4),
-        UI          = (1<<6)
-    };
-public:
-    virtual void                draw                (APipeline &pipeline, int8_t layer) = 0;
+    VAOMap                      m_vaoMap;
 };
 
 #endif // APIPELINE

@@ -8,7 +8,7 @@
 #include "timer.h"
 
 #ifdef PROFILING_ENABLED
-    #define PROFILER_MARKER Profiler MARK(__FUNCTION__);
+    #define PROFILER_MARKER; Profiler MARK(__FUNCTION__);
 
     #define PROFILER_STAT(x, y) Profiler::statAdd(x, y);
 #else
@@ -28,9 +28,9 @@ public:
     };
 
 public:
-    __forceinline Profiler      (const char *name);
+    Profiler                    (const char *name);
 
-    __forceinline ~Profiler     ();
+    ~Profiler                   ();
 
     static uint32_t             stat                (const char *name);
 

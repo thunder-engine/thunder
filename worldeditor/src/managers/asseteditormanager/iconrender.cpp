@@ -16,7 +16,7 @@
 #include <components/actor.h>
 #include <components/scene.h>
 #include <components/camera.h>
-#include <components/lightsource.h>
+#include <components/directlight.h>
 #include <components/staticmesh.h>
 #include <components/sprite.h>
 
@@ -61,7 +61,7 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->setRotation(rot);
-    m_pLight->addComponent<LightSource>();
+    //m_pLight->addComponent<LightSource>();
 }
 
 const QImage IconRender::render(const QString &resource, uint8_t type) {
@@ -74,7 +74,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     switch(type) {
         case IConverter::ContentTexture: {
             camera->setType(Camera::ORTHOGRAPHIC);
-            m_pCamera->setPosition(Vector3(0.5f, 0.5f, 1.0f));
+            m_pCamera->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
             Sprite *sprite  = object->addComponent<Sprite>();
             if(sprite) {
@@ -92,8 +92,8 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                 if(mat) {
                     mesh->setMaterial(0, mat);
                 }
-                for(auto it : m->m_Surfaces) {
-                    m_pCamera->setPosition(it.obb.center + Vector3( 0.0f, 0.0f, it.obb.size.length() / sinf(fov * DEG2RAD) ));
+                for(uint32_t s = 0; s < m->surfacesCount(); s++) {
+                    m_pCamera->setPosition(m->bound(s).center + Vector3( 0.0f, 0.0f, m->bound(s).size.length() / sinf(fov * DEG2RAD) ));
                 }
             }
         } break;
@@ -107,24 +107,22 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                 float bottom    = 0.0f;
                 uint32_t i      = 0;
 
-                for(auto it : m->m_Surfaces) {
-                    Mesh::Surface *s   = &it;
-                    pos     += s->obb.center;
-                    int length  = s->obb.center.length();
+                for(uint32_t s = 0; s < m->surfacesCount(); s++) {
+                    pos     += m->bound(s).center;
+                    int length  = m->bound(s).center.length();
                     radius  += length * 1.5;
                     Vector3 min, max;
-                    s->obb.box(min, max);
+                    m->bound(s).box(min, max);
                     if(i == 0) {
                         bottom  = min.y;
                     }
                     bottom      = MIN(bottom, min.y);
                     i++;
                 }
-                uint32_t size   = m->m_Surfaces.size();
+                uint32_t size   = m->surfacesCount();
                 pos     /= size;
                 radius  /= size;
                 m_pCamera->setPosition(pos + Vector3(0.0f, 0.0f, radius / sinf(fov * DEG2RAD)) );
-
             }
         } break;
         default: break;

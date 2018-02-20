@@ -1,11 +1,6 @@
 #ifndef AGL_H
 #define AGL_H
 
-#if defined(_WIN32)
-    #include <windows.h>
-    #include <gl/glew.h>
-#endif
-
 #ifdef iOS
     #if (ES == 2)
         #include <OpenGLES/ES2/gl.h>
@@ -14,11 +9,18 @@
 #endif
 
 #if defined(__ANDROID__)
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
+    #include <GLES3/gl3.h>
+    #include <GLES3/gl3ext.h>
 #endif
 
-#define VERTICES    "Vertices"
+#ifdef __APPLE__
+    #include <glad/glad.h>
+    #include <GLFW/glfw3.h>
+#elif _WIN32
+    #include <glad/glad.h>
+    #include <GLFW/glfw3.h>
+#endif
+
 #define POLYGONS    "Polygons"
 #define DRAWCALLS   "Draw Calls"
 

@@ -234,7 +234,7 @@ void ShaderBuilder::load(const QString &path) {
     QByteArray saveData = loadFile.readAll();
     QJsonDocument doc(QJsonDocument::fromJson(saveData));
 
-    QJsonObject &json   = doc.object();
+    QJsonObject json   = doc.object();
     QJsonArray nodes    = json[NODES].toArray();
     for(int i = 0; i < nodes.size(); ++i) {
         QJsonObject n   = nodes[i].toObject();
@@ -329,7 +329,7 @@ void ShaderBuilder::save(const QString &path) {
                         } break;
                         case QVariant::Color: {
                             QJsonArray v;
-                            v.push_back(QVariant::Color);
+                            v.push_back((int32_t)QVariant::Color);
                             QColor col      = value.value<QColor>();
                             v.push_back(col.red());
                             v.push_back(col.green());

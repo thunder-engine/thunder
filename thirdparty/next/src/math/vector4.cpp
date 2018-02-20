@@ -197,7 +197,7 @@ areal &Vector4::operator[](int i) {
     Returns the component of the vector at index position.
     \a i must be a valid index position in the vector (i.e., 0 <= i < 4).
 */
-const areal Vector4::operator[](int i) const {
+areal Vector4::operator[](int i) const {
     return v[i];
 }
 /*!

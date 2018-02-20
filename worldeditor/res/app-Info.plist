@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UTExportedTypeDeclarations</key>
+	<array/>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>thunder.icns</string>
+			<key>UTTypeDescription</key>
+			<string>ThunderEngine Project File</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.project</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>public.forge</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>forge</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+                                <string>public.forge</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSHumanReadableCopyright</key>
+        <string>(C) 2007-2018 by Evgeniy Prikazchikov</string>
+	<key>CFBundleIconFile</key>
+	<string>thunder</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleExecutable</key>
+	<string>@EXECUTABLE@</string>
+	<key>CFBundleIdentifier</key>
+	<string>@PRODUCT_BUNDLE_IDENTIFIER@</string>
+	<key>CFBundleVersion</key>
+	<string>@FULL_VERSION@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>@MACOSX_DEPLOYMENT_TARGET@</string>
+</dict>
+</plist>

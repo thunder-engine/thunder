@@ -10,7 +10,7 @@
 using namespace std;
 
 class Engine;
-class LightSource;
+class DirectLight;
 
 class SceneView;
 class ShaderBuilder;
@@ -23,7 +23,7 @@ class MaterialEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
     
 public:
-    MaterialEdit            (Engine *engine, QGLWidget *share);
+    MaterialEdit            (Engine *engine);
     ~MaterialEdit           ();
 
     void                    readSettings                    ();

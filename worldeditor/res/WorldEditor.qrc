@@ -13,7 +13,8 @@
         <file>editor/Move.png</file>
         <file>editor/Rotate.png</file>
         <file>editor/Scale.png</file>
-        <file>Logo.png</file>
+        <file>icons/bigthunder.png</file>
+        <file>icons/thunder.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

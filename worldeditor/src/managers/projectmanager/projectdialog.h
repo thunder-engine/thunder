@@ -4,11 +4,12 @@
 #include <QDialog>
 
 namespace Ui {
-class ProjectDialog;
+    class ProjectDialog;
 }
 
-class ProjectDialog : public QDialog
-{
+class ProjectModel;
+
+class ProjectDialog : public QDialog {
     Q_OBJECT
 
 public:
@@ -34,6 +35,8 @@ private:
     Ui::ProjectDialog      *ui;
 
     QString                 m_Path;
+
+    ProjectModel           *m_pModel;
 };
 
 #endif // PROJECTDIALOG_H

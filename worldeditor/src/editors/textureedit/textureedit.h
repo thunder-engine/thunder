@@ -22,7 +22,7 @@ class TextureEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    TextureEdit                 (Engine *engine, QGLWidget *share);
+    TextureEdit                 (Engine *engine);
     ~TextureEdit                ();
 
     void                        timerEvent          (QTimerEvent *event);

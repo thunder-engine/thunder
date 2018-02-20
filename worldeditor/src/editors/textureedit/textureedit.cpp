@@ -15,14 +15,14 @@
 
 #include "resources/texture.h"
 
-TextureEdit::TextureEdit(Engine *engine, QGLWidget *share) :
-        QMainWindow(NULL),
+TextureEdit::TextureEdit(Engine *engine) :
+        QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::TextureEdit) {
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this, share);
+    glWidget    = new SceneView(engine, this);
     glWidget->setController(new CameraCtrl(m_pEngine));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");
@@ -122,7 +122,7 @@ void TextureEdit::onGLInit() {
     Camera *camera  = glWidget->controller()->activeCamera();
     if(camera) {
         camera->setType(Camera::ORTHOGRAPHIC);
-        camera->actor().setPosition(Vector3(0.5, 0.5, 1.0));
+        camera->actor().setPosition(Vector3(0.0, 0.0, 1.0));
         camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));
     }
 

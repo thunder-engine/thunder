@@ -1,15 +1,16 @@
 #include "handles.h"
 
-#include <qgl.h>
-#include <gl/GLU.h>
-
 #include <rendersystem.h>
 #include <components/camera.h>
 #include <components/actor.h>
 
+#include <resources/mesh.h>
+#include <resources/material.h>
+
 #include "handletools.h"
 
 #define SIDES 32
+#define ALPHA 0.3
 
 Vector4 Handles::s_Normal   = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Selected = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -22,7 +23,7 @@ Vector4 Handles::s_Second   = Handles::s_Normal;
 
 Vector3 Handles::m_sMouse   = Vector3();
 
-const Vector4 grey(0.3, 0.3, 0.3, 1.0);
+const Vector4 grey(0.3, 0.3, 0.3, 0.6);
 
 Camera *Handles::s_ActiveCamera = nullptr;
 
@@ -32,118 +33,134 @@ static IRenderSystem *s_System  = nullptr;
 
 float length    = 0.7f;
 float sense     = 10.0f;
+float conesize  = length / 5.0f;
 
-void *s_Quadric    = gluNewQuadric();
+Mesh *Handles::s_Cone   = nullptr;
+Mesh *Handles::s_Move   = nullptr;
+MaterialInstance *Handles::s_Instance = nullptr;
+
+enum {
+    AXIS,
+    SCALE,
+    SCALE_XY,
+    SCALE_XYZ,
+    MOVE,
+    MOVE_XY,
+    CIRCLE
+};
 
 void Handles::init(IRenderSystem *system) {
-    s_System  = system;
+    if(s_System == nullptr) {
+        s_System    = system;
+    }
+    if(s_Cone == nullptr) {
+        s_Cone      = Engine::loadResource<Mesh>(".embedded/cone.fbx");
+    }
+
+    if(s_Instance == nullptr) {
+        Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
+        if(m) {
+            s_Instance  = m->createInstance();
+        }
+    }
+
+    if(s_Move == nullptr) {
+        s_Move  = Engine::objectCreate<Mesh>("Move");
+
+        Mesh::Lod lod;
+        lod.vertices    = {Vector3(0.0f), Vector3(0, 5, 0)};
+        lod.indices     = {0, 1};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_LINES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.vertices    = {Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)};
+        lod.indices     = {0, 1, 2, 3};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_LINES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.indices     = {0, 1, 2, 1, 3, 2};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_TRIANGLES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.vertices    = {Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)};
+        lod.indices     = {0, 1, 2};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_TRIANGLES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.vertices    = {Vector3(0, 1, 0), Vector3(2, 1, 0)};
+        lod.indices     = {0, 1};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_LINES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.vertices    = {Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)};
+        lod.indices     = {0, 1, 2, 1, 3, 2};
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_TRIANGLES;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+        lod.vertices    = HandleTools::pointsArc(Quaternion(), 5.0, 0, 180);
+        lod.indices.clear();
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_LINE_STRIP;
+            surface.lods.push_back(lod);
+            s_Move->addSurface(surface);
+        }
+    }
 }
 
 void Handles::beginDraw() {
-    Matrix4 v, p;
-    if(s_ActiveCamera) {
-        s_ActiveCamera->matrices(v, p);
-    }
+    s_System->setCamera(*s_ActiveCamera);
+    HandleTools::setCamera(*s_ActiveCamera);
 
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadMatrixf(p.mat);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(v.mat);
-
-    glEnable(GL_BLEND);
-
-    glClear(GL_DEPTH_BUFFER_BIT);
+    s_System->clearRenderTarget(false, Vector4(), true, 1.0f);
 }
 
 void Handles::endDraw() {
-    glDisable(GL_BLEND);
 
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
 }
 
-void Handles::drawArrow(const Vector3 &position, const Quaternion &rotation, float size) {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glMultMatrixf(Matrix4(rotation.toMatrix()).mat);
-
-    float conesize  = size / 5.0f;
-
+void Handles::drawArrow(const Matrix4 &transform) {
     s_System->setColor(s_Color);
-    drawLine(Vector3(0.0f), Vector3(0, 0, size));
+    s_System->drawMesh(transform, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+
+    Matrix4 m;
+    m.translate(Vector3(0, 4.0, 0));
     s_System->setColor(s_Second);
-    drawCone(Vector3(0, 0, size - conesize), Quaternion (), conesize);
-
-    glPopMatrix();
+    s_System->drawMesh(transform * m, s_Cone, 0, IRenderSystem::TRANSLUCENT, s_Instance);
 }
 
-void Handles::drawCone(const Vector3 &position, const Quaternion &rotation, float size) {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glMultMatrixf(Matrix4(rotation.toMatrix()).mat);
-
-    s_System->setColor(s_Color);
-    gluCylinder((GLUquadric *)s_Quadric, size / 4.0f, 0.0f, size, 8, 1);
-
-    glPopMatrix();
-}
-
-void Handles::drawDisk(const Vector3 &position, const Quaternion &rotation, float size, float start, float angle) {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glMultMatrixf(Matrix4(rotation.toMatrix()).mat);
-    glRotatef(90, 1, 0, 0);
-    s_System->setColor(s_Color);
-    gluPartialDisk((GLUquadric *)s_Quadric, 0.0, size, SIDES, 1, start, angle);
-
-    glPopMatrix();
-}
-
-void Handles::drawQuad(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4) {
+void Handles::drawFrustum(const Vector3Vector &points) {
     s_System->setColor(s_Color);
 
-    Vector3List points = {p1, p2, p3, p4};
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, &points[0]);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, points.size());
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-void Handles::drawLine(const Vector3 &p1, const Vector3 &p2) {
-    s_System->setColor(s_Color);
-
-    s_System->drawPath({p1, p2});
-}
-
-void Handles::drawFrustum(const Vector3List &points) {
-    s_System->setColor(s_Color);
-
-    GLubyte indices[] = {0, 1, 5, 4,
+    uint32_t indices[] = {0, 1, 5, 4,
                          3, 0, 4, 7,
                          2, 3, 7, 6,
                          1, 2, 6, 5};
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, &points[0]);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_QUADS, 16, GL_UNSIGNED_BYTE, indices);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void Handles::drawBox(const Vector3 &position, const Quaternion &rotation, const Vector3 &size) {
     Vector3 min = position - size * 0.5;
     Vector3 max = min + size;
 
-    Vector3List vertices;
+    Vector3Vector vertices;
     vertices.push_back(Vector3(min.x, min.y, min.z));
     vertices.push_back(Vector3(min.x, min.y, max.z));
     vertices.push_back(Vector3(max.x, min.y, max.z));
@@ -158,49 +175,81 @@ void Handles::drawBox(const Vector3 &position, const Quaternion &rotation, const
 }
 
 void Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture &texture) {
-    s_System->drawBillboard(position, size, texture);
+    //s_System->drawBillboard(position, size, texture);
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
     Vector3 result    = position;
-
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-
-    float scale = 0.0f;
     if(s_ActiveCamera) {
-        scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
-        glScalef(scale, scale, scale);
+        float scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
+        Matrix4 model(position, Quaternion(), scale);
 
-        float conesize  = length / 5.0f;
-        float consize2  = conesize * 2.0f;
+        Matrix4 x   = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
+        Matrix4 y   = model * Matrix4(Vector3(0, conesize, 0), Quaternion(), conesize);
+        Matrix4 z   = model * Matrix4(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), conesize);
 
-        Vector3 x( length, 0.0f, 0.0f);
-        Vector3 y( 0.0f, length, 0.0f);
-        Vector3 z( 0.0f, 0.0f, length);
-
-        Vector3 xy( consize2, consize2, 0.0f);
-        Vector3 yz( 0.0f, consize2, consize2);
-        Vector3 xz( consize2, 0.0f, consize2);
+        Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
-            s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-            if(HandleTools::distanceToPoint(xy) <= sense * 2.0) {
-                s_Axes  = AXIS_X | AXIS_Y;
-            } else if(HandleTools::distanceToPoint(yz) <= sense * 2.0) {
-                s_Axes  = AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToPoint(xz) <= sense * 2.0) {
+            if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
+                s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
+            } else if(HandleTools::distanceToMesh(x, s_Move, MOVE) <= sense |
+                      HandleTools::distanceToMesh(z * r, s_Move, MOVE) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if (HandleTools::distanceToLine(Vector3(), x) <= sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Move, MOVE) <= sense |
+                      HandleTools::distanceToMesh(x * r, s_Move, MOVE) <= sense) {
+                s_Axes  = AXIS_Y | AXIS_X;
+            } else if(HandleTools::distanceToMesh(z, s_Move, MOVE) <= sense |
+                      HandleTools::distanceToMesh(y * r, s_Move, MOVE) <= sense) {
+                s_Axes  = AXIS_Z | AXIS_Y;
+            } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_X;
-            } else if (HandleTools::distanceToLine(Vector3(), y) <= sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_Y;
-            } else if(HandleTools::distanceToLine(Vector3(), z) <= sense) {
+            } else if(HandleTools::distanceToMesh(z, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_Z;
             }
-            HandleTools::popCamera();
         }
+
+        s_Second    = s_xColor;
+        s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
+        drawArrow(x);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
+        s_System->drawMesh(x, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
+        s_System->drawMesh(x * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+        s_Second    = s_yColor;
+        s_Color     = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
+        drawArrow(y);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
+        s_System->drawMesh(y, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
+        s_System->drawMesh(y * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+        s_Second    = s_zColor;
+        s_Color     = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
+        drawArrow(z);
+        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawMesh(z, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor);
+        s_System->drawMesh(z * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+        s_Color = s_Selected;
+        s_Color.w = ALPHA;
+        if(s_Axes == (AXIS_X | AXIS_Z)) {
+            s_System->setColor(s_Color);
+            s_System->drawMesh(x, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+        if(s_Axes == (AXIS_X | AXIS_Y)) {
+            s_System->setColor(s_Color);
+            s_System->drawMesh(y, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+        if(s_Axes == (AXIS_Y | AXIS_Z)) {
+            s_System->setColor(s_Color);
+            s_System->drawMesh(z, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+        s_Color = s_Normal;
 
         Plane plane;
         plane.point     = position;
@@ -230,228 +279,182 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         if(s_Axes & AXIS_Z) {
             result.z    = point.z;
         }
-
-        s_Second    = s_xColor;
-        s_Color     = (s_Axes == (AXIS_X | AXIS_Z)) ? s_Selected : s_xColor;
-        drawLine(Vector3(consize2, 0, 0), xz);
-        s_Color     = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_xColor;
-        drawLine(Vector3(consize2, 0, 0), xy);
-        s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
-        drawArrow(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 1, 0), 90), length);
-
-        s_Second    = s_yColor;
-        s_Color = (s_Axes == (AXIS_X | AXIS_Y)) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, consize2, 0), xy);
-        s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, consize2, 0), yz);
-        s_Color = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
-        drawArrow(Vector3(0, conesize, 0), Quaternion(Vector3(1, 0, 0),-90), length);
-
-        s_Second    = s_zColor;
-        s_Color = (s_Axes == (AXIS_Y | AXIS_Z)) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, consize2), yz);
-        s_Color = (s_Axes == (AXIS_X | AXIS_Z)) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, consize2), xz);
-        s_Color = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawArrow(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90), length);
-
-        s_Color = s_Selected;
-        s_Color.w = 0.2f;
-        if(s_Axes == (AXIS_X | AXIS_Z)) {
-            drawQuad(Vector3(), Vector3(0.0f, xz.y, xz.z), Vector3(xz.x, xz.y, 0.0f), xz);
-        }
-        if(s_Axes == (AXIS_X | AXIS_Y)) {
-            drawQuad(Vector3(), Vector3(0.0f, xy.y, xy.z), Vector3(xy.x, 0.0f, xy.z), xy);
-        }
-        if(s_Axes == (AXIS_Y | AXIS_Z)) {
-            drawQuad(Vector3(), Vector3(yz.x, 0.0f, yz.z), Vector3(yz.x, yz.y, 0.0f), yz);
-        }
-        s_Color = s_Normal;
     }
-    glPopMatrix();
 
     return result;
 }
 
 Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
     if(s_ActiveCamera) {
-        float half      = 180.0f;
-        float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f) * length;
+        float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f);
         Vector3 normal  = position - s_ActiveCamera->actor().position();
         normal.normalize();
 
-        glPushMatrix();
-        glTranslatef(position.x, position.y, position.z);
+        Matrix4 model(position, Quaternion(), scale);
 
-        Quaternion q    = s_ActiveCamera->actor().rotation() * Quaternion(Vector3(90.0, 0, 0));
+        Matrix4 q1  = model * Matrix4(Vector3(), s_ActiveCamera->actor().rotation() * Quaternion(Vector3( 90, 0, 0)), Vector3(conesize));
+        Matrix4 q2  = q1 * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), 180), Vector3(1));
 
-        Vector3List pb  = IRenderSystem::pointsArc(q, scale * 1.4f, 0, half * 2.0f);
-        Vector3List px  = IRenderSystem::pointsArc(Quaternion(Vector3(0, 0, 1), 90),   scale,-RAD2DEG * atan2(normal.y, normal.z) + half, half);
-        Vector3List py  = IRenderSystem::pointsArc(Quaternion(Vector3(0, 1, 0), half), scale,-RAD2DEG * atan2(normal.x, normal.z), half);
-        Vector3List pz  = IRenderSystem::pointsArc(Quaternion(Vector3(1, 0, 0), 90),   scale, RAD2DEG * atan2(normal.x, normal.y), half);
+        Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 90)) *
+                                                 Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
+        Matrix4 y   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
+        Matrix4 z   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
+                                                 Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
+
+        Matrix4 m;
+        m.scale(1.2);
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
-            if(HandleTools::distanceToPath(pb) <= sense) {
+            if(HandleTools::distanceToMesh(q1 * m, s_Move, CIRCLE) <= sense |
+               HandleTools::distanceToMesh(q2 * m, s_Move, CIRCLE) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToPath(px) <= sense) {
+            } else if(HandleTools::distanceToMesh(x, s_Move, CIRCLE) <= sense) {
                 s_Axes  = AXIS_X;
-            } else if(HandleTools::distanceToPath(py) <= sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Move, CIRCLE) <= sense) {
                 s_Axes  = AXIS_Y;
-            } else if(HandleTools::distanceToPath(pz) <= sense) {
+            } else if(HandleTools::distanceToMesh(z, s_Move, CIRCLE) <= sense) {
                 s_Axes  = AXIS_Z;
             }
-            HandleTools::popCamera();
         }
 
         s_System->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-        s_System->drawPath(pb);
+        s_System->drawMesh(q1 * m, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_System->drawMesh(q2 * m, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
         s_System->setColor(grey);
-        s_System->drawPath(IRenderSystem::pointsArc(q, scale, 0, half * 2.0f));
+        s_System->drawMesh(q1, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_System->drawMesh(q2, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
 
         if(!locked || s_Axes == AXIS_X) {
             s_System->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
-            s_System->drawPath(px);
+            s_System->drawMesh(x, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
         }
 
         if(!locked || s_Axes == AXIS_Y) {
             s_System->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
-            s_System->drawPath(py);
+            s_System->drawMesh(y, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
         }
 
         if(!locked || s_Axes == AXIS_Z) {
             s_System->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
-            s_System->drawPath(pz);
+            s_System->drawMesh(z, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
         }
-        glPopMatrix();
-/*
-        if(locked) {
-            Quaternion  r   = q;
-            s_Color = grey * 2.0f;
-            switch(s_Axes) {
-                case AXIS_X: {
-                    s_Color = s_xColor;
-                    r   = Quaternion (Vector3( 0.0, 0.0,90.0));
-                } break;
-                case AXIS_Y: {
-                    s_Color = s_yColor;
-                    r   = Quaternion ();
-                } break;
-                case AXIS_Z: {
-                    s_Color = s_zColor;
-                    r   = Quaternion (Vector3(90.0, 0.0, 0.0));
-                } break;
-                default: break;
-            }
-            s_Color.w   = 0.2f;
-            drawDisk(position, r, scale, 0.0f, value);
-        }
-*/
         s_System->setColor(s_Normal);
     }
-
     return m_sMouse;
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-
-    float scale = 0.0f;
     if(s_ActiveCamera) {
-        Vector3 normal    = position - s_ActiveCamera->actor().position();
-        scale   = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2;
-        glScalef(((normal.x < 0) ? 1 : -1) * scale,
-                 ((normal.y > 0) ? 1 : -1) * scale,
-                 ((normal.z < 0) ? 1 : -1) * scale);
+        Vector3 normal  = position - s_ActiveCamera->actor().position();
+        float size      = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2;
 
-        float half  = length * 0.5;
-        float hh    = half * 0.5;
-        float big   = half * 1.4;
-        float hbig  = big  * 0.5;
+        Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
+                      ((normal.y < 0) ? 1 : -1) * size,
+                      ((normal.z < 0) ? 1 : -1) * size);
+
+        Matrix4 model(position, Quaternion(), scale);
+        Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), Vector3(conesize));
+        Matrix4 y   = model * Matrix4(Vector3(), Quaternion(), Vector3(conesize));
+        Matrix4 z   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), Vector3(conesize));
+
+        Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
         if(!locked) {
-            HandleTools::pushCamera(*s_ActiveCamera);
-            Vector3 x0  = Vector3(half, 0, 0);
-            Vector3 y0  = Vector3(0,-half, 0);
-            Vector3 z0  = Vector3(0, 0, half);
-
-            Vector3 x1  = Vector3(length, 0, 0);
-            Vector3 y1  = Vector3(0,-length, 0);
-            Vector3 z1  = Vector3(0, 0, length);
-
-            if(HandleTools::distanceToLine(x0, y0) <= sense) {
-                s_Axes  = AXIS_X | AXIS_Y;
-            } else if(HandleTools::distanceToLine(x0, z0) <= sense) {
+            if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
+                s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
+            } else if(HandleTools::distanceToMesh(x, s_Move, SCALE) <= sense |
+                      HandleTools::distanceToMesh(z * r, s_Move, SCALE) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if(HandleTools::distanceToLine(y0, z0) <= sense) {
-                s_Axes  = AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToLine(x0, x1) <= sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Move, SCALE) <= sense |
+                      HandleTools::distanceToMesh(x * r, s_Move, SCALE) <= sense) {
+                s_Axes  = AXIS_Y | AXIS_X;
+            } else if(HandleTools::distanceToMesh(z, s_Move, SCALE) <= sense |
+                      HandleTools::distanceToMesh(y * r, s_Move, SCALE) <= sense) {
+                s_Axes  = AXIS_Z | AXIS_Y;
+            } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_X;
-            } else if(HandleTools::distanceToLine(y0, y1) <= sense) {
+            } else if(HandleTools::distanceToMesh(y, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_Y;
-            } else if(HandleTools::distanceToLine(z0, z1) <= sense) {
+            } else if(HandleTools::distanceToMesh(z, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_Z;
             }
-            HandleTools::popCamera();
         }
-
-        // X Axis
-        glPushMatrix();
-        glRotatef(90, 0, 1, 0);
-        s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_xColor;
-        drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_xColor;
-        drawLine(Vector3(0, 0, half), Vector3(-hh,   0, hh));
-        drawLine(Vector3(0, 0, big),  Vector3(-hbig, 0, hbig));
-        glPopMatrix();
-        // Y Axis
-        glPushMatrix();
-        glRotatef(90, 1, 0, 0);
-        s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, 0, half), Vector3(0, hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0, hbig, hbig));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Y) ? s_Selected : s_yColor;
-        drawLine(Vector3(0, 0, half), Vector3(hh,   0,  hh));
-        drawLine(Vector3(0, 0, big),  Vector3(hbig, 0, hbig));
-        glPopMatrix();
-        // Z Axis
-        glPushMatrix();
-        glRotatef(90, 0, 0, 1);
-        s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(), Vector3(0, 0, length));
-        s_Color = (s_Axes & AXIS_X && s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, half), Vector3(0,-hh,   hh));
-        drawLine(Vector3(0, 0, big),  Vector3(0,-hbig, hbig));
-        s_Color = (s_Axes & AXIS_Y && s_Axes & AXIS_Z) ? s_Selected : s_zColor;
-        drawLine(Vector3(0, 0, half), Vector3(-hh,   0, hh));
-        drawLine(Vector3(0, 0, big),  Vector3(-hbig, 0, hbig));
-        glPopMatrix();
 
         s_Color     = s_Selected;
-        s_Color.w   = 0.2f;
-        s_System->setColor(s_Color);
-        if(s_Axes == (AXIS_X | AXIS_Y)) {
-            drawQuad(Vector3(half, 0, 0), Vector3(big, 0, 0), Vector3(0,-half, 0), Vector3(0,-big, 0));
-        } else if(s_Axes == (AXIS_X | AXIS_Z)) {
-            drawQuad(Vector3(half, 0, 0), Vector3(big, 0, 0), Vector3(0, 0, half), Vector3(0, 0, big));
-        } else if(s_Axes == (AXIS_Y | AXIS_Z)) {
-            drawQuad(Vector3(0,-half, 0), Vector3(0,-big, 0), Vector3(0, 0, half), Vector3(0, 0, big));
-        } else if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-            glBegin(GL_TRIANGLE_STRIP);
-                glVertex3f( half, 0, 0 );
-                glVertex3f( 0,-half, 0 );
-                glVertex3f( 0, 0, half );
-            glEnd();
+        s_Color.w   = ALPHA;
+        {
+            s_System->setColor(s_xColor);
+            if(s_Axes == (AXIS_X | AXIS_Z)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(x, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(x, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_xColor);
+            if(s_Axes == (AXIS_X | AXIS_Y)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(x * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(x * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_Axes & AXIS_X ? s_Selected : s_xColor);
+            s_System->drawMesh(x, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
         }
+        {
+            s_System->setColor(s_yColor);
+            if(s_Axes == (AXIS_Y | AXIS_X)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(y, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(y, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_yColor);
+            if(s_Axes == (AXIS_Y | AXIS_Z)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(y * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(y * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_Axes & AXIS_Y ? s_Selected : s_yColor);
+            s_System->drawMesh(y, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+        {
+            s_System->setColor(s_zColor);
+            if(s_Axes == (AXIS_Z | AXIS_Y)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(z, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(z, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_zColor);
+            if(s_Axes == (AXIS_Z | AXIS_X)) {
+                s_System->setColor(s_Color);
+                s_System->drawMesh(z * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+                s_System->setColor(s_Selected);
+            }
+            s_System->drawMesh(z * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+
+            s_System->setColor(s_Axes & AXIS_Z ? s_Selected : s_zColor);
+            s_System->drawMesh(z, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+
+        if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
+            s_System->setColor(s_Color);
+            s_System->drawMesh(x, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_System->drawMesh(x * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_System->drawMesh(y, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_System->drawMesh(y * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_System->drawMesh(z, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_System->drawMesh(z * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+        }
+
         s_Color = s_Normal;
     }
-    glPopMatrix();
 
     return m_sMouse;
 }

@@ -7,7 +7,7 @@
 
 class Engine;
 class Actor;
-class LightSource;
+class DirectLight;
 
 class SceneView;
 class NextObject;
@@ -21,7 +21,7 @@ class MeshEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    MeshEdit                (Engine *engine, QGLWidget *share);
+    MeshEdit                (Engine *engine);
     ~MeshEdit               ();
 
     void                    readSettings                                ();

@@ -4,6 +4,31 @@
 #define PARAMS      "Params"
 #define TEXTURES    "Textures"
 
+MaterialInstance::MaterialInstance(Material *material) :
+        m_pMaterial(material) {
+
+}
+
+Material *MaterialInstance::material() const {
+   return m_pMaterial;
+}
+
+void MaterialInstance::setFloat(const char *name, float value) {
+
+}
+void MaterialInstance::setVector2(const char *name, const Vector2 &value) {
+
+}
+void MaterialInstance::setVector3(const char *name, const Vector3 &value) {
+
+}
+void MaterialInstance::setVector4(const char *name, const Vector4 &value) {
+
+}
+void MaterialInstance::setMatrix4(const char *name, const Vector4 &value) {
+
+}
+
 Material::Material() :
         m_BlendMode(Opaque),
         m_LightModel(Unlit),
@@ -77,7 +102,7 @@ uint8_t Material::surfaces() const {
     return m_Surfaces;
 }
 
-bool Material::overrideTexture(const string &name, Texture *texture) {
+bool Material::overrideTexture(const string &name, const Texture *texture) {
     if(texture) {
         auto it = m_Textures.find(name);
         if(it != m_Textures.end()) {
@@ -88,10 +113,14 @@ bool Material::overrideTexture(const string &name, Texture *texture) {
     return false;
 }
 
-Texture *Material::texture(const string &name) {
+const Texture *Material::texture(const string &name) {
     auto it = m_Textures.find(name);
     if(it != m_Textures.end()) {
         return it->second;
     }
     return nullptr;
+}
+
+MaterialInstance *Material::createInstance() {
+    return new MaterialInstance(this);
 }

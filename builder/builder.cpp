@@ -53,6 +53,7 @@ void Builder::archive() {
         }
     }
     Log(Log::INF) << "Packaging Done";
+    CodeManager::instance()->setOutdated();
 }
 
 void Builder::onCompileDone(const QString &path) {

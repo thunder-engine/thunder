@@ -153,9 +153,9 @@ public slots:
     void                onDragEnter                 (QDragEnterEvent *);
     void                onDragLeave                 (QDragLeaveEvent *);
 
-    void                onSelectActor               (AObject::ObjectList &list, bool undo = true);
-    void                onRemoveActor               (AObject::ObjectList &, bool undo = true);
-    void                onParentActor               (AObject::ObjectList &objects, AObject::ObjectList &parents, bool undo = true);
+    void                onSelectActor               (AObject::ObjectList list, bool undo = true);
+    void                onRemoveActor               (AObject::ObjectList, bool undo = true);
+    void                onParentActor               (AObject::ObjectList objects, AObject::ObjectList parents, bool undo = true);
 
     void                onFocusActor                (AObject *object);
 
@@ -168,7 +168,7 @@ signals:
 
     void                objectsUpdated              ();
 
-    void                objectsSelected             (AObject::ObjectList &objects);
+    void                objectsSelected             (AObject::ObjectList objects);
 
 protected:
     void                drawHelpers                 (AObject &object);

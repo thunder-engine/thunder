@@ -13,22 +13,21 @@ class HandleTools {
 public:
     HandleTools             ();
 
-    static float            distanceToPoint     (const Vector3 &position);
+    static Vector3Vector    pointsArc           (const Quaternion &rotation, float size, float start, float angle);
 
-    static float            distanceToLine      (const Vector3 &a, const Vector3 &b);
+    static float            distanceToPoint     (const Matrix4 &matrix, const Vector3 &position);
 
-    static float            distanceToPath      (const Vector3List &points);
+    static float            distanceToPath      (const Matrix4 &matrix, const Vector3Vector &points);
 
-    static void             pushCamera          (const Camera &camera);
+    static float            distanceToMesh      (const Matrix4 &matrix, const Mesh *mesh, uint32_t surface);
 
-    static void             popCamera           ();
+    static void             setCamera           (const Camera &camera);
 
 protected:
     typedef stack<Matrix4>  MatrixStack;
 
-    static MatrixStack      m_sProjection;
-
-    static MatrixStack      m_sModelView;
+    static Matrix4          s_View;
+    static Matrix4          s_Projection;
 
     static int              m_sWidth;
     static int              m_sHeight;

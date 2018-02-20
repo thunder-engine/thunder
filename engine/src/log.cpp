@@ -36,6 +36,7 @@ void Log::setLogLevel(LogTypes lvl) {
 
 Log &Log::operator<<(bool b) {
     p_ptr->stream << " "  << b;
+    to_string(b);
     return *this;
 }
 

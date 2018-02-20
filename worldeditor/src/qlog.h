@@ -5,6 +5,8 @@
 
 #include <log.h>
 
+#include <QFile>
+
 class QLog : public QObject, public ILogHandler {
     Q_OBJECT
 

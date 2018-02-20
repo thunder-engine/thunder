@@ -20,11 +20,15 @@ public:
 
     void                        overrideController          (IController *controller);
 
-    void                        drawBillboard               (const Vector3 &position, const Vector2 &size, Texture &image);
+    void                        clearRenderTarget           (bool clearColor, const Vector4 &color, bool clearDepth, float depth);
 
-    void                        drawPath                    (const Vector3List &points);
+    void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = IRenderSystem::DEFAULT, MaterialInstance *material = nullptr);
 
     void                        setColor                    (const Vector4 &color);
+
+    void                        setCamera                   (const Camera &camera);
+
+    void                        setRenderTarget             (uint8_t numberColors, const Texture *colors, uint8_t numberDepth, const Texture *depth);
 
 protected:
     APipeline                  *m_pPipeline;

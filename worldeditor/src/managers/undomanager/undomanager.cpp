@@ -6,7 +6,7 @@
 
 #include "controllers/objectctrl.h"
 
-UndoManager::SelectObjects::SelectObjects(AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::SelectObjects::SelectObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     for(auto it : objects) {
         m_Objects.push_back(it->uuid());
@@ -24,7 +24,7 @@ bool UndoManager::SelectObjects::isValid() const {
     return true;
 }
 
-UndoManager::CreateObjects::CreateObjects(AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::CreateObjects::CreateObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     m_pSelect   = new SelectObjects(ctrl->selected(), ctrl);
     m_Objects   = objects;
@@ -39,7 +39,7 @@ bool UndoManager::CreateObjects::isValid() const {
     return !m_Objects.empty();
 }
 
-UndoManager::DestroyObjects::DestroyObjects(AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::DestroyObjects::DestroyObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     AVariantList list;
     for(auto it : objects) {
@@ -51,7 +51,6 @@ UndoManager::DestroyObjects::DestroyObjects(AObject::ObjectList &objects, Object
         delete it;
     }
     ctrl->mapUpdated();
-    objects.clear();
 }
 void UndoManager::DestroyObjects::undo(bool redo) {
     AVariant variant    = AJson::load(m_Dump);
@@ -83,7 +82,7 @@ bool UndoManager::DestroyObjects::isValid() const {
     return !m_Dump.empty();
 }
 
-UndoManager::ParentingObjects::ParentingObjects(AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::ParentingObjects::ParentingObjects(const AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     for(auto object : objects) {
         m_Objects.push_back( QString::number(object->uuid()) );
@@ -119,7 +118,7 @@ void enumComponents(const AObject *object, ObjectArray &list) {
     }
 }
 
-UndoManager::PropertyObjects::PropertyObjects(AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::PropertyObjects::PropertyObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     AVariantList list;
     for(auto object : objects) {

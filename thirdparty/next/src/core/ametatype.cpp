@@ -5,6 +5,8 @@
 #include "math/amath.h"
 #include "core/avariant.h"
 
+
+
 #define DECLARE_BUILT_TYPE(TYPE) \
     { \
         TypeFuncs<TYPE>::size, \
@@ -21,7 +23,7 @@
 
 typedef map<uint32_t, AMetaType::Table> TypeMap;
 typedef map<string, uint32_t>           NameMap;
-typedef map<uint32_t, map<uint32_t, AMetaType::converterCallback>> ConverterMap;
+typedef map<uint32_t, map<uint32_t, AMetaType::converterCallback> > ConverterMap;
 
 uint32_t AMetaType::s_NextId = AMetaType::USERTYPE;
 static TypeMap s_Types = {
@@ -313,7 +315,8 @@ bool AMetaType::toInteger(void *to, const void *from, const uint32_t fromType) {
         case DOUBLE: { double f = *(static_cast<const double *>(from)); *r = int(f); f -= *r; *r += (f >= 0.5f) ? 1 : 0; } break;
         case STRING: {
             string s  = *(static_cast<const string *>(from));
-            *r        = stoi(s);
+            char *end;
+            *r        = strtol(s.c_str(), &end, 10);
         } break;
         default:    { result    = false; } break;
     }
@@ -327,7 +330,11 @@ bool AMetaType::toDouble(void *to, const void *from, const uint32_t fromType) {
     switch(fromType) {
         case BOOLEAN: { *r  = double(*(static_cast<const bool *>(from))); } break;
         case INTEGER: { *r  = double(*(static_cast<const int *>(from))); } break;
-        case STRING:  { *r  = stod(*(static_cast<const string *>(from))); } break;
+        case STRING:  {
+            string s    = *(static_cast<const string *>(from));
+            char *end;
+            *r          = strtod(s.c_str(), &end);
+        } break;
         default:      { result  = false; } break;
     }
     return result;

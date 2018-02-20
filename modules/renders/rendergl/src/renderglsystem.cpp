@@ -10,15 +10,16 @@
 #include "components/aspritegl.h"
 #include "components/acameragl.h"
 #include "components/astaticmeshgl.h"
-#include "components/alightsourcegl.h"
+#include "components/adirectlightgl.h"
 
 #include "components/scene.h"
 
-RenderGLSystem::RenderGLSystem(Engine *engine) :
-        IRenderSystem(engine) {
-    PROFILER_MARKER
+#include <log.h>
 
-    m_pPipeline = NULL;
+RenderGLSystem::RenderGLSystem(Engine *engine) :
+        m_pPipeline(nullptr),
+        IRenderSystem(engine) {
+    PROFILER_MARKER;
 
     ATextureGL::registerClassFactory();
     AMaterialGL::registerClassFactory();
@@ -28,34 +29,44 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 
     ACameraGL::registerClassFactory();
     AStaticMeshGL::registerClassFactory();
-    ALightSourceGL::registerClassFactory();
+    ADirectLightGL::registerClassFactory();
 }
 
 RenderGLSystem::~RenderGLSystem() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     delete m_pPipeline;
 }
 
 /*!
     Initialization of render.
-    @return 0               Intialization successful.
-    @return -1              Intialization error ("Unsupported extentions").
 */
 bool RenderGLSystem::init() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
 #if (_WIN32)
-    glewInit();
+    //uint32_t err    = glewInit();
+    //if(err != GLEW_OK) {
+    //    Log(Log::ERR) << "[ Render::RenderGLSystem ]" << glewGetErrorString(err);
+    //    return false;
+    //}
+#endif
+
+#if !defined(__ANDROID__)
+    if(!gladLoadGL() /*!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)*/) {
+        Log(Log::ERR) << "[ Render::RenderGLSystem ] Failed to initialize OpenGL context";
+        return false;
+    }
 #endif
 
     glDepthFunc     (GL_LEQUAL);
     glEnable        (GL_DEPTH_TEST);
 
+    int32_t targets = 1;
+#ifndef GL_ES_VERSION_2_0
     glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-    int32_t targets;
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
+#endif
     if(targets >= ADeferredShading::G_TARGETS) {
         m_pPipeline = new ADeferredShading(m_pEngine);
     } else {
@@ -72,7 +83,7 @@ const char *RenderGLSystem::name() const {
     Main drawing procedure.
 */
 void RenderGLSystem::update(Scene &scene, uint32_t resource) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     if(m_pPipeline) {
         m_pPipeline->draw(scene, resource);
@@ -80,53 +91,52 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
 }
 
 void RenderGLSystem::overrideController(IController *controller) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     if(m_pPipeline) {
         m_pPipeline->overrideController(controller);
     }
 }
 
-void RenderGLSystem::drawBillboard(const Vector3 &position, const Vector2 &size, Texture &image) {
-    PROFILER_MARKER
+void RenderGLSystem::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
+    PROFILER_MARKER;
 
-    if(m_pPipeline) {
-        Matrix4 result;
-        Matrix4 m;
-        m.translate(position);
-        result *= m;
-        m.scale(Vector3(size, 1.0));
-        result *= m;
-
-        m_pPipeline->setTransform(result);
-        //AMaterialGL *mat    = m_pPipeline->materialSprite();
-        //mat->overrideTexture("texture0", &image);
-
-        //mat->bind(*m_pPipeline, IDrawObjectGL::TRANSLUCENT, AMaterialGL::Billboard);
-        //m_pPipeline->drawQuad();
-        //mat->unbind(IDrawObjectGL::TRANSLUCENT);
-
-        m_pPipeline->resetTransform();
+    uint32_t flags  = 0;
+    if(clearColor) {
+        flags   |= GL_COLOR_BUFFER_BIT;
+        glClearColor(color.x, color.y, color.z, color.w);
     }
+    if(clearDepth) {
+        flags   |= GL_DEPTH_BUFFER_BIT;
+        glClearDepthf(depth);
+    }
+    glClear(flags);
 }
 
-void RenderGLSystem::drawPath(const Vector3List &points) {
-    PROFILER_MARKER
+void RenderGLSystem::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+    PROFILER_MARKER;
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, &points[0]);
-
-    glDrawArrays(GL_LINE_STRIP, 0, points.size());
-
-    glDisableClientState(GL_VERTEX_ARRAY);
+    if(m_pPipeline) {
+        m_pPipeline->drawMesh(model, mesh, surface, layer, material);
+    }
 }
 
 void RenderGLSystem::setColor(const Vector4 &color) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     if(m_pPipeline) {
-        glColor4fv(color.v);
-        //m_pPipeline->setColor(color);
+        m_pPipeline->setColor(color);
     }
 }
 
+void RenderGLSystem::setCamera(const Camera &camera) {
+    PROFILER_MARKER;
+
+    if(m_pPipeline) {
+        m_pPipeline->cameraSet(camera);
+    }
+}
+
+void RenderGLSystem::setRenderTarget(uint8_t numberColors, const Texture *colors, uint8_t numberDepth, const Texture *depth) {
+
+}

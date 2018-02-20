@@ -6,13 +6,15 @@
 #include <amath.h>
 
 #include <rendersystem.h>
+#include <patterns/asingleton.h>
 
+class Texture;
 class Camera;
 class IRenderSystem;
 
 using namespace std;
 
-class Handles {
+class Handles : public ASingleton<Handles> {
 public:
     enum Axes {
         AXIS_X  = (1 << 0),
@@ -26,16 +28,9 @@ public:
     static void             beginDraw           ();
     static void             endDraw             ();
 
-    static void             drawArrow           (const Vector3 &position, const Quaternion &rotation, float size);
+    static void             drawArrow           (const Matrix4 &transform);
 
-    static void             drawCone            (const Vector3 &position, const Quaternion &rotation, float size);
-
-    static void             drawDisk            (const Vector3 &position, const Quaternion &rotation, float size, float start, float angle);
-
-    static void             drawQuad            (const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, const Vector3 &p4);
-
-    static void             drawLine            (const Vector3 &p1, const Vector3 &p2);
-    static void             drawFrustum         (const Vector3List &points);
+    static void             drawFrustum         (const Vector3Vector &points);
 
     static void             drawBox             (const Vector3 &position, const Quaternion &rotation, const Vector3 &size);
 
@@ -62,10 +57,16 @@ public:
 
     static Vector3          m_sMouse;
 
+    static Matrix4          m_Model;
+
     static uint8_t          s_Axes;
 
-protected:
+    static MaterialInstance*s_Instance;
 
+protected:
+    static Mesh            *s_Cone;
+
+    static Mesh            *s_Move;
 
 };
 

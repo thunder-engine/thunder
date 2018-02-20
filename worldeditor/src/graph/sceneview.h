@@ -1,10 +1,11 @@
 #ifndef SCENEVIEW_H
 #define SCENEVIEW_H
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 #include <QInputEvent>
 #include <QMenu>
+#include <QPainter>
 
 #include <components/scene.h>
 #include "common.h"
@@ -20,7 +21,7 @@ class QOpenGLFramebufferObject;
 class OverlayButton : public QObject {
     Q_OBJECT
 public:
-    OverlayButton(const QString &name = QString(), QImage &icon = QImage()) :
+    OverlayButton(const QString &name = QString(), const QImage &icon = QImage()) :
             QObject() {
         m_Hovered   = false;
         m_Name  = name;
@@ -82,10 +83,10 @@ protected:
     bool                    m_Hovered;
 };
 
-class SceneView : public QGLWidget {
+class SceneView : public QOpenGLWidget {
     Q_OBJECT
 public:
-    SceneView               (Engine *engine, QWidget *parent = 0, QGLWidget *share = 0);
+    SceneView               (Engine *engine, QWidget *parent = 0);
 
     ~SceneView              ();
 
@@ -110,8 +111,6 @@ signals:
 
 protected:
     void                    drawOverlay         (QPainter &);
-
-    void                    paintEvent          (QPaintEvent *) Q_DECL_OVERRIDE;
 
     void                    dragEnterEvent      (QDragEnterEvent *);
     void                    dragLeaveEvent      (QDragLeaveEvent *);

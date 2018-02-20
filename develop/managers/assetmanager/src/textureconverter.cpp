@@ -60,7 +60,17 @@ AVariantMap TextureConverter::convertResource(IConverterSettings *settings) {
     TextureImportSettings *s    = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         QImage img(s->source());
-        img = img.convertToFormat(QImage::Format_ARGB32); // Temp
+        QImage::Format input;
+        switch(s->formatType()) {
+            case TextureImportSettings::Uncompressed_R8G8B8: {
+                input   = QImage::Format_RGB888;
+            } break;
+            default: {
+                input   = QImage::Format_RGBA8888;
+            } break;
+        }
+
+        img = img.convertToFormat(input);
 
         texture.m_components    = img.pixelFormat().channelCount();
         texture.m_format        = (texture.m_components == 3) ? Texture::RGB : Texture::RGBA;
@@ -147,7 +157,7 @@ AVariantMap TextureConverter::convertResource(IConverterSettings *settings) {
                     w   = MAX(w / 2, 1);
                     h   = MAX(h / 2, 1);
 
-                    mip     = mip.scaled(w, h, Qt::IgnoreAspectRatio, (sharp) ? Qt::FastTransformation : Qt::SmoothTransformation);
+                    mip     = mip.scaled(w, h, Qt::IgnoreAspectRatio);
                     size    = mip.byteCount();
                     if(size) {
                         data.resize(size);

@@ -9,8 +9,8 @@ class NEXT_LIBRARY_EXPORT Sprite : public Component {
     A_REGISTER(Sprite, Component, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(Material*, Material, material, setMaterial),
-        A_PROPERTY(Texture*, Texture, texture, setTexture)
+        A_PROPERTY(Material*, Material, Sprite::material, Sprite::setMaterial),
+        A_PROPERTY(Texture*, Texture, Sprite::texture, Sprite::setTexture)
     )
     A_NOMETHODS()
 
@@ -19,7 +19,7 @@ public:
 
     void                        update              ();
 
-    Vector2                   center              () const;
+    Vector2                     center              () const;
 
     void                        setCenter           (const Vector2 &value);
 
@@ -33,12 +33,12 @@ public:
 
     void                        loadUserData        (const AVariantMap &data);
 
-    AVariantMap       saveUserData        () const;
+    AVariantMap                 saveUserData        () const;
 
 protected:
-    Vector2                   m_Center;
+    Vector2                     m_Center;
 
-    Material                   *m_Material;
+    MaterialInstance           *m_Material;
 
     Texture                    *m_Texture;
 

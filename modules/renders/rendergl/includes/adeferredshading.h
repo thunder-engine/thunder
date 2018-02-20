@@ -1,8 +1,6 @@
 #ifndef ADEFERREDSHADING_H
 #define ADEFERREDSHADING_H
 
-#if !(GL_ES_VERSION_2_0)
-
 #include "apipeline.h"
 
 #include "resources/atexturegl.h"
@@ -50,7 +48,5 @@ private:
     ATextureGL                 *m_pGBuffer;
     ATextureGL                  m_Depth;
 };
-
-#endif
 
 #endif // ADEFERREDSHADING_H

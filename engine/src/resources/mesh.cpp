@@ -3,11 +3,13 @@
 #include <file.h>
 #include <log.h>
 
-#define MESH        "Mesh"
+#define HEADER      "Header"
+#define DATA        "Data"
 #define DEFAULTMESH ".embedded/DefaultMesh.mtl"
 
 Mesh::Mesh() :
-        m_Animated(false) {
+    m_Flags(0),
+    m_Modified(false) {
 
 }
 
@@ -16,216 +18,193 @@ Mesh::~Mesh() {
 }
 
 void Mesh::loadUserData(const AVariantMap &data) {
-    auto mesh = data.find(MESH);
-    if(mesh == data.end()) {
-        return;
+    auto it = data.find(HEADER);
+    if(it != data.end()) {
+        AVariantList header   = (*it).second.value<AVariantList>();
+
+        auto i      = header.begin();
+        m_Flags     = (*i).toInt();
     }
-    for(auto surfaces : (*mesh).second.value<AVariantList>()) {
-        // Surface
-        Surface s;
-        Vector3 obb[2];
 
-        AVariantList surface = surfaces.value<AVariantList>();
-        auto x  = surface.begin();
-        s.collision     = (*x).toBool();
-        x++;
-        while(x != surface.end()) {
-            Lod l;
+    auto mesh = data.find(DATA);
+    if(mesh != data.end()) {
+        for(auto surfaces : (*mesh).second.value<AVariantList>()) {
+            // Surface
+            Surface s;
+            Vector3 obb[2];
 
-            AVariantList lod  = (*x).value<AVariantList>();
-            auto y      = lod.begin();
-            string path = (*y).toString();
-            l.material  = Engine::loadResource<Material>(path.empty() ? DEFAULTMESH : path);
-            y++;
-
-            uint32_t vCount = (*y).toInt();
-            y++;
-
-            uint32_t tCount = (*y).toInt();
-            y++;
-
-            AByteArray data = (*y).toByteArray();
-            y++;
-
-            uint32_t offset = 0;
-            l.vertices      = VertexVector(vCount, Vertex());
-
-            for(int vertex = 0; vertex < vCount; vertex++) {
-                Vertex *v   = &l.vertices[vertex];
-
-                v->weight   = Vector4();
-                v->index    = Vector4();
-
-                // Reading mesh
-                uint8_t wCount  = 0;
-                if(m_Animated) { // Animated mesh
-                    memcpy(&wCount, &data[offset], sizeof(char));
-                    offset += sizeof(char);
-                    for(int k = 0; (k < wCount) && (k < 4); k++) {
-                        unsigned short bone;
-                        memcpy(&bone, &data[offset],  sizeof(short));
-                        offset += sizeof(short);
-                        memcpy(&v->weight[k], &data[offset],  sizeof(float));
-                        offset += sizeof(float);
-                    }
-                }
-
-                Vector3 xyz;
-                memcpy(&xyz,    &data[offset], sizeof(Vector3));
-                offset += sizeof(Vector3);
-                v->xyz      = Vector4(xyz.x, xyz.y, xyz.z, wCount);
-
-                memcpy(&v->t,   &data[offset], sizeof(Vector3));
-                offset += sizeof(Vector3);
-                memcpy(&v->n,   &data[offset], sizeof(Vector3));
-                offset += sizeof(Vector3);
-
-                memcpy(&v->uv0, &data[offset], sizeof(Vector2));
-                offset += sizeof(Vector2);
-
-                obb[0].x = MIN(obb[0].x, v->xyz.x);
-                obb[0].y = MIN(obb[0].y, v->xyz.y);
-                obb[0].z = MIN(obb[0].z, v->xyz.z);
-
-                obb[1].x = MAX(obb[1].x, v->xyz.x);
-                obb[1].y = MAX(obb[1].y, v->xyz.y);
-                obb[1].z = MAX(obb[1].z, v->xyz.z);
-            }
-            l.indices   = IndexVector(tCount * 3, 0);
-            memcpy(&l.indices[0],   &data[offset],  sizeof(int) * l.indices.size());
-            offset += sizeof(int) * l.indices.size();
-
-            s.lods.push_back(l);
-
+            AVariantList surface = surfaces.value<AVariantList>();
+            auto x  = surface.begin();
+            s.collision = (*x).toBool();
             x++;
-        }
+            s.mode      = (Mesh::Modes)(*x).toInt();
+            x++;
+            while(x != surface.end()) {
+                Lod l;
 
-        s.obb.setBox(obb[0], obb[1]);
+                AVariantList lod  = (*x).value<AVariantList>();
+                auto y      = lod.begin();
+                string path = (*y).toString();
+                l.material  = Engine::loadResource<Material>(path.empty() ? DEFAULTMESH : path);
+                y++;
 
-        m_Surfaces.push_back(s);
-    }
+                uint32_t vCount = (*y).toInt();
+                y++;
 
-    if(m_Animated) { // Animated mesh
-        // Reading skeletal arcitecture
-/*
-        short parent;
-        short jCount;
+                uint32_t tCount = (*y).toInt();
+                y++;
 
-        file->_fread(&jCount, sizeof(short), 1, fp);
+                AByteArray data;
+                { // Required field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.vertices  = vector<Vector3>(vCount);
+                    memcpy(&l.vertices[0],  &data[0], sizeof(Vector3) * vCount);
+                    for(uint32_t i = 0; i < vCount; i++) {
+                        obb[0].x = MIN(obb[0].x, l.vertices[i].x);
+                        obb[0].y = MIN(obb[0].y, l.vertices[i].y);
+                        obb[0].z = MIN(obb[0].z, l.vertices[i].z);
 
-        bind = joint_vector(jCount);
-        for(int j = 0; j < jCount; j++) {
-            file->_fread(&parent, sizeof(short), 1, fp);
-
-            joint_data *joint   = &bind[j];
-            if(parent == -1)
-                joint->parent   = 0;
-            else
-                joint->parent   = &bind[parent];
-
-            joint->iparent      = parent;
-
-            file->_fread(joint->name,          32, 1, fp);
-            file->_fread(&joint->proxy,        sizeof(char), 1, fp);
-            file->_fread(&joint->emitter,      sizeof(char), 1, fp);
-        }
-        // Reading bind pose
-        for(int j = 0; j < jCount; j++) {
-            joint_data *joint   = &bind[j];
-
-            //file->_fread(&joint->quaternion,   sizeof(Quaternion ),    1, fp);
-            file->_fread(&joint->vector,       sizeof(Vector3),      1, fp);
-            // Matrix calculation
-            Matrix4 translate;
-            translate  = translate.translate(joint->vector);
-
-            //joint->rotation    = joint->quaternion.toMatrix();
-            joint->transform   = translate * joint->rotation;
-        }
-*/
-    }
-}
-
-AVariantMap Mesh::saveUserData() const {
-    AVariantMap result;
-
-    AVariantList surfaces;
-    for(auto s : m_Surfaces) {
-        AVariantList surface;
-        surface.push_back(s.collision);
-
-        for(auto l : s.lods) {
-            AVariantList lod;
-            string path = Engine::reference(l.material);
-            lod.push_back(path);
-            lod.push_back((int)l.vertices.size());
-            lod.push_back((int)l.indices.size() / 3);
-
-            AByteArray buffer;
-            buffer.resize(sizeof(Vertex) * l.vertices.size() +
-                          sizeof(int) * l.indices.size());
-
-            uint32_t offset = 0;
-            for(int vertex = 0; vertex < l.vertices.size(); vertex++) {
-                const Vertex *v = &l.vertices[vertex];
-                if(m_Animated) {	// Animated mesh
-                    char wCount = 4;
-                    memcpy(&buffer[offset], &wCount, sizeof(char));
-                    offset += sizeof(char);
-                    for(int k = 0; k < wCount; k++) {
-                        int bone    = v->index[k];
-                        memcpy(&buffer[offset], &bone,  sizeof(short));
-                        offset += sizeof(short);
-                        memcpy(&buffer[offset], &v->weight.v[k],    sizeof(float));
-                        offset += sizeof(float);
+                        obb[1].x = MAX(obb[1].x, l.vertices[i].x);
+                        obb[1].y = MAX(obb[1].y, l.vertices[i].y);
+                        obb[1].z = MAX(obb[1].z, l.vertices[i].z);
                     }
                 }
-                memcpy(&buffer[offset], &v->xyz,    sizeof(Vector3));
-                offset += sizeof(Vector3);
-                memcpy(&buffer[offset], &v->t,      sizeof(Vector3));
-                offset += sizeof(Vector3);
-                memcpy(&buffer[offset], &v->n,      sizeof(Vector3));
-                offset += sizeof(Vector3);
+                { // Required field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.indices = IndexVector(tCount * 3);
+                    memcpy(&l.indices[0], &data[0],  sizeof(uint32_t) * tCount * 3);
+                }
+                if(m_Flags & ATTRIBUTE_COLOR) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.colors    = vector<Vector4>(vCount);
+                    memcpy(&l.colors[0],    &data[0],  sizeof(Vector4) * vCount);
+                }
+                if(m_Flags & ATTRIBUTE_UV0) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.uv0   = vector<Vector2>(vCount);
+                    memcpy(&l.uv0[0],       &data[0],  sizeof(Vector2) * vCount);
+                }
+                if(m_Flags & ATTRIBUTE_UV1) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.uv1   = vector<Vector2>(vCount);
+                    memcpy(&l.uv1[0],       &data[0],  sizeof(Vector2) * vCount);
+                }
+                if(m_Flags & ATTRIBUTE_NORMALS) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.normals   = vector<Vector3>(vCount);
+                    memcpy(&l.normals[0],   &data[0],  sizeof(Vector3) * vCount);
+                }
+                if(m_Flags & ATTRIBUTE_TANGENTS) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.tangents  = vector<Vector3>(vCount);
+                    memcpy(&l.tangents[0],  &data[0],  sizeof(Vector3) * vCount);
+                }
+                if(m_Flags & ATTRIBUTE_ANIMATED) { // Optional field
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.weights   = vector<Vector4>(vCount);
+                    memcpy(&l.weights[0],   &data[0],  sizeof(Vector4) * vCount);
 
-                memcpy(&buffer[offset], &v->uv0,    sizeof(Vector2));
-                offset += sizeof(Vector2);
+                    data    = (*y).toByteArray();
+                    y++;
+                    l.bones = vector<Vector4>(vCount);
+                    memcpy(&l.bones[0],   &data[0],  sizeof(Vector4) * vCount);
+                }
+                s.lods.push_back(l);
+
+                x++;
             }
+            s.aabb.setBox(obb[0], obb[1]);
 
-            memcpy(&buffer[offset],     &l.indices[0],  sizeof(int) * l.indices.size());
-            offset += sizeof(int) * l.indices.size();
-
-            lod.push_back(AByteArray(buffer.begin(), buffer.begin() + offset));
-            surface.push_back(lod);
+            addSurface(s);
         }
-        surfaces.push_back(surface);
     }
-    result[MESH]    = surfaces;
-
-    if(m_Animated) {
-/*
-        // Save bone structure
-        short jCount    = bind.size();
-        file->_fwrite(&jCount, sizeof(short), 1, fp);
-        for(int j = 0; j < jCount; j++) {
-            joint_data *joint   = &bind[j];
-            file->_fwrite(&joint->iparent,	sizeof(short), 1, fp);
-            // Save name of bone
-            file->_fwrite(joint->name, 32, 1, fp);
-
-            file->_fwrite(&joint->proxy,    sizeof(char), 1, fp);
-            file->_fwrite(&joint->emitter,	sizeof(char), 1, fp);
-        }
-        // Save bind pose
-        for(int j = 0; j < jCount; j++) {
-            joint_data *joint   = &bind[j];
-            //file->_fwrite(&joint->quaternion,  sizeof(Quaternion ),    1, fp);
-            file->_fwrite(&joint->vector,      sizeof(Vector3),      1, fp);
-        }
-*/
-    }
-    return result;
 }
 
-bool Mesh::isAnimated() const {
-    return m_Animated;
+Material *Mesh::material(uint32_t surface, uint32_t lod) const {
+    if(lod < lodsCount(surface)) {
+        return m_Surfaces[surface].lods[lod].material;
+    }
+    return nullptr;
+}
+
+Vector3Vector Mesh::vertices(uint32_t surface, uint32_t lod) const {
+    if(lod < lodsCount(surface)) {
+        return m_Surfaces[surface].lods[lod].vertices;
+    }
+    return Vector3Vector();
+}
+
+Mesh::IndexVector Mesh::indices(uint32_t surface, uint32_t lod) const {
+    if(lod < lodsCount(surface)) {
+        return m_Surfaces[surface].lods[lod].indices;
+    }
+    return Mesh::IndexVector();
+}
+
+uint32_t Mesh::surfacesCount() const {
+    return m_Surfaces.size();
+}
+
+uint32_t Mesh::lodsCount(uint32_t surface) const {
+    if(surface < surfacesCount()) {
+        return m_Surfaces[surface].lods.size();
+    }
+    return 0;
+}
+
+uint32_t Mesh::vertexCount(uint32_t surface, uint32_t lod) const {
+    if(lod < lodsCount(surface)) {
+        return m_Surfaces[surface].lods[lod].vertices.size();
+    }
+    return 0;
+}
+
+uint32_t Mesh::indexCount(uint32_t surface, uint32_t lod) const {
+    if(lod < lodsCount(surface)) {
+        return m_Surfaces[surface].lods[lod].indices.size();
+    }
+    return 0;
+}
+
+AABBox Mesh::bound(uint32_t surface) const {
+    if(surface < surfacesCount()) {
+        return m_Surfaces[surface].aabb;
+    }
+    return AABBox();
+}
+
+Mesh::Modes Mesh::mode(uint32_t surface) const {
+    if(surface < surfacesCount()) {
+        return m_Surfaces[surface].mode;
+    }
+    return MODE_TRIANGLES;
+}
+
+uint8_t Mesh::flags() const {
+    return m_Flags;
+}
+
+void Mesh::setFlags(uint8_t flags) {
+    m_Flags = flags;
+}
+
+void Mesh::addSurface(const Surface &surface) {
+    m_Surfaces.push_back(surface);
+    m_Modified  = true;
+}
+
+bool Mesh::isModified() const {
+    return m_Modified;
+}
+
+void Mesh::setModified(bool flag) {
+    m_Modified  = flag;
 }

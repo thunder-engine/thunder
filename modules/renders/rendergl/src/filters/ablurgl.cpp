@@ -19,31 +19,28 @@ ABlurGL::ABlurGL(APipeline *pipeline) {
 }
 
 void ABlurGL::draw(ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points) {
-    if(m_pBlurMaterial) {
-        m_pBlurMaterial->bind(*m_pPipeline, IDrawObjectGL::UI, AMaterialGL::Static);
-        int program = m_pBlurMaterial->getProgram(AMaterialGL::Static);
+    if(m_pBlurMaterial && m_pBlurMaterial->bind(*m_pPipeline, IRenderSystem::UI, AMaterialGL::Static)) {
         if(u_Steps > -1) {
-            glProgramUniform1i(program, u_Steps, steps);
+            glUniform1i(u_Steps, steps);
         }
         if(u_Size > -1) {
-            glProgramUniform2f(program, u_Size, 1.0f / size.x, 1.0f / size.y);
+            glUniform2f(u_Size, 1.0f / size.x, 1.0f / size.y);
         }
         if(u_Curve > -1) {
-            glProgramUniform1fv(program, u_Curve, MAX_SAMPLES, points);
+            glUniform1fv(u_Curve, MAX_SAMPLES, points);
         }
         if(u_Direction > -1) {
-            glProgramUniform2f(program, u_Direction, 1.0f, 0.0f);
+            glUniform2f(u_Direction, 1.0f, 0.0f);
             m_pPipeline->drawScreen(source, temp);
 
             glEnable    ( GL_BLEND );
             glBlendFunc ( GL_ONE, GL_ONE );
 
-            //m_pPipeline->clearScreen(target);
-            glProgramUniform2f(program, u_Direction, 0.0f, 1.0f);
+            glUniform2f(u_Direction, 0.0f, 1.0f);
             m_pPipeline->drawScreen(temp, target);
 
             glDisable   ( GL_BLEND );
         }
-        m_pBlurMaterial->unbind(IDrawObjectGL::UI);
+        m_pBlurMaterial->unbind(IRenderSystem::UI);
     }
 }

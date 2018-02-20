@@ -27,7 +27,7 @@
 #include "components/actor.h"
 #include "components/camera.h"
 #include "components/staticmesh.h"
-#include "components/lightsource.h"
+#include "components/directlight.h"
 
 #include "components/sprite.h"
 
@@ -88,7 +88,7 @@ AVariantMap                     EnginePrivate::m_Values;
 
 Engine::Engine(IFile *file) :
         p_ptr(new EnginePrivate()) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     p_ptr->m_pFile  = file;
 
@@ -114,13 +114,13 @@ Engine::Engine(IFile *file) :
 
     StaticMesh::registerClassFactory();
     Sprite::registerClassFactory();
-    LightSource::registerClassFactory();
+    DirectLight::registerClassFactory();
 
     registerMetaType<MaterialArray>("MaterialArray");
 }
 
 Engine::~Engine() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     Input::destroy();
     p_ptr->m_pPlatform->destroy();
@@ -130,7 +130,7 @@ Engine::~Engine() {
     Initialize all engine systems.
 */
 bool Engine::init() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     bool result     = p_ptr->m_pPlatform->init(this);
 
@@ -143,7 +143,7 @@ bool Engine::init() {
 }
 
 int32_t Engine::exec() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     for(auto it : p_ptr->m_Systems) {
         if(!it->init()) {
@@ -157,14 +157,19 @@ int32_t Engine::exec() {
     if(scene) {
         p_ptr->m_Valid  = true;
 
-        Chunk *level    = loadResource<Chunk>(value(gEntry, "").toString());
+        string path     = value(gEntry, "").toString();
+        Chunk *level    = loadResource<Chunk>(path);
+        Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
         if(level) {
             level->setParent(scene);
         }
 
-        Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", scene);
-        camera->setPosition(Vector3(0.0f, 0.0f, 20.0f));
-        Camera *component   = camera->addComponent<Camera>();
+        Camera *component   = scene->findChild<Camera *>();
+        if(component == nullptr) {
+            Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", scene);
+            camera->setPosition(Vector3(0.0f, 0.0f, 20.0f));
+            component       = camera->addComponent<Camera>();
+        }
         component->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
         p_ptr->m_Controller->setActiveCamera(component);
 
@@ -192,7 +197,7 @@ int32_t Engine::exec() {
 }
 
 AVariant Engine::value(const string &key, const AVariant &defaultValue) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     auto it = EnginePrivate::m_Values.find(key);
     if(it != EnginePrivate::m_Values.end()) {
@@ -202,13 +207,13 @@ AVariant Engine::value(const string &key, const AVariant &defaultValue) {
 }
 
 void Engine::setValue(const string &key, const AVariant &value) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     EnginePrivate::m_Values[key]    = value;
 }
 
 AObject *Engine::loadResource(const string &path) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     if(!path.empty()) {
         string uuid = path;
@@ -252,7 +257,7 @@ AObject *Engine::loadResource(const string &path) {
 }
 
 string Engine::reference(AObject *object) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     auto it = EnginePrivate::m_ReferenceCache.find(object);
     if(it != EnginePrivate::m_ReferenceCache.end()) {
@@ -262,7 +267,7 @@ string Engine::reference(AObject *object) {
 }
 
 void Engine::reloadBundle() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
     EnginePrivate::m_IndexMap.clear();
 
     IFile *file = ((Engine *)Engine::instance())->file();
@@ -289,25 +294,25 @@ void Engine::reloadBundle() {
 }
 
 void Engine::addModule(IModule *mode) {
-    PROFILER_MARKER
+    PROFILER_MARKER;
     if(mode->types() && IModule::SYSTEM) {
         p_ptr->m_Systems.push_back(mode->system());
     }
 }
 
 bool Engine::createWindow() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
     return p_ptr->m_pPlatform->start();
 }
 
 IController *Engine::controller() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     return p_ptr->m_Controller;
 }
 
 IFile *Engine::file() {
-    PROFILER_MARKER
+    PROFILER_MARKER;
 
     return p_ptr->m_pFile;
 }

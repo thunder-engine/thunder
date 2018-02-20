@@ -5,8 +5,19 @@
 
 #include "baseconvertersettings.h"
 
-class Mesh;
+#include "resources/mesh.h"
+
 class IFile;
+
+class MeshSerial : public Mesh {
+public:
+
+    AVariantMap                 saveUserData                () const;
+
+protected:
+    friend class FBXConverter;
+
+};
 
 class FBXConverter : public IConverter {
 public:
@@ -20,8 +31,8 @@ public:
 
 protected:
     void                        importFBX               (const string &src, Mesh &mesh);
-    void                        importDynamic           (KFbxNode *lRootNode, Mesh &mesh);
-    void                        importAFAnimation       (KFbxScene *lScene);
+    void                        importDynamic           (FbxNode *lRootNode, Mesh &mesh);
+    void                        importAFAnimation       (FbxScene *lScene);
 
     void                        saveAnimation           (const string &dst);
 

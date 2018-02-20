@@ -48,7 +48,7 @@ void ImportQueue::onStarted(int count, const QString &action) {
     show();
     ui->progressBar->setValue(0);
     ui->progressBar->setMaximum(count);
-    ui->groupBox->setTitle(action);
+    ui->label->setText(action);
 }
 
 void ImportQueue::onFinished() {

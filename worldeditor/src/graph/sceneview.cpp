@@ -18,8 +18,8 @@
 
 #include "handles.h"
 
-SceneView::SceneView(Engine *engine, QWidget *parent, QGLWidget *share) :
-        QGLWidget(parent, share),
+SceneView::SceneView(Engine *engine, QWidget *parent) :
+        QOpenGLWidget(parent),
         m_pController(nullptr),
         m_pRender(nullptr),
         m_pScene(nullptr),
@@ -27,7 +27,6 @@ SceneView::SceneView(Engine *engine, QWidget *parent, QGLWidget *share) :
 
     m_pEngine   = engine;
 
-    setFormat(QGLFormat(QGL::SampleBuffers));
     setAutoFillBackground(false);
 
     setFocusPolicy(Qt::StrongFocus);
@@ -58,13 +57,13 @@ void SceneView::addButton(OverlayButton *button) {
 }
 
 void SceneView::initializeGL() {
-    PluginModel *plugin = PluginModel::instance();
+    QOpenGLContext *c   = context();
 
     m_pScene    = Engine::objectCreate<Scene>("Scene");
-    plugin->addScene(m_pScene);
+    PluginModel::instance()->addScene(m_pScene);
 
     if(!m_RenderDesc.isEmpty()) {
-        m_pRender   = static_cast<IRenderSystem *>(plugin->createSystem(qPrintable(m_RenderDesc)));
+        m_pRender   = static_cast<IRenderSystem *>(PluginModel::instance()->createSystem(qPrintable(m_RenderDesc)));
     }
     if(m_pRender) {
         m_pRender->init();
@@ -74,7 +73,6 @@ void SceneView::initializeGL() {
             m_pRender->overrideController(m_pController);
         }
     }
-
     emit inited();
 }
 
@@ -85,7 +83,7 @@ void SceneView::paintGL() {
     if(m_pScene) {
         m_pScene->update();
         if(m_pRender) {
-            m_pRender->update(*m_pScene);
+            m_pRender->update(*m_pScene, defaultFramebufferObject());
         }
     }
     Handles::s_ActiveCamera = m_pController->activeCamera();
@@ -94,27 +92,22 @@ void SceneView::paintGL() {
         m_pController->drawHandles();
     }
     Handles::endDraw();
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    drawOverlay(painter);
+    //painter.setRenderHint(QPainter::HighQualityAntialiasing, false);
 }
 
 void SceneView::resizeGL(int width, int height) {
+    QOpenGLWidget::resizeGL(width, height);
+
     if(m_pController) {
         Camera *c   =  m_pController->activeCamera();
         if(c) {
             c->resize(width, height);
         }
     }
-}
-
-void SceneView::paintEvent(QPaintEvent *event) {
-    makeCurrent();
-
-    paintGL();
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
-    drawOverlay(painter);
-    //painter.setRenderHint(QPainter::HighQualityAntialiasing, false);
-    painter.end();
 }
 
 void SceneView::drawOverlay(QPainter &painter) {

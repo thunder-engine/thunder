@@ -15,21 +15,25 @@ Project {
 
     DynamicLibrary {
         name: "quazip-editor"
+        condition: quazip.desktop
         files: quazip.srcFiles
+
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["core"]; }
+        bundle.isBundle: false
 
         cpp.defines: ["QUAZIP_BUILD", "QUAZIP_BUILD", "NOMINMAX"]
         cpp.includePaths: quazip.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
+        cpp.sonamePrefix: "@executable_path"
 
         Group {
             name: "Install Dynamic zLib"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: quazip.BIN_PATH
+            qbs.installDir: quazip.BIN_PATH + "/" + quazip.bundle
             qbs.installPrefix: quazip.PREFIX
         }
     }

@@ -6,11 +6,19 @@ Project {
     property string COMPANY_NAME: "FrostSpear"
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
-    property string SDK_VERSION: "1.0"
+    property string SDK_VERSION: "2.0"
     property string LAUNCHER_VERSION: "1.0"
-    property string YEAR: "2017"
+    property string COPYRIGHT_YEAR: "2018"
+    property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
-    property string PLATFORM: "windows/" + qbs.architecture
+    property string PLATFORM: {
+        var arch = qbs.architecture;
+        if(qbs.targetOS.contains("osx")) {
+            arch = "x86_64"
+        }
+
+        return qbs.targetOS[0] + "/" + arch;
+    }
     property string RESOURCE_ROOT: "../worldeditor/bin"
 
     property string PREFIX: "_PACKAGE"
@@ -19,6 +27,14 @@ Project {
     property string BIN_PATH: SDK_PATH + "/bin/" + PLATFORM
     property string LIB_PATH: SDK_PATH + "/lib/" + PLATFORM
     property string INC_PATH: SDK_PATH + "/include"
+
+    property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios")
+    property string bundle: {
+        if(qbs.targetOS.contains("osx")) {
+            return EDITOR_NAME + ".app/Contents/MacOS/"
+        }
+        return "";
+    }
 
     references: [
         "thirdparty/thirdparty.qbs",

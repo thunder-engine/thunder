@@ -32,21 +32,21 @@ public:
     Quaternion                  (const Vector3 &euler);
     Quaternion                  (const Matrix3 &matrix);
 
-    inline bool                 operator==                  (const Quaternion &quaternion) const;
-    inline bool                 operator!=                  (const Quaternion &quaternion) const;
-	
-    inline Quaternion           operator*                   (const Quaternion &quaternion) const;
-    inline Vector3             operator*                   (const Vector3 &vector) const;
+    bool                        operator==                  (const Quaternion &quaternion) const;
+    bool                        operator!=                  (const Quaternion &quaternion) const;
+
+    Quaternion                  operator*                   (const Quaternion &quaternion) const;
+    Vector3                     operator*                   (const Vector3 &vector) const;
 
     areal                      &operator[]                  (int i);
-    const areal                 operator[]                  (int i) const;
+    areal                       operator[]                  (int i) const;
 	
     Quaternion                  inverse                     () const;
 
     void                        mix                         (const Quaternion &q0, const Quaternion &q1, areal t);
 	
-    Matrix3                    toMatrix                    () const;
-    Vector3                    euler                       () const;
+    Matrix3                     toMatrix                    () const;
+    Vector3                     euler                       () const;
 	
     union {
         struct {

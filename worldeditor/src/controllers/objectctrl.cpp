@@ -108,7 +108,7 @@ void ObjectCtrl::drawHandles() {
 
     Handles::m_sMouse   = Vector3(mMousePosition, 1.0);
 
-    //drawHelpers(*m_pMap);
+    drawHelpers(*m_pMap);
 
     if(!m_Selected.empty()) {
         switch(mMode) {
@@ -157,7 +157,7 @@ void ObjectCtrl::drawHelpers(AObject &object) {
                 array<Vector3, 4> n = camera->frustumCorners(camera->nearPlane());
                 array<Vector3, 4> f = camera->frustumCorners(camera->farPlane());
 
-                Vector3List points;
+                Vector3Vector points;
                 points.push_back(n[0]);
                 points.push_back(n[1]);
                 points.push_back(n[2]);
@@ -249,7 +249,7 @@ void ObjectCtrl::selectActor(const list<uint32_t> &list, bool undo) {
     }
 }
 
-void ObjectCtrl::onSelectActor(AObject::ObjectList &list, bool undo) {
+void ObjectCtrl::onSelectActor(AObject::ObjectList list, bool undo) {
     AObject::ObjectList sel = selected();
     if(!mAdditive) {
         clear();
@@ -277,11 +277,11 @@ void ObjectCtrl::onSelectActor(AObject::ObjectList &list, bool undo) {
     }
 }
 
-void ObjectCtrl::onRemoveActor(AObject::ObjectList &, bool undo) {
+void ObjectCtrl::onRemoveActor(AObject::ObjectList, bool undo) {
     deleteSelected(!undo);
 }
 
-void ObjectCtrl::onParentActor(AObject::ObjectList &objects, AObject::ObjectList &parents, bool undo) {
+void ObjectCtrl::onParentActor(AObject::ObjectList objects, AObject::ObjectList parents, bool undo) {
     if(undo) {
         UndoManager::instance()->push(new UndoManager::ParentingObjects(objects, parents, this));
     }

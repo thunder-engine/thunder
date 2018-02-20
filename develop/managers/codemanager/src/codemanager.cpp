@@ -90,8 +90,8 @@ void CodeManager::rebuildProject() {
         includes.removeDuplicates();
         values[gIncludes].append(includes.join(""));
 
-        m_pBuilder->copyTemplate(m_pProject->resourcePath() + "/templates/plugin.cpp", m_pBuilder->project() + "plugin.cpp", values);
-        m_pBuilder->copyTemplate(m_pProject->resourcePath() + "/templates/application.cpp", m_pBuilder->project() + "application.cpp", values);
+        m_pBuilder->copyTemplate(m_pProject->resourcePath() + "/editor/templates/plugin.cpp", m_pBuilder->project() + "plugin.cpp", values);
+        m_pBuilder->copyTemplate(m_pProject->resourcePath() + "/editor/templates/application.cpp", m_pBuilder->project() + "application.cpp", values);
 
         code.removeDuplicates();
 

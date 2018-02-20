@@ -80,22 +80,22 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
             StaticMesh *staticMesh  = dynamic_cast<StaticMesh *>(it);
             if(staticMesh && staticMesh->mesh()) {
                 uint32_t i  = 0;
-                for(auto it : staticMesh->mesh()->m_Surfaces) {
-                    Mesh::Surface *s   = &it;
-                    pos += s->obb.center;
-                    radius += s->obb.center.length() + s->obb.size.length() * 0.5;
+                for(uint32_t s = 0; s < staticMesh->mesh()->surfacesCount(); s++) {
+                    AABBox aabb = staticMesh->mesh()->bound(s);
+                    pos += aabb.center;
+                    radius += aabb.center.length() + aabb.size.length() * 1.5;
                     Vector3 min, max;
-                    s->obb.box(min, max);
+                    aabb.box(min, max);
                     if(i == 0) {
                         bottom  = min.y;
                     }
                     bottom = MIN(bottom, min.y);
                     i++;
                 }
-                uint32_t size   = staticMesh->mesh()->m_Surfaces.size();
+                uint32_t size   = staticMesh->mesh()->surfacesCount();
                 pos /= size;
                 radius /= size;
-                radius /= sinf(m_pActiveCamera->fov() * 2.0 * DEG2RAD);
+                radius /= sinf(m_pActiveCamera->fov() * DEG2RAD);
             }
         }
 
@@ -198,8 +198,8 @@ void CameraCtrl::cameraZoom(float delta) {
 
 void CameraCtrl::cameraRotate(const Quaternion  &q) {
     Vector3 target = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
-    m_pCamera->setRotation(q);
     if(!mCameraFree) {
         m_pCamera->setPosition(target + q * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }
+    m_pCamera->setRotation(q);
 }

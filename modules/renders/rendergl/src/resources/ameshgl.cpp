@@ -4,133 +4,120 @@
 
 AMeshGL::AMeshGL() :
         Mesh() {
-
-    mVBO    = false;
 }
 
 AMeshGL::~AMeshGL() {
-    clear();
+    deleteVbo();
 }
 
 void AMeshGL::loadUserData(const AVariantMap &data) {
+    deleteVbo();
+
     Mesh::loadUserData(data);
 
-    clear();
-
-    bool vbo = true;
-    for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
-        uint8_t lods    = m_Surfaces[s].lods.size();
-        uint32_t *vb    = new uint32_t[lods];
-        uint32_t *ib    = new uint32_t[lods];
-        glGenBuffers(lods, vb);
-        glGenBuffers(lods, ib);
-        for(uint32_t l = 0; l < lods; l++) {
-            Lod *lod    = &m_Surfaces[s].lods[l];
-            if(vb[l]) {
-                glBindBuffer(GL_ARRAY_BUFFER, vb[l]);
-                glBufferData(GL_ARRAY_BUFFER, lod->vertices.size() * sizeof(Vertex), &lod->vertices[0], GL_STATIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            } else {
-                vbo = false;
-            }
-
-            if(ib[l]) {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib[l]);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, lod->indices.size() * sizeof(int), &lod->indices[0], GL_STATIC_DRAW);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            } else {
-                vbo = false;
-            }
-        }
-        vbuffer.push_back(vb);
-        ibuffer.push_back(ib);
-    }
-    mVBO    = vbo;
+    createVbo();
 }
 
-void AMeshGL::clear() {
-    if(vbuffer.empty() && ibuffer.empty()) {
+void AMeshGL::createVbo() {
+    if(m_vertices.empty() && m_triangles.empty()) {
+        for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
+            uint8_t lods    = m_Surfaces[s].lods.size();
+
+            IndexVector tris    = IndexVector(lods);
+            IndexVector vert    = IndexVector(lods);
+
+            IndexVector norm    = IndexVector(lods);
+            IndexVector tang    = IndexVector(lods);
+            IndexVector uv    = IndexVector(lods);
+
+            glGenBuffers(lods, &tris[0]);
+            glGenBuffers(lods, &vert[0]);
+            if(m_Flags & Mesh::ATTRIBUTE_NORMALS) {
+                glGenBuffers(lods, &norm[0]);
+            }
+            if(m_Flags & Mesh::ATTRIBUTE_TANGENTS) {
+                glGenBuffers(lods, &tang[0]);
+            }
+            if(m_Flags & Mesh::ATTRIBUTE_UV0) {
+                glGenBuffers(lods, &uv[0]);
+            }
+
+            for(uint32_t l = 0; l < lods; l++) {
+                Lod *lod    = &m_Surfaces[s].lods[l];
+                uint32_t vCount = lod->vertices.size();
+
+                if(!lod->indices.empty()) {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tris[l]);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * lod->indices.size(), &lod->indices[0], GL_STATIC_DRAW);
+                }
+                if(!lod->vertices.empty()) {
+                    glBindBuffer(GL_ARRAY_BUFFER, vert[l]);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->vertices[0], GL_STATIC_DRAW);
+                }
+                if(m_Flags & Mesh::ATTRIBUTE_NORMALS) {
+                    glBindBuffer(GL_ARRAY_BUFFER, norm[l]);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->normals[0], GL_STATIC_DRAW);
+                }
+                if(m_Flags & Mesh::ATTRIBUTE_TANGENTS) {
+                    glBindBuffer(GL_ARRAY_BUFFER, tang[l]);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->tangents[0], GL_STATIC_DRAW);
+                }
+                if(m_Flags & Mesh::ATTRIBUTE_UV0) {
+                    glBindBuffer(GL_ARRAY_BUFFER, uv[l]);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, &lod->uv0[0], GL_STATIC_DRAW);
+                }
+
+            }
+            m_vertices.push_back(vert);
+            m_triangles.push_back(tris);
+
+            if(m_Flags & Mesh::ATTRIBUTE_NORMALS) {
+                m_normals.push_back(norm);
+            }
+            if(m_Flags & Mesh::ATTRIBUTE_TANGENTS) {
+                m_tangents.push_back(tang);
+            }
+            if(m_Flags & Mesh::ATTRIBUTE_UV0) {
+                m_uv0.push_back(uv);
+            }
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+}
+
+void AMeshGL::deleteVbo() {
+    if(m_vertices.empty() && m_triangles.empty()) {
         return;
     }
     for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
-        uint8_t lods    = m_Surfaces[s].lods.size();
+        {
+            uint32_t size   = m_vertices[s].size();
+            glDeleteBuffers(size, &m_vertices[s][0]);
+        }
+        {
+            uint32_t size   = m_triangles[s].size();
+            glDeleteBuffers(size, &m_triangles[s][0]);
+        }
 
-        uint32_t *vb    = vbuffer[s];
-        glDeleteBuffers(lods, vb);
-        delete []vb;
-
-        uint32_t *ib    = ibuffer[s];
-        glDeleteBuffers(lods, ib);
-        delete []vb;
-    }
-    vbuffer.clear();
-    ibuffer.clear();
-}
-
-/*
-void MeshSystemGL::attach(mesh_data *p_ready_mesh, joint_data *p_ready_array, mesh_data *p_attach_mesh, joint_data *p_attach_array, uint8_t proxy) {
-
-    joint_data *pProxy = &p_ready_array[0];
-    // Get proxy
-    int j;
-    for(j = 0; j < p_ready_mesh->jCount; j++) {
-        if(p_ready_array[j].proxy == proxy) {
-            pProxy  = &p_ready_array[j];
-            break;
+        {
+            uint32_t size   = m_normals[s].size();
+            glDeleteBuffers(size, &m_normals[s][0]);
+        }
+        {
+            uint32_t size   = m_tangents[s].size();
+            glDeleteBuffers(size, &m_tangents[s][0]);
+        }
+        {
+            uint32_t size   = m_uv0[s].size();
+            glDeleteBuffers(size, &m_uv0[s][0]);
         }
     }
-    // Attach object
-    for(j = 0; j < p_attach_mesh->jCount; j++) {
-        if(p_attach_array[j].iparent == -1) {
-            p_attach_array[j].parent	= pProxy;
-            break;
-        }
-    }
+    m_triangles.clear();
+    m_vertices.clear();
 
+    m_normals.clear();
+    m_tangents.clear();
+    m_uv0.clear();
 }
-
-void MeshSystemGL::detach() {
-
-}
-
-void MeshSystemGL::cpu_calculation(mesh_instance_data *instance, joint_data *array) {
-    for(int surface = 0; surface < instance->pMesh->surfaces.size(); surface++) {
-        surface_data *s     = instance->pMesh->surfaces[surface];
-        // \todo: maybe 1 bone bug
-        for(int vertex = 0; vertex < s->vCount; vertex++) {
-            vertex_data *v  = &s->vertices[vertex];
-
-            Vector4 xyz   = Vector4(v->xyz.x, v->xyz.y, v->xyz.z, 1.0f);
-
-            v->txyz         = Vector4();
-            v->tn           = Vector3();
-
-            for(int k = 0; k < v->wCount; k++) {
-                int index   = (int)v->index[k];
-                v->txyz    += array[index].transform * xyz * v->weight[k];
-                v->tn      += array[index].rotation * v->n * v->weight[k];
-            }
-            
-            glBindBuffer(GL_ARRAY_BUFFER, s->vbuffer);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, s->vCount * sizeof(vertex_data), s->vertices);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-        }
-    }
-
-}
-    if(pMesh->mesh_type) {
-        pMesh->vCount       = pMesh->tpl->animations.size();
-        if(pMesh->vCount) {
-            pMesh->aAnim    = new animation_data[pMesh->vCount];
-
-            Vector3 aabb[2];
-            for(unsigned int i = 0; i < pMesh->tpl->animations.size(); i++) {
-                tpl_data *pTemplate                 = pMesh->tpl->animations[i];
-                tpl_animation_set_data *pAnimation  = (tpl_animation_set_data *)pTemplate->data[0];
-                pLog->set_record(ALog::LOG_ERROR, pTemplate->name);
-                load_animation(pAnimation->path, pTemplate->name, pMesh, i, pAnimation->type, aabb);
-            }
-            pMesh->aabb = AABox(aabb[0], aabb[1].x - aabb[0].x, aabb[1].y - aabb[0].y, aabb[1].z - aabb[0].z);
-        }
-    }
-*/

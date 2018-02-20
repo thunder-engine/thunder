@@ -23,11 +23,11 @@ void Sprite::setCenter(const Vector2 &value) {
 }
 
 Material *Sprite::material() const {
-    return m_Material;
+    return m_Material->material();
 }
 
 void Sprite::setMaterial(Material *material) {
-    m_Material  = material;
+    m_Material  = material->createInstance();
 }
 
 Texture *Sprite::texture() const {
