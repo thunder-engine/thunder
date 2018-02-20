@@ -55,7 +55,7 @@ Project {
         Depends { name: "rendergl-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
-        property bool isBundle: qbs.targetOS.contains("osx") && bundle.isBundle
+        property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
             "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR
         })
@@ -83,7 +83,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.rpaths: "@executable_path/../Frameworks/"
             cpp.weakFrameworks: ["OpenGL"]
         }
@@ -100,7 +100,7 @@ Project {
 
         Group {
             name: "Icon"
-            qbs.install: qbs.targetOS.contains("osx")
+            qbs.install: qbs.targetOS.contains("darwin")
             files: [
                 "res/icons/thunder.icns"
             ]

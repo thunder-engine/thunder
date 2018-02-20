@@ -56,7 +56,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["OpenGL"]
         }
 
@@ -84,7 +84,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["OpenGL"]
         }
 

@@ -30,7 +30,7 @@ Project {
             sources.push("src/win32_joystick.h"),
             sources.push("src/wgl_context.h"),
             sources.push("src/egl_context.h")
-        } else if(qbs.targetOS.contains("osx")) {
+        } else if(qbs.targetOS.contains("darwin")) {
             sources.push("src/cocoa_init.m"),
             sources.push("src/cocoa_joystick.m"),
             sources.push("src/cocoa_monitor.m"),
@@ -70,7 +70,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["_GLFW_COCOA"])
             cpp.weakFrameworks: ["CoreFoundation", "AppKit", "CoreVideo", "IOKit"]
         }
@@ -99,7 +99,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["_GLFW_COCOA"])
         }
 

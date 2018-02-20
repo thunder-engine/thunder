@@ -9,7 +9,7 @@ Project {
         ];
         if(qbs.targetOS.contains("windows")) {
             result.push("src/platform/win32.c")
-        } else if(qbs.targetOS.contains("osx")) {
+        } else if(qbs.targetOS.contains("darwin")) {
             result.push("src/platform/unix.c"),
             result.push("src/platform/posix.c")
         }
@@ -40,7 +40,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
         }
 
@@ -63,7 +63,7 @@ Project {
         cpp.includePaths: physfs.incPaths
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
         }
 

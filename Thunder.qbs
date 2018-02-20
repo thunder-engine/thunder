@@ -13,7 +13,7 @@ Project {
 
     property string PLATFORM: {
         var arch = qbs.architecture;
-        if(qbs.targetOS.contains("osx")) {
+        if(qbs.targetOS.contains("darwin")) {
             arch = "x86_64"
         }
 
@@ -30,7 +30,7 @@ Project {
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios")
     property string bundle: {
-        if(qbs.targetOS.contains("osx")) {
+        if(qbs.targetOS.contains("darwin")) {
             return EDITOR_NAME + ".app/Contents/MacOS/"
         }
         return "";
