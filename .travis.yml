@@ -19,7 +19,7 @@ addons:
     notification_email: eprikazchikov@mail.ru
     build_command_prepend: "qbs --version"
     build_command: "qbs build"
-    branch_pattern: coverity_scan
+    branch_pattern: master
 
 matrix:
   include:
