@@ -1,0 +1,17 @@
+language: cpp
+sudo: required
+dist: trusty
+
+matrix:
+  include:
+    - os: osx
+      before_install:
+        - brew update
+        - brew install qbs
+      script:
+        - qbs --version
+        - qbs setup-toolchains --detect
+        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
+        - qbs config profiles.qt-brew.baseProfile xcode-macosx-x86_64
+        - qbs config defaultProfile qt-brew
+        - qbs install --install-root install release
