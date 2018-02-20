@@ -19,5 +19,3 @@ build_script:
   - qbs config defaultProfile qt
   - qbs build --all-products release
 
-cache:
-  - C:\Users\appveyor\.m2
