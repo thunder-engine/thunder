@@ -1,8 +1,10 @@
 ## Thunder Engine
+[![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
+[![Build Status](https://travis-ci.org/eprikazchikov/thunder.svg?branch=master)](https://travis-ci.org/eprikazchikov/thunder)
 ### About
 Thunder Engine is a multifunctional light weight game engine written by Evgeniy Prikazchikov for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
 #### Set of Tools
-- Multifanctional Scene Editor
+- Multifunctional Scene Editor
 - Node Based Material Editor
 - Resource Management system with bunch of converters
 - Ready for CI Project Builder
