@@ -21,7 +21,7 @@ Project {
     }
     property string RESOURCE_ROOT: "../worldeditor/bin"
 
-    property string PREFIX: "_PACKAGE"
+    property string PREFIX: ""
     property string LAUNCHER_PATH: "launcher"
     property string SDK_PATH: "sdk/" + SDK_VERSION
     property string BIN_PATH: SDK_PATH + "/bin/" + PLATFORM
@@ -42,7 +42,8 @@ Project {
         "modules/renders/rendergl/rendergl.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
-        "build/install.qbs"
+        "build/install.qbs",
+        "build/archive.qbs"
     ]
 }
 
