@@ -59,7 +59,12 @@ void Builder::archive() {
 void Builder::onCompileDone(const QString &path) {
     QFileInfo info(path);
     QString target  = ProjectManager::instance()->targetPath() + "/" + info.fileName();
-    qDebug() << QFile::remove(target);
-    qDebug() << QFile::copy(path, target);
+    if(QFile::remove(target)) {
+        Log(Log::INF) << "Previous build removed.";
+    }
+
+    if(QFile::copy(path, target)) {
+        Log(Log::INF) << "New build copied to:" << qPrintable(target);
+    }
     QCoreApplication::quit();
 }

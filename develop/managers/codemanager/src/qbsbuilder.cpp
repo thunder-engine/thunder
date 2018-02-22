@@ -23,6 +23,8 @@ const QString gEditorSuffix("-Editor");
 QbsBuilder::QbsBuilder() :
         IBuilder() {
 
+    m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
+
     if(m_pMgr->targetPath().isEmpty()) {
         m_Artifact  = m_Project + "debug/install-root/" + m_pMgr->projectName() + gEditorSuffix + m_Suffix;
     } else {
@@ -37,7 +39,10 @@ QbsBuilder::QbsBuilder() :
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
 
-    if(builderToolchains().isEmpty()) {
+    m_Profiles << "MSVC2015-x86" << "Android";
+
+    if(!checkProfile(m_Profiles[0])) {
+        Log(Log::INF) << "Initializing QBS...";
         builderInit();
     }
 }
@@ -56,7 +61,7 @@ void QbsBuilder::generateProject(const QStringList &code) {
 
 bool QbsBuilder::buildProject() {
     QStringList args;
-    args << "build" << "--products";// << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    args << "build" << m_Settings;
 
     QString mode    = "release";
     QString product = m_pMgr->projectName();
@@ -64,10 +69,11 @@ bool QbsBuilder::buildProject() {
         mode        = "debug";
         product    += gEditorSuffix;
     }
-    args << product << mode;
+    args << "--products" << product << mode << "profile:" + m_Profiles[0];
 
     m_pProcess->start(m_pMgr->qbsPath(), args);
     if(!m_pProcess->waitForStarted()) {
+        Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
         return false;
     }
 
@@ -89,26 +95,31 @@ QString QbsBuilder::builderVersion() {
 }
 
 void QbsBuilder::builderInit() {
-    QStringList args;
-    args << "setup-toolchains" << "--detect" << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QProcess qbs(this);
-    qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_pMgr->qbsPath(), args);
-    if(qbs.waitForStarted()) {
-        qbs.waitForFinished();
+    {
+        QStringList args;
+        args << "setup-toolchains" << "--detect" << m_Settings;
+        QProcess qbs(this);
+        qbs.setWorkingDirectory(m_Project);
+        qbs.start(m_pMgr->qbsPath(), args);
+        if(qbs.waitForStarted()) {
+            qbs.waitForFinished();
+        }
     }
-}
+    {
+        QStringList args;
+        args << "setup-android" << m_Settings;
+        args << "--sdk-dir" << "D:/Environment/Android/sdk";
+        args << "--ndk-dir" << "D:/Environment/Android/sdk/ndk-bundle";
+        //D:/Environment/Android/sdk/ndk-bundle/sysroot
+        args << "Android";
 
-QString QbsBuilder::builderToolchains() {
-    QStringList args;
-    args << "config" << "--list" << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QProcess qbs(this);
-    qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_pMgr->qbsPath(), args);
-    if(qbs.waitForStarted() && qbs.waitForFinished()) {
-        return qbs.readAll();
+        QProcess qbs(this);
+        qbs.setWorkingDirectory(m_Project);
+        qbs.start(m_pMgr->qbsPath(), args);
+        if(qbs.waitForStarted()) {
+            qbs.waitForFinished();
+        }
     }
-    return QString();
 }
 
 void QbsBuilder::readOutput() {
@@ -147,4 +158,16 @@ void QbsBuilder::parseLogs(const QString &log) {
             Log(Log::INF) << qPrintable(it);
         }
     }
+}
+
+bool QbsBuilder::checkProfile(const QString &profile) {
+    QStringList args;
+    args << "config" << "--list" << m_Settings;
+    QProcess qbs(this);
+    qbs.setWorkingDirectory(m_Project);
+    qbs.start(m_pMgr->qbsPath(), args);
+    if(qbs.waitForStarted() && qbs.waitForFinished()) {
+        return qbs.readAll().contains(qPrintable(profile));
+    }
+    return false;
 }

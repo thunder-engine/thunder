@@ -45,7 +45,7 @@ Project {
         cpp.defines: []
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + "/lib" + project.platform
+            project.sdkPath + project.platform + "/lib"
         ]
 
         cpp.staticLibraries: [

@@ -50,7 +50,6 @@ Project {
                 //"../../../thirdparty/glew/bin"
             ]
             //cpp.dynamicLibraries: outer.concat([
-            //    "glew32",
             //    "opengl32"
             //])
         }

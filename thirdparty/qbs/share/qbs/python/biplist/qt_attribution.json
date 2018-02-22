@@ -1,0 +1,13 @@
+{
+    "Id": "biplist",
+    "Name": "biplist",
+    "QDocModule": "qbs",
+    "QtUsage": "Used in the qbs dmg module for building Apple disk images.",
+    "Description": "biplist is a library for reading/writing binary plists.",
+    "Homepage": "https://bitbucket.org/wooster/biplist",
+    "Version": "1.0.2",
+    "License": "BSD 3-clause \"New\" or \"Revised\" License",
+    "LicenseId": "BSD-3-Clause",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 2010, Andrew Wooster"
+}

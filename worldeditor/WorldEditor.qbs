@@ -37,7 +37,6 @@ Project {
             "EDITOR_NAME=\"" + EDITOR_NAME + "\"",
             "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
             "SDK_VERSION=\"" + SDK_VERSION + "\"",
-            "LAUNCHER_VERSION=\"" + LAUNCHER_VERSION + "\"",
             "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR
         ];
         return result;
@@ -102,10 +101,7 @@ Project {
             name: "Icon"
             qbs.install: qbs.targetOS.contains("osx")
             files: [
-                "res/icons/thunder.icns",
-                "src/managers/configmanager/configdialog.cpp",
-                "src/managers/configmanager/configdialog.h",
-                "src/managers/configmanager/configdialog.ui",
+                "res/icons/thunder.icns"
             ]
             qbs.installDir: worldEditor.BIN_PATH + "/" + worldEditor.bundle + "../Resources"
             qbs.installPrefix: worldEditor.PREFIX

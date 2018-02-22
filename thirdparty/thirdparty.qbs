@@ -12,6 +12,4 @@ Project {
         "quazip/quazip.qbs",
         "glad/glad.qbs"
     ]
-
-
 }

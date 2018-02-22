@@ -18,8 +18,6 @@ public:
 
     void                            builderInit         ();
 
-    QString                         builderToolchains   ();
-
 protected slots:
     void                            readOutput          ();
 
@@ -30,7 +28,13 @@ protected:
 
     void                            parseLogs           (const QString &log);
 
+    bool                            checkProfile        (const QString &profile);
+
     QProcess                       *m_pProcess;
+
+    QStringList                     m_Settings;
+
+    QStringList                     m_Profiles;
 };
 
 #endif // QBSBUILDER_H
