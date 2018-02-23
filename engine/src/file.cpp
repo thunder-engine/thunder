@@ -11,7 +11,9 @@ void IFile::finit(const char *argv0) {
 }
 
 void IFile::fsearchPathAdd(const char *path, bool isFirst) {
-    PHYSFS_addToSearchPath(path, isFirst ? 0 : 1);
+    if(PHYSFS_addToSearchPath(path, isFirst ? 0 : 1) == 0) {
+        Log(Log::ERR) << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
+    }
     if(isFirst && PHYSFS_setWriteDir(path) == 0) {
         Log(Log::ERR) << "[ FileIO ] Can't set directory for writing.";
     }
@@ -68,7 +70,7 @@ _FILE *IFile::_fopen(const char *path, const char *mode) {
         default: break;
     }
     if(result == 0) {
-        Log(Log::ERR) << "[ FileIO ] Can't open file" << path;
+        Log(Log::ERR) << "[ FileIO ] Can't open file" << path << PHYSFS_getLastError();
     }
     return result;
 }
@@ -87,5 +89,13 @@ _size_t IFile::_fsize(_FILE *stream) {
 
 _size_t IFile::_ftell(_FILE *stream) {
     return PHYSFS_tell((PHYSFS_file *)stream);
+}
+
+const char *IFile::baseDir() const {
+    return PHYSFS_getBaseDir();
+}
+
+const char *IFile::userDir() const {
+    return PHYSFS_getUserDir();
 }
 

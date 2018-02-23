@@ -23,8 +23,8 @@ bool DesktopAdaptor::init(Engine *engine) {
 
 #ifdef __APPLE__
   /* We need to explicitly ask for a 3.2 context on OS X */
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
@@ -56,7 +56,7 @@ void DesktopAdaptor::update() {
 bool DesktopAdaptor::start() {
     const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
 
-    m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", m_pMonitor, NULL);
+    m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor
     if(!m_pWindow) {
         stop();
         return false;

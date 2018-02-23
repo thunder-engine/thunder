@@ -61,6 +61,10 @@ public:
     virtual _size_t     _fsize          (_FILE *stream);
 
     virtual _size_t     _ftell          (_FILE *stream);
+
+    virtual const char *baseDir         () const;
+
+    virtual const char *userDir         () const;
 };
 
 #endif // FILEIO_H

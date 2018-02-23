@@ -243,15 +243,46 @@ Product {
         qbs.installDir: install.INC_PATH + "/engine"
         qbs.installPrefix: install.PREFIX
     }
+
+    property string qbsPath: {
+        var result = install.PLATFORM_PATH;
+        if(!qbs.targetOS.contains("windows")) {
+            result += "/bin";
+        }
+        result += "/" + install.bundle;
+        console.warn(result);
+        return result;
+    }
+
     Group {
         name: "QBS Bin"
         prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
         files: [
-            "/bin/**",
-            "/lib/**"
+            "/bin/**"
         ]
         qbs.install: true
-        qbs.installDir: install.PLATFORM_PATH
+        qbs.installDir: install.qbsPath
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "QBS Lib"
+        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
+        files: [
+            "/lib/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "QBS Plugins"
+        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
+        files: [
+            "/lib/qbs/**",
+            "/libexec/**"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../" : "")
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }
@@ -265,7 +296,7 @@ Product {
             "share/**/*.ts"
         ]
         qbs.install: true
-        qbs.installDir: install.PLATFORM_PATH
+        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../" : "")
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }

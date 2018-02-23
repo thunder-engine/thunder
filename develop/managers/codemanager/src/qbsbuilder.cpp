@@ -39,7 +39,7 @@ QbsBuilder::QbsBuilder() :
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
 
-    m_Profiles << "MSVC2015-x86" << "Android";
+    m_Profiles << "xcode-macosx-x86_64" << "Android";
 
     if(!checkProfile(m_Profiles[0])) {
         Log(Log::INF) << "Initializing QBS...";
@@ -69,7 +69,7 @@ bool QbsBuilder::buildProject() {
         mode        = "debug";
         product    += gEditorSuffix;
     }
-    args << "--products" << product << mode << "profile:" + m_Profiles[0];
+    args << "--products" << product << mode << "profile:" + m_Profiles[0] ;
 
     m_pProcess->start(m_pMgr->qbsPath(), args);
     if(!m_pProcess->waitForStarted()) {
@@ -103,6 +103,7 @@ void QbsBuilder::builderInit() {
         qbs.start(m_pMgr->qbsPath(), args);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
+            Log(Log::INF) << "Failed:" << qbs.readAll().constData();
         }
     }
     {

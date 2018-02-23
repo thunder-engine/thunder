@@ -36,6 +36,11 @@ void CodeManager::init() {
 }
 
 void CodeManager::rebuildProject() {
+    setOutdated();
+    buildProject();
+}
+
+void CodeManager::buildProject() {
     if(m_Outdated) {
         QStringList code    = rescanSources(m_pProject->contentPath());
 

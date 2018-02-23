@@ -43,7 +43,7 @@
 #include "log.h"
 #include "ametatype.h"
 
-const char *gIndex(".index");
+const char *gIndex("index");
 
 const char *gContent("content");
 const char *gSettings("settings");

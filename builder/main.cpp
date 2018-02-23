@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
     ProjectManager *mgr = ProjectManager::instance();
     mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
-
     Log::overrideHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
     IFile *file = new IFile();
@@ -51,7 +50,6 @@ int main(int argc, char *argv[]) {
 
     Builder builder;
 
-    QCoreApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &builder, SLOT(archive()));
     CodeManager::instance()->init();
     AssetManager::instance()->init();
 
