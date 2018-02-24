@@ -30,6 +30,7 @@ Project {
         cpp.dynamicLibraries: [
             "next",
             "engine" ]
+        cpp.cxxLanguageVersion: "c++14"
 
         Group {
             name: "Install Plugin"

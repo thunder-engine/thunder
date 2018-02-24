@@ -7,19 +7,25 @@
 #include <QCoreApplication>
 
 Builder::Builder() {
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportDone);
+    connect(AssetManager::instance(), &AssetManager::importFinished, CodeManager::instance(), &CodeManager::rebuildProject);
 
     connect(CodeManager::instance(), SIGNAL(buildSucess(QString)), this, SLOT(onCompileDone(QString)));
     connect(CodeManager::instance(), &CodeManager::buildFailed, QCoreApplication::instance(), &QCoreApplication::quit);
 
-    connect(this, &Builder::packDone, CodeManager::instance(), &CodeManager::rebuildProject);
-    connect(this, &Builder::moveDone, QCoreApplication::instance(), &QCoreApplication::quit);
+    connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit);
+    connect(this, &Builder::moveDone, this, &Builder::package);
 }
 
-void Builder::onImportDone() {
-    Log(Log::INF) << "Packaging Assets";
+void Builder::package(const QString &target) {
+    QFileInfo info(target);
+    QString dir = info.absolutePath();
+#if __APPLE__
+    dir     = target + "/Contents/MacOS";
+#endif
+    dir    += "/base.pak";
 
-    QuaZip zip(ProjectManager::instance()->targetPath() + "/base.pak");
+    Log(Log::INF) << "Packaging Assets to:" << qPrintable(dir);
+    QuaZip zip(dir);
     if(!zip.open(QuaZip::mdCreate)) {
         Log(Log::ERR) << "Can't open package";
         return;
@@ -30,7 +36,7 @@ void Builder::onImportDone() {
     while(it.hasNext()) {
         QString path = it.next();
         QFileInfo info(path);
-        if(info.isFile()){
+        if(info.isFile()) {
             QFile inFile(info.absoluteFilePath());
 
             string origin   = AssetManager::instance()->guidToPath(info.fileName().toStdString());
@@ -56,7 +62,6 @@ void Builder::onImportDone() {
     }
     Log(Log::INF) << "Packaging Done";
     emit packDone();
-    CodeManager::instance()->setOutdated();
 }
 
 bool copyRecursively(QString sourceFolder, QString destFolder) {
@@ -104,7 +109,7 @@ void Builder::onCompileDone(const QString &path) {
 
     if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
         Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
-        emit moveDone();
+        emit moveDone(target.absoluteFilePath());
         return;
     }
     QCoreApplication::exit(1);

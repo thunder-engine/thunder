@@ -9,9 +9,11 @@ struct GLFWmonitor;
 
 class DesktopAdaptor : public IPlatformAdaptor {
 public:
+    DesktopAdaptor              (Engine *engine);
+
     virtual ~DesktopAdaptor     () {}
 
-    bool                        init                        (Engine *engine);
+    bool                        init                        ();
 
     void                        update                      ();
 

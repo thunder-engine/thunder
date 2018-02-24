@@ -113,7 +113,7 @@ Engine::Engine(IFile *file, int argc, char **argv) :
 #elif __ANDROID__
 
 #else
-    p_ptr->m_pPlatform  = new DesktopAdaptor();
+    p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
 
     p_ptr->m_Controller = new IController(this);
@@ -148,7 +148,7 @@ Engine::~Engine() {
 bool Engine::init() {
     PROFILER_MARKER;
 
-    bool result     = p_ptr->m_pPlatform->init(this);
+    bool result     = p_ptr->m_pPlatform->init();
 
     reloadBundle();
 

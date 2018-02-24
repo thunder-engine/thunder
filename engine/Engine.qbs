@@ -38,13 +38,18 @@ Project {
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
-        cpp.dynamicLibraries: [ "Shell32" ]
+        cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
         cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: engine.desktop
             files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: [ "Shell32" ]
         }
 
         Group {

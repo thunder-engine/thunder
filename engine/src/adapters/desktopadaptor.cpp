@@ -5,7 +5,8 @@
 #elif __APPLE__
     #include <CoreFoundation/CoreFoundation.h>
     #include <ApplicationServices/ApplicationServices.h>
-#elif(__GNUC__)
+#endif
+#if(__GNUC__)
     #include <dlfcn.h>
 #endif
 #include <GLFW/glfw3.h>
@@ -44,8 +45,11 @@ string wchar_to_utf8(const wstring &in) {
     return result;
 }
 
-bool DesktopAdaptor::init(Engine *engine) {
+DesktopAdaptor::DesktopAdaptor(Engine *engine) {
     g_pEngine   = engine;
+}
+
+bool DesktopAdaptor::init() {
     glfwSetErrorCallback(errorCallback);
 
     if(!glfwInit()) {
@@ -227,6 +231,9 @@ string DesktopAdaptor::locationLocalDir() {
         result  = wchar_to_utf8(wstring(path));
         std::replace(result.begin(), result.end(), '\\', '/');
     }
+#elif __APPLE__
+    result  = g_pEngine->file()->userDir();
+    result += "/Library/Preferences";
 #endif
     return result;
 }

@@ -12,7 +12,7 @@ class IPlatformAdaptor {
 public:
     virtual ~IPlatformAdaptor           () {}
 
-    virtual bool                        init                        (Engine *engine) = 0;
+    virtual bool                        init                        () = 0;
 
     virtual void                        update                      () = 0;
 

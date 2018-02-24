@@ -14,10 +14,10 @@ public:
 
 signals:
     void            packDone        ();
-    void            moveDone        ();
+    void            moveDone        (const QString &target);
 
 public slots:
-    void            onImportDone    ();
+    void            package         (const QString &target);
     void            onCompileDone   (const QString &path);
 };
 
