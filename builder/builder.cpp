@@ -102,7 +102,7 @@ void Builder::onCompileDone(const QString &path) {
         Log(Log::INF) << "Previous build removed.";
     }
 
-    if(copyRecursively(path, target.absoluteFilePath())) {
+    if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
         Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
         emit moveDone();
         return;

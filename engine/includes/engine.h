@@ -23,7 +23,7 @@ public:
     };
 
 public:
-    Engine                      (IFile *file);
+    Engine                      (IFile *file, int argc, char **argv);
     ~Engine                     ();
 /*
     Main system
@@ -64,6 +64,18 @@ public:
         @return                 Pointer to file system object.
     */
     IFile                      *file                        ();
+
+    static string               locationAppDir              ();
+
+    static string               locationConfigDir           ();
+
+    string                      applicationName             () const;
+
+    void                        setApplicationName          (const string &name);
+
+    string                      organizationName            () const;
+
+    void                        setOrganizationName         (const string &name);
 
 private:
     EnginePrivate              *p_ptr;

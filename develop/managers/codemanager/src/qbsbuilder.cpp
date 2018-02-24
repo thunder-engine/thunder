@@ -39,7 +39,12 @@ QbsBuilder::QbsBuilder() :
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
 
-    m_Profiles << "xcode-macosx-x86_64" << "Android";
+#if _WIN32
+    m_Profiles << "MSVC2015-x86";
+#elif __APPLE__
+    m_Profiles << "xcode-macosx-x86_64";
+#endif
+    m_Profiles << "Android";
 
     if(!checkProfile(m_Profiles[0])) {
         Log(Log::INF) << "Initializing QBS...";

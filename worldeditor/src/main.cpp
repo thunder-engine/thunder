@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
         file->finit(qPrintable(QApplication::arguments().at(0)));
         file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
-        Engine engine(file);
+        Engine engine(file, argc, argv);
         engine.init();
 
         SceneComposer w(&engine);

@@ -51,6 +51,8 @@ public:
     virtual bool                        pluginUnload                (void *plugin) = 0;
 
     virtual void                       *pluginAddress               (void *plugin, const string &name) = 0;
+
+    virtual string                      locationLocalDir            () = 0;
 };
 
 #endif // AABSTRACTPLATFORMADAPTER_H

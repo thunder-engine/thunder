@@ -38,7 +38,7 @@ Project {
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
-        cpp.dynamicLibraries: [ ]
+        cpp.dynamicLibraries: [ "Shell32" ]
         cpp.cxxLanguageVersion: "c++14"
         cpp.sonamePrefix: "@executable_path"
 

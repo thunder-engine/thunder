@@ -6,30 +6,33 @@
 
 #include <rendergl.h>
 
-static string sLogPath;
+#include <mutex>
+
+static IFile *file  = nullptr;
 
 class SimpleHandler : public ILogHandler {
 protected:
     void            setRecord       (Log::LogTypes, const char *record) {
-        FILE *fp    = fopen(sLogPath.c_str(), "a");
+        unique_lock<mutex> locker(m_Mutex);
+        _FILE *fp   = file->_fopen("log.txt", "a");
         if(fp) {
-            fprintf(fp, "%s\r\n", record);
-            fclose(fp);
+            file->_fwrite(record, strlen(record), 1, fp);
+            file->_fclose(fp);
         }
     }
+    mutex           m_Mutex;
 };
 
-int main(int, char **argv) {
+int main(int argc, char **argv) {
     Log::overrideHandler(new SimpleHandler());
     Log::setLogLevel(Log::ERR);
 
-    IFile *file = new IFile;
+    file    = new IFile;
     file->finit(argv[0]);
-    Engine engine(file);
+    Engine engine(file, argc, argv);
 
-    sLogPath    = (string(file->userDir()) + "/log.txt");
-
-    file->fsearchPathAdd((string(file->baseDir()) + "/base.pak").c_str());
+    file->fsearchPathAdd(engine.locationConfigDir().c_str(), true);
+    file->fsearchPathAdd((engine.locationAppDir() + "/base.pak").c_str());
 
     engine.addModule(new RenderGL(&engine));
     if(engine.init() && engine.createWindow()) {

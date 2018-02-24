@@ -244,15 +244,7 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
 
-    property string qbsPath: {
-        var result = install.PLATFORM_PATH;
-        if(!qbs.targetOS.contains("windows")) {
-            result += "/bin";
-        }
-        result += "/" + install.bundle;
-        console.warn(result);
-        return result;
-    }
+    property string qbsPath: install.BIN_PATH + "/" + install.bundle
 
     Group {
         name: "QBS Bin"
@@ -282,7 +274,7 @@ Product {
             "/libexec/**"
         ]
         qbs.install: true
-        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../" : "")
+        qbs.installDir: install.qbsPath + "../"
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }
@@ -296,7 +288,7 @@ Product {
             "share/**/*.ts"
         ]
         qbs.install: true
-        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../" : "")
+        qbs.installDir: install.qbsPath + "../"
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }

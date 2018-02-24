@@ -51,6 +51,8 @@ public:
 
     void                       *pluginAddress               (void *plugin, const string &name);
 
+    string                      locationLocalDir            ();
+
 protected:
     static void                 scrollCallback              (GLFWwindow *, double, double yoffset);
 
@@ -65,10 +67,9 @@ protected:
 
     uint8_t                     m_MouseButtons;
 
-    static Vector3              m_MouseDelta;
+    static Vector3              s_MouseDelta;
 
-    static Vector3              m_MousePosition;
-
+    static Vector3              s_MousePosition;
 };
 
 #endif // DESKTOPAADAPTOR_H
