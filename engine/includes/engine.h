@@ -67,7 +67,9 @@ public:
 
     static string               locationAppDir              ();
 
-    static string               locationConfigDir           ();
+    static string               locationConfig              ();
+
+    static string               locationAppConfig           ();
 
     string                      applicationName             () const;
 

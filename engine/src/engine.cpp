@@ -337,14 +337,18 @@ string Engine::locationAppDir() {
     return EnginePrivate::m_ApplicationDir;
 }
 
-string Engine::locationConfigDir() {
-    string result   = EnginePrivate::m_pPlatform->locationLocalDir();
-    //if(!EnginePrivate::m_Organization.empty()) {
-    //    result  += "/" + EnginePrivate::m_Organization;
-    //}
-    //if(!EnginePrivate::m_Application.empty()) {
-    //    result  += "/" + EnginePrivate::m_Application;
-    //}
+string Engine::locationConfig() {
+    return EnginePrivate::m_pPlatform->locationLocalDir();
+}
+
+string Engine::locationAppConfig() {
+    string result;
+    if(!EnginePrivate::m_Organization.empty()) {
+        result  += "/" + EnginePrivate::m_Organization;
+    }
+    if(!EnginePrivate::m_Application.empty()) {
+        result  += "/" + EnginePrivate::m_Application;
+    }
     return result;
 }
 

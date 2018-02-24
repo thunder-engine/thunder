@@ -20,9 +20,7 @@ Log::Log(LogTypes type) :
 
 Log::~Log() {
     if(LogPrivate::handler && p_ptr->type <= LogPrivate::logLevel) {
-        string str  = p_ptr->stream.str();
-        str        += "\r\n";
-        LogPrivate::handler->setRecord(p_ptr->type, str.c_str());
+        LogPrivate::handler->setRecord(p_ptr->type, p_ptr->stream.str().c_str());
     }
 }
 
