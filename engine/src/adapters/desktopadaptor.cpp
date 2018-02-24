@@ -1,20 +1,55 @@
 #include "adapters/desktopadaptor.h"
 #if(_MSC_VER)
     #include <windows.h>
-#elif(__GNUC__)
+    #include <Shlobj.h>
+#elif __APPLE__
+    #include <CoreFoundation/CoreFoundation.h>
+    #include <ApplicationServices/ApplicationServices.h>
+#endif
+#if(__GNUC__)
     #include <dlfcn.h>
 #endif
 #include <GLFW/glfw3.h>
 
 #include <log.h>
+#include <file.h>
 
-Vector3 DesktopAdaptor::m_MouseDelta     = Vector3();
-Vector3 DesktopAdaptor::m_MousePosition  = Vector3();
+Vector3 DesktopAdaptor::s_MouseDelta     = Vector3();
+Vector3 DesktopAdaptor::s_MousePosition  = Vector3();
 
 static Engine *g_pEngine   = nullptr;
 
-bool DesktopAdaptor::init(Engine *engine) {
+string wchar_to_utf8(const wstring &in) {
+    string result;
+    for(uint32_t i = 0; i < in.size(); i++) {
+        uint32_t wc32   = in[i];
+        if(wc32 < 0x007F) {
+            result  += (char)wc32;
+        }
+        else if(wc32 < 0x07FF) {
+            result  += (char)(0xC0 + (wc32 >> 6));
+            result  += (char)(0x80 + (wc32 & 0x3F));
+        }
+        else if(wc32 < 0xFFFF) {
+            result  += (char)(0xE0 + (wc32 >> 12));
+            result  += (char)(0x80 + (wc32 >> 6 & 0x3F));
+            result  += (char)(0x80 + (wc32 & 0x3F));
+        }
+        else {
+            result  += (char)(0xF0 + (wc32 >> 18));
+            result  += (char)(0x80 + (wc32 >> 12 & 0x3F));
+            result  += (char)(0x80 + (wc32 >> 6 & 0x3F));
+            result  += (char)(0x80 + (wc32 & 0x3F));
+        }
+    }
+    return result;
+}
+
+DesktopAdaptor::DesktopAdaptor(Engine *engine) {
     g_pEngine   = engine;
+}
+
+bool DesktopAdaptor::init() {
     glfwSetErrorCallback(errorCallback);
 
     if(!glfwInit()) {
@@ -22,11 +57,11 @@ bool DesktopAdaptor::init(Engine *engine) {
     }
 
 #ifdef __APPLE__
-  /* We need to explicitly ask for a 3.2 context on OS X */
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    /* We need to explicitly ask for a 3.2 context on OS X */
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -43,7 +78,7 @@ bool DesktopAdaptor::init(Engine *engine) {
 void DesktopAdaptor::update() {
     glfwSwapBuffers(m_pWindow);
     glfwPollEvents();
-    m_MousePosition += m_MouseDelta;
+    s_MousePosition += s_MouseDelta;
 
     m_MouseButtons  = 0;
     for(uint8_t i = 0; i < 8; i++) {
@@ -56,7 +91,7 @@ void DesktopAdaptor::update() {
 bool DesktopAdaptor::start() {
     const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
 
-    m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", m_pMonitor, NULL);
+    m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor
     if(!m_pWindow) {
         stop();
         return false;
@@ -87,11 +122,11 @@ bool DesktopAdaptor::key(Input::KeyCode code) {
 }
 
 Vector3 DesktopAdaptor::mousePosition() {
-    return m_MousePosition;
+    return s_MousePosition;
 }
 
 Vector3 DesktopAdaptor::mouseDelta() {
-    return m_MouseDelta;
+    return s_MouseDelta;
 }
 
 uint8_t DesktopAdaptor::mouseButtons() {
@@ -136,11 +171,10 @@ uint16_t DesktopAdaptor::joystickButtons(uint8_t index) {
 
 Vector4 DesktopAdaptor::joystickThumbs(uint8_t index) {
     int count;
-    const float* axes = glfwGetJoystickAxes(index, &count);
+    const float *axes = glfwGetJoystickAxes(index, &count);
     if(count >= 4) {
         return Vector4(axes[0], axes[1], axes[2], axes[3]);
     }
-
     return Vector4();
 }
 
@@ -178,13 +212,28 @@ void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
-    m_MouseDelta    = Vector3(m_MouseDelta.x, m_MouseDelta.y, yoffset);
+    s_MouseDelta    = Vector3(s_MouseDelta.x, s_MouseDelta.y, yoffset);
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
-    m_MouseDelta    = Vector3(xpos, ypos, m_MouseDelta.z);
+    s_MouseDelta    = Vector3(xpos, ypos, s_MouseDelta.z);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
     Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
+}
+
+string DesktopAdaptor::locationLocalDir() {
+    string result;
+#if _WIN32
+    wchar_t path[MAX_PATH];
+    if(SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE)) {
+        result  = wchar_to_utf8(wstring(path));
+        std::replace(result.begin(), result.end(), '\\', '/');
+    }
+#elif __APPLE__
+    result  = g_pEngine->file()->userDir();
+    result += "/Library/Preferences";
+#endif
+    return result;
 }

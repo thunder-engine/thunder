@@ -456,8 +456,6 @@ void AssetManager::onPerform() {
         m_pTimer->stop();
 
         emit importFinished();
-
-        m_pCodeManager->rebuildProject();
     }
 }
 

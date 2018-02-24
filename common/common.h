@@ -15,8 +15,17 @@ const QString gSettings("settings");
 
 const QString gProjectExt(".forge");
 const QString gMetaExt(".set");
-const QString gIndex(".index");
+const QString gIndex("index");
 
+#if _WIN32
+const QString gShared(".dll");
+const QString gStatic(".lib");
+const QString gApplication(".exe");
+#elif __APPLE__
+const QString gShared(".dylib");
+const QString gStatic(".a");
+const QString gApplication(".app");
+#endif
 const QString gMimeContent("text/content");
 
 const QString gDefaultFont("Helvetica Neue");

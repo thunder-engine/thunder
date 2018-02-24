@@ -6,13 +6,14 @@
 #include <QDir>
 
 #include <projectmanager.h>
+#include <common.h>
 
 IBuilder::IBuilder() {
     m_pMgr      = ProjectManager::instance();
 
-    m_Suffix    = ".dll";
+    m_Suffix    = gShared;
     if(!m_pMgr->targetPath().isEmpty()) {
-        m_Suffix= ".exe";
+        m_Suffix= gApplication;
     }
 
     m_Project   = m_pMgr->generatedPath() + "/";

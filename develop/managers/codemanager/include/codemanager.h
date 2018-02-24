@@ -21,6 +21,7 @@ signals:
     void                            buildFailed                 ();
 
 public slots:
+    void                            buildProject                ();
     void                            rebuildProject              ();
 
 protected slots:

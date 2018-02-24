@@ -1,0 +1,5 @@
+# Visual Studio Code IDE
+tsconfig.json
+qbs-tsc-scan.js
+typings/node/node.d.ts
+typings/typescript/typescript.d.ts

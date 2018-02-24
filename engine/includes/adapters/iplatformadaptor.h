@@ -12,7 +12,7 @@ class IPlatformAdaptor {
 public:
     virtual ~IPlatformAdaptor           () {}
 
-    virtual bool                        init                        (Engine *engine) = 0;
+    virtual bool                        init                        () = 0;
 
     virtual void                        update                      () = 0;
 
@@ -51,6 +51,8 @@ public:
     virtual bool                        pluginUnload                (void *plugin) = 0;
 
     virtual void                       *pluginAddress               (void *plugin, const string &name) = 0;
+
+    virtual string                      locationLocalDir            () = 0;
 };
 
 #endif // AABSTRACTPLATFORMADAPTER_H

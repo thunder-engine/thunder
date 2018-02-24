@@ -25,7 +25,7 @@ ProjectManager::ProjectManager() {
 
     m_SDKPath       = QFileInfo(dir.absolutePath());
     m_ResourcePath  = QFileInfo(sdkPath() + "/resources");
-    m_QBSPath       = QFileInfo(sdkPath() + QString("/bin/tools/qbs/bin/qbs"));
+    m_QBSPath       = QFileInfo("qbs");
     m_QBSDefault    = m_QBSPath;
 
     m_MyProjectsPath    = QFileInfo(dir.absolutePath());

@@ -1,0 +1,13 @@
+{
+    "Id": "dmgbuild",
+    "Name": "dmgbuild",
+    "QDocModule": "qbs",
+    "QtUsage": "Used in the qbs dmg module for building Apple disk images.",
+    "Description": "macOS command line utility to build disk images",
+    "Homepage": "https://github.com/al45tair/dmgbuild",
+    "Version": "1.3.1",
+    "License": "MIT License",
+    "LicenseId": "MIT",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 2014 Alastair Houghton"
+}

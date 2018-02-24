@@ -41,15 +41,15 @@
 #include "resources/mesh.h"
 
 #include "log.h"
-#include "ametatype.h"
+#include <ametatype.h>
+#include <auri.h>
 
-const char *gIndex(".index");
+const char *gIndex("index");
 
 const char *gContent("content");
 const char *gSettings("settings");
 
 const char *gEntry(".entry");
-
 
 class EnginePrivate {
 public:
@@ -60,7 +60,6 @@ public:
     EnginePrivate() :
         m_pFile(nullptr),
         m_Controller(nullptr),
-        m_pPlatform(nullptr),
         m_Valid(false) {
 
     }
@@ -71,24 +70,41 @@ public:
 
     IFile                      *m_pFile;
 
-    IPlatformAdaptor           *m_pPlatform;
-
-    static AVariantMap          m_Values;
-
     bool                        m_Valid;
 
     string                      m_EntryLevel;
 
+    static string               m_ApplicationPath;
+
+    static string               m_ApplicationDir;
+
+    static string               m_Organization;
+
+    static string               m_Application;
+
+    static IPlatformAdaptor    *m_pPlatform;
+
+    static AVariantMap          m_Values;
 };
 
 unordered_map<string, string>   EnginePrivate::m_IndexMap;
 unordered_map<string, AObject*> EnginePrivate::m_ResourceCache;
 unordered_map<AObject*, string> EnginePrivate::m_ReferenceCache;
 AVariantMap                     EnginePrivate::m_Values;
+string                          EnginePrivate::m_ApplicationPath;
+string                          EnginePrivate::m_ApplicationDir;
+string                          EnginePrivate::m_Organization;
+string                          EnginePrivate::m_Application;
+IPlatformAdaptor               *EnginePrivate::m_pPlatform;
 
-Engine::Engine(IFile *file) :
+Engine::Engine(IFile *file, int argc, char **argv) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
+
+    EnginePrivate::m_ApplicationPath    = argv[0];
+    AUri uri(EnginePrivate::m_ApplicationPath);
+    EnginePrivate::m_ApplicationDir     = uri.dir();
+    EnginePrivate::m_Application        = uri.baseName();
 
     p_ptr->m_pFile  = file;
 
@@ -97,7 +113,7 @@ Engine::Engine(IFile *file) :
 #elif __ANDROID__
 
 #else
-    p_ptr->m_pPlatform  = new DesktopAdaptor();
+    p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
 
     p_ptr->m_Controller = new IController(this);
@@ -132,7 +148,7 @@ Engine::~Engine() {
 bool Engine::init() {
     PROFILER_MARKER;
 
-    bool result     = p_ptr->m_pPlatform->init(this);
+    bool result     = p_ptr->m_pPlatform->init();
 
     reloadBundle();
 
@@ -315,4 +331,39 @@ IFile *Engine::file() {
     PROFILER_MARKER;
 
     return p_ptr->m_pFile;
+}
+
+string Engine::locationAppDir() {
+    return EnginePrivate::m_ApplicationDir;
+}
+
+string Engine::locationConfig() {
+    return EnginePrivate::m_pPlatform->locationLocalDir();
+}
+
+string Engine::locationAppConfig() {
+    string result;
+    if(!EnginePrivate::m_Organization.empty()) {
+        result  += "/" + EnginePrivate::m_Organization;
+    }
+    if(!EnginePrivate::m_Application.empty()) {
+        result  += "/" + EnginePrivate::m_Application;
+    }
+    return result;
+}
+
+string Engine::applicationName() const {
+    return EnginePrivate::m_Application;
+}
+
+void Engine::setApplicationName(const string &name) {
+    EnginePrivate::m_Application    = name;
+}
+
+string Engine::organizationName() const {
+    return EnginePrivate::m_Organization;
+}
+
+void Engine::setOrganizationName(const string &name) {
+    EnginePrivate::m_Organization   = name;
 }

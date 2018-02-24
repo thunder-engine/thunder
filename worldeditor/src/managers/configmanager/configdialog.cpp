@@ -38,8 +38,6 @@ bool ConfigDialog::checkQbsVersion() {
     QString version = m_pBuilder->builderVersion();
     if(!version.isEmpty()) {
         ui->version->setText(version);
-
-        qDebug() << m_pBuilder->builderToolchains();
         return true;
     }
     return false;

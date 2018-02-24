@@ -22,8 +22,6 @@ public:
 
     virtual void                    builderInit         () = 0;
 
-    virtual QString                 builderToolchains   () = 0;
-
     void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
 
     void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);

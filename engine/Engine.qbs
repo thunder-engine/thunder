@@ -47,6 +47,11 @@ Project {
             files: outer.concat(["src/adapters/desktopadaptor.cpp"])
         }
 
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: [ "Shell32" ]
+        }
+
         Group {
             name: "Install Dynamic Engine"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]

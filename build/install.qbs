@@ -62,12 +62,18 @@ Product {
                 list.push(
                     "Qt5Core" + postfix,
                     "Qt5Gui" + postfix,
-                    "Qt5Widgets" + postfix
+                    "Qt5Widgets" + postfix,
+                    "Qt5Script" + postfix,
+                    "Qt5Xml" + postfix,
+                    "Qt5Network" + postfix
                 );
             } else {
                 list.push("**/QtCore.framework/**");
                 list.push("**/QtGui.framework/**");
                 list.push("**/QtWidgets.framework/**");
+                list.push("**/QtScript.framework/**");
+                list.push("**/QtXml.framework/**");
+                list.push("**/QtNetwork.framework/**");
             }
             return list;
         }
@@ -238,4 +244,52 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
 
+    property string qbsPath: install.BIN_PATH + "/" + install.bundle
+
+    Group {
+        name: "QBS Bin"
+        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
+        files: [
+            "/bin/**"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "QBS Lib"
+        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
+        files: [
+            "/lib/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "QBS Plugins"
+        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
+        files: [
+            "/lib/qbs/**",
+            "/libexec/**"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath + "../"
+        qbs.installPrefix: install.PREFIX
+        qbs.installSourceBase: prefix
+    }
+    Group {
+        name: "QBS Share"
+        prefix: "../thirdparty/qbs/"
+        files: [
+            "share/**"
+        ]
+        excludeFiles: [
+            "share/**/*.ts"
+        ]
+        qbs.install: true
+        qbs.installDir: install.qbsPath + "../"
+        qbs.installPrefix: install.PREFIX
+        qbs.installSourceBase: prefix
+    }
 }

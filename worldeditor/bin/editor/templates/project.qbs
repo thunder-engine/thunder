@@ -2,7 +2,12 @@ import qbs
 
 Project {
     id: project
-    property string platform: "/windows/x86"
+    property string platform: {
+        if(qbs.targetOS.contains("windows")) {
+            return "/windows/x86";
+        }
+        return "/macos/x86_64";
+    }
     property string sdkPath: "${sdkPath}"
     property stringList includePaths: [
         sdkPath + "/include/engine",
@@ -25,6 +30,7 @@ Project {
         cpp.dynamicLibraries: [
             "next",
             "engine" ]
+        cpp.cxxLanguageVersion: "c++14"
 
         Group {
             name: "Install Plugin"
@@ -42,10 +48,13 @@ Project {
             "application.cpp" ]
         Depends { name: "cpp" }
 
+        property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
+        bundle.identifierPrefix: "com.thunderengine"
+
         cpp.defines: []
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + "/lib" + project.platform
+            project.sdkPath + project.platform + "/lib"
         ]
 
         cpp.staticLibraries: [
@@ -55,9 +64,9 @@ Project {
             "physfs",
             "zlib",
             "glfw",
-            "glad",
-            "opengl32"
+            "glad"
         ]
+        cpp.cxxLanguageVersion: "c++14"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -65,16 +74,23 @@ Project {
                 "Shell32",
                 "User32",
                 "Gdi32",
-                "Advapi32"
+                "Advapi32",
+                "opengl32"
             ]
             //qbs.debugInformation: true
+        }
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.weakFrameworks: ["OpenGL", "Cocoa", "CoreVideo", "IOKit"]
         }
 
         Group {
             name: "Install Application"
-            fileTagsFilter: "application"
             qbs.install: true
             qbs.installDir: ""
+
+            fileTagsFilter: isBundle ? ["bundle.content"] : ["application"]
+            qbs.installSourceBase: product.buildDirectory
         }
     }
 }

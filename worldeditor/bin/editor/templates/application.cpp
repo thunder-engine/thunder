@@ -6,28 +6,40 @@
 
 #include <rendergl.h>
 
+#include <mutex>
+
+static string gAppConfig;
+static IFile *gFile = nullptr;
+
 class SimpleHandler : public ILogHandler {
 protected:
-    void            setRecord       (Log::LogTypes type, const char *record) {
-        FILE *fp    = fopen("log.txt", "a");
+    void            setRecord       (Log::LogTypes, const char *record) {
+        unique_lock<mutex> locker(m_Mutex);
+        _FILE *fp   = gFile->_fopen((gAppConfig + "/log.txt").c_str(), "a");
         if(fp) {
-            fwrite(record, strlen(record), 1, fp);
-            fclose(fp);
+            gFile->_fwrite(record, strlen(record), 1, fp);
+            gFile->_fclose(fp);
         }
     }
+    mutex           m_Mutex;
 };
 
 int main(int argc, char **argv) {
     Log::overrideHandler(new SimpleHandler());
     Log::setLogLevel(Log::ERR);
 
-    IFile *file = new IFile;
-    file->finit(argv[0]);
-    file->fsearchPathAdd("base.pak");
+    gFile   = new IFile;
+    gFile->finit(argv[0]);
+    Engine engine(gFile, argc, argv);
 
-    Engine engine(file);
+    gAppConfig  = engine.locationAppConfig();
+
+    gFile->fsearchPathAdd(engine.locationConfig().c_str(), true);
+    gFile->_mkdir(gAppConfig.c_str());
+
+    gFile->fsearchPathAdd((engine.locationAppDir() + "/base.pak").c_str());
     engine.addModule(new RenderGL(&engine));
-    if (engine.init() && engine.createWindow()) {
+    if(engine.init() && engine.createWindow()) {
         engine.exec();
     }
     return 0;

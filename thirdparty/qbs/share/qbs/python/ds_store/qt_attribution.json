@@ -1,0 +1,13 @@
+{
+    "Id": "ds_store",
+    "Name": "ds_store",
+    "QDocModule": "qbs",
+    "QtUsage": "Used in the qbs dmg module for building Apple disk images.",
+    "Description": "Manipulate Finder .DS_Store files from Python",
+    "Homepage": "https://github.com/al45tair/ds_store",
+    "Version": "1.1.2",
+    "License": "MIT License",
+    "LicenseId": "MIT",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 2014 Alastair Houghton"
+}

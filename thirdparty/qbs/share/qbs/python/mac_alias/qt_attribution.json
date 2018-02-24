@@ -1,0 +1,13 @@
+{
+    "Id": "mac_alias",
+    "Name": "mac_alias",
+    "QDocModule": "qbs",
+    "QtUsage": "Used in the qbs dmg module for building Apple disk images.",
+    "Description": "Generate/parse Mac OS Alias records from Python",
+    "Homepage": "https://github.com/al45tair/mac_alias",
+    "Version": "2.0.6",
+    "License": "MIT License",
+    "LicenseId": "MIT",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 2014 Alastair Houghton"
+}

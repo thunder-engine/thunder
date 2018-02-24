@@ -1,0 +1,462 @@
+[
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : "",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.mach-o-executable",
+    "Type" : "PackageType",
+    "Name" : "Mach-O Executable",
+    "Description" : "Mach-O executable",
+    "ProductReference" : {
+      "FileType" : "compiled.mach-o.executable",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "YES"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : "",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.mach-o-objfile",
+    "Type" : "PackageType",
+    "Name" : "Mach-O Object File",
+    "Description" : "Mach-O Object File",
+    "ProductReference" : {
+      "FileType" : "compiled.mach-o.objfile",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : "",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.mach-o-dylib",
+    "Type" : "PackageType",
+    "Name" : "Mach-O Dynamic Library",
+    "Description" : "Mach-O dynamic library",
+    "ProductReference" : {
+      "FileType" : "compiled.mach-o.dylib",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "EXECUTABLE_PREFIX" : "lib",
+      "EXECUTABLE_SUFFIX" : ".a",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.static-library",
+    "Type" : "PackageType",
+    "Name" : "Mach-O Static Library",
+    "Description" : "Mach-O static library",
+    "ProductReference" : {
+      "FileType" : "archive.ar",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : ".dylib",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.mach-o-bundle",
+    "Type" : "PackageType",
+    "Name" : "Mach-O Loadable",
+    "Description" : "Mach-O loadable",
+    "ProductReference" : {
+      "FileType" : "compiled.mach-o.bundle",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "PUBLIC_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Headers",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)",
+      "EXECUTABLE_PREFIX" : "",
+      "PLUGINS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/PlugIns",
+      "DOCUMENTATION_FOLDER_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)\/Documentation",
+      "EXECUTABLES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Executables",
+      "INFOSTRINGS_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)\/InfoPlist.strings",
+      "INFOPLIST_PATH" : "$(CONTENTS_FOLDER_PATH)\/Info.plist",
+      "EXECUTABLE_SUFFIX" : "",
+      "VERSIONPLIST_PATH" : "$(CONTENTS_FOLDER_PATH)\/version.plist",
+      "SHARED_SUPPORT_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/SharedSupport",
+      "EXECUTABLE_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/MacOS",
+      "PBDEVELOPMENTPLIST_PATH" : "$(CONTENTS_FOLDER_PATH)\/pbdevelopment.plist",
+      "FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Frameworks",
+      "LOCALIZED_RESOURCES_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/$(DEVELOPMENT_LANGUAGE).lproj",
+      "SCRIPTS_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/Scripts",
+      "WRAPPER_PREFIX" : "",
+      "PRIVATE_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/PrivateHeaders",
+      "CONTENTS_FOLDER_PATH" : "$(WRAPPER_NAME)\/Contents",
+      "WRAPPER_NAME" : "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)",
+      "PKGINFO_PATH" : "$(CONTENTS_FOLDER_PATH)\/PkgInfo",
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_FOLDER_PATH)\/$(EXECUTABLE_NAME)",
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Resources",
+      "JAVA_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/Java",
+      "SHARED_FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/SharedFrameworks",
+      "WRAPPER_SUFFIX" : ".bundle"
+    },
+    "Identifier" : "com.apple.package-type.wrapper",
+    "Type" : "PackageType",
+    "Name" : "Wrapper",
+    "Description" : "Wrapper",
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "CONTENTS_FOLDER_PATH" : "$(WRAPPER_NAME)",
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "SHALLOW_BUNDLE" : "YES",
+      "EXECUTABLE_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "Wrapper (Shallow)",
+    "Identifier" : "com.apple.package-type.wrapper.shallow",
+    "Description" : "Shallow Wrapper"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.application",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "YES"
+    },
+    "DefaultBuildSettings" : {
+      "GENERATE_PKGINFO_FILE" : "YES"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "Application Wrapper",
+    "Identifier" : "com.apple.package-type.wrapper.application",
+    "Description" : "Application Wrapper"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.application",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "YES"
+    },
+    "DefaultBuildSettings" : {
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "SHALLOW_BUNDLE" : "YES",
+      "GENERATE_PKGINFO_FILE" : "YES"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper.shallow",
+    "Name" : "Application Wrapper (Shallow)",
+    "Identifier" : "com.apple.package-type.wrapper.application.shallow",
+    "Description" : "Shallow Application Wrapper"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "PRIVATE_HEADERS_FOLDER_PATH" : "$(KEXT_FRAMEWORK)\/Contents\/PrivateHeaders\/$(KEXT_FAMILY_NAME)",
+      "PUBLIC_HEADERS_FOLDER_PATH" : "$(KEXT_FRAMEWORK)\/Contents\/Headers\/$(KEXT_FAMILY_NAME)"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "Kernel Extension Wrapper",
+    "Identifier" : "com.apple.package-type.wrapper.kernel-extension",
+    "Description" : "Kernel Extension Wrapper"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "PRIVATE_HEADERS_FOLDER_PATH" : "$(KEXT_FRAMEWORK)\/Contents\/PrivateHeaders\/$(KEXT_FAMILY_NAME)",
+      "PUBLIC_HEADERS_FOLDER_PATH" : "$(KEXT_FRAMEWORK)\/Contents\/Headers\/$(KEXT_FAMILY_NAME)",
+      "SHALLOW_BUNDLE" : "YES"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper.shallow",
+    "Name" : "Kernel Extension Wrapper (Shallow)",
+    "Identifier" : "com.apple.package-type.wrapper.kernel-extension.shallow",
+    "Description" : "Shallow Kernel Extension Wrapper"
+  },
+  {
+    "DefaultBuildSettings" : {
+      "PUBLIC_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Headers",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)",
+      "EXECUTABLE_PREFIX" : "",
+      "PLUGINS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/PlugIns",
+      "DOCUMENTATION_FOLDER_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)\/Documentation",
+      "EXECUTABLES_FOLDER_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)",
+      "INFOPLIST_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/Info.plist",
+      "EXECUTABLE_SUFFIX" : "",
+      "INFOPLISTSTRINGS_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)\/InfoPlist.strings",
+      "VERSIONPLIST_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/version.plist",
+      "SHARED_SUPPORT_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)",
+      "EXECUTABLE_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "PBDEVELOPMENTPLIST_PATH" : "$(CONTENTS_FOLDER_PATH)\/pbdevelopment.plist",
+      "VERSIONS_FOLDER_PATH" : "$(WRAPPER_NAME)\/Versions",
+      "FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Frameworks",
+      "CODESIGNING_FOLDER_PATH" : "$(TARGET_BUILD_DIR)\/$(CONTENTS_FOLDER_PATH)",
+      "LOCALIZED_RESOURCES_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/$(DEVELOPMENT_LANGUAGE).lproj",
+      "SCRIPTS_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/Scripts",
+      "WRAPPER_PREFIX" : "",
+      "PRIVATE_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/PrivateHeaders",
+      "CURRENT_VERSION" : "Current",
+      "PKGINFO_PATH" : "$(WRAPPER_NAME)\/PkgInfo",
+      "WRAPPER_NAME" : "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)",
+      "CONTENTS_FOLDER_PATH" : "$(VERSIONS_FOLDER_PATH)\/$(FRAMEWORK_VERSION)",
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_FOLDER_PATH)\/$(EXECUTABLE_NAME)",
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/Resources",
+      "JAVA_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/Java",
+      "SHARED_FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)\/SharedFrameworks",
+      "WRAPPER_SUFFIX" : ".framework"
+    },
+    "Identifier" : "com.apple.package-type.wrapper.framework",
+    "Type" : "PackageType",
+    "Name" : "Framework Wrapper",
+    "Description" : "Framework wrapper",
+    "ProductReference" : {
+      "FileType" : "wrapper.framework",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.framework.static",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_SUFFIX" : "",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)",
+      "EXECUTABLE_PREFIX" : ""
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper.framework",
+    "Name" : "Mach-O Static Framework",
+    "Identifier" : "com.apple.package-type.wrapper.framework.static",
+    "Description" : "Mach-O static framework"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.framework",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "CONTENTS_FOLDER_PATH" : "$(WRAPPER_NAME)",
+      "SHALLOW_BUNDLE" : "YES",
+      "VERSIONS_FOLDER_PATH" : "$(WRAPPER_NAME)"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper.framework",
+    "Name" : "Shallow Framework Wrapper",
+    "Identifier" : "com.apple.package-type.wrapper.framework.shallow",
+    "Description" : "Shallow framework wrapper"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "WRAPPER_SUFFIX" : "xctest"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "Unit Test Bundle",
+    "Identifier" : "com.apple.package-type.bundle.unit-test",
+    "Description" : "Unit Test Bundle"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.cfbundle",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "WRAPPER_SUFFIX" : "octest"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "OCUnit Test Bundle",
+    "Identifier" : "com.apple.package-type.bundle.ocunit-test",
+    "Description" : "OCUnit Test Bundle"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "folder",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "JAVA_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)",
+      "INFOSTRINGS_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)\/ContentInfo.strings",
+      "INFOPLIST_PATH" : "$(WRAPPER_NAME)\/ContentInfo.plist",
+      "WRAPPER_SUFFIX" : "",
+      "UNLOCALIZED_RESOURCES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "DOCUMENTATION_FOLDER_PATH" : "$(LOCALIZED_RESOURCES_FOLDER_PATH)",
+      "EXECUTABLES_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "LOCALIZED_RESOURCES_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)\/$(DEVELOPMENT_LANGUAGE).lproj",
+      "PLUGINS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "PUBLIC_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "SHARED_SUPPORT_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "SHARED_FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "PRIVATE_HEADERS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)",
+      "SCRIPTS_FOLDER_PATH" : "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)",
+      "FRAMEWORKS_FOLDER_PATH" : "$(CONTENTS_FOLDER_PATH)"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "In-App Purchase Content",
+    "Identifier" : "com.apple.package-type.in-app-purchase-content",
+    "Description" : "In-App Purchase Content"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.xpc-service",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "WRAPPER_SUFFIX" : ".xpc"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "XPC Service",
+    "Identifier" : "com.apple.package-type.xpc-service",
+    "Description" : "XPC Service"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.app-extension",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "WRAPPER_SUFFIX" : ".pluginkit"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.xpc-service",
+    "Name" : "PlugInKit PlugIn",
+    "Identifier" : "com.apple.package-type.pluginkit-plugin",
+    "Description" : "PlugInKit PlugIn"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.app-extension",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+      "WRAPPER_SUFFIX" : ".appex"
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.pluginkit-plugin",
+    "Name" : "App Extension",
+    "Identifier" : "com.apple.package-type.app-extension",
+    "Description" : "App Extension"
+  },
+  {
+    "ProductReference" : {
+      "FileType" : "wrapper.spotlight-importer",
+      "Name" : "$(WRAPPER_NAME)",
+      "IsLaunchable" : "NO"
+    },
+    "DefaultBuildSettings" : {
+
+    },
+    "Type" : "PackageType",
+    "BasedOn" : "com.apple.package-type.wrapper",
+    "Name" : "Spotlight Importer",
+    "Identifier" : "com.apple.package-type.spotlight-importer",
+    "Description" : "Spotlight Importer"
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "JAVA_MAKE_ZIPFILE" : "NO",
+      "JAVA_ARCHIVE_CLASSES" : "YES",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : ".jar",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.jarfile",
+    "Type" : "PackageType",
+    "Name" : "Jar File",
+    "Description" : "Jar file",
+    "ProductReference" : {
+      "FileType" : "archive.jar",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "JAVA_MAKE_ZIPFILE" : "YES",
+      "JAVA_ARCHIVE_CLASSES" : "YES",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : ".zip",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.zipfile",
+    "Type" : "PackageType",
+    "Name" : "Zip File",
+    "Description" : "Zip file",
+    "ProductReference" : {
+      "FileType" : "archive.zip",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  },
+  {
+    "DefaultBuildSettings" : {
+      "EXECUTABLE_PATH" : "$(EXECUTABLE_NAME)",
+      "JAVA_ARCHIVE_CLASSES" : "NO",
+      "EXECUTABLE_PREFIX" : "",
+      "EXECUTABLE_SUFFIX" : "",
+      "EXECUTABLE_NAME" : "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_SUFFIX)"
+    },
+    "Identifier" : "com.apple.package-type.javaclassfolder",
+    "Type" : "PackageType",
+    "Name" : "Class Folder",
+    "Description" : "Class folder",
+    "ProductReference" : {
+      "FileType" : "wrapper.java-classfolder",
+      "Name" : "$(EXECUTABLE_NAME)",
+      "IsLaunchable" : "NO"
+    }
+  }
+]

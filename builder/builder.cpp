@@ -7,17 +7,25 @@
 #include <QCoreApplication>
 
 Builder::Builder() {
+    connect(AssetManager::instance(), &AssetManager::importFinished, CodeManager::instance(), &CodeManager::rebuildProject);
+
     connect(CodeManager::instance(), SIGNAL(buildSucess(QString)), this, SLOT(onCompileDone(QString)));
+    connect(CodeManager::instance(), &CodeManager::buildFailed, QCoreApplication::instance(), &QCoreApplication::quit);
+
+    connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit);
+    connect(this, &Builder::moveDone, this, &Builder::package);
 }
 
-void Builder::convert() {
+void Builder::package(const QString &target) {
+    QFileInfo info(target);
+    QString dir = info.absolutePath();
+#if __APPLE__
+    dir     = target + "/Contents/MacOS";
+#endif
+    dir    += "/base.pak";
 
-}
-
-void Builder::archive() {
-    Log(Log::INF) << "Packaging Assets";
-
-    QuaZip zip(ProjectManager::instance()->targetPath() + "/base.pak");
+    Log(Log::INF) << "Packaging Assets to:" << qPrintable(dir);
+    QuaZip zip(dir);
     if(!zip.open(QuaZip::mdCreate)) {
         Log(Log::ERR) << "Can't open package";
         return;
@@ -28,7 +36,7 @@ void Builder::archive() {
     while(it.hasNext()) {
         QString path = it.next();
         QFileInfo info(path);
-        if(info.isFile()){
+        if(info.isFile()) {
             QFile inFile(info.absoluteFilePath());
 
             string origin   = AssetManager::instance()->guidToPath(info.fileName().toStdString());
@@ -53,13 +61,56 @@ void Builder::archive() {
         }
     }
     Log(Log::INF) << "Packaging Done";
-    CodeManager::instance()->setOutdated();
+    emit packDone();
+}
+
+bool copyRecursively(QString sourceFolder, QString destFolder) {
+    bool success = false;
+    QDir sourceDir(sourceFolder);
+
+    if(!sourceDir.exists()) {
+        return false;
+    }
+
+    QDir destDir(destFolder);
+    if(!destDir.exists()) {
+        destDir.mkdir(destFolder);
+    }
+
+    QStringList files = sourceDir.entryList(QDir::Files);
+    for(int i = 0; i< files.count(); i++) {
+        QString srcName = sourceFolder + QDir::separator() + files[i];
+        QString destName = destFolder + QDir::separator() + files[i];
+        success = QFile::copy(srcName, destName);
+        if(!success)
+            return false;
+    }
+
+    files.clear();
+    files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+    for(int i = 0; i< files.count(); i++) {
+        QString srcName = sourceFolder + QDir::separator() + files[i];
+        QString destName = destFolder + QDir::separator() + files[i];
+        success = copyRecursively(srcName, destName);
+        if(!success) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void Builder::onCompileDone(const QString &path) {
     QFileInfo info(path);
-    QString target  = ProjectManager::instance()->targetPath() + "/" + info.fileName();
-    qDebug() << QFile::remove(target);
-    qDebug() << QFile::copy(path, target);
-    QCoreApplication::quit();
+    QFileInfo target(ProjectManager::instance()->targetPath() + "/" + info.fileName());
+
+    if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
+        Log(Log::INF) << "Previous build removed.";
+    }
+
+    if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
+        Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
+        emit moveDone(target.absoluteFilePath());
+        return;
+    }
+    QCoreApplication::exit(1);
 }

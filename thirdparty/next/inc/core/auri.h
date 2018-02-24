@@ -19,7 +19,10 @@ public:
     string                      path                        () const;
     string                      query                       () const;
     string                      fragment                    () const;
+    string                      dir                         () const;
     string                      name                        () const;
+    string                      baseName                    () const;
+    string                      suffix                      () const;
 
 private:
     friend class AUriPrivate;

@@ -12,9 +12,12 @@ class Builder : public QObject {
 public:
     Builder         ();
 
+signals:
+    void            packDone        ();
+    void            moveDone        (const QString &target);
+
 public slots:
-    void            convert         ();
-    void            archive         ();
+    void            package         (const QString &target);
     void            onCompileDone   (const QString &path);
 };
 

@@ -7,7 +7,6 @@ Project {
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
     property string SDK_VERSION: "2.0"
-    property string LAUNCHER_VERSION: "1.0"
     property string COPYRIGHT_YEAR: "2018"
     property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
@@ -24,8 +23,9 @@ Project {
     property string PREFIX: ""
     property string LAUNCHER_PATH: "launcher"
     property string SDK_PATH: "sdk/" + SDK_VERSION
-    property string BIN_PATH: SDK_PATH + "/bin/" + PLATFORM
-    property string LIB_PATH: SDK_PATH + "/lib/" + PLATFORM
+    property string PLATFORM_PATH: SDK_PATH + "/" + PLATFORM
+    property string BIN_PATH: PLATFORM_PATH + "/bin"
+    property string LIB_PATH: PLATFORM_PATH + "/lib"
     property string INC_PATH: SDK_PATH + "/include"
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios")

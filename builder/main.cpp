@@ -40,18 +40,16 @@ int main(int argc, char *argv[]) {
     ProjectManager *mgr = ProjectManager::instance();
     mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
-
     Log::overrideHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
     IFile *file = new IFile();
     file->finit(qPrintable(QCoreApplication::arguments().at(0)));
     file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
-    Engine engine(file);
+    Engine engine(file, argc, argv);
 
     Builder builder;
 
-    QCoreApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &builder, SLOT(archive()));
     CodeManager::instance()->init();
     AssetManager::instance()->init();
 

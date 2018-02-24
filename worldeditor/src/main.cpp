@@ -26,10 +26,15 @@ int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setVersion(4, 1);
     format.setProfile(QSurfaceFormat::CoreProfile);
+    //format.setRenderableType(QSurfaceFormat::OpenGLES);
     QSurfaceFormat::setDefaultFormat(format);
 
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication a(argc, argv);
+
+    QCoreApplication::setOrganizationName(COMPANY_NAME);
+    QCoreApplication::setApplicationName(EDITOR_NAME);
+    QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QFile qss(":/Style/styles/dark/style.qss");
     if(qss.open(QIODevice::ReadOnly)) {
@@ -52,7 +57,7 @@ int main(int argc, char *argv[]) {
         file->finit(qPrintable(QApplication::arguments().at(0)));
         file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
-        Engine engine(file);
+        Engine engine(file, argc, argv);
         engine.init();
 
         SceneComposer w(&engine);
