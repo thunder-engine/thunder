@@ -1,6 +1,8 @@
 ## Thunder Engine
 [![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
 [![Build Status](https://travis-ci.org/eprikazchikov/thunder.svg?branch=master)](https://travis-ci.org/eprikazchikov/thunder)
+#### Code Quality Status
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/06a1475c3d7241d6b70cd7d28c680142)](https://www.codacy.com/app/eprikazchikov/thunder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eprikazchikov/thunder&amp;utm_campaign=Badge_Grade)
 ### About
 Thunder Engine is a multifunctional light weight game engine written by Evgeniy Prikazchikov for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
 #### Set of Tools
