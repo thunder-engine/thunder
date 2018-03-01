@@ -19,3 +19,16 @@ build_script:
   - qbs config defaultProfile qt
   - qbs build --all-products release
 
+deploy:
+  - provider: FTP
+    protocol: ftp
+    host: ftp.thunderengine.ru
+    username: u0474941_deploy
+    password:
+      secure: RZqica2UQ8drJMDdKjtUKA==
+    folder: artefacts
+    artifact: /.*\.7z/
+    on:
+        branch: snapshot
+        appveyor_repo_tag: false
+        push_release: true
