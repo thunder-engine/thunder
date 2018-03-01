@@ -29,6 +29,6 @@ deploy:
     folder: artefacts
     artifact: /.*\.7z/
     on:
-        branch: snapshot
+        branch: master
         appveyor_repo_tag: false
         push_release: true
