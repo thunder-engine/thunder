@@ -1,16 +1,17 @@
 #include "handles.h"
 
-#include <rendersystem.h>
+#include <commandbuffer.h>
 #include <components/camera.h>
 #include <components/actor.h>
 
-#include <resources/mesh.h>
 #include <resources/material.h>
 
 #include "handletools.h"
 
 #define SIDES 32
 #define ALPHA 0.3
+
+#define OVERRIDE "texture0"
 
 Vector4 Handles::s_Normal   = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Selected = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -29,15 +30,18 @@ Camera *Handles::s_ActiveCamera = nullptr;
 
 uint8_t Handles::s_Axes     = 0;
 
-static IRenderSystem *s_System  = nullptr;
+static ICommandBuffer *s_Buffer = nullptr;
 
-float length    = 0.7f;
-float sense     = 10.0f;
+float length    = 1.0f;
+float sense     = 0.02f;
 float conesize  = length / 5.0f;
 
 Mesh *Handles::s_Cone   = nullptr;
+Mesh *Handles::s_Quad   = nullptr;
 Mesh *Handles::s_Move   = nullptr;
-MaterialInstance *Handles::s_Instance = nullptr;
+
+MaterialInstance *Handles::s_Gizmo  = nullptr;
+MaterialInstance *Handles::s_Sprite = nullptr;
 
 enum {
     AXIS,
@@ -49,18 +53,24 @@ enum {
     CIRCLE
 };
 
-void Handles::init(IRenderSystem *system) {
-    if(s_System == nullptr) {
-        s_System    = system;
+void Handles::init() {
+    if(s_Quad == nullptr) {
+        s_Quad      = Engine::loadResource<Mesh>(".embedded/plane.fbx");
     }
+    if(s_Sprite == nullptr) {
+        Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+        if(m) {
+            s_Sprite = m->createInstance();
+        }
+    }
+
     if(s_Cone == nullptr) {
         s_Cone      = Engine::loadResource<Mesh>(".embedded/cone.fbx");
     }
-
-    if(s_Instance == nullptr) {
+    if(s_Gizmo == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
         if(m) {
-            s_Instance  = m->createInstance();
+            s_Gizmo = m->createInstance();
         }
     }
 
@@ -126,11 +136,15 @@ void Handles::init(IRenderSystem *system) {
     }
 }
 
-void Handles::beginDraw() {
-    s_System->setCamera(*s_ActiveCamera);
-    HandleTools::setCamera(*s_ActiveCamera);
+void Handles::beginDraw(ICommandBuffer *buffer) {
+    Matrix4 v, p;
+    s_ActiveCamera->matrices(v, p);
 
-    s_System->clearRenderTarget(false, Vector4(), true, 1.0f);
+    HandleTools::setViewProjection(v, p);
+
+    s_Buffer    = buffer;
+    s_Buffer->setViewProjection(v, p);
+    s_Buffer->clearRenderTarget(false, Vector4(), true, 1.0f);
 }
 
 void Handles::endDraw() {
@@ -138,44 +152,46 @@ void Handles::endDraw() {
 }
 
 void Handles::drawArrow(const Matrix4 &transform) {
-    s_System->setColor(s_Color);
-    s_System->drawMesh(transform, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+    s_Buffer->setColor(s_Color);
+    s_Buffer->drawMesh(transform, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
     Matrix4 m;
     m.translate(Vector3(0, 4.0, 0));
-    s_System->setColor(s_Second);
-    s_System->drawMesh(transform * m, s_Cone, 0, IRenderSystem::TRANSLUCENT, s_Instance);
+    s_Buffer->setColor(s_Second);
+    s_Buffer->drawMesh(transform * m, s_Cone, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 }
 
-void Handles::drawFrustum(const Vector3Vector &points) {
-    s_System->setColor(s_Color);
+void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices) {
+    Mesh *lines = Engine::objectCreate<Mesh>("Lines");
 
-    uint32_t indices[] = {0, 1, 5, 4,
-                         3, 0, 4, 7,
-                         2, 3, 7, 6,
-                         1, 2, 6, 5};
+    Mesh::Lod lod;
+    lod.vertices    = points;
+    lod.indices     = indices;
+    {
+        Mesh::Surface surface;
+        surface.mode    = Mesh::MODE_LINES;
+        surface.lods.push_back(lod);
+        lines->addSurface(surface);
+    }
+    s_Buffer->setColor(s_Color);
+    s_Buffer->drawMesh(transform, lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+
+    delete lines;
 }
 
-void Handles::drawBox(const Vector3 &position, const Quaternion &rotation, const Vector3 &size) {
-    Vector3 min = position - size * 0.5;
-    Vector3 max = min + size;
+bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {
+    bool result = false;
+    Matrix4 model(position, Quaternion(), Vector3(size, 1.0));
+    Matrix4 q   = model * Matrix4(Vector3(), s_ActiveCamera->actor().rotation(), Vector3(1.0));
 
-    Vector3Vector vertices;
-    vertices.push_back(Vector3(min.x, min.y, min.z));
-    vertices.push_back(Vector3(min.x, min.y, max.z));
-    vertices.push_back(Vector3(max.x, min.y, max.z));
-    vertices.push_back(Vector3(max.x, min.y, min.z));
+    if(HandleTools::distanceToPoint(q, Vector3()) <= sense) {
+        result = true;
+    }
 
-    vertices.push_back(Vector3(min.x, max.y, min.z));
-    vertices.push_back(Vector3(min.x, max.y, max.z));
-    vertices.push_back(Vector3(max.x, max.y, max.z));
-    vertices.push_back(Vector3(max.x, max.y, min.z));
-
-    drawFrustum(vertices);
-}
-
-void Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture &texture) {
-    //s_System->drawBillboard(position, size, texture);
+    s_Sprite->setTexture(OVERRIDE,  texture);
+    s_Buffer->setColor(s_Color);
+    s_Buffer->drawMesh(q, s_Quad, 0, ICommandBuffer::TRANSLUCENT, s_Sprite);
+    return result;
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
@@ -214,42 +230,43 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         s_Second    = s_xColor;
         s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
         drawArrow(x);
-        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
-        s_System->drawMesh(x, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
-        s_System->drawMesh(x * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
+        s_Buffer->drawMesh(x, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
+        s_Buffer->drawMesh(x * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
         s_Second    = s_yColor;
         s_Color     = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
         drawArrow(y);
-        s_System->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
-        s_System->drawMesh(y, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
-        s_System->drawMesh(y * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
+        s_Buffer->drawMesh(y, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
+        s_Buffer->drawMesh(y * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
         s_Second    = s_zColor;
         s_Color     = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
         drawArrow(z);
-        s_System->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
-        s_System->drawMesh(z, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor);
-        s_System->drawMesh(z * r, s_Move, MOVE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
+        s_Buffer->drawMesh(z, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor);
+        s_Buffer->drawMesh(z * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
         s_Color = s_Selected;
         s_Color.w = ALPHA;
         if(s_Axes == (AXIS_X | AXIS_Z)) {
-            s_System->setColor(s_Color);
-            s_System->drawMesh(x, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(x, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         if(s_Axes == (AXIS_X | AXIS_Y)) {
-            s_System->setColor(s_Color);
-            s_System->drawMesh(y, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(y, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         if(s_Axes == (AXIS_Y | AXIS_Z)) {
-            s_System->setColor(s_Color);
-            s_System->drawMesh(z, s_Move, MOVE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(z, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
-        s_Color = s_Normal;
+        s_Color     = s_Normal;
+        s_Second    = s_Normal;
 
         Plane plane;
         plane.point     = position;
@@ -266,8 +283,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         }
         plane.d = plane.normal.dot(plane.point);
 
-        Ray ray = s_ActiveCamera->castRay(m_sMouse.x / (float)s_ActiveCamera->width(),
-                                          m_sMouse.y / (float)s_ActiveCamera->height());
+        Ray ray = s_ActiveCamera->castRay(m_sMouse.x, m_sMouse.y);
         Vector3 point;
         ray.intersect(plane, &point, true);
         if(s_Axes & AXIS_X) {
@@ -317,30 +333,30 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             }
         }
 
-        s_System->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-        s_System->drawMesh(q1 * m, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->drawMesh(q2 * m, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->setColor(grey);
-        s_System->drawMesh(q1, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
-        s_System->drawMesh(q2, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+        s_Buffer->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
+        s_Buffer->drawMesh(q1 * m, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(q2 * m, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->setColor(grey);
+        s_Buffer->drawMesh(q1, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(q2, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
         if(!locked || s_Axes == AXIS_X) {
-            s_System->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
-            s_System->drawMesh(x, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
+            s_Buffer->drawMesh(x, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         if(!locked || s_Axes == AXIS_Y) {
-            s_System->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
-            s_System->drawMesh(y, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
+            s_Buffer->drawMesh(y, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         if(!locked || s_Axes == AXIS_Z) {
-            s_System->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
-            s_System->drawMesh(z, s_Move, CIRCLE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
+            s_Buffer->drawMesh(z, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
-        s_System->setColor(s_Normal);
+        s_Buffer->setColor(s_Normal);
     }
-    return m_sMouse;
+    return m_sMouse * 100;
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
@@ -383,80 +399,80 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         s_Color     = s_Selected;
         s_Color.w   = ALPHA;
         {
-            s_System->setColor(s_xColor);
+            s_Buffer->setColor(s_xColor);
             if(s_Axes == (AXIS_X | AXIS_Z)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(x, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(x, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(x, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(x, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_xColor);
+            s_Buffer->setColor(s_xColor);
             if(s_Axes == (AXIS_X | AXIS_Y)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(x * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(x * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(x * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(x * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_Axes & AXIS_X ? s_Selected : s_xColor);
-            s_System->drawMesh(x, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Axes & AXIS_X ? s_Selected : s_xColor);
+            s_Buffer->drawMesh(x, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         {
-            s_System->setColor(s_yColor);
+            s_Buffer->setColor(s_yColor);
             if(s_Axes == (AXIS_Y | AXIS_X)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(y, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(y, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(y, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(y, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_yColor);
+            s_Buffer->setColor(s_yColor);
             if(s_Axes == (AXIS_Y | AXIS_Z)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(y * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(y * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(y * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(y * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_Axes & AXIS_Y ? s_Selected : s_yColor);
-            s_System->drawMesh(y, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Axes & AXIS_Y ? s_Selected : s_yColor);
+            s_Buffer->drawMesh(y, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         {
-            s_System->setColor(s_zColor);
+            s_Buffer->setColor(s_zColor);
             if(s_Axes == (AXIS_Z | AXIS_Y)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(z, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(z, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(z, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(z, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_zColor);
+            s_Buffer->setColor(s_zColor);
             if(s_Axes == (AXIS_Z | AXIS_X)) {
-                s_System->setColor(s_Color);
-                s_System->drawMesh(z * r, s_Move, SCALE_XY, IRenderSystem::TRANSLUCENT, s_Instance);
-                s_System->setColor(s_Selected);
+                s_Buffer->setColor(s_Color);
+                s_Buffer->drawMesh(z * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->setColor(s_Selected);
             }
-            s_System->drawMesh(z * r, s_Move, SCALE, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->drawMesh(z * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_System->setColor(s_Axes & AXIS_Z ? s_Selected : s_zColor);
-            s_System->drawMesh(z, s_Move, AXIS, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Axes & AXIS_Z ? s_Selected : s_zColor);
+            s_Buffer->drawMesh(z, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-            s_System->setColor(s_Color);
-            s_System->drawMesh(x, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
-            s_System->drawMesh(x * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
-            s_System->drawMesh(y, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
-            s_System->drawMesh(y * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
-            s_System->drawMesh(z, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
-            s_System->drawMesh(z * r, s_Move, SCALE_XYZ, IRenderSystem::TRANSLUCENT, s_Instance);
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(x, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(x * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         s_Color = s_Normal;
     }
 
-    return m_sMouse;
+    return m_sMouse * 100;
 }
 
 

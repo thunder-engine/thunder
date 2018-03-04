@@ -7,7 +7,8 @@
 #include "sceneview.h"
 
 #include <engine.h>
-#include <rendersystem.h>
+#include <system.h>
+#include <commandbuffer.h>
 #include <components/scene.h>
 #include <components/camera.h>
 
@@ -23,7 +24,8 @@ SceneView::SceneView(Engine *engine, QWidget *parent) :
         m_pController(nullptr),
         m_pRender(nullptr),
         m_pScene(nullptr),
-        m_RenderDesc("RenderGL") {
+        m_RenderDesc("RenderGL"),
+        m_pCommandBuffer(new ICommandBuffer()) {
 
     m_pEngine   = engine;
 
@@ -57,17 +59,15 @@ void SceneView::addButton(OverlayButton *button) {
 }
 
 void SceneView::initializeGL() {
-    QOpenGLContext *c   = context();
-
     m_pScene    = Engine::objectCreate<Scene>("Scene");
     PluginModel::instance()->addScene(m_pScene);
 
     if(!m_RenderDesc.isEmpty()) {
-        m_pRender   = static_cast<IRenderSystem *>(PluginModel::instance()->createSystem(qPrintable(m_RenderDesc)));
+        m_pRender   = PluginModel::instance()->createSystem(qPrintable(m_RenderDesc));
     }
     if(m_pRender) {
         m_pRender->init();
-        Handles::init(m_pRender);
+        Handles::init();
         if(m_pController) {
             m_pController->init(m_pScene);
             m_pRender->overrideController(m_pController);
@@ -87,7 +87,8 @@ void SceneView::paintGL() {
         }
     }
     Handles::s_ActiveCamera = m_pController->activeCamera();
-    Handles::beginDraw();
+
+    Handles::beginDraw(m_pCommandBuffer);
     if(m_pController) {
         m_pController->drawHandles();
     }
@@ -102,12 +103,8 @@ void SceneView::paintGL() {
 void SceneView::resizeGL(int width, int height) {
     QOpenGLWidget::resizeGL(width, height);
 
-    if(m_pController) {
-        Camera *c   =  m_pController->activeCamera();
-        if(c) {
-            c->resize(width, height);
-        }
-    }
+    m_pRender->resize(width, height);
+    m_pController->resize(width, height);
 }
 
 void SceneView::drawOverlay(QPainter &painter) {

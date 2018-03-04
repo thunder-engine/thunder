@@ -273,7 +273,7 @@ void NextObject::buildObject(AObject *object, const QString &path) {
 }
 
 bool NextObject::event(QEvent *e) {
-    if(e->type() == QEvent::DynamicPropertyChange) {
+    if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
         QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
         QString name    = ev->propertyName();
         QVariant value  = property(qPrintable(name));
@@ -289,7 +289,8 @@ bool NextObject::event(QEvent *e) {
                     if(id < array.size()) {
                         Material *m     = aVariant(value, AMetaType::type<Material *>()).value<Material *>();
                         if(m) {
-                            delete []array[id];
+                            MaterialInstance *inst  = array[id];
+                            delete inst;
                             array[id]   = m->createInstance();
                         }
                     }

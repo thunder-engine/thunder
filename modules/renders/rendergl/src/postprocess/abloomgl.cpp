@@ -29,19 +29,27 @@ ABloomGL::ABloomGL() {
     m_BloomPasses[4].BlurSize   = Vector3(64.0f, 0.0f, 64.0f);
 }
 
-ATextureGL *ABloomGL::draw(ATextureGL &source, APipeline &pipeline) {
-    if(m_pMaterial && m_pMaterial->bind(pipeline, IRenderSystem::UI, AMaterialGL::Static)) {
-        pipeline.makeOrtho();
+ATextureGL *ABloomGL::draw(ATextureGL &source, CommandBufferGL &buffer) {
+    if(m_pMaterial && m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
+        Matrix4 proj;
+        proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
+        buffer.setViewProjection(Matrix4(), proj);
 
         uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
-        pipeline.setShaderParams(program);
+        /// \todo Return command buffer
+        //buffer.setShaderParams(program);
 
         int location    = glGetUniformLocation(program, "threshold");
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             if(location > -1) {
                 glUniform1f(location, (i == 0) ? m_Threshold : 0.0f);
             }
-            pipeline.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
+            /// \todo Return command buffer
+            //buffer.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
+            //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
+            //glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
+            ////drawTexturedQuad(source);
+            //glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
         }
 
         //pipeline.clearScreen(m_ResultTexture);
@@ -54,14 +62,14 @@ ATextureGL *ABloomGL::draw(ATextureGL &source, APipeline &pipeline) {
 
         glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
 */
-
-        ABlurGL *blur   = pipeline.filterBlur();
-        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            Vector2 size(m_BloomPasses[i].DownTexture.width(), m_BloomPasses[i].DownTexture.height());
-            m_BlurTemp.resize(size.x, size.y);
-
-            blur->draw(m_BloomPasses[i].DownTexture, m_ResultTexture, m_BlurTemp, size, m_BloomPasses[i].BlurSteps, m_BloomPasses[i].BlurPoints);
-        }
+        /// \todo Return command buffer
+        //ABlurGL *blur   = pipeline.filterBlur();
+        //for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
+        //    Vector2 size(m_BloomPasses[i].DownTexture.width(), m_BloomPasses[i].DownTexture.height());
+        //    m_BlurTemp.resize(size.x, size.y);
+        //
+        //    blur->draw(m_BloomPasses[i].DownTexture, m_ResultTexture, m_BlurTemp, size, m_BloomPasses[i].BlurSteps, m_BloomPasses[i].BlurPoints);
+        //}
         return &m_ResultTexture;
     }
 

@@ -10,9 +10,6 @@
 Matrix4 HandleTools::s_View;
 Matrix4 HandleTools::s_Projection;
 
-int HandleTools::m_sWidth   = 0;
-int HandleTools::m_sHeight  = 0;
-
 template<typename T>
 float distanceToSegment(const T &a, const T &b, const T &p) {
     T v = b - a;
@@ -63,24 +60,22 @@ Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, flo
 
 float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &position) {
     Matrix4 mv  = s_View * matrix;
-    int viewport[4] = {0, 0, m_sWidth, m_sHeight};
     Vector3 ssp;
-    Camera::project(position, mv, s_Projection, viewport, ssp);
-    ssp.y    = m_sHeight - ssp.y;
+    Camera::project(position, mv, s_Projection, ssp);
+    ssp.y    = 1.0 - ssp.y;
 
     return (Handles::m_sMouse - ssp).length();
 }
 
 float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points) {
     Matrix4 mv  = s_View * matrix;
-    int viewport[4] = {0, 0, m_sWidth, m_sHeight};
     float result    = FLT_MAX;
     bool first      = true;
     Vector3 back;
     for(auto it : points) {
         Vector3 ss;
-        Camera::project(it, mv, s_Projection, viewport, ss);
-        ss.y    = m_sHeight - ss.y;
+        Camera::project(it, mv, s_Projection, ss);
+        ss.y    = 1.0 - ss.y;
         if(!first) {
             result  = std::min(distanceToSegment(back, ss, Handles::m_sMouse), result);
         } else {
@@ -97,29 +92,23 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh, uint3
     if(indices.empty()) {
         return distanceToPath(matrix, vertices);
     }
-
     Matrix4 mv  = s_View * matrix;
-
-    float result    = FLT_MAX;
+    float result= FLT_MAX;
     if((vertices.size() % 2) == 0) {
-        int viewport[4] = {0, 0, m_sWidth, m_sHeight};
         for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
             Vector3 a;
-            Camera::project(vertices[indices[i]], mv, s_Projection, viewport, a);
-            a.y     = m_sHeight - a.y;
+            Camera::project(vertices[indices[i]], mv, s_Projection, a);
+            a.y     = 1.0 - a.y;
             Vector3 b;
-            Camera::project(vertices[indices[i+1]], mv, s_Projection, viewport, b);
-            b.y     = m_sHeight - b.y;
+            Camera::project(vertices[indices[i+1]], mv, s_Projection, b);
+            b.y     = 1.0 - b.y;
             result  = std::min(distanceToSegment(a, b, Handles::m_sMouse), result);
         }
     }
-
     return result;
 }
 
-void HandleTools::setCamera(const Camera &camera) {
-    camera.matrices(s_View, s_Projection);
-
-    m_sWidth    = camera.width();
-    m_sHeight   = camera.height();
+void HandleTools::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
+    s_View          = view;
+    s_Projection    = projection;
 }

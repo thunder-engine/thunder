@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/eprikazchikov/thunder.svg?branch=master)](https://travis-ci.org/eprikazchikov/thunder)
 ### About
 Thunder Engine is a multifunctional light weight game engine written by Evgeniy Prikazchikov for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
+#### Supported Platforms
+- Windows
+- MacOS X
 #### Set of Tools
 - Multifunctional Scene Editor
 - Node Based Material Editor
@@ -15,3 +18,11 @@ Thunder Engine is a multifunctional light weight game engine written by Evgeniy 
 - Event driven Inter Object Communication System
 - Rendering System Based on Physical Principles
 - CookTorance Lighting model
+### Getting the Engine
+#### Compiling from source
+* Make sure the Qt (>= 5.10) SDK installed.
+* Make sure the QtCreator (>= 4.5.1) installed.
+* Make sure modern C++ compiler installed:
+    - In Windows: Microsoft Visual Studio 2015 or higher
+    - In MacOS X: Latest Xcode
+* To build project with QtCreator open Thunder.qbs and Build project

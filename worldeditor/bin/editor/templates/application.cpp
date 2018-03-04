@@ -18,6 +18,7 @@ protected:
         _FILE *fp   = gFile->_fopen((gAppConfig + "/log.txt").c_str(), "a");
         if(fp) {
             gFile->_fwrite(record, strlen(record), 1, fp);
+            gFile->_fwrite("\n", 1, 1, fp);
             gFile->_fclose(fp);
         }
     }
@@ -26,7 +27,7 @@ protected:
 
 int main(int argc, char **argv) {
     Log::overrideHandler(new SimpleHandler());
-    Log::setLogLevel(Log::ERR);
+    Log::setLogLevel(Log::DBG);
 
     gFile   = new IFile;
     gFile->finit(argv[0]);

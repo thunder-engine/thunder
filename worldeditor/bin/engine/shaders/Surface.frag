@@ -29,8 +29,8 @@ layout(location = 2) out vec4 gbuffer3;
 layout(location = 3) out vec4 gbuffer4;
 
 void simpleMode(Params params) {
-    float alpha = getOpacity ( params );
 #ifdef BLEND_OPAQUE
+    float alpha = getOpacity ( params );
     if(_clip >= alpha) {
         discard;
     }

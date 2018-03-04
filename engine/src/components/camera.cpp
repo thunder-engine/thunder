@@ -3,9 +3,9 @@
 #include "components/actor.h"
 
 Camera::Camera() {
-    m_FOV       = 45.0; // 2*arctan(height/(2*distance))
+    m_FOV       = 60.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
-    m_Far       = 10000.0;
+    m_Far       = 1000.0;
     m_Ratio     = 1.0;
     m_Focal     = 1.0;
     m_OrthoWidth= 1.0;
@@ -27,7 +27,7 @@ void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
     v   = Matrix4(a.rotation().toMatrix()).inverse() * m;
 }
 
-bool Camera::project(const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ss) {
+bool Camera::project(const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss) {
     Vector4 in;
     Vector4 out;
 
@@ -43,22 +43,22 @@ bool Camera::project(const Vector3 &ws, const Matrix4 &modelview, const Matrix4 
     in.y   *= in.w;
     in.z   *= in.w;
 
-    ss.x    = (in.x * 0.5f + 0.5f) * viewport[2] + viewport[0];
-    ss.y    = (in.y * 0.5f + 0.5f) * viewport[3] + viewport[1];
+    ss.x    = (in.x * 0.5f + 0.5f);
+    ss.y    = (in.y * 0.5f + 0.5f);
     ss.z    = (1.0f + in.z) * 0.5f;
 
     return true;
 }
 
-bool Camera::unproject(const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ws) {
+bool Camera::unproject(const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ws) {
     Matrix4 final;
     Vector4 in;
     Vector4 out;
 
     final   = (projection * modelview).inverse();
 
-    in.x    = (ss.x - (float)viewport[0]) / (float)viewport[2] * 2.0 - 1.0;
-    in.y    = (ss.y - (float)viewport[1]) / (float)viewport[3] * 2.0 - 1.0;
+    in.x    = (ss.x) * 2.0 - 1.0;
+    in.y    = (ss.y) * 2.0 - 1.0;
     in.z    = 2.0f * ss.z - 1.0f;
     in.w    = 1.0f;
     out     = final * in;
@@ -95,20 +95,6 @@ Ray Camera::castRay(float x, float y) {
     return Ray (p, dir);
 }
 
-void Camera::resize(uint32_t w, uint32_t h) {
-    m_Width     = w;
-    m_Height    = h;
-    m_Ratio = (double)m_Width / (double)m_Height;
-}
-
-uint32_t Camera::width() const {
-    return m_Width;
-}
-
-uint32_t Camera::height() const {
-    return m_Height;
-}
-
 double Camera::fov() const {
     return m_FOV;
 }
@@ -131,6 +117,9 @@ void Camera::setFar(const double value) {
 
 double Camera::ratio() const {
     return m_Ratio;
+}
+void Camera::setRatio(double value) {
+    m_Ratio = value;
 }
 
 double Camera::focal() const {
@@ -173,14 +162,11 @@ array<Vector3, 4> Camera::frustumCorners(float depth) const {
     float h = depth * tang;
     float w = h * m_Ratio;
 
-    Actor &a        = actor();
-    Vector3 p       = a.position();
-    Vector3 dir     = a.rotation() * Vector3(0.0, 0.0,-1.0);
-    dir.normalize();
+    Vector3 dir     = Vector3(0.0, 0.0,-1.0);
 
     Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
     Vector3 up      = right.cross(dir);
-    Vector3 nc      = p - dir * depth;
+    Vector3 nc      = dir * depth;
 
     return {nc + up * h - right * w,
             nc + up * h + right * w,

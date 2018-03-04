@@ -37,6 +37,8 @@ public:
 
     void                                blockFree                   (bool flag) { mBlockFree    = flag; }
 
+    virtual void                        resize                      (uint32_t width, uint32_t height) {}
+
 public slots:
     virtual void                        onInputEvent                (QInputEvent *);
 

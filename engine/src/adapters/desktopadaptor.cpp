@@ -56,13 +56,10 @@ bool DesktopAdaptor::init() {
         return false;
     }
 
-#ifdef __APPLE__
-    /* We need to explicitly ask for a 3.2 context on OS X */
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 

@@ -198,7 +198,6 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
 
 bool ATextureGL::uploadTextureCubemap(const Sides &sides) {
     GLenum target;
-
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face

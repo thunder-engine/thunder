@@ -180,13 +180,20 @@ int32_t Engine::exec() {
             level->setParent(scene);
         }
 
+        Log(Log::DBG) << "Looking camera...";
         Camera *component   = scene->findChild<Camera *>();
         if(component == nullptr) {
+            Log(Log::DBG) << "Camera not found creating new one.";
             Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", scene);
             camera->setPosition(Vector3(0.0f, 0.0f, 20.0f));
             component       = camera->addComponent<Camera>();
         }
-        component->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
+        for(auto it : p_ptr->m_Systems) {
+            Log(Log::DBG) << "Resize for" << it->name();
+            it->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
+        }
+        component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
+
         p_ptr->m_Controller->setActiveCamera(component);
 
         // Enter to game loop

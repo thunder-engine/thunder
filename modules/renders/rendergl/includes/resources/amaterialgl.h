@@ -5,12 +5,11 @@
 #include <list>
 
 #include <resources/material.h>
-#include <resources/material.h>
 
 #include <engine.h>
 
 class ATextureGL;
-class APipeline;
+class CommandBufferGL;
 
 class AMaterialGL : public Material {
     A_OVERRIDE(AMaterialGL, Material, Resources)
@@ -35,7 +34,7 @@ public:
 
     void                        loadUserData    (const AVariantMap &data);
 
-    bool                        bind            (APipeline &pipeline, uint8_t layer, uint16_t type);
+    uint32_t                    bind            (MaterialInstance *instance, uint8_t layer, uint16_t type);
     void                        unbind          (uint8_t layer);
 
     uint32_t                    getProgram      (uint16_t type) const;
@@ -56,8 +55,6 @@ protected:
     string                      loadIncludes    (const string &path, const string &define = string());
 
 private:
-    AVariantMap                 mUniforms;
-
     typedef map<uint16_t, uint32_t> ProgramMap;
 
     ProgramMap                  m_Programs;

@@ -8,9 +8,10 @@
 
 #include "resources/atexturegl.h"
 
-class AMaterialGL;
-class APipeline;
+class ICommandBuffer;
+class Material;
 class MaterialInstance;
+class Mesh;
 
 class ADirectLightGL : public DirectLight {
     A_OVERRIDE(ADirectLightGL, DirectLight, Components)
@@ -21,8 +22,8 @@ class ADirectLightGL : public DirectLight {
 public:
     ADirectLightGL              ();
 
-    void                        draw                (APipeline &pipeline, uint8_t layer);
-    void                        shadowsUpdate       (APipeline &pipeline);
+    void                        draw                (ICommandBuffer &buffer, uint8_t layer);
+    void                        shadowsUpdate       (ICommandBuffer &buffer);
 
     void                        setShaderParams     (uint32_t program);
 
@@ -49,7 +50,9 @@ protected:
     /// Field of view for all LOD levels
     Vector4                     m_LOD;
 
-    AMaterialGL                *m_pMaterial;
+    Mesh                       *m_pPlane;
+
+    Material                   *m_pMaterial;
     MaterialInstance           *m_pMaterialInstance;
 };
 

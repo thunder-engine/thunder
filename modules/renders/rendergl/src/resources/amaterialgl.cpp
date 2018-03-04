@@ -1,8 +1,8 @@
 #include "resources/amaterialgl.h"
 
 #include "agl.h"
+#include "commandbuffergl.h"
 
-#include "apipeline.h"
 #include "resources/text.h"
 #include "resources/atexturegl.h"
 
@@ -132,34 +132,32 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
     return 0;
 }
 
-bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
+uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
-    if((layer & IRenderSystem::DEFAULT || layer & IRenderSystem::SHADOWCAST || layer & IRenderSystem::RAYCAST) &&
+    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST || layer & ICommandBuffer::RAYCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return false;
     }
-    if(layer & IRenderSystem::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & ICommandBuffer::TRANSLUCENT && b == Material::Opaque) {
         return false;
     }
 
     switch(layer) {
-        case IRenderSystem::RAYCAST:    {
+        case ICommandBuffer::RAYCAST:    {
             type   |= AMaterialGL::Simple;
         } break;
-        case IRenderSystem::SHADOWCAST: {
+        case ICommandBuffer::SHADOWCAST: {
             type   |= AMaterialGL::Depth;
         } break;
         default: break;
     }
     uint32_t program    = getProgram(type);
     if(!program) {
-        return false;
+        return 0;
     }
 
     glUseProgram(program);
-
-    pipeline.setShaderParams(program);
 
     int location    = -1;
     location        = glGetUniformLocation(program, "_time");
@@ -167,20 +165,20 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
         glUniform1f(location, Timer::time());
     }
     // Push uniform values to shader
-    for(const auto &it : mUniforms) {
-        location    = glGetUniformLocation(program, it.first.c_str());
-        if(location > -1) {
-            const AVariant &data= it.second;
-            switch(data.type()) {
-                case AMetaType::VECTOR2:    glUniform2fv(location, 1, data.toVector2().v); break;
-                case AMetaType::VECTOR3:    glUniform3fv(location, 1, data.toVector3().v); break;
-                case AMetaType::VECTOR4:    glUniform4fv(location, 1, data.toVector4().v); break;
-                default:                    glUniform1f (location, data.toDouble()); break;
-            }
-        }
-    }
+    //for(const auto &it : mUniforms) {
+    //    location    = glGetUniformLocation(program, it.first.c_str());
+    //    if(location > -1) {
+    //        const AVariant &data= it.second;
+    //        switch(data.type()) {
+    //            case AMetaType::VECTOR2:    glUniform2fv(location, 1, data.toVector2().v); break;
+    //            case AMetaType::VECTOR3:    glUniform3fv(location, 1, data.toVector3().v); break;
+    //            case AMetaType::VECTOR4:    glUniform4fv(location, 1, data.toVector4().v); break;
+    //            default:                    glUniform1f (location, data.toDouble()); break;
+    //        }
+    //    }
+    //}
 
-    if(!isDoubleSided() && (!layer & IRenderSystem::RAYCAST)) {
+    if(!isDoubleSided() && (!layer & ICommandBuffer::RAYCAST)) {
         glEnable    ( GL_CULL_FACE );
         glCullFace  ( GL_BACK );
     }
@@ -197,17 +195,23 @@ bool AMaterialGL::bind(APipeline &pipeline, uint8_t layer, uint16_t type) {
     }
 
     glEnable(GL_TEXTURE_2D);
-    uint8_t t   = 0;
+    uint8_t i   = 0;
     for(auto it : m_Textures) {
         const ATextureGL *texture   = static_cast<const ATextureGL *>(it.second);
-        glActiveTexture(GL_TEXTURE0 + t);
+        glActiveTexture(GL_TEXTURE0 + i);
+        if(instance) {
+            const Texture *t    = instance->texture(it.first.c_str());
+            if(t) {
+                texture = static_cast<const ATextureGL *>(t);
+            }
+        }
         if(texture) {
             texture->bind();
         }
-        t++;
+        i++;
     }
 
-    return true;
+    return program;
 }
 
 void AMaterialGL::unbind(uint8_t layer) {

@@ -102,16 +102,22 @@ void AMeshGL::deleteVbo() {
         }
 
         {
-            uint32_t size   = m_normals[s].size();
-            glDeleteBuffers(size, &m_normals[s][0]);
+            if(m_Flags & Mesh::ATTRIBUTE_NORMALS) {
+                uint32_t size   = m_normals[s].size();
+                glDeleteBuffers(size, &m_normals[s][0]);
+            }
         }
         {
-            uint32_t size   = m_tangents[s].size();
-            glDeleteBuffers(size, &m_tangents[s][0]);
+            if(m_Flags & Mesh::ATTRIBUTE_TANGENTS) {
+                uint32_t size   = m_tangents[s].size();
+                glDeleteBuffers(size, &m_tangents[s][0]);
+            }
         }
         {
-            uint32_t size   = m_uv0[s].size();
-            glDeleteBuffers(size, &m_uv0[s][0]);
+            if(m_Flags & Mesh::ATTRIBUTE_UV0) {
+                uint32_t size   = m_uv0[s].size();
+                glDeleteBuffers(size, &m_uv0[s][0]);
+            }
         }
     }
     m_triangles.clear();

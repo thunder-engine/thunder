@@ -31,7 +31,7 @@ public:
         @param[in]  width       New screen width.
         @param[in]  height      New screen height.
     */
-    void                        resize              (int32_t width, int32_t height);
+    void                        resize              (uint32_t width, uint32_t height);
 
     ATextureGL                 &getDepth            ()          { return m_Depth; }
 
@@ -47,6 +47,9 @@ private:
 
     ATextureGL                 *m_pGBuffer;
     ATextureGL                  m_Depth;
+
+    Mesh                       *m_pPlane;
+    MaterialInstance           *m_pSprite;
 };
 
 #endif // ADEFERREDSHADING_H

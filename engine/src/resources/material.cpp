@@ -9,24 +9,42 @@ MaterialInstance::MaterialInstance(Material *material) :
 
 }
 
+MaterialInstance::~MaterialInstance() {
+    m_Textures.clear();
+    m_Uniforms.clear();
+}
+
 Material *MaterialInstance::material() const {
    return m_pMaterial;
 }
 
-void MaterialInstance::setFloat(const char *name, float value) {
+const Texture *MaterialInstance::texture(const char *name) {
+    const Texture *result = nullptr;
+    auto it = m_Textures.find(name);
+    if(it != m_Textures.end()) {
+        result  = (*it).second;
+    }
+    return result;
+}
 
+void MaterialInstance::setFloat(const char *name, float value) {
+    m_Uniforms[name]    = value;
 }
 void MaterialInstance::setVector2(const char *name, const Vector2 &value) {
-
+    m_Uniforms[name]    = value;
 }
 void MaterialInstance::setVector3(const char *name, const Vector3 &value) {
-
+    m_Uniforms[name]    = value;
 }
 void MaterialInstance::setVector4(const char *name, const Vector4 &value) {
-
+    m_Uniforms[name]    = value;
 }
 void MaterialInstance::setMatrix4(const char *name, const Vector4 &value) {
+    m_Uniforms[name]    = value;
+}
 
+void MaterialInstance::setTexture(const char *name, const Texture *value) {
+    m_Textures[name]    = value;
 }
 
 Material::Material() :
@@ -100,25 +118,6 @@ void Material::setDoubleSided(bool flag) {
 
 uint8_t Material::surfaces() const {
     return m_Surfaces;
-}
-
-bool Material::overrideTexture(const string &name, const Texture *texture) {
-    if(texture) {
-        auto it = m_Textures.find(name);
-        if(it != m_Textures.end()) {
-            it->second  = texture;
-            return true;
-        }
-    }
-    return false;
-}
-
-const Texture *Material::texture(const string &name) {
-    auto it = m_Textures.find(name);
-    if(it != m_Textures.end()) {
-        return it->second;
-    }
-    return nullptr;
 }
 
 MaterialInstance *Material::createInstance() {

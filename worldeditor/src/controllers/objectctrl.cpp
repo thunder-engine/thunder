@@ -8,6 +8,7 @@
 #include <components/actor.h>
 #include <components/scene.h>
 #include <components/camera.h>
+#include <components/directlight.h>
 #include <components/sprite.h>
 #include <components/staticmesh.h>
 
@@ -106,7 +107,7 @@ ObjectCtrl::ObjectCtrl(Engine *engine, SceneView *view) :
 void ObjectCtrl::drawHandles() {
     CameraCtrl::drawHandles();
 
-    Handles::m_sMouse   = Vector3(mMousePosition, 1.0);
+    Handles::m_sMouse   = Vector3(mMousePosition.x / m_Screen.x, mMousePosition.y / m_Screen.y, 1.0);
 
     drawHelpers(*m_pMap);
 
@@ -152,25 +153,46 @@ void ObjectCtrl::drawHelpers(AObject &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
+            bool result = false;
             Camera *camera  = dynamic_cast<Camera *>(component);
             if(camera) {
                 array<Vector3, 4> n = camera->frustumCorners(camera->nearPlane());
                 array<Vector3, 4> f = camera->frustumCorners(camera->farPlane());
 
                 Vector3Vector points;
-                points.push_back(n[0]);
-                points.push_back(n[1]);
-                points.push_back(n[2]);
-                points.push_back(n[3]);
+                points.push_back(n[0]);// 0
+                points.push_back(n[1]);// 1
+                points.push_back(n[2]);// 2
+                points.push_back(n[3]);// 3
+                points.push_back(f[0]);// 4
+                points.push_back(f[1]);// 5
+                points.push_back(f[2]);// 6
+                points.push_back(f[3]);// 7
 
-                points.push_back(f[0]);
-                points.push_back(f[1]);
-                points.push_back(f[2]);
-                points.push_back(f[3]);
+                Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                                               4, 5, 5, 6, 6, 7, 7, 4,
+                                               0, 4, 1, 5, 2, 6, 3, 7};
 
-                //Handles::drawFrustum(points);
-                //Handles::drawBillboard(camera->actor().position(), Vector2(1.0));
+                Handles::drawLines(component->actor().transform(), points, indices);
+                result  = Handles::drawBillboard(component->actor().position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
             }
+            DirectLight *direct = dynamic_cast<DirectLight *>(component);
+            if(direct) {
+                Vector3 pos     = component->actor().position();
+
+                Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
+                Handles::s_Color = Handles::s_Second = direct->color();
+                Handles::drawArrow(Matrix4(pos, component->actor().rotation(), Vector3(0.5f)) * z);
+                result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
+                Handles::s_Color = Handles::s_Second = Handles::s_Normal;
+            }
+
+            if(result) {
+                list<uint32_t> sel;
+                sel.push_back(object.uuid());
+                setSelectedObjects(sel);
+            }
+
         } else {
             drawHelpers(*it);
         }
@@ -616,4 +638,8 @@ AObject *ObjectCtrl::findObject(uint32_t id, AObject *parent) {
         }
     }
     return nullptr;
+}
+
+void ObjectCtrl::resize(uint32_t width, uint32_t height) {
+    m_Screen = Vector2(width, height);
 }

@@ -5,12 +5,14 @@
 
 #include <amath.h>
 
-#include <rendersystem.h>
 #include <patterns/asingleton.h>
+
+#include <resources/mesh.h>
 
 class Texture;
 class Camera;
-class IRenderSystem;
+
+class ICommandBuffer;
 
 using namespace std;
 
@@ -23,18 +25,16 @@ public:
     };
 
 public:
-    static void             init                (IRenderSystem *system);
+    static void             init                ();
 
-    static void             beginDraw           ();
+    static void             beginDraw           (ICommandBuffer *buffer);
     static void             endDraw             ();
 
     static void             drawArrow           (const Matrix4 &transform);
 
-    static void             drawFrustum         (const Vector3Vector &points);
+    static void             drawLines           (const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
 
-    static void             drawBox             (const Vector3 &position, const Quaternion &rotation, const Vector3 &size);
-
-    static void             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture &texture);
+    static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);
 
     static Vector3          moveTool            (const Vector3 &position, bool locked);
 
@@ -61,12 +61,18 @@ public:
 
     static uint8_t          s_Axes;
 
-    static MaterialInstance*s_Instance;
+
 
 protected:
     static Mesh            *s_Cone;
 
+    static Mesh            *s_Quad;
+
     static Mesh            *s_Move;
+
+    static MaterialInstance*s_Gizmo;
+
+    static MaterialInstance*s_Sprite;
 
 };
 

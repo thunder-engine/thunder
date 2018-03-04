@@ -1,0 +1,12 @@
+{
+    "crc": -765623991,
+    "guid": "{00000000-0284-0000-0000-000000000000}",
+    "settings": {
+        "Filtering": 1,
+        "Format": 2,
+        "MIP_maping": false,
+        "Type": 0,
+        "Wrap": 1
+    },
+    "type": 22
+}

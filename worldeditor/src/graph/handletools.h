@@ -21,16 +21,13 @@ public:
 
     static float            distanceToMesh      (const Matrix4 &matrix, const Mesh *mesh, uint32_t surface);
 
-    static void             setCamera           (const Camera &camera);
+    static void             setViewProjection   (const Matrix4 &view, const Matrix4 &projection);
 
 protected:
     typedef stack<Matrix4>  MatrixStack;
 
     static Matrix4          s_View;
     static Matrix4          s_Projection;
-
-    static int              m_sWidth;
-    static int              m_sHeight;
 };
 
 #endif // HANDLETOOLS_H

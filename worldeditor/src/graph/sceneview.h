@@ -11,7 +11,8 @@
 #include "common.h"
 
 class Engine;
-class IRenderSystem;
+class ISystem;
+class ICommandBuffer;
 
 class CameraCtrl;
 
@@ -133,7 +134,7 @@ private:
     CameraCtrl             *m_pController;
 
     Engine                 *m_pEngine;
-    IRenderSystem          *m_pRender;
+    ISystem                *m_pRender;
     Scene                  *m_pScene;
 
     QList<OverlayButton*>   m_OverlayButtons;
@@ -141,6 +142,8 @@ private:
     QMenu                   m_RenderModeMenu;
 
     QString                 m_RenderDesc;
+
+    ICommandBuffer         *m_pCommandBuffer;
 
 };
 

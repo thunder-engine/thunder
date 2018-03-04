@@ -119,9 +119,9 @@ public:
 
     struct Select {
         Actor          *object;
-        Vector3       position;
+        Vector3         position;
         Quaternion      rotation;
-        Vector3       scale;
+        Vector3         scale;
     };
 
 public:
@@ -143,6 +143,8 @@ public:
     void                setAngleGrid                (float value)       { mAngleGrid = value; }
 
     AObject            *findObject                  (uint32_t id, AObject *parent = nullptr);
+
+    void                resize                      (uint32_t width, uint32_t height);
 
 public slots:
     void                onInputEvent                (QInputEvent *);
@@ -210,11 +212,12 @@ protected:
 
     SceneView          *m_pView;
 
-    Vector2           mMousePosition;
+    Vector2             mMousePosition;
+    Vector2             m_Screen;
 
-    Vector3           mWorld;
-    Vector3           mSaved;
-    Vector3           mPosition;
+    Vector3             mWorld;
+    Vector3             mSaved;
+    Vector3             mPosition;
 
     UndoManager::PropertyObjects   *m_pPropertyState;
 };

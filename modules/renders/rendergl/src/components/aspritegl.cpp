@@ -3,21 +3,24 @@
 #include "resources/amaterialgl.h"
 
 #include "agl.h"
+#include "commandbuffergl.h"
 
 #include <components/actor.h>
 
 ASpriteGL::ASpriteGL() :
         Sprite() {
-
+    m_pPlane     = Engine::loadResource<Mesh>(".embedded/plane.fbx");
 }
 
-void ASpriteGL::draw(APipeline &pipeline, int8_t layer) {
+void ASpriteGL::draw(ICommandBuffer &buffer, int8_t layer) {
     Actor &a    = actor();
-    if(layer & (IRenderSystem::RAYCAST | IRenderSystem::DEFAULT | IRenderSystem::TRANSLUCENT | IRenderSystem::SHADOWCAST | IRenderSystem::UI)) {
-        if(layer & IRenderSystem::RAYCAST) {
-            pipeline.setColor(pipeline.idCode(a.uuid()));
+    if(layer & (ICommandBuffer::RAYCAST | ICommandBuffer::DEFAULT | ICommandBuffer::TRANSLUCENT | ICommandBuffer::SHADOWCAST | ICommandBuffer::UI)) {
+        if(layer & ICommandBuffer::RAYCAST) {
+            buffer.setColor(a.uuid());
         }
-        pipeline.drawQuad(a.worldTransform(), layer, m_Material, m_Texture);
-        pipeline.resetColor();
+
+        m_Material->setTexture("texture0", m_Texture);
+        buffer.drawMesh(a.worldTransform(), m_pPlane, 0, layer, m_Material);
+        buffer.setColor(Vector4(1.0f));
     }
 }

@@ -5,9 +5,7 @@
 
 #include "apipeline.h"
 
-class AShader;
-
-class ASpriteGL : public Sprite, public IDrawObjectGL {
+class ASpriteGL : public Sprite, public IDrawObject {
     A_OVERRIDE(ASpriteGL, Sprite, Components)
 
     A_NOMETHODS()
@@ -16,7 +14,10 @@ class ASpriteGL : public Sprite, public IDrawObjectGL {
 public:
     ASpriteGL                   ();
 
-    void                        draw            (APipeline &pipeline, int8_t layer);
+    void                        draw            (ICommandBuffer &buffer, int8_t layer);
+
+protected:
+    Mesh                       *m_pPlane;
 
 };
 

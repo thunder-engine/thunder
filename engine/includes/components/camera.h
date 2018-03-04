@@ -26,16 +26,13 @@ public:
 
     void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
-    static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ss);
-    static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, int viewport[4], Vector3 &ws);
+    static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss);
+    static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ws);
 
     Ray                         castRay                 (float x, float y);
 
-    virtual void                resize                  (uint32_t w, uint32_t h);
-
-    uint32_t                    width                   () const;
-    uint32_t                    height                  () const;
     double                      ratio                   () const;
+    void                        setRatio                (double value);
 
     Camera::Types               type                    () const;
     void                        setType                 (const Camera::Types type);
@@ -77,10 +74,6 @@ protected:
     float                       m_OrthoWidth;
 
     Vector4                     m_Color;
-
-    uint32_t                    m_Width;
-    uint32_t                    m_Height;
-
 };
 
 #endif // CAMERA_H

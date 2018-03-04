@@ -67,8 +67,11 @@ void QbsBuilder::generateProject(const QStringList &code) {
 bool QbsBuilder::buildProject() {
     QStringList args;
     args << "build" << m_Settings;
-
+#ifndef _DEBUG
     QString mode    = "release";
+#else
+    QString mode    = "debug";
+#endif
     QString product = m_pMgr->projectName();
     if(m_pMgr->targetPath().isEmpty()) {
         mode        = "debug";

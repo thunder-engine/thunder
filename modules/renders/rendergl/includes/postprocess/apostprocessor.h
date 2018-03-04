@@ -6,9 +6,7 @@
 #include "resources/amaterialgl.h"
 #include "resources/atexturegl.h"
 
-#include "apipeline.h"
-
-class APipeline;
+#include "commandbuffergl.h"
 
 class APostProcessor {
 public:
@@ -16,11 +14,18 @@ public:
 
     }
 
-    virtual ATextureGL         *draw                (ATextureGL &source, APipeline &pipeline) {
+    virtual ATextureGL         *draw                (ATextureGL &source, ICommandBuffer &buffer) {
         if(m_pMaterial) {
-            pipeline.makeOrtho();
-            m_pMaterial->bind(pipeline, IRenderSystem::UI, AMaterialGL::Static);
-            pipeline.drawScreen(source, m_ResultTexture);
+            Matrix4 proj;
+            proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
+            buffer.setViewProjection(Matrix4(), proj);
+            m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static);
+            /// \todo Return command buffer
+            //pipeline.drawScreen(source, m_ResultTexture);
+            //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
+            //glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
+            ////drawTexturedQuad(source);
+            //glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
             return &m_ResultTexture;
         }
         return &source;

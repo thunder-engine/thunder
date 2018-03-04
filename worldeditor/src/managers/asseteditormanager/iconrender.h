@@ -8,7 +8,6 @@
 class Engine;
 class Scene;
 class Actor;
-class LightSource;
 class AOBox;
 
 class IController;

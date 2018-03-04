@@ -7,14 +7,14 @@
 #include "resources/ameshgl.h"
 #include "apipeline.h"
 
-class AStaticMeshGL : public StaticMesh, public IDrawObjectGL {
+class AStaticMeshGL : public StaticMesh, public IDrawObject {
     A_OVERRIDE(AStaticMeshGL, StaticMesh, Components)
 
     A_NOMETHODS()
     A_NOPROPERTIES()
 
 public:
-    void                        draw                (APipeline &pipeline, int8_t layer);
+    void                        draw                (ICommandBuffer &buffer, int8_t layer);
 
 };
 

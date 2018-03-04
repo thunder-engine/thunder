@@ -46,22 +46,21 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     if(m_pRender) {
         m_pRender->init();
         m_pRender->overrideController(m_pController);
+        m_pRender->resize(m_pFBO->size().width(), m_pFBO->size().height());
     }
 
     m_pScene    = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
-
     m_pCamera   = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
     m_pCamera->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     Camera *camera  = m_pCamera->addComponent<Camera>();
-    camera->resize(m_pFBO->size().width(), m_pFBO->size().height());
     m_pController->setActiveCamera(camera);
 
     m_pLight    = Engine::objectCreate<Actor>("LightSource", m_pScene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->setRotation(rot);
-    //m_pLight->addComponent<LightSource>();
+    m_pLight->addComponent<DirectLight>();
 }
 
 const QImage IconRender::render(const QString &resource, uint8_t type) {

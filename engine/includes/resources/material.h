@@ -10,16 +10,29 @@ class NEXT_LIBRARY_EXPORT MaterialInstance {
 public:
     MaterialInstance            (Material *material);
 
+    ~MaterialInstance           ();
+
     Material                   *material            () const;
 
-    virtual void                setFloat            (const char *name, float value);
-    virtual void                setVector2          (const char *name, const Vector2 &value);
-    virtual void                setVector3          (const char *name, const Vector3 &value);
-    virtual void                setVector4          (const char *name, const Vector4 &value);
+    const Texture              *texture             (const char *name);
 
-    virtual void                setMatrix4          (const char *name, const Vector4 &value);
+    void                        setFloat            (const char *name, float value);
+    void                        setVector2          (const char *name, const Vector2 &value);
+    void                        setVector3          (const char *name, const Vector3 &value);
+    void                        setVector4          (const char *name, const Vector4 &value);
+
+    void                        setMatrix4          (const char *name, const Vector4 &value);
+
+    void                        setTexture          (const char *name, const Texture *value);
+
 protected:
+    typedef map<string, const Texture *>            TextureMap;
+
     Material                   *m_pMaterial;
+
+    TextureMap                  m_Textures;
+
+    AVariantMap                 m_Uniforms;
 };
 
 class NEXT_LIBRARY_EXPORT Material : public AObject {
@@ -69,10 +82,6 @@ public:
     void                        setDoubleSided              (bool flag);
 
     uint8_t                     surfaces                    () const;
-
-    bool                        overrideTexture             (const string &name, const Texture *texture);
-
-    const Texture              *texture                     (const string &name);
 
     virtual MaterialInstance   *createInstance              ();
 

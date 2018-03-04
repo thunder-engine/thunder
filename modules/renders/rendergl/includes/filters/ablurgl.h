@@ -11,13 +11,11 @@ class APipeline;
 
 class ABlurGL {
 public:
-    ABlurGL                     (APipeline *pipeline);
+    ABlurGL                     ();
 
-    void                        draw                (ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points);
+    void                        draw                (CommandBufferGL &buffer, ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points);
 
 protected:
-    APipeline                  *m_pPipeline;
-
     AMaterialGL                *m_pBlurMaterial;
 
     int                         u_Steps;

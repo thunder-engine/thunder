@@ -200,12 +200,21 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Textures"
+        name: "Textures Engine"
         files: [
             install.RESOURCE_ROOT + "/engine/textures/*"
         ]
         qbs.install: true
         qbs.installDir: install.SDK_PATH + "/resources/engine/textures"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Textures Editor"
+        files: [
+            install.RESOURCE_ROOT + "/editor/textures/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/editor/textures"
         qbs.installPrefix: install.PREFIX
     }
     Group {

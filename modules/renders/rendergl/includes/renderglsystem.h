@@ -3,14 +3,14 @@
 
 #include <cstdint>
 
-#include <rendersystem.h>
+#include <system.h>
 
 class APipeline;
 
-class RenderGLSystem : public IRenderSystem {
+class RenderGLSystem : public ISystem {
 public:
-    RenderGLSystem             (Engine *engine);
-    ~RenderGLSystem            ();
+    RenderGLSystem              (Engine *engine);
+    ~RenderGLSystem             ();
 
     bool                        init                        ();
 
@@ -20,15 +20,7 @@ public:
 
     void                        overrideController          (IController *controller);
 
-    void                        clearRenderTarget           (bool clearColor, const Vector4 &color, bool clearDepth, float depth);
-
-    void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = IRenderSystem::DEFAULT, MaterialInstance *material = nullptr);
-
-    void                        setColor                    (const Vector4 &color);
-
-    void                        setCamera                   (const Camera &camera);
-
-    void                        setRenderTarget             (uint8_t numberColors, const Texture *colors, uint8_t numberDepth, const Texture *depth);
+    void                        resize                      (uint32_t width, uint32_t height);
 
 protected:
     APipeline                  *m_pPipeline;

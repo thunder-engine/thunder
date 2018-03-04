@@ -19,13 +19,13 @@ class ABloomGL : public APostProcessor {
 
         uint32_t                BlurSteps;
 
-        Vector3               BlurSize;
+        Vector3                 BlurSize;
     };
 
 public:
     ABloomGL                    ();
 
-    ATextureGL                 *draw                (ATextureGL &source, APipeline &pipeline);
+    ATextureGL                 *draw                (ATextureGL &source, CommandBufferGL &buffer);
 
     /*!
         Resizing current texture buffers.
