@@ -306,9 +306,8 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 }
                 p->setProperty("__Dynamic", true);
             }
-
         }
-        parent      = s;
+        parent  = s;
     }
 }
 

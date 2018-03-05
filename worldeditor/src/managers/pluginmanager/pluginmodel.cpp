@@ -35,7 +35,8 @@ enum {
 typedef IModule *(*moduleHandler)  (Engine *engine);
 
 PluginModel::PluginModel() :
-        BaseObjectModel(){
+        BaseObjectModel(),
+        m_pEngine(nullptr) {
 
     m_Suffixes = QStringList() << "*.dll";
 }

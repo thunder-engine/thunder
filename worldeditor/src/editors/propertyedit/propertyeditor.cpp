@@ -50,7 +50,7 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
 class PropertyFilter : public QSortFilterProxyModel {
 public:
-    PropertyFilter(QObject *parent) :
+    explicit PropertyFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
     }
 
@@ -77,7 +77,7 @@ protected:
 
 class PropertyDelegate : public QStyledItemDelegate {
 public:
-    PropertyDelegate(QObject *parent = 0) :
+    explicit PropertyDelegate(QObject *parent = 0) :
         QStyledItemDelegate(parent) {
 
         m_finishedMapper    = new QSignalMapper(this);

@@ -84,7 +84,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     analizeScene(scene);
 
     // Screen Space Ambient Occlusion effect
-    ATextureGL *t   = &m_pGBuffer[G_EMISSIVE];//&(m_pAO->draw(m_pGBuffer[G_EMISSIVE], *this));
+    ATextureGL &t   = m_pGBuffer[G_EMISSIVE];//&(m_pAO->draw(m_pGBuffer[G_EMISSIVE], *this));
 
     glBindFramebuffer( GL_FRAMEBUFFER, fb_s_id );
     m_Buffer->setRenderTarget(1, &m_pGBuffer[G_EMISSIVE], &m_Depth);
@@ -136,7 +136,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
     m_Buffer->setViewProjection(Matrix4(), proj);
 
-    m_pSprite->setTexture("texture0", postProcess(m_pGBuffer[G_EMISSIVE]));
+    m_pSprite->setTexture("texture0", postProcess(t));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 
     //glBlendFunc   (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

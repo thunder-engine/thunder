@@ -34,7 +34,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     PROFILER_MARKER;
 
     if(mesh && material) {
-        uint32_t lod    = 0;
+
         m_Model = model;
 
         AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());
@@ -46,7 +46,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             if(mesh->isModified()) {
                 m->createVbo();
             }
-
+            uint32_t lod    = 0;
             uint32_t id;
             glGenVertexArrays(1, &id);
             glBindVertexArray(id);

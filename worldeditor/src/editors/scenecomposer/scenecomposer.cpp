@@ -72,6 +72,11 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
+    m_pBuilder  = new QProcess(this);
+    connect( m_pBuilder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
+    connect( m_pBuilder, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
+    connect( m_pBuilder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onFinished(int,QProcess::ExitStatus)) );
+
     m_pEngine   = engine;
 
     QLog *log   = new QLog();
@@ -419,18 +424,13 @@ void SceneComposer::on_actionBuild_Project_triggered() {
     if(!dir.isEmpty()) {
         ProjectManager *mgr = ProjectManager::instance();
 
-        QProcess *builder   = new QProcess(this);
-
         QStringList args;
         args << "-s" << mgr->projectPath() << "-t" << dir;
 
-        builder->start("Builder", args);
-        if(!builder->waitForStarted()) {
-            qDebug() << builder->errorString();
+        m_pBuilder->start("Builder", args);
+        if(!m_pBuilder->waitForStarted()) {
+            Log(Log::ERR) << qPrintable(m_pBuilder->errorString());
         }
-
-        connect( builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
-        connect( builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
     }
 }
 
@@ -445,6 +445,14 @@ void SceneComposer::readError() {
     QProcess *p = dynamic_cast<QProcess *>( sender() );
     if(p) {
         parseLogs(p->readAllStandardError());
+    }
+}
+
+void SceneComposer::onFinished(int exitCode, QProcess::ExitStatus) {
+    if(exitCode == 0) {
+        Log(Log::INF) << "Build Finished";
+    } else {
+        Log(Log::ERR) << "Build Failed";
     }
 }
 

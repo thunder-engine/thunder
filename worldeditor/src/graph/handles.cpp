@@ -209,14 +209,14 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         if(!locked) {
             if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToMesh(x, s_Move, MOVE) <= sense |
-                      HandleTools::distanceToMesh(z * r, s_Move, MOVE) <= sense) {
+            } else if((HandleTools::distanceToMesh(x, s_Move, MOVE) <= sense) ||
+                      (HandleTools::distanceToMesh(z * r, s_Move, MOVE) <= sense)) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if(HandleTools::distanceToMesh(y, s_Move, MOVE) <= sense |
-                      HandleTools::distanceToMesh(x * r, s_Move, MOVE) <= sense) {
+            } else if((HandleTools::distanceToMesh(y, s_Move, MOVE) <= sense) ||
+                      (HandleTools::distanceToMesh(x * r, s_Move, MOVE) <= sense)) {
                 s_Axes  = AXIS_Y | AXIS_X;
-            } else if(HandleTools::distanceToMesh(z, s_Move, MOVE) <= sense |
-                      HandleTools::distanceToMesh(y * r, s_Move, MOVE) <= sense) {
+            } else if((HandleTools::distanceToMesh(z, s_Move, MOVE) <= sense) ||
+                      (HandleTools::distanceToMesh(y * r, s_Move, MOVE) <= sense)) {
                 s_Axes  = AXIS_Z | AXIS_Y;
             } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_X;

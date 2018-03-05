@@ -98,7 +98,7 @@ protected:
 
 class AssetItemDeligate : public QStyledItemDelegate  {
 public:
-    AssetItemDeligate(QObject *parent = 0) :
+    explicit AssetItemDeligate(QObject *parent = 0) :
             QStyledItemDelegate(parent),
             m_Scale(1.0f) {
     }

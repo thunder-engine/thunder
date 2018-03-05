@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QProcess>
 
 #include <vector>
 #include <cstdint>
@@ -67,6 +68,8 @@ private:
 
     ImportQueue            *m_pImportQueue;
 
+    QProcess               *m_pBuilder;
+
     bool                    mModified;
 
 private slots:
@@ -79,6 +82,8 @@ private slots:
     void                    readOutput                                  ();
 
     void                    readError                                   ();
+
+    void                    onFinished                                  (int exitCode, QProcess::ExitStatus);
 
     void                    parseLogs                                   (const QString &log);
 

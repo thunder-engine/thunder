@@ -7,7 +7,8 @@
 #define URI "uri"
 
 ComponentModel::ComponentModel() :
-        BaseObjectModel(nullptr) {
+        BaseObjectModel(nullptr),
+        m_pEngine(nullptr) {
 }
 
 void ComponentModel::init(Engine *engine) {
