@@ -187,7 +187,10 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 void CameraCtrl::cameraZoom(float delta) {
     if(m_pActiveCamera && m_pCamera) {
         if(m_pActiveCamera->type() == Camera::ORTHOGRAPHIC) {
-            m_pActiveCamera->setOrthoWidth(m_pActiveCamera->orthoWidth() - delta);
+            double width = m_pActiveCamera->orthoWidth() - delta / 10.0f;
+            if(width > 0.0) {
+                m_pActiveCamera->setOrthoWidth(width);
+            }
         } else {
             m_pActiveCamera->setFocal(m_pActiveCamera->focal() - delta);
             Vector3 pos   = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, 1.0) * delta;

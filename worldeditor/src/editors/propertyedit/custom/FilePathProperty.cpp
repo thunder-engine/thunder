@@ -33,23 +33,10 @@ QWidget *FilePathProperty::createEditor(QWidget *parent, const QStyleOptionViewI
 void FilePathProperty::onFileDilog() {
     QString mDir    = QDir::currentPath();
 
-    QString mExt    = tr("All Files (*.*)");
-
-    bool dir        = false;
-
-    QString mPath;
-
-    if(dir) {
-        mPath       = QFileDialog::getExistingDirectory( dynamic_cast<QWidget *>(parent()),
-                                                         tr("Open Directory"),
-                                                         mDir,
-                                                         QFileDialog::ShowDirsOnly);
-    } else {
-        mPath       = QFileDialog::getOpenFileName( dynamic_cast<QWidget *>(parent()),
+    QString mPath   = QFileDialog::getOpenFileName( dynamic_cast<QWidget *>(parent()),
                                                     tr("Select File"),
                                                     mDir,
-                                                    mExt);
-    }
+                                                    tr("All Files (*.*)"));
 
     if(mPath.length() > 0) {
         QDir path   = QDir(mDir);

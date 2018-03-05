@@ -79,7 +79,7 @@ void CurveEditor::draw(QPainter &mPainter, const QRect &r) {
     int y               = 0;
     QString str;
     // Points
-    int v               = 0;
+    //int v               = 0;
     int p               = 0;
     for(int i = 0; i < m_Path.elementCount(); i++) {
         QPainterPath::Element mElement;
@@ -133,8 +133,8 @@ void CurveEditor::draw(QPainter &mPainter, const QRect &r) {
                 mPainter.drawRect( mElement.x - 3, mElement.y - 3, 6, 6 );
             }
         }
-*/
         p++;
+*/
     }
     // Info
     mPainter.setPen(Qt::white);
@@ -164,15 +164,16 @@ void CurveEditor::select(const QPoint &pos) {
         focus_v = -1;
 
         uint32_t p  = 0;
-        uint32_t v  = 0;
+        //uint32_t v  = 0;
         for(uint32_t i = 0; i < m_Path.elementCount(); i++) {
             QPainterPath::Element mElement;
             mElement    = m_Path.elementAt(i);
             if(mElement.type == QPainterPath::CurveToElement)
                 i += 2;
             mElement    = m_Path.elementAt(i);
-            QRect r( m_Translate.x() + mElement.x - 3, m_Translate.y() + mElement.y - 3, 6, 6 );
 /*
+            QRect r( m_Translate.x() + mElement.x - 3, m_Translate.y() + mElement.y - 3, 6, 6 );
+
             if(pRange) {
                 if(p == 2) {
                     p   = 0;
@@ -221,8 +222,9 @@ void CurveEditor::select(const QPoint &pos) {
                     }
                 }
             }
-*/
+
             p++;
+*/
         }
     }
 }

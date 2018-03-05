@@ -159,7 +159,7 @@ uint16_t DesktopAdaptor::joystickButtons(uint8_t index) {
     const unsigned char *axes = glfwGetJoystickButtons(index, &count);
     uint16_t result = 0;
     for(int i = 0; i < count; i++) {
-        if(axes[i] == GLFW_PRESS && i < 16) {
+        if(i < 16 && axes[i] == GLFW_PRESS) {
             result |= (1<<i);
         }
     }

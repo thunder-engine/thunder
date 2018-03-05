@@ -27,7 +27,7 @@ class ContentFilter : public QSortFilterProxyModel {
 public:
     typedef QList<uint8_t>  TypeList;
 
-    ContentFilter(QObject *parent) :
+    explicit ContentFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
 
         sort(0);

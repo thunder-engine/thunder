@@ -9,7 +9,7 @@
 
 class ComponentFilter : public QSortFilterProxyModel {
 public:
-    ComponentFilter(QObject *parent) :
+    explicit ComponentFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
     }
 

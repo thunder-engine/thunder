@@ -159,8 +159,7 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
 
     glUseProgram(program);
 
-    int location    = -1;
-    location        = glGetUniformLocation(program, "_time");
+    int location    = glGetUniformLocation(program, "_time");
     if(location > -1) {
         glUniform1f(location, Timer::time());
     }

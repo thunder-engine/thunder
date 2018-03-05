@@ -177,7 +177,7 @@ void PluginModel::reloadPlugin(const QString &path) {
                     if(object) {
                         object->setParent(i.key());
                     }
-                    i++;
+                    ++i;
                 }
 
                 // Remove old plugin

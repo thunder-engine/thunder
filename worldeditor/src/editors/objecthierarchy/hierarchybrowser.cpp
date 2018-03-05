@@ -14,7 +14,7 @@
 
 class ObjectsFilter : public QSortFilterProxyModel {
 public:
-    ObjectsFilter(QObject *parent) :
+    explicit ObjectsFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
         m_HideComponents    = false;
     }

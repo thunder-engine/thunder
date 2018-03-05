@@ -321,8 +321,8 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         m.scale(1.2);
 
         if(!locked) {
-            if(HandleTools::distanceToMesh(q1 * m, s_Move, CIRCLE) <= sense |
-               HandleTools::distanceToMesh(q2 * m, s_Move, CIRCLE) <= sense) {
+            if((HandleTools::distanceToMesh(q1 * m, s_Move, CIRCLE) <= sense) ||
+               (HandleTools::distanceToMesh(q2 * m, s_Move, CIRCLE) <= sense)) {
                 s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
             } else if(HandleTools::distanceToMesh(x, s_Move, CIRCLE) <= sense) {
                 s_Axes  = AXIS_X;
@@ -378,14 +378,14 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         if(!locked) {
             if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
                 s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-            } else if(HandleTools::distanceToMesh(x, s_Move, SCALE) <= sense |
-                      HandleTools::distanceToMesh(z * r, s_Move, SCALE) <= sense) {
+            } else if((HandleTools::distanceToMesh(x, s_Move, SCALE) <= sense) ||
+                      (HandleTools::distanceToMesh(z * r, s_Move, SCALE) <= sense)) {
                 s_Axes  = AXIS_X | AXIS_Z;
-            } else if(HandleTools::distanceToMesh(y, s_Move, SCALE) <= sense |
-                      HandleTools::distanceToMesh(x * r, s_Move, SCALE) <= sense) {
+            } else if((HandleTools::distanceToMesh(y, s_Move, SCALE) <= sense) ||
+                      (HandleTools::distanceToMesh(x * r, s_Move, SCALE) <= sense)) {
                 s_Axes  = AXIS_Y | AXIS_X;
-            } else if(HandleTools::distanceToMesh(z, s_Move, SCALE) <= sense |
-                      HandleTools::distanceToMesh(y * r, s_Move, SCALE) <= sense) {
+            } else if((HandleTools::distanceToMesh(z, s_Move, SCALE) <= sense) ||
+                      (HandleTools::distanceToMesh(y * r, s_Move, SCALE) <= sense)) {
                 s_Axes  = AXIS_Z | AXIS_Y;
             } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
                 s_Axes  = AXIS_X;
@@ -415,7 +415,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             }
             s_Buffer->drawMesh(x * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_Buffer->setColor(s_Axes & AXIS_X ? s_Selected : s_xColor);
+            s_Buffer->setColor((s_Axes & AXIS_X) ? s_Selected : s_xColor);
             s_Buffer->drawMesh(x, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         {
@@ -435,7 +435,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             }
             s_Buffer->drawMesh(y * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_Buffer->setColor(s_Axes & AXIS_Y ? s_Selected : s_yColor);
+            s_Buffer->setColor((s_Axes & AXIS_Y) ? s_Selected : s_yColor);
             s_Buffer->drawMesh(y, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         {
@@ -455,7 +455,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             }
             s_Buffer->drawMesh(z * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_Buffer->setColor(s_Axes & AXIS_Z ? s_Selected : s_zColor);
+            s_Buffer->setColor((s_Axes & AXIS_Z) ? s_Selected : s_zColor);
             s_Buffer->drawMesh(z, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 

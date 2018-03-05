@@ -33,9 +33,8 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
     PROFILER_MARKER;
 
-    uint32_t lod    = 0;
-
     if(mesh && material) {
+        uint32_t lod    = 0;
         m_Model = model;
 
         AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());

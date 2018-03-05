@@ -542,10 +542,9 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                     }
                 } break;
                 case MODE_ROTATE: {
-                    float angle = 0.0f;
                     if(mDrag) {
                         Vector3 delta = mWorld - mSaved;
-                        angle   = (delta.x + delta.y + delta.z) * 0.5;
+                        float angle   = (delta.x + delta.y + delta.z) * 0.5;
                         if(mAngleGrid > 0) {
                             angle   = mAngleGrid * int(angle / mAngleGrid);
                         }
