@@ -461,12 +461,12 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
 
         if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
             s_Buffer->setColor(s_Color);
-            s_Buffer->drawMesh(x, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(x * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(y, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(y * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(z, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(z * r, s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(x,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(x * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         s_Color = s_Normal;

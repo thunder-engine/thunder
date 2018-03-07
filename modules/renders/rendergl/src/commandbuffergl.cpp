@@ -34,7 +34,6 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     PROFILER_MARKER;
 
     if(mesh && material) {
-
         m_Model = model;
 
         AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());

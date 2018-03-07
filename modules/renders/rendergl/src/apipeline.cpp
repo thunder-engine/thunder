@@ -153,7 +153,7 @@ void APipeline::updateLights(AObject &object, uint8_t layer) {
 void APipeline::analizeScene(AObject &object) {
     glBindFramebuffer( GL_FRAMEBUFFER, m_SelectBuffer );
     // Retrive object id
-    m_Buffer->clearRenderTarget(true, Vector4(0.0));
+    m_Buffer->clearRenderTarget(true, Vector4(1.0));
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 

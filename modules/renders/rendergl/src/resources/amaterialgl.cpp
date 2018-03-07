@@ -135,12 +135,12 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
-    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST || layer & ICommandBuffer::RAYCAST) &&
+    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) && //  || layer & ICommandBuffer::RAYCAST
        (b == Material::Additive || b == Material::Translucent)) {
-        return false;
+        return 0;
     }
     if(layer & ICommandBuffer::TRANSLUCENT && b == Material::Opaque) {
-        return false;
+        return 0;
     }
 
     switch(layer) {
@@ -183,7 +183,7 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     }
 
     uint8_t blend   = blendMode();
-    if(blend != Material::Opaque) {
+    if(blend != Material::Opaque && !(layer & ICommandBuffer::RAYCAST)) {
         glEnable    ( GL_BLEND );
         if(blend == Material::Translucent) {
             glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
