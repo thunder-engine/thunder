@@ -9,16 +9,16 @@ class NEXT_LIBRARY_EXPORT Animation : public Object {
     A_REGISTER(Animation, Object, Animation)
 
     A_METHODS(
-        A_SLOT(start),
-        A_SLOT(stop),
-        A_SLOT(pause),
-        A_SLOT(resume),
-        A_SIGNAL(finished)
+        A_SLOT(Animation::start),
+        A_SLOT(Animation::stop),
+        A_SLOT(Animation::pause),
+        A_SLOT(Animation::resume),
+        A_SIGNAL(Animation::finished)
     )
 
     A_PROPERTIES(
-        A_PROPERTY(Direction, Direction, direction, setDirection),
-        A_PROPERTY(uint32_t, Time, currentTime, setCurrentTime)
+        A_PROPERTY(Direction, Direction, Animation::direction, Animation::setDirection),
+        A_PROPERTY(uint32_t, Time, Animation::currentTime, Animation::setCurrentTime)
     )
 
 public:

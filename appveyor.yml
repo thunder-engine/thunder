@@ -3,12 +3,12 @@ version: '1.0.{build}'
 
 environment:
   matrix:
-    - QTDIR: C:\Qt\5.9.3\msvc2015
+    - QTDIR: C:\Qt\5.10.1\msvc2015
 
 configuration: Release
 
 install:
-  - choco install -y qbs --version 1.10.0
+  - choco install -y qbs --version 1.10.1
   - nuget install secure-file -ExcludeVersion
   - set PATH=%PATH%;%QTDIR%\bin
 
