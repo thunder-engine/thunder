@@ -36,6 +36,7 @@ float getShadowVarianceSample(sampler2D map, vec2 coord, float t) {
 
 void main (void) {
     vec4 slice0 = texture( layer0, _uv0 );
+    vec4 slice2 = texture( layer2, _uv0 );
     vec3 emit   = texture( layer3, _uv0 ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
@@ -44,31 +45,28 @@ void main (void) {
     // Light model LIT
     if(slice0.w > 0.33) {
         float depth     = texture( depthMap, _uv0 ).x;
-        vec4 world      = getWorld(transform.mvpi, _uv0, depth);
+        vec4 world      = getWorld( light.mvpi, _uv0, depth );
 
-        float shadow    = 1.0;
+        vec3 shadow     = vec3(0.0);
         if(light.shadows == 1.0) {
             int index   = 0;
-
             vec4 proj   = light.matrix[index] * ( world / world.w );
-            vec3 coord  = proj.xyz / proj.w;
-
-            if(coord.x > 0.0 && coord.y > 0.0 && coord.z > 0.0 && 1.0 > coord.x && 1.0 > coord.y && 1.0 > coord.z) {
-                shadow  = getShadowVarianceSample(shadowMap, coord.xy, coord.z);
+            vec3 coord  = (proj.xyz / proj.w);
+            if(coord.x > 0.0 && coord.x < 1.0 && coord.y > 0.0 && coord.y < 1.0 && coord.z > 0.0 && coord.z < 1.0) {
+                shadow  = vec3(getShadowSample(shadowMap, coord.xy, coord.z));
             }
         }
 
         vec4 slice1 = texture( layer1, _uv0 );
-        vec4 slice2 = texture( layer2, _uv0 );
-        float rough = max( 0.01, slice2.w );
-        float spec  = slice2.y;
+        float rough = max( 0.01, slice1.w );
+        float spec  = slice2.w;
         float metal = slice2.z;
 
         vec3 albedo = slice1.xyz;
-        vec3 v      = normalize( camera.position.xyz - ( world / world.w ).xyz );
+        vec3 v      = normalize( camera.position.xyz - (world / world.w).xyz );
         vec3 h      = normalize( light.dir + v );
 
-        vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough ) ;
+        vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
         vec3 color  = albedo * (1.0 - metal) + refl;
 
         float diff  = getLambert( ln, light.brightness );

@@ -49,8 +49,6 @@ private:
 
     SceneView              *glWidget;
 
-    float                   m_Yaw;
-
 private slots:
     void                    onGLInit                                    ();
 

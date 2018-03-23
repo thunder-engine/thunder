@@ -13,6 +13,8 @@ class Material;
 class MaterialInstance;
 class Mesh;
 
+class APipeline;
+
 class ADirectLightGL : public DirectLight {
     A_OVERRIDE(ADirectLightGL, DirectLight, Components)
 
@@ -22,31 +24,27 @@ class ADirectLightGL : public DirectLight {
 public:
     ADirectLightGL              ();
 
-    void                        draw                (ICommandBuffer &buffer, uint8_t layer);
-    void                        shadowsUpdate       (ICommandBuffer &buffer);
+    ~ADirectLightGL             ();
 
-    void                        setShaderParams     (uint32_t program);
+    void                        draw                (APipeline &pipeline, uint8_t layer);
+    void                        shadowsUpdate       (APipeline &pipeline);
 
 protected:
     /// Number of levels of detail shadows. 0 - if shadows are disabled.
     uint8_t                     m_LODCount;
 
-    ATextureGL                  m_ShadowMap;
-    ATextureGL                  m_ShadowTemp;
+    ATextureGL                 *m_pDepthMap;
 
-
-    uint8_t                     m_Steps;
-    float                      *m_pPoints;
+    uint32_t                    m_DepthBuffer;
 
     /// Resolution depth map.
-    unsigned short              m_Resolution;
+    uint16_t                    m_Resolution;
     /// Light source are using the Cascaded Shadow Maps.
     bool                        m_CSM;
-    Vector3                     m_Dir;
     /// Light source matrix array.
     Matrix4                    *m_pMatrix;
     /// Distance of cutting for each level of LOD.
-    Vector3                     m_Distance;
+    Vector4                     m_Distance;
     /// Field of view for all LOD levels
     Vector4                     m_LOD;
 

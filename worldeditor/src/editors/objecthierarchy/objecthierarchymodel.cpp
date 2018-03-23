@@ -3,18 +3,18 @@
 #include <QUrl>
 #include <QSize>
 
-#include <aobject.h>
+#include <object.h>
 
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr) {
 }
 
-void ObjectHierarchyModel::setRoot(AObject *scene) {
+void ObjectHierarchyModel::setRoot(Object *scene) {
     m_rootItem  = scene;
 }
 
-AObject *ObjectHierarchyModel::findObject(const QString &ref) {
+Object *ObjectHierarchyModel::findObject(const QString &ref) {
     QUrl path(ref);
     return m_rootItem->find(path.path().toStdString()); // \todo Review need to check this on errors
 }
@@ -28,7 +28,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    AObject *item   = static_cast<AObject* >(index.internalPointer());
+    Object *item    = static_cast<Object* >(index.internalPointer());
     switch(role) {
         case Qt::EditRole:
         case Qt::ToolTipRole:
@@ -54,7 +54,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
 }
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    AObject *item   = static_cast<AObject* >(index.internalPointer());
+    Object *item    = static_cast<Object* >(index.internalPointer());
     switch(index.column()) {
         default: {
             item->setName(value.toString().toStdString());
@@ -81,9 +81,9 @@ int ObjectHierarchyModel::columnCount(const QModelIndex &parent) const {
 
 int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
     if(m_rootItem) {
-        AObject *parentItem = m_rootItem;
+        Object *parentItem  = m_rootItem;
         if(parent.isValid()) {
-            parentItem      = static_cast<AObject *>(parent.internalPointer());
+            parentItem      = static_cast<Object *>(parent.internalPointer());
         }
         return parentItem->getChildren().size();
     }
@@ -92,14 +92,14 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
 
 QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &parent) const {
     if(m_rootItem) {
-        AObject *parentItem = m_rootItem;
+        Object *parentItem  = m_rootItem;
         if(parent.isValid()) {
-            parentItem      = static_cast<AObject *>(parent.internalPointer());
+            parentItem      = static_cast<Object *>(parent.internalPointer());
         }
         if(row >= parentItem->getChildren().size() || row < 0) {
             return QModelIndex();
         }
-        QList<AObject *> list;
+        QList<Object *> list;
         for(auto it : parentItem->getChildren()) {
             list.push_back(it);
         }
@@ -113,13 +113,13 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
         return QModelIndex();
     }
 
-    AObject *childItem  = static_cast<AObject *>(index.internalPointer());
-    AObject *parentItem = static_cast<AObject *>(childItem->parent());
+    Object *childItem   = static_cast<Object *>(index.internalPointer());
+    Object *parentItem  = static_cast<Object *>(childItem->parent());
 
     if(!parentItem || parentItem == m_rootItem) {
         return QModelIndex();
     }
-    QList<AObject *> list;
+    QList<Object *> list;
     for(auto it : parentItem->parent()->getChildren()) {
         list.push_back(it);
     }

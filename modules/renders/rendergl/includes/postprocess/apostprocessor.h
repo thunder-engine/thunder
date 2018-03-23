@@ -16,9 +16,7 @@ public:
 
     virtual ATextureGL         *draw                (ATextureGL &source, ICommandBuffer &buffer) {
         if(m_pMaterial) {
-            Matrix4 proj;
-            proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
-            buffer.setViewProjection(Matrix4(), proj);
+            buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
             m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static);
             /// \todo Return command buffer
             //pipeline.drawScreen(source, m_ResultTexture);

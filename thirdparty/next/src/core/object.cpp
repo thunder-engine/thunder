@@ -1,9 +1,9 @@
-#include "core/aobjectsystem.h"
-#include "core/auri.h"
+#include "core/ObjectSystem.h"
+#include "core/uri.h"
 
 #include <mutex>
 
-inline bool operator==(const AObject::Link &left, const AObject::Link &right) {
+inline bool operator==(const Object::Link &left, const Object::Link &right) {
     bool result = true;
     result &= (left.sender      == right.sender);
     result &= (left.receiver    == right.receiver);
@@ -12,9 +12,9 @@ inline bool operator==(const AObject::Link &left, const AObject::Link &right) {
     return result;
 }
 
-class AObjectPrivate {
+class ObjectPrivate {
 public:
-    AObjectPrivate() :
+    ObjectPrivate() :
         m_bEnable(true),
         m_pParent(nullptr),
         m_pCurrentSender(nullptr),
@@ -22,7 +22,7 @@ public:
 
     }
 
-    bool isLinkExist(const AObject::Link &link) const {
+    bool isLinkExist(const Object::Link &link) const {
         PROFILE_FUNCTION()
         for(const auto &it : m_lRecievers) {
             if(it == link) {
@@ -35,17 +35,17 @@ public:
     /// Enable object flag
     bool                            m_bEnable;
     /// Parent object
-    AObject                        *m_pParent;
+    Object                        *m_pParent;
     /// Object name
     string                          m_sName;
 
-    AObject::ObjectList             m_mChildren;
-    AObject::LinkList               m_lRecievers;
-    AObject::LinkList               m_lSenders;
+    Object::ObjectList             m_mChildren;
+    Object::LinkList               m_lRecievers;
+    Object::LinkList               m_lSenders;
 
-    AObject                        *m_pCurrentSender;
+    Object                        *m_pCurrentSender;
 
-    typedef queue<AEvent *>         EventQueue;
+    typedef queue<Event *>         EventQueue;
     EventQueue                      m_EventQueue;
 
     uint32_t                        m_UUID;
@@ -54,14 +54,14 @@ public:
 
 };
 
-AObject::AObject() :
-        p_ptr(new AObjectPrivate) {
+Object::Object() :
+        p_ptr(new ObjectPrivate) {
     PROFILE_FUNCTION()
 
     onCreated();
 }
 
-AObject::~AObject() {
+Object::~Object() {
     PROFILE_FUNCTION()
     {
         unique_lock<mutex> locker(p_ptr->m_Mutex);
@@ -77,7 +77,7 @@ AObject::~AObject() {
     disconnect(this, 0, 0, 0);
 
     for(const auto &it : p_ptr->m_mChildren) {
-        AObject *c  = it;
+        Object *c  = it;
         if(c) {
             c->p_ptr->m_pParent    = 0;
             delete c;
@@ -90,81 +90,81 @@ AObject::~AObject() {
     }
 }
 
-AObject *AObject::construct() {
+Object *Object::construct() {
     PROFILE_FUNCTION()
-    return new AObject();
+    return new Object();
 }
 
-const AMetaObject *AObject::metaClass() {
+const MetaObject *Object::metaClass() {
     PROFILE_FUNCTION()
-    static const AMetaObject staticMetaData("AObject", nullptr, &construct, nullptr, nullptr);
+    static const MetaObject staticMetaData("Object", nullptr, &construct, nullptr, nullptr);
     return &staticMetaData;
 }
 
-const AMetaObject *AObject::metaObject() const {
+const MetaObject *Object::metaObject() const {
     PROFILE_FUNCTION()
-    return AObject::metaClass();
+    return Object::metaClass();
 }
 
-AObject *AObject::clone() {
+Object *Object::clone() {
     PROFILE_FUNCTION()
-    const AMetaObject *meta = metaObject();
-    AObject *result = meta->createInstance();
-    result->p_ptr->m_UUID  = AObjectSystem::instance()->nextID();
+    const MetaObject *meta  = metaObject();
+    Object *result = meta->createInstance();
+    result->p_ptr->m_UUID   = ObjectSystem::instance()->nextID();
     int count  = meta->propertyCount();
     for(int i = 0; i < count; i++) {
-        AMetaProperty lp    = result->metaObject()->property(i);
-        AMetaProperty rp    = meta->property(i);
+        MetaProperty lp = result->metaObject()->property(i);
+        MetaProperty rp = meta->property(i);
         lp.write(result, rp.read(this));
     }
     for(auto it : getChildren()) {
-        AObject *clone  = it->clone();
+        Object *clone  = it->clone();
         clone->setName(it->name());
         clone->setParent(result);
     }
     for(auto it : p_ptr->m_lSenders) {
-        AMetaMethod signal  = it.sender->metaObject()->method(it.signal);
-        AMetaMethod method  = result->metaObject()->method(it.method);
+        MetaMethod signal  = it.sender->metaObject()->method(it.signal);
+        MetaMethod method  = result->metaObject()->method(it.method);
         connect(it.sender, (to_string(1) + signal.signature()).c_str(),
-                result, (to_string((method.type() == AMetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+                result, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
     for(auto it : getReceivers()) {
-        AMetaMethod signal  = result->metaObject()->method(it.signal);
-        AMetaMethod method  = it.receiver->metaObject()->method(it.method);
+        MetaMethod signal  = result->metaObject()->method(it.signal);
+        MetaMethod method  = it.receiver->metaObject()->method(it.method);
         connect(result, (to_string(1) + signal.signature()).c_str(),
-                it.receiver, (to_string((method.type() == AMetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+                it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
     return result;
 }
 
-AObject *AObject::parent() const {
+Object *Object::parent() const {
     PROFILE_FUNCTION()
     return p_ptr->m_pParent;
 }
 
-string AObject::name() const {
+string Object::name() const {
     PROFILE_FUNCTION()
     return p_ptr->m_sName;
 }
 
-uint32_t AObject::uuid() const {
+uint32_t Object::uuid() const {
     PROFILE_FUNCTION()
     return p_ptr->m_UUID;
 }
 
-string AObject::typeName() const {
+string Object::typeName() const {
     PROFILE_FUNCTION()
     return metaObject()->name();
 }
 
-void AObject::connect(AObject *sender, const char *signal, AObject *receiver, const char *method) {
+void Object::connect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION()
     if(sender && receiver) {
         int32_t snd = sender->metaObject()->indexOfSignal(&signal[1]);
 
         int32_t rcv;
-        AMetaMethod::MethodType right   = AMetaMethod::MethodType(method[0] - 0x30);
-        if(right == AMetaMethod::Slot) {
+        MetaMethod::MethodType right   = MetaMethod::MethodType(method[0] - 0x30);
+        if(right == MetaMethod::Slot) {
             rcv = receiver->metaObject()->indexOfSlot(&method[1]);
         } else {
             rcv = receiver->metaObject()->indexOfSignal(&method[1]);
@@ -192,7 +192,7 @@ void AObject::connect(AObject *sender, const char *signal, AObject *receiver, co
     }
 }
 
-void AObject::disconnect(AObject *sender, const char *signal, AObject *receiver, const char *method) {
+void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION()
     if(sender && !sender->p_ptr->m_lRecievers.empty()) {
         for(auto snd = sender->p_ptr->m_lRecievers.begin(); snd != sender->p_ptr->m_lRecievers.end(); snd) {
@@ -224,22 +224,22 @@ void AObject::disconnect(AObject *sender, const char *signal, AObject *receiver,
     }
 }
 
-void AObject::deleteLater() {
+void Object::deleteLater() {
     PROFILE_FUNCTION()
-    postEvent(new AEvent(AEvent::Delete));
+    postEvent(new Event(Event::Delete));
 }
 
-const AObject::ObjectList &AObject::getChildren() const {
+const Object::ObjectList &Object::getChildren() const {
     PROFILE_FUNCTION()
     return p_ptr->m_mChildren;
 }
 
-const AObject::LinkList &AObject::getReceivers() const {
+const Object::LinkList &Object::getReceivers() const {
     PROFILE_FUNCTION()
     return p_ptr->m_lRecievers;
 }
 
-AObject *AObject::find(const string &path) {
+Object *Object::find(const string &path) {
     PROFILE_FUNCTION()
     if(p_ptr->m_pParent && path[0] == '/') {
         return p_ptr->m_pParent->find(path);
@@ -252,7 +252,7 @@ AObject *AObject::find(const string &path) {
     int index  = path.find('/', 1);
     if(index > -1) {
         for(const auto &it : p_ptr->m_mChildren) {
-            AObject *o  = it->find(path.substr(index + 1));
+            Object *o  = it->find(path.substr(index + 1));
             if(o) {
                 return o;
             }
@@ -264,7 +264,7 @@ AObject *AObject::find(const string &path) {
     return nullptr;
 }
 
-void AObject::setParent(AObject *parent) {
+void Object::setParent(Object *parent) {
     PROFILE_FUNCTION()
     if(p_ptr->m_pParent) {
         p_ptr->m_pParent->removeChild(this);
@@ -275,7 +275,7 @@ void AObject::setParent(AObject *parent) {
     p_ptr->m_pParent    = parent;
 }
 
-void AObject::setName(const string &value) {
+void Object::setName(const string &value) {
     PROFILE_FUNCTION()
     if(!value.empty()) {
         p_ptr->m_sName = value;
@@ -283,14 +283,14 @@ void AObject::setName(const string &value) {
     }
 }
 
-void AObject::addChild(AObject *value) {
+void Object::addChild(Object *value) {
     PROFILE_FUNCTION()
     if(value) {
         p_ptr->m_mChildren.push_back(value);
     }
 }
 
-void AObject::removeChild(AObject *value) {
+void Object::removeChild(Object *value) {
     PROFILE_FUNCTION()
     auto it = p_ptr->m_mChildren.begin();
     while(it != p_ptr->m_mChildren.end()) {
@@ -302,29 +302,29 @@ void AObject::removeChild(AObject *value) {
     }
 }
 
-bool AObject::isEnable() const {
+bool Object::isEnable() const {
     PROFILE_FUNCTION()
     return p_ptr->m_bEnable;
 }
 
-void AObject::emitSignal(const char *signal, const AVariant &args) {
+void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION()
     int32_t index   = metaObject()->indexOfSignal(&signal[1]);
     for(auto &it : p_ptr->m_lRecievers) {
         Link *link  = &(it);
         if(link->signal == index) {
-            const AMetaMethod &method   = link->receiver->metaObject()->method(link->method);
-            if(method.type() == AMetaMethod::Signal) {
+            const MetaMethod &method   = link->receiver->metaObject()->method(link->method);
+            if(method.type() == MetaMethod::Signal) {
                 link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
             } else {
                 // Queued Connection
-                link->receiver->postEvent(new AMethodCallEvent(link->method, link->sender, args));
+                link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
             }
         }
     }
 }
 
-bool AObject::postEvent(AEvent *e) {
+bool Object::postEvent(Event *e) {
     PROFILE_FUNCTION()
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_EventQueue.push(e);
@@ -332,20 +332,20 @@ bool AObject::postEvent(AEvent *e) {
     return true;
 }
 
-void AObject::processEvents() {
+void Object::processEvents() {
     PROFILE_FUNCTION()
     while(!p_ptr->m_EventQueue.empty()) {
         unique_lock<mutex> locker(p_ptr->m_Mutex);
-        AEvent *e   = p_ptr->m_EventQueue.front();
+        Event *e   = p_ptr->m_EventQueue.front();
         switch (e->type()) {
-            case AEvent::MethodCall: {
-                AMethodCallEvent *call  = reinterpret_cast<AMethodCallEvent *>(e);
+            case Event::MethodCall: {
+                MethodCallEvent *call   = reinterpret_cast<MethodCallEvent *>(e);
                 p_ptr->m_pCurrentSender = call->sender();
-                AVariant result;
+                Variant result;
                 metaObject()->method(call->method()).invoke(this, result, 1, call->args());
                 p_ptr->m_pCurrentSender = nullptr;
             } break;
-            case AEvent::Delete: {
+            case Event::Delete: {
                 locker.unlock();
                 delete this;
                 return;
@@ -359,63 +359,63 @@ void AObject::processEvents() {
     }
 }
 
-bool AObject::event(AEvent *) {
+bool Object::event(Event *) {
     PROFILE_FUNCTION()
     return false;
 }
 
-void AObject::setEnable(bool state) {
+void Object::setEnable(bool state) {
     PROFILE_FUNCTION()
     p_ptr->m_bEnable   = state;
 }
 
-void AObject::loadUserData(const AVariantMap &) {
+void Object::loadUserData(const VariantMap &) {
 
 }
 
-AVariantMap AObject::saveUserData() const {
-    return AVariantMap();
+VariantMap Object::saveUserData() const {
+    return VariantMap();
 }
 
-AVariant AObject::property(const char *name) const {
+Variant Object::property(const char *name) const {
     PROFILE_FUNCTION()
-    const AMetaObject *meta = metaObject();
+    const MetaObject *meta  = metaObject();
     int index   = meta->indexOfProperty(name);
     if(index > -1) {
         return meta->property(index).read(this);
     }
-    return AVariant();
+    return Variant();
 }
 
-void AObject::setProperty(const char *name, const AVariant &value) {
+void Object::setProperty(const char *name, const Variant &value) {
     PROFILE_FUNCTION()
-    const AMetaObject *meta = metaObject();
+    const MetaObject *meta  = metaObject();
     int index   = meta->indexOfProperty(name);
     if(index > -1) {
         meta->property(index).write(this, value);
     }
 }
 
-void AObject::onCreated() {
+void Object::onCreated() {
     PROFILE_FUNCTION()
 
 }
 
-AObject *AObject::sender() const {
+Object *Object::sender() const {
     PROFILE_FUNCTION()
     return p_ptr->m_pCurrentSender;
 }
 
-void AObject::setUUID(uint32_t id) {
+void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION()
     p_ptr->m_UUID   = id;
 }
 
-AObject &AObject::operator=(AObject &right) {
+Object &Object::operator=(Object &right) {
     PROFILE_FUNCTION()
-    return *new AObject(right);
+    return *new Object(right);
 }
 
-AObject::AObject(const AObject &) {
+Object::Object(const Object &) {
     PROFILE_FUNCTION()
 }

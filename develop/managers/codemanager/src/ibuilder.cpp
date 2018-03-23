@@ -6,7 +6,7 @@
 #include <QDir>
 
 #include <projectmanager.h>
-#include <common.h>
+#include <config.h>
 
 IBuilder::IBuilder() {
     m_pMgr      = ProjectManager::instance();

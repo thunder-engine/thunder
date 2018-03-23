@@ -38,7 +38,7 @@ void ICommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &proje
     s_Handler->setViewProjection(view, projection);
 }
 
-void ICommandBuffer::setGlobalValue(const char *name, const AVariant &value) {
+void ICommandBuffer::setGlobalValue(const char *name, const Variant &value) {
     s_Handler->setGlobalValue(name, value);
 }
 
@@ -48,4 +48,8 @@ Matrix4 ICommandBuffer::projection() const {
 
 Matrix4 ICommandBuffer::modelView() const {
     return s_Handler->modelView();
+}
+
+void ICommandBuffer::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+    s_Handler->setViewport(x, y, width, height);
 }

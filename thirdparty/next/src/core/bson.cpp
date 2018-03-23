@@ -1,16 +1,16 @@
-#include "core/abson.h"
+#include "core/bson.h"
 
 #include <streambuf>
 
-AVariant appendProperty(const AVariant &container, const AVariant &data, const string &name) {
+Variant appendProperty(const Variant &container, const Variant &data, const string &name) {
     switch(container.type()) {
-        case AMetaType::VARIANTLIST: {
-            AVariantList list   = container.value<AVariantList>();
+        case MetaType::VARIANTLIST: {
+            VariantList list   = container.value<VariantList>();
             list.push_back(data);
             return list;
         } break;
-        case AMetaType::VARIANTMAP: {
-            AVariantMap map = container.value<AVariantMap>();
+        case MetaType::VARIANTMAP: {
+            VariantMap map = container.value<VariantMap>();
             map[name]    = data;
             return map;
         } break;
@@ -20,9 +20,9 @@ AVariant appendProperty(const AVariant &container, const AVariant &data, const s
     return container;
 }
 
-AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type type, bool first) {
+Variant Bson::load(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool first) {
     PROFILE_FUNCTION()
-    AVariant result(type);
+    Variant result(type);
     if(data.empty()) {
         return result;
     }
@@ -32,7 +32,7 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
     uint32_t size;
     memcpy(&size, &data[offset], sizeof(uint32_t));
     if(offset + size > data.size()) {
-        return AVariant();
+        return Variant();
     }
     offset  += sizeof(uint32_t);
 
@@ -57,9 +57,9 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
                 result  = appendProperty(result, (value) ? true : false, name);
             } break;
             case DOUBLE: {
-                double value;
-                memcpy(&value, &data[offset], sizeof(double));
-                offset += sizeof(double);
+                float value;
+                memcpy(&value, &data[offset], sizeof(float));
+                offset += sizeof(float);
 
                 result  = appendProperty(result, value, name);
             } break;
@@ -86,15 +86,15 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
             case ARRAY: {
                 int32_t length;
                 memcpy(&length, &data[offset], sizeof(uint32_t));
-                AVariant container  = load(data, offset, (t == ARRAY) ? AMetaType::VARIANTLIST : AMetaType::VARIANTMAP, false);
+                Variant container  = load(data, offset, (t == ARRAY) ? MetaType::VARIANTLIST : MetaType::VARIANTMAP, false);
                 if(t == ARRAY) {
-                    AVariantList list   = container.value<AVariantList>();
+                    VariantList list   = container.value<VariantList>();
                     uint32_t containerType  = list.front().toInt();
                     list.pop_front();
-                    if(containerType != AMetaType::VARIANTLIST) {
-                        void *object    = AMetaType::create(containerType);
-                        AMetaType::convert(&list, AMetaType::VARIANTLIST, object, containerType);
-                        result  = appendProperty(result, AVariant(containerType, object), name);
+                    if(containerType != MetaType::VARIANTLIST) {
+                        void *object    = MetaType::create(containerType);
+                        MetaType::convert(&list, MetaType::VARIANTLIST, object, containerType);
+                        result  = appendProperty(result, Variant(containerType, object), name);
                     } else {
                         result  = appendProperty(result, list, name);
                     }
@@ -110,7 +110,7 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
                 uint8_t sub;
                 memcpy(&sub, &data[offset],     sizeof(uint8_t));
                 offset++;
-                AByteArray value(data.begin() + offset, data.begin() + offset + length);
+                ByteArray value(data.begin() + offset, data.begin() + offset + length);
 
                 result  = appendProperty(result, value, name);
                 offset += length;
@@ -120,8 +120,8 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
 
     }
 
-    if(first && result.type() == AMetaType::VARIANTLIST) {
-        AVariantList list   = result.value<AVariantList>();
+    if(first && result.type() == MetaType::VARIANTLIST) {
+        VariantList list   = result.value<VariantList>();
         if(!list.empty()) {
             list.pop_front();
         }
@@ -131,23 +131,23 @@ AVariant ABson::load(const AByteArray &data, uint32_t &offset, AMetaType::Type t
     return result;
 }
 
-AByteArray ABson::save(const AVariant &data) {
+ByteArray Bson::save(const Variant &data) {
     PROFILE_FUNCTION()
-    AByteArray result;
+    ByteArray result;
 
     switch(data.type()) {
-        case AMetaType::BOOLEAN: {
+        case MetaType::BOOLEAN: {
             result.push_back( (data.toBool()) ? 0x01 : 0x00 );
         } break;
-        case AMetaType::DOUBLE: {
-            double value    = data.toDouble();
+        case MetaType::FLOAT: {
+            float value     = data.toFloat();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
-        case AMetaType::INTEGER: {
+        case MetaType::INTEGER: {
             int32_t value   = data.toInt();
             result.assign( reinterpret_cast<char *>( &value ), reinterpret_cast<char *>( &value ) + sizeof( value ) );
         } break;
-        case AMetaType::STRING: {
+        case MetaType::STRING: {
             string value    = data.toString();
             uint32_t size   = value.size() + 1;
             result.resize(size + sizeof(uint32_t));
@@ -155,8 +155,8 @@ AByteArray ABson::save(const AVariant &data) {
             memcpy(&result[0], &size, sizeof(uint32_t));
             memcpy(&result[sizeof(uint32_t)], value.c_str(), size);
         } break;
-        case AMetaType::BYTEARRAY: {
-            AByteArray value= data.toByteArray();
+        case MetaType::BYTEARRAY: {
+            ByteArray value = data.toByteArray();
             uint32_t size   = value.size();
             result.resize(sizeof(uint32_t) + 1 + size);
 
@@ -166,14 +166,14 @@ AByteArray ABson::save(const AVariant &data) {
                 memcpy(&result[sizeof(uint32_t) + 1], &value[0], size);
             }
         } break;
-        case AMetaType::VARIANTMAP: {
+        case MetaType::VARIANTMAP: {
             uint32_t size   = sizeof(uint32_t);
             result.resize(size);
             uint32_t offset = size;
             uint32_t index  = 0;
-            AVariantMap map = data.toMap();
+            VariantMap map = data.toMap();
             for(auto &it: map) {
-                AByteArray element  = save(it.second);
+                ByteArray element   = save(it.second);
                 uint8_t t   = type(it.second);
                 size       += element.size() + 1 + (it.first.size() + 1);
                 result.resize(size);
@@ -194,9 +194,9 @@ AByteArray ABson::save(const AVariant &data) {
             result.resize(size);
             uint32_t offset = size;
             uint32_t index  = 0;
-            AVariantList list   = data.toList();
+            VariantList list   = data.toList();
             for(auto &it: list) {
-                AByteArray element  = save(it);
+                ByteArray element   = save(it);
                 string i    = to_string(index);
                 uint8_t t   = type(it);
                 size       += element.size() + 1 + (i.size() + 1);
@@ -217,18 +217,18 @@ AByteArray ABson::save(const AVariant &data) {
     return result;
 }
 
-uint8_t ABson::type(const AVariant &data) {
+uint8_t Bson::type(const Variant &data) {
     PROFILE_FUNCTION()
     uint8_t result;
     switch (data.type()) {
-        case AMetaType::INVALID:        result  = NONE; break;
-        case AMetaType::BOOLEAN:        result  = BOOL; break;
-        case AMetaType::DOUBLE:         result  = DOUBLE; break;
-        case AMetaType::INTEGER:        result  = INT32; break;
-        case AMetaType::STRING:         result  = STRING; break;
-        case AMetaType::VARIANTMAP:     result  = OBJECT; break;
-        case AMetaType::BYTEARRAY:      result  = BINARY; break;
-        default:                        result  = ARRAY; break;
+        case MetaType::INVALID:     result  = NONE; break;
+        case MetaType::BOOLEAN:     result  = BOOL; break;
+        case MetaType::FLOAT:       result  = DOUBLE; break;
+        case MetaType::INTEGER:     result  = INT32; break;
+        case MetaType::STRING:      result  = STRING; break;
+        case MetaType::VARIANTMAP:  result  = OBJECT; break;
+        case MetaType::BYTEARRAY:   result  = BINARY; break;
+        default:                    result  = ARRAY; break;
     }
     return result;
 }

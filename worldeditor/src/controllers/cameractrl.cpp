@@ -83,7 +83,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
                 for(uint32_t s = 0; s < staticMesh->mesh()->surfacesCount(); s++) {
                     AABBox aabb = staticMesh->mesh()->bound(s);
                     pos += aabb.center;
-                    radius += aabb.center.length() + aabb.size.length() * 1.5;
+                    radius += aabb.size.length();
                     Vector3 min, max;
                     aabb.box(min, max);
                     if(i == 0) {

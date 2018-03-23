@@ -1,7 +1,7 @@
 #ifndef COMMANDBUFFER_H
 #define COMMANDBUFFER_H
 
-#include <aobject.h>
+#include <object.h>
 
 class Texture;
 class Mesh;
@@ -33,7 +33,9 @@ public:
 
     virtual void                setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
 
-    virtual void                setGlobalValue              (const char *name, const AVariant &value);
+    virtual void                setGlobalValue              (const char *name, const Variant &value);
+
+    virtual void                setViewport                 (uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
     virtual Matrix4             projection                  () const;
 

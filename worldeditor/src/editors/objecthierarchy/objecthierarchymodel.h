@@ -3,17 +3,17 @@
 
 #include <QAbstractItemModel>
 
-class AObject;
+class Object;
 
 class ObjectHierarchyModel : public QAbstractItemModel {
 public:
     ObjectHierarchyModel        (QObject *parent);
 
-    void                        setRoot                     (AObject *scene);
+    void                        setRoot                     (Object *scene);
 
-    AObject                    *root                        () const { return m_rootItem; }
+    Object                     *root                        () const { return m_rootItem; }
 
-    AObject                    *findObject                  (const QString &ref);
+    Object                     *findObject                  (const QString &ref);
 
     void                        reset                       ();
 
@@ -34,7 +34,7 @@ public:
     Qt::ItemFlags               flags                       (const QModelIndex &index) const;
 
 protected:
-    AObject                    *m_rootItem;
+    Object                     *m_rootItem;
 
 };
 

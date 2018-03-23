@@ -84,14 +84,14 @@ void ComponentEditor::select(const QPoint &pos) {
     }
 }
 
-void ComponentEditor::setObject(AObject &object) {
+void ComponentEditor::setObject(Object &object) {
     m_pObject   = &object;
 
     initObject();
     repaint();
 }
 
-void ComponentEditor::createComponent(const QString &uri, AObject *parent) {
+void ComponentEditor::createComponent(const QString &uri, Object *parent) {
     bool create = true;
     if(isUnique()) {
         for(const auto &it : parent->getChildren()) {
@@ -103,7 +103,7 @@ void ComponentEditor::createComponent(const QString &uri, AObject *parent) {
     }
 
     if(create) {
-        AObject *component  = m_pEngine->objectCreate(uri.toStdString(), "", parent);
+        Object *component   = m_pEngine->objectCreate(uri.toStdString(), "", parent);
         if(component) {
             initObject();
             repaint();
@@ -113,7 +113,7 @@ void ComponentEditor::createComponent(const QString &uri, AObject *parent) {
     }
 }
 
-void ComponentEditor::deleteComponent(AObject &object) {
+void ComponentEditor::deleteComponent(Object &object) {
     delete &object;
 
     initObject();
@@ -191,7 +191,7 @@ void ComponentEditor::initObject() {
     if(m_pObject) {
         mCache.clear();
         for(const auto &it : m_pObject->getChildren()) {
-            AObject *components = it;
+            Object *components  = it;
             QSize rect(275, 70 + components->getChildren().size() * 50);
             QSize size(rect.width() + 2 * mBlurRadius, rect.height() + 2 * mBlurRadius);
 
@@ -215,7 +215,7 @@ void ComponentEditor::initObject() {
     }
 }
 /// \todo: Replace magic numbers
-void ComponentEditor::drawComponent(QPainter &painter, const QRect &r, AObject *object) {
+void ComponentEditor::drawComponent(QPainter &painter, const QRect &r, Object *object) {
     auto components = object->getChildren();
     QRect root = r;
     root.setHeight(root.height() + components.size() * 50);
@@ -239,7 +239,7 @@ void ComponentEditor::drawComponent(QPainter &painter, const QRect &r, AObject *
         text.translate(0, 50);
         QRect back  = text;
         back.translate(-16, 0);
-        AObject *component  = it;
+        Object *component   = it;
         if(m_pSelected == component) {
             painter.setPen(Qt::NoPen);
             painter.setBrush(QColor(255, 0, 0));

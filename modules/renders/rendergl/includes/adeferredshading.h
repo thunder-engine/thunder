@@ -33,20 +33,14 @@ public:
     */
     void                        resize              (uint32_t width, uint32_t height);
 
-    ATextureGL                 &getDepth            ()          { return m_Depth; }
-
-    ATextureGL                 &getChanel           (int id)    { return m_pGBuffer[id]; }
-
 private:
     bool                        m_HDR;
-
-    uint32_t                   *buffers;
 
     uint32_t                    fb_g_id;
     uint32_t                    fb_s_id;
 
     ATextureGL                 *m_pGBuffer;
-    ATextureGL                  m_Depth;
+    ATextureGL                  m_DepthMap;
 
     Mesh                       *m_pPlane;
     MaterialInstance           *m_pSprite;

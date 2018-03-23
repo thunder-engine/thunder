@@ -1,11 +1,11 @@
-#include "core/aevent.h"
+#include "core/event.h"
 
-AEvent::AEvent(Type type) {
+Event::Event(Type type) {
     PROFILE_FUNCTION()
     m_Type  = type;
 }
 
-AEvent::Type AEvent::type() const {
+Event::Type Event::type() const {
     PROFILE_FUNCTION()
     return m_Type;
 }

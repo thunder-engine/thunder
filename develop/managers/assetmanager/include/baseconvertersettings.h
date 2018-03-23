@@ -26,7 +26,7 @@ public:
 class IConverter {
 public:
     enum ContentTypes {
-        ContentInvalid              = AMetaType::USERTYPE,
+        ContentInvalid              = MetaType::USERTYPE,
         ContentText,
         ContentTexture,
         ContentMaterial,

@@ -328,45 +328,48 @@ void Matrix4::direction(const Vector3 &direction, Vector3 &up) {
     \a fov is the vertical field-of-view in degrees of the perspective matrix,
     \a aspect is the aspect ratio (width divided by height). \a znear and \a zfar set up the depth clipping planes.
 */
-void Matrix4::perspective(areal fov, areal aspect, areal znear, areal zfar) {
-    float sine, cotangent, deltaZ;
+Matrix4 Matrix4::perspective(areal fov, areal aspect, areal znear, areal zfar) {
+    float sine, cotangent;
     float radians   = fov / 2 * DEG2RAD;
 
-    deltaZ          = znear - zfar;
-    sine            = sin(radians);
-    cotangent       = cos(radians) / sine;
+    sine        = sin(radians);
+    cotangent   = cos(radians) / sine;
 
-    //identity();
+    Matrix4 result;
 
-    mat[0]          = cotangent / aspect;
-    mat[5]          = cotangent;
-    mat[10]         = -(zfar + znear) / (zfar - znear);
-    mat[11]         = -1;
-    mat[14]         = -(2.0 * zfar * znear) / (zfar - znear);
-    mat[15]         = 0;
+    result[0]   = cotangent / aspect;
+    result[5]   = cotangent;
+    result[10]  = -(zfar + znear) / (zfar - znear);
+    result[11]  = -1;
+    result[14]  = -(2.0 * zfar * znear) / (zfar - znear);
+    result[15]  = 0;
+
+    return result;
 }
 /*!
     Creates an orthogonal projection matrix.
     Creates a view showing the area between \a left, \a right, \a top and \a bottom, with \a znear and \a zfar set up the depth clipping planes.
 */
-void Matrix4::ortho(areal left, areal right, areal bottom, areal top, areal znear, areal zfar) {
-    //identity();
+Matrix4 Matrix4::ortho(areal left, areal right, areal bottom, areal top, areal znear, areal zfar) {
+    Matrix4 result;
 
-    mat[0]          =  2.0f / (right - left);
-    mat[5]          =  2.0f / (top - bottom);
-    mat[10]         = -2.0f / (zfar - znear);
-    mat[12]         = -((right + left) / (right - left));
-    mat[13]         = -((top + bottom) / (top - bottom));
-    mat[14]         = -((zfar + znear) / (zfar - znear));
+    result[0]   =  2.0f / (right - left);
+    result[5]   =  2.0f / (top - bottom);
+    result[10]  = -2.0f / (zfar - znear);
+    result[12]  = -((right + left) / (right - left));
+    result[13]  = -((top + bottom) / (top - bottom));
+    result[14]  = -((zfar + znear) / (zfar - znear));
+
+    return result;
 }
 /*!
     Creates a transformation matrix that corresponds to a camera viewing the target from the source.
     Receiving \a eye point, a \a target point, and an \a up vector.
 */
-void Matrix4::lookAt(Vector3 &eye, Vector3 &target, Vector3 &up) {
+Matrix4 Matrix4::lookAt(Vector3 &eye, Vector3 &target, Vector3 &up) {
     Matrix4 m0, m1;
 
     m0.direction(eye - target, up);
     m1.translate(-eye);
-    *this = m0 * m1;
+    return m0 * m1;
 }

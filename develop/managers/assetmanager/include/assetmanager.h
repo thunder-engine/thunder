@@ -112,8 +112,8 @@ protected:
     typedef QMap<QString, IConverter *>     ConverterMap;
     ConverterMap            m_Converters;
 
-    AVariantMap             m_Guids;
-    AVariantMap             m_Paths;
+    VariantMap              m_Guids;
+    VariantMap              m_Paths;
 
     QFileSystemWatcher     *m_pDirWatcher;
     QFileSystemWatcher     *m_pFileWatcher;

@@ -1,7 +1,7 @@
 #ifndef ACOMMON_H
 #define ACOMMON_H
 
-#if defined(_WIN32) && defined(BUILD_SHARED)
+#ifdef _WIN32
     #ifdef NEXT_LIBRARY
         #define NEXT_LIBRARY_EXPORT __declspec(dllexport)
     #else

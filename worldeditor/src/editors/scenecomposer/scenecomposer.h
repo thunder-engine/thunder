@@ -18,7 +18,7 @@ using namespace std;
 
 class QLog;
 
-class AObject;
+class Object;
 class PluginDialog;
 class ProjectManager;
 class SceneView;
@@ -40,7 +40,7 @@ public:
     void                    resetModified                               () { mModified = false; }
 
 public slots:
-    void                    onObjectSelected                            (AObject::ObjectList objects);
+    void                    onObjectSelected                            (Object::ObjectList objects);
 
 private:
     void                    updateTitle                                 ();
@@ -60,7 +60,7 @@ private:
 
     QObject                *m_pProperties;
 
-    AObject                *m_pMap;
+    Object                 *m_pMap;
 
     QString                 mPath;
 

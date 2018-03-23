@@ -3,7 +3,7 @@
 #include "components/actor.h"
 
 Component::Component() :
-        AObject() {
+        Object() {
 
 }
 

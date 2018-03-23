@@ -4,7 +4,7 @@
 #include <QColor>
 #include <QEvent>
 
-#include <aobject.h>
+#include <object.h>
 
 #include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
@@ -58,21 +58,21 @@ void fixEuler(Vector3 &euler) {
     }
 }
 
-QVariant qVariant(AVariant &v, const string &type) {
+QVariant qVariant(Variant &v, const string &type) {
     switch(v.userType()) {
-        case AMetaType::BOOLEAN:
+        case MetaType::BOOLEAN:
             return QVariant(v.toBool());
-        case AMetaType::INTEGER:
+        case MetaType::INTEGER:
             return QVariant(v.toInt());
-        case AMetaType::DOUBLE:
-            return QVariant(v.toDouble());
-        case AMetaType::STRING:
+        case MetaType::FLOAT:
+            return QVariant(v.toFloat());
+        case MetaType::STRING:
             return QVariant(v.toString().c_str());
-        case AMetaType::VECTOR2:
+        case MetaType::VECTOR2:
             return QVariant::fromValue(v.toVector2());
-        case AMetaType::VECTOR3:
+        case MetaType::VECTOR3:
             return QVariant::fromValue(v.toVector3());
-        case AMetaType::VECTOR4: {
+        case MetaType::VECTOR4: {
             Vector4 value = v.toVector4();
             if(type == COLOR) {
                 QColor r;
@@ -81,7 +81,7 @@ QVariant qVariant(AVariant &v, const string &type) {
             }
             return QVariant::fromValue(value);
         }
-        case AMetaType::QUATERNION: {
+        case MetaType::QUATERNION: {
             Vector3 rot   = v.toQuaternion().euler();
             fixEuler(rot);
             return QVariant::fromValue(rot);
@@ -103,73 +103,72 @@ QVariant qVariant(AVariant &v, const string &type) {
     return QVariant();
 }
 
-AVariant aVariant(QVariant &v, int type) {
+Variant aVariant(QVariant &v, int type) {
     switch(type) {
-        case AMetaType::BOOLEAN: {
-            return AVariant(v.toBool());
+        case MetaType::BOOLEAN: {
+            return Variant(v.toBool());
         }
-        case AMetaType::INTEGER: {
-            return AVariant(v.toInt());
+        case MetaType::INTEGER: {
+            return Variant(v.toInt());
         }
-        case AMetaType::DOUBLE: {
-            return AVariant(v.toFloat());
+        case MetaType::FLOAT: {
+            return Variant(v.toFloat());
         }
-        case AMetaType::STRING: {
+        case MetaType::STRING: {
             if(v.canConvert<FilePath>()) {
                 FilePath p  = v.value<FilePath>();
-                return AVariant(qPrintable(p.path));
+                return Variant(qPrintable(p.path));
             }
             if(v.canConvert<Template>()) {
                 Template p  = v.value<Template>();
-                return AVariant(qPrintable(p.path));
+                return Variant(qPrintable(p.path));
             }
-            return AVariant(qPrintable(v.toString()));
+            return Variant(qPrintable(v.toString()));
         }
-        case AMetaType::VECTOR2: {
-            return AVariant(v.value<Vector2>());
+        case MetaType::VECTOR2: {
+            return Variant(v.value<Vector2>());
         }
-        case AMetaType::VECTOR3: {
-            return AVariant(v.value<Vector3>());
+        case MetaType::VECTOR3: {
+            return Variant(v.value<Vector3>());
         }
-        case AMetaType::VECTOR4: {
+        case MetaType::VECTOR4: {
             if(v.canConvert<QColor>()) {
                 QColor c    = v.value<QColor>();
                 Vector4 v(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-                return AVariant(v);
+                return Variant(v);
             }
-            return AVariant(v.value<Vector4>());
+            return Variant(v.value<Vector4>());
         }
-        case AMetaType::QUATERNION: {
-            return AVariant(Quaternion (v.value<Vector3>()));
+        case MetaType::QUATERNION: {
+            return Variant(Quaternion (v.value<Vector3>()));
         }
         case IConverter::ContentTexture: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Texture *t = Engine::loadResource<Texture>(qPrintable(p.path));
-                return AVariant::fromValue(t);
+                return Variant::fromValue(t);
             }
         }
         case IConverter::ContentMaterial: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Material *m = Engine::loadResource<Material>(qPrintable(p.path));
-                return AVariant::fromValue(m);
+                return Variant::fromValue(m);
             }
         }
         case IConverter::ContentMesh: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Mesh *m = Engine::loadResource<Mesh>(qPrintable(p.path));
-                return AVariant::fromValue(m);
+                return Variant::fromValue(m);
             }
         }
-
         default: break;
     }
-    return AVariant();
+    return Variant();
 }
 
-NextObject::NextObject(AObject *data, ObjectCtrl *ctrl, QObject *parent) :
+NextObject::NextObject(Object *data, ObjectCtrl *ctrl, QObject *parent) :
         QObject(parent),
         m_pController(ctrl) {
 
@@ -234,7 +233,7 @@ void NextObject::onDeleteComponent() {
                 Component *component    = actor->component(qPrintable(name));
                 if(component) {
                     if(m_pController) {
-                        AObject::ObjectList list;
+                        Object::ObjectList list;
                         list.push_back(component);
                         UndoManager::instance()->push(new UndoManager::DestroyObjects(list, m_pController, tr("Remove Component ") + name));
                     }
@@ -245,18 +244,18 @@ void NextObject::onDeleteComponent() {
     }
 }
 
-void NextObject::buildObject(AObject *object, const QString &path) {
-    const AMetaObject *meta = object->metaObject();
+void NextObject::buildObject(Object *object, const QString &path) {
+    const MetaObject *meta = object->metaObject();
 
     for(int i = 0; i < meta->propertyCount(); i++) {
-        AMetaProperty property = meta->property(i);
+        MetaProperty property = meta->property(i);
         QString name    = (path.isEmpty() ? "" : path + "/") + property.name();
-        AVariant data   = property.read(object);
+        Variant data    = property.read(object);
 
-        if(data.userType() == AMetaType::type<MaterialArray>()) {
+        if(data.userType() == MetaType::type<MaterialArray>()) {
             MaterialArray array = data.value<MaterialArray>();
             for(uint32_t i = 0; i < array.size(); i++) {
-                AVariant v = AVariant::fromValue(array[i]->material());
+                Variant v   = Variant::fromValue(array[i]->material());
                 setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
             }
         } else {
@@ -265,7 +264,7 @@ void NextObject::buildObject(AObject *object, const QString &path) {
             blockSignals(false);
         }
     }
-    for(AObject *it : object->getChildren()) {
+    for(Object *it : object->getChildren()) {
         if(dynamic_cast<Component *>(it) != nullptr) {
             buildObject(it, (path.isEmpty() ? "" : path + "/") + QString::fromStdString(it->typeName()));
         }
@@ -279,22 +278,22 @@ bool NextObject::event(QEvent *e) {
         QVariant value  = property(qPrintable(name));
         if(value.isValid()) {
             QStringList list = name.split('/');
-            for(AObject *it : m_Objects) {
-                AObject *o  = findChild(it, list);
-                AVariant current    = o->property(qPrintable(list.front()));
-                AVariant target;
-                if(current.userType() == AMetaType::type<MaterialArray>()) {
+            for(Object *it : m_Objects) {
+                Object *o   = findChild(it, list);
+                Variant current = o->property(qPrintable(list.front()));
+                Variant target;
+                if(current.userType() == MetaType::type<MaterialArray>()) {
                     MaterialArray array = current.value<MaterialArray>();
                     uint32_t id = name.mid(name.indexOf(QRegExp("[0-9]"))).toInt();
                     if(id < array.size()) {
-                        Material *m     = aVariant(value, AMetaType::type<Material *>()).value<Material *>();
+                        Material *m     = aVariant(value, MetaType::type<Material *>()).value<Material *>();
                         if(m) {
                             MaterialInstance *inst  = array[id];
                             delete inst;
                             array[id]   = m->createInstance();
                         }
                     }
-                    target  = AVariant::fromValue(array);
+                    target  = Variant::fromValue(array);
                 } else {
                     target  = aVariant(value, current.userType());
                 }
@@ -311,9 +310,9 @@ bool NextObject::event(QEvent *e) {
     return false;
 }
 
-AObject *NextObject::findChild(AObject *parent, QStringList &path) {
+Object *NextObject::findChild(Object *parent, QStringList &path) {
     foreach(QString str, path) {
-        for(AObject *it : parent->getChildren()) {
+        for(Object *it : parent->getChildren()) {
             if(it->typeName() == str.toStdString()) {
                 parent  = it;
                 path.pop_front();

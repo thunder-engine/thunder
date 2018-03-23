@@ -7,7 +7,7 @@
 #include <QMetaProperty>
 #include <QCoreApplication>
 
-#include "common.h"
+#include "config.h"
 
 const QString gCompany("Company");
 const QString gQBS("QBS");

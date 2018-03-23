@@ -1,12 +1,12 @@
 #include "undomanager.h"
 
-#include <ajson.h>
+#include <json.h>
 #include <components/actor.h>
 #include <components/component.h>
 
 #include "controllers/objectctrl.h"
 
-UndoManager::SelectObjects::SelectObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::SelectObjects::SelectObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     for(auto it : objects) {
         m_Objects.push_back(it->uuid());
@@ -24,7 +24,7 @@ bool UndoManager::SelectObjects::isValid() const {
     return true;
 }
 
-UndoManager::CreateObjects::CreateObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::CreateObjects::CreateObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     m_pSelect   = new SelectObjects(ctrl->selected(), ctrl);
     m_Objects   = objects;
@@ -39,25 +39,25 @@ bool UndoManager::CreateObjects::isValid() const {
     return !m_Objects.empty();
 }
 
-UndoManager::DestroyObjects::DestroyObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
-    AVariantList list;
+    VariantList list;
     for(auto it : objects) {
         list.push_back(Engine::toVariant(it));
         m_pParent   = it->parent();
     }
-    m_Dump  = AJson::save( list, 0 );
+    m_Dump  = Json::save( list, 0 );
     for(auto it : objects) {
         delete it;
     }
     ctrl->mapUpdated();
 }
 void UndoManager::DestroyObjects::undo(bool redo) {
-    AVariant variant    = AJson::load(m_Dump);
-    AObject::ObjectList objects;
-    AVariantList list = variant.value<AVariantList>();
+    Variant variant     = Json::load(m_Dump);
+    Object::ObjectList objects;
+    VariantList list    = variant.value<VariantList>();
     for(auto it : list) {
-        AObject *object = Engine::toObject(it);
+        Object *object  = Engine::toObject(it);
         if(object) {
             object->setParent(m_pParent);
             objects.push_back(object);
@@ -82,7 +82,7 @@ bool UndoManager::DestroyObjects::isValid() const {
     return !m_Dump.empty();
 }
 
-UndoManager::ParentingObjects::ParentingObjects(const AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object::ObjectList &, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     for(auto object : objects) {
         m_Objects.push_back( QString::number(object->uuid()) );
@@ -90,13 +90,13 @@ UndoManager::ParentingObjects::ParentingObjects(const AObject::ObjectList &objec
     }
 }
 void UndoManager::ParentingObjects::undo(bool redo) {
-    AObject::ObjectList objects;
-    AObject::ObjectList parents;
+    Object::ObjectList objects;
+    Object::ObjectList parents;
 
     QStringList::iterator it    = m_Parents.begin();
     foreach(const QString &ref, m_Objects) {
-        AObject *object = m_pController->findObject(ref.toInt());
-        AObject *parent = m_pController->findObject((*it).toInt());
+        Object *object  = m_pController->findObject(ref.toInt());
+        Object *parent  = m_pController->findObject((*it).toInt());
         if(object && parent) {
             objects.push_back(object);
             parents.push_back(parent);
@@ -109,8 +109,8 @@ bool UndoManager::ParentingObjects::isValid() const {
     return (!m_Objects.isEmpty() && !m_Parents.isEmpty());
 }
 
-typedef list<const AObject *> ObjectArray;
-void enumComponents(const AObject *object, ObjectArray &list) {
+typedef list<const Object *> ObjectArray;
+void enumComponents(const Object *object, ObjectArray &list) {
     for(const auto &it : object->getChildren()) {
         if(dynamic_cast<const Component *>(it) != nullptr) {
             list.push_back(it);
@@ -118,28 +118,28 @@ void enumComponents(const AObject *object, ObjectArray &list) {
     }
 }
 
-UndoManager::PropertyObjects::PropertyObjects(const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
+UndoManager::PropertyObjects::PropertyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
-    AVariantList list;
+    VariantList list;
     for(auto object : objects) {
         ObjectArray array;
         array.push_back(object);
 
         enumComponents(object, array);
-        AVariantList o;
+        VariantList o;
         for(auto it : array) {
             // Save Object
             int uuid    = int(it->uuid());
 
-            AVariantList data;
-            AVariantMap properties;
+            VariantList data;
+            VariantMap properties;
 
-            const AMetaObject *meta = it->metaObject();
+            const MetaObject *meta = it->metaObject();
             for(int i = 0; i < meta->propertyCount(); i++) {
-                AMetaProperty p = meta->property(i);
+                MetaProperty p = meta->property(i);
                 if(p.isValid()) {
-                    AVariant v  = p.read(it);
-                    if(v.userType() < AMetaType::USERTYPE) {
+                    Variant v  = p.read(it);
+                    if(v.userType() < MetaType::USERTYPE) {
                         properties[p.name()] = v;
                     }
                 }
@@ -154,19 +154,19 @@ UndoManager::PropertyObjects::PropertyObjects(const AObject::ObjectList &objects
         }
         list.push_back(o);
     }
-    m_Dump  = AJson::save( list, 0 );
+    m_Dump  = Json::save( list, 0 );
 }
 void UndoManager::PropertyObjects::undo(bool redo) {
     UndoManager::instance()->push(new PropertyObjects(m_pController->selected(), m_pController, m_Name), !redo, false);
 
-    AVariant variant    = AJson::load(m_Dump);
-    for(auto object : variant.value<AVariantList>()) {
-        for(auto it : object.value<AVariantList>()) {
-            AVariantList list  = it.value<AVariantList>();
+    Variant variant = Json::load(m_Dump);
+    for(auto object : variant.value<VariantList>()) {
+        for(auto it : object.value<VariantList>()) {
+            VariantList list    = it.value<VariantList>();
             auto i  = list.begin();
             uint32_t uuid   = (*i).toInt();
             i++;
-            AObject *o = m_pController->findObject(uuid);
+            Object *o   = m_pController->findObject(uuid);
             if(o) {
                 for(auto p : (*i).toMap()) {
                     if(o->property(p.first.c_str()) != p.second) {

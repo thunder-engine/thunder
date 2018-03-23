@@ -1,8 +1,8 @@
-#include "core/ametaobject.h"
+#include "core/metaobject.h"
 
-#include "core/aobject.h"
+#include "core/object.h"
 
-AMetaObject::AMetaObject(const char *name, const AMetaObject *super, const Constructor constructor, const AMetaMethod::Table *methods, const AMetaProperty::Table *props) :
+MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
         m_pName(name),
         m_pSuper(super),
         m_Constructor(constructor),
@@ -19,28 +19,28 @@ AMetaObject::AMetaObject(const char *name, const AMetaObject *super, const Const
     }
 }
 
-const char *AMetaObject::name() const {
+const char *MetaObject::name() const {
     PROFILE_FUNCTION()
     return m_pName;
 }
 
-const AMetaObject *AMetaObject::super() const {
+const MetaObject *MetaObject::super() const {
     PROFILE_FUNCTION()
     return m_pSuper;
 }
 
-AObject *AMetaObject::createInstance() const {
+Object *MetaObject::createInstance() const {
     PROFILE_FUNCTION()
     return (*m_Constructor)();
 }
 
-int AMetaObject::indexOfMethod(const char *signature) const {
+int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION()
-    const AMetaObject *s    = this;
+    const MetaObject *s    = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            if(AMetaMethod(m_pMethods + i).signature() == signature) {
+            if(MetaMethod(m_pMethods + i).signature() == signature) {
                 return i + s->methodOffset();
             }
         }
@@ -49,14 +49,14 @@ int AMetaObject::indexOfMethod(const char *signature) const {
     return -1;
 }
 
-int AMetaObject::indexOfSignal(const char *signature) const {
+int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION()
-    const AMetaObject *s    = this;
+    const MetaObject *s    = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            AMetaMethod m(m_pMethods + i);
-            if(m.type() == AMetaMethod::Signal && m.signature() == signature) {
+            MetaMethod m(m_pMethods + i);
+            if(m.type() == MetaMethod::Signal && m.signature() == signature) {
                 return i + s->methodOffset();
             }
         }
@@ -65,14 +65,14 @@ int AMetaObject::indexOfSignal(const char *signature) const {
     return -1;
 }
 
-int AMetaObject::indexOfSlot(const char *signature) const {
+int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION()
-    const AMetaObject *s    = this;
+    const MetaObject *s    = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            AMetaMethod m(m_pMethods + i);
-            if(m.type() == AMetaMethod::Slot && m.signature() == signature) {
+            MetaMethod m(m_pMethods + i);
+            if(m.type() == MetaMethod::Slot && m.signature() == signature) {
                 return i + s->methodOffset();
             }
         }
@@ -81,7 +81,7 @@ int AMetaObject::indexOfSlot(const char *signature) const {
     return -1;
 }
 
-AMetaMethod AMetaObject::method(int index) const {
+MetaMethod MetaObject::method(int index) const {
     PROFILE_FUNCTION()
     int i = index - methodOffset();
     if(i < 0 && m_pSuper) {
@@ -89,15 +89,15 @@ AMetaMethod AMetaObject::method(int index) const {
     }
 
     if(i >= 0 && i < m_MethodCount) {
-        return AMetaMethod(m_pMethods + index);
+        return MetaMethod(m_pMethods + index);
     }
-    return AMetaMethod(nullptr);
+    return MetaMethod(nullptr);
 }
 
-int AMetaObject::methodCount() const {
+int MetaObject::methodCount() const {
     PROFILE_FUNCTION()
     int count               = m_MethodCount;
-    const AMetaObject *s    = m_pSuper;
+    const MetaObject *s    = m_pSuper;
     while(s) {
         count  += s->m_MethodCount;
         s       = s->m_pSuper;
@@ -105,10 +105,10 @@ int AMetaObject::methodCount() const {
     return count;
 }
 
-int AMetaObject::methodOffset() const {
+int MetaObject::methodOffset() const {
     PROFILE_FUNCTION()
     int offset              = 0;
-    const AMetaObject *s    = m_pSuper;
+    const MetaObject *s    = m_pSuper;
     while(s) {
         offset += s->m_MethodCount;
         s       = s->m_pSuper;
@@ -116,9 +116,9 @@ int AMetaObject::methodOffset() const {
     return offset;
 }
 
-int AMetaObject::indexOfProperty(const char *name) const {
+int MetaObject::indexOfProperty(const char *name) const {
     PROFILE_FUNCTION()
-    const AMetaObject *s    = this;
+    const MetaObject *s    = this;
 
     while(s) {
         for(int i = 0; i < s->m_PropCount; ++i) {
@@ -131,22 +131,22 @@ int AMetaObject::indexOfProperty(const char *name) const {
     return -1;
 }
 
-AMetaProperty AMetaObject::property(int index) const {
+MetaProperty MetaObject::property(int index) const {
     PROFILE_FUNCTION()
     int i = index - propertyOffset();
     if(i < 0 && m_pSuper) {
         return m_pSuper->property(index);
     }
     if(i >= 0 && i < m_PropCount) {
-        return AMetaProperty(m_pProperties + index);
+        return MetaProperty(m_pProperties + index);
     }
-    return AMetaProperty(nullptr);
+    return MetaProperty(nullptr);
 }
 
-int AMetaObject::propertyCount() const {
+int MetaObject::propertyCount() const {
     PROFILE_FUNCTION()
     int count               = m_PropCount;
-    const AMetaObject *s    = m_pSuper;
+    const MetaObject *s    = m_pSuper;
     while(s) {
         count  += s->m_PropCount;
         s       = s->m_pSuper;
@@ -154,10 +154,10 @@ int AMetaObject::propertyCount() const {
     return count;
 }
 
-int AMetaObject::propertyOffset() const {
+int MetaObject::propertyOffset() const {
     PROFILE_FUNCTION()
     int offset              = 0;
-    const AMetaObject *s    = m_pSuper;
+    const MetaObject *s    = m_pSuper;
     while(s) {
         offset += s->m_PropCount;
         s       = s->m_pSuper;
@@ -165,9 +165,9 @@ int AMetaObject::propertyOffset() const {
     return offset;
 }
 
-bool AMetaObject::canCastTo(const char *type) const {
+bool MetaObject::canCastTo(const char *type) const {
     PROFILE_FUNCTION()
-    const AMetaObject *s    = this;
+    const MetaObject *s    = this;
 
     while(s) {
         if(strcmp(s->m_pName, type) == 0) {

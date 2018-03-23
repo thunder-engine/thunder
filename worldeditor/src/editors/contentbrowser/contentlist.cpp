@@ -8,7 +8,7 @@
 #include <log.h>
 #include <engine.h>
 
-#include "common.h"
+#include "config.h"
 
 #include <components/staticmesh.h>
 

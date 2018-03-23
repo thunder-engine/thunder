@@ -32,11 +32,11 @@ protected:
 
     TextureMap                  m_Textures;
 
-    AVariantMap                 m_Uniforms;
+    VariantMap                  m_Uniforms;
 };
 
-class NEXT_LIBRARY_EXPORT Material : public AObject {
-    A_REGISTER(Material, AObject, Resources)
+class NEXT_LIBRARY_EXPORT Material : public Object {
+    A_REGISTER(Material, Object, Resources)
 public:
     enum MaterialType {
         Surface,
@@ -70,7 +70,7 @@ public:
 
     virtual ~Material           ();
 
-    void                        loadUserData                (const AVariantMap &data);
+    void                        loadUserData                (const VariantMap &data);
 
     MaterialType                materialType                () const;
 

@@ -12,7 +12,7 @@
 #include <components/camera.h>
 
 #include "common.h"
-#include "ajson.h"
+#include "json.h"
 
 #include "editors/propertyedit/nextobject.h"
 #include "controllers/objectctrl.h"
@@ -150,7 +150,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
         glWidget->makeCurrent();
         StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
         if(mesh) {
-            AVariantMap map   = m_pBuilder->data().toMap();
+            VariantMap map  = m_pBuilder->data().toMap();
             for(auto it : mesh->materials()) {
                 it->material()->loadUserData(map);
             }

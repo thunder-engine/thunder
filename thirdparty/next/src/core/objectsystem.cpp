@@ -1,47 +1,48 @@
-#include "core/aobjectsystem.h"
+#include "core/ObjectSystem.h"
 
-#include "core/aobject.h"
-#include "core/auri.h"
-#include "core/abson.h"
-#include "core/ajson.h"
+#include "core/object.h"
+#include "core/uri.h"
+#include "core/bson.h"
+#include "core/json.h"
 
-class AObjectSystemPrivate {
+class ObjectSystemPrivate {
 public:
-    AObjectSystemPrivate() :
-        m_Exit(false) {
+    ObjectSystemPrivate() :
+        m_Exit(false),
+        m_NextID(0) {
     }
 
     /// Container for registered callbacks.
-    AObjectSystem::FactoryMap   m_Factories;
-    AObjectSystem::GroupMap     m_Groups;
+    ObjectSystem::FactoryMap    m_Factories;
+    ObjectSystem::GroupMap      m_Groups;
 
     bool                        m_Exit;
 
     uint32_t                    m_NextID;
 
-    static AObjectSystem       *s_Instance;
+    static ObjectSystem        *s_Instance;
 };
 
-AObjectSystem *AObjectSystemPrivate::s_Instance    = nullptr;
+ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
 
-AObjectSystem::AObjectSystem(const string &name) :
-        p_ptr(new AObjectSystemPrivate()) {
+ObjectSystem::ObjectSystem(const string &name) :
+        p_ptr(new ObjectSystemPrivate()) {
     PROFILE_FUNCTION()
-    if(AObjectSystemPrivate::s_Instance != nullptr) {
-        throw "There should be only one AObjectSystem object";
+    if(ObjectSystemPrivate::s_Instance != nullptr) {
+        throw "There should be only one ObjectSystem object";
     }
-    AObjectSystemPrivate::s_Instance   = this;
+    ObjectSystemPrivate::s_Instance   = this;
     setName(name);
     p_ptr->m_NextID = 1000;
 }
 
-AObjectSystem::~AObjectSystem() {
+ObjectSystem::~ObjectSystem() {
     PROFILE_FUNCTION()
     factoryClear();
-    AObjectSystemPrivate::s_Instance   = nullptr;
+    ObjectSystemPrivate::s_Instance   = nullptr;
 }
 
-int32_t AObjectSystem::exec() {
+int32_t ObjectSystem::exec() {
     PROFILE_FUNCTION()
     while(!p_ptr->m_Exit) {
 
@@ -49,16 +50,16 @@ int32_t AObjectSystem::exec() {
     return 0;
 }
 
-AObjectSystem *AObjectSystem::instance() {
+ObjectSystem *ObjectSystem::instance() {
     PROFILE_FUNCTION()
-    return AObjectSystemPrivate::s_Instance;
+    return ObjectSystemPrivate::s_Instance;
 }
 
-AObject *AObjectSystem::objectCreate(const string &uri, const string &name, AObject *parent) {
+Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object *parent) {
     PROFILE_FUNCTION()
-    AObject *object = nullptr;
+    Object *object  = nullptr;
 
-    AObjectSystem *inst = instance();
+    ObjectSystem *inst = instance();
     FactoryMap::iterator it = inst->p_ptr->m_Factories.find(uri);
     if(it == inst->p_ptr->m_Factories.end()) {
         it  = inst->p_ptr->m_Factories.find(inst->p_ptr->m_Groups[uri]);
@@ -72,31 +73,31 @@ AObject *AObjectSystem::objectCreate(const string &uri, const string &name, AObj
     return object;
 }
 
-void AObjectSystem::factoryAdd(const string &name, const string &uri, const AMetaObject *meta) {
+void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION()
     p_ptr->m_Groups[name]    = uri;
     p_ptr->m_Factories[uri]  = meta;
 }
 
-void AObjectSystem::factoryRemove(const string &name, const string &uri) {
+void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     PROFILE_FUNCTION()
     p_ptr->m_Groups.erase(name);
     p_ptr->m_Factories.erase(uri);
 }
 
-void AObjectSystem::factoryClear() {
+void ObjectSystem::factoryClear() {
     PROFILE_FUNCTION()
     p_ptr->m_Factories.clear();
 }
 
-AObjectSystem::GroupMap AObjectSystem::factories() const {
+ObjectSystem::GroupMap ObjectSystem::factories() const {
     PROFILE_FUNCTION()
     return p_ptr->m_Groups;
 }
 
-typedef list<const AObject *> ObjectArray;
+typedef list<const Object *>    ObjectArray;
 
-void enumObjects(const AObject *object, ObjectArray &list) {
+void enumObjects(const Object *object, ObjectArray &list) {
     PROFILE_FUNCTION()
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
@@ -104,9 +105,9 @@ void enumObjects(const AObject *object, ObjectArray &list) {
     }
 }
 
-AVariant AObjectSystem::toVariant(const AObject *object) {
+Variant ObjectSystem::toVariant(const Object *object) {
     PROFILE_FUNCTION()
-    AVariantList result;
+    VariantList result;
 
     ObjectArray array;
     enumObjects(object, array);
@@ -115,41 +116,41 @@ AVariant AObjectSystem::toVariant(const AObject *object) {
         // Save Object
         int uuid    = int(it->uuid());
 
-        AVariantList o;
+        VariantList o;
         o.push_back(uuid);
-        AObject *parent = it->parent();
+        Object *parent = it->parent();
         o.push_back(int((parent) ? parent->uuid() : 0));
         o.push_back(it->typeName());
         o.push_back(it->name());
         o.push_back(it->isEnable());
 
         // Save base properties
-        AVariantMap properties;
-        const AMetaObject *meta = it->metaObject();
+        VariantMap properties;
+        const MetaObject *meta = it->metaObject();
         for(int i = 0; i < meta->propertyCount(); i++) {
-            AMetaProperty p = meta->property(i);
+            MetaProperty p = meta->property(i);
             if(p.isValid()) {
-                AVariant v  = p.read(it);
-                if(v.userType() < AMetaType::USERTYPE) {
+                Variant v  = p.read(it);
+                if(v.userType() < MetaType::USERTYPE) {
                     properties[p.name()] = v;
                 }
             }
         }
 
         // Save links
-        AVariantList links;
+        VariantList links;
         for(const auto &l : it->getReceivers()) {
-            AVariantList link;
+            VariantList link;
 
-            AObject *sender   = l.sender;
+            Object *sender  = l.sender;
 
             link.push_back(int(sender->uuid()));
-            AMetaMethod method  = sender->metaObject()->method(l.signal);
-            link.push_back(AVariant(char(method.type() + 0x30) + method.signature()));
+            MetaMethod method  = sender->metaObject()->method(l.signal);
+            link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
             link.push_back(uuid);
             method      = it->metaObject()->method(l.method);
-            link.push_back(AVariant(char(method.type() + 0x30) + method.signature()));
+            link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
             links.push_back(link);
         }
@@ -163,20 +164,20 @@ AVariant AObjectSystem::toVariant(const AObject *object) {
     return result;
 }
 
-AObject *AObjectSystem::toObject(const AVariant &variant) {
+Object *ObjectSystem::toObject(const Variant &variant) {
     PROFILE_FUNCTION()
-    AObject *result = nullptr;
+    Object *result  = nullptr;
 
     // Create all declared objects
-    AVariantList objects    = variant.value<AVariantList>();
+    VariantList objects    = variant.value<VariantList>();
     ObjectMap array;
     for(auto it : objects) {
-        AVariantList o  = it.value<AVariantList>();
+        VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i      = o.begin();
             string uuid = (*i).toString();
             i++;
-            AObject *parent = nullptr;
+            Object *parent  = nullptr;
             auto a  = array.find((*i).toString());
             if(a != array.end()) {
                 parent  = (*a).second;
@@ -189,7 +190,7 @@ AObject *AObjectSystem::toObject(const AVariant &variant) {
             bool enable = (*i).toBool();
             i++;
 
-            AObject *object = objectCreate(type, name, parent);
+            Object *object  = objectCreate(type, name, parent);
             if(object) {
                 if(!object->parent()) {
                     result  = object;
@@ -198,8 +199,8 @@ AObject *AObjectSystem::toObject(const AVariant &variant) {
                 array[uuid] = object;
                 // Load base properties
                 for(const auto &it : (*i).toMap()) {
-                    AVariant v  = it.second;
-                    if(v.type() < AMetaType::USERTYPE) {
+                    Variant v  = it.second;
+                    if(v.type() < MetaType::USERTYPE) {
                         object->setProperty(it.first.c_str(), v);
                     }
                 }
@@ -212,12 +213,12 @@ AObject *AObjectSystem::toObject(const AVariant &variant) {
     }
     // Restore connections
     for(auto it : objects) {
-        AVariantList o  = it.value<AVariantList>();
-        AVariantList list   = o.back().value<AVariantList>();
+        VariantList o  = it.value<VariantList>();
+        VariantList list   = o.back().value<VariantList>();
         for(const auto &link : list) {
-            AVariantList l  = link.value<AVariantList>();
-            AObject *sender     = nullptr;
-            AObject *receiver   = nullptr;
+            VariantList l  = link.value<VariantList>();
+            Object *sender      = nullptr;
+            Object *receiver    = nullptr;
             if(l.size() == 4) {
                 auto i  = l.begin();
                 auto s = array.find((*i).toString());
@@ -246,7 +247,7 @@ AObject *AObjectSystem::toObject(const AVariant &variant) {
     return result;
 }
 
-uint32_t AObjectSystem::nextID() {
+uint32_t ObjectSystem::nextID() {
     PROFILE_FUNCTION()
     return p_ptr->m_NextID++;
 }

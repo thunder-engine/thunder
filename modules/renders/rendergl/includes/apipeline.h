@@ -43,7 +43,7 @@ public:
 
     virtual void                resize              (uint32_t width, uint32_t height);
 
-    void                        drawComponents      (AObject &object, uint8_t layer);
+    void                        drawComponents      (Object &object, uint8_t layer);
 
     Vector2                     screen              () const { return m_Screen; }
     Vector3                     world               () const { return m_World; }
@@ -51,13 +51,17 @@ public:
     void                        cameraReset         ();
     Camera                     *activeCamera        ();
 
+    Scene                      *scene               () const { return m_pScene; }
+
+    ICommandBuffer             *buffer              () const { return m_Buffer; }
+
     void                        overrideController  (IController *controller) { m_pController = controller; }
 
 protected:
-    void                        updateLights        (AObject &object, uint8_t layer);
-    void                        updateShadows       (AObject &object);
+    void                        updateLights        (Object &object, uint8_t layer);
+    void                        updateShadows       (Object &object);
 
-    void                        analizeScene        (AObject &object);
+    void                        analizeScene        (Object &object);
 
 protected:
     ICommandBuffer             *m_Buffer;

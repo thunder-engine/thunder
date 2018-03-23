@@ -31,9 +31,9 @@ public:
 
     virtual void                setTexture          (Texture *texture);
 
-    void                        loadUserData        (const AVariantMap &data);
+    void                        loadUserData        (const VariantMap &data);
 
-    AVariantMap                 saveUserData        () const;
+    VariantMap                  saveUserData        () const;
 
 protected:
     Vector2                     m_Center;

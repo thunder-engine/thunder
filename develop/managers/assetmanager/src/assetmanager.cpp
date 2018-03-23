@@ -11,9 +11,9 @@
 
 #include <zlib.h>
 
-#include "common.h"
+#include "config.h"
 
-#include <ajson.h>
+#include <json.h>
 
 #include "baseconvertersettings.h"
 #include "textureimportsettings.h"
@@ -408,17 +408,17 @@ void AssetManager::cleanupBundle() {
 void AssetManager::dumpBundle() {
     QFile file(m_pProjectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
-        AVariantMap root;
+        VariantMap root;
         root[qPrintable(gContent)]  = m_Paths;
 
-        AVariantMap settings;
+        VariantMap settings;
 
         settings[qPrintable(gEntry)]    = qPrintable(m_pProjectManager->firstMap().path);
         settings[qPrintable(gCompany)]  = qPrintable(m_pProjectManager->projectCompany());
         settings[qPrintable(gProject)]  = qPrintable(m_pProjectManager->projectName());
 
         root[qPrintable(gSettings)] = settings;
-        string data = AJson::save(root, 0);
+        string data = Json::save(root, 0);
         file.write(&data[0], data.size());
         file.close();
         Engine::reloadBundle();

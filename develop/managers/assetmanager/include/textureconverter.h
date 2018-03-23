@@ -9,11 +9,11 @@ class QImage;
 
 class TextureSerial : public Texture {
 public:
-    AVariantList                m_Surfaces;
+    VariantList                 m_Surfaces;
 
-    void                        loadUserData                (const AVariantMap &data);
+    void                        loadUserData                (const VariantMap &data);
 
-    AVariantMap                 saveUserData                () const;
+    VariantMap                  saveUserData                () const;
 protected:
     friend class TextureConverter;
 
@@ -27,7 +27,7 @@ public:
     IConverter::ContentTypes    type                        () const { return IConverter::ContentTexture; }
     uint8_t                     convertFile                 (IConverterSettings *);
 
-    AVariantMap                 convertResource             (IConverterSettings *);
+    VariantMap                  convertResource             (IConverterSettings *);
 
 protected:
     bool                        tgaReader                   (IConverterSettings &settings, QImage &t);

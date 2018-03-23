@@ -12,8 +12,8 @@
 #include "engine.h"
 #include "material.h"
 
-class NEXT_LIBRARY_EXPORT Mesh : public AObject {
-    A_REGISTER(Mesh, AObject, Resources)
+class NEXT_LIBRARY_EXPORT Mesh : public Object {
+    A_REGISTER(Mesh, Object, Resources)
 public:
     enum Attributes {
         ATTRIBUTE_COLOR         = (1<<0),
@@ -101,7 +101,7 @@ public:
     void                        setModified         (bool flag);
 
 protected:
-    void                        loadUserData        (const AVariantMap &data);
+    void                        loadUserData        (const VariantMap &data);
 
     bool                        m_Modified;
 

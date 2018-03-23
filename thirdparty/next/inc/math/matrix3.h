@@ -20,7 +20,7 @@
 #ifndef MATRIX3_H_HEADER_INCLUDED
 #define MATRIX3_H_HEADER_INCLUDED
 
-#include "acommon.h"
+#include "common.h"
 
 class Vector3;
 class Vector4;

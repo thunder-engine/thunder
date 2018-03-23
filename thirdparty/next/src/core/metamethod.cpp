@@ -1,23 +1,23 @@
-#include "core/ametamethod.h"
+#include "core/metamethod.h"
 
-#include "core/avariant.h"
+#include "core/variant.h"
 
-AMetaMethod::AMetaMethod(const Table *table) :
+MetaMethod::MetaMethod(const Table *table) :
         m_pTable(table) {
     PROFILE_FUNCTION()
 }
 
-bool AMetaMethod::isValid() const {
+bool MetaMethod::isValid() const {
     PROFILE_FUNCTION()
     return (m_pTable != nullptr);
 }
 
-const char *AMetaMethod::name() const {
+const char *MetaMethod::name() const {
     PROFILE_FUNCTION()
     return m_pTable->name;
 }
 
-string AMetaMethod::signature() const {
+string MetaMethod::signature() const {
     PROFILE_FUNCTION()
     string sig(m_pTable->name);
     int pos = sig.rfind(':');
@@ -27,7 +27,7 @@ string AMetaMethod::signature() const {
     sig += '(';
 
     for(int i = 0; i < m_pTable->argc; ++i) {
-        AMetaType arg(m_pTable->types[i + 1]);
+        MetaType arg(m_pTable->types[i + 1]);
         sig += arg.name();
         sig += ',';
     }
@@ -40,27 +40,27 @@ string AMetaMethod::signature() const {
     return sig;
 }
 
-AMetaMethod::MethodType AMetaMethod::type() const {
+MetaMethod::MethodType MetaMethod::type() const {
     PROFILE_FUNCTION()
     return m_pTable->type;
 }
 
-AMetaType AMetaMethod::returnType() const {
+MetaType MetaMethod::returnType() const {
     PROFILE_FUNCTION()
-    return AMetaType(m_pTable->types[0]);
+    return MetaType(m_pTable->types[0]);
 }
 
-int AMetaMethod::parameterCount() const {
+int MetaMethod::parameterCount() const {
     PROFILE_FUNCTION()
     return m_pTable->argc;
 }
 
-AMetaType AMetaMethod::parameterType(int index) const {
+MetaType MetaMethod::parameterType(int index) const {
     PROFILE_FUNCTION()
-    return AMetaType(m_pTable->types[index + 1]);
+    return MetaType(m_pTable->types[index + 1]);
 }
 
-bool AMetaMethod::invoke(AObject *obj, AVariant &returnValue, int argc, const AVariant *args) const {
+bool MetaMethod::invoke(Object *obj, Variant &returnValue, int argc, const Variant *args) const {
     PROFILE_FUNCTION()
     if(m_pTable->type != Signal) {
         returnValue = m_pTable->invoker(obj, argc, args);
@@ -69,25 +69,25 @@ bool AMetaMethod::invoke(AObject *obj, AVariant &returnValue, int argc, const AV
     return false;
 }
 
-AMethodCallEvent::AMethodCallEvent(int32_t method, AObject *sender, const AVariant &args) :
-        AEvent(MethodCall),
+MethodCallEvent::MethodCallEvent(int32_t method, Object *sender, const Variant &args) :
+        Event(MethodCall),
         m_pSender(sender),
         m_Method(method),
         m_Args(args) {
     PROFILE_FUNCTION()
 }
 
-AObject *AMethodCallEvent::sender() const {
+Object *MethodCallEvent::sender() const {
     PROFILE_FUNCTION()
     return m_pSender;
 }
 
-int32_t AMethodCallEvent::method() const {
+int32_t MethodCallEvent::method() const {
     PROFILE_FUNCTION()
     return m_Method;
 }
 
-const AVariant *AMethodCallEvent::args() const {
+const Variant *MethodCallEvent::args() const {
     PROFILE_FUNCTION()
     return &m_Args;
 }

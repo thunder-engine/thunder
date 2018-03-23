@@ -4,7 +4,6 @@ uniform struct Transform {
     mat4    model;
     mat4    projection;
     mat4    mv;
-    mat4    mvpi;
 } transform;
 
 uniform struct Camera {
@@ -14,11 +13,12 @@ uniform struct Camera {
 } camera;
 
 uniform struct Light {
+    mat4    mvpi;
     mat4    matrix[4];
     vec3    pos;
     vec3    dir;
     vec3    color;
-    vec3    lod;
+    vec4    lod;
     float   ambient;
     float   brightness;
     float   radius;

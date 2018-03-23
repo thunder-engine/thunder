@@ -3,8 +3,8 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT Text : public AObject {
-    A_REGISTER(Text, AObject, Resources)
+class NEXT_LIBRARY_EXPORT Text : public Object {
+    A_REGISTER(Text, Object, Resources)
 
 public:
     Text                        ();
@@ -17,10 +17,10 @@ public:
     string                      text                        () const;
 
 protected:
-    void                        loadUserData                (const AVariantMap &data);
+    void                        loadUserData                (const VariantMap &data);
 
 protected:
-    AByteArray                  m_Data;
+    ByteArray                   m_Data;
 
 };
 

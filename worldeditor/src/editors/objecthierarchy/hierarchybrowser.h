@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QTreeView>
 
-#include <aobject.h>
+#include <object.h>
 
 namespace Ui {
     class HierarchyBrowser;
@@ -63,21 +63,21 @@ public:
 
     ~HierarchyBrowser       ();
 
-    void                    setObject                   (AObject *object);
+    void                    setObject                   (Object *object);
 
 signals:
-    void                    selected                    (AObject::ObjectList objects);
+    void                    selected                    (Object::ObjectList objects);
 
-    void                    removed                     (AObject::ObjectList objects);
+    void                    removed                     (Object::ObjectList objects);
 
-    void                    focused                     (AObject *object);
+    void                    focused                     (Object *object);
 
-    void                    parented                    (AObject::ObjectList objects, AObject::ObjectList parents);
+    void                    parented                    (Object::ObjectList objects, Object::ObjectList parents);
 
     void                    updated                     ();
 
 public slots:
-    void                    onSelected                  (AObject::ObjectList objects);
+    void                    onSelected                  (Object::ObjectList objects);
 
     void                    onHierarchyUpdated          ();
 

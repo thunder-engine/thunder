@@ -78,21 +78,21 @@ inline uint32_t ATextureGL::sizeRGB(uint32_t width, uint32_t height) const {
     return width * height * m_components;
 }
 
-void ATextureGL::loadUserData(const AVariantMap &data) {
+void ATextureGL::loadUserData(const VariantMap &data) {
     Texture::loadUserData(data);
 
     Sides sides;
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
-            const AVariantList &surfaces = (*it).second.value<AVariantList>();
+            const VariantList &surfaces = (*it).second.value<VariantList>();
             for(auto s : surfaces) {
                 Surface img;
                 uint32_t w  = m_Width;
                 uint32_t h  = m_Height;
-                const AVariantList &lods = s.value<AVariantList>();
+                const VariantList &lods = s.value<VariantList>();
                 for(auto l : lods) {
-                    AByteArray bits = l.toByteArray();
+                    ByteArray bits = l.toByteArray();
                     uint32_t s  = size(w, h);
                     if(s && !bits.empty()) {
                         uint8_t *pixels = new uint8_t[s];

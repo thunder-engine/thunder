@@ -201,8 +201,8 @@ void Matrix3::identity() {
 */
 void Matrix3::rotate(const Vector3 &axis, areal angle) {
     areal rad = angle * DEG2RAD;
-    areal c = (areal)cos(rad);
-    areal s = (areal)sin(rad);
+    areal c = (rad == PI * 0.5) ? 0 : (areal)cos(rad);
+    areal s = (rad == PI) ? 0 : (areal)sin(rad);
     Vector3 v = axis;
     v.normalize();
     areal xy = v.x * v.y;
@@ -239,9 +239,9 @@ void Matrix3::rotate(const Vector3 &angles) {
     Scales the coordinate system by \a vector.
 */
 void Matrix3::scale(const Vector3 &vector) {
-    mat[0] = vector.x; mat[3] = 0.0; mat[6] = 0.0;
-    mat[1] = 0.0; mat[4] = vector.y; mat[7] = 0.0;
-    mat[2] = 0.0; mat[5] = 0.0; mat[8] = vector.z;
+    mat[0] = vector.x;  mat[3] = 0.0;       mat[6] = 0.0;
+    mat[1] = 0.0;       mat[4] = vector.y;  mat[7] = 0.0;
+    mat[2] = 0.0;       mat[5] = 0.0;       mat[8] = vector.z;
 }
 /*!
     Orthonormalize this matrix.
@@ -264,6 +264,6 @@ void Matrix3::orthonormalize() {
 */
 Vector3 Matrix3::euler() {
     return Vector3(RAD2DEG * atan2(-mat[7], mat[8]),
-                     RAD2DEG * atan2( mat[6], sqrt(mat[7] * mat[7] + mat[8] * mat[8])),
-                     RAD2DEG * atan2(-mat[3], mat[0]));
+                   RAD2DEG * atan2( mat[6], sqrt(mat[7] * mat[7] + mat[8] * mat[8])),
+                   RAD2DEG * atan2(-mat[3], mat[0]));
 }

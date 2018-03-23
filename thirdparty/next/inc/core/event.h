@@ -1,21 +1,22 @@
-#ifndef AEVENT_H
-#define AEVENT_H
+#ifndef EVENT_H
+#define EVENT_H
 
 #include <stdint.h>
 
-#include <acommon.h>
+#include <common.h>
 
-class NEXT_LIBRARY_EXPORT AEvent {
+class NEXT_LIBRARY_EXPORT Event {
 public:
     enum Type {
         Invalid                 = 0,
         MethodCall,
+        Timer,
         Delete,
-        UserType
+        UserType                = 100
     };
 
 public:
-    AEvent                      (Type type);
+    Event                       (Type type);
 
     Type                        type                        () const;
 
@@ -23,4 +24,4 @@ protected:
     Type                        m_Type;
 };
 
-#endif // AEVENT_H
+#endif // EVENT_H

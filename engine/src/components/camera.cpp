@@ -3,7 +3,7 @@
 #include "components/actor.h"
 
 Camera::Camera() {
-    m_FOV       = 60.0; // 2*arctan(height/(2*distance))
+    m_FOV       = 45.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
     m_Far       = 1000.0;
     m_Ratio     = 1.0;
@@ -15,10 +15,10 @@ Camera::Camera() {
 
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
     if(m_Type == PERSPECTIVE) {
-        p.perspective(m_FOV, m_Ratio, m_Near, m_Far);
+        p   = Matrix4::perspective(m_FOV, m_Ratio, m_Near, m_Far);
     } else {
         float height    = m_OrthoWidth / m_Ratio;
-        p.ortho(-m_OrthoWidth / 2, m_OrthoWidth / 2, -height / 2, height / 2, m_Near, m_Far);
+        p   = Matrix4::ortho(-m_OrthoWidth / 2, m_OrthoWidth / 2, -height / 2, height / 2, m_Near, m_Far);
     }
 
     Actor &a   = actor();

@@ -1,19 +1,19 @@
-#ifndef ATHREADPOOL_H
-#define ATHREADPOOL_H
+#ifndef THREADPOOL_H
+#define THREADPOOL_H
 
 #include <stdint.h>
 
-#include "aobject.h"
+#include "object.h"
 
-class AThreadPoolPrivate;
+class ThreadPoolPrivate;
 
-class NEXT_LIBRARY_EXPORT AThreadPool : public AObject {
+class NEXT_LIBRARY_EXPORT ThreadPool : public Object {
 public:
-    AThreadPool                 ();
+    ThreadPool                  ();
 
-    ~AThreadPool                ();
+    ~ThreadPool                 ();
 
-    void                        start                       (AObject &object);
+    void                        start                       (Object &object);
 
     uint32_t                    maxThreads                  () const;
 
@@ -26,7 +26,7 @@ public:
 private:
     friend class ThreadPoolTest;
 
-    AThreadPoolPrivate         *p_ptr;
+    ThreadPoolPrivate          *p_ptr;
 
 };
 

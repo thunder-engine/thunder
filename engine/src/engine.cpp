@@ -12,9 +12,11 @@
 #include <log.h>
 #include <file.h>
 
-#include <aobjectsystem.h>
-#include <abson.h>
-#include <ajson.h>
+#include <objectsystem.h>
+#include <bson.h>
+#include <json.h>
+#include <metatype.h>
+#include <uri.h>
 
 #include "module.h"
 #include "system.h"
@@ -41,8 +43,6 @@
 #include "resources/mesh.h"
 
 #include "log.h"
-#include <ametatype.h>
-#include <auri.h>
 
 const char *gIndex("index");
 
@@ -54,8 +54,8 @@ const char *gEntry(".entry");
 class EnginePrivate {
 public:
     static unordered_map<string, string>    m_IndexMap;
-    static unordered_map<string, AObject*>  m_ResourceCache;
-    static unordered_map<AObject*, string>  m_ReferenceCache;
+    static unordered_map<string, Object*>   m_ResourceCache;
+    static unordered_map<Object*, string>   m_ReferenceCache;
 
     EnginePrivate() :
         m_pFile(nullptr),
@@ -84,13 +84,13 @@ public:
 
     static IPlatformAdaptor    *m_pPlatform;
 
-    static AVariantMap          m_Values;
+    static VariantMap           m_Values;
 };
 
 unordered_map<string, string>   EnginePrivate::m_IndexMap;
-unordered_map<string, AObject*> EnginePrivate::m_ResourceCache;
-unordered_map<AObject*, string> EnginePrivate::m_ReferenceCache;
-AVariantMap                     EnginePrivate::m_Values;
+unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
+unordered_map<Object*, string>  EnginePrivate::m_ReferenceCache;
+VariantMap                      EnginePrivate::m_Values;
 string                          EnginePrivate::m_ApplicationPath;
 string                          EnginePrivate::m_ApplicationDir;
 string                          EnginePrivate::m_Organization;
@@ -102,7 +102,7 @@ Engine::Engine(IFile *file, int argc, char **argv) :
     PROFILER_MARKER;
 
     EnginePrivate::m_ApplicationPath    = argv[0];
-    AUri uri(EnginePrivate::m_ApplicationPath);
+    Uri uri(EnginePrivate::m_ApplicationPath);
     EnginePrivate::m_ApplicationDir     = uri.dir();
     EnginePrivate::m_Application        = uri.baseName();
 
@@ -219,7 +219,7 @@ int32_t Engine::exec() {
     return 0;
 }
 
-AVariant Engine::value(const string &key, const AVariant &defaultValue) {
+Variant Engine::value(const string &key, const Variant &defaultValue) {
     PROFILER_MARKER;
 
     auto it = EnginePrivate::m_Values.find(key);
@@ -229,13 +229,13 @@ AVariant Engine::value(const string &key, const AVariant &defaultValue) {
     return defaultValue;
 }
 
-void Engine::setValue(const string &key, const AVariant &value) {
+void Engine::setValue(const string &key, const Variant &value) {
     PROFILER_MARKER;
 
     EnginePrivate::m_Values[key]    = value;
 }
 
-AObject *Engine::loadResource(const string &path) {
+Object *Engine::loadResource(const string &path) {
     PROFILER_MARKER;
 
     if(!path.empty()) {
@@ -254,18 +254,18 @@ AObject *Engine::loadResource(const string &path) {
                 IFile *file = ((Engine *)Engine::instance())->file();
                 _FILE *fp   = file->_fopen(uuid.c_str(), "r");
                 if(fp) {
-                    AByteArray data;
+                    ByteArray data;
                     data.resize(file->_fsize(fp));
                     file->_fread(&data[0], data.size(), 1, fp);
                     file->_fclose(fp);
 
                     uint32_t offset = 0;
-                    AVariant var    = ABson::load(data, offset);
+                    Variant var     = Bson::load(data, offset);
                     if(!var.isValid()) {
-                        var = AJson::load(string(data.begin(), data.end()));
+                        var = Json::load(string(data.begin(), data.end()));
                     }
                     if(var.isValid()) {
-                        AObject *res    = Engine::toObject(var);
+                        Object *res = Engine::toObject(var);
                         if(res) {
                             EnginePrivate::m_ResourceCache[uuid]    = res;
                             EnginePrivate::m_ReferenceCache[res]    = uuid;
@@ -279,7 +279,7 @@ AObject *Engine::loadResource(const string &path) {
     return nullptr;
 }
 
-string Engine::reference(AObject *object) {
+string Engine::reference(Object *object) {
     PROFILER_MARKER;
 
     auto it = EnginePrivate::m_ReferenceCache.find(object);
@@ -296,14 +296,14 @@ void Engine::reloadBundle() {
     IFile *file = ((Engine *)Engine::instance())->file();
     _FILE *fp   = file->_fopen(gIndex, "r");
     if(fp) {
-        AByteArray data;
+        ByteArray data;
         data.resize(file->_fsize(fp));
         file->_fread(&data[0], data.size(), 1, fp);
         file->_fclose(fp);
 
-        AVariant var = AJson::load(string(data.begin(), data.end()));
+        Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
-            AVariantMap root    = var.toMap();
+            VariantMap root    = var.toMap();
 
             for(auto it : root[gContent].toMap()) {
                 EnginePrivate::m_IndexMap[it.second.toString()] = it.first;

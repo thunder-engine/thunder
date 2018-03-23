@@ -35,7 +35,7 @@ AMaterialGL::~AMaterialGL() {
 
 }
 
-void AMaterialGL::loadUserData(const AVariantMap &data) {
+void AMaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     auto it = data.find("Shader");

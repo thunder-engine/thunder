@@ -3,8 +3,8 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT Chunk : public AObject {
-    A_REGISTER(Chunk, AObject, General)
+class NEXT_LIBRARY_EXPORT Chunk : public Object {
+    A_REGISTER(Chunk, Object, General)
 
 };
 

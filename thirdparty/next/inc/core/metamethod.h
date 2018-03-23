@@ -1,19 +1,19 @@
-#ifndef AMETAMETHOD_H
-#define AMETAMETHOD_H
+#ifndef METAMETHOD_H
+#define METAMETHOD_H
 
 #include <string>
 
-#include "avariant.h"
-#include "ametatype.h"
-#include "aevent.h"
+#include "variant.h"
+#include "metatype.h"
+#include "event.h"
 
 using namespace std;
 
-class AObject;
+class Object;
 
-class NEXT_LIBRARY_EXPORT AMetaMethod {
+class NEXT_LIBRARY_EXPORT MetaMethod {
 public:
-    typedef AVariant            (*InvokeMem)                (AObject *, int argc, const AVariant *);
+    typedef Variant            (*InvokeMem)                (Object *, int argc, const Variant *);
 
     enum MethodType {
         Method                  = 0,
@@ -26,11 +26,11 @@ public:
         const char             *name;
         InvokeMem               invoker;
         int                     argc;
-        const AMetaType::Table **types;
+        const MetaType::Table **types;
     };
 
 public:
-    AMetaMethod                 (const Table *table);
+    MetaMethod                 (const Table *table);
 
     bool                        isValid                     () const;
 
@@ -38,33 +38,33 @@ public:
     string                      signature                   () const;
 
     MethodType                  type                        () const;
-    AMetaType                   returnType                  () const;
+    MetaType                    returnType                  () const;
     int                         parameterCount              () const;
-    AMetaType                   parameterType               (int index) const;
+    MetaType                    parameterType               (int index) const;
 
-    bool                        invoke                      (AObject *obj, AVariant &returnValue, int argc, const AVariant *args) const;
+    bool                        invoke                      (Object *obj, Variant &returnValue, int argc, const Variant *args) const;
 
 private:
     const Table                *m_pTable;
 
 };
 
-class AMethodCallEvent : public AEvent {
+class MethodCallEvent : public Event {
 public:
-    AMethodCallEvent            (int32_t method, AObject *senderm, const AVariant &args);
+    MethodCallEvent             (int32_t method, Object *senderm, const Variant &args);
 
-    AObject                    *sender                      () const;
+    Object                     *sender                      () const;
 
     int32_t                     method                      () const;
 
-    const AVariant             *args                        () const;
+    const Variant              *args                        () const;
 
 protected:
-    AObject                    *m_pSender;
+    Object                     *m_pSender;
 
     int32_t                     m_Method;
 
-    AVariant                    m_Args;
+    Variant                     m_Args;
 };
 
 namespace unpack {
@@ -91,8 +91,8 @@ struct Invoker<Return(*)(Args...)> {
         return sizeof...(Args);
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(),
             getTable<Args>()...
         };
@@ -100,12 +100,12 @@ struct Invoker<Return(*)(Args...)> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         return f(args[Is]...); //any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -122,20 +122,20 @@ struct Invoker<Return(*)()> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get()
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         return f(args[Is]...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != 0) {
             throw std::runtime_error("Bad argument count");
         }
@@ -152,8 +152,8 @@ struct Invoker<void(*)(Args...)> {
         return sizeof...(Args);
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr,
             getTable<Args>()...
         };
@@ -161,13 +161,13 @@ struct Invoker<void(*)(Args...)> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         f(args[Is]...); // any_cast<Args>(args[Is])...
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -184,21 +184,21 @@ struct Invoker<void(*)()> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr
         };
         return staticTypes;
     }
 
     template<unsigned... Is>
-    inline static AVariant invoke(AObject *obj, Fun f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, Fun f, const Variant *args, unpack::indices<Is...>) {
         f();
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != 0) {
             throw std::runtime_error("bad argument count");
         }
@@ -215,8 +215,8 @@ struct Invoker<Return(Class::*)(Args...)> {
         return sizeof...(Args);
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(),
             getTable<Args>()...
         };
@@ -224,12 +224,12 @@ struct Invoker<Return(Class::*)(Args...)> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         return (static_cast<Class *>(obj)->*f)(args[Is]...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -246,20 +246,20 @@ struct Invoker<Return(Class::*)()> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get()
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *, unpack::indices<Is...>) {
         return (static_cast<Class *>(obj)->*f)();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != 0) {
             throw std::runtime_error("Bad argument count");
         }
@@ -276,8 +276,8 @@ struct Invoker<void(Class::*)(Args...)> {
         return sizeof...(Args);
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr,
             getTable<Args>("")... /// \todo: Set name
         };
@@ -285,13 +285,13 @@ struct Invoker<void(Class::*)(Args...)> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         (static_cast<Class *>(obj)->*f)(args[Is].value<Args>()...);
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if (argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -308,21 +308,21 @@ struct Invoker<void(Class::*)()> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         (static_cast<Class *>(obj)->*f)(args[Is]...); // any_cast<Args>(args[Is])...
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if (argc != 0) {
             throw std::runtime_error("Bad argument count");
         }
@@ -339,8 +339,8 @@ struct Invoker<Return(Class::*)(Args...)const> {
         return sizeof...(Args);
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get(),
             getTable<Args>()...
         };
@@ -348,12 +348,12 @@ struct Invoker<Return(Class::*)(Args...)const> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if (argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -370,20 +370,20 @@ struct Invoker<Return(Class::*)()const> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             Table<Return>::get()
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *, unpack::indices<Is...>) {
         return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if (argc != 0) {
             throw std::runtime_error("Bad argument count");
         }
@@ -401,12 +401,12 @@ struct Invoker<void(Class::*)(Args...)const> {
     }
 
     template<typename T>
-    inline static AMetaType::Table *getTable() {
+    inline static MetaType::Table *getTable() {
         return Table<T>::get();
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr,
             getTable<Args>()...
         };
@@ -414,13 +414,13 @@ struct Invoker<void(Class::*)(Args...)const> {
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != sizeof...(Args)) {
             throw std::runtime_error("Bad argument count");
         }
@@ -437,21 +437,21 @@ struct Invoker<void(Class::*)()const> {
         return 0;
     }
 
-    inline static const AMetaType::Table **types() {
-        static const AMetaType::Table *staticTypes[] = {
+    inline static const MetaType::Table **types() {
+        static const MetaType::Table *staticTypes[] = {
             nullptr
         };
         return staticTypes;
     }
 
     template<typename F, unsigned... Is>
-    inline static AVariant invoke(AObject *obj, F f, const AVariant *args, unpack::indices<Is...>) {
+    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
         (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
-        return AVariant();
+        return Variant();
     }
 
     template<Fun fun>
-    static AVariant invoke(AObject *obj, int argc, const AVariant *args) {
+    static Variant invoke(Object *obj, int argc, const Variant *args) {
         if(argc != 0) {
             throw std::runtime_error("Bad argument count");
         }
@@ -459,4 +459,4 @@ struct Invoker<void(Class::*)()const> {
     }
 };
 
-#endif // AMETAMETHOD_H
+#endif // METAMETHOD_H

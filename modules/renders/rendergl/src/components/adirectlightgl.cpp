@@ -2,77 +2,54 @@
 
 #include "agl.h"
 #include "commandbuffergl.h"
+#include "apipeline.h"
 
 #include "components/scene.h"
 #include "components/actor.h"
+#include "components/camera.h"
 
 #include "resources/amaterialgl.h"
 
 #include "filters/ablurgl.h"
 
 #define MAX_LODS 1
-#define SM_RESOLUTION_DEFAULT 1024
+#define SM_RESOLUTION_DEFAULT 512
 
 ADirectLightGL::ADirectLightGL() {
-    m_LODCount      = 0;
-    m_pMatrix       = 0;
+    m_pMatrix       = nullptr;
     m_Resolution    = SM_RESOLUTION_DEFAULT;
-    m_CSM           = false;
-    m_Distance      = Vector3();
-    m_LOD           = Vector4(2.0f, 4.0f, 8.0f, 32.0f);
-    m_Dir           = Vector3(1.0f, 0.0f, 0.0f);
-
-
+    m_CSM           = true;
+    m_LOD           = Vector4(8.0f, 32.0f, 128.0f, 512.0f);
     m_pPlane        = Engine::loadResource<AMeshGL>(".embedded/plane.fbx");
 
-    if(m_CSM) {
-        m_LODCount  = MAX_LODS;
-    } else {
-        m_LODCount  = 1;
-    }
-
-    if(m_LODCount) {
-        m_pMatrix  = new Matrix4[m_LODCount];
-    }
+    m_LODCount      = (m_CSM) ? MAX_LODS : 1;
+    m_pMatrix       = new Matrix4[m_LODCount];
+    m_pDepthMap     = new ATextureGL[m_LODCount];
     // LOD distance
-    for(int i = 0; i < 3; i++) {
-        m_Distance[i]   = 5;
+    for(int i = 0; i < m_LODCount; i++) {
+        m_Distance[i]   = m_LOD[i];
+        m_pDepthMap[i].create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
+        m_pDepthMap[i].resize(m_Resolution, m_Resolution);
     }
-
-#if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
-    uint32_t format = GL_RG32F_EXT;
-#else
-    uint32_t format = GL_RG32F;
-#endif
-
-    m_ShadowMap.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
-    m_ShadowMap.resize(m_Resolution, m_Resolution);
-
-    m_ShadowTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
-    m_ShadowTemp.resize(m_Resolution, m_Resolution);
-
-    m_Steps     = 4;
-    m_pPoints   = new float[m_Steps];
-
-    m_pPoints[0]    = 20.0f / 64.0f;
-    m_pPoints[1]    = 15.0f / 64.0f;
-    m_pPoints[2]    = 6.0f / 64.0f;
-    m_pPoints[3]    = 1.0f / 64.0f;
-
     m_pMaterial     = Engine::loadResource<AMaterialGL>(".embedded/VSM.mtl");
     m_pMaterialInstance = m_pMaterial->createInstance();
+
+    glGenFramebuffers(1, &m_DepthBuffer);
 }
 
-void ADirectLightGL::draw(ICommandBuffer &buffer, uint8_t layer) {
+ADirectLightGL::~ADirectLightGL() {
+    glDeleteFramebuffers(1, &m_DepthBuffer);
+}
+
+void ADirectLightGL::draw(APipeline &pipeline, uint8_t layer) {
     glActiveTexture(GL_TEXTURE5);
-    m_ShadowMap.bind();
+    m_pDepthMap[0].bind();
 
     if(m_pMaterial) {
         AMaterialGL *mtl    = static_cast<AMaterialGL *>(m_pMaterial);
         if(mtl->bind(m_pMaterialInstance, ICommandBuffer::DEFAULT, AMaterialGL::Static)) {
             uint32_t program    = mtl->getProgram(AMaterialGL::Static);
-            int location;
-            location    = glGetUniformLocation(program, "layer0");
+            int location    = glGetUniformLocation(program, "layer0");
             if(location > -1) {
                 glUniform1i(location, 0);
             }
@@ -96,100 +73,85 @@ void ADirectLightGL::draw(ICommandBuffer &buffer, uint8_t layer) {
             if(location > -1) {
                 glUniform1i(location, 5);
             }
-            setShaderParams(program);
+
+            Actor &a    = actor();
+
+            location	= glGetUniformLocation(program, "light.pos");
+            if(location > -1) {
+                glUniform3fv(location, 1, a.position().v);
+            }
+            location	= glGetUniformLocation(program, "light.dir");
+            if(location > -1) {
+                glUniform3fv(location, 1, (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)).v);
+            }
+            location	= glGetUniformLocation(program, "light.color");
+            if(location > -1) {
+                glUniform3fv(location, 1, m_Color.v);
+            }
+            location	= glGetUniformLocation(program, "light.brightness");
+            if(location > -1) {
+                glUniform1f(location, m_Brightness);
+            }
+            location	= glGetUniformLocation(program, "light.shadows");
+            if(location > -1) {
+                glUniform1f(location, (m_Shadows) ? 1.0f : 0.0f );
+            }
+            if(m_Shadows) {
+                location    = glGetUniformLocation(program, "light.lod");
+                if(location > -1) {
+                    glUniform4fv(location, 1, m_Distance.v);
+                }
+                location    = glGetUniformLocation(program, "light.matrix");
+                if(location > -1) {
+                    for(uint8_t layer = 0; layer < m_LODCount; layer++) {
+                        glUniformMatrix4fv(location + layer, 1, false, m_pMatrix[layer].mat);
+                    }
+                }
+                location    = glGetUniformLocation(program, "light.mvpi");
+                if(location > -1) {
+                    Camera *camera  = pipeline.activeCamera();
+                    Matrix4 mv, p;
+                    camera->matrices(mv, p);
+                    Matrix4 mvpi    = (p * mv).inverse();
+                    glUniformMatrix4fv(location, 1, GL_FALSE, mvpi.mat);
+                }
+            }
             mtl->unbind(ICommandBuffer::DEFAULT);
         }
-        Matrix4 proj;
-        proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
-        buffer.setViewProjection(Matrix4(), proj);
-        buffer.drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);
+        ICommandBuffer *b   = pipeline.buffer();
+        b->setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+        b->drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);
     }
 
     glActiveTexture(GL_TEXTURE5);
-    m_ShadowMap.unbind();
+    m_pDepthMap[0].unbind();
 }
 
-void ADirectLightGL::shadowsUpdate(ICommandBuffer &buffer) {
-    /// \todo Return command buffer
-    //if(isEnable() && m_Shadows) {
-    //    glBindFramebuffer(GL_FRAMEBUFFER, buffer.depthBuffer());
-    //    buffer.depthTexture().resize(m_Resolution, m_Resolution);
-    //    glViewport(0, 0, m_Resolution, m_Resolution);
-    //
-    //    Matrix4 model;
-    //    model.translate(buffer.activeCamera()->actor().position());
-    //    buffer.loadMatrix(APipeline::MATRIX_MODEL, model);
-    //
-    //    Matrix4 view  = Matrix4(actor().rotation().toMatrix()).inverse();
-    //    // Draw in the depth buffer from position of the light source
-    //    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ShadowMap.id(), 0);
-    //
-    //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //    glEnable(GL_DEPTH_TEST);
-    //
-    //    float size  = 10.0f;
-    //
-    //    Matrix4 proj;
-    //    proj.ortho(-size, size, -size, size, -1000.0f, 1000.0f);
-    //
-    //    Matrix4 m(Vector3(0.5f), Quaternion(), Vector3(0.5f));
-    //    m   *= proj;
-    //    m   *= view;
-    //    m   *= model;
-    //
-    //    m_pMatrix[0]    = m;
-    //
-    //    buffer.setViewProjection(view, proj);
-    //    //pipeline.drawComponents(*(pipeline.scene()), IDrawObjectGL::SHADOWCAST);
-    //    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //    // Blur shadow map
-/*
-        pipeline.cameraReset();
-        pipeline.loadMatrix(APipeline::MATRIX_MODEL, Matrix4());
-        ABlurGL *blur   = pipeline.filterBlur();
-        if(blur) {
-            Vector2 size(m_ShadowMap.width(), m_ShadowMap.height());
-            blur->draw(m_ShadowMap, m_ShadowMap, m_ShadowTemp, size, m_Steps, m_pPoints);
-        }
-*/
-    //}
-}
+void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
+    if(isEnable() && m_Shadows) {
+        Matrix4 view    = Matrix4(actor().rotation().toMatrix()).inverse();
+        Matrix4 model;
+        model.translate(-pipeline.activeCamera()->actor().position());
+        Matrix4 mv      = view * model;
+        for(uint32_t lod = 0; lod < m_LODCount; lod++) {
+            float size      = m_LOD[lod];
+            Matrix4 proj    = Matrix4::ortho(-size, size,-size, size,-size, size);
 
-void ADirectLightGL::setShaderParams(uint32_t program) {
-    int location;
+            Matrix4 mat     = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f));
 
-    Actor &a    = actor();
+            mat *= proj;
+            mat *= view;
+            mat *= model;
 
-    location	= glGetUniformLocation(program, "light.pos");
-    if(location > -1) {
-        glUniform3fv(location, 1, a.position().v);
-    }
-    location	= glGetUniformLocation(program, "light.dir");
-    if(location > -1) {
-        glUniform3fv(location, 1, (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)).v);
-    }
-    location	= glGetUniformLocation(program, "light.color");
-    if(location > -1) {
-        glUniform3fv(location, 1, m_Color.v);
-    }
-    location	= glGetUniformLocation(program, "light.brightness");
-    if(location > -1) {
-        glUniform1f(location, m_Brightness);
-    }
-    location	= glGetUniformLocation(program, "light.shadows");
-    if(location > -1) {
-        glUniform1f(location, (m_Shadows) ? 1.0 : 0.0 );
-    }
-    if(m_Shadows) {
-        location    = glGetUniformLocation(program, "light.lod");
-        if(location > -1) {
-            glUniform3fv(location, 1, m_Distance.v);
-        }
-        location    = glGetUniformLocation(program, "light.matrix");
-        if(location > -1) {
-            for(uint8_t layer = 0; layer < m_LODCount; layer++) {
-                glUniformMatrix4fv(location + layer, 1, false, m_pMatrix[layer].mat);
-            }
+            m_pMatrix[lod]  = mat;
+            // Draw in the depth buffer from position of the light source
+            ICommandBuffer *b   = pipeline.buffer();
+            b->setViewProjection(mv, proj);
+            b->setViewport(0, 0, m_Resolution, m_Resolution);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_DepthBuffer);
+            b->setRenderTarget(0, nullptr, &m_pDepthMap[lod]);
+            b->clearRenderTarget();
+            pipeline.drawComponents(*(pipeline.scene()), ICommandBuffer::SHADOWCAST);
         }
     }
 }

@@ -31,9 +31,7 @@ ABloomGL::ABloomGL() {
 
 ATextureGL *ABloomGL::draw(ATextureGL &source, CommandBufferGL &buffer) {
     if(m_pMaterial && m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
-        Matrix4 proj;
-        proj.ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f);
-        buffer.setViewProjection(Matrix4(), proj);
+        buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
 
         uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
         /// \todo Return command buffer

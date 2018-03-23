@@ -4,25 +4,25 @@
 #include <QFile>
 #include <QFileInfo>
 
-#include <abson.h>
+#include <bson.h>
 #include <resources/texture.h>
 
 #include "textureimportsettings.h"
 #include "projectmanager.h"
 
-void TextureSerial::loadUserData(const AVariantMap &data) {
+void TextureSerial::loadUserData(const VariantMap &data) {
     Texture::loadUserData(data);
 
     auto it = data.find("Data");
     if(it != data.end()) {
-        m_Surfaces  = (*it).second.value<AVariantList>();
+        m_Surfaces  = (*it).second.value<VariantList>();
     }
 }
 
-AVariantMap TextureSerial::saveUserData() const {
-    AVariantMap result;
+VariantMap TextureSerial::saveUserData() const {
+    VariantMap result;
 
-    AVariantList header;
+    VariantList header;
 
     header.push_back((int)m_Width);
     header.push_back((int)m_Height);
@@ -42,19 +42,19 @@ AVariantMap TextureSerial::saveUserData() const {
 
 uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
     TextureSerial texture;
-    AVariantMap data    = convertResource(settings);
+    VariantMap data    = convertResource(settings);
     texture.loadUserData(data);
 
     QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
     if(file.open(QIODevice::WriteOnly)) {
-        AByteArray data = ABson::save( Engine::toVariant(&texture) );
+        ByteArray data  = Bson::save( Engine::toVariant(&texture) );
         file.write((const char *)&data[0], data.size());
         file.close();
     }
     return 0;
 }
 
-AVariantMap TextureConverter::convertResource(IConverterSettings *settings) {
+VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
     TextureSerial texture;
 
     TextureImportSettings *s    = dynamic_cast<TextureImportSettings *>(settings);
@@ -135,12 +135,10 @@ AVariantMap TextureConverter::convertResource(IConverterSettings *settings) {
             sides.push_back(img.mirrored());
         }
 
-        bool sharp  = false;
-
         foreach(const QImage &it, sides) {
-            AVariantList lods;
+            VariantList lods;
 
-            AByteArray data;
+            ByteArray data;
             uint32_t size   = it.byteCount();
             if(size) {
                 data.resize(size);

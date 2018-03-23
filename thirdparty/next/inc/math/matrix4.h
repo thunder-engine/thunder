@@ -20,7 +20,7 @@
 #ifndef MATRIX4_H_HEADER_INCLUDED
 #define MATRIX4_H_HEADER_INCLUDED
 
-#include "acommon.h"
+#include "common.h"
 
 class Vector3;
 class Vector4;
@@ -58,6 +58,8 @@ public:
     void                        reflect                     (const Vector4 &plane);
     void                        direction                   (const Vector3 &direction, Vector3 &up);
 
+    Vector3                     euler                       ();
+
     void                        zero                        ();
     void                        identity                    ();
     void                        rotate                      (const Vector3 &axis, areal angle);
@@ -65,11 +67,9 @@ public:
     void                        scale                       (const Vector3 &vector);
     void                        translate                   (const Vector3 &vector);
 
-    void                        perspective                 (areal fov, areal aspect, areal znear, areal zfar);
-    void                        ortho                       (areal left, areal right, areal bottom, areal top, areal znear, areal zfar);
-    void                        lookAt                      (Vector3 &eye, Vector3 &target, Vector3 &up);
-
-    Vector3                     euler                       ();
+    static Matrix4              perspective                 (areal fov, areal aspect, areal znear, areal zfar);
+    static Matrix4              ortho                       (areal left, areal right, areal bottom, areal top, areal znear, areal zfar);
+    static Matrix4              lookAt                      (Vector3 &eye, Vector3 &target, Vector3 &up);
 
     areal                       mat[16];
 };

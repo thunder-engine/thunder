@@ -2,7 +2,7 @@
 
 #include <QFile>
 
-#include <abson.h>
+#include <bson.h>
 #include "projectmanager.h"
 
 class TextSerial : public Text {
@@ -13,8 +13,8 @@ public:
     }
 
 protected:
-    AVariantMap                 saveUserData    () const {
-        AVariantMap result;
+    VariantMap                  saveUserData    () const {
+        VariantMap result;
         result["Data"]  = m_Data;
         return result;
     }
@@ -29,7 +29,7 @@ uint8_t TextConverter::convertFile(IConverterSettings *s) {
 
         QFile file(ProjectManager::instance()->importPath() + "/" + s->destination());
         if(file.open(QIODevice::WriteOnly)) {
-            AByteArray data = ABson::save( Engine::toVariant(&text) );
+            ByteArray data  = Bson::save( Engine::toVariant(&text) );
             file.write((const char *)&data[0], data.size());
             file.close();
             return 0;

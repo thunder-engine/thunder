@@ -20,10 +20,10 @@
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
 
-string findFreeObjectName(const string &name, AObject *parent) {
+string findFreeObjectName(const string &name, Object *parent) {
     string newName  = name;
     if(!newName.empty()) {
-        AObject *o  = parent->find(parent->name() + "/" + newName);
+        Object *o   = parent->find(parent->name() + "/" + newName);
         if(o != nullptr) {
             string number;
             while(isdigit(newName.back())) {
@@ -149,7 +149,7 @@ void ObjectCtrl::deleteSelected(bool force) {
     }
 }
 
-void ObjectCtrl::drawHelpers(AObject &object) {
+void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
@@ -219,7 +219,7 @@ void ObjectCtrl::setDrag(bool drag) {
         if(mCopy) {
             m_pView->makeCurrent();
             // Making the copy of selected objects
-            AObject::ObjectList objects;
+            Object::ObjectList objects;
             for(auto it : m_Selected) {
                 Actor *origin   = it.second.object;
                 Actor *actor    = dynamic_cast<Actor *>(origin->clone());
@@ -248,8 +248,8 @@ void ObjectCtrl::setDrag(bool drag) {
     mDrag   = drag;
 }
 
-AObject::ObjectList ObjectCtrl::selected() {
-    AObject::ObjectList result;
+Object::ObjectList ObjectCtrl::selected() {
+    Object::ObjectList result;
     for(auto it : m_Selected) {
         result.push_back(it.second.object);
     }
@@ -259,7 +259,7 @@ AObject::ObjectList ObjectCtrl::selected() {
 void ObjectCtrl::selectActor(const list<uint32_t> &list, bool undo) {
     bool select = list.empty();
 
-    AObject::ObjectList l;
+    Object::ObjectList l;
     for(auto it : list) {
         if(m_Selected.find(it) == m_Selected.end() || !mAdditive) {
             l.push_back(findObject(it));
@@ -271,8 +271,8 @@ void ObjectCtrl::selectActor(const list<uint32_t> &list, bool undo) {
     }
 }
 
-void ObjectCtrl::onSelectActor(AObject::ObjectList list, bool undo) {
-    AObject::ObjectList sel = selected();
+void ObjectCtrl::onSelectActor(Object::ObjectList list, bool undo) {
+    Object::ObjectList sel = selected();
     if(!mAdditive) {
         clear();
     }
@@ -293,17 +293,17 @@ void ObjectCtrl::onSelectActor(AObject::ObjectList list, bool undo) {
         UndoManager::instance()->push( new UndoManager::SelectObjects(sel, this) );
     }
 
-    AObject::ObjectList s  = selected();
+    Object::ObjectList s    = selected();
     if(!s.empty()) {
         emit objectsSelected(s);
     }
 }
 
-void ObjectCtrl::onRemoveActor(AObject::ObjectList, bool undo) {
+void ObjectCtrl::onRemoveActor(Object::ObjectList, bool undo) {
     deleteSelected(!undo);
 }
 
-void ObjectCtrl::onParentActor(AObject::ObjectList objects, AObject::ObjectList parents, bool undo) {
+void ObjectCtrl::onParentActor(Object::ObjectList objects, Object::ObjectList parents, bool undo) {
     if(undo) {
         UndoManager::instance()->push(new UndoManager::ParentingObjects(objects, parents, this));
     }
@@ -319,7 +319,7 @@ void ObjectCtrl::onParentActor(AObject::ObjectList objects, AObject::ObjectList 
     emit mapUpdated();
 }
 
-void ObjectCtrl::onFocusActor(AObject *object) {
+void ObjectCtrl::onFocusActor(Object *object) {
     float bottom;
     setFocusOn(dynamic_cast<Actor *>(object), bottom);
 }
@@ -343,7 +343,7 @@ void ObjectCtrl::onComponentSelected(const QString &path) {
             if(actor->component(qPrintable(path)) == nullptr) {
                 Component *comp = actor->addComponent(path.toStdString());
                 if(comp) {
-                    AObject::ObjectList list;
+                    Object::ObjectList list;
                     list.push_back(comp);
                     UndoManager::instance()->push(new UndoManager::CreateObjects(list, this, tr("Create Component ") + path));
                     Sprite *sprite  = dynamic_cast<Sprite *>(comp);
@@ -380,7 +380,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
         if(actor) {
-            AObject *object = Engine::objectCreate(name, findFreeObjectName(name, actor));
+            Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
             if(comp) {
                 comp->setParent(actor);
@@ -431,7 +431,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         }
 
     }
-    for(AObject *o : m_DragObjects) {
+    for(Object *o : m_DragObjects) {
         Actor *a    = static_cast<Actor *>(o);
         a->setPosition(Vector3()); // \todo set drag position
         a->setParent(m_pMap);
@@ -444,7 +444,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
-    for(AObject *o : m_DragObjects) {
+    for(Object *o : m_DragObjects) {
         delete o;
     }
     m_DragObjects.clear();
@@ -617,7 +617,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
     }
 }
 
-AObject *ObjectCtrl::findObject(uint32_t id, AObject *parent) {
+Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     if(!parent) {
         parent  = m_pMap;
     }
@@ -626,7 +626,7 @@ AObject *ObjectCtrl::findObject(uint32_t id, AObject *parent) {
             return parent;
         }
         for(const auto &it : parent->getChildren()) {
-            AObject *object = it;
+            Object *object = it;
             if(object->uuid() != id) {
                 object = findObject(id, object);
                 if(!object) {

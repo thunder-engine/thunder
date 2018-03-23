@@ -10,7 +10,7 @@ AMeshGL::~AMeshGL() {
     deleteVbo();
 }
 
-void AMeshGL::loadUserData(const AVariantMap &data) {
+void AMeshGL::loadUserData(const VariantMap &data) {
     deleteVbo();
 
     Mesh::loadUserData(data);

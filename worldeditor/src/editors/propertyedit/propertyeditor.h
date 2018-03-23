@@ -5,7 +5,7 @@
 
 class PropertyModel;
 class Property;
-class AObject;
+class Object;
 class PropertyFilter;
 
 namespace Ui {

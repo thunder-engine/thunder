@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include <aobject.h>
+#include <object.h>
 
 class ObjectCtrl;
 class QMenu;
@@ -14,7 +14,7 @@ class NextObject : public QObject {
     Q_PROPERTY(QString Name READ name WRITE setName DESIGNABLE true USER true)
 
 public:
-    explicit                    NextObject              (AObject *data, ObjectCtrl *ctrl, QObject *parent = 0);
+    explicit                    NextObject              (Object *data, ObjectCtrl *ctrl, QObject *parent = 0);
 
     QString                     name                    ();
     void                        setName                 (const QString &name);
@@ -33,11 +33,11 @@ protected slots:
 protected:
     bool                        event                   (QEvent *e);
 
-    void                        buildObject             (AObject *object, const QString &path = QString());
+    void                        buildObject             (Object *object, const QString &path = QString());
 
-    AObject                    *findChild               (AObject *parent, QStringList &path);
+    Object                     *findChild               (Object *parent, QStringList &path);
 
-    AObject::ObjectList         m_Objects;
+    Object::ObjectList          m_Objects;
 
     ObjectCtrl                 *m_pController;
 };

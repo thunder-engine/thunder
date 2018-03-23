@@ -1,5 +1,5 @@
-#ifndef AJSON_H
-#define AJSON_H
+#ifndef JSON_H
+#define JSON_H
 
 #include <string>
 #include <list>
@@ -7,14 +7,14 @@
 #include <stack>
 #include <cstdint>
 
-#include "avariant.h"
+#include "variant.h"
 
-class NEXT_LIBRARY_EXPORT AJson {
+class NEXT_LIBRARY_EXPORT Json {
 public:
-    AJson                       ();
+    Json                        ();
 
-    static AVariant             load                        (const string &data);
-    static string               save                        (const AVariant &data, int32_t depth = -1);
+    static Variant              load                        (const string &data);
+    static string               save                        (const Variant &data, int32_t depth = -1);
 
     static inline string        readString                  (const string &data, uint32_t &it);
 
@@ -26,4 +26,4 @@ protected:
 
 };
 
-#endif // AJSON_H
+#endif // JSON_H

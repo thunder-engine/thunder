@@ -1,6 +1,6 @@
 #include "resources/texture.h"
 
-#include <avariant.h>
+#include <variant.h>
 
 #define HEADER  "Header"
 
@@ -12,12 +12,12 @@ Texture::~Texture() {
     clear();
 }
 
-void Texture::loadUserData(const AVariantMap &data) {
+void Texture::loadUserData(const VariantMap &data) {
     clear();
     {
         auto it = data.find(HEADER);
         if(it != data.end()) {
-            AVariantList header   = (*it).second.value<AVariantList>();
+            VariantList header  = (*it).second.value<VariantList>();
 
             auto i      = header.begin();
             m_Width     = (*i).toInt();

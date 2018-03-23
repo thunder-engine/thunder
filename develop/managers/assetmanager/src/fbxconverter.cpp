@@ -4,7 +4,7 @@
 #include "file.h"
 #include "log.h"
 
-#include <abson.h>
+#include <bson.h>
 
 #include <QFileInfo>
 
@@ -27,21 +27,21 @@ struct index_data {
 };
 typedef vector<index_data>  indexVector;
 
-AVariantMap MeshSerial::saveUserData() const {
-    AVariantMap result;
+VariantMap MeshSerial::saveUserData() const {
+    VariantMap result;
 
-    AVariantList header;
+    VariantList header;
     header.push_back(m_Flags);
     result[HEADER]  = header;
 
-    AVariantList surfaces;
+    VariantList surfaces;
     for(auto s : m_Surfaces) {
-        AVariantList surface;
+        VariantList surface;
         surface.push_back(s.collision);
         surface.push_back(s.mode);
 
         for(auto l : s.lods) {
-            AVariantList lod;
+            VariantList lod;
             string path = Engine::reference(l.material);
             // Push material
             lod.push_back(path);
@@ -50,57 +50,57 @@ AVariantMap MeshSerial::saveUserData() const {
             lod.push_back((int)l.indices.size() / 3);
 
             { // Required field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
                 memcpy(&buffer[0], &l.vertices[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
             { // Required field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(uint32_t) * l.indices.size());
                 memcpy(&buffer[0], &l.indices[0], sizeof(uint32_t) * l.indices.size());
                 lod.push_back(buffer);
             }
             if(m_Flags & ATTRIBUTE_COLOR) { // Optional field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector4) * vCount);
                 memcpy(&buffer[0], &l.colors[0], sizeof(Vector4) * vCount);
                 lod.push_back(buffer);
             }
             if(m_Flags & ATTRIBUTE_UV0) { // Optional field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector2) * vCount);
                 memcpy(&buffer[0], &l.uv0[0], sizeof(Vector2) * vCount);
                 lod.push_back(buffer);
             }
             if(m_Flags & ATTRIBUTE_UV1) { // Optional field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector2) * vCount);
                 memcpy(&buffer[0], &l.uv1[0], sizeof(Vector2) * vCount);
                 lod.push_back(buffer);
             }
 
             if(m_Flags & ATTRIBUTE_NORMALS) { // Optional field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
                 memcpy(&buffer[0], &l.normals[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
             if(m_Flags & ATTRIBUTE_TANGENTS) { // Optional field
-                AByteArray buffer;
+                ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
                 memcpy(&buffer[0], &l.tangents[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
             if(m_Flags & ATTRIBUTE_ANIMATED) { // Optional field
                 {
-                    AByteArray buffer;
+                    ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
                     memcpy(&buffer[0], &l.weights[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
                 }
                 {
-                    AByteArray buffer;
+                    ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
                     memcpy(&buffer[0], &l.bones[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
@@ -157,7 +157,7 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
 
     QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
     if(file.open(QIODevice::WriteOnly)) {
-        AByteArray data   = ABson::save(Engine::toVariant(&mesh));
+        ByteArray data  = Bson::save(Engine::toVariant(&mesh));
         file.write((const char *)&data[0], data.size());
         file.close();
         return 0;

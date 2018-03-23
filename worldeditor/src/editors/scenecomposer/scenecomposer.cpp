@@ -10,8 +10,8 @@
 #include <QVariant>
 #include <QWidgetAction>
 
-#include <ajson.h>
-#include <abson.h>
+#include <json.h>
+#include <bson.h>
 
 // Engine
 #include <module.h>
@@ -54,7 +54,7 @@
 #define POLYGONS    "Polygons"
 #define DRAWCALLS   "Draw Calls"
 
-Q_DECLARE_METATYPE(AObject *)
+Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Actor *)
 
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
@@ -145,14 +145,14 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
 
     connect(ctl, SIGNAL(mapUpdated()), ui->hierarchy, SLOT(onHierarchyUpdated()));
-    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList)), this, SLOT(onObjectSelected(AObject::ObjectList)));
-    connect(ctl, SIGNAL(objectsSelected(AObject::ObjectList)), ui->hierarchy, SLOT(onSelected(AObject::ObjectList)));
+    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onObjectSelected(Object::ObjectList)));
+    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->hierarchy, SLOT(onSelected(Object::ObjectList)));
     connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onModified()));
     connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onModified()));
-    connect(ui->hierarchy, SIGNAL(selected(AObject::ObjectList)), ctl, SLOT(onSelectActor(AObject::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(removed(AObject::ObjectList)), ctl, SLOT(onRemoveActor(AObject::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(parented(AObject::ObjectList, AObject::ObjectList)), ctl, SLOT(onParentActor(AObject::ObjectList,AObject::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(focused(AObject*)), ctl, SLOT(onFocusActor(AObject*)));
+    connect(ui->hierarchy, SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
+    connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
+    connect(ui->hierarchy, SIGNAL(parented(Object::ObjectList, Object::ObjectList)), ctl, SLOT(onParentActor(Object::ObjectList,Object::ObjectList)));
+    connect(ui->hierarchy, SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
 
     connect(UndoManager::instance(), SIGNAL(updated()), this, SLOT(onUndoRedoUpdated()));
 
@@ -183,7 +183,7 @@ void SceneComposer::timerEvent(QTimerEvent *event) {
     glWidget->update();
 }
 
-void SceneComposer::onObjectSelected(AObject::ObjectList objects) {
+void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     if(m_pProperties) {
         delete m_pProperties;
         m_pProperties   = 0;
@@ -290,8 +290,8 @@ void SceneComposer::on_action_Open_triggered() {
         string data;
         data.resize(array.size());
         memcpy(&data[0], array.data(), array.size());
-        AVariant var    = AJson::load(data);
-        AObject *map    = Engine::toObject(var);
+        Variant var = Json::load(data);
+        Object *map = Engine::toObject(var);
         if(map) {
             updateTitle();
 
@@ -316,7 +316,7 @@ void SceneComposer::on_actionSave_triggered() {
 
             QFile file(dir.relativeFilePath(mPath));
             if(file.open(QIODevice::WriteOnly)) {
-                string data = AJson::save(Engine::toVariant(m_pMap), 0);
+                string data = Json::save(Engine::toVariant(m_pMap), 0);
                 file.write((const char *)&data[0], data.size());
                 file.close();
             }

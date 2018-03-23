@@ -166,10 +166,10 @@ public:
             uv      = "vec3(" + uv + ", 1.0)";
             value  += QString("\tvec4 lt%1 = texture(texture%2, %3);\n").arg(depth).arg(result).arg(uv);
             if(link.sitem->name == "") {
-                size    = AMetaType::VECTOR4;
+                size    = MetaType::VECTOR4;
                 value  += QString("\tvec4 local%1 = lt%1;\n").arg(depth);
             } else {
-                size    = AMetaType::DOUBLE;
+                size    = MetaType::FLOAT;
                 QString channel = "x";
                 if(link.sitem->name == G) {
                     channel = "y";

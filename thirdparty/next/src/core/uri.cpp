@@ -1,48 +1,48 @@
-#include "core/auri.h"
+#include "core/uri.h"
 
 #include <regex>
 
-class AUriPrivate {
+class UriPrivate {
 public:
     string                  mUri;
 
     smatch                  mResult;
 };
 
-AUri::AUri(const string &uri) :
-        p_ptr(new AUriPrivate) {
+Uri::Uri(const string &uri) :
+        p_ptr(new UriPrivate) {
     PROFILE_FUNCTION()
     p_ptr->mUri = uri;
     replace(p_ptr->mUri.begin(), p_ptr->mUri.end(), '\\', '/');
     regex_match(p_ptr->mUri, p_ptr->mResult, regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
 }
 
-string AUri::scheme() const {
+string Uri::scheme() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[2].str();
 }
 
-string AUri::host() const {
+string Uri::host() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[4];
 }
 
-string AUri::path() const {
+string Uri::path() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[5];
 }
 
-string AUri::query() const {
+string Uri::query() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[7];
 }
 
-string AUri::fragment() const {
+string Uri::fragment() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[9];
 }
 
-string AUri::dir() const {
+string Uri::dir() const {
     PROFILE_FUNCTION()
     string str = path();
     size_t found = str.rfind('/');
@@ -52,7 +52,7 @@ string AUri::dir() const {
     return str;
 }
 
-string AUri::name() const {
+string Uri::name() const {
     PROFILE_FUNCTION()
     string str = path();
     size_t found = str.rfind('/');
@@ -62,7 +62,7 @@ string AUri::name() const {
     return str;
 }
 
-string AUri::baseName() const {
+string Uri::baseName() const {
     PROFILE_FUNCTION()
     string str = name();
     size_t found = str.find('.');
@@ -72,7 +72,7 @@ string AUri::baseName() const {
     return str;
 }
 
-string AUri::suffix() const {
+string Uri::suffix() const {
     PROFILE_FUNCTION()
     string str = name();
     size_t found = str.find('.');

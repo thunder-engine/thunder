@@ -1,20 +1,20 @@
-#include "core/athreadpool.h"
+#include "core/ThreadPool.h"
 
 #include <thread>
 #include <condition_variable>
 #include <set>
 
-class AThreadPoolPrivate {
+class ThreadPoolPrivate {
 public:
-    AThreadPoolPrivate() :
+    ThreadPoolPrivate() :
             m_ActiveThreads(0) {
         PROFILE_FUNCTION()
     }
 
-    AObject *takeTask() {
+    Object *takeTask() {
         PROFILE_FUNCTION()
         if(!m_Tasks.empty()) {
-            AObject *object = m_Tasks.front();
+            Object *object = m_Tasks.front();
             m_Tasks.pop();
             return object;
         }
@@ -27,13 +27,13 @@ public:
 
     class APoolWorker {
     public:
-        APoolWorker             (AThreadPoolPrivate *pool);
+        explicit APoolWorker    (ThreadPoolPrivate *pool);
 
         ~APoolWorker            ();
 
         void                    exec                        ();
 
-        void                    run                         (AObject *object);
+        void                    run                         (Object *object);
 
         bool                    isFree                      ();
 
@@ -44,9 +44,9 @@ public:
 
         condition_variable      m_Variable;
 
-        AObject                *m_pTask;
+        Object                *m_pTask;
 
-        AThreadPoolPrivate     *m_pPool;
+        ThreadPoolPrivate     *m_pPool;
     };
 
 public:
@@ -56,12 +56,12 @@ public:
 
     set<APoolWorker *>          m_Workers;
 
-    queue<AObject *>            m_Tasks;
+    queue<Object *>            m_Tasks;
 
     int32_t                     m_ActiveThreads;
 };
 
-AThreadPoolPrivate::APoolWorker::APoolWorker(AThreadPoolPrivate *pool) :
+ThreadPoolPrivate::APoolWorker::APoolWorker(ThreadPoolPrivate *pool) :
         m_pPool(pool),
         m_pTask(nullptr),
         m_Enabled(true) {
@@ -69,14 +69,14 @@ AThreadPoolPrivate::APoolWorker::APoolWorker(AThreadPoolPrivate *pool) :
     m_Thread    = thread(&APoolWorker::exec, this);
 }
 
-AThreadPoolPrivate::APoolWorker::~APoolWorker() {
+ThreadPoolPrivate::APoolWorker::~APoolWorker() {
     PROFILE_FUNCTION()
     m_Enabled   = false;
     m_Variable.notify_one();
     m_Thread.join();
 }
 
-void AThreadPoolPrivate::APoolWorker::exec() {
+void ThreadPoolPrivate::APoolWorker::exec() {
     PROFILE_FUNCTION()
     while(m_Enabled) {
         unique_lock<mutex> locker(m_pPool->m_Mutex);
@@ -92,26 +92,26 @@ void AThreadPoolPrivate::APoolWorker::exec() {
     }
 }
 
-void AThreadPoolPrivate::APoolWorker::run(AObject *object) {
+void ThreadPoolPrivate::APoolWorker::run(Object *object) {
     PROFILE_FUNCTION()
     ++m_pPool->m_ActiveThreads;
     m_pTask = object;
     m_Variable.notify_one();
 }
 
-bool AThreadPoolPrivate::APoolWorker::isFree() {
+bool ThreadPoolPrivate::APoolWorker::isFree() {
     PROFILE_FUNCTION()
     return (m_pTask == nullptr);
 }
 
-AThreadPool::AThreadPool() :
-        p_ptr(new AThreadPoolPrivate) {
+ThreadPool::ThreadPool() :
+        p_ptr(new ThreadPoolPrivate) {
 
     PROFILE_FUNCTION()
     setMaxThreads(optimalThreadCount());
 }
 
-AThreadPool::~AThreadPool() {
+ThreadPool::~ThreadPool() {
     PROFILE_FUNCTION()
     for(auto it : p_ptr->m_Workers) {
         delete it;
@@ -119,7 +119,7 @@ AThreadPool::~AThreadPool() {
     p_ptr->m_Workers.clear();
 }
 
-void AThreadPool::start(AObject &object) {
+void ThreadPool::start(Object &object) {
     PROFILE_FUNCTION()
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     for(auto it : p_ptr->m_Workers) {
@@ -131,18 +131,18 @@ void AThreadPool::start(AObject &object) {
     p_ptr->m_Tasks.push(&object);
 }
 
-uint32_t AThreadPool::maxThreads() const {
+uint32_t ThreadPool::maxThreads() const {
     PROFILE_FUNCTION()
     return p_ptr->m_Workers.size();
 }
 
-void AThreadPool::setMaxThreads(uint32_t value) {
+void ThreadPool::setMaxThreads(uint32_t value) {
     PROFILE_FUNCTION()
     uint32_t current    = p_ptr->m_Workers.size();
     if(current < value) {
         for(uint32_t i = 0; i < value - current; i++) {
-            AThreadPoolPrivate::APoolWorker *worker = new AThreadPoolPrivate::APoolWorker(p_ptr);
-            AObject *object     = p_ptr->takeTask();
+            ThreadPoolPrivate::APoolWorker *worker = new ThreadPoolPrivate::APoolWorker(p_ptr);
+            Object *object     = p_ptr->takeTask();
             if(object) {
                 worker->run(object);
             }
@@ -152,14 +152,14 @@ void AThreadPool::setMaxThreads(uint32_t value) {
         for(uint32_t i = 0; i < current - value; i++) {
             auto it = p_ptr->m_Workers.end();
             --it;
-            AThreadPoolPrivate::APoolWorker *worker = (*it);
+            ThreadPoolPrivate::APoolWorker *worker = (*it);
             p_ptr->m_Workers.erase(it);
             delete worker;
         }
     }
 }
 
-bool AThreadPool::waitForDone(int32_t msecs) {
+bool ThreadPool::waitForDone(int32_t msecs) {
     PROFILE_FUNCTION()
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     if(msecs < 0) {
@@ -171,7 +171,7 @@ bool AThreadPool::waitForDone(int32_t msecs) {
     return (p_ptr->m_Tasks.empty() && p_ptr->m_ActiveThreads == 0);
 }
 
-uint32_t AThreadPool::optimalThreadCount() {
+uint32_t ThreadPool::optimalThreadCount() {
     PROFILE_FUNCTION()
     return thread::hardware_concurrency();
 }

@@ -70,7 +70,7 @@ Scene &Actor::scene() const {
 
 Component *Actor::component(const char *type) {
     for(auto it : getChildren()) {
-        const AMetaObject *meta = it->metaObject();
+        const MetaObject *meta = it->metaObject();
         if(meta->canCastTo(type)) {
             return static_cast<Component *>(it);
         }
@@ -102,12 +102,12 @@ Component *Actor::addComponent(const string &name) {
     return static_cast<Component *>(Engine::objectCreate(name, name, this));
 }
 
-void Actor::setParent(AObject *parent) {
+void Actor::setParent(Object *parent) {
     Vector3 p     = worldPosition();
-    Quaternion  r   = worldRotation();
+    Quaternion r  = worldRotation();
     Vector3 s     = worldScale();
 
-    AObject::setParent(parent);
+    Object::setParent(parent);
 
     Actor *actor   = dynamic_cast<Actor *>(parent);
     if(actor) {

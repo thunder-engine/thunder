@@ -9,7 +9,7 @@
 #include <engine.h>
 
 #include "schemeeditor.h"
-#include "common.h"
+#include "config.h"
 
 #include "editors/componentbrowser/componentbrowser.h"
 

@@ -32,7 +32,7 @@ public:
     AMaterialGL                 ();
     ~AMaterialGL                ();
 
-    void                        loadUserData    (const AVariantMap &data);
+    void                        loadUserData    (const VariantMap &data);
 
     uint32_t                    bind            (MaterialInstance *instance, uint8_t layer, uint16_t type);
     void                        unbind          (uint8_t layer);

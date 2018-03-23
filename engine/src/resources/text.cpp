@@ -1,6 +1,6 @@
 #include "resources/text.h"
 
-#include <avariant.h>
+#include <variant.h>
 
 #define DATA  "Data"
 
@@ -11,7 +11,7 @@ Text::Text() {
 Text::~Text() {
 }
 
-void Text::loadUserData(const AVariantMap &data) {
+void Text::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {
         m_Data  = (*it).second.toByteArray();

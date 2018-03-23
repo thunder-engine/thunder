@@ -11,7 +11,7 @@
 #include <system.h>
 #include <components/scene.h>
 
-#include <ajson.h>
+#include <json.h>
 
 #include <rendergl.h>
 
@@ -173,8 +173,8 @@ void PluginModel::reloadPlugin(const QString &path) {
                 // Deserialize saved data for components
                 ComponentMap::const_iterator i = result.constBegin();
                 while(i != result.constEnd()) {
-                    AVariant v  = AJson::load(i.value().toStdString());
-                    AObject *object = Engine::toObject(v);
+                    Variant v   = Json::load(i.value().toStdString());
+                    Object *object  = Engine::toObject(v);
                     if(object) {
                         object->setParent(i.key());
                     }
@@ -241,8 +241,8 @@ void PluginModel::addScene(Scene *scene) {
     m_Scenes.push_back(scene);
 }
 
-typedef list<const AObject *> ObjectArray;
-void enumComponents(const AObject *object, const string &type, ObjectArray &list) {
+typedef list<const Object *> ObjectArray;
+void enumComponents(const Object *object, const string &type, ObjectArray &list) {
     for(const auto &it : object->getChildren()) {
         if(it->typeName() == type) {
             list.push_back(it);
@@ -252,14 +252,14 @@ void enumComponents(const AObject *object, const string &type, ObjectArray &list
     }
 }
 
-void PluginModel::serializeComponents(AObject *parent, const string &type, ComponentMap &map) {
+void PluginModel::serializeComponents(Object *parent, const string &type, ComponentMap &map) {
     ObjectArray array;
 
     enumComponents(parent, type, array);
 
     for(auto it : array) {
-        AVariant v  = Engine::toVariant(it);
-        map[it->parent()] = AJson::save(v).c_str();
+        Variant v   = Engine::toVariant(it);
+        map[it->parent()] = Json::save(v).c_str();
         delete []it;
     }
 }

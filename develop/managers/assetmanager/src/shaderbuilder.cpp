@@ -6,10 +6,10 @@
 
 #include <resources/texture.h>
 
-#include <atools.h>
+#include <tools.h>
 #include <file.h>
 #include <log.h>
-#include <ajson.h>
+#include <json.h>
 
 #include <QVector2D>
 #include <QVector3D>
@@ -428,10 +428,10 @@ bool ShaderBuilder::build() {
     return true;
 }
 
-AVariant ShaderBuilder::object() const {
-    AVariantList result;
+Variant ShaderBuilder::object() const {
+    VariantList result;
 
-    AVariantList object;
+    VariantList object;
 
     object.push_back(0); // id
     object.push_back(0); // parent
@@ -439,19 +439,19 @@ AVariant ShaderBuilder::object() const {
     object.push_back(Material::metaClass()->name()); // name
     object.push_back(true); // enable
 
-    object.push_back(AVariantMap()); // properties
+    object.push_back(VariantMap()); // properties
 
     object.push_back(data()); // user data
-    object.push_back(AVariantList()); // links
+    object.push_back(VariantList()); // links
 
     result.push_back(object);
 
     return result;
 }
 
-AVariant ShaderBuilder::data() const {
-    AVariantMap user;
-    AVariantList params;
+Variant ShaderBuilder::data() const {
+    VariantMap user;
+    VariantList params;
     params.push_back(materialType());
     params.push_back(isDoubleSided());
     params.push_back(isTangent());
@@ -459,7 +459,7 @@ AVariant ShaderBuilder::data() const {
     params.push_back(blend());
     params.push_back(lightModel());
 
-    AVariantMap textures;
+    VariantMap textures;
     uint16_t i  = 0;
     for(auto it : m_Textures) {
         textures["texture" + to_string(i)]  = it.first.toStdString();

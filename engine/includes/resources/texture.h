@@ -5,8 +5,8 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT Texture : public AObject {
-    A_REGISTER(Texture, AObject, Resources)
+class NEXT_LIBRARY_EXPORT Texture : public Object {
+    A_REGISTER(Texture, Object, Resources)
 
 public:
     enum TextureType {
@@ -46,7 +46,7 @@ public:
     inline bool                 isCompressed                () const { return (m_format == DXT1 || m_format == DXT5 || m_format == ETC2); }
     inline bool                 isCubemap                   () { return (m_type == Cubemap); }
 
-    void                        loadUserData                (const AVariantMap &data);
+    void                        loadUserData                (const VariantMap &data);
 
 protected:
     virtual void                clear                       ();

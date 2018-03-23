@@ -17,10 +17,10 @@ Mesh::~Mesh() {
 
 }
 
-void Mesh::loadUserData(const AVariantMap &data) {
+void Mesh::loadUserData(const VariantMap &data) {
     auto it = data.find(HEADER);
     if(it != data.end()) {
-        AVariantList header   = (*it).second.value<AVariantList>();
+        VariantList header  = (*it).second.value<VariantList>();
 
         auto i      = header.begin();
         m_Flags     = (*i).toInt();
@@ -28,12 +28,12 @@ void Mesh::loadUserData(const AVariantMap &data) {
 
     auto mesh = data.find(DATA);
     if(mesh != data.end()) {
-        for(auto surfaces : (*mesh).second.value<AVariantList>()) {
+        for(auto surfaces : (*mesh).second.value<VariantList>()) {
             // Surface
             Surface s;
             Vector3 obb[2];
 
-            AVariantList surface = surfaces.value<AVariantList>();
+            VariantList surface = surfaces.value<VariantList>();
             auto x  = surface.begin();
             s.collision = (*x).toBool();
             x++;
@@ -42,7 +42,7 @@ void Mesh::loadUserData(const AVariantMap &data) {
             while(x != surface.end()) {
                 Lod l;
 
-                AVariantList lod  = (*x).value<AVariantList>();
+                VariantList lod = (*x).value<VariantList>();
                 auto y      = lod.begin();
                 string path = (*y).toString();
                 l.material  = Engine::loadResource<Material>(path.empty() ? DEFAULTMESH : path);
@@ -54,7 +54,7 @@ void Mesh::loadUserData(const AVariantMap &data) {
                 uint32_t tCount = (*y).toInt();
                 y++;
 
-                AByteArray data;
+                ByteArray data;
                 { // Required field
                     data    = (*y).toByteArray();
                     y++;

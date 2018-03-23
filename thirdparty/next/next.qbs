@@ -6,9 +6,11 @@ Project {
         "src/*.cpp",
         "src/core/*.cpp",
         "src/math/*.cpp",
+        "src/anim/*.cpp",
         "inc/*.h",
         "inc/core/*.h",
-        "inc/math/*.h"
+        "inc/math/*.h",
+        "inc/anim/*.h"
     ]
 
     property stringList incPaths: [

@@ -32,7 +32,7 @@ public:
 
     ~AMeshGL                    ();
 
-    void                        loadUserData        (const AVariantMap &data);
+    void                        loadUserData        (const VariantMap &data);
 };
 
 #endif // MESHGL_H

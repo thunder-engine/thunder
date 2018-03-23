@@ -1,6 +1,6 @@
 #include "components/astaticmeshgl.h"
 
-#include <atools.h>
+#include <tools.h>
 
 #include "agl.h"
 #include "commandbuffergl.h"

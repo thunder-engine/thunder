@@ -38,7 +38,7 @@ void Sprite::setTexture(Texture *texture) {
     m_Texture   = texture;
 }
 
-void Sprite::loadUserData(const AVariantMap &data) {
+void Sprite::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
         auto it = data.find(MATERIAL);
@@ -54,8 +54,8 @@ void Sprite::loadUserData(const AVariantMap &data) {
     }
 }
 
-AVariantMap Sprite::saveUserData() const {
-    AVariantMap result    = Component::saveUserData();
+VariantMap Sprite::saveUserData() const {
+    VariantMap result   = Component::saveUserData();
     {
         Material *m = material();
         string ref  = Engine::reference(m);

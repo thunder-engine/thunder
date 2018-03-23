@@ -36,9 +36,9 @@ public:
 
     uint32_t                    materialCount           () const;
 
-    void                        loadUserData            (const AVariantMap &data);
+    void                        loadUserData            (const VariantMap &data);
 
-    AVariantMap                 saveUserData            () const;
+    VariantMap                  saveUserData            () const;
 
 protected:
     Mesh                       *m_pMesh;

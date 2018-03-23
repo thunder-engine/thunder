@@ -12,7 +12,7 @@ class IFile;
 class MeshSerial : public Mesh {
 public:
 
-    AVariantMap                 saveUserData                () const;
+    VariantMap                  saveUserData                () const;
 
 protected:
     friend class FBXConverter;

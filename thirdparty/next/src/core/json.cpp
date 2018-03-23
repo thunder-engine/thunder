@@ -1,7 +1,7 @@
-#include "core/ajson.h"
+#include "core/json.h"
 
-#include "core/avariant.h"
-#include "core/aobjectsystem.h"
+#include "core/variant.h"
+#include "core/objectsystem.h"
 
 #define J_TRUE  "true"
 #define J_FALSE "false"
@@ -9,24 +9,24 @@
 
 #define FORMAT (depth > -1) ? "\n" : "";
 
-typedef stack<AVariant> VariantStack;
+typedef stack<Variant> VariantStack;
 typedef stack<string>   NameStack;
 
-void appendProperty(VariantStack &s, const AVariant &data, const string &name) {
-    AVariant v;
+void appendProperty(VariantStack &s, const Variant &data, const string &name) {
+    Variant v;
     if(!s.empty()) {
         v   = s.top();
         s.pop();
     }
     switch(v.type()) {
-        case AMetaType::VARIANTLIST: {
-            AVariantList list = v.value<AVariantList>();
+        case MetaType::VARIANTLIST: {
+            VariantList list = v.value<VariantList>();
             list.push_back(data);
             s.push(list);
             return;
         }
-        case AMetaType::VARIANTMAP: {
-            AVariantMap map   = v.value<AVariantMap>();
+        case MetaType::VARIANTMAP: {
+            VariantMap map   = v.value<VariantMap>();
             map[name]    = data;
             s.push(map);
             return;
@@ -46,13 +46,13 @@ enum States {
     propertyValue
 };
 
-AJson::AJson() {
+Json::Json() {
     PROFILE_FUNCTION()
 }
 
-AVariant AJson::load(const string &data) {
+Variant Json::load(const string &data) {
     PROFILE_FUNCTION()
-    AVariant result;
+    Variant result;
 
     VariantStack    s;
     NameStack       n;
@@ -63,7 +63,7 @@ AVariant AJson::load(const string &data) {
         skipSpaces(data.c_str(), it);
         switch(data[it]) {
             case '{': {
-                AVariantMap map;
+                VariantMap map;
                 s.push(map);
                 n.push(name);
                 name    = "";
@@ -80,21 +80,21 @@ AVariant AJson::load(const string &data) {
             } break;
             case '[': {
                 if(state == propertyValue) {
-                    AVariantList list;
+                    VariantList list;
                     s.push(list);
                     n.push(name);
                     name    = "";
                 }
             } break;
             case ']': {
-                AVariantList list   = s.top().value<AVariantList>();
+                VariantList list   = s.top().value<VariantList>();
                 s.pop();
                 uint32_t type   = list.front().toInt();
                 list.pop_front();
-                if(type != AMetaType::VARIANTLIST) {
-                    void *object    = AMetaType::create(type);
-                    AMetaType::convert(&list, AMetaType::VARIANTLIST, object, type);
-                    appendProperty(s, AVariant(type, object), n.top());
+                if(type != MetaType::VARIANTLIST) {
+                    void *object    = MetaType::create(type);
+                    MetaType::convert(&list, MetaType::VARIANTLIST, object, type);
+                    appendProperty(s, Variant(type, object), n.top());
                 } else {
                     appendProperty(s, list, n.top());
                 }
@@ -106,7 +106,7 @@ AVariant AJson::load(const string &data) {
                 state   = propertyValue;
             } break;
             case ',': {
-                if(s.top().type() == AMetaType::VARIANTLIST) {
+                if(s.top().type() == MetaType::VARIANTLIST) {
                     state   = propertyValue;
                 } else {
                     state   = propertyName;
@@ -144,8 +144,8 @@ AVariant AJson::load(const string &data) {
                     }
                 }
                 if(state == propertyValue) {
-                    AVariant v(data.substr(st, it - st));
-                    appendProperty(s, (number) ? AVariant(v.toDouble()) : AVariant(v.toInt()), name);
+                    Variant v(data.substr(st, it - st));
+                    appendProperty(s, (number) ? Variant(v.toFloat()) : Variant(v.toInt()), name);
                 }
                 it--;
             } break;
@@ -182,23 +182,23 @@ AVariant AJson::load(const string &data) {
     return result;
 }
 
-string AJson::save(const AVariant &data, int32_t depth) {
+string Json::save(const Variant &data, int32_t depth) {
     PROFILE_FUNCTION()
     string result;
     switch(data.type()) {
-        case AMetaType::BOOLEAN:
-        case AMetaType::DOUBLE:
-        case AMetaType::INTEGER: {
+        case MetaType::BOOLEAN:
+        case MetaType::FLOAT:
+        case MetaType::INTEGER: {
             result += data.toString();
         } break;
-        case AMetaType::STRING: {
+        case MetaType::STRING: {
             result += '"' + data.toString() + '"';
         } break;
-        case AMetaType::VARIANTMAP: {
+        case MetaType::VARIANTMAP: {
             result += "{";
             result += FORMAT;
             uint32_t i = 1;
-            AVariantMap map = data.toMap();
+            VariantMap map = data.toMap();
             for(auto &it: map) {
                 result.append(depth + 1, '\t');
                 result += "\"" + it.first + "\":" + ((depth > -1) ? " " : "") + save(it.second, (depth > -1) ? depth + 1 : depth);
@@ -215,7 +215,7 @@ string AJson::save(const AVariant &data, int32_t depth) {
             result += "[";
             result += FORMAT;
             uint32_t i = 1;
-            AVariantList list = data.toList();
+            VariantList list = data.toList();
             for(auto &it: list) {
                 result.append(depth + 1, '\t');
                 result += save(it, (depth > -1) ? depth + 1 : depth);
@@ -232,7 +232,7 @@ string AJson::save(const AVariant &data, int32_t depth) {
     return result;
 }
 
-inline string AJson::readString(const string &data, uint32_t &it) {
+inline string Json::readString(const string &data, uint32_t &it) {
     PROFILE_FUNCTION()
     uint32_t s  = ++it;
     char c      = data[s];
@@ -245,19 +245,19 @@ inline string AJson::readString(const string &data, uint32_t &it) {
     return data.substr(s, it - s);
 }
 
-inline void AJson::skipSpaces(const char *data, uint32_t &it) {
+inline void Json::skipSpaces(const char *data, uint32_t &it) {
     PROFILE_FUNCTION()
     while(isSpace(data[it])) {
         it++;
     }
 }
 
-inline bool AJson::isSpace(uint8_t c) {
+inline bool Json::isSpace(uint8_t c) {
     PROFILE_FUNCTION()
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-inline bool AJson::isDigit(uint8_t c) {
+inline bool Json::isDigit(uint8_t c) {
     PROFILE_FUNCTION()
     return c >= '0' && c <= '9';
 }

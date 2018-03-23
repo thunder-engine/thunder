@@ -61,12 +61,12 @@ Material::~Material() {
     clear();
 }
 
-void Material::loadUserData(const AVariantMap &data) {
+void Material::loadUserData(const VariantMap &data) {
     clear();
     {
         auto it = data.find(PARAMS);
         if(it != data.end()) {
-            AVariantList list = (*it).second.value<AVariantList>();
+            VariantList list    = (*it).second.value<VariantList>();
             auto i  = list.begin();
             m_MaterialType  = (MaterialType)(*i).toInt();
             i++;

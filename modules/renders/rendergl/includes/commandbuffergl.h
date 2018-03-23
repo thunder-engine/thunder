@@ -20,11 +20,14 @@ public:
 
     void                        setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
 
-    void                        setGlobalValue              (const char *name, const AVariant &value);
+    void                        setGlobalValue              (const char *name, const Variant &value);
+
+    void                        setViewport                 (uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
     Matrix4                     projection                  () const { return m_Projection; }
 
     Matrix4                     modelView                   () const { return m_View * m_Model; }
+
 
 protected:
     void                        setShaderParams             (uint32_t program);
@@ -36,8 +39,9 @@ protected:
     Matrix4                     m_Model;
     Matrix4                     m_Projection;
 
-    AVariantMap                 m_Uniforms;
+    VariantMap                  m_Uniforms;
 
+    uint32_t                    m_Buffers[8];
 };
 
 #endif // COMMANDBUFFERGL_H

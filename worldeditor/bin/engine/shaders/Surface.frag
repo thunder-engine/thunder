@@ -54,7 +54,7 @@ void passMode(Params params) {
         discard;
     }
     vec3 norm   = vec3(1.0);
-    vec3 matv   = vec3(1.0, 1.0, getMetallic( params ));
+    vec3 matv   = vec3(_xyz.x, _xyz.y, getMetallic( params ));
     float rough = 0.0;
     float model = 0.0;
     #ifdef MODEL_LIT
@@ -66,7 +66,7 @@ void passMode(Params params) {
     #endif
     gbuffer1    = vec4( norm, model );
     gbuffer2    = vec4( albd, rough );
-    gbuffer3    = vec4( matv, rough );
+    gbuffer3    = vec4( matv, 1.0   );
     gbuffer4    = vec4( emit, 0.0   );
 #else
     gbuffer1    = vec4( emit, alpha );

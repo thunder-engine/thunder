@@ -15,6 +15,7 @@ Project {
 
     property stringList incPaths: [
         "src",
+        "../",
         "../common",
         "../engine/includes",
         "../develop/managers/codemanager/include",

@@ -6,7 +6,7 @@
 
 #include <projectmanager.h>
 
-#include "common.h"
+#include "config.h"
 #include "contentlist.h"
 #include "assetmanager.h"
 

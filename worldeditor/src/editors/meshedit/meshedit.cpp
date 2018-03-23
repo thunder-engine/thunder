@@ -52,12 +52,9 @@ MeshEdit::MeshEdit(Engine *engine) :
         action->setChecked(true);
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
-
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
 
     readSettings();
-
-    m_Yaw   = 0.0f;
 }
 
 MeshEdit::~MeshEdit() {
@@ -112,7 +109,8 @@ void MeshEdit::prepareScene(const QString &resource) {
     }
     float bottom;
     glWidget->controller()->setFocusOn(m_pMesh, bottom);
-    m_pGround->setPosition(Vector3(0.0f, bottom - m_pGround->scale().y * 2.0, 0.0f));
+    Vector3 pos(0.0f, bottom - (m_pGround->scale().y * 0.5f), 0.0f);
+    m_pGround->setPosition(pos);
 }
 
 void MeshEdit::onGLInit() {
@@ -123,12 +121,10 @@ void MeshEdit::onGLInit() {
     m_pMesh->addComponent<StaticMesh>();
 
     m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
-    Matrix3 mat;
-    mat.rotate(Vector3(-45.0f, 45.0f, 0.0f));//162.0
-    m_pLight->setRotation(mat);
+    m_pLight->setRotation(Quaternion(Vector3(-30.0f, 0.0f, 0.0f)));
     DirectLight *light  = m_pLight->addComponent<DirectLight>();
-    light->setCastShadows(false);
-    light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
+    light->setCastShadows(true);
+    //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
     m_pGround   = Engine::objectCreate<Actor>("Ground", scene);
     m_pGround->setScale(Vector3(100.0f, 1.0f, 100.0f));

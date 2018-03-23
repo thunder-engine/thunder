@@ -12,10 +12,10 @@ class Engine;
 class IModule;
 class ISystem;
 
-class AObject;
+class Object;
 class Scene;
 
-typedef QMap<AObject *, QString>    ComponentMap;
+typedef QMap<Object *, QString> ComponentMap;
 
 class PluginModel : public BaseObjectModel, public ASingleton<PluginModel> {
     Q_OBJECT
@@ -56,7 +56,7 @@ protected:
 
     void                        registerExtensionPlugin     (const QString &path, IModule *plugin);
 
-    void                        serializeComponents         (AObject *parent, const std::string &type, ComponentMap &map);
+    void                        serializeComponents         (Object *parent, const std::string &type, ComponentMap &map);
 
 private:
     void                        clear                       ();

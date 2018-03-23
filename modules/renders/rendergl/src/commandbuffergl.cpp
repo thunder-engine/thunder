@@ -131,11 +131,16 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
 void CommandBufferGL::setRenderTarget(uint8_t numberColors, const Texture *colors, const Texture *depth) {
     PROFILER_MARKER;
 
+    const ATextureGL *c = static_cast<const ATextureGL *>(colors);
     for(int i = 0; i < numberColors; i++) {
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, static_cast<const ATextureGL *>(&colors[i])->id(), 0 );
+        m_Buffers[i]  = GL_COLOR_ATTACHMENT0 + i;
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, c[i].id(), 0 );
     }
     if(depth) {
         glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, static_cast<const ATextureGL *>(depth)->id(), 0 );
+    }
+    if(numberColors > 1) {
+        glDrawBuffers( numberColors, m_Buffers );
     }
 }
 
@@ -163,20 +168,17 @@ void CommandBufferGL::setShaderParams(uint32_t program) {
     if(location > -1) {
         glUniformMatrix4fv(location, 1, GL_FALSE, modelView().mat);
     }
-    location	= glGetUniformLocation(program, "transform.mvpi");
-    if(location > -1) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, ((m_Projection * modelView()).inverse()).mat);
-    }
+
     // Push uniform values to shader
     for(const auto &it : m_Uniforms) {
         location    = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
-            const AVariant &data= it.second;
+            const Variant &data= it.second;
             switch(data.type()) {
-                case AMetaType::VECTOR2:    glUniform2fv(location, 1, data.toVector2().v); break;
-                case AMetaType::VECTOR3:    glUniform3fv(location, 1, data.toVector3().v); break;
-                case AMetaType::VECTOR4:    glUniform4fv(location, 1, data.toVector4().v); break;
-                default:                    glUniform1f (location, data.toDouble()); break;
+                case MetaType::VECTOR2: glUniform2fv(location, 1, data.toVector2().v); break;
+                case MetaType::VECTOR3: glUniform3fv(location, 1, data.toVector3().v); break;
+                case MetaType::VECTOR4: glUniform4fv(location, 1, data.toVector4().v); break;
+                default:                glUniform1f (location, data.toFloat()); break;
             }
         }
     }
@@ -191,6 +193,10 @@ void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &proj
     m_Projection    = projection;
 }
 
-void CommandBufferGL::setGlobalValue(const char *name, const AVariant &value) {
+void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
     m_Uniforms[name]    = value;
+}
+
+void CommandBufferGL::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+    glViewport(x, y, width, height);
 }

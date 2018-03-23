@@ -8,7 +8,7 @@
 #include <map>
 
 #include <amath.h>
-#include <aobject.h>
+#include <object.h>
 
 #include "cameractrl.h"
 #include "graph/sceneview.h"
@@ -135,14 +135,14 @@ public:
 
     void                selectActor                 (const list<uint32_t> &list, bool undo = true);
 
-    AObject::ObjectList selected                    ();
+    Object::ObjectList  selected                    ();
 
-    void                setMap                      (AObject *map)      { m_pMap = map; }
+    void                setMap                      (Object *map)      { m_pMap = map; }
 
     void                setMoveGrid                 (float value)       { mMoveGrid = value; }
     void                setAngleGrid                (float value)       { mAngleGrid = value; }
 
-    AObject            *findObject                  (uint32_t id, AObject *parent = nullptr);
+    Object             *findObject                  (uint32_t id, Object *parent = nullptr);
 
     void                resize                      (uint32_t width, uint32_t height);
 
@@ -155,11 +155,11 @@ public slots:
     void                onDragEnter                 (QDragEnterEvent *);
     void                onDragLeave                 (QDragLeaveEvent *);
 
-    void                onSelectActor               (AObject::ObjectList list, bool undo = true);
-    void                onRemoveActor               (AObject::ObjectList, bool undo = true);
-    void                onParentActor               (AObject::ObjectList objects, AObject::ObjectList parents, bool undo = true);
+    void                onSelectActor               (Object::ObjectList list, bool undo = true);
+    void                onRemoveActor               (Object::ObjectList, bool undo = true);
+    void                onParentActor               (Object::ObjectList objects, Object::ObjectList parents, bool undo = true);
 
-    void                onFocusActor                (AObject *object);
+    void                onFocusActor                (Object *object);
 
     void                onMoveActor                 ();
     void                onRotateActor               ();
@@ -170,10 +170,10 @@ signals:
 
     void                objectsUpdated              ();
 
-    void                objectsSelected             (AObject::ObjectList objects);
+    void                objectsSelected             (Object::ObjectList objects);
 
 protected:
-    void                drawHelpers                 (AObject &object);
+    void                drawHelpers                 (Object &object);
 
     void                selectGeometry              (Vector2 &, Vector2 &);
 
@@ -206,9 +206,9 @@ protected:
     float               mAngleGrid;
     float               mScaleGrid;
 
-    AObject            *m_pMap;
+    Object             *m_pMap;
 
-    AObject::ObjectList m_DragObjects;
+    Object::ObjectList  m_DragObjects;
 
     SceneView          *m_pView;
 

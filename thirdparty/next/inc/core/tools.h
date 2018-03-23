@@ -1,5 +1,5 @@
-#ifndef ATOOLS
-#define ATOOLS
+#ifndef TOOLS
+#define TOOLS
 
 #include <string>
 
@@ -9,5 +9,5 @@ wstring utf8_to_wchar(const string &in);
 string wchar_to_utf8(const wstring &in);
 
 
-#endif // ATOOLS
+#endif // TOOLS
 

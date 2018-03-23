@@ -1,7 +1,7 @@
 #include "projectdialog.h"
 #include "ui_projectdialog.h"
 
-#include "common.h"
+#include "config.h"
 #include "projectmodel.h"
 #include "projectmanager.h"
 

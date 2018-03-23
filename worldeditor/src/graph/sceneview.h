@@ -8,7 +8,7 @@
 #include <QPainter>
 
 #include <components/scene.h>
-#include "common.h"
+#include "config.h"
 
 class Engine;
 class ISystem;

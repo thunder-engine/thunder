@@ -3,7 +3,7 @@
 #include <QSettings>
 #include <QImage>
 
-#include "common.h"
+#include "config.h"
 
 const QString gProjects("launcher.projects");
 

@@ -5,8 +5,8 @@
 
 class Actor;
 
-class NEXT_LIBRARY_EXPORT Component : public AObject {
-    A_REGISTER(Component, AObject, Components)
+class NEXT_LIBRARY_EXPORT Component : public Object {
+    A_REGISTER(Component, Object, Components)
 
 public:
     Component                   ();

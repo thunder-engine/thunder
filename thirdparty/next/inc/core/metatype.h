@@ -1,23 +1,23 @@
-#ifndef AMETATYPE_H
-#define AMETATYPE_H
+#ifndef MetaType_H
+#define MetaType_H
 
 #include <map>
 #include <typeinfo>
 #include <typeindex>
 #include <stdint.h>
 
-#include <acommon.h>
+#include <common.h>
 
 using namespace std;
 
-class NEXT_LIBRARY_EXPORT AMetaType {
+class NEXT_LIBRARY_EXPORT MetaType {
 public:
     /*! \enum Type */
     enum Type {
         INVALID                 = 0,
         BOOLEAN,
         INTEGER,
-        DOUBLE,
+        FLOAT,
         STRING,
         VARIANTMAP,
         VARIANTLIST,
@@ -49,7 +49,7 @@ public:
     typedef bool            (*converterCallback)        (void *to, const void *from, const uint32_t fromType);
 
 public:
-    AMetaType               (const Table *table);
+    MetaType               (const Table *table);
 
     const char             *name                        () const;
     int                     size                        () const;
@@ -85,14 +85,14 @@ public:
 
     static bool             toBoolean                   (void *to, const void *from, const uint32_t fromType);
     static bool             toInteger                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toDouble                    (void *to, const void *from, const uint32_t fromType);
+    static bool             toFloat                     (void *to, const void *from, const uint32_t fromType);
     static bool             toString                    (void *to, const void *from, const uint32_t fromType);
     static bool             toList                      (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector2                  (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector3                  (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector4                  (void *to, const void *from, const uint32_t fromType);
-    static bool             toMatrix3                  (void *to, const void *from, const uint32_t fromType);
-    static bool             toMatrix4                  (void *to, const void *from, const uint32_t fromType);
+    static bool             toVector2                   (void *to, const void *from, const uint32_t fromType);
+    static bool             toVector3                   (void *to, const void *from, const uint32_t fromType);
+    static bool             toVector4                   (void *to, const void *from, const uint32_t fromType);
+    static bool             toMatrix3                   (void *to, const void *from, const uint32_t fromType);
+    static bool             toMatrix4                   (void *to, const void *from, const uint32_t fromType);
     static bool             toQuaternion                (void *to, const void *from, const uint32_t fromType);
 
 private:
@@ -167,8 +167,8 @@ struct Table {
     typedef Bool<std::is_pointer<T>::value>         is_pointer;
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
-    static AMetaType::Table *get(const char *typeName) {
-        static AMetaType::Table staticTable = {
+    static MetaType::Table *get(const char *typeName) {
+        static MetaType::Table staticTable = {
             TypeFuncs<T_no_cv>::size,
             TypeFuncs<T_no_cv>::static_new,
             TypeFuncs<T_no_cv>::construct,
@@ -186,13 +186,13 @@ struct Table {
 
 //Function to unpack args properly
 template<typename T>
-inline static AMetaType::Table *getTable(const char *typeName) {
+inline static MetaType::Table *getTable(const char *typeName) {
     return Table<T>::get(typeName);
 }
 
 template<typename T>
 static uint32_t registerMetaType(const char *typeName) {
-    return AMetaType::registerType(*getTable<T>(typeName));
+    return MetaType::registerType(*getTable<T>(typeName));
 }
 
-#endif // AMETATYPE_H
+#endif // MetaType_H

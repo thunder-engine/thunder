@@ -2,7 +2,7 @@
 
 #include <QFile>
 
-#include <abson.h>
+#include <bson.h>
 
 #include <file.h>
 
@@ -17,7 +17,7 @@ uint8_t MaterialConverter::convertFile(IConverterSettings *settings) {
     if(builder->build()) {
         QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
         if(file.open(QIODevice::WriteOnly)) {
-            AByteArray data = ABson::save( builder->object() );
+            ByteArray data  = Bson::save( builder->object() );
             file.write((const char *)&data[0], data.size());
             file.close();
             return 0;

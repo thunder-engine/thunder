@@ -138,9 +138,9 @@ public:
     void                        load                        (const QString &path);
     void                        save                        (const QString &path);
 
-    AVariant                    object                      () const;
+    Variant                     object                      () const;
 
-    AVariant                    data                        () const;
+    Variant                     data                        () const;
 
     bool                        build                       ();
 

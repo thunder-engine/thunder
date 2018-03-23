@@ -42,9 +42,16 @@ Quaternion::Quaternion(const Vector3 &dir, areal angle) {
     Constructs a quaternion by Euler angles represented by Vector3(pitch, yaw, roll) \a euler in rotation degrees.
 */
 Quaternion::Quaternion(const Vector3 &euler) {
-    Vector3 rad2(euler.x * DEG2RAD * 0.5f, euler.y * DEG2RAD * 0.5f, euler.z * DEG2RAD * 0.5f);
-    Vector3 c(cos(rad2.x), cos(rad2.y), cos(rad2.z));
-    Vector3 s(sin(rad2.x), sin(rad2.y), sin(rad2.z));
+    Vector3 rad2(euler.x * DEG2RAD * 0.5f,
+                 euler.y * DEG2RAD * 0.5f,
+                 euler.z * DEG2RAD * 0.5f);
+
+    Vector3 c((rad2.x == PI * 0.5) ? 0.0 : cos(rad2.x),
+              (rad2.y == PI * 0.5) ? 0.0 : cos(rad2.y),
+              (rad2.z == PI * 0.5) ? 0.0 : cos(rad2.z));
+    Vector3 s((rad2.x == PI) ? 0.0 : sin(rad2.x),
+              (rad2.y == PI) ? 0.0 : sin(rad2.y),
+              (rad2.z == PI) ? 0.0 : sin(rad2.z));
 
     w = c.x * c.y * c.z + s.x * s.y * s.z;
     x = s.x * c.y * c.z - c.x * s.y * s.z;

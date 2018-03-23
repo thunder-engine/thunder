@@ -3,8 +3,8 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT Scene : public AObject {
-    A_REGISTER(Scene, AObject, General)
+class NEXT_LIBRARY_EXPORT Scene : public Object {
+    A_REGISTER(Scene, Object, General)
 
 public:
     Scene               ();
@@ -15,7 +15,7 @@ public:
     void                setAmbient          (float ambient);
 
 protected:
-    void                updateComponents    (AObject &object);
+    void                updateComponents    (Object &object);
 
     /// Scene settings
     /// Power of ambient light.

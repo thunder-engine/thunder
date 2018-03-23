@@ -1,17 +1,17 @@
-#ifndef ABSON
-#define ABSON
+#ifndef BSON_H
+#define BSON_H
 
 #include <vector>
 #include <cstdint>
 
-#include "avariant.h"
+#include "variant.h"
 
-class NEXT_LIBRARY_EXPORT ABson {
+class NEXT_LIBRARY_EXPORT Bson {
 public:
-    ABson                       ();
+    Bson                        ();
 
-    static AVariant             load                        (const AByteArray &data, uint32_t &offset, AMetaType::Type type = AMetaType::VARIANTLIST, bool first = true);
-    static AByteArray           save                        (const AVariant &data);
+    static Variant              load                        (const ByteArray &data, uint32_t &offset, MetaType::Type type = MetaType::VARIANTLIST, bool first = true);
+    static ByteArray            save                        (const Variant &data);
 
 protected:
     enum BsonDataTypes {
@@ -38,9 +38,9 @@ protected:
     };
 
 protected:
-    static inline uint8_t       type                        (const AVariant &data);
+    static inline uint8_t       type                        (const Variant &data);
 
 };
 
-#endif // ABSON
+#endif // BSON_H
 

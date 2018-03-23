@@ -1,6 +1,6 @@
 #include "apipeline.h"
 
-#include <aobject.h>
+#include <object.h>
 
 #include "controller.h"
 
@@ -38,14 +38,12 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new AAntiAliasingGL());
     //m_PostEffects.push_back(new ABloomGL());
 
-    m_Select.create  (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
+    m_Select.create (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
     m_Depth.create  (GL_TEXTURE_2D, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
 
-    m_SelectBuffer  = 0;
     glGenFramebuffers(1, &m_SelectBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_SelectBuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_Select.id(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_Depth.id(), 0);
+    m_Buffer->setRenderTarget(1, &m_Select, &m_Depth);
 }
 
 APipeline::~APipeline() {
@@ -57,10 +55,14 @@ void APipeline::draw(Scene &scene, uint32_t) {
     Profiler::statReset(DRAWCALLS);
 
     m_pScene    = &scene;
-    m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
     // Light prepass
+    m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     updateShadows(scene);
 
+    m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
     analizeScene(scene);
 }
 
@@ -94,8 +96,6 @@ Camera *APipeline::activeCamera() {
 }
 
 void APipeline::resize(uint32_t width, uint32_t height) {
-    glViewport(0, 0, width, height);
-
     m_Screen    = Vector2(width, height);
     //m_pAO->resize(width, height);
 
@@ -107,10 +107,10 @@ void APipeline::resize(uint32_t width, uint32_t height) {
     }
 }
 
-void APipeline::drawComponents(AObject &object, uint8_t layer) {
+void APipeline::drawComponents(Object &object, uint8_t layer) {
     for(auto &it : object.getChildren()) {
-        AObject *child  = it;
-        IDrawObject *draw = dynamic_cast<IDrawObject *>(child);
+        Object *child  = it;
+        IDrawObject *draw   = dynamic_cast<IDrawObject *>(child);
         if(draw) {
             draw->draw(*m_Buffer, layer);
         } else {
@@ -128,31 +128,31 @@ void APipeline::drawComponents(AObject &object, uint8_t layer) {
     }
 }
 
-void APipeline::updateShadows(AObject &object) {
+void APipeline::updateShadows(Object &object) {
     for(auto &it : object.getChildren()) {
         ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
         if(light) {
-            light->shadowsUpdate(*m_Buffer);
+            light->shadowsUpdate(*this);
         } else {
             updateShadows(*it);
         }
     }
 }
 
-void APipeline::updateLights(AObject &object, uint8_t layer) {
+void APipeline::updateLights(Object &object, uint8_t layer) {
     for(auto &it : object.getChildren()) {
         ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
         if(light) {
-            light->draw(*m_Buffer, layer);
+            light->draw(*this, layer);
         } else {
             updateLights(*it, layer);
         }
     }
 }
 
-void APipeline::analizeScene(AObject &object) {
-    glBindFramebuffer( GL_FRAMEBUFFER, m_SelectBuffer );
+void APipeline::analizeScene(Object &object) {
     // Retrive object id
+    glBindFramebuffer( GL_FRAMEBUFFER, m_SelectBuffer );
     m_Buffer->clearRenderTarget(true, Vector4(1.0));
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);

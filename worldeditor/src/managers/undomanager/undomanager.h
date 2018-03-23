@@ -11,7 +11,7 @@
 
 #include <patterns/asingleton.h>
 
-class AObject;
+class Object;
 class ObjectCtrl;
 
 class UndoManager : public QObject, public ASingleton<UndoManager> {
@@ -69,7 +69,7 @@ public:
 
     class SelectObjects : public UndoObject {
     public:
-        SelectObjects           (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Selection Change"));
+        SelectObjects           (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Selection Change"));
         void                    undo                (bool redo);
         void                    forceUndo           ();
         virtual bool            isValid             () const;
@@ -79,27 +79,27 @@ public:
 
     class CreateObjects : public UndoObject {
     public:
-        CreateObjects           (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Create Objects"));
+        CreateObjects           (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Create Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
-        AObject::ObjectList     m_Objects;
+        Object::ObjectList      m_Objects;
         SelectObjects          *m_pSelect;
     };
 
     class DestroyObjects : public UndoObject {
     public:
-        DestroyObjects          (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Destroy Objects"));
+        DestroyObjects          (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Destroy Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
         string                  m_Dump;
-        AObject                *m_pParent;
+        Object                 *m_pParent;
     };
 
     class ParentingObjects : public UndoObject {
     public:
-        ParentingObjects        (const AObject::ObjectList &objects, AObject::ObjectList &parents, ObjectCtrl *ctrl, const QString &name = tr("Parenting Objects"));
+        ParentingObjects        (const Object::ObjectList &objects, Object::ObjectList &, ObjectCtrl *ctrl, const QString &name = tr("Parenting Objects"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
@@ -109,7 +109,7 @@ public:
 
     class PropertyObjects : public UndoObject {
     public:
-        PropertyObjects         (const AObject::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Change Property"));
+        PropertyObjects         (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = tr("Change Property"));
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:

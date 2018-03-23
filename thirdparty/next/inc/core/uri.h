@@ -1,18 +1,17 @@
-#ifndef AURI_H
-#define AURI_H
-
+#ifndef URI_H
+#define URI_H
 
 #include <string>
 
-#include "acommon.h"
+#include "common.h"
 
 using namespace std;
 
-class AUriPrivate;
+class UriPrivate;
 
-class NEXT_LIBRARY_EXPORT AUri {
+class NEXT_LIBRARY_EXPORT Uri {
 public:
-    AUri                        (const string &uri);
+    Uri                         (const string &uri);
 
     string                      scheme                      () const;
     string                      host                        () const;
@@ -25,9 +24,9 @@ public:
     string                      suffix                      () const;
 
 private:
-    friend class AUriPrivate;
+    friend class UriPrivate;
 
-    AUriPrivate                *p_ptr;
+    UriPrivate                 *p_ptr;
 };
 
-#endif // AURI_H
+#endif // URI_H

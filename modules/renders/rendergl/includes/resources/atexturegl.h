@@ -19,7 +19,7 @@ public:
 
     void                        resize                      (uint32_t width, uint32_t height);
 
-    void                        loadUserData                (const AVariantMap &data);
+    void                        loadUserData                (const VariantMap &data);
 
     void                        bind                        () const;
     void                        unbind                      () const;

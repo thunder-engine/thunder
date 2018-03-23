@@ -6,8 +6,8 @@
 class Component;
 class Scene;
 
-class NEXT_LIBRARY_EXPORT Actor : public AObject {
-    A_REGISTER(Actor, AObject, Scene)
+class NEXT_LIBRARY_EXPORT Actor : public Object {
+    A_REGISTER(Actor, Object, Scene)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, Position, Actor::position, Actor::setPosition),
@@ -63,7 +63,7 @@ public:
         return static_cast<T *>(addComponent(T::metaClass()->name()));
     }
 
-    void                        setParent               (AObject *parent);
+    void                        setParent               (Object *parent);
 
 protected:
     Vector3                     m_Position;

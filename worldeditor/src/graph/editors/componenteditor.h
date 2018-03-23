@@ -3,7 +3,7 @@
 
 #include "../graphwidget.h"
 
-#include <aobject.h>
+#include <object.h>
 
 class Engine;
 
@@ -17,7 +17,7 @@ public:
     void                    draw                (QPainter &painter, const QRect &r);
     void                    select              (const QPoint &pos);
 
-    void                    setObject           (AObject &object);
+    void                    setObject           (Object &object);
 
     void                    setModified         (bool value) { m_bModified = value; }
     bool                    isModified          () { return m_bModified; }
@@ -25,13 +25,13 @@ public:
     void                    setUnique           (bool value) { m_bUnique = value; }
     bool                    isUnique            () { return m_bUnique; }
 
-    void                    createComponent     (const QString &uri, AObject *parent = 0);
-    void                    deleteComponent     (AObject &object);
+    void                    createComponent     (const QString &uri, Object *parent = 0);
+    void                    deleteComponent     (Object &object);
 
     void                    initObject          ();
 
 signals:
-    void                    nodeSelected        (AObject *object);
+    void                    nodeSelected        (Object *object);
     void                    nodeDeleted         ();
 
 public slots:
@@ -46,7 +46,7 @@ public slots:
     void                    dropEvent           (QDropEvent *event);
 
 private:
-    void                    drawComponent       (QPainter &painter, const QRect &r, AObject *object);
+    void                    drawComponent       (QPainter &painter, const QRect &r, Object *object);
 
     bool                    m_bModified;
     bool                    m_bUnique;
@@ -67,11 +67,11 @@ private:
     QImage                  mEnable;
     QImage                  mGraph;
 
-    Engine                *m_pEngine;
+    Engine                 *m_pEngine;
 
-    AObject                *m_pObject;
-    AObject                *m_pFocused;
-    AObject                *m_pSelected;
+    Object                 *m_pObject;
+    Object                 *m_pFocused;
+    Object                 *m_pSelected;
 };
 
 #endif // COMPONENTEDITOR_H

@@ -5,8 +5,8 @@
 #include <string>
 #include <map>
 
-#include <aobject.h>
-#include <aobjectsystem.h>
+#include <object.h>
+#include <objectsystem.h>
 
 class IFile;
 
@@ -15,7 +15,7 @@ class IController;
 
 class EnginePrivate;
 
-class NEXT_LIBRARY_EXPORT Engine : public AObjectSystem {
+class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
     enum ModeTypes {
         EDIT                    = (1<<0),
@@ -34,20 +34,20 @@ public:
 /*
     Settings
 */
-    static AVariant             value                       (const string &key, const AVariant &defaultValue = AVariant());
+    static Variant              value                       (const string &key, const Variant &defaultValue = Variant());
 
-    static void                 setValue                    (const string &key, const AVariant &value);
+    static void                 setValue                    (const string &key, const Variant &value);
 /*
     Resource management
 */
-    static AObject             *loadResource                (const string &path = string());
+    static Object              *loadResource                (const string &path = string());
 
     template<typename T>
     static T                   *loadResource                (const string &path) {
         return dynamic_cast<T *>(loadResource(path));
     }
 
-    static string               reference                   (AObject *object);
+    static string               reference                   (Object *object);
 
     static void                 reloadBundle                ();
 /*

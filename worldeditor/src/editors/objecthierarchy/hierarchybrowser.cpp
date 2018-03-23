@@ -6,7 +6,7 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 
-#include <aobject.h>
+#include <object.h>
 #include <components/component.h>
 
 #include "objecthierarchymodel.h"
@@ -37,7 +37,7 @@ protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
         if(m_HideComponents) {
-            AObject *object = static_cast<AObject *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
+            Object *object  = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
             result  = (dynamic_cast<Component*>(object) == nullptr);
         }
         if(!m_List.isEmpty()) {
@@ -113,12 +113,12 @@ HierarchyBrowser::~HierarchyBrowser() {
     delete ui;
 }
 
-void HierarchyBrowser::setObject(AObject *object) {
+void HierarchyBrowser::setObject(Object *object) {
     static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel())->setRoot(object);
     onHierarchyUpdated();
 }
 
-void HierarchyBrowser::onSelected(AObject::ObjectList objects) {
+void HierarchyBrowser::onSelected(Object::ObjectList objects) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model   = ui->treeView->model();
     select->select(QModelIndex(), QItemSelectionModel::Clear);
@@ -167,19 +167,19 @@ void HierarchyBrowser::onDragMove(QDragMoveEvent *e) {
 }
 
 void HierarchyBrowser::onDrop(QDropEvent *e) {
-    AObject::ObjectList objects;
-    AObject::ObjectList parents;
+    Object::ObjectList objects;
+    Object::ObjectList parents;
     if(e->mimeData()->hasFormat(gMimeObject)) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split("\n")) {
             ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
-            AObject *item   = model->findObject(it);
+            Object *item    = model->findObject(it);
             QModelIndex index   = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
             if(item) {
                 objects.push_back(item);
                 if(index.isValid()) {
                     if(item != index.internalPointer()) {
-                        parents.push_back(static_cast<AObject *>(index.internalPointer()));
+                        parents.push_back(static_cast<Object *>(index.internalPointer()));
                     }
                 } else {
                     parents.push_back(model->root());
@@ -193,7 +193,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
     m_pRect->hide();
 }
 
-string objectPath(const AObject *object) {
+string objectPath(const Object *object) {
     if(object->parent()) {
         return objectPath(object->parent()) + "/" + object->name();
     }
@@ -206,7 +206,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
     foreach(const QModelIndex &it, ui->treeView->selectionModel()->selectedIndexes()) {
         QModelIndex index   = m_pFilter->mapToSource(it);
         if(index.column() == 0) {
-            AObject *object     = static_cast<AObject *>(index.internalPointer());
+            Object *object  = static_cast<Object *>(index.internalPointer());
             list.push_back(QString::fromStdString(objectPath(object)));
         }
     }
@@ -219,19 +219,19 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
 
 void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
-    AObject::ObjectList list;
+    Object::ObjectList list;
     foreach(QModelIndex it, select->selectedRows()) {
-        list.push_back(static_cast<AObject *>(m_pFilter->mapToSource(it).internalPointer()));
+        list.push_back(static_cast<Object *>(m_pFilter->mapToSource(it).internalPointer()));
     }
     emit selected(list);
     if(index.column() == 2) {
-        AObject *object = static_cast<AObject *>(m_pFilter->mapToSource(index).internalPointer());
+        Object *object  = static_cast<Object *>(m_pFilter->mapToSource(index).internalPointer());
         object->setEnable(!object->isEnable());
     }
 }
 
 void HierarchyBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
-    emit focused(static_cast<AObject *>(m_pFilter->mapToSource(index).internalPointer()));
+    emit focused(static_cast<Object *>(m_pFilter->mapToSource(index).internalPointer()));
 }
 
 void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
@@ -248,9 +248,9 @@ void HierarchyBrowser::onItemDuplicate() {
 
 void HierarchyBrowser::onItemDelete() {
     QItemSelectionModel *select = ui->treeView->selectionModel();
-    AObject::ObjectList list;
+    Object::ObjectList list;
     foreach(QModelIndex it, select->selectedRows()) {
-        list.push_back(static_cast<AObject *>(m_pFilter->mapToSource(it).internalPointer()));
+        list.push_back(static_cast<Object *>(m_pFilter->mapToSource(it).internalPointer()));
     }
     emit removed(list);
 }
