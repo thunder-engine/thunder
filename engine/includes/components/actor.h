@@ -11,7 +11,7 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, Position, Actor::position, Actor::setPosition),
-        A_PROPERTY(Quaternion, Rotation, Actor::rotation, Actor::setRotation),
+        A_PROPERTY(Vector3, Rotation, Actor::euler, Actor::setEuler),
         A_PROPERTY(Vector3, Scale, Actor::scale, Actor::setScale)
     )
 
@@ -22,6 +22,8 @@ public:
 
     virtual Vector3             position                () const;
 
+    virtual Vector3             euler                   () const;
+
     virtual Quaternion          rotation                () const;
 
     virtual Vector3             scale                   () const;
@@ -29,6 +31,8 @@ public:
     virtual Matrix4             worldTransform          ();
 
     virtual Vector3             worldPosition           () const;
+
+    virtual Vector3             worldEuler              () const;
 
     virtual Quaternion          worldRotation           () const;
 
@@ -47,6 +51,8 @@ public:
     }
 
     virtual void                setPosition             (const Vector3 &value);
+
+    virtual void                setEuler                (const Vector3  &value);
 
     virtual void                setRotation             (const Quaternion  &value);
 
@@ -67,6 +73,7 @@ public:
 
 protected:
     Vector3                     m_Position;
+    Vector3                     m_Euler;
     Quaternion                  m_Rotation;
     Vector3                     m_Scale;
 
