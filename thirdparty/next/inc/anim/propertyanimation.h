@@ -15,7 +15,7 @@ public:
 
     const Object                   *target                      () const;
 
-    const char                     *property                    () const;
+    const char                     *targetProperty              () const;
 
 protected:
     void                            valueUpdated                (const Variant &value);

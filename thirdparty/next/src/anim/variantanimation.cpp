@@ -38,7 +38,7 @@ void VariantAnimation::update() {
     if(p_ptr->m_KeyFrames.size() >= 2) {
         KeyFrame a;
         KeyFrame b;
-        for(int i = 0; i < p_ptr->m_KeyFrames.size(); i++) {
+        for(size_t i = 0; i < p_ptr->m_KeyFrames.size(); i++) {
             if(factor == p_ptr->m_KeyFrames[i].first) {
                 p_ptr->m_CurrentValue   = p_ptr->m_KeyFrames[i].second;
                 return;

@@ -1,4 +1,4 @@
-#include "core/ThreadPool.h"
+#include "core/threadpool.h"
 
 #include <thread>
 #include <condition_variable>
@@ -44,9 +44,9 @@ public:
 
         condition_variable      m_Variable;
 
-        Object                *m_pTask;
+        Object                 *m_pTask;
 
-        ThreadPoolPrivate     *m_pPool;
+        ThreadPoolPrivate      *m_pPool;
     };
 
 public:
@@ -62,9 +62,9 @@ public:
 };
 
 ThreadPoolPrivate::APoolWorker::APoolWorker(ThreadPoolPrivate *pool) :
-        m_pPool(pool),
+        m_Enabled(true),
         m_pTask(nullptr),
-        m_Enabled(true) {
+        m_pPool(pool) {
     PROFILE_FUNCTION()
     m_Thread    = thread(&APoolWorker::exec, this);
 }

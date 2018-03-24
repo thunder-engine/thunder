@@ -33,7 +33,7 @@ namespace math {
     }
 
     inline areal noise2d(areal x, areal y) {
-        int n   = x + y * 57;
+        int n   = int(x) + int(y) * 57;
         n       = (n << 13) ^ n;
         return ( 1.0f - ( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f);
     }
@@ -47,10 +47,10 @@ namespace math {
     }
 
     areal perlinNoise(areal x, areal y) {
-        areal intx          = int(x);
+        areal intx          = areal(int(x));
         areal fractionalx   = x - intx;
 
-        areal inty          = int(y);
+        areal inty          = areal(int(y));
         areal fractionaly   = y - inty;
 
         areal v1    = smoothed(intx,     inty);
