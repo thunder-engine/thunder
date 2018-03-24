@@ -4,7 +4,6 @@
     #include <Shlobj.h>
 #elif __APPLE__
     #include <CoreFoundation/CoreFoundation.h>
-    #include <ApplicationServices/ApplicationServices.h>
 #endif
 #if(__GNUC__)
     #include <dlfcn.h>
