@@ -4,8 +4,8 @@
 
 MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
         m_pName(name),
-        m_pSuper(super),
         m_Constructor(constructor),
+        m_pSuper(super),
         m_pMethods(methods),
         m_pProperties(props),
         m_MethodCount(0),

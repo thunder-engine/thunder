@@ -39,13 +39,13 @@ public:
     /// Object name
     string                          m_sName;
 
-    Object::ObjectList             m_mChildren;
-    Object::LinkList               m_lRecievers;
-    Object::LinkList               m_lSenders;
+    Object::ObjectList              m_mChildren;
+    Object::LinkList                m_lRecievers;
+    Object::LinkList                m_lSenders;
 
-    Object                        *m_pCurrentSender;
+    Object                         *m_pCurrentSender;
 
-    typedef queue<Event *>         EventQueue;
+    typedef queue<Event *>          EventQueue;
     EventQueue                      m_EventQueue;
 
     uint32_t                        m_UUID;
@@ -195,7 +195,7 @@ void Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION()
     if(sender && !sender->p_ptr->m_lRecievers.empty()) {
-        for(auto snd = sender->p_ptr->m_lRecievers.begin(); snd != sender->p_ptr->m_lRecievers.end(); snd) {
+        for(auto snd = sender->p_ptr->m_lRecievers.begin(); snd != sender->p_ptr->m_lRecievers.end(); ) {
             Link *data = &(*snd);
 
             if(data->sender == sender) {
@@ -203,7 +203,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
                     if(receiver == nullptr || data->receiver == receiver) {
                         if(method == nullptr || (receiver && data->method == receiver->metaObject()->indexOfMethod(&method[1]))) {
 
-                            for(auto rcv = data->receiver->p_ptr->m_lSenders.begin(); rcv != data->receiver->p_ptr->m_lSenders.end(); rcv) {
+                            for(auto rcv = data->receiver->p_ptr->m_lSenders.begin(); rcv != data->receiver->p_ptr->m_lSenders.end(); ) {
                                 if(*rcv == *data) {
                                     unique_lock<mutex> locker(data->receiver->p_ptr->m_Mutex);
                                     rcv = data->receiver->p_ptr->m_lSenders.erase(rcv);
