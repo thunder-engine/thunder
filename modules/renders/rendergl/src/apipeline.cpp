@@ -51,8 +51,8 @@ APipeline::~APipeline() {
 }
 
 void APipeline::draw(Scene &scene, uint32_t) {
-    Profiler::statReset(POLYGONS);
-    Profiler::statReset(DRAWCALLS);
+    PROFILER_RESET(POLYGONS);
+    PROFILER_RESET(DRAWCALLS);
 
     m_pScene    = &scene;
     // Light prepass

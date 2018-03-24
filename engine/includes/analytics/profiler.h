@@ -11,10 +11,14 @@
     #define PROFILER_MARKER; Profiler MARK(__FUNCTION__);
 
     #define PROFILER_STAT(x, y) Profiler::statAdd(x, y);
+
+    #define PROFILER_RESET(x) Profiler::statReset(x);
 #else
     #define PROFILER_MARKER
 
     #define PROFILER_STAT(x, y)
+
+    #define PROFILER_RESET(x)
 #endif
 
 class NEXT_LIBRARY_EXPORT Profiler {

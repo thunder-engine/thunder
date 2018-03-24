@@ -65,8 +65,6 @@ void QbsBuilder::generateProject(const QStringList &code) {
 }
 
 bool QbsBuilder::buildProject() {
-    QStringList args;
-    args << "build" << m_Settings;
 #ifndef _DEBUG
     QString mode    = "release";
 #else
@@ -77,25 +75,33 @@ bool QbsBuilder::buildProject() {
         mode        = "debug";
         product    += gEditorSuffix;
     }
-    args << "--products" << product << mode << "profile:" + m_Profiles[0] ;
-
-    m_pProcess->start(m_pMgr->qbsPath(), args);
-    if(!m_pProcess->waitForStarted()) {
-        Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
-        return false;
+    {
+        QProcess qbs(this);
+        qbs.setWorkingDirectory(m_Project);
+        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << mode << "profile:" + m_Profiles[0]);
+        if(qbs.waitForStarted()) {
+            qbs.waitForFinished();
+            Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
+        }
+    }
+    {
+        QStringList args;
+        args << "build" << m_Settings;
+        args << "--products" << product << mode << "profile:" + m_Profiles[0];
+        m_pProcess->start(m_pMgr->qbsPath(), args);
+        if(!m_pProcess->waitForStarted()) {
+            Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
+            return false;
+        }
     }
 
     return true;
 }
 
 QString QbsBuilder::builderVersion() {
-    QStringList args;
-    args << "--version";
-
     QProcess qbs(this);
-
     qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_pMgr->qbsPath(), args);
+    qbs.start(m_pMgr->qbsPath(), QStringList() << "--version" );
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         return qbs.readAll().simplified();
     }
@@ -104,14 +110,12 @@ QString QbsBuilder::builderVersion() {
 
 void QbsBuilder::builderInit() {
     {
-        QStringList args;
-        args << "setup-toolchains" << "--detect" << m_Settings;
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), args);
+        qbs.start(m_pMgr->qbsPath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
-            Log(Log::INF) << "Failed:" << qbs.readAll().constData();
+            Log(Log::INF) << "Found:" << qbs.readAll().constData();
         }
     }
     {

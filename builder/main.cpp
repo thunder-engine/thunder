@@ -37,6 +37,10 @@ int main(int argc, char *argv[]) {
 
     parser.process(a);
 
+    if(!parser.isSet(sourceFileOption) || !parser.isSet(targetDirectoryOption)) {
+        parser.showHelp(1);
+    }
+
     ProjectManager *mgr = ProjectManager::instance();
     mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
