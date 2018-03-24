@@ -49,6 +49,7 @@ AssetManager::AssetManager() {
 
     connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SIGNAL(fileChanged(QString)));
     connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(onFileChanged(QString)));
+    connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(reimport()));
 
     m_pTimer    = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onPerform()));

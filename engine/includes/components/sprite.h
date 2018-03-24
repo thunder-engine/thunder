@@ -6,13 +6,13 @@
 #include "resources/material.h"
 
 class NEXT_LIBRARY_EXPORT Sprite : public Component {
-    A_REGISTER(Sprite, Component, Components)
+    A_REGISTER(Sprite, Component, Components);
 
     A_PROPERTIES(
         A_PROPERTY(Material*, Material, Sprite::material, Sprite::setMaterial),
         A_PROPERTY(Texture*, Texture, Sprite::texture, Sprite::setTexture)
-    )
-    A_NOMETHODS()
+    );
+    A_NOMETHODS();
 
 public:
     Sprite                      ();

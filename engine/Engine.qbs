@@ -52,6 +52,11 @@ Project {
             cpp.dynamicLibraries: [ "Shell32" ]
         }
 
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.weakFrameworks: ["IOKit"]
+        }
+
         Group {
             name: "Install Dynamic Engine"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]

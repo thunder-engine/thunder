@@ -9,13 +9,13 @@
 #include <array>
 
 class NEXT_LIBRARY_EXPORT StaticMesh : public Component {
-    A_REGISTER(StaticMesh, Component, Components)
+    A_REGISTER(StaticMesh, Component, Components);
 
     A_PROPERTIES (
         A_PROPERTY(Mesh*, Mesh, StaticMesh::mesh, StaticMesh::setMesh),
         A_PROPERTY(MateralArray, Materials, StaticMesh::materials, StaticMesh::setMaterials)
-    )
-    A_NOMETHODS()
+    );
+    A_NOMETHODS();
 
 public:
     StaticMesh                  ();

@@ -6,14 +6,14 @@
 #include "component.h"
 
 class NEXT_LIBRARY_EXPORT Camera : public Component {
-    A_REGISTER(Camera, Component, Components)
+    A_REGISTER(Camera, Component, Components);
 
     A_PROPERTIES(
         A_PROPERTY(double, Fov, Camera::fov, Camera::setFov),
         A_PROPERTY(double, Near, Camera::nearPlane, Camera::setNear),
         A_PROPERTY(double, Far, Camera::farPlane, Camera::setFar),
         A_PROPERTY(Color, Background_color, Camera::color, Camera::setColor)
-    )
+    );
 
 public:
     /*! \enum Types */

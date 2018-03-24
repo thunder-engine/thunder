@@ -6,7 +6,7 @@
 class Actor;
 
 class NEXT_LIBRARY_EXPORT Component : public Object {
-    A_REGISTER(Component, Object, Components)
+    A_REGISTER(Component, Object, Components);
 
 public:
     Component                   ();

@@ -7,6 +7,7 @@
 
 #include "assetmanager.h"
 #include "projectmanager.h"
+#include "codemanager.h"
 
 #include "iconrender.h"
 
@@ -17,8 +18,10 @@ ImportQueue::ImportQueue(QWidget *parent) :
 
     AssetManager *manager   = AssetManager::instance();
     connect(manager, SIGNAL(importStarted(int,QString)), this, SLOT(onStarted(int,QString)));
-    connect(manager, SIGNAL(importFinished()), this, SLOT(onFinished()));
     connect(manager, SIGNAL(imported(QString,uint8_t)), this, SLOT(onProcessed(QString,uint8_t)));
+
+    connect(manager, &AssetManager::importFinished, this, &ImportQueue::onFinished);
+    connect(manager, &AssetManager::importFinished, CodeManager::instance(), &CodeManager::buildProject);
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
 
