@@ -4,7 +4,7 @@
 #include "engine.h"
 
 class NEXT_LIBRARY_EXPORT Chunk : public Object {
-    A_REGISTER(Chunk, Object, General)
+    A_REGISTER(Chunk, Object, General);
 
 };
 

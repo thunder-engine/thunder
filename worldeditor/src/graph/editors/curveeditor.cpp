@@ -75,17 +75,18 @@ void CurveEditor::draw(QPainter &mPainter, const QRect &r) {
     mPainter.setPen( m_Color );
     mPainter.drawPath( m_Path );
 
-    int x               = 0;
-    int y               = 0;
+    int x   = 0;
+    int y   = 0;
     QString str;
     // Points
-    //int v               = 0;
-    int p               = 0;
+    //int v = 0;
+    //int p = 0;
     for(int i = 0; i < m_Path.elementCount(); i++) {
         QPainterPath::Element mElement;
         mElement    = m_Path.elementAt(i);
-        if(mElement.type == QPainterPath::CurveToElement)
+        if(mElement.type == QPainterPath::CurveToElement) {
             i += 2;
+        }
         mElement    = m_Path.elementAt(i);
 /*
         if(pRange) {
@@ -163,7 +164,7 @@ void CurveEditor::select(const QPoint &pos) {
         focus_p = -1;
         focus_v = -1;
 
-        uint32_t p  = 0;
+        //uint32_t p  = 0;
         //uint32_t v  = 0;
         for(uint32_t i = 0; i < m_Path.elementCount(); i++) {
             QPainterPath::Element mElement;

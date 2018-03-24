@@ -276,38 +276,39 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
         return;
     }
 
+    Property *it    = parent;
     // Add properties left in the list
     foreach(QByteArray dynProp, dynamicProperties) {
         QList<QByteArray> list  = dynProp.split('/');
 
-        Property *s     = parent;
-        parent          = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : parent;
+        Property *s = it;
+        it          = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = 0;
 
-            if(parent && i < list.size() - 1) {
-                Property *child = parent->findChild<Property *>(list[i]);
+            if(it && i < list.size() - 1) {
+                Property *child = it->findChild<Property *>(list[i]);
                 if(child) {
-                    parent  = child;
+                    it  = child;
                 } else {
-                    p       = new Property(list[i], propertyObject, parent, true);
-                    parent  = p;
+                    p   = new Property(list[i], propertyObject, it, true);
+                    it  = p;
                 }
             } else {
                 if(!m_userCallbacks.isEmpty()) {
                     QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
                     while( p == 0 && iter != m_userCallbacks.end() ) {
-                        p   = (*iter)(dynProp, propertyObject, parent);
+                        p   = (*iter)(dynProp, propertyObject, it);
                         ++iter;
                     }
                 }
                 if(p == 0) {
-                    p   = new Property(dynProp, propertyObject, parent);
+                    p   = new Property(dynProp, propertyObject, it);
                 }
                 p->setProperty("__Dynamic", true);
             }
         }
-        parent  = s;
+        it  = s;
     }
 }
 

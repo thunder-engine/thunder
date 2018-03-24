@@ -161,6 +161,7 @@ void PluginModel::reloadPlugin(const QString &path) {
         // Unload plugin
         delete plugin;
         plugin  = nullptr;
+        m_Extensions.remove(ext.key());
 
         QObject *child  = m_rootItem->findChild<QObject *>(info.fileName());
         if(child) {
@@ -260,6 +261,6 @@ void PluginModel::serializeComponents(Object *parent, const string &type, Compon
     for(auto it : array) {
         Variant v   = Engine::toVariant(it);
         map[it->parent()] = Json::save(v).c_str();
-        delete []it;
+        delete it;
     }
 }

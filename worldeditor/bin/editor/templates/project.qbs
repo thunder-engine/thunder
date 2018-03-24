@@ -25,11 +25,11 @@ Project {
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + "/bin" + project.platform
+            project.sdkPath + project.platform + "/bin"
         ]
         cpp.dynamicLibraries: [
-            "next",
-            "engine" ]
+            "next-editor",
+            "engine-editor" ]
         cpp.cxxLanguageVersion: "c++14"
 
         Group {

@@ -7,13 +7,13 @@ class Component;
 class Scene;
 
 class NEXT_LIBRARY_EXPORT Actor : public Object {
-    A_REGISTER(Actor, Object, Scene)
+    A_REGISTER(Actor, Object, Scene);
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, Position, Actor::position, Actor::setPosition),
         A_PROPERTY(Vector3, Rotation, Actor::euler, Actor::setEuler),
         A_PROPERTY(Vector3, Scale, Actor::scale, Actor::setScale)
-    )
+    );
 
 public:
     Actor                       ();

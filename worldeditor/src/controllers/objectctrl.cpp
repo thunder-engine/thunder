@@ -577,9 +577,8 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 } break;
                 case MODE_SCALE: {
                     if(mDrag) {
-                        float scale = 0.0f;
                         Vector3 delta = (mWorld - mSaved);
-                        scale = (delta.x + delta.y + delta.z) * 0.01;
+                        float scale = (delta.x + delta.y + delta.z) * 0.01;
                         if(mScaleGrid > 0) {
                             scale = mScaleGrid * int(scale / mScaleGrid);
                         }
