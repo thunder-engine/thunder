@@ -51,7 +51,7 @@ Project {
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.identifierPrefix: "com.thunderengine"
 
-        cpp.defines: []
+        cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/lib"
@@ -60,11 +60,11 @@ Project {
         cpp.staticLibraries: [
             "next",
             "engine",
-            "rendergl",
             "physfs",
             "zlib",
             "glfw",
-            "glad"
+            "glad",
+            "rendergl"
         ]
         cpp.cxxLanguageVersion: "c++14"
 

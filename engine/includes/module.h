@@ -6,7 +6,7 @@
 
 class ISystem;
 
-class IModule {
+class NEXT_LIBRARY_EXPORT IModule {
 public:
     enum PluginTypes {
         SYSTEM                      = (1<<0),
