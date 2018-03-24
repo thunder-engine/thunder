@@ -1,4 +1,4 @@
-#include "core/ObjectSystem.h"
+#include "core/objectsystem.h"
 #include "core/uri.h"
 
 #include <mutex>

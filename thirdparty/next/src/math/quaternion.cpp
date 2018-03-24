@@ -46,12 +46,12 @@ Quaternion::Quaternion(const Vector3 &euler) {
                  euler.y * DEG2RAD * 0.5f,
                  euler.z * DEG2RAD * 0.5f);
 
-    Vector3 c((rad2.x == PI * 0.5) ? 0.0 : cos(rad2.x),
-              (rad2.y == PI * 0.5) ? 0.0 : cos(rad2.y),
-              (rad2.z == PI * 0.5) ? 0.0 : cos(rad2.z));
-    Vector3 s((rad2.x == PI) ? 0.0 : sin(rad2.x),
-              (rad2.y == PI) ? 0.0 : sin(rad2.y),
-              (rad2.z == PI) ? 0.0 : sin(rad2.z));
+    Vector3 c((rad2.x == PI * 0.5f) ? 0.0f : cos(rad2.x),
+              (rad2.y == PI * 0.5f) ? 0.0f : cos(rad2.y),
+              (rad2.z == PI * 0.5f) ? 0.0f : cos(rad2.z));
+    Vector3 s((rad2.x == PI) ? 0.0f : sin(rad2.x),
+              (rad2.y == PI) ? 0.0f : sin(rad2.y),
+              (rad2.z == PI) ? 0.0f : sin(rad2.z));
 
     w = c.x * c.y * c.z + s.x * s.y * s.z;
     x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -82,8 +82,8 @@ Quaternion::Quaternion(const Matrix3 &matrix) {
         index   = 3;
     }
 
-    areal biggest   = sqrt(four + 1) * 0.5;
-    areal mult = 0.25 / biggest;
+    areal biggest   = sqrt(four + 1) * 0.5f;
+    areal mult = 0.25f / biggest;
 
     switch(index) {
         case 0: {

@@ -31,7 +31,7 @@ const Object *PropertyAnimation::target() const {
     return p_ptr->m_pObject;
 }
 
-const char *PropertyAnimation::property() const {
+const char *PropertyAnimation::targetProperty() const {
     if(p_ptr->m_Property.isValid()) {
         return p_ptr->m_Property.name();
     }

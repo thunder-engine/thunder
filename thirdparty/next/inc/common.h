@@ -25,6 +25,8 @@
     #define PROFILE_STOP
 #endif
 
+#define A_UNUSED(a) (void)a;
+
 typedef float areal;
 
 #endif // ACOMMON_H

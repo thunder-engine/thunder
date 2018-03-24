@@ -216,9 +216,10 @@ areal Vector3::sqrLength() const {
 */
 areal Vector3::normalize() {
     areal len = length();
-    if (len == 0.0)
-        return 0.0;
-    (*this) *= (1.0 / len);
+    if (len == 0.0f) {
+        return 0.0f;
+    }
+    (*this) *= (1.0f / len);
 
     return len;
 }
@@ -229,8 +230,8 @@ areal Vector3::normalize() {
 */
 Vector3 Vector3::cross(const Vector3 &vector) const {
     return Vector3(y * vector.z - z * vector.y,
-                     z * vector.x - x * vector.z,
-                     x * vector.y - y * vector.x);
+                   z * vector.x - x * vector.z,
+                   x * vector.y - y * vector.x);
 }
 /*!
     Returns the dot-product of this vector and given \a vector.

@@ -14,9 +14,9 @@ public:
 
     Animation::Direction    m_Direction;
     Animation::State        m_State;
-    uint32_t                m_CurrentLoop;
+    int32_t                 m_CurrentLoop;
     int32_t                 m_CurrentTime;
-    uint32_t                m_TotalCurrentTime;
+    int32_t                 m_TotalCurrentTime;
     int32_t                 m_LoopCount;
 };
 

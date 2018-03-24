@@ -328,8 +328,8 @@ bool MetaType::toFloat(void *to, const void *from, const uint32_t fromType) {
     bool result = true;
     float *r    = static_cast<float *>(to);
     switch(fromType) {
-        case BOOLEAN: { *r  = double(*(static_cast<const bool *>(from))); } break;
-        case INTEGER: { *r  = double(*(static_cast<const int *>(from))); } break;
+        case BOOLEAN: { *r  = areal(*(static_cast<const bool *>(from))); } break;
+        case INTEGER: { *r  = areal(*(static_cast<const int *>(from))); } break;
         case STRING:  {
             string s    = *(static_cast<const string *>(from));
             char *end;
@@ -404,7 +404,7 @@ bool MetaType::toVector2(void *to, const void *from, const uint32_t fromType) {
     bool result    = true;
     Vector2 *r    = static_cast<Vector2 *>(to);
     switch(fromType) {
-        case INTEGER:   { *r  = Vector2(*(static_cast<const int *>(from))); } break;
+        case INTEGER:   { *r  = Vector2(areal(*(static_cast<const int *>(from)))); } break;
         case FLOAT:     { *r  = Vector2(*(static_cast<const float *>(from))); } break;
         case VARIANTLIST: {
             const VariantList *list    = reinterpret_cast<const VariantList *>(from);
@@ -423,7 +423,7 @@ bool MetaType::toVector3(void *to, const void *from, const uint32_t fromType) {
     bool result     = true;
     Vector3 *r    = static_cast<Vector3 *>(to);
     switch(fromType) {
-        case INTEGER:   { *r  = Vector3(*(static_cast<const int *>(from))); } break;
+        case INTEGER:   { *r  = Vector3(areal(*(static_cast<const int *>(from)))); } break;
         case FLOAT:     { *r  = Vector3(*(static_cast<const float *>(from))); } break;
         case VARIANTLIST: {
             const VariantList *list    = reinterpret_cast<const VariantList *>(from);
@@ -443,7 +443,7 @@ bool MetaType::toVector4(void *to, const void *from, const uint32_t fromType) {
     bool result     = true;
     Vector4 *r    = static_cast<Vector4 *>(to);
     switch(fromType) {
-        case INTEGER:   { *r  = Vector4(*(static_cast<const int *>(from))); } break;
+        case INTEGER:   { *r  = Vector4(areal(*(static_cast<const int *>(from)))); } break;
         case FLOAT:     { *r  = Vector4(*(static_cast<const float *>(from))); } break;
         case VARIANTLIST: {
             const VariantList *list    = reinterpret_cast<const VariantList *>(from);

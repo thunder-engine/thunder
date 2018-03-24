@@ -194,9 +194,10 @@ areal Vector2::sqrLength() const {
 */
 areal Vector2::normalize() {
     areal len = length();
-    if (len == 0.0)
-        return 0.0;
-    (*this) *= (1.0 / len);
+    if (len == 0.0f) {
+        return 0.0f;
+    }
+    (*this) *= (1.0f / len);
 
     return len;
 }
