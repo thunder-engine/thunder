@@ -111,6 +111,7 @@ private slots:
     void                    on_actionBuild_Project_triggered            ();
 
     void                    on_actionOptions_triggered                  ();
+    void on_actionAbout_triggered();
 };
 
 #endif // WORLDBUILDER_H

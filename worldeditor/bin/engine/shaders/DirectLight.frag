@@ -47,7 +47,7 @@ void main (void) {
         float depth     = texture( depthMap, _uv0 ).x;
         vec4 world      = getWorld( light.mvpi, _uv0, depth );
 
-        vec3 shadow     = vec3(0.0);
+        vec3 shadow     = vec3(1.0);
         if(light.shadows == 1.0) {
             int index   = 0;
             vec4 proj   = light.matrix[index] * ( world / world.w );

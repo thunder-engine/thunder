@@ -32,17 +32,6 @@ Project {
         "../thirdparty/zlib/src"
     ]
 
-    property stringList defines: {
-        var result  = [
-            "COMPANY_NAME=\"" + COMPANY_NAME + "\"",
-            "EDITOR_NAME=\"" + EDITOR_NAME + "\"",
-            "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
-            "SDK_VERSION=\"" + SDK_VERSION + "\"",
-            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR
-        ];
-        return result;
-    }
-
     QtGuiApplication {
         name: worldEditor.EDITOR_NAME
         condition: worldEditor.desktop

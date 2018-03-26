@@ -15,6 +15,7 @@
         <file>editor/Scale.png</file>
         <file>icons/bigthunder.png</file>
         <file>icons/thunder.png</file>
+        <file>icons/thunder.svg</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

@@ -34,6 +34,8 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+#include "aboutdialog.h"
+
 // System
 #include "common.h"
 #include "qlog.h"
@@ -131,6 +133,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->centralwidget->addToolWindow(ui->consoleOutput, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->contentBrowser));
     ui->centralwidget->addToolWindow(ui->projectWidget, QToolWindowManager::NoArea);
 
+    ui->actionAbout->setText(tr("About %1...").arg(EDITOR_NAME));
     foreach(QWidget *it, ui->centralwidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
         ui->menuWindow->insertAction(ui->actionSave_Layout, action);
@@ -472,5 +475,10 @@ void SceneComposer::parseLogs(const QString &log) {
 
 void SceneComposer::on_actionOptions_triggered() {
     ConfigDialog dlg;
+    dlg.exec();
+}
+
+void SceneComposer::on_actionAbout_triggered() {
+    AboutDialog dlg;
     dlg.exec();
 }
