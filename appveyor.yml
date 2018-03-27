@@ -1,5 +1,5 @@
 clone_depth: 200
-version: '1.0.{build}'
+version: '2.0.{build}'
 
 environment:
   matrix:
@@ -19,16 +19,18 @@ build_script:
   - qbs config defaultProfile qt
   - qbs build --all-products release
 
+artifacts:
+  - path: 'ThunderEngine*.7z'
+    name: Binaries
+
 deploy:
   - provider: FTP
     protocol: ftp
     host: ftp.thunderengine.ru
-    username: u0474941_deploy
+    username:
+      secure: /p8MbuOVjNDQWc6qoXm+Zg==
     password:
-      secure: RZqica2UQ8drJMDdKjtUKA==
-    folder: artefacts
-    artifact: /.*\.7z/
+      secure: bSl/ZDdDyvSPlyBdsEEZIg==
     on:
         branch: master
         appveyor_repo_tag: false
-        push_release: true

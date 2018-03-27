@@ -31,4 +31,6 @@ matrix:
         - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
         - qbs config profiles.qt-brew.baseProfile xcode-macosx-x86_64
         - qbs config defaultProfile qt-brew
-        - qbs install
+        - qbs install --all-products release
+      after_success:
+        "curl --ftp-create-dirs -T ThunderEngine-macos-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-macos-x86_64.tar.gz"
