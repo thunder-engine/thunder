@@ -1,7 +1,7 @@
 #include "math/amath.h"
 
 /*!
-    \class Matrix3
+    \class Matrix4
     \brief The Matrix4 class represents a 4x4 transform matrix in 3D space.
     \since Next 1.0
     \inmodule Math
@@ -42,9 +42,9 @@ Matrix4::Matrix4(const Vector3 &position, const Quaternion &rotation, const Vect
     Returns true if this matrix is equal to given \a matrix; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
-bool Matrix4::operator==(const Matrix4 &vector) const {
+bool Matrix4::operator==(const Matrix4 &matrix) const {
     for(int i = 0; i < 16; i++) {
-        if(mat[i] != vector.mat[i]) {
+        if(mat[i] != matrix.mat[i]) {
             return false;
         }
     }
@@ -54,8 +54,8 @@ bool Matrix4::operator==(const Matrix4 &vector) const {
     Returns true if this matrix is NOT equal to given \a matrix; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
-bool Matrix4::operator!=(const Matrix4 &vector) const {
-    return !(*this == vector);
+bool Matrix4::operator!=(const Matrix4 &matrix) const {
+    return !(*this == matrix);
 }
 /*!
     Returns the result of multiplying this matrix and the given 3D \a vector.
@@ -293,7 +293,7 @@ Vector3 Matrix4::euler() {
     return rotation().euler();
 }
 /*!
-    Constructs a matrix that reflects the coordinate system about a plane.
+    Constructs a matrix that reflects the coordinate system about the \a plane.
 */
 void Matrix4::reflect(const Vector4 &plane) {
     areal x = plane.x;

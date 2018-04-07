@@ -36,7 +36,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             switch(index.column()) {
                 case 0: return QString::fromStdString(item->name());
                 case 1: return QString::fromStdString(item->typeName());
-                case 2: return item->isEnable();
+                case 2: return true;//item->isEnable();
                 default: break;
             }
         } break;

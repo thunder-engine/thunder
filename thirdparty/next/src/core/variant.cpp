@@ -162,7 +162,7 @@ bool Variant::toBool() const {
 
 int Variant::toInt() const {
     PROFILE_FUNCTION()
-    return value<int>();
+    return value<int32_t>();
 }
 
 float Variant::toFloat() const {
@@ -182,9 +182,7 @@ const VariantMap Variant::toMap() const {
 
 const VariantList Variant::toList() const {
     PROFILE_FUNCTION()
-    VariantList result = value<VariantList>();
-    result.push_front(static_cast<int>(mData.type));
-    return result;
+    return value<VariantList>();
 }
 
 const ByteArray Variant::toByteArray() const {

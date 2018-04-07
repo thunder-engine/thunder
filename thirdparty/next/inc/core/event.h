@@ -8,20 +8,20 @@
 class NEXT_LIBRARY_EXPORT Event {
 public:
     enum Type {
-        Invalid                 = 0,
-        MethodCall,
-        Timer,
-        Delete,
-        UserType                = 100
+        INVALID                 = 0,
+        METHODCALL,
+        TIMEREVENT,
+        DESTROY,
+        USERTYPE                = 100
     };
 
 public:
-    Event                       (Type type);
+    Event                       (uint32_t type);
 
-    Type                        type                        () const;
+    uint32_t                    type                        () const;
 
 protected:
-    Type                        m_Type;
+    uint32_t                    m_Type;
 };
 
 #endif // EVENT_H

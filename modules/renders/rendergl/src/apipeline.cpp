@@ -116,9 +116,9 @@ void APipeline::drawComponents(Object &object, uint8_t layer) {
         } else {
             Actor *actor    = dynamic_cast<Actor *>(child);
             if(actor) {
-                if(!actor->isEnable()) {
-                    continue;
-                }
+                //if(!actor->isEnable()) {
+                //    continue;
+                //}
             }
             drawComponents(*child, layer);
             if(actor) {

@@ -122,7 +122,6 @@ Variant ObjectSystem::toVariant(const Object *object) {
         o.push_back(int((parent) ? parent->uuid() : 0));
         o.push_back(it->typeName());
         o.push_back(it->name());
-        o.push_back(it->isEnable());
 
         // Save base properties
         VariantMap properties;
@@ -187,15 +186,12 @@ Object *ObjectSystem::toObject(const Variant &variant) {
             i++;
             string name = (*i).toString();
             i++;
-            bool enable = (*i).toBool();
-            i++;
 
             Object *object  = objectCreate(type, name, parent);
             if(object) {
                 if(!object->parent()) {
                     result  = object;
                 }
-                object->setEnable(enable);
                 array[uuid] = object;
                 // Load base properties
                 for(const auto &it : (*i).toMap()) {

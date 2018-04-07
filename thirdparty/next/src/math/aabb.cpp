@@ -7,12 +7,12 @@
 
     Bounded volume in space in the form of a rectangular parallelepiped, with a period parallel to the coordinate axes in the world system.
     When the object rotates, the AABB changes its dimensions, but it always remains oriented along the coordinate axes.
-    Axis Aligned Bounding Box represented by \p center of box and \p size.
+    Axis Aligned Bounding Box represented by \a center of box and \a size.
 
     \sa Vector3, OBBox
 */
 /*!
-    Constructs an bounding box with \p center (0, 0, 0) and \p size (1, 1, 1).
+    Constructs an bounding box with center (0, 0, 0) and size (1, 1, 1).
 */
 AABBox::AABBox() :
         center(0.0),

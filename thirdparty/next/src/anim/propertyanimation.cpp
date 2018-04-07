@@ -16,7 +16,7 @@ PropertyAnimation::PropertyAnimation() :
 
 }
 
-void PropertyAnimation::setTarget(Object *object, char *property) {
+void PropertyAnimation::setTarget(Object *object, const char *property) {
     if(object) {
         const MetaObject *meta  = object->metaObject();
         int32_t index   = meta->indexOfProperty(property);

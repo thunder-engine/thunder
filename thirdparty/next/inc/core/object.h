@@ -104,10 +104,7 @@ public:
 
     void                            deleteLater                 ();
 
-    void                            setName                     (const string &value);
-
-    bool                            isEnable                    () const;
-
+    void                            setName                     (const string &name);
 
     Object                         *find                        (const string &path);
 
@@ -156,23 +153,15 @@ public:
     virtual Variant                 property                    (const char *name) const;
     virtual void                    setProperty                 (const char *name, const Variant &value);
 
-    virtual void                    setEnable                   (bool state);
+    virtual bool                    event                       (Event *event);
 
-    virtual bool                    event                       (Event *);
-
-    virtual void                    loadUserData                (const VariantMap &);
+    virtual void                    loadUserData                (const VariantMap &data);
 
     virtual VariantMap              saveUserData                () const;
 
 protected:
-    void                            addChild                    (Object *value);
-    void                            removeChild                 (Object *value);
-
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
-    bool                            postEvent                   (Event *e);
-    void                            processEvents               ();
-
-    virtual void                    onCreated                   ();
+    void                            postEvent                   (Event *event);
 
     Object                         *sender                      () const;
 
@@ -182,6 +171,11 @@ private:
     friend class ObjectSystem;
 
 private:
+    void                            processEvents               ();
+
+    void                            addChild                    (Object *value);
+    void                            removeChild                 (Object *value);
+
     void                            setUUID                     (uint32_t id);
 
     bool                            operator==                  (const Object &) const { return false; }

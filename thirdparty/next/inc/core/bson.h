@@ -20,21 +20,18 @@ protected:
         OBJECT,
         ARRAY,
         BINARY,
-        UNDEFINED,
-        OBJECTID,
-        BOOL,
+        BOOL                    = 8,
         DATETYME,
-        NONE,
-        REGEXP,
-        DBPOINTER,
-        JAVASCRIPT,
-        DEPRECATED,
-        JAVASCRIPTWS,
-        INT32,
-        TIMESTAMP,
-        INT64,
+        NONE                    = 10,
+        INT32                   = 16,
         MINKEY                  = -1,
-        MAXKEY                  = 127
+        MAXKEY                  = 127,
+        VECTOR2,
+        VECTOR3,
+        VECTOR4,
+        MATRIX3,
+        MATRIX4,
+        QUATERNION
     };
 
 protected:

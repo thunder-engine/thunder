@@ -70,7 +70,7 @@ bool MetaMethod::invoke(Object *obj, Variant &returnValue, int argc, const Varia
 }
 
 MethodCallEvent::MethodCallEvent(int32_t method, Object *sender, const Variant &args) :
-        Event(MethodCall),
+        Event(METHODCALL),
         m_pSender(sender),
         m_Method(method),
         m_Args(args) {

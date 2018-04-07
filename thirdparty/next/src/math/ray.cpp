@@ -188,7 +188,7 @@ Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
 }
 /*!
     Returns a new Ray object wich result of refraction of current ray.
-    Refraction calculating by \a normal vector of reflection surface and intersection \a point.
+    Refraction calculating by \a normal vector of reflection surface and intersection \a point with \a ior (Index of Refraction).
 */
 Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
     Ray ret(0.0, 0.0);

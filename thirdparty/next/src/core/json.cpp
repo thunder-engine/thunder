@@ -26,9 +26,17 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
             return;
         }
         case MetaType::VARIANTMAP: {
-            VariantMap map   = v.value<VariantMap>();
-            map[name]    = data;
-            s.push(map);
+            VariantMap map  = v.value<VariantMap>();
+            uint32_t type   = MetaType::type(name.c_str());
+            if((type >= MetaType::VECTOR2 && type < MetaType::USERTYPE)) {
+                Variant object(type, MetaType::create(type));
+                VariantList list    = data.toList();
+                MetaType::convert(&list, MetaType::VARIANTLIST, object.data(), type);
+                s.push(object);
+            } else {
+                map[name]    = data;
+                s.push(map);
+            }
             return;
         } break;
         default: break;
@@ -72,7 +80,7 @@ Variant Json::load(const string &data) {
             case '}': {
                 result  = s.top();
                 s.pop();
-                if(s.size()) {
+                if(!s.empty()) {
                     appendProperty(s, result, n.top());
                 }
                 n.pop();
@@ -87,18 +95,11 @@ Variant Json::load(const string &data) {
                 }
             } break;
             case ']': {
-                VariantList list   = s.top().value<VariantList>();
+                result    = s.top();
                 s.pop();
-                uint32_t type   = list.front().toInt();
-                list.pop_front();
-                if(type != MetaType::VARIANTLIST) {
-                    void *object    = MetaType::create(type);
-                    MetaType::convert(&list, MetaType::VARIANTLIST, object, type);
-                    appendProperty(s, Variant(type, object), n.top());
-                } else {
-                    appendProperty(s, list, n.top());
+                if(!s.empty()) {
+                    appendProperty(s, result, n.top());
                 }
-                result  = list;
                 n.pop();
                 state   = propertyName;
             } break;
@@ -185,7 +186,8 @@ Variant Json::load(const string &data) {
 string Json::save(const Variant &data, int32_t depth) {
     PROFILE_FUNCTION()
     string result;
-    switch(data.type()) {
+    uint32_t type   = data.type();
+    switch(type) {
         case MetaType::BOOLEAN:
         case MetaType::FLOAT:
         case MetaType::INTEGER: {
@@ -194,27 +196,10 @@ string Json::save(const Variant &data, int32_t depth) {
         case MetaType::STRING: {
             result += '"' + data.toString() + '"';
         } break;
-        case MetaType::VARIANTMAP: {
-            result += "{";
-            result += FORMAT;
-            uint32_t i = 1;
-            VariantMap map = data.toMap();
-            for(auto &it: map) {
-                result.append(depth + 1, '\t');
-                result += "\"" + it.first + "\":" + ((depth > -1) ? " " : "") + save(it.second, (depth > -1) ? depth + 1 : depth);
-                result += ((i < map.size()) ? "," : "");
-                result += FORMAT;
-                i++;
-            }
-            if(depth > -1) {
-                result.append(depth, '\t');
-            }
-            result += "}";
-        } break;
-        default: {
+        case MetaType::VARIANTLIST: {
             result += "[";
             result += FORMAT;
-            uint32_t i = 1;
+            uint32_t i  = 1;
             VariantList list = data.toList();
             for(auto &it: list) {
                 result.append(depth + 1, '\t');
@@ -227,6 +212,32 @@ string Json::save(const Variant &data, int32_t depth) {
                 result.append(depth, '\t');
             }
             result += "]";
+        } break;
+        default: {
+            result += "{";
+            result += FORMAT;
+            uint32_t i = 1;
+            if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
+                result.append(depth + 1, '\t');
+                result += (string("\"") + MetaType::name(type) + "\":");
+                result += FORMAT;
+                result.append(depth + 1, '\t');
+                result += save(data.toList(), (depth > -1) ? depth + 1 : depth);
+                result += FORMAT;
+            } else {
+                VariantMap map = data.toMap();
+                for(auto &it: map) {
+                    result.append(depth + 1, '\t');
+                    result += "\"" + it.first + "\":" + ((depth > -1) ? " " : "") + save(it.second, (depth > -1) ? depth + 1 : depth);
+                    result += ((i < map.size()) ? "," : "");
+                    result += FORMAT;
+                    i++;
+                }
+            }
+            if(depth > -1) {
+                result.append(depth, '\t');
+            }
+            result += "}";
         } break;
     }
     return result;

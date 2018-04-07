@@ -7,6 +7,7 @@
 #include <bson.h>
 
 #include <QFileInfo>
+#include <QTime>
 
 #include "baseconvertersettings.h"
 #include "projectmanager.h"
@@ -199,6 +200,9 @@ void FBXConverter::importFBX(const string &src, Mesh &mesh) {
 void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
     vector<FbxCluster *> bones;
 
+    QTime t;
+    t.start();
+
     for(int n = 0; n < lRootNode->GetChildCount(); n++) {
         FbxNode *node               = lRootNode->GetChild(n);
         FbxNodeAttribute *attrib    = node->GetNodeAttribute();
@@ -240,116 +244,125 @@ void FBXConverter::importDynamic(FbxNode *lRootNode, Mesh &mesh) {
 
             indexVector indices;
 
-            // Polygons
-            int tCount			= m->GetPolygonCount();
-            l.indices			= vector<uint32_t>(tCount * 3);
             // Export
             FbxVector4 *verts                   = m->GetControlPoints();
             FbxGeometryElementUV *uv            = m->GetElementUV();
+            if(uv) {
+                mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_UV0);
+            } else {
+                Log(Log::WRN) << "No uv exist";
+            }
+
             FbxGeometryElementNormal *normals   = m->GetElementNormal();
+            if(normals) {
+                mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_NORMALS);
+            } else {
+                Log(Log::WRN) << "No normals exist";
+            }
+
             FbxGeometryElementTangent *tangents = m->GetElementTangent();
+            if(tangents) {
+                mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_TANGENTS);
+            } else {
+                Log(Log::WRN) << "No tangents exist";
+            }
 
+            int tCount  = m->GetPolygonCount();
             for(int triangle = 0; triangle < tCount; triangle++) {
-                for(int k = 0; k < 3; k++) {
+                int size    = m->GetPolygonSize(triangle);
+                for(int h = 0; h < ((size == 4) ? 2 : 1); h++) {
+                    for(int k = 0; k < 3; k++) {
+                        index_data data;
+                        data.vIndex = m->GetPolygonVertex(triangle, (k == 0) ? k : k + h);
+                        data.uIndex	= m->GetTextureUVIndex(triangle, (k == 0) ? k : k + h);
+                        data.xIndex = m->GetPolygonVertexIndex(triangle) + ((k == 0) ? k : k + h);
 
-                    index_data data;
-                    data.vIndex = m->GetPolygonVertex(triangle, k);
-                    data.uIndex	= m->GetTextureUVIndex(triangle, k);
-                    data.xIndex = m->GetPolygonVertexIndex(triangle) + k;
+                        int count	= indices.size();
 
-                    int count	= indices.size();
-
-                    bool create	= true;
-                    for(int i = 0; i < count; i++) {
-                        index_data *it	= &indices[i];
-                        if(*it == data) {
-                            // Vertex already exist. Just add it into indices list
-                            l.indices[triangle * 3 + k]   = i;
-                            create	= false;
-                            break;
-                        }
-                    }
-
-                    // Add vertex to arrays
-                    if(create) {
-                        indices.push_back(data);
-
-                        FbxVector4 v;
-                        v           = verts[data.vIndex];
-                        l.vertices.push_back(gInvert * Vector3(v[0], v[1], v[2]));
-                        l.indices[triangle * 3 + k] = count;
-
-                        if(normals) {
-                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_NORMALS);
-                            switch (normals->GetReferenceMode()) {
-                                case FbxLayerElement::eDirect: {
-                                    v   = normals->GetDirectArray().GetAt(data.xIndex);
-                                } break;
-                                case FbxLayerElement::eIndexToDirect: {
-                                    int index   = normals->GetIndexArray().GetAt(data.xIndex);
-                                    v           = normals->GetDirectArray().GetAt(index);
-                                } break;
-                                default: {
-                                    Log(Log::ERR) << "Invalid normals reference mode";
-                                } break;
-
+                        bool create	= true;
+                        for(int i = 0; i < count; i++) {
+                            if(indices[i] == data) {
+                                // Vertex already exist. Just add it into indices list
+                                l.indices.push_back(i);
+                                create	= false;
+                                break;
                             }
-                            l.normals.push_back(gInvert * Vector3(v[0], v[1], v[2]));
-                        } else {
-                            Log(Log::WRN) << "No normals exist";
                         }
 
-                        if(tangents) {
-                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_TANGENTS);
-                            switch (tangents->GetReferenceMode()) {
-                                case FbxLayerElement::eDirect: {
-                                    v       = tangents->GetDirectArray().GetAt(data.xIndex);
-                                } break;
-                                case FbxLayerElement::eIndexToDirect: {
-                                    int index   = tangents->GetIndexArray().GetAt(data.xIndex);
-                                    v           = tangents->GetDirectArray().GetAt(index);
-                                } break;
-                                default: {
-                                    Log(Log::ERR) << "Invalid tangents reference mode";
-                                } break;
+                        // Add vertex to arrays
+                        if(create) {
+                            indices.push_back(data);
 
+                            FbxVector4 v    = verts[data.vIndex];
+                            l.vertices.push_back(gInvert * Vector3(v[0], v[1], v[2]));
+                            l.indices.push_back(count);
+
+                            if(normals) {
+                                switch (normals->GetReferenceMode()) {
+                                    case FbxLayerElement::eDirect: {
+                                        v   = normals->GetDirectArray().GetAt(data.xIndex);
+                                    } break;
+                                    case FbxLayerElement::eIndexToDirect: {
+                                        int index   = normals->GetIndexArray().GetAt(data.xIndex);
+                                        v           = normals->GetDirectArray().GetAt(index);
+                                    } break;
+                                    default: {
+                                        Log(Log::ERR) << "Invalid normals reference mode";
+                                    } break;
+                                }
+                                l.normals.push_back(gInvert * Vector3(v[0], v[1], v[2]));
                             }
-                            l.tangents.push_back(gInvert * Vector3(v[0], v[1], v[2]));
-                        } else {
-                            Log(Log::WRN) << "No tangents exist";
-                        }
 
-                        if(uv) {
-                            mesh.setFlags(mesh.flags() | Mesh::ATTRIBUTE_UV0);
-                            v       = uv->GetDirectArray().GetAt(data.uIndex);
-                            l.uv0.push_back(Vector2(v[0], v[1]));
-                        }
-/*
-                        if(mesh.isAnimated()) {
-                            int w	= 0;
-                            for(int b = 0; b < bones.size(); b++) {
-                                int *indices	= bones[b]->GetControlPointIndices();
-                                double *weights = bones[b]->GetControlPointWeights();
-                                for(int i = 0; i < bones[b]->GetControlPointIndicesCount(); i++) {
-                                    if(indices[i] == data.vIndex) {
-                                        //KFbxNode *bone  = bones[b]->GetLink();
+                            if(tangents) {
+                                switch (tangents->GetReferenceMode()) {
+                                    case FbxLayerElement::eDirect: {
+                                        v       = tangents->GetDirectArray().GetAt(data.xIndex);
+                                    } break;
+                                    case FbxLayerElement::eIndexToDirect: {
+                                        int index   = tangents->GetIndexArray().GetAt(data.xIndex);
+                                        v           = tangents->GetDirectArray().GetAt(index);
+                                    } break;
+                                    default: {
+                                        Log(Log::ERR) << "Invalid tangents reference mode";
+                                    } break;
 
-                                        vert.index[w]	= (float)b;
-                                        vert.weight[w]	= (float)weights[i];
+                                }
+                                l.tangents.push_back(gInvert * Vector3(v[0], v[1], v[2]));
+                            }
 
-                                        w++;
+                            if(uv) {
+                                v       = uv->GetDirectArray().GetAt(data.uIndex);
+                                l.uv0.push_back(Vector2(v[0], v[1]));
+                            }
+    /*
+                            if(mesh.isAnimated()) {
+                                int w	= 0;
+                                for(int b = 0; b < bones.size(); b++) {
+                                    int *indices	= bones[b]->GetControlPointIndices();
+                                    double *weights = bones[b]->GetControlPointWeights();
+                                    for(int i = 0; i < bones[b]->GetControlPointIndicesCount(); i++) {
+                                        if(indices[i] == data.vIndex) {
+                                            //KFbxNode *bone  = bones[b]->GetLink();
+
+                                            vert.index[w]	= (float)b;
+                                            vert.weight[w]	= (float)weights[i];
+
+                                            w++;
+                                        }
                                     }
                                 }
                             }
-                        }
-*/
-                    } // end Creation
+    */
+                        } // end Creation
+                    }
                 }
             }
             s.lods.push_back(l);
             mesh.addSurface(s);
         }
     }
+
+    Log(Log::INF) << "Mesh imported in:" << t.elapsed() << "msec";
 /*
     if(pMesh->type == MESH_ANIMATED) {
         pMesh->jCount			= bones.size();

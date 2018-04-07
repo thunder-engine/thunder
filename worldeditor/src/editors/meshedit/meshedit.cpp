@@ -121,7 +121,7 @@ void MeshEdit::onGLInit() {
     m_pMesh->addComponent<StaticMesh>();
 
     m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
-    m_pLight->setRotation(Quaternion(Vector3(-30.0f, 0.0f, 0.0f)));
+    m_pLight->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
     DirectLight *light  = m_pLight->addComponent<DirectLight>();
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
@@ -136,7 +136,7 @@ void MeshEdit::onGLInit() {
     if(mesh) {
         //mesh->setMesh(Cache::load<Mesh>(".embedded/sphere.fbx"));
     }
-    m_pDome->setEnable(false);
+    //m_pDome->setEnable(false);
 }
 
 void MeshEdit::onKeyPress(QKeyEvent *pe) {

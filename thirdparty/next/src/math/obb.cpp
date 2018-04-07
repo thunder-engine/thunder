@@ -9,12 +9,12 @@
     An arbitrarily oriented bounded volume in space in the form of a rectangular parallelepiped (Bounding Box).
     Unlike AABB, OBB rotates with the object and does not change its size.
     Collision testing with OBB is somewhat more complicated and slower than AABB, but more often it is more preferable.
-    Oriented Bounding Box represented by \p center of box, \p size and \p rotation quaternion.
+    Oriented Bounding Box represented by \a center of box, \a size and \a rotation quaternion.
 
     \sa Vector3, AABBox
 */
 /*!
-    Constructs an bounding box with \p center (0, 0, 0), \p size (1, 1, 1) and identity rotation.
+    Constructs an bounding box with center (0, 0, 0), size (1, 1, 1) and identity rotation.
 */
 OBBox::OBBox() :
         center(0.0),
