@@ -4,7 +4,7 @@ All kinds of contributions are very appreciated, be it documentation, code or bu
 
 ## Reporting an Issue
 
-To report an issue please follow to this [template](ISSUE_TEMPLATE.md)
+To report an issue please fill fields in this [template](https://github.com/eprikazchikov/thunder/issues/new)
 
 ## Requesting a Feature
 
