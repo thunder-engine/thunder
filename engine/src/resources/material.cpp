@@ -53,6 +53,7 @@ Material::Material() :
         m_MaterialType(Surface),
         m_DoubleSided(true),
         m_Tangent(false),
+        m_DepthTest(true),
         m_Surfaces(1) {
 
 }
@@ -79,6 +80,8 @@ void Material::loadUserData(const VariantMap &data) {
             m_BlendMode     = (BlendType)(*i).toInt();
             i++;
             m_LightModel    = (LightModelType)(*i).toInt();
+            i++;
+            m_DepthTest     = (*i).toBool();
             i++;
         }
     }
@@ -114,6 +117,14 @@ bool Material::isDoubleSided() const {
 
 void Material::setDoubleSided(bool flag) {
     m_DoubleSided   = flag;
+}
+
+bool Material::isDepthTest() const {
+    return m_DepthTest;
+}
+
+void Material::setDepthTest(bool flag) {
+    m_DepthTest = flag;
 }
 
 uint8_t Material::surfaces() const {

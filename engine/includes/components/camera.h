@@ -55,7 +55,7 @@ public:
     double                      orthoWidth              () const;
     void                        setOrthoWidth           (const double value);
 
-    array<Vector3, 4>           frustumCorners          (float depth) const;
+    array<Vector3, 8>           frustumCorners          (float nearPlane, float farPlane) const;
 
 protected:
     /// Type of camera.

@@ -86,6 +86,8 @@ public:
 
     uint32_t                    indexCount          (uint32_t surface, uint32_t lod) const;
 
+    AABBox                      bound               () const;
+
     AABBox                      bound               (uint32_t surface) const;
 
     Modes                       mode                (uint32_t surface) const;
@@ -108,6 +110,8 @@ protected:
     uint8_t                     m_Flags;
 
     SurfaceQueue                m_Surfaces;
+
+    AABBox                      m_Box;
 };
 
 #endif // MESH_H

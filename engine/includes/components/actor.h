@@ -52,9 +52,9 @@ public:
 
     virtual void                setPosition             (const Vector3 &value);
 
-    virtual void                setEuler                (const Vector3  &value);
+    virtual void                setEuler                (const Vector3 &value);
 
-    virtual void                setRotation             (const Quaternion  &value);
+    virtual void                setRotation             (const Quaternion &value);
 
     virtual void                setScale                (const Vector3 &value);
 

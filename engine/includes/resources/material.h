@@ -36,7 +36,7 @@ protected:
 };
 
 class NEXT_LIBRARY_EXPORT Material : public Object {
-    A_REGISTER(Material, Object, Resources)
+    A_REGISTER(Material, Object, Resources);
 public:
     enum MaterialType {
         Surface,
@@ -81,6 +81,9 @@ public:
     bool                        isDoubleSided               () const;
     void                        setDoubleSided              (bool flag);
 
+    bool                        isDepthTest                 () const;
+    void                        setDepthTest                (bool flag);
+
     uint8_t                     surfaces                    () const;
 
     virtual MaterialInstance   *createInstance              ();
@@ -100,6 +103,8 @@ protected:
     bool                        m_DoubleSided;
 
     bool                        m_Tangent;
+
+    bool                        m_DepthTest;
 
     TextureMap                  m_Textures;
 

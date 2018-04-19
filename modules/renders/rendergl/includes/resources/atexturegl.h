@@ -15,7 +15,13 @@ class ATextureGL : public Texture {
 public:
     ATextureGL                  ();
 
+    ~ATextureGL                 ();
+
     void                        create                      (uint32_t target, uint32_t internal, uint32_t format, uint32_t bits);
+
+    void                        destroy                     ();
+
+    uint32_t                    buffer                      () const    { return m_Buffer; }
 
     void                        resize                      (uint32_t width, uint32_t height);
 
@@ -24,7 +30,7 @@ public:
     void                        bind                        () const;
     void                        unbind                      () const;
 
-    uint32_t                    id                          () const        { return mID; }
+    uint32_t                    id                          () const    { return mID; }
 
 private:
     void                        clear                       ();
@@ -40,12 +46,13 @@ private:
     inline uint32_t             dwordAlignedLineSize        (uint32_t width, uint32_t bpp) ;
 
     uint32_t                    m_Target;
-    uint32_t                    mInternal;
+    uint32_t                    m_Internal;
     uint32_t                    m_Format;
     uint32_t                    m_Bits;
 
-    uint32_t                    mID;
+    uint32_t                    m_Buffer;
 
+    uint32_t                    mID;
 };
 
 #endif // TEXTUREGL_H

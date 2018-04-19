@@ -24,8 +24,6 @@ class ADirectLightGL : public DirectLight {
 public:
     ADirectLightGL              ();
 
-    ~ADirectLightGL             ();
-
     void                        draw                (APipeline &pipeline, uint8_t layer);
     void                        shadowsUpdate       (APipeline &pipeline);
 
@@ -33,9 +31,7 @@ protected:
     /// Number of levels of detail shadows. 0 - if shadows are disabled.
     uint8_t                     m_LODCount;
 
-    ATextureGL                 *m_pDepthMap;
-
-    uint32_t                    m_DepthBuffer;
+    ATextureGL                  m_DepthMap;
 
     /// Resolution depth map.
     uint16_t                    m_Resolution;
@@ -43,10 +39,11 @@ protected:
     bool                        m_CSM;
     /// Light source matrix array.
     Matrix4                    *m_pMatrix;
+    Vector4                    *m_pTiles;
     /// Distance of cutting for each level of LOD.
     Vector4                     m_Distance;
-    /// Field of view for all LOD levels
-    Vector4                     m_LOD;
+
+    Vector4                     m_NormalizedDistance;
 
     Mesh                       *m_pPlane;
 

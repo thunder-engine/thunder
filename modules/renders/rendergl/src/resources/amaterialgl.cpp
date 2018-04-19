@@ -177,6 +177,12 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     //    }
     //}
 
+    if(m_DepthTest) {
+        glEnable(GL_DEPTH_TEST);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+    }
+
     if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
         glEnable    ( GL_CULL_FACE );
         glCullFace  ( GL_BACK );

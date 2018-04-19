@@ -156,20 +156,27 @@ double Camera::orthoWidth() const {
 void Camera::setOrthoWidth(const double value) {
     m_OrthoWidth    = value;
 }
-/// \todo Probably can be solved with inverted projection matrix;
-array<Vector3, 4> Camera::frustumCorners(float depth) const {
+
+array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const {
     float tang  = (float)tan(m_FOV * DEG2RAD * 0.5);
-    float h = depth * tang;
-    float w = h * m_Ratio;
+    float nh    = nearPlane * tang;
+    float fh    = farPlane * tang;
+    float nw    = nh * m_Ratio;
+    float fw    = fh * m_Ratio;
 
     Vector3 dir     = Vector3(0.0, 0.0,-1.0);
 
-    Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
+    Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
     Vector3 up      = right.cross(dir);
-    Vector3 nc      = dir * depth;
+    Vector3 nc      = dir * nearPlane;
+    Vector3 fc      = dir * farPlane;
 
-    return {nc + up * h - right * w,
-            nc + up * h + right * w,
-            nc - up * h + right * w,
-            nc - up * h - right * w};
+    return {nc + up * nh - right * nw,
+            nc + up * nh + right * nw,
+            nc - up * nh + right * nw,
+            nc - up * nh - right * nw,
+            fc + up * fh - right * fw,
+            fc + up * fh + right * fw,
+            fc - up * fh + right * fw,
+            fc - up * fh - right * fw};
 }

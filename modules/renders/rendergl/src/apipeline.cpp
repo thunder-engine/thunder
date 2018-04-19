@@ -39,7 +39,7 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new ABloomGL());
 
     m_Select.create (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
-    m_Depth.create  (GL_TEXTURE_2D, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
+    m_Depth.create  (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
 
     glGenFramebuffers(1, &m_SelectBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_SelectBuffer);
@@ -58,7 +58,6 @@ void APipeline::draw(Scene &scene, uint32_t) {
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
 
-    glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     updateShadows(scene);
 
@@ -80,7 +79,7 @@ void APipeline::cameraReset() {
         camera->setRatio(m_Screen.x / m_Screen.y);
         m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().position(), camera->nearPlane()));
         m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
-        m_Buffer->setGlobalValue("camera.screen", Vector2(1.0 / m_Screen.x, 1.0 / m_Screen.y));
+        m_Buffer->setGlobalValue("camera.screen", Vector4(1.0 / m_Screen.x, 1.0 / m_Screen.y, m_Screen.x, m_Screen.y));
 
         Matrix4 v, p;
         camera->matrices(v, p);
@@ -154,7 +153,7 @@ void APipeline::analizeScene(Object &object) {
     // Retrive object id
     glBindFramebuffer( GL_FRAMEBUFFER, m_SelectBuffer );
     m_Buffer->clearRenderTarget(true, Vector4(1.0));
-    glEnable(GL_DEPTH_TEST);
+
     glDepthFunc(GL_LEQUAL);
 
     cameraReset();

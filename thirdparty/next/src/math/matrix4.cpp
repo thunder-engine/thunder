@@ -197,41 +197,48 @@ Matrix4 Matrix4::transpose() const {
     ret[3] = mat[12]; ret[7] = mat[13]; ret[11] = mat[14]; ret[15] = mat[15];
     return ret;
 }
+
+inline Matrix3 subMatrix(const float mat[16], int x, int y) {
+    Matrix3 ret;
+
+    for(int dx = 0; dx < 3; dx++ ) {
+        for(int dy = 0; dy < 3; dy++ ) {
+            int sx = dx + ( ( dx >= x ) ? 1 : 0 );
+            int sy = dy + ( ( dy >= y ) ? 1 : 0 );
+
+            ret[dx * 3 + dy] = mat[sx * 4 + sy];
+        }
+    }
+
+    return ret;
+}
 /*!
     Returns the matrix determinant.
 */
 areal Matrix4::determinant() const {
-    areal det;
-    det  = mat[0] * mat[5] * mat[10];
-    det += mat[4] * mat[9] * mat[2];
-    det += mat[8] * mat[1] * mat[6];
-    det -= mat[8] * mat[5] * mat[2];
-    det -= mat[4] * mat[1] * mat[10];
-    det -= mat[0] * mat[9] * mat[6];
-    return det;
+    areal ret  = mat[0] * subMatrix( mat, 0, 0 ).determinant();
+    ret       -= mat[1] * subMatrix( mat, 0, 1 ).determinant();
+    ret       += mat[2] * subMatrix( mat, 0, 2 ).determinant();
+    ret       -= mat[3] * subMatrix( mat, 0, 3 ).determinant();
+
+    return ret;
 }
 /*!
     Returns an inverted copy of this matrix.
 */
 Matrix4 Matrix4::inverse() const {
+    areal det = determinant();
+    if( det == 0.0f ) {
+        return Matrix4();
+    }
+
     Matrix4 ret;
-    areal idet = 1.0f / determinant();
-    ret[0]  =  (mat[5] * mat[10] - mat[9] * mat[6]) * idet;
-    ret[1]  = -(mat[1] * mat[10] - mat[9] * mat[2]) * idet;
-    ret[2]  =  (mat[1] * mat[6]  - mat[5] * mat[2]) * idet;
-    ret[3]  = 0.0;
-    ret[4]  = -(mat[4] * mat[10] - mat[8] * mat[6]) * idet;
-    ret[5]  =  (mat[0] * mat[10] - mat[8] * mat[2]) * idet;
-    ret[6]  = -(mat[0] * mat[6]  - mat[4] * mat[2]) * idet;
-    ret[7]  = 0.0;
-    ret[8]  =  (mat[4] * mat[9]  - mat[8] * mat[5]) * idet;
-    ret[9]  = -(mat[0] * mat[9]  - mat[8] * mat[1]) * idet;
-    ret[10] =  (mat[0] * mat[5]  - mat[4] * mat[1]) * idet;
-    ret[11] = 0.0;
-    ret[12] = -(mat[12] * ret[0] + mat[13] * ret[4] + mat[14] * ret[8]);
-    ret[13] = -(mat[12] * ret[1] + mat[13] * ret[5] + mat[14] * ret[9]);
-    ret[14] = -(mat[12] * ret[2] + mat[13] * ret[6] + mat[14] * ret[10]);
-    ret[15] = 1.0;
+    for(int x = 0; x < 4; x++ ) {
+        for(int y = 0; y < 4; y++ ) {
+            int sign    = 1 - ( (x + y) % 2 ) * 2;
+            ret[x + y * 4]  = ( subMatrix(mat, x, y ).determinant() * sign ) / det;
+        }
+    }
     return ret;
 }
 /*!

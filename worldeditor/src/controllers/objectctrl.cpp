@@ -156,19 +156,9 @@ void ObjectCtrl::drawHelpers(Object &object) {
             bool result = false;
             Camera *camera  = dynamic_cast<Camera *>(component);
             if(camera) {
-                array<Vector3, 4> n = camera->frustumCorners(camera->nearPlane());
-                array<Vector3, 4> f = camera->frustumCorners(camera->farPlane());
+                array<Vector3, 8> a = camera->frustumCorners(camera->nearPlane(), camera->farPlane());
 
-                Vector3Vector points;
-                points.push_back(n[0]);// 0
-                points.push_back(n[1]);// 1
-                points.push_back(n[2]);// 2
-                points.push_back(n[3]);// 3
-                points.push_back(f[0]);// 4
-                points.push_back(f[1]);// 5
-                points.push_back(f[2]);// 6
-                points.push_back(f[3]);// 7
-
+                Vector3Vector points(a.begin(), a.end());
                 Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
                                                4, 5, 5, 6, 6, 7, 7, 4,
                                                0, 4, 1, 5, 2, 6, 3, 7};
@@ -238,8 +228,8 @@ void ObjectCtrl::setDrag(bool drag) {
         // Save params
         for(auto &it : m_Selected) {
             it.second.position  = it.second.object->position();
-            it.second.rotation  = it.second.object->rotation();
             it.second.scale     = it.second.object->scale();
+            it.second.euler     = it.second.object->euler();
         }
         mSaved  = mWorld;
         mPosition   = objectPosition();
@@ -489,7 +479,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 if(mDrag) {
                     for(auto it : m_Selected) {
                         it.second.object->setPosition(it.second.position);
-                        it.second.object->setRotation(it.second.rotation);
+                        it.second.object->setEuler(it.second.euler);
                         it.second.object->setScale(it.second.scale);
                     }
                     if(m_pPropertyState) {
@@ -549,26 +539,31 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             angle   = mAngleGrid * int(angle / mAngleGrid);
                         }
                         for(const auto &it : m_Selected) {
-                            Vector3 t     = Vector3(mPosition - it.second.position);
-                            Quaternion  q   = it.second.rotation;
+                            Vector3 t       = Vector3(mPosition - it.second.position);
+                            Quaternion q    = it.second.object->rotation();
+                            Vector3 euler   = it.second.euler;
                             switch(Handles::s_Axes) {
                                 case Handles::AXIS_X: {
-                                    q   = q * Quaternion (Vector3(1.0f, 0.0f, 0.0f), angle);
+                                    q       = q * Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
+                                    euler  += Vector3(angle, 0.0f, 0.0f);
                                 } break;
                                 case Handles::AXIS_Y: {
-                                    q   = q * Quaternion (Vector3(0.0f, 1.0f, 0.0f), angle);
+                                    q       = q * Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
+                                    euler  += Vector3(0.0f, angle, 0.0f);
                                 } break;
                                 case Handles::AXIS_Z: {
-                                    q   = q * Quaternion (Vector3(0.0f, 0.0f, 1.0f), angle);
+                                    q       = q * Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
+                                    euler  += Vector3(0.0f, 0.0f, angle);
                                 } break;
                                 default: {
                                     Vector3 axis  = m_pActiveCamera->actor().position() - mPosition;
                                     axis.normalize();
-                                    q   = q * Quaternion (axis, angle);
+                                    q       = q * Quaternion(axis, angle);
+                                    euler  += axis * angle;
                                 } break;
                             }
                             it.second.object->setPosition(mPosition - q * t);
-                            it.second.object->setRotation(q);
+                            it.second.object->setEuler(euler);
                         }
                         emit objectsUpdated();
                     } else {

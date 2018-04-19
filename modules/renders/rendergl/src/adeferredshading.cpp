@@ -35,7 +35,7 @@ ADeferredShading::ADeferredShading(Engine *engine) :
     m_pGBuffer[G_PARAMS]  .create(GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
     m_pGBuffer[G_EMISSIVE].create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
 
-    m_DepthMap            .create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
+    m_DepthMap            .create(GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
 
     // G buffer
     glGenFramebuffers(1, &fb_g_id);
@@ -70,7 +70,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     ATextureGL &t   = m_pGBuffer[G_EMISSIVE];//&(m_pAO->draw(m_pGBuffer[G_EMISSIVE], *this));
 
     glBindFramebuffer( GL_FRAMEBUFFER, fb_s_id );
-    m_Buffer->setRenderTarget(1, &m_pGBuffer[G_EMISSIVE], &m_Depth);
+    m_Buffer->setRenderTarget(1, &m_pGBuffer[G_EMISSIVE], nullptr);
 
     // Light pass
     glActiveTexture (GL_TEXTURE0);
@@ -88,11 +88,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     glActiveTexture (GL_TEXTURE4);
     m_Depth.bind();
 
-    glDisable(GL_DEPTH_TEST);
-
     updateLights(scene, ICommandBuffer::LIGHT);
-
-    glEnable(GL_DEPTH_TEST);
 
     glActiveTexture (GL_TEXTURE4);
     m_Depth.unbind();

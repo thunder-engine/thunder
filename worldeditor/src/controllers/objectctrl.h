@@ -120,8 +120,8 @@ public:
     struct Select {
         Actor          *object;
         Vector3         position;
-        Quaternion      rotation;
         Vector3         scale;
+        Vector3         euler;
     };
 
 public:

@@ -28,6 +28,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(20.0f);
+    //m_pActiveCamera->setFar(100.0f);
     //m_pActiveCamera->setType(Camera::ORTHOGRAPHIC);
 
     m_pCamera->setPosition(Vector3(0.0, 0.0, 20.0));

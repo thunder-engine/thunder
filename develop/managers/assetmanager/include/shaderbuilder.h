@@ -92,7 +92,7 @@ class ShaderBuilder : public AbstractSchemeModel {
     Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
     Q_ENUMS(LightModel)
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
-
+    Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
 
 public:
     enum LightModel {
@@ -151,6 +151,9 @@ public:
     bool                        isDoubleSided               () const { return m_DoubleSided; }
     void                        setDoubleSided              (bool value) { m_DoubleSided = value; emit schemeUpdated(); }
 
+    bool                        isDepthTest                 () const { return m_DepthTest; }
+    void                        setDepthTest                (bool value) { m_DepthTest = value; emit schemeUpdated(); }
+
     Type                        materialType                () const { return m_MaterialType; }
     void                        setMaterialType             (Type type) { m_MaterialType = type; }
 
@@ -198,6 +201,8 @@ private:
     bool                        m_DoubleSided;
 
     bool                        m_Tangent;
+
+    bool                        m_DepthTest;
 
     AbstractSchemeModel::Node  *m_pNode;
 };

@@ -91,9 +91,8 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                 if(mat) {
                     mesh->setMaterial(0, mat);
                 }
-                for(uint32_t s = 0; s < m->surfacesCount(); s++) {
-                    m_pCamera->setPosition(m->bound(s).center + Vector3( 0.0f, 0.0f, m->bound(s).size.length() / sinf(fov * DEG2RAD) ));
-                }
+                AABBox bb   = m->bound();
+                m_pCamera->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
             }
         } break;
         case IConverter::ContentMesh: {
@@ -101,27 +100,8 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
             Mesh *m = Engine::loadResource<Mesh>(resource.toStdString());
             if(m) {
                 mesh->setMesh(m);
-                Vector3 pos;
-                float radius    = 0.0f;
-                float bottom    = 0.0f;
-                uint32_t i      = 0;
-
-                for(uint32_t s = 0; s < m->surfacesCount(); s++) {
-                    pos     += m->bound(s).center;
-                    int length  = m->bound(s).center.length();
-                    radius  += length * 1.5;
-                    Vector3 min, max;
-                    m->bound(s).box(min, max);
-                    if(i == 0) {
-                        bottom  = min.y;
-                    }
-                    bottom      = MIN(bottom, min.y);
-                    i++;
-                }
-                uint32_t size   = m->surfacesCount();
-                pos     /= size;
-                radius  /= size;
-                m_pCamera->setPosition(pos + Vector3(0.0f, 0.0f, radius / sinf(fov * DEG2RAD)) );
+                AABBox bb   = m->bound();
+                m_pCamera->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
             }
         } break;
         default: break;

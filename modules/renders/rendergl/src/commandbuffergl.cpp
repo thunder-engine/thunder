@@ -134,10 +134,13 @@ void CommandBufferGL::setRenderTarget(uint8_t numberColors, const Texture *color
     const ATextureGL *c = static_cast<const ATextureGL *>(colors);
     for(int i = 0; i < numberColors; i++) {
         m_Buffers[i]  = GL_COLOR_ATTACHMENT0 + i;
+        //glBindFramebuffer(GL_FRAMEBUFFER, c[i].buffer());
         glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, c[i].id(), 0 );
     }
     if(depth) {
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, static_cast<const ATextureGL *>(depth)->id(), 0 );
+        const ATextureGL *t = static_cast<const ATextureGL *>(depth);
+        //glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, t->id(), 0 );
     }
     if(numberColors > 1) {
         glDrawBuffers( numberColors, m_Buffers );

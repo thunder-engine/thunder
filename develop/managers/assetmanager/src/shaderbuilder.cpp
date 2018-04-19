@@ -44,11 +44,13 @@
 #define BLEND       "Blend"
 #define MODEL       "Model"
 #define SIDE        "Side"
+#define DEPTH       "Depth"
 #define X           "X"
 #define Y           "Y"
 
 ShaderBuilder::ShaderBuilder() :
         m_DoubleSided(false),
+        m_DepthTest(true),
         m_BlendMode(Opaque),
         m_LightModel(Lit)  {
 
@@ -295,6 +297,7 @@ void ShaderBuilder::load(const QString &path) {
     setBlend((Blend)json[BLEND].toInt());
     setLightModel((LightModel)json[MODEL].toInt());
     setDoubleSided(json[SIDE].toBool());
+    setDepthTest(json.contains(DEPTH) ? json[DEPTH].toBool() : true);
     blockSignals(false);
 
     emit schemeUpdated();
@@ -386,6 +389,7 @@ void ShaderBuilder::save(const QString &path) {
     data[BLEND] = blend();
     data[MODEL] = lightModel();
     data[SIDE]  = isDoubleSided();
+    data[DEPTH] = isDepthTest();
 
     QJsonDocument doc(data);
     saveFile.write(doc.toJson());
@@ -457,6 +461,7 @@ Variant ShaderBuilder::data() const {
     params.push_back((materialType() == Material::Surface) ? (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) : Material::Static );
     params.push_back(blend());
     params.push_back(lightModel());
+    params.push_back(isDepthTest());
 
     VariantMap textures;
     uint16_t i  = 0;

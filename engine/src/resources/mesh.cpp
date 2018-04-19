@@ -31,7 +31,7 @@ void Mesh::loadUserData(const VariantMap &data) {
         for(auto surfaces : (*mesh).second.value<VariantList>()) {
             // Surface
             Surface s;
-            Vector3 obb[2];
+            Vector3 bb[2];
 
             VariantList surface = surfaces.value<VariantList>();
             auto x  = surface.begin();
@@ -61,13 +61,13 @@ void Mesh::loadUserData(const VariantMap &data) {
                     l.vertices  = vector<Vector3>(vCount);
                     memcpy(&l.vertices[0],  &data[0], sizeof(Vector3) * vCount);
                     for(uint32_t i = 0; i < vCount; i++) {
-                        obb[0].x = MIN(obb[0].x, l.vertices[i].x);
-                        obb[0].y = MIN(obb[0].y, l.vertices[i].y);
-                        obb[0].z = MIN(obb[0].z, l.vertices[i].z);
+                        bb[0].x = MIN(bb[0].x, l.vertices[i].x);
+                        bb[0].y = MIN(bb[0].y, l.vertices[i].y);
+                        bb[0].z = MIN(bb[0].z, l.vertices[i].z);
 
-                        obb[1].x = MAX(obb[1].x, l.vertices[i].x);
-                        obb[1].y = MAX(obb[1].y, l.vertices[i].y);
-                        obb[1].z = MAX(obb[1].z, l.vertices[i].z);
+                        bb[1].x = MAX(bb[1].x, l.vertices[i].x);
+                        bb[1].y = MAX(bb[1].y, l.vertices[i].y);
+                        bb[1].z = MAX(bb[1].z, l.vertices[i].z);
                     }
                 }
                 { // Required field
@@ -121,11 +121,25 @@ void Mesh::loadUserData(const VariantMap &data) {
 
                 x++;
             }
-            s.aabb.setBox(obb[0], obb[1]);
+            s.aabb.setBox(bb[0], bb[1]);
 
             addSurface(s);
         }
     }
+    Vector3 aabb[2];
+    for(Surface it : m_Surfaces) {
+        Vector3 min;
+        Vector3 max;
+        it.aabb.box(min, max);
+        aabb[0].x   = MIN(aabb[0].x, min.x);
+        aabb[0].y   = MIN(aabb[0].y, min.y);
+        aabb[0].z   = MIN(aabb[0].z, min.z);
+
+        aabb[1].x   = MAX(aabb[1].x, max.x);
+        aabb[1].y   = MAX(aabb[1].y, max.y);
+        aabb[1].z   = MAX(aabb[1].z, max.z);
+    }
+    m_Box.setBox(aabb[0], aabb[1]);
 }
 
 Material *Mesh::material(uint32_t surface, uint32_t lod) const {
@@ -172,6 +186,10 @@ uint32_t Mesh::indexCount(uint32_t surface, uint32_t lod) const {
         return m_Surfaces[surface].lods[lod].indices.size();
     }
     return 0;
+}
+
+AABBox Mesh::bound() const {
+    return m_Box;
 }
 
 AABBox Mesh::bound(uint32_t surface) const {

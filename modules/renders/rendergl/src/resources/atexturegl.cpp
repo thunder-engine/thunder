@@ -3,23 +3,27 @@
 #define DATA    "Data"
 
 ATextureGL::ATextureGL() {
-    m_Target    = 0;
-    m_Format    = 0;
-    mID         = 0;
-    m_Bits      = GL_UNSIGNED_BYTE;
-    mInternal   = 0;
+    m_Buffer    = 0;
+
+    destroy();
+}
+
+ATextureGL::~ATextureGL() {
+    destroy();
 }
 
 void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uint32_t bits) {
+    destroy();
+
     m_Target    = target;
-    mInternal   = internal;
+    m_Internal  = internal;
     m_Format    = format;
     m_Bits      = bits;
 
     glGenTextures   ( 1, &mID );
     glBindTexture   ( m_Target, mID );
 
-    glTexParameterf ( m_Target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameterf ( m_Target, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 
     glTexParameterf ( m_Target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameterf ( m_Target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
@@ -28,11 +32,23 @@ void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uin
         glTexParameterf ( target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 #endif
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, mInternal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
         }
     } else {
-        glTexImage2D    ( m_Target, 0, mInternal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
     }
+
+    glGenFramebuffers(1, &m_Buffer);
+}
+
+void ATextureGL::destroy() {
+    m_Target    = 0;
+    m_Format    = 0;
+    mID         = 0;
+    m_Bits      = GL_UNSIGNED_BYTE;
+    m_Internal  = 0;
+
+    glDeleteFramebuffers(1, &m_Buffer);
 }
 
 void ATextureGL::resize(uint32_t width, uint32_t height) {
@@ -42,10 +58,10 @@ void ATextureGL::resize(uint32_t width, uint32_t height) {
     glBindTexture       (m_Target, mID);
     if(m_Target == GL_TEXTURE_CUBE_MAP) {
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, mInternal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
         }
     } else {
-        glTexImage2D    ( m_Target, 0, mInternal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
     }
 }
 
