@@ -74,6 +74,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@rpath"
             cpp.rpaths: "@executable_path/../Frameworks/"
             cpp.weakFrameworks: ["OpenGL"]
         }
