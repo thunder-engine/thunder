@@ -33,5 +33,6 @@ matrix:
         - qbs config defaultProfile qt-brew
         - qbs install --install-root install --all-products config:release
         - /usr/local/opt/qt/bin/macdeployqt install/sdk/2.0/macos/x86_64/bin/WorldEditor.app
+        - tar -czvf ThunderEngine-macos-x86_64.tar.gz install/sdk
       after_success:
         "curl --ftp-create-dirs -T ThunderEngine-macos-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-macos-x86_64.tar.gz"
