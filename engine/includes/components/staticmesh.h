@@ -1,8 +1,8 @@
 #ifndef STATICMESH_H
 #define STATICMESH_H
 
-#include "resources/mesh.h"
-#include "resources/material.h"
+#include "mesh.h"
+#include "material.h"
 
 #include "component.h"
 

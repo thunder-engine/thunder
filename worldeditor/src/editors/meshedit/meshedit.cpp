@@ -31,8 +31,9 @@ MeshEdit::MeshEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this);
-    glWidget->setController(new CameraCtrl(m_pEngine));
+    glWidget    = new Viewport(this);
+    glWidget->setController(new CameraCtrl());
+    glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");
 
@@ -69,7 +70,7 @@ MeshEdit::~MeshEdit() {
     delete m_pLight;
 }
 
-void MeshEdit::timerEvent(QTimerEvent *event) {
+void MeshEdit::timerEvent(QTimerEvent *) {
     glWidget->update();
 }
 
@@ -108,7 +109,7 @@ void MeshEdit::prepareScene(const QString &resource) {
         staticMesh->setMesh(m);
     }
     float bottom;
-    glWidget->controller()->setFocusOn(m_pMesh, bottom);
+    static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
     Vector3 pos(0.0f, bottom - (m_pGround->scale().y * 0.5f), 0.0f);
     m_pGround->setPosition(pos);
 }

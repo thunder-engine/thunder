@@ -272,6 +272,26 @@
      </item>
     </layout>
    </widget>
+   <widget class="SceneView" name="preview" native="true">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>220</y>
+      <width>201</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="Viewport" name="viewport" native="true">
+    <property name="geometry">
+     <rect>
+      <x>639</x>
+      <y>219</y>
+      <width>201</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -564,6 +584,18 @@
    <class>ConsoleManager</class>
    <extends>QWidget</extends>
    <header>managers/consolemanager/consolemanager.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SceneView</class>
+   <extends>QWidget</extends>
+   <header>graph/sceneview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Viewport</class>
+   <extends>QWidget</extends>
+   <header>graph/viewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

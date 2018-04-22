@@ -13,7 +13,6 @@ class ObjectSystemPrivate;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
-    typedef unordered_map<string, Object *>             ObjectMap;
     typedef unordered_map<string, const MetaObject *>   FactoryMap;
     typedef unordered_map<string, string>               GroupMap;
 
@@ -24,8 +23,6 @@ public:
     virtual int32_t                     exec                    ();
 
     GroupMap                            factories               () const;
-
-    uint32_t                            nextID                  ();
 
 public:
     static ObjectSystem                *instance                ();
@@ -58,6 +55,8 @@ public:
 
     static Variant                      toVariant               (const Object *object);
     static Object                      *toObject                (const Variant &variant);
+
+    static uint32_t                     generateUUID            (const Object *object);
 
 private:
     friend class ObjectSystemTest;

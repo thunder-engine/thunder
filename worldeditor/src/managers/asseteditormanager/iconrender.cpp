@@ -40,7 +40,7 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 
     m_pFBO      = new QOpenGLFramebufferObject(128, 128);
 
-    m_pController   = new IController(m_pEngine);
+    m_pController   = new IController();
 
     m_pRender   = PluginModel::instance()->createSystem("RenderGL");
     if(m_pRender) {

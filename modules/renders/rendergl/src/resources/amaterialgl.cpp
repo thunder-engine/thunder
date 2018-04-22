@@ -202,6 +202,11 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     glEnable(GL_TEXTURE_2D);
     uint8_t i   = 0;
     for(auto it : m_Textures) {
+        int location    = glGetUniformLocation(program, it.first.c_str());
+        if(location > -1) {
+            glUniform1i(location, i);
+        }
+
         const ATextureGL *texture   = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + i);
         if(instance) {
@@ -219,7 +224,7 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     return program;
 }
 
-void AMaterialGL::unbind(uint8_t layer) {
+void AMaterialGL::unbind(uint8_t) {
     uint8_t t   = 0;
     for(auto it : m_Textures) {
         const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);

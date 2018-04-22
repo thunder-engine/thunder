@@ -112,6 +112,8 @@ public:
         ReferenceBottomOf
     };
 
+    void activateToolWindow(QWidget *toolWindow);
+
     void addToolWindow(QWidget *toolWindow, AreaType area = LastUsedArea);
     void addToolWindow(QWidget *toolWindow, ReferenceType reference,
                        QAbstractToolWindowManagerArea *area);

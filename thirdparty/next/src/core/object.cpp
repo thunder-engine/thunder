@@ -256,7 +256,6 @@ Object *Object::clone() {
     PROFILE_FUNCTION()
     const MetaObject *meta  = metaObject();
     Object *result = meta->createInstance();
-    result->p_ptr->m_UUID   = ObjectSystem::instance()->nextID();
     int count  = meta->propertyCount();
     for(int i = 0; i < count; i++) {
         MetaProperty lp = result->metaObject()->property(i);
@@ -280,6 +279,7 @@ Object *Object::clone() {
         connect(result, (to_string(1) + signal.signature()).c_str(),
                 it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
+    result->p_ptr->m_UUID   = ObjectSystem::generateUUID(result);
     return result;
 }
 /*!

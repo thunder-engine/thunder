@@ -9,9 +9,9 @@ class NEXT_LIBRARY_EXPORT DirectLight : public Component {
     A_REGISTER(DirectLight, Component, Components);
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Cast_shadows, DirectLight::castShadows, DirectLight::setCastShadows),
-        A_PROPERTY(double, Brightness, DirectLight::brightness, DirectLight::setBrightness),
-        A_PROPERTY(Color, Color, DirectLight::color, DirectLight::setColor)
+        A_PROPERTY(bool,    Cast_shadows,   DirectLight::castShadows, DirectLight::setCastShadows),
+        A_PROPERTY(float,   Brightness,     DirectLight::brightness, DirectLight::setBrightness),
+        A_PROPERTY(Color,   Color,          DirectLight::color, DirectLight::setColor)
     );
 
 public:
@@ -20,8 +20,8 @@ public:
     bool                        castShadows             () const;
     void                        setCastShadows          (bool shadows);
 
-    double                      brightness              () const;
-    void                        setBrightness           (const double brightness);
+    float                       brightness              () const;
+    void                        setBrightness           (const float brightness);
 
     Vector4                     color                   () const;
     void                        setColor                (const Vector4 &color);
@@ -29,7 +29,7 @@ public:
 protected:
     bool                        m_Shadows;
 
-    double                      m_Brightness;
+    float                       m_Brightness;
 
     Vector4                     m_Color;
 };

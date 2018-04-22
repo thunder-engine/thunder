@@ -12,7 +12,7 @@ using namespace std;
 class Engine;
 class DirectLight;
 
-class SceneView;
+class Viewport;
 class ShaderBuilder;
 
 namespace Ui {
@@ -54,7 +54,7 @@ private:
 
     QString                 m_CustomMesh;
 
-    SceneView              *glWidget;
+    Viewport               *glWidget;
 
 private slots:
     void                    onGLInit                        ();

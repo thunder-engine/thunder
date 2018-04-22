@@ -5,7 +5,7 @@
 
 class WidgetCtrl : public ObjectCtrl {
 public:
-    WidgetCtrl                          (Engine *engine);
+    WidgetCtrl                          ();
 /*
     static void                         callback_transform_select   (ARender *pRender, int mode, bool simple, void *parent);
     static void                         callback_transform_draw     (ARender *pRender, int mode, bool simple, void *parent);

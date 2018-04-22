@@ -83,7 +83,7 @@ public:
         void                    undo                (bool redo);
         virtual bool            isValid             () const;
     protected:
-        Object::ObjectList      m_Objects;
+        QStringList             m_Objects;
         SelectObjects          *m_pSelect;
     };
 
@@ -94,7 +94,7 @@ public:
         virtual bool            isValid             () const;
     protected:
         string                  m_Dump;
-        Object                 *m_pParent;
+        QStringList             m_Parents;
     };
 
     class ParentingObjects : public UndoObject {

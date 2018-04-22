@@ -20,6 +20,7 @@ Project {
         "includes",
         "../../../common",
         "../../../engine/includes",
+        "../../../engine/includes/resources",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",

@@ -14,6 +14,7 @@ Project {
         "../",
         "../common",
         "../engine/includes",
+        "../engine/includes/resources",
         "../develop/managers/codemanager/include",
         "../develop/managers/projectmanager/include",
         "../develop/managers/assetmanager/include",

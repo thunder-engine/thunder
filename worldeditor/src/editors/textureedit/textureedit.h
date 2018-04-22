@@ -7,7 +7,7 @@
 
 #include "textureimportsettings.h"
 
-class SceneView;
+class Viewport;
 class Engine;
 
 class Texture;
@@ -40,7 +40,7 @@ private:
 
     Ui::TextureEdit            *ui;
 
-    SceneView                  *glWidget;
+    Viewport                   *glWidget;
 
     Texture                    *m_pTexture;
 

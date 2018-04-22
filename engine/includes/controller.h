@@ -12,7 +12,7 @@ class Scene;
 
 class NEXT_LIBRARY_EXPORT IController {
 public:
-    IController                 (Engine *engine);
+    IController                 ();
 
     virtual void                update                      ();
 /*
@@ -29,8 +29,6 @@ public:
     virtual void                setSelectedObjects          (list<uint32_t> &);
 
 protected:
-    Engine                     *m_pEngine;
-
     Camera                     *m_pActiveCamera;
 
     list<uint32_t>              m_ObjectsList;

@@ -17,12 +17,6 @@ class EnginePrivate;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
-    enum ModeTypes {
-        EDIT                    = (1<<0),
-        GAME                    = (1<<1)
-    };
-
-public:
     Engine                      (IFile *file, int argc, char **argv);
     ~Engine                     ();
 /*

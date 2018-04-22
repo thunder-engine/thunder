@@ -46,7 +46,7 @@ private:
     void                    updateTitle                                 ();
 
     void                    closeEvent                                  (QCloseEvent *event);
-    void                    timerEvent                                  (QTimerEvent *event);
+    void                    timerEvent                                  (QTimerEvent *);
 
     bool                    checkSave                                   ();
 
@@ -64,11 +64,11 @@ private:
 
     QString                 mPath;
 
-    SceneView              *glWidget;
-
     ImportQueue            *m_pImportQueue;
 
     QProcess               *m_pBuilder;
+
+    ByteArray               m_Back;
 
     bool                    mModified;
 

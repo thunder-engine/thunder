@@ -11,8 +11,8 @@
 #include <components/actor.h>
 #include <components/staticmesh.h>
 
-CameraCtrl::CameraCtrl(Engine *engine) :
-        IController(engine),
+CameraCtrl::CameraCtrl() :
+        IController(),
         mBlockMove(false),
         mBlockRot(false),
         mBlockFree(false),

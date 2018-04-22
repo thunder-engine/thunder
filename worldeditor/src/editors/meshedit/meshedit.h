@@ -9,7 +9,7 @@ class Engine;
 class Actor;
 class DirectLight;
 
-class SceneView;
+class Viewport;
 class NextObject;
 class IconRender;
 
@@ -36,7 +36,7 @@ signals:
 private:
     void                    prepareScene                                (const QString &resource);
 
-    void                    timerEvent                                  (QTimerEvent *event);
+    void                    timerEvent                                  (QTimerEvent *);
 
     Ui::MeshEdit           *ui;
 
@@ -47,7 +47,7 @@ private:
 
     NextObject             *m_pEditor;
 
-    SceneView              *glWidget;
+    Viewport               *glWidget;
 
 private slots:
     void                    onGLInit                                    ();

@@ -21,7 +21,7 @@ public:
     };
 
 public:
-    CameraCtrl                          (Engine *engine);
+    CameraCtrl                          ();
 
     void                                init                        (Scene *);
 
@@ -37,7 +37,7 @@ public:
 
     void                                blockFree                   (bool flag) { mBlockFree    = flag; }
 
-    virtual void                        resize                      (uint32_t width, uint32_t height) {}
+    virtual void                        resize                      (uint32_t, uint32_t) {}
 
 public slots:
     virtual void                        onInputEvent                (QInputEvent *);

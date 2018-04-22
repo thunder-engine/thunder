@@ -9,10 +9,12 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components);
 
     A_PROPERTIES(
-        A_PROPERTY(double, Fov, Camera::fov, Camera::setFov),
-        A_PROPERTY(double, Near, Camera::nearPlane, Camera::setNear),
-        A_PROPERTY(double, Far, Camera::farPlane, Camera::setFar),
-        A_PROPERTY(Color, Background_color, Camera::color, Camera::setColor)
+        A_PROPERTY(float, Fov,  Camera::fov, Camera::setFov),
+        A_PROPERTY(float, Near, Camera::nearPlane, Camera::setNear),
+        A_PROPERTY(float, Far,  Camera::farPlane, Camera::setFar),
+        A_PROPERTY(float, Size, Camera::orthoWidth, Camera::setOrthoWidth),
+        A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
+        A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor)
     );
 
 public:
@@ -31,29 +33,29 @@ public:
 
     Ray                         castRay                 (float x, float y);
 
-    double                      ratio                   () const;
-    void                        setRatio                (double value);
+    float                       ratio                   () const;
+    void                        setRatio                (float value);
 
     Camera::Types               type                    () const;
     void                        setType                 (const Camera::Types type);
 
-    double                      nearPlane               () const;
-    void                        setNear                 (const double value);
+    float                       nearPlane               () const;
+    void                        setNear                 (const float value);
 
-    double                      farPlane                () const;
-    void                        setFar                  (const double value);
+    float                       farPlane                () const;
+    void                        setFar                  (const float value);
 
-    double                      focal                   () const;
-    virtual void                setFocal                (const double focal);
+    float                       focal                   () const;
+    virtual void                setFocal                (const float focal);
 
-    double                      fov                     () const;
-    virtual void                setFov                  (const double value);
+    float                       fov                     () const;
+    virtual void                setFov                  (const float value);
 
     Vector4                     color                   () const;
     void                        setColor                (const Vector4 &color);
 
-    double                      orthoWidth              () const;
-    void                        setOrthoWidth           (const double value);
+    float                       orthoWidth              () const;
+    void                        setOrthoWidth           (const float value);
 
     array<Vector3, 8>           frustumCorners          (float nearPlane, float farPlane) const;
 

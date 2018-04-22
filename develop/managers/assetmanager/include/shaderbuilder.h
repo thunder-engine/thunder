@@ -178,15 +178,18 @@ private:
 
     void                        cleanup                     ();
 
-    typedef map<QString, uint8_t>UniformMap;
-    typedef map<QString, bool>   TextureMap;
+    typedef map<QString, uint8_t>   UniformMap;
+
+    typedef QPair<QString, bool>    TexturePair;
+
+    typedef list<TexturePair>       TextureList;
 
     QStringList                 m_Functions;
 
     /// Shader uniforms
     UniformMap                  m_Uniforms;
     /// Shader uniforms
-    TextureMap                  m_Textures;
+    TextureList                 m_Textures;
     /// Shader params
     QString                     m_Params;
     /// Shader source code

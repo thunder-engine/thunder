@@ -3,7 +3,7 @@
 
 #include "component.h"
 
-#include "resources/material.h"
+#include "material.h"
 
 class NEXT_LIBRARY_EXPORT Sprite : public Component {
     A_REGISTER(Sprite, Component, Components);

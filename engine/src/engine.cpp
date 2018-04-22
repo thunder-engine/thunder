@@ -116,7 +116,7 @@ Engine::Engine(IFile *file, int argc, char **argv) :
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
 
-    p_ptr->m_Controller = new IController(this);
+    p_ptr->m_Controller = new IController();
 
     Text::registerClassFactory();
     Texture::registerClassFactory();
@@ -185,7 +185,7 @@ int32_t Engine::exec() {
         if(component == nullptr) {
             Log(Log::DBG) << "Camera not found creating new one.";
             Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", scene);
-            camera->setPosition(Vector3(0.0f, 0.0f, 20.0f));
+            camera->setPosition(Vector3(0.0f));
             component       = camera->addComponent<Camera>();
         }
         for(auto it : p_ptr->m_Systems) {
@@ -195,6 +195,8 @@ int32_t Engine::exec() {
         component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 
         p_ptr->m_Controller->setActiveCamera(component);
+        // Start Scene
+        scene->start();
 
         // Enter to game loop
         while(p_ptr->m_Valid) {

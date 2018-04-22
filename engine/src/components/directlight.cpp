@@ -14,11 +14,11 @@ void DirectLight::setCastShadows(bool shadows) {
     m_Shadows   = shadows;
 }
 
-double DirectLight::brightness() const {
+float DirectLight::brightness() const {
     return m_Brightness;
 }
 
-void DirectLight::setBrightness(const double brightness) {
+void DirectLight::setBrightness(const float brightness) {
     m_Brightness= brightness;
 }
 

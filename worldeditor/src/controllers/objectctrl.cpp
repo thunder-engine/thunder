@@ -42,8 +42,8 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-ObjectCtrl::ObjectCtrl(Engine *engine, SceneView *view) :
-        CameraCtrl(engine),
+ObjectCtrl::ObjectCtrl(Viewport *view) :
+        CameraCtrl(),
         m_pView(view) {
 
     mCopy       = false;

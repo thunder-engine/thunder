@@ -22,8 +22,9 @@ TextureEdit::TextureEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this);
-    glWidget->setController(new CameraCtrl(m_pEngine));
+    glWidget    = new Viewport(this);
+    glWidget->setController(new CameraCtrl());
+    glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");
 

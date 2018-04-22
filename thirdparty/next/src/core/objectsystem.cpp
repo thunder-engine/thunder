@@ -8,8 +8,7 @@
 class ObjectSystemPrivate {
 public:
     ObjectSystemPrivate() :
-        m_Exit(false),
-        m_NextID(0) {
+        m_Exit(false) {
     }
 
     /// Container for registered callbacks.
@@ -17,8 +16,6 @@ public:
     ObjectSystem::GroupMap      m_Groups;
 
     bool                        m_Exit;
-
-    uint32_t                    m_NextID;
 
     static ObjectSystem        *s_Instance;
 };
@@ -33,7 +30,6 @@ ObjectSystem::ObjectSystem(const string &name) :
     }
     ObjectSystemPrivate::s_Instance   = this;
     setName(name);
-    p_ptr->m_NextID = 1000;
 }
 
 ObjectSystem::~ObjectSystem() {
@@ -68,7 +64,7 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         object = (*it).second->createInstance();
         object->setName(name);
         object->setParent(parent);
-        object->setUUID(inst->nextID());
+        object->setUUID(generateUUID(object));
     }
     return object;
 }
@@ -167,17 +163,19 @@ Object *ObjectSystem::toObject(const Variant &variant) {
     PROFILE_FUNCTION()
     Object *result  = nullptr;
 
+    typedef unordered_map<uint32_t, Object *> ObjectMap;
+    ObjectMap array;
+
     // Create all declared objects
     VariantList objects    = variant.value<VariantList>();
-    ObjectMap array;
     for(auto it : objects) {
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
-            auto i      = o.begin();
-            string uuid = (*i).toString();
+            auto i          = o.begin();
+            uint32_t uuid   = (*i).toInt();
             i++;
             Object *parent  = nullptr;
-            auto a  = array.find((*i).toString());
+            auto a  = array.find((*i).toInt());
             if(a != array.end()) {
                 parent  = (*a).second;
             }
@@ -189,6 +187,7 @@ Object *ObjectSystem::toObject(const Variant &variant) {
 
             Object *object  = objectCreate(type, name, parent);
             if(object) {
+                object->setUUID(uuid);
                 if(!object->parent()) {
                     result  = object;
                 }
@@ -217,7 +216,7 @@ Object *ObjectSystem::toObject(const Variant &variant) {
             Object *receiver    = nullptr;
             if(l.size() == 4) {
                 auto i  = l.begin();
-                auto s = array.find((*i).toString());
+                auto s = array.find((*i).toInt());
                 if(s != array.end()) {
                     sender  = (*s).second;
                 }
@@ -226,7 +225,7 @@ Object *ObjectSystem::toObject(const Variant &variant) {
                 string signal = (*i).toString();
                 i++;
 
-                s = array.find((*i).toString());
+                s = array.find((*i).toInt());
                 if(s != array.end()) {
                     receiver  = (*s).second;
                 }
@@ -243,7 +242,6 @@ Object *ObjectSystem::toObject(const Variant &variant) {
     return result;
 }
 
-uint32_t ObjectSystem::nextID() {
-    PROFILE_FUNCTION()
-    return p_ptr->m_NextID++;
+uint32_t ObjectSystem::generateUUID(const Object *object) {
+    return hash<const void *>()(object);
 }

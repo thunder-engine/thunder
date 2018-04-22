@@ -11,6 +11,8 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
 public:
     Component                   ();
 
+    virtual void                start                   ();
+
     virtual void                update                  ();
 
     virtual bool                isEnable                () const;

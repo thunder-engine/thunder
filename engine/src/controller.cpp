@@ -3,9 +3,7 @@
 #include "input.h"
 #include "components/camera.h"
 
-IController::IController(Engine *engine) {
-    m_pEngine   = engine;
-
+IController::IController() {
     m_pActiveCamera = nullptr;
 
     m_ObjectsList.clear();

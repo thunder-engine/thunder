@@ -3,7 +3,7 @@
 #include "components/actor.h"
 
 Camera::Camera() {
-    m_FOV       = 45.0; // 2*arctan(height/(2*distance))
+    m_FOV       = 60.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
     m_Far       = 1000.0;
     m_Ratio     = 1.0;
@@ -95,38 +95,38 @@ Ray Camera::castRay(float x, float y) {
     return Ray (p, dir);
 }
 
-double Camera::fov() const {
+float Camera::fov() const {
     return m_FOV;
 }
 
-double Camera::nearPlane() const {
+float Camera::nearPlane() const {
     return m_Near;
 }
 
-void Camera::setNear(double value) {
+void Camera::setNear(float value) {
     m_Near  = value;
 }
 
-double Camera::farPlane() const {
+float Camera::farPlane() const {
     return m_Far;
 }
 
-void Camera::setFar(const double value) {
+void Camera::setFar(const float value) {
     m_Far   = value;
 }
 
-double Camera::ratio() const {
+float Camera::ratio() const {
     return m_Ratio;
 }
-void Camera::setRatio(double value) {
+void Camera::setRatio(float value) {
     m_Ratio = value;
 }
 
-double Camera::focal() const {
+float Camera::focal() const {
     return m_Focal;
 }
 
-void Camera::setFocal(const double focal) {
+void Camera::setFocal(const float focal) {
     m_Focal = focal;
 }
 
@@ -138,7 +138,7 @@ void Camera::setType(const Types type) {
     m_Type   = type;
 }
 
-void Camera::setFov(const double value) {
+void Camera::setFov(const float value) {
     m_FOV   = value;
 }
 
@@ -150,10 +150,10 @@ void Camera::setColor(const Vector4 &color) {
     m_Color = color;
 }
 
-double Camera::orthoWidth() const {
+float Camera::orthoWidth() const {
     return m_OrthoWidth;
 }
-void Camera::setOrthoWidth(const double value) {
+void Camera::setOrthoWidth(const float value) {
     m_OrthoWidth    = value;
 }
 

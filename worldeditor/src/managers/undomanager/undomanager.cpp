@@ -27,11 +27,20 @@ bool UndoManager::SelectObjects::isValid() const {
 UndoManager::CreateObjects::CreateObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     m_pSelect   = new SelectObjects(ctrl->selected(), ctrl);
-    m_Objects   = objects;
+    for(auto it : objects) {
+        m_Objects.push_back(QString::number(it->uuid()));
+    }
 }
 void UndoManager::CreateObjects::undo(bool redo) {
     if(!m_Objects.empty()) {
-        UndoManager::instance()->push(new DestroyObjects(m_Objects, m_pController, m_Name), !redo, false);
+        Object::ObjectList objects;
+        foreach(const QString &ref, m_Objects) {
+            Object *object  = m_pController->findObject(ref.toInt());
+            if(object) {
+                objects.push_back(object);
+            }
+        }
+        UndoManager::instance()->push(new DestroyObjects(objects, m_pController, m_Name), !redo, false);
     }
     m_pSelect->forceUndo();
 }
@@ -44,7 +53,7 @@ UndoManager::DestroyObjects::DestroyObjects(const Object::ObjectList &objects, O
     VariantList list;
     for(auto it : objects) {
         list.push_back(Engine::toVariant(it));
-        m_pParent   = it->parent();
+        m_Parents.push_back(QString::number(it->parent()->uuid()));
     }
     m_Dump  = Json::save( list, 0 );
     for(auto it : objects) {
@@ -56,12 +65,14 @@ void UndoManager::DestroyObjects::undo(bool redo) {
     Variant variant     = Json::load(m_Dump);
     Object::ObjectList objects;
     VariantList list    = variant.value<VariantList>();
-    for(auto it : list) {
-        Object *object  = Engine::toObject(it);
+    QStringList::iterator it  = m_Parents.begin();
+    for(auto ref : list) {
+        Object *object  = Engine::toObject(ref);
         if(object) {
-            object->setParent(m_pParent);
+            object->setParent(m_pController->findObject((*it).toInt()));
             objects.push_back(object);
         }
+        it++;
     }
     m_pController->mapUpdated();
     if(!objects.empty()) {
@@ -101,6 +112,7 @@ void UndoManager::ParentingObjects::undo(bool redo) {
             objects.push_back(object);
             parents.push_back(parent);
         }
+        it++;
     }
     UndoManager::instance()->push(new ParentingObjects(objects, parents, m_pController, m_Name), !redo, false);
     m_pController->onParentActor(objects, parents, false);
@@ -129,8 +141,7 @@ UndoManager::PropertyObjects::PropertyObjects(const Object::ObjectList &objects,
         VariantList o;
         for(auto it : array) {
             // Save Object
-            int uuid    = int(it->uuid());
-
+            int uuid    = (int)it->uuid();
             VariantList data;
             VariantMap properties;
 

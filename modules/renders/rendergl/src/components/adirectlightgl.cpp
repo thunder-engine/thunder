@@ -111,10 +111,11 @@ void ADirectLightGL::draw(APipeline &pipeline, uint8_t layer) {
                         glUniform4fv(location + layer, 1, m_pTiles[layer].v);
                     }
                 }
-
-                location    = glGetUniformLocation(program, "light.mvpi");
-                if(location > -1) {
-                    Camera *camera  = pipeline.activeCamera();
+            }
+            location    = glGetUniformLocation(program, "light.mvpi");
+            if(location > -1) {
+                Camera *camera  = pipeline.activeCamera();
+                if(camera) {
                     Matrix4 mv, p;
                     camera->matrices(mv, p);
 
@@ -133,13 +134,13 @@ void ADirectLightGL::draw(APipeline &pipeline, uint8_t layer) {
 }
 
 void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
-    ICommandBuffer *b   = pipeline.buffer();
-    glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMap.buffer());
-    b->setRenderTarget(0, nullptr, &m_DepthMap);
-    b->clearRenderTarget();
+    Camera *camera  = pipeline.activeCamera();
+    if(isEnable() && m_Shadows && camera) {
+        ICommandBuffer *b   = pipeline.buffer();
+        glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMap.buffer());
+        //b->setRenderTarget(0, nullptr, &m_DepthMap);
+        b->clearRenderTarget();
 
-    if(isEnable() && m_Shadows) {
-        Camera *camera  = pipeline.activeCamera();
         Matrix4 mv, p;
         camera->matrices(mv, p);
         {

@@ -36,11 +36,12 @@ MaterialEdit::MaterialEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    glWidget    = new SceneView(engine, this);
-    CameraCtrl *ctrl    = new CameraCtrl(m_pEngine);
+    glWidget    = new Viewport(this);
+    CameraCtrl *ctrl    = new CameraCtrl();
     ctrl->blockFree(true);
     ctrl->blockMovement(true);
     glWidget->setController(ctrl);
+    glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");
 
@@ -167,7 +168,7 @@ void MaterialEdit::changeMesh(const string &path) {
             mesh->setMaterial(0, m_pMaterial);
         }
         float bottom;
-        glWidget->controller()->setFocusOn(m_pMesh, bottom);
+        static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
     }
 }
 
@@ -183,7 +184,7 @@ void MaterialEdit::onGLInit() {
     m_pLight->setRotation(rot);
     m_pLight->addComponent<DirectLight>();
 
-    CameraCtrl *controller  = glWidget->controller();
+    CameraCtrl *controller  = static_cast<CameraCtrl *>(glWidget->controller());
     Camera *camera  = controller->activeCamera();
     if(camera) {
         camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));

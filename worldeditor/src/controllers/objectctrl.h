@@ -11,7 +11,7 @@
 #include <object.h>
 
 #include "cameractrl.h"
-#include "graph/sceneview.h"
+#include "graph/viewport.h"
 #include "managers/undomanager/undomanager.h"
 
 class Engine;
@@ -125,7 +125,7 @@ public:
     };
 
 public:
-    ObjectCtrl          (Engine *engine, SceneView *view);
+    ObjectCtrl          (Viewport *view);
 
     void                drawHandles                 ();
 
@@ -210,7 +210,7 @@ protected:
 
     Object::ObjectList  m_DragObjects;
 
-    SceneView          *m_pView;
+    Viewport           *m_pView;
 
     Vector2             mMousePosition;
     Vector2             m_Screen;

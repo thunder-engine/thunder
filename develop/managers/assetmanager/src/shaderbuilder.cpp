@@ -479,7 +479,7 @@ Variant ShaderBuilder::data() const {
 int ShaderBuilder::setTexture(const QString &path, Vector4 &sub, bool cube) {
     sub     = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    m_Textures[path]    = cube;
+    m_Textures.push_back(TexturePair(path, cube));
     return m_Textures.size() - 1;
 }
 

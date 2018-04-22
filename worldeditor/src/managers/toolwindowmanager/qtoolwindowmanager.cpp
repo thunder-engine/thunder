@@ -227,6 +227,14 @@ QToolWindowManager::~QToolWindowManager()
     delete d_ptr;
 }
 
+void QToolWindowManager::activateToolWindow(QWidget *toolWindow)
+{
+    Q_D(QToolWindowManager);
+    foreach(QAbstractToolWindowManagerArea *it, d->m_areas) {
+        it->activateToolWindow(toolWindow);
+    }
+}
+
 /*!
  * Adds \a toolWindow to the manager and moves it to the position specified in
  * \a area. This function is a shortcut for QToolWindowManager::addToolWindows.

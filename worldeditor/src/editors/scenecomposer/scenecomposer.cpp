@@ -91,16 +91,18 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     m_pPluginDlg    = new PluginDialog(m_pEngine, this);
     connect(m_pPluginDlg, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
-    glWidget        = new SceneView(m_pEngine, this);
+    ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
+    connect(ui->viewport, SIGNAL(drop(QDropEvent*)), ctl, SLOT(onDrop()));
+    connect(ui->viewport, SIGNAL(dragEnter(QDragEnterEvent *)), ctl, SLOT(onDragEnter(QDragEnterEvent *)));
+    connect(ui->viewport, SIGNAL(dragLeave(QDragLeaveEvent *)), ctl, SLOT(onDragLeave(QDragLeaveEvent *)));
 
-    ObjectCtrl *ctl = new ObjectCtrl(m_pEngine, glWidget);
-    connect(glWidget, SIGNAL(drop(QDropEvent*)), ctl, SLOT(onDrop()));
-    connect(glWidget, SIGNAL(dragEnter(QDragEnterEvent *)), ctl, SLOT(onDragEnter(QDragEnterEvent *)));
-    connect(glWidget, SIGNAL(dragLeave(QDragLeaveEvent *)), ctl, SLOT(onDragLeave(QDragLeaveEvent *)));
+    ui->viewport->setController(ctl);
+    ui->viewport->setScene(Engine::objectCreate<Scene>("Scene"));
+    ui->viewport->setWindowTitle("Viewport");
 
-    glWidget->setController(ctl);
-    glWidget->setObjectName("Viewport");
-    glWidget->setWindowTitle("Viewport");
+    ui->preview->setController(new IController());
+    ui->preview->setScene(ui->viewport->scene());
+    ui->preview->setWindowTitle("Preview");
 
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
@@ -122,14 +124,15 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->commitButton, SIGNAL(clicked(bool)), ProjectManager::instance(), SLOT(saveSettings()));
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->viewport, SIGNAL(inited()), this, SLOT(onGLInit()));
     startTimer(16);
 
-    ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(ui->contentBrowser, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(glWidget));
-    ui->centralwidget->addToolWindow(ui->hierarchy, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(glWidget));
+    ui->centralwidget->addToolWindow(ui->viewport, QToolWindowManager::EmptySpaceArea);
+    ui->centralwidget->addToolWindow(ui->preview, QToolWindowManager::EmptySpaceArea);
+    ui->centralwidget->addToolWindow(ui->contentBrowser, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->viewport));
+    ui->centralwidget->addToolWindow(ui->hierarchy, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->viewport));
     ui->centralwidget->addToolWindow(ui->propertyWidget, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->hierarchy));
-    ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(glWidget));
+    ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->viewport));
     ui->centralwidget->addToolWindow(ui->consoleOutput, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->contentBrowser));
     ui->centralwidget->addToolWindow(ui->projectWidget, QToolWindowManager::NoArea);
 
@@ -181,9 +184,10 @@ SceneComposer::~SceneComposer() {
     delete ui;
 }
 
-void SceneComposer::timerEvent(QTimerEvent *event) {
+void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
-    glWidget->update();
+    ui->viewport->update();
+    ui->preview->update();
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
@@ -192,10 +196,10 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         m_pProperties   = 0;
     }
     if(!objects.empty()) {
-        glWidget->makeCurrent();
+        ui->viewport->makeCurrent();
         /// \todo Don't reload mesh and materials for each repick
-        m_pProperties   = new NextObject(*objects.begin(), static_cast<ObjectCtrl *>(glWidget->controller()), this);
-        connect(glWidget->controller(), SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
+        m_pProperties   = new NextObject(*objects.begin(), static_cast<ObjectCtrl *>(ui->viewport->controller()), this);
+        connect(static_cast<CameraCtrl *>(ui->viewport->controller()), SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
         connect(m_pPluginDlg, SIGNAL(pluginReloaded()), m_pProperties, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), this, SLOT(onModified()));
@@ -204,7 +208,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
 }
 
 void SceneComposer::onGLInit() {
-    m_pImportQueue->init(new IconRender(m_pEngine, glWidget->context()));
+    m_pImportQueue->init(new IconRender(m_pEngine, ui->viewport->context()));
 
     AssetManager *asset = AssetManager::instance();
     asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine));
@@ -231,9 +235,9 @@ void SceneComposer::updateTitle() {
 void SceneComposer::closeEvent(QCloseEvent *event) {
     if(!checkSave()) {
         event->ignore();
-    } else {
-        QMainWindow::closeEvent(event);
+        return;
     }
+    QMainWindow::closeEvent(event);
 }
 
 bool SceneComposer::checkSave() {
@@ -261,15 +265,16 @@ void SceneComposer::on_action_New_triggered() {
 
     delete m_pMap;
 
-    m_pMap  = Engine::objectCreate<Chunk>("Chunk", glWidget->scene());
+    m_pMap  = Engine::objectCreate<Chunk>("Chunk", ui->viewport->scene());
     ui->hierarchy->setObject(m_pMap);
 
-    ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(glWidget->controller());
+    ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
     ctrl->clear();
     ctrl->setMap(m_pMap);
 
     UndoManager::instance()->clear();
+    onUndoRedoUpdated();
 
     mPath.clear();
 }
@@ -298,16 +303,17 @@ void SceneComposer::on_action_Open_triggered() {
         if(map) {
             updateTitle();
 
-            map->setParent(glWidget->scene());
+            map->setParent(ui->viewport->scene());
             delete m_pMap;
             m_pMap  = map;
             ui->hierarchy->setObject(m_pMap);
-            ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(glWidget->controller());
+            ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
             ctrl->clear();
             ctrl->setMap(m_pMap);
 
             UndoManager::instance()->clear();
+            onUndoRedoUpdated();
         }
     }
 }
@@ -351,18 +357,34 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
     ui->actionEditor_Mode->setChecked(true);
     ui->actionGame_Mode->setChecked(false);
 
-    //m_pEngine->setMode(Engine::EDIT);
+    ui->preview->stopGame();
+    ui->centralwidget->activateToolWindow(ui->viewport);
+    uint32_t offset = 0;
+    Object *map = Engine::toObject(Bson::load(m_Back, offset));
+    if(map) {
+        map->setParent(ui->viewport->scene());
+        delete m_pMap;
+        m_pMap  = map;
+        ui->hierarchy->setObject(m_pMap);
+        ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
+
+        ctrl->clear();
+        ctrl->setMap(m_pMap);
+    }
 }
 
 void SceneComposer::on_actionGame_Mode_triggered() {
     ui->actionGame_Mode->setChecked(true);
     ui->actionEditor_Mode->setChecked(false);
 
-    //m_pEngine->setMode(Engine::GAME);
+    m_Back  = Bson::save(Engine::toVariant(m_pMap));
+
+    ui->preview->startGame();
+    ui->centralwidget->activateToolWindow(ui->preview);
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {
-    QImage result   = glWidget->grabFramebuffer();
+    QImage result   = ui->viewport->grabFramebuffer();
     result.save("SceneComposer-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
 }
 

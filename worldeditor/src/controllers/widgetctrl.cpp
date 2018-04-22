@@ -4,8 +4,8 @@
 
 #include <components/actor.h>
 
-WidgetCtrl::WidgetCtrl(Engine *engine) :
-        ObjectCtrl(engine, nullptr) {
+WidgetCtrl::WidgetCtrl() :
+        ObjectCtrl(nullptr) {
 }
 
 /// \todo: Rework Controller
