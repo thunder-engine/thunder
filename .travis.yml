@@ -25,12 +25,6 @@ matrix:
       before_install:
         - brew update
         - brew install qbs
-        - install_name_tool -id "@rpath/../Frameworks/QtCore" /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore
-        - install_name_tool -id "@rpath/../Frameworks/QtGui" /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui
-        - install_name_tool -id "@rpath/../Frameworks/QtWidgets" /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets
-        - install_name_tool -id "@rpath/../Frameworks/QtScript" /usr/local/opt/qt/lib/QtScript.framework/Versions/5/QtScript
-        - install_name_tool -id "@rpath/../Frameworks/QtXml" /usr/local/opt/qt/lib/QtXml.framework/Versions/5/QtXml
-        - install_name_tool -id "@rpath/../Frameworks/QtNetwork" /usr/local/opt/qt/lib/QtNetwork.framework/Versions/5/QtNetwork
       script:
         - qbs --version
         - qbs setup-toolchains --detect
