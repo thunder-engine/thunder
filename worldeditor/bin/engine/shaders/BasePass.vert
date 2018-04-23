@@ -47,9 +47,14 @@ struct Vertex {
 
 Vertex staticMesh(vec3 v, vec3 t, vec3 n) {
     Vertex result;
+
+    mat3 normal = mat3( transform.model[0].xyz,
+                        transform.model[1].xyz,
+                        transform.model[2].xyz );
+
     result.v    = v;
-    result.t    = t;
-    result.n    = n;
+    result.t    = normal * t;
+    result.n    = normal * n;
     result.m    = vec4( 0.0 );
 
     return result;
@@ -134,6 +139,8 @@ void main(void) {
     Vertex vert = axisAlignedBillboard( vertex, tangent, normal, position, axis );
 #endif
     gl_Position = transform.projection * ( ( transform.mv * vec4(vert.v, 1.0) ) + vert.m );
+
+
 
     _vertex     = gl_Position.xyz;
     _n          = vert.n;
