@@ -85,7 +85,8 @@ Project {
         "modules/renders/rendergl/rendergl.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
-        "build/install.qbs"
+        "build/install.qbs",
+        "build/archive.qbs"
     ]
 }
 
