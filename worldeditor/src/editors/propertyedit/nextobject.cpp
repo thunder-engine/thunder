@@ -246,7 +246,6 @@ void NextObject::onDeleteComponent() {
 
 void NextObject::buildObject(Object *object, const QString &path) {
     const MetaObject *meta = object->metaObject();
-
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         QString name    = (path.isEmpty() ? "" : path + "/") + property.name();

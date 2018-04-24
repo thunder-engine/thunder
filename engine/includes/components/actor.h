@@ -10,6 +10,7 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     A_REGISTER(Actor, Object, Scene);
 
     A_PROPERTIES(
+        A_PROPERTY(bool, Enable, Actor::isEnable, Actor::setEnable),
         A_PROPERTY(Vector3, Position, Actor::position, Actor::setPosition),
         A_PROPERTY(Vector3, Rotation, Actor::euler, Actor::setEuler),
         A_PROPERTY(Vector3, Scale, Actor::scale, Actor::setScale)
@@ -18,15 +19,19 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
 public:
     Actor                       ();
 
+    bool                        isEnable                () const;
+
+    Vector3                     position                () const;
+
+    Vector3                     euler                   () const;
+
+    Vector3                     scale                   () const;
+
+    uint8_t                     layers                  () const;
+
     virtual Matrix4             transform               ();
 
-    virtual Vector3             position                () const;
-
-    virtual Vector3             euler                   () const;
-
     virtual Quaternion          rotation                () const;
-
-    virtual Vector3             scale                   () const;
 
     virtual Matrix4             worldTransform          ();
 
@@ -38,27 +43,26 @@ public:
 
     virtual Vector3             worldScale              () const;
 
+    Scene                       &scene                  () const;
 
-    virtual uint8_t             layers                  () const;
-
-    Scene                       &scene                   () const;
-
-    Component                   *component               (const char *type);
+    Component                   *component              (const char *type);
 
     template<typename T>
     T                          *component               () {
         return static_cast<T *>(component(T::metaClass()->name()));
     }
 
-    virtual void                setPosition             (const Vector3 &value);
+    void                        setEnable               (const bool enable);
 
-    virtual void                setEuler                (const Vector3 &value);
+    void                        setPosition             (const Vector3 &value);
+
+    void                        setEuler                (const Vector3 &value);
+
+    void                        setScale                (const Vector3 &value);
+
+    void                        setLayers               (const uint8_t layers);
 
     virtual void                setRotation             (const Quaternion &value);
-
-    virtual void                setScale                (const Vector3 &value);
-
-    virtual void                setLayers               (const uint8_t layers);
 
     void                        setScene                (Scene &scene);
 
@@ -78,6 +82,8 @@ protected:
     Vector3                     m_Scale;
 
     uint8_t                     m_Layers;
+
+    bool                        m_Enable;
 
     Scene                      *m_pScene;
 };

@@ -3,13 +3,21 @@
 #include "components/component.h"
 
 Actor::Actor() :
-        m_pScene(nullptr) {
+        m_pScene(nullptr),
+        m_Enable(true),
+        m_Position(Vector3()),
+        m_Rotation(Quaternion()),
+        m_Scale(Vector3(1.0f)),
+        m_Layers(0x17) {
 
-    m_Position  = Vector3(0.0f);
-    m_Rotation  = Quaternion ();
-    m_Scale     = Vector3(1.0f);
+}
 
-    m_Layers    = 0x17;
+bool Actor::isEnable() const {
+    return m_Enable;
+}
+
+void Actor::setEnable(const bool enable) {
+    m_Enable    = enable;
 }
 
 Matrix4 Actor::transform() {
