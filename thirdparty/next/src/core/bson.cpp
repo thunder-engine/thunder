@@ -2,6 +2,8 @@
 
 #include <streambuf>
 
+#include <cstring>
+
 Variant appendProperty(const Variant &container, const Variant &data, const string &name) {
     switch(container.type()) {
         case MetaType::VARIANTLIST: {

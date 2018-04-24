@@ -25,6 +25,10 @@ const QString gApplication(".exe");
 const QString gShared(".dylib");
 const QString gStatic(".a");
 const QString gApplication(".app");
+#elif __linux__
+const QString gShared(".so");
+const QString gStatic(".a");
+const QString gApplication("");
 #endif
 const QString gMimeContent("text/content");
 

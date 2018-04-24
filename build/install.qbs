@@ -50,7 +50,14 @@ Product {
             }
         }
 
-        property string postfix: {
+		property string libPrefix: {
+            var result = "";
+            if (qbs.targetOS.contains("linux"))
+                result = "lib";
+            return result;
+        }
+		
+        property string libPostfix: {
             var suffix = "";
             if (qbs.targetOS.contains("windows") && qbs.debugInformation)
                 suffix += "d";
@@ -60,12 +67,12 @@ Product {
             var list = [];
             if (!Qt.core.frameworkBuild) {
                 list.push(
-                    "Qt5Core" + postfix,
-                    "Qt5Gui" + postfix,
-                    "Qt5Widgets" + postfix,
-                    "Qt5Script" + postfix,
-                    "Qt5Xml" + postfix,
-                    "Qt5Network" + postfix
+                    libPrefix + "Qt5Core" + libPostfix,
+                    libPrefix + "Qt5Gui" + libPostfix,
+                    libPrefix + "Qt5Widgets" + libPostfix,
+                    libPrefix + "Qt5Script" + libPostfix,
+                    libPrefix + "Qt5Xml" + libPostfix,
+                    libPrefix + "Qt5Network" + libPostfix
                 );
             } else {
                 list.push("**/QtCore.framework/**");

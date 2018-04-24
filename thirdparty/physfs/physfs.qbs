@@ -9,7 +9,7 @@ Project {
         ];
         if(qbs.targetOS.contains("windows")) {
             result.push("src/platform/win32.c")
-        } else if(qbs.targetOS.contains("darwin")) {
+        } else {
             result.push("src/platform/unix.c"),
             result.push("src/platform/posix.c")
         }
@@ -32,7 +32,6 @@ Project {
         cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
         cpp.libraryPaths: [ ]
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -42,6 +41,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {

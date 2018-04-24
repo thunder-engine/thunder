@@ -3,6 +3,8 @@
 #include <file.h>
 #include <log.h>
 
+#include <cstring>
+
 #define HEADER      "Header"
 #define DATA        "Data"
 #define DEFAULTMESH ".embedded/DefaultMesh.mtl"

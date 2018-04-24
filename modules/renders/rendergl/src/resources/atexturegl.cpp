@@ -1,5 +1,7 @@
 #include "resources/atexturegl.h"
 
+#include <cstring>
+
 #define DATA    "Data"
 
 ATextureGL::ATextureGL() {

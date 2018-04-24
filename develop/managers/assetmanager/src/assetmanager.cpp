@@ -10,6 +10,7 @@
 #include <QMetaProperty>
 
 #include <zlib.h>
+#include <cstring>
 
 #include "config.h"
 

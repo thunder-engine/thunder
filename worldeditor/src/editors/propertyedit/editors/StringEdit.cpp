@@ -1,5 +1,5 @@
 #include "StringEdit.h"
-#include "ui_stringedit.h"
+#include "ui_StringEdit.h"
 
 StringEdit::StringEdit(QWidget *parent) :
         QWidget(parent),

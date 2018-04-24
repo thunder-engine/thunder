@@ -6,6 +6,8 @@
 
 #include <bson.h>
 
+#include <cstring>
+
 #include <QFileInfo>
 #include <QTime>
 

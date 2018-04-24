@@ -393,18 +393,22 @@ void ContentBrowser::showInGraphicalShell() {
                << QLatin1String("tell application \"Finder\" to activate");
     QProcess::execute("/usr/bin/osascript", scriptArgs);
 #else
+/*
     // we cannot select a file here, because no file browser really supports it...
     const QFileInfo fileInfo(path);
     const QString folder = fileInfo.absoluteFilePath();
     const QString app = Utils::UnixUtils::fileBrowser(Core::ICore::instance()->settings());
     QProcess browserProc;
     const QString browserArgs = Utils::UnixUtils::substituteFileBrowserParameters(app, folder);
-    if (debug)
+    if (debug) {
         qDebug() <<  browserArgs;
+    }
     bool success = browserProc.startDetached(browserArgs);
     const QString error = QString::fromLocal8Bit(browserProc.readAllStandardError());
     success = success && error.isEmpty();
-    if (!success)
+    if (!success) {
         showGraphicalShellError(parent, app, error);
+    }
+*/
 #endif
 }
