@@ -1,6 +1,6 @@
 ## FBX SDK
 
-- Link: https://www.freetype.org
+- Link: https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-archives
 - Version: 2018.1.1
 - License: Proprietary
 
