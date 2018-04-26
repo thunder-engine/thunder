@@ -138,15 +138,15 @@ MetaProperty MetaObject::property(int index) const {
         return m_pSuper->property(index);
     }
     if(i >= 0 && i < m_PropCount) {
-        return MetaProperty(m_pProperties + index);
+        return MetaProperty(m_pProperties + i);
     }
     return MetaProperty(nullptr);
 }
 
 int MetaObject::propertyCount() const {
     PROFILE_FUNCTION()
-    int count               = m_PropCount;
-    const MetaObject *s    = m_pSuper;
+    int count           = m_PropCount;
+    const MetaObject *s = m_pSuper;
     while(s) {
         count  += s->m_PropCount;
         s       = s->m_pSuper;
@@ -156,8 +156,8 @@ int MetaObject::propertyCount() const {
 
 int MetaObject::propertyOffset() const {
     PROFILE_FUNCTION()
-    int offset              = 0;
-    const MetaObject *s    = m_pSuper;
+    int offset          = 0;
+    const MetaObject *s = m_pSuper;
     while(s) {
         offset += s->m_PropCount;
         s       = s->m_pSuper;

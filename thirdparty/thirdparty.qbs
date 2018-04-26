@@ -10,6 +10,7 @@ Project {
         "glfw/glfw.qbs",
         "glfm/glfm.qbs",
         "quazip/quazip.qbs",
-        "glad/glad.qbs"
+        "glad/glad.qbs",
+        "freetype/freetype.qbs"
     ]
 }
