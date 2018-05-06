@@ -13,13 +13,8 @@
     #include <GLES3/gl3ext.h>
 #endif
 
-#ifdef __APPLE__
-    #include <glad/glad.h>
-    #include <GLFW/glfw3.h>
-#elif _WIN32
-    #include <glad/glad.h>
-    #include <GLFW/glfw3.h>
-#endif
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #define POLYGONS    "Polygons"
 #define DRAWCALLS   "Draw Calls"

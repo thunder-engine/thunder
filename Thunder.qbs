@@ -13,10 +13,9 @@ Project {
 
     property string PLATFORM: {
         var arch = qbs.architecture;
-        if(qbs.targetOS.contains("darwin")) {
+        if(qbs.targetOS.contains("darwin") || qbs.targetOS.contains("linux")) {
             arch = "x86_64"
         }
-
         return qbs.targetOS[0] + "/" + arch;
     }
 

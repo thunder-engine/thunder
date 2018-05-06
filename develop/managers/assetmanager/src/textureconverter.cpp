@@ -4,6 +4,8 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <cstring>
+
 #include <bson.h>
 #include <resources/texture.h>
 

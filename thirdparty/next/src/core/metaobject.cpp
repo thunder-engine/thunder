@@ -2,6 +2,8 @@
 
 #include "core/object.h"
 
+#include <cstring>
+
 MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
         m_pName(name),
         m_Constructor(constructor),

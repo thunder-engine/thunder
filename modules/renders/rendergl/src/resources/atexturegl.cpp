@@ -1,10 +1,16 @@
 #include "resources/atexturegl.h"
 
+#include <cstring>
+
+#define DATA    "Data"
+
+
 ATextureGL::ATextureGL() :
         m_Buffer(0) {
 
     destroy();
 }
+
 
 ATextureGL::~ATextureGL() {
     destroy();

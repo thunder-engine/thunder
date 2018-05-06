@@ -5,6 +5,7 @@
 #include "apipeline.h"
 
 #include <cmath>
+#include <cstring>
 
 ABloomGL::ABloomGL() {
     reset("shaders/Downsample.frag");

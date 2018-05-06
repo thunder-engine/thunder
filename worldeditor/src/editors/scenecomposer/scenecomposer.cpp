@@ -13,6 +13,8 @@
 #include <json.h>
 #include <bson.h>
 
+#include <cstring>
+
 // Engine
 #include <module.h>
 #include <timer.h>

@@ -42,6 +42,21 @@ Project {
             sources.push("src/cocoa_platform.h"),
             sources.push("src/cocoa_joystick.h"),
             sources.push("src/nsgl_context.h")
+        } else if(qbs.targetOS.contains("linux")) {
+            sources.push("src/x11_init.c"),
+            sources.push("src/linux_joystick.c"),
+            sources.push("src/xkb_unicode.c"),
+            sources.push("src/x11_monitor.c"),
+            sources.push("src/posix_time.c"),
+            sources.push("src/posix_tls.c"),
+            sources.push("src/x11_window.c"),
+            sources.push("src/glx_context.c"),
+            sources.push("src/egl_context.c"),
+
+            sources.push("src/x11_platform.h"),
+            sources.push("src/linux_joystick.h"),
+            sources.push("src/glx_context.h"),
+            sources.push("src/egl_context.h")
         }
 
         return sources;
@@ -61,18 +76,24 @@ Project {
         cpp.defines: ["_GLFW_BUILD_DLL"]
         cpp.includePaths: glfw.incPaths
         cpp.libraryPaths: [ ]
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.defines: outer.concat(["_GLFW_WIN32"])
             cpp.dynamicLibraries: [ "gdi32", "User32", "Shell32" ]
         }
+		
+		Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.defines: outer.concat(["_GLFW_X11"])
+            cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama" ]
+        }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["_GLFW_COCOA"])
-            cpp.weakFrameworks: ["CoreFoundation", "AppKit", "CoreVideo", "IOKit"]
+            cpp.weakFrameworks: [ "CoreFoundation", "AppKit", "CoreVideo", "IOKit" ]
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {
@@ -96,6 +117,11 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.defines: ["_GLFW_WIN32"]
+        }
+		
+		Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.defines: outer.concat(["_GLFW_X11"])
         }
 
         Properties {
