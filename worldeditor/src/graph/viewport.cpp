@@ -10,6 +10,9 @@ Viewport::Viewport(QWidget *parent) :
         SceneView(parent),
         m_pCommandBuffer(new ICommandBuffer())  {
 
+    setFocusPolicy(Qt::StrongFocus);
+    setAcceptDrops(true);
+    //setContextMenuPolicy(Qt::CustomContextMenu);
     setAutoFillBackground(false);
 
 }
@@ -17,7 +20,7 @@ Viewport::Viewport(QWidget *parent) :
 void Viewport::addButton(OverlayButton *button) {
     int width   = 10;
     foreach(OverlayButton *it, m_OverlayButtons) {
-        width   += it->rect().width() + gRoundness;
+        width  += it->rect().width() + gRoundness;
     }
     button->setPos(QPoint(width, 10));
     m_OverlayButtons.push_back(button);
@@ -44,7 +47,6 @@ void Viewport::paintGL() {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     drawOverlay(painter);
-    //painter.setRenderHint(QPainter::HighQualityAntialiasing, false);
 }
 
 void Viewport::resizeGL(int width, int height) {

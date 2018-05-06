@@ -28,11 +28,11 @@ VariantMap TextureSerial::saveUserData() const {
     header.push_back((int)m_Height);
     header.push_back(0); // Reserved
 
-    header.push_back(m_type);
-    header.push_back((int)m_components);
-    header.push_back((int)m_format);
-    header.push_back((int)m_filtering);
-    header.push_back((int)m_wrap);
+    header.push_back(m_Type);
+    header.push_back(0); // Reserved
+    header.push_back((int)m_Format);
+    header.push_back((int)m_Filtering);
+    header.push_back((int)m_Wrap);
 
     result["Header"]    = header;
     result["Data"]      = m_Surfaces;
@@ -72,11 +72,10 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
 
         img = img.convertToFormat(input);
 
-        texture.m_components    = img.pixelFormat().channelCount();
-        texture.m_format        = (texture.m_components == 3) ? Texture::RGB : Texture::RGBA;
-        texture.m_type          = Texture::TextureType(s->textureType());
-        texture.m_filtering     = Texture::FilteringType(s->filtering());
-        texture.m_wrap          = Texture::WrapType(s->wrap());
+        texture.m_Format        = (img.pixelFormat().channelCount() == 3) ? Texture::RGB : Texture::RGBA;
+        texture.m_Type          = Texture::TextureType(s->textureType());
+        texture.m_Filtering     = Texture::FilteringType(s->filtering());
+        texture.m_Wrap          = Texture::WrapType(s->wrap());
 
         if(!texture.m_Width || !texture.m_Height) {
             //tgaReader(settings, img);

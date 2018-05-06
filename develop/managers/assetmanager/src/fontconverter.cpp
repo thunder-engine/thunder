@@ -1,12 +1,18 @@
-#include "textconverter.h"
+#include "fontconverter.h"
 
 #include <QFile>
 
 #include <bson.h>
-#include "resources/text.h"
+
+#include <file.h>
+
+#include "resources/font.h"
 #include "projectmanager.h"
 
-class TextSerial : public Text {
+#define HEADER  "Header"
+#define DATA    "Data"
+
+class FontSerial : public Font {
 public:
     void                        setData         (const QByteArray &data) {
         m_Data.resize(data.size());
@@ -16,26 +22,34 @@ public:
 protected:
     VariantMap                  saveUserData    () const {
         VariantMap result;
-        result["Data"]  = m_Data;
+        {
+            VariantList header;
+            header.push_back(0); // Reserved
+            header.push_back((int)m_Size);
+            header.push_back(m_FontName);
+            result[HEADER]  = header;
+        }
+        {
+            result[DATA]    = m_Data;
+        }
         return result;
     }
 };
 
-uint8_t TextConverter::convertFile(IConverterSettings *settings) {
+uint8_t FontConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        TextSerial text;
-        text.setData(src.readAll());
+        FontSerial font;
+        font.setData(src.readAll());
         src.close();
 
         QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data  = Bson::save( Engine::toVariant(&text) );
+            ByteArray data  = Bson::save( Engine::toVariant(&font) );
             file.write((const char *)&data[0], data.size());
             file.close();
             return 0;
         }
     }
-
     return 1;
 }

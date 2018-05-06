@@ -5,8 +5,10 @@
 
 #include "engine.h"
 
+class Node;
+
 class NEXT_LIBRARY_EXPORT Texture : public Object {
-    A_REGISTER(Texture, Object, Resources)
+    A_REGISTER(Texture, Object, Resources);
 
 public:
     enum TextureType {
@@ -15,7 +17,7 @@ public:
     };
 
     enum FormatType {
-        RED,
+        LUMINANCE,
         RGB,
         RGBA,
         DXT1,
@@ -35,32 +37,59 @@ public:
         Mirrored
     };
 
+    typedef deque<uint8_t *>    Surface;
+    typedef deque<Surface>      Sides;
+
+    typedef deque<const Texture *>  Textures;
+
 public:
     Texture                     ();
 
     virtual ~Texture            ();
 
+    virtual void                apply                       ();
+    virtual void                clear                       ();
+
     uint32_t                    width                       () const;
     uint32_t                    height                      () const;
 
-    inline bool                 isCompressed                () const { return (m_format == DXT1 || m_format == DXT5 || m_format == ETC2); }
-    inline bool                 isCubemap                   () { return (m_type == Cubemap); }
+    void                        setWidth                    (uint32_t width);
+    void                        setHeight                   (uint32_t height);
+
+    Vector2Vector               shape                       () const;
+    void                        setShape                    (const Vector2Vector &shape);
+
+    Vector4Vector               pack                        (const Textures &textures, uint8_t padding = 0);
+
+    bool                        isCompressed                () const;
+    bool                        isCubemap                   () const;
 
     void                        loadUserData                (const VariantMap &data);
 
-protected:
-    virtual void                clear                       ();
+    void                        addSurface                  (const Surface &surface);
 
-public:
-    uint32_t                    m_format;
-    uint32_t                    m_components;
-    TextureType                 m_type;
-    FilteringType               m_filtering;
-    WrapType                    m_wrap;
+    void                        resize                      (uint32_t width, uint32_t height);
+
+protected:
+    uint32_t                    size                        (uint32_t width, uint32_t height) const;
+    uint32_t                    sizeDXTc                    (uint32_t width, uint32_t height) const;
+    uint32_t                    sizeRGB                     (uint32_t width, uint32_t height) const;
+
+    uint8_t                     components                  () const;
+
+    FormatType                  m_Format;
+    TextureType                 m_Type;
+    FilteringType               m_Filtering;
+    WrapType                    m_Wrap;
 
     uint32_t                    m_Width;
     uint32_t                    m_Height;
 
+    Vector2Vector               m_Shape;
+
+    Sides                       m_Sides;
+
+    Node                       *m_pRoot;
 };
 
 #endif // TEXTURE_H

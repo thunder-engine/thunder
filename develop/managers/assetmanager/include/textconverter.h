@@ -3,8 +3,6 @@
 
 #include "baseconvertersettings.h"
 
-#include "resources/text.h"
-
 class TextConverter : public IConverter {
 public:
     TextConverter               () {}

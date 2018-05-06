@@ -19,6 +19,7 @@
 #include <components/actor.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
+#include <resources/font.h>
 
 #include "assetmanager.h"
 
@@ -30,33 +31,6 @@
 #define COMPONENT   "Component"
 
 Q_DECLARE_METATYPE(Vector4)
-
-void fixEuler(Vector3 &euler) {
-    const double negative = -0.0001;
-    const double positive = 360 - 0.0001;
-
-    if((euler.x == 180 && euler.z == 180) || (euler.x ==-180 && euler.z ==-180)) {
-        euler.x = 0;
-        euler.z = 0;
-        euler.y = 180 - euler.y;
-    }
-
-    if(euler.x < negative) {
-        euler.x += 360;
-    } else if(euler.x > positive) {
-        euler.x -= 360;
-    }
-    if(euler.y < negative) {
-        euler.y += 360;
-    } else if(euler.y > positive) {
-        euler.y -= 360;
-    }
-    if(euler.z < negative) {
-        euler.z += 360;
-    } else if(euler.z > positive) {
-        euler.z -= 360;
-    }
-}
 
 QVariant qVariant(Variant &v, const string &type) {
     switch(v.userType()) {
@@ -81,11 +55,6 @@ QVariant qVariant(Variant &v, const string &type) {
             }
             return QVariant::fromValue(value);
         }
-        case MetaType::QUATERNION: {
-            Vector3 rot   = v.toQuaternion().euler();
-            fixEuler(rot);
-            return QVariant::fromValue(rot);
-        }
         case IConverter::ContentTexture: {
             Texture *t  = v.value<Texture *>();
             return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
@@ -96,6 +65,10 @@ QVariant qVariant(Variant &v, const string &type) {
         }
         case IConverter::ContentMesh: {
             Mesh *t     = v.value<Mesh *>();
+            return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
+        }
+        case IConverter::ContentFont: {
+            Font *t     = v.value<Font *>();
             return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
         }
         default: break;
@@ -117,13 +90,13 @@ Variant aVariant(QVariant &v, int type) {
         case MetaType::STRING: {
             if(v.canConvert<FilePath>()) {
                 FilePath p  = v.value<FilePath>();
-                return Variant(qPrintable(p.path));
+                return Variant(qUtf8Printable(p.path));
             }
             if(v.canConvert<Template>()) {
                 Template p  = v.value<Template>();
-                return Variant(qPrintable(p.path));
+                return Variant(qUtf8Printable(p.path));
             }
-            return Variant(qPrintable(v.toString()));
+            return Variant(qUtf8Printable(v.toString()));
         }
         case MetaType::VECTOR2: {
             return Variant(v.value<Vector2>());
@@ -138,9 +111,6 @@ Variant aVariant(QVariant &v, int type) {
                 return Variant(v);
             }
             return Variant(v.value<Vector4>());
-        }
-        case MetaType::QUATERNION: {
-            return Variant(Quaternion (v.value<Vector3>()));
         }
         case IConverter::ContentTexture: {
             Template p  = v.value<Template>();
@@ -160,6 +130,13 @@ Variant aVariant(QVariant &v, int type) {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Mesh *m = Engine::loadResource<Mesh>(qPrintable(p.path));
+                return Variant::fromValue(m);
+            }
+        }
+        case IConverter::ContentFont: {
+            Template p  = v.value<Template>();
+            if(!p.path.isEmpty()) {
+                Font *m = Engine::loadResource<Font>(qPrintable(p.path));
                 return Variant::fromValue(m);
             }
         }
@@ -255,7 +232,9 @@ void NextObject::buildObject(Object *object, const QString &path) {
             MaterialArray array = data.value<MaterialArray>();
             for(uint32_t i = 0; i < array.size(); i++) {
                 Variant v   = Variant::fromValue(array[i]->material());
+                blockSignals(true);
                 setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
+                blockSignals(false);
             }
         } else {
             blockSignals(true);

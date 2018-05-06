@@ -6,12 +6,9 @@
 
 #include <amath.h>
 #include <log.h>
-#include <tools.h>
 
 #include "components/scene.h"
 #include "components/camera.h"
-
-#include "components/aspritegl.h"
 
 #include "analytics/profiler.h"
 
@@ -35,7 +32,10 @@ ADeferredShading::ADeferredShading(Engine *engine) :
     m_pGBuffer[G_PARAMS]  .create(GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
     m_pGBuffer[G_EMISSIVE].create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
 
-    m_DepthMap            .create(GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+    m_Targets["layer0"] = &m_pGBuffer[G_NORMALS];
+    m_Targets["layer1"] = &m_pGBuffer[G_DIFFUSE];
+    m_Targets["layer2"] = &m_pGBuffer[G_PARAMS];
+    m_Targets["layer3"] = &m_pGBuffer[G_EMISSIVE];
 
     // G buffer
     glGenFramebuffers(1, &fb_g_id);
@@ -64,7 +64,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     // Draw Opaque pass
     drawComponents(scene, ICommandBuffer::DEFAULT);
 
-    analizeScene(scene);
+    glDepthFunc(GL_LEQUAL);
 
     // Screen Space Ambient Occlusion effect
     ATextureGL &t   = m_pGBuffer[G_EMISSIVE];//&(m_pAO->draw(m_pGBuffer[G_EMISSIVE], *this));
@@ -73,37 +73,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     m_Buffer->setRenderTarget(1, &m_pGBuffer[G_EMISSIVE], nullptr);
 
     // Light pass
-    glActiveTexture (GL_TEXTURE0);
-    m_pGBuffer[G_NORMALS].bind();
-
-    glActiveTexture (GL_TEXTURE1);
-    m_pGBuffer[G_DIFFUSE].bind();
-
-    glActiveTexture (GL_TEXTURE2);
-    m_pGBuffer[G_PARAMS].bind();
-
-    glActiveTexture (GL_TEXTURE3);
-    m_pGBuffer[G_EMISSIVE].bind();
-
-    glActiveTexture (GL_TEXTURE4);
-    m_Depth.bind();
-
     updateLights(scene, ICommandBuffer::LIGHT);
-
-    glActiveTexture (GL_TEXTURE4);
-    m_Depth.unbind();
-
-    glActiveTexture (GL_TEXTURE3);
-    m_pGBuffer[G_EMISSIVE].unbind();
-
-    glActiveTexture (GL_TEXTURE2);
-    m_pGBuffer[G_PARAMS].unbind();
-
-    glActiveTexture (GL_TEXTURE1);
-    m_pGBuffer[G_DIFFUSE].unbind();
-
-    glActiveTexture (GL_TEXTURE0);
-    m_pGBuffer[G_NORMALS].unbind();
 
     cameraReset();
     // Draw Transparent pass
@@ -125,7 +95,6 @@ void ADeferredShading::resize(uint32_t width, uint32_t height) {
     for(int i = 0; i < G_TARGETS; i++) {
         m_pGBuffer[i].resize(m_Screen.x, m_Screen.y);
     }
-    m_DepthMap.resize(m_Screen.x, m_Screen.y);
 }
 
 #endif

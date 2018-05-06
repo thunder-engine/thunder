@@ -10,8 +10,7 @@ MaterialInstance::MaterialInstance(Material *material) :
 }
 
 MaterialInstance::~MaterialInstance() {
-    m_Textures.clear();
-    m_Uniforms.clear();
+    m_Info.clear();
 }
 
 Material *MaterialInstance::material() const {
@@ -20,31 +19,73 @@ Material *MaterialInstance::material() const {
 
 const Texture *MaterialInstance::texture(const char *name) {
     const Texture *result = nullptr;
-    auto it = m_Textures.find(name);
-    if(it != m_Textures.end()) {
-        result  = (*it).second;
+    auto it = m_Info.find(name);
+    if(it != m_Info.end()) {
+        result  = static_cast<const Texture *>((*it).second.ptr);
     }
     return result;
 }
 
-void MaterialInstance::setFloat(const char *name, float value) {
-    m_Uniforms[name]    = value;
-}
-void MaterialInstance::setVector2(const char *name, const Vector2 &value) {
-    m_Uniforms[name]    = value;
-}
-void MaterialInstance::setVector3(const char *name, const Vector3 &value) {
-    m_Uniforms[name]    = value;
-}
-void MaterialInstance::setVector4(const char *name, const Vector4 &value) {
-    m_Uniforms[name]    = value;
-}
-void MaterialInstance::setMatrix4(const char *name, const Vector4 &value) {
-    m_Uniforms[name]    = value;
+MaterialInstance::InfoMap MaterialInstance::params() const {
+    return m_Info;
 }
 
-void MaterialInstance::setTexture(const char *name, const Texture *value) {
-    m_Textures[name]    = value;
+void MaterialInstance::setInteger(const char *name, const int32_t *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::INTEGER;
+
+    m_Info[name]    = info;
+}
+void MaterialInstance::setFloat(const char *name, const float *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::FLOAT;
+
+    m_Info[name]    = info;
+}
+void MaterialInstance::setVector2(const char *name, const Vector2 *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::VECTOR2;
+
+    m_Info[name]    = info;
+}
+void MaterialInstance::setVector3(const char *name, const Vector3 *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::VECTOR3;
+
+    m_Info[name]    = info;
+}
+void MaterialInstance::setVector4(const char *name, const Vector4 *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::VECTOR4;
+
+    m_Info[name]    = info;
+}
+void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = MetaType::MATRIX4;
+
+    m_Info[name]    = info;
+}
+
+void MaterialInstance::setTexture(const char *name, const Texture *value, uint32_t count) {
+    Info info;
+    info.count      = count;
+    info.ptr        = value;
+    info.type       = 0;
+
+    m_Info[name]    = info;
 }
 
 Material::Material() :
@@ -125,6 +166,10 @@ bool Material::isDepthTest() const {
 
 void Material::setDepthTest(bool flag) {
     m_DepthTest = flag;
+}
+
+void Material::setTexture(const string &name, const Texture *texture) {
+    m_Textures[name]    = texture;
 }
 
 uint8_t Material::surfaces() const {

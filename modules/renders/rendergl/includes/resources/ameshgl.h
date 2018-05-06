@@ -11,6 +11,16 @@ class AMeshGL : public Mesh {
 public:
     typedef vector<IndexVector> BufferVector;
 
+public:
+    AMeshGL                     ();
+
+    ~AMeshGL                    ();
+
+    void                        apply               ();
+
+    void                        clear               ();
+
+public:
     BufferVector                m_triangles;
     BufferVector                m_uv0;
     BufferVector                m_uv1;
@@ -23,16 +33,6 @@ public:
     BufferVector                m_weights;
     BufferVector                m_indices;
 
-    void                        createVbo           ();
-
-    void                        deleteVbo           ();
-
-public:
-    AMeshGL                     ();
-
-    ~AMeshGL                    ();
-
-    void                        loadUserData        (const VariantMap &data);
 };
 
 #endif // MESHGL_H

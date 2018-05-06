@@ -20,7 +20,7 @@ class NEXT_LIBRARY_EXPORT StaticMesh : public Component {
 public:
     StaticMesh                  ();
 
-    void                        update                  ();
+    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
 
     Mesh                       *mesh                    () const;
 

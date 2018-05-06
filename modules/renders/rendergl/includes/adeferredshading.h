@@ -40,7 +40,6 @@ private:
     uint32_t                    fb_s_id;
 
     ATextureGL                 *m_pGBuffer;
-    ATextureGL                  m_DepthMap;
 
     Mesh                       *m_pPlane;
     MaterialInstance           *m_pSprite;

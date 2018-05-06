@@ -27,9 +27,11 @@ public:
     void                        setColor                (const Vector4 &color);
 
 protected:
-    bool                        m_Shadows;
+    float                       m_Shadows;
 
     float                       m_Brightness;
+
+    float                       m_Bias;
 
     Vector4                     m_Color;
 };

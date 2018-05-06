@@ -41,10 +41,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         if(program) {
             setShaderParams(program);
 
-            AMeshGL *m  = static_cast<AMeshGL *>(mesh);
-            if(mesh->isModified()) {
-                m->createVbo();
+            AMeshGL *m      = static_cast<AMeshGL *>(mesh);
+            if(!m || m->m_triangles.empty() || m->m_vertices.empty()) {
+                return;
             }
+
             uint32_t lod    = 0;
             uint32_t id;
             glGenVertexArrays(1, &id);
@@ -181,6 +182,7 @@ void CommandBufferGL::setShaderParams(uint32_t program) {
                 case MetaType::VECTOR2: glUniform2fv(location, 1, data.toVector2().v); break;
                 case MetaType::VECTOR3: glUniform3fv(location, 1, data.toVector3().v); break;
                 case MetaType::VECTOR4: glUniform4fv(location, 1, data.toVector4().v); break;
+                case MetaType::MATRIX4: glUniformMatrix4fv(location, 1, GL_FALSE, data.toMatrix4().mat); break;
                 default:                glUniform1f (location, data.toFloat()); break;
             }
         }

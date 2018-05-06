@@ -31,8 +31,6 @@ protected:
     /// Number of levels of detail shadows. 0 - if shadows are disabled.
     uint8_t                     m_LODCount;
 
-    ATextureGL                  m_DepthMap;
-
     /// Resolution depth map.
     uint16_t                    m_Resolution;
     /// Light source are using the Cascaded Shadow Maps.

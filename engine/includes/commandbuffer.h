@@ -27,8 +27,6 @@ public:
 
     virtual void                setRenderTarget             (uint8_t numberColors, const Texture *colors, const Texture *depth);
 
-    virtual void                setColor                    (uint32_t id);
-
     virtual void                setColor                    (const Vector4 &color);
 
     virtual void                setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
@@ -40,6 +38,8 @@ public:
     virtual Matrix4             projection                  () const;
 
     virtual Matrix4             modelView                   () const;
+
+    static Vector4              idToColor                   (uint32_t id);
 
 protected:
     static void                 setHandler                  (ICommandBuffer *handler);

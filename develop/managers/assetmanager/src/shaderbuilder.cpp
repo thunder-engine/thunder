@@ -6,7 +6,6 @@
 
 #include <resources/texture.h>
 
-#include <tools.h>
 #include <file.h>
 #include <log.h>
 #include <json.h>
@@ -247,7 +246,9 @@ void ShaderBuilder::load(const QString &path) {
             obj->blockSignals(true);
             QJsonObject values  = n[VALUES].toObject();
             foreach(QString key, values.keys()) {
-                if(values[key].isDouble()) {
+                if(values[key].isString()) {
+                    obj->setProperty(qPrintable(key), values[key].toString());
+                } else if(values[key].isDouble()) {
                     obj->setProperty(qPrintable(key), values[key].toDouble());
                 } else if(values[key].isArray()) {
                     QJsonArray array    = values[key].toArray();
@@ -325,31 +326,36 @@ void ShaderBuilder::save(const QString &path) {
                 const QMetaObject *meta   = func->metaObject();
                 for(int i = 0; i < meta->propertyCount(); i++) {
                     QMetaProperty property  = meta->property(i);
-                    QVariant value  = property.read(func);
-                    switch(value.type()) {
-                        case QVariant::Double: {
-                            values[property.name()] = value.toDouble();
-                        } break;
-                        case QVariant::Color: {
-                            QJsonArray v;
-                            v.push_back((int32_t)QVariant::Color);
-                            QColor col      = value.value<QColor>();
-                            v.push_back(col.red());
-                            v.push_back(col.green());
-                            v.push_back(col.blue());
-                            v.push_back(col.alpha());
-                            values[property.name()] = v;
-                        } break;
-                        default: {
-                            if(value.canConvert<Template>()) {
-                                Template tmp    = value.value<Template>();
+                    if(property.isUser(func)) {
+                        QVariant value  = property.read(func);
+                        switch(value.type()) {
+                            case QVariant::String: {
+                                values[property.name()] = value.toString();
+                            } break;
+                            case QVariant::Double: {
+                                values[property.name()] = value.toDouble();
+                            } break;
+                            case QVariant::Color: {
                                 QJsonArray v;
-                                v.push_back(value.typeName());
-                                v.push_back(tmp.path);
-                                v.push_back(tmp.type);
+                                v.push_back((int32_t)QVariant::Color);
+                                QColor col      = value.value<QColor>();
+                                v.push_back(col.red());
+                                v.push_back(col.green());
+                                v.push_back(col.blue());
+                                v.push_back(col.alpha());
                                 values[property.name()] = v;
-                            }
-                        } break;
+                            } break;
+                            default: {
+                                if(value.canConvert<Template>()) {
+                                    Template tmp    = value.value<Template>();
+                                    QJsonArray v;
+                                    v.push_back(value.typeName());
+                                    v.push_back(tmp.path);
+                                    v.push_back(tmp.type);
+                                    values[property.name()] = v;
+                                }
+                            } break;
+                        }
                     }
                 }
                 node[VALUES]    = values;

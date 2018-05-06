@@ -8,8 +8,7 @@
 #define DEFAULTMESH ".embedded/DefaultMesh.mtl"
 
 Mesh::Mesh() :
-    m_Flags(0),
-    m_Modified(false) {
+        m_Flags(0) {
 
 }
 
@@ -17,7 +16,17 @@ Mesh::~Mesh() {
 
 }
 
+void Mesh::apply() {
+
+}
+
+void Mesh::clear() {
+    m_Surfaces.clear();
+}
+
 void Mesh::loadUserData(const VariantMap &data) {
+    clear();
+
     auto it = data.find(HEADER);
     if(it != data.end()) {
         VariantList header  = (*it).second.value<VariantList>();
@@ -140,6 +149,8 @@ void Mesh::loadUserData(const VariantMap &data) {
         aabb[1].z   = MAX(aabb[1].z, max.z);
     }
     m_Box.setBox(aabb[0], aabb[1]);
+
+    apply();
 }
 
 Material *Mesh::material(uint32_t surface, uint32_t lod) const {
@@ -216,13 +227,4 @@ void Mesh::setFlags(uint8_t flags) {
 
 void Mesh::addSurface(const Surface &surface) {
     m_Surfaces.push_back(surface);
-    m_Modified  = true;
-}
-
-bool Mesh::isModified() const {
-    return m_Modified;
-}
-
-void Mesh::setModified(bool flag) {
-    m_Modified  = flag;
 }

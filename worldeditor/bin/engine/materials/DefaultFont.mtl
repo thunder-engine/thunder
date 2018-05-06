@@ -3,16 +3,16 @@
     "Depth": true,
     "Links": [
         {
-            "RItem": "Emissive",
+            "RItem": "Opacity",
             "Receiver": 0,
-            "SItem": "",
+            "SItem": "R",
             "Sender": 1
         },
         {
-            "RItem": "Opacity",
+            "RItem": "Emissive",
             "Receiver": 0,
-            "SItem": "A",
-            "Sender": 1
+            "SItem": "",
+            "Sender": 2
         }
     ],
     "Model": 0,
@@ -26,8 +26,16 @@
                     22
                 ]
             },
-            "X": -200,
+            "X": -199,
             "Y": 0
+        },
+        {
+            "Type": "ParamVector",
+            "Values": {
+                "Parameter_Name": "color0"
+            },
+            "X": -183,
+            "Y": -82
         }
     ],
     "Side": true,

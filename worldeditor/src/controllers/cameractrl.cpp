@@ -28,6 +28,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(20.0f);
+    m_pActiveCamera->setColor(Vector4(0.1f));
     //m_pActiveCamera->setFar(100.0f);
     //m_pActiveCamera->setType(Camera::ORTHOGRAPHIC);
 
@@ -200,7 +201,7 @@ void CameraCtrl::cameraZoom(float delta) {
     }
 }
 
-void CameraCtrl::cameraRotate(const Quaternion  &q) {
+void CameraCtrl::cameraRotate(const Quaternion &q) {
     Vector3 target = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
         m_pCamera->setPosition(target + q * Vector3(0.0, 0.0, m_pActiveCamera->focal()));

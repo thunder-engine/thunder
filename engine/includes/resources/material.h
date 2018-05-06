@@ -8,6 +8,17 @@ class Material;
 
 class NEXT_LIBRARY_EXPORT MaterialInstance {
 public:
+    struct Info {
+        uint32_t                type;
+
+        uint32_t                count;
+
+        const void             *ptr;
+    };
+
+    typedef unordered_map<string, Info>             InfoMap;
+
+public:
     MaterialInstance            (Material *material);
 
     ~MaterialInstance           ();
@@ -16,23 +27,23 @@ public:
 
     const Texture              *texture             (const char *name);
 
-    void                        setFloat            (const char *name, float value);
-    void                        setVector2          (const char *name, const Vector2 &value);
-    void                        setVector3          (const char *name, const Vector3 &value);
-    void                        setVector4          (const char *name, const Vector4 &value);
+    InfoMap                     params              () const;
 
-    void                        setMatrix4          (const char *name, const Vector4 &value);
+    void                        setInteger          (const char *name, const int32_t *value, uint32_t count = 1);
 
-    void                        setTexture          (const char *name, const Texture *value);
+    void                        setFloat            (const char *name, const float   *value, uint32_t count = 1);
+    void                        setVector2          (const char *name, const Vector2 *value, uint32_t count = 1);
+    void                        setVector3          (const char *name, const Vector3 *value, uint32_t count = 1);
+    void                        setVector4          (const char *name, const Vector4 *value, uint32_t count = 1);
+
+    void                        setMatrix4          (const char *name, const Matrix4 *value, uint32_t count = 1);
+
+    void                        setTexture          (const char *name, const Texture *value, uint32_t count = 1);
 
 protected:
-    typedef map<string, const Texture *>            TextureMap;
-
     Material                   *m_pMaterial;
 
-    TextureMap                  m_Textures;
-
-    VariantMap                  m_Uniforms;
+    InfoMap                     m_Info;
 };
 
 class NEXT_LIBRARY_EXPORT Material : public Object {
@@ -65,6 +76,8 @@ public:
         Oriented                = (1<<3)
     };
 
+    typedef map<string, const Texture *>    TextureMap;
+
 public:
     Material                    ();
 
@@ -84,6 +97,8 @@ public:
     bool                        isDepthTest                 () const;
     void                        setDepthTest                (bool flag);
 
+    void                        setTexture                  (const string &name, const Texture *texture);
+
     uint8_t                     surfaces                    () const;
 
     virtual MaterialInstance   *createInstance              ();
@@ -92,8 +107,6 @@ protected:
     virtual void                clear                       ();
 
 protected:
-    typedef map<string, const Texture *>    TextureMap;
-
     BlendType                   m_BlendMode;
 
     LightModelType              m_LightModel;

@@ -13,7 +13,7 @@
 #include "material.h"
 
 class NEXT_LIBRARY_EXPORT Mesh : public Object {
-    A_REGISTER(Mesh, Object, Resources)
+    A_REGISTER(Mesh, Object, Resources);
 public:
     enum Attributes {
         ATTRIBUTE_COLOR         = (1<<0),
@@ -56,7 +56,6 @@ public:
     };
     typedef deque<Lod>          LodQueue;
 
-    /*! \struct Surface */
     struct Surface {
         LodQueue                lods;
         /// Special tag indicating that a given surface in calculation of collision
@@ -71,6 +70,9 @@ public:
 public:
     Mesh                        ();
     virtual ~Mesh               ();
+
+    virtual void                apply               ();
+    virtual void                clear               ();
 
     Material                   *material            (uint32_t surface, uint32_t lod) const;
 
@@ -98,15 +100,9 @@ public:
 
     void                        addSurface          (const Surface &surface);
 
-    bool                        isModified          () const;
-
-    void                        setModified         (bool flag);
-
-protected:
     void                        loadUserData        (const VariantMap &data);
 
-    bool                        m_Modified;
-
+protected:
     uint8_t                     m_Flags;
 
     SurfaceQueue                m_Surfaces;

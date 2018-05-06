@@ -7,18 +7,12 @@ AMeshGL::AMeshGL() :
 }
 
 AMeshGL::~AMeshGL() {
-    deleteVbo();
+    clear();
 }
 
-void AMeshGL::loadUserData(const VariantMap &data) {
-    deleteVbo();
+void AMeshGL::apply() {
+    Mesh::apply();
 
-    Mesh::loadUserData(data);
-
-    createVbo();
-}
-
-void AMeshGL::createVbo() {
     if(m_vertices.empty() && m_triangles.empty()) {
         for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
             uint8_t lods    = m_Surfaces[s].lods.size();
@@ -28,7 +22,7 @@ void AMeshGL::createVbo() {
 
             IndexVector norm    = IndexVector(lods);
             IndexVector tang    = IndexVector(lods);
-            IndexVector uv    = IndexVector(lods);
+            IndexVector uv      = IndexVector(lods);
 
             glGenBuffers(lods, &tris[0]);
             glGenBuffers(lods, &vert[0]);
@@ -87,7 +81,9 @@ void AMeshGL::createVbo() {
 
 }
 
-void AMeshGL::deleteVbo() {
+void AMeshGL::clear() {
+    Mesh::clear();
+
     if(m_vertices.empty() && m_triangles.empty()) {
         return;
     }

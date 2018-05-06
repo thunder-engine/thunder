@@ -1,23 +1,25 @@
-#ifndef SPRITE
-#define SPRITE
+#ifndef SPRITEMESH
+#define SPRITEMESH
 
 #include "component.h"
 
 #include "material.h"
 
-class NEXT_LIBRARY_EXPORT Sprite : public Component {
-    A_REGISTER(Sprite, Component, Components);
+class Mesh;
+
+class NEXT_LIBRARY_EXPORT SpriteMesh : public Component {
+    A_REGISTER(SpriteMesh, Component, Components);
 
     A_PROPERTIES(
-        A_PROPERTY(Material*, Material, Sprite::material, Sprite::setMaterial),
-        A_PROPERTY(Texture*, Texture, Sprite::texture, Sprite::setTexture)
+        A_PROPERTY(Material*, Material, SpriteMesh::material, SpriteMesh::setMaterial),
+        A_PROPERTY(Texture*, Texture, SpriteMesh::texture, SpriteMesh::setTexture)
     );
     A_NOMETHODS();
 
 public:
-    Sprite                      ();
+    SpriteMesh                   ();
 
-    void                        update              ();
+    void                        draw                (ICommandBuffer &buffer, int8_t layer);
 
     Vector2                     center              () const;
 
@@ -42,7 +44,9 @@ protected:
 
     Texture                    *m_Texture;
 
+    Mesh                       *m_pPlane;
+
 };
 
-#endif // SPRITE
+#endif // SPRITEMESH
 

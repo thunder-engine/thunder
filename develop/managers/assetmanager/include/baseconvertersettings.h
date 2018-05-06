@@ -31,6 +31,8 @@ public:
         ContentTexture,
         ContentMaterial,
         ContentMesh,
+        ContentAtlas,
+        ContentFont,
         ContentAnimation,
         ContentEffect,
         ContentSound,

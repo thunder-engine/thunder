@@ -16,12 +16,10 @@ class TextureSample : public ShaderFunction {
     Q_CLASSINFO("Group", "Texture")
 
     Q_PROPERTY(Template Texture READ texture WRITE setTexture DESIGNABLE true USER true)
-    //Q_PROPERTY(QString Element READ element WRITE setElement DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE TextureSample() {
         m_Path  = Template("", IConverter::ContentTexture);
-        m_Element.clear();
     }
 
     virtual AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) {
@@ -134,7 +132,6 @@ public:
 
 protected:
     Template    m_Path;
-    QString     m_Element;
 
 };
 

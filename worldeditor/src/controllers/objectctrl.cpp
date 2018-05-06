@@ -9,7 +9,7 @@
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
-#include <components/sprite.h>
+#include <components/spritemesh.h>
 #include <components/staticmesh.h>
 
 #include "graph/handletools.h"
@@ -78,8 +78,6 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     OverlayButton *s    = new OverlayButton("", QImage(":/Images/editor/Scale.png"));
     mode->addButton(s);
     connect(s, SIGNAL(clicked()), this, SLOT(onScaleActor()));
-
-    //Engine::loadResource<Material>("")
 
     mode->setActive(s);
 
@@ -336,7 +334,7 @@ void ObjectCtrl::onComponentSelected(const QString &path) {
                     Object::ObjectList list;
                     list.push_back(comp);
                     UndoManager::instance()->push(new UndoManager::CreateObjects(list, this, tr("Create Component ") + path));
-                    Sprite *sprite  = dynamic_cast<Sprite *>(comp);
+                    SpriteMesh *sprite  = dynamic_cast<SpriteMesh *>(comp);
                     if(sprite) {
                         sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
                     }
@@ -375,7 +373,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
             if(comp) {
                 comp->setParent(actor);
                 actor->setName(findFreeObjectName(comp->typeName(), m_pMap));
-                Sprite *sprite  = dynamic_cast<Sprite *>(comp);
+                SpriteMesh *sprite  = dynamic_cast<SpriteMesh *>(comp);
                 if(sprite) {
                     sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
                 }
@@ -404,7 +402,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentTexture: {
                         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        Sprite *sprite  = actor->addComponent<Sprite>();
+                        SpriteMesh *sprite  = actor->addComponent<SpriteMesh>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
                             sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));
@@ -598,13 +596,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 default: break;
             }
 
-            QCursor *shape  = QApplication::overrideCursor();
             if(!m_ObjectsList.empty()) {
-                if(!shape || shape->shape() != Qt::CrossCursor) {
-                    QApplication::setOverrideCursor(Qt::CrossCursor);
-                }
+                m_pView->setCursor(QCursor(Qt::CrossCursor));
             } else {
-                QApplication::restoreOverrideCursor();
+                m_pView->unsetCursor();
             }
         } break;
         default: break;

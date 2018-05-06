@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/Images">
-        <file>Add.png</file>
-        <file>Remove.png</file>
         <file>Graph.png</file>
         <file>Disable.png</file>
         <file>Enable.png</file>
@@ -27,5 +25,6 @@
         <file>styles/dark/icons/revert.png</file>
         <file>styles/dark/images/cpp.png</file>
         <file>styles/dark/images/map.png</file>
+        <file>styles/dark/images/ttf.png</file>
     </qresource>
 </RCC>

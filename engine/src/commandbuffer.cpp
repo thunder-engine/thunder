@@ -20,14 +20,14 @@ void ICommandBuffer::setRenderTarget(uint8_t numberColors, const Texture *colors
     s_Handler->setRenderTarget(numberColors, colors, depth);
 }
 
-void ICommandBuffer::setColor(uint32_t id) {
+Vector4 ICommandBuffer::idToColor(uint32_t id) {
     uint8_t rgb[4];
     rgb[0]  = id;
     rgb[1]  = id >> 8;
     rgb[2]  = id >> 16;
     rgb[3]  = id >> 24;
 
-    s_Handler->setColor(Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f));
+    return Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f);
 }
 
 void ICommandBuffer::setColor(const Vector4 &color) {

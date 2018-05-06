@@ -65,8 +65,8 @@ public:
             painter.drawPath( path.simplified() );
             painter.drawImage(m_Rect.left() + gRoundness + pos, m_Rect.top(), it->icon());
 
-            r.moveTo(m_Rect.left() + it->icon().width() + gRoundness + pos, m_Rect.top());
-            painter.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, it->name());
+            //r.moveTo(m_Rect.left() + it->icon().width() + gRoundness + pos, m_Rect.top());
+            //painter.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, it->name());
 
             pos += it->rect().width();
         }

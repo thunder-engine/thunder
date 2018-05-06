@@ -18,7 +18,7 @@
 #include <components/camera.h>
 #include <components/directlight.h>
 #include <components/staticmesh.h>
-#include <components/sprite.h>
+#include <components/spritemesh.h>
 
 #include "managers/pluginmanager/pluginmodel.h"
 #include "assetmanager.h"
@@ -75,7 +75,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
             camera->setType(Camera::ORTHOGRAPHIC);
             m_pCamera->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
-            Sprite *sprite  = object->addComponent<Sprite>();
+            SpriteMesh *sprite  = object->addComponent<SpriteMesh>();
             if(sprite) {
                 sprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
                 Texture *t  = Engine::loadResource<Texture>(resource.toStdString());

@@ -1,15 +1,16 @@
 #include "resources/atexturegl.h"
 
-#define DATA    "Data"
-
-ATextureGL::ATextureGL() {
-    m_Buffer    = 0;
+ATextureGL::ATextureGL() :
+        m_Buffer(0) {
 
     destroy();
 }
 
 ATextureGL::~ATextureGL() {
     destroy();
+
+    glDeleteTextures(1, &mID);
+    mID = 0;
 }
 
 void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uint32_t bits) {
@@ -17,7 +18,7 @@ void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uin
 
     m_Target    = target;
     m_Internal  = internal;
-    m_Format    = format;
+    m_GlFormat  = format;
     m_Bits      = bits;
 
     glGenTextures   ( 1, &mID );
@@ -32,10 +33,10 @@ void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uin
         glTexParameterf ( target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 #endif
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
         }
     } else {
-        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
     }
 
     glGenFramebuffers(1, &m_Buffer);
@@ -43,12 +44,14 @@ void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uin
 
 void ATextureGL::destroy() {
     m_Target    = 0;
-    m_Format    = 0;
+    m_GlFormat  = 0;
     mID         = 0;
     m_Bits      = GL_UNSIGNED_BYTE;
     m_Internal  = 0;
 
-    glDeleteFramebuffers(1, &m_Buffer);
+    if(m_Buffer) {
+        glDeleteFramebuffers(1, &m_Buffer);
+    }
 }
 
 void ATextureGL::resize(uint32_t width, uint32_t height) {
@@ -58,10 +61,10 @@ void ATextureGL::resize(uint32_t width, uint32_t height) {
     glBindTexture       (m_Target, mID);
     if(m_Target == GL_TEXTURE_CUBE_MAP) {
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
         }
     } else {
-        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_Format, m_Bits, 0 );
+        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
     }
 }
 
@@ -75,81 +78,48 @@ void ATextureGL::unbind() const {
 
 void ATextureGL::clear() {
     Texture::clear();
-
-    glDeleteTextures(1, &mID);
 }
 
-uint32_t ATextureGL::size(uint32_t width, uint32_t height) const {
-    uint32_t (ATextureGL::*sizefunc)(uint32_t, uint32_t) const;
-    sizefunc    = (isCompressed() ? &ATextureGL::sizeDXTc : &ATextureGL::sizeRGB);
+void ATextureGL::apply() {
+    Texture::apply();
 
-    return (this->*sizefunc)(width, height);
-}
-
-inline uint32_t ATextureGL::sizeDXTc(uint32_t width, uint32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (m_format == DXT1 ? 8 : 16);
-}
-
-inline uint32_t ATextureGL::sizeRGB(uint32_t width, uint32_t height) const {
-    return width * height * m_components;
-}
-
-void ATextureGL::loadUserData(const VariantMap &data) {
-    Texture::loadUserData(data);
-
-    Sides sides;
-    {
-        auto it = data.find(DATA);
-        if(it != data.end()) {
-            const VariantList &surfaces = (*it).second.value<VariantList>();
-            for(auto s : surfaces) {
-                Surface img;
-                uint32_t w  = m_Width;
-                uint32_t h  = m_Height;
-                const VariantList &lods = s.value<VariantList>();
-                for(auto l : lods) {
-                    ByteArray bits = l.toByteArray();
-                    uint32_t s  = size(w, h);
-                    if(s && !bits.empty()) {
-                        uint8_t *pixels = new uint8_t[s];
-                        memcpy(pixels, &bits[0], s);
-                        img.push_back(pixels);
-                    }
-                    w   = MAX(w / 2, 1);
-                    h   = MAX(h / 2, 1);
-                }
-                sides.push_back(img);
-            }
-        }
+    if(m_Sides.empty()) {
+        return;
     }
 
-    glGenTextures(1, &mID);
+    bool update = false;
+    if(!mID) {
+        glGenTextures(1, &mID);
+    } else {
+        update  = true;
+    }
 
     m_Target    = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-    switch (m_format) {
-        case RGB:       m_Format    = GL_RGB; break;
-        //case DXT1:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-        //case DXT5:      m_Format    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-        default:        m_Format    = GL_RGBA; break;
+    switch (m_Format) {
+        case LUMINANCE: m_GlFormat  = GL_RED; break;
+        case RGB:       m_GlFormat  = GL_RGB; break;
+        case DXT1:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
+        case DXT5:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+        default:        m_GlFormat  = GL_RGBA; break;
     }
 
     glBindTexture(m_Target, mID);
 
     switch(m_Target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(sides);
+            uploadTextureCubemap(m_Sides);
         } break;
         default: {
-            uploadTexture2D(sides);
+            uploadTexture2D(m_Sides, 0, m_Target, update);
         } break;
     }
 
     //glTexParameterf ( m_Target, GL_TEXTURE_LOD_BIAS, 0.0);
 
-    bool mipmap = (sides[0].size() > 1);
+    bool mipmap = (m_Sides[0].size() > 1);
 
     uint32_t filtering;
-    switch(m_filtering) {
+    switch(m_Filtering) {
         case Bilinear:  filtering = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
         case Trilinear: filtering = GL_LINEAR_MIPMAP_LINEAR; break;
         default: filtering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
@@ -158,7 +128,7 @@ void ATextureGL::loadUserData(const VariantMap &data) {
     glTexParameteri ( m_Target, GL_TEXTURE_MIN_FILTER, filtering );
 
     uint32_t wrap;
-    switch (m_wrap) {
+    switch (m_Wrap) {
         case Repeat: wrap   = GL_REPEAT; break;
         case Mirrored: wrap = GL_MIRRORED_REPEAT; break;
         default: wrap       = GL_CLAMP_TO_EDGE; break;
@@ -174,7 +144,7 @@ void ATextureGL::loadUserData(const VariantMap &data) {
     glBindTexture(m_Target, 0);
 }
 
-bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target) {
+bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, bool update) {
     const Surface &image    = sides[imageIndex];
 
     if(isCompressed()) {
@@ -183,10 +153,9 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         uint32_t h  = m_Height;
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glCompressedTexImage2D(target, i, m_Format, w, h, 0, size(w, h), data);
+            glCompressedTexImage2D(target, i, m_GlFormat, w, h, 0, size(w, h), data);
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
-            delete []data;
         }
     } else {
         GLint alignment = -1;
@@ -199,10 +168,14 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         uint32_t h  = m_Height;
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glTexImage2D(target, i, (m_components == 3) ?  GL_RGB : GL_RGBA, w, h, 0, m_Format, GL_UNSIGNED_BYTE, data);
+            if(update) {
+                glTexSubImage2D(target, i, 0, 0, w, h, m_GlFormat, GL_UNSIGNED_BYTE, data);
+            } else {
+                glTexImage2D(target, i, m_GlFormat, w, h, 0, m_GlFormat, GL_UNSIGNED_BYTE, data);
+            }
+
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
-            delete []data;
         }
         if(alignment != -1) {
             glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -227,8 +200,8 @@ bool ATextureGL::uploadTextureCubemap(const Sides &sides) {
 }
 
 bool ATextureGL::isDwordAligned() {
-    int dwordLineSize   = dwordAlignedLineSize(width(), m_components*8);
-    int curLineSize     = width() * m_components;
+    int dwordLineSize   = dwordAlignedLineSize(width(), components() * 8);
+    int curLineSize     = width() * components();
 
     return (dwordLineSize == curLineSize);
 }

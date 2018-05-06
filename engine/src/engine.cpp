@@ -30,8 +30,9 @@
 #include "components/camera.h"
 #include "components/staticmesh.h"
 #include "components/directlight.h"
+#include "components/textmesh.h"
 
-#include "components/sprite.h"
+#include "components/spritemesh.h"
 
 #include "analytics/profiler.h"
 
@@ -41,6 +42,7 @@
 #include "resources/texture.h"
 #include "resources/material.h"
 #include "resources/mesh.h"
+#include "resources/font.h"
 
 #include "log.h"
 
@@ -122,6 +124,8 @@ Engine::Engine(IFile *file, int argc, char **argv) :
     Texture::registerClassFactory();
     Material::registerClassFactory();
     Mesh::registerClassFactory();
+    Atlas::registerClassFactory();
+    Font::registerClassFactory();
 
     Scene::registerClassFactory();
     Chunk::registerClassFactory();
@@ -129,7 +133,8 @@ Engine::Engine(IFile *file, int argc, char **argv) :
     Camera::registerClassFactory();
 
     StaticMesh::registerClassFactory();
-    Sprite::registerClassFactory();
+    TextMesh::registerClassFactory();
+    SpriteMesh::registerClassFactory();
     DirectLight::registerClassFactory();
 
     registerMetaType<MaterialArray>("MaterialArray");

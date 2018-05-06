@@ -16,7 +16,6 @@
 #include <components/camera.h>
 
 #include "components/adirectlightgl.h"
-#include "components/aspritegl.h"
 
 #include "analytics/profiler.h"
 
@@ -38,8 +37,14 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new AAntiAliasingGL());
     //m_PostEffects.push_back(new ABloomGL());
 
-    m_Select.create (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
-    m_Depth.create  (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+    m_Select.create     (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
+    m_Depth.create      (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+
+    m_ShadowMap.create  (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+    m_ShadowMap.resize  (2048, 2048);
+
+    m_Targets["depthMap"]   = &m_Depth;
+    m_Targets["shadowMap"]  = &m_ShadowMap;
 
     glGenFramebuffers(1, &m_SelectBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_SelectBuffer);
@@ -59,6 +64,9 @@ void APipeline::draw(Scene &scene, uint32_t) {
     m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
 
     glDepthFunc(GL_LEQUAL);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowMap.buffer());
+    m_Buffer->setRenderTarget(0, nullptr, &m_ShadowMap);
+    m_Buffer->clearRenderTarget();
     updateShadows(scene);
 
     m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
@@ -76,14 +84,14 @@ ATextureGL *APipeline::postProcess(ATextureGL &source) {
 void APipeline::cameraReset() {
     Camera *camera  = activeCamera();
     if(camera) {
+        Matrix4 mv, p;
+        camera->matrices(mv, p);
         camera->setRatio(m_Screen.x / m_Screen.y);
         m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().position(), camera->nearPlane()));
         m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
         m_Buffer->setGlobalValue("camera.screen", Vector4(1.0 / m_Screen.x, 1.0 / m_Screen.y, m_Screen.x, m_Screen.y));
-
-        Matrix4 v, p;
-        camera->matrices(v, p);
-        m_Buffer->setViewProjection(v, p);
+        m_Buffer->setGlobalValue("camera.mvpi", (p * mv).inverse());
+        m_Buffer->setViewProjection(mv, p);
     }
 }
 
@@ -108,20 +116,20 @@ void APipeline::resize(uint32_t width, uint32_t height) {
 
 void APipeline::drawComponents(Object &object, uint8_t layer) {
     for(auto &it : object.getChildren()) {
-        Object *child  = it;
-        IDrawObject *draw   = dynamic_cast<IDrawObject *>(child);
+        Object *child   = it;
+        Component *draw = dynamic_cast<Component *>(child);
         if(draw) {
             draw->draw(*m_Buffer, layer);
         } else {
             Actor *actor    = dynamic_cast<Actor *>(child);
             if(actor) {
-                //if(!actor->isEnable()) {
-                //    continue;
-                //}
+                if(!actor->isEnable()) {
+                    continue;
+                }
             }
             drawComponents(*child, layer);
             if(actor) {
-                m_Buffer->setColor(Vector4(1.0));
+                //m_Buffer->setColor(Vector4(1.0));
             }
         }
     }
@@ -138,10 +146,22 @@ void APipeline::updateShadows(Object &object) {
     }
 }
 
+const Texture *APipeline::pipelineTexture(const string &name) const {
+    auto it = m_Targets.find(name);
+    if(it != m_Targets.end()) {
+        return (*it).second;
+    }
+    return nullptr;
+}
+
 void APipeline::updateLights(Object &object, uint8_t layer) {
     for(auto &it : object.getChildren()) {
         ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
         if(light) {
+            Actor &a    = light->actor();
+            m_Buffer->setGlobalValue("transform.position", a.position());
+            m_Buffer->setGlobalValue("transform.orientation", (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)));
+
             light->draw(*this, layer);
         } else {
             updateLights(*it, layer);
@@ -152,7 +172,7 @@ void APipeline::updateLights(Object &object, uint8_t layer) {
 void APipeline::analizeScene(Object &object) {
     // Retrive object id
     glBindFramebuffer( GL_FRAMEBUFFER, m_SelectBuffer );
-    m_Buffer->clearRenderTarget(true, Vector4(1.0));
+    m_Buffer->clearRenderTarget(true, Vector4(0.0));
 
     glDepthFunc(GL_LEQUAL);
 

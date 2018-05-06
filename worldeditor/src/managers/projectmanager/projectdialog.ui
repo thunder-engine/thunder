@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>ThunderEngine Project Browser</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">
@@ -44,6 +47,9 @@
        <property name="text">
         <string>New</string>
        </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
@@ -64,12 +70,18 @@
        <property name="text">
         <string>Import</string>
        </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="loadBtn">
        <property name="text">
         <string>Load</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

@@ -23,6 +23,7 @@
 #include "textureconverter.h"
 #include "materialconverter.h"
 #include "fbxconverter.h"
+#include "fontconverter.h"
 
 #include "projectmanager.h"
 
@@ -58,6 +59,7 @@ AssetManager::AssetManager() {
     registerConverter(new TextureConverter());
     registerConverter(new MaterialConverter());
     registerConverter(new FBXConverter());
+    registerConverter(new FontConverter());
 
     m_Formats["map"]    = IConverter::ContentMap;
     m_Formats["cpp"]    = IConverter::ContentCode;
@@ -382,6 +384,9 @@ QImage AssetManager::icon(const QString &path) {
         } break;
         case IConverter::ContentCode: {
             icon.load(":/Style/styles/dark/images/cpp.png", "PNG");
+        } break;
+        case IConverter::ContentFont: {
+            icon.load(":/Style/styles/dark/images/ttf.png", "PNG");
         } break;
         default: {
             QStringList list;

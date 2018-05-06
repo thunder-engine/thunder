@@ -133,6 +133,7 @@ void Handles::init() {
             surface.lods.push_back(lod);
             s_Move->addSurface(surface);
         }
+        s_Move->apply();
     }
 }
 
@@ -172,6 +173,7 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
         surface.mode    = Mesh::MODE_LINES;
         surface.lods.push_back(lod);
         lines->addSurface(surface);
+        lines->apply();
     }
     s_Buffer->setColor(s_Color);
     s_Buffer->drawMesh(transform, lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);

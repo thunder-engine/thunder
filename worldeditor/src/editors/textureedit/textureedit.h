@@ -11,7 +11,7 @@ class Viewport;
 class Engine;
 
 class Texture;
-class Sprite;
+class SpriteMesh;
 class TextureConverter;
 
 namespace Ui {
@@ -44,7 +44,7 @@ private:
 
     Texture                    *m_pTexture;
 
-    Sprite                     *m_pSprite;
+    SpriteMesh                     *m_pSprite;
 
     TextureImportSettings      *m_pSettings;
 

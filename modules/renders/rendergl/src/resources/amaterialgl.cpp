@@ -65,6 +65,14 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_Surfaces      = Static;
 
             fragments[0]    = buildShader(Fragment, loadIncludes(gEmbedded + gLight), gEmbedded + gPost);
+            /// \todo should be removed
+            setTexture("layer0",    nullptr);
+            setTexture("layer1",    nullptr);
+            setTexture("layer2",    nullptr);
+            setTexture("layer3",    nullptr);
+            setTexture("depthMap",  nullptr);
+            setTexture("shadowMap", nullptr);
+
         } break;
         default: { // Surface type
             string define;
@@ -164,18 +172,23 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
         glUniform1f(location, Timer::time());
     }
     // Push uniform values to shader
-    //for(const auto &it : mUniforms) {
-    //    location    = glGetUniformLocation(program, it.first.c_str());
-    //    if(location > -1) {
-    //        const AVariant &data= it.second;
-    //        switch(data.type()) {
-    //            case AMetaType::VECTOR2:    glUniform2fv(location, 1, data.toVector2().v); break;
-    //            case AMetaType::VECTOR3:    glUniform3fv(location, 1, data.toVector3().v); break;
-    //            case AMetaType::VECTOR4:    glUniform4fv(location, 1, data.toVector4().v); break;
-    //            default:                    glUniform1f (location, data.toDouble()); break;
-    //        }
-    //    }
-    //}
+    for(const auto &it : instance->params()) {
+        location    = glGetUniformLocation(program, it.first.c_str());
+        if(location > -1) {
+            const MaterialInstance::Info &data  = it.second;
+            for(uint32_t i = 0; i < data.count; i++) {
+                switch(data.type) {
+                    case 0: break;
+                    case MetaType::INTEGER: glUniform1i         (location + i, *static_cast<const int32_t *>(data.ptr)); break;
+                    case MetaType::VECTOR2: glUniform2fv        (location + i, 1, static_cast<const float *>(data.ptr)); break;
+                    case MetaType::VECTOR3: glUniform3fv        (location + i, 1, static_cast<const float *>(data.ptr)); break;
+                    case MetaType::VECTOR4: glUniform4fv        (location + i, 1, static_cast<const float *>(data.ptr)); break;
+                    case MetaType::MATRIX4: glUniformMatrix4fv  (location + i, 1, GL_FALSE, static_cast<const float *>(data.ptr)); break;
+                    default:                glUniform1f         (location + i, *static_cast<const float *>(data.ptr)); break;
+                }
+            }
+        }
+    }
 
     if(m_DepthTest) {
         glEnable(GL_DEPTH_TEST);
@@ -202,7 +215,7 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     glEnable(GL_TEXTURE_2D);
     uint8_t i   = 0;
     for(auto it : m_Textures) {
-        int location    = glGetUniformLocation(program, it.first.c_str());
+        location    = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
             glUniform1i(location, i);
         }
@@ -227,14 +240,14 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
 void AMaterialGL::unbind(uint8_t) {
     uint8_t t   = 0;
     for(auto it : m_Textures) {
-        const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + t);
+        const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);
         if(texture) {
             texture->unbind();
         }
         t++;
     }
-
+    glActiveTexture(GL_TEXTURE0);
     glDisable(GL_TEXTURE_2D);
 
     glUseProgram(0);
@@ -243,7 +256,6 @@ void AMaterialGL::unbind(uint8_t) {
     if(blend == Material::Additive || blend == Material::Translucent) {
         glDisable   ( GL_BLEND );
     }
-
     glDisable( GL_CULL_FACE );
 }
 

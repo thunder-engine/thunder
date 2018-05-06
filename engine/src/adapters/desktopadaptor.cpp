@@ -12,37 +12,12 @@
 
 #include <log.h>
 #include <file.h>
+#include <utils.h>
 
 Vector3 DesktopAdaptor::s_MouseDelta     = Vector3();
 Vector3 DesktopAdaptor::s_MousePosition  = Vector3();
 
 static Engine *g_pEngine   = nullptr;
-
-string wchar_to_utf8(const wstring &in) {
-    string result;
-    for(uint32_t i = 0; i < in.size(); i++) {
-        uint32_t wc32   = in[i];
-        if(wc32 < 0x007F) {
-            result  += (char)wc32;
-        }
-        else if(wc32 < 0x07FF) {
-            result  += (char)(0xC0 + (wc32 >> 6));
-            result  += (char)(0x80 + (wc32 & 0x3F));
-        }
-        else if(wc32 < 0xFFFF) {
-            result  += (char)(0xE0 + (wc32 >> 12));
-            result  += (char)(0x80 + (wc32 >> 6 & 0x3F));
-            result  += (char)(0x80 + (wc32 & 0x3F));
-        }
-        else {
-            result  += (char)(0xF0 + (wc32 >> 18));
-            result  += (char)(0x80 + (wc32 >> 12 & 0x3F));
-            result  += (char)(0x80 + (wc32 >> 6 & 0x3F));
-            result  += (char)(0x80 + (wc32 & 0x3F));
-        }
-    }
-    return result;
-}
 
 DesktopAdaptor::DesktopAdaptor(Engine *engine) {
     g_pEngine   = engine;
@@ -224,7 +199,7 @@ string DesktopAdaptor::locationLocalDir() {
 #if _WIN32
     wchar_t path[MAX_PATH];
     if(SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result  = wchar_to_utf8(wstring(path));
+        result  = Utils::wstringToUtf8(wstring(path));
         std::replace(result.begin(), result.end(), '\\', '/');
     }
 #elif __APPLE__

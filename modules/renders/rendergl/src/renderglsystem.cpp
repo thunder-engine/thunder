@@ -7,8 +7,6 @@
 #include "apipeline.h"
 #include "adeferredshading.h"
 
-#include "components/aspritegl.h"
-#include "components/astaticmeshgl.h"
 #include "components/adirectlightgl.h"
 
 #include "components/scene.h"
@@ -24,9 +22,6 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
     AMaterialGL::registerClassFactory();
     AMeshGL::registerClassFactory();
 
-    ASpriteGL::registerClassFactory();
-
-    AStaticMeshGL::registerClassFactory();
     ADirectLightGL::registerClassFactory();
 }
 

@@ -26,11 +26,6 @@ class APostProcessor;
 
 class ICommandBuffer;
 
-class IDrawObject {
-public:
-    virtual void                draw                (ICommandBuffer &buffer, int8_t layer) = 0;
-};
-
 class APipeline {
 public:
     APipeline                   (Engine *engine);
@@ -57,6 +52,8 @@ public:
 
     void                        overrideController  (IController *controller) { m_pController = controller; }
 
+    const Texture              *pipelineTexture     (const string &name) const;
+
 protected:
     void                        updateLights        (Object &object, uint8_t layer);
     void                        updateShadows       (Object &object);
@@ -74,6 +71,7 @@ protected:
 
     ATextureGL                  m_Select;
     ATextureGL                  m_Depth;
+    ATextureGL                  m_ShadowMap;
     /// Frame buffers
     uint32_t                    m_SelectBuffer;
 
@@ -83,6 +81,7 @@ protected:
 
     list<APostProcessor *>      m_PostEffects;
 
+    Material::TextureMap        m_Targets;
 };
 
 #endif // APIPELINE

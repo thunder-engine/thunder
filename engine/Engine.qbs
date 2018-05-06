@@ -23,7 +23,8 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/physfs/src",
         "../thirdparty/glfw/include",
-        "../thirdparty/glfm/include"
+        "../thirdparty/glfm/include",
+        "../thirdparty/freetype/include"
     ]
 
     DynamicLibrary {
@@ -34,6 +35,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "physfs-editor" }
+        Depends { name: "freetype-editor" }
         bundle.isBundle: false
 
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]

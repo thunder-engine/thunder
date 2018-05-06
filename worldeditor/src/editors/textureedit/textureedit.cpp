@@ -10,7 +10,7 @@
 #include "graph/sceneview.h"
 
 #include "components/actor.h"
-#include "components/sprite.h"
+#include "components/spritemesh.h"
 #include "components/camera.h"
 
 #include "resources/texture.h"
@@ -128,7 +128,7 @@ void TextureEdit::onGLInit() {
     }
 
     Actor *object   = Engine::objectCreate<Actor>("", scene);
-    m_pSprite       = object->addComponent<Sprite>();
+    m_pSprite       = object->addComponent<SpriteMesh>();
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }

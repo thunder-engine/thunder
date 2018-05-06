@@ -18,7 +18,7 @@
 #include <timer.h>
 #include <components/chunk.h>
 #include <components/actor.h>
-#include <components/sprite.h>
+#include <components/spritemesh.h>
 #include <components/staticmesh.h>
 
 #include <analytics/profiler.h>

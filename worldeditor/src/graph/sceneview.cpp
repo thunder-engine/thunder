@@ -24,10 +24,7 @@ SceneView::SceneView(QWidget *parent) :
         m_RenderDesc("RenderGL"),
         m_GameMode(false) {
 
-    setFocusPolicy(Qt::StrongFocus);
-    setAcceptDrops(true);
     setMouseTracking(true);
-    //setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 SceneView::~SceneView() {

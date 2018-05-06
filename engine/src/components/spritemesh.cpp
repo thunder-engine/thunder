@@ -1,46 +1,63 @@
-#include "components/sprite.h"
+#include "components/spritemesh.h"
+#include "components/actor.h"
 
 #include "resources/material.h"
+#include "resources/mesh.h"
+
+#include "commandbuffer.h"
 
 #define MATERIAL    "Material"
 #define BASEMAP     "BaseMap"
 
-Sprite::Sprite() {
+SpriteMesh::SpriteMesh() {
     m_Center    = Vector2();
     m_Material  = nullptr;
     m_Texture   = nullptr;
+
+    m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx");
 }
 
-void Sprite::update() {
+void SpriteMesh::draw(ICommandBuffer &buffer, int8_t layer) {
+    Actor &a    = actor();
+    if(layer & (ICommandBuffer::RAYCAST | ICommandBuffer::DEFAULT | ICommandBuffer::TRANSLUCENT | ICommandBuffer::SHADOWCAST | ICommandBuffer::UI)) {
+        if(layer & ICommandBuffer::RAYCAST) {
+            buffer.setColor(ICommandBuffer::idToColor(a.uuid()));
+        }
+        if(m_Material) {
+            m_Material->setTexture("texture0", m_Texture);
+        }
+        buffer.drawMesh(a.worldTransform(), m_pPlane, 0, layer, m_Material);
+        buffer.setColor(Vector4(1.0f));
+    }
 }
 
-Vector2 Sprite::center() const {
+Vector2 SpriteMesh::center() const {
     return m_Center;
 }
 
-void Sprite::setCenter(const Vector2 &value) {
+void SpriteMesh::setCenter(const Vector2 &value) {
     m_Center    = value;
 }
 
-Material *Sprite::material() const {
+Material *SpriteMesh::material() const {
     return (m_Material) ? m_Material->material() : nullptr;
 }
 
-void Sprite::setMaterial(Material *material) {
+void SpriteMesh::setMaterial(Material *material) {
     if(material) {
         m_Material  = material->createInstance();
     }
 }
 
-Texture *Sprite::texture() const {
+Texture *SpriteMesh::texture() const {
     return m_Texture;
 }
 
-void Sprite::setTexture(Texture *texture) {
+void SpriteMesh::setTexture(Texture *texture) {
     m_Texture   = texture;
 }
 
-void Sprite::loadUserData(const VariantMap &data) {
+void SpriteMesh::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
         auto it = data.find(MATERIAL);
@@ -56,7 +73,7 @@ void Sprite::loadUserData(const VariantMap &data) {
     }
 }
 
-VariantMap Sprite::saveUserData() const {
+VariantMap SpriteMesh::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
         Material *m = material();

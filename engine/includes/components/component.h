@@ -4,6 +4,7 @@
 #include <engine.h>
 
 class Actor;
+class ICommandBuffer;
 
 class NEXT_LIBRARY_EXPORT Component : public Object {
     A_REGISTER(Component, Object, Components);
@@ -19,6 +20,8 @@ public:
     virtual void                start                   ();
 
     virtual void                update                  ();
+
+    virtual void                draw                    (ICommandBuffer &buffer, int8_t layer);
 
     Actor                      &actor                   () const;
 

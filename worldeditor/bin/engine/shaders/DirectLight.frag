@@ -20,12 +20,12 @@ void main (void) {
     vec3 emit   = texture( layer3, _uv0 ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
-    float ln    = dot( light.dir, n );
+    float ln    = dot( transform.orientation, n );
 
     // Light model LIT
     if(slice0.w > 0.33) {
         float depth = texture( depthMap, _uv0 ).x;
-        vec4 world  = getWorld( light.mvpi, _uv0, depth );
+        vec4 world  = getWorld( camera.mvpi, _uv0, depth );
 
         vec4 slice1 = texture( layer1, _uv0 );
         float rough = max( 0.01, slice1.w );
@@ -34,7 +34,7 @@ void main (void) {
 
         vec3 albedo = slice1.xyz;
         vec3 v      = normalize( camera.position.xyz - (world / world.w).xyz );
-        vec3 h      = normalize( light.dir + v );
+        vec3 h      = normalize( transform.orientation + v );
 
         vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
         vec3 color  = albedo * (1.0 - metal) + refl;
@@ -59,7 +59,7 @@ void main (void) {
             }
         }
 
-        rgb = vec4( light.color * color * shadow * diff + emit, 1.0 );
+        rgb = vec4( light.color.xyz * color * shadow * diff + emit, 1.0 );
     } else {
         rgb = vec4( emit, 1.0 );
     }
