@@ -16,6 +16,10 @@ PropertyAnimation::PropertyAnimation() :
 
 }
 
+PropertyAnimation::~PropertyAnimation() {
+    delete p_ptr;
+}
+
 void PropertyAnimation::setTarget(Object *object, const char *property) {
     if(object) {
         const MetaObject *meta  = object->metaObject();

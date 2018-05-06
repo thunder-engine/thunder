@@ -36,6 +36,8 @@ public:
 public:
     Animation                       ();
 
+    ~Animation                      ();
+
     Direction                       direction                   () const;
     void                            setDirection                (Direction value);
 

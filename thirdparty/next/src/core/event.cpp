@@ -31,6 +31,11 @@ Event::Event(uint32_t type) :
         m_Type(type) {
     PROFILE_FUNCTION()
 }
+
+Event::~Event() {
+
+}
+
 /*!
     Returns type of event.
 */

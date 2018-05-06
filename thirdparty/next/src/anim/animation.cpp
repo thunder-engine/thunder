@@ -25,6 +25,10 @@ Animation::Animation() :
 
 }
 
+Animation::~Animation() {
+    delete p_ptr;
+}
+
 bool Animation::event(Event *event) {
     return Object::event(event);
 }

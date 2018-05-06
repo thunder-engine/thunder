@@ -17,6 +17,10 @@ Uri::Uri(const string &uri) :
     regex_match(p_ptr->mUri, p_ptr->mResult, regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
 }
 
+Uri::~Uri() {
+    delete p_ptr;
+}
+
 string Uri::scheme() const {
     PROFILE_FUNCTION()
     return p_ptr->mResult[2].str();

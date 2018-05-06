@@ -11,6 +11,8 @@ class NEXT_LIBRARY_EXPORT PropertyAnimation : public VariantAnimation {
 public:
     PropertyAnimation               ();
 
+    ~PropertyAnimation              ();
+
     void                            setTarget                   (Object *object, const char *property);
 
     const Object                   *target                      () const;

@@ -209,6 +209,8 @@ Object::~Object() {
     if(p_ptr->m_pParent) {
         p_ptr->m_pParent->removeChild(this);
     }
+
+    delete p_ptr;
 }
 /*!
     Returns new instance of Object class.

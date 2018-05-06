@@ -18,6 +18,8 @@ public:
 public:
     Event                       (uint32_t type);
 
+    virtual ~Event              ();
+
     uint32_t                    type                        () const;
 
 protected:

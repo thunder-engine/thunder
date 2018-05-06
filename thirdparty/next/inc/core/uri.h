@@ -13,6 +13,8 @@ class NEXT_LIBRARY_EXPORT Uri {
 public:
     Uri                         (const string &uri);
 
+    ~Uri                        ();
+
     string                      scheme                      () const;
     string                      host                        () const;
     string                      path                        () const;

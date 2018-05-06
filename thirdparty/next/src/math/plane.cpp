@@ -14,7 +14,8 @@
 /*!
     Default constructor.
 */
-Plane::Plane() {
+Plane::Plane() :
+    d(1.0f) {
 
 }
 /*!

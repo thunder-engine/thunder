@@ -16,6 +16,10 @@ VariantAnimation::VariantAnimation() :
 
 }
 
+VariantAnimation::~VariantAnimation() {
+    delete p_ptr;
+}
+
 int32_t VariantAnimation::loopDuration() const {
     return p_ptr->m_Duration;
 }

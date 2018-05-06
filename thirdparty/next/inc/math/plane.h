@@ -31,8 +31,8 @@ public:
 
     areal                       sqrDistance                 (const Vector3 &point);
 
-    Vector3                    normal;
-    Vector3                    point;
+    Vector3                     normal;
+    Vector3                     point;
     float                       d;
 };
 

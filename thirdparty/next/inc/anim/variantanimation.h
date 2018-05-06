@@ -14,6 +14,8 @@ class NEXT_LIBRARY_EXPORT VariantAnimation : public Animation {
 public:
     VariantAnimation                ();
 
+    ~VariantAnimation               ();
+
     int32_t                         loopDuration                () const;
     void                            setLoopDuration             (int32_t msec);
 
