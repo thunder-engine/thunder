@@ -62,7 +62,11 @@ Project {
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
-        cpp.sonamePrefix: "@executable_path"
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
+        }
 
         Group {
             name: "Install Dynamic Platform"
