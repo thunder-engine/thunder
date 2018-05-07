@@ -60,7 +60,8 @@ void Handles::init() {
     if(s_Sprite == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
         if(m) {
-            s_Sprite = m->createInstance();
+            MaterialInstance *inst  = m->createInstance();
+            s_Sprite = inst;
         }
     }
 

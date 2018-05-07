@@ -7,9 +7,11 @@ class AAmbientOcclusionGL : public APostProcessor {
 public:
     AAmbientOcclusionGL         ();
 
+    ~AAmbientOcclusionGL        ();
+
 protected:
 
-    Vector3                  *m_pSamplesKernel;
+    Vector3                    *m_pSamplesKernel;
 
 };
 

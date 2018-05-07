@@ -22,3 +22,7 @@ AAmbientOcclusionGL::AAmbientOcclusionGL() {
         m_pSamplesKernel[i] *= scale;
     }
 }
+
+AAmbientOcclusionGL::~AAmbientOcclusionGL() {
+    delete m_pSamplesKernel;
+}

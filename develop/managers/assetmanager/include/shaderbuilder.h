@@ -182,7 +182,7 @@ private:
 
     typedef QPair<QString, bool>    TexturePair;
 
-    typedef list<TexturePair>       TextureList;
+    typedef QList<TexturePair>      TextureList;
 
     QStringList                 m_Functions;
 

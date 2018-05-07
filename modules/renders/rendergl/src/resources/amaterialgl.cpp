@@ -215,7 +215,7 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
     glEnable(GL_TEXTURE_2D);
     uint8_t i   = 0;
     for(auto it : m_Textures) {
-        location    = glGetUniformLocation(program, it.first.c_str());
+        int location    = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
             glUniform1i(location, i);
         }

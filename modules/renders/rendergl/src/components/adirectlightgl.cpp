@@ -16,7 +16,6 @@
 #define SM_RESOLUTION_DEFAULT 1024
 
 ADirectLightGL::ADirectLightGL() {
-    m_pMatrix       = nullptr;
     m_Resolution    = SM_RESOLUTION_DEFAULT;
     m_CSM           = true;
     m_pPlane        = Engine::loadResource<Mesh>(".embedded/plane.fbx");
@@ -27,6 +26,11 @@ ADirectLightGL::ADirectLightGL() {
 
     m_pMaterial     = Engine::loadResource<Material>(".embedded/VSM.mtl");
     m_pMaterialInstance = m_pMaterial->createInstance();
+}
+
+ADirectLightGL::~ADirectLightGL() {
+    delete m_pMatrix;
+    delete m_pTiles;
 }
 
 void ADirectLightGL::draw(APipeline &pipeline, uint8_t layer) {

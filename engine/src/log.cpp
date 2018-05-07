@@ -2,16 +2,14 @@
 
 #include <sstream>
 
+static ILogHandler *s_handler    = nullptr;
+static Log::LogTypes s_logLevel  = Log::ERR;
+
 class LogPrivate {
 public:
     std::stringstream       stream;
     Log::LogTypes           type;
-    static ILogHandler     *handler;
-    static Log::LogTypes    logLevel;
 };
-
-ILogHandler *LogPrivate::handler    = nullptr;
-Log::LogTypes LogPrivate::logLevel  = Log::ERR;
 
 Log::Log(LogTypes type) :
         p_ptr(new LogPrivate()) {
@@ -19,19 +17,20 @@ Log::Log(LogTypes type) :
 }
 
 Log::~Log() {
-    if(LogPrivate::handler && p_ptr->type <= LogPrivate::logLevel) {
-        LogPrivate::handler->setRecord(p_ptr->type, p_ptr->stream.str().c_str());
+    if(s_handler && p_ptr->type <= s_logLevel) {
+        s_handler->setRecord(p_ptr->type, p_ptr->stream.str().c_str());
     }
+    delete p_ptr;
 }
 
 void Log::overrideHandler(ILogHandler *handler) {
     if(handler) {
-        LogPrivate::handler = handler;
+        s_handler   = handler;
     }
 }
 
 void Log::setLogLevel(LogTypes lvl) {
-    LogPrivate::logLevel    = lvl;
+    s_logLevel  = lvl;
 }
 
 Log &Log::operator<<(bool b) {

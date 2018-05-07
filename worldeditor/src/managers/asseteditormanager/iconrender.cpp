@@ -63,6 +63,10 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_pLight->addComponent<DirectLight>();
 }
 
+IconRender::~IconRender() {
+    delete m_pController;
+}
+
 const QImage IconRender::render(const QString &resource, uint8_t type) {
     m_Context->makeCurrent(m_Surface);
 

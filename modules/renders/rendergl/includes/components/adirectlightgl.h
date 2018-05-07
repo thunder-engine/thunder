@@ -24,6 +24,8 @@ class ADirectLightGL : public DirectLight {
 public:
     ADirectLightGL              ();
 
+    ~ADirectLightGL             ();
+
     void                        draw                (APipeline &pipeline, uint8_t layer);
     void                        shadowsUpdate       (APipeline &pipeline);
 

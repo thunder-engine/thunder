@@ -2,6 +2,8 @@
 
 #include <variant.h>
 
+#include <cstring>
+
 #define HEADER  "Header"
 #define DATA    "Data"
 

@@ -21,6 +21,8 @@ class IconRender : public QObject {
 public:
     IconRender                  (Engine *engine, QOpenGLContext *share, QObject *parent = 0);
 
+    ~IconRender                 ();
+
     const QImage                render              (const QString &resource, uint8_t type);
 
 protected:

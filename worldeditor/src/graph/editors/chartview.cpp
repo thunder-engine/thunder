@@ -126,7 +126,7 @@ void ChartView::drawChart(QPainter &painter, const QRect &r, Data::const_iterato
 
     QPainterPath path;
 
-    float start;
+    float start = 0.0f;
     int i   = 0;
     foreach(const float &value, it.value()) {
         float p     = (value - range.x()) / delta;
