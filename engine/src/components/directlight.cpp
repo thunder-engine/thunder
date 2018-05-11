@@ -1,10 +1,49 @@
 #include "components/directlight.h"
 
+#include "commandbuffer.h"
+
+#include "resources/material.h"
+#include "resources/mesh.h"
+
+#define MAX_LODS 4
+
 DirectLight::DirectLight() {
     m_Shadows       = false;
     m_Brightness    = 1.0f;
     m_Bias          = 0.001f;
     m_Color         = Vector4(1.0f);
+
+    m_CSM           = true;
+    m_pPlane        = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+
+    m_LODCount      = (m_CSM) ? MAX_LODS : 1;
+    m_pMatrix       = new Matrix4[m_LODCount];
+    m_pTiles        = new Vector4[m_LODCount];
+
+    m_pMaterial     = Engine::loadResource<Material>(".embedded/VSM.mtl");
+    m_pMaterialInstance = m_pMaterial->createInstance();
+
+    m_pMaterialInstance->setVector4("light.color",      &m_Color);
+    m_pMaterialInstance->setFloat("light.brightness",   &m_Brightness);
+    m_pMaterialInstance->setFloat("light.shadows",      &m_Shadows);
+
+    m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
+    m_pMaterialInstance->setVector4("light.lod",        &m_NormalizedDistance);
+
+    m_pMaterialInstance->setMatrix4("light.matrix",     m_pMatrix, m_LODCount);
+    m_pMaterialInstance->setVector4("light.tiles",      m_pTiles,  m_LODCount);
+}
+
+DirectLight::~DirectLight() {
+    delete m_pMatrix;
+    delete m_pTiles;
+}
+
+void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
+    if(m_pPlane && m_pMaterial && (layer & ICommandBuffer::LIGHT)) {
+        buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+        buffer.drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);
+    }
 }
 
 bool DirectLight::castShadows() const {

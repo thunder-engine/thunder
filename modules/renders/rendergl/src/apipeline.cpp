@@ -43,8 +43,8 @@ APipeline::APipeline(Engine *engine) :
     m_ShadowMap.create  (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
     m_ShadowMap.resize  (2048, 2048);
 
-    m_Targets["depthMap"]   = &m_Depth;
-    m_Targets["shadowMap"]  = &m_ShadowMap;
+    m_Buffer->setGlobalTexture("depthMap",    &m_Depth);
+    m_Buffer->setGlobalTexture("shadowMap",   &m_ShadowMap);
 
     glGenFramebuffers(1, &m_SelectBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_SelectBuffer);
@@ -56,9 +56,6 @@ APipeline::~APipeline() {
 }
 
 void APipeline::draw(Scene &scene, uint32_t) {
-    PROFILER_RESET(POLYGONS);
-    PROFILER_RESET(DRAWCALLS);
-
     m_pScene    = &scene;
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
@@ -119,18 +116,19 @@ void APipeline::drawComponents(Object &object, uint8_t layer) {
         Object *child   = it;
         Component *draw = dynamic_cast<Component *>(child);
         if(draw) {
-            draw->draw(*m_Buffer, layer);
+            if(draw->isEnable()) {
+                draw->draw(*m_Buffer, layer);
+            }
         } else {
             Actor *actor    = dynamic_cast<Actor *>(child);
             if(actor) {
                 if(!actor->isEnable()) {
                     continue;
                 }
+                m_Buffer->setGlobalValue("transform.position", actor->position());
+                m_Buffer->setGlobalValue("transform.orientation", (actor->rotation() * Vector3(0.0f, 0.0f, 1.0f)));
             }
             drawComponents(*child, layer);
-            if(actor) {
-                //m_Buffer->setColor(Vector4(1.0));
-            }
         }
     }
 }
@@ -142,29 +140,6 @@ void APipeline::updateShadows(Object &object) {
             light->shadowsUpdate(*this);
         } else {
             updateShadows(*it);
-        }
-    }
-}
-
-const Texture *APipeline::pipelineTexture(const string &name) const {
-    auto it = m_Targets.find(name);
-    if(it != m_Targets.end()) {
-        return (*it).second;
-    }
-    return nullptr;
-}
-
-void APipeline::updateLights(Object &object, uint8_t layer) {
-    for(auto &it : object.getChildren()) {
-        ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
-        if(light) {
-            Actor &a    = light->actor();
-            m_Buffer->setGlobalValue("transform.position", a.position());
-            m_Buffer->setGlobalValue("transform.orientation", (a.rotation() * Vector3(0.0f, 0.0f, 1.0f)));
-
-            light->draw(*this, layer);
-        } else {
-            updateLights(*it, layer);
         }
     }
 }

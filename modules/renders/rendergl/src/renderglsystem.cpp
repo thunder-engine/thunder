@@ -66,6 +66,9 @@ const char *RenderGLSystem::name() const {
 void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     PROFILER_MARKER;
 
+    PROFILER_RESET(POLYGONS);
+    PROFILER_RESET(DRAWCALLS);
+
     if(m_pPipeline) {
         m_pPipeline->draw(scene, resource);
     }

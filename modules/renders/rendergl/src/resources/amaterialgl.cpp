@@ -127,7 +127,7 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
     }
     if(m_Surfaces & Oriented) {
         for(auto it : fragments) {
-            m_Programs[Oriented | it.first]     = buildProgram(it.second, "#define TYPE_AXISALIGNED 1");
+            m_Programs[Oriented | it.first] = buildProgram(it.second, "#define TYPE_AXISALIGNED 1");
         }
     }
 }
@@ -140,7 +140,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
     return 0;
 }
 
-uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t type) {
+uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) && //  || layer & ICommandBuffer::RAYCAST
@@ -226,6 +226,11 @@ uint32_t AMaterialGL::bind(MaterialInstance *instance, uint8_t layer, uint16_t t
             const Texture *t    = instance->texture(it.first.c_str());
             if(t) {
                 texture = static_cast<const ATextureGL *>(t);
+            } else {
+                t = buffer.texture(it.first.c_str());
+                if(t) {
+                    texture = static_cast<const ATextureGL *>(t);
+                }
             }
         }
         if(texture) {

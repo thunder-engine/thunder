@@ -13,7 +13,7 @@ class ABlurGL {
 public:
     ABlurGL                     ();
 
-    void                        draw                (CommandBufferGL &buffer, ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points);
+    void                        draw                (ICommandBuffer &buffer, ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points);
 
 protected:
     AMaterialGL                *m_pBlurMaterial;

@@ -14,10 +14,6 @@ ATextureGL::ATextureGL() :
 
 ATextureGL::~ATextureGL() {
     destroy();
-    if(mID) {
-        glDeleteTextures(1, &mID);
-        mID = 0;
-    }
 }
 
 void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uint32_t bits) {
@@ -85,6 +81,11 @@ void ATextureGL::unbind() const {
 
 void ATextureGL::clear() {
     Texture::clear();
+
+    if(mID) {
+        glDeleteTextures(1, &mID);
+        mID = 0;
+    }
 }
 
 void ATextureGL::apply() {

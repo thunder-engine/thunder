@@ -9,7 +9,7 @@
 #include <engine.h>
 
 class ATextureGL;
-class CommandBufferGL;
+class ICommandBuffer;
 
 class AMaterialGL : public Material {
     A_OVERRIDE(AMaterialGL, Material, Resources)
@@ -34,7 +34,7 @@ public:
 
     void                        loadUserData    (const VariantMap &data);
 
-    uint32_t                    bind            (MaterialInstance *instance, uint8_t layer, uint16_t type);
+    uint32_t                    bind            (ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer, uint16_t type);
     void                        unbind          (uint8_t);
 
     uint32_t                    getProgram      (uint16_t type) const;

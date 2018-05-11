@@ -17,7 +17,7 @@ public:
     virtual ATextureGL         *draw                (ATextureGL &source, ICommandBuffer &buffer) {
         if(m_pMaterial) {
             buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
-            m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static);
+            m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static);
             /// \todo Return command buffer
             //pipeline.drawScreen(source, m_ResultTexture);
             //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );

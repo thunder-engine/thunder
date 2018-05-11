@@ -32,10 +32,10 @@ ADeferredShading::ADeferredShading(Engine *engine) :
     m_pGBuffer[G_PARAMS]  .create(GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
     m_pGBuffer[G_EMISSIVE].create(GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT);
 
-    m_Targets["layer0"] = &m_pGBuffer[G_NORMALS];
-    m_Targets["layer1"] = &m_pGBuffer[G_DIFFUSE];
-    m_Targets["layer2"] = &m_pGBuffer[G_PARAMS];
-    m_Targets["layer3"] = &m_pGBuffer[G_EMISSIVE];
+    m_Buffer->setGlobalTexture("layer0", &m_pGBuffer[G_NORMALS]);
+    m_Buffer->setGlobalTexture("layer1", &m_pGBuffer[G_DIFFUSE]);
+    m_Buffer->setGlobalTexture("layer2", &m_pGBuffer[G_PARAMS]);
+    m_Buffer->setGlobalTexture("layer3", &m_pGBuffer[G_EMISSIVE]);
 
     // G buffer
     glGenFramebuffers(1, &fb_g_id);
@@ -73,7 +73,7 @@ void ADeferredShading::draw(Scene &scene, uint32_t resource) {
     m_Buffer->setRenderTarget(1, &m_pGBuffer[G_EMISSIVE], nullptr);
 
     // Light pass
-    updateLights(scene, ICommandBuffer::LIGHT);
+    drawComponents(scene, ICommandBuffer::LIGHT);
 
     cameraReset();
     // Draw Transparent pass

@@ -22,12 +22,15 @@ public:
 
     void                        setGlobalValue              (const char *name, const Variant &value);
 
+    void                        setGlobalTexture            (const char *name, const Texture *value);
+
     void                        setViewport                 (uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
     Matrix4                     projection                  () const { return m_Projection; }
 
     Matrix4                     modelView                   () const { return m_View * m_Model; }
 
+    const Texture              *texture                     (const char *name) const;
 
 protected:
     void                        setShaderParams             (uint32_t program);
@@ -40,6 +43,8 @@ protected:
     Matrix4                     m_Projection;
 
     VariantMap                  m_Uniforms;
+
+    Material::TextureMap        m_Textures;
 
     uint32_t                    m_Buffers[8];
 };

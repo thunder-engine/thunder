@@ -2,6 +2,7 @@
 #define OBJECTHIERARCHYMODEL_H
 
 #include <QAbstractItemModel>
+#include <QPixmap>
 
 class Object;
 
@@ -36,6 +37,8 @@ public:
 protected:
     Object                     *m_rootItem;
 
+    QPixmap                     m_Visible;
+    QPixmap                     m_Invisible;
 };
 
 #endif // OBJECTHIERARCHYMODEL_H

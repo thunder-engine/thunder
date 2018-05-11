@@ -14,6 +14,7 @@
         <file>icons/bigthunder.png</file>
         <file>icons/thunder.png</file>
         <file>icons/thunder.svg</file>
+        <file>fontawesome/eye.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

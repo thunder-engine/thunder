@@ -37,7 +37,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         m_Model = model;
 
         AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());
-        uint32_t program    = mat->bind(material, layer, Material::Static);
+        uint32_t program    = mat->bind(*this, material, layer, Material::Static);
         if(program) {
             setShaderParams(program);
 
@@ -148,6 +148,14 @@ void CommandBufferGL::setRenderTarget(uint8_t numberColors, const Texture *color
     }
 }
 
+const Texture *CommandBufferGL::texture(const char *name) const {
+    auto it = m_Textures.find(name);
+    if(it != m_Textures.end()) {
+        return (*it).second;
+    }
+    return nullptr;
+}
+
 void CommandBufferGL::setShaderParams(uint32_t program) {
     PROFILER_MARKER;
 
@@ -200,6 +208,10 @@ void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &proj
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
     m_Uniforms[name]    = value;
+}
+
+void CommandBufferGL::setGlobalTexture(const char *name, const Texture *value) {
+    m_Textures[name]    = value;
 }
 
 void CommandBufferGL::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {

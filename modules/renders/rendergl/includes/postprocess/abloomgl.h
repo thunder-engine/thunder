@@ -25,7 +25,7 @@ class ABloomGL : public APostProcessor {
 public:
     ABloomGL                    ();
 
-    ATextureGL                 *draw                (ATextureGL &source, CommandBufferGL &buffer);
+    ATextureGL                 *draw                (ATextureGL &source, ICommandBuffer &buffer);
 
     /*!
         Resizing current texture buffers.

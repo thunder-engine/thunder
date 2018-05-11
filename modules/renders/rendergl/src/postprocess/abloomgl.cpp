@@ -30,8 +30,8 @@ ABloomGL::ABloomGL() {
     m_BloomPasses[4].BlurSize   = Vector3(64.0f, 0.0f, 64.0f);
 }
 
-ATextureGL *ABloomGL::draw(ATextureGL &source, CommandBufferGL &buffer) {
-    if(m_pMaterial && m_pMaterial->bind(nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
+ATextureGL *ABloomGL::draw(ATextureGL &source, ICommandBuffer &buffer) {
+    if(m_pMaterial && m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
         buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
 
         uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);

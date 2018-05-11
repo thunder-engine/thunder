@@ -7,6 +7,7 @@
 #include <QDragEnterEvent>
 
 #include <object.h>
+#include <components/actor.h>
 #include <components/component.h>
 
 #include "objecthierarchymodel.h"
@@ -223,11 +224,12 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     foreach(QModelIndex it, select->selectedRows()) {
         list.push_back(static_cast<Object *>(m_pFilter->mapToSource(it).internalPointer()));
     }
-    emit selected(list);
+
     if(index.column() == 2) {
-        Object *object  = static_cast<Object *>(m_pFilter->mapToSource(index).internalPointer());
-        //object->setEnable(!object->isEnable());
+        Actor *object  = static_cast<Actor *>(m_pFilter->mapToSource(index).internalPointer());
+        object->setEnable(!object->isEnable());
     }
+    emit selected(list);
 }
 
 void HierarchyBrowser::on_treeView_doubleClicked(const QModelIndex &index) {

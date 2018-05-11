@@ -33,11 +33,15 @@ public:
 
     virtual void                setGlobalValue              (const char *name, const Variant &value);
 
+    virtual void                setGlobalTexture            (const char *name, const Texture *value);
+
     virtual void                setViewport                 (uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
     virtual Matrix4             projection                  () const;
 
     virtual Matrix4             modelView                   () const;
+
+    virtual const Texture      *texture                     (const char *name) const;
 
     static Vector4              idToColor                   (uint32_t id);
 

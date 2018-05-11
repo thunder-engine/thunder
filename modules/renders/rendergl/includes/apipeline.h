@@ -52,10 +52,7 @@ public:
 
     void                        overrideController  (IController *controller) { m_pController = controller; }
 
-    const Texture              *pipelineTexture     (const string &name) const;
-
 protected:
-    void                        updateLights        (Object &object, uint8_t layer);
     void                        updateShadows       (Object &object);
 
     void                        analizeScene        (Object &object);
@@ -80,8 +77,6 @@ protected:
     Vector3                     m_World;
 
     list<APostProcessor *>      m_PostEffects;
-
-    Material::TextureMap        m_Targets;
 };
 
 #endif // APIPELINE

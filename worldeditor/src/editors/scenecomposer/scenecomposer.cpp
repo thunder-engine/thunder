@@ -64,7 +64,9 @@ Q_DECLARE_METATYPE(Actor *)
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         m_pImportQueue(new ImportQueue()),
-        ui(new Ui::SceneComposer) {
+        ui(new Ui::SceneComposer),
+        m_pProperties(nullptr),
+        m_pMap(nullptr) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -169,11 +171,17 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
-    m_pProperties   = nullptr;
-    m_pMap          = nullptr;
+    AssetManager *asset = AssetManager::instance();
+    asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine));
+    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(m_pEngine));
+    asset->addEditor(IConverter::ContentMesh, new MeshEdit(m_pEngine));
+
+    ui->projectSettings->setObject(ProjectManager::instance());
 
     on_actionEditor_Mode_triggered();
     on_actionResore_Layout_triggered();
+
+    on_action_New_triggered();
 }
 
 SceneComposer::~SceneComposer() {
@@ -212,18 +220,8 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
 void SceneComposer::onGLInit() {
     m_pImportQueue->init(new IconRender(m_pEngine, ui->viewport->context()));
 
-    AssetManager *asset = AssetManager::instance();
-    asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine));
-    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(m_pEngine));
-    asset->addEditor(IConverter::ContentMesh, new MeshEdit(m_pEngine));
-    //asset->addEditor(IConverter::ContentEffect, new ParticleEdit(m_pEngine));
-
     ComponentModel::instance()->init(m_pEngine);
     ContentList::instance()->init(m_pEngine);
-
-    ui->projectSettings->setObject(ProjectManager::instance());
-
-    on_action_New_triggered();
 }
 
 void SceneComposer::updateTitle() {
@@ -270,7 +268,7 @@ void SceneComposer::on_action_New_triggered() {
     m_pMap  = Engine::objectCreate<Chunk>("Chunk", ui->viewport->scene());
     ui->hierarchy->setObject(m_pMap);
 
-    ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
+    ObjectCtrl *ctrl    = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
     ctrl->clear();
     ctrl->setMap(m_pMap);
