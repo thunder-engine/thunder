@@ -19,7 +19,7 @@ Project {
         return qbs.targetOS[0] + "/" + arch;
     }
 
-    property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios")
+    property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
     property string bundle: {
         if(qbs.targetOS.contains("darwin")) {
             return EDITOR_NAME + ".app/Contents/MacOS/"

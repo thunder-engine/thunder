@@ -35,9 +35,11 @@
 #include "components/spritemesh.h"
 
 #include "analytics/profiler.h"
-
-#include "adapters/desktopadaptor.h"
-
+#if THUNDER_MOBILE
+    #include "adapters/mobileadaptor.h"
+#else
+    #include "adapters/desktopadaptor.h"
+#endif
 #include "resources/text.h"
 #include "resources/texture.h"
 #include "resources/material.h"
@@ -99,7 +101,7 @@ string                          EnginePrivate::m_Organization;
 string                          EnginePrivate::m_Application;
 IPlatformAdaptor               *EnginePrivate::m_pPlatform;
 
-Engine::Engine(IFile *file, int argc, char **argv) :
+Engine::Engine(IFile *file, int, char **argv) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
@@ -110,10 +112,8 @@ Engine::Engine(IFile *file, int argc, char **argv) :
 
     p_ptr->m_pFile  = file;
 
-#if TARGET_OS_IPHONE
-
-#elif __ANDROID__
-
+#if THUNDER_MOBILE
+    p_ptr->m_pPlatform  = new MobileAdaptor(this);
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif

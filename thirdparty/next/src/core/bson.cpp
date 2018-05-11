@@ -2,7 +2,9 @@
 
 #include <streambuf>
 
+#if __linux__
 #include <cstring>
+#endif
 
 Variant appendProperty(const Variant &container, const Variant &data, const string &name) {
     switch(container.type()) {

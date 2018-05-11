@@ -98,7 +98,7 @@ Project {
             name: "Install Static Freetype"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: freetype.LIB_PATH
+            qbs.installDir: freetype.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: freetype.PREFIX
         }
     }

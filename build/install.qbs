@@ -7,7 +7,10 @@ Product {
     name: "_install"
 
     Depends { name: "cpp" }
-    Depends { name: "Qt.core" }
+    Depends {
+        name: "Qt.core"
+        condition: install.desktop
+    }
 
     property string suffix: {
         if(qbs.targetOS.contains("windows")) {
@@ -99,6 +102,7 @@ Product {
 
     Group {
         name: "Qt Image Format Plugins"
+        condition: install.desktop
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/imageformats/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
@@ -109,6 +113,7 @@ Product {
 
     Group {
         name: "Qt Platform Plugins"
+        condition: install.desktop
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/platforms/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
@@ -154,6 +159,7 @@ Product {
 
     Group {
         name: "Shaders Engine"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/engine/shaders/*"
         ]
@@ -163,6 +169,7 @@ Product {
     }
     Group {
         name: "Materials Engine"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/engine/materials/*"
         ]
@@ -172,6 +179,7 @@ Product {
     }
     Group {
         name: "Materials Editor"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/editor/materials/*"
         ]
@@ -181,6 +189,7 @@ Product {
     }
     Group {
         name: "Meshes Engine"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/engine/meshes/*"
         ]
@@ -190,6 +199,7 @@ Product {
     }
     Group {
         name: "Meshes Editor"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/editor/meshes/*"
         ]
@@ -199,6 +209,7 @@ Product {
     }
     Group {
         name: "Templates Editor"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/editor/templates/*"
         ]
@@ -208,6 +219,7 @@ Product {
     }
     Group {
         name: "Textures Engine"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/engine/textures/*"
         ]
@@ -217,6 +229,7 @@ Product {
     }
     Group {
         name: "Textures Editor"
+        condition: install.desktop
         files: [
             install.RESOURCE_ROOT + "/editor/textures/*"
         ]
@@ -226,6 +239,7 @@ Product {
     }
     Group {
         name: "Next includes"
+        condition: install.desktop
         prefix: "../thirdparty/next/inc/"
         files: [
             "**"
@@ -237,6 +251,7 @@ Product {
     }
     Group {
         name: "Engine includes"
+        condition: install.desktop
         prefix: "../engine/includes/"
         files: [
             "**/*.h"
@@ -251,6 +266,7 @@ Product {
     }
     Group {
         name: "RenderGL includes"
+        condition: install.desktop
         prefix: "../modules/renders/rendergl/includes/"
         files: [
             "**/rendergl.h"
@@ -264,6 +280,7 @@ Product {
 
     Group {
         name: "QBS Bin"
+        condition: install.desktop
         prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
         files: [
             "/bin/**"
@@ -274,6 +291,7 @@ Product {
     }
     Group {
         name: "QBS Lib"
+        condition: install.desktop
         prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
         files: [
             "/lib/*"
@@ -284,6 +302,7 @@ Product {
     }
     Group {
         name: "QBS Plugins"
+        condition: install.desktop
         prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
         files: [
             "/lib/qbs/**",
@@ -296,6 +315,7 @@ Product {
     }
     Group {
         name: "QBS Share"
+        condition: install.desktop
         prefix: "../thirdparty/qbs/"
         files: [
             "share/**"

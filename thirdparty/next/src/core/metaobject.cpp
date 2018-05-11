@@ -2,7 +2,9 @@
 
 #include "core/object.h"
 
+#if __linux__
 #include <cstring>
+#endif
 
 MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
         m_pName(name),

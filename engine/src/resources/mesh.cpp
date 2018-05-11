@@ -3,7 +3,9 @@
 #include <file.h>
 #include <log.h>
 
+#if __linux__
 #include <cstring>
+#endif
 
 #define HEADER      "Header"
 #define DATA        "Data"

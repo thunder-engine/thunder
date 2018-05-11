@@ -31,6 +31,8 @@ Project {
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.cxxStandardLibrary: "libc++"
         cpp.sonamePrefix: "@executable_path"
 
         Group {
@@ -53,6 +55,10 @@ Project {
         cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.minimumIosVersion: "10.0"
+        cpp.minimumTvosVersion: "10.0"
+        cpp.cxxStandardLibrary: "libc++"
 
         Properties {
             condition: qbs.targetOS.contains("android")
@@ -61,9 +67,10 @@ Project {
 
         Group {
             name: "Install Static Platform"
+            condition: next.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: next.LIB_PATH
+            qbs.installDir:  next.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: next.PREFIX
         }
     }

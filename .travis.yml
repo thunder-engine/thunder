@@ -33,7 +33,7 @@ matrix:
         - sudo apt-get -y install qt510base qt510script qt510svg qt510imageformats qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
         - source /opt/qt510/bin/qt510-env.sh
         - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
-        - tar -xvzf qbs-1.11.0.tar.gz
+        - tar -xvzf qbs-1.11.0-linux.tar.gz
         - export PATH=$PATH:qbs-build/bin
         - qbs --version
         - qbs setup-toolchains --detect
@@ -45,6 +45,7 @@ matrix:
       after_success:
         - sudo curl --ftp-create-dirs -T ThunderEngine-linux-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-linux-x86_64.tar.gz
     - os: osx
+      osx_image: xcode9.3
       before_install:
         - brew update
         - brew install qbs

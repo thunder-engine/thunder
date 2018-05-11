@@ -7,9 +7,11 @@ class Log;
 
 class MobileAdaptor : public IPlatformAdaptor {
 public:
+    MobileAdaptor               (Engine *engine);
+
     virtual ~MobileAdaptor      () {}
 
-    bool                        init                        (Engine *engine);
+    bool                        init                        ();
 
     void                        update                      ();
 
@@ -48,6 +50,8 @@ public:
     bool                        pluginUnload                (void *plugin);
 
     void                       *pluginAddress               (void *plugin, const string &name);
+
+    string                      locationLocalDir            ();
 
 protected:
 

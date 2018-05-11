@@ -2,7 +2,9 @@
 
 #include <variant.h>
 
+#if __linux__
 #include <cstring>
+#endif
 
 #define HEADER  "Header"
 #define DATA    "Data"
