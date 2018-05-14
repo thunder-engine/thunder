@@ -35,7 +35,7 @@ void UndoManager::CreateObjects::undo(bool redo) {
     if(!m_Objects.empty()) {
         Object::ObjectList objects;
         foreach(const QString &ref, m_Objects) {
-            Object *object  = m_pController->findObject(ref.toInt());
+            Object *object  = m_pController->findObject(ref.toUInt());
             if(object) {
                 objects.push_back(object);
             }
@@ -69,7 +69,7 @@ void UndoManager::DestroyObjects::undo(bool redo) {
     for(auto ref : list) {
         Object *object  = Engine::toObject(ref);
         if(object) {
-            object->setParent(m_pController->findObject((*it).toInt()));
+            object->setParent(m_pController->findObject((*it).toUInt()));
             objects.push_back(object);
         }
         it++;
@@ -106,8 +106,8 @@ void UndoManager::ParentingObjects::undo(bool redo) {
 
     QStringList::iterator it    = m_Parents.begin();
     foreach(const QString &ref, m_Objects) {
-        Object *object  = m_pController->findObject(ref.toInt());
-        Object *parent  = m_pController->findObject((*it).toInt());
+        Object *object  = m_pController->findObject(ref.toUInt());
+        Object *parent  = m_pController->findObject((*it).toUInt());
         if(object && parent) {
             objects.push_back(object);
             parents.push_back(parent);
