@@ -43,9 +43,10 @@ Project {
 
         Group {
             name: "Install Static zLib"
+            condition: zlib.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: zlib.LIB_PATH
+            qbs.installDir: zlib.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: zlib.PREFIX
         }
     }

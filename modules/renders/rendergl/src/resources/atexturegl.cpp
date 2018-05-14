@@ -1,6 +1,8 @@
 #include "resources/atexturegl.h"
 
+#if __linux__
 #include <cstring>
+#endif
 
 #define DATA    "Data"
 
@@ -104,10 +106,14 @@ void ATextureGL::apply() {
 
     m_Target    = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     switch (m_Format) {
+#if !(GL_ES_VERSION_2_0)
         case LUMINANCE: m_GlFormat  = GL_RED; break;
+#else
+        case LUMINANCE: m_GlFormat  = GL_RED_EXT; break;
+#endif
         case RGB:       m_GlFormat  = GL_RGB; break;
-        case DXT1:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-        case DXT5:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+        //case DXT1:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
+        //case DXT5:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
         default:        m_GlFormat  = GL_RGBA; break;
     }
 

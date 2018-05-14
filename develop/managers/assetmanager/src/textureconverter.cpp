@@ -4,7 +4,9 @@
 #include <QFile>
 #include <QFileInfo>
 
+#if __linux__
 #include <cstring>
+#endif
 
 #include <bson.h>
 #include <resources/texture.h>

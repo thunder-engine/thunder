@@ -48,8 +48,13 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
 
             uint32_t lod    = 0;
             uint32_t id;
+#if !(GL_ES_VERSION_2_0)
             glGenVertexArrays(1, &id);
             glBindVertexArray(id);
+#else
+            glGenVertexArraysOES(1, &id);
+            glBindVertexArrayOES(id);
+#endif
             // indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->m_triangles[surface][lod]);
             // vertices
@@ -120,10 +125,13 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glDisableVertexAttribArray(8);
             // weights
             glDisableVertexAttribArray(9);
-
+#if !(GL_ES_VERSION_2_0)
             glBindVertexArray(0);
             glDeleteVertexArrays(1, &id);
-
+#else
+            glBindVertexArrayOES(0);
+            glDeleteVertexArraysOES(1, &id);
+#endif
             mat->unbind(layer);
         }
     }
@@ -144,7 +152,9 @@ void CommandBufferGL::setRenderTarget(uint8_t numberColors, const Texture *color
         glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, t->id(), 0 );
     }
     if(numberColors > 1) {
+#if !(GL_ES_VERSION_2_0)
         glDrawBuffers( numberColors, m_Buffers );
+#endif
     }
 }
 

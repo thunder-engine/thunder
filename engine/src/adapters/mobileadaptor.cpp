@@ -20,7 +20,11 @@ void glfmMain(GLFMDisplay *display) {
     //glfmSetMainLoopFunc(display, onFrame);
 }
 
-bool MobileAdaptor::init(Engine *) {
+MobileAdaptor::MobileAdaptor(Engine *engine) {
+    A_UNUSED(engine)
+}
+
+bool MobileAdaptor::init() {
     return true;
 }
 
@@ -97,4 +101,10 @@ bool MobileAdaptor::pluginUnload(void *) {
 
 void *MobileAdaptor::pluginAddress(void *, const string &) {
     return nullptr;
+}
+
+string MobileAdaptor::locationLocalDir() {
+    string result;
+
+    return result;
 }

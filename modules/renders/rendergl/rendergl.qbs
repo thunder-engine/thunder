@@ -25,6 +25,7 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/glfw/include",
+        "../../../thirdparty/glfm/include",
         "../../../thirdparty/glew/include",
         "../../../thirdparty/glad/include",
     ]
@@ -43,16 +44,12 @@ Project {
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: rendergl.incPaths
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.cxxStandardLibrary: "libc++"
         cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
-            cpp.libraryPaths: [
-                //"../../../thirdparty/glew/bin"
-            ]
-            //cpp.dynamicLibraries: outer.concat([
-            //    "opengl32"
-            //])
         }
 
         Properties {
@@ -77,6 +74,15 @@ Project {
 
         cpp.includePaths: rendergl.incPaths
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.minimumIosVersion: "10.0"
+        cpp.minimumTvosVersion: "10.0"
+        cpp.cxxStandardLibrary: "libc++"
+
+        Properties {
+            condition: !rendergl.desktop
+            cpp.defines: ["THUNDER_MOBILE"]
+        }
 
         Properties {
             condition: qbs.targetOS.contains("android")
@@ -92,7 +98,7 @@ Project {
             name: "Install Static RenderGL"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: rendergl.LIB_PATH
+            qbs.installDir: rendergl.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: rendergl.PREFIX
         }
     }

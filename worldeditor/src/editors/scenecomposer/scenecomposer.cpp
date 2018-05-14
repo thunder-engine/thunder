@@ -13,7 +13,9 @@
 #include <json.h>
 #include <bson.h>
 
+#if __linux__
 #include <cstring>
+#endif
 
 // Engine
 #include <module.h>

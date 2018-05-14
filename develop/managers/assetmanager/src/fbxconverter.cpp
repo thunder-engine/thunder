@@ -6,7 +6,9 @@
 
 #include <bson.h>
 
+#if __linux__
 #include <cstring>
+#endif
 
 #include <QFileInfo>
 #include <QTime>

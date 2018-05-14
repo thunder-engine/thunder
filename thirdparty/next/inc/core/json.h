@@ -5,7 +5,9 @@
 #include <list>
 #include <map>
 #include <stack>
+#if __linux__
 #include <cstdint>
+#endif
 
 #include "variant.h"
 

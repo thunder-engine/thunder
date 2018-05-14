@@ -12,6 +12,7 @@ Project {
 
     StaticLibrary {
         name: "glad"
+        condition: glad.desktop
         files: glad.srcFiles
         Depends { name: "cpp" }
         bundle.isBundle: false

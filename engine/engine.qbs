@@ -34,6 +34,7 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
+        Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
         bundle.isBundle: false
@@ -43,6 +44,8 @@ Project {
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.cxxStandardLibrary: "libc++"
 
         Properties {
             condition: engine.desktop
@@ -77,6 +80,10 @@ Project {
 
         cpp.includePaths: engine.incPaths
         cpp.cxxLanguageVersion: "c++14"
+        cpp.minimumMacosVersion: "10.12"
+        cpp.minimumIosVersion: "10.0"
+        cpp.minimumTvosVersion: "10.0"
+        cpp.cxxStandardLibrary: "libc++"
         cpp.defines: ["NEXT_LIBRARY"]
 
         Properties {
@@ -86,6 +93,7 @@ Project {
         Properties {
             condition: !engine.desktop
             files: outer.concat(["src/adapters/mobileadaptor.cpp"])
+            cpp.defines: ["THUNDER_MOBILE"]
         }
 
         Properties {
@@ -97,7 +105,7 @@ Project {
             name: "Install Static Engine"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: engine.LIB_PATH
+            qbs.installDir: engine.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: engine.PREFIX
         }
     }

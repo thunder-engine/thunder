@@ -37,10 +37,30 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new AAntiAliasingGL());
     //m_PostEffects.push_back(new ABloomGL());
 
-    m_Select.create     (GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT);
-    m_Depth.create      (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
 
-    m_ShadowMap.create  (GL_TEXTURE_2D, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+    m_Select.create     (GL_TEXTURE_2D,
+#if !(GL_ES_VERSION_2_0)
+                         GL_RGBA8,
+#else
+                         GL_RGBA8_OES,
+#endif
+                         GL_RGBA, GL_UNSIGNED_INT);
+
+    m_Depth.create      (GL_TEXTURE_2D,
+#if !(GL_ES_VERSION_2_0)
+                         GL_DEPTH_COMPONENT24,
+#else
+                         GL_DEPTH_COMPONENT24_OES,
+#endif
+                         GL_DEPTH_COMPONENT, GL_FLOAT);
+
+    m_ShadowMap.create  (GL_TEXTURE_2D,
+#if !(GL_ES_VERSION_2_0)
+                         GL_DEPTH_COMPONENT24,
+#else
+                         GL_DEPTH_COMPONENT24_OES,
+#endif
+                         GL_DEPTH_COMPONENT, GL_FLOAT);
     m_ShadowMap.resize  (2048, 2048);
 
     m_Buffer->setGlobalTexture("depthMap",    &m_Depth);
