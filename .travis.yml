@@ -55,6 +55,8 @@ matrix:
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:qt-brew
+        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/2.0/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/2.0/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
+	- tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/2.0/macos/x86_64
         - qbs resolve config:release profile:xcode-iphoneos-arm64
         - qbs install --all-products config:release profile:xcode-iphoneos-arm64
         - qbs resolve config:release profile:xcode-appletvos-arm64

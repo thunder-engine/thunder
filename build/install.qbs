@@ -44,7 +44,7 @@ Product {
 
     Group {
         name: "Qt DLLs"
-        condition: install.desktop
+        condition: install.desktop && !qbs.targetOS.contains("darwin")
         prefix: {
             if (qbs.targetOS.contains("windows")) {
                 return Qt.core.binPath + "/"
@@ -102,7 +102,7 @@ Product {
 
     Group {
         name: "Qt Image Format Plugins"
-        condition: install.desktop
+        condition: install.desktop && !qbs.targetOS.contains("darwin")
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/imageformats/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
@@ -113,7 +113,7 @@ Product {
 
     Group {
         name: "Qt Platform Plugins"
-        condition: install.desktop
+        condition: install.desktop && !qbs.targetOS.contains("darwin")
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/platforms/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles

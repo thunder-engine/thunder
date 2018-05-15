@@ -140,8 +140,6 @@ void main(void) {
 #endif
     gl_Position = transform.projection * ( ( transform.mv * vec4(vert.v, 1.0) ) + vert.m );
 
-
-
     _vertex     = gl_Position.xyz;
     _n          = vert.n;
     _t          = vert.t;

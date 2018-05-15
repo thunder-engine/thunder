@@ -5,7 +5,7 @@
 #include ".embedded/Common.vert"
 #include ".embedded/BRDF.frag"
 
-layout(location = 0) in vec3 _xyz;
+layout(location = 0) in vec3 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) in vec2 _uv1;
 layout(location = 3) in vec3 _n;
@@ -54,7 +54,7 @@ void passMode(Params params) {
         discard;
     }
     vec3 norm   = vec3(1.0);
-    vec3 matv   = vec3(_xyz.x, _xyz.y, getMetallic( params ));
+    vec3 matv   = vec3(0.0, 0.0, getMetallic( params ));
     float rough = 0.0;
     float model = 0.0;
     #ifdef MODEL_LIT
