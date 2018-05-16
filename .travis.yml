@@ -44,7 +44,7 @@ matrix:
         - qbs install --all-products config:release
         - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/2.0/linux
       after_success:
-        - sudo curl -v --ftp-create-dirs -T ThunderEngine-linux-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-linux-x86_64.tar.gz
+        - sudo curl -v -s --ftp-create-dirs -T ThunderEngine-linux-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-linux-x86_64-${TRAVIS_BUILD_NUMBER}.tar.gz
     - os: osx
       osx_image: xcode9.3
       before_install:
@@ -66,7 +66,7 @@ matrix:
         - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/2.0/tvos
       after_success:
         - ls
-        - curl --ftp-create-dirs -T ThunderEngine-macosx-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-macos-x86_64.tar.gz
-        - curl --ftp-create-dirs -T ThunderEngine-ios-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-ios-arm64.tar.gz
-        - curl --ftp-create-dirs -T ThunderEngine-tvos-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-tvos-arm64.tar.gz
+        - curl --ftp-create-dirs -T ThunderEngine-macosx-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-macos-x86_64-${TRAVIS_BUILD_NUMBER}.tar.gz
+        - curl --ftp-create-dirs -T ThunderEngine-ios-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-ios-arm64-${TRAVIS_BUILD_NUMBER}.tar.gz
+        - curl --ftp-create-dirs -T ThunderEngine-tvos-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-tvos-arm64-${TRAVIS_BUILD_NUMBER}.tar.gz
     
