@@ -42,6 +42,7 @@ matrix:
         - qbs config defaultProfile qt-5-10-1
         - qbs config --list
         - qbs install --all-products config:release
+        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/2.0/linux
       after_success:
         - sudo curl --ftp-create-dirs -T ThunderEngine-linux-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-linux-x86_64.tar.gz
     - os: osx
