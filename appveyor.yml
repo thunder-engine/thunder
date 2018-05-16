@@ -17,7 +17,7 @@ build_script:
   - qbs setup-toolchains --detect
   - qbs setup-qt %QTDIR%\bin\qmake.exe qt
   - qbs config defaultProfile qt
-  - qbs build --all-products config:release
+  - qbs build --all-products release
   - 7za a -t7z ThunderEngine-windows-x86.7z release/install-root/
 
 artifacts:
