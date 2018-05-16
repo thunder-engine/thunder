@@ -18,7 +18,8 @@ build_script:
   - qbs setup-qt %QTDIR%\bin\qmake.exe qt
   - qbs config defaultProfile qt
   - qbs build --all-products release
-  - 7za a -t7z ThunderEngine-windows-x86.7z release/install-root/
+  - dir
+  - 7z a -t7z ThunderEngine-windows-x86.7z release/install-root/
 
 artifacts:
   - path: 'ThunderEngine*.7z'
