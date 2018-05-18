@@ -4,32 +4,32 @@ about: Create a report to help us improve
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Description
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+[Description of the issue]
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Steps to Reproduce
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+    [First Step]
+    [Second Step]
+    [and so on...]
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+### Expected behavior:
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+[What did you expect to happen?]
 
-**Additional context**
-Add any other context about the problem here.
+### Actual behavior:
+
+[What actually happened instead?]
+
+### Reproducibility:
+
+[How many times does this happen and how many times you tried? i.e 3 of 5]
+
+## Versions
+
+You can get this information from About Dialog. Also, please include the OS and what version of the OS you're running.
+
+## Additional Information
+
+Please include any additional information, configuration or data that might be necessary to reproduce the issue. Screenshots and logs, are helpful as well.
