@@ -29,7 +29,7 @@ void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uin
     glGenTextures   ( 1, &mID );
     glBindTexture   ( m_Target, mID );
 
-    glTexParameterf ( m_Target, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameterf ( m_Target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
     glTexParameterf ( m_Target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameterf ( m_Target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );

@@ -11,25 +11,29 @@
 #include "components/camera.h"
 
 #define SM_RESOLUTION_DEFAULT 1024
+#define SM_RESOLUTION 2048
+
+#define MAX_LODS 4
 
 void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
     Camera *camera  = pipeline.activeCamera();
     if(isEnable() && m_Shadows && camera) {
         ICommandBuffer *b   = pipeline.buffer();
 
+        Vector4 distance;
         Matrix4 mv, p;
         camera->matrices(mv, p);
         {
             float split     = 0.9f;
             float nearPlane = camera->nearPlane();
             float farPlane  = camera->farPlane();
-            for(int i = 1; i <= m_LODCount; i++) {
-                float f = (float)i / (float)m_LODCount;
+            for(int i = 1; i <= MAX_LODS; i++) {
+                float f = (float)i / (float)MAX_LODS;
                 float l = nearPlane * pow(farPlane / nearPlane, f);
                 float u = nearPlane + (farPlane - nearPlane) * f;
                 float v = MIX(u, l, split);
-                m_Distance[i - 1]   = v;
-                Vector4 depth       = p * Vector4(0.0f, 0.0f, -v, 1.0f);
+                distance[i - 1] = v;
+                Vector4 depth   = p * Vector4(0.0f, 0.0f, -v, 1.0f);
                 m_NormalizedDistance[i - 1] = (depth.z / depth.w);
             }
         }
@@ -37,8 +41,8 @@ void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
         float nearPlane = camera->nearPlane();
         Matrix4 view    = Matrix4(actor().rotation().toMatrix()).inverse();
         Matrix4 inv     = mv.inverse();
-        for(uint32_t lod = 0; lod < m_LODCount; lod++) {
-            float dist  = m_Distance[lod];
+        for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
+            float dist  = distance[lod];
             Vector3 bb[2]   = {Vector3(FLT_MAX), Vector3(-FLT_MAX)};
             for(Vector3 &it : camera->frustumCorners(nearPlane, dist)) {
                 Vector3 pos = (inv * it);
@@ -52,8 +56,8 @@ void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
             }
             nearPlane       = dist;
             float size      = MAX(bb[1].x - bb[0].x, bb[1].y - bb[0].y);
-            Matrix4 proj    = Matrix4::ortho(bb[0].x, bb[0].x + size,
-                                             bb[0].y, bb[0].y + size,
+            Matrix4 proj    = Matrix4::ortho(bb[0].x, bb[1].x,
+                                             bb[0].y, bb[1].y,
                                              -100, 100);
 
             m_pMatrix[lod]  = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * proj * view;
@@ -63,10 +67,10 @@ void ADirectLightGL::shadowsUpdate(APipeline &pipeline) {
             uint32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
             b->setViewport(x, y, SM_RESOLUTION_DEFAULT, SM_RESOLUTION_DEFAULT);
 
-            m_pTiles[lod]   = Vector4((float)x / 2048.0f,
-                                      (float)y / 2048.0f,
-                                      (float)SM_RESOLUTION_DEFAULT / 2048.0f,
-                                      (float)SM_RESOLUTION_DEFAULT / 2048.0f);
+            m_pTiles[lod]   = Vector4((float)x / SM_RESOLUTION,
+                                      (float)y / SM_RESOLUTION,
+                                      (float)SM_RESOLUTION_DEFAULT / SM_RESOLUTION,
+                                      (float)SM_RESOLUTION_DEFAULT / SM_RESOLUTION);
 
             pipeline.drawComponents(*(pipeline.scene()), ICommandBuffer::SHADOWCAST);
         }

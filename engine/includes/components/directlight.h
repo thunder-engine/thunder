@@ -15,7 +15,8 @@ class NEXT_LIBRARY_EXPORT DirectLight : public Component {
     A_PROPERTIES(
         A_PROPERTY(bool,    Cast_shadows,   DirectLight::castShadows, DirectLight::setCastShadows),
         A_PROPERTY(float,   Brightness,     DirectLight::brightness, DirectLight::setBrightness),
-        A_PROPERTY(Color,   Color,          DirectLight::color, DirectLight::setColor)
+        A_PROPERTY(Color,   Color,          DirectLight::color, DirectLight::setColor),
+        A_PROPERTY(float,   Bias,           DirectLight::bias, DirectLight::setBias)
     );
 
 public:
@@ -23,7 +24,7 @@ public:
 
     ~DirectLight                ();
 
-    void                        draw                (ICommandBuffer &buffer, int8_t layer);
+    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
 
     bool                        castShadows             () const;
     void                        setCastShadows          (bool shadows);
@@ -34,6 +35,9 @@ public:
     Vector4                     color                   () const;
     void                        setColor                (const Vector4 &color);
 
+    float                       bias                    () const;
+    void                        setBias                 (const float bias);
+
 protected:
     float                       m_Shadows;
 
@@ -43,16 +47,8 @@ protected:
 
     Vector4                     m_Color;
 
-    /// Number of levels of detail shadows. 0 - if shadows are disabled.
-    uint8_t                     m_LODCount;
-
-    /// Light source are using the Cascaded Shadow Maps.
-    bool                        m_CSM;
-    /// Light source matrix array.
     Matrix4                    *m_pMatrix;
     Vector4                    *m_pTiles;
-    /// Distance of cutting for each level of LOD.
-    Vector4                     m_Distance;
 
     Vector4                     m_NormalizedDistance;
 

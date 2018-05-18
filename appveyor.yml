@@ -1,5 +1,5 @@
 clone_depth: 200
-version: '2.0.{build}'
+version: '2018.2.{build}'
 
 environment:
   matrix:

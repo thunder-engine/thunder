@@ -18,6 +18,7 @@ ADeferredShading::ADeferredShading(Engine *engine) :
         APipeline(engine) {
 
     m_HDR       = false;
+    m_pSprite   = nullptr;
 
     Material *mtl   = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {

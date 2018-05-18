@@ -4,7 +4,8 @@ dist: trusty
 
 env:
   global:
-    - VERSION="2.0.${TRAVIS_BUILD_NUMBER}"
+    - VERSION="2018.2"
+    - BUILD="${VERSION}.${TRAVIS_BUILD_NUMBER}"
     - secure: "BU6qOLe+/3SunZygJZO98o/SgUn4EgRHPu95hbXtGwJeAjJX57BtivSOVjdIX+EHEuAybgtbY6ckVHfx0n8zDNTHfyotLbyWK8XKW91AVk882/rLNMDLKIJ1o396dWLZ0nIlE4uAn8M8YNHBChnkkeIKTxH0+OwS2jRpxNTD3Z5KPS8AKuqzscwkm9FA/XxjR8XQLXcnCsiCkhf0/RA9tmve01qRZX5PkHpHXJk69ZGhbqEhphRTkSbtvrTlOVrwAQnsqMvGyzl2efp47VPwEdk4feNnoGbhi9npGRTKA2l79Y+RJZAMz+SGmxgrSNOxJOTIBiPNeTd9iOuturNpwnBV04Gx4NK6DA1rrXtu1GhKWjiyTDOz9LVo2060F1QhexfKKlXeL9JwQNPd1mrqVP9cvUbNcexJQ2bQVfb6/6iZgDXslAKe1UYdjCPLUg5R0Ls4God8YESr9ZMo3AdK1D+xh5Odi6Eff4BJ/jvmf219zQg+vpZRd9EDQJJkZ7B7kCPPOUBS+l5PZ8dfzf/0rsGCLkNq6Cz8uEu6iX72Ua4sP9P7Clt6X8ypEnZp7t6zhpsIcE/yp2lvJhvEfBWdUrR7aUC8EB0d7TOl3uMmSoFo890wiUQeKJUqqE92PcBxKkmqpHGvR6Nw+fg6mvCcArwA1UKgKkBi08Og4u4ZOjQ="
 
 before_install:
@@ -43,7 +44,7 @@ matrix:
         - qbs config defaultProfile qt-5-10-1
         - qbs config --list
         - qbs install --all-products config:release
-        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/2.0/linux
+        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/${VERSION}/linux
       
     - os: osx
       osx_image: xcode9.3
@@ -56,17 +57,17 @@ matrix:
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:qt-brew
-        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/2.0/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/2.0/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/2.0/macos
+        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
+        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
         - qbs resolve config:release profile:xcode-iphoneos-arm64
         - qbs install --all-products config:release profile:xcode-iphoneos-arm64
-        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/2.0/ios
+        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
         - qbs resolve config:release profile:xcode-appletvos-arm64
         - qbs install --all-products config:release profile:xcode-appletvos-arm64
-        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/2.0/tvos
+        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
       after_success:
         - ls
-        - curl -v --ftp-create-dirs -T ThunderEngine-macosx-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${VERSION}-macos-x86_64.tar.gz
-        - curl -v --ftp-create-dirs -T ThunderEngine-ios-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${VERSION}-ios-arm64.tar.gz
-        - curl -v --ftp-create-dirs -T ThunderEngine-tvos-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${VERSION}-tvos-arm64.tar.gz
+        - curl -v --ftp-create-dirs -T ThunderEngine-macosx-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-macos-x86_64.tar.gz
+        - curl -v --ftp-create-dirs -T ThunderEngine-ios-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-ios-arm64.tar.gz
+        - curl -v --ftp-create-dirs -T ThunderEngine-tvos-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-tvos-arm64.tar.gz
     

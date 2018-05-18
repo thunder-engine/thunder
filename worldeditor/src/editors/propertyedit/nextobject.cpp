@@ -243,7 +243,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
         }
     }
     for(Object *it : object->getChildren()) {
-        if(dynamic_cast<Component *>(it) != nullptr) {
+        if(dynamic_cast<Component *>(it)) {
             buildObject(it, (path.isEmpty() ? "" : path + "/") + QString::fromStdString(it->typeName()));
         }
     }

@@ -23,6 +23,8 @@
 
 #include <log.h>
 
+#define SM_RESOLUTION 2048
+
 APipeline::APipeline(Engine *engine) :
         m_pEngine(engine),
         m_pScene(nullptr),
@@ -61,7 +63,7 @@ APipeline::APipeline(Engine *engine) :
                          GL_DEPTH_COMPONENT24_OES,
 #endif
                          GL_DEPTH_COMPONENT, GL_FLOAT);
-    m_ShadowMap.resize  (2048, 2048);
+    m_ShadowMap.resize  (SM_RESOLUTION, SM_RESOLUTION);
 
     m_Buffer->setGlobalTexture("depthMap",    &m_Depth);
     m_Buffer->setGlobalTexture("shadowMap",   &m_ShadowMap);
@@ -106,8 +108,9 @@ void APipeline::cameraReset() {
         camera->setRatio(m_Screen.x / m_Screen.y);
         m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().position(), camera->nearPlane()));
         m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
-        m_Buffer->setGlobalValue("camera.screen", Vector4(1.0 / m_Screen.x, 1.0 / m_Screen.y, m_Screen.x, m_Screen.y));
+        m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
         m_Buffer->setGlobalValue("camera.mvpi", (p * mv).inverse());
+        m_Buffer->setGlobalValue("light.map", Vector4(1.0f / SM_RESOLUTION, 1.0f / SM_RESOLUTION, SM_RESOLUTION, SM_RESOLUTION));
         m_Buffer->setViewProjection(mv, p);
     }
 }

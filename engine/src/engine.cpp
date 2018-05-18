@@ -1,11 +1,5 @@
 #include "engine.h"
 
-#if __APPLE__
-    #include <TargetConditionals.h>
-#elif __ANDROID__
-    #include <android/api-level.h>
-#endif
-
 #include <string>
 #include <sstream>
 

@@ -13,12 +13,10 @@ DirectLight::DirectLight() {
     m_Bias          = 0.001f;
     m_Color         = Vector4(1.0f);
 
-    m_CSM           = true;
     m_pPlane        = Engine::loadResource<Mesh>(".embedded/plane.fbx");
 
-    m_LODCount      = (m_CSM) ? MAX_LODS : 1;
-    m_pMatrix       = new Matrix4[m_LODCount];
-    m_pTiles        = new Vector4[m_LODCount];
+    m_pMatrix       = new Matrix4[MAX_LODS];
+    m_pTiles        = new Vector4[MAX_LODS];
 
     m_pMaterial     = Engine::loadResource<Material>(".embedded/VSM.mtl");
     m_pMaterialInstance = m_pMaterial->createInstance();
@@ -30,8 +28,8 @@ DirectLight::DirectLight() {
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
     m_pMaterialInstance->setVector4("light.lod",        &m_NormalizedDistance);
 
-    m_pMaterialInstance->setMatrix4("light.matrix",     m_pMatrix, m_LODCount);
-    m_pMaterialInstance->setVector4("light.tiles",      m_pTiles,  m_LODCount);
+    m_pMaterialInstance->setMatrix4("light.matrix",     m_pMatrix, MAX_LODS);
+    m_pMaterialInstance->setVector4("light.tiles",      m_pTiles,  MAX_LODS);
 }
 
 DirectLight::~DirectLight() {
@@ -67,4 +65,12 @@ Vector4 DirectLight::color() const {
 }
 void DirectLight::setColor(const Vector4 &color) {
     m_Color = color;
+}
+
+float DirectLight::bias() const {
+    return m_Bias;
+}
+
+void DirectLight::setBias(const float bias) {
+    m_Bias = bias;
 }
