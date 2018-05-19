@@ -172,6 +172,8 @@ signals:
 
     void                objectsSelected             (Object::ObjectList objects);
 
+    void                loadMap                     (const QString &map);
+
 protected:
     void                drawHelpers                 (Object &object);
 
@@ -209,6 +211,8 @@ protected:
     Object             *m_pMap;
 
     Object::ObjectList  m_DragObjects;
+
+    QString             m_DragMap;
 
     Viewport           *m_pView;
 

@@ -71,12 +71,12 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     m_Context->makeCurrent(m_Surface);
 
     Camera *camera  = m_pController->activeCamera();
-    camera->setType(Camera::PERSPECTIVE);
+    camera->setOrthographic(false);
     Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
     float fov       = camera->fov();
     switch(type) {
         case IConverter::ContentTexture: {
-            camera->setType(Camera::ORTHOGRAPHIC);
+            camera->setOrthographic(true);
             m_pCamera->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
             SpriteMesh *sprite  = object->addComponent<SpriteMesh>();

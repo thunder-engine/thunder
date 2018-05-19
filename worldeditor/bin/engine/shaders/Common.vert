@@ -20,6 +20,7 @@ uniform struct Light {
     vec4    tiles[6];
     vec4    color;
     vec4    lod;
+    vec4    map;
     float   bias;
     float   ambient;
     float   brightness;
@@ -69,14 +70,14 @@ float getShadowSample(sampler2D map, vec2 coord, float t) {
 }
 
 float getShadowSampleLinear(sampler2D map, vec2 coord, float t) {
-    vec2 pos    = coord / camera.screen.xy + vec2(0.5);
+    vec2 pos    = coord / light.map.xy + vec2(0.5);
     vec2 frac   = fract(pos);
-    vec2 start  = (pos - frac) * camera.screen.xy;
+    vec2 start  = (pos - frac) * light.map.xy;
 
     float bl    = getShadowSample(map, start, t);
-    float br    = getShadowSample(map, start + vec2(camera.screen.x, 0.0), t);
-    float tl    = getShadowSample(map, start + vec2(0.0, camera.screen.y), t);
-    float tr    = getShadowSample(map, start + camera.screen.xy, t);
+    float br    = getShadowSample(map, start + vec2(light.map.x, 0.0), t);
+    float tl    = getShadowSample(map, start + vec2(0.0, light.map.y), t);
+    float tr    = getShadowSample(map, start + light.map.xy, t);
 
     float a     = mix(bl, tl, frac.y);
     float b     = mix(br, tr, frac.y);
@@ -91,7 +92,7 @@ float getShadowSamplePCF(sampler2D map, vec2 coord, float t) {
     float result    = 0.0;
     for(float y = -SAMPLES_START; y <= SAMPLES_START; y += 1.0) {
         for(float x = -SAMPLES_START; x <= SAMPLES_START; x += 1.0) {
-            result += getShadowSampleLinear(map, coord + vec2(x, y) * camera.screen.xy, t);
+            result += getShadowSampleLinear(map, coord + vec2(x, y) * light.map.xy, t);
         }
     }
     return result / (NUM_SAMPLES * NUM_SAMPLES);

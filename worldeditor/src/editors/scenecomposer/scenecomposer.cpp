@@ -24,6 +24,7 @@
 #include <components/actor.h>
 #include <components/spritemesh.h>
 #include <components/staticmesh.h>
+#include <components/camera.h>
 
 #include <analytics/profiler.h>
 
@@ -62,6 +63,8 @@
 
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Actor *)
+
+const QString gRecent("Recent");
 
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
@@ -161,6 +164,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->hierarchy, SLOT(onSelected(Object::ObjectList)));
     connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onModified()));
     connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onModified()));
+    connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(on_action_Open_triggered(QString)));
     connect(ui->hierarchy, SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(parented(Object::ObjectList, Object::ObjectList)), ctl, SLOT(onParentActor(Object::ObjectList,Object::ObjectList)));
@@ -224,6 +228,30 @@ void SceneComposer::onGLInit() {
 
     ComponentModel::instance()->init(m_pEngine);
     ContentList::instance()->init(m_pEngine);
+
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    QVariant map    = settings.value(ProjectManager::instance()->projectId());
+    if(map.isValid()) {
+        VariantList list    =  Json::load(map.toString().toStdString()).toList();
+        auto it = list.begin();
+        on_action_Open_triggered(it->toString().c_str());
+        it++;
+        Camera *camera  = ui->viewport->controller()->activeCamera();
+        if(camera) {
+            Actor &actor    = camera->actor();
+            actor.setPosition(it->toVector3());
+            it++;
+            actor.setEuler(it->toVector3());
+            it++;
+            camera->setOrthographic(it->toBool());
+            it++;
+            camera->setFocal(it->toFloat());
+            it++;
+            camera->setOrthoWidth(it->toFloat());
+            it++;
+        }
+
+    }
 }
 
 void SceneComposer::updateTitle() {
@@ -239,6 +267,25 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         event->ignore();
         return;
     }
+
+    QString str = ProjectManager::instance()->projectId();
+    if(!str.isEmpty() && !mPath.isEmpty()) {
+        VariantList params;
+        params.push_back(qPrintable(mPath));
+        Camera *camera  = ui->viewport->controller()->activeCamera();
+        if(camera) {
+            Actor &actor    = camera->actor();
+            params.push_back(actor.position());
+            params.push_back(actor.euler());
+            params.push_back(camera->orthographic());
+            params.push_back(camera->focal());
+            params.push_back(camera->orthoWidth());
+        }
+
+        QSettings settings(COMPANY_NAME, EDITOR_NAME);
+        settings.setValue(str, QString::fromStdString(Json::save(params)));
+    }
+
     QMainWindow::closeEvent(event);
 }
 
@@ -281,14 +328,18 @@ void SceneComposer::on_action_New_triggered() {
     mPath.clear();
 }
 
-void SceneComposer::on_action_Open_triggered() {
+void SceneComposer::on_action_Open_triggered(const QString &arg) {
     checkSave();
+    if(arg.isEmpty()) {
+        QString dir = ProjectManager::instance()->contentPath();
+        mPath       = QFileDialog::getOpenFileName(this,
+                                                   tr("Open Map"),
+                                                   dir + "/maps",
+                                                   tr("Maps (*.map)") );
+    } else {
+        mPath   = arg;
+    }
 
-    QString dir = ProjectManager::instance()->contentPath();
-    mPath       = QFileDialog::getOpenFileName(this,
-                                               tr("Open Map"),
-                                               dir + "/maps",
-                                               tr("Maps (*.map)") );
     if( !mPath.isEmpty() ) {
         QFile loadFile(mPath);
         if (!loadFile.open(QIODevice::ReadOnly)) {

@@ -1,5 +1,6 @@
 #include "projectmanager.h"
 
+#include <QUuid>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -11,6 +12,7 @@
 
 const QString gCompany("Company");
 const QString gQBS("QBS");
+const QString gProject("ProjectId");
 
 ProjectManager::ProjectManager() {
     QDir dir(QCoreApplication::applicationDirPath());
@@ -73,7 +75,7 @@ void ProjectManager::loadSettings() {
         if(!doc.isNull()) {
             const QMetaObject *meta = metaObject();
             QJsonObject object      = doc.object();
-            foreach(const QString &it, doc.object().keys()) {
+            foreach(const QString &it, object.keys()) {
                 int index   = meta->indexOfProperty(qPrintable(it));
                 if(index > -1) {
                     QMetaProperty property  = meta->property(index);
@@ -85,10 +87,17 @@ void ProjectManager::loadSettings() {
                     property.write(this, value);
                 }
             }
-
             QJsonValue value    = object.value(gQBS);
             if(!value.isUndefined()) {
                 setQbsPath(value.toString());
+            }
+
+            QJsonObject::iterator it    = object.find(gProject);
+            if(it != doc.object().end()) {
+                m_ProjectId = it.value().toString();
+            } else {
+                m_ProjectId = QUuid::createUuid().toString();
+                saveSettings();
             }
         }
     }
@@ -110,9 +119,9 @@ void ProjectManager::saveSettings() {
             } else {
                 object[name] = QJsonValue(value.toString());
             }
-
         }
     }
+    object[gProject]    = QJsonValue(m_ProjectId);
 
     QString qbs = qbsPath();
     if(m_QBSDefault != qbs) {

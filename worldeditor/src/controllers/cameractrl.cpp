@@ -19,7 +19,6 @@ CameraCtrl::CameraCtrl() :
         mCameraFree(false),
         mCameraMove(MoveTypes::MOVE_IDLE),
         mCameraSpeed(Vector3()),
-        mRotation(Vector3()),
         m_pCamera(nullptr) {
 }
 
@@ -28,9 +27,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(20.0f);
-    m_pActiveCamera->setColor(Vector4(0.1f));
-    //m_pActiveCamera->setFar(100.0f);
-    //m_pActiveCamera->setType(Camera::ORTHOGRAPHIC);
+    m_pActiveCamera->setColor(Vector4(0.3f));
 
     m_pCamera->setPosition(Vector3(0.0, 0.0, 20.0));
 }
@@ -172,9 +169,7 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             QMouseEvent *e  = static_cast<QMouseEvent *>(pe);
             QPoint d        = e->globalPos() - mSaved;
             if(!mBlockRot && e->buttons() & Qt::RightButton) {
-                mRotation.x -= (float)d.x() / 10.0;
-                mRotation.y -= (float)d.y() / 10.0;
-                cameraRotate(Vector3(CLAMP(mRotation.y, -80.0f, 80.0f), mRotation.x, 0.0));
+                cameraRotate(m_pCamera->euler() + Vector3((float)d.y() /-10.0f, (float)d.x() /-10.0f, 0.0f));
 
                 QCursor::setPos(mSaved);
             }
@@ -188,23 +183,24 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 
 void CameraCtrl::cameraZoom(float delta) {
     if(m_pActiveCamera && m_pCamera) {
-        if(m_pActiveCamera->type() == Camera::ORTHOGRAPHIC) {
+        if(m_pActiveCamera->orthographic()) {
             double width = m_pActiveCamera->orthoWidth() - delta / 10.0f;
             if(width > 0.0) {
                 m_pActiveCamera->setOrthoWidth(width);
             }
         } else {
             m_pActiveCamera->setFocal(m_pActiveCamera->focal() - delta);
-            Vector3 pos   = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, 1.0) * delta;
-            m_pCamera->setPosition(pos);
+            m_pCamera->setPosition(m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, 1.0) * delta);
         }
     }
 }
 
-void CameraCtrl::cameraRotate(const Quaternion &q) {
+void CameraCtrl::cameraRotate(const Vector3 &euler) {
+    Quaternion q(euler);
+
     Vector3 target = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
         m_pCamera->setPosition(target + q * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }
-    m_pCamera->setRotation(q);
+    m_pCamera->setEuler(euler);
 }

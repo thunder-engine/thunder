@@ -88,7 +88,7 @@ private slots:
     void                    parseLogs                                   (const QString &log);
 
     void                    on_action_New_triggered                     ();
-    void                    on_action_Open_triggered                    ();
+    void                    on_action_Open_triggered                    (const QString &arg = QString());
     void                    on_actionSave_triggered                     ();
     void                    on_actionSave_As_triggered                  ();
 
@@ -111,7 +111,7 @@ private slots:
     void                    on_actionBuild_Project_triggered            ();
 
     void                    on_actionOptions_triggered                  ();
-    void on_actionAbout_triggered();
+    void                    on_actionAbout_triggered                    ();
 };
 
 #endif // WORLDBUILDER_H

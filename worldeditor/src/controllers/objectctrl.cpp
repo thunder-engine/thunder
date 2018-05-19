@@ -355,14 +355,21 @@ void ObjectCtrl::onComponentSelected(const QString &path) {
 }
 
 void ObjectCtrl::onDrop() {
-    UndoManager::instance()->push( new UndoManager::CreateObjects(m_DragObjects, this) );
-    clear();
-    emit mapUpdated();
-    onSelectActor(m_DragObjects, false);
+    if(!m_DragObjects.empty()) {
+        UndoManager::instance()->push( new UndoManager::CreateObjects(m_DragObjects, this) );
+        clear();
+        emit mapUpdated();
+        onSelectActor(m_DragObjects, false);
+    }
+
+    if(!m_DragMap.isEmpty()) {
+        emit loadMap(ProjectManager::instance()->contentPath() + "/" + m_DragMap);
+    }
 }
 
 void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     m_DragObjects.clear();
+    m_DragMap.clear();
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
@@ -392,6 +399,9 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
             if( !str.isEmpty() ) {
                 QFileInfo info(str);
                 switch(mgr->resourceType(info)) {
+                    case IConverter::ContentMap: {
+                        m_DragMap   = str;
+                    } break;
                     case IConverter::ContentMesh: {
                         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         StaticMesh *m   = actor->addComponent<StaticMesh>();
@@ -424,7 +434,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         a->setPosition(Vector3()); // \todo set drag position
         a->setParent(m_pMap);
     }
-    if(!m_DragObjects.empty()) {
+    if(!m_DragObjects.empty() || !m_DragMap.isEmpty()) {
         return;
     }
 

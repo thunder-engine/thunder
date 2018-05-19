@@ -122,7 +122,7 @@ void TextureEdit::onGLInit() {
     Scene *scene    = glWidget->scene();
     Camera *camera  = glWidget->controller()->activeCamera();
     if(camera) {
-        camera->setType(Camera::ORTHOGRAPHIC);
+        camera->setOrthographic(true);
         camera->actor().setPosition(Vector3(0.0, 0.0, 1.0));
         camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));
     }

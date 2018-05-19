@@ -14,16 +14,11 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
         A_PROPERTY(float, Far,  Camera::farPlane, Camera::setFar),
         A_PROPERTY(float, Size, Camera::orthoWidth, Camera::setOrthoWidth),
         A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
-        A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor)
+        A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor),
+        A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
     );
 
 public:
-    /*! \enum Types */
-    enum Types {
-        PERSPECTIVE     = 1,
-        ORTHOGRAPHIC    = 2
-    };
-
     Camera                      ();
 
     void                        matrices                (Matrix4 &v, Matrix4 &p) const;
@@ -35,9 +30,6 @@ public:
 
     float                       ratio                   () const;
     void                        setRatio                (float value);
-
-    Camera::Types               type                    () const;
-    void                        setType                 (const Camera::Types type);
 
     float                       nearPlane               () const;
     void                        setNear                 (const float value);
@@ -57,20 +49,22 @@ public:
     float                       orthoWidth              () const;
     void                        setOrthoWidth           (const float value);
 
+    bool                        orthographic            () const;
+    void                        setOrthographic         (const bool value);
+
     array<Vector3, 8>           frustumCorners          (float nearPlane, float farPlane) const;
 
 protected:
-    /// Type of camera.
-    Types                       m_Type;
-    /// Field Of View angle
+    bool                        m_Ortho;
+
     float                       m_FOV;
-    /// Near plane of cut
+
     float                       m_Near;
-    /// Far plane of cut
+
     float                       m_Far;
-    /// Aspect ratio
+
     float                       m_Ratio;
-    /// Focal distance
+
     float                       m_Focal;
 
     float                       m_OrthoWidth;

@@ -39,12 +39,12 @@ public:
 
     virtual void                        resize                      (uint32_t, uint32_t) {}
 
+    void                                cameraRotate                (const Vector3 &euler);
+
 public slots:
     virtual void                        onInputEvent                (QInputEvent *);
 
 protected:
-    void                                cameraRotate                (const Quaternion  &q);
-
     void                                cameraZoom                  (float delta);
 
 protected:
@@ -55,11 +55,9 @@ protected:
     bool                                mBlockRot;
     bool                                mBlockFree;
 
-    Vector3                           mCameraSpeed;
+    Vector3                             mCameraSpeed;
 
     QPoint                              mSaved;
-
-    Vector3                           mRotation;
 
     Actor                              *m_pCamera;
 };

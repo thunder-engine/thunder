@@ -26,6 +26,8 @@ public:
     QString                     projectName                 () const { return m_ProjectName; }
     void                        setProjectName              (const QString &value) { m_ProjectName = value; }
 
+    QString                     projectId                   () const { return m_ProjectId; }
+
     QString                     projectCompany              () const { return m_CompanyName; }
     void                        setProjectCompany           (const QString &value) { m_CompanyName = value; }
 
@@ -63,6 +65,7 @@ protected:
     ProjectManager              ();
 
 private:
+    QString                     m_ProjectId;
     QString                     m_ProjectName;
     QString                     m_CompanyName;
     QString                     m_ProjectVersion;

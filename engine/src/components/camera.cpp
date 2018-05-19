@@ -9,16 +9,16 @@ Camera::Camera() {
     m_Ratio     = 1.0;
     m_Focal     = 1.0;
     m_OrthoWidth= 1.0;
-    m_Type      = PERSPECTIVE;
+    m_Ortho     = false;
     m_Color     = Vector4();
 }
 
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
-    if(m_Type == PERSPECTIVE) {
-        p   = Matrix4::perspective(m_FOV, m_Ratio, m_Near, m_Far);
-    } else {
+    if(m_Ortho) {
         float height    = m_OrthoWidth / m_Ratio;
         p   = Matrix4::ortho(-m_OrthoWidth / 2, m_OrthoWidth / 2, -height / 2, height / 2, m_Near, m_Far);
+    } else {
+        p   = Matrix4::perspective(m_FOV, m_Ratio, m_Near, m_Far);
     }
 
     Actor &a   = actor();
@@ -130,14 +130,6 @@ void Camera::setFocal(const float focal) {
     m_Focal = focal;
 }
 
-Camera::Types Camera::type() const {
-    return m_Type;
-}
-
-void Camera::setType(const Types type) {
-    m_Type   = type;
-}
-
 void Camera::setFov(const float value) {
     m_FOV   = value;
 }
@@ -155,6 +147,14 @@ float Camera::orthoWidth() const {
 }
 void Camera::setOrthoWidth(const float value) {
     m_OrthoWidth    = value;
+}
+
+bool Camera::orthographic() const {
+    return m_Ortho;
+}
+
+void Camera::setOrthographic(const bool value) {
+    m_Ortho = value;
 }
 
 array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const {
