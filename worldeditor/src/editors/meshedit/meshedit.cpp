@@ -32,7 +32,7 @@ MeshEdit::MeshEdit(Engine *engine) :
     ui->setupUi(this);
 
     glWidget    = new Viewport(this);
-    glWidget->setController(new CameraCtrl());
+    glWidget->setController(new CameraCtrl(glWidget));
     glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
     glWidget->setWindowTitle("Preview");

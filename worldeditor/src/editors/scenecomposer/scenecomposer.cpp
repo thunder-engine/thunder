@@ -107,17 +107,20 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ui->viewport->setController(ctl);
     ui->viewport->setScene(Engine::objectCreate<Scene>("Scene"));
-    ui->viewport->setWindowTitle("Viewport");
 
     ui->preview->setController(new IController());
     ui->preview->setScene(ui->viewport->scene());
     ui->preview->setWindowTitle("Preview");
 
+    ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
 
     ui->commitButton->setProperty("green", true);
     ui->componentButton->setProperty("blue", true);
+    ui->moveButton->setProperty("blue", true);
+    ui->rotateButton->setProperty("blue", true);
+    ui->scaleButton->setProperty("blue", true);
 
     ComponentBrowser *comp  = new ComponentBrowser(this);
     QMenu *menu = new QMenu(ui->componentButton);
@@ -136,12 +139,12 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->viewport, SIGNAL(inited()), this, SLOT(onGLInit()));
     startTimer(16);
 
-    ui->centralwidget->addToolWindow(ui->viewport, QToolWindowManager::EmptySpaceArea);
+    ui->centralwidget->addToolWindow(ui->viewportWidget, QToolWindowManager::EmptySpaceArea);
     ui->centralwidget->addToolWindow(ui->preview, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(ui->contentBrowser, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->viewport));
-    ui->centralwidget->addToolWindow(ui->hierarchy, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->viewport));
+    ui->centralwidget->addToolWindow(ui->contentBrowser, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->viewportWidget));
+    ui->centralwidget->addToolWindow(ui->hierarchy, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->viewportWidget));
     ui->centralwidget->addToolWindow(ui->propertyWidget, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->hierarchy));
-    ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->viewport));
+    ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->viewportWidget));
     ui->centralwidget->addToolWindow(ui->consoleOutput, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->contentBrowser));
     ui->centralwidget->addToolWindow(ui->projectWidget, QToolWindowManager::NoArea);
 
@@ -169,6 +172,12 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(parented(Object::ObjectList, Object::ObjectList)), ctl, SLOT(onParentActor(Object::ObjectList,Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
+    connect(ui->orthoButton,SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
+    connect(ui->moveButton,     SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
+    connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
+    connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
+
+    ui->scaleButton->click();
 
     connect(UndoManager::instance(), SIGNAL(updated()), this, SLOT(onUndoRedoUpdated()));
 
@@ -243,7 +252,7 @@ void SceneComposer::onGLInit() {
             it++;
             actor.setEuler(it->toVector3());
             it++;
-            camera->setOrthographic(it->toBool());
+            ui->orthoButton->setChecked(it->toBool());
             it++;
             camera->setFocal(it->toFloat());
             it++;
@@ -277,7 +286,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
             Actor &actor    = camera->actor();
             params.push_back(actor.position());
             params.push_back(actor.euler());
-            params.push_back(camera->orthographic());
+            params.push_back(ui->orthoButton->isChecked());
             params.push_back(camera->focal());
             params.push_back(camera->orthoWidth());
         }
@@ -326,6 +335,7 @@ void SceneComposer::on_action_New_triggered() {
     onUndoRedoUpdated();
 
     mPath.clear();
+    updateTitle();
 }
 
 void SceneComposer::on_action_Open_triggered(const QString &arg) {

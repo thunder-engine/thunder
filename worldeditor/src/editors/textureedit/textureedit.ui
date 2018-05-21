@@ -30,6 +30,16 @@
      </size>
     </property>
    </widget>
+   <widget class="Viewport" name="Preview" native="true">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>10</y>
+      <width>281</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -65,11 +75,18 @@
    <class>PropertyEditor</class>
    <extends>QTreeView</extends>
    <header>editors/propertyedit/propertyeditor.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QToolWindowManager</class>
    <extends>QWidget</extends>
    <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Viewport</class>
+   <extends>QWidget</extends>
+   <header>graph/viewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

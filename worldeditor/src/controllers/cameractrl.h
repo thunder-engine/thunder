@@ -7,6 +7,7 @@
 #include <controller.h>
 
 class Actor;
+class Viewport;
 
 class CameraCtrl : public QObject, public IController {
     Q_OBJECT
@@ -21,7 +22,7 @@ public:
     };
 
 public:
-    CameraCtrl                          ();
+    CameraCtrl                          (Viewport *view);
 
     void                                init                        (Scene *);
 
@@ -39,13 +40,17 @@ public:
 
     virtual void                        resize                      (uint32_t, uint32_t) {}
 
-    void                                cameraRotate                (const Vector3 &euler);
-
 public slots:
     virtual void                        onInputEvent                (QInputEvent *);
 
+    virtual void                        onOrthographic              (bool flag);
+
 protected:
     void                                cameraZoom                  (float delta);
+
+    void                                cameraRotate                (const Vector3 &delta);
+
+    void                                cameraMove                  (const Vector3 &delta);
 
 protected:
     uint8_t                             mCameraMove;
@@ -56,10 +61,13 @@ protected:
     bool                                mBlockFree;
 
     Vector3                             mCameraSpeed;
+    Quaternion                          mRotation;
 
     QPoint                              mSaved;
 
     Actor                              *m_pCamera;
+
+    Viewport                           *m_pView;
 };
 
 #endif // CAMERACTRL_H

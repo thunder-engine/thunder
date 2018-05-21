@@ -43,8 +43,7 @@ string findFreeObjectName(const string &name, Object *parent) {
 }
 
 ObjectCtrl::ObjectCtrl(Viewport *view) :
-        CameraCtrl(),
-        m_pView(view) {
+        CameraCtrl(view) {
 
     mCopy       = false;
     mDrag       = false;
@@ -64,24 +63,6 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     m_pPropertyState= nullptr;
 
     mMousePosition  = Vector2();
-
-    RadioOverlayButton *mode    = new RadioOverlayButton();
-
-    OverlayButton *m    = new OverlayButton("", QImage(":/Images/editor/Move.png"));
-    mode->addButton(m);
-    connect(m, SIGNAL(clicked()), this, SLOT(onMoveActor()));
-
-    OverlayButton *r    = new OverlayButton("", QImage(":/Images/editor/Rotate.png"));
-    mode->addButton(r);
-    connect(r, SIGNAL(clicked()), this, SLOT(onRotateActor()));
-
-    OverlayButton *s    = new OverlayButton("", QImage(":/Images/editor/Scale.png"));
-    mode->addButton(s);
-    connect(s, SIGNAL(clicked()), this, SLOT(onScaleActor()));
-
-    mode->setActive(s);
-
-    m_pView->addButton(mode);
 /*
     QActionGroup *group = new QActionGroup(this);
     QStringList list    = QStringList() << "Summary" << "World Normal" << "Diffuse" << "Light Buffer";

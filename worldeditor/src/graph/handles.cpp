@@ -198,9 +198,15 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
-    Vector3 result    = position;
+    Vector3 result  = position;
     if(s_ActiveCamera) {
-        float scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
+        float scale = 1.0f;
+        if(!s_ActiveCamera->orthographic()) {
+            scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
+        } else {
+            scale  *= s_ActiveCamera->orthoWidth() * 0.04f;
+        }
+
         Matrix4 model(position, Quaternion(), scale);
 
         Matrix4 x   = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
@@ -305,7 +311,13 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 
 Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
     if(s_ActiveCamera) {
-        float scale     = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f);
+        float scale     = 1.0f;
+        if(!s_ActiveCamera->orthographic()) {
+            scale   = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f);
+        } else {
+            scale  *= s_ActiveCamera->orthoWidth() * 0.04f;
+        }
+
         Vector3 normal  = position - s_ActiveCamera->actor().position();
         normal.normalize();
 
@@ -365,7 +377,12 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
     if(s_ActiveCamera) {
         Vector3 normal  = position - s_ActiveCamera->actor().position();
-        float size      = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2;
+        float size      = 1.0f;
+        if(!s_ActiveCamera->orthographic()) {
+            size    = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f;
+        } else {
+            size   *= s_ActiveCamera->orthoWidth() * 0.04f;
+        }
 
         Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
                       ((normal.y < 0) ? 1 : -1) * size,

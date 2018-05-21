@@ -37,7 +37,7 @@ MaterialEdit::MaterialEdit(Engine *engine) :
     ui->setupUi(this);
 
     glWidget    = new Viewport(this);
-    CameraCtrl *ctrl    = new CameraCtrl();
+    CameraCtrl *ctrl    = new CameraCtrl(glWidget);
     ctrl->blockFree(true);
     ctrl->blockMovement(true);
     glWidget->setController(ctrl);

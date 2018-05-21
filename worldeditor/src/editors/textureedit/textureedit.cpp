@@ -15,6 +15,8 @@
 
 #include "resources/texture.h"
 
+#define SCALE 100.0f
+
 TextureEdit::TextureEdit(Engine *engine) :
         QMainWindow(nullptr),
         IAssetEditor(engine),
@@ -22,19 +24,20 @@ TextureEdit::TextureEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    glWidget    = new Viewport(this);
-    glWidget->setController(new CameraCtrl());
-    glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
-    glWidget->setObjectName("Preview");
-    glWidget->setWindowTitle("Preview");
+    CameraCtrl *ctrl    = new CameraCtrl(ui->Preview);
+    ctrl->blockRotations(true);
+
+    ui->Preview->setController(ctrl);
+    ui->Preview->setScene(Engine::objectCreate<Scene>("Scene"));
+    ui->Preview->setWindowTitle("Preview");
 
     ui->treeView->setWindowTitle("Properties");
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->Preview, SIGNAL(inited()), this, SLOT(onGLInit()));
     startTimer(16);
 
-    ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(glWidget));
+    ui->centralwidget->addToolWindow(ui->Preview, QToolWindowManager::EmptySpaceArea);
+    ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->Preview));
 
     foreach(QWidget *it, ui->centralwidget->toolWindows()) {
         QAction *action = ui->menuWindow->addAction(it->windowTitle());
@@ -56,8 +59,8 @@ TextureEdit::~TextureEdit() {
     delete ui;
 }
 
-void TextureEdit::timerEvent(QTimerEvent *event) {
-    glWidget->update();
+void TextureEdit::timerEvent(QTimerEvent *) {
+    ui->Preview->update();
 }
 
 void TextureEdit::readSettings() {
@@ -110,6 +113,13 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
         connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
         ui->treeView->setObject(m_pSettings);
     }
+
+    Camera *camera  = ui->Preview->controller()->activeCamera();
+    if(camera) {
+        camera->actor().setPosition(Vector3(0.0f, 0.0f, 1.0f));
+        camera->setOrthoWidth(SCALE);
+        camera->setFocal(SCALE);
+    }
 }
 
 void TextureEdit::onUpdateTemplate(bool update) {
@@ -119,15 +129,14 @@ void TextureEdit::onUpdateTemplate(bool update) {
 }
 
 void TextureEdit::onGLInit() {
-    Scene *scene    = glWidget->scene();
-    Camera *camera  = glWidget->controller()->activeCamera();
+    Scene *scene    = ui->Preview->scene();
+    Camera *camera  = ui->Preview->controller()->activeCamera();
     if(camera) {
         camera->setOrthographic(true);
-        camera->actor().setPosition(Vector3(0.0, 0.0, 1.0));
-        camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));
     }
 
     Actor *object   = Engine::objectCreate<Actor>("", scene);
+    object->setScale(Vector3(SCALE));
     m_pSprite       = object->addComponent<SpriteMesh>();
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
