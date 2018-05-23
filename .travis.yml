@@ -74,6 +74,12 @@ matrix:
         
     - lanuage: android
       os: linux
+      jdk: oraclejdk8
+      android:
+        components:
+          - tools
+          - android-25
+          - build-tools-25.0.3
       before_install:
         - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
         - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
