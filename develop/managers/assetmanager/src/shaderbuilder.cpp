@@ -52,7 +52,7 @@ ShaderBuilder::ShaderBuilder() :
         m_DepthTest(true),
         m_BlendMode(Opaque),
         m_LightModel(Lit),
-        m_MaterialType(Material::Surface),
+        m_MaterialType(Surface),
         m_Tangent(false) {
 
     qRegisterMetaType<ConstFloat*>("ConstFloat");

@@ -11,8 +11,6 @@ class ProjectManager;
 class CodeManager : public QObject, public ASingleton<CodeManager> {
     Q_OBJECT
 public:
-    CodeManager                     ();
-
     void                            init                        ();
 
     void                            setOutdated                 ();
@@ -30,7 +28,12 @@ protected slots:
     void                            onBuildFinished             (int exitCode);
 
 protected:
-    CodeManager                     () {}
+    CodeManager                     () :
+            m_Outdated(false),
+            m_pBuilder(nullptr),
+            m_pProject(nullptr) {
+
+    }
     ~CodeManager                    () {}
 
     QStringList                     rescanSources               (const QString &path);

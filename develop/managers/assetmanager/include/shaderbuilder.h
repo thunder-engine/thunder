@@ -167,7 +167,7 @@ public:
 
     void                        addUniform                  (const QString &name, uint8_t type);
 
-    void                        reportError                 (QObject *owner, const QString &message) { }
+    void                        reportError                 (QObject *, const QString &) { }
 
 private:
     bool                        build                       (QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
