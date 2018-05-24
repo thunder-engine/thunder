@@ -11,6 +11,8 @@
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/staticmesh.h>
+#include <components/spritemesh.h>
+#include <components/textmesh.h>
 
 #include "graph/viewport.h"
 
@@ -30,8 +32,8 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera   = Engine::objectCreate<Actor>("Camera", scene);
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
-    m_pActiveCamera->setFocal(20.0f);
-    m_pActiveCamera->setOrthoWidth(20.0f);
+    m_pActiveCamera->setFocal(10.0f);
+    m_pActiveCamera->setOrthoWidth(10.0f);
     m_pActiveCamera->setColor(Vector4(0.3f));
 
     m_pCamera->setPosition(Vector3(0.0, 0.0, 20.0));
@@ -94,13 +96,29 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         Vector3 pos;
         float radius    = 0;
         for(auto it : actor->getChildren()) {
+            Mesh *mesh  = nullptr;
+            /// \todo Bad switch case
             StaticMesh *staticMesh  = dynamic_cast<StaticMesh *>(it);
-            if(staticMesh && staticMesh->mesh()) {
+            if(staticMesh) {
+                mesh    = staticMesh->mesh();
+            } else {
+                SpriteMesh *spriteMesh  = dynamic_cast<SpriteMesh *>(it);
+                if(spriteMesh) {
+                    mesh    = spriteMesh->mesh();
+                } else {
+                    TextMesh *textMesh  = dynamic_cast<TextMesh *>(it);
+                    if(textMesh) {
+                        mesh    = textMesh->mesh();
+                    }
+                }
+            }
+
+            if(mesh) {
                 uint32_t i  = 0;
-                for(uint32_t s = 0; s < staticMesh->mesh()->surfacesCount(); s++) {
-                    AABBox aabb = staticMesh->mesh()->bound(s);
-                    pos    += aabb.center;
-                    radius += aabb.size.length();
+                for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
+                    AABBox aabb = mesh->bound(s);
+                    pos    += aabb.center * actor->worldScale();
+                    radius += (aabb.size * actor->worldScale()).length();
                     Vector3 min, max;
                     aabb.box(min, max);
                     if(i == 0) {
@@ -109,16 +127,17 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
                     bottom = MIN(bottom, min.y);
                     i++;
                 }
-                uint32_t size   = staticMesh->mesh()->surfacesCount();
+                uint32_t size   = mesh->surfacesCount();
                 pos    /= size;
                 radius /= size;
                 radius /= sinf(m_pActiveCamera->fov() * DEG2RAD);
             }
+
         }
 
         m_pActiveCamera->setFocal(radius);
         m_pActiveCamera->setOrthoWidth(radius);
-        m_pCamera->setPosition(actor->position() + pos + m_pCamera->rotation() * Vector3(0.0, 0.0, radius));
+        m_pCamera->setPosition(actor->worldPosition() + pos + m_pCamera->rotation() * Vector3(0.0, 0.0, radius));
     }
 }
 
@@ -230,8 +249,7 @@ void CameraCtrl::cameraZoom(float delta) {
         if(focal > 0.0f) {
             m_pActiveCamera->setFocal(focal);
             m_pActiveCamera->setOrthoWidth(focal);
-        }
-        if(!m_pActiveCamera->orthographic()) {
+
             m_pCamera->setPosition(m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, delta));
         }
     }

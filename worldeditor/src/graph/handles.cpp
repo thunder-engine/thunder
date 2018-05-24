@@ -22,7 +22,7 @@ Vector4 Handles::s_zColor   = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Color    = Handles::s_Normal;
 Vector4 Handles::s_Second   = Handles::s_Normal;
 
-Vector3 Handles::m_sMouse   = Vector3();
+Vector2 Handles::m_sMouse   = Vector2();
 
 const Vector4 grey(0.3, 0.3, 0.3, 0.6);
 
@@ -202,10 +202,11 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
     if(s_ActiveCamera) {
         float scale = 1.0f;
         if(!s_ActiveCamera->orthographic()) {
-            scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.2f;
+            scale   = (position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() * DEG2RAD) * 0.295f; /// \todo Magic
         } else {
             scale  *= s_ActiveCamera->orthoWidth() * 0.04f;
         }
+
 
         Matrix4 model(position, Quaternion(), scale);
 
@@ -315,7 +316,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         if(!s_ActiveCamera->orthographic()) {
             scale   = ((position - s_ActiveCamera->actor().position()).length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f);
         } else {
-            scale  *= s_ActiveCamera->orthoWidth() * 0.04f;
+            scale  *= s_ActiveCamera->orthoWidth() * 0.0475f; /// \todo Magic
         }
 
         Vector3 normal  = position - s_ActiveCamera->actor().position();
@@ -371,7 +372,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         }
         s_Buffer->setColor(s_Normal);
     }
-    return m_sMouse * 100;
+    return Vector3(m_sMouse, 1.0) * 100;
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
@@ -381,7 +382,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         if(!s_ActiveCamera->orthographic()) {
             size    = normal.length() * cos(s_ActiveCamera->fov() / 2 * DEG2RAD) * 0.2f;
         } else {
-            size   *= s_ActiveCamera->orthoWidth() * 0.04f;
+            size   *= s_ActiveCamera->orthoWidth() * 0.0475f; /// \todo Magic
         }
 
         Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
@@ -492,7 +493,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         s_Color = s_Normal;
     }
 
-    return m_sMouse * 100;
+    return Vector3(m_sMouse, 1.0) * 100;
 }
 
 

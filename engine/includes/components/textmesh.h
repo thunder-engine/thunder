@@ -44,6 +44,8 @@ public:
 
     VariantMap                  saveUserData        () const;
 
+    Mesh                       *mesh                () const;
+
 protected:
     void                        composeMesh         ();
 

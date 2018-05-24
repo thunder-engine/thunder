@@ -212,7 +212,7 @@ SceneComposer::~SceneComposer() {
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
     ui->viewport->update();
-    ui->preview->update();
+    //ui->preview->update();
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {

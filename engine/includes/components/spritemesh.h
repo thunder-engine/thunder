@@ -37,6 +37,8 @@ public:
 
     VariantMap                  saveUserData        () const;
 
+    Mesh                       *mesh                () const;
+
 protected:
     Vector2                     m_Center;
 
@@ -44,7 +46,7 @@ protected:
 
     Texture                    *m_Texture;
 
-    Mesh                       *m_pPlane;
+    Mesh                       *m_pMesh;
 
 };
 

@@ -18,6 +18,13 @@ const QString gIncludes("${Includes}");
 
 #include "qbsbuilder.h"
 
+CodeManager::CodeManager() :
+        m_Outdated(false),
+        m_pBuilder(nullptr),
+        m_pProject(nullptr) {
+
+}
+
 void CodeManager::init() {
     m_Suffixes << "cpp" << "h";
 

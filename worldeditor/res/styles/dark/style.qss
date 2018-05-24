@@ -65,10 +65,10 @@ QAbstractButton[blue="true"]:hover {
     background: #0288d1
 }
 QAbstractButton[blue="true"]:checked {
-    background: #2e7d32
+    background: #c62828
 }
 QAbstractButton[blue="true"]:checked:hover {
-    background: #388e3c
+    background: #d32f2f
 }
 
 QToolButton::menu-indicator {

@@ -134,7 +134,7 @@ public:
         QSize result    = QStyledItemDelegate::sizeHint(option, index);
         if(origin.isValid()) {
             Property *p     = static_cast<Property *>(origin.internalPointer());
-            return p->sizeHint(result);
+            result  = p->sizeHint(result);
         }
         return result;
     }

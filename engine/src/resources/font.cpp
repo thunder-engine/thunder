@@ -16,7 +16,8 @@ static FT_Library library = nullptr;
 
 Font::Font() :
         Atlas(),
-        m_pFace(nullptr) {
+        m_pFace(nullptr),
+        m_Size(12) {
 
     clear();
 

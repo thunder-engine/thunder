@@ -35,6 +35,10 @@ QVariant StringProperty::editorData(QWidget *editor) {
     return Property::editorData(editor);
 }
 
+QSize StringProperty::sizeHint(const QSize& size) const {
+    return QSize(size.width(), 24);
+}
+
 void StringProperty::onDataChanged(const QString &data) {
     setValue(QVariant(data));
 }

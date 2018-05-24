@@ -63,30 +63,12 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     m_pPropertyState= nullptr;
 
     mMousePosition  = Vector2();
-/*
-    QActionGroup *group = new QActionGroup(this);
-    QStringList list    = QStringList() << "Summary" << "World Normal" << "Diffuse" << "Light Buffer";
-
-    QAction *action;
-    int i   = 0;
-    foreach (const QString &name, list) {
-        action  = new QAction(name, NULL);
-        action->setData(i);
-        action->setCheckable(true);
-        action->setActionGroup(group);
-
-        m_RenderModeMenu.addAction(action);
-        i++;
-    }
-    //connect(&m_RenderModeMenu, SIGNAL(triggered(QAction*)), this, SLOT(onBufferVisualization(QAction*)));
-    //m_RenderModeMenu.exec(mapToGlobal(m_CurrentButton->rect.bottomLeft()));
-*/
 }
 
 void ObjectCtrl::drawHandles() {
     CameraCtrl::drawHandles();
 
-    Handles::m_sMouse   = Vector3(mMousePosition.x / m_Screen.x, mMousePosition.y / m_Screen.y, 1.0);
+    Handles::m_sMouse   = Vector2(mMousePosition.x / m_Screen.x, mMousePosition.y / m_Screen.y);
 
     drawHelpers(*m_pMap);
 
@@ -161,7 +143,6 @@ void ObjectCtrl::drawHelpers(Object &object) {
                 sel.push_back(object.uuid());
                 setSelectedObjects(sel);
             }
-
         } else {
             drawHelpers(*it);
         }
@@ -399,10 +380,6 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                             sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));
                         }
                         m_DragObjects.push_back(actor);
-                    } break;
-                    case IConverter::ContentEffect: {
-                        /// \todo return effect
-                        //object   = m_pEngine->load( path.toStdString() );
                     } break;
                     default: break;
                 }

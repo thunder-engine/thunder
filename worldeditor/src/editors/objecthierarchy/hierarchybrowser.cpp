@@ -5,6 +5,7 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QAction>
 
 #include <object.h>
 #include <components/actor.h>

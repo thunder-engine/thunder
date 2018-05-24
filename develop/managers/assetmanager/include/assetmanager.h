@@ -20,7 +20,10 @@ class ProjectManager;
 class CodeManager;
 
 struct Template {
-    Template                    () {}
+    Template                    () :
+        type(IConverter::ContentInvalid) {
+
+    }
     Template                    (const QString &p, IConverter::ContentTypes t = IConverter::ContentInvalid) :
         path(p),
         type(t) {

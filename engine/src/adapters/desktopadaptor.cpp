@@ -19,7 +19,10 @@ Vector3 DesktopAdaptor::s_MousePosition  = Vector3();
 
 static Engine *g_pEngine   = nullptr;
 
-DesktopAdaptor::DesktopAdaptor(Engine *engine) {
+DesktopAdaptor::DesktopAdaptor(Engine *engine) :
+        m_pWindow(nullptr),
+        m_pMonitor(nullptr),
+        m_MouseButtons(0) {
     g_pEngine   = engine;
 }
 

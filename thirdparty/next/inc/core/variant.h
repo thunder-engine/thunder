@@ -121,7 +121,7 @@ public:
     }
 
     template<typename T>
-    static Variant             fromValue                   (const T &value) {
+    static Variant             fromValue                    (const T &value) {
         Variant result;
         result.mData.type   = MetaType::type<T>();
         if(result.mData.type != MetaType::INVALID) {

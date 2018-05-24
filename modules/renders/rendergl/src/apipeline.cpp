@@ -39,7 +39,6 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new AAntiAliasingGL());
     //m_PostEffects.push_back(new ABloomGL());
 
-
     m_Select.create     (GL_TEXTURE_2D,
 #if !(GL_ES_VERSION_2_0)
                          GL_RGBA8,
@@ -205,5 +204,7 @@ void APipeline::analizeScene(Object &object) {
     if(result) {
         l.push_back(result);
     }
-    controller->setSelectedObjects(l);
+    if(controller) {
+        controller->setSelectedObjects(l);
+    }
 }

@@ -55,7 +55,7 @@ public:
 
     static Camera          *s_ActiveCamera;
 
-    static Vector3          m_sMouse;
+    static Vector2          m_sMouse;
 
     static Matrix4          m_Model;
 

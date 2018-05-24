@@ -108,9 +108,6 @@ protected:
     bool                mCopy;
     bool                mDrag;
 
-    bool                mMoveLeft;
-    bool                mMoveRight;
-
     /// Current mode (see AController::ModeTypes)
     uint8_t             mMode;
 

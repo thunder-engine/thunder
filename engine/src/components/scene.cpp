@@ -4,7 +4,7 @@
 #include "components/component.h"
 
 Scene::Scene() :
-    m_Ambient(0.3f) {
+    m_Ambient(0.2f) {
 
 }
 

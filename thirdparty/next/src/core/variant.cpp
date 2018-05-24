@@ -99,8 +99,7 @@ Variant::~Variant() {
 
 Variant::Variant(const Variant &value) {
     PROFILE_FUNCTION()
-    mData.type  = value.mData.type;
-    mData.so    = MetaType::create(value.mData.type, value.mData.so);
+    *this   = value;
 }
 
 Variant &Variant::operator=(const Variant &value) {
@@ -127,6 +126,7 @@ bool Variant::operator!=(const Variant &right) const {
 void Variant::clear() {
     MetaType::destroy(mData.type, mData.so);
     mData.type  = 0;
+    mData.so    = nullptr;
 }
 
 uint32_t Variant::type() const {

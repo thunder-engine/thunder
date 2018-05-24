@@ -25,6 +25,9 @@ SchemeEditor::SchemeEditor(QWidget *parent) :
 
     mBlurRadius     = 50;
 
+    x               = 0;
+    y               = 0;
+
     mFont           = QFont(gDefaultFont, gFontSize);
 
     mFontColor      = QColor(0, 0, 0);

@@ -11,6 +11,8 @@ class ProjectManager;
 class CodeManager : public QObject, public ASingleton<CodeManager> {
     Q_OBJECT
 public:
+    CodeManager                     ();
+
     void                            init                        ();
 
     void                            setOutdated                 ();

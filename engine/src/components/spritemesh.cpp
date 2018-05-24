@@ -14,7 +14,7 @@ SpriteMesh::SpriteMesh() {
     m_Material  = nullptr;
     m_Texture   = nullptr;
 
-    m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+    m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx");
 }
 
 void SpriteMesh::draw(ICommandBuffer &buffer, int8_t layer) {
@@ -26,7 +26,7 @@ void SpriteMesh::draw(ICommandBuffer &buffer, int8_t layer) {
         if(m_Material) {
             m_Material->setTexture("texture0", m_Texture);
         }
-        buffer.drawMesh(a.worldTransform(), m_pPlane, 0, layer, m_Material);
+        buffer.drawMesh(a.worldTransform(), m_pMesh, 0, layer, m_Material);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -90,4 +90,8 @@ VariantMap SpriteMesh::saveUserData() const {
         }
     }
     return result;
+}
+
+Mesh *SpriteMesh::mesh() const {
+    return m_pMesh;
 }

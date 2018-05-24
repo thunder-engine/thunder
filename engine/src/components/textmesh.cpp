@@ -13,7 +13,8 @@ TextMesh::TextMesh() :
         m_Size(16),
         m_Space(0),
         m_Line(0),
-        m_Color(1.0f) {
+        m_Color(1.0f),
+        m_pMaterial(nullptr) {
     m_pMesh = Engine::objectCreate<Mesh>();
     m_pMesh->setFlags(Mesh::ATTRIBUTE_UV0);
 
@@ -91,9 +92,21 @@ void TextMesh::composeMesh() {
                 }
             }
 
+            Vector3 bb[2];
+            for(uint32_t i = 0; i < lod.vertices.size(); i++) {
+                bb[0].x = MIN(bb[0].x, lod.vertices[i].x);
+                bb[0].y = MIN(bb[0].y, lod.vertices[i].y);
+                bb[0].z = MIN(bb[0].z, lod.vertices[i].z);
+
+                bb[1].x = MAX(bb[1].x, lod.vertices[i].x);
+                bb[1].y = MAX(bb[1].y, lod.vertices[i].y);
+                bb[1].z = MAX(bb[1].z, lod.vertices[i].z);
+            }
+
             Mesh::Surface surface;
             surface.mode    = Mesh::MODE_TRIANGLES;
             surface.lods.push_back(lod);
+            surface.aabb.setBox(bb[0], bb[1]);
             m_pMesh->addSurface(surface);
             m_pMesh->apply();
         }
@@ -161,4 +174,8 @@ VariantMap TextMesh::saveUserData() const {
         }
     }
     return result;
+}
+
+Mesh *TextMesh::mesh() const {
+    return m_pMesh;
 }

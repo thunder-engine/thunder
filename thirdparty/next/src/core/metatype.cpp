@@ -134,10 +134,10 @@ void *MetaType::construct(void *where, const void *copy) const {
 void *MetaType::create(const void *copy) const {
     PROFILE_FUNCTION()
     void *where = nullptr;
-    m_pTable->static_new(&where);
-
     if(copy) {
         m_pTable->clone(&copy, &where);
+    } else {
+        m_pTable->static_new(&where);
     }
     return where;
 }

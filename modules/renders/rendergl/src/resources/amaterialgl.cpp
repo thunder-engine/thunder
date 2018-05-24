@@ -143,6 +143,10 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer, uint16_t type) {
     uint8_t b   = blendMode();
 
+    if(!instance) {
+        return 0;
+    }
+
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) && //  || layer & ICommandBuffer::RAYCAST
        (b == Material::Additive || b == Material::Translucent)) {
         return 0;
