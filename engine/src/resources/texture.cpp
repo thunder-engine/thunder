@@ -115,7 +115,7 @@ void Texture::loadUserData(const VariantMap &data) {
 
             m_Type      = TextureType((*i).toInt());
             i++;
-            //Reserved
+            m_Compress  = CompressionType((*i).toInt());
             i++;
             m_Format    = FormatType((*i).toInt());
             i++;
@@ -159,7 +159,8 @@ void Texture::addSurface(const Surface &surface) {
 }
 
 void Texture::clear() {
-    m_Format    = LUMINANCE;
+    m_Format    = R8;
+    m_Compress  = Uncompressed;
     m_Type      = Flat;
     m_Filtering = None;
     m_Wrap      = Clamp;
@@ -179,6 +180,10 @@ void Texture::clear() {
         delete m_pRoot;
     }
     m_pRoot     = new Node;
+}
+
+void *Texture::nativeHandle() const {
+    return nullptr;
 }
 
 uint32_t Texture::width() const {
@@ -267,7 +272,7 @@ void Texture::resize(uint32_t width, uint32_t height) {
 }
 
 bool Texture::isCompressed() const {
-    return (m_Format == DXT1 || m_Format == DXT5 || m_Format == ETC2);
+    return m_Compress != Uncompressed;
 }
 
 bool Texture::isCubemap() const {
@@ -276,8 +281,8 @@ bool Texture::isCubemap() const {
 
 uint8_t Texture::components() const {
     switch(m_Format) {
-        case LUMINANCE: return 1;
-        case RGB:       return 3;
+        case R8:    return 1;
+        case RGB8:  return 3;
         default: break;
     }
     return 4;

@@ -4,7 +4,7 @@
 
 #include "agl.h"
 #include "commandbuffer.h"
-#include "apipeline.h"
+#include "pipeline.h"
 
 #include "components/scene.h"
 #include "components/actor.h"

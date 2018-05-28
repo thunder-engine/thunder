@@ -20,8 +20,8 @@ class TextureImportSettings : public BaseConverterSettings {
 
 public:
     enum FormatType {
-        Uncompressed_R8G8B8     = Texture::RGB,
-        Uncompressed_R8G8B8A8   = Texture::RGBA,
+        Uncompressed_R8G8B8     = Texture::RGB8,
+        Uncompressed_R8G8B8A8   = Texture::RGBA8,
     };
 
     enum TextureType {

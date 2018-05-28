@@ -38,6 +38,7 @@ public:
         ContentSound,
         ContentCode,
         ContentMap,
+        ContentPipeline,
         ContentLast
     };
 public:

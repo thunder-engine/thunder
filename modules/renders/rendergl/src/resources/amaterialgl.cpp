@@ -66,12 +66,12 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
 
             fragments[0]    = buildShader(Fragment, loadIncludes(gEmbedded + gLight), gEmbedded + gPost);
             /// \todo should be removed
-            setTexture("layer0",    nullptr);
-            setTexture("layer1",    nullptr);
-            setTexture("layer2",    nullptr);
-            setTexture("layer3",    nullptr);
-            setTexture("depthMap",  nullptr);
-            setTexture("shadowMap", nullptr);
+            setTexture("normalsMap",    nullptr);
+            setTexture("diffuseMap",    nullptr);
+            setTexture("paramsMap",     nullptr);
+            setTexture("emissiveMap",   nullptr);
+            setTexture("depthMap",      nullptr);
+            setTexture("shadowMap",     nullptr);
 
         } break;
         default: { // Surface type
@@ -224,21 +224,21 @@ uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, u
             glUniform1i(location, i);
         }
 
-        const ATextureGL *texture   = static_cast<const ATextureGL *>(it.second);
+        const Texture *texture  = static_cast<const ATextureGL *>(it.second);
         glActiveTexture(GL_TEXTURE0 + i);
         if(instance) {
             const Texture *t    = instance->texture(it.first.c_str());
             if(t) {
-                texture = static_cast<const ATextureGL *>(t);
+                texture = t;
             } else {
                 t = buffer.texture(it.first.c_str());
                 if(t) {
-                    texture = static_cast<const ATextureGL *>(t);
+                    texture = t;
                 }
             }
         }
         if(texture) {
-            texture->bind();
+            glBindTexture((texture->isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, (uint32_t)texture->nativeHandle());
         }
         i++;
     }
@@ -250,9 +250,9 @@ void AMaterialGL::unbind(uint8_t) {
     uint8_t t   = 0;
     for(auto it : m_Textures) {
         glActiveTexture(GL_TEXTURE0 + t);
-        const ATextureGL *texture = static_cast<const ATextureGL *>(it.second);
+        const Texture *texture    = it.second;
         if(texture) {
-            texture->unbind();
+            glBindTexture((texture->isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, 0);
         }
         t++;
     }

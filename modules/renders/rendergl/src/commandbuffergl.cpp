@@ -7,6 +7,8 @@
 #include <resources/ameshgl.h>
 #include <resources/atexturegl.h>
 
+#include "resources/arendertexturegl.h"
+
 CommandBufferGL::CommandBufferGL() {
     PROFILER_MARKER;
 
@@ -137,25 +139,37 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     }
 }
 
-void CommandBufferGL::setRenderTarget(uint8_t numberColors, const Texture *colors, const Texture *depth) {
+void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
     PROFILER_MARKER;
 
-    const ATextureGL *c = static_cast<const ATextureGL *>(colors);
-    for(int i = 0; i < numberColors; i++) {
-        m_Buffers[i]  = GL_COLOR_ATTACHMENT0 + i;
-        //glBindFramebuffer(GL_FRAMEBUFFER, c[i].buffer());
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, c[i].id(), 0 );
+    uint32_t colors[8];
+
+    uint32_t buffer = 0;
+    if(!target.empty()) {
+        for(int i = 0; i < target.size(); i++) {
+            const ARenderTextureGL *c = static_cast<const ARenderTextureGL *>(target[i]);
+            if(i == 0) {
+                buffer  = c->buffer();
+                glBindFramebuffer(GL_FRAMEBUFFER, buffer);
+            }
+            colors[i]   = GL_COLOR_ATTACHMENT0 + i;
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, static_cast<uint32_t>(c->nativeHandle()), 0 );
+        }
     }
+
     if(depth) {
-        const ATextureGL *t = static_cast<const ATextureGL *>(depth);
-        //glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, t->id(), 0 );
+        const ARenderTextureGL *t = static_cast<const ARenderTextureGL *>(depth);
+        if(!buffer) {
+            glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
+        }
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, static_cast<uint32_t>(t->nativeHandle()), 0 );
     }
-    if(numberColors > 1) {
+
 #if !(GL_ES_VERSION_2_0)
-        glDrawBuffers( numberColors, m_Buffers );
-#endif
+    if(target.size() > 1) {
+        glDrawBuffers( target.size(), colors );
     }
+#endif
 }
 
 const Texture *CommandBufferGL::texture(const char *name) const {

@@ -111,35 +111,35 @@ Variant aVariant(QVariant &v, int type) {
                 return Variant(v);
             }
             return Variant(v.value<Vector4>());
-        }
+        } break;
         case IConverter::ContentTexture: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Texture *t = Engine::loadResource<Texture>(qPrintable(p.path));
                 return Variant::fromValue(t);
             }
-        }
+        } break;
         case IConverter::ContentMaterial: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Material *m = Engine::loadResource<Material>(qPrintable(p.path));
                 return Variant::fromValue(m);
             }
-        }
+        } break;
         case IConverter::ContentMesh: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Mesh *m = Engine::loadResource<Mesh>(qPrintable(p.path));
                 return Variant::fromValue(m);
             }
-        }
+        } break;
         case IConverter::ContentFont: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
                 Font *m = Engine::loadResource<Font>(qPrintable(p.path));
                 return Variant::fromValue(m);
             }
-        }
+        } break;
         default: break;
     }
     return Variant();
