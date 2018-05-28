@@ -14,7 +14,6 @@
 class Engine;
 class BaseController;
 
-class ATextureGL;
 class ACameraGL;
 class ASpriteGL;
 
@@ -26,15 +25,17 @@ class APostProcessor;
 
 class ICommandBuffer;
 
+class RenderTexture;
+
 class APipeline {
 public:
     APipeline                   (Engine *engine);
 
     virtual ~APipeline          ();
 
-    virtual void                draw                (Scene &scene, uint32_t);
+    virtual void                draw                (Scene &scene, uint32_t resource);
 
-    virtual ATextureGL         *postProcess         (ATextureGL &source);
+    virtual RenderTexture      *postProcess         (RenderTexture &source);
 
     virtual void                resize              (uint32_t width, uint32_t height);
 
@@ -57,7 +58,11 @@ protected:
 
     void                        analizeScene        (Object &object);
 
+    void                        deferredShading     (Scene &scene, uint32_t resource);
+
 protected:
+    typedef map<string, RenderTexture *> TargetMap;
+
     ICommandBuffer             *m_Buffer;
 
     IController                *m_pController;
@@ -66,17 +71,16 @@ protected:
 
     Scene                      *m_pScene;
 
-    ATextureGL                  m_Select;
-    ATextureGL                  m_Depth;
-    ATextureGL                  m_ShadowMap;
-    /// Frame buffers
-    uint32_t                    m_SelectBuffer;
+    TargetMap                   m_Targets;
 
     Vector2                     m_Screen;
 
     Vector3                     m_World;
 
     list<APostProcessor *>      m_PostEffects;
+
+    Mesh                       *m_pPlane;
+    MaterialInstance           *m_pSprite;
 };
 
 #endif // APIPELINE

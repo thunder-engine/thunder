@@ -6,87 +6,16 @@
 
 #define DATA    "Data"
 
+ATextureGL::ATextureGL() {
 
-ATextureGL::ATextureGL() :
-        m_Buffer(0) {
-
-    destroy();
-}
-
-
-ATextureGL::~ATextureGL() {
-    destroy();
-}
-
-void ATextureGL::create(uint32_t target, uint32_t internal, uint32_t format, uint32_t bits) {
-    destroy();
-
-    m_Target    = target;
-    m_Internal  = internal;
-    m_GlFormat  = format;
-    m_Bits      = bits;
-
-    glGenTextures   ( 1, &mID );
-    glBindTexture   ( m_Target, mID );
-
-    glTexParameterf ( m_Target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-
-    glTexParameterf ( m_Target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameterf ( m_Target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    if(target == GL_TEXTURE_CUBE_MAP) {
-#if !(GL_ES_VERSION_2_0)
-        glTexParameterf ( target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-#endif
-        for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
-        }
-    } else {
-        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
-    }
-
-    glGenFramebuffers(1, &m_Buffer);
-}
-
-void ATextureGL::destroy() {
-    m_Target    = 0;
-    m_GlFormat  = 0;
-    mID         = 0;
-    m_Bits      = GL_UNSIGNED_BYTE;
-    m_Internal  = 0;
-
-    if(m_Buffer) {
-        glDeleteFramebuffers(1, &m_Buffer);
-    }
-}
-
-void ATextureGL::resize(uint32_t width, uint32_t height) {
-    m_Width     = width;
-    m_Height    = height;
-
-    glBindTexture       (m_Target, mID);
-    if(m_Target == GL_TEXTURE_CUBE_MAP) {
-        for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
-        }
-    } else {
-        glTexImage2D    ( m_Target, 0, m_Internal, m_Width, m_Height, 0, m_GlFormat, m_Bits, 0 );
-    }
-}
-
-void ATextureGL::bind() const {
-    glBindTexture   (m_Target, mID);
-}
-
-void ATextureGL::unbind() const {
-    glBindTexture   (m_Target, 0);
 }
 
 void ATextureGL::clear() {
     Texture::clear();
 
-    if(mID) {
-        glDeleteTextures(1, &mID);
-        mID = 0;
+    if(m_ID) {
+        glDeleteTextures(1, &m_ID);
+        m_ID = 0;
     }
 }
 
@@ -98,37 +27,38 @@ void ATextureGL::apply() {
     }
 
     bool update = false;
-    if(!mID) {
-        glGenTextures(1, &mID);
+    if(!m_ID) {
+        glGenTextures(1, &m_ID);
     } else {
         update  = true;
     }
 
-    m_Target    = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    uint32_t format;
     switch (m_Format) {
 #if !(GL_ES_VERSION_2_0)
-        case LUMINANCE: m_GlFormat  = GL_RED; break;
+        case R8:    format  = GL_RED; break;
 #else
-        case LUMINANCE: m_GlFormat  = GL_RED_EXT; break;
+        case R8:    format  = GL_RED_EXT; break;
 #endif
-        case RGB:       m_GlFormat  = GL_RGB; break;
-        //case DXT1:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-        //case DXT5:      m_GlFormat  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-        default:        m_GlFormat  = GL_RGBA; break;
+        case RGB8:  format  = GL_RGB; break;
+      //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
+      //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+        default:    format  = GL_RGBA; break;
     }
 
-    glBindTexture(m_Target, mID);
+    glBindTexture(target, m_ID);
 
-    switch(m_Target) {
+    switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(m_Sides);
+            uploadTextureCubemap(m_Sides, format);
         } break;
         default: {
-            uploadTexture2D(m_Sides, 0, m_Target, update);
+            uploadTexture2D(m_Sides, 0, target, format, update);
         } break;
     }
 
-    //glTexParameterf ( m_Target, GL_TEXTURE_LOD_BIAS, 0.0);
+    //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
 
     bool mipmap = (m_Sides[0].size() > 1);
 
@@ -138,8 +68,8 @@ void ATextureGL::apply() {
         case Trilinear: filtering = GL_LINEAR_MIPMAP_LINEAR; break;
         default: filtering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
     }
-    //glTexParameteri ( m_Target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri ( m_Target, GL_TEXTURE_MIN_FILTER, filtering );
+    //glTexParameteri ( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, filtering );
 
     uint32_t wrap;
     switch (m_Wrap) {
@@ -147,18 +77,18 @@ void ATextureGL::apply() {
         case Mirrored: wrap = GL_MIRRORED_REPEAT; break;
         default: wrap       = GL_CLAMP_TO_EDGE; break;
     }
-    glTexParameteri ( m_Target, GL_TEXTURE_WRAP_S, wrap );
-    glTexParameteri ( m_Target, GL_TEXTURE_WRAP_T, wrap );
-    //glTexParameteri ( m_Target, GL_TEXTURE_WRAP_R, wrap );
+    glTexParameteri ( target, GL_TEXTURE_WRAP_S, wrap );
+    glTexParameteri ( target, GL_TEXTURE_WRAP_T, wrap );
+    //glTexParameteri ( target, GL_TEXTURE_WRAP_R, wrap );
 /*
     float aniso = 0.0f;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-    glTexParameterf ( m_Target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
+    glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
 */
-    glBindTexture(m_Target, 0);
+    glBindTexture(target, 0);
 }
 
-bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, bool update) {
+bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t format, bool update) {
     const Surface &image    = sides[imageIndex];
 
     if(isCompressed()) {
@@ -167,7 +97,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         uint32_t h  = m_Height;
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glCompressedTexImage2D(target, i, m_GlFormat, w, h, 0, size(w, h), data);
+            glCompressedTexImage2D(target, i, format, w, h, 0, size(w, h), data);
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
         }
@@ -183,9 +113,9 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
             if(update) {
-                glTexSubImage2D(target, i, 0, 0, w, h, m_GlFormat, GL_UNSIGNED_BYTE, data);
+                glTexSubImage2D(target, i, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
             } else {
-                glTexImage2D(target, i, m_GlFormat, w, h, 0, m_GlFormat, GL_UNSIGNED_BYTE, data);
+                glTexImage2D(target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
             }
 
             w   = MAX(w / 2, 1);
@@ -199,13 +129,13 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
     return true;
 }
 
-bool ATextureGL::uploadTextureCubemap(const Sides &sides) {
+bool ATextureGL::uploadTextureCubemap(const Sides &sides, uint32_t format) {
     GLenum target;
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face
         target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        if(!uploadTexture2D(sides, n, target)) {
+        if(!uploadTexture2D(sides, n, target, format)) {
             return false;
         }
     }

@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#include "resources/amaterialgl.h"
-#include "resources/atexturegl.h"
+#include "resources/material.h"
+#include "resources/rendertexture.h"
 
-#include "commandbuffergl.h"
+#include "commandbuffer.h"
 
 class APostProcessor {
 public:
@@ -14,41 +14,42 @@ public:
 
     }
 
-    virtual ATextureGL         *draw                (ATextureGL &source, ICommandBuffer &buffer) {
+    virtual RenderTexture      *draw                (RenderTexture &source, ICommandBuffer &buffer) {
         if(m_pMaterial) {
-            buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
-            m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static);
+            buffer.setScreenProjection();
+            //m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static);
             /// \todo Return command buffer
             //pipeline.drawScreen(source, m_ResultTexture);
             //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
             //glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
-            ////drawTexturedQuad(source);
+            //drawTexturedQuad(source);
             //glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
-            return &m_ResultTexture;
+            return m_pResultTexture;
         }
         return &source;
     }
 
     virtual void                resize              (uint32_t width, uint32_t height) {
-        m_ResultTexture.resize(width, height);
+        m_pResultTexture->resize(width, height);
     }
 
     virtual void                reset               (const string &path) {
-        m_pMaterial = Engine::loadResource<AMaterialGL>(path);
+        m_pMaterial         = Engine::loadResource<Material>(path);
+        m_pResultTexture    = Engine::objectCreate<RenderTexture>();
 
 #if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
         uint32_t format  = GL_R11F_G11F_B10F_APPLE;
 #else
-        uint32_t format  = GL_R11F_G11F_B10F;
+        //uint32_t format  = GL_R11F_G11F_B10F;
 #endif
 
-        m_ResultTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
+        //m_pResultTexture->setFormat(format);
     }
 
 protected:
-    ATextureGL                  m_ResultTexture;
+    RenderTexture              *m_pResultTexture;
 
-    AMaterialGL                *m_pMaterial;
+    Material                   *m_pMaterial;
 };
 
 #endif // APOSTPROCESS_H

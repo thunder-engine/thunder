@@ -17,9 +17,15 @@ public:
     };
 
     enum FormatType {
-        LUMINANCE,
-        RGB,
-        RGBA,
+        R8,
+        RGB8,
+        RGBA8,
+        RGB10A2,
+        R11G11B10Float
+    };
+
+    enum CompressionType {
+        Uncompressed,
         DXT1,
         DXT5,
         ETC2
@@ -50,6 +56,8 @@ public:
     virtual void                apply                       ();
     virtual void                clear                       ();
 
+    virtual void               *nativeHandle                () const;
+
     uint32_t                    width                       () const;
     uint32_t                    height                      () const;
 
@@ -78,6 +86,7 @@ protected:
     uint8_t                     components                  () const;
 
     FormatType                  m_Format;
+    CompressionType             m_Compress;
     TextureType                 m_Type;
     FilteringType               m_Filtering;
     WrapType                    m_Wrap;

@@ -3,11 +3,14 @@
 
 #include <object.h>
 
+class RenderTexture;
 class Texture;
 class Mesh;
 
 class Camera;
 class MaterialInstance;
+
+typedef vector<RenderTexture *> TargetBuffer;
 
 class NEXT_LIBRARY_EXPORT ICommandBuffer {
 public:
@@ -25,9 +28,11 @@ public:
 
     virtual void                drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
-    virtual void                setRenderTarget             (uint8_t numberColors, const Texture *colors, const Texture *depth);
+    virtual void                setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
 
     virtual void                setColor                    (const Vector4 &color);
+
+    virtual void                setScreenProjection         ();
 
     virtual void                setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
 

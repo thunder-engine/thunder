@@ -36,6 +36,7 @@
 #endif
 #include "resources/text.h"
 #include "resources/texture.h"
+#include "resources/rendertexture.h"
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/font.h"
@@ -130,6 +131,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     TextMesh::registerClassFactory();
     SpriteMesh::registerClassFactory();
     DirectLight::registerClassFactory();
+    RenderTexture::registerClassFactory();
 
     registerMetaType<MaterialArray>("MaterialArray");
 }

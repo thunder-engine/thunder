@@ -8,7 +8,7 @@ environment:
 configuration: Release
 
 install:
-  - choco install -y qbs --version 1.10.1
+  - choco install -y qbs --version 1.11.0
   - nuget install secure-file -ExcludeVersion
   - set PATH=%PATH%;%QTDIR%\bin
 
@@ -17,7 +17,7 @@ build_script:
   - qbs setup-toolchains --detect
   - qbs setup-qt %QTDIR%\bin\qmake.exe qt
   - qbs config defaultProfile qt
-  - qbs build --all-products release
+  - qbs build --all-products config:release
   - dir
   - 7z a -t7z ThunderEngine-%APPVEYOR_BUILD_VERSION%-windows-x86.7z release/install-root/
 
