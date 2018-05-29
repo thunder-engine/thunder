@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "apipeline.h"
+#include "pipeline.h"
 
 #include <cmath>
 #if __linux__
@@ -15,13 +15,13 @@ ABloomGL::ABloomGL() {
 #if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
         uint32_t format  = GL_R11F_G11F_B10F_APPLE;
 #else
-        uint32_t format  = GL_R11F_G11F_B10F;
+        //uint32_t format  = GL_R11F_G11F_B10F;
 #endif
 
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
+        //m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     }
-    m_BlurTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
+    //m_BlurTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
 
     m_Threshold = 1.0f;
 
@@ -32,26 +32,26 @@ ABloomGL::ABloomGL() {
     m_BloomPasses[4].BlurSize   = Vector3(64.0f, 0.0f, 64.0f);
 }
 
-ATextureGL *ABloomGL::draw(ATextureGL &source, ICommandBuffer &buffer) {
-    if(m_pMaterial && m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
-        buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
-
-        uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
+RenderTexture *ABloomGL::draw(RenderTexture &source, ICommandBuffer &buffer) {
+    if(m_pMaterial) {
+        buffer.setScreenProjection();
+        //m_pMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static)
+        //uint32_t program    = m_pMaterial->getProgram(AMaterialGL::Static);
         /// \todo Return command buffer
         //buffer.setShaderParams(program);
 
-        int location    = glGetUniformLocation(program, "threshold");
-        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            if(location > -1) {
-                glUniform1f(location, (i == 0) ? m_Threshold : 0.0f);
-            }
-            /// \todo Return command buffer
-            //buffer.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
-            //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
-            //glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
-            ////drawTexturedQuad(source);
-            //glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
-        }
+        //int location    = glGetUniformLocation(program, "threshold");
+        //for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
+        //    if(location > -1) {
+        //        glUniform1f(location, (i == 0) ? m_Threshold : 0.0f);
+        //    }
+        //    /// \todo Return command buffer
+        //    //buffer.drawScreen((i == 0) ? source : m_BloomPasses[i - 1].DownTexture, m_BloomPasses[i].DownTexture);
+        //    //glBindFramebuffer       ( GL_FRAMEBUFFER, m_ScreenBuffer );
+        //    //glFramebufferTexture2D  ( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target.id(), 0 );
+        //    ////drawTexturedQuad(source);
+        //    //glBindFramebuffer   ( GL_FRAMEBUFFER, 0 );
+        //}
 
         //pipeline.clearScreen(m_ResultTexture);
 /*
@@ -71,7 +71,7 @@ ATextureGL *ABloomGL::draw(ATextureGL &source, ICommandBuffer &buffer) {
         //
         //    blur->draw(m_BloomPasses[i].DownTexture, m_ResultTexture, m_BlurTemp, size, m_BloomPasses[i].BlurSteps, m_BloomPasses[i].BlurPoints);
         //}
-        return &m_ResultTexture;
+        return m_pResultTexture;
     }
 
     return &source;

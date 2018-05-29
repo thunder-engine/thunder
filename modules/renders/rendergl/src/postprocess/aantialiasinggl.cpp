@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "apipeline.h"
+#include "pipeline.h"
 
 AAntiAliasingGL::AAntiAliasingGL() {
     reset("shaders/SSAA.frag");

@@ -14,7 +14,7 @@ public:
 
     void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
-    void                        setRenderTarget             (uint8_t numberColors, const Texture *colors, const Texture *depth);
+    void                        setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
 
     void                        setColor                    (const Vector4 &color);
 
@@ -45,8 +45,6 @@ protected:
     VariantMap                  m_Uniforms;
 
     Material::TextureMap        m_Textures;
-
-    uint32_t                    m_Buffers[8];
 };
 
 #endif // COMMANDBUFFERGL_H
