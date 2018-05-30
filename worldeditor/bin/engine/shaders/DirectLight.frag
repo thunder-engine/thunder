@@ -3,10 +3,10 @@
 #include ".embedded/Common.vert"
 #include ".embedded/BRDF.frag"
 
-uniform sampler2D layer0;
-uniform sampler2D layer1;
-uniform sampler2D layer2;
-uniform sampler2D layer3;
+uniform sampler2D normalsMap;
+uniform sampler2D diffuseMap;
+uniform sampler2D paramsMap;
+uniform sampler2D emissiveMap;
 uniform sampler2D depthMap;
 uniform sampler2D shadowMap;
 
@@ -15,9 +15,9 @@ layout(location = 1) in vec2 _uv0;
 out vec4    rgb;
 
 void main (void) {
-    vec4 slice0 = texture( layer0, _uv0 );
-    vec4 slice2 = texture( layer2, _uv0 );
-    vec3 emit   = texture( layer3, _uv0 ).xyz;
+    vec4 slice0 = texture( normalsMap,  _uv0 );
+    vec4 slice2 = texture( paramsMap,   _uv0 );
+    vec3 emit   = texture( emissiveMap, _uv0 ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
     float ln    = dot( transform.orientation, n );
@@ -27,7 +27,7 @@ void main (void) {
         float depth = texture( depthMap, _uv0 ).x;
         vec4 world  = getWorld( camera.mvpi, _uv0, depth );
 
-        vec4 slice1 = texture( layer1, _uv0 );
+        vec4 slice1 = texture( diffuseMap, _uv0 );
         float rough = max( 0.01, slice1.w );
         float spec  = slice2.w;
         float metal = slice2.z;

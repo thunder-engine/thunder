@@ -16,8 +16,8 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface
     s_Handler->drawMesh(model, mesh, surface, layer, material);
 }
 
-void ICommandBuffer::setRenderTarget(uint8_t numberColors, const Texture *colors, const Texture *depth) {
-    s_Handler->setRenderTarget(numberColors, colors, depth);
+void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
+    s_Handler->setRenderTarget(target, depth);
 }
 
 Vector4 ICommandBuffer::idToColor(uint32_t id) {
@@ -32,6 +32,10 @@ Vector4 ICommandBuffer::idToColor(uint32_t id) {
 
 void ICommandBuffer::setColor(const Vector4 &color) {
     s_Handler->setColor(color);
+}
+
+void ICommandBuffer::setScreenProjection() {
+    s_Handler->setViewProjection(Matrix4(), Matrix4::ortho(0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
 }
 
 void ICommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {

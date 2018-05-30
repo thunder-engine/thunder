@@ -4,12 +4,12 @@
 
 #include "analytics/profiler.h"
 
-#include "apipeline.h"
-#include "adeferredshading.h"
+#include "pipeline.h"
 
 #include "components/adirectlightgl.h"
-
 #include "components/scene.h"
+
+#include "resources/arendertexturegl.h"
 
 #include <log.h>
 
@@ -19,6 +19,7 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
     PROFILER_MARKER;
 
     ATextureGL::registerClassFactory();
+    ARenderTextureGL::registerClassFactory();
     AMaterialGL::registerClassFactory();
     AMeshGL::registerClassFactory();
 
@@ -48,11 +49,9 @@ bool RenderGLSystem::init() {
     glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
 #endif
-    if(targets >= ADeferredShading::G_TARGETS) {
-        m_pPipeline = new ADeferredShading(m_pEngine);
-    } else {
-        m_pPipeline = new APipeline(m_pEngine);
-    }
+
+    m_pPipeline = new APipeline(m_pEngine);
+
     return true;
 }
 

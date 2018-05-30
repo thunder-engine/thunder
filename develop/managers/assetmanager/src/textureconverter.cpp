@@ -76,7 +76,7 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
 
         img = img.convertToFormat(input);
 
-        texture.m_Format        = (img.pixelFormat().channelCount() == 3) ? Texture::RGB : Texture::RGBA;
+        texture.m_Format        = (img.pixelFormat().channelCount() == 3) ? Texture::RGB8 : Texture::RGBA8;
         texture.m_Type          = Texture::TextureType(s->textureType());
         texture.m_Filtering     = Texture::FilteringType(s->filtering());
         texture.m_Wrap          = Texture::WrapType(s->wrap());
