@@ -23,6 +23,8 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+const QString gTemplateName("${templateName}");
+
 class ContentFilter : public QSortFilterProxyModel {
 public:
     typedef QList<uint8_t>  TypeList;
@@ -213,6 +215,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
         m_CreationMenu.addSeparator();
         m_CreationMenu.addAction(a);
         m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
+        m_CreationMenu.addAction(tr("CppComponent"))->setData(".cpp");
     }
 
     createAction(showIn, SLOT(showInGraphicalShell()));
@@ -254,9 +257,19 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             QString name    = QString("New") + action->text();
             QString suff    = action->data().toString();
             AssetManager::findFreeName(name, dir.path(), suff);
-            QFile file(dir.path() + QDir::separator() + name + suff );
-            if(file.open(QIODevice::WriteOnly)) {
+
+            QFile file(ProjectManager::instance()->templatePath() + "/" + suff + ".tpl");
+            if(file.open(QFile::ReadOnly | QFile::Text)) {
+                QByteArray data(file.readAll());
                 file.close();
+
+                data.replace(gTemplateName, qPrintable(name));
+
+                QFile gen(dir.path() + QDir::separator() + name + suff);
+                if(gen.open(QFile::ReadWrite | QFile::Text | QFile::Truncate)) {
+                    gen.write(data);
+                    gen.close();
+                }
             }
         } break;
         default: break;
@@ -376,8 +389,10 @@ void ContentBrowser::showInGraphicalShell() {
     } else {
         const QModelIndex origin    = m_pContentProxy->mapToSource(list.first());
         QObject *item   = static_cast<QObject *>(origin.internalPointer());
-        QFileInfo info(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
-        path    = info.absoluteFilePath();
+        if(item) {
+            QFileInfo info(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
+            path    = info.absoluteFilePath();
+        }
     }
 
 #if defined(Q_OS_WIN)

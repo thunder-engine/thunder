@@ -27,6 +27,7 @@ ProjectManager::ProjectManager() {
 
     m_SDKPath       = QFileInfo(dir.absolutePath());
     m_ResourcePath  = QFileInfo(sdkPath() + "/resources");
+    m_TemplatePath  = QFileInfo(resourcePath() + "/editor/templates");
     m_QBSPath       = QFileInfo("qbs");
     m_QBSDefault    = m_QBSPath;
 

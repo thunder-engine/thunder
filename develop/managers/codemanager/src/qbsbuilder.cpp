@@ -61,7 +61,7 @@ void QbsBuilder::generateProject(const QStringList &code) {
     values[gFilesList]      = formatList(code);
     values[gLibraries]      = formatList(m_Libs);
 
-    copyTemplate(m_pMgr->resourcePath() + "/editor/templates/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
+    copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
 }
 
 bool QbsBuilder::buildProject() {

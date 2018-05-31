@@ -48,6 +48,7 @@ public:
 
     QString                     sdkPath                     () const { return m_SDKPath.absoluteFilePath(); }
     QString                     resourcePath                () const { return m_ResourcePath.absoluteFilePath(); }
+    QString                     templatePath                () const { return m_TemplatePath.absoluteFilePath(); }
 
     QString                     myProjectsPath              () const { return m_MyProjectsPath.absoluteFilePath(); }
 
@@ -83,6 +84,7 @@ private:
 
     QFileInfo                   m_SDKPath;
     QFileInfo                   m_ResourcePath;
+    QFileInfo                   m_TemplatePath;
 
     QFileInfo                   m_MyProjectsPath;
 

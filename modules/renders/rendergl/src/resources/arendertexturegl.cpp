@@ -19,11 +19,8 @@ void ARenderTextureGL::apply() {
         glGenFramebuffers(1, &m_Buffer);
     }
 
-    bool update = false;
     if(!m_ID) {
         glGenTextures(1, &m_ID);
-    } else {
-        update = true;
     }
 
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
@@ -89,7 +86,7 @@ void ARenderTextureGL::apply() {
 
     if(m_DepthBits) {
         format  = GL_DEPTH_COMPONENT;
-        type    = GL_UNSIGNED_BYTE;
+        type    = GL_FLOAT;
 
         switch(m_DepthBits) {
             case 24: {

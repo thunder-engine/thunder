@@ -228,16 +228,15 @@ void APipeline::analizeScene(Object &object) {
     if(position.x >= 0.0f && position.y >= 0.0f &&
        position.x < m_Screen.x && position.y < m_Screen.y) {
 
-        float depth;
-        glReadPixels(position.x, (m_Screen.y - position.y), 1, 1, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, &depth);
+        Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
+        screen.y        = (1.0 - screen.y);
+
+        glReadPixels((int)screen.x, (int)screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screen.z);
 
         uint8_t value[4];
         glReadPixels(position.x, (m_Screen.y - position.y), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, value);
 
         result  = value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24);
-
-        Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
-        screen.y        = (1.0 - screen.y);
 
         Camera::unproject(screen, m_Buffer->modelView(), m_Buffer->projection(), m_World);
     }

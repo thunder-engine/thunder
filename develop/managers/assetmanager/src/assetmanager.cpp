@@ -182,8 +182,6 @@ void AssetManager::removeResource(const QFileInfo &source) {
             string uuid = guid->second.toString();
 
             QFile::remove(m_pProjectManager->importPath() + "/" + uuid.c_str());
-            QFile::remove(src.absoluteFilePath() + gMetaExt);
-            QFile::remove(src.absoluteFilePath());
             QFile::remove(m_pProjectManager->iconPath() + "/" + uuid.c_str() + ".png");
 
             auto path = m_Paths.find(guid->second.toString());
@@ -192,6 +190,8 @@ void AssetManager::removeResource(const QFileInfo &source) {
                 m_Paths.erase(path);
             }
         }
+        QFile::remove(src.absoluteFilePath() + gMetaExt);
+        QFile::remove(src.absoluteFilePath());
     }
     dumpBundle();
 }
