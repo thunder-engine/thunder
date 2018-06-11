@@ -19,7 +19,7 @@ ABlurGL::ABlurGL() {
 }
 
 void ABlurGL::draw(ICommandBuffer &buffer, ATextureGL &source, ATextureGL &target, ATextureGL &temp, Vector2 &size, uint8_t steps, float *points) {
-    if(m_pBlurMaterial && m_pBlurMaterial->bind(buffer, nullptr, ICommandBuffer::UI, AMaterialGL::Static)) {
+    if(m_pBlurMaterial && m_pBlurMaterial->bind(buffer, nullptr, ICommandBuffer::UI)) {
         if(u_Steps > -1) {
             glUniform1i(u_Steps, steps);
         }

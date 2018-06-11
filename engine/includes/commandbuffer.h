@@ -1,7 +1,7 @@
 #ifndef COMMANDBUFFER_H
 #define COMMANDBUFFER_H
 
-#include <object.h>
+#include "engine.h"
 
 class RenderTexture;
 class Texture;
@@ -12,7 +12,9 @@ class MaterialInstance;
 
 typedef vector<RenderTexture *> TargetBuffer;
 
-class NEXT_LIBRARY_EXPORT ICommandBuffer {
+class NEXT_LIBRARY_EXPORT ICommandBuffer: public Object {
+    A_REGISTER(ICommandBuffer, Object, System);
+
 public:
     enum LayerTypes {
         DEFAULT     = (1<<0),
@@ -49,9 +51,6 @@ public:
     virtual const Texture      *texture                     (const char *name) const;
 
     static Vector4              idToColor                   (uint32_t id);
-
-protected:
-    static void                 setHandler                  (ICommandBuffer *handler);
 
 };
 

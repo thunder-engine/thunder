@@ -83,6 +83,8 @@ public:
 
     virtual ~Material           ();
 
+    virtual void                clear                       ();
+
     void                        loadUserData                (const VariantMap &data);
 
     MaterialType                materialType                () const;
@@ -102,9 +104,6 @@ public:
     uint8_t                     surfaces                    () const;
 
     virtual MaterialInstance   *createInstance              ();
-
-protected:
-    virtual void                clear                       ();
 
 protected:
     BlendType                   m_BlendMode;

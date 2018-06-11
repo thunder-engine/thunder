@@ -462,14 +462,14 @@ Variant ShaderBuilder::object() const {
 
 Variant ShaderBuilder::data() const {
     VariantMap user;
-    VariantList params;
-    params.push_back(materialType());
-    params.push_back(isDoubleSided());
-    params.push_back(isTangent());
-    params.push_back((materialType() == Material::Surface) ? (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) : Material::Static );
-    params.push_back(blend());
-    params.push_back(lightModel());
-    params.push_back(isDepthTest());
+    VariantList properties;
+    properties.push_back(materialType());
+    properties.push_back(isDoubleSided());
+    properties.push_back(isTangent());
+    properties.push_back((materialType() == Material::Surface) ? (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) : Material::Static );
+    properties.push_back(blend());
+    properties.push_back(lightModel());
+    properties.push_back(isDepthTest());
 
     VariantMap textures;
     uint16_t i  = 0;
@@ -478,7 +478,7 @@ Variant ShaderBuilder::data() const {
         i++;
     }
     user["Textures"]    = textures;
-    user["Params"]      = params;
+    user["Properties"]  = properties;
     user["Shader"]      = shader().toStdString();
 
     return user;

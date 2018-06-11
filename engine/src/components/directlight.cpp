@@ -1,5 +1,7 @@
 #include "components/directlight.h"
 
+#include "components/actor.h"
+
 #include "commandbuffer.h"
 
 #include "resources/material.h"
@@ -27,6 +29,7 @@ DirectLight::DirectLight() {
 
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
     m_pMaterialInstance->setVector4("light.lod",        &m_NormalizedDistance);
+    m_pMaterialInstance->setVector4("light.position",   &m_Direction);
 
     m_pMaterialInstance->setMatrix4("light.matrix",     m_pMatrix, MAX_LODS);
     m_pMaterialInstance->setVector4("light.tiles",      m_pTiles,  MAX_LODS);
@@ -39,6 +42,8 @@ DirectLight::~DirectLight() {
 
 void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pPlane && m_pMaterial && (layer & ICommandBuffer::LIGHT)) {
+        m_Direction = Vector4(actor().rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
+
         buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
         buffer.drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);
     }

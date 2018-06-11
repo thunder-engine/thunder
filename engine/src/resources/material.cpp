@@ -1,7 +1,7 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
-#define PARAMS      "Params"
+#define PROPERTIES  "Properties"
 #define TEXTURES    "Textures"
 
 MaterialInstance::MaterialInstance(Material *material) :
@@ -14,7 +14,7 @@ MaterialInstance::~MaterialInstance() {
 }
 
 Material *MaterialInstance::material() const {
-   return m_pMaterial;
+    return m_pMaterial;
 }
 
 const Texture *MaterialInstance::texture(const char *name) {
@@ -96,7 +96,7 @@ Material::Material() :
         m_Tangent(false),
         m_DepthTest(true),
         m_Surfaces(1) {
-
+    clear();
 }
 
 Material::~Material() {
@@ -106,7 +106,7 @@ Material::~Material() {
 void Material::loadUserData(const VariantMap &data) {
     clear();
     {
-        auto it = data.find(PARAMS);
+        auto it = data.find(PROPERTIES);
         if(it != data.end()) {
             VariantList list    = (*it).second.value<VariantList>();
             auto i  = list.begin();

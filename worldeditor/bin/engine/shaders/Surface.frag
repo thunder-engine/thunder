@@ -16,7 +16,7 @@ layout(location = 6) in vec4 _color;
 layout(location = 7) in vec3 _view;
 layout(location = 8) in vec3 _proj;
 
-uniform samplerCube environmentMap;
+uniform vec4        t_color;
 
 uniform float       _clip;
 uniform float       _time;
@@ -33,7 +33,7 @@ void simpleMode(Params params) {
     if(_clip >= alpha) {
         discard;
     }
-    gbuffer1    = transform.color;
+    gbuffer1    = t_color;
 }
 
 void depthMode(Params params) {
@@ -46,9 +46,9 @@ void depthMode(Params params) {
 }
 
 void passMode(Params params) {
-    vec3 albd   = getDiffuse ( params ) * transform.color.xyz;
-    vec3 emit   = getEmissive( params ) * transform.color.xyz;
-    float alpha = getOpacity ( params ) * transform.color.w;
+    vec3 albd   = getDiffuse ( params ) * t_color.xyz;
+    vec3 emit   = getEmissive( params ) * t_color.xyz;
+    float alpha = getOpacity ( params ) * t_color.w;
 #ifdef BLEND_OPAQUE
     if(_clip >= alpha) {
         discard;
@@ -61,8 +61,7 @@ void passMode(Params params) {
     model       = 0.34;
     norm        = 0.5 * params.normal + vec3( 0.5 );
     rough       = max(0.08, getRoughness( params ));
-    vec3 refl   = vec3(1.0);//textureLod( environmentMap, params.reflect, rough * 10.0 ).xyz;
-    emit        = emit + albd * refl * light.ambient;
+    emit        = emit + albd * light.ambient;
     #endif
     gbuffer1    = vec4( norm, model );
     gbuffer2    = vec4( albd, rough );
@@ -79,7 +78,6 @@ void main(void) {
     params.reflect  = vec3(0.0);
     params.color    = _color;
     params.normal   = _n;
-    params.time     = _time;
 #ifdef TANGENT
     params.normal   = 2.0 * getNormal( params ) - vec3( 1.0 );
     params.normal   = normalize( params.normal.x * _t + params.normal.y * _b + params.normal.z * _n );

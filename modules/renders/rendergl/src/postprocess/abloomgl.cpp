@@ -11,18 +11,14 @@
 
 ABloomGL::ABloomGL() {
     reset("shaders/Downsample.frag");
-
-#if defined(GL_ES_VERSION_2_0) && !defined(GL_ES_VERSION_3_0)
-        uint32_t format  = GL_R11F_G11F_B10F_APPLE;
-#else
-        //uint32_t format  = GL_R11F_G11F_B10F;
-#endif
+/*
+    uint32_t format  = GL_R11F_G11F_B10F;
 
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        //m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
+        m_BloomPasses[i].DownTexture.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
     }
-    //m_BlurTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
-
+    m_BlurTemp.create(GL_TEXTURE_2D, format, GL_RGB, GL_FLOAT);
+*/
     m_Threshold = 1.0f;
 
     m_BloomPasses[0].BlurSize   = Vector3(1.0f,  0.0f,  4.0f);

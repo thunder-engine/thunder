@@ -41,9 +41,10 @@ APipeline::APipeline(Engine *engine) :
         m_pEngine(engine),
         m_pScene(nullptr),
         m_pController(nullptr),
-        m_Buffer(new CommandBufferGL()),
+        m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
-        m_World(Vector3()) {
+        m_World(Vector3()),
+        m_pSprite(nullptr) {
 
     //m_pBlur     = new ABlurGL();
     //m_pAO       = new AAmbientOcclusionGL();
@@ -51,7 +52,7 @@ APipeline::APipeline(Engine *engine) :
     //m_PostEffects.push_back(new AAntiAliasingGL());
     //m_PostEffects.push_back(new ABloomGL());
 
-    m_pSprite   = nullptr;
+    m_Buffer    = Engine::objectCreate<ICommandBuffer>();
 
     Material *mtl   = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
@@ -141,15 +142,15 @@ RenderTexture *APipeline::postProcess(RenderTexture &source) {
 void APipeline::cameraReset() {
     Camera *camera  = activeCamera();
     if(camera) {
-        Matrix4 mv, p;
-        camera->matrices(mv, p);
+        Matrix4 v, p;
+        camera->matrices(v, p);
         camera->setRatio(m_Screen.x / m_Screen.y);
         m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().position(), camera->nearPlane()));
         m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
         m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
-        m_Buffer->setGlobalValue("camera.mvpi", (p * mv).inverse());
+        m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
         m_Buffer->setGlobalValue("light.map", Vector4(1.0f / SM_RESOLUTION, 1.0f / SM_RESOLUTION, SM_RESOLUTION, SM_RESOLUTION));
-        m_Buffer->setViewProjection(mv, p);
+        m_Buffer->setViewProjection(v, p);
     }
 }
 
@@ -185,8 +186,6 @@ void APipeline::drawComponents(Object &object, uint8_t layer) {
                 if(!actor->isEnable()) {
                     continue;
                 }
-                m_Buffer->setGlobalValue("transform.position", actor->position());
-                m_Buffer->setGlobalValue("transform.orientation", (actor->rotation() * Vector3(0.0f, 0.0f, 1.0f)));
             }
             drawComponents(*child, layer);
         }

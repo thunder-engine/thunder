@@ -61,6 +61,7 @@ Project {
             "next",
             "engine",
             "physfs",
+            "freetype",
             "zlib",
             "glfw",
             "glad",

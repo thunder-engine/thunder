@@ -28,36 +28,33 @@ class AMaterialGL : public Material {
         Depth                   = (1<<9)
     };
 
+    typedef map<uint16_t, uint32_t> ObjectMap;
+
 public:
-    AMaterialGL                 ();
-    ~AMaterialGL                ();
+    void                        clear           ();
 
     void                        loadUserData    (const VariantMap &data);
 
-    uint32_t                    bind            (ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer, uint16_t type);
+    uint32_t                    bind            (ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer);
     void                        unbind          (uint8_t);
 
     uint32_t                    getProgram      (uint16_t type) const;
 
+    uint32_t                    buildShader     (uint8_t type, const string &path = string(), const string &define = string());
+
+    TextureMap                  textures        () const { return m_Textures; }
+
 protected:
-    void                        clear           ();
-
-    uint32_t                    buildShader     (uint8_t type, const string &src, const string &path = string());
-
-    uint32_t                    buildProgram    (uint32_t fragment, const string &define);
-
-    bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
-
     void                        addPragma       (const string &key, const string &value);
 
     string                      parseData       (const string &data, const string &define);
 
     string                      loadIncludes    (const string &path, const string &define = string());
 
-private:
-    typedef map<uint16_t, uint32_t> ProgramMap;
+    bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
 
-    ProgramMap                  m_Programs;
+private:
+    ObjectMap                   m_Programs;
 
     typedef map<string, string> PragmaMap;
 

@@ -145,12 +145,13 @@ void Handles::beginDraw(ICommandBuffer *buffer) {
     HandleTools::setViewProjection(v, p);
 
     s_Buffer    = buffer;
+    s_Buffer->setColor(s_Normal);
     s_Buffer->setViewProjection(v, p);
     s_Buffer->clearRenderTarget(false, Vector4(), true, 1.0f);
 }
 
 void Handles::endDraw() {
-
+    s_Buffer->setColor(s_Normal);
 }
 
 void Handles::drawArrow(const Matrix4 &transform) {
@@ -206,7 +207,6 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         } else {
             scale  *= s_ActiveCamera->orthoWidth() * 0.04f;
         }
-
 
         Matrix4 model(position, Quaternion(), scale);
 

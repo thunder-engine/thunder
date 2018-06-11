@@ -6,6 +6,11 @@
 
 #define MAX_BONES 60
 
+uniform mat4 t_view;
+uniform mat4 t_projection;
+
+uniform mat4 t_model;
+
 uniform mat4 bonesMatrix[MAX_BONES];
 uniform vec4 position;
 uniform vec3 axis;
@@ -48,9 +53,9 @@ struct Vertex {
 Vertex staticMesh(vec3 v, vec3 t, vec3 n) {
     Vertex result;
 
-    mat3 normal = mat3( transform.model[0].xyz,
-                        transform.model[1].xyz,
-                        transform.model[2].xyz );
+    mat3 normal = mat3( t_model[0].xyz,
+                        t_model[1].xyz,
+                        t_model[2].xyz );
 
     result.v    = v;
     result.t    = normal * t;
@@ -138,7 +143,14 @@ void main(void) {
 #ifdef TYPE_AXISALIGNED
     Vertex vert = axisAlignedBillboard( vertex, tangent, normal, position, axis );
 #endif
-    gl_Position = transform.projection * ( ( transform.mv * vec4(vert.v, 1.0) ) + vert.m );
+
+    vec3 camera = vec3( t_view[0].w,
+                        t_view[1].w,
+                        t_view[2].w);
+
+    mat4 modelView  = t_view * t_model;
+
+    gl_Position = t_projection * ( ( modelView * vec4(vert.v, 1.0) ) + vert.m );
 
     _vertex     = gl_Position.xyz;
     _n          = vert.n;
@@ -149,5 +161,5 @@ void main(void) {
     _uv0        = uv0;
     _uv1        = uv1;
     _proj       = 0.5 * ( gl_Position.xyz / gl_Position.w ) + 0.5;
-    _view       = ( transform.model * vec4(vert.v, 1.0) ).xyz - camera.position.xyz;
+    _view       = ( t_model * vec4(vert.v, 1.0) ).xyz - camera;
 }

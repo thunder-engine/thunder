@@ -6,9 +6,11 @@
 #include "handles.h"
 #include "controllers/objectctrl.h"
 
+#include "commandbuffer.h"
+
 Viewport::Viewport(QWidget *parent) :
         SceneView(parent),
-        m_pCommandBuffer(new ICommandBuffer())  {
+        m_pCommandBuffer(nullptr)  {
 
     setFocusPolicy(Qt::StrongFocus);
     setAcceptDrops(true);
@@ -22,6 +24,11 @@ void Viewport::initializeGL() {
         static_cast<CameraCtrl *>(m_pController)->init(m_pScene);
     }
     SceneView::initializeGL();
+
+    makeCurrent();
+
+    m_pCommandBuffer    = Engine::objectCreate<ICommandBuffer>();
+
     Handles::init();
 }
 

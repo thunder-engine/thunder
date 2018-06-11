@@ -11,6 +11,8 @@
 
 #include "resources/arendertexturegl.h"
 
+#include "commandbuffergl.h"
+
 #include <log.h>
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
@@ -24,6 +26,8 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
     AMeshGL::registerClassFactory();
 
     ADirectLightGL::registerClassFactory();
+
+    CommandBufferGL::registerClassFactory();
 }
 
 RenderGLSystem::~RenderGLSystem() {
@@ -38,17 +42,16 @@ RenderGLSystem::~RenderGLSystem() {
 bool RenderGLSystem::init() {
     PROFILER_MARKER;
 
-    int32_t targets = 1;
-
-#ifndef GL_ES_VERSION_2_0
+#ifndef THUNDER_MOBILE
     if(!gladLoadGL()) {
         Log(Log::ERR) << "[ Render::RenderGLSystem ] Failed to initialize OpenGL context";
         return false;
     }
-
     glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
 #endif
+
+    int32_t targets;
+    glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
 
     m_pPipeline = new APipeline(m_pEngine);
 

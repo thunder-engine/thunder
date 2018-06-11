@@ -8,6 +8,8 @@
 
 #include <mutex>
 
+${Includes}
+
 static string gAppConfig;
 static IFile *gFile = nullptr;
 
@@ -32,6 +34,9 @@ int main(int argc, char **argv) {
     gFile   = new IFile;
     gFile->finit(argv[0]);
     Engine engine(gFile, argc, argv);
+    {
+        ${RegisterComponents}
+    }
 
     gAppConfig  = engine.locationAppConfig();
 
@@ -42,6 +47,10 @@ int main(int argc, char **argv) {
     engine.addModule(new RenderGL(&engine));
     if(engine.init() && engine.createWindow()) {
         engine.exec();
+    }
+
+    {
+        ${UnregisterComponents}
     }
     return 0;
 }

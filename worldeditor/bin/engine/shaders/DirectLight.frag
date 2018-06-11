@@ -20,7 +20,7 @@ void main (void) {
     vec3 emit   = texture( emissiveMap, _uv0 ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
-    float ln    = dot( transform.orientation, n );
+    float ln    = dot( light.position.xyz, n );
 
     // Light model LIT
     if(slice0.w > 0.33) {
@@ -34,10 +34,10 @@ void main (void) {
 
         vec3 albedo = slice1.xyz;
         vec3 v      = normalize( camera.position.xyz - (world / world.w).xyz );
-        vec3 h      = normalize( transform.orientation + v );
+        vec3 h      = normalize( light.position.xyz + v );
 
         vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
-        vec3 color  = albedo * (1.0 - metal) + refl;
+        vec3 result = albedo * (1.0 - metal) + refl;
         float diff  = getLambert( ln, light.brightness );
 
         float shadow    = 1.0;
@@ -59,7 +59,7 @@ void main (void) {
             }
         }
 
-        rgb = vec4( light.color.xyz * color * shadow * diff + emit, 1.0 );
+        rgb = vec4( light.color.xyz * result * shadow * diff + emit, 1.0 );
     } else {
         rgb = vec4( emit, 1.0 );
     }

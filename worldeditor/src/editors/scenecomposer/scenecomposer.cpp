@@ -212,7 +212,7 @@ SceneComposer::~SceneComposer() {
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
     ui->viewport->update();
-    //ui->preview->update();
+    ui->preview->update();
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
@@ -440,10 +440,12 @@ void SceneComposer::on_actionGame_Mode_triggered() {
     ui->actionGame_Mode->setChecked(true);
     ui->actionEditor_Mode->setChecked(false);
 
-    m_Back  = Bson::save(Engine::toVariant(m_pMap));
+    if(!ui->preview->isGame()) {
+        m_Back  = Bson::save(Engine::toVariant(m_pMap));
 
-    ui->preview->startGame();
-    ui->centralwidget->activateToolWindow(ui->preview);
+        ui->preview->startGame();
+        ui->centralwidget->activateToolWindow(ui->preview);
+    }
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {

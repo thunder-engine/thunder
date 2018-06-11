@@ -1,13 +1,3 @@
-uniform struct Transform {
-    mat4    view;
-    mat4    model;
-    mat4    projection;
-    mat4    mv;
-    vec4    color;
-    vec3    position;
-    vec3    orientation;
-} transform;
-
 uniform struct Camera {
     mat4    mvpi;
     vec4    position;
@@ -21,6 +11,7 @@ uniform struct Light {
     vec4    color;
     vec4    lod;
     vec4    map;
+    vec4    position;
     float   bias;
     float   ambient;
     float   brightness;
@@ -57,8 +48,8 @@ float getAttenuation(float d, float r) {
     return scale * ( 1.0 / ( 1.0 + d ) - offs1 );
 }
 
-float luminanceApprox( vec3 color ) {
-    return dot( color, vec3( 0.3, 0.6, 0.1 ) );
+float luminanceApprox( vec3 rgb ) {
+    return dot( rgb, vec3( 0.3, 0.6, 0.1 ) );
 }
 
 float linstep(float l, float h, float v) {

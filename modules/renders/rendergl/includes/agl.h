@@ -2,6 +2,7 @@
 #define AGL_H
 
 #if THUNDER_MOBILE
+    #define GLFM_INCLUDE_ES3
     #include <glfm.h>
 #else
     #include <glad/glad.h>

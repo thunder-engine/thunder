@@ -3,7 +3,7 @@
 #include "components/actor.h"
 
 Camera::Camera() {
-    m_FOV       = 60.0; // 2*arctan(height/(2*distance))
+    m_FOV       = 45.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
     m_Far       = 1000.0;
     m_Ratio     = 1.0;
@@ -158,11 +158,22 @@ void Camera::setOrthographic(const bool value) {
 }
 
 array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const {
-    float tang  = (float)tan(m_FOV * DEG2RAD * 0.5);
-    float nh    = nearPlane * tang;
-    float fh    = farPlane * tang;
-    float nw    = nh * m_Ratio;
-    float fw    = fh * m_Ratio;
+    float nh;
+    float fh;
+    float nw;
+    float fw;
+    if(m_Ortho) {
+        nw    = m_OrthoWidth * 0.5;
+        fw    = nw;
+        nh    = nw / m_Ratio;
+        fh    = nh;
+    } else {
+        float tang  = (float)tan(m_FOV * DEG2RAD * 0.5);
+        nh    = nearPlane * tang;
+        fh    = farPlane * tang;
+        nw    = nh * m_Ratio;
+        fw    = fh * m_Ratio;
+    }
 
     Vector3 dir     = Vector3(0.0, 0.0,-1.0);
 

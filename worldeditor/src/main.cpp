@@ -24,7 +24,7 @@
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
-    format.setVersion(4, 1);
+    format.setVersion(4, 2);
     format.setProfile(QSurfaceFormat::CoreProfile);
     //format.setRenderableType(QSurfaceFormat::OpenGLES);
     QSurfaceFormat::setDefaultFormat(format);

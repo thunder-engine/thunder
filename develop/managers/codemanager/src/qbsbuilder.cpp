@@ -18,6 +18,12 @@ const QString gLibraries("${libraries}");
 
 const QString gEditorSuffix("-Editor");
 
+#ifndef _DEBUG
+    const QString gMode = "release";
+#else
+    const QString gMode = "debug";
+#endif
+
 // generate --generator visualstudio2013
 
 QbsBuilder::QbsBuilder() :
@@ -26,9 +32,9 @@ QbsBuilder::QbsBuilder() :
     m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
     if(m_pMgr->targetPath().isEmpty()) {
-        m_Artifact  = m_Project + "debug/install-root/" + m_pMgr->projectName() + gEditorSuffix + m_Suffix;
+        m_Artifact  = m_Project + gMode + "/install-root/" + m_pMgr->projectName() + gEditorSuffix + m_Suffix;
     } else {
-        m_Artifact  = m_Project + "release/install-root/" + m_pMgr->projectName() + m_Suffix;
+        m_Artifact  = m_Project + gMode + "/install-root/" + m_pMgr->projectName() + m_Suffix;
     }
 
     m_pProcess  = new QProcess(this);
@@ -65,20 +71,14 @@ void QbsBuilder::generateProject(const QStringList &code) {
 }
 
 bool QbsBuilder::buildProject() {
-#ifndef _DEBUG
-    QString mode    = "release";
-#else
-    QString mode    = "debug";
-#endif
     QString product = m_pMgr->projectName();
     if(m_pMgr->targetPath().isEmpty()) {
-        mode        = "debug";
         product    += gEditorSuffix;
     }
     {
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << mode << "profile:" + m_Profiles[0]);
+        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << gMode << "profile:" + m_Profiles[0]);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
             Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
@@ -87,7 +87,7 @@ bool QbsBuilder::buildProject() {
     {
         QStringList args;
         args << "build" << m_Settings;
-        args << "--products" << product << mode << "profile:" + m_Profiles[0];
+        args << "--products" << product << gMode << "profile:" + m_Profiles[0];
         m_pProcess->start(m_pMgr->qbsPath(), args);
         if(!m_pProcess->waitForStarted()) {
             Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());

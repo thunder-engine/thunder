@@ -36,11 +36,7 @@ void ATextureGL::apply() {
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     uint32_t format;
     switch (m_Format) {
-#if !(GL_ES_VERSION_2_0)
         case R8:    format  = GL_RED; break;
-#else
-        case R8:    format  = GL_RED_EXT; break;
-#endif
         case RGB8:  format  = GL_RGB; break;
       //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
       //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
@@ -79,12 +75,12 @@ void ATextureGL::apply() {
     }
     glTexParameteri ( target, GL_TEXTURE_WRAP_S, wrap );
     glTexParameteri ( target, GL_TEXTURE_WRAP_T, wrap );
-    //glTexParameteri ( target, GL_TEXTURE_WRAP_R, wrap );
-/*
+    glTexParameteri ( target, GL_TEXTURE_WRAP_R, wrap );
+
     float aniso = 0.0f;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
     glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
-*/
+
     glBindTexture(target, 0);
 }
 

@@ -61,8 +61,6 @@ public:
 
     static uint8_t          s_Axes;
 
-
-
 protected:
     static Mesh            *s_Cone;
 

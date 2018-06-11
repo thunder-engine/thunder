@@ -17,12 +17,12 @@ void AMeshGL::apply() {
         for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
             uint8_t lods    = m_Surfaces[s].lods.size();
 
-            IndexVector tris    = IndexVector(lods);
-            IndexVector vert    = IndexVector(lods);
+            IndexVector tris(lods);
+            IndexVector vert(lods);
 
-            IndexVector norm    = IndexVector(lods);
-            IndexVector tang    = IndexVector(lods);
-            IndexVector uv      = IndexVector(lods);
+            IndexVector norm(lods);
+            IndexVector tang(lods);
+            IndexVector uv  (lods);
 
             glGenBuffers(lods, &tris[0]);
             glGenBuffers(lods, &vert[0]);
@@ -62,6 +62,7 @@ void AMeshGL::apply() {
                 }
 
             }
+
             m_vertices.push_back(vert);
             m_triangles.push_back(tris);
 
@@ -75,6 +76,7 @@ void AMeshGL::apply() {
                 m_uv0.push_back(uv);
             }
         }
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -116,6 +118,7 @@ void AMeshGL::clear() {
             }
         }
     }
+
     m_triangles.clear();
     m_vertices.clear();
 

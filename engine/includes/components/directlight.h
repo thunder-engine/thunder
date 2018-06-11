@@ -52,6 +52,8 @@ protected:
 
     Vector4                     m_NormalizedDistance;
 
+    Vector4                     m_Direction;
+
     Mesh                       *m_pPlane;
 
     Material                   *m_pMaterial;
