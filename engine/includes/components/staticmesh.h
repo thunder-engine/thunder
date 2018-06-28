@@ -1,15 +1,10 @@
 #ifndef STATICMESH_H
 #define STATICMESH_H
 
-#include "mesh.h"
-#include "material.h"
+#include "basemesh.h"
 
-#include "component.h"
-
-#include <array>
-
-class NEXT_LIBRARY_EXPORT StaticMesh : public Component {
-    A_REGISTER(StaticMesh, Component, Components);
+class NEXT_LIBRARY_EXPORT StaticMesh : public BaseMesh {
+    A_REGISTER(StaticMesh, BaseMesh, Components);
 
     A_PROPERTIES (
         A_PROPERTY(Mesh*, Mesh, StaticMesh::mesh, StaticMesh::setMesh),
@@ -18,32 +13,7 @@ class NEXT_LIBRARY_EXPORT StaticMesh : public Component {
     A_NOMETHODS();
 
 public:
-    StaticMesh                  ();
-
     void                        draw                    (ICommandBuffer &buffer, int8_t layer);
-
-    Mesh                       *mesh                    () const;
-
-    virtual void                setMesh                 (Mesh *mesh);
-
-    MaterialArray               materials               () const;
-
-    virtual void                setMaterials            (const MaterialArray &mat);
-
-    Material                   *material                (uint32_t index) const;
-
-    virtual void                setMaterial             (uint32_t index, Material *mat);
-
-    uint32_t                    materialCount           () const;
-
-    void                        loadUserData            (const VariantMap &data);
-
-    VariantMap                  saveUserData            () const;
-
-protected:
-    Mesh                       *m_pMesh;
-
-    MaterialArray               m_Materials;
 
 };
 

@@ -44,7 +44,7 @@ void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pPlane && m_pMaterial && (layer & ICommandBuffer::LIGHT)) {
         m_Direction = Vector4(actor().rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
 
-        buffer.setViewProjection(Matrix4(), Matrix4::ortho( 0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+        buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);
     }
 }
@@ -78,4 +78,16 @@ float DirectLight::bias() const {
 
 void DirectLight::setBias(const float bias) {
     m_Bias = bias;
+}
+
+Vector4 &DirectLight::normalizedDistance() {
+    return m_NormalizedDistance;
+}
+
+Vector4 *DirectLight::tiles() {
+    return m_pTiles;
+}
+
+Matrix4 *DirectLight::matrix() {
+    return m_pMatrix;
 }

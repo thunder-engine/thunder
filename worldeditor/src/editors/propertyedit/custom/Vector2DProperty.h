@@ -24,6 +24,7 @@ public:
     float               y               () const;
     void                setY            (float value);
 
+    QSize               sizeHint        (const QSize& size) const;
 private:
     Property           *pX;
     Property           *pY;

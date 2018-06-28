@@ -21,7 +21,7 @@ void Actor::setEnable(const bool enable) {
 }
 
 Matrix4 Actor::transform() {
-    return Matrix4(m_Position, m_Rotation, m_Scale);
+    return m_Transform;
 }
 
 Vector3 Actor::position() const {
@@ -43,41 +43,41 @@ Vector3 Actor::scale() const {
 Matrix4 Actor::worldTransform() {
     Actor *p    = dynamic_cast<Actor *>(parent());
     if(p) {
-        return p->worldTransform() * transform();
+        return p->worldTransform() * m_Transform;
     }
-    return transform();
+    return m_Transform;
 }
 
 Vector3 Actor::worldPosition() const {
     Actor *p    = dynamic_cast<Actor *>(parent());
     if(p) {
-        return p->rotation().toMatrix() * (p->worldPosition() + position()) * p->scale();
+        return p->rotation().toMatrix() * (p->worldPosition() + m_Position) * p->scale();
     }
-    return position();
+    return m_Position;
 }
 
 Vector3 Actor::worldEuler() const {
     Actor *p    = dynamic_cast<Actor *>(parent());
     if(p) {
-        return p->worldEuler() + euler();
+        return p->worldEuler() + m_Euler;
     }
-    return euler();
+    return m_Euler;
 }
 
-Quaternion  Actor::worldRotation() const {
+Quaternion Actor::worldRotation() const {
     Actor *p  = dynamic_cast<Actor *>(parent());
     if(p) {
-        return p->worldRotation() * rotation();
+        return p->worldRotation() * m_Rotation;
     }
-    return rotation();
+    return m_Rotation;
 }
 
 Vector3 Actor::worldScale() const {
     Actor *p  = dynamic_cast<Actor *>(parent());
     if(p) {
-        return p->worldScale() * scale();
+        return p->worldScale() * m_Scale;
     }
-    return scale();
+    return m_Scale;
 }
 
 uint8_t Actor::layers() const {
@@ -100,6 +100,7 @@ Component *Actor::component(const char *type) {
 
 void Actor::setPosition(const Vector3 &value) {
     m_Position  = value;
+    m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
 }
 
 void Actor::setEuler(const Vector3 &value) {
@@ -109,10 +110,12 @@ void Actor::setEuler(const Vector3 &value) {
 
 void Actor::setRotation(const Quaternion &value) {
     m_Rotation  = value;
+    m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
 }
 
 void Actor::setScale(const Vector3 &value) {
     m_Scale     = value;
+    m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
 }
 
 void Actor::setLayers(const uint8_t layers) {

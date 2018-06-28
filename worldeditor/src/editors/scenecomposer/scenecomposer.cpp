@@ -272,6 +272,8 @@ void SceneComposer::updateTitle() {
 }
 
 void SceneComposer::closeEvent(QCloseEvent *event) {
+    QMainWindow::closeEvent(event);
+
     if(!checkSave()) {
         event->ignore();
         return;
@@ -295,7 +297,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         settings.setValue(str, QString::fromStdString(Json::save(params)));
     }
 
-    QMainWindow::closeEvent(event);
+    QApplication::quit();
 }
 
 bool SceneComposer::checkSave() {

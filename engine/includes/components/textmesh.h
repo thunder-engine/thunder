@@ -1,15 +1,15 @@
 #ifndef TEXTMESH_H
 #define TEXTMESH_H
 
-#include "component.h"
+#include "basemesh.h"
 
 #include "font.h"
 
 class Mesh;
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT TextMesh : public Component {
-    A_REGISTER(TextMesh, Component, Components);
+class NEXT_LIBRARY_EXPORT TextMesh : public BaseMesh {
+    A_REGISTER(TextMesh, BaseMesh, Components);
 
     A_PROPERTIES(
         A_PROPERTY(string, Text, TextMesh::text, TextMesh::setText),
@@ -44,14 +44,8 @@ public:
 
     VariantMap                  saveUserData        () const;
 
-    Mesh                       *mesh                () const;
-
 protected:
     void                        composeMesh         ();
-
-    Mesh                       *m_pMesh;
-
-    MaterialInstance           *m_pMaterial;
 
     Font                       *m_pFont;
 

@@ -20,7 +20,6 @@ CameraCtrl::CameraCtrl(Viewport *view) :
         IController(),
         mBlockMove(false),
         mBlockRot(false),
-        mBlockFree(false),
         mCameraFree(true),
         mCameraMove(MoveTypes::MOVE_IDLE),
         mCameraSpeed(Vector3()),
@@ -162,11 +161,6 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
                 case Qt::Key_Right: {
                     mCameraMove |= MOVE_RIGHT;
                 } break;
-                case Qt::Key_Alt: {
-                    if(!mBlockFree) {
-                        mCameraFree = true;
-                    }
-                } break;
                 default: break;
             }
         } break;
@@ -188,11 +182,6 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
                 case Qt::Key_D:
                 case Qt::Key_Right: {
                     mCameraMove &= ~MOVE_RIGHT;
-                } break;
-                case Qt::Key_Alt: {
-                    if(!mBlockFree) {
-                        mCameraFree = false;
-                    }
                 } break;
                 default: break;
             }
@@ -232,9 +221,9 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
                 if(pos.y() <= r.top()) {
                     pos.setY(pos.y() + r.height() - 2);
                 }
+                QCursor::setPos(pos);
             }
-            mSaved          = pos;
-            QCursor::setPos(mSaved);
+            mSaved  = pos;
         } break;
         case QEvent::Wheel: {
             cameraZoom(static_cast<QWheelEvent *>(pe)->delta() * 0.01f);
@@ -259,7 +248,7 @@ void CameraCtrl::cameraRotate(const Vector3 &delta) {
     Vector3 euler   = m_pCamera->euler() - delta;
     mRotation       = Quaternion(euler);
 
-    Vector3 target = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
+    Vector3 target  = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
         m_pCamera->setPosition(target + mRotation * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }

@@ -164,7 +164,7 @@ QTreeView {
 }
 QTreeView::item {
     border-radius: 0px;
-    margin: 1px 0px;
+    margin: 0px 0px;
 }
 QTreeView::item:selected {
     background: #0277bd;

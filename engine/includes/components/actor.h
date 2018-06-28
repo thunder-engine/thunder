@@ -81,6 +81,8 @@ protected:
     Quaternion                  m_Rotation;
     Vector3                     m_Scale;
 
+    Matrix4                     m_Transform;
+
     uint8_t                     m_Layers;
 
     bool                        m_Enable;

@@ -1,10 +1,10 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include "engine.h"
+#include "actor.h"
 
-class NEXT_LIBRARY_EXPORT Chunk : public Object {
-    A_REGISTER(Chunk, Object, General);
+class NEXT_LIBRARY_EXPORT Chunk : public Actor {
+    A_REGISTER(Chunk, Actor, General);
 
 };
 

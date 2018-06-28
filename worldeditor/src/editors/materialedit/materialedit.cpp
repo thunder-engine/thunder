@@ -38,8 +38,8 @@ MaterialEdit::MaterialEdit(Engine *engine) :
 
     glWidget    = new Viewport(this);
     CameraCtrl *ctrl    = new CameraCtrl(glWidget);
-    ctrl->blockFree(true);
     ctrl->blockMovement(true);
+    ctrl->setFree(false);
     glWidget->setController(ctrl);
     glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
@@ -134,7 +134,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         m_pMaterial = Engine::loadResource<Material>(settings->destination());
         StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
         if(mesh) {
-            mesh->setMaterial(0, m_pMaterial);
+            mesh->setMaterial(m_pMaterial);
         }
         m_pBuilder->load(m_Path);
 
@@ -165,7 +165,7 @@ void MaterialEdit::changeMesh(const string &path) {
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
         if(m_pMaterial) {
-            mesh->setMaterial(0, m_pMaterial);
+            mesh->setMaterial(m_pMaterial);
         }
         float bottom;
         static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);

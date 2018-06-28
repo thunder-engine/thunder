@@ -1,17 +1,13 @@
 #ifndef SPRITEMESH
 #define SPRITEMESH
 
-#include "component.h"
+#include "basemesh.h"
 
-#include "material.h"
-
-class Mesh;
-
-class NEXT_LIBRARY_EXPORT SpriteMesh : public Component {
-    A_REGISTER(SpriteMesh, Component, Components);
+class NEXT_LIBRARY_EXPORT SpriteMesh : public BaseMesh {
+    A_REGISTER(SpriteMesh, BaseMesh, Components);
 
     A_PROPERTIES(
-        A_PROPERTY(Material*, Material, SpriteMesh::material, SpriteMesh::setMaterial),
+        A_PROPERTY(MateralArray, Material, SpriteMesh::materials, SpriteMesh::setMaterials),
         A_PROPERTY(Texture*, Texture, SpriteMesh::texture, SpriteMesh::setTexture)
     );
     A_NOMETHODS();
@@ -25,10 +21,6 @@ public:
 
     void                        setCenter           (const Vector2 &value);
 
-    Material                   *material            () const;
-
-    virtual void                setMaterial         (Material *material);
-
     Texture                    *texture             () const;
 
     virtual void                setTexture          (Texture *texture);
@@ -37,16 +29,10 @@ public:
 
     VariantMap                  saveUserData        () const;
 
-    Mesh                       *mesh                () const;
-
 protected:
     Vector2                     m_Center;
 
-    MaterialInstance           *m_Material;
-
     Texture                    *m_Texture;
-
-    Mesh                       *m_pMesh;
 
 };
 

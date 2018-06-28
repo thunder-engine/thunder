@@ -14,6 +14,8 @@
 class Engine;
 class BaseController;
 
+class Component;
+class DirectLight;
 class ACameraGL;
 class ASpriteGL;
 
@@ -39,7 +41,7 @@ public:
 
     virtual void                resize              (uint32_t width, uint32_t height);
 
-    void                        drawComponents      (Object &object, uint8_t layer);
+    void                        combineComponents   (Object &object);
 
     Vector2                     screen              () const { return m_Screen; }
     Vector3                     world               () const { return m_World; }
@@ -54,12 +56,15 @@ public:
     void                        overrideController  (IController *controller) { m_pController = controller; }
 
 protected:
+    void                        drawComponents      (uint32_t layer);
+
     void                        updateShadows       (Object &object);
 
-    void                        analizeScene        (Object &object);
+    void                        analizeScene        ();
 
-    void                        deferredShading     (Scene &scene, uint32_t resource);
+    void                        deferredShading     (uint32_t resource);
 
+    void                        directUpdate        (DirectLight *light);
 protected:
     typedef map<string, RenderTexture *> TargetMap;
 
@@ -76,6 +81,8 @@ protected:
     Vector2                     m_Screen;
 
     Vector3                     m_World;
+
+    list<Component *>           m_ComponentList;
 
     list<APostProcessor *>      m_PostEffects;
 

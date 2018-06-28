@@ -38,6 +38,12 @@ public:
     float                       bias                    () const;
     void                        setBias                 (const float bias);
 
+    Vector4                    &normalizedDistance      ();
+
+    Vector4                    *tiles                   ();
+
+    Matrix4                    *matrix                  ();
+
 protected:
     float                       m_Shadows;
 

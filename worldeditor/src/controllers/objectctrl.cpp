@@ -490,7 +490,15 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             }
                         }
                         for(const auto &it : m_Selected) {
-                            it.second.object->setPosition(it.second.position + delta);
+                            Vector3 dt  = delta;
+                            Actor *a    = dynamic_cast<Actor *>(it.second.object->parent());
+                            if(a) {
+                                Vector3 scale   = a->worldScale();
+                                dt.x   /= scale.x;
+                                dt.y   /= scale.y;
+                                dt.z   /= scale.z;
+                            }
+                            it.second.object->setPosition(it.second.position + dt);
                         }
                         emit objectsUpdated();
                     } else {

@@ -53,7 +53,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
 
-            m_Programs[0]    = buildShader(Fragment, gEmbedded + gLight);
             /// \todo should be removed
             setTexture("normalsMap",    nullptr);
             setTexture("diffuseMap",    nullptr);
@@ -62,6 +61,7 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             setTexture("depthMap",      nullptr);
             setTexture("shadowMap",     nullptr);
 
+            m_Programs[0]    = buildShader(Fragment, gEmbedded + gLight);
         } break;
         default: { // Surface type
             string define;
@@ -91,21 +91,11 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
                 define += "\n#define TANGENT 1";
             }
 
-            uint32_t fragment   = buildShader(Fragment, gEmbedded + gSurface, define);
-            uint8_t t   = 0;
-            for(auto it : m_Textures) {
-                int location    = glGetUniformLocation(fragment, it.first.c_str());
-                if(location > -1) {
-                    glProgramUniform1iEXT(fragment, location, t);
-                }
-                t++;
-            }
-            m_Programs[0]       = fragment;
-
+            m_Programs[0]       = buildShader(Fragment, gEmbedded + gSurface, define);
             define += "\n#define SIMPLE 1";
             m_Programs[Simple]  = buildShader(Fragment, gEmbedded + gSurface, define);
-            // if cast shadows
-            m_Programs[Depth]   = buildShader(Fragment, gEmbedded + gSurface, define + "\n#define DEPTH 1");
+            define += "\n#define DEPTH 1";
+            m_Programs[Depth]   = buildShader(Fragment, gEmbedded + gSurface, define);
         } break;
     }
 }
@@ -194,10 +184,11 @@ void AMaterialGL::clear() {
     Material::clear();
 
     m_Pragmas.clear();
-
-    addPragma("version", "#version 420 core");
-    //addPragma("version", "#version 300 es");
-
+#ifndef THUNDER_MOBILE
+    addPragma("version", "#version 430 core");
+#else
+    addPragma("version", "#version 300 es");
+#endif
     for(auto it : m_Programs) {
         glDeleteProgram(it.second);
     }
@@ -209,7 +200,9 @@ uint32_t AMaterialGL::buildShader(uint8_t type, const string &path, const string
 
     uint32_t t;
     switch(type) {
-      //case Geometry:  t   = GL_GEOMETRY_SHADER; break;
+#ifndef THUNDER_MOBILE
+        case Geometry:  t   = GL_GEOMETRY_SHADER; break;
+#endif
         case Vertex:    t   = GL_VERTEX_SHADER;   break;
         default:        t   = GL_FRAGMENT_SHADER; break;
     }
@@ -234,6 +227,17 @@ uint32_t AMaterialGL::buildShader(uint8_t type, const string &path, const string
         checkShader(result, path, true);
     }
     glDeleteShader(shader);
+
+    if(type == Fragment) {
+        uint8_t t   = 0;
+        for(auto it : m_Textures) {
+            int location    = glGetUniformLocation(result, it.first.c_str());
+            if(location > -1) {
+                glProgramUniform1iEXT(result, location, t);
+            }
+            t++;
+        }
+    }
 
     return result;
 }

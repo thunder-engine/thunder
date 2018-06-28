@@ -11,6 +11,9 @@
 
 #define TRANSFORM_BIND 0
 
+#define COLOR_BIND 2
+#define TIMER_BIND 3
+
 const char *gVertex = ".embedded/BasePass.vert";
 
 #define TYPE_STATIC "#define TYPE_STATIC 1"
@@ -34,6 +37,7 @@ CommandBufferGL::CommandBufferGL() {
     m_ModelLocation = glGetUniformLocation(m_Static, "t_model");
 
     glGenProgramPipelinesEXT(1, &m_Pipeline);
+    glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
 }
 
 CommandBufferGL::~CommandBufferGL() {
@@ -70,16 +74,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         if(program) {
             glProgramUniformMatrix4fvEXT(m_Static, m_ModelLocation, 1, GL_FALSE, model.mat);
 
-            int32_t location    = glGetUniformLocation(program, "_time");
-            if(location > -1) {
-                glProgramUniform1fEXT(program, location, Timer::time());
-            }
-            location    = glGetUniformLocation(program, "t_color");
-            if(location > -1) {
-                glProgramUniform4fvEXT(program, location, 1, m_Color.v);
-            }
+            glProgramUniform1fEXT   (program, TIMER_BIND, Timer::time());
+            glProgramUniform4fvEXT  (program, COLOR_BIND, 1, m_Color.v);
 
             // Push uniform values to shader
+            int32_t location;
             for(const auto &it : m_Uniforms) {
                 location    = glGetUniformLocation(program, it.first.c_str());
                 if(location > -1) {
@@ -113,30 +112,24 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glEnable(GL_TEXTURE_2D);
             uint8_t i   = 0;
             for(auto it : mat->textures()) {
-                location    = glGetUniformLocation(program, it.first.c_str());
-                if(location > -1) {
-                    glProgramUniform1iEXT(program, location, i);
-                }
-
                 const Texture *tex  = static_cast<const ATextureGL *>(it.second);
-                glActiveTexture(GL_TEXTURE0 + i);
-                const Texture *t    = material->texture(it.first.c_str());
-                if(t) {
-                    tex = t;
+                const Texture *tmp  = material->texture(it.first.c_str());
+                if(tmp) {
+                    tex = tmp;
                 } else {
-                    t = texture(it.first.c_str());
-                    if(t) {
-                        tex = t;
+                    tmp = texture(it.first.c_str());
+                    if(tmp) {
+                        tex = tmp;
                     }
                 }
 
                 if(tex) {
+                    glActiveTexture(GL_TEXTURE0 + i);
                     glBindTexture((tex->isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, (uint32_t)(size_t)tex->nativeHandle());
                 }
                 i++;
             }
 
-            glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
             glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
             glBindProgramPipelineEXT(m_Pipeline);
 

@@ -52,6 +52,9 @@ void Vector2DProperty::setValue(const QVariant &value) {
         Property::setValue(value);
 }
 
+QSize Vector2DProperty::sizeHint(const QSize& size) const {
+    return QSize(size.width(), 26);
+}
 
 float Vector2DProperty::x() const {
     return value().value<Vector2>().x;

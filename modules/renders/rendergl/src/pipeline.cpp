@@ -1,5 +1,7 @@
 #include "pipeline.h"
 
+#include <float.h>
+
 #include <object.h>
 
 #include "controller.h"
@@ -14,8 +16,7 @@
 #include <components/scene.h>
 #include <components/component.h>
 #include <components/camera.h>
-
-#include "components/adirectlightgl.h"
+#include <components/directlight.h>
 
 #include "analytics/profiler.h"
 
@@ -26,7 +27,10 @@
 
 #include "commandbuffergl.h"
 
+#define SM_RESOLUTION_DEFAULT 1024
 #define SM_RESOLUTION 2048
+
+#define MAX_LODS 4
 
 #define G_NORMALS   "normalsMap"
 #define G_DIFFUSE   "diffuseMap"
@@ -116,19 +120,23 @@ APipeline::~APipeline() {
 
 void APipeline::draw(Scene &scene, uint32_t resource) {
     m_pScene    = &scene;
+    m_ComponentList.clear();
+    combineComponents(scene);
+
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
 
+    m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
     glDepthFunc(GL_LEQUAL);
 
-    m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
     m_Buffer->clearRenderTarget();
     updateShadows(scene);
 
     m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
-    analizeScene(scene);
 
-    deferredShading(scene, resource);
+    analizeScene();
+
+    deferredShading(resource);
 }
 
 RenderTexture *APipeline::postProcess(RenderTexture &source) {
@@ -172,13 +180,13 @@ void APipeline::resize(uint32_t width, uint32_t height) {
     }
 }
 
-void APipeline::drawComponents(Object &object, uint8_t layer) {
+void APipeline::combineComponents(Object &object) {
     for(auto &it : object.getChildren()) {
         Object *child   = it;
         Component *draw = dynamic_cast<Component *>(child);
         if(draw) {
             if(draw->isEnable()) {
-                draw->draw(*m_Buffer, layer);
+                m_ComponentList.push_back(draw);
             }
         } else {
             Actor *actor    = dynamic_cast<Actor *>(child);
@@ -187,31 +195,31 @@ void APipeline::drawComponents(Object &object, uint8_t layer) {
                     continue;
                 }
             }
-            drawComponents(*child, layer);
+            combineComponents(*child);
         }
     }
 }
 
 void APipeline::updateShadows(Object &object) {
     for(auto &it : object.getChildren()) {
-        ADirectLightGL *light = dynamic_cast<ADirectLightGL *>(it);
+        DirectLight *light = dynamic_cast<DirectLight *>(it);
         if(light) {
-            light->shadowsUpdate(*this);
+            directUpdate(light);
         } else {
             updateShadows(*it);
         }
     }
 }
 
-void APipeline::analizeScene(Object &object) {
+void APipeline::analizeScene() {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, Vector4(0.0));
-
     glDepthFunc(GL_LEQUAL);
 
+    m_Buffer->clearRenderTarget(true, Vector4(0.0));
+
     cameraReset();
-    drawComponents(object, ICommandBuffer::RAYCAST);
+    drawComponents(ICommandBuffer::RAYCAST);
 
     IController *controller = m_pEngine->controller();
     if(m_pController) {
@@ -248,33 +256,100 @@ void APipeline::analizeScene(Object &object) {
     }
 }
 
-void APipeline::deferredShading(Scene &scene, uint32_t resource) {
+void APipeline::deferredShading(uint32_t resource) {
     Camera *camera  = activeCamera();
     // Fill G buffer pass
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
     glDepthFunc(GL_EQUAL);
+
+    m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
 
     cameraReset();
     // Draw Opaque pass
-    drawComponents(scene, ICommandBuffer::DEFAULT);
-
-    glDepthFunc(GL_LEQUAL);
+    drawComponents(ICommandBuffer::DEFAULT);
 
     // Screen Space Ambient Occlusion effect
     RenderTexture *t    = m_Targets[G_EMISSIVE];
 
     m_Buffer->setRenderTarget({t});
+    glDepthFunc(GL_LEQUAL);
+
     // Light pass
-    drawComponents(scene, ICommandBuffer::LIGHT);
+    drawComponents(ICommandBuffer::LIGHT);
 
     cameraReset();
     // Draw Transparent pass
-    drawComponents(scene, ICommandBuffer::TRANSLUCENT);
+    drawComponents(ICommandBuffer::TRANSLUCENT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, resource);
-    m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0.5f,-0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+    m_Buffer->setScreenProjection();
 
     m_pSprite->setTexture("texture0", postProcess(*t));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 }
+
+void APipeline::drawComponents(uint32_t layer) {
+    for(auto it : m_ComponentList) {
+        it->draw(*m_Buffer, layer);
+    }
+}
+
+void APipeline::directUpdate(DirectLight *light) {
+    Camera *camera  = activeCamera();
+    if(camera) {
+        Vector4 distance;
+        Matrix4 mv, p;
+        camera->matrices(mv, p);
+        {
+            float split     = 0.9f;
+            float nearPlane = camera->nearPlane();
+            float farPlane  = camera->farPlane();
+            for(int i = 1; i <= MAX_LODS; i++) {
+                float f = (float)i / (float)MAX_LODS;
+                float l = nearPlane * pow(farPlane / nearPlane, f);
+                float u = nearPlane + (farPlane - nearPlane) * f;
+                float v = MIX(u, l, split);
+                distance[i - 1] = v;
+                Vector4 depth   = p * Vector4(0.0f, 0.0f, -v, 1.0f);
+                light->normalizedDistance()[i - 1] = (depth.z / depth.w);
+            }
+        }
+
+        float nearPlane = camera->nearPlane();
+        Matrix4 view    = Matrix4(light->actor().rotation().toMatrix()).inverse();
+        Matrix4 inv     = mv.inverse();
+        for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
+            float dist  = distance[lod];
+            Vector3 bb[2]   = {Vector3(FLT_MAX), Vector3(-FLT_MAX)};
+            for(Vector3 &it : camera->frustumCorners(nearPlane, dist)) {
+                Vector3 pos = (inv * it);
+                bb[0].x = MIN(bb[0].x, pos.x);
+                bb[0].y = MIN(bb[0].y, pos.y);
+                bb[0].z = MIN(bb[0].z, pos.z);
+
+                bb[1].x = MAX(bb[1].x, pos.x);
+                bb[1].y = MAX(bb[1].y, pos.y);
+                bb[1].z = MAX(bb[1].z, pos.z);
+            }
+            nearPlane   = dist;
+            Matrix4 proj    = Matrix4::ortho(bb[0].x, bb[1].x,
+                                             bb[0].y, bb[1].y,
+                                             -100, 100);
+
+            light->matrix()[lod]    = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * proj * view;
+            // Draw in the depth buffer from position of the light source
+            m_Buffer->setViewProjection(view, proj);
+            uint32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
+            uint32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
+            m_Buffer->setViewport(x, y, SM_RESOLUTION_DEFAULT, SM_RESOLUTION_DEFAULT);
+
+            light->tiles()[lod] = Vector4((float)x / SM_RESOLUTION,
+                                          (float)y / SM_RESOLUTION,
+                                          (float)SM_RESOLUTION_DEFAULT / SM_RESOLUTION,
+                                          (float)SM_RESOLUTION_DEFAULT / SM_RESOLUTION);
+
+            drawComponents(ICommandBuffer::SHADOWCAST);
+        }
+    }
+}
+

@@ -6,7 +6,6 @@
 
 #include "pipeline.h"
 
-#include "components/adirectlightgl.h"
 #include "components/scene.h"
 
 #include "resources/arendertexturegl.h"
@@ -24,8 +23,6 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
     ARenderTextureGL::registerClassFactory();
     AMaterialGL::registerClassFactory();
     AMeshGL::registerClassFactory();
-
-    ADirectLightGL::registerClassFactory();
 
     CommandBufferGL::registerClassFactory();
 }

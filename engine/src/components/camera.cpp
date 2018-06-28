@@ -76,21 +76,24 @@ bool Camera::unproject(const Vector3 &ss, const Matrix4 &modelview, const Matrix
 }
 
 Ray Camera::castRay(float x, float y) {
-    float tang      = tan(m_FOV * DEG2RAD * 0.5);
-
     Actor &a        = actor();
     Vector3 p       = a.position();
     Vector3 dir     = a.rotation() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
-    Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
-    Vector3 up      = right.cross(dir);
-    Vector3 view    = Vector3( (x - 0.5f) * tang * m_Ratio) * right +
-                      Vector3(-(y - 0.5f) * tang) * up +
-                      p + dir;
+    Vector3 view;
+    if(m_Ortho) {
+        p   = Vector3(p.x + x * m_OrthoWidth, p.y - y * m_OrthoWidth / m_Ratio, p.z);
+    } else {
+        float tang      = tan(m_FOV * DEG2RAD * 0.5);
+        Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
+        Vector3 up      = right.cross(dir);
+        view    = Vector3( (x - 0.5f) * tang * m_Ratio) * right +
+                  Vector3(-(y - 0.5f) * tang) * up + p + dir;
 
-    dir = (view - p);
-    dir.normalize();
+        dir = (view - p);
+        dir.normalize();
+    }
 
     return Ray (p, dir);
 }

@@ -61,7 +61,7 @@ QVariant TemplateProperty::editorData(QWidget *editor) {
 }
 
 QSize TemplateProperty::sizeHint(const QSize& size) const {
-    return QSize(size.width(), 70);
+    return QSize(size.width(), 74);
 }
 
 void TemplateProperty::onAssetChanged(const QString &tpl) {

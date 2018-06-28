@@ -32,11 +32,11 @@ public:
 
     void                                setFocusOn                  (Actor *actor, float &bottom);
 
+    void                                setFree                     (bool flag) { mCameraFree   = flag; }
+
     void                                blockMovement               (bool flag) { mBlockMove    = flag; }
 
     void                                blockRotations              (bool flag) { mBlockRot     = flag; }
-
-    void                                blockFree                   (bool flag) { mBlockFree    = flag; }
 
     virtual void                        resize                      (uint32_t, uint32_t) {}
 
@@ -58,7 +58,6 @@ protected:
 
     bool                                mBlockMove;
     bool                                mBlockRot;
-    bool                                mBlockFree;
 
     Vector3                             mCameraSpeed;
     Quaternion                          mRotation;

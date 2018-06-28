@@ -13,14 +13,13 @@ TextMesh::TextMesh() :
         m_Size(16),
         m_Space(0),
         m_Line(0),
-        m_Color(1.0f),
-        m_pMaterial(nullptr) {
+        m_Color(1.0f) {
     m_pMesh = Engine::objectCreate<Mesh>();
     m_pMesh->setFlags(Mesh::ATTRIBUTE_UV0);
 
     Material *material  = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
     if(material) {
-        m_pMaterial = material->createInstance();
+        m_Materials.push_back(material->createInstance());
     }
 }
 
@@ -32,7 +31,8 @@ void TextMesh::draw(ICommandBuffer &buffer, int8_t layer) {
         }
 
         for(uint32_t s = 0; s < m_pMesh->surfacesCount(); s++) {
-            buffer.drawMesh(a.worldTransform(), m_pMesh, s, layer, m_pMaterial);
+            MaterialInstance *material   = (s < m_Materials.size()) ? m_Materials[s] : nullptr;
+            buffer.drawMesh(a.worldTransform(), m_pMesh, s, layer, material);
         }
         buffer.setColor(Vector4(1.0f));
     }
@@ -128,8 +128,8 @@ Font *TextMesh::font() const {
 
 void TextMesh::setFont(Font *font) {
     m_pFont = font;
-    if(m_pFont) {
-        m_pMaterial->setTexture("texture0", m_pFont->texture());
+    if(m_pFont && !m_Materials.empty()) {
+        m_Materials[0]->setTexture("texture0", m_pFont->texture());
     }
     composeMesh();
 }
@@ -149,8 +149,8 @@ Vector4 TextMesh::color() const {
 
 void TextMesh::setColor(const Vector4 &color) {
     m_Color = color;
-    if(m_pMaterial) {
-        m_pMaterial->setVector4("color0", &m_Color);
+    if(!m_Materials.empty()) {
+        m_Materials[0]->setVector4("color0", &m_Color);
     }
 }
 
@@ -174,8 +174,4 @@ VariantMap TextMesh::saveUserData() const {
         }
     }
     return result;
-}
-
-Mesh *TextMesh::mesh() const {
-    return m_pMesh;
 }

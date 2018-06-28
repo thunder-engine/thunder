@@ -44,6 +44,10 @@ QVariant Vector3DProperty::editorData(QWidget *editor) {
     return Property::editorData(editor);
 }
 
+QSize Vector3DProperty::sizeHint(const QSize& size) const {
+    return QSize(size.width(), 26);
+}
+
 void Vector3DProperty::onDataChanged(const QVariant &data) {
     if(data.isValid()) {
         setValue(data);

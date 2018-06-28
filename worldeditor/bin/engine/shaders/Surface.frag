@@ -16,10 +16,9 @@ layout(location = 6) in vec4 _color;
 layout(location = 7) in vec3 _view;
 layout(location = 8) in vec3 _proj;
 
-uniform vec4        t_color;
-
-uniform float       _clip;
-uniform float       _time;
+layout(location = 2) uniform vec4   t_color;
+layout(location = 3) uniform float _time;
+layout(location = 4) uniform float _clip;
 
 #pragma material
 

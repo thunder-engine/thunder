@@ -93,7 +93,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                 mesh->setMesh(m);
                 Material *mat   = Engine::loadResource<Material>(resource.toStdString());
                 if(mat) {
-                    mesh->setMaterial(0, mat);
+                    mesh->setMaterial(mat);
                 }
                 AABBox bb   = m->bound();
                 m_pCamera->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
