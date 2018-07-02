@@ -34,23 +34,31 @@ void ATextureGL::apply() {
     }
 
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-    uint32_t format;
-    switch (m_Format) {
-        case R8:    format  = GL_RED; break;
-        case RGB8:  format  = GL_RGB; break;
+    uint32_t internal   = GL_RGBA8;
+    uint32_t format     = GL_RGBA;
+
+    switch(m_Format) {
+        case R8: {
+            internal    = GL_R8;
+            format      = GL_RED;
+        } break;
+        case RGB8: {
+            internal    = GL_RGB8;
+            format      = GL_RGB;
+        } break;
+        default: break;
       //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
       //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-        default:    format  = GL_RGBA; break;
     }
 
     glBindTexture(target, m_ID);
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(m_Sides, format);
+            uploadTextureCubemap(m_Sides, internal, format);
         } break;
         default: {
-            uploadTexture2D(m_Sides, 0, target, format, update);
+            uploadTexture2D(m_Sides, 0, target, internal, format, update);
         } break;
     }
 
@@ -84,7 +92,7 @@ void ATextureGL::apply() {
     glBindTexture(target, 0);
 }
 
-bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t format, bool update) {
+bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {
     const Surface &image    = sides[imageIndex];
 
     if(isCompressed()) {
@@ -93,7 +101,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         uint32_t h  = m_Height;
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glCompressedTexImage2D(target, i, format, w, h, 0, size(w, h), data);
+            glCompressedTexImage2D(target, i, internal, w, h, 0, size(w, h), data);
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
         }
@@ -111,7 +119,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
             if(update) {
                 glTexSubImage2D(target, i, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
             } else {
-                glTexImage2D(target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+                glTexImage2D(target, i, internal, w, h, 0, format, GL_UNSIGNED_BYTE, data);
             }
 
             w   = MAX(w / 2, 1);
@@ -125,13 +133,13 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
     return true;
 }
 
-bool ATextureGL::uploadTextureCubemap(const Sides &sides, uint32_t format) {
+bool ATextureGL::uploadTextureCubemap(const Sides &sides, uint32_t internal, uint32_t format) {
     GLenum target;
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face
         target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        if(!uploadTexture2D(sides, n, target, format)) {
+        if(!uploadTexture2D(sides, n, target, internal, format)) {
             return false;
         }
     }

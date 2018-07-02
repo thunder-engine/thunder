@@ -43,7 +43,7 @@ void ARenderTextureGL::apply() {
         } break;
         case RGB8: {
             internal    = GL_RGB8;
-            format      = GL_RGB; break;
+            format      = GL_RGB;
         } break;
         case RGB10A2: {
 #ifndef THUNDER_MOBILE

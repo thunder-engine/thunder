@@ -14,6 +14,22 @@
 #include "textureimportsettings.h"
 #include "projectmanager.h"
 
+void copyData(const uchar *src, int8_t *dst, uint32_t size, uint8_t channels) {
+    if(channels == 3) {
+        uint32_t m  = 0;
+        for(uint32_t i = 0; i < size; i++) {
+            dst[i] = src[m];
+
+            if(i % channels == 2) {
+                m++;
+            }
+            m++;
+        }
+    } else {
+        memcpy(dst, src, size);
+    }
+}
+
 void TextureSerial::loadUserData(const VariantMap &data) {
     Texture::loadUserData(data);
 
@@ -62,24 +78,25 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
     TextureSerial texture;
 
     TextureImportSettings *s    = dynamic_cast<TextureImportSettings *>(settings);
+    uint8_t channels;
     if(s) {
-        QImage img(s->source());
-        QImage::Format input;
+        QImage src(s->source());
+        QImage img;
         switch(s->formatType()) {
             case TextureImportSettings::Uncompressed_R8G8B8: {
-                input   = QImage::Format_RGB888;
+                img = src.convertToFormat(QImage::Format_RGB32).rgbSwapped();
+                channels    = 3;
             } break;
             default: {
-                input   = QImage::Format_RGBA8888;
+                img = src.convertToFormat(QImage::Format_RGBA8888);
+                channels    = 4;
             } break;
         }
 
-        img = img.convertToFormat(input);
-
-        texture.m_Format        = (img.pixelFormat().channelCount() == 3) ? Texture::RGB8 : Texture::RGBA8;
-        texture.m_Type          = Texture::TextureType(s->textureType());
-        texture.m_Filtering     = Texture::FilteringType(s->filtering());
-        texture.m_Wrap          = Texture::WrapType(s->wrap());
+        texture.m_Format    = (channels == 3) ? Texture::RGB8 : Texture::RGBA8;
+        texture.m_Type      = Texture::TextureType(s->textureType());
+        texture.m_Filtering = Texture::FilteringType(s->filtering());
+        texture.m_Wrap      = Texture::WrapType(s->wrap());
 
         if(!texture.m_Width || !texture.m_Height) {
             //tgaReader(settings, img);
@@ -142,15 +159,15 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
             VariantList lods;
 
             ByteArray data;
-            uint32_t size   = it.byteCount();
+            uint32_t size   = it.width() * it.height() * channels;
             if(size) {
                 data.resize(size);
-                memcpy(&data[0], it.constBits(), size);
+                copyData(it.constBits(), &data[0], size, channels);
             }
             lods.push_back(data);
 
             if(s->lod()) {
-                // Specular convolution for cubemaps
+                /// \todo Specular convolution for cubemaps
                 int w   = texture.m_Width;
                 int h   = texture.m_Height;
                 QImage mip  = it;
@@ -159,10 +176,10 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
                     h   = MAX(h / 2, 1);
 
                     mip     = mip.scaled(w, h, Qt::IgnoreAspectRatio);
-                    size    = mip.byteCount();
+                    size    = w * h * channels;
                     if(size) {
                         data.resize(size);
-                        memcpy(&data[0], mip.constBits(), size);
+                        copyData(mip.constBits(), &data[0], size, channels);
                     }
                     lods.push_back(data);
                 }
