@@ -81,6 +81,7 @@ Project {
     references: [
         "thirdparty/thirdparty.qbs",
         "engine/engine.qbs",
+        "modules/media/media.qbs",
         "modules/renders/rendergl/rendergl.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",

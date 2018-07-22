@@ -28,7 +28,7 @@ uint8_t TextConverter::convertFile(IConverterSettings *settings) {
         text.setData(src.readAll());
         src.close();
 
-        QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
+        QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data  = Bson::save( Engine::toVariant(&text) );
             file.write((const char *)&data[0], data.size());

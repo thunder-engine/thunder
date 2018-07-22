@@ -424,8 +424,7 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
 
     ui->preview->stopGame();
     ui->centralwidget->activateToolWindow(ui->viewport);
-    uint32_t offset = 0;
-    Object *map = Engine::toObject(Bson::load(m_Back, offset));
+    Object *map = Engine::toObject(Bson::load(m_Back));
     if(map) {
         map->setParent(ui->viewport->scene());
         delete m_pMap;

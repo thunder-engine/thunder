@@ -1,14 +1,15 @@
 #ifndef FONTCONVERTER_H
 #define FONTCONVERTER_H
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
+#include "resources/font.h"
 
 class FontConverter : public IConverter {
 public:
     FontConverter               () {}
 
     string                      format                      () const { return "ttf;otf"; }
-    IConverter::ContentTypes    type                        () const { return IConverter::ContentFont; }
+    uint32_t                    type                        () const { return MetaType::type<Font *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);
 
 };

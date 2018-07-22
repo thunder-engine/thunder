@@ -3,7 +3,7 @@
 
 #include <fbxsdk.h>
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 
 #include "resources/mesh.h"
 
@@ -26,7 +26,7 @@ public:
     ~FBXConverter               ();
 
     string                      format                  () const;
-    IConverter::ContentTypes    type                    () const;
+    uint32_t                    type                    () const;
     uint8_t                     convertFile             (IConverterSettings *);
 
 protected:

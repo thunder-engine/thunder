@@ -2,6 +2,10 @@
 
 #include "renderglsystem.h"
 
+IModule *moduleCreate(Engine *engine) {
+    return new RenderGL(engine);
+}
+
 RenderGL::RenderGL(Engine *engine) :
         m_pEngine(engine) {
 }

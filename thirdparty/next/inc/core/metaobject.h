@@ -78,7 +78,7 @@ public: \
 #define A_METHOD(m) { \
     MetaMethod::Method, \
     #m, \
-    (MetaMethod::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types() \
 }
@@ -94,7 +94,7 @@ public: \
 #define A_SLOT(m) { \
     MetaMethod::Slot, \
     #m, \
-    (MetaMethod::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
     Invoker<decltype(&m)>::argCount(), \
     Invoker<decltype(&m)>::types() \
 }
@@ -109,7 +109,7 @@ public:
     typedef Object             *(*Constructor)              ();
 
 public:
-    MetaObject                  (const char *, const MetaObject *, const Constructor, const MetaMethod::Table *, const MetaProperty::Table *);
+    explicit MetaObject         (const char *, const MetaObject *, const Constructor, const MetaMethod::Table *, const MetaProperty::Table *);
 
     const char                 *name                        () const;
     const MetaObject           *super                       () const;

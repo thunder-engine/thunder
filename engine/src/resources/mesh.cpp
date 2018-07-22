@@ -17,7 +17,7 @@ Mesh::Mesh() :
 }
 
 Mesh::~Mesh() {
-
+    clear();
 }
 
 void Mesh::apply() {

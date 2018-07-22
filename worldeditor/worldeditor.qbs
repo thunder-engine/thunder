@@ -22,15 +22,19 @@ Project {
         "../develop/managers/codemanager/include",
         "../develop/managers/projectmanager/include",
         "../develop/managers/assetmanager/include",
+        "../develop/managers/pluginmanager/include",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
+        "../modules/media/includes",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
         "../thirdparty/physfs/inc",
         "../thirdparty/glfw/inc",
         "../thirdparty/fbx/inc",
-        "../thirdparty/zlib/src"
+        "../thirdparty/zlib/src",
+        "../thirdparty/libogg/src",
+        "../thirdparty/libvorbis/src"
     ]
 
     QtGuiApplication {
@@ -41,9 +45,11 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
+        Depends { name: "vorbis-editor" }
+        Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "rendergl-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia"]; }
 
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({

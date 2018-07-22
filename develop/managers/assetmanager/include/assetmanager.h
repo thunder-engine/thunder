@@ -11,27 +11,26 @@
 #include <engine.h>
 #include <module.h>
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 
 class QFileSystemWatcher;
 
-class BaseConverterSettings;
 class ProjectManager;
 class CodeManager;
 
 struct Template {
     Template                    () :
-        type(IConverter::ContentInvalid) {
+        type(MetaType::INVALID) {
 
     }
-    Template                    (const QString &p, IConverter::ContentTypes t = IConverter::ContentInvalid) :
+    Template                    (const QString &p, uint32_t t = MetaType::INVALID) :
         path(p),
         type(t) {
 
     }
 
     QString                     path;
-    IConverter::ContentTypes    type;
+    uint32_t                    type;
 };
 
 Q_DECLARE_METATYPE(Template)
@@ -63,7 +62,7 @@ public:
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
 
-    int8_t                  resourceType        (const QFileInfo &source);
+    int32_t                 resourceType        (const QFileInfo &source);
 
     void                    removeResource      (const QFileInfo &source);
     void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
@@ -76,7 +75,7 @@ public:
 
     static void             findFreeName        (QString &name, const QString &path, const QString &suff = QString());
 
-    static void             saveSettings        (BaseConverterSettings *settings);
+    static void             saveSettings        (IConverterSettings *settings);
 
     string                  guidToPath          (const string &guid);
     string                  pathToGuid          (const string &path);
@@ -121,7 +120,7 @@ protected:
     QFileSystemWatcher     *m_pDirWatcher;
     QFileSystemWatcher     *m_pFileWatcher;
 
-    QList<BaseConverterSettings *>  m_ImportQueue;
+    QList<IConverterSettings *>  m_ImportQueue;
 
     ProjectManager         *m_pProjectManager;
     CodeManager            *m_pCodeManager;
@@ -132,16 +131,16 @@ protected:
     AssetManager            ();
     ~AssetManager           ();
 
-    BaseConverterSettings  *createSettings      (const QFileInfo &source);
+    IConverterSettings     *createSettings      (const QFileInfo &source);
 
     void                    cleanupBundle       ();
     void                    dumpBundle          ();
 
-    bool                    isOutdated          (BaseConverterSettings *settings);
+    bool                    isOutdated          (IConverterSettings *settings);
 
-    bool                    pushToImport        (BaseConverterSettings *settings);
+    bool                    pushToImport        (IConverterSettings *settings);
 
-    bool                    convert             (BaseConverterSettings *settings);
+    bool                    convert             (IConverterSettings *settings);
 };
 
 #endif // ASSETEDITORSMANAGER_H
