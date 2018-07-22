@@ -10,6 +10,10 @@ ATextureGL::ATextureGL() {
 
 }
 
+ATextureGL::~ATextureGL() {
+    clear();
+}
+
 void ATextureGL::clear() {
     Texture::clear();
 

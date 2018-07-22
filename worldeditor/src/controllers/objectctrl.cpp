@@ -124,7 +124,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
                                                4, 5, 5, 6, 6, 7, 7, 4,
                                                0, 4, 1, 5, 2, 6, 3, 7};
 
-                Handles::drawLines(component->actor().transform(), points, indices); /// \todo Memory leak
+                Handles::drawLines(component->actor().transform(), points, indices);
                 result  = Handles::drawBillboard(component->actor().position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
             }
             DirectLight *direct = dynamic_cast<DirectLight *>(component);

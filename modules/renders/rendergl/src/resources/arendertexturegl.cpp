@@ -1,5 +1,9 @@
 #include "resources/arendertexturegl.h"
 
+ARenderTextureGL::~ARenderTextureGL() {
+    clear();
+}
+
 void ARenderTextureGL::clear() {
     Texture::clear();
 

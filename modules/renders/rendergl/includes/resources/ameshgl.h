@@ -14,6 +14,8 @@ public:
 public:
     AMeshGL                     ();
 
+    ~AMeshGL                    ();
+
     void                        apply               ();
 
     void                        clear               ();

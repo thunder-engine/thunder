@@ -6,6 +6,10 @@ AMeshGL::AMeshGL() :
         Mesh() {
 }
 
+AMeshGL::~AMeshGL() {
+    clear();
+}
+
 void AMeshGL::apply() {
     Mesh::apply();
 
@@ -80,9 +84,8 @@ void AMeshGL::apply() {
 }
 
 void AMeshGL::clear() {
-    Mesh::clear();
-
     if(m_vertices.empty() && m_triangles.empty()) {
+        Mesh::clear();
         return;
     }
     for(uint32_t s = 0; s < m_Surfaces.size(); s++) {
@@ -121,4 +124,6 @@ void AMeshGL::clear() {
     m_normals.clear();
     m_tangents.clear();
     m_uv0.clear();
+
+    Mesh::clear();
 }

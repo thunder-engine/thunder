@@ -12,6 +12,8 @@ class ATextureGL : public Texture {
 public:
     ATextureGL                  ();
 
+    ~ATextureGL                 ();
+
     void                        apply                       ();
 
     void                       *nativeHandle                () const { return (void *)m_ID; }

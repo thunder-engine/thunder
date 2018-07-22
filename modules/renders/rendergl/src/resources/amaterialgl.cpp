@@ -25,6 +25,10 @@ const char *gLight      = "DirectLight.frag";
 
 const string gEmbedded(".embedded/");
 
+AMaterialGL::~AMaterialGL() {
+    clear();
+}
+
 void AMaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 

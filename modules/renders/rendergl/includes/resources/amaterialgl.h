@@ -31,6 +31,8 @@ class AMaterialGL : public Material {
     typedef map<uint16_t, uint32_t> ObjectMap;
 
 public:
+    ~AMaterialGL                ();
+
     void                        clear           ();
 
     void                        loadUserData    (const VariantMap &data);
