@@ -5,12 +5,14 @@
 #include <file.h>
 
 class ISystem;
+class IConverter;
 
 class NEXT_LIBRARY_EXPORT IModule {
 public:
     enum PluginTypes {
         SYSTEM                      = (1<<0),
-        EXTENSION                   = (1<<1)
+        EXTENSION                   = (1<<1),
+        CONVERTER                   = (1<<2)
     };
 
 public:
@@ -23,6 +25,8 @@ public:
     virtual uint8_t                 types                   () const = 0;
 
     virtual ISystem                *system                  () { return nullptr; }
+
+    virtual IConverter             *converter               () { return nullptr; }
 
     virtual StringList              components              () const { return StringList(); }
 };

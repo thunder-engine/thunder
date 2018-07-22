@@ -14,25 +14,22 @@
 #include <components/camera.h>
 
 #include "common.h"
-#include "managers/pluginmanager/pluginmodel.h"
+#include "pluginmodel.h"
 
 SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
         m_pController(nullptr),
-        m_pRender(nullptr),
         m_pScene(nullptr),
-        m_RenderDesc("RenderGL"),
         m_GameMode(false) {
 
     setMouseTracking(true);
 }
 
 SceneView::~SceneView() {
-    delete m_pRender;
-}
-
-void SceneView::setRender(const QString &render) {
-    m_RenderDesc    = render;
+    foreach(ISystem *it, m_Systems) {
+        delete it;
+    }
+    m_Systems.clear();
 }
 
 void SceneView::setScene(Scene *scene) {
@@ -62,15 +59,16 @@ bool SceneView::isGame() const {
 }
 
 void SceneView::initializeGL() {
-    if(!m_RenderDesc.isEmpty()) {
-        m_pRender   = PluginModel::instance()->createSystem(qPrintable(m_RenderDesc));
-    }
-    if(m_pRender) {
-        m_pRender->init();
+    m_Systems.push_back(PluginModel::instance()->createSystem("Media"));
+    m_Systems.push_back(PluginModel::instance()->createSystem("RenderGL"));
+
+    foreach(ISystem *it, m_Systems) {
+        it->init();
         if(m_pController) {
-            m_pRender->overrideController(m_pController);
+            it->overrideController(m_pController);
         }
     }
+
     emit inited();
 }
 
@@ -81,8 +79,9 @@ void SceneView::paintGL() {
     if(m_pScene) {
         findCamera();
         m_pScene->update();
-        if(m_pRender) {
-            m_pRender->update(*m_pScene, defaultFramebufferObject());
+        uint32_t handle = defaultFramebufferObject();
+        foreach(ISystem *it, m_Systems) {
+            it->update(*m_pScene, handle);
         }
     }
 }
@@ -90,8 +89,8 @@ void SceneView::paintGL() {
 void SceneView::resizeGL(int width, int height) {
     QOpenGLWidget::resizeGL(width, height);
 
-    if(m_pRender) {
-        m_pRender->resize(width, height);
+    foreach(ISystem *it, m_Systems) {
+        it->resize(width, height);
     }
 }
 

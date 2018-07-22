@@ -9,7 +9,7 @@
 
 #include <engine.h>
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 
 class QSortFilterProxyModel;
 class AssetItemDeligate;

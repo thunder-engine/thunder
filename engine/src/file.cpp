@@ -58,6 +58,7 @@ int IFile::_fclose(_FILE *stream) {
 }
 
 _size_t IFile::_fseek(_FILE *stream, long int offset, int origin) {
+    A_UNUSED(origin)
     return PHYSFS_seek((PHYSFS_file *)stream, offset);
 }
 

@@ -2,9 +2,7 @@
 
 #include <streambuf>
 
-#if __linux__
 #include <cstring>
-#endif
 
 Variant appendProperty(const Variant &container, const Variant &data, const string &name) {
     switch(container.type()) {
@@ -24,7 +22,23 @@ Variant appendProperty(const Variant &container, const Variant &data, const stri
     return container;
 }
 
-Variant Bson::load(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool first) {
+enum DataTypes {
+    FLOAT                   = 1,
+    STRING,
+    OBJECT,
+    ARRAY,
+    BINARY,
+    BOOL                    = 8,
+    INT32                   = 16,
+    VECTOR2                 = 128,
+    VECTOR3,
+    VECTOR4,
+    MATRIX3,
+    MATRIX4,
+    QUATERNION
+};
+
+Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool first) {
     PROFILE_FUNCTION()
     Variant result(type);
     if(data.empty()) {
@@ -76,7 +90,7 @@ Variant Bson::load(const ByteArray &data, uint32_t &offset, MetaType::Type type,
             case ARRAY: {
                 int32_t length;
                 memcpy(&length, &data[offset], sizeof(uint32_t));
-                Variant container  = load(data, offset, (t == ARRAY) ? MetaType::VARIANTLIST : MetaType::VARIANTMAP, false);
+                Variant container  = parse(data, offset, (t == ARRAY) ? MetaType::VARIANTLIST : MetaType::VARIANTMAP, false);
                 result  = appendProperty(result, container, name);
             } break;
             case BINARY: {
@@ -91,7 +105,7 @@ Variant Bson::load(const ByteArray &data, uint32_t &offset, MetaType::Type type,
                 result  = appendProperty(result, value, name);
                 offset += length;
             } break;
-            case DOUBLE: {
+            case FLOAT: {
                 float value;
                 memcpy(&value, &data[offset], sizeof(float));
                 offset += sizeof(float);
@@ -158,6 +172,58 @@ Variant Bson::load(const ByteArray &data, uint32_t &offset, MetaType::Type type,
     return result;
 }
 
+uint8_t type(const Variant &data) {
+    PROFILE_FUNCTION()
+    uint8_t result;
+    switch (data.type()) {
+        case MetaType::BOOLEAN:     result  = BOOL; break;
+        case MetaType::FLOAT:       result  = FLOAT; break;
+        case MetaType::INTEGER:     result  = INT32; break;
+        case MetaType::STRING:      result  = STRING; break;
+        case MetaType::VARIANTMAP:  result  = OBJECT; break;
+        case MetaType::BYTEARRAY:   result  = BINARY; break;
+        case MetaType::VECTOR2:     result  = VECTOR2; break;
+        case MetaType::VECTOR3:     result  = VECTOR3; break;
+        case MetaType::VECTOR4:     result  = VECTOR4; break;
+        case MetaType::MATRIX3:     result  = MATRIX3; break;
+        case MetaType::MATRIX4:     result  = MATRIX4; break;
+        case MetaType::QUATERNION:  result  = QUATERNION; break;
+        default:                    result  = ARRAY; break;
+    }
+    return result;
+}
+/*!
+    \class Bson
+    \brief Binary JSON format parser.
+    \since Next 1.0
+    \inmodule Core
+
+    This class implements Binary JSON parser with Variant based DOM structure input/output.
+    It allows to serialize and deserialize object structures represented in Variant DOM structure.
+
+    Example:
+    \code
+        VariantMap dictionary;
+        dictionary["bool"]    = true;
+        dictionary["str"]     = "string";
+        dictionary["int"]     = 1;
+        dictionary["float"]   = 2.0f;
+
+        ByteArray data  = Bson::save(dictionary); // Serializing dictionary to binary format
+        ....
+        VariantMap result   = Bson::load(data).toMap(); // Resotoring it back
+    \endcode
+*/
+/*!
+    Returns deserialized binary \a data as Variant based DOM structure with expected \a type of container (can be MetaType::VARIANTLIST or MetaType::VARIANTMAP).
+*/
+Variant Bson::load(const ByteArray &data, MetaType::Type type) {
+    uint32_t offset = 0;
+    return parse(data, offset, type, true);
+}
+/*!
+    Returns serialized \a data as binary buffer.
+*/
 ByteArray Bson::save(const Variant &data) {
     PROFILE_FUNCTION()
     ByteArray result;
@@ -264,28 +330,6 @@ ByteArray Bson::save(const Variant &data) {
             result.push_back(0x00);
             memcpy(&result[0], &(++size), sizeof(uint32_t));
         } break;
-    }
-    return result;
-}
-
-uint8_t Bson::type(const Variant &data) {
-    PROFILE_FUNCTION()
-    uint8_t result;
-    switch (data.type()) {
-        case MetaType::INVALID:     result  = NONE; break;
-        case MetaType::BOOLEAN:     result  = BOOL; break;
-        case MetaType::FLOAT:       result  = DOUBLE; break;
-        case MetaType::INTEGER:     result  = INT32; break;
-        case MetaType::STRING:      result  = STRING; break;
-        case MetaType::VARIANTMAP:  result  = OBJECT; break;
-        case MetaType::BYTEARRAY:   result  = BINARY; break;
-        case MetaType::VECTOR2:     result  = VECTOR2; break;
-        case MetaType::VECTOR3:     result  = VECTOR3; break;
-        case MetaType::VECTOR4:     result  = VECTOR4; break;
-        case MetaType::MATRIX3:     result  = MATRIX3; break;
-        case MetaType::MATRIX4:     result  = MATRIX4; break;
-        case MetaType::QUATERNION:  result  = QUATERNION; break;
-        default:                    result  = ARRAY; break;
     }
     return result;
 }

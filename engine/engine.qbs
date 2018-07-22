@@ -30,13 +30,19 @@ Project {
     DynamicLibrary {
         name: "engine-editor"
         condition: engine.desktop
-        files: engine.srcFiles
+        files: {
+            var sources = srcFiles
+            sources.push("src/converters/*.cpp")
+            sources.push("includes/converters/*.h")
+            return sources
+        }
         Depends { name: "cpp" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
+        Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
         cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]

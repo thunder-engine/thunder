@@ -6,10 +6,6 @@ AMeshGL::AMeshGL() :
         Mesh() {
 }
 
-AMeshGL::~AMeshGL() {
-    clear();
-}
-
 void AMeshGL::apply() {
     Mesh::apply();
 

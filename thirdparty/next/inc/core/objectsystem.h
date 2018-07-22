@@ -56,7 +56,7 @@ public:
     static Variant                      toVariant               (const Object *object);
     static Object                      *toObject                (const Variant &variant);
 
-    static uint32_t                     generateUUID            (const Object *object);
+    static uint32_t                     generateUID             ();
 
 private:
     friend class ObjectSystemTest;

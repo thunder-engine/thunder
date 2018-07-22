@@ -7,9 +7,9 @@
 #define J_FALSE "false"
 #define J_NULL  "null"
 
-#define FORMAT (depth > -1) ? "\n" : "";
+#define FORMAT (tab > -1) ? "\n" : "";
 
-typedef stack<Variant> VariantStack;
+typedef stack<Variant>  VariantStack;
 typedef stack<string>   NameStack;
 
 void appendProperty(VariantStack &s, const Variant &data, const string &name) {
@@ -44,6 +44,37 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
     s.push(v);
 }
 
+
+inline string readString(const string &data, uint32_t &it) {
+    PROFILE_FUNCTION()
+    uint32_t s  = ++it;
+    char c      = data[s];
+    while(it < data.length() && c != '"') {
+        c = data[++it];
+        if(c == '\\') {
+            c = data[++it];
+        }
+    }
+    return data.substr(s, it - s);
+}
+
+inline bool isSpace(uint8_t c) {
+    PROFILE_FUNCTION()
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+inline void skipSpaces(const char *data, uint32_t &it) {
+    PROFILE_FUNCTION()
+    while(isSpace(data[it])) {
+        it++;
+    }
+}
+
+inline bool isDigit(uint8_t c) {
+    PROFILE_FUNCTION()
+    return c >= '0' && c <= '9';
+}
+
 enum States {
     objectBegin = 1,
     objectEnd,
@@ -53,11 +84,31 @@ enum States {
     propertyName,
     propertyValue
 };
+/*!
+    \class Json
+    \brief JSON format parser.
+    \since Next 1.0
+    \inmodule Core
 
-Json::Json() {
-    PROFILE_FUNCTION()
-}
+    This class implements Json parser with Variant based DOM structure input/output.
+    It allows to serialize and deserialize object structures represented in Variant DOM structure.
 
+    Example:
+    \code
+        VariantMap dictionary;
+        dictionary["bool"]    = true;
+        dictionary["str"]     = "string";
+        dictionary["int"]     = 1;
+        dictionary["float"]   = 2.0f;
+
+        string data = Json::save(dictionary); // Serializing dictionary to string
+        ....
+        VariantMap result   = Json::load(data).toMap(); // Resotoring it back
+    \endcode
+*/
+/*!
+    Returns deserialized string \a data as Variant based DOM structure.
+*/
 Variant Json::load(const string &data) {
     PROFILE_FUNCTION()
     Variant result;
@@ -182,8 +233,11 @@ Variant Json::load(const string &data) {
     }
     return result;
 }
-
-string Json::save(const Variant &data, int32_t depth) {
+/*!
+    Returns serialized \a data as string.
+    Argument \a tab is used as JSON tabulation formatting offset (-1 for one line JSON)
+*/
+string Json::save(const Variant &data, int32_t tab) {
     PROFILE_FUNCTION()
     string result;
     uint32_t type   = data.type();
@@ -202,14 +256,14 @@ string Json::save(const Variant &data, int32_t depth) {
             uint32_t i  = 1;
             VariantList list = data.toList();
             for(auto &it: list) {
-                result.append(depth + 1, '\t');
-                result += save(it, (depth > -1) ? depth + 1 : depth);
+                result.append(tab + 1, '\t');
+                result += save(it, (tab > -1) ? tab + 1 : tab);
                 result += ((i < list.size()) ? "," : "");
                 result += FORMAT;
                 i++;
             }
-            if(depth > -1) {
-                result.append(depth, '\t');
+            if(tab > -1) {
+                result.append(tab, '\t');
             }
             result += "]";
         } break;
@@ -218,57 +272,27 @@ string Json::save(const Variant &data, int32_t depth) {
             result += FORMAT;
             uint32_t i = 1;
             if(type >= MetaType::VECTOR2 && type < MetaType::USERTYPE) {
-                result.append(depth + 1, '\t');
+                result.append(tab + 1, '\t');
                 result += (string("\"") + MetaType::name(type) + "\":");
                 result += FORMAT;
-                result.append(depth + 1, '\t');
-                result += save(data.toList(), (depth > -1) ? depth + 1 : depth);
+                result.append(tab + 1, '\t');
+                result += save(data.toList(), (tab > -1) ? tab + 1 : tab);
                 result += FORMAT;
             } else {
                 VariantMap map = data.toMap();
                 for(auto &it: map) {
-                    result.append(depth + 1, '\t');
-                    result += "\"" + it.first + "\":" + ((depth > -1) ? " " : "") + save(it.second, (depth > -1) ? depth + 1 : depth);
+                    result.append(tab + 1, '\t');
+                    result += "\"" + it.first + "\":" + ((tab > -1) ? " " : "") + save(it.second, (tab > -1) ? tab + 1 : tab);
                     result += ((i < map.size()) ? "," : "");
                     result += FORMAT;
                     i++;
                 }
             }
-            if(depth > -1) {
-                result.append(depth, '\t');
+            if(tab > -1) {
+                result.append(tab, '\t');
             }
             result += "}";
         } break;
     }
     return result;
-}
-
-inline string Json::readString(const string &data, uint32_t &it) {
-    PROFILE_FUNCTION()
-    uint32_t s  = ++it;
-    char c      = data[s];
-    while(it < data.length() && c != '"') {
-        c = data[++it];
-        if(c == '\\') {
-            c = data[++it];
-        }
-    }
-    return data.substr(s, it - s);
-}
-
-inline void Json::skipSpaces(const char *data, uint32_t &it) {
-    PROFILE_FUNCTION()
-    while(isSpace(data[it])) {
-        it++;
-    }
-}
-
-inline bool Json::isSpace(uint8_t c) {
-    PROFILE_FUNCTION()
-    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
-}
-
-inline bool Json::isDigit(uint8_t c) {
-    PROFILE_FUNCTION()
-    return c >= '0' && c <= '9';
 }

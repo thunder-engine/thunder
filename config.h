@@ -11,6 +11,7 @@ const QString gIcons("thumbnails");
 const QString gGenerated("generated");
 const QString gPlugins("plugins");
 const QString gType("type");
+const QString gSubItems("subitems");
 const QString gSettings("settings");
 
 const QString gProjectExt(".forge");

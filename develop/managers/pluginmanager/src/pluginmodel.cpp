@@ -1,6 +1,6 @@
-#include "pluginmodel.h"
+#include "../include/pluginmodel.h"
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDirIterator>
 #include <QDir>
 #include <QLibrary>
@@ -30,7 +30,7 @@ enum {
 
 #define VERSION "version"
 
-#define PLUGINS "plugins"
+#define PLUGINS "/plugins"
 
 typedef IModule *(*moduleHandler)  (Engine *engine);
 
@@ -82,13 +82,12 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
 
 void PluginModel::init(Engine *engine) {
     m_pEngine   = engine;
-    registerSystemPlugin(new RenderGL(m_pEngine));
 }
 
 void PluginModel::rescan() {
     clear();
 
-    rescanPath(QString(QApplication::applicationDirPath() + QDir::separator() + PLUGINS));
+    rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
     rescanPath(ProjectManager::instance()->pluginsPath());
 }
 
@@ -108,11 +107,9 @@ bool PluginModel::loadPlugin(const QString &path) {
                 if(types & IModule::EXTENSION) {
                     registerExtensionPlugin(path, plugin);
                 }
-/*
                 if(types & IModule::CONVERTER) {
                      AssetManager::instance()->registerConverter(plugin->converter());
                 }
-*/
                 int start   = rowCount();
                 beginInsertRows(QModelIndex(), start, start);
                     QFileInfo file(path);

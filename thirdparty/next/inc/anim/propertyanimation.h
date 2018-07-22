@@ -20,7 +20,7 @@ public:
     const char                     *targetProperty              () const;
 
 protected:
-    void                            valueUpdated                (const Variant &value);
+    void                            setCurrentValue             (const Variant &value);
 
 private:
     PropertyAnimationPrivate       *p_ptr;
