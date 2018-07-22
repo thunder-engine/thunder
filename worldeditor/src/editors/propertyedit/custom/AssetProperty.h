@@ -5,7 +5,7 @@
 
 #include <engine.h>
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 
 class TemplateProperty : public Property {
     Q_OBJECT

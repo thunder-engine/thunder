@@ -262,8 +262,7 @@ Object *Engine::loadResource(const string &path) {
                     file->_fread(&data[0], data.size(), 1, fp);
                     file->_fclose(fp);
 
-                    uint32_t offset = 0;
-                    Variant var     = Bson::load(data, offset);
+                    Variant var     = Bson::load(data);
                     if(!var.isValid()) {
                         var = Json::load(string(data.begin(), data.end()));
                     }
@@ -321,7 +320,7 @@ void Engine::reloadBundle() {
 
 void Engine::addModule(IModule *mode) {
     PROFILER_MARKER;
-    if(mode->types() && IModule::SYSTEM) {
+    if(mode->types() & IModule::SYSTEM) {
         p_ptr->m_Systems.push_back(mode->system());
     }
 }

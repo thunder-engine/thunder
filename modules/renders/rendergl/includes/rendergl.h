@@ -22,4 +22,8 @@ protected:
 
 };
 
+extern "C" {
+    NEXT_LIBRARY_EXPORT IModule *moduleCreate(Engine *engine);
+}
+
 #endif // RENDERGL_H

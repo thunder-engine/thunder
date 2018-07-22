@@ -13,7 +13,7 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaMethod {
 public:
-    typedef Variant            (*InvokeMem)                (Object *, int argc, const Variant *);
+
 
     enum MethodType {
         Method                  = 0,
@@ -22,6 +22,8 @@ public:
     };
 
     struct Table {
+        typedef Variant         (*InvokeMem)                (Object *, int argc, const Variant *);
+
         MethodType              type;
         const char             *name;
         InvokeMem               invoker;
@@ -30,7 +32,7 @@ public:
     };
 
 public:
-    MetaMethod                 (const Table *table);
+    MetaMethod                  (const Table *table);
 
     bool                        isValid                     () const;
 
@@ -42,7 +44,7 @@ public:
     int                         parameterCount              () const;
     MetaType                    parameterType               (int index) const;
 
-    bool                        invoke                      (Object *obj, Variant &returnValue, int argc, const Variant *args) const;
+    bool                        invoke                      (Object *object, Variant &returnValue, int argc, const Variant *args) const;
 
 private:
     const Table                *m_pTable;

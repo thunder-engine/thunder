@@ -18,11 +18,11 @@
     This enum type defines base event types and can be extended by the user defined types.
     User Defined type of Event should be bigger than Event::UserType.
 
-    \value INVALID                  Invalid event.
-    \value METHODCALL               Receiver object should invoke method (MethodCallEvent).
-    \value TIMER                    Timer event (TimerEvent).
-    \value DELETE                   Reseiver object must be deleted immediately.
-    \value USERTYPE                 User defined event.
+    \value INVALID \c Invalid event.
+    \value METHODCALL \c Receiver object should invoke method (MethodCallEvent).
+    \value TIMEREVENT \c Timer event (TimerEvent).
+    \value DESTROY \c Reseiver object must be deleted immediately.
+    \value USERTYPE \c User defined event.
 */
 /*!
     Constructs an Event with \a type of event.

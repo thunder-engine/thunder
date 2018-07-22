@@ -5,14 +5,13 @@
 
 #include "assetmanager.h"
 
-#include "textureimportsettings.h"
-
 class Viewport;
 class Engine;
 
 class Texture;
 class SpriteMesh;
 class TextureConverter;
+class TextureImportSettings;
 
 namespace Ui {
     class TextureEdit;

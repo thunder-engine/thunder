@@ -7,6 +7,7 @@
 #include <QUuid>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QMetaProperty>
 
 #include <zlib.h>
@@ -18,8 +19,7 @@
 
 #include <json.h>
 
-#include "baseconvertersettings.h"
-#include "textureimportsettings.h"
+#include "converters/converter.h"
 
 #include "codemanager.h"
 #include "textconverter.h"
@@ -107,13 +107,13 @@ QObject *AssetManager::openEditor(const QFileInfo &source) {
     return nullptr;
 }
 
-int8_t AssetManager::resourceType(const QFileInfo &source) {
+int32_t AssetManager::resourceType(const QFileInfo &source) {
     QString s = source.completeSuffix().toLower();
     auto it = m_Formats.find(s);
     if(it != m_Formats.end()) {
         return it.value();
     }
-    return IConverter::ContentInvalid;
+    return MetaType::INVALID;
 }
 
 bool AssetManager::pushToImport(const QFileInfo &source) {
@@ -121,7 +121,7 @@ bool AssetManager::pushToImport(const QFileInfo &source) {
     return true;
 }
 
-bool AssetManager::pushToImport(BaseConverterSettings *settings) {
+bool AssetManager::pushToImport(IConverterSettings *settings) {
     if(settings) {
         m_ImportQueue.push_back(settings);
     }
@@ -137,7 +137,7 @@ void AssetManager::reimport() {
     }
 }
 
-bool AssetManager::isOutdated(BaseConverterSettings *settings) {
+bool AssetManager::isOutdated(IConverterSettings *settings) {
     bool result     = true;
     uint32_t crc    = crc32(0L, Z_NULL, 0);
 
@@ -277,9 +277,10 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
     QFile::copy(src.absoluteFilePath(), target.filePath());
     QFile::copy(src.absoluteFilePath() + gMetaExt, target.filePath() + gMetaExt);
 
-    BaseConverterSettings *settings = createSettings(target);
+    IConverterSettings *settings    = createSettings(target);
     QString guid    = settings->destination();
     settings->setDestination(qPrintable(QUuid::createUuid().toString()));
+    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
 
     saveSettings(settings);
 
@@ -310,22 +311,15 @@ bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
     return QFile::copy(source.absoluteFilePath(), path + name + suff);
 }
 
-BaseConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
-    BaseConverterSettings *settings = nullptr;
-
-    uint8_t type    = IConverter::ContentInvalid;
+IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
+    IConverterSettings *settings;
+    uint8_t type    = MetaType::INVALID;
     auto it = m_Converters.find(source.completeSuffix().toLower());
     if(it != m_Converters.end()) {
         type    = it.value()->type();
-    }
-
-    switch(type) {
-        case IConverter::ContentTexture: {
-            settings    = new TextureImportSettings();
-        } break;
-        default: {
-            settings    = new BaseConverterSettings();
-        } break;
+        settings    = it.value()->createSettings();
+    } else {
+        settings    = new IConverterSettings();
     }
 
     settings->setType(type);
@@ -339,9 +333,15 @@ BaseConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
         settings->loadProperties( object.value(gSettings).toObject().toVariantMap() );
         settings->setDestination( qPrintable(object.value(gGUID).toString()) );
         settings->setCRC( uint32_t(object.value(gCRC).toInt()) );
+
+        QJsonArray array    = object.value(gSubItems).toArray();
+        foreach(QJsonValue it, array) {
+            settings->addSubItem(qPrintable(it.toString()));
+        }
     } else {
         settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
     }
+    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
     return settings;
 }
 
@@ -438,7 +438,7 @@ void AssetManager::onPerform() {
     QDir dir(m_pProjectManager->contentPath());
 
     if(!m_ImportQueue.isEmpty()) {
-        BaseConverterSettings *settings = m_ImportQueue.takeFirst();
+        IConverterSettings *settings = m_ImportQueue.takeFirst();
 
         Log(Log::INF) << "Converting:" << settings->source();
         if(!convert(settings)) {
@@ -457,6 +457,9 @@ void AssetManager::onPerform() {
 
                 m_Guids[source] = settings->destination();
                 m_Paths[settings->destination()]    = source;
+                for(int i = 0; i < settings->subItemsCount(); i++) {
+                    m_Paths[settings->subItem(i)]   = source;
+                }
 
                 emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), settings->type());
             }
@@ -473,13 +476,12 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
     QDir dir(m_pProjectManager->contentPath());
     QFileInfo info(path);
     if(info.exists() && (QString(".") + info.suffix()) != gMetaExt) {
-        BaseConverterSettings *settings = createSettings(info);
+        IConverterSettings *settings = createSettings(info);
 
         //settings->setDestination(settings->source());
         settings->setType(resourceType(info));
 
         if(force || isOutdated(settings)) {
-            saveSettings(settings);
             pushToImport(settings);
         } else {
             if(settings->type() != IConverter::ContentCode) {
@@ -490,6 +492,9 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
                 string guid     = settings->destination();
                 m_Guids[source] = guid;
                 m_Paths[guid]   = source;
+                for(int i = 0; i < settings->subItemsCount(); i++) {
+                    m_Paths[settings->subItem(i)]   = source;
+                }
             }
         }
     }
@@ -512,7 +517,7 @@ void AssetManager::onDirectoryChanged(const QString &path, bool force) {
     }
 }
 
-bool AssetManager::convert(BaseConverterSettings *settings) {
+bool AssetManager::convert(IConverterSettings *settings) {
     QFileInfo info(settings->source());
     QDir dir(m_pProjectManager->contentPath());
     QString format  = info.completeSuffix().toLower();
@@ -527,6 +532,10 @@ bool AssetManager::convert(BaseConverterSettings *settings) {
             }
             m_Guids[source] = settings->destination();
             m_Paths[settings->destination()]    = source;
+            for(int i = 0; i < settings->subItemsCount(); i++) {
+                m_Paths[settings->subItem(i)]   = source;
+            }
+            saveSettings(settings);
 
             emit imported(QString::fromStdString(source), settings->type());
 
@@ -537,20 +546,30 @@ bool AssetManager::convert(BaseConverterSettings *settings) {
     return false;
 }
 
-void AssetManager::saveSettings(BaseConverterSettings *settings) {
+void AssetManager::saveSettings(IConverterSettings *settings) {
     QJsonObject set;
-    const QMetaObject *meta = settings->metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
-        if(QString(property.name()) != "objectName") {
-            set.insert(property.name(), QJsonValue::fromVariant(property.read(settings)));
+    QObject *object = dynamic_cast<QObject *>(settings);
+    if(object) {
+        const QMetaObject *meta = object->metaObject();
+        for(int i = 0; i < meta->propertyCount(); i++) {
+            QMetaProperty property  = meta->property(i);
+            if(QString(property.name()) != "objectName") {
+                set.insert(property.name(), QJsonValue::fromVariant(property.read(object)));
+            }
         }
     }
+
     QJsonObject obj;
     obj.insert(gCRC, int(settings->crc()));
     obj.insert(gGUID, settings->destination());
     obj.insert(gSettings, set);
     obj.insert(gType, settings->type());
+
+    QJsonArray subItems;
+    for(int i = 0; i < settings->subItemsCount(); i++) {
+        subItems.append(settings->subItem(i));
+    }
+    obj.insert(gSubItems, subItems);
 
     QFile fp(QString(settings->source()) + gMetaExt);
     if(fp.open(QIODevice::WriteOnly)) {

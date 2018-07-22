@@ -103,7 +103,12 @@ bool ThreadPoolPrivate::APoolWorker::isFree() {
     PROFILE_FUNCTION()
     return (m_pTask == nullptr);
 }
-
+/*!
+    \class ThreadPool
+    \brief
+    \since Next 1.0
+    \inmodule Core
+*/
 ThreadPool::ThreadPool() :
         p_ptr(new ThreadPoolPrivate) {
 

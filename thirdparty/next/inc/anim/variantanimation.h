@@ -17,16 +17,17 @@ public:
     ~VariantAnimation               ();
 
     int32_t                         loopDuration                () const;
-    void                            setLoopDuration             (int32_t msec);
+    void                            setLoopDuration             (int32_t duration);
 
     Variant                         currentValue                () const;
+    virtual void                    setCurrentValue             (const Variant &value);
 
+    FrameVector                    &keyFrames                   () const;
     void                            setKeyFrames                (const FrameVector &frames);
 
 protected:
     void                            update                      ();
 
-    virtual void                    valueUpdated                (const Variant &value);
 private:
     VariantAnimationPrivate        *p_ptr;
 };

@@ -20,6 +20,7 @@
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
+#include <resources/audioclip.h>
 
 #include "assetmanager.h"
 
@@ -55,23 +56,10 @@ QVariant qVariant(Variant &v, const string &type) {
             }
             return QVariant::fromValue(value);
         }
-        case IConverter::ContentTexture: {
-            Texture *t  = v.value<Texture *>();
-            return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
-        }
-        case IConverter::ContentMaterial: {
-            Material *t = v.value<Material *>();
-            return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
-        }
-        case IConverter::ContentMesh: {
-            Mesh *t     = v.value<Mesh *>();
-            return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
-        }
-        case IConverter::ContentFont: {
-            Font *t     = v.value<Font *>();
-            return QVariant::fromValue(Template(Engine::reference(t).c_str(), (IConverter::ContentTypes)v.userType()));
-        }
-        default: break;
+        default: {
+            Object *o   = *(reinterpret_cast<Object **>(v.data()));
+            return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
+        } break;
     }
     return QVariant();
 }
@@ -112,35 +100,13 @@ Variant aVariant(QVariant &v, int type) {
             }
             return Variant(v.value<Vector4>());
         } break;
-        case IConverter::ContentTexture: {
+        default: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
-                Texture *t = Engine::loadResource<Texture>(qPrintable(p.path));
-                return Variant::fromValue(t);
+                Object *m = Engine::loadResource<Object>(qPrintable(p.path));
+                return Variant(type, &m);
             }
         } break;
-        case IConverter::ContentMaterial: {
-            Template p  = v.value<Template>();
-            if(!p.path.isEmpty()) {
-                Material *m = Engine::loadResource<Material>(qPrintable(p.path));
-                return Variant::fromValue(m);
-            }
-        } break;
-        case IConverter::ContentMesh: {
-            Template p  = v.value<Template>();
-            if(!p.path.isEmpty()) {
-                Mesh *m = Engine::loadResource<Mesh>(qPrintable(p.path));
-                return Variant::fromValue(m);
-            }
-        } break;
-        case IConverter::ContentFont: {
-            Template p  = v.value<Template>();
-            if(!p.path.isEmpty()) {
-                Font *m = Engine::loadResource<Font>(qPrintable(p.path));
-                return Variant::fromValue(m);
-            }
-        } break;
-        default: break;
     }
     return Variant();
 }
@@ -275,10 +241,12 @@ bool NextObject::event(QEvent *e) {
                 } else {
                     target  = aVariant(value, current.userType());
                 }
+
                 if(target.isValid() && current != target) {
                     if(m_pController) {
                         UndoManager::instance()->push(new UndoManager::PropertyObjects(m_Objects, m_pController));
                     }
+
                     o->setProperty(qPrintable(list.front()), target);
                     onUpdated();
                 }

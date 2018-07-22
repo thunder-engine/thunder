@@ -67,7 +67,7 @@ public:
     \since Next 1.0
     \inmodule Core
 
-    The object is the central part of the library Next.
+    The object is the central part of the Next library.
     For communication between objects two mechanisms was implemented the signals and slots also event based approach.
     To connect two objects between use connect() method and the sender object  will notify the receiver object about necessary events.
 
@@ -106,13 +106,34 @@ public:
     \sa find(), findChildren()
 */
 /*!
+    \macro A_OBJECT(Class, Super)
+    \relates Object
+
+    This macro creates member functions to create MetaObject's.
+
+    \a Class must be current class name
+    \a Super must be class name of parent
+
+    Example:
+    \code
+        class MyObject : public Object {
+            A_OBJECT(MyObject, Object)
+        };
+    \endcode
+
+    And then:
+    \code
+        MetaObject *meta    = MyObject::metaClass();
+    \endcode
+*/
+/*!
     \macro A_REGISTER(Class, Super, Group)
     \relates Object
 
-    This macro create member functions for registering and unregistering in ObjectSystem factory.
+    This macro creates member functions for registering and unregistering in ObjectSystem factory.
 
     \a Class must be current class name
-    \a Super must be class name of parrent
+    \a Super must be class name of parent
     \a Group could be any and used to help manage factories
 
     Example:
@@ -138,14 +159,14 @@ public:
     \macro A_OVERRIDE(Class, Super, Group)
     \relates Object
 
-    This macro work pertty mutch the same as A_REGISTER() macro but with little difference.
+    This macro works pertty mutch the same as A_REGISTER() macro but with little difference.
     It's override \a Super factory in ObjectSystem by own routine.
     And restore original state when do unregisterClassFactory().
 
     This macro can be used to implement polymorphic behavior for factories.
 
     \a Class must be current class name
-    \a Super must be class name of parrent
+    \a Super must be class name of parent
     \a Group could be any and used to help manage factories
 
     Example:
@@ -167,12 +188,67 @@ public:
         }
     \endcode
 
-    \note Also it's includes A_OBJECT() macro
+    \note Also it's includes A_OBJECT macro
 
-    \sa ObjectSystem::objectCreate(), A_REGISTER(), A_OBJECT()
+    \sa ObjectSystem::objectCreate(), A_REGISTER(), A_OBJECT
 */
 /*!
-    Cunstructs an object.
+    \macro A_METHODS()
+    \relates Object
+
+    This macro is a container to keep information about included methods.
+
+    There are three possible types of methods:
+    \table
+    \header
+        \li Type
+        \li Description
+    \row
+        \li A_SIGNAL
+        \li Method without impelementation can't be invoked. Used for Signals and Slots mechanism.
+    \row
+        \li A_METHOD
+        \li Standard method can be invoked. Used for general porposes.
+    \row
+        \li A_SLOT
+        \li Very similar to A_METHOD but with special flag to be used for Signal-Slot mechanism.
+    \endtable
+
+
+    For example declare an introspectable class.
+    \code
+        class MyObject : public Object {
+            A_REGISTER(MyObject, Object, General)
+
+            A_METHODS(
+                A_METHOD(foo)
+                A_SIGNAL(signal)
+            )
+
+        public:
+            void            foo             () { }
+
+            void            signal          ();
+        };
+    \endcode
+
+    And then:
+    \code
+        MyObject obj;
+        const MetaObject *meta = obj.metaObject();
+
+        int index   = meta->indexOfMethod("foo");
+        if(index > -1) {
+            MetaMethod method   = meta->method(index);
+            if(method.isValid() {
+                Variant value;
+                method.invoke(&obj, value, 0, nullptr); // Will call MyObject::foo method
+            }
+        }
+    \endcode
+*/
+/*!
+    Constructs an object.
 
     By default Object create without parent to assign the parent object use setParent().
 */
@@ -281,7 +357,7 @@ Object *Object::clone() {
         connect(result, (to_string(1) + signal.signature()).c_str(),
                 it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
-    result->p_ptr->m_UUID   = ObjectSystem::generateUUID(result);
+    result->p_ptr->m_UUID   = ObjectSystem::generateUID();
     return result;
 }
 /*!
@@ -629,7 +705,7 @@ void Object::loadUserData(const VariantMap &data) {
 }
 /*!
     This method allows to SERIALIZE data which not present as A_PROPERTY() in object.
-    Returns sizlized data as VariantMap.
+    Returns serialized data as VariantList.
 */
 VariantMap Object::saveUserData() const {
     return VariantMap();
