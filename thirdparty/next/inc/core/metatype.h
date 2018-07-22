@@ -83,18 +83,6 @@ public:
     static bool             registerConverter           (uint32_t from, uint32_t to, converterCallback function);
     static bool             hasConverter                (uint32_t from, uint32_t to);
 
-    static bool             toBoolean                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toInteger                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toFloat                     (void *to, const void *from, const uint32_t fromType);
-    static bool             toString                    (void *to, const void *from, const uint32_t fromType);
-    static bool             toList                      (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector2                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector3                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toVector4                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toMatrix3                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toMatrix4                   (void *to, const void *from, const uint32_t fromType);
-    static bool             toQuaternion                (void *to, const void *from, const uint32_t fromType);
-
 private:
     const Table            *m_pTable;
 

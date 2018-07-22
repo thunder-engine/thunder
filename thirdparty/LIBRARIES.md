@@ -28,10 +28,20 @@
 - Version: 3.2
 - License: Zlib
 
+## libogg
+- Link: https://github.com/xiph/ogg
+- Version: 1.3.3
+- License: Ogg License (BSD-like)
+
+## libvorbis
+- Link: https://github.com/xiph/vorbis
+- Version: 1.3.6
+- License: Vorbis License (BSD-like)
+
 ## next
 
-- Link: N/A
-- Version: N/A
+- Link: https://github.com/eprikazchikov/platformnext
+- Version: 1.0
 - License: MIT
 
 ## physfs

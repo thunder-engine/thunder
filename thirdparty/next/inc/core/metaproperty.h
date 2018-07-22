@@ -25,11 +25,11 @@ public:
     bool                    isValid                     () const;
     const MetaType          type                        () const;
 
-    Variant                 read                        (const Object *obj) const;
-    void                    write                       (Object *obj, const Variant &value) const;
+    Variant                 read                        (const Object *object) const;
+    void                    write                       (Object *object, const Variant &value) const;
 
     template<typename T>
-    void                    write                       (Object *obj, const T &value) const {
+    void                    write                       (Object *object, const T &value) const {
         uint32_t type   = MetaType::type<T>();
         Variant arg;
         if(type < MetaType::VARIANTMAP && type >= MetaType::USERTYPE) {
@@ -37,7 +37,7 @@ public:
         } else {
             arg = Variant(value);
         }
-        write(obj, arg);
+        write(object, arg);
     }
 
 private:

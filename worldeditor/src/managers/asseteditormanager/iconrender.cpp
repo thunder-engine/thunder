@@ -20,9 +20,9 @@
 #include <components/staticmesh.h>
 #include <components/spritemesh.h>
 
-#include "managers/pluginmanager/pluginmodel.h"
+#include "pluginmodel.h"
 #include "assetmanager.h"
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 
 IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
         QObject(parent) {

@@ -5,10 +5,17 @@
 #include "core/bson.h"
 #include "core/json.h"
 
+#include <random>
+
+static random_device rd;
+static mt19937 mt(rd());
+static uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
+
 class ObjectSystemPrivate {
 public:
     ObjectSystemPrivate() :
         m_Exit(false) {
+
     }
 
     /// Container for registered callbacks.
@@ -21,7 +28,30 @@ public:
 };
 
 ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
+/*!
+    \class ObjectSystem
+    \brief
+    \since Next 1.0
+    \inmodule Core
+*/
+/*!
+    \typedef ObjectSystem::FactoryMap
 
+    This container holds all registered Objects which can be easily created through objectCreate().
+
+    \sa objectCreate()
+*/
+/*!
+    \typedef ObjectSystem::GroupMap
+
+    This container holds links between objects and groups. Groups helps to manage objects and not used directly.
+
+    \sa objectCreate()
+*/
+/*!
+    Constructs ObjectSystem with \a name.
+    \note There can be only one instance of Object System per application. (semi singleton)
+*/
 ObjectSystem::ObjectSystem(const string &name) :
         p_ptr(new ObjectSystemPrivate()) {
     PROFILE_FUNCTION()
@@ -45,7 +75,10 @@ int32_t ObjectSystem::exec() {
     }
     return 0;
 }
-
+/*!
+    Returns a singe instance of ObjectSystem.
+    \note Can return nullptr in case of ObjectSystem isn't initialized yet.
+*/
 ObjectSystem *ObjectSystem::instance() {
     PROFILE_FUNCTION()
     return ObjectSystemPrivate::s_Instance;
@@ -64,7 +97,7 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         object = (*it).second->createInstance();
         object->setName(name);
         object->setParent(parent);
-        object->setUUID(generateUUID(object));
+        object->setUUID(generateUID());
     }
     return object;
 }
@@ -80,7 +113,9 @@ void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     p_ptr->m_Groups.erase(name);
     p_ptr->m_Factories.erase(uri);
 }
-
+/*!
+    Removes all factories from the system.
+*/
 void ObjectSystem::factoryClear() {
     PROFILE_FUNCTION()
     p_ptr->m_Factories.clear();
@@ -100,7 +135,14 @@ void enumObjects(const Object *object, ObjectArray &list) {
         enumObjects(it, list);
     }
 }
+/*!
+    Returns serialized to Variant version of \a object inherited from Object class.
+    This method saves all object property values, active connections and necessary parameters.
+    \note All childs of object will be also serialized.
 
+    The returned value can be saved on disk in BSON or JSON form or keep it in memory.
+    Developers is able to save own data using Object::saveUserData() mechanism.
+*/
 Variant ObjectSystem::toVariant(const Object *object) {
     PROFILE_FUNCTION()
     VariantList result;
@@ -150,15 +192,19 @@ Variant ObjectSystem::toVariant(const Object *object) {
             links.push_back(link);
         }
         o.push_back(properties);
-        o.push_back(it->saveUserData());
         o.push_back(links);
+        o.push_back(it->saveUserData());
 
         result.push_back(o);
     }
 
     return result;
 }
-
+/*!
+    Returns object deserialized from \a variant based representation.
+    The Variant representation can be loaded from BSON or JSON formats or retrieved from memory.
+    Deserialization will try to restore objects hierarchy, its properties and connections.
+*/
 Object *ObjectSystem::toObject(const Variant &variant) {
     PROFILE_FUNCTION()
     Object *result  = nullptr;
@@ -200,48 +246,46 @@ Object *ObjectSystem::toObject(const Variant &variant) {
                     }
                 }
                 i++;
+                // Restore connections
+                for(const auto &link : (*i).value<VariantList>()) {
+                    VariantList list    = link.value<VariantList>();
+                    Object *sender      = nullptr;
+                    Object *receiver    = nullptr;
+                    if(list.size() == 4) {
+                        auto l  = list.begin();
+                        auto s  = array.find((*l).toInt());
+                        if(s != array.end()) {
+                            sender  = (*s).second;
+                        }
+                        l++;
+
+                        string signal = (*l).toString();
+                        l++;
+
+                        s = array.find((*l).toInt());
+                        if(s != array.end()) {
+                            receiver  = (*s).second;
+                        }
+                        l++;
+
+                        string method = (*l).toString();
+                        l++;
+
+                        connect(sender, signal.c_str(), receiver, method.c_str());
+                    }
+                }
+                i++;
                 // Load user data
-                object->loadUserData((*i).toMap());
-                i++;
-            }
-        }
-    }
-    // Restore connections
-    for(auto it : objects) {
-        VariantList o  = it.value<VariantList>();
-        VariantList list   = o.back().value<VariantList>();
-        for(const auto &link : list) {
-            VariantList l  = link.value<VariantList>();
-            Object *sender      = nullptr;
-            Object *receiver    = nullptr;
-            if(l.size() == 4) {
-                auto i  = l.begin();
-                auto s = array.find((*i).toInt());
-                if(s != array.end()) {
-                    sender  = (*s).second;
-                }
-                i++;
-
-                string signal = (*i).toString();
-                i++;
-
-                s = array.find((*i).toInt());
-                if(s != array.end()) {
-                    receiver  = (*s).second;
-                }
-                i++;
-
-                string method = (*i).toString();
-                i++;
-
-                connect(sender, signal.c_str(), receiver, method.c_str());
+                object->loadUserData((*i).value<VariantMap>());
             }
         }
     }
 
     return result;
 }
-
-uint32_t ObjectSystem::generateUUID(const Object *object) {
-    return hash<const void *>()(object);
+/*!
+    Returns the new unique ID based on random number generator.
+*/
+uint32_t ObjectSystem::generateUID() {
+    return dist(mt);
 }

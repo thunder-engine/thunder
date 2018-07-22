@@ -13,7 +13,7 @@
 #include <QFileInfo>
 #include <QTime>
 
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 #include "projectmanager.h"
 
 #define HEADER  "Header"
@@ -143,8 +143,8 @@ string FBXConverter::format() const {
     return "fbx";
 }
 
-IConverter::ContentTypes FBXConverter::type() const {
-    return IConverter::ContentMesh;
+uint32_t FBXConverter::type() const {
+    return MetaType::type<Mesh *>();
 }
 
 uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
@@ -160,7 +160,7 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
         }
     }
 
-    QFile file(ProjectManager::instance()->importPath() + "/" + settings->destination());
+    QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data  = Bson::save(Engine::toVariant(&mesh));
         file.write((const char *)&data[0], data.size());

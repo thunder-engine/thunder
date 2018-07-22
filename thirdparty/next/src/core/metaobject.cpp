@@ -2,13 +2,29 @@
 
 #include "core/object.h"
 
-#if __linux__
 #include <cstring>
-#endif
+/*!
+    \class MetaObject
+    \brief The MetaObject provides an interface to retrieve information about Object at runtime.
+    \since Next 1.0
+    \inmodule Core
 
+    This class is a part of Object-Introspection-Mechanism. MetaObject provides information about one particular class inherited from base Object class.
+    Developers are able to retrieve information about properties, methods and inheritance chains.
+
+    This class is actively used in Signal-Slot mechanism.
+*/
+/*!
+    \typedef MetaObject::Constructor
+
+    Callback which contain address to method to construct new Object with represented type.
+*/
+/*!
+    Constructs MetaObject object for Object with type \a name, inherited from \a super class and provided \a constructor, \a methods and \a props.
+*/
 MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
-        m_pName(name),
         m_Constructor(constructor),
+        m_pName(name),
         m_pSuper(super),
         m_pMethods(methods),
         m_pProperties(props),
@@ -22,22 +38,31 @@ MetaObject::MetaObject(const char *name, const MetaObject *super, const Construc
         m_PropCount++;
     }
 }
-
+/*!
+    Returns the name of the object type.
+*/
 const char *MetaObject::name() const {
     PROFILE_FUNCTION()
     return m_pName;
 }
-
+/*!
+    Returns an introspection object for parent class.
+*/
 const MetaObject *MetaObject::super() const {
     PROFILE_FUNCTION()
     return m_pSuper;
 }
-
+/*!
+    Constructs and return a new instance of associated class.
+*/
 Object *MetaObject::createInstance() const {
     PROFILE_FUNCTION()
     return (*m_Constructor)();
 }
-
+/*!
+    Returns index of class method by provided \a signature; otherwise returns -1.
+    \note This method looks through class hierarchy.
+*/
 int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION()
     const MetaObject *s    = this;
@@ -52,7 +77,10 @@ int MetaObject::indexOfMethod(const char *signature) const {
     }
     return -1;
 }
-
+/*!
+    Returns index of class signal by provided \a signature; otherwise returns -1.
+    \note This method looks through class hierarchy.
+*/
 int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION()
     const MetaObject *s    = this;
@@ -68,7 +96,10 @@ int MetaObject::indexOfSignal(const char *signature) const {
     }
     return -1;
 }
-
+/*!
+    Returns index of class slot by provided \a signature; otherwise returns -1.
+    \note This method looks through class hierarchy.
+*/
 int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION()
     const MetaObject *s    = this;
@@ -84,7 +115,10 @@ int MetaObject::indexOfSlot(const char *signature) const {
     }
     return -1;
 }
-
+/*!
+    Returns MetaMethod object by provided \a index of method.
+    \note This method looks through class hierarchy.
+*/
 MetaMethod MetaObject::method(int index) const {
     PROFILE_FUNCTION()
     int i = index - methodOffset();
@@ -97,29 +131,36 @@ MetaMethod MetaObject::method(int index) const {
     }
     return MetaMethod(nullptr);
 }
-
+/*!
+    Returns the sum of methods for the current class and parent classes. It's includes signals and slots.
+*/
 int MetaObject::methodCount() const {
     PROFILE_FUNCTION()
-    int count               = m_MethodCount;
-    const MetaObject *s    = m_pSuper;
+    int count           = m_MethodCount;
+    const MetaObject *s = m_pSuper;
     while(s) {
         count  += s->m_MethodCount;
         s       = s->m_pSuper;
     }
     return count;
 }
-
+/*!
+    Returns the first index of method for current class. The offset is the sum of all methods in parent classes.
+*/
 int MetaObject::methodOffset() const {
     PROFILE_FUNCTION()
-    int offset              = 0;
-    const MetaObject *s    = m_pSuper;
+    int offset          = 0;
+    const MetaObject *s = m_pSuper;
     while(s) {
         offset += s->m_MethodCount;
         s       = s->m_pSuper;
     }
     return offset;
 }
-
+/*!
+    Returns index of class property by provided \a name; otherwise returns -1.
+    \note This method looks through class hierarchy.
+*/
 int MetaObject::indexOfProperty(const char *name) const {
     PROFILE_FUNCTION()
     const MetaObject *s    = this;
@@ -134,7 +175,10 @@ int MetaObject::indexOfProperty(const char *name) const {
     }
     return -1;
 }
-
+/*!
+    Returns MetaProperty object by provided \a index of property.
+    \note This method looks through class hierarchy.
+*/
 MetaProperty MetaObject::property(int index) const {
     PROFILE_FUNCTION()
     int i = index - propertyOffset();
@@ -146,7 +190,9 @@ MetaProperty MetaObject::property(int index) const {
     }
     return MetaProperty(nullptr);
 }
-
+/*!
+    Returns the sum of properties for the current class and parent classes.
+*/
 int MetaObject::propertyCount() const {
     PROFILE_FUNCTION()
     int count           = m_PropCount;
@@ -157,7 +203,9 @@ int MetaObject::propertyCount() const {
     }
     return count;
 }
-
+/*!
+    Returns the first index of property for current class. The offset is the sum of all properties in parent classes.
+*/
 int MetaObject::propertyOffset() const {
     PROFILE_FUNCTION()
     int offset          = 0;
@@ -168,7 +216,12 @@ int MetaObject::propertyOffset() const {
     }
     return offset;
 }
+/*!
+    Checks the abillity to cast the current object to \a type.
+    \note This method tries to go through inheritance to find a common parent class.
 
+    Returns true if object can be cast to \a type; otherwise returns false.
+*/
 bool MetaObject::canCastTo(const char *type) const {
     PROFILE_FUNCTION()
     const MetaObject *s    = this;

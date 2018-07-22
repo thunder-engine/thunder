@@ -55,12 +55,11 @@ protected:
 
     IController            *m_pController;
 
-    ISystem                *m_pRender;
+    QList<ISystem *>        m_Systems;
+
     Scene                  *m_pScene;
 
     QMenu                   m_RenderModeMenu;
-
-    QString                 m_RenderDesc;
 
     bool                    m_GameMode;
 };

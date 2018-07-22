@@ -8,7 +8,12 @@ public:
 
     smatch                  mResult;
 };
-
+/*!
+    \class Uri
+    \brief Uri class provides an interface for working with URI's.
+    \since Next 1.0
+    \inmodule Core
+*/
 Uri::Uri(const string &uri) :
         p_ptr(new UriPrivate) {
     PROFILE_FUNCTION()

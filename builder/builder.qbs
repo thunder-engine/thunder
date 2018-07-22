@@ -18,6 +18,7 @@ Project {
         "../develop/managers/codemanager/include",
         "../develop/managers/projectmanager/include",
         "../develop/managers/assetmanager/include",
+        "../develop/managers/pluginmanager/include",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
         "../thirdparty/next/inc",

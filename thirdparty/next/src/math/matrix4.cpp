@@ -30,9 +30,11 @@ Matrix4::Matrix4(const Matrix3 &matrix) {
     Constructs matrix by given \a position, \a rotation and \a scale.
 */
 Matrix4::Matrix4(const Vector3 &position, const Quaternion &rotation, const Vector3 &scale) {
-    this->translate(position);
-    *this *= Matrix4(rotation.toMatrix());
+    identity();
     Matrix4 m;
+    m.translate(position);
+    *this *= m;
+    *this *= Matrix4(rotation.toMatrix());
     m.scale(scale);
     *this *= m;
 }

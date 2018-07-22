@@ -260,7 +260,7 @@ void ShaderBuilder::load(const QString &path) {
                         } break;
                         default: {
                             if(array.first().toString() == "Template") {
-                                obj->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(), (IConverter::ContentTypes)array.at(2).toInt())));
+                                obj->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(), array.at(2).toInt())));
                             }
                         } break;
                     }
@@ -353,7 +353,7 @@ void ShaderBuilder::save(const QString &path) {
                                     QJsonArray v;
                                     v.push_back(value.typeName());
                                     v.push_back(tmp.path);
-                                    v.push_back(tmp.type);
+                                    v.push_back(QJsonValue::fromVariant(tmp.type));
                                     values[property.name()] = v;
                                 }
                             } break;
@@ -452,8 +452,8 @@ Variant ShaderBuilder::object() const {
 
     object.push_back(VariantMap()); // properties
 
-    object.push_back(data()); // user data
     object.push_back(VariantList()); // links
+    object.push_back(data()); // user data
 
     result.push_back(object);
 

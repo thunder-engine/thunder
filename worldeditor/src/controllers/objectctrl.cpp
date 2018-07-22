@@ -15,7 +15,7 @@
 #include "graph/handletools.h"
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
-#include "baseconvertersettings.h"
+#include "converters/converter.h"
 #include "projectmanager.h"
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
@@ -114,7 +114,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
-            bool result = false;
+            bool result     = false;
             Camera *camera  = dynamic_cast<Camera *>(component);
             if(camera) {
                 array<Vector3, 8> a = camera->frustumCorners(camera->nearPlane(), camera->farPlane());
@@ -124,7 +124,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
                                                4, 5, 5, 6, 6, 7, 7, 4,
                                                0, 4, 1, 5, 2, 6, 3, 7};
 
-                Handles::drawLines(component->actor().transform(), points, indices);
+                Handles::drawLines(component->actor().transform(), points, indices); /// \todo Memory leak
                 result  = Handles::drawBillboard(component->actor().position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
             }
             DirectLight *direct = dynamic_cast<DirectLight *>(component);

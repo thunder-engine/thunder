@@ -12,8 +12,7 @@ class NEXT_LIBRARY_EXPORT Animation : public Object {
         A_SLOT(Animation::start),
         A_SLOT(Animation::stop),
         A_SLOT(Animation::pause),
-        A_SLOT(Animation::resume),
-        A_SIGNAL(Animation::finished)
+        A_SLOT(Animation::resume)
     )
 
     A_PROPERTIES(
@@ -39,13 +38,13 @@ public:
     ~Animation                      ();
 
     Direction                       direction                   () const;
-    void                            setDirection                (Direction value);
+    void                            setDirection                (Direction direction);
 
     int32_t                         currentTime                 () const;
     void                            setCurrentTime              (int32_t msecs);
 
     int32_t                         loopCount                   () const;
-    void                            setLoopCount                (int32_t loop);
+    void                            setLoopCount                (int32_t loops);
 
     uint32_t                        currentLoop                 () const;
 
@@ -58,9 +57,6 @@ public:
     int32_t                         duration                    () const;
 
 public:
-    void                            finished                    ();
-
-public:
     void                            start                       ();
 
     void                            stop                        ();
@@ -70,8 +66,6 @@ public:
     void                            resume                      ();
 
 protected:
-    bool                            event                       (Event *event);
-
     virtual void                    update                      ();
 
 private:

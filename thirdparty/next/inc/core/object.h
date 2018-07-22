@@ -70,8 +70,6 @@ public:
         Object                     *receiver;
 
         int32_t                     method;
-
-        string                      reference;
     };
 
     typedef list<Object *>          ObjectList;
