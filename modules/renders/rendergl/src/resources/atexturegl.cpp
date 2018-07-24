@@ -6,7 +6,8 @@
 
 #define DATA    "Data"
 
-ATextureGL::ATextureGL() {
+ATextureGL::ATextureGL() :
+    m_ID(0) {
 
 }
 

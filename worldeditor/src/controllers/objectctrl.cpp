@@ -137,6 +137,10 @@ void ObjectCtrl::drawHelpers(Object &object) {
                 result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
                 Handles::s_Color = Handles::s_Second = Handles::s_Normal;
             }
+            if(component->typeName() == "AudioSource") {
+                Vector3 pos     = component->actor().position();
+                result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/soundsource.png"));
+            }
 
             if(result) {
                 list<uint32_t> sel;

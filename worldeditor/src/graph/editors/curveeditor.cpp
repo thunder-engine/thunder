@@ -11,7 +11,7 @@ CurveEditor::CurveEditor(QWidget *parent) :
     remove    = false;
 
     cell      = 32;
-    m_Step     = QPointF(0.1f, 1.0f);
+    m_Step    = QPointF(0.1f, 1.0f);
 
     focus_p   = -1;
     focus_v   = -1;
