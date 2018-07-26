@@ -5,7 +5,10 @@
 [![Coverity Status](https://img.shields.io/coverity/scan/15068.svg)](https://scan.coverity.com/projects/eprikazchikov-thunder)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/06a1475c3d7241d6b70cd7d28c680142)](https://www.codacy.com/app/eprikazchikov/thunder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eprikazchikov/thunder&amp;utm_campaign=Badge_Grade)
 ### About
+
 Thunder Engine is a multifunctional light weight game engine written by Evgeniy Prikazchikov for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
+![Screenshot of Thunder Engine](https://raw.githubusercontent.com/eprikazchikov/thunder/master/doc/media/ScreenShot01.png)
+
 #### Supported Platforms
 - Windows
 - MacOS X
