@@ -21,10 +21,16 @@ public:
 
     QMenu                      *menu                    (const QString &name);
 
+    Object                     *findChild               (QStringList &path);
+
+    void                        setChanged              (Object *object, const QString &property);
+
 public slots:
     void                        onUpdated               ();
 
 signals:
+    void                        changed                 (Object *object, const QString &property);
+
     void                        updated                 ();
 
 protected slots:
@@ -35,9 +41,7 @@ protected:
 
     void                        buildObject             (Object *object, const QString &path = QString());
 
-    Object                     *findChild               (Object *parent, QStringList &path);
-
-    Object::ObjectList          m_Objects;
+    Object                     *m_pObject;
 
     ObjectCtrl                 *m_pController;
 };

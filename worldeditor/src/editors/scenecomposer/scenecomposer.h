@@ -75,7 +75,7 @@ private:
 private slots:
     void                    onGLInit                                    ();
 
-    void                    onModified                                  ();
+    void                    onUpdated                                   ();
 
     void                    onUndoRedoUpdated                           ();
 

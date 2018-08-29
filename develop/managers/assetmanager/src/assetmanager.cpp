@@ -21,6 +21,7 @@
 
 #include "converters/converter.h"
 
+#include "animconverter.h"
 #include "codemanager.h"
 #include "textconverter.h"
 #include "textureconverter.h"
@@ -41,6 +42,8 @@ const QString gEntry(".entry");
 const QString gCompany(".company");
 const QString gProject(".project");
 
+Q_DECLARE_METATYPE(IConverterSettings *)
+
 AssetManager::AssetManager() {
     m_pProjectManager   = ProjectManager::instance();
     m_pCodeManager      = CodeManager::instance();
@@ -58,6 +61,7 @@ AssetManager::AssetManager() {
     m_pTimer    = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onPerform()));
 
+    registerConverter(new AnimConverter());
     registerConverter(new TextConverter());
     registerConverter(new TextureConverter());
     registerConverter(new MaterialConverter());
@@ -460,6 +464,7 @@ void AssetManager::onPerform() {
                 for(int i = 0; i < settings->subItemsCount(); i++) {
                     m_Paths[settings->subItem(i)]   = source;
                 }
+                saveSettings(settings);
 
                 emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), settings->type());
             }

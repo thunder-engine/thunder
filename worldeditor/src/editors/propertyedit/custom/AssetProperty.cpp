@@ -37,7 +37,7 @@ QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewI
     editor->setType( type );
 
     m_Editor    = editor;
-    connect(m_Editor, SIGNAL(assetChanged(QString)), this, SLOT(onAssetChanged(QString)));
+    connect(m_Editor, SIGNAL(assetChanged(IConverterSettings *)), this, SLOT(onAssetChanged(IConverterSettings *)));
     return m_Editor;
 }
 
@@ -64,6 +64,6 @@ QSize TemplateProperty::sizeHint(const QSize& size) const {
     return QSize(size.width(), 74);
 }
 
-void TemplateProperty::onAssetChanged(const QString &tpl) {
-    setValue(tpl);
+void TemplateProperty::onAssetChanged(IConverterSettings *settings) {
+    setValue(settings->destination());
 }

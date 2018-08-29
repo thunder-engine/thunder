@@ -1,53 +1,45 @@
 #include "VectorEdit.h"
+#include "ui_VectorEdit.h"
 
-#include <QHBoxLayout>
-
-#include <amath.h>
 #include <float.h>
 
 Q_DECLARE_METATYPE(Vector3)
 
 VectorEdit::VectorEdit(QWidget *parent) :
-        QWidget(parent) {
+        QWidget(parent),
+        ui(new Ui::VectorEdit) {
 
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(0);
-    layout->setSpacing(1);
+    ui->setupUi(this);
 
-    m_pSpinX    = new QDoubleSpinBox(this);
-    m_pSpinY    = new QDoubleSpinBox(this);
-    m_pSpinZ    = new QDoubleSpinBox(this);
-    connect(m_pSpinX, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
-    connect(m_pSpinY, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
-    connect(m_pSpinZ, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
+    ui->x->setRange(-DBL_MAX, DBL_MAX);
+    ui->y->setRange(-DBL_MAX, DBL_MAX);
+    ui->z->setRange(-DBL_MAX, DBL_MAX);
 
-    m_pSpinX->setRange(-DBL_MAX, DBL_MAX);
-    m_pSpinY->setRange(-DBL_MAX, DBL_MAX);
-    m_pSpinZ->setRange(-DBL_MAX, DBL_MAX);
+    connect(ui->x, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
+    connect(ui->y, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
+    connect(ui->z, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
+}
 
-    layout->addWidget(m_pSpinX);
-    layout->addWidget(m_pSpinY);
-    layout->addWidget(m_pSpinZ);
-
-    setLayout(layout);
+VectorEdit::~VectorEdit() {
+    delete ui;
 }
 
 Vector3 VectorEdit::data() const {
-    return Vector3(m_pSpinX->value(), m_pSpinY->value(), m_pSpinZ->value());
+    return Vector3(ui->x->value(), ui->y->value(), ui->z->value());
 }
 
 void VectorEdit::setData(const Vector3 &v) {
-    m_pSpinX->blockSignals(true);
-    m_pSpinX->setValue(v.x);
-    m_pSpinX->blockSignals(false);
+    ui->x->blockSignals(true);
+    ui->x->setValue(v.x);
+    ui->x->blockSignals(false);
 
-    m_pSpinY->blockSignals(true);
-    m_pSpinY->setValue(v.y);
-    m_pSpinY->blockSignals(false);
+    ui->y->blockSignals(true);
+    ui->y->setValue(v.y);
+    ui->y->blockSignals(false);
 
-    m_pSpinZ->blockSignals(true);
-    m_pSpinZ->setValue(v.z);
-    m_pSpinZ->blockSignals(false);
+    ui->z->blockSignals(true);
+    ui->z->setValue(v.z);
+    ui->z->blockSignals(false);
 }
 
 void VectorEdit::onValueChanged(double) {

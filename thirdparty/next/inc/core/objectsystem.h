@@ -20,8 +20,6 @@ public:
     ObjectSystem                        (const string &name = "system");
     ~ObjectSystem                       ();
 
-    virtual int32_t                     exec                    ();
-
     GroupMap                            factories               () const;
 
 public:

@@ -22,7 +22,7 @@ public:
     QSize               sizeHint            (const QSize &size) const;
 
 public slots:
-    void                onAssetChanged      (const QString &tpl);
+    void                onAssetChanged      (IConverterSettings *settings);
 
 };
 

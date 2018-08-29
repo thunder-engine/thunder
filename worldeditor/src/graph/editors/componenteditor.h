@@ -1,7 +1,7 @@
 #ifndef COMPONENTEDITOR_H
 #define COMPONENTEDITOR_H
 
-#include "../graphwidget.h"
+#include "graphwidget.h"
 
 #include <object.h>
 

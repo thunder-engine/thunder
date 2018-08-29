@@ -174,7 +174,7 @@
       </layout>
      </item>
      <item>
-      <widget class="PropertyEditor" name="projectSettings" native="true">
+      <widget class="PropertyEditor" name="projectSettings">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -261,7 +261,7 @@
       </layout>
      </item>
      <item>
-      <widget class="PropertyEditor" name="propertyView" native="true">
+      <widget class="PropertyEditor" name="propertyView">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -406,6 +406,16 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="Timeline" name="timeline" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>660</y>
+      <width>411</width>
+      <height>111</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -667,7 +677,7 @@
  <customwidgets>
   <customwidget>
    <class>PropertyEditor</class>
-   <extends>QWidget</extends>
+   <extends>QTreeView</extends>
    <header>editors/propertyedit/propertyeditor.h</header>
    <container>1</container>
   </customwidget>
@@ -711,6 +721,12 @@
    <class>Viewport</class>
    <extends>QWidget</extends>
    <header>graph/viewport.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Timeline</class>
+   <extends>QWidget</extends>
+   <header>editors/timeline/timeline.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

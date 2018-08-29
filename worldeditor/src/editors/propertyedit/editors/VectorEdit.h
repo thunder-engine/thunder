@@ -2,28 +2,32 @@
 #define VECTOREDIT_H
 
 #include <QWidget>
-#include <QSpinBox>
 
 #include <amath.h>
 
+namespace Ui {
+    class VectorEdit;
+}
+
 class VectorEdit : public QWidget {
     Q_OBJECT
-public:
-    explicit VectorEdit(QWidget *parent = 0);
 
-    Vector3       data            () const;
-    void            setData         (const Vector3 &v);
+public:
+    explicit VectorEdit (QWidget *parent = 0);
+    ~VectorEdit         ();
+
+    Vector3             data                () const;
+
+    void                setData             (const Vector3 &);
 
 signals:
-    void            dataChanged     (QVariant data);
+    void                dataChanged         (const QVariant &);
 
 protected slots:
-    void            onValueChanged  (double);
+    void                onValueChanged      (double);
 
-protected:
-    QDoubleSpinBox *m_pSpinX;
-    QDoubleSpinBox *m_pSpinY;
-    QDoubleSpinBox *m_pSpinZ;
+private:
+    Ui::VectorEdit     *ui;
 };
 
 #endif // VECTOREDIT_H

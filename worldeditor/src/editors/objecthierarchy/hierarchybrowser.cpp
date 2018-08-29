@@ -120,7 +120,7 @@ void HierarchyBrowser::setObject(Object *object) {
     onHierarchyUpdated();
 }
 
-void HierarchyBrowser::onSelected(Object::ObjectList objects) {
+void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model   = ui->treeView->model();
     select->select(QModelIndex(), QItemSelectionModel::Clear);

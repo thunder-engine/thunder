@@ -105,7 +105,7 @@ void ObjectCtrl::deleteSelected(bool force) {
         } else {
             UndoManager::instance()->push(new UndoManager::DestroyObjects(selected(), this));
         }
-        clear();
+        clear(true);
         emit mapUpdated();
     }
 }
@@ -505,6 +505,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             it.second.object->setPosition(it.second.position + dt);
                         }
                         emit objectsUpdated();
+                        emit objectsChanged(selected(), "Position");
                     } else {
                         Handles::s_Axes = mAxes;
                     }
@@ -544,6 +545,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             it.second.object->setEuler(euler);
                         }
                         emit objectsUpdated();
+                        emit objectsChanged(selected(), "Rotation");
                     } else {
                         Handles::s_Axes = mAxes;
                     }
@@ -569,6 +571,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             it.second.object->setScale(it.second.scale + s);
                         }
                         emit objectsUpdated();
+                        emit objectsChanged(selected(), "Scale");
                     } else {
                         Handles::s_Axes = Handles::AXIS_X | Handles::AXIS_Y | Handles::AXIS_Z;
                     }

@@ -82,6 +82,8 @@ signals:
 
     void                objectsUpdated              ();
 
+    void                objectsChanged              (Object::ObjectList objects, const QString &property);
+
     void                objectsSelected             (Object::ObjectList objects);
 
     void                loadMap                     (const QString &map);

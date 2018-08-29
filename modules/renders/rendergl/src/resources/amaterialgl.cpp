@@ -113,7 +113,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 }
 
 uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer) {
-    uint8_t b   = blendMode();
+    int32_t b   = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) && //  || layer & ICommandBuffer::RAYCAST
        (b == Material::Additive || b == Material::Translucent)) {
@@ -177,7 +177,7 @@ void AMaterialGL::unbind(uint8_t) {
 
     glUseProgram(0);
 
-    uint8_t blend   = blendMode();
+    int32_t blend   = blendMode();
     if(blend == Material::Additive || blend == Material::Translucent) {
         glDisable   ( GL_BLEND );
     }
@@ -264,9 +264,9 @@ bool AMaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
         if(value) {
             char *buff  = new char[value + 1];
             if(!link) {
-                glGetShaderInfoLog(shader, value, NULL, buff);
+                glGetShaderInfoLog(shader, value, nullptr, buff);
             } else {
-                glGetProgramInfoLog(shader, value, NULL, buff);
+                glGetProgramInfoLog(shader, value, nullptr, buff);
             }
             Log(Log::ERR) << "[ Render::ShaderGL ]" << path.c_str() << "\n[ Said ]" << buff;
             delete []buff;

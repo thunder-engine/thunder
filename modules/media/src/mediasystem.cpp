@@ -53,15 +53,17 @@ void MediaSystem::update(Scene &scene, uint32_t resource) {
     PROFILER_MARKER;
 
     Camera *camera  = activeCamera();
-    Actor &a    = camera->actor();
+    if(camera) {
+        Actor &a    = camera->actor();
 
-    alListenerfv(AL_POSITION,    a.position().v);
+        alListenerfv(AL_POSITION,    a.position().v);
 
-    Vector3 dir = a.rotation() * Vector3(0.0f, 0.0f,-1.0f);
-    Vector3 up  = a.rotation() * Vector3(0.0f, 1.0f, 0.0f);
-    float orientation[] = { dir.x, dir.y, dir.z, up.x, up.y, up.z };
+        Vector3 dir = a.rotation() * Vector3(0.0f, 0.0f,-1.0f);
+        Vector3 up  = a.rotation() * Vector3(0.0f, 1.0f, 0.0f);
+        float orientation[] = { dir.x, dir.y, dir.z, up.x, up.y, up.z };
 
-    alListenerfv(AL_ORIENTATION, orientation);
+        alListenerfv(AL_ORIENTATION, orientation);
+    }
 }
 
 void MediaSystem::overrideController(IController *controller) {

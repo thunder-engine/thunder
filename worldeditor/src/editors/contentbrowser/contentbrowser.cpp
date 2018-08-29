@@ -169,7 +169,8 @@ private:
 
 ContentBrowser::ContentBrowser(QWidget* parent) :
         QWidget(parent),
-        ui(new Ui::ContentBrowser) {
+        ui(new Ui::ContentBrowser),
+        m_pSelected(nullptr) {
 
     ui->setupUi(this);
 
@@ -215,7 +216,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
         m_CreationMenu.addSeparator();
         m_CreationMenu.addAction(a);
         m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
-        m_CreationMenu.addAction(tr("CppComponent"))->setData(".cpp");
+        m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
     }
 
     createAction(showIn, SLOT(showInGraphicalShell()));
@@ -230,6 +231,10 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
 
 ContentBrowser::~ContentBrowser() {
     writeSettings();
+
+    delete ui;
+
+    delete m_pSelected;
 }
 
 void ContentBrowser::readSettings() {
@@ -340,7 +345,15 @@ void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
 
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     QModelIndex origin   = m_pContentProxy->mapToSource(index);
-    emit assetSelected(AssetManager::instance()->pathToGuid(ContentList::instance()->path(origin).toStdString()).c_str());
+
+    QFileInfo path  = ProjectManager::instance()->contentPath() + QDir::separator() + ContentList::instance()->path(origin);
+    if(path.isFile()) {
+        if(m_pSelected) {
+            delete m_pSelected;
+        }
+        m_pSelected = AssetManager::instance()->createSettings(path);
+        emit assetSelected(m_pSelected);
+    }
 }
 
 void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {

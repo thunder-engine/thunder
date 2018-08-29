@@ -13,8 +13,7 @@ static uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
 class ObjectSystemPrivate {
 public:
-    ObjectSystemPrivate() :
-        m_Exit(false) {
+    ObjectSystemPrivate() {
 
     }
 
@@ -22,17 +21,17 @@ public:
     ObjectSystem::FactoryMap    m_Factories;
     ObjectSystem::GroupMap      m_Groups;
 
-    bool                        m_Exit;
-
     static ObjectSystem        *s_Instance;
 };
 
 ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
 /*!
     \class ObjectSystem
-    \brief
+    \brief The ObjectSystem responds for object management.
     \since Next 1.0
     \inmodule Core
+
+    ObjectSystem helps to developers create new instances and serialize/deserialize them on disc or in memory.
 */
 /*!
     \typedef ObjectSystem::FactoryMap
@@ -47,6 +46,27 @@ ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
     This container holds links between objects and groups. Groups helps to manage objects and not used directly.
 
     \sa objectCreate()
+*/
+/*!
+    \fn void ObjectSystem::factoryAdd(const string &group, const MetaObject *meta)
+
+    Registers class with T type, \a meta object and \a group to object instantiation mechanism.
+    \note New classes inherited from base Object class can be automaticaly registered using T::registerClassFactory().
+    This is preferable way to use this functionality.
+*/
+/*!
+    \fn void ObjectSystem::factoryRemove(const string &group)
+
+    Unregisters class with type T and \a group from object instantiation mechanism.
+    \note The preferable way to use this function is T::unregisterClassFactory() invocation.
+*/
+/*!
+    \fn T *ObjectSystem::objectCreate(const string &name = string(), Object *parent = 0)
+
+    Returns new instance of type T and \a name as child of \a parent object.
+    \note Class T should be registered first via factoryAdd()
+
+    \sa factoryAdd(), factoryRemove()
 */
 /*!
     Constructs ObjectSystem with \a name.
@@ -68,13 +88,6 @@ ObjectSystem::~ObjectSystem() {
     ObjectSystemPrivate::s_Instance   = nullptr;
 }
 
-int32_t ObjectSystem::exec() {
-    PROFILE_FUNCTION()
-    while(!p_ptr->m_Exit) {
-
-    }
-    return 0;
-}
 /*!
     Returns a singe instance of ObjectSystem.
     \note Can return nullptr in case of ObjectSystem isn't initialized yet.
@@ -83,7 +96,12 @@ ObjectSystem *ObjectSystem::instance() {
     PROFILE_FUNCTION()
     return ObjectSystemPrivate::s_Instance;
 }
+/*!
+    Returns new instance of type represented in \a uri and \a name as child of \a parent object.
+    \note Class represented as uri should be registered first via factoryAdd()
 
+    \sa factoryAdd(), factoryRemove()
+*/
 Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object *parent) {
     PROFILE_FUNCTION()
     Object *object  = nullptr;
@@ -104,8 +122,8 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
 
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION()
-    p_ptr->m_Groups[name]    = uri;
-    p_ptr->m_Factories[uri]  = meta;
+    p_ptr->m_Groups[name]   = uri;
+    p_ptr->m_Factories[uri] = meta;
 }
 
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
@@ -120,7 +138,9 @@ void ObjectSystem::factoryClear() {
     PROFILE_FUNCTION()
     p_ptr->m_Factories.clear();
 }
-
+/*!
+    Returns all registered classes.
+*/
 ObjectSystem::GroupMap ObjectSystem::factories() const {
     PROFILE_FUNCTION()
     return p_ptr->m_Groups;

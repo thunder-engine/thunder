@@ -4,19 +4,19 @@
 #include "graphwidget.h"
 
 GraphWidget::GraphWidget(QWidget *parent) :
-        QLabel(parent) {
+        QWidget(parent) {
 
     setMouseTracking(true);
 }
 
-void GraphWidget::draw(QPainter &mPainter, const QRect &r) {
+void GraphWidget::draw(QPainter &, const QRect &) {
 }
 
-void GraphWidget::select(const QPoint &pos) {
+void GraphWidget::select(const QPoint &) {
 }
 
 void GraphWidget::paintEvent( QPaintEvent *pe ) {
-    QLabel::paintEvent(pe);
+    QWidget::paintEvent(pe);
 
     QPainter paint(this);
 
@@ -26,13 +26,13 @@ void GraphWidget::paintEvent( QPaintEvent *pe ) {
 }
 
 void GraphWidget::wheelEvent(QWheelEvent *pe ) {
-    QLabel::wheelEvent(pe);
+    QWidget::wheelEvent(pe);
 
     repaint();
 }
 
 void GraphWidget::mouseMoveEvent( QMouseEvent *pe ) {
-    QLabel::mouseMoveEvent(pe);
+    QWidget::mouseMoveEvent(pe);
 
     select(pe->pos());
 
@@ -40,25 +40,25 @@ void GraphWidget::mouseMoveEvent( QMouseEvent *pe ) {
 }
 
 void GraphWidget::mousePressEvent( QMouseEvent *pe ) {
-    QLabel::mousePressEvent(pe);
+    QWidget::mousePressEvent(pe);
 
     repaint();
 }
 
 void GraphWidget::mouseReleaseEvent( QMouseEvent *pe ) {
-    QLabel::mouseReleaseEvent(pe);
+    QWidget::mouseReleaseEvent(pe);
 
     repaint();
 }
 
 void GraphWidget::keyPressEvent( QKeyEvent *pe ) {
-    QLabel::keyPressEvent(pe);
+    QWidget::keyPressEvent(pe);
 
     repaint();
 }
 
 void GraphWidget::keyReleaseEvent( QKeyEvent *pe ) {
-    QLabel::keyPressEvent(pe);
+    QWidget::keyPressEvent(pe);
 
     repaint();
 }

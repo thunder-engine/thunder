@@ -82,6 +82,8 @@ public:
 
     QImage                  icon                (const QString &path);
 
+    IConverterSettings     *createSettings      (const QFileInfo &source);
+
 public slots:
     void                    reimport            ();
 
@@ -130,8 +132,6 @@ protected:
 protected:
     AssetManager            ();
     ~AssetManager           ();
-
-    IConverterSettings     *createSettings      (const QFileInfo &source);
 
     void                    cleanupBundle       ();
     void                    dumpBundle          ();

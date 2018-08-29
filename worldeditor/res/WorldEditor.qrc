@@ -15,6 +15,13 @@
         <file>icons/thunder.png</file>
         <file>icons/thunder.svg</file>
         <file>fontawesome/eye.png</file>
+        <file>fontawesome/fast-backward.png</file>
+        <file>fontawesome/fast-forward.png</file>
+        <file>fontawesome/play.png</file>
+        <file>fontawesome/record.png</file>
+        <file>fontawesome/back.png</file>
+        <file>fontawesome/next.png</file>
+        <file>fontawesome/pause.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

@@ -1,7 +1,7 @@
 #ifndef SCHEMEEDITOR_H
 #define SCHEMEEDITOR_H
 
-#include "../../graph/graphwidget.h"
+#include "../../graph/editors/graphwidget.h"
 
 #include "abstractschememodel.h"
 
