@@ -205,10 +205,11 @@ void PluginModel::reloadPlugin(const QString &path) {
 }
 
 void PluginModel::clear() {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
     delete m_rootItem;
     m_rootItem  = createRoot();
-    endRemoveRows();
+
+    beginResetModel();
+    endResetModel();
 }
 
 void PluginModel::rescanPath(const QString &path) {

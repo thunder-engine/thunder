@@ -11,7 +11,7 @@ QVariant Vector3DProperty::value(int role) const {
     if(data.isValid() && role != Qt::UserRole) {
         switch(role) {
             case Qt::DisplayRole: {
-                return QVariant();
+                return data;
             }
             default: break;
         }
@@ -26,7 +26,7 @@ QWidget *Vector3DProperty::createEditor(QWidget *parent, const QStyleOptionViewI
 }
 
 bool Vector3DProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    VectorEdit *e  = dynamic_cast<VectorEdit *>(editor);
+    VectorEdit *e  = static_cast<VectorEdit *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(data.value<Vector3>());
@@ -37,7 +37,7 @@ bool Vector3DProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant Vector3DProperty::editorData(QWidget *editor) {
-    VectorEdit *e  = dynamic_cast<VectorEdit *>(editor);
+    VectorEdit *e  = static_cast<VectorEdit *>(editor);
     if(e) {
         return QVariant::fromValue(e->data());
     }

@@ -77,7 +77,7 @@ signals:
     void                    updated                     ();
 
 public slots:
-    void                    onSelected                  (Object::ObjectList objects);
+    void                    onObjectSelected            (Object::ObjectList objects);
 
     void                    onHierarchyUpdated          ();
 

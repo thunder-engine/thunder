@@ -14,25 +14,6 @@
    <string>Material Editor</string>
   </property>
   <widget class="QToolWindowManager" name="centralwidget">
-   <widget class="SchemeEditor" name="schemeWidget">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>90</y>
-      <width>200</width>
-      <height>200</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>200</height>
-     </size>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
    <widget class="PropertyEditor" name="treeView">
     <property name="geometry">
      <rect>
@@ -79,6 +60,16 @@
       <width>200</width>
       <height>200</height>
      </size>
+    </property>
+   </widget>
+   <widget class="SchemeEditor" name="schemeWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>231</width>
+      <height>191</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -173,14 +164,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>SchemeEditor</class>
-   <extends>QLabel</extends>
-   <header>editors/scemeeditor/schemeeditor.h</header>
-  </customwidget>
-  <customwidget>
    <class>ComponentBrowser</class>
    <extends>QWidget</extends>
    <header>editors/componentbrowser/componentbrowser.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SchemeEditor</class>
+   <extends>QWidget</extends>
+   <header>editors/scemeeditor/schemeeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

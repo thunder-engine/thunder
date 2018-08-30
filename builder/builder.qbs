@@ -24,6 +24,7 @@ Project {
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
+        "../thirdparty/next/inc/anim",
         "../thirdparty/physfs/inc",
         "../thirdparty/glfw/inc",
         "../thirdparty/fbx/inc",

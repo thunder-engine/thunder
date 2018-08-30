@@ -10,13 +10,16 @@
 #define DEG2RAD (PI / 180.0f)
 #define RAD2DEG (180.0f / PI)
 
+#define SQR(a) (a * a)
+#define QUAD(a) (a * a * a)
+
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
 #define CLAMP(x, min, max)	((x < min) ? min : (x > max) ? max : x)
-#define MIX(a, b, f) (a * (1 - f) + b * f)
-
-#define SQR(a) (a * a)
+#define MIX(a, b, f)        (a * (1 - f) + b * f)
+#define QMIX(a, b, c, f)    (a * SQR(1 - f) + b * 2 * f * (1 - f) + c * SQR(f))
+#define CMIX(a, b, c, d, f) (a * QUAD(1 - f) + b * 3 * f * SQR(1 - f) + c * 3 * SQR(f) * (1 - f) + d * QUAD(f))
 
 #define RANGE(min, max) (min + ((max - min) * ((areal)rand() / RAND_MAX)))
 

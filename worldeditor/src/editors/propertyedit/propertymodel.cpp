@@ -313,10 +313,11 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 }
 
 void PropertyModel::clear() {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
     delete m_rootItem;
     m_rootItem  = new Property("Root", 0, this);
-    endRemoveRows();
+
+    beginResetModel();
+    endResetModel();
 }
 
 void PropertyModel::registerCustomPropertyCB(PropertyEditor::UserTypeCB callback) {

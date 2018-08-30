@@ -115,12 +115,17 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
+    ui->timeline->setWindowTitle("Timeline");
 
     ui->commitButton->setProperty("green", true);
     ui->componentButton->setProperty("blue", true);
     ui->moveButton->setProperty("blue", true);
     ui->rotateButton->setProperty("blue", true);
     ui->scaleButton->setProperty("blue", true);
+
+    ui->moveButton->setProperty("checkred", true);
+    ui->rotateButton->setProperty("checkred", true);
+    ui->scaleButton->setProperty("checkred", true);
 
     ComponentBrowser *comp  = new ComponentBrowser(this);
     QMenu *menu = new QMenu(ui->componentButton);
@@ -146,6 +151,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->centralwidget->addToolWindow(ui->propertyWidget, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->hierarchy));
     ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->viewportWidget));
     ui->centralwidget->addToolWindow(ui->consoleOutput, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->contentBrowser));
+    ui->centralwidget->addToolWindow(ui->timeline, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->contentBrowser));
     ui->centralwidget->addToolWindow(ui->projectWidget, QToolWindowManager::NoArea);
 
     ui->actionAbout->setText(tr("About %1...").arg(EDITOR_NAME));
@@ -164,9 +170,10 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ctl, SIGNAL(mapUpdated()), ui->hierarchy, SLOT(onHierarchyUpdated()));
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onObjectSelected(Object::ObjectList)));
-    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->hierarchy, SLOT(onSelected(Object::ObjectList)));
-    connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onModified()));
-    connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onModified()));
+    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->hierarchy, SLOT(onObjectSelected(Object::ObjectList)));
+    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->timeline, SLOT(onObjectSelected(Object::ObjectList)));
+    connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onUpdated()));
+    connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onUpdated()));
     connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(on_action_Open_triggered(QString)));
     connect(ui->hierarchy, SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
@@ -177,12 +184,14 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
     connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
 
+    connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
+
     ui->scaleButton->click();
 
     connect(UndoManager::instance(), SIGNAL(updated()), this, SLOT(onUndoRedoUpdated()));
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
-    connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onModified()));
+    connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
 
     connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
@@ -200,8 +209,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 }
 
 SceneComposer::~SceneComposer() {
-    AssetManager::destroy();
-
     delete m_pProperties;
 
     delete cmToolbars;
@@ -223,11 +230,18 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     if(!objects.empty()) {
         ui->viewport->makeCurrent();
         /// \todo Don't reload mesh and materials for each repick
-        m_pProperties   = new NextObject(*objects.begin(), static_cast<ObjectCtrl *>(ui->viewport->controller()), this);
-        connect(static_cast<CameraCtrl *>(ui->viewport->controller()), SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
+        ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+
+        m_pProperties   = new NextObject(*objects.begin(), ctl, this);
+        connect(ctl, SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
+        connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
+
         connect(m_pPluginDlg, SIGNAL(pluginReloaded()), m_pProperties, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
-        connect(m_pProperties, SIGNAL(updated()), this, SLOT(onModified()));
+        connect(m_pProperties, SIGNAL(updated()), this, SLOT(onUpdated()));
+        connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
+
+        connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
     }
     ui->propertyView->setObject(m_pProperties);
 }
@@ -502,7 +516,7 @@ void SceneComposer::on_actionResore_Layout_triggered() {
     ui->centralwidget->restoreState(settings.value("main.windows"));
 }
 
-void SceneComposer::onModified() {
+void SceneComposer::onUpdated() {
     mModified   = true;
 }
 

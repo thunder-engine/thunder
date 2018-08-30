@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
     } else {
         project = ProjectDialog::projectPath();
     }
+    int result = 0;
     if(!project.isEmpty()) {
         mgr->init(project);
 
@@ -67,7 +68,10 @@ int main(int argc, char *argv[]) {
         AssetManager::instance()->init();
         UndoManager::instance()->init();
 
-        return a.exec();
+        result  = a.exec();
     }
-    return 0;
+    UndoManager::destroy();
+    AssetManager::destroy();
+    CodeManager::destroy();
+    return result;
 }

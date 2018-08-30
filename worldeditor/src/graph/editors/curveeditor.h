@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../graphwidget.h"
+#include "graphwidget.h"
 
 #include <amath.h>
 

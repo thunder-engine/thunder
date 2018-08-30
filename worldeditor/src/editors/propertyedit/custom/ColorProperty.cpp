@@ -11,7 +11,7 @@ QVariant ColorProperty::value(int role) const {
     if(data.isValid()) {
         switch(role) {
             case Qt::DisplayRole: {
-                return data.value<QColor>();
+                return data;
             }
             case Qt::ToolTipRole: {
                 return data.value<QColor>().name(QColor::HexArgb);

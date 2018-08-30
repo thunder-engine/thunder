@@ -8,6 +8,8 @@
 class QSortFilterProxyModel;
 class ContentBrowser;
 
+class IConverterSettings;
+
 namespace Ui {
     class ContentSelect;
 }
@@ -25,10 +27,10 @@ public:
     void                        setData                         (const QString &guid);
 
 signals:
-    void                        assetChanged                    (const QString &source);
+    void                        assetChanged                    (IConverterSettings *settings);
 
 private slots:
-    void                        onAssetSelected                 (const QString &source);
+    void                        onAssetSelected                 (IConverterSettings *settings);
 
 private:
     Ui::ContentSelect          *ui;

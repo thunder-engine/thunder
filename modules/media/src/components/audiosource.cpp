@@ -84,25 +84,27 @@ void AudioSource::play() {
         delete m_pData;
     }
 
-    uint32_t size;
-    if(m_pClip->isStream()) {
-        m_pData = new uint8_t[BUFFER_SIZE];
-        size    = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
-        alBufferData(m_Buffers[0], m_Format, m_pData, size, m_pClip->frequency());
-        size	= m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
-        alBufferData(m_Buffers[1], m_Format, m_pData, size, m_pClip->frequency());
+    if(m_pClip) {
+        uint32_t size;
+        if(m_pClip->isStream()) {
+            m_pData = new uint8_t[BUFFER_SIZE];
+            size    = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
+            alBufferData(m_Buffers[0], m_Format, m_pData, size, m_pClip->frequency());
+            size	= m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
+            alBufferData(m_Buffers[1], m_Format, m_pData, size, m_pClip->frequency());
 
-        alSourceQueueBuffers(m_ID, 2, m_Buffers);
-    } else {
-        size    = (m_pClip->duration() + 0.5) * m_pClip->channels() * m_pClip->frequency() * 2;
-        m_pData = new uint8_t[size];
-        int32_t length  = m_pClip->readData(m_pData, size, m_PositionSamples);
-        alBufferData(m_Buffers[0], m_Format, m_pData, length, m_pClip->frequency());
+            alSourceQueueBuffers(m_ID, 2, m_Buffers);
+        } else {
+            size    = (m_pClip->duration() + 0.5) * m_pClip->channels() * m_pClip->frequency() * 2;
+            m_pData = new uint8_t[size];
+            int32_t length  = m_pClip->readData(m_pData, size, m_PositionSamples);
+            alBufferData(m_Buffers[0], m_Format, m_pData, length, m_pClip->frequency());
 
-        alSourcei(m_ID, AL_BUFFER, m_Buffers[0]);
+            alSourcei(m_ID, AL_BUFFER, m_Buffers[0]);
+        }
+
+        alSourcePlay(m_ID);
     }
-
-    alSourcePlay(m_ID);
 }
 
 void AudioSource::stop() {

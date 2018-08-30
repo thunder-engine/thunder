@@ -25,8 +25,8 @@ ContentSelect::ContentSelect(QWidget *parent) :
 
     m_pBrowser  = new ContentBrowser(this);
     m_pBrowser->setCompact(true);
-    connect(m_pBrowser, SIGNAL(assetSelected(QString)), this, SLOT(onAssetSelected(QString)));
-    connect(m_pBrowser, SIGNAL(assetSelected(QString)), this, SIGNAL(assetChanged(QString)));
+    connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SLOT(onAssetSelected(IConverterSettings *)));
+    connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SIGNAL(assetChanged(IConverterSettings *)));
 
     QWidgetAction *action   = new QWidgetAction(assetMenu);
     action->setDefaultWidget(m_pBrowser);
@@ -64,7 +64,7 @@ void ContentSelect::setType(const uint8_t type) {
     m_pBrowser->filterByType(type);
 }
 
-void ContentSelect::onAssetSelected(const QString &source) {
-    setData(source);
+void ContentSelect::onAssetSelected(IConverterSettings *settings) {
+    setData(settings->destination());
     ui->toolButton->menu()->hide();
 }

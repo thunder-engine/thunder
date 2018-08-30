@@ -6,7 +6,6 @@
 
 #include <object.h>
 
-#include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
 #include "custom/ColorProperty.h"
 #include "custom/FilePathProperty.h"
@@ -43,8 +42,6 @@ QVariant qVariant(Variant &v, const string &type) {
             return QVariant(v.toFloat());
         case MetaType::STRING:
             return QVariant(v.toString().c_str());
-        case MetaType::VECTOR2:
-            return QVariant::fromValue(v.toVector2());
         case MetaType::VECTOR3:
             return QVariant::fromValue(v.toVector3());
         case MetaType::VECTOR4: {
@@ -86,9 +83,6 @@ Variant aVariant(QVariant &v, int type) {
             }
             return Variant(qUtf8Printable(v.toString()));
         }
-        case MetaType::VECTOR2: {
-            return Variant(v.value<Vector2>());
-        }
         case MetaType::VECTOR3: {
             return Variant(v.value<Vector3>());
         }
@@ -113,30 +107,29 @@ Variant aVariant(QVariant &v, int type) {
 
 NextObject::NextObject(Object *data, ObjectCtrl *ctrl, QObject *parent) :
         QObject(parent),
-        m_pController(ctrl) {
-
-    m_Objects.push_back(data);
+        m_pController(ctrl),
+        m_pObject(data) {
 
     onUpdated();
 }
 
 QString NextObject::name() {
-    for(auto it : m_Objects) {
-        return it->name().c_str();
+    if(m_pObject) {
+        return m_pObject->name().c_str();
     }
     return QString();
 }
 
 void NextObject::setName(const QString &name) {
-    for(auto it : m_Objects) {
-        it->setName(qPrintable(name));
+    if(m_pObject) {
+        m_pObject->setName(qPrintable(name));
         emit updated();
     }
 }
 
 QMenu *NextObject::menu(const QString &name) {
     QMenu *result   = nullptr;
-    Actor *actor    = dynamic_cast<Actor *>(m_Objects.front());
+    Actor *actor    = dynamic_cast<Actor *>(m_pObject);
     if(actor) {
         Component *component    = actor->component(qPrintable(name));
         if(component) {
@@ -158,20 +151,20 @@ void NextObject::onUpdated() {
         setProperty(it, QVariant());
     }
 
-    for(auto object : m_Objects) {
-        buildObject(object);
+    if(m_pObject) {
+        buildObject(m_pObject);
 
-        setObjectName(object->typeName().c_str());
-        emit updated();
+        setObjectName(m_pObject->typeName().c_str());
     }
+    emit updated();
 }
 
 void NextObject::onDeleteComponent() {
     QObject *snd    = sender();
     QString name    = snd->property(COMPONENT).toString();
     if(!name.isEmpty()) {
-        for(auto object : m_Objects) {
-            Actor *actor    = dynamic_cast<Actor *>(object);
+        if(m_pObject) {
+            Actor *actor    = dynamic_cast<Actor *>(m_pObject);
             if(actor) {
                 Component *component    = actor->component(qPrintable(name));
                 if(component) {
@@ -181,6 +174,7 @@ void NextObject::onDeleteComponent() {
                         UndoManager::instance()->push(new UndoManager::DestroyObjects(list, m_pController, tr("Remove Component ") + name));
                     }
                     onUpdated();
+
                 }
             }
         }
@@ -221,9 +215,9 @@ bool NextObject::event(QEvent *e) {
         QString name    = ev->propertyName();
         QVariant value  = property(qPrintable(name));
         if(value.isValid()) {
-            QStringList list = name.split('/');
-            for(Object *it : m_Objects) {
-                Object *o   = findChild(it, list);
+            QStringList list    = name.split('/');
+            if(m_pObject) {
+                Object *o       = findChild(list);
                 Variant current = o->property(qPrintable(list.front()));
                 Variant target;
                 if(current.userType() == MetaType::type<MaterialArray>()) {
@@ -244,11 +238,13 @@ bool NextObject::event(QEvent *e) {
 
                 if(target.isValid() && current != target) {
                     if(m_pController) {
-                        UndoManager::instance()->push(new UndoManager::PropertyObjects(m_Objects, m_pController));
+                        UndoManager::instance()->push(new UndoManager::PropertyObjects({m_pObject}, m_pController));
                     }
 
                     o->setProperty(qPrintable(list.front()), target);
                     onUpdated();
+
+                    setChanged(o, list.front());
                 }
             }
         }
@@ -256,7 +252,8 @@ bool NextObject::event(QEvent *e) {
     return false;
 }
 
-Object *NextObject::findChild(Object *parent, QStringList &path) {
+Object *NextObject::findChild(QStringList &path) {
+    Object *parent  = m_pObject;
     foreach(QString str, path) {
         for(Object *it : parent->getChildren()) {
             if(it->typeName() == str.toStdString()) {
@@ -267,4 +264,8 @@ Object *NextObject::findChild(Object *parent, QStringList &path) {
         }
     }
     return parent;
+}
+
+void NextObject::setChanged(Object *object, const QString &property) {
+    emit changed(object, property);
 }

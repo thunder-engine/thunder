@@ -1,9 +1,17 @@
 QWidget {
-    color: white;
+    color: #ffffff;
     background: #424242;
+}
+QWidget:disabled {
+    color: #80ffffff;
 }
 
 QToolBar {
+    spacing: 3px;
+    border: 0px;
+    padding: 3px;
+}
+QScrollArea {
     spacing: 3px;
     border: 0px;
     padding: 3px;
@@ -64,11 +72,24 @@ QAbstractButton[blue="true"] {
 QAbstractButton[blue="true"]:hover {
     background: #0288d1
 }
-QAbstractButton[blue="true"]:checked {
+
+QAbstractButton[checkred="true"]:checked {
     background: #c62828
 }
-QAbstractButton[blue="true"]:checked:hover {
+QAbstractButton[checkred="true"]:checked:hover {
     background: #d32f2f
+}
+QAbstractButton[checkgreen="true"]:checked {
+    background: #2e7d32
+}
+QAbstractButton[checkgreen="true"]:checked:hover {
+    background: #388e3c
+}
+QAbstractButton[checkblue="true"]:checked {
+    background: #0277bd
+}
+QAbstractButton[checkblue="true"]:checked:hover {
+    background: #0288d1
 }
 
 QToolButton::menu-indicator {
@@ -196,6 +217,7 @@ QHeaderView::section {
     padding: 2px 2px;
     background: #616161;
     border-style: solid;
+    height: 15px
 }
 
 QMenuBar {
@@ -226,16 +248,15 @@ QMenu::separator {
 
 QScrollBar:vertical {
     background: #757575;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    width: 12px;
+    border-radius: 4px;
+    width: 8px;
     margin: 0px;
 }
 QScrollBar::handle:vertical {
    background: #616161;
-   border-radius: 3px;
+   border-radius: 4px;
    min-height: 20px;
-   margin: 0px 2px 0px 2px;
+   margin: 0px 0px 0px 0px;
 }
 QScrollBar::add-line:vertical {
    height: 0px;
@@ -254,16 +275,15 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical, QScrollBar::add-pa
 
 QScrollBar:horizontal {
     background: #757575;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    height: 12px;
+    border-radius: 4px;
+    height: 8px;
     margin: 0px;
 }
 QScrollBar::handle:horizontal {
    background: #616161;
-   border-radius: 3px;
+   border-radius: 4px;
    min-width: 20px;
-   margin: 2px 0px 2px 0px;
+   margin: 0px 0px 0px 0px;
 }
 QScrollBar::add-line:horizontal {
    width: 0px;

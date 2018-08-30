@@ -105,9 +105,35 @@ bool ThreadPoolPrivate::APoolWorker::isFree() {
 }
 /*!
     \class ThreadPool
-    \brief
+    \brief The ThreadPool manages a collection of threads.
     \since Next 1.0
     \inmodule Core
+
+    ThreadPool allows developer to run tasks in parallel.
+    Objects must be inherited from base Object class and override Object::event() method.
+
+    For example declare new class:
+    \code
+        class ThreadObject : public Object {
+        public:
+            bool            event           (Event *e) {
+                return Object::event(e);
+            }
+        };
+    \endcode
+
+    Put 16 copies of ThreadObject class for execution:
+    \code
+        ThreadPool pool;
+        for(int i = 0; i < 16; i++) {
+            ThreadObject *object = new ThreadObject();
+            object->setName(string("TestComponent") + to_string(i));
+            object->setParent(&obj);
+            object->post();
+            pool.start(*object);
+        }
+        pool.waitForDone();
+    \endcode
 */
 ThreadPool::ThreadPool() :
         p_ptr(new ThreadPoolPrivate) {
@@ -123,7 +149,10 @@ ThreadPool::~ThreadPool() {
     }
     p_ptr->m_Workers.clear();
 }
-
+/*!
+    Pushes an \a object as job in queue and starts jobs execution if no any executed yet.
+    \note Objects must be inherited from base Object class and override Object::event() method.
+*/
 void ThreadPool::start(Object &object) {
     PROFILE_FUNCTION()
     unique_lock<mutex> locker(p_ptr->m_Mutex);
@@ -135,17 +164,21 @@ void ThreadPool::start(Object &object) {
     }
     p_ptr->m_Tasks.push(&object);
 }
-
+/*!
+    Returns maximum number of available threads.
+*/
 uint32_t ThreadPool::maxThreads() const {
     PROFILE_FUNCTION()
     return p_ptr->m_Workers.size();
 }
-
-void ThreadPool::setMaxThreads(uint32_t value) {
+/*!
+    Sets maximum \a number of available threads.
+*/
+void ThreadPool::setMaxThreads(uint32_t number) {
     PROFILE_FUNCTION()
     uint32_t current    = p_ptr->m_Workers.size();
-    if(current < value) {
-        for(uint32_t i = 0; i < value - current; i++) {
+    if(current < number) {
+        for(uint32_t i = 0; i < number - current; i++) {
             ThreadPoolPrivate::APoolWorker *worker = new ThreadPoolPrivate::APoolWorker(p_ptr);
             Object *object     = p_ptr->takeTask();
             if(object) {
@@ -153,8 +186,8 @@ void ThreadPool::setMaxThreads(uint32_t value) {
             }
             p_ptr->m_Workers.insert(worker);
         }
-    } else if(current > value) {
-        for(uint32_t i = 0; i < current - value; i++) {
+    } else if(current > number) {
+        for(uint32_t i = 0; i < current - number; i++) {
             auto it = p_ptr->m_Workers.end();
             --it;
             ThreadPoolPrivate::APoolWorker *worker = (*it);
@@ -163,7 +196,10 @@ void ThreadPool::setMaxThreads(uint32_t value) {
         }
     }
 }
-
+/*!
+     Blocks execution thread until all jobs are done or timeout in \a msecs is elapsed.
+     Returns the result of execution. True in case of all jobs are done; otherwise returns false.
+*/
 bool ThreadPool::waitForDone(int32_t msecs) {
     PROFILE_FUNCTION()
     unique_lock<mutex> locker(p_ptr->m_Mutex);
@@ -175,7 +211,10 @@ bool ThreadPool::waitForDone(int32_t msecs) {
     }
     return (p_ptr->m_Tasks.empty() && p_ptr->m_ActiveThreads == 0);
 }
-
+/*!
+    Returns optimal number of threads on current system.
+    \note Return value based on number of processor cores, both real and logical, in the system.
+*/
 uint32_t ThreadPool::optimalThreadCount() {
     PROFILE_FUNCTION()
     return thread::hardware_concurrency();

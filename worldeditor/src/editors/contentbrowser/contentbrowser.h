@@ -55,7 +55,7 @@ public:
     QImage                  icon                    (const QString &resource) const;
 
 signals:
-    void                    assetSelected           (const QString &source);
+    void                    assetSelected           (IConverterSettings *settings);
 
 protected:
     void                    readSettings            ();
@@ -99,6 +99,8 @@ private:
     QMenu                   m_ContentMenu;
 
     QMenu                   m_CreationMenu;
+
+    IConverterSettings     *m_pSelected;
 
 };
 

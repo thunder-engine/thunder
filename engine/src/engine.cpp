@@ -28,6 +28,8 @@
 
 #include "components/spritemesh.h"
 
+#include "components/animationcontroller.h"
+
 #include "analytics/profiler.h"
 #if THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
@@ -40,6 +42,7 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/font.h"
+#include "resources/animationclip.h"
 
 #include "log.h"
 
@@ -121,6 +124,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     Mesh::registerClassFactory();
     Atlas::registerClassFactory();
     Font::registerClassFactory();
+    AnimationClip::registerClassFactory();
 
     Scene::registerClassFactory();
     Chunk::registerClassFactory();
@@ -132,6 +136,8 @@ Engine::Engine(IFile *file, int, char **argv) :
     SpriteMesh::registerClassFactory();
     DirectLight::registerClassFactory();
     RenderTexture::registerClassFactory();
+
+    AnimationController::registerClassFactory();
 
     registerMetaType<MaterialArray>("MaterialArray");
 }

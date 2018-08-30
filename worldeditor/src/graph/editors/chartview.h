@@ -1,7 +1,7 @@
 #ifndef CHARTVIEW_H
 #define CHARTVIEW_H
 
-#include "../graphwidget.h"
+#include "graphwidget.h"
 
 #include <QMap>
 

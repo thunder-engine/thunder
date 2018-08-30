@@ -20,7 +20,7 @@ void ObjectHierarchyModel::setRoot(Object *scene) {
 
 Object *ObjectHierarchyModel::findObject(const QString &ref) {
     QUrl path(ref);
-    return m_rootItem->find(path.path().toStdString()); // \todo Review need to check this on errors
+    return m_rootItem->find(path.path().toStdString()); /// \todo Review need to check this on errors
 }
 
 void ObjectHierarchyModel::reset() {
