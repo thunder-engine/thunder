@@ -158,6 +158,17 @@ Product {
     }
 
     Group {
+        name: "OpenAL Binary"
+        condition: qbs.targetOS.contains("windows")
+        files: [
+            "../thirdparty/openal/windows/bin/OpenAL32.dll"
+        ]
+        qbs.install: true
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
+        qbs.installPrefix: install.PREFIX
+    }
+
+    Group {
         name: "Shaders Engine"
         condition: install.desktop
         files: [

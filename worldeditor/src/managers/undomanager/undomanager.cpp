@@ -72,7 +72,7 @@ void UndoManager::DestroyObjects::undo(bool redo) {
             object->setParent(m_pController->findObject((*it).toUInt()));
             objects.push_back(object);
         }
-        it++;
+        ++it;
     }
     m_pController->mapUpdated();
     if(!objects.empty()) {
@@ -84,7 +84,7 @@ void UndoManager::DestroyObjects::undo(bool redo) {
             if(comp) {
                 *it = comp->parent();
             }
-            it++;
+            ++it;
         }
         m_pController->onSelectActor(objects, false);
     }
@@ -112,7 +112,7 @@ void UndoManager::ParentingObjects::undo(bool redo) {
             objects.push_back(object);
             parents.push_back(parent);
         }
-        it++;
+        ++it;
     }
     UndoManager::instance()->push(new ParentingObjects(objects, parents, m_pController, m_Name), !redo, false);
     m_pController->onParentActor(objects, parents, false);

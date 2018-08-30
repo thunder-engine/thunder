@@ -3,6 +3,8 @@
 #define TRACKS  "Tracks"
 
 void AnimationClip::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION()
+
     {
         auto section = data.find(TRACKS);
         if(section != data.end()) {
