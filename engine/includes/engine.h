@@ -8,12 +8,14 @@
 #include <object.h>
 #include <objectsystem.h>
 
-class IFile;
+#include <file.h>
 
 class IModule;
 class IController;
 
 class EnginePrivate;
+
+class Actor;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
@@ -47,6 +49,8 @@ public:
 /*
     Misc
 */
+    static Actor               *createActor                 (const string &name = string(), Object *parent = nullptr, const StringList &components = StringList());
+
     void                        addModule                   (IModule *mode);
 
     bool                        createWindow                ();

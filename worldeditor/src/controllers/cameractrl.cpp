@@ -10,6 +10,7 @@
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/staticmesh.h>
 #include <components/spritemesh.h>
 #include <components/textmesh.h>
@@ -28,14 +29,14 @@ CameraCtrl::CameraCtrl(Viewport *view) :
 }
 
 void CameraCtrl::init(Scene *scene) {
-    m_pCamera   = Engine::objectCreate<Actor>("Camera", scene);
+    m_pCamera   = Engine::createActor("Camera", scene);
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(10.0f);
     m_pActiveCamera->setOrthoWidth(10.0f);
     m_pActiveCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
-    m_pCamera->setPosition(Vector3(0.0, 0.0, 20.0));
+    m_pCamera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));
 }
 
 void CameraCtrl::update() {
@@ -58,12 +59,13 @@ void CameraCtrl::update() {
     }
 
     if( m_pActiveCamera && (mCameraSpeed.x != 0 || mCameraSpeed.y != 0 || mCameraSpeed.z != 0) ) {
-        Vector3 pos   = m_pCamera->position();
-        Vector3 dir   = m_pCamera->rotation() * Vector3(0.0, 0.0, 1.0);
+        Transform *t    = m_pCamera->transform();
+        Vector3 pos     = t->position();
+        Vector3 dir     = t->rotation() * Vector3(0.0, 0.0, 1.0);
         dir.normalize();
 
         Vector3 delta = (dir * mCameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * mCameraSpeed.x;
-        m_pCamera->setPosition(pos - delta * m_pActiveCamera->focal() * 0.1f);
+        t->setPosition(pos - delta * m_pActiveCamera->focal() * 0.1f);
 
         mCameraSpeed   -= mCameraSpeed * 10.0f * Timer::deltaTime();
         if(mCameraSpeed.length() <= .01f) {
@@ -78,11 +80,12 @@ void CameraCtrl::drawHandles() {
 
 void CameraCtrl::onOrthographic(bool flag) {
     if(m_pActiveCamera->orthographic() != flag) {
+        Transform *t    = m_pCamera->transform();
         if(flag) {
-            mRotation   = m_pCamera->rotation();
-            m_pCamera->setRotation(Quaternion());
+            mRotation   = t->rotation();
+            t->setRotation(Quaternion());
         } else {
-            m_pCamera->setRotation(mRotation);
+            t->setRotation(mRotation);
         }
 
         m_pActiveCamera->setOrthographic(flag);
@@ -94,6 +97,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
     if(actor) {
         Vector3 pos;
         float radius    = 0;
+        Transform *t    = actor->transform();
         for(auto it : actor->getChildren()) {
             Mesh *mesh  = nullptr;
             /// \todo Bad switch case
@@ -116,8 +120,9 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
                 uint32_t i  = 0;
                 for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
                     AABBox aabb = mesh->bound(s);
-                    pos    += aabb.center * actor->worldScale();
-                    radius += (aabb.size * actor->worldScale()).length();
+                    Vector3 scale   = t->worldScale();
+                    pos    += aabb.center * scale;
+                    radius += (aabb.size * scale).length();
                     Vector3 min, max;
                     aabb.box(min, max);
                     if(i == 0) {
@@ -136,7 +141,8 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
 
         m_pActiveCamera->setFocal(radius);
         m_pActiveCamera->setOrthoWidth(radius);
-        m_pCamera->setPosition(actor->worldPosition() + pos + m_pCamera->rotation() * Vector3(0.0, 0.0, radius));
+        Transform *camera   = m_pCamera->transform();
+        camera->setPosition(t->worldPosition() + pos + camera->rotation() * Vector3(0.0, 0.0, radius));
     }
 }
 
@@ -239,22 +245,26 @@ void CameraCtrl::cameraZoom(float delta) {
             m_pActiveCamera->setFocal(focal);
             m_pActiveCamera->setOrthoWidth(focal);
 
-            m_pCamera->setPosition(m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, delta));
+            Transform *t    = m_pCamera->transform();
+
+            t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, delta));
         }
     }
 }
 
 void CameraCtrl::cameraRotate(const Vector3 &delta) {
-    Vector3 euler   = m_pCamera->euler() - delta;
+    Transform *t    = m_pCamera->transform();
+    Vector3 euler   = t->euler() - delta;
     mRotation       = Quaternion(euler);
 
-    Vector3 target  = m_pCamera->position() - m_pCamera->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
+    Vector3 target  = t->position() - t->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
-        m_pCamera->setPosition(target + mRotation * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
+        t->setPosition(target + mRotation * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }
-    m_pCamera->setEuler(euler);
+    t->setEuler(euler);
 }
 
 void CameraCtrl::cameraMove(const Vector3 &delta) {
-    m_pCamera->setPosition(m_pCamera->position() - delta * m_pActiveCamera->focal());
+    Transform *t    = m_pCamera->transform();
+    t->setPosition(t->position() - delta * m_pActiveCamera->focal());
 }

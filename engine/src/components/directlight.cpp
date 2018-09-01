@@ -1,6 +1,7 @@
 #include "components/directlight.h"
 
 #include "components/actor.h"
+#include "components/transform.h"
 
 #include "commandbuffer.h"
 
@@ -42,7 +43,7 @@ DirectLight::~DirectLight() {
 
 void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pPlane && m_pMaterial && (layer & ICommandBuffer::LIGHT)) {
-        m_Direction = Vector4(actor().rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
+        m_Direction = Vector4(actor().transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
 
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), m_pPlane, 0, layer, m_pMaterialInstance);

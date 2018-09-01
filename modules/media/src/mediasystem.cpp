@@ -8,6 +8,7 @@
 #include <analytics/profiler.h>
 #include <components/camera.h>
 #include <components/actor.h>
+#include <components/transform.h>
 
 #include "components/audiosource.h"
 #include "resources/audioclip.h"
@@ -56,10 +57,14 @@ void MediaSystem::update(Scene &scene, uint32_t resource) {
     if(camera) {
         Actor &a    = camera->actor();
 
-        alListenerfv(AL_POSITION,    a.position().v);
+        Transform *t    = a.transform();
 
-        Vector3 dir = a.rotation() * Vector3(0.0f, 0.0f,-1.0f);
-        Vector3 up  = a.rotation() * Vector3(0.0f, 1.0f, 0.0f);
+        alListenerfv(AL_POSITION,    t->worldPosition().v);
+
+        Quaternion rot  = t->worldRotation();
+
+        Vector3 dir = rot * Vector3(0.0f, 0.0f,-1.0f);
+        Vector3 up  = rot * Vector3(0.0f, 1.0f, 0.0f);
         float orientation[] = { dir.x, dir.y, dir.z, up.x, up.y, up.z };
 
         alListenerfv(AL_ORIENTATION, orientation);

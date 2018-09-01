@@ -10,6 +10,7 @@
 #include "graph/sceneview.h"
 
 #include "components/actor.h"
+#include "components/transform.h"
 #include "components/spritemesh.h"
 #include "components/camera.h"
 
@@ -116,7 +117,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
 
     Camera *camera  = ui->Preview->controller()->activeCamera();
     if(camera) {
-        camera->actor().setPosition(Vector3(0.0f, 0.0f, 1.0f));
+        camera->actor().transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         camera->setOrthoWidth(SCALE);
         camera->setFocal(SCALE);
     }
@@ -135,8 +136,8 @@ void TextureEdit::onGLInit() {
         camera->setOrthographic(true);
     }
 
-    Actor *object   = Engine::objectCreate<Actor>("", scene);
-    object->setScale(Vector3(SCALE));
+    Actor *object   = Engine::createActor("Sprite", scene);
+    object->transform()->setScale(Vector3(SCALE));
     m_pSprite       = object->addComponent<SpriteMesh>();
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
@@ -114,6 +115,8 @@ void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
+            Transform *t    = component->actor().transform();
+
             bool result     = false;
             Camera *camera  = dynamic_cast<Camera *>(component);
             if(camera) {
@@ -124,21 +127,21 @@ void ObjectCtrl::drawHelpers(Object &object) {
                                                4, 5, 5, 6, 6, 7, 7, 4,
                                                0, 4, 1, 5, 2, 6, 3, 7};
 
-                Handles::drawLines(component->actor().transform(), points, indices);
-                result  = Handles::drawBillboard(component->actor().position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
+                Handles::drawLines(t->worldTransform(), points, indices);
+                result  = Handles::drawBillboard(t->position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
             }
             DirectLight *direct = dynamic_cast<DirectLight *>(component);
             if(direct) {
-                Vector3 pos     = component->actor().position();
+                Vector3 pos     = t->position();
 
                 Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
                 Handles::s_Color = Handles::s_Second = direct->color();
-                Handles::drawArrow(Matrix4(pos, component->actor().rotation(), Vector3(0.5f)) * z);
+                Handles::drawArrow(Matrix4(pos, t->rotation(), Vector3(0.5f)) * z);
                 result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
                 Handles::s_Color = Handles::s_Second = Handles::s_Normal;
             }
             if(component->typeName() == "AudioSource") {
-                Vector3 pos     = component->actor().position();
+                Vector3 pos     = t->position();
                 result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/soundsource.png"));
             }
 
@@ -161,7 +164,7 @@ Vector3 ObjectCtrl::objectPosition() {
     Vector3 result;
     if(!m_Selected.empty()) {
         for(auto &it : m_Selected) {
-            result += it.second.object->worldPosition();
+            result += it.second.object->transform()->worldPosition();
         }
         result  = result / m_Selected.size();
     }
@@ -191,9 +194,10 @@ void ObjectCtrl::setDrag(bool drag) {
         }
         // Save params
         for(auto &it : m_Selected) {
-            it.second.position  = it.second.object->position();
-            it.second.scale     = it.second.object->scale();
-            it.second.euler     = it.second.object->euler();
+            Transform *t    = it.second.object->transform();
+            it.second.position  = t->position();
+            it.second.scale     = t->scale();
+            it.second.euler     = t->euler();
         }
         mSaved  = mWorld;
         mPosition   = objectPosition();
@@ -339,7 +343,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
+        Actor *actor    = Engine::createActor(findFreeObjectName(name, m_pMap));
         if(actor) {
             Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
@@ -369,7 +373,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         m_DragMap   = str;
                     } break;
                     case IConverter::ContentMesh: {
-                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        Actor *actor    = Engine::createActor(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         StaticMesh *m   = actor->addComponent<StaticMesh>();
                         if(m) {
                             m->setMesh(Engine::loadResource<Mesh>( qPrintable(str) ));
@@ -377,7 +381,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         m_DragObjects.push_back(actor);
                     } break;
                     case IConverter::ContentTexture: {
-                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        Actor *actor    = Engine::createActor(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         SpriteMesh *sprite  = actor->addComponent<SpriteMesh>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
@@ -393,7 +397,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     }
     for(Object *o : m_DragObjects) {
         Actor *a    = static_cast<Actor *>(o);
-        a->setPosition(Vector3()); // \todo set drag position
+        a->transform()->setPosition(Vector3()); // \todo set drag position
         a->setParent(m_pMap);
     }
     if(!m_DragObjects.empty() || !m_DragMap.isEmpty()) {
@@ -448,9 +452,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 }
                 if(mDrag) {
                     for(auto it : m_Selected) {
-                        it.second.object->setPosition(it.second.position);
-                        it.second.object->setEuler(it.second.euler);
-                        it.second.object->setScale(it.second.scale);
+                        Transform *t    = it.second.object->transform();
+                        t->setPosition(it.second.position);
+                        t->setEuler(it.second.euler);
+                        t->setScale(it.second.scale);
                     }
                     if(m_pPropertyState) {
                         delete m_pPropertyState;
@@ -497,12 +502,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             Vector3 dt  = delta;
                             Actor *a    = dynamic_cast<Actor *>(it.second.object->parent());
                             if(a) {
-                                Vector3 scale   = a->worldScale();
+                                Vector3 scale   = a->transform()->worldScale();
                                 dt.x   /= scale.x;
                                 dt.y   /= scale.y;
                                 dt.z   /= scale.z;
                             }
-                            it.second.object->setPosition(it.second.position + dt);
+                            it.second.object->transform()->setPosition(it.second.position + dt);
                         }
                         emit objectsUpdated();
                         emit objectsChanged(selected(), "Position");
@@ -518,8 +523,9 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             angle   = mAngleGrid * int(angle / mAngleGrid);
                         }
                         for(const auto &it : m_Selected) {
+                            Transform *tr   = it.second.object->transform();
                             Vector3 t       = Vector3(mPosition - it.second.position);
-                            Quaternion q    = it.second.object->rotation();
+                            Quaternion q    = tr->rotation();
                             Vector3 euler   = it.second.euler;
                             switch(Handles::s_Axes) {
                                 case Handles::AXIS_X: {
@@ -535,14 +541,14 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                                     euler  += Vector3(0.0f, 0.0f, angle);
                                 } break;
                                 default: {
-                                    Vector3 axis  = m_pActiveCamera->actor().position() - mPosition;
+                                    Vector3 axis  = m_pActiveCamera->actor().transform()->position() - mPosition;
                                     axis.normalize();
                                     q       = q * Quaternion(axis, angle);
                                     euler  += axis * angle;
                                 } break;
                             }
-                            it.second.object->setPosition(mPosition - q * t);
-                            it.second.object->setEuler(euler);
+                            tr->setPosition(mPosition - q * t);
+                            tr->setEuler(euler);
                         }
                         emit objectsUpdated();
                         emit objectsChanged(selected(), "Rotation");
@@ -568,7 +574,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             if(Handles::s_Axes & Handles::AXIS_Z) {
                                 s   += Vector3(0, 0, scale);
                             }
-                            it.second.object->setScale(it.second.scale + s);
+                            it.second.object->transform()->setScale(it.second.scale + s);
                         }
                         emit objectsUpdated();
                         emit objectsChanged(selected(), "Scale");

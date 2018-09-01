@@ -14,6 +14,7 @@
 #include <system.h>
 
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
@@ -51,15 +52,15 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 
     m_pScene    = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
-    m_pCamera   = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
-    m_pCamera->setPosition(Vector3(0.0f, 0.0f, 0.0f));
+    m_pCamera   = Engine::createActor("ActiveCamera", m_pScene);
+    m_pCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     Camera *camera  = m_pCamera->addComponent<Camera>();
     m_pController->setActiveCamera(camera);
 
-    m_pLight    = Engine::objectCreate<Actor>("LightSource", m_pScene);
+    m_pLight    = Engine::createActor("LightSource", m_pScene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_pLight->setRotation(rot);
+    m_pLight->transform()->setRotation(rot);
     m_pLight->addComponent<DirectLight>();
 }
 
@@ -77,7 +78,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     switch(type) {
         case IConverter::ContentTexture: {
             camera->setOrthographic(true);
-            m_pCamera->setPosition(Vector3(0.0f, 0.0f, 1.0f));
+            m_pCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
             SpriteMesh *sprite  = object->addComponent<SpriteMesh>();
             if(sprite) {
@@ -96,7 +97,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                     mesh->setMaterial(mat);
                 }
                 AABBox bb   = m->bound();
-                m_pCamera->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
+                m_pCamera->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
             }
         } break;
         case IConverter::ContentMesh: {
@@ -105,7 +106,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
             if(m) {
                 mesh->setMesh(m);
                 AABBox bb   = m->bound();
-                m_pCamera->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
+                m_pCamera->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
             }
         } break;
         default: break;

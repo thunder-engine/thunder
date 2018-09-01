@@ -13,6 +13,7 @@
 #include "postprocess/abloomgl.h"
 
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/scene.h>
 #include <components/component.h>
 #include <components/camera.h>
@@ -153,7 +154,7 @@ void APipeline::cameraReset() {
         Matrix4 v, p;
         camera->matrices(v, p);
         camera->setRatio(m_Screen.x / m_Screen.y);
-        m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().position(), camera->nearPlane()));
+        m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().transform()->position(), camera->nearPlane()));
         m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
         m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
         m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
@@ -316,7 +317,7 @@ void APipeline::directUpdate(DirectLight *light) {
         }
 
         float nearPlane = camera->nearPlane();
-        Matrix4 view    = Matrix4(light->actor().rotation().toMatrix()).inverse();
+        Matrix4 view    = Matrix4(light->actor().transform()->rotation().toMatrix()).inverse();
         Matrix4 inv     = mv.inverse();
         for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
             float dist  = distance[lod];

@@ -1,5 +1,6 @@
 #include "components/spritemesh.h"
 #include "components/actor.h"
+#include "components/transform.h"
 
 #include "resources/material.h"
 #include "resources/mesh.h"
@@ -23,7 +24,7 @@ void SpriteMesh::draw(ICommandBuffer &buffer, int8_t layer) {
             buffer.setColor(ICommandBuffer::idToColor(a.uuid()));
         }
 
-        buffer.drawMesh(a.worldTransform(), m_pMesh, 0, layer, m_Materials[0]);
+        buffer.drawMesh(a.transform()->worldTransform(), m_pMesh, 0, layer, m_Materials[0]);
         buffer.setColor(Vector4(1.0f));
     }
 }

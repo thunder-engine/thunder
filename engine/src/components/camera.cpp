@@ -1,6 +1,7 @@
 #include "components/camera.h"
 
 #include "components/actor.h"
+#include "components/transform.h"
 
 Camera::Camera() {
     m_FOV       = 45.0; // 2*arctan(height/(2*distance))
@@ -23,8 +24,8 @@ void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
 
     Actor &a   = actor();
     Matrix4 m;
-    m.translate(-a.position());
-    v   = Matrix4(a.rotation().toMatrix()).inverse() * m;
+    m.translate(-a.transform()->position());
+    v   = Matrix4(a.transform()->rotation().toMatrix()).inverse() * m;
 }
 
 bool Camera::project(const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss) {
@@ -77,8 +78,8 @@ bool Camera::unproject(const Vector3 &ss, const Matrix4 &modelview, const Matrix
 
 Ray Camera::castRay(float x, float y) {
     Actor &a        = actor();
-    Vector3 p       = a.position();
-    Vector3 dir     = a.rotation() * Vector3(0.0, 0.0,-1.0);
+    Vector3 p       = a.transform()->position();
+    Vector3 dir     = a.transform()->rotation() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
     Vector3 view;

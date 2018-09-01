@@ -22,6 +22,7 @@
 #include <timer.h>
 #include <components/chunk.h>
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/spritemesh.h>
 #include <components/staticmesh.h>
 #include <components/camera.h>
@@ -262,9 +263,10 @@ void SceneComposer::onGLInit() {
         Camera *camera  = ui->viewport->controller()->activeCamera();
         if(camera) {
             Actor &actor    = camera->actor();
-            actor.setPosition(it->toVector3());
+            Transform *t    = actor.transform();
+            t->setPosition(it->toVector3());
             it++;
-            actor.setEuler(it->toVector3());
+            t->setEuler(it->toVector3());
             it++;
             ui->orthoButton->setChecked(it->toBool());
             it++;
@@ -300,8 +302,9 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         Camera *camera  = ui->viewport->controller()->activeCamera();
         if(camera) {
             Actor &actor    = camera->actor();
-            params.push_back(actor.position());
-            params.push_back(actor.euler());
+            Transform *t    = actor.transform();
+            params.push_back(t->position());
+            params.push_back(t->euler());
             params.push_back(ui->orthoButton->isChecked());
             params.push_back(camera->focal());
             params.push_back(camera->orthoWidth());

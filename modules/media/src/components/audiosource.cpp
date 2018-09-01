@@ -3,6 +3,7 @@
 #include <AL/al.h>
 
 #include <components/actor.h>
+#include <components/transform.h>
 
 #define CLIP        "Clip"
 #define BUFFER_SIZE 65536
@@ -31,7 +32,7 @@ AudioSource::~AudioSource() {
 void AudioSource::update() {
     Actor &a    = actor();
 
-    alSourcefv(m_ID, AL_POSITION,   a.position().v);
+    alSourcefv(m_ID, AL_POSITION,   a.transform()->worldPosition().v);
 
     if(m_pClip && m_pClip->isStream()) {
         int processed;

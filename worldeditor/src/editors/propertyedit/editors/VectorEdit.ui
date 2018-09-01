@@ -30,13 +30,13 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QDoubleSpinBox" name="x"/>
+    <widget class="QLineEdit" name="x"/>
    </item>
    <item>
-    <widget class="QDoubleSpinBox" name="y"/>
+    <widget class="QLineEdit" name="y"/>
    </item>
    <item>
-    <widget class="QDoubleSpinBox" name="z"/>
+    <widget class="QLineEdit" name="z"/>
    </item>
   </layout>
  </widget>

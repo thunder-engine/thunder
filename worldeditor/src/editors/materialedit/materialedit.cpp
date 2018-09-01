@@ -7,6 +7,7 @@
 
 #include <engine.h>
 #include <components/actor.h>
+#include <components/transform.h>
 #include <components/staticmesh.h>
 #include <components/directlight.h>
 #include <components/camera.h>
@@ -178,10 +179,10 @@ void MaterialEdit::onGLInit() {
         scene->setAmbient(0.25f);
     }
 
-    m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
+    m_pLight    = Engine::createActor("LightSource", scene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_pLight->setRotation(rot);
+    m_pLight->transform()->setRotation(rot);
     m_pLight->addComponent<DirectLight>();
 
     CameraCtrl *controller  = static_cast<CameraCtrl *>(glWidget->controller());
@@ -190,7 +191,7 @@ void MaterialEdit::onGLInit() {
         camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));
     }
 
-    m_pMesh     = Engine::objectCreate<Actor>("StaticMesh", scene);
+    m_pMesh     = Engine::createActor("StaticMesh", scene);
     m_pMesh->addComponent<StaticMesh>();
 
     on_actionSphere_triggered();

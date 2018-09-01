@@ -21,6 +21,7 @@
 #include "components/chunk.h"
 #include "components/scene.h"
 #include "components/actor.h"
+#include "components/transform.h"
 #include "components/camera.h"
 #include "components/staticmesh.h"
 #include "components/directlight.h"
@@ -129,6 +130,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     Scene::registerClassFactory();
     Chunk::registerClassFactory();
     Actor::registerClassFactory();
+    Transform::registerClassFactory();
     Camera::registerClassFactory();
 
     StaticMesh::registerClassFactory();
@@ -191,8 +193,8 @@ int32_t Engine::exec() {
         Camera *component   = scene->findChild<Camera *>();
         if(component == nullptr) {
             Log(Log::DBG) << "Camera not found creating new one.";
-            Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", scene);
-            camera->setPosition(Vector3(0.0f));
+            Actor *camera   = Engine::createActor("ActiveCamera", scene);
+            camera->transform()->setPosition(Vector3(0.0f));
             component       = camera->addComponent<Camera>();
         }
         for(auto it : p_ptr->m_Systems) {
@@ -322,6 +324,16 @@ void Engine::reloadBundle() {
             }
         }
     }
+}
+
+Actor *Engine::createActor(const string &name, Object *parent, const StringList &components) {
+    Actor *result   = Engine::objectCreate<Actor>(name, parent);
+    Engine::objectCreate<Transform>("", result);
+    for(auto &it : components) {
+        Engine::objectCreate(it, "", result);
+    }
+
+    return result;
 }
 
 void Engine::addModule(IModule *mode) {
