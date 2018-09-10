@@ -45,6 +45,12 @@ matrix:
         - qbs config --list
         - qbs install --all-products config:release
         - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/${VERSION}/linux
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file ThunderEngine-linux-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-linux-x86_64.tar.gz
+          on:
+            tags: true
       
     - language: cpp
       os: osx
@@ -66,11 +72,22 @@ matrix:
         - qbs resolve config:release profile:xcode-appletvos-arm64
         - qbs install --all-products config:release profile:xcode-appletvos-arm64
         - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
-      after_success:
-        - ls
-        - curl -v --ftp-create-dirs -T ThunderEngine-macosx-x86_64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-macos-x86_64.tar.gz
-        - curl -v --ftp-create-dirs -T ThunderEngine-ios-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-ios-arm64.tar.gz
-        - curl -v --ftp-create-dirs -T ThunderEngine-tvos-arm64.tar.gz -u $FTP_USER:$FTP_PASSWORD ftp://ftp.thunderengine.ru/ThunderEngine-${BUILD}-tvos-arm64.tar.gz
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file ThunderEngine-macosx-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-macos-x86_64.tar.gz
+          on:
+            tags: true
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file ThunderEngine-ios-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-ios-arm64.tar.gz
+          on:
+            tags: true
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file ThunderEngine-tvos-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-tvos-arm64.tar.gz
+          on:
+            tags: true
         
 #    - lanuage: android
 #      os: linux
