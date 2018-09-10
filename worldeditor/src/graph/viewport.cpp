@@ -23,6 +23,7 @@ void Viewport::initializeGL() {
     if(m_pController) {
         static_cast<CameraCtrl *>(m_pController)->init(m_pScene);
     }
+
     SceneView::initializeGL();
 
     makeCurrent();

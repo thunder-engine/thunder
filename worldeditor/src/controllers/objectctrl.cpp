@@ -13,6 +13,9 @@
 #include <components/spritemesh.h>
 #include <components/staticmesh.h>
 
+#include <resources/pipeline.h>
+#include <resources/rendertexture.h>
+
 #include "graph/handletools.h"
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
@@ -64,6 +67,12 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     m_pPropertyState= nullptr;
 
     mMousePosition  = Vector2();
+
+    m_pSelect   = Engine::objectCreate<Texture>();
+    m_pSelect->setFormat(Texture::RGBA8);
+    m_pSelect->resize(1, 1);
+
+    m_pDepth    = Engine::objectCreate<Texture>();
 }
 
 void ObjectCtrl::drawHandles() {
@@ -87,6 +96,35 @@ void ObjectCtrl::drawHandles() {
             default: break;
         }
     }
+
+    Camera *camera  = activeCamera();
+    Pipeline *pipeline  = camera->pipeline();
+    if(pipeline) {
+        Vector2 position, size;
+        selectGeometry(position, size);
+
+        uint32_t result = 0;
+        if(position.x >= 0.0f && position.y >= 0.0f &&
+           position.x < m_Screen.x && position.y < m_Screen.y) {
+
+            Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
+            screen.y        = (1.0 - screen.y);
+
+            //glReadPixels((int)screen.x, (int)screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screen.z);
+            //Camera::unproject(screen, m_Buffer->modelView(), m_Buffer->projection(), m_World);
+
+            RenderTexture *rt   = pipeline->target("selectMap");
+            rt->makeCurrent();
+
+            m_pSelect->readPixels(position.x, (m_Screen.y - position.y), 1, 1);
+            result  = m_pSelect->getPixel(0, 0);
+        }
+
+        if(result) {
+            setSelectedObjects({ result });
+        }
+    }
+
 }
 
 void ObjectCtrl::clear(bool signal) {

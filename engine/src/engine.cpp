@@ -44,6 +44,7 @@
 #include "resources/mesh.h"
 #include "resources/font.h"
 #include "resources/animationclip.h"
+#include "resources/pipeline.h"
 
 #include "log.h"
 
@@ -140,6 +141,8 @@ Engine::Engine(IFile *file, int, char **argv) :
     RenderTexture::registerClassFactory();
 
     AnimationController::registerClassFactory();
+
+    Pipeline::registerClassFactory();
 
     registerMetaType<MaterialArray>("MaterialArray");
 }

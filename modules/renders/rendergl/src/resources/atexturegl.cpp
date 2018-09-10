@@ -11,10 +11,6 @@ ATextureGL::ATextureGL() :
 
 }
 
-ATextureGL::~ATextureGL() {
-    clear();
-}
-
 void ATextureGL::clear() {
     Texture::clear();
 
@@ -95,6 +91,16 @@ void ATextureGL::apply() {
     glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
 
     glBindTexture(target, 0);
+}
+
+void ATextureGL::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) {
+    bool depth = false;
+
+    Surface &surface    = m_Sides[0];
+
+    glReadPixels( x, y, width, height,
+                 (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
+                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
 }
 
 bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {

@@ -83,6 +83,11 @@ public:
 };
 
 Texture::Texture() :
+        m_Format(R8),
+        m_Compress(Uncompressed),
+        m_Type(Flat),
+        m_Filtering(None),
+        m_Wrap(Clamp),
         m_pRoot(nullptr) {
     setShape({ Vector2(0.0f), Vector2(0.0f, 1.0f), Vector2(1.0f), Vector2(1.0f, 0.0f) });
 }
@@ -157,12 +162,6 @@ void Texture::addSurface(const Surface &surface) {
 }
 
 void Texture::clear() {
-    m_Format    = R8;
-    m_Compress  = Uncompressed;
-    m_Type      = Flat;
-    m_Filtering = None;
-    m_Wrap      = Clamp;
-
     m_Width     = 1;
     m_Height    = 1;
 
@@ -182,6 +181,19 @@ void Texture::clear() {
 
 void *Texture::nativeHandle() const {
     return nullptr;
+}
+
+void Texture::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) {
+
+}
+
+uint32_t Texture::getPixel(int32_t x, int32_t y) const {
+    uint32_t result = 0;
+    if(!m_Sides.empty() && !m_Sides[0].empty()) {
+        uint8_t *ptr    = m_Sides[0][0] + (y * m_Width + x);
+        memcpy(&result, ptr, sizeof(uint32_t));
+    }
+    return result;
 }
 
 uint32_t Texture::width() const {
@@ -267,6 +279,10 @@ void Texture::resize(uint32_t width, uint32_t height) {
     Texture::Surface s;
     s.push_back(pixels);
     addSurface(s);
+}
+
+void Texture::setFormat(FormatType type) {
+    m_Format    = type;
 }
 
 bool Texture::isCompressed() const {

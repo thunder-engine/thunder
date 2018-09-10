@@ -23,7 +23,7 @@ public:
     void                        resize                      (uint32_t width, uint32_t height);
 
 protected:
-    APipeline                  *m_pPipeline;
+    IController                *m_pController;
 
 };
 

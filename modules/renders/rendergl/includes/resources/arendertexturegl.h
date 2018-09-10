@@ -19,6 +19,8 @@ public:
 
     void                       *nativeHandle                () const { return (void *)m_ID; }
 
+    void                        makeCurrent                 (uint32_t index = 0) const;
+
 private:
     uint32_t                    m_Buffer;
 

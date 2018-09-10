@@ -18,7 +18,9 @@ public:
 
     void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
-    void                        setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
+    void                        setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr, bool equal = false);
+
+    void                        setRenderTarget             (uint32_t target);
 
     void                        setColor                    (const Vector4 &color);
 

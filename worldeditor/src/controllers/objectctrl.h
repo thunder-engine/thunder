@@ -18,6 +18,7 @@
 class Engine;
 class Actor;
 class Scene;
+class Texture;
 
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
@@ -120,6 +121,9 @@ protected:
     float               mScaleGrid;
 
     Object             *m_pMap;
+
+    Texture            *m_pDepth;
+    Texture            *m_pSelect;
 
     Object::ObjectList  m_DragObjects;
 

@@ -8,8 +8,14 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface
 
 }
 
-void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
+void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth, bool equal) {
+    A_UNUSED(target);
+    A_UNUSED(depth);
+    A_UNUSED(equal);
+}
 
+void ICommandBuffer::setRenderTarget(uint32_t target) {
+    A_UNUSED(target);
 }
 
 Vector4 ICommandBuffer::idToColor(uint32_t id) {

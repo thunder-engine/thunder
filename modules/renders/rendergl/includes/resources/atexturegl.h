@@ -12,11 +12,11 @@ class ATextureGL : public Texture {
 public:
     ATextureGL                  ();
 
-    ~ATextureGL                 ();
-
     void                        apply                       ();
 
     void                       *nativeHandle                () const { return (void *)m_ID; }
+
+    void                        readPixels                  (int32_t x, int32_t y, uint32_t width, uint32_t height);
 
 private:
     void                        clear                       ();

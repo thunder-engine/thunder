@@ -159,7 +159,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     }
 }
 
-void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
+void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth, bool equal) {
     PROFILER_MARKER;
 
     uint32_t colors[8];
@@ -187,6 +187,13 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTe
 
     if(target.size() > 1) {
         glDrawBuffers( target.size(), colors );
+    }
+    glDepthFunc((equal) ? GL_EQUAL : GL_LEQUAL);
+}
+
+void CommandBufferGL::setRenderTarget(uint32_t target) {
+    if(target) {
+        glBindFramebuffer(GL_FRAMEBUFFER, target);
     }
 }
 

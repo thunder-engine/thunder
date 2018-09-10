@@ -2,15 +2,7 @@
 
 #include <float.h>
 
-#include <object.h>
-
 #include "controller.h"
-
-#include "filters/ablurgl.h"
-
-#include "postprocess/aambientocclusiongl.h"
-#include "postprocess/aantialiasinggl.h"
-#include "postprocess/abloomgl.h"
 
 #include <components/actor.h>
 #include <components/transform.h>
@@ -19,14 +11,13 @@
 #include <components/camera.h>
 #include <components/directlight.h>
 
-#include "analytics/profiler.h"
+#include <resources/mesh.h>
+#include <resources/rendertexture.h>
 
-#include "resources/mesh.h"
-#include "resources/rendertexture.h"
-
+#include <analytics/profiler.h>
 #include <log.h>
 
-#include "commandbuffergl.h"
+#include <commandbuffer.h>
 
 #define SM_RESOLUTION_DEFAULT 1024
 #define SM_RESOLUTION 2048
@@ -42,20 +33,10 @@
 #define DEPTH_MAP   "depthMap"
 #define SHADOW_MAP  "shadowMap"
 
-APipeline::APipeline(Engine *engine) :
-        m_pEngine(engine),
-        m_pScene(nullptr),
-        m_pController(nullptr),
+Pipeline::Pipeline() :
         m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
-        m_World(Vector3()),
         m_pSprite(nullptr) {
-
-    //m_pBlur     = new ABlurGL();
-    //m_pAO       = new AAmbientOcclusionGL();
-
-    //m_PostEffects.push_back(new AAntiAliasingGL());
-    //m_PostEffects.push_back(new ABloomGL());
 
     m_Buffer    = Engine::objectCreate<ICommandBuffer>();
 
@@ -107,49 +88,76 @@ APipeline::APipeline(Engine *engine) :
     m_Targets[G_EMISSIVE]   = emissive;
     m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
 
-
     shadow->resize(SM_RESOLUTION, SM_RESOLUTION);
     shadow->setFixed(true);
+
+  //m_pBlur     = new ABlurGL();
+  //m_pAO       = new AAmbientOcclusionGL();
+
+  //m_PostEffects.push_back(new AAntiAliasingGL());
+  //m_PostEffects.push_back(new ABloomGL());
 }
 
-APipeline::~APipeline() {
+Pipeline::~Pipeline() {
     for(auto it : m_Targets) {
         it.second->deleteLater();
     }
     m_Targets.clear();
 }
 
-void APipeline::draw(Scene &scene, uint32_t resource) {
-    m_pScene    = &scene;
+void Pipeline::draw(Scene &scene, uint32_t resource) {
     m_ComponentList.clear();
     combineComponents(scene);
 
     // Light prepass
-    m_Buffer->setGlobalValue("light.ambient", m_pScene->ambient());
+    m_Buffer->setGlobalValue("light.ambient", scene.ambient());
 
     m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
-    glDepthFunc(GL_LEQUAL);
-
     m_Buffer->clearRenderTarget();
+
     updateShadows(scene);
 
     m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
 
-    analizeScene();
+    // Retrive object id
+    m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
+    m_Buffer->clearRenderTarget(true, Vector4(0.0));
 
-    deferredShading(resource);
+    cameraReset();
+    drawComponents(ICommandBuffer::RAYCAST);
+
+    // Deffered shading
+
+    Camera *camera  = static_cast<Camera *>(parent());
+    // Fill G buffer pass
+    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP], true);
+    m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
+
+    cameraReset();
+    // Draw Opaque pass
+    drawComponents(ICommandBuffer::DEFAULT);
+
+    // Screen Space Ambient Occlusion effect
+    RenderTexture *t    = m_Targets[G_EMISSIVE];
+
+    m_Buffer->setRenderTarget({t});
+
+    // Light pass
+    drawComponents(ICommandBuffer::LIGHT);
+
+    cameraReset();
+    // Draw Transparent pass
+    drawComponents(ICommandBuffer::TRANSLUCENT);
+
+    m_Buffer->setRenderTarget(resource);
+    m_Buffer->setScreenProjection();
+
+    m_pSprite->setTexture("texture0", postProcess(*t));
+    m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 }
 
-RenderTexture *APipeline::postProcess(RenderTexture &source) {
-    RenderTexture *result   = &source;
-    for(auto it : m_PostEffects) {
-        result  = it->draw(*result, *m_Buffer);
-    }
-    return result;
-}
-
-void APipeline::cameraReset() {
-    Camera *camera  = activeCamera();
+void Pipeline::cameraReset() {
+    Camera *camera  = static_cast<Camera *>(parent());
     if(camera) {
         Matrix4 v, p;
         camera->matrices(v, p);
@@ -163,25 +171,26 @@ void APipeline::cameraReset() {
     }
 }
 
-Camera *APipeline::activeCamera() {
-    if(m_pController) {
-        return m_pController->activeCamera();
+RenderTexture *Pipeline::target(const string &target) {
+    auto it = m_Targets.find(target);
+    if(it != m_Targets.end()) {
+        return it->second;
     }
-    return m_pEngine->controller()->activeCamera();
+    return nullptr;
 }
 
-void APipeline::resize(uint32_t width, uint32_t height) {
+void Pipeline::resize(uint32_t width, uint32_t height) {
     m_Screen    = Vector2(width, height);
 
-    for(auto it : m_Targets) {
+    for(auto &it : m_Targets) {
         it.second->resize(width, height);
     }
-    for(auto it : m_PostEffects) {
-        it->resize(width, height);
+    for(auto &it : m_PostEffects) {
+        //it->resize(width, height);
     }
 }
 
-void APipeline::combineComponents(Object &object) {
+void Pipeline::combineComponents(Object &object) {
     for(auto &it : object.getChildren()) {
         Object *child   = it;
         Component *draw = dynamic_cast<Component *>(child);
@@ -201,7 +210,7 @@ void APipeline::combineComponents(Object &object) {
     }
 }
 
-void APipeline::updateShadows(Object &object) {
+void Pipeline::updateShadows(Object &object) {
     for(auto &it : object.getChildren()) {
         DirectLight *light = dynamic_cast<DirectLight *>(it);
         if(light) {
@@ -212,91 +221,14 @@ void APipeline::updateShadows(Object &object) {
     }
 }
 
-void APipeline::analizeScene() {
-    // Retrive object id
-    m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
-    glDepthFunc(GL_LEQUAL);
-
-    m_Buffer->clearRenderTarget(true, Vector4(0.0));
-
-    cameraReset();
-    drawComponents(ICommandBuffer::RAYCAST);
-
-    IController *controller = m_pEngine->controller();
-    if(m_pController) {
-        controller = m_pController;
-    }
-
-    Vector2 position;
-    if(controller) {
-        Vector2 v;
-        controller->selectGeometry(position, v);
-    }
-    uint32_t result = 0;
-    if(position.x >= 0.0f && position.y >= 0.0f &&
-       position.x < m_Screen.x && position.y < m_Screen.y) {
-
-        Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
-        screen.y        = (1.0 - screen.y);
-
-        glReadPixels((int)screen.x, (int)screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screen.z);
-
-        uint8_t value[4];
-        glReadPixels(position.x, (m_Screen.y - position.y), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, value);
-
-        result  = value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24);
-
-        Camera::unproject(screen, m_Buffer->modelView(), m_Buffer->projection(), m_World);
-    }
-    list<uint32_t> l;
-    if(result) {
-        l.push_back(result);
-    }
-    if(controller) {
-        controller->setSelectedObjects(l);
-    }
-}
-
-void APipeline::deferredShading(uint32_t resource) {
-    Camera *camera  = activeCamera();
-    // Fill G buffer pass
-    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    glDepthFunc(GL_EQUAL);
-
-    m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
-
-    cameraReset();
-    // Draw Opaque pass
-    drawComponents(ICommandBuffer::DEFAULT);
-
-    // Screen Space Ambient Occlusion effect
-    RenderTexture *t    = m_Targets[G_EMISSIVE];
-
-    m_Buffer->setRenderTarget({t});
-    glDepthFunc(GL_LEQUAL);
-
-    // Light pass
-    drawComponents(ICommandBuffer::LIGHT);
-
-    cameraReset();
-    // Draw Transparent pass
-    drawComponents(ICommandBuffer::TRANSLUCENT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, resource);
-    m_Buffer->setScreenProjection();
-
-    m_pSprite->setTexture("texture0", postProcess(*t));
-    m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
-}
-
-void APipeline::drawComponents(uint32_t layer) {
+void Pipeline::drawComponents(uint32_t layer) {
     for(auto it : m_ComponentList) {
         it->draw(*m_Buffer, layer);
     }
 }
 
-void APipeline::directUpdate(DirectLight *light) {
-    Camera *camera  = activeCamera();
+void Pipeline::directUpdate(DirectLight *light) {
+    Camera *camera  = static_cast<Camera *>(parent());
     if(camera) {
         Vector4 distance;
         Matrix4 mv, p;
@@ -354,3 +286,10 @@ void APipeline::directUpdate(DirectLight *light) {
     }
 }
 
+RenderTexture *Pipeline::postProcess(RenderTexture &source) {
+    RenderTexture *result   = &source;
+    for(auto it : m_PostEffects) {
+        //result  = it->draw(*result, *m_Buffer);
+    }
+    return result;
+}

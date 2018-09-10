@@ -26,7 +26,7 @@ public:
 */
     virtual void                selectGeometry              (Vector2 &, Vector2 &);
 
-    virtual void                setSelectedObjects          (list<uint32_t> &);
+    virtual void                setSelectedObjects          (const list<uint32_t> &);
 
 protected:
     Camera                     *m_pActiveCamera;

@@ -2,21 +2,23 @@
 
 #include "agl.h"
 
-#include "analytics/profiler.h"
+#include <components/camera.h>
 
-#include "pipeline.h"
+#include <resources/pipeline.h>
 
-#include "components/scene.h"
+#include <controller.h>
 
+#include <analytics/profiler.h>
+#include <log.h>
+
+#include "resources/atexturegl.h"
 #include "resources/arendertexturegl.h"
 
 #include "commandbuffergl.h"
 
-#include <log.h>
-
 RenderGLSystem::RenderGLSystem(Engine *engine) :
-        m_pPipeline(nullptr),
-        ISystem(engine) {
+        ISystem(engine),
+        m_pController(nullptr) {
     PROFILER_MARKER;
 
     ATextureGL::registerClassFactory();
@@ -30,7 +32,6 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 RenderGLSystem::~RenderGLSystem() {
     PROFILER_MARKER;
 
-    delete m_pPipeline;
 }
 
 /*!
@@ -50,8 +51,6 @@ bool RenderGLSystem::init() {
     int32_t targets;
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
 
-    m_pPipeline = new APipeline(m_pEngine);
-
     return true;
 }
 
@@ -68,23 +67,31 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     PROFILER_RESET(POLYGONS);
     PROFILER_RESET(DRAWCALLS);
 
-    if(m_pPipeline) {
-        m_pPipeline->draw(scene, resource);
+    Camera *camera  = m_pEngine->controller()->activeCamera();
+    if(m_pController) {
+        camera  = m_pController->activeCamera();
+    }
+
+    if(camera) {
+        camera->pipeline()->draw(scene, resource);
     }
 }
 
 void RenderGLSystem::overrideController(IController *controller) {
     PROFILER_MARKER;
 
-    if(m_pPipeline) {
-        m_pPipeline->overrideController(controller);
-    }
+    m_pController   = controller;
 }
 
 void RenderGLSystem::resize(uint32_t width, uint32_t height) {
     PROFILER_MARKER;
 
-    if(m_pPipeline) {
-        m_pPipeline->resize(width, height);
+    Camera *camera  = m_pEngine->controller()->activeCamera();
+    if(m_pController) {
+        camera  = m_pController->activeCamera();
+    }
+
+    if(camera) {
+        camera->pipeline()->resize(width, height);
     }
 }

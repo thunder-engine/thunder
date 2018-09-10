@@ -90,3 +90,10 @@ void ARenderTextureGL::apply() {
     }
 
 }
+
+void ARenderTextureGL::makeCurrent(uint32_t index) const {
+    if(index == 0) {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
+    }
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, m_ID, 0 );
+}

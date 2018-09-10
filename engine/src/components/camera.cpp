@@ -3,6 +3,8 @@
 #include "components/actor.h"
 #include "components/transform.h"
 
+#include "resources/pipeline.h"
+
 Camera::Camera() {
     m_FOV       = 45.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
@@ -12,6 +14,14 @@ Camera::Camera() {
     m_OrthoWidth= 1.0;
     m_Ortho     = false;
     m_Color     = Vector4();
+    m_pPipeline = nullptr;
+}
+
+Pipeline *Camera::pipeline() {
+    if(m_pPipeline == nullptr) {
+        m_pPipeline = Engine::objectCreate<Pipeline>("", this);
+    }
+    return m_pPipeline;
 }
 
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {

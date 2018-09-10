@@ -21,7 +21,8 @@ public:
         RGB8,
         RGBA8,
         RGB10A2,
-        R11G11B10Float
+        R11G11B10Float,
+        Depth
     };
 
     enum CompressionType {
@@ -58,6 +59,10 @@ public:
 
     virtual void               *nativeHandle                () const;
 
+    virtual void                readPixels                  (int32_t x, int32_t y, uint32_t width, uint32_t height);
+
+    uint32_t                    getPixel                    (int32_t x, int32_t y) const;
+
     uint32_t                    width                       () const;
     uint32_t                    height                      () const;
 
@@ -77,6 +82,8 @@ public:
     void                        addSurface                  (const Surface &surface);
 
     void                        resize                      (uint32_t width, uint32_t height);
+
+    void                        setFormat                   (FormatType type);
 
 protected:
     uint32_t                    size                        (uint32_t width, uint32_t height) const;

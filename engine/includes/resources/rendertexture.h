@@ -17,6 +17,8 @@ public:
 
     void                        resize                      (uint32_t width, uint32_t height);
 
+    virtual void                makeCurrent                 (uint32_t index = 0) const;
+
 protected:
     uint8_t                     m_DepthBits;
 

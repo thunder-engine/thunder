@@ -26,6 +26,6 @@ void IController::selectGeometry(Vector2 &pos, Vector2 &) {
     pos = Vector2(result.x, result.y);
 }
 
-void IController::setSelectedObjects(list<uint32_t> &id) {
+void IController::setSelectedObjects(const list<uint32_t> &id) {
     m_ObjectsList   = id;
 }

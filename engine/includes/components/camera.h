@@ -5,6 +5,8 @@
 
 #include "component.h"
 
+class Pipeline;
+
 class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components);
 
@@ -20,6 +22,8 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
 
 public:
     Camera                      ();
+
+    Pipeline                   *pipeline                ();
 
     void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
@@ -70,6 +74,8 @@ protected:
     float                       m_OrthoWidth;
 
     Vector4                     m_Color;
+
+    Pipeline                   *m_pPipeline;
 };
 
 #endif // CAMERA_H
