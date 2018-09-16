@@ -70,6 +70,9 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         uint32_t id     = handle(m, surface, lod);
 
         AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());
+        if(!mat) {
+            return;
+        }
         uint32_t program    = mat->bind(*this, material, layer);
         if(program) {
             glProgramUniformMatrix4fvEXT(m_Static, m_ModelLocation, 1, GL_FALSE, model.mat);

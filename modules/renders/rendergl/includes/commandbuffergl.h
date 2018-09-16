@@ -50,7 +50,7 @@ protected:
 
     uint32_t                    m_Pipeline;
 
-    uint32_t                    m_Transform;
+  //uint32_t                    m_Transform;
 
     int32_t                     m_ModelLocation;
 

@@ -9,6 +9,8 @@ class ARenderTextureGL : public RenderTexture {
     A_OVERRIDE(ARenderTextureGL, RenderTexture, Resources)
 
 public:
+     ARenderTextureGL           ();
+
     ~ARenderTextureGL           ();
 
     void                        apply                       ();

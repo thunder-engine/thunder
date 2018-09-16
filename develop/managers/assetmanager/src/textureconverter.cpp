@@ -196,6 +196,8 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
         if(texture.isCubemap()) {
             QList<QPoint> positions;
             float ratio = (float)img.width() / (float)img.height();
+            texture.m_Width     = img.width();
+            texture.m_Height    = img.height();
             if(ratio == 6.0f / 1.0f) { // Row
                 texture.m_Width     = img.width() / 6;
                 texture.m_Height    = img.height();
@@ -228,7 +230,6 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
                 positions.push_back(QPoint(2 * texture.m_Width, 1 * texture.m_Height));
             } else {
                 //qDebug() << "Unsupported ratio";
-                //return 1;
             }
 
             QRect sub;

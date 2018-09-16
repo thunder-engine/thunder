@@ -53,12 +53,10 @@ QVariant qVariant(Variant &v, const string &type) {
             }
             return QVariant::fromValue(value);
         }
-        default: {
-            Object *o   = *(reinterpret_cast<Object **>(v.data()));
-            return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
-        } break;
+        default: break;
     }
-    return QVariant();
+    Object *o   = *(reinterpret_cast<Object **>(v.data()));
+    return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
 }
 
 Variant aVariant(QVariant &v, int type) {

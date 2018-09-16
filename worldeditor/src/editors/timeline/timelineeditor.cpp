@@ -24,6 +24,7 @@ TimelineEditor::TimelineEditor(QWidget *parent) :
         m_Position(0.0),
         m_Scale(0.01f),
         m_Step(MIN_STEP),
+        m_OldPos(0),
         m_Drag(false),
         m_pClip(nullptr),
         m_CreateMenu(this),

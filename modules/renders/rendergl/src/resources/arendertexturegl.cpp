@@ -1,5 +1,11 @@
 #include "resources/arendertexturegl.h"
 
+ARenderTextureGL::ARenderTextureGL() :
+        m_Buffer(0),
+        m_ID(0) {
+
+}
+
 ARenderTextureGL::~ARenderTextureGL() {
     clear();
 }

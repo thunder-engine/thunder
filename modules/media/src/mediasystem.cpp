@@ -16,6 +16,7 @@
 MediaSystem::MediaSystem(Engine *engine) :
         m_pDevice(nullptr),
         m_pContext(nullptr),
+        m_pController(nullptr),
         ISystem(engine) {
     PROFILER_MARKER;
 

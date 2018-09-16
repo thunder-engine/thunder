@@ -220,7 +220,7 @@ uint32_t Texture::size(uint32_t width, uint32_t height) const {
 }
 
 inline uint32_t Texture::sizeDXTc(uint32_t width, uint32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (m_Format == DXT1 ? 8 : 16);
+    return ((width + 3) / 4) * ((height + 3) / 4) * (m_Compress == DXT1 ? 8 : 16);
 }
 
 inline uint32_t Texture::sizeRGB(uint32_t width, uint32_t height) const {

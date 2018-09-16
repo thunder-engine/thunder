@@ -9,8 +9,8 @@
 #include <engine.h>
 #include <system.h>
 #include <controller.h>
+#include <components/actor.h>
 #include <components/scene.h>
-#include <components/chunk.h>
 #include <components/camera.h>
 
 #include "common.h"
@@ -102,7 +102,7 @@ void SceneView::resizeGL(int width, int height) {
 }
 
 void SceneView::findCamera() {
-    Chunk *chunk    = m_pScene->findChild<Chunk *>();
+    Actor *chunk    = m_pScene->findChild<Actor *>(false);
     if(chunk && m_pController) {
         m_pController->setActiveCamera(chunk->findChild<Camera *>());
     }

@@ -18,7 +18,6 @@
 #include "timer.h"
 #include "input.h"
 
-#include "components/chunk.h"
 #include "components/scene.h"
 #include "components/actor.h"
 #include "components/transform.h"
@@ -129,7 +128,6 @@ Engine::Engine(IFile *file, int, char **argv) :
     AnimationClip::registerClassFactory();
 
     Scene::registerClassFactory();
-    Chunk::registerClassFactory();
     Actor::registerClassFactory();
     Transform::registerClassFactory();
     Camera::registerClassFactory();
@@ -186,7 +184,7 @@ int32_t Engine::exec() {
         p_ptr->m_Valid  = true;
 
         string path     = value(gEntry, "").toString();
-        Chunk *level    = loadResource<Chunk>(path);
+        Actor *level    = loadResource<Actor>(path);
         Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
         if(level) {
             level->setParent(scene);

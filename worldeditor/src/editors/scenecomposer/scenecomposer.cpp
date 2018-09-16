@@ -20,7 +20,6 @@
 // Engine
 #include <module.h>
 #include <timer.h>
-#include <components/chunk.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spritemesh.h>
@@ -343,7 +342,7 @@ void SceneComposer::on_action_New_triggered() {
 
     delete m_pMap;
 
-    m_pMap  = Engine::objectCreate<Chunk>("Chunk", ui->viewport->scene());
+    m_pMap  = Engine::createActor("Chunk", ui->viewport->scene());
     ui->hierarchy->setObject(m_pMap);
 
     ObjectCtrl *ctrl    = static_cast<ObjectCtrl *>(ui->viewport->controller());

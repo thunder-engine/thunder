@@ -67,9 +67,11 @@ void Actor::setParent(Object *parent) {
         Actor *actor   = dynamic_cast<Actor *>(parent);
         if(actor) {
             Transform *par  = actor->transform();
-            p   = par->worldRotation().inverse() * (p - par->worldPosition()) * s;
-            e   = e - par->worldEuler();
-            s   = s * par->worldScale();
+            if(par) {
+                p   = par->worldRotation().inverse() * (p - par->worldPosition()) * s;
+                e   = e - par->worldEuler();
+                s   = s * par->worldScale();
+            }
         }
 
         t->setPosition(p);
