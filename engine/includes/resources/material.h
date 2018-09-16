@@ -114,8 +114,6 @@ protected:
 
     bool                        m_DoubleSided;
 
-    bool                        m_Tangent;
-
     bool                        m_DepthTest;
 
     TextureMap                  m_Textures;

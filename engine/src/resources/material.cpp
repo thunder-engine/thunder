@@ -93,7 +93,6 @@ Material::Material() :
         m_LightModel(Unlit),
         m_MaterialType(Surface),
         m_DoubleSided(true),
-        m_Tangent(false),
         m_DepthTest(true),
         m_Surfaces(1) {
     clear();
@@ -114,7 +113,6 @@ void Material::loadUserData(const VariantMap &data) {
             i++;
             m_DoubleSided   = (*i).toBool();
             i++;
-            m_Tangent       = (*i).toBool();
             i++;
             m_Surfaces      = (*i).toInt();
             i++;

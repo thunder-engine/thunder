@@ -104,7 +104,7 @@ ShaderBuilder::ShaderBuilder() :
     list << "Diffuse" << "Emissive" << "Normal" << "Metallic" << "Roughness" << "Opacity" << "IOR";
 
     QVariantList value;
-    value << QVector3D(1.0, 1.0, 1.0) << QVector3D(0.0, 0.0, 0.0) << QVector3D(0.0, 0.0, 1.0) << 0.0 << 0.0 << 1.0 << 1.0;
+    value << QVector3D(1.0, 1.0, 1.0) << QVector3D(0.0, 0.0, 0.0) << QVector3D(0.5, 0.5, 1.0) << 0.0 << 0.0 << 1.0 << 1.0;
 
     int i   = 0;
     foreach(QString it, list) {

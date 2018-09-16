@@ -43,7 +43,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
     switch(m_MaterialType) {
         case PostProcess: {
             m_DoubleSided   = true;
-            m_Tangent       = false;
             m_BlendMode     = Opaque;
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
@@ -52,7 +51,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
         } break;
         case LightFunction: {
             m_DoubleSided   = true;
-            m_Tangent       = false;
             m_BlendMode     = Opaque;
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
@@ -90,9 +88,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
                 default: {
                     define += "\n#define MODEL_UNLIT 1";
                 } break;
-            }
-            if(m_Tangent) {
-                define += "\n#define TANGENT 1";
             }
 
             m_Programs[0]       = buildShader(Fragment, gEmbedded + gSurface, define);
