@@ -113,7 +113,6 @@ void Material::loadUserData(const VariantMap &data) {
             i++;
             m_DoubleSided   = (*i).toBool();
             i++;
-            i++;
             m_Surfaces      = (*i).toInt();
             i++;
             m_BlendMode     = (BlendType)(*i).toInt();

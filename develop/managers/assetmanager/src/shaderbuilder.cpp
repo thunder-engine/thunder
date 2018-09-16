@@ -52,8 +52,7 @@ ShaderBuilder::ShaderBuilder() :
         m_DepthTest(true),
         m_BlendMode(Opaque),
         m_LightModel(Lit),
-        m_MaterialType(Surface),
-        m_Tangent(false) {
+        m_MaterialType(Surface) {
 
     qRegisterMetaType<ConstFloat*>("ConstFloat");
     qRegisterMetaType<ConstVector2*>("ConstVector2");
@@ -435,8 +434,6 @@ bool ShaderBuilder::build() {
     }
     m_Shader.append("\n");
     m_Shader.append(str);
-    // Options
-    m_Tangent   = findLink(m_pNode, "Normal");
     return true;
 }
 
@@ -465,7 +462,6 @@ Variant ShaderBuilder::data() const {
     VariantList properties;
     properties.push_back(materialType());
     properties.push_back(isDoubleSided());
-    properties.push_back(isTangent());
     properties.push_back((materialType() == Material::Surface) ? (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) : Material::Static );
     properties.push_back(blend());
     properties.push_back(lightModel());

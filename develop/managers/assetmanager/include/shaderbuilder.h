@@ -146,8 +146,6 @@ public:
 
     QString                     shader                      () const { return m_Shader; }
 
-    bool                        isTangent                   () const { return m_Tangent; }
-
     bool                        isDoubleSided               () const { return m_DoubleSided; }
     void                        setDoubleSided              (bool value) { m_DoubleSided = value; emit schemeUpdated(); }
 
@@ -202,8 +200,6 @@ private:
     Type                        m_MaterialType;
 
     bool                        m_DoubleSided;
-
-    bool                        m_Tangent;
 
     bool                        m_DepthTest;
 

@@ -11,8 +11,9 @@
 
 #define TRANSFORM_BIND 0
 
-#define COLOR_BIND 2
-#define TIMER_BIND 3
+#define COLOR_BIND  2
+#define TIMER_BIND  3
+#define CLIP_BIND   4
 
 const char *gVertex = ".embedded/BasePass.vert";
 
@@ -78,6 +79,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glProgramUniformMatrix4fvEXT(m_Static, m_ModelLocation, 1, GL_FALSE, model.mat);
 
             glProgramUniform1fEXT   (program, TIMER_BIND, Timer::time());
+            glProgramUniform1fEXT   (program, CLIP_BIND,  0.99f);
             glProgramUniform4fvEXT  (program, COLOR_BIND, 1, m_Color.v);
 
             // Push uniform values to shader

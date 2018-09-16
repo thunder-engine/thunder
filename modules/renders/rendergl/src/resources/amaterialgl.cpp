@@ -110,7 +110,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer) {
     int32_t b   = blendMode();
 
-    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) && //  || layer & ICommandBuffer::RAYCAST
+    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return 0;
     }
@@ -133,10 +133,10 @@ uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, u
         return 0;
     }
 
-    if(m_DepthTest) {
-        glEnable(GL_DEPTH_TEST);
-    } else {
+    if(!m_DepthTest/* || layer & ICommandBuffer::RAYCAST*/) {
         glDisable(GL_DEPTH_TEST);
+    } else {
+        glEnable(GL_DEPTH_TEST);
     }
 
     if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {

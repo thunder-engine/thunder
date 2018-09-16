@@ -128,18 +128,16 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
 
     Camera *camera  = static_cast<Camera *>(parent());
     // Fill G buffer pass
-    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP], true);
+    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP], false);
     m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
 
     cameraReset();
     // Draw Opaque pass
     drawComponents(ICommandBuffer::DEFAULT);
 
-    // Screen Space Ambient Occlusion effect
-    RenderTexture *t    = m_Targets[G_EMISSIVE];
+    /// \todo Screen Space Ambient Occlusion effect should be defined here
 
-    m_Buffer->setRenderTarget({t});
-
+    m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]});
     // Light pass
     drawComponents(ICommandBuffer::LIGHT);
 
@@ -150,7 +148,7 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
     m_Buffer->setRenderTarget(resource);
     m_Buffer->setScreenProjection();
 
-    m_pSprite->setTexture("texture0", postProcess(*t));
+    m_pSprite->setTexture("texture0", postProcess(*m_Targets[G_EMISSIVE]));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 }
 

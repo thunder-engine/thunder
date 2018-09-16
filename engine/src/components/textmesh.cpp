@@ -26,7 +26,7 @@ TextMesh::TextMesh() :
 
 void TextMesh::draw(ICommandBuffer &buffer, int8_t layer) {
     Actor &a    = actor();
-    if(m_pMesh && layer & (ICommandBuffer::RAYCAST | ICommandBuffer::DEFAULT | ICommandBuffer::TRANSLUCENT | ICommandBuffer::SHADOWCAST)) {
+    if(m_pMesh && layer & (ICommandBuffer::RAYCAST | ICommandBuffer::TRANSLUCENT)) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a.uuid()));
         }

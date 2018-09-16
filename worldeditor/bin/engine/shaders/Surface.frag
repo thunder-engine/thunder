@@ -29,7 +29,7 @@ layout(location = 3) out vec4 gbuffer4;
 
 void simpleMode(Params params) {
     float alpha = getOpacity ( params );
-    if(_clip >= alpha) {
+    if(alpha <= _clip) {
         discard;
     }
     gbuffer1    = t_color;
