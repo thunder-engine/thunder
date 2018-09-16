@@ -28,8 +28,8 @@ class Matrix4;
 
 class NEXT_LIBRARY_EXPORT AABBox {
 public:
-    AABBox                       ();
-    AABBox                       (const Vector3 &center, const Vector3 &size);
+    AABBox                      ();
+    AABBox                      (const Vector3 &center, const Vector3 &size);
 
     const AABBox                operator*                   (areal factor) const;
     const AABBox                operator*                   (const Vector3 &vector) const;
@@ -39,9 +39,10 @@ public:
 
     void                        box                         (Vector3 &min, Vector3 &max) const;
     void                        setBox                      (const Vector3 &min, const Vector3 &max);
+    void                        setBox                      (const Vector3 *points, uint32_t number);
 
-    Vector3                    center;
-    Vector3                    size;
+    Vector3                     center;
+    Vector3                     size;
 };
 
 #endif /* AABB_H_HEADER_INCLUDED */

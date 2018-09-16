@@ -84,6 +84,7 @@ void SceneView::paintGL() {
         uint32_t handle = defaultFramebufferObject();
         foreach(ISystem *it, m_Systems) {
             if(it) {
+                it->resize(width(), height());
                 it->update(*m_pScene, handle);
             }
         }

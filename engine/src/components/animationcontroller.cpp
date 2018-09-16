@@ -113,18 +113,20 @@ VariantMap AnimationController::saveUserData() const {
 Object *AnimationController::findTarget(Object *src, const string &path) {
     PROFILE_FUNCTION()
 
-    if(path.empty() || path == src->name()) {
-        return src;
-    } else {
-        string sub  = path;
-        int index   = path.find('/', 1);
-        if(index > -1) {
-            sub     = path.substr(index + 1);
-        }
-        for(const auto &it : src->getChildren()) {
-            Object *o  = findTarget(it, sub);
-            if(o) {
-                return o;
+    if(src) {
+        if(path.empty() || path == src->name()) {
+            return src;
+        } else {
+            string sub  = path;
+            int index   = path.find('/', 1);
+            if(index > -1) {
+                sub     = path.substr(index + 1);
+            }
+            for(const auto &it : src->getChildren()) {
+                Object *o  = findTarget(it, sub);
+                if(o) {
+                    return o;
+                }
             }
         }
     }

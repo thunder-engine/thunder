@@ -34,6 +34,8 @@ public:
 
     static void             drawLines           (const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
 
+    static void             drawAABB            (AABBox &box);
+
     static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);
 
     static Vector3          moveTool            (const Vector3 &position, bool locked);
@@ -67,6 +69,8 @@ protected:
     static Mesh            *s_Quad;
 
     static Mesh            *s_Move;
+
+    static Mesh            *s_Lines;
 
     static MaterialInstance*s_Gizmo;
 

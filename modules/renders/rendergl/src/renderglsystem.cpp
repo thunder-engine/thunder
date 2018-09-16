@@ -32,6 +32,12 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 RenderGLSystem::~RenderGLSystem() {
     PROFILER_MARKER;
 
+    ATextureGL::unregisterClassFactory();
+    ARenderTextureGL::unregisterClassFactory();
+    AMaterialGL::unregisterClassFactory();
+    AMeshGL::unregisterClassFactory();
+
+    CommandBufferGL::unregisterClassFactory();
 }
 
 /*!

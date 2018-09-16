@@ -34,7 +34,11 @@ public:
 
     void                        cameraReset         ();
 
-    RenderTexture              *target              (const string &target);
+    RenderTexture              *target              (const string &target) const;
+
+    Mesh                       *plane               () const;
+
+    MaterialInstance           *sprite              () const;
 
 protected:
     void                        drawComponents      (uint32_t layer);

@@ -184,6 +184,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->moveButton,     SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
     connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
     connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
+    connect(ui->renderMode,     SIGNAL(clicked()), ui->viewport, SLOT(onSetMode()));
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 

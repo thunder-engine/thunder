@@ -27,6 +27,8 @@ public:
 
     void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
+    Matrix4                     projectionMatrix        () const;
+
     static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss);
     static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ws);
 

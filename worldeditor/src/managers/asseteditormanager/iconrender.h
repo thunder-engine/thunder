@@ -8,7 +8,6 @@
 class Engine;
 class Scene;
 class Actor;
-class AOBox;
 
 class IController;
 class ISystem;

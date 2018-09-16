@@ -9,7 +9,6 @@
 #include <QFileInfo>
 
 #include <engine.h>
-#include <controller.h>
 
 #include <system.h>
 
@@ -24,6 +23,7 @@
 #include "pluginmodel.h"
 #include "assetmanager.h"
 #include "converters/converter.h"
+#include "controllers/cameractrl.h"
 
 IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
         QObject(parent) {
@@ -47,7 +47,6 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     if(m_pRender) {
         m_pRender->init();
         m_pRender->overrideController(m_pController);
-        m_pRender->resize(m_pFBO->size().width(), m_pFBO->size().height());
     }
 
     m_pScene    = Engine::objectCreate<Scene>();
@@ -73,7 +72,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
 
     Camera *camera  = m_pController->activeCamera();
     camera->setOrthographic(false);
-    Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
+    Actor *object   = Engine::createActor("", m_pScene);
     float fov       = camera->fov();
     switch(type) {
         case IConverter::ContentTexture: {
@@ -113,6 +112,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     }
 
     if(m_pRender) {
+        m_pRender->resize(m_pFBO->size().width(), m_pFBO->size().height());
         m_pRender->update(*m_pScene, m_pFBO->handle());
     }
     m_Context->functions()->glFlush();

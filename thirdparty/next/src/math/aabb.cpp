@@ -1,4 +1,7 @@
 #include "math/amath.h"
+
+#include <float.h>
+
 /*!
     \class AABBox
     \brief The AABBox class represents a Axis Aligned Bounding Box in 3D space.
@@ -73,9 +76,25 @@ void AABBox::box(Vector3 &min, Vector3 &max) const {
     max     = min + size;
 }
 /*!
-    Set curent bounding box by \a min and \a max points.
+    Set current bounding box by \a min and \a max points.
 */
 void AABBox::setBox(const Vector3 &min, const Vector3 &max) {
     size    = max - min;
     center  = min + size * 0.5;
+}
+/*!
+    Set curent bounding box by provided array of \a points and \a number of them.
+*/
+void AABBox::setBox(const Vector3 *points, uint32_t number) {
+    Vector3 bb[2]   = {Vector3(FLT_MAX), Vector3(-FLT_MAX)};
+    for(uint32_t i = 0; i < number; i++) {
+        bb[0].x = MIN(bb[0].x, points[i].x);
+        bb[0].y = MIN(bb[0].y, points[i].y);
+        bb[0].z = MIN(bb[0].z, points[i].z);
+
+        bb[1].x = MAX(bb[1].x, points[i].x);
+        bb[1].y = MAX(bb[1].y, points[i].y);
+        bb[1].z = MAX(bb[1].z, points[i].z);
+    }
+    setBox(bb[0], bb[1]);
 }

@@ -3,6 +3,10 @@
 #include <system.h>
 #include <commandbuffer.h>
 
+#include <components/camera.h>
+
+#include <resources/pipeline.h>
+
 #include "handles.h"
 #include "controllers/objectctrl.h"
 
@@ -16,7 +20,14 @@ Viewport::Viewport(QWidget *parent) :
     setAcceptDrops(true);
     //setContextMenuPolicy(Qt::CustomContextMenu);
     setAutoFillBackground(false);
+}
 
+void Viewport::onSetMode() {
+    if(m_Target.empty()) {
+        m_Target    = "shadowMap";
+    } else {
+        m_Target.clear();
+    }
 }
 
 void Viewport::initializeGL() {
@@ -38,6 +49,17 @@ void Viewport::paintGL() {
 
     if(m_pController) {
         Handles::s_ActiveCamera = m_pController->activeCamera();
+
+        if(!m_Target.empty()) {
+            Pipeline *pipeline  = Handles::s_ActiveCamera->pipeline();
+
+            MaterialInstance *sprite    = pipeline->sprite();
+            sprite->setTexture("texture0", reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
+
+            m_pCommandBuffer->setScreenProjection();
+            m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);
+        }
+
         Handles::beginDraw(m_pCommandBuffer);
         static_cast<CameraCtrl *>(m_pController)->drawHandles();
         Handles::endDraw();

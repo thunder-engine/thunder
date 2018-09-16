@@ -40,6 +40,7 @@ float conesize  = length / 5.0f;
 Mesh *Handles::s_Cone   = nullptr;
 Mesh *Handles::s_Quad   = nullptr;
 Mesh *Handles::s_Move   = nullptr;
+Mesh *Handles::s_Lines  = nullptr;
 
 MaterialInstance *Handles::s_Gizmo  = nullptr;
 MaterialInstance *Handles::s_Sprite = nullptr;
@@ -74,6 +75,10 @@ void Handles::init() {
         if(m) {
             s_Gizmo = m->createInstance();
         }
+    }
+
+    if(s_Lines == nullptr) {
+        s_Lines = Engine::objectCreate<Mesh>("Lines");
     }
 
     if(s_Move == nullptr) {
@@ -166,22 +171,42 @@ void Handles::drawArrow(const Matrix4 &transform) {
 }
 
 void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices) {
-    Mesh *lines = Engine::objectCreate<Mesh>("Lines");
 
     Mesh::Lod lod;
     lod.vertices    = points;
     lod.indices     = indices;
     {
+        s_Lines->clear();
         Mesh::Surface surface;
         surface.mode    = Mesh::MODE_LINES;
         surface.lods.push_back(lod);
-        lines->addSurface(surface);
-        lines->apply();
+        s_Lines->addSurface(surface);
+        s_Lines->apply();
     }
     s_Buffer->setColor(s_Color);
-    s_Buffer->drawMesh(transform, lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    s_Buffer->drawMesh(transform, s_Lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+}
 
-    delete lines;
+void Handles::drawAABB(AABBox &box) {
+    Vector3 min, max;
+    box.box(min, max);
+
+    Vector3Vector points = {
+        Vector3(min.x, min.y, min.z),
+        Vector3(max.x, min.y, min.z),
+        Vector3(max.x, min.y, max.z),
+        Vector3(min.x, min.y, max.z),
+
+        Vector3(min.x, max.y, min.z),
+        Vector3(max.x, max.y, min.z),
+        Vector3(max.x, max.y, max.z),
+        Vector3(min.x, max.y, max.z)
+    };
+    Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                                   4, 5, 5, 6, 6, 7, 7, 4,
+                                   0, 4, 1, 5, 2, 6, 3, 7};
+
+    drawLines(Matrix4(), points, indices);
 }
 
 bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {

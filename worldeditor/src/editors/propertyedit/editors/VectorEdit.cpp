@@ -2,6 +2,7 @@
 #include "ui_VectorEdit.h"
 
 #include <QDoubleValidator>
+#include <QLocale>
 
 #include <float.h>
 
@@ -29,22 +30,24 @@ VectorEdit::~VectorEdit() {
 }
 
 Vector3 VectorEdit::data() const {
-    return Vector3(ui->x->text().toFloat(),
-                   ui->y->text().toFloat(),
-                   ui->z->text().toFloat());
+    QLocale locale;
+    return Vector3(locale.toFloat(ui->x->text()),
+                   locale.toFloat(ui->y->text()),
+                   locale.toFloat(ui->z->text()));
 }
 
 void VectorEdit::setData(const Vector3 &v) {
+    QLocale locale;
     ui->x->blockSignals(true);
-    ui->x->setText(QString::number(v.x));
+    ui->x->setText(locale.toString(v.x));
     ui->x->blockSignals(false);
 
     ui->y->blockSignals(true);
-    ui->y->setText(QString::number(v.y));
+    ui->y->setText(locale.toString(v.y));
     ui->y->blockSignals(false);
 
     ui->z->blockSignals(true);
-    ui->z->setText(QString::number(v.z));
+    ui->z->setText(locale.toString(v.z));
     ui->z->blockSignals(false);
 }
 

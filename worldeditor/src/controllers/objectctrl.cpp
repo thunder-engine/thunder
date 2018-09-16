@@ -78,6 +78,8 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
 void ObjectCtrl::drawHandles() {
     CameraCtrl::drawHandles();
 
+    m_ObjectsList.clear();
+
     Handles::m_sMouse   = Vector2(mMousePosition.x / m_Screen.x, mMousePosition.y / m_Screen.y);
 
     drawHelpers(*m_pMap);
@@ -99,7 +101,7 @@ void ObjectCtrl::drawHandles() {
 
     Camera *camera  = activeCamera();
     Pipeline *pipeline  = camera->pipeline();
-    if(pipeline) {
+    if(pipeline && m_ObjectsList.empty()) {
         Vector2 position, size;
         selectGeometry(position, size);
 
@@ -165,7 +167,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
                                                4, 5, 5, 6, 6, 7, 7, 4,
                                                0, 4, 1, 5, 2, 6, 3, 7};
 
-                Handles::drawLines(t->worldTransform(), points, indices);
+                //Handles::drawLines(Matrix4(), points, indices);
                 result  = Handles::drawBillboard(t->position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
             }
             DirectLight *direct = dynamic_cast<DirectLight *>(component);
