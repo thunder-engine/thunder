@@ -29,7 +29,7 @@ CameraCtrl::CameraCtrl(Viewport *view) :
 }
 
 void CameraCtrl::init(Scene *scene) {
-    m_pCamera   = Engine::createActor("Camera", scene);
+    m_pCamera   = Engine::createActor("Camera");
     m_pCamera->setScene(*scene);
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(10.0f);
