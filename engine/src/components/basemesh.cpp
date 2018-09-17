@@ -31,6 +31,14 @@ MaterialArray BaseMesh::materials() const {
 }
 
 void BaseMesh::setMaterials(const MaterialArray &material) {
+    for(uint32_t index = 0; index < m_Materials.size(); index++) {
+        if(index < material.size()) {
+            MaterialInstance *inst  = m_Materials[index];
+            delete inst;
+
+            m_Materials[index]  = material[index];
+        }
+    }
     m_Materials = material;
 }
 
@@ -42,7 +50,7 @@ Material *BaseMesh::material(uint32_t index) const {
 }
 
 void BaseMesh::setMaterial(Material *material, uint32_t index) {
-    if(index < m_Materials.size()) {
+    if(material && index < m_Materials.size()) {
         if(m_Materials[index]) {
             delete m_Materials[index];
         }
@@ -78,8 +86,7 @@ void BaseMesh::loadUserData(const VariantMap &data) {
 VariantMap BaseMesh::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
-        Mesh *m     = mesh();
-        string ref  = Engine::reference(m);
+        string ref  = Engine::reference(mesh());
         if(!ref.empty()) {
             result[MESH]    = ref;
         }
@@ -87,7 +94,10 @@ VariantMap BaseMesh::saveUserData() const {
     {
         VariantList list;
         for(MaterialInstance *it : materials()) {
-            list.push_back(Engine::reference(it->material()));
+            string ref  = Engine::reference(it->material());
+            if(!ref.empty()) {
+                list.push_back(ref);
+            }
         }
         result[MATERAILS]   = list;
     }

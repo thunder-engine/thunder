@@ -224,8 +224,6 @@ bool NextObject::event(QEvent *e) {
                     if(id < array.size()) {
                         Material *m     = aVariant(value, MetaType::type<Material *>()).value<Material *>();
                         if(m) {
-                            MaterialInstance *inst  = array[id];
-                            delete inst;
                             array[id]   = m->createInstance();
                         }
                     }
