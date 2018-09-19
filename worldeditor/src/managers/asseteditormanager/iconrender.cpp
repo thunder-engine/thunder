@@ -20,6 +20,8 @@
 #include <components/staticmesh.h>
 #include <components/spritemesh.h>
 
+#include <resources/pipeline.h>
+
 #include "pluginmodel.h"
 #include "assetmanager.h"
 #include "converters/converter.h"
@@ -71,6 +73,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     m_Context->makeCurrent(m_Surface);
 
     Camera *camera  = m_pController->activeCamera();
+    camera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
     camera->setOrthographic(false);
     Actor *object   = Engine::createActor("", m_pScene);
     float fov       = camera->fov();
@@ -112,7 +115,6 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     }
 
     if(m_pRender) {
-        m_pRender->resize(m_pFBO->size().width(), m_pFBO->size().height());
         m_pRender->update(*m_pScene, m_pFBO->handle());
     }
     m_Context->functions()->glFlush();

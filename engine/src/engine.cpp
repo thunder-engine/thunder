@@ -198,16 +198,12 @@ int32_t Engine::exec() {
             camera->transform()->setPosition(Vector3(0.0f));
             component       = camera->addComponent<Camera>();
         }
-        for(auto it : p_ptr->m_Systems) {
-            Log(Log::DBG) << "Resize for" << it->name();
-            it->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
-        }
+        component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
         component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 
         p_ptr->m_Controller->setActiveCamera(component);
         // Start Scene
         scene->start();
-
         // Enter to game loop
         while(p_ptr->m_Valid) {
             Timer::update();
@@ -217,10 +213,10 @@ int32_t Engine::exec() {
                 p_ptr->m_Controller->update();
                 scene->update();
 
-                for(auto it : p_ptr->m_Systems) {
-                    it->update(*scene);
-                }
                 lag -= Timer::fixedDelta();
+            }
+            for(auto it : p_ptr->m_Systems) {
+                it->update(*scene);
             }
             p_ptr->m_Valid  = p_ptr->m_pPlatform->isValid();
             p_ptr->m_pPlatform->update();

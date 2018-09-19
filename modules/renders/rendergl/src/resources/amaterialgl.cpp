@@ -107,7 +107,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
     return 0;
 }
 
-uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer) {
+uint32_t AMaterialGL::bind(uint8_t layer) {
     int32_t b   = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
@@ -137,6 +137,7 @@ uint32_t AMaterialGL::bind(ICommandBuffer &buffer, MaterialInstance *instance, u
         glDisable(GL_DEPTH_TEST);
     } else {
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc((layer & ICommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
     }
 
     if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {

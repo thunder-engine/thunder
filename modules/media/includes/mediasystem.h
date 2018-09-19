@@ -20,8 +20,6 @@ public:
 
     void                        overrideController          (IController *controller);
 
-    void                        resize                      (uint32_t, uint32_t);
-
 protected:
     Camera                     *activeCamera                ();
 

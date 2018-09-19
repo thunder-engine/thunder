@@ -20,8 +20,6 @@ public:
 
     void                        overrideController          (IController *controller);
 
-    void                        resize                      (uint32_t width, uint32_t height);
-
 protected:
     IController                *m_pController;
 

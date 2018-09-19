@@ -78,11 +78,6 @@ void MediaSystem::overrideController(IController *controller) {
     m_pController   = controller;
 }
 
-void MediaSystem::resize(uint32_t, uint32_t) {
-    PROFILER_MARKER;
-
-}
-
 Camera *MediaSystem::activeCamera() {
     if(m_pController) {
         return m_pController->activeCamera();

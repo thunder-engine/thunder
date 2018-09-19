@@ -13,6 +13,8 @@
 #include <components/scene.h>
 #include <components/camera.h>
 
+#include <resources/pipeline.h>
+
 #include "common.h"
 #include "pluginmodel.h"
 
@@ -84,7 +86,6 @@ void SceneView::paintGL() {
         uint32_t handle = defaultFramebufferObject();
         foreach(ISystem *it, m_Systems) {
             if(it) {
-                it->resize(width(), height());
                 it->update(*m_pScene, handle);
             }
         }
@@ -94,9 +95,10 @@ void SceneView::paintGL() {
 void SceneView::resizeGL(int width, int height) {
     QOpenGLWidget::resizeGL(width, height);
 
-    foreach(ISystem *it, m_Systems) {
-        if(it) {
-            it->resize(width, height);
+    if(m_pController) {
+        Camera *camera  = m_pController->activeCamera();
+        if(camera) {
+            camera->pipeline()->resize(width, height);
         }
     }
 }
@@ -105,6 +107,9 @@ void SceneView::findCamera() {
     Actor *chunk    = m_pScene->findChild<Actor *>(false);
     if(chunk && m_pController) {
         Camera *camera  = chunk->findChild<Camera *>();
-        m_pController->setActiveCamera(camera);
+        if(camera) {
+            camera->pipeline()->resize(width(), height());
+            m_pController->setActiveCamera(camera);
+        }
     }
 }

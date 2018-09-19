@@ -15,10 +15,9 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface
     A_UNUSED(material);
 }
 
-void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth, bool equal) {
+void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
     A_UNUSED(target);
     A_UNUSED(depth);
-    A_UNUSED(equal);
 }
 
 void ICommandBuffer::setRenderTarget(uint32_t target) {

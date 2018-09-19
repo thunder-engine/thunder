@@ -88,16 +88,3 @@ void RenderGLSystem::overrideController(IController *controller) {
 
     m_pController   = controller;
 }
-
-void RenderGLSystem::resize(uint32_t width, uint32_t height) {
-    PROFILER_MARKER;
-
-    Camera *camera  = m_pEngine->controller()->activeCamera();
-    if(m_pController) {
-        camera  = m_pController->activeCamera();
-    }
-
-    if(camera) {
-        camera->pipeline()->resize(width, height);
-    }
-}

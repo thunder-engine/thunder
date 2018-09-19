@@ -37,7 +37,7 @@ public:
 
     void                        loadUserData    (const VariantMap &data);
 
-    uint32_t                    bind            (ICommandBuffer &buffer, MaterialInstance *instance, uint8_t layer);
+    uint32_t                    bind            (uint8_t layer);
     void                        unbind          (uint8_t);
 
     uint32_t                    getProgram      (uint16_t type) const;

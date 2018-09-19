@@ -128,7 +128,7 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
 
     Camera *camera  = static_cast<Camera *>(parent());
     // Fill G buffer pass
-    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP], false);
+    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
 
     cameraReset();
