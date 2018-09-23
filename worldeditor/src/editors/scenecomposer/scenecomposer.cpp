@@ -112,6 +112,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->preview->setScene(ui->viewport->scene());
     ui->preview->setWindowTitle("Preview");
 
+    Input::instance()->init(ui->preview);
+
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
@@ -219,8 +221,8 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
-    ui->viewport->update();
-    ui->preview->update();
+    ui->viewport->repaint();
+    ui->preview->repaint();
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {

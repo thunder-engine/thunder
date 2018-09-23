@@ -29,8 +29,14 @@ public:
 
     void                        setEnable               (bool enable);
 
+    bool                        isStarted               () const;
+
+    void                        setStarted              (bool started);
+
 protected:
     bool                        m_Enable;
+
+    bool                        m_Started;
 
 };
 

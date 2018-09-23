@@ -3,7 +3,6 @@
 
 #include "iplatformadaptor.h"
 
-class Log;
 struct GLFWwindow;
 struct GLFWmonitor;
 
@@ -27,9 +26,9 @@ public:
 
     bool                        key                         (Input::KeyCode code);
 
-    Vector3                     mousePosition               ();
+    Vector4                     mousePosition               ();
 
-    Vector3                     mouseDelta                  ();
+    Vector4                     mouseDelta                  ();
 
     uint8_t                     mouseButtons                ();
 
@@ -69,9 +68,11 @@ protected:
 
     uint8_t                     m_MouseButtons;
 
-    static Vector3              s_MouseDelta;
+    static Vector4              s_MousePosition;
 
-    static Vector3              s_MousePosition;
+    static Vector4              s_OldMousePosition;
+
+    static Vector2              s_Screen;
 };
 
 #endif // DESKTOPAADAPTOR_H

@@ -26,9 +26,9 @@ public:
 
     virtual bool                        key                         (Input::KeyCode code) = 0;
 
-    virtual Vector3                     mousePosition               () = 0;
+    virtual Vector4                     mousePosition               () = 0;
 
-    virtual Vector3                     mouseDelta                  () = 0;
+    virtual Vector4                     mouseDelta                  () = 0;
 
     virtual uint8_t                     mouseButtons                () = 0;
 

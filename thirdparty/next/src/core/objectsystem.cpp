@@ -120,6 +120,10 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     return object;
 }
 
+void ObjectSystem::processObject(Object *object) {
+    object->processEvents();
+}
+
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION()
     p_ptr->m_Groups[name]   = uri;

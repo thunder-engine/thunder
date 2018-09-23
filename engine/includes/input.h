@@ -8,7 +8,7 @@
 
 class IPlatformAdaptor;
 
-class NEXT_LIBRARY_EXPORT Input : public ASingleton<Input> {
+class NEXT_LIBRARY_EXPORT Input {
 public:
     enum MouseButton {
         LEFT                = 0x01,
@@ -161,16 +161,17 @@ public:
         KEY_MENU            = 348
     };
 public:
-    Input                       ();
-    ~Input                      ();
+    static Input               *instance                    ();
+
+    static void                 destroy                     ();
 
     void                        init                        (IPlatformAdaptor *platform);
 
     bool                        key                         (KeyCode code);
 
-    Vector3                   mousePosition               ();
+    Vector4                     mousePosition               ();
 
-    Vector3                   mouseDelta                  ();
+    Vector4                     mouseDelta                  ();
 
     uint8_t                     mouseButtons                ();
 
@@ -180,12 +181,18 @@ public:
 
     uint16_t                    joystickButtons             (uint8_t index);
 
-    Vector4                   joystickThumbs              (uint8_t index);
+    Vector4                     joystickThumbs              (uint8_t index);
 
-    Vector2                   joystickTriggers            (uint8_t index);
+    Vector2                     joystickTriggers            (uint8_t index);
 
 protected:
     IPlatformAdaptor           *m_pPlatform;
+
+private:
+    Input                       ();
+    ~Input                      ();
+
+    static Input               *m_pInstance;
 
 };
 

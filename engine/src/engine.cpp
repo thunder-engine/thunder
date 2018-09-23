@@ -202,8 +202,6 @@ int32_t Engine::exec() {
         component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 
         p_ptr->m_Controller->setActiveCamera(component);
-        // Start Scene
-        scene->start();
         // Enter to game loop
         while(p_ptr->m_Valid) {
             Timer::update();
@@ -211,7 +209,7 @@ int32_t Engine::exec() {
             while(lag >= Timer::fixedDelta()) {
                 // fixed update
                 p_ptr->m_Controller->update();
-                scene->update();
+                updateScene(scene);
 
                 lag -= Timer::fixedDelta();
             }
@@ -390,4 +388,22 @@ string Engine::organizationName() const {
 
 void Engine::setOrganizationName(const string &name) {
     EnginePrivate::m_Organization   = name;
+}
+
+void Engine::updateScene(Object *object) {
+    if(object) {
+        for(auto &it : object->getChildren()) {
+            Object *child   = it;
+            Component *comp = dynamic_cast<Component *>(child);
+            if(comp && comp->isEnable()) {
+                if(!comp->isStarted()) {
+                    comp->start();
+                    comp->setStarted(true);
+                }
+                comp->update();
+            } else {
+                updateScene(child);
+            }
+        }
+    }
 }

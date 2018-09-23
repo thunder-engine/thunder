@@ -16,7 +16,8 @@ Project {
     property stringList incPaths: [
         "inc",
         "inc/core",
-        "inc/math"
+        "inc/math",
+        "inc/anim"
     ]
 
     DynamicLibrary {

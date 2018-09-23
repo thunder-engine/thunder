@@ -77,6 +77,8 @@ public:
 
     void                        setOrganizationName         (const string &name);
 
+    static void                 updateScene                 (Object *object);
+
 private:
     EnginePrivate              *p_ptr;
 

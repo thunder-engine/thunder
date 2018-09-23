@@ -22,7 +22,7 @@ void IController::setActiveCamera(Camera *camera) {
 }
 
 void IController::selectGeometry(Vector2 &pos, Vector2 &) {
-    Vector3 result    = Input::instance()->mousePosition();
+    Vector4 result    = Input::instance()->mousePosition();
     pos = Vector2(result.x, result.y);
 }
 

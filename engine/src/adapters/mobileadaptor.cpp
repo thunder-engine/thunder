@@ -4,8 +4,8 @@
 
 #include <log.h>
 
-//Vector3 DesktopAdaptor::m_MouseDelta     = Vector3();
-//Vector3 DesktopAdaptor::m_MousePosition  = Vector3();
+Vector4 MobileAdaptor::m_MouseDelta     = Vector4();
+Vector4 MobileAdaptor::m_MousePosition  = Vector4();
 
 void glfmMain(GLFMDisplay *display) {
     glfmSetDisplayConfig(display,
@@ -52,11 +52,11 @@ bool MobileAdaptor::key(Input::KeyCode) {
     return false;
 }
 
-Vector3 MobileAdaptor::mousePosition() {
+Vector4 MobileAdaptor::mousePosition() {
     return m_MousePosition;
 }
 
-Vector3 MobileAdaptor::mouseDelta() {
+Vector4 MobileAdaptor::mouseDelta() {
     return m_MouseDelta;
 }
 

@@ -4,7 +4,8 @@
 
 Component::Component() :
         Object(),
-        m_Enable(true) {
+        m_Enable(true),
+        m_Started(false) {
 
 }
 
@@ -30,4 +31,12 @@ bool Component::isEnable() const {
 
 void Component::setEnable(bool enable) {
     m_Enable    = enable;
+}
+
+bool Component::isStarted() const {
+    return m_Started;
+}
+
+void Component::setStarted(bool started) {
+    m_Started   = started;
 }

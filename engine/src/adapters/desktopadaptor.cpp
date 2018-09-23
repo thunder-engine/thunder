@@ -14,8 +14,9 @@
 #include <file.h>
 #include <utils.h>
 
-Vector3 DesktopAdaptor::s_MouseDelta     = Vector3();
-Vector3 DesktopAdaptor::s_MousePosition  = Vector3();
+Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
+Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
+Vector2 DesktopAdaptor::s_Screen            = Vector2();
 
 static Engine *g_pEngine   = nullptr;
 
@@ -46,13 +47,15 @@ bool DesktopAdaptor::init() {
         return false;
     }
 
+    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
+    s_Screen    =   Vector2(mode->width, mode->height);
+
     return true;
 }
 
 void DesktopAdaptor::update() {
     glfwSwapBuffers(m_pWindow);
     glfwPollEvents();
-    s_MousePosition += s_MouseDelta;
 
     m_MouseButtons  = 0;
     for(uint8_t i = 0; i < 8; i++) {
@@ -95,12 +98,12 @@ bool DesktopAdaptor::key(Input::KeyCode code) {
     return (glfwGetKey(m_pWindow, code) == GLFW_PRESS);
 }
 
-Vector3 DesktopAdaptor::mousePosition() {
+Vector4 DesktopAdaptor::mousePosition() {
     return s_MousePosition;
 }
 
-Vector3 DesktopAdaptor::mouseDelta() {
-    return s_MouseDelta;
+Vector4 DesktopAdaptor::mouseDelta() {
+    return s_MousePosition - s_OldMousePosition;
 }
 
 uint8_t DesktopAdaptor::mouseButtons() {
@@ -108,13 +111,11 @@ uint8_t DesktopAdaptor::mouseButtons() {
 }
 
 uint32_t DesktopAdaptor::screenWidth() {
-    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-    return mode->width;
+    return s_Screen.x;
 }
 
 uint32_t DesktopAdaptor::screenHeight() {
-    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-    return mode->height;
+    return s_Screen.y;
 }
 
 void DesktopAdaptor::setMousePosition(const Vector3 &position) {
@@ -186,11 +187,12 @@ void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
-    s_MouseDelta    = Vector3(s_MouseDelta.x, s_MouseDelta.y, yoffset);
+
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
-    s_MouseDelta    = Vector3(xpos, ypos, s_MouseDelta.z);
+    s_OldMousePosition  = s_MousePosition;
+    s_MousePosition     = Vector4(xpos, s_Screen.y - ypos, xpos / s_Screen.x, 1.0f - ypos / s_Screen.y);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {

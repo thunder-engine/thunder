@@ -4,6 +4,8 @@
 
 #include "adapters/iplatformadaptor.h"
 
+Input *Input::m_pInstance   = nullptr;
+
 /*!
     Constructor of Input class.
     @param[in]  pLog        The pointer to Log object for working with logging system.
@@ -17,6 +19,18 @@ Input::~Input() {
 
 }
 
+Input *Input::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new Input;
+    }
+    return m_pInstance;
+}
+
+void Input::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
+}
+
 void Input::init(IPlatformAdaptor *platform) {
     m_pPlatform = platform;
 }
@@ -25,11 +39,11 @@ bool Input::key(KeyCode code) {
     return m_pPlatform->key(code);
 }
 
-Vector3 Input::mousePosition() {
+Vector4 Input::mousePosition() {
     return m_pPlatform->mousePosition();
 }
 
-Vector3 Input::mouseDelta() {
+Vector4 Input::mouseDelta() {
     return m_pPlatform->mouseDelta();
 }
 

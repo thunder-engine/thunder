@@ -22,7 +22,8 @@ SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
         m_pController(nullptr),
         m_pScene(nullptr),
-        m_GameMode(false) {
+        m_GameMode(false),
+        m_MouseButtons(0) {
 
     setMouseTracking(true);
 }
@@ -47,8 +48,6 @@ void SceneView::setController(IController *ctrl) {
 }
 
 void SceneView::startGame() {
-    m_pScene->start();
-
     m_GameMode  = true;
 }
 
@@ -81,8 +80,12 @@ void SceneView::paintGL() {
         m_pController->update();
     }
     if(m_pScene) {
+        if(m_GameMode) {
+            updateScene(m_pScene);
+        }
+
         findCamera();
-        m_pScene->update();
+
         uint32_t handle = defaultFramebufferObject();
         foreach(ISystem *it, m_Systems) {
             if(it) {
@@ -101,6 +104,18 @@ void SceneView::resizeGL(int width, int height) {
             camera->pipeline()->resize(width, height);
         }
     }
+}
+
+void SceneView::mousePressEvent(QMouseEvent *ev) {
+    m_MouseButtons  = ev->buttons();
+}
+
+void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
+    m_MouseButtons  = ev->buttons();
+}
+
+void SceneView::updateScene(Object *object) {
+    Engine::updateScene(object);
 }
 
 void SceneView::findCamera() {

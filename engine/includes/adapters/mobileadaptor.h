@@ -25,9 +25,9 @@ public:
 
     bool                        key                         (Input::KeyCode code);
 
-    Vector3                     mousePosition               ();
+    Vector4                     mousePosition               ();
 
-    Vector3                     mouseDelta                  ();
+    Vector4                     mouseDelta                  ();
 
     uint8_t                     mouseButtons                ();
 
@@ -59,9 +59,9 @@ protected:
 protected:
     uint8_t                     m_MouseButtons;
 
-    static Vector3              m_MouseDelta;
+    static Vector4              m_MouseDelta;
 
-    static Vector3              m_MousePosition;
+    static Vector4              m_MousePosition;
 
 };
 

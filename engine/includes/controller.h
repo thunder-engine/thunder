@@ -10,7 +10,7 @@
 class Camera;
 class Scene;
 
-class NEXT_LIBRARY_EXPORT IController {
+class NEXT_LIBRARY_EXPORT [[deprecated("To be removed in 2018.4")]] IController {
 public:
     IController                 ();
 

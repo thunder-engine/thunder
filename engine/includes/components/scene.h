@@ -9,18 +9,10 @@ class NEXT_LIBRARY_EXPORT Scene : public Object {
 public:
     Scene               ();
 
-    void                start               ();
-
-    void                update              ();
-
     float               ambient             () const;
     void                setAmbient          (float ambient);
 
 protected:
-    void                startComponents     (Object &object);
-
-    void                updateComponents    (Object &object);
-
     float               m_Ambient;
 
 };

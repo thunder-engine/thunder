@@ -16,6 +16,7 @@ Project {
 
     property stringList incPaths: [
         "includes",
+        "includes/components",
         "includes/resources",
         "../common",
         "../thirdparty/next/inc",
