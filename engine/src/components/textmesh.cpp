@@ -135,11 +135,11 @@ void TextMesh::setFont(Font *font) {
     composeMesh();
 }
 
-int TextMesh::size() const {
+int TextMesh::fontSize() const {
     return m_Size;
 }
 
-void TextMesh::setSize(int size) {
+void TextMesh::setFontSize(int size) {
     m_Size  = size;
     composeMesh();
 }

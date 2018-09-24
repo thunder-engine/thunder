@@ -2,6 +2,8 @@
 
 #include "agl.h"
 
+#include "commandbuffergl.h"
+
 AMeshGL::AMeshGL() :
         Mesh() {
 }
@@ -116,6 +118,13 @@ void AMeshGL::clear() {
                 glDeleteBuffers(size, &m_uv0[s][0]);
             }
         }
+        {
+            for(uint32_t i = 0; i < m_triangles[s].size(); i++) {
+                for(auto it : m_Listeners) {
+                    it->notify(m_triangles[s][i]);
+                }
+            }
+        }
     }
 
     m_triangles.clear();
@@ -126,4 +135,23 @@ void AMeshGL::clear() {
     m_uv0.clear();
 
     Mesh::clear();
+}
+
+void AMeshGL::subscribe(CommandBufferGL *buffer) {
+    for(auto it : m_Listeners) {
+        if(it == buffer) {
+            return;
+        }
+    }
+    m_Listeners.push_back(buffer);
+}
+
+void AMeshGL::unsubscribe(CommandBufferGL *buffer) {
+    auto it = m_Listeners.begin();
+    for(it; it != m_Listeners.end(); it++) {
+        if(*it == buffer) {
+            m_Listeners.erase(it);
+            return;
+        }
+    }
 }

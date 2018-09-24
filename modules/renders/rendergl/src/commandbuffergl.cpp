@@ -207,12 +207,21 @@ const Texture *CommandBufferGL::texture(const char *name) const {
     return nullptr;
 }
 
+void CommandBufferGL::notify(uint32_t index) {
+    auto it = m_Objects.find(index);
+    if(it != m_Objects.end()) {
+        m_Objects.erase(it);
+    }
+}
+
 uint32_t CommandBufferGL::handle(AMeshGL *mesh, uint32_t surface, uint32_t lod) {
     uint32_t id = 0;
 
     uint32_t key    = mesh->m_triangles[surface][lod];
     auto it = m_Objects.find(key);
     if(it == m_Objects.end()) {
+        mesh->subscribe(this);
+
         glGenVertexArrays(1, &id);
         glBindVertexArray(id);
 

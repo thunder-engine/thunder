@@ -5,6 +5,8 @@
 
 #include "resources/pipeline.h"
 
+Camera *Camera::s_pCurrent  = nullptr;
+
 Camera::Camera() {
     m_FOV       = 45.0; // 2*arctan(height/(2*distance))
     m_Near      = 0.1;
@@ -97,7 +99,8 @@ Ray Camera::castRay(float x, float y) {
 
     Vector3 view;
     if(m_Ortho) {
-        p   = Vector3(p.x + x * m_OrthoWidth, p.y - y * m_OrthoWidth / m_Ratio, p.z);
+        p   = Vector3(p.x + (x - 0.5f) * m_OrthoWidth,
+                      p.y + (y - 0.5f) * m_OrthoWidth / m_Ratio, p.z);
     } else {
         float tang      = tan(m_FOV * DEG2RAD * 0.5);
         Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
@@ -212,4 +215,12 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
             fc + up * fh + right * fw,
             fc - up * fh + right * fw,
             fc - up * fh - right * fw};
+}
+
+Camera *Camera::current() {
+    return s_pCurrent;
+}
+
+void Camera::setCurrent(Camera *current) {
+    s_pCurrent  = current;
 }

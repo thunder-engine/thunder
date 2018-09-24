@@ -125,6 +125,7 @@ void SceneView::findCamera() {
         if(camera) {
             camera->pipeline()->resize(width(), height());
             m_pController->setActiveCamera(camera);
+            Camera::setCurrent(camera);
         }
     }
 }

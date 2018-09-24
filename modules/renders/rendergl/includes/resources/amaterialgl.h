@@ -1,7 +1,7 @@
 #ifndef MATERIALGL_H
 #define MATERIALGL_H
 
-#include <map>
+#include <unordered_map>
 #include <list>
 
 #include <resources/material.h>
@@ -28,7 +28,7 @@ class AMaterialGL : public Material {
         Depth                   = (1<<9)
     };
 
-    typedef map<uint16_t, uint32_t> ObjectMap;
+    typedef unordered_map<uint16_t, uint32_t> ObjectMap;
 
 public:
     ~AMaterialGL                ();

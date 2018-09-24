@@ -14,7 +14,7 @@ class NEXT_LIBRARY_EXPORT TextMesh : public BaseMesh {
     A_PROPERTIES(
         A_PROPERTY(string, Text, TextMesh::text, TextMesh::setText),
         A_PROPERTY(Font, Font_Name, TextMesh::font, TextMesh::setFont),
-        A_PROPERTY(int, Font_Size, TextMesh::size, TextMesh::setSize),
+        A_PROPERTY(int, Font_Size, TextMesh::fontSize, TextMesh::setFontSize),
         A_PROPERTY(Color, Color, TextMesh::color, TextMesh::setColor)
     );
     A_NOMETHODS();
@@ -32,9 +32,9 @@ public:
 
     void                        setFont             (Font *font);
 
-    int                         size                () const;
+    int                         fontSize            () const;
 
-    void                        setSize             (int size);
+    void                        setFontSize         (int size);
 
     Vector4                     color               () const;
 

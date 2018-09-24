@@ -60,6 +60,9 @@ public:
 
     array<Vector3, 8>           frustumCorners          (float nearPlane, float farPlane) const;
 
+    static Camera              *current                 ();
+    static void                 setCurrent              (Camera *current);
+
 protected:
     bool                        m_Ortho;
 
@@ -78,6 +81,8 @@ protected:
     Vector4                     m_Color;
 
     Pipeline                   *m_pPipeline;
+
+    static Camera              *s_pCurrent;
 };
 
 #endif // CAMERA_H

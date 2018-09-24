@@ -202,6 +202,7 @@ int32_t Engine::exec() {
         component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 
         p_ptr->m_Controller->setActiveCamera(component);
+        Camera::setCurrent(component);
         // Enter to game loop
         while(p_ptr->m_Valid) {
             Timer::update();

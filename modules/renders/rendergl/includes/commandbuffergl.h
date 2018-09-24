@@ -38,6 +38,8 @@ public:
 
     const Texture              *texture                     (const char *name) const;
 
+    void                        notify                      (uint32_t index);
+
 protected:
     uint32_t                    handle                      (AMeshGL *mesh, uint32_t surface, uint32_t lod);
 

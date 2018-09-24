@@ -29,19 +29,19 @@ class AABBox;
 
 class NEXT_LIBRARY_EXPORT Ray {
 public:
-    Ray                        (const Vector3 &position, const Vector3 &direction);
+    Ray                         (const Vector3 &position, const Vector3 &direction);
 
     bool                        intersect                   (const Vector3 &position, areal radius, Vector3 *pt);
     bool                        intersect                   (const Plane &plane, Vector3 *pt, bool back = false);
     bool                        intersect                   (const AABBox &box, Vector3 *pt);
     bool                        intersect                   (const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vector3 *pt, bool back = false);
 
-    Ray                        reflect                     (const Vector3 &normal, const Vector3 &point);
-    Ray                        refract                     (const Vector3 &normal, const Vector3 &point, areal ior);
-    Ray                        diffuse                     (const Vector3 &normal, const Vector3 &point, areal min, areal max);
+    Ray                         reflect                     (const Vector3 &normal, const Vector3 &point);
+    Ray                         refract                     (const Vector3 &normal, const Vector3 &point, areal ior);
+    Ray                         diffuse                     (const Vector3 &normal, const Vector3 &point, areal min, areal max);
 
-    Vector3                    pos;
-    Vector3                    dir;
+    Vector3                     pos;
+    Vector3                     dir;
 };
 
 #endif // RAY_H_HEADER_INCLUDED
