@@ -61,7 +61,7 @@ TextureEdit::~TextureEdit() {
 }
 
 void TextureEdit::timerEvent(QTimerEvent *) {
-    ui->Preview->update();
+    ui->Preview->repaint();
 }
 
 void TextureEdit::readSettings() {

@@ -91,7 +91,7 @@ MaterialEdit::~MaterialEdit() {
 }
 
 void MaterialEdit::timerEvent(QTimerEvent *) {
-    glWidget->update();
+    glWidget->repaint();
 }
 
 void MaterialEdit::readSettings() {

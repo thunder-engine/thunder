@@ -75,7 +75,7 @@ MeshEdit::~MeshEdit() {
 }
 
 void MeshEdit::timerEvent(QTimerEvent *) {
-    glWidget->update();
+    glWidget->repaint();
 }
 
 void MeshEdit::readSettings() {
