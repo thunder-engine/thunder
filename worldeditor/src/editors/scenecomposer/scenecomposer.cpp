@@ -135,7 +135,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     action->setDefaultWidget(comp);
     menu->addAction(action);
     ui->componentButton->setMenu(menu);
-    connect(comp, SIGNAL(componentSelected(QString)), ctl, SLOT(onComponentSelected(QString)));
+    connect(comp, SIGNAL(componentSelected(QString)), ctl, SLOT(onCreateSelected(QString)));
     connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
 
     comp->setGroups(QStringList("Components"));
@@ -238,6 +238,8 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         m_pProperties   = new NextObject(*objects.begin(), ctl, this);
         connect(ctl, SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
         connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
+
+        connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
 
         connect(m_pPluginDlg, SIGNAL(pluginReloaded()), m_pProperties, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));

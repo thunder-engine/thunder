@@ -33,6 +33,8 @@ signals:
 
     void                        updated                 ();
 
+    void                        deleteComponent         (const QString &name);
+
 protected slots:
     void                        onDeleteComponent       ();
 

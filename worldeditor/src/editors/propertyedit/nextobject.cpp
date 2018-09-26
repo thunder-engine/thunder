@@ -158,25 +158,7 @@ void NextObject::onUpdated() {
 }
 
 void NextObject::onDeleteComponent() {
-    QObject *snd    = sender();
-    QString name    = snd->property(COMPONENT).toString();
-    if(!name.isEmpty()) {
-        if(m_pObject) {
-            Actor *actor    = dynamic_cast<Actor *>(m_pObject);
-            if(actor) {
-                Component *component    = actor->component(qPrintable(name));
-                if(component) {
-                    if(m_pController) {
-                        Object::ObjectList list;
-                        list.push_back(component);
-                        UndoManager::instance()->push(new UndoManager::DestroyObjects(list, m_pController, tr("Remove Component ") + name));
-                    }
-                    onUpdated();
-
-                }
-            }
-        }
-    }
+    emit deleteComponent(sender()->property(COMPONENT).toString());
 }
 
 void NextObject::buildObject(Object *object, const QString &path) {

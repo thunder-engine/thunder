@@ -62,7 +62,8 @@ public:
 public slots:
     void                onInputEvent                (QInputEvent *);
 
-    void                onComponentSelected         (const QString &path);
+    void                onCreateSelected            (const QString &name);
+    void                onDeleteComponent           (const QString &name);
 
     void                onDrop                      ();
     void                onDragEnter                 (QDragEnterEvent *);

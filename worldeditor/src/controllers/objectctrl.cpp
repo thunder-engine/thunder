@@ -334,31 +334,50 @@ void ObjectCtrl::onScaleActor() {
     mMode   = MODE_SCALE;
 }
 
-void ObjectCtrl::onComponentSelected(const QString &path) {
+void ObjectCtrl::onCreateSelected(const QString &name) {
     if(m_Selected.size() == 1) {
         Actor *actor    = m_Selected.begin()->second.object;
         if(actor) {
-            if(actor->component(qPrintable(path)) == nullptr) {
-                Component *comp = actor->addComponent(path.toStdString());
+            if(actor->component(qPrintable(name)) == nullptr) {
+                Component *comp = actor->addComponent(name.toStdString());
                 if(comp) {
                     Object::ObjectList list;
                     list.push_back(comp);
-                    UndoManager::instance()->push(new UndoManager::CreateObjects(list, this, tr("Create Component ") + path));
+                    UndoManager::instance()->push(new UndoManager::CreateObjects(list, this, tr("Create Component ") + name));
                     SpriteMesh *sprite  = dynamic_cast<SpriteMesh *>(comp);
                     if(sprite) {
                         sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
                     }
                     emit objectsUpdated();
+                    emit objectsSelected(selected());
                 }
             } else {
                 QMessageBox msgBox;
                 msgBox.setIcon(QMessageBox::Warning);
                 msgBox.setText("Creation Component Failed");
                 msgBox.setInformativeText("Do you want to save your changes?");
-                msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(path));
+                msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(name));
                 msgBox.setStandardButtons(QMessageBox::Ok);
 
                 msgBox.exec();
+            }
+        }
+    }
+}
+
+void ObjectCtrl::onDeleteComponent(const QString &name) {
+    if(!name.isEmpty()) {
+        Actor *actor    = m_Selected.begin()->second.object;
+        if(actor) {
+            Component *component    = actor->component(qPrintable(name));
+            if(component) {
+                Object::ObjectList list;
+                list.push_back(component);
+                UndoManager::instance()->push(new UndoManager::DestroyObjects(list, this, tr("Remove Component ") + name));
+
+                emit objectsUpdated();
+                emit objectsSelected(selected());
+
             }
         }
     }
