@@ -79,7 +79,7 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     }
 
     if(camera) {
-        camera->pipeline()->draw(scene, resource);
+        camera->pipeline()->draw(scene, *camera, resource);
     }
 }
 

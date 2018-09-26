@@ -28,11 +28,11 @@ public:
 
     virtual ~Pipeline           ();
 
-    virtual void                draw                (Scene &scene, uint32_t resource);
+    virtual void                draw                (Scene &scene, Camera &camera, uint32_t resource);
 
     virtual void                resize              (uint32_t width, uint32_t height);
 
-    void                        cameraReset         ();
+    void                        cameraReset         (Camera &camera);
 
     RenderTexture              *target              (const string &target) const;
 
@@ -45,9 +45,9 @@ protected:
 
     void                        combineComponents   (Object &object);
 
-    void                        updateShadows       (Object &object);
+    void                        updateShadows       (Camera &camera, Object &object);
 
-    void                        directUpdate        (DirectLight *light);
+    void                        directUpdate        (Camera &camera, DirectLight *light);
 
     RenderTexture              *postProcess         (RenderTexture &source);
 

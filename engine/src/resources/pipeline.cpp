@@ -103,7 +103,7 @@ Pipeline::~Pipeline() {
     m_Targets.clear();
 }
 
-void Pipeline::draw(Scene &scene, uint32_t resource) {
+void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
     m_ComponentList.clear();
     combineComponents(scene);
 
@@ -113,7 +113,7 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
     m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
     m_Buffer->clearRenderTarget();
 
-    updateShadows(scene);
+    updateShadows(camera, scene);
 
     m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
 
@@ -121,17 +121,16 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget(true, Vector4(0.0));
 
-    cameraReset();
+    cameraReset(camera);
     drawComponents(ICommandBuffer::RAYCAST);
 
     // Deffered shading
 
-    Camera *camera  = static_cast<Camera *>(parent());
     // Fill G buffer pass
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, ((camera) ? camera->color() : Vector4(0.0)), false);
+    m_Buffer->clearRenderTarget(true, camera.color(), false);
 
-    cameraReset();
+    cameraReset(camera);
     // Draw Opaque pass
     drawComponents(ICommandBuffer::DEFAULT);
 
@@ -141,7 +140,7 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
     // Light pass
     drawComponents(ICommandBuffer::LIGHT);
 
-    cameraReset();
+    cameraReset(camera);
     // Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT);
 
@@ -152,19 +151,16 @@ void Pipeline::draw(Scene &scene, uint32_t resource) {
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 }
 
-void Pipeline::cameraReset() {
-    Camera *camera  = static_cast<Camera *>(parent());
-    if(camera) {
-        Matrix4 v, p;
-        camera->matrices(v, p);
-        camera->setRatio(m_Screen.x / m_Screen.y);
-        m_Buffer->setGlobalValue("camera.position", Vector4(camera->actor().transform()->position(), camera->nearPlane()));
-        m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera->farPlane()));
-        m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
-        m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
-        m_Buffer->setGlobalValue("light.map", Vector4(1.0f / SM_RESOLUTION, 1.0f / SM_RESOLUTION, SM_RESOLUTION, SM_RESOLUTION));
-        m_Buffer->setViewProjection(v, p);
-    }
+void Pipeline::cameraReset(Camera &camera) {
+    Matrix4 v, p;
+    camera.matrices(v, p);
+    camera.setRatio(m_Screen.x / m_Screen.y);
+    m_Buffer->setGlobalValue("camera.position", Vector4(camera.actor().transform()->worldPosition(), camera.nearPlane()));
+    m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera.farPlane()));
+    m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
+    m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
+    m_Buffer->setGlobalValue("light.map", Vector4(1.0f / SM_RESOLUTION, 1.0f / SM_RESOLUTION, SM_RESOLUTION, SM_RESOLUTION));
+    m_Buffer->setViewProjection(v, p);
 }
 
 RenderTexture *Pipeline::target(const string &target) const {
@@ -214,13 +210,13 @@ void Pipeline::combineComponents(Object &object) {
     }
 }
 
-void Pipeline::updateShadows(Object &object) {
+void Pipeline::updateShadows(Camera &camera, Object &object) {
     for(auto &it : object.getChildren()) {
         DirectLight *light = dynamic_cast<DirectLight *>(it);
         if(light) {
-            directUpdate(light);
+            directUpdate(camera, light);
         } else {
-            updateShadows(*it);
+            updateShadows(camera, *it);
         }
     }
 }
@@ -231,79 +227,73 @@ void Pipeline::drawComponents(uint32_t layer) {
     }
 }
 
-void Pipeline::directUpdate(DirectLight *light) {
-    Camera *camera  = static_cast<Camera *>(parent());
-    if(camera) {
-        Vector4 distance;
+void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
+    Vector4 distance;
 
-        Transform *t    = camera->actor().transform();
-        Vector3 tr  = t->worldPosition();
-
-        Matrix4 p   = camera->projectionMatrix();
-        {
-            float split     = 0.95f;
-            float nearPlane = camera->nearPlane();
-            float farPlane  = camera->farPlane();
-            for(int i = 0; i < MAX_LODS; i++) {
-                float f = (i + 1) / (float)MAX_LODS;
-                float l = nearPlane * powf(farPlane / nearPlane, f);
-                float u = nearPlane + (farPlane - nearPlane) * f;
-                float v = MIX(u, l, split);
-                distance[i]     = v;
-                Vector4 depth   = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
-                light->normalizedDistance()[i] = depth.z / depth.w;
-            }
+    Matrix4 p       = camera.projectionMatrix();
+    {
+        float split     = 0.95f;
+        float nearPlane = camera.nearPlane();
+        float farPlane  = camera.farPlane();
+        for(int i = 0; i < MAX_LODS; i++) {
+            float f = (i + 1) / (float)MAX_LODS;
+            float l = nearPlane * powf(farPlane / nearPlane, f);
+            float u = nearPlane + (farPlane - nearPlane) * f;
+            float v = MIX(u, l, split);
+            distance[i]     = v;
+            Vector4 depth   = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
+            light->normalizedDistance()[i] = depth.z / depth.w;
         }
+    }
 
-        float nearPlane = camera->nearPlane();
-        Matrix4 view    = Matrix4(light->actor().transform()->rotation().toMatrix()).inverse();
-        for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
-            float dist  = distance[lod];
-            const array<Vector3, 8> &points = camera->frustumCorners(nearPlane, dist);
-            nearPlane   = dist;
+    float nearPlane = camera.nearPlane();
+    Matrix4 view    = Matrix4(light->actor().transform()->rotation().toMatrix()).inverse();
+    for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
+        float dist  = distance[lod];
+        const array<Vector3, 8> &points = camera.frustumCorners(nearPlane, dist);
+        nearPlane   = dist;
 
-            AABBox box;
-            box.setBox(&(points.at(0)), 8);
+        AABBox box;
+        box.setBox(&(points.at(0)), 8);
 
-            Vector3 min, max;
-            box.box(min, max);
+        Vector3 min, max;
+        box.box(min, max);
 
-            Vector3 rot[8]  = {
-                view * Vector3(min.x, min.y, min.z),
-                view * Vector3(min.x, min.y, max.z),
-                view * Vector3(max.x, min.y, max.z),
-                view * Vector3(max.x, min.y, min.z),
+        Vector3 rot[8]  = {
+            view * Vector3(min.x, min.y, min.z),
+            view * Vector3(min.x, min.y, max.z),
+            view * Vector3(max.x, min.y, max.z),
+            view * Vector3(max.x, min.y, min.z),
 
-                view * Vector3(min.x, max.y, min.z),
-                view * Vector3(min.x, max.y, max.z),
-                view * Vector3(max.x, max.y, max.z),
-                view * Vector3(max.x, max.y, min.z)
-            };
-            box.setBox(rot, 8);
-            box.box(min, max);
+            view * Vector3(min.x, max.y, min.z),
+            view * Vector3(min.x, max.y, max.z),
+            view * Vector3(max.x, max.y, max.z),
+            view * Vector3(max.x, max.y, min.z)
+        };
+        box.setBox(rot, 8);
+        box.box(min, max);
 
-            Matrix4 crop    = Matrix4::ortho(min.x, max.x,
-                                             min.y, max.y,
-                                             -100, 100);
+        Matrix4 crop    = Matrix4::ortho(min.x, max.x,
+                                         min.y, max.y,
+                                         -100, 100);
 
-            m_Buffer->setViewProjection(view, crop);
+        m_Buffer->setViewProjection(view, crop);
 
-            light->matrix()[lod]    = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * crop * view;
-            // Draw in the depth buffer from position of the light source
-            uint32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
-            uint32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
-            //float ratio = camera->ratio();
-            uint32_t w  = SM_RESOLUTION_DEFAULT;// / ((ratio < 1.0f) ? ratio : 1.0f);
-            uint32_t h  = SM_RESOLUTION_DEFAULT;// / ((ratio > 1.0f) ? ratio : 1.0f);
-            m_Buffer->setViewport(x, y, w, h);
+        light->matrix()[lod]    = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * crop * view;
+        // Draw in the depth buffer from position of the light source
+        uint32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
+        uint32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
+        //float ratio = camera->ratio();
+        uint32_t w  = SM_RESOLUTION_DEFAULT;// / ((ratio < 1.0f) ? ratio : 1.0f);
+        uint32_t h  = SM_RESOLUTION_DEFAULT;// / ((ratio > 1.0f) ? ratio : 1.0f);
+        m_Buffer->setViewport(x, y, w, h);
 
-            light->tiles()[lod] = Vector4((float)x / SM_RESOLUTION,
-                                          (float)y / SM_RESOLUTION,
-                                          (float)w / SM_RESOLUTION,
-                                          (float)h / SM_RESOLUTION);
+        light->tiles()[lod] = Vector4((float)x / SM_RESOLUTION,
+                                      (float)y / SM_RESOLUTION,
+                                      (float)w / SM_RESOLUTION,
+                                      (float)h / SM_RESOLUTION);
 
-            drawComponents(ICommandBuffer::SHADOWCAST);
-        }
+        drawComponents(ICommandBuffer::SHADOWCAST);
     }
 }
 

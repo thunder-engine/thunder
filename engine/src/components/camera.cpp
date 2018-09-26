@@ -21,7 +21,7 @@ Camera::Camera() {
 
 Pipeline *Camera::pipeline() {
     if(m_pPipeline == nullptr) {
-        m_pPipeline = Engine::objectCreate<Pipeline>("", this);
+        m_pPipeline = Engine::objectCreate<Pipeline>("Pipeline");
     }
     return m_pPipeline;
 }
