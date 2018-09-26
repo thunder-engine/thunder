@@ -16,6 +16,7 @@
 #include <engine.h>
 #include <components/component.h>
 #include <components/actor.h>
+#include <components/transform.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -130,7 +131,7 @@ QMenu *NextObject::menu(const QString &name) {
     Actor *actor    = dynamic_cast<Actor *>(m_pObject);
     if(actor) {
         Component *component    = actor->component(qPrintable(name));
-        if(component) {
+        if(component && dynamic_cast<Transform *>(component) == nullptr) {
             result  = new QMenu();
 
             QAction *del    = new QAction(tr("Remove Component"), this);
