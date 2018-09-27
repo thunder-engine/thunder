@@ -395,6 +395,12 @@ QImage AssetManager::icon(const QString &path) {
         case IConverter::ContentFont: {
             icon.load(":/Style/styles/dark/images/ttf.png", "PNG");
         } break;
+        case IConverter::ContentAnimation: {
+            icon.load(":/Style/styles/dark/images/anim.png", "PNG");
+        } break;
+        case IConverter::ContentSound: {
+            icon.load(":/Style/styles/dark/images/wav.png", "PNG");
+        } break;
         default: {
             QStringList list;
             for(auto it : m_Guids) {
