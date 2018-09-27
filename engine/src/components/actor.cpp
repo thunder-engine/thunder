@@ -68,9 +68,12 @@ void Actor::setParent(Object *parent) {
         if(actor) {
             Transform *par  = actor->transform();
             if(par) {
-                p   = par->worldRotation().inverse() * (p - par->worldPosition()) * s;
+                Vector3 scale   = par->worldScale();
+                scale   = Vector3(1.0 / scale.x, 1.0 / scale.y, 1.0 / scale.z);
+
+                p   = par->worldRotation().inverse() * ((p - par->worldPosition()) * scale);
                 e   = e - par->worldEuler();
-                s   = s * par->worldScale();
+                s   = s * scale;
             }
         }
 
