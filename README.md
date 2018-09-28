@@ -12,18 +12,33 @@ Thunder Engine is an opensource multifunctional light weight game engine for cre
 #### Supported Platforms
 - Windows
 - MacOS X
+- Linux (Technical Preview)
+
+#### Render
+- Rendering System Based on Physical Principles
+- Deferred Shading
+- CookTorance Lighting model
+- Cascaded Shadow Maps (PPSM)
+
+#### Animation
+- Animation engine is based on "Animate Everything" principles
+
+#### Audio
+- 2D/3D Audio engine
+- Ogg/Vorbis, MP3, WAV file formats support
+
+#### Engine
+- Entity Component System based Object Management System
+- Scene Graph object management approach
+- MetaObject model for Objects
+- Event driven Inter Object Communication System
+
 #### Set of Tools
 - Multifunctional Scene Editor
 - Node Based Material Editor
 - Resource Management system with bunch of converters
 - Ready for CI Project Builder
-#### Main Features
-- Entity Component System based Object Management System
-- Scene Graph object management approach
-- MetaObject model for Objects
-- Event driven Inter Object Communication System
-- Rendering System Based on Physical Principles
-- CookTorance Lighting model
+
 ### Getting the Engine
 #### Compiling from source
 * Make sure the Qt (>= 5.10) SDK installed.
