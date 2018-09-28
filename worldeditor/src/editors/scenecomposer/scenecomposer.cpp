@@ -405,7 +405,7 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
 }
 
 void SceneComposer::on_actionSave_triggered() {
-    if(m_pMap) {
+    if(m_pMap && !ui->preview->isGame()) {
         if( mPath.length() > 0 ) {
             QDir dir    = QDir(QDir::currentPath());
 
@@ -419,6 +419,8 @@ void SceneComposer::on_actionSave_triggered() {
         } else {
             on_actionSave_As_triggered();
         }
+    } else {
+        QApplication::beep();
     }
 }
 
