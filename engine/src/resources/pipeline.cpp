@@ -136,7 +136,7 @@ void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
 
     /// \todo Screen Space Ambient Occlusion effect should be defined here
 
-    m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]});
+    m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     // Light pass
     drawComponents(ICommandBuffer::LIGHT);
 

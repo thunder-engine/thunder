@@ -46,6 +46,7 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_BlendMode     = Opaque;
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
+            m_DepthTest     = false;
 
             m_Programs[0]    = buildShader(Fragment, gEmbedded + gPost);
         } break;
@@ -54,6 +55,7 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_BlendMode     = Opaque;
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
+            m_DepthTest     = false;
 
             /// \todo should be removed
             setTexture("normalsMap",    nullptr);
