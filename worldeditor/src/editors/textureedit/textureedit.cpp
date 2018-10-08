@@ -136,7 +136,7 @@ void TextureEdit::onGLInit() {
         camera->setOrthographic(true);
     }
 
-    Actor *object   = Engine::createActor("Sprite", scene);
+    Actor *object   = Engine::objectCreate<Actor>("Sprite", scene);
     object->transform()->setScale(Vector3(SCALE));
     m_pSprite       = object->addComponent<SpriteMesh>();
     if(m_pSprite) {

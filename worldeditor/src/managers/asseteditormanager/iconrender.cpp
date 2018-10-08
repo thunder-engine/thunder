@@ -53,12 +53,12 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 
     m_pScene    = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
-    m_pCamera   = Engine::createActor("ActiveCamera", m_pScene);
+    m_pCamera   = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
     m_pCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     Camera *camera  = m_pCamera->addComponent<Camera>();
     m_pController->setActiveCamera(camera);
 
-    m_pLight    = Engine::createActor("LightSource", m_pScene);
+    m_pLight    = Engine::objectCreate<Actor>("LightSource", m_pScene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->transform()->setRotation(rot);
@@ -75,7 +75,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
     Camera *camera  = m_pController->activeCamera();
     camera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
     camera->setOrthographic(false);
-    Actor *object   = Engine::createActor("", m_pScene);
+    Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
     float fov       = camera->fov();
     switch(type) {
         case IConverter::ContentTexture: {

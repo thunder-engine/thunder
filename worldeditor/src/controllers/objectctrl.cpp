@@ -49,6 +49,11 @@ string findFreeObjectName(const string &name, Object *parent) {
 ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(view) {
 
+    connect(view, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop()));
+    connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
+    connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
+    connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
+
     mCopy       = false;
     mDrag       = false;
     mAdditive   = false;
@@ -73,14 +78,18 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
     m_pSelect->resize(1, 1);
 
     m_pDepth    = Engine::objectCreate<Texture>();
+    m_pDepth->setFormat(Texture::Depth);
+    m_pDepth->resize(1, 1);
 }
 
 void ObjectCtrl::drawHandles() {
     CameraCtrl::drawHandles();
 
-    m_ObjectsList.clear();
+    Vector2 position, size;
+    selectGeometry(position, size);
 
-    Handles::m_sMouse   = Vector2(mMousePosition.x / m_Screen.x, mMousePosition.y / m_Screen.y);
+    Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
+    Handles::m_sMouse   = Vector2(screen.x, screen.y);
 
     drawHelpers(*m_pMap);
 
@@ -101,27 +110,32 @@ void ObjectCtrl::drawHandles() {
 
     Camera *camera  = activeCamera();
     Pipeline *pipeline  = camera->pipeline();
-    if(pipeline && m_ObjectsList.empty()) {
-        Vector2 position, size;
-        selectGeometry(position, size);
-
+    if(pipeline) {
         uint32_t result = 0;
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
 
-            Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
-            screen.y        = (1.0 - screen.y);
+            RenderTexture *rt;
+            rt  = pipeline->target("depthMap");
+            rt->makeCurrent();
+            m_pDepth->readPixels(position.x, (m_Screen.y - position.y), 1, 1);
+            result  = m_pDepth->getPixel(0, 0);
+            if(result > 0) {
+                memcpy(&screen.z, &result, sizeof(float));
+                Matrix4 mv, p;
+                camera->matrices(mv, p);
+                screen.y    = (1.0 - screen.y);
+                //Camera::unproject(screen, mv, p, mMouseWorld);
+            }
 
-            //glReadPixels((int)screen.x, (int)screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screen.z);
-            //Camera::unproject(screen, m_Buffer->modelView(), m_Buffer->projection(), m_World);
-
-            RenderTexture *rt   = pipeline->target("selectMap");
+            rt  = pipeline->target("selectMap");
             rt->makeCurrent();
 
-            m_pSelect->readPixels(position.x, (m_Screen.y - position.y), 1, 1);
+            m_pSelect->readPixels(position.x, (m_Screen.y - position.y), size.x, size.y);
             result  = m_pSelect->getPixel(0, 0);
         }
 
+        m_ObjectsList.clear();
         if(result) {
             setSelectedObjects({ result });
         }
@@ -196,8 +210,9 @@ void ObjectCtrl::drawHelpers(Object &object) {
     }
 }
 
-void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &) {
-    pos = Vector2(mMousePosition.x, mMousePosition.y);
+void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
+    pos     = Vector2(mMousePosition.x, mMousePosition.y);
+    size    = Vector2(1, 1);
 }
 
 Vector3 ObjectCtrl::objectPosition() {
@@ -385,6 +400,7 @@ void ObjectCtrl::onDeleteComponent(const QString &name) {
 
 void ObjectCtrl::onDrop() {
     if(!m_DragObjects.empty()) {
+        mDrag   = false;
         UndoManager::instance()->push( new UndoManager::CreateObjects(m_DragObjects, this) );
         clear();
         emit mapUpdated();
@@ -402,7 +418,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor    = Engine::createActor(findFreeObjectName(name, m_pMap));
+        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
         if(actor) {
             Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
@@ -432,7 +448,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         m_DragMap   = str;
                     } break;
                     case IConverter::ContentMesh: {
-                        Actor *actor    = Engine::createActor(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         StaticMesh *m   = actor->addComponent<StaticMesh>();
                         if(m) {
                             m->setMesh(Engine::loadResource<Mesh>( qPrintable(str) ));
@@ -440,7 +456,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         m_DragObjects.push_back(actor);
                     } break;
                     case IConverter::ContentTexture: {
-                        Actor *actor    = Engine::createActor(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         SpriteMesh *sprite  = actor->addComponent<SpriteMesh>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
@@ -448,22 +464,40 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         }
                         m_DragObjects.push_back(actor);
                     } break;
+                    case IConverter::ContentPrefab: {
+                        Actor *prefab  = Engine::loadResource<Actor>( qPrintable(str) );
+                        if(prefab) {
+                            Actor *actor    = static_cast<Actor *>(prefab->clone());
+                            actor->setPrefab(prefab);
+                            actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                            m_DragObjects.push_back(actor);
+                        }
+                    } break;
                     default: break;
                 }
             }
         }
-
     }
     for(Object *o : m_DragObjects) {
         Actor *a    = static_cast<Actor *>(o);
-        a->transform()->setPosition(Vector3()); // \todo set drag position
+        a->transform()->setPosition(mMouseWorld);
         a->setParent(m_pMap);
     }
     if(!m_DragObjects.empty() || !m_DragMap.isEmpty()) {
+        mDrag   = true;
         return;
     }
 
     event->ignore();
+}
+
+void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
+    mMousePosition  = Vector2(e->pos().x(), e->pos().y());
+
+    for(Object *o : m_DragObjects) {
+        Actor *a    = static_cast<Actor *>(o);
+        a->transform()->setPosition(mMouseWorld);
+    }
 }
 
 void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {

@@ -72,8 +72,8 @@ Vector3 Transform::worldPosition() const {
     Actor *cur  = dynamic_cast<Actor *>(actor().parent());
     while(cur) {
         Transform *t    = cur->transform();
-        result += t->m_Position;
         result  = result * t->m_Scale;
+        result += t->m_Position;
         result  = t->m_Rotation.toMatrix() * result;
         cur     = dynamic_cast<Actor *>(cur->parent());
     }

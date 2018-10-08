@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
 
         CodeManager::instance()->init();
-        AssetManager::instance()->init();
+        AssetManager::instance()->init(&engine);
         UndoManager::instance()->init();
 
         result  = a.exec();

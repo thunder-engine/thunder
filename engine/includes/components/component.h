@@ -34,6 +34,9 @@ public:
     void                        setStarted              (bool started);
 
 protected:
+    bool                        isSerializable          () const;
+
+protected:
     bool                        m_Enable;
 
     bool                        m_Started;

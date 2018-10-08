@@ -37,27 +37,27 @@ Q_DECLARE_METATYPE(Template)
 
 class IAssetEditor {
 public:
-    IAssetEditor                (Engine *engine) :
+    IAssetEditor            (Engine *engine) :
             m_bModified(false) {
         m_pEngine   = engine;
     }
 
-    virtual void                loadAsset           (IConverterSettings *settings) = 0;
+    virtual void            loadAsset           (IConverterSettings *settings) = 0;
 
-    void                        setModified         (bool value) { m_bModified = value; }
-    bool                        isModified          () { return m_bModified; }
+    void                    setModified         (bool value) { m_bModified = value; }
+    bool                    isModified          () { return m_bModified; }
 
 protected:
-    Engine                     *m_pEngine;
+    Engine                 *m_pEngine;
 
-    bool                        m_bModified;
+    bool                    m_bModified;
 
 };
 
 class AssetManager : public QObject, public ASingleton<AssetManager> {
     Q_OBJECT
 public:
-    void                    init                ();
+    void                    init                (Engine *engine);
 
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
@@ -67,6 +67,8 @@ public:
     void                    removeResource      (const QFileInfo &source);
     void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
     void                    duplicateResource   (const QFileInfo &source);
+
+    void                    makePrefab          (const QString &source, const QFileInfo &target);
 
     bool                    pushToImport        (const QFileInfo &source);
     bool                    import              (const QFileInfo &source, const QFileInfo &target);
@@ -128,6 +130,8 @@ protected:
     CodeManager            *m_pCodeManager;
 
     QTimer                 *m_pTimer;
+
+    Engine                 *m_pEngine;
 
 protected:
     AssetManager            ();

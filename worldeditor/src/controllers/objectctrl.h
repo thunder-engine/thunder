@@ -67,6 +67,7 @@ public slots:
 
     void                onDrop                      ();
     void                onDragEnter                 (QDragEnterEvent *);
+    void                onDragMove                  (QDragMoveEvent *);
     void                onDragLeave                 (QDragLeaveEvent *);
 
     void                onSelectActor               (Object::ObjectList list, bool undo = true);
@@ -93,7 +94,7 @@ signals:
 protected:
     void                drawHelpers                 (Object &object);
 
-    void                selectGeometry              (Vector2 &, Vector2 &);
+    void                selectGeometry              (Vector2 &, Vector2 &size);
 
     Vector3             objectPosition              ();
 
@@ -136,6 +137,8 @@ protected:
     Vector3             mWorld;
     Vector3             mSaved;
     Vector3             mPosition;
+
+    Vector3             mMouseWorld;
 
     UndoManager::PropertyObjects   *m_pPropertyState;
 };

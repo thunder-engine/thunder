@@ -16,6 +16,7 @@ class IController;
 class EnginePrivate;
 
 class Actor;
+class Scene;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
@@ -49,13 +50,13 @@ public:
 /*
     Misc
 */
-    static Actor               *createActor                 (const string &name = string(), Object *parent = nullptr, const StringList &components = StringList());
-
     void                        addModule                   (IModule *mode);
 
     bool                        createWindow                ();
 
     IController                *controller                  ();
+
+    Scene                      *scene                       ();
     /*!
         Get FileIO object.
 
@@ -78,6 +79,8 @@ public:
     void                        setOrganizationName         (const string &name);
 
     static void                 updateScene                 (Object *object);
+
+    static void                 setResource                 (Object *object, string &uuid);
 
 private:
     EnginePrivate              *p_ptr;

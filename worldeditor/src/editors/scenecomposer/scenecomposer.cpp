@@ -63,6 +63,7 @@
 
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Actor *)
+Q_DECLARE_METATYPE(Object::ObjectList *)
 
 const QString gRecent("Recent");
 
@@ -101,15 +102,12 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(m_pPluginDlg, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
-    connect(ui->viewport, SIGNAL(drop(QDropEvent*)), ctl, SLOT(onDrop()));
-    connect(ui->viewport, SIGNAL(dragEnter(QDragEnterEvent *)), ctl, SLOT(onDragEnter(QDragEnterEvent *)));
-    connect(ui->viewport, SIGNAL(dragLeave(QDragLeaveEvent *)), ctl, SLOT(onDragLeave(QDragLeaveEvent *)));
 
     ui->viewport->setController(ctl);
-    ui->viewport->setScene(Engine::objectCreate<Scene>("Scene"));
+    ui->viewport->setScene(m_pEngine->scene());
 
     ui->preview->setController(new IController());
-    ui->preview->setScene(ui->viewport->scene());
+    ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
 
     Input::instance()->init(ui->preview);
@@ -346,7 +344,7 @@ void SceneComposer::on_action_New_triggered() {
 
     delete m_pMap;
 
-    m_pMap  = Engine::createActor("Chunk", ui->viewport->scene());
+    m_pMap  = Engine::objectCreate<Actor>("Chunk", m_pEngine->scene());
     ui->hierarchy->setObject(m_pMap);
 
     ObjectCtrl *ctrl    = static_cast<ObjectCtrl *>(ui->viewport->controller());

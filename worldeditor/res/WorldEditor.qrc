@@ -36,5 +36,6 @@
         <file>styles/dark/images/ttf.png</file>
         <file>styles/dark/images/anim.png</file>
         <file>styles/dark/images/wav.png</file>
+        <file>styles/dark/images/prefab.png</file>
     </qresource>
 </RCC>

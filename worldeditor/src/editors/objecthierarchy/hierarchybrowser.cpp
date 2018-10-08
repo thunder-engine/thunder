@@ -11,6 +11,8 @@
 #include <components/actor.h>
 #include <components/component.h>
 
+#include "config.h"
+
 #include "objecthierarchymodel.h"
 #include "managers/undomanager/undomanager.h"
 
@@ -173,7 +175,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
     Object::ObjectList parents;
     if(e->mimeData()->hasFormat(gMimeObject)) {
         QString path(e->mimeData()->data(gMimeObject));
-        foreach(const QString &it, path.split("\n")) {
+        foreach(const QString &it, path.split(";")) {
             ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
             Object *item    = model->findObject(it);
             QModelIndex index   = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
@@ -212,7 +214,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
             list.push_back(QString::fromStdString(objectPath(object)));
         }
     }
-    mimeData->setData(gMimeObject, qPrintable(list.join("\n")));
+    mimeData->setData(gMimeObject, qPrintable(list.join(";")));
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);

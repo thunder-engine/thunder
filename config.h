@@ -32,6 +32,7 @@ const QString gStatic(".a");
 const QString gApplication("");
 #endif
 const QString gMimeContent("text/content");
+const QString gMimeObject("text/object");
 
 const QString gDefaultFont("Helvetica Neue");
 

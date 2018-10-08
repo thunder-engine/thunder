@@ -10,8 +10,6 @@
 
 #include "config.h"
 
-#include <components/staticmesh.h>
-
 #include "assetmanager.h"
 #include "projectmanager.h"
 
@@ -198,14 +196,19 @@ bool ContentList::canDropMimeData(const QMimeData *data, Qt::DropAction, int, in
         target  = QFileInfo (m_pProjectManager->contentPath() + QDir::separator() + item->objectName());
     }
     bool result = target.isDir();
-    if(result && data->hasFormat(gMimeContent)) {
-        QStringList list    = QString(data->data(gMimeContent)).split(";");
-        foreach(QString path, list) {
-            if( !path.isEmpty() ) {
-                QFileInfo source(m_pProjectManager->contentPath() + QDir::separator() + path);
-                result  &= (source.absolutePath() != target.absoluteFilePath());
-                result  &= (source != target);
+    if(result) {
+        if(data->hasFormat(gMimeContent)) {
+            QStringList list    = QString(data->data(gMimeContent)).split(";");
+            foreach(QString path, list) {
+                if( !path.isEmpty() ) {
+                    QFileInfo source(m_pProjectManager->contentPath() + QDir::separator() + path);
+                    result  &= (source.absolutePath() != target.absoluteFilePath());
+                    result  &= (source != target);
+                }
             }
+        }
+        if(data->hasFormat(gMimeObject)) {
+            result   = true;
         }
     }
     return result;
@@ -231,6 +234,13 @@ bool ContentList::dropMimeData(const QMimeData *data, Qt::DropAction, int, int, 
                 m_pAssetManager->renameResource(info.filePath(), target.filePath() + "/" + info.fileName());
             }
         }
+    } else if(data->hasFormat(gMimeObject)) {
+         QStringList list   = QString(data->data(gMimeObject)).split(";");
+         foreach(QString path, list) {
+             if( !path.isEmpty() ) {
+                 m_pAssetManager->makePrefab(path, target.filePath());
+             }
+         }
     }
     return true;
 }

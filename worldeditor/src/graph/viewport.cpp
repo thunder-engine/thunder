@@ -24,7 +24,7 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::onSetMode() {
     if(m_Target.empty()) {
-        m_Target    = "shadowMap";
+        m_Target    = "depthMap";
     } else {
         m_Target.clear();
     }
@@ -76,6 +76,10 @@ void Viewport::resizeGL(int width, int height) {
 
 void Viewport::dragEnterEvent(QDragEnterEvent *event) {
     emit dragEnter(event);
+}
+
+void Viewport::dragMoveEvent(QDragMoveEvent *event) {
+    emit dragMove(event);
 }
 
 void Viewport::dragLeaveEvent(QDragLeaveEvent *event) {

@@ -65,6 +65,7 @@ public:
         ContentCode,
         ContentMap,
         ContentPipeline,
+        ContentPrefab,
         ContentLast
     };
 public:

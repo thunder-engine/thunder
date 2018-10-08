@@ -94,7 +94,7 @@ void ATextureGL::apply() {
 }
 
 void ATextureGL::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) {
-    bool depth = false;
+    bool depth = (m_Format == Depth);
 
     Surface &surface    = m_Sides[0];
 

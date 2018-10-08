@@ -67,6 +67,8 @@ public:
 
     }
 
+    Scene                       *m_pScene;
+
     list<ISystem *>             m_Systems;
 
     IController                *m_Controller;
@@ -142,6 +144,8 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     Pipeline::registerClassFactory();
 
+    p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
+
     registerMetaType<MaterialArray>("MaterialArray");
 }
 
@@ -179,22 +183,22 @@ int32_t Engine::exec() {
         }
     }
 
-    Scene *scene   = Engine::objectCreate<Scene>();
-    if(scene) {
+
+    if(p_ptr->m_pScene) {
         p_ptr->m_Valid  = true;
 
         string path     = value(gEntry, "").toString();
         Actor *level    = loadResource<Actor>(path);
         Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
         if(level) {
-            level->setParent(scene);
+            level->setParent(p_ptr->m_pScene);
         }
 
         Log(Log::DBG) << "Looking camera...";
-        Camera *component   = scene->findChild<Camera *>();
+        Camera *component   = p_ptr->m_pScene->findChild<Camera *>();
         if(component == nullptr) {
             Log(Log::DBG) << "Camera not found creating new one.";
-            Actor *camera   = Engine::createActor("ActiveCamera", scene);
+            Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
             camera->transform()->setPosition(Vector3(0.0f));
             component       = camera->addComponent<Camera>();
         }
@@ -210,18 +214,18 @@ int32_t Engine::exec() {
             while(lag >= Timer::fixedDelta()) {
                 // fixed update
                 p_ptr->m_Controller->update();
-                updateScene(scene);
+                updateScene(p_ptr->m_pScene);
 
                 lag -= Timer::fixedDelta();
             }
             for(auto it : p_ptr->m_Systems) {
-                it->update(*scene);
+                it->update(*(p_ptr->m_pScene));
             }
             p_ptr->m_Valid  = p_ptr->m_pPlatform->isValid();
             p_ptr->m_pPlatform->update();
         }
         p_ptr->m_pPlatform->stop();
-        delete scene;
+        delete p_ptr->m_pScene;
     }
     return 0;
 }
@@ -273,8 +277,7 @@ Object *Engine::loadResource(const string &path) {
                     if(var.isValid()) {
                         Object *res = Engine::toObject(var);
                         if(res) {
-                            EnginePrivate::m_ResourceCache[uuid]    = res;
-                            EnginePrivate::m_ReferenceCache[res]    = uuid;
+                            setResource(res, uuid);
                             return res;
                         }
                     }
@@ -283,6 +286,11 @@ Object *Engine::loadResource(const string &path) {
         }
     }
     return nullptr;
+}
+
+void Engine::setResource(Object *object, string &uuid) {
+    EnginePrivate::m_ResourceCache[uuid]    = object;
+    EnginePrivate::m_ReferenceCache[object] = uuid;
 }
 
 string Engine::reference(Object *object) {
@@ -322,16 +330,6 @@ void Engine::reloadBundle() {
     }
 }
 
-Actor *Engine::createActor(const string &name, Object *parent, const StringList &components) {
-    Actor *result   = Engine::objectCreate<Actor>(name, parent);
-    Engine::objectCreate<Transform>("", result);
-    for(auto &it : components) {
-        Engine::objectCreate(it, "", result);
-    }
-
-    return result;
-}
-
 void Engine::addModule(IModule *mode) {
     PROFILER_MARKER;
     if(mode->types() & IModule::SYSTEM) {
@@ -348,6 +346,10 @@ IController *Engine::controller() {
     PROFILER_MARKER;
 
     return p_ptr->m_Controller;
+}
+
+Scene *Engine::scene() {
+    return p_ptr->m_pScene;
 }
 
 IFile *Engine::file() {

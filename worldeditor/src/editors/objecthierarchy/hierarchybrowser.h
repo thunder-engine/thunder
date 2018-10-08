@@ -10,8 +10,6 @@ namespace Ui {
     class HierarchyBrowser;
 }
 
-const QString gMimeObject("text/object");
-
 class TreeView : public QTreeView {
     Q_OBJECT
 

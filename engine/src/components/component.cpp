@@ -40,3 +40,7 @@ bool Component::isStarted() const {
 void Component::setStarted(bool started) {
     m_Started   = started;
 }
+
+bool Component::isSerializable() const {
+    return (!actor().isPrefab() && actor().isSerializable());
+}

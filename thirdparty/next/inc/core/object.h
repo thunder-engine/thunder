@@ -89,7 +89,7 @@ public:
     static const MetaObject        *metaClass                   ();
     virtual const MetaObject       *metaObject                  () const;
 
-    virtual Object                 *clone                       ();
+    Object                         *clone                       (Object *parent = nullptr);
 
     Object                         *parent                      () const;
 
@@ -157,9 +157,14 @@ public:
 
     virtual VariantMap              saveUserData                () const;
 
+    virtual bool                    isSerializable              () const;
+
+    uint32_t                        clonedFrom                  () const;
 protected:
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);
+
+    virtual void                    addChild                    (Object *value);
 
     Object                         *sender                      () const;
 
@@ -171,7 +176,6 @@ private:
 private:
     void                            processEvents               ();
 
-    void                            addChild                    (Object *value);
     void                            removeChild                 (Object *value);
 
     void                            setUUID                     (uint32_t id);

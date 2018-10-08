@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
     PluginModel::instance()->init(&engine);
     CodeManager::instance()->init();
-    AssetManager::instance()->init();
+    AssetManager::instance()->init(&engine);
 
     return a.exec();
 }

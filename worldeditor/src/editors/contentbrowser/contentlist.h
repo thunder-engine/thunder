@@ -78,7 +78,6 @@ protected:
 
     QImage                      m_DefaultIcon;
 
-
     ProjectManager             *m_pProjectManager;
     AssetManager               *m_pAssetManager;
 

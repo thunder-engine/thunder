@@ -29,7 +29,8 @@ public:
     ObjectPrivate() :
         m_pParent(nullptr),
         m_pCurrentSender(nullptr),
-        m_UUID(0) {
+        m_UUID(0),
+        m_Cloned(0) {
 
     }
 
@@ -57,9 +58,9 @@ public:
     EventQueue                      m_EventQueue;
 
     uint32_t                        m_UUID;
+    uint32_t                        m_Cloned;
 
     mutex                           m_Mutex;
-
 };
 /*!
     \class Object
@@ -320,7 +321,7 @@ const MetaObject *Object::metaObject() const {
     return Object::metaClass();
 }
 /*!
-    Clones this object.
+    Clones this object and set \a parent for the clone.
     Returns pointer to clone object.
 
     When you clone the Object or subclasses of it, all child objects also will be cloned.
@@ -330,10 +331,11 @@ const MetaObject *Object::metaObject() const {
 
     \sa connect()
 */
-Object *Object::clone() {
+Object *Object::clone(Object *parent) {
     PROFILE_FUNCTION()
     const MetaObject *meta  = metaObject();
     Object *result = meta->createInstance();
+    result->setParent(parent);
     int count  = meta->propertyCount();
     for(int i = 0; i < count; i++) {
         MetaProperty lp = result->metaObject()->property(i);
@@ -341,9 +343,8 @@ Object *Object::clone() {
         lp.write(result, rp.read(this));
     }
     for(auto it : getChildren()) {
-        Object *clone  = it->clone();
+        Object *clone  = it->clone(result);
         clone->setName(it->name());
-        clone->setParent(result);
     }
     for(auto it : p_ptr->m_lSenders) {
         MetaMethod signal  = it.sender->metaObject()->method(it.signal);
@@ -357,8 +358,16 @@ Object *Object::clone() {
         connect(result, (to_string(1) + signal.signature()).c_str(),
                 it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
+    result->p_ptr->m_Cloned = p_ptr->m_UUID;
     result->p_ptr->m_UUID   = ObjectSystem::generateUID();
     return result;
+}
+/*!
+    Returns the UUID of cloned object.
+*/
+uint32_t Object::clonedFrom() const {
+    PROFILE_FUNCTION()
+    return p_ptr->m_Cloned;
 }
 /*!
     Returns a pointer to the parent object.
@@ -709,6 +718,12 @@ void Object::loadUserData(const VariantMap &data) {
 */
 VariantMap Object::saveUserData() const {
     return VariantMap();
+}
+/*!
+    Returns true if the object can be serialized; otherwise returns false.
+*/
+bool Object::isSerializable() const {
+    return true;
 }
 /*!
     Returns the value of the object's property by \a name.
