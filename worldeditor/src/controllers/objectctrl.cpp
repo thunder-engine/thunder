@@ -91,6 +91,8 @@ void ObjectCtrl::drawHandles() {
     Vector3 screen  = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
     Handles::m_sMouse   = Vector2(screen.x, screen.y);
 
+    m_ObjectsList.clear();
+
     drawHelpers(*m_pMap);
 
     if(!m_Selected.empty()) {
@@ -135,7 +137,6 @@ void ObjectCtrl::drawHandles() {
             result  = m_pSelect->getPixel(0, 0);
         }
 
-        m_ObjectsList.clear();
         if(result) {
             setSelectedObjects({ result });
         }
@@ -200,9 +201,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
             }
 
             if(result) {
-                list<uint32_t> sel;
-                sel.push_back(object.uuid());
-                setSelectedObjects(sel);
+                setSelectedObjects({object.uuid()});
             }
         } else {
             drawHelpers(*it);
