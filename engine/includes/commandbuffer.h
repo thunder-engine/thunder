@@ -30,6 +30,8 @@ public:
 
     virtual void                drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
+    virtual void                drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+
     virtual void                setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
 
     virtual void                setRenderTarget             (uint32_t target);

@@ -16,16 +16,19 @@ uniform vec4 position;
 uniform vec3 axis;
 
 layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec2 uv0;
-layout(location = 2) in vec2 uv1;
-layout(location = 3) in vec2 uv2;
-layout(location = 4) in vec2 uv3;
-layout(location = 5) in vec3 normal;
-layout(location = 6) in vec3 tangent;
-layout(location = 7) in vec4 color;
-layout(location = 8) in vec4 indices;
-layout(location = 9) in vec4 weights;
-
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 tangent;
+layout(location = 3) in vec2 uv0;
+#ifdef INSTANCING
+    layout(location = 4) in mat4 instanceMatrix;
+#else
+    //layout(location = 4) in vec2 uv1;
+    //layout(location = 5) in vec2 uv2;
+    //layout(location = 6) in vec2 uv3;
+    //layout(location = 7) in vec4 color;
+    //layout(location = 8) in vec4 indices;
+    //layout(location = 9) in vec4 weights;
+#endif
 layout(location = 0) out vec3 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec2 _uv1;
@@ -50,16 +53,12 @@ struct Vertex {
 
 #pragma material
 
-Vertex staticMesh(vec3 v, vec3 t, vec3 n) {
+Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
     Vertex result;
 
-    mat3 normal = mat3( t_model[0].xyz,
-                        t_model[1].xyz,
-                        t_model[2].xyz );
-
     result.v    = v;
-    result.t    = normal * t;
-    result.n    = normal * n;
+    result.t    = r * t;
+    result.n    = r * n;
     result.m    = vec4( 0.0 );
 
     return result;
@@ -128,8 +127,17 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 position) {
 }
 
 void main(void) {
+#ifdef INSTANCING
+    mat4 model  = instanceMatrix;
+#else
+    mat4 model  = t_model;
+#endif
+    mat3 rot    = mat3( model[0].xyz,
+                        model[1].xyz,
+                        model[2].xyz );
+
 #ifdef TYPE_STATIC
-    Vertex vert = staticMesh( vertex, tangent, normal );
+    Vertex vert = staticMesh( vertex, tangent, normal, rot );
 #endif
 
 #ifdef TYPE_SKINNED
@@ -148,7 +156,8 @@ void main(void) {
                         t_view[1].w,
                         t_view[2].w);
 
-    mat4 modelView  = t_view * t_model;
+
+    mat4 modelView  = t_view * model;
 
     gl_Position = t_projection * ( ( modelView * vec4(vert.v, 1.0) ) + vert.m );
 
@@ -156,10 +165,11 @@ void main(void) {
     _n          = vert.n;
     _t          = vert.t;
     _b          = cross ( _t, _n );
-
-    _color      = color;
     _uv0        = uv0;
-    _uv1        = uv1;
+#ifndef INSTANCING
+    //_uv1        = uv1;
+    //_color      = color;
+#endif
     _proj       = 0.5 * ( gl_Position.xyz / gl_Position.w ) + 0.5;
-    _view       = ( t_model * vec4(vert.v, 1.0) ).xyz - camera;
+    _view       = ( model * vec4(vert.v, 1.0) ).xyz - camera;
 }

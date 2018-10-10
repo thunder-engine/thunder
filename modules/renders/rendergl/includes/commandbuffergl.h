@@ -18,6 +18,8 @@ public:
 
     void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
+    void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+
     void                        setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
 
     void                        setRenderTarget             (uint32_t target);
@@ -41,20 +43,21 @@ public:
     void                        notify                      (uint32_t index);
 
 protected:
-    uint32_t                    handle                      (AMeshGL *mesh, uint32_t surface, uint32_t lod);
+    void                        bindVao                     (AMeshGL *mesh, uint32_t surface, uint32_t lod, uint32_t instance = 0);
 
-    void                        updateValues                ();
+    void                        putUniforms                 (uint32_t fragment, MaterialInstance *instance);
 
 protected:
     AMaterialGL                 m_StaticVertex;
 
     uint32_t                    m_Static;
+    uint32_t                    m_Instanced;
 
     uint32_t                    m_Pipeline;
 
-  //uint32_t                    m_Transform;
-
     int32_t                     m_ModelLocation;
+
+    uint32_t                    m_InstanceBuffer;
 
     Matrix4                     m_View;
 

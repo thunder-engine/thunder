@@ -15,6 +15,8 @@
 #define TIMER_BIND  3
 #define CLIP_BIND   4
 
+#define INSTANCE_BIND   4
+
 const char *gVertex = ".embedded/BasePass.vert";
 
 #define TYPE_STATIC "#define TYPE_STATIC 1"
@@ -22,29 +24,42 @@ const char *gVertex = ".embedded/BasePass.vert";
 #define TYPE_BILLBOARD "#define TYPE_BILLBOARD 1"
 #define TYPE_AXISALIGNED "#define TYPE_AXISALIGNED 1"
 
+#define INSTACED "#define INSTANCING 1"
+
 CommandBufferGL::CommandBufferGL() {
     PROFILER_MARKER;
-/*
-    glGenBuffers(1, &m_Transform);
-    glBindBuffer(GL_UNIFORM_BUFFER, m_Transform);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(TransformData), &m_TransformData, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glBindBufferBase(GL_UNIFORM_BUFFER, TRANSFORM_BIND, m_Transform);
-*/
     m_StaticVertex.clear();
-    m_Static    = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, TYPE_STATIC);
+    string flags    = TYPE_STATIC;
+    m_Static    = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, flags);
+
+    flags   += "\n";
+    flags   += INSTACED;
+    m_Instanced = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, flags);
 
     m_ModelLocation = glGetUniformLocation(m_Static, "t_model");
 
+    Matrix4 inst;
+
+    vector<Matrix4> array(2);
+    inst.scale(Vector3(0.01));
+    array[0]    = inst;
+    inst.scale(Vector3(0.1));
+    array[1]    = inst;
+
+    glGenBuffers(1, &m_InstanceBuffer);
+
     glGenProgramPipelinesEXT(1, &m_Pipeline);
-    glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
 }
 
 CommandBufferGL::~CommandBufferGL() {
     glDeleteProgramPipelinesEXT(1, &m_Pipeline);
 
+    glDeleteBuffers(1, &m_InstanceBuffer);
+
     glDeleteProgram(m_Static);
+
+    glDeleteProgram(m_Instanced);
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -62,96 +77,144 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
     glClear(flags);
 }
 
+void CommandBufferGL::putUniforms(uint32_t fragment, MaterialInstance *instance) {
+    glProgramUniform1fEXT   (fragment, TIMER_BIND, Timer::time());
+    glProgramUniform1fEXT   (fragment, CLIP_BIND,  0.99f);
+    glProgramUniform4fvEXT  (fragment, COLOR_BIND, 1, m_Color.v);
+
+    int32_t location;
+    // Push uniform values to shader
+    for(const auto &it : m_Uniforms) {
+        location    = glGetUniformLocation(fragment, it.first.c_str());
+        if(location > -1) {
+            const Variant &data= it.second;
+            switch(data.type()) {
+                case MetaType::VECTOR2: glProgramUniform2fvEXT      (fragment, location, 1, data.toVector2().v); break;
+                case MetaType::VECTOR3: glProgramUniform3fvEXT      (fragment, location, 1, data.toVector3().v); break;
+                case MetaType::VECTOR4: glProgramUniform4fvEXT      (fragment, location, 1, data.toVector4().v); break;
+                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(fragment, location, 1, GL_FALSE, data.toMatrix4().mat); break;
+                default:                glProgramUniform1fEXT       (fragment, location, data.toFloat()); break;
+            }
+        }
+    }
+
+    for(const auto &it : instance->params()) {
+        location    = glGetUniformLocation(fragment, it.first.c_str());
+        if(location > -1) {
+            const MaterialInstance::Info &data  = it.second;
+            switch(data.type) {
+                case 0: break;
+                case MetaType::INTEGER: glProgramUniform1ivEXT      (fragment, location, data.count, static_cast<const int32_t *>(data.ptr)); break;
+                case MetaType::VECTOR2: glProgramUniform2fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR3: glProgramUniform3fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR4: glProgramUniform4fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(fragment, location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
+                default:                glProgramUniform1fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
+            }
+        }
+    }
+
+    AMaterialGL *mat    = static_cast<AMaterialGL *>(instance->material());
+
+    glEnable(GL_TEXTURE_2D);
+    uint8_t i   = 0;
+    for(auto it : mat->textures()) {
+        const Texture *tex  = static_cast<const ATextureGL *>(it.second);
+        const Texture *tmp  = instance->texture(it.first.c_str());
+        if(tmp) {
+            tex = tmp;
+        } else {
+            tmp = texture(it.first.c_str());
+            if(tmp) {
+                tex = tmp;
+            }
+        }
+
+        if(tex) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture((tex->isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, (uint32_t)(size_t)tex->nativeHandle());
+        }
+        i++;
+    }
+}
+
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
     PROFILER_MARKER;
 
     if(mesh && material) {
         AMeshGL *m      = static_cast<AMeshGL *>(mesh);
         uint32_t lod    = 0;
-        uint32_t id     = handle(m, surface, lod);
 
-        AMaterialGL *mat    = dynamic_cast<AMaterialGL *>(material->material());
-        if(!mat) {
-            return;
-        }
+        AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
         uint32_t program    = mat->bind(layer);
         if(program) {
             glProgramUniformMatrix4fvEXT(m_Static, m_ModelLocation, 1, GL_FALSE, model.mat);
 
-            glProgramUniform1fEXT   (program, TIMER_BIND, Timer::time());
-            glProgramUniform1fEXT   (program, CLIP_BIND,  0.99f);
-            glProgramUniform4fvEXT  (program, COLOR_BIND, 1, m_Color.v);
+            putUniforms(program, material);
 
-            // Push uniform values to shader
-            int32_t location;
-            for(const auto &it : m_Uniforms) {
-                location    = glGetUniformLocation(program, it.first.c_str());
-                if(location > -1) {
-                    const Variant &data= it.second;
-                    switch(data.type()) {
-                        case MetaType::VECTOR2: glProgramUniform2fvEXT      (program, location, 1, data.toVector2().v); break;
-                        case MetaType::VECTOR3: glProgramUniform3fvEXT      (program, location, 1, data.toVector3().v); break;
-                        case MetaType::VECTOR4: glProgramUniform4fvEXT      (program, location, 1, data.toVector4().v); break;
-                        case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(program, location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                        default:                glProgramUniform1fEXT       (program, location, data.toFloat()); break;
-                    }
-                }
-            }
-
-            for(const auto &it : material->params()) {
-                location    = glGetUniformLocation(program, it.first.c_str());
-                if(location > -1) {
-                    const MaterialInstance::Info &data  = it.second;
-                    switch(data.type) {
-                        case 0: break;
-                        case MetaType::INTEGER: glProgramUniform1ivEXT      (program, location, data.count, static_cast<const int32_t *>(data.ptr)); break;
-                        case MetaType::VECTOR2: glProgramUniform2fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                        case MetaType::VECTOR3: glProgramUniform3fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                        case MetaType::VECTOR4: glProgramUniform4fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                        case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(program, location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
-                        default:                glProgramUniform1fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                    }
-                }
-            }
-
-            glEnable(GL_TEXTURE_2D);
-            uint8_t i   = 0;
-            for(auto it : mat->textures()) {
-                const Texture *tex  = static_cast<const ATextureGL *>(it.second);
-                const Texture *tmp  = material->texture(it.first.c_str());
-                if(tmp) {
-                    tex = tmp;
-                } else {
-                    tmp = texture(it.first.c_str());
-                    if(tmp) {
-                        tex = tmp;
-                    }
-                }
-
-                if(tex) {
-                    glActiveTexture(GL_TEXTURE0 + i);
-                    glBindTexture((tex->isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, (uint32_t)(size_t)tex->nativeHandle());
-                }
-                i++;
-            }
-
+            glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
             glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
             glBindProgramPipelineEXT(m_Pipeline);
 
-            glBindVertexArray(id);
+            bindVao(m, surface, lod);
 
             Mesh::Modes mode    = mesh->mode(surface);
             if(mode > Mesh::MODE_LINES) {
-                uint32_t count  = mesh->vertexCount(surface, lod);
-                glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, count);
+                uint32_t vert   = mesh->vertexCount(surface, lod);
+                glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert);
 
-                PROFILER_STAT(POLYGONS, count - 2);
+                PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                uint32_t count  = mesh->indexCount(surface, lod);
+                uint32_t index  = mesh->indexCount(surface, lod);
                 glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES,
-                               count, GL_UNSIGNED_INT, 0);
+                               index, GL_UNSIGNED_INT, 0);
 
-                PROFILER_STAT(POLYGONS, count / 3);
+                PROFILER_STAT(POLYGONS, index / 3);
+            }
+            PROFILER_STAT(DRAWCALLS, 1);
+
+            glBindVertexArray(0);
+
+            mat->unbind(layer);
+
+            glBindProgramPipelineEXT(0);
+        }
+    }
+}
+
+void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+    PROFILER_MARKER;
+
+    if(mesh && material) {
+        AMeshGL *m      = static_cast<AMeshGL *>(mesh);
+        uint32_t lod    = 0;
+
+        AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
+        uint32_t program    = mat->bind(layer);
+        if(program) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
+            glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
+
+            putUniforms(program, material);
+
+            glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Instanced);
+            glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
+            glBindProgramPipelineEXT(m_Pipeline);
+
+            bindVao(m, surface, lod, m_InstanceBuffer);
+
+            Mesh::Modes mode    = mesh->mode(surface);
+            if(mode > Mesh::MODE_LINES) {
+                uint32_t vert   = mesh->vertexCount(surface, lod);
+                glDrawArraysInstanced((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
+
+                PROFILER_STAT(POLYGONS, index - 2 * count);
+            } else {
+                uint32_t index  = mesh->indexCount(surface, lod);
+                glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES,
+                               index, GL_UNSIGNED_INT, 0, count);
+
+                PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);
 
@@ -214,14 +277,13 @@ void CommandBufferGL::notify(uint32_t index) {
     }
 }
 
-uint32_t CommandBufferGL::handle(AMeshGL *mesh, uint32_t surface, uint32_t lod) {
-    uint32_t id = 0;
-
+void CommandBufferGL::bindVao(AMeshGL *mesh, uint32_t surface, uint32_t lod, uint32_t instance) {
     uint32_t key    = mesh->m_triangles[surface][lod];
     auto it = m_Objects.find(key);
     if(it == m_Objects.end()) {
         mesh->subscribe(this);
 
+        uint32_t id;
         glGenVertexArrays(1, &id);
         glBindVertexArray(id);
 
@@ -229,65 +291,64 @@ uint32_t CommandBufferGL::handle(AMeshGL *mesh, uint32_t surface, uint32_t lod) 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_triangles[surface][lod]);
         // vertices
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vertices[surface][lod]);
+
+        glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         uint8_t flags   = mesh->flags();
-        glEnableVertexAttribArray(0);
-        if(flags & Mesh::ATTRIBUTE_UV0) {
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_uv0[surface][lod]);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-            glEnableVertexAttribArray(1);
-        }
-        //// uv1
-        //glEnableVertexAttribArray(2);
-        //// uv2
-        //glEnableVertexAttribArray(3);
-        //// uv3
-        //glEnableVertexAttribArray(4);
         if(flags & Mesh::ATTRIBUTE_NORMALS) {
             glBindBuffer(GL_ARRAY_BUFFER, mesh->m_normals[surface][lod]);
-            glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            glEnableVertexAttribArray(5);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
         }
         if(flags & Mesh::ATTRIBUTE_TANGENTS) {
             glBindBuffer(GL_ARRAY_BUFFER, mesh->m_tangents[surface][lod]);
-            glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            glEnableVertexAttribArray(6);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
         }
-        //// colors
-        //glEnableVertexAttribArray(7);
-        //// indices
-        //glEnableVertexAttribArray(8);
-        //// weights
-        //glEnableVertexAttribArray(9);
+        if(flags & Mesh::ATTRIBUTE_UV0) {
+            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_uv0[surface][lod]);
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        }
 
-        glBindVertexArray(0);
-
+        if(instance) {
+            glBindBuffer(GL_ARRAY_BUFFER, instance);
+            for(int i = 0; i < 4; i++) {
+                glEnableVertexAttribArray(INSTANCE_BIND + i);
+                glVertexAttribPointer(INSTANCE_BIND + i, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix4), (void *)(i * sizeof(Vector4)));
+                glVertexAttribDivisor(INSTANCE_BIND + i, 1);
+            }
+        } else {
+            //// uv1
+            //glEnableVertexAttribArray(2);
+            //// uv2
+            //glEnableVertexAttribArray(3);
+            //// uv3
+            //glEnableVertexAttribArray(4);
+            //// colors
+            //glEnableVertexAttribArray(7);
+            //// indices
+            //glEnableVertexAttribArray(8);
+            //// weights
+            //glEnableVertexAttribArray(9);
+        }
         m_Objects[key]  = id;
     } else {
-        id  = it->second;
+        glBindVertexArray(it->second);
     }
-
-    return id;
-}
-
-void CommandBufferGL::updateValues() {
-    //glBindBuffer(GL_UNIFORM_BUFFER, m_Transform);
-    //void* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-    //memcpy(p, &m_TransformData, sizeof(m_TransformData));
-    //glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
 void CommandBufferGL::setColor(const Vector4 &color) {
     m_Color = color;
-    //updateValues();
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     m_View          = view;
     m_Projection    = projection;
 
-    int32_t location	= glGetUniformLocation(m_Static, "t_view");
+    int32_t location;
+    location    = glGetUniformLocation(m_Static, "t_view");
     if(location > -1) {
         glProgramUniformMatrix4fvEXT(m_Static, location, 1, GL_FALSE, m_View.mat);
     }
@@ -296,7 +357,14 @@ void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &proj
         glProgramUniformMatrix4fvEXT(m_Static, location, 1, GL_FALSE, m_Projection.mat);
     }
 
-    //updateValues();
+    location    = glGetUniformLocation(m_Instanced, "t_view");
+    if(location > -1) {
+        glProgramUniformMatrix4fvEXT(m_Instanced, location, 1, GL_FALSE, m_View.mat);
+    }
+    location	= glGetUniformLocation(m_Instanced, "t_projection");
+    if(location > -1) {
+        glProgramUniformMatrix4fvEXT(m_Instanced, location, 1, GL_FALSE, m_Projection.mat);
+    }
 }
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
