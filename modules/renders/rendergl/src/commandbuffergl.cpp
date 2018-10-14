@@ -39,14 +39,6 @@ CommandBufferGL::CommandBufferGL() {
 
     m_ModelLocation = glGetUniformLocation(m_Static, "t_model");
 
-    Matrix4 inst;
-
-    vector<Matrix4> array(2);
-    inst.scale(Vector3(0.01));
-    array[0]    = inst;
-    inst.scale(Vector3(0.1));
-    array[1]    = inst;
-
     glGenBuffers(1, &m_InstanceBuffer);
 
     glGenProgramPipelinesEXT(1, &m_Pipeline);

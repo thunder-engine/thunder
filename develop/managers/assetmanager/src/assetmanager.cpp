@@ -120,13 +120,21 @@ QObject *AssetManager::openEditor(const QFileInfo &source) {
     return nullptr;
 }
 
-int32_t AssetManager::resourceType(const QFileInfo &source) {
+uint32_t AssetManager::resourceType(const QFileInfo &source) {
     QString s = source.completeSuffix().toLower();
     auto it = m_Formats.find(s);
     if(it != m_Formats.end()) {
         return it.value();
     }
     return MetaType::INVALID;
+}
+
+uint8_t AssetManager::toContentType(uint32_t type) {
+    auto it = m_ContentTypes.find(type);
+    if(it != m_ContentTypes.end()) {
+        return it.value();
+    }
+    return type;
 }
 
 bool AssetManager::pushToImport(const QFileInfo &source) {
@@ -392,7 +400,8 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
 void AssetManager::registerConverter(IConverter *converter) {
     if(converter) {
         foreach (QString format, QString::fromStdString(converter->format()).split(';')) {
-            m_Formats[format.toLower()]     = converter->type();
+            m_Formats[format.toLower()]     = converter->contentType();
+            m_ContentTypes[converter->type()]   = converter->contentType();
             m_Converters[format.toLower()]  = converter;
         }
     }

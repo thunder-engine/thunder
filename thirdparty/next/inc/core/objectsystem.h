@@ -9,7 +9,6 @@
 #include "object.h"
 
 class MetaObject;
-class ObjectSystemPrivate;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
@@ -17,38 +16,35 @@ public:
     typedef unordered_map<string, string>               GroupMap;
 
 public:
-    ObjectSystem                        (const string &name = "system");
+    ObjectSystem                        ();
     ~ObjectSystem                       ();
+
+    virtual void                        destroy                 ();
+
+    virtual void                        update                  ();
 
     GroupMap                            factories               () const;
 
+    static const MetaObject            *metaFactory             (const string &uri);
+
 public:
-    static ObjectSystem                *instance                ();
-
-    static Object                      *objectCreate            (const string &uri, const string &name = string(), Object *parent = 0);
-
     template<typename T>
     static T                           *objectCreate            (const string &name = string(), Object *parent = 0) {
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    template<typename T>
-    static void                         factoryAdd              (const string &group, const MetaObject *meta) {
-        string name = T::metaClass()->name();
-        string uri  = string("thor://") + group + "/" + name;
-        ObjectSystem *inst = ObjectSystem::instance();
-        inst->factoryAdd(name, uri, meta);
+    static Object                      *objectCreate            (const string &uri, const string &name = string(), Object *parent = 0);
 
-        name += " *";
-        if(MetaType::type(name.c_str()) == 0) {
-            registerMetaType<T *>(name.c_str());
-        }
+    template<typename T>
+    void                                factoryAdd              (const string &group, const MetaObject *meta) {
+        string name = T::metaClass()->name();
+        factoryAdd(name, string("thor://") + group + "/" + name, meta);
     }
 
     template<typename T>
-    static void                         factoryRemove           (const string &group) {
+    void                                factoryRemove           (const string &group) {
         const char *name    = T::metaClass()->name();
-        ObjectSystem::instance()->factoryRemove(name, string("thor://") + group + "/" + name);
+        factoryRemove(name, string("thor://") + group + "/" + name);
     }
 
     static Variant                      toVariant               (const Object *object);
@@ -61,14 +57,14 @@ protected:
 
 private:
     friend class ObjectSystemTest;
+    friend class Object;
+
+    static void                         addObject               (Object *object);
+    static void                         removeObject            (Object *object);
 
     void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
 
     void                                factoryRemove           (const string &name, const string &uri);
-
-    void                                factoryClear            ();
-
-    ObjectSystemPrivate                *p_ptr;
 };
 
 #endif // OBJECTSYSTEM_H

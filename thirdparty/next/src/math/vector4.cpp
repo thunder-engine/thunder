@@ -105,7 +105,7 @@ bool Vector4::operator<(const Vector4 &vector) const {
 
     \sa operator*=()
 */
-const Vector4 Vector4::operator*(areal factor) const {
+Vector4 Vector4::operator*(areal factor) const {
     return Vector4(x * factor, y * factor, z * factor, w * factor);
 }
 /*!
@@ -113,7 +113,7 @@ const Vector4 Vector4::operator*(areal factor) const {
 
     \sa operator*=()
 */
-const Vector4 Vector4::operator*(const Vector4 &vector) const {
+Vector4 Vector4::operator*(const Vector4 &vector) const {
     return Vector4(x * vector.x, y * vector.y, z * vector.z, w * vector.w);
 }
 /*!
@@ -121,7 +121,7 @@ const Vector4 Vector4::operator*(const Vector4 &vector) const {
 
     \sa operator/=()
 */
-const Vector4 Vector4::operator/(areal divisor) const {
+Vector4 Vector4::operator/(areal divisor) const {
     return Vector4(x / divisor, y / divisor, z / divisor, w / divisor);
 }
 /*!
@@ -129,7 +129,7 @@ const Vector4 Vector4::operator/(areal divisor) const {
 
     \sa operator+=()
 */
-const Vector4 Vector4::operator+(const Vector4 &vector) const {
+Vector4 Vector4::operator+(const Vector4 &vector) const {
     return Vector4(x + vector.x, y + vector.y, z + vector.z, w + vector.w);
 }
 /*!
@@ -138,7 +138,7 @@ const Vector4 Vector4::operator+(const Vector4 &vector) const {
 
     Equivalent to \c {Vector4(0,0,0,1) - vector}.
 */
-const Vector4 Vector4::operator-() const {
+Vector4 Vector4::operator-() const {
     return Vector4(-x, -y, -z, -w);
 }
 /*!
@@ -147,7 +147,7 @@ const Vector4 Vector4::operator-() const {
 
     \sa operator-=()
 */
-const Vector4 Vector4::operator-(const Vector4 &vector) const {
+Vector4 Vector4::operator-(const Vector4 &vector) const {
     return Vector4(x - vector.x, y - vector.y, z - vector.z, z - vector.w);
 }
 /*!

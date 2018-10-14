@@ -135,18 +135,6 @@ FBXConverter::FBXConverter() {
 
 }
 
-FBXConverter::~FBXConverter() {
-
-}
-
-string FBXConverter::format() const {
-    return "fbx";
-}
-
-uint32_t FBXConverter::type() const {
-    return MetaType::type<Mesh *>();
-}
-
 uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
     MeshSerial mesh;
 

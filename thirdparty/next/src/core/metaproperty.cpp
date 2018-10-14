@@ -67,3 +67,10 @@ void MetaProperty::write(Object *object, const Variant &value) const {
     PROFILE_FUNCTION()
     m_pTable->writer(object, value);
 }
+/*!
+    Returns property information table.
+*/
+const MetaProperty::Table *MetaProperty::table() const {
+    PROFILE_FUNCTION()
+    return m_pTable;
+}

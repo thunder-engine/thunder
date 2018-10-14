@@ -13,9 +13,7 @@ class NEXT_LIBRARY_EXPORT SpriteMesh : public BaseMesh {
     A_NOMETHODS();
 
 public:
-    SpriteMesh                   ();
-
-    void                        draw                (ICommandBuffer &buffer, int8_t layer);
+    SpriteMesh                  ();
 
     Vector2                     center              () const;
 

@@ -34,7 +34,7 @@ public: \
     static const MetaProperty::Table *properties() { \
         static const MetaProperty::Table table[] { \
             __VA_ARGS__, \
-            {nullptr, nullptr, nullptr, nullptr} \
+            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
         }; \
         return table; \
     }
@@ -43,7 +43,7 @@ public: \
 public: \
     static const MetaProperty::Table *properties() { \
         static const MetaProperty::Table table[] { \
-            {nullptr, nullptr, nullptr, nullptr} \
+            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
         }; \
         return table; \
     }
@@ -53,7 +53,7 @@ public: \
     static const MetaMethod::Table *methods() { \
         static const MetaMethod::Table table[] { \
             __VA_ARGS__, \
-            {MetaMethod::Method, nullptr, nullptr, 0, nullptr} \
+            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr} \
         }; \
         return table; \
     }
@@ -62,7 +62,7 @@ public: \
 public: \
     static const MetaMethod::Table *methods() { \
         static const MetaMethod::Table table[] { \
-            {MetaMethod::Method, nullptr, nullptr, 0, nullptr} \
+            {MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr} \
         }; \
         return table; \
     }
@@ -72,31 +72,36 @@ public: \
     #p, \
     Reader<decltype(&r), &r>::type(#t), \
    &Reader<decltype(&r), &r>::read, \
-   &Writer<decltype(&w), &w>::write \
+   &Writer<decltype(&w), &w>::write, \
+   &Reader<decltype(&r), &r>::address<&r>, \
+   &Writer<decltype(&w), &w>::address<&w> \
 }
 
-#define A_METHOD(m) { \
+#define A_METHOD(r, m) { \
     MetaMethod::Method, \
     #m, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
     Invoker<decltype(&m)>::argCount(), \
-    Invoker<decltype(&m)>::types() \
+    Invoker<decltype(&m)>::types(#r), \
 }
 
 #define A_SIGNAL(m) { \
     MetaMethod::Signal, \
     #m, \
     nullptr, \
+    nullptr, \
     Invoker<decltype(&m)>::argCount(), \
-    Invoker<decltype(&m)>::types() \
+    Invoker<decltype(&m)>::types("void"), \
 }
 
 #define A_SLOT(m) { \
     MetaMethod::Slot, \
     #m, \
     (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
     Invoker<decltype(&m)>::argCount(), \
-    Invoker<decltype(&m)>::types() \
+    Invoker<decltype(&m)>::types("void"), \
 }
 
 #define _SIGNAL(a)  "1"#a

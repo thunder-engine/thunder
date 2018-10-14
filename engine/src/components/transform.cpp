@@ -49,7 +49,7 @@ void Transform::setScale(const Vector3 &value) {
     m_Dirty = true;
 }
 
-Matrix4 Transform::worldTransform() {
+Matrix4 &Transform::worldTransform() {
     if(m_Dirty) {
         for(auto &it : actor().findChildren<Actor *>(false)) {
             it->transform()->m_Dirty = true;

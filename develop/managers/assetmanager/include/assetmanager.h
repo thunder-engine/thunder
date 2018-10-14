@@ -62,7 +62,9 @@ public:
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
 
-    int32_t                 resourceType        (const QFileInfo &source);
+    uint32_t                resourceType        (const QFileInfo &source);
+
+    uint8_t                 toContentType       (uint32_t type);
 
     void                    removeResource      (const QFileInfo &source);
     void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
@@ -114,6 +116,9 @@ protected:
 
     typedef QMap<QString, uint8_t>          FormatsMap;
     FormatsMap              m_Formats;
+
+    typedef QMap<uint32_t, uint8_t>         ContentTypeMap;
+    ContentTypeMap          m_ContentTypes;
 
     typedef QMap<QString, IConverter *>     ConverterMap;
     ConverterMap            m_Converters;

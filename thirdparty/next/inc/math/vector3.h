@@ -37,12 +37,12 @@ public:
     bool                        operator>                   (const Vector3 &vector) const;
     bool                        operator<                   (const Vector3 &vector) const;
 
-    const Vector3               operator*                   (areal factor) const;
-    const Vector3               operator*                   (const Vector3 &vector) const;
-    const Vector3               operator/                   (areal divisor) const;
-    const Vector3               operator+                   (const Vector3 &vector) const;
-    const Vector3               operator-                   () const;
-    const Vector3               operator-                   (const Vector3 &vector) const;
+    Vector3                     operator*                   (areal factor) const;
+    Vector3                     operator*                   (const Vector3 &vector) const;
+    Vector3                     operator/                   (areal divisor) const;
+    Vector3                     operator+                   (const Vector3 &vector) const;
+    Vector3                     operator-                   () const;
+    Vector3                     operator-                   (const Vector3 &vector) const;
 
     Vector3                    &operator*=                  (areal factor);
     Vector3                    &operator/=                  (areal divisor);

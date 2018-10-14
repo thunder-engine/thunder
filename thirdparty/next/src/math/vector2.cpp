@@ -75,7 +75,7 @@ bool Vector2::operator<(const Vector2 &vector) const {
 
     \sa operator*=()
 */
-const Vector2 Vector2::operator*(areal factor) const {
+Vector2 Vector2::operator*(areal factor) const {
     return Vector2(x * factor, y * factor);
 }
 /*!
@@ -83,7 +83,7 @@ const Vector2 Vector2::operator*(areal factor) const {
 
     \sa operator*=()
 */
-const Vector2 Vector2::operator*(Vector2 &vector) const {
+Vector2 Vector2::operator*(const Vector2 &vector) const {
     return Vector2(x * vector.x, y * vector.y);
 }
 /*!
@@ -91,7 +91,7 @@ const Vector2 Vector2::operator*(Vector2 &vector) const {
 
     \sa operator/=()
 */
-const Vector2 Vector2::operator/(areal divisor) const {
+Vector2 Vector2::operator/(areal divisor) const {
     return Vector2(x / divisor, y / divisor);
 }
 /*!
@@ -99,7 +99,7 @@ const Vector2 Vector2::operator/(areal divisor) const {
 
     \sa operator+=()
 */
-const Vector2 Vector2::operator+(const Vector2 &vector) const {
+Vector2 Vector2::operator+(const Vector2 &vector) const {
     return Vector2(x + vector.x, y + vector.y);
 }
 /*!
@@ -108,7 +108,7 @@ const Vector2 Vector2::operator+(const Vector2 &vector) const {
 
     Equivalent to \c {Vector2(0,0) - vector}.
 */
-const Vector2 Vector2::operator-() const {
+Vector2 Vector2::operator-() const {
     return Vector2(-x, -y);
 }
 /*!
@@ -117,7 +117,7 @@ const Vector2 Vector2::operator-() const {
 
     \sa operator-=()
 */
-const Vector2 Vector2::operator-(const Vector2 &vector) const {
+Vector2 Vector2::operator-(const Vector2 &vector) const {
     return Vector2(x - vector.x, y - vector.y);
 }
 /*!

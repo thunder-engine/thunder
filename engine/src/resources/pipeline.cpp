@@ -2,20 +2,20 @@
 
 #include "controller.h"
 
-#include <components/actor.h>
-#include <components/transform.h>
-#include <components/scene.h>
-#include <components/component.h>
-#include <components/camera.h>
-#include <components/directlight.h>
+#include "components/actor.h"
+#include "components/transform.h"
+#include "components/scene.h"
+#include "components/camera.h"
+#include "components/directlight.h"
+#include "components/basemesh.h"
 
-#include <resources/mesh.h>
-#include <resources/rendertexture.h>
+#include "resources/mesh.h"
+#include "resources/rendertexture.h"
 
-#include <analytics/profiler.h>
-#include <log.h>
+#include "analytics/profiler.h"
+#include "log.h"
 
-#include <commandbuffer.h>
+#include "commandbuffer.h"
 
 #define SM_RESOLUTION_DEFAULT 1024
 #define SM_RESOLUTION 2048
@@ -104,8 +104,7 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
-    m_ComponentList.clear();
-    combineComponents(scene);
+    ObjectList filter   = filterComponents(camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
 
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", scene.ambient());
@@ -122,9 +121,7 @@ void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
     m_Buffer->clearRenderTarget(true, Vector4(0.0));
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::RAYCAST);
-
-    // Deffered shading
+    drawComponents(ICommandBuffer::RAYCAST, filter);
 
     // Fill G buffer pass
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
@@ -132,17 +129,17 @@ void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
 
     cameraReset(camera);
     // Draw Opaque pass
-    drawComponents(ICommandBuffer::DEFAULT);
+    drawComponents(ICommandBuffer::DEFAULT, filter);
 
     /// \todo Screen Space Ambient Occlusion effect should be defined here
 
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     // Light pass
-    drawComponents(ICommandBuffer::LIGHT);
+    drawComponents(ICommandBuffer::LIGHT, filter);
 
     cameraReset(camera);
     // Draw Transparent pass
-    drawComponents(ICommandBuffer::TRANSLUCENT);
+    drawComponents(ICommandBuffer::TRANSLUCENT, filter);
 
     m_Buffer->setRenderTarget(resource);
     m_Buffer->setScreenProjection();
@@ -190,23 +187,43 @@ void Pipeline::resize(uint32_t width, uint32_t height) {
     //}
 }
 
-void Pipeline::combineComponents(Object &object) {
+void Pipeline::combineComponents(Object &object, bool first) {
+    if(first) {
+        m_Components.clear();
+    }
     for(auto &it : object.getChildren()) {
         Object *child   = it;
-        Component *draw = dynamic_cast<Component *>(child);
-        if(draw) {
-            if(draw->isEnable()) {
-                m_ComponentList.push_back(draw);
+        BaseMesh *mesh  = dynamic_cast<BaseMesh *>(child);
+        if(mesh) {
+            if(mesh->isEnable()) {
+                m_Components.push_back(mesh);
             }
         } else {
-            Actor *actor    = dynamic_cast<Actor *>(child);
-            if(actor) {
-                if(!actor->isEnable()) {
-                    continue;
+            DirectLight *light  = dynamic_cast<DirectLight *>(child);
+            if(light) {
+                if(light->isEnable()) {
+                    m_Components.push_back(light);
                 }
+            } else {
+                Actor *actor    = dynamic_cast<Actor *>(child);
+                if(actor) {
+                    if(!actor->isEnable()) {
+                        continue;
+                    }
+                }
+                combineComponents(*child);
             }
-            combineComponents(*child);
         }
+    }
+}
+
+Object::ObjectList Pipeline::filterComponents(const array<Vector3, 8> &frustum) {
+    return frustumCulling(m_Components, frustum);
+}
+
+void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
+    for(auto it : list) {
+        static_cast<Component *>(it)->draw(*m_Buffer, layer);
     }
 }
 
@@ -221,16 +238,10 @@ void Pipeline::updateShadows(Camera &camera, Object &object) {
     }
 }
 
-void Pipeline::drawComponents(uint32_t layer) {
-    for(auto it : m_ComponentList) {
-        it->draw(*m_Buffer, layer);
-    }
-}
-
 void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
     Vector4 distance;
 
-    Matrix4 p       = camera.projectionMatrix();
+    Matrix4 p   = camera.projectionMatrix();
     {
         float split     = 0.95f;
         float nearPlane = camera.nearPlane();
@@ -293,14 +304,85 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
                                       (float)w / SM_RESOLUTION,
                                       (float)h / SM_RESOLUTION);
 
-        drawComponents(ICommandBuffer::SHADOWCAST);
+        drawComponents(ICommandBuffer::SHADOWCAST, m_Components);
     }
 }
 
 RenderTexture *Pipeline::postProcess(RenderTexture &source) {
     RenderTexture *result   = &source;
     //for(auto it : m_PostEffects) {
-    //    //result  = it->draw(*result, *m_Buffer);
+    //    result  = it->draw(*result, *m_Buffer);
     //}
     return result;
 }
+
+inline bool intersect(Plane pl[6], Vector3 points[8]) {
+    for(int i = 0; i < 6; i++) {
+        if(pl[i].sqrDistance(points[0]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[1]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[2]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[3]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[4]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[5]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[6]) > 0) {
+            continue;
+        }
+        if(pl[i].sqrDistance(points[7]) > 0) {
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
+Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3, 8> &frustum) {
+    Plane pl[6];
+    pl[0]   = Plane(frustum[1], frustum[0], frustum[4]); // top
+    pl[1]   = Plane(frustum[7], frustum[3], frustum[2]); // bottom
+    pl[2]   = Plane(frustum[3], frustum[7], frustum[0]); // left
+    pl[3]   = Plane(frustum[2], frustum[1], frustum[6]); // right
+    pl[4]   = Plane(frustum[0], frustum[1], frustum[3]); // near
+    pl[5]   = Plane(frustum[5], frustum[4], frustum[6]); // far
+
+    Object::ObjectList result;
+    for(auto it : in) {
+        BaseMesh *mesh  = dynamic_cast<BaseMesh *>(it);
+        if(mesh && mesh->mesh()) {
+            Matrix4 &transform   = mesh->actor().transform()->worldTransform();
+            Vector3 min, max;
+            mesh->mesh()->bound().box(min, max);
+            Matrix3 r   = transform.rotation();
+            Vector3 t(transform[12], transform[13], transform[14]);
+
+            Vector3 p[8];
+            p[0]    = r * Vector3(min.x, min.y, min.z) + t;
+            p[1]    = r * Vector3(min.x, min.y, max.z) + t;
+            p[2]    = r * Vector3(max.x, min.y, max.z) + t;
+            p[3]    = r * Vector3(max.x, min.y, min.z) + t;
+            p[4]    = r * Vector3(min.x, max.y, min.z) + t;
+            p[5]    = r * Vector3(min.x, max.y, max.z) + t;
+            p[6]    = r * Vector3(max.x, max.y, max.z) + t;
+            p[7]    = r * Vector3(max.x, max.y, min.z) + t;
+
+            if(intersect(pl, p)) {
+                result.push_back(it);
+            }
+        } else {
+            result.push_back(it);
+        }
+    }
+    return result;
+}
+

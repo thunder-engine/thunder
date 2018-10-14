@@ -97,7 +97,7 @@ bool Vector3::operator< (const Vector3 &vector) const {
 
     \sa operator*=()
 */
-const Vector3 Vector3::operator*(areal factor) const {
+Vector3 Vector3::operator*(areal factor) const {
     return Vector3(x * factor, y * factor, z * factor);
 }
 /*!
@@ -105,7 +105,7 @@ const Vector3 Vector3::operator*(areal factor) const {
 
     \sa operator*=()
 */
-const Vector3 Vector3::operator*(const Vector3 &vector) const {
+Vector3 Vector3::operator*(const Vector3 &vector) const {
     return Vector3(x * vector.x, y * vector.y, z * vector.z);
 }
 /*!
@@ -113,7 +113,7 @@ const Vector3 Vector3::operator*(const Vector3 &vector) const {
 
     \sa operator/=()
 */
-const Vector3 Vector3::operator/(areal divisor) const {
+Vector3 Vector3::operator/(areal divisor) const {
     return Vector3(x / divisor, y / divisor, z / divisor);
 }
 /*!
@@ -121,7 +121,7 @@ const Vector3 Vector3::operator/(areal divisor) const {
 
     \sa operator+=()
 */
-const Vector3 Vector3::operator+(const Vector3 &vector) const {
+Vector3 Vector3::operator+(const Vector3 &vector) const {
     return Vector3(x + vector.x, y + vector.y, z + vector.z);
 }
 /*!
@@ -130,7 +130,7 @@ const Vector3 Vector3::operator+(const Vector3 &vector) const {
 
     Equivalent to \c {Vector3(0,0,0) - vector}.
 */
-const Vector3 Vector3::operator-() const {
+Vector3 Vector3::operator-() const {
     return Vector3(-x, -y, -z);
 }
 /*!
@@ -139,7 +139,7 @@ const Vector3 Vector3::operator-() const {
 
     \sa operator-=()
 */
-const Vector3 Vector3::operator-(const Vector3 &vector) const {
+Vector3 Vector3::operator-(const Vector3 &vector) const {
     return Vector3(x - vector.x, y - vector.y, z - vector.z);
 }
 /*!

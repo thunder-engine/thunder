@@ -113,11 +113,19 @@ MetaType MetaMethod::parameterType(int index) const {
 bool MetaMethod::invoke(Object *object, Variant &returnValue, int argc, const Variant *args) const {
     PROFILE_FUNCTION()
     if(m_pTable->type != Signal) {
-        returnValue = m_pTable->invoker(object, argc, args);
+         m_pTable->invoker(object, argc, args, returnValue);
         return true;
     }
     return false;
 }
+/*!
+    Returns method information table.
+*/
+const MetaMethod::Table *MetaMethod::table() const {
+    PROFILE_FUNCTION()
+    return m_pTable;
+}
+
 /*!
     \class MethodCallEvent
     \brief MethodCallEvent implements event which contain all necessary information for method invocation.

@@ -40,13 +40,13 @@ OBBox::OBBox(const Vector3 &center, const Vector3 &size, const Quaternion &rotat
 /*!
     Returns a copy of this vector, multiplied by the given \a factor.
 */
-const OBBox OBBox::operator*(areal factor) {
+const OBBox OBBox::operator*(areal factor) const {
     return OBBox(center * factor, size * factor, rotation);
 }
 /*!
     Returns a copy of this vector, multiplied by the given \a vector.
 */
-const OBBox OBBox::operator*(const Vector3 &vector) {
+const OBBox OBBox::operator*(const Vector3 &vector) const {
     return OBBox(center * vector, size * vector, rotation);
 }
 /*!

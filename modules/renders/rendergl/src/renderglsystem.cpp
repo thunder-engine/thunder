@@ -3,6 +3,7 @@
 #include "agl.h"
 
 #include <components/camera.h>
+#include <components/scene.h>
 
 #include <resources/pipeline.h>
 
@@ -21,23 +22,27 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
         m_pController(nullptr) {
     PROFILER_MARKER;
 
-    ATextureGL::registerClassFactory();
-    ARenderTextureGL::registerClassFactory();
-    AMaterialGL::registerClassFactory();
-    AMeshGL::registerClassFactory();
+    ObjectSystem system;
 
-    CommandBufferGL::registerClassFactory();
+    ATextureGL::registerClassFactory(&system);
+    ARenderTextureGL::registerClassFactory(&system);
+    AMaterialGL::registerClassFactory(&system);
+    AMeshGL::registerClassFactory(&system);
+
+    CommandBufferGL::registerClassFactory(&system);
 }
 
 RenderGLSystem::~RenderGLSystem() {
     PROFILER_MARKER;
 
-    ATextureGL::unregisterClassFactory();
-    ARenderTextureGL::unregisterClassFactory();
-    AMaterialGL::unregisterClassFactory();
-    AMeshGL::unregisterClassFactory();
+    ObjectSystem system;
 
-    CommandBufferGL::unregisterClassFactory();
+    ATextureGL::unregisterClassFactory(&system);
+    ARenderTextureGL::unregisterClassFactory(&system);
+    AMaterialGL::unregisterClassFactory(&system);
+    AMeshGL::unregisterClassFactory(&system);
+
+    CommandBufferGL::unregisterClassFactory(&system);
 }
 
 /*!
@@ -79,7 +84,9 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     }
 
     if(camera) {
-        camera->pipeline()->draw(scene, *camera, resource);
+        Pipeline *pipe  = camera->pipeline();
+        pipe->combineComponents(scene, true);
+        pipe->draw(scene, *camera, resource);
     }
 }
 

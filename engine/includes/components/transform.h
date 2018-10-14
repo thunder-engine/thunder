@@ -24,7 +24,7 @@ public:
 
     virtual Quaternion          rotation                () const;
 
-    virtual Matrix4             worldTransform          ();
+    virtual Matrix4            &worldTransform          ();
 
     virtual Vector3             worldPosition           () const;
 

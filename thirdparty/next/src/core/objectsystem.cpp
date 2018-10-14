@@ -11,20 +11,11 @@ static random_device rd;
 static mt19937 mt(rd());
 static uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
-class ObjectSystemPrivate {
-public:
-    ObjectSystemPrivate() {
+static ObjectSystem::FactoryMap s_Factories;
+static ObjectSystem::GroupMap   s_Groups;
 
-    }
+static Object::ObjectList       s_List;
 
-    /// Container for registered callbacks.
-    ObjectSystem::FactoryMap    m_Factories;
-    ObjectSystem::GroupMap      m_Groups;
-
-    static ObjectSystem        *s_Instance;
-};
-
-ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
 /*!
     \class ObjectSystem
     \brief The ObjectSystem responds for object management.
@@ -69,32 +60,38 @@ ObjectSystem *ObjectSystemPrivate::s_Instance    = nullptr;
     \sa factoryAdd(), factoryRemove()
 */
 /*!
-    Constructs ObjectSystem with \a name.
-    \note There can be only one instance of Object System per application. (semi singleton)
+    Constructs ObjectSystem.
 */
-ObjectSystem::ObjectSystem(const string &name) :
-        p_ptr(new ObjectSystemPrivate()) {
+ObjectSystem::ObjectSystem() {
     PROFILE_FUNCTION()
-    if(ObjectSystemPrivate::s_Instance != nullptr) {
-        throw "There should be only one ObjectSystem object";
-    }
-    ObjectSystemPrivate::s_Instance   = this;
-    setName(name);
 }
-
+/*!
+    Destructs ObjectSystem.
+    \note It just destroys the system but not registered factories or created object use ObjectSystem::destroy() instead.
+*/
 ObjectSystem::~ObjectSystem() {
     PROFILE_FUNCTION()
-    factoryClear();
-    ObjectSystemPrivate::s_Instance   = nullptr;
 }
-
 /*!
-    Returns a singe instance of ObjectSystem.
-    \note Can return nullptr in case of ObjectSystem isn't initialized yet.
+    Destoroys all related objects and registered factories.
+    \note This method destroys the objects everywhere.
 */
-ObjectSystem *ObjectSystem::instance() {
+void ObjectSystem::destroy() {
     PROFILE_FUNCTION()
-    return ObjectSystemPrivate::s_Instance;
+    s_Factories.clear();
+    s_Groups.clear();
+    for(auto it : s_List) {
+        delete it;
+    }
+    s_List.clear();
+}
+/*!
+    Updates all related objects.
+*/
+void ObjectSystem::update() {
+    for(auto it : s_List) {
+        it->processEvents();
+    }
 }
 /*!
     Returns new instance of type represented in \a uri and \a name as child of \a parent object.
@@ -106,13 +103,9 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     PROFILE_FUNCTION()
     Object *object  = nullptr;
 
-    ObjectSystem *inst = instance();
-    FactoryMap::iterator it = inst->p_ptr->m_Factories.find(uri);
-    if(it == inst->p_ptr->m_Factories.end()) {
-        it  = inst->p_ptr->m_Factories.find(inst->p_ptr->m_Groups[uri]);
-    }
-    if(it != inst->p_ptr->m_Factories.end()) {
-        object = (*it).second->createInstance();
+    const MetaObject *meta  = metaFactory(uri);
+    if(meta) {
+        object = meta->createInstance();
         object->setName(name);
         object->setParent(parent);
         object->setUUID(generateUID());
@@ -126,28 +119,34 @@ void ObjectSystem::processObject(Object *object) {
 
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION()
-    p_ptr->m_Groups[name]   = uri;
-    p_ptr->m_Factories[uri] = meta;
+    s_Groups[name]   = uri;
+    s_Factories[uri] = meta;
 }
 
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     PROFILE_FUNCTION()
-    p_ptr->m_Groups.erase(name);
-    p_ptr->m_Factories.erase(uri);
-}
-/*!
-    Removes all factories from the system.
-*/
-void ObjectSystem::factoryClear() {
-    PROFILE_FUNCTION()
-    p_ptr->m_Factories.clear();
+   s_Groups.erase(name);
+   s_Factories.erase(uri);
 }
 /*!
     Returns all registered classes.
 */
 ObjectSystem::GroupMap ObjectSystem::factories() const {
     PROFILE_FUNCTION()
-    return p_ptr->m_Groups;
+    return s_Groups;
+}
+/*!
+    Returns MetaObject for registered factory by provided \a uri.
+*/
+const MetaObject *ObjectSystem::metaFactory(const string &uri) {
+    FactoryMap::iterator it = s_Factories.find(uri);
+    if(it == s_Factories.end()) {
+        it  = s_Factories.find(s_Groups[uri]);
+    }
+    if(it != s_Factories.end()) {
+        return (*it).second;
+    }
+    return nullptr;
 }
 
 typedef list<const Object *> ObjectArray;
@@ -313,5 +312,22 @@ Object *ObjectSystem::toObject(const Variant &variant) {
     Returns the new unique ID based on random number generator.
 */
 uint32_t ObjectSystem::generateUID() {
+    PROFILE_FUNCTION()
     return dist(mt);
+}
+
+void ObjectSystem::addObject(Object *object) {
+    s_List.push_back(object);
+}
+
+void ObjectSystem::removeObject(Object *object) {
+    PROFILE_FUNCTION()
+    auto it = s_List.begin();
+    while(it != s_List.end()) {
+        if(*it == object) {
+            s_List.erase(it);
+            return;
+        }
+        it++;
+    }
 }

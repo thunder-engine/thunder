@@ -9,8 +9,10 @@
 class TextSerial : public Text {
 public:
     void                        setData         (const QByteArray &data) {
-        m_Data.resize(data.size());
-        memcpy(&m_Data[0], data.data(), data.size());
+        if(!data.isEmpty()) {
+            m_Data.resize(data.size());
+            memcpy(&m_Data[0], data.data(), data.size());
+        }
     }
 
 protected:
