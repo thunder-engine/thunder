@@ -165,10 +165,6 @@ public:
     virtual bool                    operator==                  (const Object &) const final { return false; }
     virtual bool                    operator!=                  (const Object &) const final { return false; }
 
-    virtual Object                 &operator=                   (Object &) final;
-
-    Object                          (const Object &) final;
-
 protected:
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);

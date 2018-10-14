@@ -775,12 +775,3 @@ void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION()
     p_ptr->m_UUID   = id;
 }
-
-Object &Object::operator=(Object &right) {
-    PROFILE_FUNCTION()
-    return *new Object(right);
-}
-
-Object::Object(const Object &) {
-    PROFILE_FUNCTION()
-}
