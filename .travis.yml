@@ -51,7 +51,7 @@ matrix:
           script: curl --upload-file ThunderEngine-linux-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-linux-x86_64.tar.gz
           on:
             tags: true
-      
+
     - language: cpp
       os: osx
       osx_image: xcode9.3
@@ -66,46 +66,69 @@ matrix:
         - qbs install --all-products config:release profile:qt-brew
         - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
         - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
-        - qbs resolve config:release profile:xcode-iphoneos-arm64
-        - qbs install --all-products config:release profile:xcode-iphoneos-arm64
-        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
-        - qbs resolve config:release profile:xcode-appletvos-arm64
-        - qbs install --all-products config:release profile:xcode-appletvos-arm64
-        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
       deploy:
         - provider: script
           skip_cleanup: true
           script: curl --upload-file ThunderEngine-macosx-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-macos-x86_64.tar.gz
           on:
             tags: true
+
+    - language: cpp
+      os: osx
+      osx_image: xcode9.3
+      before_install:
+        - brew update
+        - brew install qbs
+        - qbs --version
+        - qbs setup-toolchains --detect
+        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
+      script:
+        - qbs config --list
+        - qbs install --all-products config:release profile:xcode-iphoneos-arm64
+        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
+      deploy:
         - provider: script
           skip_cleanup: true
           script: curl --upload-file ThunderEngine-ios-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-ios-arm64.tar.gz
           on:
             tags: true
+    - language: cpp
+      os: osx
+      osx_image: xcode9.3
+      before_install:
+        - brew update
+        - brew install qbs
+        - qbs --version
+        - qbs setup-toolchains --detect
+        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
+      script:
+        - qbs config --list
+        - qbs install --all-products config:release profile:xcode-appletvos-arm64
+        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
+      deploy:
         - provider: script
           skip_cleanup: true
           script: curl --upload-file ThunderEngine-tvos-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-tvos-arm64.tar.gz
           on:
             tags: true
         
-#    - lanuage: android
-#      os: linux
-#      jdk: oraclejdk8
-#      android:
-#        components:
-#          - tools
-#          - android-25
-#          - build-tools-25.0.3
-#      before_install:
-#        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
-#        - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-#        - sudo apt-get update -qq
-#        - sudo apt-get -y install qt510base qt510script qt510svg qt510imageformats qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
-#        - source /opt/qt510/bin/qt510-env.sh
-#        - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
-#        - tar -xvzf qbs-1.11.0-linux.tar.gz
-#        - export PATH=$PATH:qbs-build/bin
-#        - qbs --version
-#        - qbs setup-toolchains --detect
-#        - qbs setup-qt --detect
+    #- lanuage: android
+    #  os: linux
+    #  jdk: oraclejdk8
+    #  android:
+    #    components:
+    #      - tools
+    #      - android-25
+    #      - build-tools-25.0.3
+    #  before_install:
+    #    - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
+    #    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+    #    - sudo apt-get update -qq
+    #    - sudo apt-get -y install qt510base qt510script qt510svg qt510imageformats qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
+    #    - source /opt/qt510/bin/qt510-env.sh
+    #    - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
+    #    - tar -xvzf qbs-1.11.0-linux.tar.gz
+    #    - export PATH=$PATH:qbs-build/bin
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #    - qbs setup-qt --detect
