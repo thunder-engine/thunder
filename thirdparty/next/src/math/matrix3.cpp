@@ -20,7 +20,7 @@ Matrix3::Matrix3() {
 /*!
     Returns the result of multiplying this matrix and the given 3D \a vector.
 */
-const Vector3 Matrix3::operator*(const Vector3 &vector) const {
+Vector3 Matrix3::operator*(const Vector3 &vector) const {
     Vector3 ret;
     ret[0] = mat[0] * vector[0] + mat[3] * vector[1] + mat[6] * vector[2];
     ret[1] = mat[1] * vector[0] + mat[4] * vector[1] + mat[7] * vector[2];
@@ -30,13 +30,13 @@ const Vector3 Matrix3::operator*(const Vector3 &vector) const {
 /*!
     Returns the result of multiplying this matrix and the given 4D \a vector.
 */
-const Vector4 Matrix3::operator*(const Vector4 &vector) const {
+Vector4 Matrix3::operator*(const Vector4 &vector) const {
     return Vector4(*this * Vector3(vector.x, vector.y, vector.z), vector.w);
 }
 /*!
     Returns the result of multiplying this matrix and the given \a factor.
 */
-const Matrix3 Matrix3::operator*(areal factor) const {
+Matrix3 Matrix3::operator*(areal factor) const {
     Matrix3 ret;
     ret[0] = mat[0] * factor; ret[3] = mat[3] * factor; ret[6] = mat[6] * factor;
     ret[1] = mat[1] * factor; ret[4] = mat[4] * factor; ret[7] = mat[7] * factor;
@@ -48,7 +48,7 @@ const Matrix3 Matrix3::operator*(areal factor) const {
 
     Note that matrix multiplication is not commutative, i.e. a*b != b*a.
 */
-const Matrix3 Matrix3::operator*(const Matrix3 &matrix) const {
+Matrix3 Matrix3::operator*(const Matrix3 &matrix) const {
     Matrix3 ret;
     ret[0] = mat[0] * matrix[0] + mat[3] * matrix[1] + mat[6] * matrix[2];
     ret[1] = mat[1] * matrix[0] + mat[4] * matrix[1] + mat[7] * matrix[2];
@@ -64,7 +64,7 @@ const Matrix3 Matrix3::operator*(const Matrix3 &matrix) const {
 /*!
     Returns the sum of this matrix and the given \a matrix.
 */
-const Matrix3 Matrix3::operator+(const Matrix3 &matrix) const {
+Matrix3 Matrix3::operator+(const Matrix3 &matrix) const {
     Matrix3 ret;
     ret[0] = mat[0] + matrix[0]; ret[3] = mat[3] + matrix[3]; ret[6] = mat[6] + matrix[6];
     ret[1] = mat[1] + matrix[1]; ret[4] = mat[4] + matrix[4]; ret[7] = mat[7] + matrix[7];
@@ -74,7 +74,7 @@ const Matrix3 Matrix3::operator+(const Matrix3 &matrix) const {
 /*!
     Returns the difference of this matrix and the given \a matrix.
 */
-const Matrix3 Matrix3::operator-(const Matrix3 &matrix) const {
+Matrix3 Matrix3::operator-(const Matrix3 &matrix) const {
     Matrix3 ret;
     ret[0] = mat[0] - matrix[0]; ret[3] = mat[3] - matrix[3]; ret[6] = mat[6] - matrix[6];
     ret[1] = mat[1] - matrix[1]; ret[4] = mat[4] - matrix[4]; ret[7] = mat[7] - matrix[7];

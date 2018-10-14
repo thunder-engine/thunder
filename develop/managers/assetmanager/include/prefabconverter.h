@@ -8,6 +8,7 @@ public:
     PrefabConverter             () {}
 
     string                      format                      () const { return "fab"; }
+    uint32_t                    contentType                 () const { return ContentPrefab; }
     uint32_t                    type                        () const { return MetaType::type<Actor *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);
 

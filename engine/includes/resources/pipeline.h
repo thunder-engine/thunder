@@ -40,10 +40,12 @@ public:
 
     MaterialInstance           *sprite              () const;
 
-protected:
-    void                        drawComponents      (uint32_t layer);
+    void                        combineComponents   (Object &object, bool first = false);
 
-    void                        combineComponents   (Object &object);
+protected:
+    ObjectList                  filterComponents    (const array<Vector3, 8> &frustum);
+
+    void                        drawComponents      (uint32_t layer, ObjectList &list);
 
     void                        updateShadows       (Camera &camera, Object &object);
 
@@ -51,16 +53,18 @@ protected:
 
     RenderTexture              *postProcess         (RenderTexture &source);
 
+    ObjectList                  frustumCulling      (ObjectList &in, const array<Vector3, 8> &frustum);
+
 protected:
     typedef map<string, RenderTexture *> TargetMap;
 
     ICommandBuffer             *m_Buffer;
 
+    ObjectList                  m_Components;
+
     TargetMap                   m_Targets;
 
     Vector2                     m_Screen;
-
-    list<Component *>           m_ComponentList;
 
     list<PostProcessor *>       m_PostEffects;
 

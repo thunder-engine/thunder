@@ -33,8 +33,8 @@ public:
     OBBox                       (const Vector3 &center, const Vector3 &size);
     OBBox                       (const Vector3 &center, const Vector3 &size, const Quaternion &rotation);
 
-    const OBBox                 operator*                   (areal factor);
-    const OBBox                 operator*                   (const Vector3 &vector);
+    const OBBox                 operator*                   (areal factor) const;
+    const OBBox                 operator*                   (const Vector3 &vector) const;
 
     void                        box                         (Vector3 &min, Vector3 &max) const;
     void                        setBox                      (const Vector3 &min, const Vector3 &max);

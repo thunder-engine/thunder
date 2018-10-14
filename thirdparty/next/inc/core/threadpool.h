@@ -17,7 +17,7 @@ public:
 
     uint32_t                    maxThreads                  () const;
 
-    void                        setMaxThreads               (uint32_t number);
+    void                        setMaxThreads               (uint32_t value);
 
     bool                        waitForDone                 (int32_t msecs = -1);
 

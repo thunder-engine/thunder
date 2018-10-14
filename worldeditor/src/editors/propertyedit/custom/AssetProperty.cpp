@@ -33,8 +33,7 @@ void TemplateProperty::setValue(const QVariant &value) {
 
 QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     ContentSelect *editor = new ContentSelect(parent);
-    int type    = Property::value(Qt::EditRole).value<Template>().type;
-    editor->setType( type );
+    editor->setType( Property::value(Qt::EditRole).value<Template>().type );
 
     m_Editor    = editor;
     connect(m_Editor, SIGNAL(assetChanged(IConverterSettings *)), this, SLOT(onAssetChanged(IConverterSettings *)));

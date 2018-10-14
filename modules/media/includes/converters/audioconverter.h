@@ -57,6 +57,7 @@ public:
     AudioConverter              ();
 
     string                      format                      () const { return "mp3;wav;ogg"; }
+    uint32_t                    contentType                 () const { return IConverter::ContentSound; }
     uint32_t                    type                        () const { return MetaType::type<AudioClip *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);
 

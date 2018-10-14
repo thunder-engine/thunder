@@ -321,9 +321,7 @@ void ContentBrowser::setCompact(bool value) {
 }
 
 void ContentBrowser::filterByType(const uint8_t type) {
-    ContentFilter::TypeList list;
-    list.append(type);
-    m_pContentProxy->setContentTypes(list);
+    m_pContentProxy->setContentTypes({ AssetManager::instance()->toContentType(type) });
 }
 
 void ContentBrowser::setSelected(const QString &resource) {

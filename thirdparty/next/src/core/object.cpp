@@ -257,9 +257,12 @@ Object::Object() :
         p_ptr(new ObjectPrivate) {
     PROFILE_FUNCTION()
 
+    ObjectSystem::addObject(this);
 }
 
 Object::~Object() {
+    ObjectSystem::removeObject(this);
+
     PROFILE_FUNCTION()
     {
         unique_lock<mutex> locker(p_ptr->m_Mutex);

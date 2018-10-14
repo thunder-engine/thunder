@@ -17,18 +17,6 @@ SpriteMesh::SpriteMesh() {
     m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx");
 }
 
-void SpriteMesh::draw(ICommandBuffer &buffer, int8_t layer) {
-    Actor &a    = actor();
-    if(layer & (ICommandBuffer::RAYCAST | ICommandBuffer::DEFAULT | ICommandBuffer::TRANSLUCENT | ICommandBuffer::SHADOWCAST | ICommandBuffer::UI)) {
-        if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a.uuid()));
-        }
-
-        buffer.drawMesh(a.transform()->worldTransform(), m_pMesh, 0, layer, m_Materials[0]);
-        buffer.setColor(Vector4(1.0f));
-    }
-}
-
 Vector2 SpriteMesh::center() const {
     return m_Center;
 }

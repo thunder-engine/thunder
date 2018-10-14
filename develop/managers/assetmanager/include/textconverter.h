@@ -9,6 +9,7 @@ public:
     TextConverter               () {}
 
     string                      format                      () const { return "txt;json;html;htm;xml;vert;frag"; }
+    uint32_t                    contentType                 () const { return ContentText; }
     uint32_t                    type                        () const { return MetaType::type<Text *>(); }
     uint8_t                     convertFile                 (IConverterSettings *s);
 };

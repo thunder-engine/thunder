@@ -32,12 +32,12 @@ public:
     bool                        operator==                  (const Matrix3 &matrix) const;
     bool                        operator!=                  (const Matrix3 &matrix) const;
 
-    const Vector3               operator*                   (const Vector3 &vector) const;
-    const Vector4               operator*                   (const Vector4 &vector) const;
-    const Matrix3               operator*                   (areal factor) const;
-    const Matrix3               operator*                   (const Matrix3 &matrix) const;
-    const Matrix3               operator+                   (const Matrix3 &matrix) const;
-    const Matrix3               operator-                   (const Matrix3 &matrix) const;
+    Vector3                     operator*                   (const Vector3 &vector) const;
+    Vector4                     operator*                   (const Vector4 &vector) const;
+    Matrix3                     operator*                   (areal factor) const;
+    Matrix3                     operator*                   (const Matrix3 &matrix) const;
+    Matrix3                     operator+                   (const Matrix3 &matrix) const;
+    Matrix3                     operator-                   (const Matrix3 &matrix) const;
 	
     Matrix3                    &operator*=                  (areal factor);
     Matrix3                    &operator*=                  (const Matrix3 &matrix);

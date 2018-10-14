@@ -22,8 +22,6 @@ class NEXT_LIBRARY_EXPORT TextMesh : public BaseMesh {
 public:
     TextMesh                    ();
 
-    void                        draw                (ICommandBuffer &buffer, int8_t layer);
-
     string                      text                () const;
 
     void                        setText             (const string &text);

@@ -60,7 +60,7 @@ bool Matrix4::operator!=(const Matrix4 &matrix) const {
 /*!
     Returns the result of multiplying this matrix and the given 3D \a vector.
 */
-const Vector3 Matrix4::operator*(const Vector3 &vector) const {
+Vector3 Matrix4::operator*(const Vector3 &vector) const {
     Vector3 ret;
     ret[0] = mat[0] * vector[0] + mat[4] * vector[1] + mat[ 8] * vector[2] + mat[12];
     ret[1] = mat[1] * vector[0] + mat[5] * vector[1] + mat[ 9] * vector[2] + mat[13];
@@ -70,7 +70,7 @@ const Vector3 Matrix4::operator*(const Vector3 &vector) const {
 /*!
     Returns the result of multiplying this matrix and the given 4D \a vector.
 */
-const Vector4 Matrix4::operator*(const Vector4 &vector) const {
+Vector4 Matrix4::operator*(const Vector4 &vector) const {
     Vector4 ret;
     ret[0] = mat[0] * vector[0] + mat[4] * vector[1] + mat[8]  * vector[2] + mat[12] * vector[3];
     ret[1] = mat[1] * vector[0] + mat[5] * vector[1] + mat[9]  * vector[2] + mat[13] * vector[3];
@@ -81,7 +81,7 @@ const Vector4 Matrix4::operator*(const Vector4 &vector) const {
 /*!
     Returns the result of multiplying this matrix and the given \a factor.
 */
-const Matrix4 Matrix4::operator*(areal factor) const {
+Matrix4 Matrix4::operator*(areal factor) const {
     Matrix4 ret;
     ret[0] = mat[0] * factor; ret[4] = mat[4] * factor; ret[8]  = mat[8]  * factor; ret[12] = mat[12] * factor;
     ret[1] = mat[1] * factor; ret[5] = mat[5] * factor; ret[9]  = mat[9]  * factor; ret[13] = mat[13] * factor;
@@ -94,7 +94,7 @@ const Matrix4 Matrix4::operator*(areal factor) const {
 
     Note that matrix multiplication is not commutative, i.e. a*b != b*a.
 */
-const Matrix4 Matrix4::operator*(const Matrix4 &matrix) const {
+Matrix4 Matrix4::operator*(const Matrix4 &matrix) const {
     Matrix4 ret;
     ret[0]  = mat[0] * matrix[0]  + mat[4] * matrix[1]  + mat[8]  * matrix[2]  + mat[12] * matrix[3];
     ret[1]  = mat[1] * matrix[0]  + mat[5] * matrix[1]  + mat[9]  * matrix[2]  + mat[13] * matrix[3];
@@ -117,7 +117,7 @@ const Matrix4 Matrix4::operator*(const Matrix4 &matrix) const {
 /*!
     Returns the sum of this matrix and the given \a matrix.
 */
-const Matrix4 Matrix4::operator+(const Matrix4 &matrix) const {
+Matrix4 Matrix4::operator+(const Matrix4 &matrix) const {
     Matrix4 ret;
     ret[0] = mat[0] + matrix[0]; ret[4] = mat[4] + matrix[4]; ret[8]  = mat[8]  + matrix[8];  ret[12] = mat[12] + matrix[12];
     ret[1] = mat[1] + matrix[1]; ret[5] = mat[5] + matrix[5]; ret[9]  = mat[9]  + matrix[9];  ret[13] = mat[13] + matrix[13];
@@ -128,7 +128,7 @@ const Matrix4 Matrix4::operator+(const Matrix4 &matrix) const {
 /*!
     Returns the difference of this matrix and the given \a matrix.
 */
-const Matrix4 Matrix4::operator-(const Matrix4 &matrix) const {
+Matrix4 Matrix4::operator-(const Matrix4 &matrix) const {
     Matrix4 ret;
     ret[0] = mat[0] - matrix[0]; ret[4] = mat[4] - matrix[4]; ret[8]  = mat[8]  - matrix[8];  ret[12] = mat[12] - matrix[12];
     ret[1] = mat[1] - matrix[1]; ret[5] = mat[5] - matrix[5]; ret[9]  = mat[9]  - matrix[9];  ret[13] = mat[13] - matrix[13];
@@ -317,7 +317,7 @@ void Matrix4::reflect(const Vector4 &plane) {
 /*!
     Creates a rotation matrix based on \a direction and \a up vectors.
 */
-void Matrix4::direction(const Vector3 &direction, Vector3 &up) {
+void Matrix4::direction(const Vector3 &direction, const Vector3 &up) {
     Vector3 z = direction;
     z.normalize();
     Vector3 x = up.cross(z);

@@ -36,12 +36,12 @@ public:
     bool                        operator==                  (const Matrix4 &matrix) const;
     bool                        operator!=                  (const Matrix4 &matrix) const;
 
-    const Vector3               operator*                   (const Vector3 &vector) const;
-    const Vector4               operator*                   (const Vector4 &vector) const;
-    const Matrix4               operator*                   (areal factor) const;
-    const Matrix4               operator*                   (const Matrix4 &matrix) const;
-    const Matrix4               operator+                   (const Matrix4 &matrix) const;
-    const Matrix4               operator-                   (const Matrix4 &matrix) const;
+    Vector3                     operator*                   (const Vector3 &vector) const;
+    Vector4                     operator*                   (const Vector4 &vector) const;
+    Matrix4                     operator*                   (areal factor) const;
+    Matrix4                     operator*                   (const Matrix4 &matrix) const;
+    Matrix4                     operator+                   (const Matrix4 &matrix) const;
+    Matrix4                     operator-                   (const Matrix4 &matrix) const;
 
     Matrix4                    &operator*=                  (areal factor);
     Matrix4                    &operator*=                  (const Matrix4 &matrix);
@@ -56,7 +56,7 @@ public:
     areal                       determinant                 () const;
     Matrix4                     inverse                     () const;
     void                        reflect                     (const Vector4 &plane);
-    void                        direction                   (const Vector3 &direction, Vector3 &up);
+    void                        direction                   (const Vector3 &direction, const Vector3 &up);
 
     Vector3                     euler                       ();
 

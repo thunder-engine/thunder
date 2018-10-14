@@ -14,6 +14,8 @@ class NEXT_LIBRARY_EXPORT BaseMesh : public Component {
 public:
     BaseMesh                    ();
 
+    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
+
     Mesh                       *mesh                    () const;
 
     virtual void                setMesh                 (Mesh *mesh);

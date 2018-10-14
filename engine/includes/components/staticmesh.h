@@ -12,9 +12,6 @@ class NEXT_LIBRARY_EXPORT StaticMesh : public BaseMesh {
     );
     A_NOMETHODS();
 
-public:
-    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
-
 };
 
 #endif // STATICMESH_H

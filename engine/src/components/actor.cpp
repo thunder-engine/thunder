@@ -2,12 +2,14 @@
 
 #include "components/transform.h"
 
+#include "commandbuffer.h"
+
 #define PREFAB  "Prefab"
 #define DATA    "PrefabData"
 
 Actor::Actor() :
         m_Enable(true),
-        m_Layers(0x17),
+        m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
         m_pTransform(nullptr),
         m_pPrefab(nullptr) {
 

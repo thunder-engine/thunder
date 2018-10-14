@@ -61,7 +61,6 @@ public:
     static unordered_map<Object*, string>   m_ReferenceCache;
 
     EnginePrivate() :
-        m_pFile(nullptr),
         m_Controller(nullptr),
         m_Valid(false) {
 
@@ -73,7 +72,7 @@ public:
 
     IController                *m_Controller;
 
-    IFile                      *m_pFile;
+    static IFile               *m_pFile;
 
     bool                        m_Valid;
 
@@ -91,6 +90,9 @@ public:
 
     static VariantMap           m_Values;
 };
+
+
+IFile                          *EnginePrivate::m_pFile  = nullptr;
 
 unordered_map<string, string>   EnginePrivate::m_IndexMap;
 unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
@@ -121,28 +123,30 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     p_ptr->m_Controller = new IController();
 
-    Text::registerClassFactory();
-    Texture::registerClassFactory();
-    Material::registerClassFactory();
-    Mesh::registerClassFactory();
-    Atlas::registerClassFactory();
-    Font::registerClassFactory();
-    AnimationClip::registerClassFactory();
+    ObjectSystem system;
 
-    Scene::registerClassFactory();
-    Actor::registerClassFactory();
-    Transform::registerClassFactory();
-    Camera::registerClassFactory();
+    Text::registerClassFactory(&system);
+    Texture::registerClassFactory(&system);
+    Material::registerClassFactory(&system);
+    Mesh::registerClassFactory(&system);
+    Atlas::registerClassFactory(&system);
+    Font::registerClassFactory(&system);
+    AnimationClip::registerClassFactory(&system);
 
-    StaticMesh::registerClassFactory();
-    TextMesh::registerClassFactory();
-    SpriteMesh::registerClassFactory();
-    DirectLight::registerClassFactory();
-    RenderTexture::registerClassFactory();
+    Scene::registerClassFactory(&system);
+    Actor::registerClassFactory(&system);
+    Transform::registerClassFactory(&system);
+    Camera::registerClassFactory(&system);
 
-    AnimationController::registerClassFactory();
+    StaticMesh::registerClassFactory(&system);
+    TextMesh::registerClassFactory(&system);
+    SpriteMesh::registerClassFactory(&system);
+    DirectLight::registerClassFactory(&system);
+    RenderTexture::registerClassFactory(&system);
 
-    Pipeline::registerClassFactory();
+    AnimationController::registerClassFactory(&system);
+
+    Pipeline::registerClassFactory(&system);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 
@@ -262,7 +266,7 @@ Object *Engine::loadResource(const string &path) {
             if(it != EnginePrivate::m_ResourceCache.end() && it->second) {
                 return it->second;
             } else {
-                IFile *file = ((Engine *)Engine::instance())->file();
+                IFile *file = Engine::file();
                 _FILE *fp   = file->_fopen(uuid.c_str(), "r");
                 if(fp) {
                     ByteArray data;
@@ -289,6 +293,8 @@ Object *Engine::loadResource(const string &path) {
 }
 
 void Engine::setResource(Object *object, string &uuid) {
+    PROFILER_MARKER;
+
     EnginePrivate::m_ResourceCache[uuid]    = object;
     EnginePrivate::m_ReferenceCache[object] = uuid;
 }
@@ -307,7 +313,7 @@ void Engine::reloadBundle() {
     PROFILER_MARKER;
     EnginePrivate::m_IndexMap.clear();
 
-    IFile *file = ((Engine *)Engine::instance())->file();
+    IFile *file = Engine::file();
     _FILE *fp   = file->_fopen(gIndex, "r");
     if(fp) {
         ByteArray data;
@@ -355,18 +361,24 @@ Scene *Engine::scene() {
 IFile *Engine::file() {
     PROFILER_MARKER;
 
-    return p_ptr->m_pFile;
+    return EnginePrivate::m_pFile;
 }
 
 string Engine::locationAppDir() {
+    PROFILER_MARKER;
+
     return EnginePrivate::m_ApplicationDir;
 }
 
 string Engine::locationConfig() {
+    PROFILER_MARKER;
+
     return EnginePrivate::m_pPlatform->locationLocalDir();
 }
 
 string Engine::locationAppConfig() {
+    PROFILER_MARKER;
+
     string result;
     if(!EnginePrivate::m_Organization.empty()) {
         result  += "/" + EnginePrivate::m_Organization;
@@ -378,22 +390,32 @@ string Engine::locationAppConfig() {
 }
 
 string Engine::applicationName() const {
+    PROFILER_MARKER;
+
     return EnginePrivate::m_Application;
 }
 
 void Engine::setApplicationName(const string &name) {
+    PROFILER_MARKER;
+
     EnginePrivate::m_Application    = name;
 }
 
 string Engine::organizationName() const {
+    PROFILER_MARKER;
+
     return EnginePrivate::m_Organization;
 }
 
 void Engine::setOrganizationName(const string &name) {
+    PROFILER_MARKER;
+
     EnginePrivate::m_Organization   = name;
 }
 
 void Engine::updateScene(Object *object) {
+    PROFILER_MARKER;
+
     if(object) {
         for(auto &it : object->getChildren()) {
             Object *child   = it;

@@ -15,11 +15,7 @@ AudioClip::AudioClip() :
         m_pFile(nullptr),
         m_pClip(nullptr) {
 
-    Engine *engine  = dynamic_cast<Engine *>(Engine::instance());
-    if(engine) {
-        m_pFile = engine->file();
-    }
-
+    m_pFile = Engine::file();
 }
 
 AudioClip::~AudioClip() {
