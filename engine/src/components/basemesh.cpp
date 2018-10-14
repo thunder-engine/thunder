@@ -51,14 +51,13 @@ MaterialArray BaseMesh::materials() const {
 
 void BaseMesh::setMaterials(const MaterialArray &material) {
     for(uint32_t index = 0; index < m_Materials.size(); index++) {
-        if(index < material.size()) {
+        if(index < material.size() && m_Materials[index] != material[index]) {
             MaterialInstance *inst  = m_Materials[index];
             delete inst;
 
             m_Materials[index]  = material[index];
         }
     }
-    m_Materials = material;
 }
 
 Material *BaseMesh::material(uint32_t index) const {
