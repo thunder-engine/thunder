@@ -27,7 +27,11 @@ Project {
         cpp.includePaths: quazip.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.sonamePrefix: "@executable_path"
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
+        }
 
         Group {
             name: "Install Dynamic zLib"

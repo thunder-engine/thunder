@@ -80,6 +80,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@rpath"
             cpp.rpaths: "@executable_path/../Frameworks/"

@@ -60,7 +60,17 @@ Project {
             prefix + "fbxsdk"
         ]
         cpp.cxxLanguageVersion: "c++14"
-        cpp.rpaths: "@executable_path/../Frameworks/"
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN"
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@rpath"
+            cpp.rpaths: "@executable_path/../Frameworks/"
+        }
 
         Group {
             name: "Install " + builder.BUILDER_NAME

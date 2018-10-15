@@ -62,9 +62,14 @@ Product {
 		
         property string libPostfix: {
             var suffix = "";
-            if (qbs.targetOS.contains("windows") && qbs.debugInformation)
+            if(qbs.targetOS.contains("windows") && qbs.debugInformation) {
                 suffix += "d";
-            return suffix + cpp.dynamicLibrarySuffix;
+            }
+            suffix += cpp.dynamicLibrarySuffix
+            if(qbs.targetOS.contains("linux")) {
+                suffix += "." + Qt.core.versionMajor;
+            }
+            return suffix;
         }
         files: {
             var list = [];
@@ -77,6 +82,14 @@ Product {
                     libPrefix + "Qt5Xml" + libPostfix,
                     libPrefix + "Qt5Network" + libPostfix
                 );
+                if(qbs.targetOS.contains("linux")) {
+                    list.push(libPrefix + "Qt5Core" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Gui" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Widgets" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Script" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Xml" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Network" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                }
             } else {
                 list.push("**/QtCore.framework/**");
                 list.push("**/QtGui.framework/**");
