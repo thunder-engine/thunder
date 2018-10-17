@@ -10,8 +10,8 @@ public:
     IConverterSettings              ();
     virtual ~IConverterSettings     () {}
 
-    virtual uint8_t         type                    () const;
-    virtual void            setType                 (uint8_t type);
+    virtual uint32_t        type                    () const;
+    virtual void            setType                 (uint32_t type);
 
     virtual bool            isValid                 () const;
     virtual void            setValid                (bool valid);
@@ -38,7 +38,7 @@ public:
 protected:
     bool                    mValid;
 
-    uint8_t                 mType;
+    uint32_t                mType;
 
     uint32_t                mCRC;
 

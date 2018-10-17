@@ -10,7 +10,7 @@ class NEXT_LIBRARY_EXPORT MetaProperty {
 public:
     typedef Variant             (*ReadMem)              (const Object *);
     typedef void                (*WriteMem)             (Object *, const Variant&);
-    typedef void                (*AddressMem)           (char *, int);
+    typedef void                (*AddressMem)           (char *, size_t);
 
     struct Table {
         const char             *name;
@@ -70,7 +70,7 @@ struct Reader<T(Class::*)(), ReadFunc> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -93,7 +93,7 @@ struct Reader<T(Class::*)()const, ReadFunc> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -117,7 +117,7 @@ struct Writer<void(Class::*)(T), WriteFunc> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -136,7 +136,7 @@ struct Writer<void(Class::*)(const T&), WriteFunc> {
     }
 
     template<Fun fun>
-    inline static void address(char *ptr, int size) {
+    inline static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];

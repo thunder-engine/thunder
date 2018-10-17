@@ -23,7 +23,7 @@ public:
 
     struct Table {
         typedef void            (*InvokeMem)                (Object *, int argc, const Variant *, Variant &);
-        typedef void            (*AddressMem)               (char *ptr, int size);
+        typedef void            (*AddressMem)               (char *ptr, size_t size);
 
         MethodType              type;
         const char             *name;
@@ -119,7 +119,7 @@ struct Invoker<Return(*)(Args...)> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -157,7 +157,7 @@ struct Invoker<Return(*)()> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -198,7 +198,7 @@ struct Invoker<void(*)(Args...)> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -238,7 +238,7 @@ struct Invoker<void(*)()> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -277,7 +277,7 @@ struct Invoker<Return(Class::*)(Args...)> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -315,7 +315,7 @@ struct Invoker<Return(Class::*)()> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -356,7 +356,7 @@ struct Invoker<void(Class::*)(Args...)> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -398,7 +398,7 @@ struct Invoker<void(Class::*)()> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -437,7 +437,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -475,7 +475,7 @@ struct Invoker<Return(Class::*)()const> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -516,7 +516,7 @@ struct Invoker<void(Class::*)(Args...)const> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];
@@ -556,7 +556,7 @@ struct Invoker<void(Class::*)()const> {
     }
 
     template<Fun fun>
-    static void address(char *ptr, int size) {
+    static void address(char *ptr, size_t size) {
         Fun f   = fun;
         for(size_t n = 0; n < size; n++) {
             ptr[n]  = reinterpret_cast<const char *>(&f)[n];

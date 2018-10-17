@@ -18,7 +18,7 @@ ImportQueue::ImportQueue(QWidget *parent) :
 
     AssetManager *manager   = AssetManager::instance();
     connect(manager, SIGNAL(importStarted(int,QString)), this, SLOT(onStarted(int,QString)));
-    connect(manager, SIGNAL(imported(QString,uint8_t)), this, SLOT(onProcessed(QString,uint8_t)));
+    connect(manager, SIGNAL(imported(QString,uint32_t)), this, SLOT(onProcessed(QString,uint32_t)));
 
     connect(manager, &AssetManager::importFinished, this, &ImportQueue::onFinished);
     connect(manager, &AssetManager::importFinished, CodeManager::instance(), &CodeManager::buildProject);
@@ -40,7 +40,7 @@ void ImportQueue::init(IconRender *render) {
     renderIcons();
 }
 
-void ImportQueue::onProcessed(const QString &path, uint8_t type) {
+void ImportQueue::onProcessed(const QString &path, uint32_t type) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
     QString guid    = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()));

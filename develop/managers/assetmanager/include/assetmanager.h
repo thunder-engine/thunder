@@ -64,7 +64,7 @@ public:
 
     uint32_t                resourceType        (const QFileInfo &source);
 
-    uint8_t                 toContentType       (uint32_t type);
+    uint32_t                toContentType       (uint32_t type);
 
     void                    removeResource      (const QFileInfo &source);
     void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
@@ -97,7 +97,7 @@ signals:
     void                    directoryChanged    (const QString &path);
     void                    fileChanged         (const QString &path);
 
-    void                    imported            (const QString &path, uint8_t type);
+    void                    imported            (const QString &path, uint32_t type);
     void                    importStarted       (int count, const QString &stage);
     void                    importFinished      ();
 
@@ -111,13 +111,13 @@ protected slots:
 protected:
     friend class ASingleton<AssetManager>;
 
-    typedef QMap<uint8_t, IAssetEditor *>   EditorsMap;
+    typedef QMap<uint32_t, IAssetEditor *>  EditorsMap;
     EditorsMap              m_Editors;
 
-    typedef QMap<QString, uint8_t>          FormatsMap;
+    typedef QMap<QString, uint32_t>         FormatsMap;
     FormatsMap              m_Formats;
 
-    typedef QMap<uint32_t, uint8_t>         ContentTypeMap;
+    typedef QMap<uint32_t, uint32_t>        ContentTypeMap;
     ContentTypeMap          m_ContentTypes;
 
     typedef QMap<QString, IConverter *>     ConverterMap;

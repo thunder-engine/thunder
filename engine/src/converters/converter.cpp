@@ -6,10 +6,10 @@ IConverterSettings::IConverterSettings() :
         mCRC(0) {
 }
 
-uint8_t IConverterSettings::type() const {
+uint32_t IConverterSettings::type() const {
     return mType;
 }
-void IConverterSettings::setType(uint8_t type) {
+void IConverterSettings::setType(uint32_t type) {
     mType   = type;
 }
 

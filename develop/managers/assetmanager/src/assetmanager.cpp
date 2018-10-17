@@ -129,7 +129,7 @@ uint32_t AssetManager::resourceType(const QFileInfo &source) {
     return MetaType::INVALID;
 }
 
-uint8_t AssetManager::toContentType(uint32_t type) {
+uint32_t AssetManager::toContentType(uint32_t type) {
     auto it = m_ContentTypes.find(type);
     if(it != m_ContentTypes.end()) {
         return it.value();
@@ -365,7 +365,7 @@ bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
 
 IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
     IConverterSettings *settings;
-    uint8_t type    = MetaType::INVALID;
+    uint32_t type   = MetaType::INVALID;
     auto it = m_Converters.find(source.completeSuffix().toLower());
     if(it != m_Converters.end()) {
         type    = it.value()->type();
@@ -519,7 +519,7 @@ void AssetManager::onPerform() {
 
                 m_Guids[source] = settings->destination();
                 m_Paths[settings->destination()]    = source;
-                for(int i = 0; i < settings->subItemsCount(); i++) {
+                for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
                     m_Paths[settings->subItem(i)]   = source;
                 }
                 saveSettings(settings);
@@ -555,7 +555,7 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
                 string guid     = settings->destination();
                 m_Guids[source] = guid;
                 m_Paths[guid]   = source;
-                for(int i = 0; i < settings->subItemsCount(); i++) {
+                for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
                     m_Paths[settings->subItem(i)]   = source;
                 }
             }
@@ -595,7 +595,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
             }
             m_Guids[source] = settings->destination();
             m_Paths[settings->destination()]    = source;
-            for(int i = 0; i < settings->subItemsCount(); i++) {
+            for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
                 m_Paths[settings->subItem(i)]   = source;
             }
             saveSettings(settings);
@@ -626,10 +626,10 @@ void AssetManager::saveSettings(IConverterSettings *settings) {
     obj.insert(gCRC, int(settings->crc()));
     obj.insert(gGUID, settings->destination());
     obj.insert(gSettings, set);
-    obj.insert(gType, settings->type());
+    obj.insert(gType, (int)settings->type());
 
     QJsonArray subItems;
-    for(int i = 0; i < settings->subItemsCount(); i++) {
+    for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
         subItems.append(settings->subItem(i));
     }
     obj.insert(gSubItems, subItems);

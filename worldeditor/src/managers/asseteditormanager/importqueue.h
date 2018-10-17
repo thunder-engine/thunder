@@ -19,7 +19,7 @@ class ImportQueue : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ImportQueue    (QWidget *parent = 0);
+    explicit ImportQueue    (QWidget *parent = nullptr);
     ~ImportQueue            ();
 
     void                    init                (IconRender *render);
@@ -30,7 +30,7 @@ signals:
     void                    rendered            (const QString &uuid);
 
 private slots:
-    void                    onProcessed         (const QString &path, uint8_t type);
+    void                    onProcessed         (const QString &path, uint32_t type);
 
     void                    onStarted           (int count, const QString &action);
     void                    onFinished          ();
