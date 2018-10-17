@@ -30,6 +30,7 @@ PropertyModel::~PropertyModel() {
 }
 
 int PropertyModel::columnCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent);
     return 2;
 }
 

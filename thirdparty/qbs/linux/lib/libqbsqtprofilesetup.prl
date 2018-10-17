@@ -1,0 +1,5 @@
+QMAKE_PRL_BUILD_DIR = /home/travis/build/eprikazchikov/dependencies/qbs-build/src/lib/qtprofilesetup
+QMAKE_PRO_INPUT = qtprofilesetup.pro
+QMAKE_PRL_TARGET = libqbsqtprofilesetup.so.1.11.0
+QMAKE_PRL_CONFIG = lex yacc exceptions depend_includepath testcase_targets import_plugins import_qpa_plugin file_copies qmake_use qt warn_on release link_prl incremental shared release linux unix posix gcc qbs_no_dev_install qbs_no_man_install hide_symbols c++11 create_prl depend_includepath have_target dll thread moc resources
+QMAKE_PRL_VERSION = 1.11.0

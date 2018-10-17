@@ -11,6 +11,7 @@ StringProperty::~StringProperty() {
 }
 
 QWidget *StringProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
+    Q_UNUSED(option);
     m_Editor = new StringEdit(parent);
     connect(m_Editor, SIGNAL(textEdited(QString)), this, SLOT(onDataChanged(QString)));
     return m_Editor;

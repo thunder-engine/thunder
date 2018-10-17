@@ -20,6 +20,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+#include <regex>
 #include "managers/projectmanager/projectdialog.h"
 
 int main(int argc, char *argv[]) {

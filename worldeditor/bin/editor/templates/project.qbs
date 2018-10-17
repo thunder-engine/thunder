@@ -6,6 +6,10 @@ Project {
         if(qbs.targetOS.contains("windows")) {
             return "/windows/x86";
         }
+        if(qbs.targetOS.contains("linux")) {
+            return "/linux/x86_64"
+        }
+
         return "/macos/x86_64";
     }
     property string sdkPath: "${sdkPath}"
@@ -58,14 +62,14 @@ Project {
         ]
 
         cpp.staticLibraries: [
-            "next",
             "engine",
+            "next",
             "physfs",
             "freetype",
             "zlib",
             "glfw",
-            "glad",
-            "rendergl"
+            "rendergl",
+            "glad"
         ]
         cpp.cxxLanguageVersion: "c++14"
 
@@ -78,7 +82,10 @@ Project {
                 "Advapi32",
                 "opengl32"
             ]
-            //qbs.debugInformation: true
+        }
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ]
         }
         Properties {
             condition: qbs.targetOS.contains("darwin")

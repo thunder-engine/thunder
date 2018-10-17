@@ -54,7 +54,7 @@ public:
 
     bool                    isValid                     () { return true; }
 
-    bool                    key                         (Input::KeyCode code) { return false; }
+    bool                    key                         (Input::KeyCode) { return false; }
 
     Vector4                 mousePosition               () {
         QPoint p    = mapFromGlobal(QCursor::pos());
@@ -76,17 +76,17 @@ public:
 
     uint16_t                joystickCount               () { return 0; }
 
-    uint16_t                joystickButtons             (uint8_t index) { return 0; }
+    uint16_t                joystickButtons             (uint8_t) { return 0; }
 
-    Vector4                 joystickThumbs              (uint8_t index) { return Vector4(); }
+    Vector4                 joystickThumbs              (uint8_t) { return Vector4(); }
 
-    Vector2                 joystickTriggers            (uint8_t index) { return Vector2(); }
+    Vector2                 joystickTriggers            (uint8_t) { return Vector2(); }
 
-    void                   *pluginLoad                  (const char *name) { return nullptr; }
+    void                   *pluginLoad                  (const char *) { return nullptr; }
 
-    bool                    pluginUnload                (void *plugin) { return false; }
+    bool                    pluginUnload                (void *) { return false; }
 
-    void                   *pluginAddress               (void *plugin, const string &name) { return nullptr; }
+    void                   *pluginAddress               (void *, const string &) { return nullptr; }
 
     string                  locationLocalDir            () { return string(); }
 

@@ -8,10 +8,12 @@ ${Includes}
 class ${Project_Name} : public IModule {
 public:
     ${Project_Name}             (Engine *engine) {
+        ObjectSystem system;
         ${RegisterComponents}
     }
 
     ~${Project_Name}            () {
+        ObjectSystem system;
         ${UnregisterComponents}
     }
 

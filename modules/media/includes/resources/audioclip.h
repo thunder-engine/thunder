@@ -7,7 +7,7 @@
 class OggVorbis_File;
 
 class NEXT_LIBRARY_EXPORT AudioClip : public Object {
-    A_REGISTER(AudioClip, Object, Resources);
+    A_REGISTER(AudioClip, Object, Resources)
 public:
     AudioClip                   ();
     virtual ~AudioClip          ();

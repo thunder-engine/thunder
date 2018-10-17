@@ -321,7 +321,15 @@ Product {
             "/lib/*"
         ]
         qbs.install: true
-        qbs.installDir: install.qbsPath + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
+        qbs.installDir: install.qbsPath;
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            qbs.installDir: install.qbsPath + "../Frameworks/";
+        }
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            qbs.installDir: install.qbsPath + "../lib/";
+        }
         qbs.installPrefix: install.PREFIX
     }
     Group {

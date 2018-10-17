@@ -20,7 +20,6 @@
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
-#include <resources/audioclip.h>
 
 #include "assetmanager.h"
 

@@ -31,7 +31,7 @@
 #include "components/animationcontroller.h"
 
 #include "analytics/profiler.h"
-#if THUNDER_MOBILE
+#ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
 #else
     #include "adapters/desktopadaptor.h"
@@ -115,7 +115,7 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     p_ptr->m_pFile  = file;
 
-#if THUNDER_MOBILE
+#ifdef THUNDER_MOBILE
     p_ptr->m_pPlatform  = new MobileAdaptor(this);
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);

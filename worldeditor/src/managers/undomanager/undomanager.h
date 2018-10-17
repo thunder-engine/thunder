@@ -22,7 +22,7 @@ public:
     public:
         virtual ~IUndoUnit      () {}
 
-        virtual void            undo                (bool redo) {}
+        virtual void            undo                (bool redo) {Q_UNUSED(redo);}
 
         QString                 name                () const { return m_Name; }
 

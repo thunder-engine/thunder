@@ -88,8 +88,8 @@ void CodeManager::buildProject() {
         while(it.hasNext()) {
             it.next();
             includes << "#include \"" + it.value() + "\"\n";
-            values[gRegisterComponents].append(it.key() + "::registerClassFactory();\n\t\t");
-            values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory();\n\t\t");
+            values[gRegisterComponents].append(it.key() + "::registerClassFactory(&system);\n\t\t");
+            values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(&system);\n\t\t");
             values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n\t\t");
         }
         includes.removeDuplicates();

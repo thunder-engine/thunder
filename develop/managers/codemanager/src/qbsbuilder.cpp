@@ -45,10 +45,12 @@ QbsBuilder::QbsBuilder() :
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
 
-#if _WIN32
+#if defined(Q_OS_WIN)
     m_Profiles << "MSVC2015-x86";
-#elif __APPLE__
+#elif defined(Q_OS_MAC)
     m_Profiles << "xcode-macosx-x86_64";
+#elif defined(Q_OS_UNIX)
+    m_Profiles << "clang";
 #endif
     m_Profiles << "Android";
 
@@ -78,7 +80,7 @@ bool QbsBuilder::buildProject() {
     {
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << gMode << "profile:" + m_Profiles[0]);
+        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << "config:" + gMode << "profile:" + m_Profiles[0]);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
             Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
@@ -87,7 +89,7 @@ bool QbsBuilder::buildProject() {
     {
         QStringList args;
         args << "build" << m_Settings;
-        args << "--products" << product << gMode << "profile:" + m_Profiles[0];
+        args << "--products" << product << "config:" + gMode << "profile:" + m_Profiles[0];
         m_pProcess->start(m_pMgr->qbsPath(), args);
         if(!m_pProcess->waitForStarted()) {
             Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());

@@ -7,6 +7,7 @@
 #include <rendergl.h>
 
 #include <mutex>
+#include <string.h>
 
 ${Includes}
 
@@ -35,6 +36,7 @@ int main(int argc, char **argv) {
     gFile->finit(argv[0]);
     Engine engine(gFile, argc, argv);
     {
+        ObjectSystem system;
         ${RegisterComponents}
     }
 
@@ -50,6 +52,7 @@ int main(int argc, char **argv) {
     }
 
     {
+        ObjectSystem system;
         ${UnregisterComponents}
     }
     return 0;

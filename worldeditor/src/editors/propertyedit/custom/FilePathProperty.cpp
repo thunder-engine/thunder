@@ -25,6 +25,7 @@ void FilePathProperty::setValue(const QVariant &value) {
 }
 
 QWidget *FilePathProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
+    Q_UNUSED(option);
     QWidget *pEditor = new PathEdit(parent);
     connect(pEditor, SIGNAL(openFileDlg()), this, SLOT(onFileDilog()));
     return pEditor;
