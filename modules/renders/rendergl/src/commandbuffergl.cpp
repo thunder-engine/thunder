@@ -41,12 +41,19 @@ CommandBufferGL::CommandBufferGL() {
 
     glGenBuffers(1, &m_InstanceBuffer);
 
+#if GL_ES_VERSION_2_0
     glGenProgramPipelinesEXT(1, &m_Pipeline);
+#else
+    glGenProgramPipelines(1, &m_Pipeline);
+#endif
 }
 
 CommandBufferGL::~CommandBufferGL() {
+#if GL_ES_VERSION_2_0
     glDeleteProgramPipelinesEXT(1, &m_Pipeline);
-
+#else
+    glDeleteProgramPipelines(1, &m_Pipeline);
+#endif
     glDeleteBuffers(1, &m_InstanceBuffer);
 
     glDeleteProgram(m_Static);
@@ -143,11 +150,15 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glProgramUniformMatrix4fvEXT(m_Static, m_ModelLocation, 1, GL_FALSE, model.mat);
 
             putUniforms(program, material);
-
+#if GL_ES_VERSION_2_0
             glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
             glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
             glBindProgramPipelineEXT(m_Pipeline);
-
+#else
+            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, m_Static);
+            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, program);
+            glBindProgramPipeline(m_Pipeline);
+#endif
             bindVao(m, surface, lod);
 
             Mesh::Modes mode    = mesh->mode(surface);
@@ -168,8 +179,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glBindVertexArray(0);
 
             mat->unbind(layer);
-
+#if GL_ES_VERSION_2_0
             glBindProgramPipelineEXT(0);
+#else
+            glBindProgramPipeline(0);
+#endif
         }
     }
 }
@@ -188,11 +202,15 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
 
             putUniforms(program, material);
-
+#if GL_ES_VERSION_2_0
             glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Instanced);
             glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
             glBindProgramPipelineEXT(m_Pipeline);
-
+#else
+            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, m_Instanced);
+            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, program);
+            glBindProgramPipeline(m_Pipeline);
+#endif
             bindVao(m, surface, lod, m_InstanceBuffer);
 
             Mesh::Modes mode    = mesh->mode(surface);
@@ -213,8 +231,11 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             glBindVertexArray(0);
 
             mat->unbind(layer);
-
+#if GL_ES_VERSION_2_0
             glBindProgramPipelineEXT(0);
+#else
+            glBindProgramPipeline(0);
+#endif
         }
     }
 }
