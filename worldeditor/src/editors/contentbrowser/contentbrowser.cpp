@@ -27,7 +27,7 @@ const QString gTemplateName("${templateName}");
 
 class ContentFilter : public QSortFilterProxyModel {
 public:
-    typedef QList<uint8_t>  TypeList;
+    typedef QList<uint32_t> TypeList;
 
     explicit ContentFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
@@ -320,7 +320,7 @@ void ContentBrowser::setCompact(bool value) {
     ui->contentList->setViewMode((value) ? QListView::ListMode : QListView::IconMode);
 }
 
-void ContentBrowser::filterByType(const uint8_t type) {
+void ContentBrowser::filterByType(const uint32_t type) {
     m_pContentProxy->setContentTypes({ AssetManager::instance()->toContentType(type) });
 }
 

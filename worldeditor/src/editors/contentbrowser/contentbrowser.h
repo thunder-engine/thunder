@@ -48,7 +48,7 @@ public:
 
     void                    setCompact              (bool value);
 
-    void                    filterByType            (const uint8_t);
+    void                    filterByType            (const uint32_t);
 
     void                    setSelected             (const QString &resource);
 
