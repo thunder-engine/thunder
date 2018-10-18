@@ -16,6 +16,7 @@ TextMesh::TextMesh() :
         m_Line(0),
         m_Color(1.0f) {
     m_pMesh = Engine::objectCreate<Mesh>();
+    m_pMesh->makeDynamic();
     m_pMesh->setFlags(Mesh::ATTRIBUTE_UV0);
 
     Material *material  = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
@@ -29,7 +30,7 @@ void TextMesh::composeMesh() {
         m_Space = m_pFont->spaceWidth(m_Size);
         m_Line  = m_pFont->lineHeight(m_Size);
 
-        m_pMesh->clear();
+        //m_pMesh->clear();
 
         u32string text  = Utils::utf8ToUtf32(m_Text);
         m_pFont->requestCharacters(text, m_Size);
@@ -93,7 +94,7 @@ void TextMesh::composeMesh() {
             surface.mode    = Mesh::MODE_TRIANGLES;
             surface.lods.push_back(lod);
             surface.aabb.setBox(bb[0], bb[1]);
-            m_pMesh->addSurface(surface);
+            m_pMesh->setSurface(0, surface);
             m_pMesh->apply();
         }
     }

@@ -79,6 +79,7 @@ void Handles::init() {
 
     if(s_Lines == nullptr) {
         s_Lines = Engine::objectCreate<Mesh>("Lines");
+        s_Lines->makeDynamic();
     }
 
     if(s_Move == nullptr) {
@@ -176,11 +177,10 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
     lod.vertices    = points;
     lod.indices     = indices;
     {
-        s_Lines->clear();
         Mesh::Surface surface;
         surface.mode    = Mesh::MODE_LINES;
         surface.lods.push_back(lod);
-        s_Lines->addSurface(surface);
+        s_Lines->setSurface(0, surface);
         s_Lines->apply();
     }
     s_Buffer->setColor(s_Color);

@@ -40,8 +40,6 @@ public:
 
     const Texture              *texture                     (const char *name) const;
 
-    void                        notify                      (uint32_t index);
-
 protected:
     void                        bindVao                     (AMeshGL *mesh, uint32_t surface, uint32_t lod, uint32_t instance = 0);
 

@@ -12,6 +12,7 @@
 #define DEFAULTMESH ".embedded/DefaultMesh.mtl"
 
 Mesh::Mesh() :
+        m_Dynamic(false),
         m_Flags(0) {
 
 }
@@ -39,6 +40,10 @@ void Mesh::apply() {
 
 void Mesh::clear() {
     m_Surfaces.clear();
+}
+
+void Mesh::makeDynamic() {
+    m_Dynamic   = true;
 }
 
 void Mesh::loadUserData(const VariantMap &data) {
@@ -230,4 +235,12 @@ void Mesh::setFlags(uint8_t flags) {
 
 void Mesh::addSurface(const Surface &surface) {
     m_Surfaces.push_back(surface);
+}
+
+void Mesh::setSurface(uint32_t index, Surface &surface) {
+    if(index < surfacesCount()) {
+        m_Surfaces[index]   = surface;
+    } else {
+        addSurface(surface);
+    }
 }

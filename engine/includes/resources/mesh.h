@@ -74,6 +74,8 @@ public:
     virtual void                apply               ();
     virtual void                clear               ();
 
+    void                        makeDynamic         ();
+
     Material                   *material            (uint32_t surface, uint32_t lod) const;
 
     Vector3Vector               vertices            (uint32_t surface, uint32_t lod) const;
@@ -100,9 +102,13 @@ public:
 
     void                        addSurface          (const Surface &surface);
 
+    void                        setSurface          (uint32_t index, Surface &surface);
+
     void                        loadUserData        (const VariantMap &data);
 
 protected:
+    bool                        m_Dynamic;
+
     uint8_t                     m_Flags;
 
     SurfaceQueue                m_Surfaces;
