@@ -26,7 +26,7 @@ Project {
             "plugin.cpp" ]
         Depends { name: "cpp" }
 
-        cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/bin"
@@ -34,7 +34,6 @@ Project {
         cpp.dynamicLibraries: [
             "next-editor",
             "engine-editor" ]
-        cpp.cxxLanguageVersion: "c++14"
 
         Group {
             name: "Install Plugin"
@@ -71,7 +70,6 @@ Project {
             "rendergl",
             "glad"
         ]
-        cpp.cxxLanguageVersion: "c++14"
 
         Properties {
             condition: qbs.targetOS.contains("windows")

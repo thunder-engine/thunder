@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 
-#include "common.h"
+#include <global.h>
 
 #include "amath.h"
 #include "metatype.h"

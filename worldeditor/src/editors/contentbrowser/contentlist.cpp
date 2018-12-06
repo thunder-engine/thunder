@@ -15,9 +15,12 @@
 
 const QString gIcon("icon");
 
+ContentList *ContentList::m_pInstance   = nullptr;
+
+
 ContentList::ContentList() :
-        BaseObjectModel(NULL),
-        m_pEngine(NULL) {
+        BaseObjectModel(nullptr),
+        m_pEngine(nullptr) {
 
     m_pProjectManager   = ProjectManager::instance();
     m_pAssetManager     = AssetManager::instance();
@@ -25,15 +28,32 @@ ContentList::ContentList() :
     m_DefaultIcon   = QImage(":/Images/Folder.png");
 }
 
+ContentList *ContentList::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new ContentList;
+    }
+    return m_pInstance;
+}
+
+void ContentList::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
+}
+
 void ContentList::init(Engine *engine) {
     m_pEngine       = engine;
 
     connect(m_pAssetManager, SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
 
-    update(m_pProjectManager->contentPath());
+    scan(m_pProjectManager->resourcePath());
+    scan(m_pProjectManager->contentPath());
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 int ContentList::columnCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent)
     return 4;
 }
 
@@ -92,6 +112,7 @@ Qt::ItemFlags ContentList::flags(const QModelIndex &index) const {
 }
 
 bool ContentList::setData(const QModelIndex &index, const QVariant &value, int role) {
+    Q_UNUSED(role)
     switch(index.column()) {
         case 0: {
             QDir dir(m_pProjectManager->contentPath());
@@ -126,7 +147,7 @@ bool ContentList::removeResource(const QModelIndex &index) {
         if(item) {
             m_pAssetManager->removeResource(QFileInfo(item->objectName()));
 
-            item->setParent(NULL);
+            item->setParent(nullptr);
             delete item;
         }
     }
@@ -255,10 +276,19 @@ void ContentList::update(const QString &path) {
     foreach(QObject *it, m_rootItem->children()) {
         QFileInfo info(dir.absoluteFilePath(it->objectName()));
         if(!info.exists()) {
-            it->setParent(NULL);
+            it->setParent(nullptr);
             delete it;
         }
     }
+
+    scan(path);
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
+}
+
+void ContentList::scan(const QString &path) {
+    QDir dir(m_pProjectManager->contentPath());
 
     QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
@@ -267,20 +297,19 @@ void ContentList::update(const QString &path) {
             continue;
         }
 
-        QString relative    = dir.relativeFilePath(info.absoluteFilePath());
-        if(!m_rootItem->findChild<QObject *>(relative)) {
+        QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
+                             dir.relativeFilePath(info.absoluteFilePath()) : (QString(".embedded/") + info.fileName());
+
+        if(!m_rootItem->findChild<QObject *>(source)) {
             QObject *item   = new QObject(m_rootItem);
-            item->setObjectName(relative);
+            item->setObjectName(source);
             item->setProperty(qPrintable(gIcon), m_DefaultIcon);
             if(!info.isDir()) {
-                item->setProperty(qPrintable(gType), m_pAssetManager->resourceType(relative));
-                item->setProperty(qPrintable(gIcon), m_pAssetManager->icon(relative));
+                item->setProperty(qPrintable(gType), m_pAssetManager->resourceType(source));
+                item->setProperty(qPrintable(gIcon), m_pAssetManager->icon(source) );
             }
         }
     }
-
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
 }
 
 void ContentList::onRendered(const QString &uuid) {

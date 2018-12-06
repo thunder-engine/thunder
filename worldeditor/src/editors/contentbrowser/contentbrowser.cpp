@@ -15,7 +15,7 @@
 #include <QMessageBox>
 #include <QProcess>
 
-#include "common.h"
+#include <global.h>
 
 #include "contentlist.h"
 #include "contenttree.h"
@@ -27,7 +27,7 @@ const QString gTemplateName("${templateName}");
 
 class ContentFilter : public QSortFilterProxyModel {
 public:
-    typedef QList<uint32_t> TypeList;
+    typedef QList<int32_t> TypeList;
 
     explicit ContentFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
@@ -77,8 +77,8 @@ protected:
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QModelIndex index   = sourceModel()->index(sourceRow, 3, sourceParent);
-        foreach (uint8_t it, m_List) {
-            uint8_t type    = sourceModel()->data(index).toInt();
+        foreach (int32_t it, m_List) {
+            int32_t type    = sourceModel()->data(index).toInt();
             if(it == type) {
                 return true;
             }
@@ -100,7 +100,7 @@ protected:
 
 class AssetItemDeligate : public QStyledItemDelegate  {
 public:
-    explicit AssetItemDeligate(QObject *parent = 0) :
+    explicit AssetItemDeligate(QObject *parent = nullptr) :
             QStyledItemDelegate(parent),
             m_Scale(1.0f) {
     }
@@ -118,20 +118,19 @@ public:
 private:
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
         QStyledItemDelegate::initStyleOption(option, index);
-        if(QStyleOptionViewItemV4 *v4 = qstyleoption_cast<QStyleOptionViewItemV4 *>(option)) {
-            QVariant value  = index.data(Qt::DecorationRole);
-            switch(value.type()) {
-                case QVariant::Image: {
-                    QImage image    = value.value<QImage>();
-                    if(!image.isNull()) {
-                        QSize origin    = image.size();
-                        image           = image.scaled(origin.width() * m_Scale, origin.height() * m_Scale, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                        v4->icon        = QIcon(QPixmap::fromImage(image));
-                        v4->decorationSize = image.size();
-                    }
-                } break;
-                default: break;
-            }
+        QVariant value  = index.data(Qt::DecorationRole);
+        switch(value.type()) {
+            case QVariant::Image: {
+                QImage image    = value.value<QImage>();
+                if(!image.isNull()) {
+                    QSize origin    = image.size();
+                    image           = image.scaled(origin.width() * m_Scale, origin.height() * m_Scale,
+                                                   Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                    option->icon    = QIcon(QPixmap::fromImage(image));
+                    option->decorationSize = image.size();
+                }
+            } break;
+            default: break;
         }
     }
 
@@ -139,7 +138,7 @@ private:
         return QStyledItemDelegate::sizeHint(option, index) * m_Scale;
     }
 
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
         return new QLineEdit(parent);
     }
 
@@ -159,7 +158,7 @@ private:
     }
 
     void setEditorData(QWidget *editor, const QModelIndex &index) const {
-        uint32_t width  = editor->width();
+        int32_t width = editor->width();
         QStyledItemDelegate::setEditorData(editor, index);
         editor->setFixedWidth(width);
     }
@@ -215,8 +214,9 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
         m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
         m_CreationMenu.addSeparator();
         m_CreationMenu.addAction(a);
-        m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
         m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
+        m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
+        m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
     }
 
     createAction(showIn, SLOT(showInGraphicalShell()));
@@ -344,12 +344,24 @@ void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     QModelIndex origin   = m_pContentProxy->mapToSource(index);
 
-    QFileInfo path  = ProjectManager::instance()->contentPath() + QDir::separator() + ContentList::instance()->path(origin);
-    if(path.isFile()) {
+    QString source = ContentList::instance()->path(origin);
+    QFileInfo path(source);
+    bool embedded = false;
+    if(source.contains(".embedded/")) {
+        embedded = true;
+    } else {
+        path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
+    }
+
+    if(embedded || path.isFile()) {
         if(m_pSelected) {
             delete m_pSelected;
         }
         m_pSelected = AssetManager::instance()->createSettings(path);
+        if(embedded) {
+            string guid = AssetManager::instance()->pathToGuid(source.toStdString());
+            m_pSelected->setDestination(guid.c_str());
+        }
         emit assetSelected(m_pSelected);
     }
 }

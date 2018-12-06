@@ -34,6 +34,8 @@ enum {
 
 typedef IModule *(*moduleHandler)  (Engine *engine);
 
+PluginModel *PluginModel::m_pInstance   = nullptr;
+
 PluginModel::PluginModel() :
         BaseObjectModel(),
         m_pEngine(nullptr) {
@@ -78,6 +80,18 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
     }
 
     return QVariant();
+}
+
+PluginModel *PluginModel::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new PluginModel;
+    }
+    return m_pInstance;
+}
+
+void PluginModel::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
 }
 
 void PluginModel::init(Engine *engine) {

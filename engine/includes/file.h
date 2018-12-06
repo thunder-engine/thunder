@@ -25,7 +25,7 @@
 #include <string>
 #include <list>
 
-#include <common.h>
+#include <global.h>
 
 using namespace std;
 

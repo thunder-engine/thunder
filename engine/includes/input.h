@@ -1,7 +1,6 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <patterns/asingleton.h>
 #include <amath.h>
 
 #include "engine.h"

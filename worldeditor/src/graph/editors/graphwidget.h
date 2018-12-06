@@ -6,7 +6,7 @@
 class GraphWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit GraphWidget    (QWidget *parent = 0);
+    explicit GraphWidget    (QWidget *parent = nullptr);
 
     virtual void            draw                (QPainter &, const QRect &);
     virtual void            select              (const QPoint &);

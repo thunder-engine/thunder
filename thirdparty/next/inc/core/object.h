@@ -26,7 +26,7 @@
 #include <queue>
 #include <list>
 
-#include "common.h"
+#include <global.h>
 
 #include "variant.h"
 

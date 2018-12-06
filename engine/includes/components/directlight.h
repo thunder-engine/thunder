@@ -10,14 +10,14 @@ class Material;
 class MaterialInstance;
 
 class NEXT_LIBRARY_EXPORT DirectLight : public Component {
-    A_REGISTER(DirectLight, Component, Components);
+    A_REGISTER(DirectLight, Component, Components)
 
     A_PROPERTIES(
         A_PROPERTY(bool,    Cast_shadows,   DirectLight::castShadows, DirectLight::setCastShadows),
         A_PROPERTY(float,   Brightness,     DirectLight::brightness, DirectLight::setBrightness),
         A_PROPERTY(Color,   Color,          DirectLight::color, DirectLight::setColor),
         A_PROPERTY(float,   Bias,           DirectLight::bias, DirectLight::setBias)
-    );
+    )
 
 public:
     DirectLight                 ();

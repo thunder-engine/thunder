@@ -4,14 +4,14 @@
 #include "component.h"
 
 class NEXT_LIBRARY_EXPORT Transform : public Component {
-    A_REGISTER(Transform, Component, Components);
+    A_REGISTER(Transform, Component, Components)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, Position, Transform::position, Transform::setPosition),
         A_PROPERTY(Vector3, Rotation, Transform::euler, Transform::setEuler),
         A_PROPERTY(Vector3, Scale, Transform::scale, Transform::setScale)
-    );
-    A_NOMETHODS();
+    )
+    A_NOMETHODS()
 
 public:
     Transform                   ();

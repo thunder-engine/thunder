@@ -20,7 +20,7 @@
 #ifndef AABB_H_HEADER_INCLUDED
 #define AABB_H_HEADER_INCLUDED
 
-#include "common.h"
+#include <stdint.h>
 
 #include "vector3.h"
 

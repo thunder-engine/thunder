@@ -6,6 +6,8 @@
 
 #include "controllers/objectctrl.h"
 
+UndoManager *UndoManager::m_pInstance   = nullptr;
+
 UndoManager::SelectObjects::SelectObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name) :
         UndoObject(ctrl, name) {
     for(auto it : objects) {
@@ -194,6 +196,18 @@ void UndoManager::PropertyObjects::undo(bool redo) {
 }
 bool UndoManager::PropertyObjects::isValid() const {
     return !m_Dump.empty();
+}
+
+UndoManager *UndoManager::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new UndoManager;
+    }
+    return m_pInstance;
+}
+
+void UndoManager::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
 }
 
 void UndoManager::init() {

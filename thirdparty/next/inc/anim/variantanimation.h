@@ -11,7 +11,6 @@ class NEXT_LIBRARY_EXPORT VariantAnimation : public Animation {
     A_REGISTER(VariantAnimation, Animation, Animation)
 
 public:
-
     typedef list<KeyFrame>          Curve;
 
 public:
@@ -32,6 +31,7 @@ protected:
 
 private:
     VariantAnimationPrivate        *p_ptr;
+
 };
 
 #endif // VARIANTANIMATION_H

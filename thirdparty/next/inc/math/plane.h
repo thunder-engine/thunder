@@ -20,8 +20,6 @@
 #ifndef PLANE_H_HEADER_INCLUDED
 #define PLANE_H_HEADER_INCLUDED
 
-#include "common.h"
-
 #include "vector3.h"
 
 class NEXT_LIBRARY_EXPORT Plane {

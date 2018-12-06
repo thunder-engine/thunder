@@ -12,7 +12,7 @@
 #include <components/directlight.h>
 #include <components/camera.h>
 
-#include "common.h"
+#include <global.h>
 #include "json.h"
 
 #include "editors/propertyedit/nextobject.h"
@@ -29,16 +29,16 @@ MaterialEdit::MaterialEdit(Engine *engine) :
         QMainWindow(nullptr),
         IAssetEditor(engine),
         ui(new Ui::MaterialEdit),
-        m_pMaterial(nullptr),
         m_pMesh(nullptr),
         m_pLight(nullptr),
-        m_pEditor(nullptr),
-        m_pBuilder(nullptr) {
+        m_pMaterial(nullptr),
+        m_pBuilder(new ShaderBuilder()),
+        m_pEditor(nullptr) {
 
     ui->setupUi(this);
 
-    glWidget    = new Viewport(this);
-    CameraCtrl *ctrl    = new CameraCtrl(glWidget);
+    glWidget = new Viewport(this);
+    CameraCtrl *ctrl = new CameraCtrl(glWidget);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
     glWidget->setController(ctrl);
@@ -68,12 +68,13 @@ MaterialEdit::MaterialEdit(Engine *engine) :
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
 
-    m_pBuilder  = new ShaderBuilder();
     ui->components->setModel(m_pBuilder->components());
 
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
     connect(ui->schemeWidget, SIGNAL(nodeSelected(void*)), this, SLOT(onNodeSelected(void*)));
+
+    ui->schemeWidget->setModel(m_pBuilder);
 
     readSettings();
 }
@@ -140,8 +141,6 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         m_pBuilder->load(m_Path);
 
         onUpdateTemplate(false);
-
-        ui->schemeWidget->setModel(m_pBuilder);
         onNodeSelected(m_pBuilder);
     }
 }
@@ -175,9 +174,6 @@ void MaterialEdit::changeMesh(const string &path) {
 
 void MaterialEdit::onGLInit() {
     Scene *scene    = glWidget->scene();
-    if(scene) {
-        scene->setAmbient(0.25f);
-    }
 
     m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
     Matrix3 rot;
@@ -188,7 +184,7 @@ void MaterialEdit::onGLInit() {
     CameraCtrl *controller  = static_cast<CameraCtrl *>(glWidget->controller());
     Camera *camera  = controller->activeCamera();
     if(camera) {
-        camera->setColor(Vector4(0.3, 0.3, 0.3, 1.0));
+        camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
     }
 
     m_pMesh     = Engine::objectCreate<Actor>("StaticMesh", scene);
@@ -198,8 +194,7 @@ void MaterialEdit::onGLInit() {
 }
 
 void MaterialEdit::onNodeSelected(void *node) {
-    QObject *o  = static_cast<QObject *>(node);
-    ui->treeView->setObject(o);
+    ui->treeView->setObject(static_cast<QObject *>(node));
 }
 
 void MaterialEdit::on_actionPlane_triggered() {

@@ -4,7 +4,7 @@
 #include <engine.h>
 #include <file.h>
 
-#include "common.h"
+#include <global.h>
 #include "projectmanager.h"
 #include "assetmanager.h"
 #include "codemanager.h"

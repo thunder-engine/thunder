@@ -8,11 +8,11 @@ class Transform;
 class Prefab;
 
 class NEXT_LIBRARY_EXPORT Actor : public Object {
-    A_REGISTER(Actor, Object, Scene);
+    A_REGISTER(Actor, Object, Scene)
 
     A_PROPERTIES(
         A_PROPERTY(bool, Enable, Actor::isEnable, Actor::setEnable)
-    );
+    )
 
 public:
     Actor                       ();

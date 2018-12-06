@@ -6,10 +6,10 @@
 
 #define MAX_BONES 60
 
-uniform mat4 t_view;
-uniform mat4 t_projection;
+layout(location = 0) uniform mat4 t_model;
 
-uniform mat4 t_model;
+layout(location = 1) uniform mat4 t_view;
+layout(location = 2) uniform mat4 t_projection;
 
 uniform mat4 bonesMatrix[MAX_BONES];
 uniform vec4 position;
@@ -18,16 +18,23 @@ uniform vec3 axis;
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec3 tangent;
-layout(location = 3) in vec2 uv0;
+layout(location = 3) in vec4 color;
+layout(location = 4) in vec2 uv0;
 #ifdef INSTANCING
-    layout(location = 4) in mat4 instanceMatrix;
+    layout(location = 5) in mat4 instanceMatrix;
 #else
+    #ifdef TYPE_BILLBOARD
+    layout(location = 5) in vec4 particlePosRot;
+    layout(location = 6) in vec4 particleSizeDist;
+    layout(location = 7) in vec4 particleRes1;
+    layout(location = 8) in vec4 particleRes2;
+    #else
     //layout(location = 4) in vec2 uv1;
     //layout(location = 5) in vec2 uv2;
     //layout(location = 6) in vec2 uv3;
-    //layout(location = 7) in vec4 color;
     //layout(location = 8) in vec4 indices;
     //layout(location = 9) in vec4 weights;
+    #endif
 #endif
 layout(location = 0) out vec3 _vertex;
 layout(location = 1) out vec2 _uv0;
@@ -48,7 +55,6 @@ struct Vertex {
     vec3    v;
     vec3    t;
     vec3    n;
-    vec4    m;
 };
 
 #pragma material
@@ -59,7 +65,6 @@ Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
     result.v    = v;
     result.t    = r * t;
     result.n    = r * n;
-    result.m    = vec4( 0.0 );
 
     return result;
 }
@@ -69,7 +74,6 @@ Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 indices, vec4 weights) {
     result.v    = vec3( 0.0 );
     result.t    = vec3( 0.0 );
     result.n    = vec3( 0.0 );
-    result.m    = vec4( 0.0 );
 /*
     for(int i = 0; int(v.w) > i ; i++) { // process bones
         mat4 m44    = bonesMatrix[int(indices.x)];
@@ -105,24 +109,25 @@ Vertex axisAlignedBillboard(vec3 v, vec3 t, vec3 n, vec4 position, vec3 axis) {
                         vec4(position.xyz,  1.0));
 
     result.v    = m44 * vec4( v.x * v.z, v.y * v.w, 0.0, 1.0 );
-    result.m    = vec4( 0.0 );
 */
     return result;
 }
 
-Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 position) {
+Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
     Vertex result;
     result.t    = t;
     result.n    = n;
-/*
-    float angle = position.w;  // w - Rotation
-    // Billboard rotated coordinates in {0 0 0} matrix
-    float x     = cos( angle ) * ( v.z ) + sin( angle ) * ( v.w );
-    float y     = sin( angle ) * ( v.z ) - cos( angle ) * ( v.w );
 
-    result.v    = vec4( position.xyz, 1.0 );
-    result.m    = vec4( v.x * x, v.y * y, 0.0, 0.0 );
-*/
+    float angle = posRot.w;  // rotation
+    float x     = cos( angle ) * ( v.x ) + sin( angle ) * ( v.y );
+    float y     = sin( angle ) * ( v.x ) - cos( angle ) * ( v.y );
+
+    vec3 normal = normalize( camera.position.xyz - posRot.xyz );
+    vec3 right  = normalize( cross( vec3(0.0, 1.0, 0.0), normal ) );
+    vec3 up     = normalize( cross( normal, right ) );
+
+    result.v    = (up * x + right * y) * sizeDist.xyz + posRot.xyz ;
+
     return result;
 }
 
@@ -145,30 +150,28 @@ void main(void) {
 #endif
 
 #ifdef TYPE_BILLBOARD
-    Vertex vert = billboard( vertex, tangent, normal, position );
+    Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist);
 #endif
 
 #ifdef TYPE_AXISALIGNED
     Vertex vert = axisAlignedBillboard( vertex, tangent, normal, position, axis );
 #endif
-
     vec3 camera = vec3( t_view[0].w,
                         t_view[1].w,
                         t_view[2].w);
 
-
     mat4 modelView  = t_view * model;
 
-    gl_Position = t_projection * ( ( modelView * vec4(vert.v, 1.0) ) + vert.m );
+    gl_Position = t_projection * (modelView * vec4(vert.v, 1.0));
 
     _vertex     = gl_Position.xyz;
     _n          = vert.n;
     _t          = vert.t;
     _b          = cross ( _t, _n );
+    _color      = color;
     _uv0        = uv0;
 #ifndef INSTANCING
     //_uv1        = uv1;
-    //_color      = color;
 #endif
     _proj       = 0.5 * ( gl_Position.xyz / gl_Position.w ) + 0.5;
     _view       = ( model * vec4(vert.v, 1.0) ).xyz - camera;

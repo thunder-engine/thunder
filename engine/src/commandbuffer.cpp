@@ -15,7 +15,7 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface
     A_UNUSED(material);
 }
 
-void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material, bool particle) {
     A_UNUSED(models);
     A_UNUSED(count);
     A_UNUSED(mesh);
@@ -79,7 +79,7 @@ const Texture *ICommandBuffer::texture(const char *name) const {
     return nullptr;
 }
 
-void ICommandBuffer::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+void ICommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     A_UNUSED(x);
     A_UNUSED(y);
     A_UNUSED(width);

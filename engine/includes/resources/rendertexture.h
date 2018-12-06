@@ -4,10 +4,12 @@
 #include "texture.h"
 
 class NEXT_LIBRARY_EXPORT RenderTexture : public Texture {
-    A_REGISTER(RenderTexture, Texture, Resources);
+    A_REGISTER(RenderTexture, Texture, Resources)
 
 public:
     RenderTexture               ();
+
+    ~RenderTexture              ();
 
     void                        setTarget                   (FormatType format);
 

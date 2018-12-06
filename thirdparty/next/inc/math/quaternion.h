@@ -20,7 +20,7 @@
 #ifndef QUATERNION_H_HEADER_INCLUDED
 #define QUATERNION_H_HEADER_INCLUDED
 
-#include "common.h"
+#include <global.h>
 
 class Vector3;
 class Matrix3;

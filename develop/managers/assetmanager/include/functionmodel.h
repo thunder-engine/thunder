@@ -3,8 +3,6 @@
 
 #include "baseobjectmodel.h"
 
-#include <patterns/asingleton.h>
-
 class Engine;
 
 class FunctionModel : public BaseObjectModel {

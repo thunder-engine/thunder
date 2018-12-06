@@ -6,6 +6,10 @@ RenderTexture::RenderTexture() :
 
 }
 
+RenderTexture::~RenderTexture() {
+
+}
+
 void RenderTexture::setTarget(FormatType format) {
     m_Format    = format;
 }

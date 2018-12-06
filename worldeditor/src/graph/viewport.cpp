@@ -58,11 +58,11 @@ void Viewport::paintGL() {
 
             m_pCommandBuffer->setScreenProjection();
             m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);
+        } else {
+            Handles::beginDraw(m_pCommandBuffer);
+            static_cast<CameraCtrl *>(m_pController)->drawHandles();
+            Handles::endDraw();
         }
-
-        Handles::beginDraw(m_pCommandBuffer);
-        static_cast<CameraCtrl *>(m_pController)->drawHandles();
-        Handles::endDraw();
     }
 }
 

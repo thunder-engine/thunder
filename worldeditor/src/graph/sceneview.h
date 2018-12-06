@@ -23,7 +23,7 @@ class QOpenGLFramebufferObject;
 class SceneView : public QOpenGLWidget, public IPlatformAdaptor {
     Q_OBJECT
 public:
-    SceneView               (QWidget *parent = 0);
+    SceneView               (QWidget *parent = nullptr);
 
     ~SceneView              ();
 
@@ -34,12 +34,6 @@ public:
 
     void                    setController       (IController *ctrl);
     IController            *controller          () const        { return m_pController; }
-
-    void                    startGame           ();
-
-    void                    stopGame            ();
-
-    bool                    isGame              () const;
 
 public:
     bool                    init                        () { return true; }
@@ -102,8 +96,6 @@ protected:
     void                    mouseReleaseEvent   (QMouseEvent *);
 
 protected:
-    virtual void            updateScene         (Object *object);
-
     virtual void            findCamera          ();
 
     IController            *m_pController;
@@ -114,9 +106,7 @@ protected:
 
     QMenu                   m_RenderModeMenu;
 
-    bool                    m_GameMode;
-
-    uint8_t                 m_MouseButtons;
+    int32_t                 m_MouseButtons;
 };
 
 #endif // SCENEVIEW_H

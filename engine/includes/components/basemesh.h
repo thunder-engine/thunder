@@ -9,7 +9,7 @@
 #include <array>
 
 class NEXT_LIBRARY_EXPORT BaseMesh : public Component {
-    A_REGISTER(BaseMesh, Component, General);
+    A_REGISTER(BaseMesh, Component, General)
 
 public:
     BaseMesh                    ();

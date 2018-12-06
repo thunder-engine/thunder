@@ -4,7 +4,6 @@
 #include "baseobjectmodel.h"
 
 #include <stdint.h>
-#include <patterns/asingleton.h>
 
 class QLibrary;
 
@@ -17,10 +16,14 @@ class Scene;
 
 typedef QMap<Object *, QString> ComponentMap;
 
-class PluginModel : public BaseObjectModel, public ASingleton<PluginModel> {
+class PluginModel : public BaseObjectModel {
     Q_OBJECT
 
 public:
+    static PluginModel         *instance            ();
+
+    static void                 destroy             ();
+
     void                        init                        (Engine *engine);
 
     void                        rescan                      ();
@@ -45,11 +48,13 @@ signals:
 public slots:
     void                        reloadPlugin                (const QString &path);
 
-protected:
-    friend class ASingleton<PluginModel>;
-
+private:
     PluginModel                 ();
+    ~PluginModel                () {}
 
+    static PluginModel         *m_pInstance;
+
+protected:
     void                        rescanPath                  (const QString &path);
 
     void                        registerSystemPlugin        (IModule *plugin);

@@ -3,14 +3,13 @@
 
 #include <QObject>
 #include <QFileInfo>
-#include <patterns/asingleton.h>
 
 #include <engine.h>
 
 #include <assetmanager.h>
 
 #include <QDebug>
-class ProjectManager : public QObject, public ASingleton<ProjectManager> {
+class ProjectManager : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString Project_Name READ projectName WRITE setProjectName DESIGNABLE true USER true)
@@ -20,6 +19,9 @@ class ProjectManager : public QObject, public ASingleton<ProjectManager> {
     Q_PROPERTY(Template First_Map READ firstMap WRITE setFirstMap DESIGNABLE true USER true)
 
 public:
+    static ProjectManager      *instance                    ();
+
+    static void                 destroy                     ();
 
     void                        init                        (const QString &project, const QString &target = QString());
 
@@ -60,10 +62,11 @@ public slots:
     void                        loadSettings                ();
     void                        saveSettings                ();
 
-protected:
-    friend class ASingleton<ProjectManager>;
-
+private:
     ProjectManager              ();
+    ~ProjectManager             () {}
+
+    static ProjectManager      *m_pInstance;
 
 private:
     QString                     m_ProjectId;

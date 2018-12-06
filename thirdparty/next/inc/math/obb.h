@@ -20,8 +20,6 @@
 #ifndef OBB_H_HEADER_INCLUDED
 #define OBB_H_HEADER_INCLUDED
 
-#include "common.h"
-
 #include "vector3.h"
 #include "quaternion.h"
 

@@ -18,11 +18,11 @@ class PropertyEditor : public QWidget {
 public:
     typedef Property* (*UserTypeCB)(const QString &name, QObject *propertyObject, Property *parent);
 
-    explicit PropertyEditor (QWidget *parent = 0);
+    explicit PropertyEditor (QWidget *parent = nullptr);
 
     virtual ~PropertyEditor ();
 
-    void                    addObject                   (QObject *propertyObject, const QString &name = QString(), QObject *parent = 0);
+    void                    addObject                   (QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
 
     void                    setObject                   (QObject *propertyObject);
 

@@ -1,7 +1,7 @@
 #include "media.h"
 
 #include "mediasystem.h"
-#ifdef BUILD_SHARED
+#ifdef NEXT_SHARED
     #include "converters/audioconverter.h"
 #endif
 IModule *moduleCreate(Engine *engine) {
@@ -26,7 +26,7 @@ const char *Media::version() const {
 
 uint8_t Media::types() const {
     uint8_t result  = SYSTEM;
-#ifdef BUILD_SHARED
+#ifdef NEXT_SHARED
     result  |= CONVERTER;
 #endif
     return result;
@@ -37,7 +37,7 @@ ISystem *Media::system() {
 }
 
 IConverter *Media::converter() {
-#ifdef BUILD_SHARED
+#ifdef NEXT_SHARED
     return new AudioConverter();
 #endif
     return nullptr;

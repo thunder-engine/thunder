@@ -15,14 +15,12 @@
 
 #include <resources/pipeline.h>
 
-#include "common.h"
 #include "pluginmodel.h"
 
 SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
         m_pController(nullptr),
         m_pScene(nullptr),
-        m_GameMode(false),
         m_MouseButtons(0) {
 
     setMouseTracking(true);
@@ -47,18 +45,6 @@ void SceneView::setController(IController *ctrl) {
     m_pController   = ctrl;
 }
 
-void SceneView::startGame() {
-    m_GameMode  = true;
-}
-
-void SceneView::stopGame() {
-    m_GameMode  = false;
-}
-
-bool SceneView::isGame() const {
-    return m_GameMode;
-}
-
 void SceneView::initializeGL() {
     m_Systems.push_back(PluginModel::instance()->createSystem("Media"));
     m_Systems.push_back(PluginModel::instance()->createSystem("RenderGL"));
@@ -80,10 +66,6 @@ void SceneView::paintGL() {
         m_pController->update();
     }
     if(m_pScene) {
-        if(m_GameMode) {
-            updateScene(m_pScene);
-        }
-
         findCamera();
 
         uint32_t handle = defaultFramebufferObject();
@@ -112,10 +94,6 @@ void SceneView::mousePressEvent(QMouseEvent *ev) {
 
 void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
     m_MouseButtons  = ev->buttons();
-}
-
-void SceneView::updateScene(Object *object) {
-    Engine::updateScene(object);
 }
 
 void SceneView::findCamera() {
