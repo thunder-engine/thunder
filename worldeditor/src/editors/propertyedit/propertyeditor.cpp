@@ -106,13 +106,15 @@ public:
 
     virtual void setEditorData(QWidget *editor, const QModelIndex &index) const {
         m_finishedMapper->blockSignals(true);
-        QModelIndex origin  = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
-        QVariant data   = origin.model()->data(origin, Qt::EditRole);
+        if(index.isValid()) {
+            const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
+            QModelIndex origin  = model->mapToSource(index);
+            QVariant data   = origin.model()->data(origin, Qt::EditRole);
 
-        if(!static_cast<Property *>(origin.internalPointer())->setEditorData(editor, data)) {
-            QStyledItemDelegate::setEditorData(editor, index);
+            if(!static_cast<Property *>(origin.internalPointer())->setEditorData(editor, data)) {
+                QStyledItemDelegate::setEditorData(editor, index);
+            }
         }
-
         m_finishedMapper->blockSignals(false);
     }
 
