@@ -12,9 +12,7 @@
 #include <QUrl>
 
 #include <zlib.h>
-#if __linux__
 #include <cstring>
-#endif
 
 #include "config.h"
 
@@ -33,6 +31,7 @@
 #include "fbxconverter.h"
 #include "fontconverter.h"
 #include "prefabconverter.h"
+#include "effectconverter.h"
 
 #include "projectmanager.h"
 
@@ -46,6 +45,8 @@ const QString gGUID("guid");
 const QString gEntry(".entry");
 const QString gCompany(".company");
 const QString gProject(".project");
+
+AssetManager *AssetManager::m_pInstance   = nullptr;
 
 Q_DECLARE_METATYPE(IConverterSettings *)
 
@@ -74,15 +75,27 @@ AssetManager::AssetManager() :
     registerConverter(new FBXConverter());
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
+    registerConverter(new EffectConverter());
 
     m_Formats["map"]    = IConverter::ContentMap;
     m_Formats["cpp"]    = IConverter::ContentCode;
     m_Formats["h"]      = IConverter::ContentCode;
-    m_Formats["fab"]    = IConverter::ContentPrefab;
 }
 
 AssetManager::~AssetManager() {
     m_Editors.clear();
+}
+
+AssetManager *AssetManager::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new AssetManager;
+    }
+    return m_pInstance;
+}
+
+void AssetManager::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
 }
 
 void AssetManager::init(Engine *engine) {
@@ -120,7 +133,7 @@ QObject *AssetManager::openEditor(const QFileInfo &source) {
     return nullptr;
 }
 
-uint32_t AssetManager::resourceType(const QFileInfo &source) {
+int32_t AssetManager::resourceType(const QFileInfo &source) {
     QString s = source.completeSuffix().toLower();
     auto it = m_Formats.find(s);
     if(it != m_Formats.end()) {
@@ -129,7 +142,7 @@ uint32_t AssetManager::resourceType(const QFileInfo &source) {
     return MetaType::INVALID;
 }
 
-uint32_t AssetManager::toContentType(uint32_t type) {
+int32_t AssetManager::toContentType(int32_t type) {
     auto it = m_ContentTypes.find(type);
     if(it != m_ContentTypes.end()) {
         return it.value();
@@ -160,7 +173,7 @@ void AssetManager::reimport() {
 
 bool AssetManager::isOutdated(IConverterSettings *settings) {
     bool result     = true;
-    uint32_t crc    = crc32(0L, Z_NULL, 0);
+    uint32_t crc    = crc32(0L, nullptr, 0);
 
     QFile file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
@@ -168,7 +181,7 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
         while(!file.atEnd()) {
             memset(buffer, 0, BUFF_SIZE);
             file.read(buffer, BUFF_SIZE);
-            crc    = crc32(crc, (Bytef *)buffer, BUFF_SIZE);
+            crc    = crc32(crc, reinterpret_cast<Bytef *>(buffer), BUFF_SIZE);
         }
         file.close();
 
@@ -328,7 +341,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             string str  = Json::save(Engine::toVariant(prefab), 0);
-            file.write((const char *)&str[0], str.size());
+            file.write(static_cast<const char *>(&str[0]), str.size());
             file.close();
 
             IConverterSettings *settings    = createSettings(path);
@@ -524,7 +537,7 @@ void AssetManager::onPerform() {
                 }
                 saveSettings(settings);
 
-                emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), settings->type());
+                emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), toContentType(settings->type()));
             }
         }
     } else {
@@ -600,7 +613,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
             }
             saveSettings(settings);
 
-            emit imported(QString::fromStdString(source), settings->type());
+            emit imported(QString::fromStdString(source), toContentType(settings->type()));
 
             return true;
         }
@@ -626,7 +639,7 @@ void AssetManager::saveSettings(IConverterSettings *settings) {
     obj.insert(gCRC, int(settings->crc()));
     obj.insert(gGUID, settings->destination());
     obj.insert(gSettings, set);
-    obj.insert(gType, (int)settings->type());
+    obj.insert(gType, static_cast<int>(settings->type()));
 
     QJsonArray subItems;
     for(uint32_t i = 0; i < settings->subItemsCount(); i++) {

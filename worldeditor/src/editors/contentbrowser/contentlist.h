@@ -9,8 +9,6 @@
 #include <QMimeData>
 #include <QDir>
 
-#include <patterns/asingleton.h>
-
 #include "baseobjectmodel.h"
 
 class QOpenGLContext;
@@ -20,10 +18,14 @@ class AssetManager;
 
 class Engine;
 
-class ContentList  : public BaseObjectModel, public ASingleton<ContentList> {
+class ContentList  : public BaseObjectModel {
     Q_OBJECT
 
 public:
+    static ContentList         *instance                    ();
+
+    static void                 destroy                     ();
+
     void                        init                        (Engine *engine);
 
     int                         columnCount                 (const QModelIndex &parent) const;
@@ -62,18 +64,21 @@ protected slots:
     void                        update                      (const QString &path);
 
 protected:
+    void                        scan                        (const QString &path);
+
     Qt::DropActions             supportedDropActions        () const;
     QStringList                 mimeTypes                   () const;
     QMimeData                  *mimeData                    (const QModelIndexList &indexes) const;
     bool                        canDropMimeData             (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
     bool                        dropMimeData                (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent);
 
-protected:
-    friend class ASingleton<ContentList>;
-
+private:
     ContentList                 ();
     ~ContentList                () {}
 
+    static ContentList         *m_pInstance;
+
+protected:
     Engine                     *m_pEngine;
 
     QImage                      m_DefaultIcon;

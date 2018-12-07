@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <common.h>
+#include <global.h>
 
 class NEXT_LIBRARY_EXPORT Event {
 public:

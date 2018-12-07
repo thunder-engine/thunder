@@ -4,9 +4,6 @@
 
 #include <bson.h>
 #include <json.h>
-#include <components/actor.h>
-
-#define DATA    "Data"
 
 uint8_t PrefabConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());

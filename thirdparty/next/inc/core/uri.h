@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "common.h"
+#include <global.h>
 
 using namespace std;
 

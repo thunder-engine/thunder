@@ -26,7 +26,7 @@ public:
         /// Displaying name of item.
         QString                     name;
         /// Displaying position of item.
-        uint32_t                    pos;
+        int32_t                     pos;
 
         QVariant                    var;
     };

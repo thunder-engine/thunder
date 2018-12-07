@@ -12,7 +12,7 @@
 #include <components/directlight.h>
 #include <components/camera.h>
 
-#include "common.h"
+#include <global.h>
 
 #include "editors/propertyedit/nextobject.h"
 #include "controllers/objectctrl.h"
@@ -26,8 +26,8 @@ MeshEdit::MeshEdit(Engine *engine) :
         ui(new Ui::MeshEdit),
         m_pMesh(nullptr),
         m_pGround(nullptr),
-        m_pLight(nullptr),
         m_pDome(nullptr),
+        m_pLight(nullptr),
         m_pEditor(nullptr) {
 
     ui->setupUi(this);

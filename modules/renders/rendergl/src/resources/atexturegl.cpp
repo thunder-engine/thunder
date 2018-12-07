@@ -1,8 +1,6 @@
 #include "resources/atexturegl.h"
 
-#if __linux__
 #include <cstring>
-#endif
 
 #define DATA    "Data"
 
@@ -67,7 +65,7 @@ void ATextureGL::apply() {
 
     bool mipmap = (m_Sides[0].size() > 1);
 
-    uint32_t filtering;
+    int32_t filtering;
     switch(m_Filtering) {
         case Bilinear:  filtering = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
         case Trilinear: filtering = GL_LINEAR_MIPMAP_LINEAR; break;
@@ -76,7 +74,7 @@ void ATextureGL::apply() {
     //glTexParameteri ( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, filtering );
 
-    uint32_t wrap;
+    int32_t wrap;
     switch (m_Wrap) {
         case Repeat: wrap   = GL_REPEAT; break;
         case Mirrored: wrap = GL_MIRRORED_REPEAT; break;
@@ -165,6 +163,6 @@ bool ATextureGL::isDwordAligned() {
     return (dwordLineSize == curLineSize);
 }
 
-inline uint32_t ATextureGL::dwordAlignedLineSize(uint32_t width, uint32_t bpp) {
+inline int32_t ATextureGL::dwordAlignedLineSize(int32_t width, int32_t bpp) {
     return ((width * bpp + 31) & -32) >> 3;
 }

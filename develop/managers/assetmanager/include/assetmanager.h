@@ -7,7 +7,6 @@
 #include <QTimer>
 #include <QImage>
 
-#include <patterns/asingleton.h>
 #include <engine.h>
 #include <module.h>
 
@@ -19,18 +18,18 @@ class ProjectManager;
 class CodeManager;
 
 struct Template {
-    Template                    () :
+    Template() :
         type(MetaType::INVALID) {
 
     }
-    Template                    (const QString &p, uint32_t t = MetaType::INVALID) :
+    Template(const QString &p, uint32_t t = MetaType::INVALID) :
         path(p),
         type(t) {
 
     }
 
-    QString                     path;
-    uint32_t                    type;
+    QString path;
+    uint32_t type;
 };
 
 Q_DECLARE_METATYPE(Template)
@@ -41,6 +40,8 @@ public:
             m_bModified(false) {
         m_pEngine   = engine;
     }
+
+    virtual ~IAssetEditor() {}
 
     virtual void            loadAsset           (IConverterSettings *settings) = 0;
 
@@ -54,17 +55,21 @@ protected:
 
 };
 
-class AssetManager : public QObject, public ASingleton<AssetManager> {
+class AssetManager : public QObject {
     Q_OBJECT
 public:
+    static AssetManager    *instance            ();
+
+    static void             destroy             ();
+
     void                    init                (Engine *engine);
 
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
 
-    uint32_t                resourceType        (const QFileInfo &source);
+    int32_t                 resourceType        (const QFileInfo &source);
 
-    uint32_t                toContentType       (uint32_t type);
+    int32_t                 toContentType       (int32_t type);
 
     void                    removeResource      (const QFileInfo &source);
     void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
@@ -108,16 +113,21 @@ protected slots:
 
     void                    onDirectoryChanged  (const QString &path, bool force = false);
 
-protected:
-    friend class ASingleton<AssetManager>;
+private:
+    AssetManager            ();
+    ~AssetManager           ();
 
-    typedef QMap<uint32_t, IAssetEditor *>  EditorsMap;
+    static AssetManager    *m_pInstance;
+
+
+protected:
+    typedef QMap<int32_t, IAssetEditor *>   EditorsMap;
     EditorsMap              m_Editors;
 
-    typedef QMap<QString, uint32_t>         FormatsMap;
+    typedef QMap<QString, int32_t>          FormatsMap;
     FormatsMap              m_Formats;
 
-    typedef QMap<uint32_t, uint32_t>        ContentTypeMap;
+    typedef QMap<int32_t, int32_t>          ContentTypeMap;
     ContentTypeMap          m_ContentTypes;
 
     typedef QMap<QString, IConverter *>     ConverterMap;
@@ -139,9 +149,6 @@ protected:
     Engine                 *m_pEngine;
 
 protected:
-    AssetManager            ();
-    ~AssetManager           ();
-
     void                    cleanupBundle       ();
     void                    dumpBundle          ();
 

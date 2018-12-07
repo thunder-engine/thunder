@@ -32,7 +32,7 @@ matrix:
         - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
         - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
         - sudo apt-get update -qq
-        - sudo apt-get -y install qt510base qt510multimedia qt510script qt510svg qt510imageformats qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
+        - sudo apt-get -y install qt510base qt510multimedia qt510script qt510svg qt510imageformats qt510graphicaleffects qt510quickcontrols2 qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
         - source /opt/qt510/bin/qt510-env.sh
         - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
         - tar -xvzf qbs-1.11.0-linux.tar.gz > /dev/null

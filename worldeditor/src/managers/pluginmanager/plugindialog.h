@@ -3,8 +3,6 @@
 
 #include <QDialog>
 
-#include "patterns/asingleton.h"
-
 #include <engine.h>
 
 class PluginModel;
@@ -19,7 +17,7 @@ class PluginDialog : public QDialog  {
     Q_OBJECT
 
 public:
-    PluginDialog                    (Engine *engine, QWidget *parent = 0);
+    PluginDialog                    (Engine *engine, QWidget *parent = nullptr);
     ~PluginDialog                   ();
 
 public slots:

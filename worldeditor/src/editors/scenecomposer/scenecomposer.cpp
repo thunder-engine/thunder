@@ -13,9 +13,7 @@
 #include <json.h>
 #include <bson.h>
 
-#if __linux__
 #include <cstring>
-#endif
 
 // Engine
 #include <module.h>
@@ -42,16 +40,13 @@
 #include "aboutdialog.h"
 
 // System
-#include "common.h"
+#include <global.h>
 #include "qlog.h"
 
 // Editors
 #include "editors/propertyedit/nextobject.h"
 #include "editors/contentbrowser/contentlist.h"
 #include "editors/componentbrowser/componentmodel.h"
-#include "editors/textureedit/textureedit.h"
-#include "editors/materialedit/materialedit.h"
-#include "editors/meshedit/meshedit.h"
 
 #include "managers/asseteditormanager/importqueue.h"
 #include "managers/asseteditormanager/iconrender.h"
@@ -69,10 +64,10 @@ const QString gRecent("Recent");
 
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
-        m_pImportQueue(new ImportQueue()),
         ui(new Ui::SceneComposer),
         m_pProperties(nullptr),
-        m_pMap(nullptr) {
+        m_pMap(nullptr),
+        m_pImportQueue(new ImportQueue()) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -196,11 +191,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
-    AssetManager *asset = AssetManager::instance();
-    asset->addEditor(IConverter::ContentTexture, new TextureEdit(m_pEngine));
-    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(m_pEngine));
-    asset->addEditor(IConverter::ContentMesh, new MeshEdit(m_pEngine));
-
     ui->projectSettings->setObject(ProjectManager::instance());
 
     on_actionEditor_Mode_triggered();
@@ -219,6 +209,9 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
+    if(ui->actionGame_Mode->isChecked()) {
+        Engine::updateScene(ui->preview->scene());
+    }
     ui->viewport->repaint();
     ui->preview->repaint();
 }
@@ -226,7 +219,7 @@ void SceneComposer::timerEvent(QTimerEvent *) {
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     if(m_pProperties) {
         delete m_pProperties;
-        m_pProperties   = 0;
+        m_pProperties   = nullptr;
     }
     if(!objects.empty()) {
         ui->viewport->makeCurrent();
@@ -403,7 +396,7 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
 }
 
 void SceneComposer::on_actionSave_triggered() {
-    if(m_pMap && !ui->preview->isGame()) {
+    if(m_pMap && !ui->actionGame_Mode->isChecked()) {
         if( mPath.length() > 0 ) {
             QDir dir    = QDir(QDir::currentPath());
 
@@ -443,7 +436,6 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
     ui->actionEditor_Mode->setChecked(true);
     ui->actionGame_Mode->setChecked(false);
 
-    ui->preview->stopGame();
     ui->centralwidget->activateToolWindow(ui->viewport);
     Object *map = Engine::toObject(Bson::load(m_Back));
     if(map) {
@@ -459,15 +451,12 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
 }
 
 void SceneComposer::on_actionGame_Mode_triggered() {
-    ui->actionGame_Mode->setChecked(true);
-    ui->actionEditor_Mode->setChecked(false);
-
-    if(!ui->preview->isGame()) {
+    if(!ui->actionGame_Mode->isChecked()) {
         m_Back  = Bson::save(Engine::toVariant(m_pMap));
-
-        ui->preview->startGame();
         ui->centralwidget->activateToolWindow(ui->preview);
     }
+    ui->actionGame_Mode->setChecked(true);
+    ui->actionEditor_Mode->setChecked(false);
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {

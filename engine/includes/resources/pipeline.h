@@ -21,7 +21,7 @@ class RenderTexture;
 class PostProcessor;
 
 class NEXT_LIBRARY_EXPORT Pipeline : public Object {
-    A_REGISTER(Pipeline, Object, Resources);
+    A_REGISTER(Pipeline, Object, Resources)
 
 public:
     Pipeline                    ();

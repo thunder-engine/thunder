@@ -8,7 +8,7 @@
 class Pipeline;
 
 class NEXT_LIBRARY_EXPORT Camera : public Component {
-    A_REGISTER(Camera, Component, Components);
+    A_REGISTER(Camera, Component, Components)
 
     A_PROPERTIES(
         A_PROPERTY(float, Fov,  Camera::fov, Camera::setFov),
@@ -18,7 +18,7 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
         A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
         A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor),
         A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
-    );
+    )
 
 public:
     Camera                      ();

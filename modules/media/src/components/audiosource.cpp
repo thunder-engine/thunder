@@ -40,8 +40,8 @@ void AudioSource::update() {
 
         switch(processed) {
             case 1: {
-                int offset;
-                alGetSourcei(m_ID, AL_SAMPLE_OFFSET , &offset);
+                int32_t offset;
+                alGetSourcei(m_ID, AL_SAMPLE_OFFSET, &offset);
                 m_PositionSamples  += offset;
 
                 alSourceUnqueueBuffers(m_ID, 1, &m_Buffers[m_Current]);

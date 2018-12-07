@@ -44,7 +44,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "multimedia"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: media.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"

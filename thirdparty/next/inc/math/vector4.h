@@ -20,7 +20,7 @@
 #ifndef VECTOR4_H_HEADER_INCLUDED
 #define VECTOR4_H_HEADER_INCLUDED
 
-#include "common.h"
+#include <global.h>
 
 class Vector2;
 class Vector3;

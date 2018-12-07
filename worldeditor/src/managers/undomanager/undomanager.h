@@ -9,12 +9,10 @@
 
 #include <engine.h>
 
-#include <patterns/asingleton.h>
-
 class Object;
 class ObjectCtrl;
 
-class UndoManager : public QObject, public ASingleton<UndoManager> {
+class UndoManager : public QObject {
     Q_OBJECT
 
 public:
@@ -35,6 +33,10 @@ public:
     typedef shared_ptr<IUndoUnit>   Undo;
 
 public:
+    static UndoManager         *instance            ();
+
+    static void                 destroy             ();
+
     void                        init                ();
 
     void                        undo                ();
@@ -116,17 +118,18 @@ public:
         string                  m_Dump;
     };
 
-protected:
-    friend class ASingleton<UndoManager>;
+private:
+    UndoManager                 () {}
+    ~UndoManager                () {}
 
+    static UndoManager         *m_pInstance;
+
+protected:
     typedef QStack<IUndoUnit *> UndoStack;
 
     UndoStack                   m_UndoStack;
 
     UndoStack                   m_RedoStack;
-
-protected:
-    UndoManager                 () {}
 
 };
 

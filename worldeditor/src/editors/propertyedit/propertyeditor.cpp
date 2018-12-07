@@ -43,7 +43,7 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
     if(userType == QMetaType::type("Template"))
         return new TemplateProperty(name, propertyObject, parent);
 
-    return 0;
+    return nullptr;
 }
 
 class PropertyFilter : public QSortFilterProxyModel {
@@ -75,7 +75,7 @@ protected:
 
 class PropertyDelegate : public QStyledItemDelegate {
 public:
-    explicit PropertyDelegate(QObject *parent = 0) :
+    explicit PropertyDelegate(QObject *parent = nullptr) :
         QStyledItemDelegate(parent) {
 
         m_finishedMapper    = new QSignalMapper(this);

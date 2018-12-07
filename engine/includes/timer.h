@@ -9,19 +9,19 @@ typedef std::chrono::high_resolution_clock::time_point  TimePoint;
 
 class NEXT_LIBRARY_EXPORT Timer {
 public:
-    static void                 init                        (double fixed);
+    static void                 init                        (float fixed);
 
     static void                 update                      ();
 
-    static double               deltaTime                   ();
+    static float                deltaTime                   ();
 
-    static double               fixedDelta                  ();
+    static float                fixedDelta                  ();
 
-    static double               scale                       ();
+    static float                scale                       ();
 
-    static void                 setScale                    (double scale);
+    static void                 setScale                    (float scale);
 
-    static double               time                        ();
+    static float                time                        ();
 };
 
 #endif // TIMER

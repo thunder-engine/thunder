@@ -145,7 +145,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             }
             classList.push_front(metaObject);
         }
-    } while((metaObject = metaObject->superClass()) != 0);
+    } while((metaObject = metaObject->superClass()) != nullptr);
 	
     QList<const QMetaObject*> finalClassList;
     // remove empty classes from hierarchy list
@@ -162,7 +162,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
         }
     }
     // finally insert properties for classes containing them
-    int i                   = rowCount();
+    int i = rowCount();
     Property *propertyItem  = static_cast<Property *>(parent);
     beginInsertRows( QModelIndex(), i, i + finalClassList.count() );
     foreach(const QMetaObject *metaObject, finalClassList) {
@@ -185,15 +185,15 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             // Check if the property is associated with the current class from the finalClassList
             if(pair.Object == metaObject) {
                 QMetaProperty property(pair.Property);
-                Property *p = 0;
+                Property *p = nullptr;
                 if (!m_userCallbacks.isEmpty()) {
                     QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
-                    while( p == 0 && iter != m_userCallbacks.end() ) {
+                    while( p == nullptr && iter != m_userCallbacks.end() ) {
                         p   = (*iter)(property.name(), propertyObject, propertyItem);
                         ++iter;
                     }
                 }
-                if(p == 0) {
+                if(p == nullptr) {
                     if(property.isEnumType()) {
                         p   = new EnumProperty(property.name(), propertyObject, propertyItem);
                     } else {
@@ -285,7 +285,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
         Property *s = it;
         it          = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
-            Property *p = 0;
+            Property *p = nullptr;
 
             if(it && i < list.size() - 1) {
                 Property *child = it->findChild<Property *>(list[i]);
@@ -298,12 +298,12 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
             } else {
                 if(!m_userCallbacks.isEmpty()) {
                     QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
-                    while( p == 0 && iter != m_userCallbacks.end() ) {
+                    while( p == nullptr && iter != m_userCallbacks.end() ) {
                         p   = (*iter)(dynProp, propertyObject, it);
                         ++iter;
                     }
                 }
-                if(p == 0) {
+                if(p == nullptr) {
                     p   = new Property(dynProp, propertyObject, it);
                 }
                 p->setProperty("__Dynamic", true);
@@ -315,7 +315,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
 void PropertyModel::clear() {
     delete m_rootItem;
-    m_rootItem  = new Property("Root", 0, this);
+    m_rootItem  = new Property("Root", nullptr, this);
 
     beginResetModel();
     endResetModel();

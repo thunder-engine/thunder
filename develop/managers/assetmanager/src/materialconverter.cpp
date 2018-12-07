@@ -6,7 +6,7 @@
 
 #include <file.h>
 
-#include "common.h"
+#include <global.h>
 #include "shaderbuilder.h"
 
 #include "projectmanager.h"

@@ -20,9 +20,9 @@ void AnimationClip::loadUserData(const VariantMap &data) {
                     VariantList keys    = c.toList();
                     auto k      = keys.begin();
                     KeyFrame key;
-                    key.mPosition   = (*k).toFloat();
+                    key.mPosition   = static_cast<uint32_t>((*k).toInt());
                     k++;
-                    key.mType       = (KeyFrame::Type)(*k).toInt();
+                    key.mType       = static_cast<KeyFrame::Type>((*k).toInt());
                     k++;
                     key.mValue      = (*k);
                     k++;

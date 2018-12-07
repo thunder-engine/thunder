@@ -25,7 +25,7 @@ private:
     bool                        uploadTextureCubemap        (const Sides &sides, uint32_t internal, uint32_t format);
 
     inline bool                 isDwordAligned              ();
-    inline uint32_t             dwordAlignedLineSize        (uint32_t width, uint32_t bpp);
+    inline int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
 
     uint32_t                    m_ID;
 };

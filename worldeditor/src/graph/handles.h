@@ -5,8 +5,6 @@
 
 #include <amath.h>
 
-#include <patterns/asingleton.h>
-
 #include <resources/mesh.h>
 
 class Texture;
@@ -16,7 +14,7 @@ class ICommandBuffer;
 
 using namespace std;
 
-class Handles : public ASingleton<Handles> {
+class Handles {
 public:
     enum Axes {
         AXIS_X  = (1 << 0),

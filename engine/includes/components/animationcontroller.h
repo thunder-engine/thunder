@@ -7,11 +7,11 @@ class PropertyAnimation;
 class AnimationClip;
 
 class NEXT_LIBRARY_EXPORT AnimationController : public Component {
-    A_REGISTER(AnimationController, Component, Components);
+    A_REGISTER(AnimationController, Component, Components)
 
     A_PROPERTIES (
         A_PROPERTY(AnimationClip*, Clip, AnimationController::clip, AnimationController::setClip)
-    );
+    )
 
 public:
     AnimationController         ();

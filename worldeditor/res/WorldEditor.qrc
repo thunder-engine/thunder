@@ -22,6 +22,7 @@
         <file>fontawesome/back.png</file>
         <file>fontawesome/next.png</file>
         <file>fontawesome/pause.png</file>
+        <file>fontawesome/close.svg</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>
@@ -37,5 +38,8 @@
         <file>styles/dark/images/anim.png</file>
         <file>styles/dark/images/wav.png</file>
         <file>styles/dark/images/prefab.png</file>
+    </qresource>
+    <qresource prefix="/QML">
+        <file>qml/Emitters.qml</file>
     </qresource>
 </RCC>

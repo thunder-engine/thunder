@@ -7,7 +7,7 @@ class BaseObjectModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    explicit BaseObjectModel    (QObject *parent = 0);
+    explicit BaseObjectModel    (QObject *parent = nullptr);
 
     virtual QObject            *createRoot                  ();
 

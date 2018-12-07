@@ -65,15 +65,15 @@ private slots:
     void                    onNodeSelected                  (void *node);
     void                    onUpdateTemplate                (bool update = true);
 
+    void                    onToolWindowActionToggled       (bool checked);
+
+    void                    onToolWindowVisibilityChanged   (QWidget *toolWindow, bool visible);
+
     void                    on_actionPlane_triggered        ();
     void                    on_actionCube_triggered         ();
     void                    on_actionSphere_triggered       ();
 
     void                    on_actionSave_triggered         ();
-
-    void                    onToolWindowActionToggled       (bool checked);
-
-    void                    onToolWindowVisibilityChanged   (QWidget *toolWindow, bool visible);
 };
 
 #endif // MATERIALEDIT_H

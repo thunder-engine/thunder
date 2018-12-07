@@ -14,12 +14,14 @@ const QString gCompany("Company");
 const QString gQBS("QBS");
 const QString gProject("ProjectId");
 
+ProjectManager *ProjectManager::m_pInstance   = nullptr;
+
 ProjectManager::ProjectManager() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
-#if __APPLE__
+#if defined(__APPLE__)
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
@@ -32,6 +34,18 @@ ProjectManager::ProjectManager() {
     m_QBSDefault    = m_QBSPath;
 
     m_MyProjectsPath    = QFileInfo(dir.absolutePath());
+}
+
+ProjectManager *ProjectManager::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new ProjectManager;
+    }
+    return m_pInstance;
+}
+
+void ProjectManager::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
 }
 
 void ProjectManager::init(const QString &project, const QString &target) {

@@ -27,7 +27,7 @@ Project {
         Depends { name: "cpp" }
         bundle.isBundle: false
 
-        cpp.defines: ["BUILD_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]

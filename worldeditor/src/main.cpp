@@ -14,7 +14,7 @@
 #include "projectmanager.h"
 #include <engine.h>
 
-#include "common.h"
+#include <global.h>
 #include "qlog.h"
 
 #include <QDesktopServices>
@@ -22,6 +22,11 @@
 
 #include <regex>
 #include "managers/projectmanager/projectdialog.h"
+
+#include "editors/textureedit/textureedit.h"
+#include "editors/materialedit/materialedit.h"
+#include "editors/meshedit/meshedit.h"
+#include "editors/particleedit/particleedit.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -62,11 +67,17 @@ int main(int argc, char *argv[]) {
         Engine engine(file, argc, argv);
         engine.init();
 
+        AssetManager *asset = AssetManager::instance();
+        asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
+        asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
+        asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
+        asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
+
         SceneComposer w(&engine);
         QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
 
         CodeManager::instance()->init();
-        AssetManager::instance()->init(&engine);
+        asset->init(&engine);
         UndoManager::instance()->init();
 
         result  = a.exec();

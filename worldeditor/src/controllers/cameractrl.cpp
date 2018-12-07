@@ -116,6 +116,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
             }
 
             if(mesh) {
+                radius = 0;
                 uint32_t i  = 0;
                 for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
                     AABBox aabb = mesh->bound(s);
@@ -134,6 +135,8 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
                 pos    /= size;
                 radius /= size;
                 radius /= sinf(m_pActiveCamera->fov() * DEG2RAD);
+            } else {
+                radius = 1.0f;
             }
 
         }

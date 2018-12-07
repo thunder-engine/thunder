@@ -158,15 +158,15 @@
    <header>editors/propertyedit/propertyeditor.h</header>
   </customwidget>
   <customwidget>
-   <class>QToolWindowManager</class>
-   <extends>QWidget</extends>
-   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ComponentBrowser</class>
    <extends>QWidget</extends>
    <header>editors/componentbrowser/componentbrowser.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QToolWindowManager</class>
+   <extends>QWidget</extends>
+   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -8,8 +8,8 @@
 #define DATA    "PrefabData"
 
 Actor::Actor() :
-        m_Enable(true),
         m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
+        m_Enable(true),
         m_pTransform(nullptr),
         m_pPrefab(nullptr) {
 

@@ -48,11 +48,11 @@
 #define Y           "Y"
 
 ShaderBuilder::ShaderBuilder() :
-        m_DoubleSided(false),
-        m_DepthTest(true),
         m_BlendMode(Opaque),
         m_LightModel(Lit),
-        m_MaterialType(Surface) {
+        m_MaterialType(Surface),
+        m_DoubleSided(false),
+        m_DepthTest(true) {
 
     qRegisterMetaType<ConstFloat*>("ConstFloat");
     qRegisterMetaType<ConstVector2*>("ConstVector2");
@@ -259,7 +259,8 @@ void ShaderBuilder::load(const QString &path) {
                         } break;
                         default: {
                             if(array.first().toString() == "Template") {
-                                obj->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(), array.at(2).toInt())));
+                                obj->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
+                                                                                               array.at(2).toInt())));
                             }
                         } break;
                     }
@@ -295,9 +296,9 @@ void ShaderBuilder::load(const QString &path) {
             }
         }
     }
-    setMaterialType((Type)json[TYPE].toInt());
-    setBlend((Blend)json[BLEND].toInt());
-    setLightModel((LightModel)json[MODEL].toInt());
+    setMaterialType(static_cast<Type>(json[TYPE].toInt()));
+    setBlend(static_cast<Blend>(json[BLEND].toInt()));
+    setLightModel(static_cast<LightModel>(json[MODEL].toInt()));
     setDoubleSided(json[SIDE].toBool());
     setDepthTest(json.contains(DEPTH) ? json[DEPTH].toBool() : true);
     blockSignals(false);
@@ -338,7 +339,7 @@ void ShaderBuilder::save(const QString &path) {
                             } break;
                             case QVariant::Color: {
                                 QJsonArray v;
-                                v.push_back((int32_t)QVariant::Color);
+                                v.push_back(static_cast<int32_t>(QVariant::Color));
                                 QColor col      = value.value<QColor>();
                                 v.push_back(col.red());
                                 v.push_back(col.green());
@@ -462,7 +463,9 @@ Variant ShaderBuilder::data() const {
     VariantList properties;
     properties.push_back(materialType());
     properties.push_back(isDoubleSided());
-    properties.push_back((materialType() == Material::Surface) ? (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) : Material::Static );
+    properties.push_back((materialType() == Material::Surface) ?
+                             (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) :
+                             Material::Static );
     properties.push_back(blend());
     properties.push_back(lightModel());
     properties.push_back(isDepthTest());

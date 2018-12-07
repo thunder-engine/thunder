@@ -6,9 +6,23 @@
 
 #define URI "uri"
 
+ComponentModel *ComponentModel::m_pInstance   = nullptr;
+
 ComponentModel::ComponentModel() :
         BaseObjectModel(nullptr),
         m_pEngine(nullptr) {
+}
+
+ComponentModel *ComponentModel::instance() {
+    if(!m_pInstance) {
+        m_pInstance = new ComponentModel;
+    }
+    return m_pInstance;
+}
+
+void ComponentModel::destroy() {
+    delete m_pInstance;
+    m_pInstance = nullptr;
 }
 
 void ComponentModel::init(Engine *engine) {

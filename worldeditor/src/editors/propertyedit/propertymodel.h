@@ -13,7 +13,7 @@ class PropertyModel : public BaseObjectModel {
 	Q_OBJECT
 
 public:
-    PropertyModel                   (QObject* parent = 0);
+    PropertyModel                   (QObject* parent = nullptr);
 
     virtual ~PropertyModel          ();
 
@@ -29,7 +29,7 @@ public:
 
     QModelIndex                     buddy                           (const QModelIndex &index) const;
 
-    void                            addItem                         (QObject *propertyObject, const QString &propertyName = QString(), QObject *parent = 0);
+    void                            addItem                         (QObject *propertyObject, const QString &propertyName = QString(), QObject *parent = nullptr);
 
     void                            updateItem                      (QObject *propertyObject);
 

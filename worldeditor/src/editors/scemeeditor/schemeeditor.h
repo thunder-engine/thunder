@@ -15,7 +15,7 @@ class QWidgetAction;
 class SchemeEditor : public GraphWidget {
     Q_OBJECT
 public:
-    explicit SchemeEditor   (QWidget *parent = 0);
+    explicit SchemeEditor   (QWidget *parent = nullptr);
 
     void                    init                (const QStringList &groups = QStringList());
 
@@ -53,7 +53,7 @@ protected:
     int                     itemPos             (const AbstractSchemeModel::Item *item);
 
 protected slots:
-    void                    on_customContextMenuRequested   (const QPoint &pos);
+    void                    on_customContextMenuRequested   (const QPoint &);
 
     void                    onComponentSelected             (const QString &path);
 

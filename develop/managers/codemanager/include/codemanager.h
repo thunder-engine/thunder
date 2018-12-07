@@ -3,14 +3,16 @@
 
 #include <QObject>
 
-#include <patterns/asingleton.h>
-
 class IBuilder;
 class ProjectManager;
 
-class CodeManager : public QObject, public ASingleton<CodeManager> {
+class CodeManager : public QObject {
     Q_OBJECT
 public:
+    static CodeManager             *instance                    ();
+
+    static void                     destroy                     ();
+
     void                            init                        ();
 
     void                            setOutdated                 ();
@@ -27,7 +29,7 @@ public slots:
 protected slots:
     void                            onBuildFinished             (int exitCode);
 
-protected:
+private:
     CodeManager                     () :
             m_Outdated(false),
             m_pBuilder(nullptr),
@@ -36,11 +38,11 @@ protected:
     }
     ~CodeManager                    () {}
 
+    static CodeManager             *m_pInstance;
+
     QStringList                     rescanSources               (const QString &path);
 
 protected:
-    friend class ASingleton<CodeManager>;
-
     bool                            m_Outdated;
 
     QStringList                     m_Suffixes;

@@ -20,8 +20,6 @@
 #ifndef RAY_H_HEADER_INCLUDED
 #define RAY_H_HEADER_INCLUDED
 
-#include "common.h"
-
 #include "vector3.h"
 
 class Plane;

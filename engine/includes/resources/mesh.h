@@ -13,7 +13,8 @@
 #include "material.h"
 
 class NEXT_LIBRARY_EXPORT Mesh : public Object {
-    A_REGISTER(Mesh, Object, Resources);
+    A_REGISTER(Mesh, Object, Resources)
+
 public:
     enum Attributes {
         ATTRIBUTE_COLOR         = (1<<0),

@@ -8,6 +8,7 @@
 #include "components/camera.h"
 #include "components/directlight.h"
 #include "components/basemesh.h"
+#include "components/particlerender.h"
 
 #include "resources/mesh.h"
 #include "resources/rendertexture.h"
@@ -199,19 +200,26 @@ void Pipeline::combineComponents(Object &object, bool first) {
                 m_Components.push_back(mesh);
             }
         } else {
-            DirectLight *light  = dynamic_cast<DirectLight *>(child);
-            if(light) {
-                if(light->isEnable()) {
-                    m_Components.push_back(light);
+            ParticleRender *effect = dynamic_cast<ParticleRender *>(child);
+            if(effect) {
+                if(effect->isEnable()) {
+                    m_Components.push_back(effect);
                 }
             } else {
-                Actor *actor    = dynamic_cast<Actor *>(child);
-                if(actor) {
-                    if(!actor->isEnable()) {
-                        continue;
+                DirectLight *light  = dynamic_cast<DirectLight *>(child);
+                if(light) {
+                    if(light->isEnable()) {
+                        m_Components.push_back(light);
                     }
+                } else {
+                    Actor *actor    = dynamic_cast<Actor *>(child);
+                    if(actor) {
+                        if(!actor->isEnable()) {
+                            continue;
+                        }
+                    }
+                    combineComponents(*child);
                 }
-                combineComponents(*child);
             }
         }
     }
@@ -247,7 +255,7 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
         float nearPlane = camera.nearPlane();
         float farPlane  = camera.farPlane();
         for(int i = 0; i < MAX_LODS; i++) {
-            float f = (i + 1) / (float)MAX_LODS;
+            float f = (i + 1) / static_cast<float>(MAX_LODS);
             float l = nearPlane * powf(farPlane / nearPlane, f);
             float u = nearPlane + (farPlane - nearPlane) * f;
             float v = MIX(u, l, split);
@@ -259,7 +267,7 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
 
     float nearPlane = camera.nearPlane();
     Matrix4 view    = Matrix4(light->actor().transform()->rotation().toMatrix()).inverse();
-    for(uint32_t lod = 0; lod < MAX_LODS; lod++) {
+    for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist  = distance[lod];
         const array<Vector3, 8> &points = camera.frustumCorners(nearPlane, dist);
         nearPlane   = dist;
@@ -292,17 +300,17 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
 
         light->matrix()[lod]    = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * crop * view;
         // Draw in the depth buffer from position of the light source
-        uint32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
-        uint32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
+        int32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
+        int32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
         //float ratio = camera->ratio();
-        uint32_t w  = SM_RESOLUTION_DEFAULT;// / ((ratio < 1.0f) ? ratio : 1.0f);
-        uint32_t h  = SM_RESOLUTION_DEFAULT;// / ((ratio > 1.0f) ? ratio : 1.0f);
+        int32_t w  = SM_RESOLUTION_DEFAULT;// / ((ratio < 1.0f) ? ratio : 1.0f);
+        int32_t h  = SM_RESOLUTION_DEFAULT;// / ((ratio > 1.0f) ? ratio : 1.0f);
         m_Buffer->setViewport(x, y, w, h);
 
-        light->tiles()[lod] = Vector4((float)x / SM_RESOLUTION,
-                                      (float)y / SM_RESOLUTION,
-                                      (float)w / SM_RESOLUTION,
-                                      (float)h / SM_RESOLUTION);
+        light->tiles()[lod] = Vector4(static_cast<float>(x) / SM_RESOLUTION,
+                                      static_cast<float>(y) / SM_RESOLUTION,
+                                      static_cast<float>(w) / SM_RESOLUTION,
+                                      static_cast<float>(h) / SM_RESOLUTION);
 
         drawComponents(ICommandBuffer::SHADOWCAST, m_Components);
     }

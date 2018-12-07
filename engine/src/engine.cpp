@@ -25,8 +25,9 @@
 #include "components/staticmesh.h"
 #include "components/directlight.h"
 #include "components/textmesh.h"
-
 #include "components/spritemesh.h"
+
+#include "components/particlerender.h"
 
 #include "components/animationcontroller.h"
 
@@ -44,6 +45,8 @@
 #include "resources/font.h"
 #include "resources/animationclip.h"
 #include "resources/pipeline.h"
+
+#include "resources/particleeffect.h"
 
 #include "log.h"
 
@@ -143,6 +146,9 @@ Engine::Engine(IFile *file, int, char **argv) :
     SpriteMesh::registerClassFactory(&system);
     DirectLight::registerClassFactory(&system);
     RenderTexture::registerClassFactory(&system);
+
+    ParticleRender::registerClassFactory(&system);
+    ParticleEffect::registerClassFactory(&system);
 
     AnimationController::registerClassFactory(&system);
 

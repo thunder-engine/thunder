@@ -13,7 +13,7 @@ class MaterialInstance;
 typedef vector<RenderTexture *> TargetBuffer;
 
 class NEXT_LIBRARY_EXPORT ICommandBuffer: public Object {
-    A_REGISTER(ICommandBuffer, Object, System);
+    A_REGISTER(ICommandBuffer, Object, System)
 
 public:
     enum LayerTypes {
@@ -30,7 +30,7 @@ public:
 
     virtual void                drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
-    virtual void                drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+    virtual void                drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface = 0, uint8_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false);
 
     virtual void                setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
 
@@ -46,7 +46,7 @@ public:
 
     virtual void                setGlobalTexture            (const char *name, const Texture *value);
 
-    virtual void                setViewport                 (uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+    virtual void                setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height);
 
     virtual Matrix4             projection                  () const;
 
