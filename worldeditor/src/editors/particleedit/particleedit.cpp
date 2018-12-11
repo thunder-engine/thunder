@@ -40,8 +40,6 @@ ParticleEdit::ParticleEdit(Engine *engine) :
     ui->treeView->setWindowTitle("Properties");
     ui->quickWidget->setWindowTitle("Scheme");
 
-    qDebug() << ui->quickWidget->engine()->pluginPathList();
-
     connect(ui->glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
     startTimer(16);
 

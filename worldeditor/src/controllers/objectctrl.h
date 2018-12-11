@@ -118,7 +118,7 @@ protected:
 
     uint8_t             mAxes;
 
-    float               mMoveGrid;
+    Vector3             mMoveGrid;
     float               mAngleGrid;
     float               mScaleGrid;
 

@@ -35,7 +35,7 @@ HandleTools::HandleTools() {
 
 Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, float start, float angle) {
     Vector3Vector result;
-    int sides       = SIDES / 360.0 * angle;
+    int sides       = SIDES / 360.0f * angle;
     float theta     = angle / float(sides - 1) * DEG2RAD;
     float tfactor   = tanf(theta);
     float rfactor   = cosf(theta);
@@ -62,7 +62,7 @@ float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &positio
     Matrix4 mv  = s_View * matrix;
     Vector3 ssp;
     Camera::project(position, mv, s_Projection, ssp);
-    ssp.y    = 1.0 - ssp.y;
+    ssp.y    = 1.0f - ssp.y;
 
     Vector2 ss(ssp.x, ssp.y);
     return (Handles::m_sMouse - ss).length();
@@ -76,7 +76,7 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
     for(auto it : points) {
         Vector3 ssp;
         Camera::project(it, mv, s_Projection, ssp);
-        ssp.y    = 1.0 - ssp.y;
+        ssp.y    = 1.0f - ssp.y;
         Vector2 ss(ssp.x, ssp.y);
         if(!first) {
             result  = std::min(distanceToSegment(back, ss, Handles::m_sMouse), result);
@@ -85,7 +85,7 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
         }
         back    = ss;
     }
-    return (float)sqrt(result);
+    return sqrtf(result);
 }
 
 float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh, uint32_t surface) {
@@ -100,16 +100,16 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh, uint3
         for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
             Vector3 a;
             Camera::project(vertices[indices[i]], mv, s_Projection, a);
-            a.y     = 1.0 - a.y;
+            a.y     = 1.0f - a.y;
             Vector3 b;
             Camera::project(vertices[indices[i+1]], mv, s_Projection, b);
-            b.y     = 1.0 - b.y;
+            b.y     = 1.0f - b.y;
             Vector2 ssa(a.x, a.y);
             Vector2 ssb(b.x, b.y);
             result  = std::min(distanceToSegment(ssa, ssb, Handles::m_sMouse), result);
         }
     }
-    return (float)sqrt(result);
+    return sqrtf(result);
 }
 
 void HandleTools::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
