@@ -16,7 +16,7 @@ public:
 
     const char                 *name                        () const;
 
-    void                        update                      (Scene &scene, uint32_t resource = 0);
+    void                        update                      (Scene &, uint32_t = 0);
 
     void                        overrideController          (IController *controller);
 

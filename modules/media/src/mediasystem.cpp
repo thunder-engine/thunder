@@ -14,10 +14,10 @@
 #include "resources/audioclip.h"
 
 MediaSystem::MediaSystem(Engine *engine) :
+        ISystem(engine),
         m_pDevice(nullptr),
         m_pContext(nullptr),
-        m_pController(nullptr),
-        ISystem(engine) {
+        m_pController(nullptr) {
     PROFILER_MARKER;
 
     ObjectSystem system;
@@ -37,9 +37,9 @@ MediaSystem::~MediaSystem() {
 bool MediaSystem::init() {
     PROFILER_MARKER;
 
-    m_pDevice   = alcOpenDevice(0);
+    m_pDevice   = alcOpenDevice(nullptr);
     if(m_pDevice) {
-        m_pContext  = alcCreateContext(m_pDevice, 0);
+        m_pContext  = alcCreateContext(m_pDevice, nullptr);
         if(alcGetError(m_pDevice) == AL_NO_ERROR) {
             alcMakeContextCurrent(m_pContext);
 
@@ -53,7 +53,7 @@ const char *MediaSystem::name() const {
     return "Media";
 }
 
-void MediaSystem::update(Scene &scene, uint32_t resource) {
+void MediaSystem::update(Scene &, uint32_t) {
     PROFILER_MARKER;
 
     Camera *camera  = activeCamera();

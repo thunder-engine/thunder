@@ -19,7 +19,7 @@ public:
 
     uint32_t                    buffer                      () const { return m_Buffer; }
 
-    void                       *nativeHandle                () const { return (void *)m_ID; }
+    void                       *nativeHandle                () const { return reinterpret_cast<void *>(m_ID); }
 
     void                        makeCurrent                 (uint32_t index = 0) const;
 

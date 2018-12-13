@@ -89,10 +89,10 @@ void ARenderTextureGL::apply() {
 
     if(target == GL_TEXTURE_CUBE_MAP) {
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, m_Width, m_Height, 0, format, type, 0 );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, m_Width, m_Height, 0, format, type, nullptr );
         }
     } else {
-        glTexImage2D    ( target, 0, internal, m_Width, m_Height, 0, format, type, 0 );
+        glTexImage2D    ( target, 0, internal, m_Width, m_Height, 0, format, type, nullptr );
     }
 
 }

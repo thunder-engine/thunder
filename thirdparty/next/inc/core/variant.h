@@ -38,7 +38,7 @@ typedef map<string, Variant>    VariantMap;
 typedef list<Variant>           VariantList;
 typedef vector<int8_t>          ByteArray;
 
-#if __ANDROID__
+#ifdef __ANDROID__
 #include <sstream>
 string to_string(auto v) {
     ostringstream ss;
