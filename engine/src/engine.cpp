@@ -176,7 +176,7 @@ bool Engine::init() {
 
     reloadBundle();
 
-    Timer::init(1.0 / 60.0);
+    Timer::init(1.0f / 60.0f);
     Input::instance()->init(p_ptr->m_pPlatform);
 
     return result;
@@ -220,7 +220,7 @@ int32_t Engine::exec() {
         // Enter to game loop
         while(p_ptr->m_Valid) {
             Timer::update();
-            double lag  = Timer::deltaTime();
+            float lag  = Timer::deltaTime();
             while(lag >= Timer::fixedDelta()) {
                 // fixed update
                 p_ptr->m_Controller->update();

@@ -22,7 +22,6 @@ class Object;
 class PluginDialog;
 class ProjectManager;
 class SceneView;
-class ImportQueue;
 
 namespace Ui {
     class SceneComposer;
@@ -32,7 +31,7 @@ class SceneComposer : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit SceneComposer  (Engine *engine, QWidget *parent = 0);
+    explicit SceneComposer  (Engine *engine, QWidget *parent = nullptr);
     ~SceneComposer          ();
 
     bool                    isModified                                  () const { return mModified; }
@@ -63,8 +62,6 @@ private:
     Object                 *m_pMap;
 
     QString                 mPath;
-
-    ImportQueue            *m_pImportQueue;
 
     QProcess               *m_pBuilder;
 

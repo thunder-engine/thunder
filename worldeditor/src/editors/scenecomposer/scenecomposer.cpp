@@ -34,7 +34,6 @@
 #include "managers/pluginmanager/plugindialog.h"
 #include "managers/configmanager/configdialog.h"
 
-#include "assetmanager.h"
 #include "projectmanager.h"
 
 #include "aboutdialog.h"
@@ -45,11 +44,9 @@
 
 // Editors
 #include "editors/propertyedit/nextobject.h"
-#include "editors/contentbrowser/contentlist.h"
 #include "editors/componentbrowser/componentmodel.h"
 
-#include "managers/asseteditormanager/importqueue.h"
-#include "managers/asseteditormanager/iconrender.h"
+#include "graph/handles.h"
 
 #define FPS         "FPS"
 #define VERTICES    "Vertices"
@@ -66,8 +63,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::SceneComposer),
         m_pProperties(nullptr),
-        m_pMap(nullptr),
-        m_pImportQueue(new ImportQueue()) {
+        m_pMap(nullptr) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -136,7 +132,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->commitButton, SIGNAL(clicked(bool)), ProjectManager::instance(), SLOT(saveSettings()));
 
-    connect(ui->viewport, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->viewport, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
     startTimer(16);
 
     ui->centralwidget->addToolWindow(ui->viewportWidget, QToolWindowManager::EmptySpaceArea);
@@ -188,8 +184,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
-
-    connect(m_pImportQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
     ui->projectSettings->setObject(ProjectManager::instance());
 
@@ -243,22 +237,18 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
 }
 
 void SceneComposer::onGLInit() {
-    m_pImportQueue->init(new IconRender(m_pEngine, ui->viewport->context()));
-
-    ComponentModel::instance()->init(m_pEngine);
-    ContentList::instance()->init(m_pEngine);
-
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant map    = settings.value(ProjectManager::instance()->projectId());
+    QVariant map = settings.value(ProjectManager::instance()->projectId());
     if(map.isValid()) {
-        VariantList list    =  Json::load(map.toString().toStdString()).toList();
+        VariantList list = Json::load(map.toString().toStdString()).toList();
         auto it = list.begin();
         on_action_Open_triggered(it->toString().c_str());
+
         it++;
-        Camera *camera  = ui->viewport->controller()->activeCamera();
+        Camera *camera = ui->viewport->controller()->activeCamera();
         if(camera) {
-            Actor &actor    = camera->actor();
-            Transform *t    = actor.transform();
+            Actor &actor = camera->actor();
+            Transform *t = actor.transform();
             t->setPosition(it->toVector3());
             it++;
             t->setEuler(it->toVector3());
@@ -270,8 +260,9 @@ void SceneComposer::onGLInit() {
             camera->setOrthoWidth(it->toFloat());
             it++;
         }
-
     }
+
+    Handles::init();
 }
 
 void SceneComposer::updateTitle() {

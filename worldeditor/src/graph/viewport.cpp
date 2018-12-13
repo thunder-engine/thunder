@@ -40,8 +40,6 @@ void Viewport::initializeGL() {
     makeCurrent();
 
     m_pCommandBuffer    = Engine::objectCreate<ICommandBuffer>();
-
-    Handles::init();
 }
 
 void Viewport::paintGL() {

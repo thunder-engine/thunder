@@ -18,7 +18,7 @@ class QOpenGLFramebufferObject;
 
 class IconRender : public QObject {
 public:
-    IconRender                  (Engine *engine, QOpenGLContext *share, QObject *parent = 0);
+    IconRender                  (Engine *engine, QOpenGLContext *share, QObject *parent = nullptr);
 
     ~IconRender                 ();
 

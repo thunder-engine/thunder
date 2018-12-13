@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QSurfaceFormat>
+#include <QOpenGLContext>
 
 #include <stdio.h>
 
@@ -27,6 +28,11 @@
 #include "editors/materialedit/materialedit.h"
 #include "editors/meshedit/meshedit.h"
 #include "editors/particleedit/particleedit.h"
+
+#include "editors/componentbrowser/componentmodel.h"
+#include "editors/contentbrowser/contentlist.h"
+
+#include "managers/asseteditormanager/importqueue.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -76,9 +82,15 @@ int main(int argc, char *argv[]) {
         SceneComposer w(&engine);
         QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
 
+        ImportQueue queue(&engine);
+        QApplication::connect(&queue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
+
         CodeManager::instance()->init();
         asset->init(&engine);
         UndoManager::instance()->init();
+
+        ComponentModel::instance()->init(&engine);
+        ContentList::instance()->init(&engine);
 
         result  = a.exec();
     }

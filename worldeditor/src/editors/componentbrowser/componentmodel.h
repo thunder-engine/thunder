@@ -15,7 +15,7 @@ public:
 
     void                    init            (Engine *engine);
 
-    int                     columnCount     (const QModelIndex &parent) const;
+    int                     columnCount     (const QModelIndex &) const;
 
     QVariant                headerData      (int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 

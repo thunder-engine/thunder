@@ -19,7 +19,7 @@ class ImportQueue : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ImportQueue    (QWidget *parent = nullptr);
+    explicit ImportQueue    (Engine *engine, QWidget *parent = nullptr);
     ~ImportQueue            ();
 
     void                    init                (IconRender *render);
@@ -38,12 +38,11 @@ private slots:
 private:
     void                    keyPressEvent       (QKeyEvent *e);
 
-    void                    renderIcons         ();
-
     Ui::ImportQueue        *ui;
-    IconRender             *m_pIconRender;
 
     QMap<QString, uint8_t>  m_UpdateQueue;
+
+    Engine                 *m_pEngine;
 };
 
 #endif // IMPORTQUEUE_H

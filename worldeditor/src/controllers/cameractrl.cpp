@@ -19,10 +19,10 @@
 
 CameraCtrl::CameraCtrl(Viewport *view) :
         IController(),
+        mCameraMove(MoveTypes::MOVE_IDLE),
+        mCameraFree(true),
         mBlockMove(false),
         mBlockRot(false),
-        mCameraFree(true),
-        mCameraMove(MoveTypes::MOVE_IDLE),
         mCameraSpeed(Vector3()),
         m_pCamera(nullptr),
         m_pView(view) {
