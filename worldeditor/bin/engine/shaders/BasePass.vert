@@ -3,17 +3,17 @@
 #pragma flags
 
 #include ".embedded/Common.vert"
+#include "Common.vert"
 
 #define MAX_BONES 60
 
 layout(location = 0) uniform mat4 t_model;
-
 layout(location = 1) uniform mat4 t_view;
 layout(location = 2) uniform mat4 t_projection;
 
-uniform mat4 bonesMatrix[MAX_BONES];
-uniform vec4 position;
-uniform vec3 axis;
+//uniform mat4 bonesMatrix[MAX_BONES];
+//uniform vec4 position;
+//uniform vec3 axis;
 
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec3 normal;
@@ -95,7 +95,7 @@ Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 indices, vec4 weights) {
     return result;
 }
 
-Vertex axisAlignedBillboard(vec3 v, vec3 t, vec3 n, vec4 position, vec3 axis) {
+Vertex axisAlignedBillboard(vec3 v, vec3 t, vec3 n, vec3 axis) {
     Vertex result;
     result.t    = t;
     result.n    = n;
@@ -154,7 +154,7 @@ void main(void) {
 #endif
 
 #ifdef TYPE_AXISALIGNED
-    Vertex vert = axisAlignedBillboard( vertex, tangent, normal, position, axis );
+    Vertex vert = axisAlignedBillboard( vertex, tangent, normal, axis );
 #endif
     vec3 camera = vec3( t_view[0].w,
                         t_view[1].w,

@@ -24,7 +24,7 @@ StringList IFile::_flist(const char *path) {
     char **i;
 
     StringList result;
-    for(i = rc; *i != NULL; i++) {
+    for(i = rc; *i != nullptr; i++) {
         result.push_back(*i);
     }
 
@@ -70,7 +70,7 @@ _FILE *IFile::_fopen(const char *path, const char *mode) {
         case 'a': result    = (void *)PHYSFS_openAppend(path); break;
         default: break;
     }
-    if(result == 0) {
+    if(result == nullptr) {
         Log(Log::ERR) << "[ FileIO ] Can't open file" << path << PHYSFS_getLastError();
     }
     return result;

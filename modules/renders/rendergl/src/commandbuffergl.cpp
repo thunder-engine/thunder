@@ -24,29 +24,13 @@
 #define INSTANCE_ATRIB  5
 
 #define MODEL_UNIFORM   0
-
-const char *gVertex = ".embedded/BasePass.vert";
-
-#define TYPE_STATIC "#define TYPE_STATIC 1"
-#define TYPE_SKINNED "#define TYPE_SKINNED 1"
-#define TYPE_BILLBOARD "#define TYPE_BILLBOARD 1"
-#define TYPE_AXISALIGNED "#define TYPE_AXISALIGNED 1"
-
-#define INSTACED "#define INSTANCING 1"
+#define VIEW_UNIFORM    1
+#define PROJ_UNIFORM    2
 
 CommandBufferGL::CommandBufferGL() {
     PROFILER_MARKER;
 
     m_StaticVertex.clear();
-
-    string flags    = TYPE_STATIC;
-    m_Static    = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, flags);
-
-    flags   += "\n";
-    flags   += INSTACED;
-    m_Instanced = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, flags);
-
-    m_Particle  = m_StaticVertex.buildShader(AMaterialGL::Vertex, gVertex, TYPE_BILLBOARD);
 
     glGenBuffers(1, &m_InstanceBuffer);
 
@@ -64,12 +48,6 @@ CommandBufferGL::~CommandBufferGL() {
     glDeleteProgramPipelines(1, &m_Pipeline);
 #endif
     glDeleteBuffers(1, &m_InstanceBuffer);
-
-    glDeleteProgram(m_Particle);
-
-    glDeleteProgram(m_Static);
-
-    glDeleteProgram(m_Instanced);
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -87,39 +65,39 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
     glClear(flags);
 }
 
-void CommandBufferGL::putUniforms(uint32_t fragment, MaterialInstance *instance) {
-    glProgramUniform1fEXT   (fragment, TIMER_BIND, Timer::time());
-    glProgramUniform1fEXT   (fragment, CLIP_BIND,  0.99f);
-    glProgramUniform4fvEXT  (fragment, COLOR_BIND, 1, m_Color.v);
+void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) {
+    glProgramUniform1fEXT   (program, TIMER_BIND, Timer::time());
+    glProgramUniform1fEXT   (program, CLIP_BIND,  0.99f);
+    glProgramUniform4fvEXT  (program, COLOR_BIND, 1, m_Color.v);
 
     int32_t location;
     // Push uniform values to shader
     for(const auto &it : m_Uniforms) {
-        location    = glGetUniformLocation(fragment, it.first.c_str());
+        location    = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
             const Variant &data= it.second;
             switch(data.type()) {
-                case MetaType::VECTOR2: glProgramUniform2fvEXT      (fragment, location, 1, data.toVector2().v); break;
-                case MetaType::VECTOR3: glProgramUniform3fvEXT      (fragment, location, 1, data.toVector3().v); break;
-                case MetaType::VECTOR4: glProgramUniform4fvEXT      (fragment, location, 1, data.toVector4().v); break;
-                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(fragment, location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                default:                glProgramUniform1fEXT       (fragment, location, data.toFloat()); break;
+                case MetaType::VECTOR2: glProgramUniform2fvEXT      (program, location, 1, data.toVector2().v); break;
+                case MetaType::VECTOR3: glProgramUniform3fvEXT      (program, location, 1, data.toVector3().v); break;
+                case MetaType::VECTOR4: glProgramUniform4fvEXT      (program, location, 1, data.toVector4().v); break;
+                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(program, location, 1, GL_FALSE, data.toMatrix4().mat); break;
+                default:                glProgramUniform1fEXT       (program, location, data.toFloat()); break;
             }
         }
     }
 
     for(const auto &it : instance->params()) {
-        location    = glGetUniformLocation(fragment, it.first.c_str());
+        location    = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
             const MaterialInstance::Info &data  = it.second;
             switch(data.type) {
                 case 0: break;
-                case MetaType::INTEGER: glProgramUniform1ivEXT      (fragment, location, data.count, static_cast<const int32_t *>(data.ptr)); break;
-                case MetaType::VECTOR2: glProgramUniform2fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR3: glProgramUniform3fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR4: glProgramUniform4fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(fragment, location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
-                default:                glProgramUniform1fvEXT      (fragment, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::INTEGER: glProgramUniform1ivEXT      (program, location, data.count, static_cast<const int32_t *>(data.ptr)); break;
+                case MetaType::VECTOR2: glProgramUniform2fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR3: glProgramUniform3fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR4: glProgramUniform4fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(program, location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
+                default:                glProgramUniform1fvEXT      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
             }
         }
     }
@@ -156,19 +134,22 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         uint32_t lod    = 0;
 
         AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
-        uint32_t program    = mat->bind(layer);
-        if(program) {
-            glProgramUniformMatrix4fvEXT(m_Static, MODEL_UNIFORM, 1, GL_FALSE, model.mat);
+        uint32_t vertex     = mat->getProgram(AMaterialGL::Static);
+        uint32_t fragment   = mat->bind(layer);
+        if(vertex && fragment) {
+            glProgramUniformMatrix4fvEXT(vertex, MODEL_UNIFORM, 1, GL_FALSE, model.mat);
+            glProgramUniformMatrix4fvEXT(vertex, VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
+            glProgramUniformMatrix4fvEXT(vertex, PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
 #ifdef GL_ES_VERSION_2_0
-            glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, m_Static);
-            glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
+            glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, vertex);
+            glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, fragment);
             glBindProgramPipelineEXT(m_Pipeline);
 #else
-            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, m_Static);
-            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, program);
+            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, vertex);
+            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
             glBindProgramPipeline(m_Pipeline);
 #endif
-            putUniforms(program, material);
+            putUniforms(fragment, material);
 
             bindVao(m, surface, lod);
 
@@ -207,24 +188,26 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
         uint32_t lod    = 0;
 
         AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
-        uint32_t program    = mat->bind(layer);
-        if(program) {
-            uint32_t vertex = (particle) ? m_Particle : m_Instanced;
+        uint32_t vertex     = mat->getProgram((particle) ? AMaterialGL::Particle : AMaterialGL::Instanced);
+        uint32_t fragment   = mat->bind(layer);
 
+        if(vertex && fragment) {
             glProgramUniformMatrix4fvEXT(vertex, MODEL_UNIFORM, 1, GL_FALSE, Matrix4().mat);
+            glProgramUniformMatrix4fvEXT(vertex, VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
+            glProgramUniformMatrix4fvEXT(vertex, PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
 
             glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
             glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
 #ifdef GL_ES_VERSION_2_0
             glUseProgramStagesEXT(m_Pipeline, GL_VERTEX_SHADER_BIT_EXT, vertex);
-            glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, program);
+            glUseProgramStagesEXT(m_Pipeline, GL_FRAGMENT_SHADER_BIT_EXT, fragment);
             glBindProgramPipelineEXT(m_Pipeline);
 #else
             glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, vertex);
-            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, program);
+            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
             glBindProgramPipeline(m_Pipeline);
 #endif
-            putUniforms(program, material);
+            putUniforms(fragment, material);
 
             bindVao(m, surface, lod);
 
@@ -370,51 +353,6 @@ void CommandBufferGL::setColor(const Vector4 &color) {
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     m_View          = view;
     m_Projection    = projection;
-
-    int32_t location;
-    location    = glGetUniformLocation(m_Particle, "t_view");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Particle, location, 1, GL_FALSE, m_View.mat);
-    }
-    location	= glGetUniformLocation(m_Particle, "t_projection");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Particle, location, 1, GL_FALSE, m_Projection.mat);
-    }
-
-    for(const auto &it : m_Uniforms) {
-        location    = glGetUniformLocation(m_Particle, it.first.c_str());
-        if(location > -1) {
-            const Variant &data= it.second;
-            switch(data.type()) {
-                case MetaType::VECTOR2: glProgramUniform2fvEXT      (m_Particle, location, 1, data.toVector2().v); break;
-                case MetaType::VECTOR3: glProgramUniform3fvEXT      (m_Particle, location, 1, data.toVector3().v); break;
-                case MetaType::VECTOR4: {
-                    Vector4 v   = data.toVector4();
-                    glProgramUniform4fvEXT      (m_Particle, location, 1, v.v); break;
-                }
-                case MetaType::MATRIX4: glProgramUniformMatrix4fvEXT(m_Particle, location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                default:                glProgramUniform1fEXT       (m_Particle, location, data.toFloat()); break;
-            }
-        }
-    }
-
-    location    = glGetUniformLocation(m_Static, "t_view");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Static, location, 1, GL_FALSE, m_View.mat);
-    }
-    location	= glGetUniformLocation(m_Static, "t_projection");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Static, location, 1, GL_FALSE, m_Projection.mat);
-    }
-
-    location    = glGetUniformLocation(m_Instanced, "t_view");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Instanced, location, 1, GL_FALSE, m_View.mat);
-    }
-    location	= glGetUniformLocation(m_Instanced, "t_projection");
-    if(location > -1) {
-        glProgramUniformMatrix4fvEXT(m_Instanced, location, 1, GL_FALSE, m_Projection.mat);
-    }
 }
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {

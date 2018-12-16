@@ -109,15 +109,15 @@ void Material::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             VariantList list    = (*it).second.value<VariantList>();
             auto i  = list.begin();
-            m_MaterialType  = (MaterialType)(*i).toInt();
+            m_MaterialType  = static_cast<MaterialType>((*i).toInt());
             i++;
             m_DoubleSided   = (*i).toBool();
             i++;
             m_Surfaces      = (*i).toInt();
             i++;
-            m_BlendMode     = (BlendType)(*i).toInt();
+            m_BlendMode     = static_cast<BlendType>((*i).toInt());
             i++;
-            m_LightModel    = (LightModelType)(*i).toInt();
+            m_LightModel    = static_cast<LightModelType>((*i).toInt());
             i++;
             m_DepthTest     = (*i).toBool();
             i++;
@@ -142,11 +142,11 @@ void Material::clear() {
 }
 
 Material::LightModelType Material::lightModel() const {
-    return (LightModelType)m_LightModel;
+    return static_cast<LightModelType>(m_LightModel);
 }
 
 Material::BlendType Material::blendMode() const {
-    return (BlendType)m_BlendMode;
+    return static_cast<BlendType>(m_BlendMode);
 }
 
 bool Material::isDoubleSided() const {

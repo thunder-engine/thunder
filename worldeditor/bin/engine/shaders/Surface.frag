@@ -2,8 +2,7 @@
 
 #pragma flags
 
-#include ".embedded/Common.vert"
-#include ".embedded/BRDF.frag"
+#include "Common.vert"
 
 layout(location = 0) in vec3 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -33,15 +32,6 @@ void simpleMode(Params params) {
         discard;
     }
     gbuffer1    = t_color;
-}
-
-void depthMode(Params params) {
-    float depth = gl_FragCoord.z;
-    float dx    = dFdx(depth);
-    float dy    = dFdy(depth);
-    float msqr  = depth * depth + 0.25 * (dx * dx + dy * dy);
-
-    gbuffer1    = vec4(depth, msqr, 0.0, 0.0);
 }
 
 void passMode(Params params) {
@@ -81,11 +71,7 @@ void main(void) {
     params.normal   = normalize( params.normal.x * _t + params.normal.y * _b + params.normal.z * _n );
     params.reflect  = reflect( _view, params.normal );
 #ifdef SIMPLE
-    #ifdef DEPTH
-    depthMode(params);
-    #else
     simpleMode(params);
-    #endif
 #else
     passMode(params);
 #endif

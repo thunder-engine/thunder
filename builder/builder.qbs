@@ -29,7 +29,9 @@ Project {
         "../thirdparty/glfw/inc",
         "../thirdparty/fbx/inc",
         "../thirdparty/zlib/src",
-        "../thirdparty/quazip/src"
+        "../thirdparty/quazip/src",
+        "../thirdparty/glsl",
+        "../thirdparty/spirvcross/src"
     ]
 
     QtApplication {
@@ -41,6 +43,8 @@ Project {
         Depends { name: "quazip-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "glsl" }
+        Depends { name: "spirvcross" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
 
         bundle.isBundle: false

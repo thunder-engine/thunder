@@ -43,14 +43,10 @@ public:
 protected:
     void                        bindVao                     (AMeshGL *mesh, uint32_t surface, uint32_t lod);
 
-    void                        putUniforms                 (uint32_t fragment, MaterialInstance *instance);
+    void                        putUniforms                 (uint32_t program, MaterialInstance *instance);
 
 protected:
     AMaterialGL                 m_StaticVertex;
-
-    uint32_t                    m_Static;
-    uint32_t                    m_Particle;
-    uint32_t                    m_Instanced;
 
     uint32_t                    m_Pipeline;
 

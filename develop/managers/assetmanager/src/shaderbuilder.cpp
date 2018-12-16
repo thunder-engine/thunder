@@ -31,6 +31,11 @@
 #include "projectmanager.h"
 
 #include "functionmodel.h"
+#include "spirvconverter.h"
+#include "resources/text.h"
+
+#include <regex>
+#include <sstream>
 
 #define NODES       "Nodes"
 #define LINKS       "Links"
@@ -46,6 +51,9 @@
 #define DEPTH       "Depth"
 #define X           "X"
 #define Y           "Y"
+
+const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
+const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
 
 ShaderBuilder::ShaderBuilder() :
         m_BlendMode(Opaque),
@@ -406,7 +414,6 @@ void ShaderBuilder::save(const QString &path) {
 bool ShaderBuilder::build() {
     cleanup();
 
-    m_Shader.clear();
     // Nodes
     QString str;
     buildRoot(str);
@@ -435,6 +442,10 @@ bool ShaderBuilder::build() {
     }
     m_Shader.append("\n");
     m_Shader.append(str);
+
+    addPragma("version", "#version 430 core");
+    addPragma("material", m_Shader.toStdString());
+
     return true;
 }
 
@@ -478,7 +489,74 @@ Variant ShaderBuilder::data() const {
     }
     user["Textures"]    = textures;
     user["Properties"]  = properties;
-    user["Shader"]      = shader().toStdString();
+
+    string define;
+    switch(m_BlendMode) {
+        case Additive: {
+            define  = "#define BLEND_ADDITIVE 1";
+        } break;
+        case Translucent: {
+            define  = "#define BLEND_TRANSLUCENT 1";
+        } break;
+        default: {
+            define  = "#define BLEND_OPAQUE 1";
+        } break;
+    }
+    switch(m_LightModel) {
+        case Lit: {
+            define += "\n#define MODEL_LIT 1";
+        } break;
+        case Subsurface: {
+            define += "\n#define MODEL_SUBSURFACE 1";
+        } break;
+        default: {
+            define += "\n#define MODEL_UNLIT 1";
+        } break;
+    }
+
+    QString fragment = ProjectManager::instance()->resourcePath() + "/engine/shaders/Surface.frag";
+    {
+        QString buff = loadIncludes(fragment, define);
+        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
+        if(!spv.empty()) {
+            user["Shader"] = SpirVConverter::spvToGlsl(spv);
+        }
+    }
+    {
+        define += "\n#define SIMPLE 1";
+        QString buff = loadIncludes(fragment, define);
+        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
+        if(!spv.empty()) {
+            user["Simple"] = SpirVConverter::spvToGlsl(spv);
+        }
+    }
+
+    QString vertex = ProjectManager::instance()->resourcePath() + "/engine/shaders/BasePass.vert";
+    {
+        string define = "#define TYPE_STATIC 1";
+        {
+            QString buff = loadIncludes(vertex, define);
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+            if(!spv.empty()) {
+                user["Static"] = SpirVConverter::spvToGlsl(spv);
+            }
+        }
+        {
+            define += "\n#define INSTANCING 1";
+            QString buff = loadIncludes(vertex, define);
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+            if(!spv.empty()) {
+                user["StaticInst"] = SpirVConverter::spvToGlsl(spv);
+            }
+        }
+    }
+    {
+        QString buff = loadIncludes(vertex, "#define TYPE_BILLBOARD 1");
+        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+        if(!spv.empty()) {
+            user["Particled"] = SpirVConverter::spvToGlsl(spv);
+        }
+    }
 
     return user;
 }
@@ -556,4 +634,44 @@ void ShaderBuilder::cleanup() {
     m_Textures.clear();
     m_Params.clear();
     m_Uniforms.clear();
+    m_Pragmas.clear();
+    m_Shader.clear();
+}
+
+void ShaderBuilder::addPragma(const string &key, const string &value) {
+    m_Pragmas[key]  = m_Pragmas[key].append(value).append("\r\n");
+}
+
+QString ShaderBuilder::loadIncludes(const QString &path, const string &define) const {
+    QString output;
+
+    QFile file(path);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        while(!file.atEnd()) {
+            QString line = file.readLine();
+
+            smatch matches;
+
+            string data = line.toStdString();
+            if(regex_match(data, matches, include)) {
+                string next(matches[1]);
+                output += loadIncludes(ProjectManager::instance()->resourcePath() + "/engine/shaders/" + next.c_str(), define) + "\n";
+            } else if(regex_match(data, matches, pragma)) {
+                if(matches[1] == "flags") {
+                    output += QString(define.c_str()) + "\n";
+                } else {
+                    auto it = m_Pragmas.find(matches[1]);
+                    if(it != m_Pragmas.end()) {
+                        output += QString(m_Pragmas.at(matches[1]).c_str()) + "\n";
+                    }
+                }
+            } else {
+                output += line + "\n";
+            }
+
+        }
+        file.close();
+    }
+
+    return output;
 }

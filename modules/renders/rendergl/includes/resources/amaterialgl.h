@@ -14,18 +14,14 @@ class ICommandBuffer;
 class AMaterialGL : public Material {
     A_OVERRIDE(AMaterialGL, Material, Resources)
 
-    /*! \enum ShaderType */
     enum ShaderType {
-        Vertex                  = (1<<0),
-        Fragment                = (1<<1),
-        Geometry                = (1<<2),
-        TesselationControll     = (1<<3),
-        TesselationEvaluation   = (1<<4)
-    };
+        Static      = 0,
+        Instanced,
+        Skinned,
+        Particle,
 
-    enum FragmentMode {
-        Simple                  = (1<<8),
-        Depth                   = (1<<9)
+        Default     = 20,
+        Simple
     };
 
     typedef unordered_map<uint16_t, uint32_t> ObjectMap;
@@ -42,16 +38,16 @@ public:
 
     uint32_t                    getProgram      (uint16_t type) const;
 
-    uint32_t                    buildShader     (uint8_t type, const string &path = string(), const string &define = string());
+    uint32_t                    buildShader     (uint8_t type, const string &src = string());
 
     TextureMap                  textures        () const { return m_Textures; }
+
+    string                      loadIncludes    (const string &path, const string &define = string());
 
 protected:
     void                        addPragma       (const string &key, const string &value);
 
     string                      parseData       (const string &data, const string &define);
-
-    string                      loadIncludes    (const string &path, const string &define = string());
 
     bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
 
