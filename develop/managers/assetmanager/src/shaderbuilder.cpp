@@ -454,9 +454,9 @@ Variant ShaderBuilder::object() const {
 
     VariantList object;
 
+    object.push_back(Material::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
-    object.push_back(Material::metaClass()->name()); // type
     object.push_back(Material::metaClass()->name()); // name
 
     object.push_back(VariantMap()); // properties

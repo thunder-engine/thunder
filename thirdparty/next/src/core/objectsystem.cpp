@@ -1,6 +1,7 @@
 #include "core/objectsystem.h"
 
 #include "core/object.h"
+#include "core/invalid.h"
 #include "core/uri.h"
 #include "core/bson.h"
 #include "core/json.h"
@@ -177,50 +178,7 @@ Variant ObjectSystem::toVariant(const Object *object) {
         if(!it->isSerializable()) {
             continue;
         }
-        int uuid    = int(it->uuid());
-
-        VariantList o;
-        o.push_back(uuid);
-        Object *parent = it->parent();
-        o.push_back(int((parent) ? parent->uuid() : 0));
-        o.push_back(it->typeName());
-        o.push_back(it->name());
-
-        // Save base properties
-        VariantMap properties;
-        const MetaObject *meta = it->metaObject();
-        for(int i = 0; i < meta->propertyCount(); i++) {
-            MetaProperty p = meta->property(i);
-            if(p.isValid()) {
-                Variant v  = p.read(it);
-                if(v.userType() < MetaType::USERTYPE) {
-                    properties[p.name()] = v;
-                }
-            }
-        }
-
-        // Save links
-        VariantList links;
-        for(const auto &l : it->getReceivers()) {
-            VariantList link;
-
-            Object *sender  = l.sender;
-
-            link.push_back(int(sender->uuid()));
-            MetaMethod method  = sender->metaObject()->method(l.signal);
-            link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
-
-            link.push_back(uuid);
-            method      = it->metaObject()->method(l.method);
-            link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
-
-            links.push_back(link);
-        }
-        o.push_back(properties);
-        o.push_back(links);
-        o.push_back(it->saveUserData());
-
-        result.push_back(o);
+        result.push_back(it->saveData());
     }
 
     return result;
@@ -243,6 +201,8 @@ Object *ObjectSystem::toObject(const Variant &variant) {
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i          = o.begin();
+            string type = (*i).toString();
+            i++;
             uint32_t uuid   = (*i).toInt();
             i++;
             Object *parent  = nullptr;
@@ -251,18 +211,14 @@ Object *ObjectSystem::toObject(const Variant &variant) {
                 parent  = (*a).second;
             }
             i++;
-            string type = (*i).toString();
-            i++;
             string name = (*i).toString();
             i++;
 
             Object *object  = objectCreate(type, name, parent);
             if(object) {
                 object->setUUID(uuid);
-                if(!object->parent()) {
-                    result  = object;
-                }
                 array[uuid] = object;
+
                 // Load base properties
                 for(const auto &it : (*i).toMap()) {
                     Variant v  = it.second;
@@ -302,6 +258,21 @@ Object *ObjectSystem::toObject(const Variant &variant) {
                 i++;
                 // Load user data
                 object->loadUserData((*i).value<VariantMap>());
+            } else {
+                // Create a dummy object to keep all fields
+                Invalid *invalid = new Invalid();
+                invalid->loadData(o);
+                object = invalid;
+
+                object->setUUID(uuid);
+                object->setName(name);
+                object->setParent(parent);
+
+                array[uuid] = object;
+            }
+
+            if(!object->parent()) {
+                result  = object;
             }
         }
     }

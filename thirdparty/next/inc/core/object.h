@@ -98,7 +98,7 @@ public:
 
     uint32_t                        uuid                        () const;
 
-    static void                     connect                     (Object *sender, const char *signal, Object *receiver, const char *method);
+    static bool                     connect                     (Object *sender, const char *signal, Object *receiver, const char *method);
     static void                     disconnect                  (Object *sender, const char *signal, Object *receiver, const char *method);
 
     void                            deleteLater                 ();
@@ -154,8 +154,10 @@ public:
 
     virtual bool                    event                       (Event *event);
 
+    virtual void                    loadData                    (const VariantList &data);
     virtual void                    loadUserData                (const VariantMap &data);
 
+    virtual VariantList             saveData                    () const;
     virtual VariantMap              saveUserData                () const;
 
     virtual bool                    isSerializable              () const;

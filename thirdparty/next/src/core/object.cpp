@@ -437,7 +437,7 @@ string Object::typeName() const {
         Object::connect(&obj1, _SIGNAL(signal(bool)), &obj2, _SIGNAL(signal(bool)));
     \endcode
 */
-void Object::connect(Object *sender, const char *signal, Object *receiver, const char *method) {
+bool Object::connect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION()
     if(sender && receiver) {
         int32_t snd = sender->metaObject()->indexOfSignal(&signal[1]);
@@ -467,9 +467,11 @@ void Object::connect(Object *sender, const char *signal, Object *receiver, const
                     unique_lock<mutex> locker(receiver->p_ptr->m_Mutex);
                     receiver->p_ptr->m_lSenders.push_back(link);
                 }
+                return true;
             }
         }
     }
+    return false;
 }
 /*!
     Disconnects \a signal in object \a sender from \a method in object \a receiver.
@@ -708,7 +710,12 @@ bool Object::event(Event *event) {
     A_UNUSED(event);
     return false;
 }
-
+/*!
+    This method allows to DESERIALIZE \a data of object like properties, connections and user data.
+*/
+void Object::loadData(const VariantList &data) {
+    A_UNUSED(data)
+}
 /*!
     This method allows to DESERIALIZE \a data which not present as A_PROPERTY() in object.
 */
@@ -716,8 +723,58 @@ void Object::loadUserData(const VariantMap &data) {
     A_UNUSED(data)
 }
 /*!
-    This method allows to SERIALIZE data which not present as A_PROPERTY() in object.
+    This method allows to SERIALIZE all object data like properties connections and user data.
     Returns serialized data as VariantList.
+*/
+VariantList Object::saveData() const {
+    VariantList result;
+
+    result.push_back(typeName());
+    result.push_back((int32_t)p_ptr->m_UUID);
+    Object *parent = p_ptr->m_pParent;
+    result.push_back(int((parent) ? parent->uuid() : 0));
+    result.push_back(name());
+
+    // Save base properties
+    VariantMap properties;
+    const MetaObject *meta = metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        MetaProperty p = meta->property(i);
+        if(p.isValid()) {
+            Variant v  = p.read(this);
+            if(v.userType() < MetaType::USERTYPE) {
+                properties[p.name()] = v;
+            }
+        }
+    }
+
+    // Save links
+    VariantList links;
+    for(const auto &l : getReceivers()) {
+        VariantList link;
+
+        Object *sender  = l.sender;
+
+        link.push_back(int(sender->uuid()));
+        MetaMethod method  = sender->metaObject()->method(l.signal);
+        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+
+        link.push_back((int32_t)p_ptr->m_UUID);
+        method      = metaObject()->method(l.method);
+        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+
+        links.push_back(link);
+    }
+    result.push_back(properties);
+    result.push_back(links);
+    result.push_back(saveUserData());
+
+    return result;
+}
+
+/*!
+    This method allows to SERIALIZE data which not present as A_PROPERTY() in object.
+    Returns serialized data as VariantMap.
 */
 VariantMap Object::saveUserData() const {
     return VariantMap();

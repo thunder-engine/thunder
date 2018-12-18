@@ -84,6 +84,7 @@ Product {
                     libPrefix + "Qt5Script" + libPostfix,
                     libPrefix + "Qt5Xml" + libPostfix,
                     libPrefix + "Qt5Network" + libPostfix,
+                    libPrefix + "Qt5Multimedia" + libPostfix,
                     libPrefix + "Qt5QuickWidgets" + libPostfix,
                     libPrefix + "Qt5Quick" + libPostfix,
                     libPrefix + "Qt5QuickTemplates2" + libPostfix,
@@ -97,6 +98,7 @@ Product {
                     list.push(libPrefix + "Qt5Script" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
                     list.push(libPrefix + "Qt5Xml" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
                     list.push(libPrefix + "Qt5Network" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
+                    list.push(libPrefix + "Qt5Multimedia" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
                     list.push(libPrefix + "Qt5QuickWidgets" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
                     list.push(libPrefix + "Qt5Quick" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
                     list.push(libPrefix + "Qt5QuickTemplates2" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
@@ -110,6 +112,7 @@ Product {
                 list.push("**/QtScript.framework/**");
                 list.push("**/QtXml.framework/**");
                 list.push("**/QtNetwork.framework/**");
+                list.push("**/QtMultimedia.framework/**"),
                 list.push("**/QtQml.framework/**");
                 list.push("**/QtQuick.framework/**");
                 list.push("**/Qt5QuickTemplates2.framework/**");
