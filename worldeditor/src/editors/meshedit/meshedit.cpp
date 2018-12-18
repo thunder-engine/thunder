@@ -43,7 +43,7 @@ MeshEdit::MeshEdit(Engine *engine) :
 
     ui->treeView->setWindowTitle("Properties");
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
     startTimer(16);
 
     ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::EmptySpaceArea);

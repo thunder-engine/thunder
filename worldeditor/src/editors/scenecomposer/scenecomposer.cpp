@@ -97,7 +97,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->viewport->setController(ctl);
     ui->viewport->setScene(m_pEngine->scene());
 
-    ui->preview->setController(new IController());
+    ui->preview->setController(new CameraCtrl(ui->preview));
     ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
 
@@ -245,7 +245,7 @@ void SceneComposer::onGLInit() {
         on_action_Open_triggered(it->toString().c_str());
 
         it++;
-        Camera *camera = ui->viewport->controller()->activeCamera();
+        Camera *camera = Camera::current();
         if(camera) {
             Actor &actor = camera->actor();
             Transform *t = actor.transform();
@@ -285,7 +285,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
     if(!str.isEmpty() && !mPath.isEmpty()) {
         VariantList params;
         params.push_back(qPrintable(mPath));
-        Camera *camera  = ui->viewport->controller()->activeCamera();
+        Camera *camera  = ui->viewport->controller()->camera();
         if(camera) {
             Actor &actor    = camera->actor();
             Transform *t    = actor.transform();

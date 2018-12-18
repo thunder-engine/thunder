@@ -50,7 +50,7 @@ MaterialEdit::MaterialEdit(Engine *engine) :
     ui->textEdit->setWindowTitle("Source Code");
     ui->schemeWidget->setWindowTitle("Scheme");
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
     startTimer(16);
 
     ui->centralwidget->addToolWindow(ui->schemeWidget, QToolWindowManager::EmptySpaceArea);
@@ -181,8 +181,7 @@ void MaterialEdit::onGLInit() {
     m_pLight->transform()->setRotation(rot);
     m_pLight->addComponent<DirectLight>();
 
-    CameraCtrl *controller  = static_cast<CameraCtrl *>(glWidget->controller());
-    Camera *camera  = controller->activeCamera();
+    Camera *camera  = Camera::current();
     if(camera) {
         camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
     }

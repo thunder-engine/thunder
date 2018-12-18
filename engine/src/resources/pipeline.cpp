@@ -1,7 +1,5 @@
 #include "pipeline.h"
 
-#include "controller.h"
-
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/scene.h"
@@ -11,6 +9,7 @@
 #include "components/particlerender.h"
 
 #include "resources/mesh.h"
+#include "resources/material.h"
 #include "resources/rendertexture.h"
 
 #include "analytics/profiler.h"

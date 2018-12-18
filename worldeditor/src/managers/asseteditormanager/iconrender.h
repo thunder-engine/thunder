@@ -8,6 +8,7 @@
 class Engine;
 class Scene;
 class Actor;
+class Camera;
 
 class IController;
 class ISystem;
@@ -38,11 +39,13 @@ protected:
 
     Scene                      *m_pScene;
 
-    Actor                      *m_pCamera;
+    Actor                      *m_pActor;
 
     Actor                      *m_pLight;
 
     IController                *m_pController;
+
+    Camera                     *m_pCamera;
 };
 
 #endif // ICONRENDER_H

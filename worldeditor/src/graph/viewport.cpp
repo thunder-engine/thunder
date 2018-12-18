@@ -32,12 +32,11 @@ void Viewport::onSetMode() {
 
 void Viewport::initializeGL() {
     if(m_pController) {
-        static_cast<CameraCtrl *>(m_pController)->init(m_pScene);
+        m_pController->init(m_pScene);
+        Camera::setCurrent(m_pController->camera());
     }
 
     SceneView::initializeGL();
-
-    makeCurrent();
 
     m_pCommandBuffer    = Engine::objectCreate<ICommandBuffer>();
 }
@@ -46,10 +45,8 @@ void Viewport::paintGL() {
     SceneView::paintGL();
 
     if(m_pController) {
-        Handles::s_ActiveCamera = m_pController->activeCamera();
-
         if(!m_Target.empty()) {
-            Pipeline *pipeline  = Handles::s_ActiveCamera->pipeline();
+            Pipeline *pipeline  = Camera::current()->pipeline();
 
             MaterialInstance *sprite    = pipeline->sprite();
             sprite->setTexture("texture0", reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
@@ -58,7 +55,7 @@ void Viewport::paintGL() {
             m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);
         } else {
             Handles::beginDraw(m_pCommandBuffer);
-            static_cast<CameraCtrl *>(m_pController)->drawHandles();
+            m_pController->drawHandles();
             Handles::endDraw();
         }
     }
@@ -68,7 +65,8 @@ void Viewport::resizeGL(int width, int height) {
     SceneView::resizeGL(width, height);
 
     if(m_pController) {
-        static_cast<CameraCtrl *>(m_pController)->resize(width, height);
+        Camera::setCurrent(m_pController->camera());
+        m_pController->resize(width, height);
     }
 }
 
@@ -122,5 +120,15 @@ void Viewport::keyPressEvent(QKeyEvent *pe) {
 void Viewport::keyReleaseEvent(QKeyEvent *pe) {
     if(m_pController) {
         static_cast<CameraCtrl *>(m_pController)->onInputEvent(pe);
+    }
+}
+
+void Viewport::findCamera() {
+    if(m_pController) {
+        Camera *camera = m_pController->camera();
+        if(camera) {
+            camera->pipeline()->resize(width(), height());
+        }
+        Camera::setCurrent(camera);
     }
 }

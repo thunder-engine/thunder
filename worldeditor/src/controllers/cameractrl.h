@@ -4,12 +4,15 @@
 #include <QObject>
 #include <QMouseEvent>
 
-#include <controller.h>
+#include <amath.h>
 
 class Actor;
-class Viewport;
+class Scene;
+class Camera;
 
-class CameraCtrl : public QObject, public IController {
+class QOpenGLWidget;
+
+class CameraCtrl : public QObject {
     Q_OBJECT
 
 public:
@@ -22,9 +25,9 @@ public:
     };
 
 public:
-    CameraCtrl                          (Viewport *view);
+    CameraCtrl                          (QOpenGLWidget *view);
 
-    void                                init                        (Scene *);
+    void                                init                        (Scene *scene);
 
     void                                update                      ();
 
@@ -39,6 +42,8 @@ public:
     void                                blockRotations              (bool flag) { mBlockRot     = flag; }
 
     virtual void                        resize                      (uint32_t, uint32_t) {}
+
+    Camera                             *camera                      () const { return m_pActiveCamera; }
 
 public slots:
     virtual void                        onInputEvent                (QInputEvent *);
@@ -66,7 +71,9 @@ protected:
 
     Actor                              *m_pCamera;
 
-    Viewport                           *m_pView;
+    QOpenGLWidget                      *m_pView;
+
+    Camera                             *m_pActiveCamera;
 };
 
 #endif // CAMERACTRL_H

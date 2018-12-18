@@ -46,7 +46,7 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-ObjectCtrl::ObjectCtrl(Viewport *view) :
+ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
         CameraCtrl(view) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
@@ -202,7 +202,7 @@ void ObjectCtrl::drawHandles() {
         }
     }
 
-    Camera *camera  = activeCamera();
+    Camera *camera  = Camera::current();
     Pipeline *pipeline  = camera->pipeline();
     if(pipeline) {
         uint32_t result = 0;
@@ -230,7 +230,7 @@ void ObjectCtrl::drawHandles() {
         }
 
         if(result) {
-            setSelectedObjects({ result });
+            m_ObjectsList = { result };
         }
     }
 
@@ -293,7 +293,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
             }
 
             if(result) {
-                setSelectedObjects({object.uuid()});
+                m_ObjectsList = {object.uuid()};
             }
         } else {
             drawHelpers(*it);

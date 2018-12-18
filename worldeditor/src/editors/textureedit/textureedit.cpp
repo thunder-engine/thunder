@@ -115,7 +115,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
         ui->treeView->setObject(m_pSettings);
     }
 
-    Camera *camera  = ui->Preview->controller()->activeCamera();
+    Camera *camera  = Camera::current();
     if(camera) {
         camera->actor().transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         camera->setOrthoWidth(SCALE);
@@ -131,7 +131,7 @@ void TextureEdit::onUpdateTemplate(bool update) {
 
 void TextureEdit::onGLInit() {
     Scene *scene    = ui->Preview->scene();
-    Camera *camera  = ui->Preview->controller()->activeCamera();
+    Camera *camera  = Camera::current();
     if(camera) {
         camera->setOrthographic(true);
     }

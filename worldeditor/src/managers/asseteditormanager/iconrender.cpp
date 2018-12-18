@@ -43,22 +43,18 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 
     m_pFBO      = new QOpenGLFramebufferObject(128, 128);
 
-    m_pController   = new IController();
-
     m_pRender   = PluginModel::instance()->createSystem("RenderGL");
     if(m_pRender) {
         m_pRender->init();
-        m_pRender->overrideController(m_pController);
     }
 
-    m_pScene    = Engine::objectCreate<Scene>();
+    m_pScene = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
-    m_pCamera   = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
-    m_pCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
-    Camera *camera  = m_pCamera->addComponent<Camera>();
-    m_pController->setActiveCamera(camera);
+    m_pActor = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
+    m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
+    m_pCamera = m_pActor->addComponent<Camera>();
 
-    m_pLight    = Engine::objectCreate<Actor>("LightSource", m_pScene);
+    m_pLight = Engine::objectCreate<Actor>("LightSource", m_pScene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->transform()->setRotation(rot);
@@ -66,21 +62,20 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 }
 
 IconRender::~IconRender() {
-    delete m_pController;
+
 }
 
 const QImage IconRender::render(const QString &resource, uint8_t type) {
     m_Context->makeCurrent(m_Surface);
 
-    Camera *camera  = m_pController->activeCamera();
-    camera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
-    camera->setOrthographic(false);
+    m_pCamera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
+    m_pCamera->setOrthographic(false);
     Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
-    float fov       = camera->fov();
+    float fov       = m_pCamera->fov();
     switch(type) {
         case IConverter::ContentTexture: {
-            camera->setOrthographic(true);
-            m_pCamera->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
+            m_pCamera->setOrthographic(true);
+            m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
             SpriteMesh *sprite  = object->addComponent<SpriteMesh>();
             if(sprite) {
@@ -99,7 +94,7 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
                     mesh->setMaterial(mat);
                 }
                 AABBox bb   = m->bound();
-                m_pCamera->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
+                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
             }
         } break;
         case IConverter::ContentMesh: {
@@ -108,16 +103,17 @@ const QImage IconRender::render(const QString &resource, uint8_t type) {
             if(m) {
                 mesh->setMesh(m);
                 AABBox bb   = m->bound();
-                m_pCamera->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
+                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
             }
         } break;
         default: break;
     }
 
     if(m_pRender) {
+        Camera::setCurrent(m_pCamera);
         m_pRender->update(*m_pScene, m_pFBO->handle());
     }
-    m_Context->functions()->glFlush();
+    m_Context->functions()->glFinish();
 
     delete object;
     return m_pFBO->toImage();

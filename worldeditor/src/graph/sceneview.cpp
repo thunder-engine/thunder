@@ -8,12 +8,14 @@
 
 #include <engine.h>
 #include <system.h>
-#include <controller.h>
+
 #include <components/actor.h>
 #include <components/scene.h>
 #include <components/camera.h>
 
 #include <resources/pipeline.h>
+
+#include "controllers/cameractrl.h"
 
 #include "pluginmodel.h"
 
@@ -41,7 +43,7 @@ void SceneView::setScene(Scene *scene) {
     PluginModel::instance()->addScene(m_pScene);
 }
 
-void SceneView::setController(IController *ctrl) {
+void SceneView::setController(CameraCtrl *ctrl) {
     m_pController   = ctrl;
 }
 
@@ -52,9 +54,6 @@ void SceneView::initializeGL() {
     foreach(ISystem *it, m_Systems) {
         if(it) {
             it->init();
-            if(m_pController) {
-                it->overrideController(m_pController);
-            }
         }
     }
 
@@ -81,7 +80,7 @@ void SceneView::resizeGL(int width, int height) {
     QOpenGLWidget::resizeGL(width, height);
 
     if(m_pController) {
-        Camera *camera  = m_pController->activeCamera();
+        Camera *camera  = Camera::current();
         if(camera) {
             camera->pipeline()->resize(width, height);
         }
@@ -103,7 +102,6 @@ void SceneView::findCamera() {
         if(camera) {
             camera->pipeline()->resize(width(), height());
         }
-        m_pController->setActiveCamera(camera);
         Camera::setCurrent(camera);
     }
 }

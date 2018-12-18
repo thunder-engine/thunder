@@ -3,7 +3,6 @@
 #include <AL/al.h>
 
 #include <log.h>
-#include <controller.h>
 
 #include <analytics/profiler.h>
 #include <components/camera.h>
@@ -16,8 +15,7 @@
 MediaSystem::MediaSystem(Engine *engine) :
         ISystem(engine),
         m_pDevice(nullptr),
-        m_pContext(nullptr),
-        m_pController(nullptr) {
+        m_pContext(nullptr) {
     PROFILER_MARKER;
 
     ObjectSystem system;
@@ -56,7 +54,7 @@ const char *MediaSystem::name() const {
 void MediaSystem::update(Scene &, uint32_t) {
     PROFILER_MARKER;
 
-    Camera *camera  = activeCamera();
+    Camera *camera  = Camera::current();
     if(camera) {
         Actor &a    = camera->actor();
 
@@ -72,17 +70,4 @@ void MediaSystem::update(Scene &, uint32_t) {
 
         alListenerfv(AL_ORIENTATION, orientation);
     }
-}
-
-void MediaSystem::overrideController(IController *controller) {
-    PROFILER_MARKER;
-
-    m_pController   = controller;
-}
-
-Camera *MediaSystem::activeCamera() {
-    if(m_pController) {
-        return m_pController->activeCamera();
-    }
-    return m_pEngine->controller()->activeCamera();
 }

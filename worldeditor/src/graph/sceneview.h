@@ -32,57 +32,57 @@ public:
     void                    setScene            (Scene *scene);
     Scene                  *scene               ()              { return m_pScene; }
 
-    void                    setController       (IController *ctrl);
-    IController            *controller          () const        { return m_pController; }
+    void                    setController       (CameraCtrl *ctrl);
+    CameraCtrl             *controller          () const        { return m_pController; }
 
 public:
-    bool                    init                        () { return true; }
+    bool                    init                () { return true; }
 
-    void                    update                      () {}
+    void                    update              () {}
 
-    bool                    start                       () { return true; }
+    bool                    start               () { return true; }
 
-    void                    stop                        () {}
+    void                    stop                () {}
 
-    void                    destroy                     () {}
+    void                    destroy             () {}
 
-    bool                    isValid                     () { return true; }
+    bool                    isValid             () { return true; }
 
-    bool                    key                         (Input::KeyCode) { return false; }
+    bool                    key                 (Input::KeyCode) { return false; }
 
-    Vector4                 mousePosition               () {
+    Vector4                 mousePosition       () {
         QPoint p    = mapFromGlobal(QCursor::pos());
         return Vector4(p.x(), height() - p.y(),
                        (float)p.x() / width(), 1.0f - (float)p.y() / height());
     }
 
-    Vector4                 mouseDelta                  () { return Vector4(); }
+    Vector4                 mouseDelta          () { return Vector4(); }
 
-    uint8_t                 mouseButtons                () { return m_MouseButtons; }
+    uint8_t                 mouseButtons        () { return m_MouseButtons; }
 
-    uint32_t                screenWidth                 () { return width(); }
+    uint32_t                screenWidth         () { return width(); }
 
-    uint32_t                screenHeight                () { return height(); }
+    uint32_t                screenHeight        () { return height(); }
 
-    void                    setMousePosition            (const Vector3 &position) {
+    void                    setMousePosition    (const Vector3 &position) {
         QCursor::setPos(mapToGlobal(QPoint(position.x, position.y)));
     }
 
-    uint16_t                joystickCount               () { return 0; }
+    uint16_t                joystickCount       () { return 0; }
 
-    uint16_t                joystickButtons             (uint8_t) { return 0; }
+    uint16_t                joystickButtons     (uint8_t) { return 0; }
 
-    Vector4                 joystickThumbs              (uint8_t) { return Vector4(); }
+    Vector4                 joystickThumbs      (uint8_t) { return Vector4(); }
 
-    Vector2                 joystickTriggers            (uint8_t) { return Vector2(); }
+    Vector2                 joystickTriggers    (uint8_t) { return Vector2(); }
 
-    void                   *pluginLoad                  (const char *) { return nullptr; }
+    void                   *pluginLoad          (const char *) { return nullptr; }
 
-    bool                    pluginUnload                (void *) { return false; }
+    bool                    pluginUnload        (void *) { return false; }
 
-    void                   *pluginAddress               (void *, const string &) { return nullptr; }
+    void                   *pluginAddress       (void *, const string &) { return nullptr; }
 
-    string                  locationLocalDir            () { return string(); }
+    string                  locationLocalDir    () { return string(); }
 
 signals:
     void                    inited              ();
@@ -98,7 +98,7 @@ protected:
 protected:
     virtual void            findCamera          ();
 
-    IController            *m_pController;
+    CameraCtrl             *m_pController;
 
     QList<ISystem *>        m_Systems;
 

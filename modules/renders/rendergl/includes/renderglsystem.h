@@ -18,11 +18,6 @@ public:
 
     void                        update                      (Scene &scene, uint32_t resource = 0);
 
-    void                        overrideController          (IController *controller);
-
-protected:
-    IController                *m_pController;
-
 };
 
 #endif // RENDERGLSYSTEM_H

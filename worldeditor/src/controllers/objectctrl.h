@@ -38,7 +38,7 @@ public:
     };
 
 public:
-    ObjectCtrl          (Viewport *view);
+    ObjectCtrl          (QOpenGLWidget *view);
 
     void                drawHandles                 ();
 
@@ -141,6 +141,8 @@ protected:
     Vector3             mMouseWorld;
 
     UndoManager::PropertyObjects   *m_pPropertyState;
+
+    list<uint32_t>      m_ObjectsList;
 };
 
 #endif // OBJECTCTRL_H

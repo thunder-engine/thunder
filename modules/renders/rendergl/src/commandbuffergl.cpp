@@ -73,9 +73,9 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     int32_t location;
     // Push uniform values to shader
     for(const auto &it : m_Uniforms) {
-        location    = glGetUniformLocation(program, it.first.c_str());
+        location = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
-            const Variant &data= it.second;
+            const Variant &data = it.second;
             switch(data.type()) {
                 case MetaType::VECTOR2: glProgramUniform2fvEXT      (program, location, 1, data.toVector2().v); break;
                 case MetaType::VECTOR3: glProgramUniform3fvEXT      (program, location, 1, data.toVector3().v); break;

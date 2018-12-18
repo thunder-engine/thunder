@@ -41,7 +41,7 @@ protected:
     void                    keyReleaseEvent     (QKeyEvent *);
 
 private:
-    void                    findCamera          () {}
+    void                    findCamera          ();
 
     ICommandBuffer         *m_pCommandBuffer;
 

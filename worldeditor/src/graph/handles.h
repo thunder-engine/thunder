@@ -53,8 +53,6 @@ public:
     static Vector4          s_yColor;
     static Vector4          s_zColor;
 
-    static Camera          *s_ActiveCamera;
-
     static Vector2          m_sMouse;
     static Vector2          m_sScreen;
 

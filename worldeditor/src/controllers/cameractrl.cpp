@@ -15,20 +15,21 @@
 #include <components/spritemesh.h>
 #include <components/textmesh.h>
 
-#include "graph/viewport.h"
+#include "graph/sceneview.h"
 
-CameraCtrl::CameraCtrl(Viewport *view) :
-        IController(),
+CameraCtrl::CameraCtrl(QOpenGLWidget *view) :
         mCameraMove(MoveTypes::MOVE_IDLE),
         mCameraFree(true),
         mBlockMove(false),
         mBlockRot(false),
         mCameraSpeed(Vector3()),
         m_pCamera(nullptr),
-        m_pView(view) {
+        m_pView(view),
+        m_pActiveCamera(nullptr) {
 }
 
 void CameraCtrl::init(Scene *scene) {
+    Q_UNUSED(scene)
     m_pCamera   = Engine::objectCreate<Actor>("Camera");
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(10.0f);

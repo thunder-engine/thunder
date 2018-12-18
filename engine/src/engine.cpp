@@ -14,7 +14,6 @@
 
 #include "module.h"
 #include "system.h"
-#include "controller.h"
 #include "timer.h"
 #include "input.h"
 
@@ -64,7 +63,6 @@ public:
     static unordered_map<Object*, string>   m_ReferenceCache;
 
     EnginePrivate() :
-        m_Controller(nullptr),
         m_Valid(false) {
 
     }
@@ -72,8 +70,6 @@ public:
     Scene                       *m_pScene;
 
     list<ISystem *>             m_Systems;
-
-    IController                *m_Controller;
 
     static IFile               *m_pFile;
 
@@ -123,8 +119,6 @@ Engine::Engine(IFile *file, int, char **argv) :
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
-
-    p_ptr->m_Controller = new IController();
 
     ObjectSystem system;
 
@@ -215,7 +209,6 @@ int32_t Engine::exec() {
         component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
         component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 
-        p_ptr->m_Controller->setActiveCamera(component);
         Camera::setCurrent(component);
         // Enter to game loop
         while(p_ptr->m_Valid) {
@@ -223,7 +216,6 @@ int32_t Engine::exec() {
             float lag  = Timer::deltaTime();
             while(lag >= Timer::fixedDelta()) {
                 // fixed update
-                p_ptr->m_Controller->update();
                 updateScene(p_ptr->m_pScene);
 
                 lag -= Timer::fixedDelta();
@@ -354,19 +346,13 @@ bool Engine::createWindow() {
     return p_ptr->m_pPlatform->start();
 }
 
-IController *Engine::controller() {
-    PROFILER_MARKER;
-
-    return p_ptr->m_Controller;
-}
-
 Scene *Engine::scene() {
+    PROFILER_MARKER;
     return p_ptr->m_pScene;
 }
 
 IFile *Engine::file() {
     PROFILER_MARKER;
-
     return EnginePrivate::m_pFile;
 }
 

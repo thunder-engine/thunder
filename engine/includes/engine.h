@@ -11,7 +11,6 @@
 #include <file.h>
 
 class IModule;
-class IController;
 
 class EnginePrivate;
 
@@ -53,8 +52,6 @@ public:
     void                        addModule                   (IModule *mode);
 
     bool                        createWindow                ();
-
-    IController                *controller                  ();
 
     Scene                      *scene                       ();
     /*!

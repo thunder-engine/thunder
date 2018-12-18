@@ -7,8 +7,6 @@
 
 #include <resources/pipeline.h>
 
-#include <controller.h>
-
 #include <analytics/profiler.h>
 #include <log.h>
 
@@ -18,8 +16,7 @@
 #include "commandbuffergl.h"
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
-        ISystem(engine),
-        m_pController(nullptr) {
+        ISystem(engine) {
     PROFILER_MARKER;
 
     ObjectSystem system;
@@ -78,20 +75,10 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     PROFILER_RESET(POLYGONS);
     PROFILER_RESET(DRAWCALLS);
 
-    Camera *camera  = m_pEngine->controller()->activeCamera();
-    if(m_pController) {
-        camera  = m_pController->activeCamera();
-    }
-
+    Camera *camera  = Camera::current();
     if(camera) {
         Pipeline *pipe  = camera->pipeline();
         pipe->combineComponents(scene, true);
         pipe->draw(scene, *camera, resource);
     }
-}
-
-void RenderGLSystem::overrideController(IController *controller) {
-    PROFILER_MARKER;
-
-    m_pController   = controller;
 }

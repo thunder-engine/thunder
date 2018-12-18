@@ -40,7 +40,7 @@ ParticleEdit::ParticleEdit(Engine *engine) :
     ui->treeView->setWindowTitle("Properties");
     ui->quickWidget->setWindowTitle("Scheme");
 
-    connect(ui->glWidget, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
     startTimer(16);
 
     ui->centralwidget->addToolWindow(ui->quickWidget, QToolWindowManager::EmptySpaceArea);
