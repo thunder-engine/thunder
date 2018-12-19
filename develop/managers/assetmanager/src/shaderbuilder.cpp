@@ -554,7 +554,7 @@ Variant ShaderBuilder::data() const {
         QString buff = loadIncludes(vertex, "#define TYPE_BILLBOARD 1");
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
         if(!spv.empty()) {
-            user["Particled"] = SpirVConverter::spvToGlsl(spv);
+            user["Particle"] = SpirVConverter::spvToGlsl(spv);
         }
     }
 

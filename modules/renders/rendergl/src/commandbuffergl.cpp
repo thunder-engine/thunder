@@ -149,6 +149,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
             glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
             glBindProgramPipeline(m_Pipeline);
 #endif
+            putUniforms(vertex, material);
             putUniforms(fragment, material);
 
             bindVao(m, surface, lod);
@@ -207,6 +208,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
             glBindProgramPipeline(m_Pipeline);
 #endif
+            putUniforms(vertex, material);
             putUniforms(fragment, material);
 
             bindVao(m, surface, lod);

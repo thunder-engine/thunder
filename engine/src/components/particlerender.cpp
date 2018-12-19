@@ -161,6 +161,7 @@ ParticleEffect *ParticleRender::effect() const {
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
         m_effect->m_pEffect   = effect;
+        m_effect->m_Emitters.clear();
         m_effect->m_Emitters.resize(effect->emittersCount());
     }
 }

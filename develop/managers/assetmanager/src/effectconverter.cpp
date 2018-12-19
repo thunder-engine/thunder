@@ -56,6 +56,10 @@ uint8_t EffectConverter::convertFile(IConverterSettings *settings) {
 }
 
 void EffectConverter::load(const QString &path) {
+    foreach(QObject *it, children()) {
+        delete it;
+    }
+
     QFile loadFile(path);
     if (!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open file.");
@@ -324,9 +328,9 @@ Variant EffectConverter::object() const {
 
     VariantList object;
 
+    object.push_back(ParticleEffect::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
-    object.push_back(ParticleEffect::metaClass()->name()); // type
     object.push_back(ParticleEffect::metaClass()->name()); // name
 
     object.push_back(VariantMap()); // properties
