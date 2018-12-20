@@ -295,7 +295,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                     p   = new Property(list[i], propertyObject, it, true);
                     it  = p;
                 }
-            } else {
+            } else if(!list[i].isEmpty()) {
                 if(!m_userCallbacks.isEmpty()) {
                     QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
                     while( p == nullptr && iter != m_userCallbacks.end() ) {
