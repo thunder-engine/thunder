@@ -8,6 +8,7 @@
 #include <QAction>
 
 #include <object.h>
+#include <invalid.h>
 #include <components/actor.h>
 #include <components/component.h>
 
@@ -42,7 +43,8 @@ protected:
         bool result = true;
         if(m_HideComponents) {
             Object *object  = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
-            result  = (dynamic_cast<Component*>(object) == nullptr);
+            result &= (dynamic_cast<Component*>(object) == nullptr);
+            result &= (dynamic_cast<Invalid*>(object) == nullptr);
         }
         if(!m_List.isEmpty()) {
             result &= checkClassTypeFilter(sourceRow, sourceParent);

@@ -475,11 +475,15 @@ void ObjectCtrl::onDeleteComponent(const QString &name) {
     if(!name.isEmpty()) {
         Actor *actor    = m_Selected.begin()->second.object;
         if(actor) {
-            Component *component    = actor->component(qPrintable(name));
-            if(component) {
-                Object::ObjectList list;
-                list.push_back(component);
-                UndoManager::instance()->push(new UndoManager::DestroyObjects(list, this, tr("Remove Component ") + name));
+            Object *obj = nullptr;
+            for(const auto &it : actor->getChildren()) {
+                if(it->typeName() == name.toStdString()) {
+                    obj = it;
+                    break;
+                }
+            }
+            if(obj) {
+                UndoManager::instance()->push(new UndoManager::DestroyObjects({obj}, this, tr("Remove Component ") + name));
 
                 emit objectsUpdated();
                 emit objectsSelected(selected());

@@ -11,6 +11,8 @@ public:
 
     VariantList                         saveData                () const;
 
+    string                              typeName                () const;
+
 protected:
     VariantList                         m_Data;
 
