@@ -92,7 +92,7 @@ Variant aVariant(QVariant &v, int type) {
                 return Variant(v);
             }
             return Variant(v.value<Vector4>());
-        } break;
+        }
         default: {
             Template p  = v.value<Template>();
             if(!p.path.isEmpty()) {
@@ -106,8 +106,8 @@ Variant aVariant(QVariant &v, int type) {
 
 NextObject::NextObject(Object *data, ObjectCtrl *ctrl, QObject *parent) :
         QObject(parent),
-        m_pController(ctrl),
-        m_pObject(data) {
+        m_pObject(data),
+        m_pController(ctrl) {
 
     onUpdated();
 }

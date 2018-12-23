@@ -12,6 +12,8 @@
 
 #include "commandbuffer.h"
 
+#define OVERRIDE "uni.texture0"
+
 Viewport::Viewport(QWidget *parent) :
         SceneView(parent),
         m_pCommandBuffer(nullptr)  {
@@ -24,7 +26,7 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::onSetMode() {
     if(m_Target.empty()) {
-        m_Target    = "depthMap";
+        m_Target    = "normalsMap";
     } else {
         m_Target.clear();
     }
@@ -49,7 +51,7 @@ void Viewport::paintGL() {
             Pipeline *pipeline  = Camera::current()->pipeline();
 
             MaterialInstance *sprite    = pipeline->sprite();
-            sprite->setTexture("texture0", reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
+            sprite->setTexture(OVERRIDE, reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
 
             m_pCommandBuffer->setScreenProjection();
             m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);

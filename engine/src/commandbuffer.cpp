@@ -51,6 +51,10 @@ void ICommandBuffer::setScreenProjection() {
     setViewProjection(Matrix4(), Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
 }
 
+void ICommandBuffer::resetViewProjection() {
+
+}
+
 void ICommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     A_UNUSED(view);
     A_UNUSED(projection);

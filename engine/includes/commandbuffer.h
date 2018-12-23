@@ -40,6 +40,8 @@ public:
 
     virtual void                setScreenProjection         ();
 
+    virtual void                resetViewProjection         ();
+
     virtual void                setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
 
     virtual void                setGlobalValue              (const char *name, const Variant &value);

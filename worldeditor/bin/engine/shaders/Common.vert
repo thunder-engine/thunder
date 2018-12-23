@@ -20,10 +20,7 @@ layout(location = 9) uniform struct Light {
 } light;
 
 struct Params {
-    vec2    uv;
-    vec3    project;
     vec3    reflect;
-    vec4    color;
     vec3    normal;
     float   time;
 } params;

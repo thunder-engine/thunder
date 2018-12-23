@@ -19,7 +19,7 @@ public:
     QSize               sizeHint        (const QSize& size) const;
 
 protected slots:
-    void                onDataChanged   (const QString &data);
+    void                onDataChanged   ();
 
 };
 

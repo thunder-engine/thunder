@@ -187,12 +187,12 @@ void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
-
+    A_UNUSED(yoffset)
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
     s_OldMousePosition  = s_MousePosition;
-    s_MousePosition     = Vector4(xpos, s_Screen.y - ypos, xpos / s_Screen.x, 1.0f - ypos / s_Screen.y);
+    s_MousePosition     = Vector4(xpos, ypos, xpos / s_Screen.x, ypos / s_Screen.y);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {

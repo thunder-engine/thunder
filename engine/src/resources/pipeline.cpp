@@ -31,6 +31,8 @@
 #define DEPTH_MAP   "depthMap"
 #define SHADOW_MAP  "shadowMap"
 
+#define OVERRIDE "uni.texture0"
+
 Pipeline::Pipeline() :
         m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
@@ -123,28 +125,28 @@ void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
     cameraReset(camera);
     drawComponents(ICommandBuffer::RAYCAST, filter);
 
-    // Fill G buffer pass
+    // Step1 - Fill G buffer pass
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget(true, camera.color(), false);
 
-    cameraReset(camera);
     // Draw Opaque pass
     drawComponents(ICommandBuffer::DEFAULT, filter);
 
     /// \todo Screen Space Ambient Occlusion effect should be defined here
 
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    // Light pass
+
+    // Step2 - Light pass
     drawComponents(ICommandBuffer::LIGHT, filter);
 
     cameraReset(camera);
-    // Draw Transparent pass
+    // Step3 - Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, filter);
 
     m_Buffer->setRenderTarget(resource);
     m_Buffer->setScreenProjection();
 
-    m_pSprite->setTexture("texture0", postProcess(*m_Targets[G_EMISSIVE]));
+    m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
 }
 

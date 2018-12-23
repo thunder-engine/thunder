@@ -16,6 +16,12 @@ class ShaderFunction : public QObject {
     Q_OBJECT
 
 public:
+    ShaderFunction      () { reset(); }
+
+    void reset() {
+        m_Position  = -1;
+    }
+
     virtual AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) {
         m_pNode     = new AbstractSchemeModel::Node;
         m_pNode->root   = false;
@@ -28,7 +34,17 @@ public:
         return m_pNode;
     }
 
-    virtual bool                        build       (QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) = 0;
+    virtual uint32_t                    build       (QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+        Q_UNUSED(value);
+        Q_UNUSED(link);
+        Q_UNUSED(size);
+
+        if(m_Position == -1) {
+            m_Position  = depth;
+            depth++;
+        }
+        return m_Position;
+    }
 
     static QString                      convert     (const QString &value, uint8_t current, uint8_t target, uint8_t component = 0) {
         QString prefix;
@@ -80,6 +96,8 @@ protected:
     ShaderBuilder              *m_pModel;
     AbstractSchemeModel::Node  *m_pNode;
 
+    int32_t                     m_Position;
+
 };
 
 class ShaderBuilder : public AbstractSchemeModel {
@@ -93,6 +111,7 @@ class ShaderBuilder : public AbstractSchemeModel {
     Q_ENUMS(LightModel)
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
+    Q_PROPERTY(bool View_Space READ isViewSpace WRITE setViewSpace DESIGNABLE true USER true)
 
 public:
     enum LightModel {
@@ -112,6 +131,12 @@ public:
         PostProcess     = Material::PostProcess,
         LightFunction   = Material::LightFunction
     };
+
+    enum Flags {
+        Cube    = (1<<0),
+        Target  = (1<<1)
+    };
+
 public:
     ShaderBuilder               ();
     ~ShaderBuilder              ();
@@ -152,6 +177,9 @@ public:
     bool                        isDepthTest                 () const { return m_DepthTest; }
     void                        setDepthTest                (bool value) { m_DepthTest = value; emit schemeUpdated(); }
 
+    bool                        isViewSpace                 () const { return m_ViewSpace; }
+    void                        setViewSpace                (bool value) { m_ViewSpace = value; emit schemeUpdated(); }
+
     Type                        materialType                () const { return m_MaterialType; }
     void                        setMaterialType             (Type type) { m_MaterialType = type; }
 
@@ -161,7 +189,7 @@ public:
     LightModel                  lightModel                  () const { return m_LightModel; }
     void                        setLightModel               (LightModel model) { m_LightModel = model; emit schemeUpdated(); }
 
-    int                         setTexture                  (const QString &path, Vector4 &sub, bool cube);
+    int                         setTexture                  (const QString &path, Vector4 &sub, uint8_t flags = 0);
 
     void                        addUniform                  (const QString &name, uint8_t type);
 
@@ -181,7 +209,7 @@ private:
 
     typedef map<QString, uint8_t>   UniformMap;
 
-    typedef QPair<QString, bool>    TexturePair;
+    typedef QPair<QString, uint8_t> TexturePair;
 
     typedef QList<TexturePair>      TextureList;
 
@@ -205,6 +233,8 @@ private:
     bool                        m_DoubleSided;
 
     bool                        m_DepthTest;
+
+    bool                        m_ViewSpace;
 
     AbstractSchemeModel::Node  *m_pNode;
 

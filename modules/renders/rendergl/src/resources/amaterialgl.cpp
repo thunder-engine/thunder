@@ -44,12 +44,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_Programs[Default] = buildShader(Default, loadIncludes(gEmbedded + gPost));
         } break;
         case LightFunction: {
-            m_DoubleSided   = true;
-            m_BlendMode     = Opaque;
-            m_LightModel    = Unlit;
-            m_Surfaces      = Static;
-            m_DepthTest     = false;
-
             /// \todo should be removed
             setTexture("normalsMap",    nullptr);
             setTexture("diffuseMap",    nullptr);

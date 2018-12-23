@@ -49,8 +49,11 @@
 #define MODEL       "Model"
 #define SIDE        "Side"
 #define DEPTH       "Depth"
+#define VIEW        "View"
 #define X           "X"
 #define Y           "Y"
+
+#define UNIFORM     30
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
@@ -69,16 +72,18 @@ ShaderBuilder::ShaderBuilder() :
     m_Functions << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4";
 
     qRegisterMetaType<TexCoord*>("TexCoord");
+    qRegisterMetaType<ProjectionCoord*>("ProjectionCoord");
     qRegisterMetaType<CoordPanner*>("CoordPanner");
-    m_Functions << "TexCoord" << "CoordPanner";
+    m_Functions << "TexCoord" << "ProjectionCoord" << "CoordPanner";
 
     qRegisterMetaType<ParamFloat*>("ParamFloat");
     qRegisterMetaType<ParamVector*>("ParamVector");
     m_Functions << "ParamFloat" << "ParamVector";
 
     qRegisterMetaType<TextureSample*>("TextureSample");
+    qRegisterMetaType<RenderTargetSample*>("RenderTargetSample");
     qRegisterMetaType<TextureSampleCube*>("TextureSampleCube");
-    m_Functions << "TextureSample" << "TextureSampleCube";
+    m_Functions << "TextureSample" << "RenderTargetSample" << "TextureSampleCube";
 
     qRegisterMetaType<DotProduct*>("DotProduct");
     qRegisterMetaType<CrossProduct*>("CrossProduct");
@@ -87,13 +92,14 @@ ShaderBuilder::ShaderBuilder() :
     qRegisterMetaType<Abs*>("Abs");
     qRegisterMetaType<Floor*>("Floor");
     qRegisterMetaType<Ceil*>("Ceil");
+    qRegisterMetaType<Normalize*>("Normalize");
     qRegisterMetaType<Sine*>("Sine");
     qRegisterMetaType<Cosine*>("Cosine");
     qRegisterMetaType<Tangent*>("Tangent");
     qRegisterMetaType<ArcSine*>("ArcSine");
     qRegisterMetaType<ArcCosine*>("ArcCosine");
     qRegisterMetaType<ArcTangent*>("ArcTangent");
-    m_Functions << "DotProduct" << "CrossProduct" << "Clamp" << "Mod" << "Abs" << "Floor" << "Ceil";
+    m_Functions << "DotProduct" << "CrossProduct" << "Clamp" << "Mod" << "Abs" << "Floor" << "Ceil" << "Normalize";
     m_Functions << "Sine" << "Cosine" << "Tangent" << "ArcSine" << "ArcCosine" << "ArcTangent";
 
     qRegisterMetaType<Subtraction*>("Subtraction");
@@ -406,6 +412,7 @@ void ShaderBuilder::save(const QString &path) {
     data[MODEL] = lightModel();
     data[SIDE]  = isDoubleSided();
     data[DEPTH] = isDepthTest();
+    data[VIEW] = isViewSpace();
 
     QJsonDocument doc(data);
     saveFile.write(doc.toJson());
@@ -417,30 +424,36 @@ bool ShaderBuilder::build() {
     // Nodes
     QString str;
     buildRoot(str);
+
+    if(!m_Uniforms.empty() || !m_Textures.empty()) {
+        m_Shader = QString("layout(location = %1) uniform struct Uniforms {\n").arg(UNIFORM);
+    }
     // Make uniforms
     for(const auto &it : m_Uniforms) {
         switch(it.second) {
-            case QMetaType::QVector2D:  m_Shader += "uniform vec2 " + it.first + ";\n"; break;
-            case QMetaType::QVector3D:  m_Shader += "uniform vec3 " + it.first + ";\n"; break;
-            case QMetaType::QVector4D:  m_Shader += "uniform vec4 " + it.first + ";\n"; break;
-            default:  m_Shader += "uniform float " + it.first + ";\n"; break;
+            case QMetaType::QVector2D:  m_Shader += "\tvec2 " + it.first + ";\n"; break;
+            case QMetaType::QVector3D:  m_Shader += "\tvec3 " + it.first + ";\n"; break;
+            case QMetaType::QVector4D:  m_Shader += "\tvec4 " + it.first + ";\n"; break;
+            default:  m_Shader += "\tfloat " + it.first + ";\n"; break;
         }
     }
     m_Shader.append("\n");
     // Textures
     uint16_t i  = 0;
     for(auto it : m_Textures) {
-        QString texture = "uniform ";
-        if(it.second) {
-            texture += "samplerCube";
+        QString texture;
+        if(it.second & Cube) {
+            texture += "\tsamplerCube ";
         } else {
-            texture += "sampler2D";
+            texture += "\tsampler2D ";
         }
-        texture += " texture" + QString::number(i) + ";\n";
+        texture += ((it.second & Target) ? it.first : QString("texture%1").arg(i)) + ";\n";
         m_Shader.append( texture );
         i++;
     }
-    m_Shader.append("\n");
+    if(!m_Uniforms.empty() || !m_Textures.empty()) {
+        m_Shader += "} uni;\n";
+    }
     m_Shader.append(str);
 
     addPragma("version", "#version 430 core");
@@ -484,7 +497,7 @@ Variant ShaderBuilder::data() const {
     VariantMap textures;
     uint16_t i  = 0;
     for(auto it : m_Textures) {
-        textures["texture" + to_string(i)]  = it.first.toStdString();
+        textures[string("uni.") + ((it.second & Target) ? it.first : QString("texture%1").arg(i)).toStdString()]  = it.first.toStdString();
         i++;
     }
     user["Textures"]    = textures;
@@ -561,13 +574,13 @@ Variant ShaderBuilder::data() const {
     return user;
 }
 
-int ShaderBuilder::setTexture(const QString &path, Vector4 &sub, bool cube) {
+int ShaderBuilder::setTexture(const QString &path, Vector4 &sub, uint8_t flags) {
     sub     = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    int index   = m_Textures.indexOf(TexturePair(path, cube));
+    int index   = m_Textures.indexOf(TexturePair(path, flags));
     if(index == -1) {
-        m_Textures.push_back(TexturePair(path, cube));
-        return m_Textures.size() - 1;
+        index   = m_Textures.size();
+        m_Textures.push_back(TexturePair(path, flags));
     }
     return index;
 }
@@ -582,6 +595,13 @@ void ShaderBuilder::addParam(const QString &param) {
 
 void ShaderBuilder::buildRoot(QString &result) {
     for(const auto it : m_pNode->list) {
+        for(auto it : m_Nodes) {
+            ShaderFunction *node   = static_cast<ShaderFunction *>(it->ptr);
+            if(node && it->ptr != this) {
+                node->reset();
+            }
+        }
+
         Item *item  = it;
         switch(item->type) {
             case QMetaType::Double:     result += "float get" + item->name + "(Params p) {\n"; break;
@@ -597,11 +617,10 @@ void ShaderBuilder::buildRoot(QString &result) {
             if(node) {
                 uint32_t depth  = 0;
                 uint8_t size    = 0;
-                if(node->build(result, *link, depth, size)) {
-                    result  += "\treturn " + ShaderFunction::convert("local" + QString::number(depth), size, item->type) + ";\n";
-                    result.append("}\n\n");
-                    continue;
-                }
+                uint32_t index  = node->build(result, *link, depth, size);
+                result  += "\treturn " + ShaderFunction::convert("local" + QString::number(index), size, item->type) + ";\n";
+                result.append("}\n\n");
+                continue;
             }
         }
 

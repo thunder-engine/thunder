@@ -26,6 +26,8 @@ public:
 
     void                        setColor                    (const Vector4 &color);
 
+    void                        resetViewProjection         ();
+
     void                        setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
 
     void                        setGlobalValue              (const char *name, const Variant &value);
@@ -54,9 +56,9 @@ protected:
 
     Matrix4                     m_View;
 
-    Matrix4                     m_Model;
-
     Matrix4                     m_Projection;
+
+    Matrix4                     m_Model;
 
     Vector4                     m_Color;
 
@@ -65,6 +67,11 @@ protected:
     Material::TextureMap        m_Textures;
 
     AMaterialGL::ObjectMap      m_Objects;
+
+
+    Matrix4                     m_SaveView;
+
+    Matrix4                     m_SaveProjection;
 };
 
 #endif // COMMANDBUFFERGL_H

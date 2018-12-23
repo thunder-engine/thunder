@@ -10,24 +10,26 @@ uniform sampler2D emissiveMap;
 uniform sampler2D depthMap;
 uniform sampler2D shadowMap;
 
-layout(location = 1) in vec2 _uv0;
+layout(location = 0) in vec4 _vertex;
 
 out vec4    rgb;
 
 void main (void) {
-    vec4 slice0 = texture( normalsMap,  _uv0 );
-    vec4 slice2 = texture( paramsMap,   _uv0 );
-    vec3 emit   = texture( emissiveMap, _uv0 ).xyz;
+    vec2 proj   = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5).xy;
+
+    vec4 slice0 = texture( normalsMap,  proj );
+    vec4 slice2 = texture( paramsMap,   proj );
+    vec3 emit   = texture( emissiveMap, proj ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
     float ln    = dot( light.position.xyz, n );
 
     // Light model LIT
     if(slice0.w > 0.33) {
-        float depth = texture( depthMap, _uv0 ).x;
-        vec4 world  = getWorld( camera.mvpi, _uv0, depth );
+        float depth = texture( depthMap, proj ).x;
+        vec4 world  = getWorld( camera.mvpi, proj, depth );
 
-        vec4 slice1 = texture( diffuseMap, _uv0 );
+        vec4 slice1 = texture( diffuseMap, proj );
         float rough = max( 0.01, slice1.w );
         float spec  = slice2.w;
         float metal = slice2.z;

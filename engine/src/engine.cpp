@@ -21,12 +21,13 @@
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
+
 #include "components/staticmesh.h"
-#include "components/directlight.h"
 #include "components/textmesh.h"
 #include "components/spritemesh.h"
-
 #include "components/particlerender.h"
+#include "components/directlight.h"
+#include "components/pointlight.h"
 
 #include "components/animationcontroller.h"
 
@@ -139,6 +140,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     TextMesh::registerClassFactory(&system);
     SpriteMesh::registerClassFactory(&system);
     DirectLight::registerClassFactory(&system);
+    PointLight::registerClassFactory(&system);
     RenderTexture::registerClassFactory(&system);
 
     ParticleRender::registerClassFactory(&system);

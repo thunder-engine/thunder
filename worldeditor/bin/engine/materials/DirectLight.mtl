@@ -1,5 +1,6 @@
 {
     "Blend": 0,
+    "Depth": false,
     "Links": [
         {
             "RItem": "Emissive",

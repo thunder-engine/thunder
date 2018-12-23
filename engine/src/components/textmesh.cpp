@@ -9,6 +9,8 @@
 
 #define FONT  "Font"
 
+#define OVERRIDE "uni.texture0"
+
 TextMesh::TextMesh() :
         m_pFont(nullptr),
         m_Size(16),
@@ -116,7 +118,7 @@ Font *TextMesh::font() const {
 void TextMesh::setFont(Font *font) {
     m_pFont = font;
     if(m_pFont && !m_Materials.empty()) {
-        m_Materials[0]->setTexture("texture0", m_pFont->texture());
+        m_Materials[0]->setTexture(OVERRIDE, m_pFont->texture());
     }
     composeMesh();
 }
@@ -137,7 +139,7 @@ Vector4 TextMesh::color() const {
 void TextMesh::setColor(const Vector4 &color) {
     m_Color = color;
     if(!m_Materials.empty()) {
-        m_Materials[0]->setVector4("color0", &m_Color);
+        m_Materials[0]->setVector4("uni.color0", &m_Color);
     }
 }
 

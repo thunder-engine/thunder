@@ -11,11 +11,7 @@ layout(location = 0) uniform mat4 t_model;
 layout(location = 1) uniform mat4 t_view;
 layout(location = 2) uniform mat4 t_projection;
 
-//uniform mat4 bonesMatrix[MAX_BONES];
-//uniform vec4 position;
-//uniform vec3 axis;
-
-layout(location = 0) in vec3 vertex;
+layout(location = 0) in vec4 vertex;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec3 tangent;
 layout(location = 3) in vec4 color;
@@ -36,7 +32,7 @@ layout(location = 4) in vec2 uv0;
     //layout(location = 9) in vec4 weights;
     #endif
 #endif
-layout(location = 0) out vec3 _vertex;
+layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
 layout(location = 2) out vec2 _uv1;
 layout(location = 3) out vec3 _n;
@@ -45,7 +41,6 @@ layout(location = 5) out vec3 _b;
 layout(location = 6) out vec4 _color;
 
 layout(location = 7) out vec3 _view;
-layout(location = 8) out vec3 _proj;
 
 out gl_PerVertex {
     vec4  gl_Position;
@@ -142,19 +137,19 @@ void main(void) {
                         model[2].xyz );
 
 #ifdef TYPE_STATIC
-    Vertex vert = staticMesh( vertex, tangent, normal, rot );
+    Vertex vert = staticMesh( vertex.xyz, tangent, normal, rot );
 #endif
 
 #ifdef TYPE_SKINNED
-    Vertex vert = skinnedMesh( vertex, tangent, normal, indices, weights );
+    Vertex vert = skinnedMesh( vertex.xyz, tangent, normal, indices, weights );
 #endif
 
 #ifdef TYPE_BILLBOARD
-    Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist);
+    Vertex vert = billboard( vertex.xyz, tangent, normal, particlePosRot, particleSizeDist);
 #endif
 
 #ifdef TYPE_AXISALIGNED
-    Vertex vert = axisAlignedBillboard( vertex, tangent, normal, axis );
+    Vertex vert = axisAlignedBillboard( vertex.xyz, tangent, normal, axis );
 #endif
     vec3 camera = vec3( t_view[0].w,
                         t_view[1].w,
@@ -164,7 +159,7 @@ void main(void) {
 
     gl_Position = t_projection * (modelView * vec4(vert.v, 1.0));
 
-    _vertex     = gl_Position.xyz;
+    _vertex     = gl_Position;
     _n          = vert.n;
     _t          = vert.t;
     _b          = cross ( _t, _n );
@@ -173,6 +168,5 @@ void main(void) {
 #ifndef INSTANCING
     //_uv1        = uv1;
 #endif
-    _proj       = 0.5 * ( gl_Position.xyz / gl_Position.w ) + 0.5;
     _view       = ( model * vec4(vert.v, 1.0) ).xyz - camera;
 }

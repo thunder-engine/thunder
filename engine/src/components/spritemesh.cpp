@@ -10,6 +10,8 @@
 #define MATERIAL    "Material"
 #define BASEMAP     "BaseMap"
 
+#define OVERRIDE "uni.texture0"
+
 SpriteMesh::SpriteMesh() {
     m_Center    = Vector2();
     m_Texture   = nullptr;
@@ -32,7 +34,7 @@ Texture *SpriteMesh::texture() const {
 void SpriteMesh::setTexture(Texture *texture) {
     m_Texture   = texture;
     if(m_Materials[0]) {
-        m_Materials[0]->setTexture("texture0", m_Texture);
+        m_Materials[0]->setTexture(OVERRIDE, m_Texture);
     }
 }
 

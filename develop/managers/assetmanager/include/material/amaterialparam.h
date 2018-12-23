@@ -26,12 +26,13 @@ public:
         return result;
     }
 
-    bool build(QString &value, const AbstractSchemeModel::Link &, uint32_t &depth, uint8_t &size) {
-        size    = MetaType::FLOAT;
-        m_pModel->addUniform(objectName(), size);
-        value  += QString("\tfloat local%1 = %2;\n").arg(depth).arg(objectName());
-
-        return true;
+    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+        if(m_Position == -1) {
+            size    = MetaType::FLOAT;
+            m_pModel->addUniform(objectName(), size);
+            value  += QString("\tfloat local%1 = uni.%2;\n").arg(depth).arg(objectName());
+        }
+        return ShaderFunction::build(value, link, depth, size);
     }
 };
 
@@ -58,11 +59,13 @@ public:
         return result;
     }
 
-    bool build(QString &value, const AbstractSchemeModel::Link &, uint32_t &depth, uint8_t &size) {
-        size    = QMetaType::QVector4D;
-        m_pModel->addUniform(objectName(), size);
-        value  += QString("\tvec4 local%1 = %2;\n").arg(depth).arg(objectName());
-        return true;
+    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+        if(m_Position == -1) {
+            size    = QMetaType::QVector4D;
+            m_pModel->addUniform(objectName(), size);
+            value  += QString("\tvec4 local%1 = uni.%2;\n").arg(depth).arg(objectName());
+        }
+        return ShaderFunction::build(value, link, depth, size);
     }
 };
 

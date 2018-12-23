@@ -52,8 +52,8 @@ public:
 
     Vector4                 mousePosition       () {
         QPoint p    = mapFromGlobal(QCursor::pos());
-        return Vector4(p.x(), height() - p.y(),
-                       (float)p.x() / width(), 1.0f - (float)p.y() / height());
+        return Vector4(p.x(), p.y(),
+                       (float)p.x() / width(), (float)p.y() / height());
     }
 
     Vector4                 mouseDelta          () { return Vector4(); }

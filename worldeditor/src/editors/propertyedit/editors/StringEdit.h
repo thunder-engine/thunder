@@ -19,6 +19,7 @@ public:
 
 signals:
     void                    textEdited      (const QString &);
+    void                    editFinished    ();
 
 private:
     Ui::StringEdit         *ui;

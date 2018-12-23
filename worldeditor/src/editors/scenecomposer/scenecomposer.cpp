@@ -430,12 +430,13 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
     ui->centralwidget->activateToolWindow(ui->viewport);
     Object *map = Engine::toObject(Bson::load(m_Back));
     if(map) {
-        map->setParent(ui->viewport->scene());
         delete m_pMap;
         m_pMap  = map;
-        ui->hierarchy->setObject(m_pMap);
-        ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
+        map->setParent(ui->viewport->scene());
+        ui->hierarchy->setObject(m_pMap);
+
+        ObjectCtrl *ctrl  = static_cast<ObjectCtrl *>(ui->viewport->controller());
         ctrl->clear();
         ctrl->setMap(m_pMap);
     }
