@@ -515,7 +515,6 @@ void AssetManager::onPerform() {
     if(!m_ImportQueue.isEmpty()) {
         IConverterSettings *settings = m_ImportQueue.takeFirst();
 
-        Log(Log::INF) << "Converting:" << settings->source();
         if(!convert(settings)) {
             if(settings->type() == IConverter::ContentCode) {
                 m_pCodeManager->setOutdated();
@@ -535,10 +534,9 @@ void AssetManager::onPerform() {
                 for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
                     m_Paths[settings->subItem(i)]   = source;
                 }
-                saveSettings(settings);
-
                 emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), toContentType(settings->type()));
             }
+            saveSettings(settings);
         }
     } else {
         dumpBundle();
@@ -597,6 +595,8 @@ bool AssetManager::convert(IConverterSettings *settings) {
     QFileInfo info(settings->source());
     QDir dir(m_pProjectManager->contentPath());
     QString format  = info.completeSuffix().toLower();
+
+    Log(Log::INF) << "Converting:" << settings->source();
 
     auto it = m_Converters.find(format);
     if(it != m_Converters.end()) {
