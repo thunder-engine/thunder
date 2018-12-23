@@ -10,9 +10,9 @@ about: Create a report to help us improve
 
 ## Steps to Reproduce
 
-    [First Step]
-    [Second Step]
-    [and so on...]
+1. [First Step]
+2. [Second Step]
+3. [and so on...]
 
 ### Expected behavior:
 
