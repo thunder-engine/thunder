@@ -17,6 +17,12 @@ using namespace std;
 
 #define REGISTER_META_TYPE_IMPL(Class) registerMetaType<Class>(#Class)
 
+#define UNREGISTER_META_TYPE(Class) \
+    UNREGISTER_META_TYPE_IMPL(Class); \
+    UNREGISTER_META_TYPE_IMPL(Class *);
+
+#define UNREGISTER_META_TYPE_IMPL(Class) registerMetaType<Class>(#Class)
+
 class NEXT_LIBRARY_EXPORT MetaType {
 public:
     /*! \enum Type */
@@ -69,6 +75,7 @@ public:
     bool                    isValid                     () const;
 
     static uint32_t         registerType                (Table &table);
+    static void             unregisterType              (Table &table);
 
     static uint32_t         type                        (const char *name);
 
@@ -195,6 +202,11 @@ inline static MetaType::Table *getTable(const char *typeName = "") {
 template<typename T>
 static uint32_t registerMetaType(const char *typeName) {
     return MetaType::registerType(*getTable<T>(typeName));
+}
+
+template<typename T>
+static uint32_t unregisterMetaType(const char *typeName) {
+    return MetaType::unregisterType(*getTable<T>(typeName));
 }
 
 #endif // METATYPE_H

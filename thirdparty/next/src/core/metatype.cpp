@@ -486,6 +486,21 @@ uint32_t MetaType::registerType(Table &table) {
     return result;
 }
 /*!
+    Unregisters type by type MetaType::Table \a table. Use unregisterMetaType() instead this function.
+*/
+void MetaType::unregisterType(Table &table) {
+    PROFILE_FUNCTION()
+    auto it = s_Names.find(table.name);
+    if(it != s_Names.end()) {
+        uint32_t id = it->second;
+        auto name = s_Types.find(id);
+        if(name != s_Types.end()) {
+            s_Types.erase(name);
+        }
+        s_Names.erase(it);
+    }
+}
+/*!
     Returns an ID of type with type \a name.
     Returns MetaType::INVALID for unregistered type.
 */

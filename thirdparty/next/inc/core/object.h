@@ -41,6 +41,7 @@ public: \
         system->factoryAdd<Class>(#Group, Class::metaClass()); \
     } \
     static void                     unregisterClassFactory  (ObjectSystem *system) { \
+        UNREGISTER_META_TYPE(Class); \
         system->factoryRemove<Class>(#Group); \
     }
 
