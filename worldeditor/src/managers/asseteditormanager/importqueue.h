@@ -33,6 +33,7 @@ private slots:
     void                    onProcessed         (const QString &path, uint32_t type);
 
     void                    onStarted           (int count, const QString &action);
+    void                    onImportFinished    ();
     void                    onFinished          ();
 
 private:
@@ -40,7 +41,7 @@ private:
 
     Ui::ImportQueue        *ui;
 
-    QMap<QString, uint8_t>  m_UpdateQueue;
+    QMap<QString, uint32_t> m_UpdateQueue;
 
     Engine                 *m_pEngine;
 };

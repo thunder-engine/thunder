@@ -23,7 +23,7 @@ public:
 
     ~IconRender                 ();
 
-    const QImage                render              (const QString &resource, uint8_t type);
+    const QImage                render              (const QString &resource, uint32_t type);
 
 protected:
 

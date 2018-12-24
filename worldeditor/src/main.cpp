@@ -24,6 +24,9 @@
 #include <regex>
 #include "managers/projectmanager/projectdialog.h"
 
+#include "codemanager.h"
+#include "pluginmodel.h"
+
 #include "editors/textureedit/textureedit.h"
 #include "editors/materialedit/materialedit.h"
 #include "editors/meshedit/meshedit.h"
@@ -73,17 +76,22 @@ int main(int argc, char *argv[]) {
         Engine engine(file, argc, argv);
         engine.init();
 
+        PluginModel::instance()->init(&engine);
+        PluginModel::instance()->rescan();
+
+        QApplication::connect(PluginModel::instance(), SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
+
         AssetManager *asset = AssetManager::instance();
         asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
         asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
         asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
         asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
 
-        SceneComposer w(&engine);
-        QApplication::connect(AssetManager::instance(), SIGNAL(importFinished()), &w, SLOT(show()));
-
         ImportQueue queue(&engine);
         QApplication::connect(&queue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
+
+        SceneComposer w(&engine);
+        QApplication::connect(&queue, &ImportQueue::finished, &w, &SceneComposer::show);
 
         CodeManager::instance()->init();
         asset->init(&engine);

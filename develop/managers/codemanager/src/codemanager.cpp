@@ -129,8 +129,16 @@ void CodeManager::onBuildFinished(int exitCode) {
     }
 }
 
+bool CodeManager::isOutdated() const {
+    return m_Outdated;
+}
+
 void CodeManager::setOutdated() {
     m_Outdated  = true;
+}
+
+QString CodeManager::artifact() const {
+    return m_pBuilder->artifact();
 }
 
 QStringList CodeManager::rescanSources(const QString &path) {

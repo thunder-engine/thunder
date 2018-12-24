@@ -55,8 +55,6 @@ private:
 
     QMenu                  *cmToolbars;
 
-    PluginDialog           *m_pPluginDlg;
-
     QObject                *m_pProperties;
 
     Object                 *m_pMap;

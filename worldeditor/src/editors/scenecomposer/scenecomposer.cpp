@@ -35,7 +35,8 @@
 #include "managers/configmanager/configdialog.h"
 
 #include "projectmanager.h"
-
+#include "pluginmodel.h"
+#include "codemanager.h"
 #include "aboutdialog.h"
 
 // System
@@ -88,9 +89,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     Log::setLogLevel(Log::DBG);
 
     cmToolbars      = new QMenu(this);
-
-    m_pPluginDlg    = new PluginDialog(m_pEngine, this);
-    connect(m_pPluginDlg, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
 
@@ -185,6 +183,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
 
+    QApplication::connect(CodeManager::instance(), SIGNAL(buildSucess(QString)), PluginModel::instance(), SLOT(reloadPlugin(QString)));
+
     ui->projectSettings->setObject(ProjectManager::instance());
 
     on_actionEditor_Mode_triggered();
@@ -226,7 +226,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
 
         connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
 
-        connect(m_pPluginDlg, SIGNAL(pluginReloaded()), m_pProperties, SLOT(onUpdated()));
+        connect(PluginModel::instance(), SIGNAL(pluginReloaded(QString)), m_pProperties, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), this, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
@@ -420,7 +420,7 @@ void SceneComposer::on_actionSave_As_triggered() {
 }
 
 void SceneComposer::on_actionPlugin_Manager_triggered() {
-    m_pPluginDlg->exec();
+    PluginDialog(this).exec();
 }
 
 void SceneComposer::on_actionEditor_Mode_triggered() {
@@ -443,7 +443,7 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
 }
 
 void SceneComposer::on_actionGame_Mode_triggered() {
-    if(!ui->actionGame_Mode->isChecked()) {
+    if(ui->actionEditor_Mode->isChecked()) {
         m_Back  = Bson::save(Engine::toVariant(m_pMap));
         ui->centralwidget->activateToolWindow(ui->preview);
     }

@@ -186,8 +186,8 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
         file.close();
 
         if(settings->crc() == crc) {
-            QFileInfo info(m_pProjectManager->importPath() + "/" + settings->destination());
-            if(settings->type() == IConverter::ContentCode || info.exists()) {
+            QFileInfo info(settings->absoluteDestination());
+            if(info.exists()) {
                 result  = false;
             }
         }
@@ -385,6 +385,7 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
         settings    = it.value()->createSettings();
     } else {
         settings    = new IConverterSettings();
+        type = resourceType(source);
     }
 
     settings->setType(type);
@@ -406,7 +407,11 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
     } else {
         settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
     }
-    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
+    if(settings->type() == IConverter::ContentCode) {
+        settings->setAbsoluteDestination(qPrintable(CodeManager::instance()->artifact()));
+    } else {
+        settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
+    }
     return settings;
 }
 

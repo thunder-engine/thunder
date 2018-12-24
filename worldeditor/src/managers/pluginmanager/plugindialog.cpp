@@ -9,7 +9,7 @@
 
 #include "codemanager.h"
 
-PluginDialog::PluginDialog(Engine *engine, QWidget *parent) :
+PluginDialog::PluginDialog(QWidget *parent) :
         QDialog(parent),
         ui(new Ui::PluginDialog) {
 
@@ -17,15 +17,7 @@ PluginDialog::PluginDialog(Engine *engine, QWidget *parent) :
 
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
-    PluginModel *model  = PluginModel::instance();
-    connect(model, SIGNAL(updated()), this, SIGNAL(updated()));
-    connect(model, SIGNAL(pluginReloaded(QString)), this, SIGNAL(pluginReloaded()));
-    connect(CodeManager::instance(), SIGNAL(buildSucess(QString)), model, SLOT(reloadPlugin(QString)));
-
-    model->init(engine);
-    model->rescan();
-
-    ui->tableView->setModel(model);
+    ui->tableView->setModel(PluginModel::instance());
     ui->tableView->setItemDelegate(new PluginDelegate(this));
     ui->tableView->horizontalHeader()->setHighlightSections(false);
 }
@@ -48,7 +40,6 @@ void PluginDialog::on_loadButton_clicked() {
         PluginModel *model  = PluginModel::instance();
         if( model->loadPlugin(dir.relativeFilePath(path)) ) {
             ui->tableView->setModel(model);
-            emit updated();
         }
     }
 }

@@ -15,7 +15,11 @@ public:
 
     void                            init                        ();
 
+    bool                            isOutdated                  () const;
+
     void                            setOutdated                 ();
+
+    QString                         artifact                    () const;
 
 signals:
     void                            buildSucess                 (const QString &path);

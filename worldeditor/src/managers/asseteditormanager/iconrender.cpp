@@ -65,7 +65,7 @@ IconRender::~IconRender() {
 
 }
 
-const QImage IconRender::render(const QString &resource, uint8_t type) {
+const QImage IconRender::render(const QString &resource, uint32_t type) {
     m_Context->makeCurrent(m_Surface);
 
     m_pCamera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
