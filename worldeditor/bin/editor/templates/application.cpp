@@ -51,10 +51,6 @@ int main(int argc, char **argv) {
         engine.exec();
     }
 
-    {
-        ObjectSystem system;
-        ${UnregisterComponents}
-    }
     return 0;
 }
 

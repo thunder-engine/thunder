@@ -189,7 +189,6 @@ int32_t Engine::exec() {
         }
     }
 
-
     if(p_ptr->m_pScene) {
         p_ptr->m_Valid  = true;
 
@@ -215,11 +214,11 @@ int32_t Engine::exec() {
         // Enter to game loop
         while(p_ptr->m_Valid) {
             Timer::update();
+            // fixed update
+            updateScene(p_ptr->m_pScene);
+
             float lag  = Timer::deltaTime();
             while(lag >= Timer::fixedDelta()) {
-                // fixed update
-                updateScene(p_ptr->m_pScene);
-
                 lag -= Timer::fixedDelta();
             }
             for(auto it : p_ptr->m_Systems) {
