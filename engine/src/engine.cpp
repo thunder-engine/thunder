@@ -68,7 +68,16 @@ public:
 
     }
 
-    Scene                       *m_pScene;
+    ~EnginePrivate() {
+        m_Values.clear();
+
+        m_pPlatform->destroy();
+        delete m_pPlatform;
+
+        delete m_pScene;
+    }
+
+    Scene                      *m_pScene;
 
     list<ISystem *>             m_Systems;
 
@@ -159,7 +168,8 @@ Engine::~Engine() {
     PROFILER_MARKER;
 
     Input::destroy();
-    p_ptr->m_pPlatform->destroy();
+
+    delete p_ptr;
 }
 
 /*!
@@ -228,7 +238,6 @@ int32_t Engine::exec() {
             p_ptr->m_pPlatform->update();
         }
         p_ptr->m_pPlatform->stop();
-        delete p_ptr->m_pScene;
     }
     return 0;
 }
