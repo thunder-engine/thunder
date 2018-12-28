@@ -83,6 +83,7 @@ Project {
         "engine/engine.qbs",
         "modules/media/media.qbs",
         "modules/renders/rendergl/rendergl.qbs",
+        "modules/vms/angel/angel.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
         "build/install.qbs"

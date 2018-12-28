@@ -231,6 +231,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             glBindVertexArray(0);
 
             mat->unbind(layer);
+
 #ifdef GL_ES_VERSION_2_0
             glBindProgramPipelineEXT(0);
 #else

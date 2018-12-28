@@ -1,22 +1,22 @@
 #ifndef BASELIGHT_H
 #define BASELIGHT_H
 
-#include "component.h"
+#include "nativebehaviour.h"
 
 #include <amath.h>
 
 class Mesh;
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT BaseLight : public Component {
-    A_REGISTER(BaseLight, Component, Components);
+class NEXT_LIBRARY_EXPORT BaseLight : public NativeBehaviour {
+    A_REGISTER(BaseLight, NativeBehaviour, Components)
 
     A_PROPERTIES(
         A_PROPERTY(bool,    Cast_shadows,   BaseLight::castShadows, BaseLight::setCastShadows),
         A_PROPERTY(float,   Brightness,     BaseLight::brightness, BaseLight::setBrightness),
         A_PROPERTY(Color,   Color,          BaseLight::color, BaseLight::setColor),
         A_PROPERTY(float,   Bias,           BaseLight::bias, BaseLight::setBias)
-    );
+    )
 
 public:
     BaseLight                   ();
@@ -24,7 +24,7 @@ public:
     ~BaseLight                  ();
 
     bool                        castShadows             () const;
-    void                        setCastShadows          (bool shadows);
+    void                        setCastShadows          (const bool shadows);
 
     float                       brightness              () const;
     void                        setBrightness           (const float brightness);

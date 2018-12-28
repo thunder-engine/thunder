@@ -31,7 +31,8 @@ Project {
     DynamicLibrary {
         name: "engine-editor"
         condition: engine.desktop
-        files: {
+        files:
+        {
             var sources = srcFiles
             sources.push("src/converters/*.cpp")
             sources.push("includes/converters/*.h")

@@ -78,6 +78,7 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
+        cpp.defines: ["NEXT_LIBRARY"]
 
         Properties {
             condition: !rendergl.desktop

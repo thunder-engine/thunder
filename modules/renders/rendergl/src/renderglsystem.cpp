@@ -34,6 +34,7 @@ RenderGLSystem::~RenderGLSystem() {
 
     ObjectSystem system;
 
+
     ATextureGL::unregisterClassFactory(&system);
     ARenderTextureGL::unregisterClassFactory(&system);
     AMaterialGL::unregisterClassFactory(&system);

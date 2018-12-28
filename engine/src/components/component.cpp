@@ -9,14 +9,6 @@ Component::Component() :
 
 }
 
-void Component::start() {
-
-}
-
-void Component::update() {
-
-}
-
 void Component::draw(ICommandBuffer &, int8_t) {
 
 }

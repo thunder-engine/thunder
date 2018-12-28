@@ -601,10 +601,10 @@ bool AssetManager::convert(IConverterSettings *settings) {
     QDir dir(m_pProjectManager->contentPath());
     QString format  = info.completeSuffix().toLower();
 
-    Log(Log::INF) << "Converting:" << settings->source();
-
     auto it = m_Converters.find(format);
     if(it != m_Converters.end()) {
+        Log(Log::INF) << "Converting:" << settings->source();
+
         settings->setType(it.value()->type());
         if(it.value()->convertFile(settings) == 0) {
             string source   = dir.relativeFilePath(settings->source()).toStdString();

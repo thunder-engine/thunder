@@ -12,6 +12,8 @@
 
 #include "commandbuffer.h"
 
+#include "pluginmodel.h"
+
 #define OVERRIDE "uni.texture0"
 
 Viewport::Viewport(QWidget *parent) :
@@ -37,6 +39,8 @@ void Viewport::initializeGL() {
         m_pController->init(m_pScene);
         Camera::setCurrent(m_pController->camera());
     }
+
+    m_Systems.push_back(PluginModel::instance()->createSystem("AngelScript"));
 
     SceneView::initializeGL();
 

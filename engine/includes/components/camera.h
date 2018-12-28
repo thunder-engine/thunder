@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include "component.h"
+#include "nativebehaviour.h"
 
 class Pipeline;
 

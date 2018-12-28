@@ -1,13 +1,13 @@
 #ifndef ANIMATIONCONTROLLER_H
 #define ANIMATIONCONTROLLER_H
 
-#include "component.h"
+#include "nativebehaviour.h"
 
 class PropertyAnimation;
 class AnimationClip;
 
-class NEXT_LIBRARY_EXPORT AnimationController : public Component {
-    A_REGISTER(AnimationController, Component, Components)
+class NEXT_LIBRARY_EXPORT AnimationController : public NativeBehaviour {
+    A_REGISTER(AnimationController, NativeBehaviour, Components)
 
     A_PROPERTIES (
         A_PROPERTY(AnimationClip*, Clip, AnimationController::clip, AnimationController::setClip)

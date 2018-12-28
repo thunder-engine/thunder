@@ -21,7 +21,7 @@ bool BaseLight::castShadows() const {
     return (m_Shadows == 1.0f);
 }
 
-void BaseLight::setCastShadows(bool shadows) {
+void BaseLight::setCastShadows(const bool shadows) {
     m_Shadows   = (shadows) ? 1.0f : 0.0f;
 }
 

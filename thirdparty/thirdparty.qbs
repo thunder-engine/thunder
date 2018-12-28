@@ -4,6 +4,7 @@ Project {
     id: thirdparty
 
     references: [
+		"angelscript/angelscript.qbs",
         "next/next.qbs",
         "zlib/zlib.qbs",
         "physfs/physfs.qbs",

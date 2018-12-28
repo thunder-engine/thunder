@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include <object.h>
+#include "object.h"
 #include <objectsystem.h>
 
 #include <file.h>
@@ -54,11 +54,7 @@ public:
     bool                        createWindow                ();
 
     Scene                      *scene                       ();
-    /*!
-        Get FileIO object.
 
-        @return                 Pointer to file system object.
-    */
     static IFile               *file                        ();
 
     static string               locationAppDir              ();

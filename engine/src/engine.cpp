@@ -100,8 +100,7 @@ public:
     static VariantMap           m_Values;
 };
 
-
-IFile                          *EnginePrivate::m_pFile  = nullptr;
+IFile *EnginePrivate::m_pFile   = nullptr;
 
 unordered_map<string, string>   EnginePrivate::m_IndexMap;
 unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
@@ -112,6 +111,8 @@ string                          EnginePrivate::m_ApplicationDir;
 string                          EnginePrivate::m_Organization;
 string                          EnginePrivate::m_Application;
 IPlatformAdaptor               *EnginePrivate::m_pPlatform;
+
+typedef Vector4 Color;
 
 Engine::Engine(IFile *file, int, char **argv) :
         p_ptr(new EnginePrivate()) {
@@ -130,38 +131,38 @@ Engine::Engine(IFile *file, int, char **argv) :
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
 
+    REGISTER_META_TYPE_IMPL(MaterialArray);
+
     ObjectSystem system;
 
-    Text::registerClassFactory(&system);
-    Texture::registerClassFactory(&system);
-    Material::registerClassFactory(&system);
-    Mesh::registerClassFactory(&system);
-    Atlas::registerClassFactory(&system);
-    Font::registerClassFactory(&system);
-    AnimationClip::registerClassFactory(&system);
+    Text::registerClassFactory(this);
+    Texture::registerClassFactory(this);
+    Material::registerClassFactory(this);
+    Mesh::registerClassFactory(this);
+    Atlas::registerClassFactory(this);
+    Font::registerClassFactory(this);
+    AnimationClip::registerClassFactory(this);
 
-    Scene::registerClassFactory(&system);
-    Actor::registerClassFactory(&system);
-    Transform::registerClassFactory(&system);
-    Camera::registerClassFactory(&system);
+    Scene::registerClassFactory(this);
+    Actor::registerClassFactory(this);
+    Transform::registerClassFactory(this);
+    Camera::registerClassFactory(this);
 
-    StaticMesh::registerClassFactory(&system);
-    TextMesh::registerClassFactory(&system);
-    SpriteMesh::registerClassFactory(&system);
-    DirectLight::registerClassFactory(&system);
-    PointLight::registerClassFactory(&system);
-    RenderTexture::registerClassFactory(&system);
+    StaticMesh::registerClassFactory(this);
+    TextMesh::registerClassFactory(this);
+    SpriteMesh::registerClassFactory(this);
+    DirectLight::registerClassFactory(this);
+    PointLight::registerClassFactory(this);
+    RenderTexture::registerClassFactory(this);
 
-    ParticleRender::registerClassFactory(&system);
-    ParticleEffect::registerClassFactory(&system);
+    ParticleRender::registerClassFactory(this);
+    ParticleEffect::registerClassFactory(this);
 
-    AnimationController::registerClassFactory(&system);
+    AnimationController::registerClassFactory(this);
 
-    Pipeline::registerClassFactory(&system);
+    Pipeline::registerClassFactory(this);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
-
-    registerMetaType<MaterialArray>("MaterialArray");
 }
 
 Engine::~Engine() {
@@ -209,7 +210,6 @@ int32_t Engine::exec() {
             level->setParent(p_ptr->m_pScene);
         }
 
-        Log(Log::DBG) << "Looking camera...";
         Camera *component   = p_ptr->m_pScene->findChild<Camera *>();
         if(component == nullptr) {
             Log(Log::DBG) << "Camera not found creating new one.";
@@ -363,6 +363,7 @@ Scene *Engine::scene() {
 
 IFile *Engine::file() {
     PROFILER_MARKER;
+
     return EnginePrivate::m_pFile;
 }
 
@@ -421,7 +422,7 @@ void Engine::updateScene(Object *object) {
     if(object) {
         for(auto &it : object->getChildren()) {
             Object *child   = it;
-            Component *comp = dynamic_cast<Component *>(child);
+            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(child);
             if(comp && comp->isEnable()) {
                 if(!comp->isStarted()) {
                     comp->start();

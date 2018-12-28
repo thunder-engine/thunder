@@ -1,7 +1,7 @@
 #include "components/scene.h"
 
 #include "components/actor.h"
-#include "components/component.h"
+#include "components/nativebehaviour.h"
 
 Scene::Scene() :
     m_Ambient(0.2f) {

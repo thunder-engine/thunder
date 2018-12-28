@@ -53,7 +53,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("windows")
-            cpp.libraryPaths: [ "../../thirdparty/openal/windows/x32" ]
+            cpp.libraryPaths: ["../../thirdparty/openal/windows/" + ((qbs.architecture === "x86_64") ? "x64" : "x32")]
             cpp.dynamicLibraries: [ "OpenAL32" ]
         }
 
@@ -83,6 +83,7 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
+        cpp.defines: ["NEXT_LIBRARY"]
 
         Properties {
             condition: !media.desktop

@@ -4,11 +4,14 @@
 
 #define DATA  "Data"
 
+#include <log.h>
+
 Text::Text() {
 
 }
 
 Text::~Text() {
+
 }
 
 void Text::loadUserData(const VariantMap &data) {

@@ -17,10 +17,6 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
 public:
     Component                   ();
 
-    virtual void                start                   ();
-
-    virtual void                update                  ();
-
     virtual void                draw                    (ICommandBuffer &buffer, int8_t layer);
 
     Actor                      &actor                   () const;
