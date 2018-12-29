@@ -36,7 +36,6 @@
 
 #include "projectmanager.h"
 #include "pluginmodel.h"
-#include "codemanager.h"
 #include "aboutdialog.h"
 
 // System
@@ -183,7 +182,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
 
-    QApplication::connect(CodeManager::instance(), SIGNAL(buildSucess(QString)), PluginModel::instance(), SLOT(reloadPlugin(QString)));
+
 
     ui->projectSettings->setObject(ProjectManager::instance());
 

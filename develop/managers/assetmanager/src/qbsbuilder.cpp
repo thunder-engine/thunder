@@ -3,10 +3,18 @@
 #include <QProcess>
 #include <QDir>
 #include <QStandardPaths>
+#include <QMetaProperty>
 
 #include <log.h>
 
 #include <projectmanager.h>
+
+QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
+
+const QString gRegisterComponents("${RegisterComponents}");
+const QString gUnregisterComponents("${UnregisterComponents}");
+const QString gComponentNames("${ComponentNames}");
+const QString gIncludes("${Includes}");
 
 const QString gFilesList("${filesList}");
 
@@ -60,8 +68,62 @@ QbsBuilder::QbsBuilder() :
     }
 }
 
-void QbsBuilder::generateProject(const QStringList &code) {
+void QbsBuilder::generateProject() {
+    QStringList &code = rescanSources(m_pMgr->contentPath());
+
+    StringMap classes;
+    // Generate plugin loader
+    foreach(QString it, code) {
+        QFile file(it);
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
+            QByteArray data = file.readLine();
+            bool valid      = true;
+            while(!data.isEmpty()) {
+                if(!valid && data.indexOf("*/") != -1) {
+                    valid = true;
+                }
+                int comment = data.indexOf("/*");
+                if(comment == -1) {
+                    int comment = data.indexOf("//");
+                    int index   = gClass.indexIn(QString(data));
+                    if(valid && index != -1 && !gClass.cap(1).isEmpty() && (comment == -1 || comment > index)) {
+                        classes[gClass.cap(1)] = it;
+                    }
+                } else if(data.indexOf("*/", comment + 2) == -1) {
+                    valid   = false;
+                }
+                data = file.readLine();
+            }
+            file.close();
+        }
+    }
+
     StringMap values(m_Values);
+
+    values[gRegisterComponents]     = "";
+    values[gUnregisterComponents]   = "";
+    values[gComponentNames]         = "";
+
+    const QMetaObject *meta = m_pMgr->metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        QMetaProperty property  = meta->property(i);
+        values[QString("${%1}").arg(property.name())]   = property.read(m_pMgr).toString();
+    }
+
+    QStringList includes;
+    QMapIterator<QString, QString> it(classes);
+    while(it.hasNext()) {
+        it.next();
+        includes << "#include \"" + it.value() + "\"\n";
+        values[gRegisterComponents].append(it.key() + "::registerClassFactory(&system);\n\t\t");
+        values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(&system);\n\t\t");
+        values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n\t\t");
+    }
+    includes.removeDuplicates();
+    values[gIncludes].append(includes.join(""));
+
+    copyTemplate(m_pMgr->templatePath() + "/plugin.cpp", project() + "plugin.cpp", values);
+    copyTemplate(m_pMgr->templatePath() + "/application.cpp", project() + "application.cpp", values);
 
     values[gSdkPath]        = m_pMgr->sdkPath();
     values[gIncludePaths]   = formatList(m_IncludePath);
@@ -73,6 +135,8 @@ void QbsBuilder::generateProject(const QStringList &code) {
 }
 
 bool QbsBuilder::buildProject() {
+    generateProject();
+
     QString product = m_pMgr->projectName();
     if(m_pMgr->targetPath().isEmpty()) {
         product    += gEditorSuffix;
@@ -185,4 +249,10 @@ bool QbsBuilder::checkProfile(const QString &profile) {
         return qbs.readAll().contains(qPrintable(profile));
     }
     return false;
+}
+
+void QbsBuilder::setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs) {
+    m_IncludePath   = incp;
+    m_LibPath       = libp;
+    m_Libs          = libs;
 }

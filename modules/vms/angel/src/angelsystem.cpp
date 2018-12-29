@@ -76,7 +76,7 @@ bool AngelSystem::init() {
 
         registerClasses(m_pScriptEngine);
 
-        AngelScript *script = Engine::loadResource<AngelScript>("test.as");
+        AngelScript *script = Engine::loadResource<AngelScript>("{00000000-0101-0000-0000-000000000000}");
         if(script) {
             AngelStream stream(script->m_Array);
             m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
