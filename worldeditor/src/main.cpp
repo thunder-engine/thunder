@@ -11,7 +11,6 @@
 #include "editors/scenecomposer/scenecomposer.h"
 
 #include "assetmanager.h"
-#include "codemanager.h"
 #include "projectmanager.h"
 #include <engine.h>
 
@@ -24,7 +23,6 @@
 #include <regex>
 #include "managers/projectmanager/projectdialog.h"
 
-#include "codemanager.h"
 #include "pluginmodel.h"
 
 #include "editors/textureedit/textureedit.h"
@@ -93,7 +91,6 @@ int main(int argc, char *argv[]) {
         SceneComposer w(&engine);
         QApplication::connect(&queue, &ImportQueue::finished, &w, &SceneComposer::show);
 
-        CodeManager::instance()->init();
         asset->init(&engine);
         UndoManager::instance()->init();
 
@@ -104,6 +101,5 @@ int main(int argc, char *argv[]) {
     }
     UndoManager::destroy();
     AssetManager::destroy();
-    CodeManager::destroy();
     return result;
 }

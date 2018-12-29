@@ -14,31 +14,27 @@ class IBuilder : public QObject {
 public:
     IBuilder                        ();
 
-    virtual void                    generateProject     (const QStringList &code) = 0;
-
     virtual bool                    buildProject        () = 0;
 
     virtual QString                 builderVersion      () = 0;
 
     virtual void                    builderInit         () = 0;
 
-    void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
+    virtual QStringList             suffixes            () const = 0;
 
-    void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
+    void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
 
     QString                         project             () const { return m_Project; }
 
     QString                         artifact            () const { return m_Artifact; }
+
+    QStringList                     rescanSources       (const QString &path) const;
 
 signals:
     void                            buildFinished       (int exitCode);
 
 protected:
     StringMap                       m_Values;
-
-    QStringList                     m_IncludePath;
-    QStringList                     m_LibPath;
-    QStringList                     m_Libs;
 
     QString                         m_Suffix;
     QString                         m_Project;

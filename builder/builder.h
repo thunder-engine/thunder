@@ -13,12 +13,12 @@ public:
     Builder         ();
 
 signals:
-    void            packDone        ();
-    void            moveDone        (const QString &target);
+    void            packDone            ();
+    void            moveDone            (const QString &target);
 
 public slots:
-    void            package         (const QString &target);
-    void            onCompileDone   (const QString &path);
+    void            package             (const QString &target);
+    void            onCompileFinished   (int code);
 };
 
 #endif // BUILDER_H

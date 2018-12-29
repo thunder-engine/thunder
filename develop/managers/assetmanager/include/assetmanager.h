@@ -15,7 +15,8 @@
 class QFileSystemWatcher;
 
 class ProjectManager;
-class CodeManager;
+
+class IBuilder;
 
 struct Template {
     Template() :
@@ -93,8 +94,21 @@ public:
 
     IConverterSettings     *createSettings      (const QFileInfo &source);
 
+
+    bool                    isOutdated          () const;
+
+    void                    setOutdated         ();
+
+    QString                 artifact            () const;
+
 public slots:
     void                    reimport            ();
+
+    void                    buildProject        ();
+
+    void                    rebuildProject      ();
+
+    void                    onBuildFinished     (int exit);
 
 signals:
     void                    ready               ();
@@ -105,6 +119,8 @@ signals:
     void                    imported            (const QString &path, uint32_t type);
     void                    importStarted       (int count, const QString &stage);
     void                    importFinished      ();
+
+    void                    buildFinished       (int exit);
 
 protected slots:
     void                    onPerform           ();
@@ -142,11 +158,14 @@ protected:
     QList<IConverterSettings *>  m_ImportQueue;
 
     ProjectManager         *m_pProjectManager;
-    CodeManager            *m_pCodeManager;
 
     QTimer                 *m_pTimer;
 
     Engine                 *m_pEngine;
+
+    bool                    m_Outdated;
+
+    IBuilder               *m_pBuilder;
 
 protected:
     void                    cleanupBundle       ();

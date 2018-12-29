@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QMetaProperty>
 #include <QDir>
+#include <QDirIterator>
 
 #include <projectmanager.h>
 #include <config.h>
@@ -45,8 +46,15 @@ void IBuilder::copyTemplate(const QString &src, const QString &dst, StringMap &v
     }
 }
 
-void IBuilder::setEnvironment(const QStringList &incp, const QStringList &libp, const QStringList &libs) {
-    m_IncludePath   = incp;
-    m_LibPath       = libp;
-    m_Libs          = libs;
+QStringList IBuilder::rescanSources(const QString &path) const {
+    QStringList result;
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    while(it.hasNext()) {
+        QFileInfo info(it.next());
+        if(suffixes().contains(info.completeSuffix(), Qt::CaseInsensitive)) {
+            result.push_back(info.absoluteFilePath());
+        }
+    }
+    result.removeDuplicates();
+    return result;
 }

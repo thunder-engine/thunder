@@ -1,9 +1,7 @@
 #ifndef NATIVEBEHAVIOUR_H
 #define NATIVEBEHAVIOUR_H
 
-#include "components/component.h"
-
-#include "system.h"
+#include "component.h"
 
 class NEXT_LIBRARY_EXPORT NativeBehaviour : public Component {
     A_REGISTER(NativeBehaviour, Component, Components)

@@ -7,8 +7,6 @@
 #include "pluginmodel.h"
 #include "plugindelegate.h"
 
-#include "codemanager.h"
-
 PluginDialog::PluginDialog(QWidget *parent) :
         QDialog(parent),
         ui(new Ui::PluginDialog) {

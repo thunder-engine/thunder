@@ -24,7 +24,6 @@
 #include "components/actor.h"
 
 #include "animconverter.h"
-#include "codemanager.h"
 #include "textconverter.h"
 #include "textureconverter.h"
 #include "materialconverter.h"
@@ -34,6 +33,9 @@
 #include "effectconverter.h"
 
 #include "projectmanager.h"
+#include "pluginmodel.h"
+
+#include "qbsbuilder.h"
 
 #include "log.h"
 
@@ -51,9 +53,9 @@ AssetManager *AssetManager::m_pInstance   = nullptr;
 Q_DECLARE_METATYPE(IConverterSettings *)
 
 AssetManager::AssetManager() :
-        m_pEngine(nullptr) {
+        m_pEngine(nullptr),
+        m_Outdated(false) {
     m_pProjectManager   = ProjectManager::instance();
-    m_pCodeManager      = CodeManager::instance();
 
     m_pDirWatcher   = new QFileSystemWatcher(this);
     m_pFileWatcher  = new QFileSystemWatcher(this);
@@ -76,6 +78,12 @@ AssetManager::AssetManager() :
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
+
+    QbsBuilder *builder = new QbsBuilder();
+    builder->setEnvironment(QStringList(), QStringList(), QStringList());
+    m_pBuilder  = builder;
+
+    connect(m_pBuilder, SIGNAL(buildFinished(int)), this, SLOT(onBuildFinished(int)));
 
     m_Formats["map"]    = IConverter::ContentMap;
     m_Formats["cpp"]    = IConverter::ContentCode;
@@ -408,7 +416,7 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
         settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
     }
     if(settings->type() == IConverter::ContentCode) {
-        settings->setAbsoluteDestination(qPrintable(CodeManager::instance()->artifact()));
+        settings->setAbsoluteDestination(qPrintable(artifact()));
     } else {
         settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
     }
@@ -522,7 +530,7 @@ void AssetManager::onPerform() {
 
         if(!convert(settings)) {
             if(settings->type() == IConverter::ContentCode) {
-                m_pCodeManager->setOutdated();
+                setOutdated();
             } else {
                 QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
                 dir.mkpath(QFileInfo(dst).absoluteDir().absolutePath());
@@ -657,4 +665,35 @@ void AssetManager::saveSettings(IConverterSettings *settings) {
         fp.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
         fp.close();
     }
+}
+
+void AssetManager::rebuildProject() {
+    setOutdated();
+    buildProject();
+}
+
+void AssetManager::buildProject() {
+    if(m_Outdated) {
+        m_pBuilder->buildProject();
+    }
+}
+
+void AssetManager::onBuildFinished(int exitCode) {
+    if(exitCode == 0) {
+        PluginModel::instance()->reloadPlugin(artifact());
+        m_Outdated  = false;
+    }
+    emit buildFinished(exitCode);
+}
+
+bool AssetManager::isOutdated() const {
+    return m_Outdated;
+}
+
+void AssetManager::setOutdated() {
+    m_Outdated  = true;
+}
+
+QString AssetManager::artifact() const {
+    return m_pBuilder->artifact();
 }
