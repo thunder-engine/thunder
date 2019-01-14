@@ -1,6 +1,7 @@
 ## Thunder Engine
 [![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
 
+#### Build Status
 [![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
 [![Build Status](https://travis-ci.org/eprikazchikov/thunder.svg?branch=master)](https://travis-ci.org/eprikazchikov/thunder)
 #### Code Quality Status
@@ -19,6 +20,7 @@ Thunder Engine is an opensource multifunctional light weight game engine for cre
 #### Render
 - Rendering System Based on Physical Principles
 - Deferred Shading
+- Particle system
 - CookTorance Lighting model
 - Cascaded Shadow Maps (PPSM)
 
