@@ -1,4 +1,6 @@
 ## Thunder Engine
+[![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
+
 [![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
 [![Build Status](https://travis-ci.org/eprikazchikov/thunder.svg?branch=master)](https://travis-ci.org/eprikazchikov/thunder)
 #### Code Quality Status
