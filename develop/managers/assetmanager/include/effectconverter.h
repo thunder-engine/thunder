@@ -151,13 +151,13 @@ public:
     virtual int32_t classType() const { return ParticleEffect::MODIFICATOR_SCALEANGLE; }
 };
 
-class ScaleVelocity : public EffectFunction {
+class Velocity : public EffectFunction {
     Q_OBJECT
     Q_PROPERTY(Vector3 Value READ minValue WRITE setMinValue DESIGNABLE true USER true)
     Q_PROPERTY(Vector3 Min READ minValue WRITE setMinValue DESIGNABLE true USER true)
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
-    Q_INVOKABLE ScaleVelocity() { }
+    Q_INVOKABLE Velocity() { }
     virtual int32_t classType() const { return ParticleEffect::MODIFICATOR_VELOCITY; }
 };
 

@@ -33,12 +33,12 @@ EffectConverter::EffectConverter() {
     qRegisterMetaType<StartSize*>("StartSize");
     qRegisterMetaType<StartColor*>("StartColor");
     qRegisterMetaType<StartAngle*>("StartAngle");
-    qRegisterMetaType<StartAngle*>("StartPosition");
+    qRegisterMetaType<StartPosition*>("StartPosition");
 
     qRegisterMetaType<ScaleSize*>("ScaleSize");
     qRegisterMetaType<ScaleColor*>("ScaleColor");
     qRegisterMetaType<ScaleAngle*>("ScaleAngle");
-    qRegisterMetaType<ScaleVelocity*>("ScaleVelocity");
+    qRegisterMetaType<Velocity*>("Velocity");
 }
 
 uint8_t EffectConverter::convertFile(IConverterSettings *settings) {

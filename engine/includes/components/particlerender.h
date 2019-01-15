@@ -1,13 +1,13 @@
 #ifndef PARTICLERENDER_H
 #define PARTICLERENDER_H
 
-#include "component.h"
+#include "nativebehaviour.h"
 
 class ParticleRenderPrivate;
 class ParticleEffect;
 
-class NEXT_LIBRARY_EXPORT ParticleRender : public Component {
-    A_REGISTER(ParticleRender, Component, Components)
+class NEXT_LIBRARY_EXPORT ParticleRender : public NativeBehaviour {
+    A_REGISTER(ParticleRender, NativeBehaviour, Components)
 
     A_PROPERTIES(
         A_PROPERTY(ParticleEffect *, Effect, ParticleRender::effect, ParticleRender::setEffect)

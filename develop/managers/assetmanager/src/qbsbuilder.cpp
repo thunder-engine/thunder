@@ -69,7 +69,7 @@ QbsBuilder::QbsBuilder() :
 }
 
 void QbsBuilder::generateProject() {
-    QStringList &code = rescanSources(m_pMgr->contentPath());
+    QStringList code = rescanSources(m_pMgr->contentPath());
 
     StringMap classes;
     // Generate plugin loader
