@@ -21,7 +21,7 @@ using namespace std;
     UNREGISTER_META_TYPE_IMPL(Class); \
     UNREGISTER_META_TYPE_IMPL(Class *);
 
-#define UNREGISTER_META_TYPE_IMPL(Class) registerMetaType<Class>(#Class)
+#define UNREGISTER_META_TYPE_IMPL(Class) unregisterMetaType<Class>(#Class)
 
 class NEXT_LIBRARY_EXPORT MetaType {
 public:
@@ -205,8 +205,8 @@ static uint32_t registerMetaType(const char *typeName) {
 }
 
 template<typename T>
-static uint32_t unregisterMetaType(const char *typeName) {
-    return MetaType::unregisterType(*getTable<T>(typeName));
+static void unregisterMetaType(const char *typeName) {
+    MetaType::unregisterType(*getTable<T>(typeName));
 }
 
 #endif // METATYPE_H
