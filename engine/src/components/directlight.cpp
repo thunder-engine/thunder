@@ -38,7 +38,7 @@ DirectLight::~DirectLight() {
 
 void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
-        m_Direction = Vector4(actor().transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
+        m_Direction = Vector4(actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
 
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), m_pShape, 0, layer, m_pMaterialInstance);

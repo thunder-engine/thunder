@@ -179,6 +179,8 @@ void registerVector4(asIScriptEngine *engine) {
 void registerColor(asIScriptEngine *engine) {
     engine->RegisterObjectType("Color", sizeof(Vector4), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
     engine->RegisterObjectBehaviour("Color", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(vec4), asCALL_CDECL_OBJLAST);
+
+    engine->RegisterObjectBehaviour("Color", asBEHAVE_DESTRUCT,  "void f()", asFUNCTION(deleteVec4),  asCALL_CDECL_OBJLAST);
 }
 
 static void mat3(Matrix3 *dest) {

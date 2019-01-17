@@ -56,9 +56,8 @@ void MediaSystem::update(Scene &, uint32_t) {
 
     Camera *camera  = Camera::current();
     if(camera) {
-        Actor &a    = camera->actor();
-
-        Transform *t    = a.transform();
+        Actor *a = camera->actor();
+        Transform *t = a->transform();
 
         alListenerfv(AL_POSITION,    t->worldPosition().v);
 

@@ -213,7 +213,7 @@ void Handles::drawAABB(AABBox &box) {
 bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {
     bool result = false;
     Matrix4 model(position, Quaternion(), Vector3(size, 1.0));
-    Matrix4 q   = model * Matrix4(Vector3(), Camera::current()->actor().transform()->rotation(), Vector3(1.0));
+    Matrix4 q   = model * Matrix4(Vector3(), Camera::current()->actor()->transform()->rotation(), Vector3(1.0));
 
     if(HandleTools::distanceToPoint(q, Vector3()) <= sense) {
         result = true;
@@ -230,7 +230,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 
     Camera *camera  = Camera::current();
     if(camera) {
-        Vector3 normal = position - camera->actor().transform()->position();
+        Vector3 normal = position - camera->actor()->transform()->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
             scale = normal.length() * (CONTROL_SIZE / m_sScreen.y);
@@ -310,7 +310,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 
         Plane plane;
         plane.point     = position;
-        plane.normal    = camera->actor().transform()->rotation() * Vector3(0.0, 0.0, 1.0);
+        plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0, 0.0, 1.0);
         if(s_Axes == AXIS_X || s_Axes == AXIS_Z) {
             plane.normal    = Vector3(0.0f, plane.normal.y, plane.normal.z);
         } else if(s_Axes == (AXIS_X | AXIS_Y)) {
@@ -318,7 +318,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
             plane.normal    = Vector3(1.0f, 0.0f, 0.0f);
         } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-            plane.normal    = camera->actor().transform()->rotation() * Vector3(0.0, 0.0, 1.0);
+            plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0, 0.0, 1.0);
             plane.normal    = Vector3(plane.normal.x, 0.0f, plane.normal.z);
         }
         plane.d = plane.normal.dot(plane.point);
@@ -344,7 +344,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
     Camera *camera  = Camera::current();
     if(camera) {
-        Transform *t = camera->actor().transform();
+        Transform *t = camera->actor()->transform();
         Vector3 normal = position - t->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
@@ -410,7 +410,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
     Camera *camera  = Camera::current();
     if(camera) {
-        Vector3 normal = position - camera->actor().transform()->position();
+        Vector3 normal = position - camera->actor()->transform()->position();
         float size = 1.0f;
         if(!camera->orthographic()) {
             size = normal.length() * (CONTROL_SIZE / m_sScreen.y);

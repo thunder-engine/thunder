@@ -13,8 +13,8 @@ void Component::draw(ICommandBuffer &, int8_t) {
 
 }
 
-Actor &Component::actor() const {
-    return *(static_cast<Actor *>(parent()));
+Actor *Component::actor() const {
+    return (static_cast<Actor *>(parent()));
 }
 
 bool Component::isEnable() const {
@@ -34,5 +34,5 @@ void Component::setStarted(bool started) {
 }
 
 bool Component::isSerializable() const {
-    return (!actor().isPrefab() && actor().isSerializable());
+    return (!actor()->isPrefab() && actor()->isSerializable());
 }

@@ -12,14 +12,16 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
     A_PROPERTIES (
         A_PROPERTY(bool, Enable, Component::isEnable, Component::setEnable)
     )
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(Actor *, Component::actor)
+    )
 
 public:
     Component                   ();
 
     virtual void                draw                    (ICommandBuffer &buffer, int8_t layer);
 
-    Actor                      &actor                   () const;
+    Actor                      *actor                   () const;
 
     bool                        isEnable                () const;
 

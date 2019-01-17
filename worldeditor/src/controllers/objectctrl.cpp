@@ -155,7 +155,7 @@ void ObjectCtrl::drawHandles() {
                                 euler  += Vector3(0.0f, 0.0f, angle);
                             } break;
                             default: {
-                                Vector3 axis  = m_pActiveCamera->actor().transform()->position() - mPosition;
+                                Vector3 axis  = m_pActiveCamera->actor()->transform()->position() - mPosition;
                                 axis.normalize();
                                 q       = q * Quaternion(axis, angle);
                                 euler  += axis * angle;
@@ -262,7 +262,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
-            Transform *t    = component->actor().transform();
+            Transform *t    = component->actor()->transform();
 
             bool result     = false;
             Camera *camera  = dynamic_cast<Camera *>(component);

@@ -26,6 +26,6 @@ PointLight::~PointLight() {
 
 void PointLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
-        buffer.drawMesh(actor().transform()->worldTransform(), m_pShape, 0, layer, m_pMaterialInstance);
+        buffer.drawMesh(actor()->transform()->worldTransform(), m_pShape, 0, layer, m_pMaterialInstance);
     }
 }

@@ -59,13 +59,13 @@ ParticleRender::ParticleRender() :
 
 void ParticleRender::update() {
     float dt    = Timer::deltaTime() * Timer::scale();
-    Matrix4 &m  = actor().transform()->worldTransform();
+    Matrix4 &m  = actor()->transform()->worldTransform();
 
     Camera *camera = Camera::current();
     if(!camera) {
         return;
     }
-    Vector3 pos = camera->actor().transform()->worldPosition();
+    Vector3 pos = camera->actor()->transform()->worldPosition();
 
     if(m_effect->m_pEffect) {
         uint32_t index  = 0;
@@ -139,10 +139,10 @@ void ParticleRender::update() {
 }
 
 void ParticleRender::draw(ICommandBuffer &buffer, int8_t layer) {
-    Actor &a    = actor();
-    if(layer & a.layers()) {
+    Actor *a    = actor();
+    if(layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a.uuid()));
+            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
         uint32_t index  = 0;
         for(auto &it : m_effect->m_Emitters) {

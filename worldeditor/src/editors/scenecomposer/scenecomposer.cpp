@@ -246,8 +246,8 @@ void SceneComposer::onGLInit() {
         it++;
         Camera *camera = Camera::current();
         if(camera) {
-            Actor &actor = camera->actor();
-            Transform *t = actor.transform();
+            Actor *actor = camera->actor();
+            Transform *t = actor->transform();
             t->setPosition(it->toVector3());
             it++;
             t->setEuler(it->toVector3());
@@ -286,8 +286,8 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         params.push_back(qPrintable(mPath));
         Camera *camera  = ui->viewport->controller()->camera();
         if(camera) {
-            Actor &actor    = camera->actor();
-            Transform *t    = actor.transform();
+            Actor *actor = camera->actor();
+            Transform *t = actor->transform();
             params.push_back(t->position());
             params.push_back(t->euler());
             params.push_back(ui->orthoButton->isChecked());

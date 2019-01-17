@@ -50,7 +50,7 @@ void AnimationController::setClip(AnimationClip *clip) {
 
     if(m_pClip) {
         for(auto &it : clip->m_Tracks) {
-            Object *target  = findTarget(&actor(), it.path);
+            Object *target  = findTarget(actor(), it.path);
             PropertyAnimation *property = new PropertyAnimation();
             property->setTarget(target, it.property.c_str());
             property->setKeyFrames(it.curve);

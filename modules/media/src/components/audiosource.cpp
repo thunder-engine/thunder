@@ -30,9 +30,9 @@ AudioSource::~AudioSource() {
 }
 
 void AudioSource::update() {
-    Actor &a    = actor();
+    Actor *a    = actor();
 
-    alSourcefv(m_ID, AL_POSITION,   a.transform()->worldPosition().v);
+    alSourcefv(m_ID, AL_POSITION,   a->transform()->worldPosition().v);
 
     if(m_pClip && m_pClip->isStream()) {
         int processed;

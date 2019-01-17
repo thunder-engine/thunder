@@ -29,7 +29,7 @@ Pipeline *Camera::pipeline() {
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
     p   = projectionMatrix();
 
-    Transform *t   = actor().transform();
+    Transform *t   = actor()->transform();
     Matrix4 m;
     m.translate(-t->position());
     v   = Matrix4(t->rotation().toMatrix()).inverse() * m;
@@ -92,9 +92,9 @@ bool Camera::unproject(const Vector3 &ss, const Matrix4 &modelview, const Matrix
 }
 
 Ray Camera::castRay(float x, float y) {
-    Actor &a        = actor();
-    Vector3 p       = a.transform()->position();
-    Vector3 dir     = a.transform()->rotation() * Vector3(0.0, 0.0,-1.0);
+    Actor *a        = actor();
+    Vector3 p       = a->transform()->position();
+    Vector3 dir     = a->transform()->rotation() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
     Vector3 view;
@@ -195,7 +195,7 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
         fw    = fh * m_Ratio;
     }
 
-    Transform *t    = actor().transform();
+    Transform *t    = actor()->transform();
 
     Vector3 pos     = t->worldPosition();
     Quaternion rot  = t->worldRotation();

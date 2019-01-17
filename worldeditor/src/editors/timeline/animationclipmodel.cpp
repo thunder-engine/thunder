@@ -39,7 +39,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
             QString name    = lst.last();
             uint32_t size   = lst.size();
             if(name.isEmpty()) {
-                name    = QString::fromStdString(m_pController->actor().name());
+                name    = QString::fromStdString(m_pController->actor()->name());
                 size    = 0;
             }
 

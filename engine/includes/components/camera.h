@@ -19,6 +19,7 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
         A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor),
         A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
     )
+    A_NOMETHODS()
 
 public:
     Camera                      ();

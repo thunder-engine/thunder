@@ -51,12 +51,12 @@ void Transform::setScale(const Vector3 &value) {
 
 Matrix4 &Transform::worldTransform() {
     if(m_Dirty) {
-        for(auto &it : actor().findChildren<Actor *>(false)) {
+        for(auto &it : actor()->findChildren<Actor *>(false)) {
             it->transform()->m_Dirty = true;
         }
 
         m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
-        Actor *cur  = dynamic_cast<Actor *>(actor().parent());
+        Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
         while(cur) {
             Transform *t    = cur->transform();
             m_Transform     = t->worldTransform() * m_Transform;
@@ -69,7 +69,7 @@ Matrix4 &Transform::worldTransform() {
 
 Vector3 Transform::worldPosition() const {
     Vector3 result  = m_Position;
-    Actor *cur  = dynamic_cast<Actor *>(actor().parent());
+    Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
     while(cur) {
         Transform *t    = cur->transform();
         result  = result * t->m_Scale;
@@ -82,7 +82,7 @@ Vector3 Transform::worldPosition() const {
 
 Vector3 Transform::worldEuler() const {
     Vector3 result  = m_Euler;
-    Actor *cur  = dynamic_cast<Actor *>(actor().parent());
+    Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
     while(cur) {
         Transform *t    = cur->transform();
         result += t->m_Euler;
@@ -93,7 +93,7 @@ Vector3 Transform::worldEuler() const {
 
 Quaternion Transform::worldRotation() const {
     Quaternion result   = m_Rotation;
-    Actor *cur  = dynamic_cast<Actor *>(actor().parent());
+    Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
     while(cur) {
         Transform *t    = cur->transform();
         result  = result * t->m_Rotation;
@@ -104,7 +104,7 @@ Quaternion Transform::worldRotation() const {
 
 Vector3 Transform::worldScale() const {
     Vector3 result  = m_Scale;
-    Actor *cur  = dynamic_cast<Actor *>(actor().parent());
+    Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
     while(cur) {
         Transform *t    = cur->transform();
         result  = result * t->m_Scale;

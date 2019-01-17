@@ -154,7 +154,7 @@ void Pipeline::cameraReset(Camera &camera) {
     Matrix4 v, p;
     camera.matrices(v, p);
     camera.setRatio(m_Screen.x / m_Screen.y);
-    m_Buffer->setGlobalValue("camera.position", Vector4(camera.actor().transform()->worldPosition(), camera.nearPlane()));
+    m_Buffer->setGlobalValue("camera.position", Vector4(camera.actor()->transform()->worldPosition(), camera.nearPlane()));
     m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera.farPlane()));
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
     m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
@@ -267,7 +267,7 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
     }
 
     float nearPlane = camera.nearPlane();
-    Matrix4 view    = Matrix4(light->actor().transform()->rotation().toMatrix()).inverse();
+    Matrix4 view    = Matrix4(light->actor()->transform()->rotation().toMatrix()).inverse();
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist  = distance[lod];
         const array<Vector3, 8> &points = camera.frustumCorners(nearPlane, dist);
@@ -369,7 +369,7 @@ Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3,
     for(auto it : in) {
         BaseMesh *mesh  = dynamic_cast<BaseMesh *>(it);
         if(mesh && mesh->mesh()) {
-            Matrix4 &transform   = mesh->actor().transform()->worldTransform();
+            Matrix4 &transform   = mesh->actor()->transform()->worldTransform();
             Vector3 min, max;
             mesh->mesh()->bound().box(min, max);
             Matrix3 r   = transform.rotation();

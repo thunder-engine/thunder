@@ -183,7 +183,7 @@ void Timeline::onUpdated(Object *object, const QString &property) {
     if(object && !property.isEmpty() && ui->record->isChecked()) {
         AnimationController *controller = findController(object);
         if(controller) {
-            QString path    = pathTo(static_cast<Object *>(&controller->actor()), object);
+            QString path    = pathTo(static_cast<Object *>(controller->actor()), object);
 
             const MetaObject *meta  = object->metaObject();
             int32_t index   = meta->indexOfProperty(qPrintable(property));
