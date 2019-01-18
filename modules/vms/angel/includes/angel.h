@@ -3,7 +3,7 @@
 
 #include <module.h>
 
-class NEXT_LIBRARY_EXPORT Angel : public IModule {
+class Angel : public IModule {
 public:
     Angel                       (Engine *engine);
 
@@ -25,7 +25,7 @@ protected:
 };
 
 extern "C" {
-    NEXT_LIBRARY_EXPORT IModule *moduleCreate(Engine *engine);
+    MODULE_EXPORT IModule *moduleCreate(Engine *engine);
 }
 
 #endif // ANGEL_H

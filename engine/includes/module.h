@@ -7,6 +7,13 @@
 class ISystem;
 class IConverter;
 
+#if defined(NEXT_SHARED) && defined(_WIN32)
+    #define MODULE_EXPORT __declspec(dllexport)
+#else
+    #define MODULE_EXPORT
+#endif
+
+
 class NEXT_LIBRARY_EXPORT IModule {
 public:
     enum PluginTypes {

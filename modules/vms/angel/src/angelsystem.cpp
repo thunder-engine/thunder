@@ -147,11 +147,6 @@ void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
     }
 }
 
-void AngelSystem::resize(uint32_t, uint32_t) {
-    PROFILER_MARKER;
-
-}
-
 void AngelSystem::registerClasses(asIScriptEngine *engine) {
     PROFILER_MARKER;
 

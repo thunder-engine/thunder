@@ -49,7 +49,7 @@ protected:
     vector<string>          mSubItems;
 };
 
-class NEXT_LIBRARY_EXPORT IConverter {
+class NEXT_LIBRARY_EXPORT IConverter : public QObject {
 public:
     enum ContentTypes {
         ContentInvalid              = MetaType::USERTYPE,
@@ -69,7 +69,7 @@ public:
         ContentLast
     };
 public:
-    virtual string                  format          () const = 0;
+    virtual QStringList             suffixes        () const = 0;
     virtual uint32_t                contentType     () const = 0;
     virtual uint32_t                type            () const = 0;
     virtual uint8_t                 convertFile     (IConverterSettings *) = 0;

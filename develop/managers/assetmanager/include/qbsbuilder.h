@@ -1,7 +1,7 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include "ibuilder.h"
+#include "converters/builder.h"
 
 class QProcess;
 
@@ -10,13 +10,9 @@ class QbsBuilder : public IBuilder {
 public:
     QbsBuilder                      ();
 
-    void                            generateProject     ();
-
     bool                            buildProject        ();
 
     QString                         builderVersion      ();
-
-    void                            builderInit         ();
 
     QStringList                     suffixes            () const { return {"cpp", "h"}; }
 
@@ -28,6 +24,10 @@ protected slots:
     void                            readError           ();
 
 protected:
+    void                            builderInit         ();
+
+    void                            generateProject     ();
+
     QString                         formatList          (const QStringList &list);
 
     void                            parseLogs           (const QString &log);
@@ -43,6 +43,8 @@ protected:
     QStringList                     m_Settings;
 
     QStringList                     m_Profiles;
+
+    ProjectManager                 *m_pMgr;
 };
 
 #endif // QBSBUILDER_H

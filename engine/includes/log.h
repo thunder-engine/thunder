@@ -25,6 +25,8 @@ public:
 
     static void         overrideHandler             (ILogHandler *handler);
 
+    static ILogHandler *handler                     ();
+
     static void         setLogLevel                 (LogTypes lvl);
 
     Log                &operator<<                  (bool b);

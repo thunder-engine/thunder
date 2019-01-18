@@ -236,7 +236,7 @@ private:
 
 };
 
-class EffectConverter : public QObject, public IConverter {
+class EffectConverter : public IConverter {
     Q_OBJECT
 
 public:
@@ -246,7 +246,7 @@ public:
     void load(const QString &path);
     void save(const QString &path);
 
-    string format() const { return "efx"; }
+    QStringList suffixes() const { return {"efx"}; }
     uint32_t contentType() const { return ContentEffect; }
     uint32_t type() const { return MetaType::type<ParticleEffect *>(); }
     uint8_t convertFile(IConverterSettings *);

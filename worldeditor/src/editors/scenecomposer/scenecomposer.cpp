@@ -82,10 +82,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     m_pEngine   = engine;
 
-    QLog *log   = new QLog();
-    connect(log, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
-    Log::overrideHandler(log);
-    Log::setLogLevel(Log::DBG);
+    QLog *handler = static_cast<QLog *>(Log::handler());
+    connect(handler, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
 
     cmToolbars      = new QMenu(this);
 

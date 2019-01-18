@@ -3,7 +3,7 @@
 #include "angelsystem.h"
 
 #ifdef NEXT_SHARED
-    #include "converters/angelconverter.h"
+    #include "converters/angelbuilder.h"
 #endif
 
 IModule *moduleCreate(Engine *engine) {
@@ -40,7 +40,7 @@ ISystem *Angel::system() {
 
 IConverter *Angel::converter() {
 #ifdef NEXT_SHARED
-    return new AngelConverter();
+    return new AngelBuilder();
 #endif
     return nullptr;
 }

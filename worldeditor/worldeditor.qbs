@@ -64,7 +64,12 @@ Project {
 
         consoleApplication: false
 
-        cpp.defines: worldEditor.defines
+        cpp.defines: {
+            var result  = worldEditor.defines
+            result.push("NEXT_SHARED")
+            return result
+        }
+
         cpp.includePaths: worldEditor.incPaths
         cpp.libraryPaths: [
             "../thirdparty/fbx/lib"

@@ -51,6 +51,7 @@ Project {
 
         cpp.defines: {
             var result  = builder.defines
+            result.push("NEXT_SHARED")
             result.push("BUILDER")
             return result
         }

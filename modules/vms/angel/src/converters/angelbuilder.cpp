@@ -1,4 +1,4 @@
-#include "converters/angelconverter.h"
+#include "converters/angelbuilder.h"
 
 #include <log.h>
 #include <bson.h>
@@ -42,7 +42,7 @@ VariantMap AngelSerial::saveUserData() const {
     return result;
 }
 
-AngelConverter::AngelConverter() {
+AngelBuilder::AngelBuilder() {
     m_pScriptEngine = asCreateScriptEngine();
 
     m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
@@ -50,7 +50,15 @@ AngelConverter::AngelConverter() {
     AngelSystem::registerClasses(m_pScriptEngine);
 }
 
-uint8_t AngelConverter::convertFile(IConverterSettings *settings) {
+bool AngelBuilder::buildProject() {
+    return true;
+}
+
+QString AngelBuilder::builderVersion() {
+    return "1.0";
+}
+
+uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
     asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_ALWAYS_CREATE);
 
     QFile file(settings->source());
@@ -77,7 +85,7 @@ uint8_t AngelConverter::convertFile(IConverterSettings *settings) {
     return 0;
 }
 
-void AngelConverter::messageCallback(const asSMessageInfo *msg, void *param) {
+void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
     A_UNUSED(param)
-    Log((Log::LogTypes)msg->type) << msg->section << "(" << msg->row << msg->col << "):" << msg->message;
+    Log((Log::LogTypes)msg->type) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
 }

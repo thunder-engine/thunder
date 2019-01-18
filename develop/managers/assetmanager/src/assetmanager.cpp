@@ -425,10 +425,10 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
 
 void AssetManager::registerConverter(IConverter *converter) {
     if(converter) {
-        foreach (QString format, QString::fromStdString(converter->format()).split(';')) {
-            m_Formats[format.toLower()]     = converter->contentType();
-            m_ContentTypes[converter->type()]   = converter->contentType();
-            m_Converters[format.toLower()]  = converter;
+        foreach (QString format, converter->suffixes()) {
+            m_Formats[format.toLower()] = converter->contentType();
+            m_ContentTypes[converter->type()] = converter->contentType();
+            m_Converters[format.toLower()] = converter;
         }
     }
 }

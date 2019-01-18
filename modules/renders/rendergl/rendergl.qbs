@@ -19,8 +19,8 @@ Project {
     property stringList incPaths: [
         "includes",
         "../../../common",
-        "../../../engine/includes",
         "../../../engine/includes/resources",
+        "../../../engine/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
@@ -41,7 +41,7 @@ Project {
         Depends { name: "glad" }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: rendergl.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -78,7 +78,6 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
-        cpp.defines: ["NEXT_LIBRARY"]
 
         Properties {
             condition: !rendergl.desktop

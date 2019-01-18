@@ -6,6 +6,7 @@
 #include <QMetaProperty>
 
 #include <log.h>
+#include <config.h>
 
 #include <projectmanager.h>
 
@@ -36,6 +37,22 @@ const QString gEditorSuffix("-Editor");
 
 QbsBuilder::QbsBuilder() :
         IBuilder() {
+
+    m_pMgr      = ProjectManager::instance();
+
+    m_Suffix    = gShared;
+    if(!m_pMgr->targetPath().isEmpty()) {
+        m_Suffix= gApplication;
+    }
+
+    m_Project   = m_pMgr->generatedPath() + "/";
+    m_Artifact  = m_Project + m_pMgr->projectName() + m_Suffix;
+
+    const QMetaObject *meta = m_pMgr->metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        QMetaProperty property  = meta->property(i);
+        m_Values[QString("${%1}").arg(property.name())]   = property.read(m_pMgr).toString();
+    }
 
     m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 

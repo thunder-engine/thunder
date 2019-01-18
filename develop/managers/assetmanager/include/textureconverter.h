@@ -93,7 +93,7 @@ class TextureConverter : public IConverter {
 public:
     TextureConverter            () {}
 
-    string                      format                      () const { return "bmp;dds;jpg;jpeg;png;tga;ico;tif"; }
+    QStringList suffixes() const { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
     uint32_t                    contentType                 () const { return ContentTexture; }
     uint32_t                    type                        () const { return MetaType::type<Texture *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);

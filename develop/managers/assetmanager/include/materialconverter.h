@@ -8,7 +8,7 @@ class MaterialConverter : public IConverter {
 public:
     MaterialConverter           () {}
 
-    string                      format                      () const { return "mtl"; }
+    QStringList suffixes() const { return {"mtl"}; }
     uint32_t                    contentType                 () const { return ContentMaterial; }
     uint32_t                    type                        () const { return MetaType::type<Material *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);

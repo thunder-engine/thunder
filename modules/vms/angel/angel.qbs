@@ -44,7 +44,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: angel.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -80,7 +80,6 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
-        cpp.defines: ["NEXT_LIBRARY"]
 
         Properties {
             condition: !angel.desktop

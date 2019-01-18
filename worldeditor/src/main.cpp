@@ -71,6 +71,10 @@ int main(int argc, char *argv[]) {
         file->finit(qPrintable(QApplication::arguments().at(0)));
         file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
+        QLog *log   = new QLog();
+        Log::overrideHandler(log);
+        Log::setLogLevel(Log::DBG);
+
         Engine engine(file, argc, argv);
         engine.init();
 

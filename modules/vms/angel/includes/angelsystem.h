@@ -24,8 +24,6 @@ public:
 
     void                        update                      (Scene &, uint32_t = 0);
 
-    void                        resize                      (uint32_t, uint32_t);
-
     static void                 registerClasses             (asIScriptEngine *engine);
 
 protected:

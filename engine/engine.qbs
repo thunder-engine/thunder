@@ -23,9 +23,9 @@ Project {
         "../thirdparty/glfw/include",
         "../thirdparty/glfm/include",
         "../thirdparty/freetype/include",
-        "includes",
         "includes/components",
-        "includes/resources"
+        "includes/resources",
+        "includes"
     ]
 
     DynamicLibrary {

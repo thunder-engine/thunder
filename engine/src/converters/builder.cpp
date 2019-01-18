@@ -1,4 +1,4 @@
-#include "ibuilder.h"
+#include "converters/builder.h"
 
 #include <QFile>
 #include <QMap>
@@ -6,25 +6,12 @@
 #include <QDir>
 #include <QDirIterator>
 
-#include <projectmanager.h>
-#include <config.h>
-
 IBuilder::IBuilder() {
-    m_pMgr      = ProjectManager::instance();
 
-    m_Suffix    = gShared;
-    if(!m_pMgr->targetPath().isEmpty()) {
-        m_Suffix= gApplication;
-    }
+}
 
-    m_Project   = m_pMgr->generatedPath() + "/";
-    m_Artifact  = m_Project + m_pMgr->projectName() + m_Suffix;
-
-    const QMetaObject *meta = m_pMgr->metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
-        m_Values[QString("${%1}").arg(property.name())]   = property.read(m_pMgr).toString();
-    }
+uint8_t IBuilder::convertFile(IConverterSettings *) {
+    return 1;
 }
 
 void IBuilder::copyTemplate(const QString &src, const QString &dst, StringMap &values) {

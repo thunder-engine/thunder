@@ -29,6 +29,10 @@ void Log::overrideHandler(ILogHandler *handler) {
     }
 }
 
+ILogHandler *Log::handler() {
+    return s_handler;
+}
+
 void Log::setLogLevel(LogTypes lvl) {
     s_logLevel  = lvl;
 }

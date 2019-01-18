@@ -3,8 +3,8 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT AngelScript : public Object {
-    A_REGISTER(AngelScript, Object, Resources);
+class AngelScript : public Object {
+    A_REGISTER(AngelScript, Object, Resources)
 
 public:
     void                        loadUserData                (const VariantMap &data);

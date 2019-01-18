@@ -1,7 +1,8 @@
-#ifndef IBUILDER_H
-#define IBUILDER_H
+#ifndef BUILDER_H
+#define BUILDER_H
 
-#include <QObject>
+#include "converter.h"
+#include "resources/text.h"
 
 #include <QMap>
 
@@ -9,7 +10,7 @@ class ProjectManager;
 
 typedef QMap<QString, QString>      StringMap;
 
-class IBuilder : public QObject {
+class NEXT_LIBRARY_EXPORT IBuilder : public IConverter {
     Q_OBJECT
 public:
     IBuilder                        ();
@@ -18,9 +19,9 @@ public:
 
     virtual QString                 builderVersion      () = 0;
 
-    virtual void                    builderInit         () = 0;
-
-    virtual QStringList             suffixes            () const = 0;
+    virtual uint32_t                contentType         () const { return IConverter::ContentCode; }
+    virtual uint32_t                type                () const { return MetaType::type<Text *>(); }
+    virtual uint8_t                 convertFile         (IConverterSettings *);
 
     void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
 
@@ -40,7 +41,6 @@ protected:
     QString                         m_Project;
     QString                         m_Artifact;
 
-    ProjectManager                 *m_pMgr;
 };
 
-#endif // IBUILDER_H
+#endif // BUILDER_H
