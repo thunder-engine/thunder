@@ -97,18 +97,11 @@ public:
 
     bool                    isOutdated          () const;
 
-    void                    setOutdated         ();
-
     QString                 artifact            () const;
+    void                    setArtifact         (const QString &value);
 
 public slots:
     void                    reimport            ();
-
-    void                    buildProject        ();
-
-    void                    rebuildProject      ();
-
-    void                    onBuildFinished     (int exit);
 
 signals:
     void                    ready               ();
@@ -119,8 +112,6 @@ signals:
     void                    imported            (const QString &path, uint32_t type);
     void                    importStarted       (int count, const QString &stage);
     void                    importFinished      ();
-
-    void                    buildFinished       (int exit);
 
 protected slots:
     void                    onPerform           ();
@@ -163,9 +154,9 @@ protected:
 
     Engine                 *m_pEngine;
 
-    bool                    m_Outdated;
+    QList<IBuilder *>       m_pBuilders;
 
-    IBuilder               *m_pBuilder;
+    QString                 m_Artifact;
 
 protected:
     void                    cleanupBundle       ();

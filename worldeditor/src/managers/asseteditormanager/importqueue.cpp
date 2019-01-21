@@ -22,8 +22,6 @@ ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
     connect(manager, SIGNAL(imported(QString,uint32_t)), this, SLOT(onProcessed(QString,uint32_t)));
 
     connect(manager, &AssetManager::importFinished, this, &ImportQueue::onImportFinished);
-    connect(manager, &AssetManager::importFinished, manager, &AssetManager::buildProject);
-    connect(manager, &AssetManager::buildFinished, this, &ImportQueue::onFinished);
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
 
@@ -63,15 +61,6 @@ void ImportQueue::onImportFinished() {
     }
     m_UpdateQueue.clear();
 
-    AssetManager *manager = AssetManager::instance();
-    if(manager->isOutdated()) {
-        manager->buildProject();
-    } else {
-        onFinished();
-    }
-}
-
-void ImportQueue::onFinished() {
     hide();
     emit finished();
 }

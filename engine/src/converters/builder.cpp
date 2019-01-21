@@ -6,11 +6,13 @@
 #include <QDir>
 #include <QDirIterator>
 
-IBuilder::IBuilder() {
+IBuilder::IBuilder() :
+        m_Outdated(false) {
 
 }
 
 uint8_t IBuilder::convertFile(IConverterSettings *) {
+    m_Outdated = true;
     return 1;
 }
 

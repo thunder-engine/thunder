@@ -154,8 +154,9 @@ void PluginModel::reloadPlugin(const QString &path) {
     QFileInfo dest  = ProjectManager::instance()->pluginsPath() + QDir::separator() + info.fileName();
     QFileInfo temp  = dest.absoluteFilePath() + ".tmp";
 
+    // Rename old version of plugin
     if(dest.exists()) {
-        QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
+        qDebug() << QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 
     PluginsMap::Iterator ext    = m_Extensions.find(dest.absoluteFilePath());
@@ -171,8 +172,6 @@ void PluginModel::reloadPlugin(const QString &path) {
         }
         // Unload plugin
         delete plugin;
-        plugin  = nullptr;
-        m_Extensions.remove(ext.key());
 
         QObject *child  = m_rootItem->findChild<QObject *>(info.fileName());
         if(child) {
@@ -200,6 +199,10 @@ void PluginModel::reloadPlugin(const QString &path) {
                     return;
                 }
             }
+
+            m_Extensions.remove(ext.key());
+        } else {
+            Log(Log::ERR) << "Plugin unload:" << qPrintable(path) << "failed";
         }
     } else { // Just copy and load plugin
         if(QFile::copy(path, dest.absoluteFilePath())) {

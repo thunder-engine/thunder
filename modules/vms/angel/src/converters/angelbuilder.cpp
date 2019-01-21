@@ -51,6 +51,7 @@ AngelBuilder::AngelBuilder() {
 }
 
 bool AngelBuilder::buildProject() {
+    m_Outdated = false;
     return true;
 }
 

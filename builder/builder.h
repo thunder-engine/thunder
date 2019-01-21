@@ -18,7 +18,7 @@ signals:
 
 public slots:
     void            package             (const QString &target);
-    void            onCompileFinished   (int code);
+    void            onImportFinished    ();
 };
 
 #endif // BUILDER_H

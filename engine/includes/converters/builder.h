@@ -27,20 +27,17 @@ public:
 
     QString                         project             () const { return m_Project; }
 
-    QString                         artifact            () const { return m_Artifact; }
-
     QStringList                     rescanSources       (const QString &path) const;
 
-signals:
-    void                            buildFinished       (int exitCode);
+    bool                            isOutdated          () const { return m_Outdated; }
 
 protected:
     StringMap                       m_Values;
 
     QString                         m_Suffix;
     QString                         m_Project;
-    QString                         m_Artifact;
 
+    bool                            m_Outdated;
 };
 
 #endif // BUILDER_H

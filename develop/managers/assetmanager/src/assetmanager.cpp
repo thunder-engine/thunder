@@ -53,8 +53,7 @@ AssetManager *AssetManager::m_pInstance   = nullptr;
 Q_DECLARE_METATYPE(IConverterSettings *)
 
 AssetManager::AssetManager() :
-        m_pEngine(nullptr),
-        m_Outdated(false) {
+        m_pEngine(nullptr) {
     m_pProjectManager   = ProjectManager::instance();
 
     m_pDirWatcher   = new QFileSystemWatcher(this);
@@ -79,15 +78,7 @@ AssetManager::AssetManager() :
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
 
-    QbsBuilder *builder = new QbsBuilder();
-    builder->setEnvironment(QStringList(), QStringList(), QStringList());
-    m_pBuilder  = builder;
-
-    connect(m_pBuilder, SIGNAL(buildFinished(int)), this, SLOT(onBuildFinished(int)));
-
     m_Formats["map"]    = IConverter::ContentMap;
-    m_Formats["cpp"]    = IConverter::ContentCode;
-    m_Formats["h"]      = IConverter::ContentCode;
 }
 
 AssetManager::~AssetManager() {
@@ -108,6 +99,9 @@ void AssetManager::destroy() {
 
 void AssetManager::init(Engine *engine) {
     m_pEngine   = engine;
+
+    registerConverter(new QbsBuilder());
+
     QString target  = m_pProjectManager->targetPath();
 
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/shaders",  !target.isEmpty());
@@ -429,6 +423,11 @@ void AssetManager::registerConverter(IConverter *converter) {
             m_Formats[format.toLower()] = converter->contentType();
             m_ContentTypes[converter->type()] = converter->contentType();
             m_Converters[format.toLower()] = converter;
+
+            IBuilder *builder = dynamic_cast<IBuilder *>(converter);
+            if(builder) {
+                m_pBuilders.push_back(builder);
+            }
         }
     }
 }
@@ -529,29 +528,33 @@ void AssetManager::onPerform() {
         IConverterSettings *settings = m_ImportQueue.takeFirst();
 
         if(!convert(settings)) {
-            if(settings->type() == IConverter::ContentCode) {
-                setOutdated();
-            } else {
-                QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
-                dir.mkpath(QFileInfo(dst).absoluteDir().absolutePath());
-                QFile::copy(settings->source(), dst);
+            QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
+            dir.mkpath(QFileInfo(dst).absoluteDir().absolutePath());
+            QFile::copy(settings->source(), dst);
 
-                QFileInfo info(settings->source());
-                string source   = dir.relativeFilePath(info.absoluteFilePath()).toStdString();
-                if(!info.absoluteFilePath().contains(dir.absolutePath())) {
-                    source      = string(".embedded/") + info.fileName().toStdString();
-                }
-
-                m_Guids[source] = settings->destination();
-                m_Paths[settings->destination()]    = source;
-                for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
-                    m_Paths[settings->subItem(i)]   = source;
-                }
-                emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), toContentType(settings->type()));
+            QFileInfo info(settings->source());
+            string source   = dir.relativeFilePath(info.absoluteFilePath()).toStdString();
+            if(!info.absoluteFilePath().contains(dir.absolutePath())) {
+                source      = string(".embedded/") + info.fileName().toStdString();
             }
+
+            m_Guids[source] = settings->destination();
+            m_Paths[settings->destination()]    = source;
+            for(uint32_t i = 0; i < settings->subItemsCount(); i++) {
+                m_Paths[settings->subItem(i)]   = source;
+            }
+            emit imported(QString::fromStdString(m_Paths[settings->destination()].toString()), toContentType(settings->type()));
+
             saveSettings(settings);
         }
     } else {
+        if(isOutdated()) {
+            foreach(IBuilder *it, m_pBuilders) {
+                it->buildProject();
+            }
+            return;
+        }
+
         dumpBundle();
         m_pTimer->stop();
 
@@ -667,33 +670,19 @@ void AssetManager::saveSettings(IConverterSettings *settings) {
     }
 }
 
-void AssetManager::rebuildProject() {
-    setOutdated();
-    buildProject();
-}
-
-void AssetManager::buildProject() {
-    if(m_Outdated) {
-        m_pBuilder->buildProject();
-    }
-}
-
-void AssetManager::onBuildFinished(int exitCode) {
-    if(exitCode == 0) {
-        PluginModel::instance()->reloadPlugin(artifact());
-        m_Outdated  = false;
-    }
-    emit buildFinished(exitCode);
-}
-
 bool AssetManager::isOutdated() const {
-    return m_Outdated;
-}
-
-void AssetManager::setOutdated() {
-    m_Outdated  = true;
+    foreach(IBuilder *it, m_pBuilders) {
+        if(it->isOutdated()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 QString AssetManager::artifact() const {
-    return m_pBuilder->artifact();
+    return m_Artifact;
+}
+
+void AssetManager::setArtifact(const QString &value) {
+    m_Artifact = value;
 }

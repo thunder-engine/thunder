@@ -9,6 +9,7 @@
 #include <config.h>
 
 #include <projectmanager.h>
+#include <pluginmodel.h>
 
 QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
 
@@ -36,7 +37,8 @@ const QString gEditorSuffix("-Editor");
 // generate --generator visualstudio2013
 
 QbsBuilder::QbsBuilder() :
-        IBuilder() {
+        IBuilder(),
+        m_Progress(false) {
 
     m_pMgr      = ProjectManager::instance();
 
@@ -46,7 +48,8 @@ QbsBuilder::QbsBuilder() :
     }
 
     m_Project   = m_pMgr->generatedPath() + "/";
-    m_Artifact  = m_Project + m_pMgr->projectName() + m_Suffix;
+
+    setEnvironment(QStringList(), QStringList(), QStringList());
 
     const QMetaObject *meta = m_pMgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -62,13 +65,15 @@ QbsBuilder::QbsBuilder() :
         m_Artifact  = m_Project + gMode + "/install-root/" + m_pMgr->projectName() + m_Suffix;
     }
 
+    AssetManager::instance()->setArtifact(m_Artifact);
+
     m_pProcess  = new QProcess(this);
     m_pProcess->setWorkingDirectory(m_Project);
 
     connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
     connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
 
-    connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SIGNAL(buildFinished(int)) );
+    connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
 
 #if defined(Q_OS_WIN)
     m_Profiles << "MSVC2015-x86";
@@ -152,33 +157,44 @@ void QbsBuilder::generateProject() {
 }
 
 bool QbsBuilder::buildProject() {
-    generateProject();
+    if(m_Outdated && !m_Progress) {
+        generateProject();
 
-    QString product = m_pMgr->projectName();
-    if(m_pMgr->targetPath().isEmpty()) {
-        product    += gEditorSuffix;
-    }
-    {
-        QProcess qbs(this);
-        qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << gMode << "profile:" + m_Profiles[0]);
-        if(qbs.waitForStarted()) {
-            qbs.waitForFinished();
-            Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
+        QString product = m_pMgr->projectName();
+        if(m_pMgr->targetPath().isEmpty()) {
+            product    += gEditorSuffix;
         }
-    }
-    {
-        QStringList args;
-        args << "build" << m_Settings;
-        args << "--products" << product << gMode << "profile:" + m_Profiles[0];
-        m_pProcess->start(m_pMgr->qbsPath(), args);
-        if(!m_pProcess->waitForStarted()) {
-            Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
-            return false;
+        {
+            QProcess qbs(this);
+            qbs.setWorkingDirectory(m_Project);
+            qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << gMode << "profile:" + m_Profiles[0]);
+            if(qbs.waitForStarted()) {
+                qbs.waitForFinished();
+                Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
+            }
+        }
+        {
+            QStringList args;
+            args << "build" << m_Settings;
+            args << "--products" << product << gMode << "profile:" + m_Profiles[0];
+            m_pProcess->start(m_pMgr->qbsPath(), args);
+            if(!m_pProcess->waitForStarted()) {
+                Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
+                return false;
+            }
+            m_Progress = true;
         }
     }
 
     return true;
+}
+
+void QbsBuilder::onBuildFinished(int exitCode) {
+    if(exitCode == 0) {
+        PluginModel::instance()->reloadPlugin(m_Artifact);
+    }
+    m_Outdated = false;
+    m_Progress = false;
 }
 
 QString QbsBuilder::builderVersion() {

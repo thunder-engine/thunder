@@ -34,7 +34,6 @@ private slots:
 
     void                    onStarted           (int count, const QString &action);
     void                    onImportFinished    ();
-    void                    onFinished          ();
 
 private:
     void                    keyPressEvent       (QKeyEvent *e);

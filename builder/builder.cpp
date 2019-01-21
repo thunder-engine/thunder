@@ -6,9 +6,9 @@
 #include <QCoreApplication>
 
 Builder::Builder() {
-    connect(AssetManager::instance(), &AssetManager::importFinished, AssetManager::instance(), &AssetManager::rebuildProject);
+    //connect(AssetManager::instance(), &AssetManager::importFinished, AssetManager::instance(), &AssetManager::rebuildProject);
 
-    connect(AssetManager::instance(), SIGNAL(buildFinished(int)), this, SLOT(onCompileFinished(int)));
+    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished);
 
     connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit);
     connect(this, &Builder::moveDone, this, &Builder::package);
@@ -97,21 +97,20 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
     return true;
 }
 
-void Builder::onCompileFinished(int code) {
-    if(code == 0) {
-        QString path = AssetManager::instance()->artifact();
-        QFileInfo info(path);
-        QFileInfo target(ProjectManager::instance()->targetPath() + "/" + info.fileName());
+void Builder::onImportFinished() {
+    QString path = AssetManager::instance()->artifact();
+    QFileInfo info(path);
+    QFileInfo target(ProjectManager::instance()->targetPath() + "/" + info.fileName());
 
-        if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
-            Log(Log::INF) << "Previous build removed.";
-        }
-
-        if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
-            Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
-            emit moveDone(target.absoluteFilePath());
-            return;
-        }
+    if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
+        Log(Log::INF) << "Previous build removed.";
     }
-    QCoreApplication::exit(code);
+
+    if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
+        Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
+        emit moveDone(target.absoluteFilePath());
+        return;
+    }
+
+    QCoreApplication::exit(0);
 }

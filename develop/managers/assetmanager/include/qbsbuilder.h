@@ -16,14 +16,16 @@ public:
 
     QStringList                     suffixes            () const { return {"cpp", "h"}; }
 
-    void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
-
 protected slots:
     void                            readOutput          ();
 
     void                            readError           ();
 
+    void                            onBuildFinished     (int exitCode);
+
 protected:
+    void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
+
     void                            builderInit         ();
 
     void                            generateProject     ();
@@ -33,6 +35,8 @@ protected:
     void                            parseLogs           (const QString &log);
 
     bool                            checkProfile        (const QString &profile);
+
+    QString                         m_Artifact;
 
     QStringList                     m_IncludePath;
     QStringList                     m_LibPath;
@@ -45,6 +49,8 @@ protected:
     QStringList                     m_Profiles;
 
     ProjectManager                 *m_pMgr;
+
+    bool                            m_Progress;
 };
 
 #endif // QBSBUILDER_H
