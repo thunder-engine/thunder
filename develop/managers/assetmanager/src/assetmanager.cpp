@@ -68,17 +68,6 @@ AssetManager::AssetManager() :
 
     m_pTimer    = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onPerform()));
-
-    registerConverter(new AnimConverter());
-    registerConverter(new TextConverter());
-    registerConverter(new TextureConverter());
-    registerConverter(new MaterialConverter());
-    registerConverter(new FBXConverter());
-    registerConverter(new FontConverter());
-    registerConverter(new PrefabConverter());
-    registerConverter(new EffectConverter());
-
-    m_Formats["map"]    = IConverter::ContentMap;
 }
 
 AssetManager::~AssetManager() {
@@ -100,7 +89,17 @@ void AssetManager::destroy() {
 void AssetManager::init(Engine *engine) {
     m_pEngine   = engine;
 
+    registerConverter(new AnimConverter());
+    registerConverter(new TextConverter());
+    registerConverter(new TextureConverter());
+    registerConverter(new MaterialConverter());
+    registerConverter(new FBXConverter());
+    registerConverter(new FontConverter());
+    registerConverter(new PrefabConverter());
+    registerConverter(new EffectConverter());
     registerConverter(new QbsBuilder());
+
+    m_Formats["map"]    = IConverter::ContentMap;
 
     QString target  = m_pProjectManager->targetPath();
 
@@ -550,6 +549,7 @@ void AssetManager::onPerform() {
     } else {
         if(isOutdated()) {
             foreach(IBuilder *it, m_pBuilders) {
+                it->rescanSources(ProjectManager::instance()->contentPath());
                 it->buildProject();
             }
             return;

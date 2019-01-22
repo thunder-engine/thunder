@@ -8,7 +8,6 @@
 
 #include <assetmanager.h>
 
-#include <QDebug>
 class ProjectManager : public QObject {
     Q_OBJECT
 

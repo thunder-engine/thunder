@@ -27,7 +27,7 @@ public:
 
     QString                         project             () const { return m_Project; }
 
-    QStringList                     rescanSources       (const QString &path) const;
+    void                            rescanSources       (const QString &path);
 
     bool                            isOutdated          () const { return m_Outdated; }
 
@@ -36,6 +36,8 @@ protected:
 
     QString                         m_Suffix;
     QString                         m_Project;
+
+    QStringList                     m_Sources;
 
     bool                            m_Outdated;
 };

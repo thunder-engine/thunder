@@ -91,11 +91,9 @@ QbsBuilder::QbsBuilder() :
 }
 
 void QbsBuilder::generateProject() {
-    QStringList code = rescanSources(m_pMgr->contentPath());
-
     StringMap classes;
     // Generate plugin loader
-    foreach(QString it, code) {
+    foreach(QString it, m_Sources) {
         QFile file(it);
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QByteArray data = file.readLine();
@@ -150,7 +148,7 @@ void QbsBuilder::generateProject() {
     values[gSdkPath]        = m_pMgr->sdkPath();
     values[gIncludePaths]   = formatList(m_IncludePath);
     values[gLibraryPaths]   = formatList(m_LibPath);
-    values[gFilesList]      = formatList(code);
+    values[gFilesList]      = formatList(m_Sources);
     values[gLibraries]      = formatList(m_Libs);
 
     copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);

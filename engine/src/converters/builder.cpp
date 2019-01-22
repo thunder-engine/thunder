@@ -35,15 +35,14 @@ void IBuilder::copyTemplate(const QString &src, const QString &dst, StringMap &v
     }
 }
 
-QStringList IBuilder::rescanSources(const QString &path) const {
-    QStringList result;
+void IBuilder::rescanSources(const QString &path) {
+    m_Sources.clear();
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         QFileInfo info(it.next());
         if(suffixes().contains(info.completeSuffix(), Qt::CaseInsensitive)) {
-            result.push_back(info.absoluteFilePath());
+            m_Sources.push_back(info.absoluteFilePath());
         }
     }
-    result.removeDuplicates();
-    return result;
+    m_Sources.removeDuplicates();
 }

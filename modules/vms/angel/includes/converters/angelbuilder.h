@@ -28,14 +28,16 @@ public:
     QString builderVersion ();
 
     QStringList suffixes () const { return {"as"}; }
-    uint32_t contentType () const { return ContentCode; }
     uint32_t type () const { return MetaType::type<AngelScript *>(); }
-    uint8_t convertFile (IConverterSettings *);
+
+    uint8_t convertFile(IConverterSettings *settings);
 
 protected:
     static void messageCallback (const asSMessageInfo *msg, void *param);
 
     asIScriptEngine *m_pScriptEngine;
+
+    QString m_Destination;
 
 };
 

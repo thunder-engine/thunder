@@ -156,7 +156,7 @@ void PluginModel::reloadPlugin(const QString &path) {
 
     // Rename old version of plugin
     if(dest.exists()) {
-        qDebug() << QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
+        QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 
     PluginsMap::Iterator ext    = m_Extensions.find(dest.absoluteFilePath());

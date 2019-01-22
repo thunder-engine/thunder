@@ -6,6 +6,7 @@
 #include <angelscript.h>
 
 #include <QFile>
+#include <QFileInfo>
 
 #include "angelsystem.h"
 
@@ -51,39 +52,46 @@ AngelBuilder::AngelBuilder() {
 }
 
 bool AngelBuilder::buildProject() {
-    m_Outdated = false;
-    return true;
-}
-
-QString AngelBuilder::builderVersion() {
-    return "1.0";
-}
-
-uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
-    asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_ALWAYS_CREATE);
-
-    QFile file(settings->source());
-    if(file.open( QIODevice::ReadOnly)) {
-        mod->AddScriptSection("AngelData", file.readAll().data());
-        file.close();
-
+    if(m_Outdated) {
+        asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
+        foreach(QString it, m_Sources) {
+            QFile file(it);
+            if(file.open( QIODevice::ReadOnly)) {
+                mod->AddScriptSection("AngelData", file.readAll().data());
+                file.close();
+            }
+        }
         if(mod->Build() >= 0) {
-            QFile dst(settings->absoluteDestination());
+            QFile dst(m_Destination);
             if(dst.open( QIODevice::WriteOnly)) {
                 AngelSerial serial;
                 serial.m_Array.clear();
                 CBytecodeStream stream(serial.m_Array);
                 mod->SaveByteCode(&stream);
 
-                ByteArray data  = Bson::save( Engine::toVariant(&serial) );
-
+                ByteArray data = Bson::save( Engine::toVariant(&serial) );
                 dst.write((const char *)&data[0], data.size());
                 dst.close();
             }
         }
-    }
 
-    return 0;
+        m_Outdated = false;
+    }
+    return true;
+}
+#include <QDebug>
+uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
+    QFileInfo info(settings->absoluteDestination());
+
+    m_Destination = info.absolutePath() + "/{00000000-0101-0000-0000-000000000000}";
+
+    qDebug() << m_Destination;
+
+    return IBuilder::convertFile(settings);
+}
+
+QString AngelBuilder::builderVersion() {
+    return "1.0";
 }
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {

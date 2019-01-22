@@ -70,9 +70,9 @@ bool AngelSystem::init() {
 
     m_pScriptEngine = asCreateScriptEngine();
 
-    int32_t r   = m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
+    int32_t r = m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
     if(r >= 0) {
-        m_pContext  = m_pScriptEngine->CreateContext();
+        m_pContext = m_pScriptEngine->CreateContext();
 
         registerClasses(m_pScriptEngine);
 
@@ -114,14 +114,9 @@ void AngelSystem::update(Scene &scene, uint32_t) {
                     if(object) {
                         object->AddRef();
 
-                        it->setScriptStart  (type->GetMethodByDecl("void start()"));
-                        it->setScriptUpdate (type->GetMethodByDecl("void update()"));
-
                         it->setScriptObject(object);
-                        if(object->GetPropertyCount() > 0) {
-                            AngelBehaviour **behaviour = reinterpret_cast<AngelBehaviour**>(object->GetAddressOfProperty(0));
-                            memcpy(behaviour, &(it), sizeof(void *));
-                        }
+                        it->setScriptStart(type->GetMethodByDecl("void start()"));
+                        it->setScriptUpdate(type->GetMethodByDecl("void update()"));
 
                         execute(object, it->scriptStart());
                     } else {
