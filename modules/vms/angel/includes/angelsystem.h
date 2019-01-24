@@ -15,16 +15,18 @@ class MetaObject;
 
 class AngelSystem : public ISystem {
 public:
-    AngelSystem                 (Engine *engine);
+    AngelSystem                 ();
     ~AngelSystem                ();
 
     bool                        init                        ();
 
     const char                 *name                        () const;
 
-    void                        update                      (Scene &, uint32_t = 0);
+    void                        update                      (Scene *);
 
-    static void                 registerClasses             (asIScriptEngine *engine);
+    void                        reload                      ();
+
+    void                        registerClasses             (asIScriptEngine *engine);
 
 protected:
     void                        execute                     (asIScriptObject *object, asIScriptFunction *func);

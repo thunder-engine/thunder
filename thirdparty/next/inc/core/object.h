@@ -61,6 +61,7 @@ public: \
     }
 
 class ObjectPrivate;
+class ObjectSystem;
 
 class NEXT_LIBRARY_EXPORT Object {
 public:
@@ -187,6 +188,8 @@ private:
     void                            removeChild                 (Object *value);
 
     void                            setUUID                     (uint32_t id);
+
+    void                            setSystem                   (ObjectSystem *system);
 };
 
 #endif // Object_H

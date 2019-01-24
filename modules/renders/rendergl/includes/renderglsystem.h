@@ -9,14 +9,14 @@ class APipeline;
 
 class RenderGLSystem : public ISystem {
 public:
-    RenderGLSystem              (Engine *engine);
+    RenderGLSystem              ();
     ~RenderGLSystem             ();
 
     bool                        init                        ();
 
     const char                 *name                        () const;
 
-    void                        update                      (Scene &scene, uint32_t resource = 0);
+    void                        update                      (Scene *scene);
 
 };
 

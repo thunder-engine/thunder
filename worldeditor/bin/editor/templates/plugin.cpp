@@ -35,10 +35,11 @@ public:
         return result;
     }
 };
-
+#ifdef NEXT_SHARED
 extern "C" {
-    NEXT_LIBRARY_EXPORT IModule *moduleCreate(Engine *engine) {
+    MODULE_EXPORT IModule *moduleCreate(Engine *engine) {
         return new ${Project_Name}(engine);
     }
 }
+#endif
 #endif // PLUGINTEMPLATE_H

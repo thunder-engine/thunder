@@ -61,6 +61,8 @@ public:
     uint32_t                        m_Cloned;
 
     mutex                           m_Mutex;
+
+    ObjectSystem                   *m_pSystem;
 };
 /*!
     \class Object
@@ -257,13 +259,15 @@ Object::Object() :
         p_ptr(new ObjectPrivate) {
     PROFILE_FUNCTION()
 
-    ObjectSystem::addObject(this);
 }
 
 Object::~Object() {
-    ObjectSystem::removeObject(this);
-
     PROFILE_FUNCTION()
+
+    if(p_ptr->m_pSystem) {
+        p_ptr->m_pSystem->removeObject(this);
+    }
+
     {
         unique_lock<mutex> locker(p_ptr->m_Mutex);
         while(!p_ptr->m_EventQueue.empty()) {
@@ -831,4 +835,9 @@ Object *Object::sender() const {
 void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION()
     p_ptr->m_UUID   = id;
+}
+
+void Object::setSystem(ObjectSystem *system) {
+    PROFILE_FUNCTION()
+    p_ptr->m_pSystem = system;
 }

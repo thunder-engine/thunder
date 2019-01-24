@@ -26,7 +26,7 @@ Project {
             "plugin.cpp" ]
         Depends { name: "cpp" }
 
-        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/bin"
@@ -48,13 +48,13 @@ Project {
         consoleApplication: false
 
         files: [ ${filesList},
-            "application.cpp" ]
+            "application.cpp",
+            "plugin.cpp" ]
         Depends { name: "cpp" }
 
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.identifierPrefix: "com.thunderengine"
 
-        cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/lib"

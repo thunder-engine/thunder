@@ -54,6 +54,10 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_pCamera = m_pActor->addComponent<Camera>();
 
+    Pipeline *pipe = m_pCamera->pipeline();
+    pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
+    pipe->setTarget(m_pFBO->handle());
+
     m_pLight = Engine::objectCreate<Actor>("LightSource", m_pScene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
@@ -68,7 +72,6 @@ IconRender::~IconRender() {
 const QImage IconRender::render(const QString &resource, uint32_t type) {
     m_Context->makeCurrent(m_Surface);
 
-    m_pCamera->pipeline()->resize(m_pFBO->size().width(), m_pFBO->size().height());
     m_pCamera->setOrthographic(false);
     Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
     float fov       = m_pCamera->fov();
@@ -111,7 +114,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
 
     if(m_pRender) {
         Camera::setCurrent(m_pCamera);
-        m_pRender->update(*m_pScene, m_pFBO->handle());
+        m_pRender->update(m_pScene);
     }
     m_Context->functions()->glFinish();
 

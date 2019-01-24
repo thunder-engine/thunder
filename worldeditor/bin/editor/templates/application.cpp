@@ -9,7 +9,7 @@
 #include <mutex>
 #include <string.h>
 
-${Includes}
+#include "plugin.cpp"
 
 static string gAppConfig;
 static IFile *gFile = nullptr;
@@ -35,10 +35,6 @@ int main(int argc, char **argv) {
     gFile   = new IFile;
     gFile->finit(argv[0]);
     Engine engine(gFile, argc, argv);
-    {
-        ObjectSystem system;
-        ${RegisterComponents}
-    }
 
     gAppConfig  = engine.locationAppConfig();
 
@@ -47,6 +43,8 @@ int main(int argc, char **argv) {
 
     gFile->fsearchPathAdd((engine.locationAppDir() + "/base.pak").c_str());
     engine.addModule(new RenderGL(&engine));
+    engine.addModule(new ${Project_Name}(&engine));
+
     if(engine.init() && engine.createWindow()) {
         engine.exec();
     }

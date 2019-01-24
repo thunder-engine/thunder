@@ -12,8 +12,8 @@
 #include "components/audiosource.h"
 #include "resources/audioclip.h"
 
-MediaSystem::MediaSystem(Engine *engine) :
-        ISystem(engine),
+MediaSystem::MediaSystem() :
+        ISystem(),
         m_pDevice(nullptr),
         m_pContext(nullptr) {
     PROFILER_MARKER;
@@ -51,7 +51,7 @@ const char *MediaSystem::name() const {
     return "Media";
 }
 
-void MediaSystem::update(Scene &, uint32_t) {
+void MediaSystem::update(Scene *) {
     PROFILER_MARKER;
 
     Camera *camera  = Camera::current();

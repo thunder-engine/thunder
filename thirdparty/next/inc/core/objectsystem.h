@@ -12,7 +12,8 @@ class MetaObject;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
-    typedef unordered_map<string, const MetaObject *>   FactoryMap;
+    typedef pair<const MetaObject *, ObjectSystem *>    FactoryPair;
+    typedef unordered_map<string, FactoryPair>          FactoryMap;
     typedef unordered_map<string, string>               GroupMap;
 
 public:
@@ -25,7 +26,7 @@ public:
 
     GroupMap                            factories               () const;
 
-    static const MetaObject            *metaFactory             (const string &uri);
+    static FactoryPair                 *metaFactory             (const string &uri);
 
 public:
     template<typename T>
@@ -59,12 +60,15 @@ private:
     friend class ObjectSystemTest;
     friend class Object;
 
-    static void                         addObject               (Object *object);
-    static void                         removeObject            (Object *object);
+    void                                removeObject            (Object *object);
 
     void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
 
     void                                factoryRemove           (const string &name, const string &uri);
+
+private:
+    Object::ObjectList                  m_List;
+
 };
 
 #endif // OBJECTSYSTEM_H

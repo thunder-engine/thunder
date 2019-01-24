@@ -1,5 +1,7 @@
 #include "components/angelbehaviour.h"
 
+#include <cstring>
+
 #include <log.h>
 
 #include <angelscript.h>

@@ -28,7 +28,7 @@ public:
 
     virtual ~Pipeline           ();
 
-    virtual void                draw                (Scene &scene, Camera &camera, uint32_t resource);
+    virtual void                draw                (Scene *scene, Camera &camera);
 
     virtual void                resize              (uint32_t width, uint32_t height);
 
@@ -40,14 +40,16 @@ public:
 
     MaterialInstance           *sprite              () const;
 
-    void                        combineComponents   (Object &object, bool first = false);
+    void                        combineComponents   (Object *object, bool first = false);
+
+    void                        setTarget           (uint32_t resource);
 
 protected:
     ObjectList                  filterComponents    (const array<Vector3, 8> &frustum);
 
     void                        drawComponents      (uint32_t layer, ObjectList &list);
 
-    void                        updateShadows       (Camera &camera, Object &object);
+    void                        updateShadows       (Camera &camera, Object *object);
 
     void                        directUpdate        (Camera &camera, DirectLight *light);
 
@@ -70,6 +72,8 @@ protected:
 
     Mesh                       *m_pPlane;
     MaterialInstance           *m_pSprite;
+
+    uint32_t                    m_Target;
 };
 
 #endif // APIPELINE

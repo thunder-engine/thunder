@@ -15,8 +15,8 @@
 
 #include "commandbuffergl.h"
 
-RenderGLSystem::RenderGLSystem(Engine *engine) :
-        ISystem(engine) {
+RenderGLSystem::RenderGLSystem() :
+        ISystem() {
     PROFILER_MARKER;
 
     ObjectSystem system;
@@ -70,7 +70,7 @@ const char *RenderGLSystem::name() const {
 /*!
     Main drawing procedure.
 */
-void RenderGLSystem::update(Scene &scene, uint32_t resource) {
+void RenderGLSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
     PROFILER_RESET(POLYGONS);
@@ -80,6 +80,6 @@ void RenderGLSystem::update(Scene &scene, uint32_t resource) {
     if(camera) {
         Pipeline *pipe  = camera->pipeline();
         pipe->combineComponents(scene, true);
-        pipe->draw(scene, *camera, resource);
+        pipe->draw(scene, *camera);
     }
 }

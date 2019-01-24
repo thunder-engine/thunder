@@ -4,36 +4,22 @@
 #include <string>
 #include <stdint.h>
 
-class Engine;
+#include <engine.h>
+
 class Scene;
 
 using namespace std;
 
-class ISystem {
+class ISystem : public ObjectSystem {
 public:
-    /*!
-        Constructor of System class.
-        @param[in]  engine      Pointer to Engine object.
-    */
-    ISystem                     (Engine *engine) : m_pEngine(engine) { }
+    ISystem                     () {}
     virtual ~ISystem            () {}
 
-    /*!
-        Initialization of system.
-        @return true            Intialization successful.
-    */
     virtual bool                init                        () = 0;
 
     virtual const char         *name                        () const = 0;
-    /*!
-        Tha main procedure procedure that is called every cycle.
-        @param[in]  scene       Reference to scene.
-        @param[in]  resource    Additional value which can be used for external purporces.
-    */
-    virtual void                update                      (Scene &scene, uint32_t resource = 0) = 0;
 
-protected:
-    Engine                     *m_pEngine;
+    virtual void                update                      (Scene *scene) = 0;
 };
 
 #endif // ABSTRACTSYSTEM_H

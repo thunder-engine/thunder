@@ -15,8 +15,6 @@ static uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;
 
-static Object::ObjectList       s_List;
-
 /*!
     \class ObjectSystem
     \brief The ObjectSystem responds for object management.
@@ -81,16 +79,17 @@ void ObjectSystem::destroy() {
     PROFILE_FUNCTION()
     s_Factories.clear();
     s_Groups.clear();
-    for(auto it : s_List) {
+
+    for(auto it : m_List) {
         delete it;
     }
-    s_List.clear();
+    m_List.clear();
 }
 /*!
     Updates all related objects.
 */
 void ObjectSystem::update() {
-    for(auto it : s_List) {
+    for(auto it : m_List) {
         it->processEvents();
     }
 }
@@ -104,24 +103,28 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     PROFILE_FUNCTION()
     Object *object  = nullptr;
 
-    const MetaObject *meta  = metaFactory(uri);
-    if(meta) {
+    FactoryPair *pair = metaFactory(uri);
+    if(pair) {
+        const MetaObject *meta  = pair->first;
+
         object = meta->createInstance();
         object->setName(name);
         object->setParent(parent);
         object->setUUID(generateUID());
+        object->setSystem(pair->second);
     }
     return object;
 }
 
 void ObjectSystem::processObject(Object *object) {
+    PROFILE_FUNCTION()
     object->processEvents();
 }
 
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION()
     s_Groups[name]   = uri;
-    s_Factories[uri] = meta;
+    s_Factories[uri] = FactoryPair(meta, this);
 }
 
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
@@ -139,13 +142,14 @@ ObjectSystem::GroupMap ObjectSystem::factories() const {
 /*!
     Returns MetaObject for registered factory by provided \a uri.
 */
-const MetaObject *ObjectSystem::metaFactory(const string &uri) {
+ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
+    PROFILE_FUNCTION()
     FactoryMap::iterator it = s_Factories.find(uri);
     if(it == s_Factories.end()) {
         it  = s_Factories.find(s_Groups[uri]);
     }
     if(it != s_Factories.end()) {
-        return (*it).second;
+        return &((*it).second);
     }
     return nullptr;
 }
@@ -287,16 +291,12 @@ uint32_t ObjectSystem::generateUID() {
     return dist(mt);
 }
 
-void ObjectSystem::addObject(Object *object) {
-    s_List.push_back(object);
-}
-
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION()
-    auto it = s_List.begin();
-    while(it != s_List.end()) {
+    auto it = m_List.begin();
+    while(it != m_List.end()) {
         if(*it == object) {
-            s_List.erase(it);
+            m_List.erase(it);
             return;
         }
         it++;

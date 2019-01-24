@@ -36,7 +36,9 @@ public:
 /*
     Resource management
 */
-    static Object              *loadResource                (const string &path = string());
+    static Object              *loadResource                (const string &path);
+
+    static void                 unloadResource              (const string &path);
 
     template<typename T>
     static T                   *loadResource                (const string &path) {

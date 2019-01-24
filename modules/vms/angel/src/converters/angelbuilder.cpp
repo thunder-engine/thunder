@@ -48,7 +48,8 @@ AngelBuilder::AngelBuilder() {
 
     m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
 
-    AngelSystem::registerClasses(m_pScriptEngine);
+    AngelSystem system;
+    system.registerClasses(m_pScriptEngine);
 }
 
 bool AngelBuilder::buildProject() {
@@ -73,19 +74,18 @@ bool AngelBuilder::buildProject() {
                 dst.write((const char *)&data[0], data.size());
                 dst.close();
             }
+            // Do the hot reload
         }
 
         m_Outdated = false;
     }
     return true;
 }
-#include <QDebug>
+
 uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
     QFileInfo info(settings->absoluteDestination());
 
     m_Destination = info.absolutePath() + "/{00000000-0101-0000-0000-000000000000}";
-
-    qDebug() << m_Destination;
 
     return IBuilder::convertFile(settings);
 }

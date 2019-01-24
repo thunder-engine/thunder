@@ -9,14 +9,14 @@ class Camera;
 
 class MediaSystem : public ISystem {
 public:
-    MediaSystem                 (Engine *engine);
+    MediaSystem                 ();
     ~MediaSystem                ();
 
     bool                        init                        ();
 
     const char                 *name                        () const;
 
-    void                        update                      (Scene &, uint32_t = 0);
+    void                        update                      (Scene *);
 
 protected:
     ALCdevice                  *m_pDevice;

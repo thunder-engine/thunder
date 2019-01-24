@@ -35,7 +35,7 @@ uint8_t Angel::types() const {
 }
 
 ISystem *Angel::system() {
-    return new AngelSystem(m_pEngine);
+    return new AngelSystem();
 }
 
 IConverter *Angel::converter() {

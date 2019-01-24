@@ -36,7 +36,8 @@
 Pipeline::Pipeline() :
         m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
-        m_pSprite(nullptr) {
+        m_pSprite(nullptr),
+        m_Target(0) {
 
     m_Buffer    = Engine::objectCreate<ICommandBuffer>();
 
@@ -105,11 +106,11 @@ Pipeline::~Pipeline() {
     m_Targets.clear();
 }
 
-void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
+void Pipeline::draw(Scene *scene, Camera &camera) {
     ObjectList filter   = filterComponents(camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
 
     // Light prepass
-    m_Buffer->setGlobalValue("light.ambient", scene.ambient());
+    m_Buffer->setGlobalValue("light.ambient", scene->ambient());
 
     m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
     m_Buffer->clearRenderTarget();
@@ -143,7 +144,7 @@ void Pipeline::draw(Scene &scene, Camera &camera, uint32_t resource) {
     // Step3 - Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, filter);
 
-    m_Buffer->setRenderTarget(resource);
+    m_Buffer->setRenderTarget(m_Target);
     m_Buffer->setScreenProjection();
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
@@ -189,11 +190,11 @@ void Pipeline::resize(uint32_t width, uint32_t height) {
     //}
 }
 
-void Pipeline::combineComponents(Object &object, bool first) {
+void Pipeline::combineComponents(Object *object, bool first) {
     if(first) {
         m_Components.clear();
     }
-    for(auto &it : object.getChildren()) {
+    for(auto &it : object->getChildren()) {
         Object *child   = it;
         BaseMesh *mesh  = dynamic_cast<BaseMesh *>(child);
         if(mesh) {
@@ -219,11 +220,15 @@ void Pipeline::combineComponents(Object &object, bool first) {
                             continue;
                         }
                     }
-                    combineComponents(*child);
+                    combineComponents(child);
                 }
             }
         }
     }
+}
+
+void Pipeline::setTarget(uint32_t resource) {
+    m_Target = resource;
 }
 
 Object::ObjectList Pipeline::filterComponents(const array<Vector3, 8> &frustum) {
@@ -236,13 +241,13 @@ void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
     }
 }
 
-void Pipeline::updateShadows(Camera &camera, Object &object) {
-    for(auto &it : object.getChildren()) {
+void Pipeline::updateShadows(Camera &camera, Object *object) {
+    for(auto &it : object->getChildren()) {
         DirectLight *light = dynamic_cast<DirectLight *>(it);
         if(light) {
             directUpdate(camera, light);
         } else {
-            updateShadows(camera, *it);
+            updateShadows(camera, it);
         }
     }
 }

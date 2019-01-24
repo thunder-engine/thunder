@@ -232,7 +232,7 @@ int32_t Engine::exec() {
                 lag -= Timer::fixedDelta();
             }
             for(auto it : p_ptr->m_Systems) {
-                it->update(*(p_ptr->m_pScene));
+                it->update(p_ptr->m_pScene);
             }
             p_ptr->m_Valid  = p_ptr->m_pPlatform->isValid();
             p_ptr->m_pPlatform->update();
@@ -298,6 +298,28 @@ Object *Engine::loadResource(const string &path) {
         }
     }
     return nullptr;
+}
+
+void Engine::unloadResource(const string &path) {
+    PROFILER_MARKER;
+
+    if(!path.empty()) {
+        string uuid = path;
+        {
+            auto it = EnginePrivate::m_IndexMap.find(path);
+            if(it != EnginePrivate::m_IndexMap.end()) {
+                uuid    = it->second;
+            }
+        }
+        {
+            auto it = EnginePrivate::m_ResourceCache.find(uuid);
+            if(it != EnginePrivate::m_ResourceCache.end() && it->second) {
+                delete it->second;
+
+                EnginePrivate::m_ResourceCache.erase(it);
+            }
+        }
+    }
 }
 
 void Engine::setResource(Object *object, string &uuid) {

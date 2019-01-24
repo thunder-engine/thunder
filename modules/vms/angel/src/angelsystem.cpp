@@ -18,6 +18,8 @@
 
 #include "bindings/angelmath.h"
 
+#define TEMPALTE "{00000000-0101-0000-0000-000000000000}"
+
 class AngelStream : public asIBinaryStream {
 public:
     AngelStream(ByteArray &ptr) :
@@ -41,16 +43,16 @@ protected:
     uint32_t            m_Offset;
 };
 
-AngelSystem::AngelSystem(Engine *engine) :
-        ISystem(engine),
+AngelSystem::AngelSystem() :
+        ISystem(),
         m_pScriptEngine(nullptr),
         m_pScriptModule(nullptr),
         m_pContext(nullptr) {
     PROFILER_MARKER;
 
-    AngelScript::registerClassFactory(engine);
+    AngelScript::registerClassFactory(this);
 
-    AngelBehaviour::registerClassFactory(engine);
+    AngelBehaviour::registerClassFactory(this);
 }
 
 AngelSystem::~AngelSystem() {
@@ -60,9 +62,17 @@ AngelSystem::~AngelSystem() {
         m_pContext->Release();
     }
 
+    if(m_pScriptModule) {
+        m_pScriptModule->Discard();
+    }
+
     if(m_pScriptEngine) {
         m_pScriptEngine->ShutDownAndRelease();
     }
+
+    AngelBehaviour::unregisterClassFactory(this);
+
+    AngelScript::unregisterClassFactory(this);
 }
 
 bool AngelSystem::init() {
@@ -76,14 +86,7 @@ bool AngelSystem::init() {
 
         registerClasses(m_pScriptEngine);
 
-        AngelScript *script = Engine::loadResource<AngelScript>("{00000000-0101-0000-0000-000000000000}");
-        if(script) {
-            AngelStream stream(script->m_Array);
-            m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
-            m_pScriptModule->LoadByteCode(&stream);
-        } else {
-            Log(Log::ERR) << __FUNCTION__ << "Filed to load a script";
-        }
+        reload();
     }
 
     return (r >= 0);
@@ -93,10 +96,10 @@ const char *AngelSystem::name() const {
     return "AngelScript";
 }
 
-void AngelSystem::update(Scene &scene, uint32_t) {
+void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
-    for(auto &it : scene.findChildren<AngelBehaviour *>()) {
+    for(auto &it : scene->findChildren<AngelBehaviour *>()) {
         if(it->isEnable()) {
             asIScriptObject *object = it->scriptObject();
             string value    = it->script();
@@ -130,7 +133,28 @@ void AngelSystem::update(Scene &scene, uint32_t) {
     }
 }
 
+void AngelSystem::reload() {
+    PROFILER_MARKER;
+
+    if(m_pScriptModule) {
+        m_pScriptModule->Discard();
+
+        Engine::unloadResource(TEMPALTE);
+    }
+
+    AngelScript *script = Engine::loadResource<AngelScript>(TEMPALTE);
+    if(script) {
+        AngelStream stream(script->m_Array);
+        m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
+        m_pScriptModule->LoadByteCode(&stream);
+    } else {
+        Log(Log::ERR) << __FUNCTION__ << "Filed to load a script";
+    }
+}
+
 void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
+    PROFILER_MARKER;
+
     if(func) {
         m_pContext->Prepare(func);
         if(object) {
@@ -164,10 +188,9 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
         }
     }
 
-    ObjectSystem system;
-    for(auto &it: system.factories()) {
+    for(auto &it: ISystem::factories()) {
         const char *typeName    = it.first.c_str();
-        const MetaObject *meta  = system.metaFactory(typeName);
+        const MetaObject *meta  = ISystem::metaFactory(typeName)->first;
 
         uint32_t type   = MetaType::type(typeName);
         MetaType::Table *table  = MetaType::table(type);

@@ -27,5 +27,5 @@ uint8_t RenderGL::types() const {
 }
 
 ISystem *RenderGL::system() {
-    return new RenderGLSystem(m_pEngine);
+    return new RenderGLSystem();
 }

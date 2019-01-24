@@ -33,7 +33,7 @@ uint8_t Media::types() const {
 }
 
 ISystem *Media::system() {
-    return new MediaSystem(m_pEngine);
+    return new MediaSystem();
 }
 
 IConverter *Media::converter() {

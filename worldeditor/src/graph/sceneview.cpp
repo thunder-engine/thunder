@@ -67,10 +67,9 @@ void SceneView::paintGL() {
     if(m_pScene) {
         findCamera();
 
-        uint32_t handle = defaultFramebufferObject();
         foreach(ISystem *it, m_Systems) {
             if(it) {
-                it->update(*m_pScene, handle);
+                it->update(m_pScene);
             }
         }
     }
@@ -82,7 +81,9 @@ void SceneView::resizeGL(int width, int height) {
     if(m_pController) {
         Camera *camera  = Camera::current();
         if(camera) {
-            camera->pipeline()->resize(width, height);
+            Pipeline *pipe = camera->pipeline();
+            pipe->resize(width, height);
+            pipe->setTarget(defaultFramebufferObject());
         }
     }
 }
@@ -100,7 +101,9 @@ void SceneView::findCamera() {
     if(chunk && m_pController) {
         Camera *camera  = chunk->findChild<Camera *>();
         if(camera) {
-            camera->pipeline()->resize(width(), height());
+            Pipeline *pipe = camera->pipeline();
+            pipe->resize(width(), height());
+            pipe->setTarget(defaultFramebufferObject());
         }
         Camera::setCurrent(camera);
     }
