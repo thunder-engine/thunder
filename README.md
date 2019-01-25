@@ -1,5 +1,5 @@
 ## Thunder Engine
-[![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
+Thunder Engine is an open-source multi-functional lightweight game engine for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
 
 #### Build Status
 [![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
@@ -9,39 +9,21 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/06a1475c3d7241d6b70cd7d28c680142)](https://www.codacy.com/app/eprikazchikov/thunder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eprikazchikov/thunder&amp;utm_campaign=Badge_Grade)
 ### About
 
-Thunder Engine is an opensource multifunctional light weight game engine for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
+The main ideology of project is to create the modular engine to give developers an ability to exclude modules which they are not using in their project to keep their projects lightweight. API of Thunder Engine is also allowing to create own modules to use them in your games.
+
 ![Screenshot of Thunder Engine](https://raw.githubusercontent.com/eprikazchikov/thunder/master/doc/media/ScreenShot01.png)
 
-#### Supported Platforms
-- Windows
-- MacOS X
-- Linux (Technical Preview)
+#### Features
+Please find a complete [list of features](https://github.com/eprikazchikov/thunder-doc/blob/master/basics/features.rst).
 
-#### Render
-- Rendering System Based on Physical Principles
-- Deferred Shading
-- Particle system
-- CookTorance Lighting model
-- Cascaded Shadow Maps (PPSM)
+#### Have a question or an idea?
+I'm always open to new ideas and you can always ask a question regarding Thunder Engine.
+[![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
 
-#### Animation
-- Animation engine is based on "Animate Everything" principles
+Or you can [create a ticket](https://github.com/eprikazchikov/thunder/issues/new/choose)
 
-#### Audio
-- 2D/3D Audio engine
-- Ogg/Vorbis, MP3, WAV file formats support
-
-#### Engine
-- Entity Component System based Object Management System
-- Scene Graph object management approach
-- MetaObject model for Objects
-- Event driven Inter Object Communication System
-
-#### Set of Tools
-- Multifunctional Scene Editor
-- Node Based Material Editor
-- Resource Management system with bunch of converters
-- Ready for CI Project Builder
+#### Contributing
+Would like to help to project? Please read [this](CONTRIBUTING.md).
 
 ### Getting the Engine
 #### Compiling from source
@@ -51,3 +33,5 @@ Thunder Engine is an opensource multifunctional light weight game engine for cre
     - In Windows: Microsoft Visual Studio 2015 or higher
     - In MacOS X: Latest Xcode
 * To build project with QtCreator open Thunder.qbs and Build project
+
+For more options please follow a [build instruction](https://github.com/eprikazchikov/thunder-doc/blob/master/basics/install.rst)
