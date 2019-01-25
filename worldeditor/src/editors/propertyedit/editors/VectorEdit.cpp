@@ -20,9 +20,9 @@ VectorEdit::VectorEdit(QWidget *parent) :
     ui->y->setValidator(validator);
     ui->z->setValidator(validator);
 
-    connect(ui->x, SIGNAL(textChanged(QString)), this, SLOT(onValueChanged(QString)));
-    connect(ui->y, SIGNAL(textChanged(QString)), this, SLOT(onValueChanged(QString)));
-    connect(ui->z, SIGNAL(textChanged(QString)), this, SLOT(onValueChanged(QString)));
+    connect(ui->x, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
+    connect(ui->y, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
+    connect(ui->z, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
 }
 
 VectorEdit::~VectorEdit() {
@@ -37,20 +37,19 @@ Vector3 VectorEdit::data() const {
 }
 
 void VectorEdit::setData(const Vector3 &v) {
-    QLocale locale;
     ui->x->blockSignals(true);
-    ui->x->setText(locale.toString(v.x));
+    ui->x->setText(QString::number(v.x, 'f', 3));
     ui->x->blockSignals(false);
 
     ui->y->blockSignals(true);
-    ui->y->setText(locale.toString(v.y));
+    ui->y->setText(QString::number(v.y, 'f', 3));
     ui->y->blockSignals(false);
 
     ui->z->blockSignals(true);
-    ui->z->setText(locale.toString(v.z));
+    ui->z->setText(QString::number(v.z, 'f', 3));
     ui->z->blockSignals(false);
 }
 
-void VectorEdit::onValueChanged(QString) {
+void VectorEdit::onValueChanged() {
     emit dataChanged(QVariant::fromValue(data()));
 }

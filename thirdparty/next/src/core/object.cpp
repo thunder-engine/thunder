@@ -30,7 +30,8 @@ public:
         m_pParent(nullptr),
         m_pCurrentSender(nullptr),
         m_UUID(0),
-        m_Cloned(0) {
+        m_Cloned(0),
+        m_pSystem(nullptr) {
 
     }
 

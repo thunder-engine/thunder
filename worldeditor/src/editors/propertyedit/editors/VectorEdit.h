@@ -24,7 +24,7 @@ signals:
     void                dataChanged         (const QVariant &);
 
 protected slots:
-    void                onValueChanged      (QString);
+    void                onValueChanged      ();
 
 private:
     Ui::VectorEdit     *ui;

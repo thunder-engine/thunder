@@ -133,8 +133,6 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     REGISTER_META_TYPE_IMPL(MaterialArray);
 
-    ObjectSystem system;
-
     Text::registerClassFactory(this);
     Texture::registerClassFactory(this);
     Material::registerClassFactory(this);
