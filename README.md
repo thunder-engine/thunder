@@ -18,6 +18,7 @@ Please find a complete [list of features](https://github.com/eprikazchikov/thund
 
 #### Have a question or an idea?
 I'm always open to new ideas and you can always ask a question regarding Thunder Engine.
+
 [![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
 
 Or you can [create a ticket](https://github.com/eprikazchikov/thunder/issues/new/choose)
