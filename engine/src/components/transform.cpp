@@ -58,8 +58,8 @@ Matrix4 &Transform::worldTransform() {
         m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
         Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
         while(cur) {
-            Transform *t    = cur->transform();
-            m_Transform     = t->worldTransform() * m_Transform;
+            Transform *t = cur->transform();
+            m_Transform = t->worldTransform() * m_Transform;
             cur = dynamic_cast<Actor *>(cur->parent());
         }
         m_Dirty = false;
@@ -73,8 +73,9 @@ Vector3 Transform::worldPosition() const {
     while(cur) {
         Transform *t    = cur->transform();
         result  = result * t->m_Scale;
-        result += t->m_Position;
+
         result  = t->m_Rotation.toMatrix() * result;
+        result += t->m_Position;
         cur     = dynamic_cast<Actor *>(cur->parent());
     }
     return result;
