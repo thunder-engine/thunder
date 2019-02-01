@@ -9,7 +9,7 @@
 
 class AnimationClipSerial : public AnimationClip {
 public:
-    VariantMap                  saveUserData                () const {
+    VariantMap saveUserData() const {
         VariantMap result;
 
         VariantList tracks;
@@ -18,23 +18,29 @@ public:
             track.push_back(t.path);
             track.push_back(t.property);
 
-            VariantList keys;
-            for(auto c : t.curve) {
-                VariantList key;
-                key.push_back(int32_t(c.mPosition));
-                key.push_back(c.mType);
-                key.push_back(c.mValue);
-                key.push_back(c.mSupport);
+            VariantList curves;
+            for(auto c : t.curves) {
+                VariantList curve;
+                curve.push_back(c.first);
 
-                keys.push_back(key);
+                for(auto it : c.second.m_Keys) {
+                    VariantList key;
+                    key.push_back(int32_t(it.m_Position));
+                    key.push_back(it.m_Type);
+                    key.push_back(it.m_Value);
+                    key.push_back(it.m_LeftTangent);
+                    key.push_back(it.m_RightTangent);
+
+                    curve.push_back(key);
+                }
+                curves.push_back(curve);
             }
-            track.push_back(keys);
+            track.push_back(curves);
 
             tracks.push_back(track);
         }
 
-        result[TRACKS]  = tracks;
-
+        result[TRACKS] = tracks;
         return result;
     }
 
@@ -55,7 +61,7 @@ uint8_t AnimConverter::convertFile(IConverterSettings *settings) {
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data  = Bson::save( Engine::toVariant(&clip) );
-            file.write((const char *)&data[0], data.size());
+            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
             return 0;
         }

@@ -2,12 +2,13 @@
 
 class VariantAnimationPrivate {
 public:
-    VariantAnimationPrivate() :
-            m_KeyFrames(nullptr) {
+    VariantAnimationPrivate() {
     }
 
-    VariantAnimation::Curve    *m_KeyFrames;
-    Variant                     m_CurrentValue;
+    map<int32_t, AnimationCurve> m_KeyFrames;
+
+    uint32_t        m_Type;
+    Variant         m_CurrentValue;
 };
 /*!
     \class VariantAnimation
@@ -21,12 +22,12 @@ public:
 
     List of supported Variant types for animation:
     \list
+        \li MetaType::BOOLEAN
         \li MetaType::INTEGER
         \li MetaType::FLOAT
         \li MetaType::VECTOR2
         \li MetaType::VECTOR3
         \li MetaType::VECTOR4
-        \li MetaType::QUATERNION
     \endlist
 */
 /*!
@@ -44,10 +45,11 @@ VariantAnimation::~VariantAnimation() {
     Returns the duration of the animation (in milliseconds).
 */
 int32_t VariantAnimation::loopDuration() const {
-    if(p_ptr->m_KeyFrames && !p_ptr->m_KeyFrames->empty()) {
-        return p_ptr->m_KeyFrames->back().mPosition;
+    uint32_t result = 0;
+    for(auto it : p_ptr->m_KeyFrames) {
+        result = MAX(it.second.m_Keys.back().m_Position, result);
     }
-    return 0;
+    return result;
 }
 /*!
     Returns the current value for the animated Variant.
@@ -62,94 +64,55 @@ void VariantAnimation::setCurrentValue(const Variant &value) {
     p_ptr->m_CurrentValue   = value;
 }
 /*!
-    Returns the sequence of key frames as curve for the animation track.
+    Returns the sequence of key frames as curve for the \a component of animation track.
 */
-VariantAnimation::Curve &VariantAnimation::keyFrames() const {
-    return *(p_ptr->m_KeyFrames);
+AnimationCurve &VariantAnimation::curve(int32_t component) const {
+    return p_ptr->m_KeyFrames[component];
 }
 /*!
     Sets the new sequence of the key \a frames.
 */
-void VariantAnimation::setKeyFrames(Curve &frames) {
-    p_ptr->m_KeyFrames  = &frames;
+void VariantAnimation::setCurve(AnimationCurve &curve, int32_t component) {
+    p_ptr->m_KeyFrames[component] = curve;
 }
 /*!
     \overload
     This function interpolates animated Variant value from one KeyFrame to another.
 */
 void VariantAnimation::update() {
-    uint32_t duration   = loopDuration();
-    uint32_t current    = loopTime();
+    Variant data = currentValue();
+    for(auto it : p_ptr->m_KeyFrames) {
+        int32_t component = it.first;
 
-    if(p_ptr->m_KeyFrames->size() >= 2) {
-        KeyFrame a;
-        KeyFrame b;
+        float value = it.second.value(loopTime());
 
-        for(auto i = p_ptr->m_KeyFrames->begin(); i != p_ptr->m_KeyFrames->end(); i++) {
-            if(current == i->mPosition) {
-                setCurrentValue(i->mValue);
-                return;
-            }
-            if(current >= i->mPosition) {
-                a   = (*i);
-            }
-            if(current <= i->mPosition) {
-                b   = (*i);
-                break;
-            }
-        }
-        float f1    = float(a.mPosition) / duration;
-        float f2    = float(b.mPosition) / duration;
-        float f     = float(current) / duration;
-        float factor    = (f - f1) / (f2 - f1);
-
-        if(a.mValue.type() == b.mValue.type()) {
-            switch(a.mValue.type()) {
-                case MetaType::BOOLEAN: {
-                    setCurrentValue((factor >= 1.0f) ? b.mValue.toBool() : a.mValue.toBool());
-                } break;
-                case MetaType::INTEGER: {
-                    if(a.mType == KeyFrame::Linear) {
-                        setCurrentValue(MIX(a.mValue.toInt(), b.mValue.toInt(), factor));
-                    } else {
-                        setCurrentValue(CMIX(a.mValue.toInt(), a.mSupport.toInt(), b.mSupport.toInt(), b.mValue.toInt(), factor));
-                    }
-                } break;
-                case MetaType::FLOAT: {
-                    if(a.mType == KeyFrame::Linear) {
-                        setCurrentValue(MIX(a.mValue.toFloat(), b.mValue.toFloat(), factor));
-                    } else {
-                        setCurrentValue(CMIX(a.mValue.toFloat(), a.mSupport.toFloat(), b.mSupport.toFloat(), b.mValue.toFloat(), factor));
-                    }
-                } break;
-                case MetaType::VECTOR2: {
-                    if(a.mType == KeyFrame::Linear) {
-                        setCurrentValue(MIX(a.mValue.toVector2(), b.mValue.toVector2(), factor));
-                    } else {
-                        setCurrentValue(CMIX(a.mValue.toVector2(), a.mSupport.toVector2(), b.mSupport.toVector2(), b.mValue.toVector2(), factor));
-                    }
-                } break;
-                case MetaType::VECTOR3: {
-                    if(a.mType == KeyFrame::Linear) {
-                        setCurrentValue(MIX(a.mValue.toVector3(), b.mValue.toVector3(), factor));
-                    } else {
-                        setCurrentValue(CMIX(a.mValue.toVector3(), a.mSupport.toVector3(), b.mSupport.toVector3(), b.mValue.toVector3(), factor));
-                    }
-                } break;
-                case MetaType::VECTOR4: {
-                    if(a.mType == KeyFrame::Linear) {
-                        setCurrentValue(MIX(a.mValue.toVector4(), b.mValue.toVector4(), factor));
-                    } else {
-                        setCurrentValue(CMIX(a.mValue.toVector4(), a.mSupport.toVector4(), b.mSupport.toVector4(), b.mValue.toVector4(), factor));
-                    }
-                } break;
-                case MetaType::QUATERNION: {
-                    Quaternion result;
-                    result.mix(a.mValue.toQuaternion(), b.mValue.toQuaternion(), factor);
-                    setCurrentValue(result);
-                } break;
-                default: break;
-            }
+        switch(p_ptr->m_CurrentValue.type()) {
+            case MetaType::BOOLEAN: {
+                data = Variant(static_cast<bool>(value));
+            } break;
+            case MetaType::INTEGER: {
+                data = Variant(static_cast<int>(value));
+            } break;
+            case MetaType::FLOAT: {
+                data = Variant(value);
+            } break;
+            case MetaType::VECTOR2: {
+                Vector2 v = data.toVector2();
+                v[component] = value;
+                data = v;
+            } break;
+            case MetaType::VECTOR3: {
+                Vector3 v = data.toVector3();
+                v[component] = value;
+                data = v;
+            } break;
+            case MetaType::VECTOR4: {
+                Vector4 v = data.toVector4();
+                v[component] = value;
+                data = v;
+            } break;
+            default: break;
         }
     }
+    setCurrentValue(data);
 }

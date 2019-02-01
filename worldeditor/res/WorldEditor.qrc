@@ -23,6 +23,7 @@
         <file>fontawesome/next.png</file>
         <file>fontawesome/pause.png</file>
         <file>fontawesome/close.svg</file>
+        <file>fontawesome/curve.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>
@@ -41,5 +42,10 @@
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>
+        <file>qml/Timeline.qml</file>
+        <file>qml/Theme.qml</file>
+        <file>qml/CurveEditor.qml</file>
+        <file>qml/KeyframeEditor.qml</file>
+        <file>qml/ContextMenu.qml</file>
     </qresource>
 </RCC>

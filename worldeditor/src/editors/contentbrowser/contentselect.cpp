@@ -38,22 +38,25 @@ ContentSelect::~ContentSelect() {
 }
 
 QString ContentSelect::data() const {
-    return QString();
+    return m_Guid;
 }
 
 void ContentSelect::setData(const QString &guid) {
     if(!guid.isEmpty()) {
-        string path = AssetManager::instance()->guidToPath(guid.toStdString());
-        if(!path.empty()) {
-            QFileInfo file(path.c_str());
-            m_pBrowser->setSelected(file.filePath());
-            ui->toolButton->setText(file.baseName());
-            QImage img  = m_pBrowser->icon(file.filePath());
-            if(!img.isNull()) {
-                ui->label->setPixmap( QPixmap::fromImage(img.scaled( ui->label->size() )) );
+        if(m_Guid != guid) {
+            string path = AssetManager::instance()->guidToPath(guid.toStdString());
+            if(!path.empty()) {
+                QFileInfo file(path.c_str());
+                m_pBrowser->setSelected(file.filePath());
+                ui->toolButton->setText(file.baseName());
+                QImage img  = m_pBrowser->icon(file.filePath());
+                if(!img.isNull()) {
+                    ui->label->setPixmap( QPixmap::fromImage(img.scaled( ui->label->size() )) );
+                }
+            } else {
+                ui->toolButton->setText("Ivalid");
             }
-        } else {
-            ui->toolButton->setText("Ivalid");
+            m_Guid = guid;
         }
     } else {
         ui->toolButton->setText("None");

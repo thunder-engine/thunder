@@ -133,7 +133,9 @@ void Viewport::findCamera() {
     if(m_pController) {
         Camera *camera = m_pController->camera();
         if(camera) {
-            camera->pipeline()->resize(width(), height());
+            Pipeline *pipe = camera->pipeline();
+            pipe->resize(width(), height());
+            pipe->setTarget(defaultFramebufferObject());
         }
         Camera::setCurrent(camera);
     }

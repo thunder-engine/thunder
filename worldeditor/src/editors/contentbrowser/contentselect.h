@@ -18,7 +18,7 @@ class ContentSelect : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ContentSelect      (QWidget *parent = 0);
+    explicit ContentSelect      (QWidget *parent = nullptr);
     ~ContentSelect              ();
 
     QString                     data                            () const;
@@ -33,9 +33,11 @@ private slots:
     void                        onAssetSelected                 (IConverterSettings *settings);
 
 private:
-    Ui::ContentSelect          *ui;
+    Ui::ContentSelect *ui;
 
-    ContentBrowser             *m_pBrowser;
+    ContentBrowser *m_pBrowser;
+
+    QString m_Guid;
 };
 
 #endif // CONTENTSELECT_H

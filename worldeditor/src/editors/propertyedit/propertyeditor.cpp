@@ -108,10 +108,11 @@ public:
         m_finishedMapper->blockSignals(true);
         if(index.isValid()) {
             const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
-            QModelIndex origin  = model->mapToSource(index);
-            QVariant data   = origin.model()->data(origin, Qt::EditRole);
+            QModelIndex origin = model->mapToSource(index);
+            QVariant data = origin.model()->data(origin, Qt::EditRole);
 
-            if(!static_cast<Property *>(origin.internalPointer())->setEditorData(editor, data)) {
+            Property *p = static_cast<Property *>(origin.internalPointer());
+            if(!p->setEditorData(editor, data)) {
                 QStyledItemDelegate::setEditorData(editor, index);
             }
         }
@@ -201,16 +202,13 @@ void PropertyEditor::setObject(QObject *propertyObject) {
 }
 
 void PropertyEditor::onUpdated() {
-    QAbstractItemModel *m   = m_pFilter->sourceModel();
-    static_cast<PropertyModel *>(m)->updateItem(nullptr);
-    ui->treeView->expandToDepth(-1);
-
-    int i   = 0;
-    QModelIndex it  = m->index(i, 1);
+    QAbstractItemModel *m = m_pFilter->sourceModel();
+    int i = 0;
+    QModelIndex it = m->index(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it  = m->index(i, 1);
+        it = m->index(i, 1);
     }
 }
 
@@ -233,11 +231,14 @@ void PropertyEditor::clear() {
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
     Property *p = static_cast<Property *>(index.internalPointer());
     if(p && p->isPersistent()) {
-        ui->treeView->openPersistentEditor(m_pFilter->mapFromSource(index));
+        QModelIndex origin = m_pFilter->mapFromSource(index);
+        if(!ui->treeView->isPersistentEditorOpen(origin)) {
+            ui->treeView->openPersistentEditor(origin);
+        }
 
         QWidget *e  = p->editor();
         if(e) {
-            ui->treeView->itemDelegate()->setEditorData(e, m_pFilter->mapFromSource(index));
+            ui->treeView->itemDelegate()->setEditorData(e, origin);
         }
     }
 

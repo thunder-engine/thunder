@@ -51,6 +51,7 @@ void PropertyAnimation::setTarget(Object *object, const char *property) {
         if(index > -1) {
             p_ptr->m_pObject    = object;
             p_ptr->m_Property   = meta->property(index);
+            VariantAnimation::setCurrentValue(p_ptr->m_Property.read(p_ptr->m_pObject));
         }
     }
 }

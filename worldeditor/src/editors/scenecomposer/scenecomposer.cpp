@@ -222,11 +222,11 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
 
         connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
-
-        connect(PluginModel::instance(), SIGNAL(pluginReloaded(QString)), m_pProperties, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(updated()), this, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
+
+        connect(PluginModel::instance(), SIGNAL(pluginReloaded(QString)), m_pProperties, SLOT(onUpdated()));
 
         connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
     }

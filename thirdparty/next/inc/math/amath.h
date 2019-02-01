@@ -18,8 +18,8 @@
 
 #define CLAMP(x, min, max)	((x < min) ? min : (x > max) ? max : x)
 #define MIX(a, b, f)        (a * (1 - f) + b * f)
-#define QMIX(a, b, c, f)    (a * SQR(1 - f) + b * 2 * f * (1 - f) + c * SQR(f))
-#define CMIX(a, b, c, d, f) (a * QUAD(1 - f) + b * 3 * f * SQR(1 - f) + c * 3 * SQR(f) * (1 - f) + d * QUAD(f))
+#define QMIX(a, b, c, f)    (a * SQR((1 - f)) + b * 2 * f * (1 - f) + c * SQR(f))
+#define CMIX(a, b, c, d, f) (a * QUAD((1 - f)) + b * 3 * f * SQR((1 - f)) + c * 3 * SQR(f) * (1 - f) + d * QUAD(f))
 
 #define RANGE(min, max) (min + ((max - min) * (static_cast<areal>(rand()) / RAND_MAX)))
 

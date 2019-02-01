@@ -26,13 +26,13 @@ Quaternion::Quaternion() :
 */
 Quaternion::Quaternion(const Vector3 &dir, areal angle) {
     areal length = dir.length();
-    if(length != 0.0) {
+    if(length != 0.0f) {
         length = 1.0f / length;
-        areal sinangle = (areal)sin(angle * DEG2RAD / 2.0f);
+        areal sinangle = sin(angle * DEG2RAD / 2.0f);
         x = dir[0] * length * sinangle;
         y = dir[1] * length * sinangle;
         z = dir[2] * length * sinangle;
-        w = (areal)cos(angle * DEG2RAD / 2.0f);
+        w = cos(angle * DEG2RAD / 2.0f);
     } else {
         x = y = z = 0.0;
         w = 1.0;
@@ -178,7 +178,7 @@ Quaternion Quaternion::inverse() const {
 void Quaternion::mix(const Quaternion &q0, const Quaternion &q1, areal t) {
     areal k0,k1,cosomega = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
     Quaternion q;
-    if(cosomega < 0.0) {
+    if(cosomega < 0.0f) {
         cosomega = -cosomega;
         q.x = -q1.x;
         q.y = -q1.y;
@@ -190,11 +190,11 @@ void Quaternion::mix(const Quaternion &q0, const Quaternion &q1, areal t) {
         q.z = q1.z;
         q.w = q1.w;
     }
-    if(1.0 - cosomega > 1e-6) {
-        areal omega = (areal)acos(cosomega);
-        areal sinomega = (areal)sin(omega);
-        k0 = (areal)sin((1.0f - t) * omega) / sinomega;
-        k1 = (areal)sin(t * omega) / sinomega;
+    if(1.0f - cosomega > 1e-6f) {
+        areal omega = acos(cosomega);
+        areal sinomega = sin(omega);
+        k0 = sin((1.0f - t) * omega) / sinomega;
+        k1 = sin(t * omega) / sinomega;
     } else {
         k0 = 1.0f - t;
         k1 = t;

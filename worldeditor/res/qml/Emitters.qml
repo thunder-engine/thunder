@@ -2,23 +2,15 @@ import QtQuick 2.0
 import QtQuick.Controls 2.4
 import QtGraphicalEffects 1.0
 
+
 Rectangle {
     id: rectangle
 
     color: "#757575"
-    property string textColor: "#ffffff"
-    property string emitterColor: "#40000000"
-    property string functionColor: "#40000000"
-    property string hoverColor: "#60000000"
 
-    property string blueColor: "#0277bd"
-    property string hoverBlueColor: "#0288d1"
-
-    property string greenColor: "#2e7d32"
-    property string hoverGreenColor: "#388e3c"
-
-    property string redColor: "#c62828"
-    property string hoverRedColor: "#d32f2f"
+    Theme {
+        id: theme
+    }
 
     signal emitterSelected(string emitter)
     signal emitterCreate()
@@ -48,13 +40,13 @@ Rectangle {
                     anchors.fill: parent
                     anchors.rightMargin: 3
                     radius: 3
-                    color: emitterColor
+                    color: theme.emitterColor
 
                     Text {
                         id: nameLabel
                         anchors.fill: parent
                         text: "+"
-                        color: textColor
+                        color: theme.textColor
                         font.pointSize: 32
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -63,8 +55,8 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: addEmitter.color = hoverColor
-                        onExited: addEmitter.color = emitterColor
+                        onEntered: addEmitter.color = theme.hoverColor
+                        onExited: addEmitter.color = theme.emitterColor
                         onClicked: {
                             emitterCreate()
                         }
@@ -81,7 +73,7 @@ Rectangle {
             width: 256
             height: parent.height
             radius: 3
-            color: emitterColor
+            color: theme.emitterColor
 
             Image {
                 source: "file:///" + _IconPath
@@ -99,15 +91,15 @@ Rectangle {
                 height: 64
                 text: Name
                 font.pointSize: 16
-                color: textColor
+                color: theme.textColor
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
 
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: emitter.color = hoverColor
-                    onExited: emitter.color = emitterColor
+                    onEntered: emitter.color = theme.hoverColor
+                    onExited: emitter.color = theme.emitterColor
                     onClicked: {
                         emitterSelected(Name)
                     }
@@ -130,13 +122,13 @@ Rectangle {
                         anchors.right: parent.right
                         height: 32
                         radius: 3
-                        color: functionColor
+                        color: theme.functionColor
 
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
-                            onEntered: emitterFunction.color = hoverColor
-                            onExited: emitterFunction.color = functionColor
+                            onEntered: emitterFunction.color = theme.hoverColor
+                            onExited: emitterFunction.color = theme.functionColor
                             onClicked: {
                                 functionSelected(Name, modelData)
                             }
@@ -174,7 +166,7 @@ Rectangle {
                             anchors.fill: parent
                             anchors.margins: 3
                             text: modelData
-                            color: textColor
+                            color: theme.textColor
                             font.pointSize: 16
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
@@ -192,13 +184,13 @@ Rectangle {
                     height: 32
                     radius: 3
                     color: "#00000000"
-                    border.color: redColor
+                    border.color: theme.redColor
 
                     Text {
                         id: deleteLabel
                         anchors.fill: parent
                         text: "Delete Emitter"
-                        color: redColor
+                        color: theme.redColor
                         font.pointSize: 16
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -208,14 +200,14 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         onEntered: {
-                            deleteEmitter.color = hoverRedColor
-                            deleteLabel.color = textColor
+                            deleteEmitter.color = theme.hoverRedColor
+                            deleteLabel.color = theme.textColor
                             deleteEmitter.border.color = "#00000000"
                         }
                         onExited: {
                             deleteEmitter.color = "#00000000"
-                            deleteLabel.color = redColor
-                            deleteEmitter.border.color = redColor
+                            deleteLabel.color = theme.redColor
+                            deleteEmitter.border.color = theme.redColor
                         }
                         onClicked: {
                             emitterDelete(Name)
@@ -234,13 +226,13 @@ Rectangle {
                             anchors.fill: parent
                             anchors.bottomMargin: 3
                             radius: 3
-                            color: greenColor
+                            color: theme.greenColor
 
                             Text {
                                 id: nameLabel
                                 anchors.fill: parent
                                 text: "Add Modifier"
-                                color: textColor
+                                color: theme.textColor
                                 font.pointSize: 16
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -249,8 +241,8 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onEntered: addFunction.color = hoverGreenColor
-                                onExited: addFunction.color = greenColor
+                                onEntered: addFunction.color = theme.hoverGreenColor
+                                onExited: addFunction.color = theme.greenColor
                                 onClicked: {
                                     menu.open()
                                 }

@@ -98,7 +98,7 @@ void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
 
 void SceneView::findCamera() {
     Actor *chunk    = m_pScene->findChild<Actor *>(false);
-    if(chunk && m_pController) {
+    if(chunk) {
         Camera *camera  = chunk->findChild<Camera *>();
         if(camera) {
             Pipeline *pipe = camera->pipeline();

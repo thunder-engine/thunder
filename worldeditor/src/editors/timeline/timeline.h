@@ -6,7 +6,10 @@
 
 #include <object.h>
 
+#include <animationcurve.h>
+
 class AnimationController;
+class AnimationClipModel;
 
 namespace Ui {
     class Timeline;
@@ -16,7 +19,7 @@ class Timeline : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Timeline       (QWidget *parent = 0);
+    explicit Timeline       (QWidget *parent = nullptr);
     ~Timeline               ();
 
 signals:
@@ -31,10 +34,6 @@ public slots:
 
     void                    onChanged               (Object::ObjectList objects, const QString &property);
 
-    void                    onEntered               (const QModelIndex &index);
-
-    void                    onHovered               (uint32_t index);
-
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();
@@ -48,13 +47,13 @@ protected:
     QString                 pathTo                  (Object *src, Object *dst);
 
 private slots:
-    void                    onMoved                 (uint32_t ms);
-
     void                    onModified              ();
 
     void                    onRemoveProperty        ();
 
-    void                    onScaled                ();
+    void                    onSelectKey             (int, int, int);
+
+    void                    onKeyChanged            ();
 
     void                    on_play_clicked         ();
 
@@ -70,6 +69,16 @@ private slots:
 
     void                    on_treeView_customContextMenuRequested  (const QPoint &pos);
 
+    void                    on_treeView_clicked     (const QModelIndex &index);
+
+    void                    on_curve_toggled        (bool checked);
+
+    void                    on_flatKey_clicked      ();
+
+    void                    on_breakKey_clicked     ();
+
+    void                    on_deleteKey_clicked    ();
+
 private:
     Ui::Timeline           *ui;
 
@@ -81,6 +90,13 @@ private:
 
     bool                    m_Modified;
 
+    AnimationClipModel     *m_pModel;
+
+    AnimationCurve::KeyFrame *m_pKey;
+
+    int32_t                 m_Row;
+    int32_t                 m_Col;
+    int32_t                 m_Ind;
 };
 
 #endif // TIMELINE_H

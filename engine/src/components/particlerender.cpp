@@ -146,8 +146,10 @@ void ParticleRender::draw(ICommandBuffer &buffer, int8_t layer) {
         }
         uint32_t index  = 0;
         for(auto &it : m_effect->m_Emitters) {
-            ParticleEffect::Emitter &emitter    = m_effect->m_pEffect->emitter(index);
-            buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, 0, layer, emitter.m_pMaterial, true);
+            if(it.m_Count > 0) {
+                ParticleEffect::Emitter &emitter    = m_effect->m_pEffect->emitter(index);
+                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, 0, layer, emitter.m_pMaterial, true);
+            }
             index++;
         }
         buffer.setColor(Vector4(1.0f));

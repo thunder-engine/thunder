@@ -8,21 +8,21 @@ class NEXT_LIBRARY_EXPORT AnimationClip : public Object {
 
 public:
    struct Track {
-       string                   path;
+       string path;
 
-       string                   property;
+       string property;
 
-       VariantAnimation::Curve  curve;
+       map<int32_t, AnimationCurve> curves;
    };
-   typedef list<Track>          TrackList;
+   typedef list<Track> TrackList;
 
 public:
-    void                        loadUserData        (const VariantMap &data);
+    void loadUserData(const VariantMap &data);
 
-    static bool                 compare             (const KeyFrame &first, const KeyFrame &second);
+    static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second);
 
 public:
-    TrackList                   m_Tracks;
+    TrackList m_Tracks;
 
 };
 
