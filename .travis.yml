@@ -4,6 +4,7 @@ env:
   global:
     - VERSION="2018.4"
     - BUILD="${VERSION}.${TRAVIS_BUILD_NUMBER}"
+    - QBS_VERSION="1.12.2"
     - secure: "BU6qOLe+/3SunZygJZO98o/SgUn4EgRHPu95hbXtGwJeAjJX57BtivSOVjdIX+EHEuAybgtbY6ckVHfx0n8zDNTHfyotLbyWK8XKW91AVk882/rLNMDLKIJ1o396dWLZ0nIlE4uAn8M8YNHBChnkkeIKTxH0+OwS2jRpxNTD3Z5KPS8AKuqzscwkm9FA/XxjR8XQLXcnCsiCkhf0/RA9tmve01qRZX5PkHpHXJk69ZGhbqEhphRTkSbtvrTlOVrwAQnsqMvGyzl2efp47VPwEdk4feNnoGbhi9npGRTKA2l79Y+RJZAMz+SGmxgrSNOxJOTIBiPNeTd9iOuturNpwnBV04Gx4NK6DA1rrXtu1GhKWjiyTDOz9LVo2060F1QhexfKKlXeL9JwQNPd1mrqVP9cvUbNcexJQ2bQVfb6/6iZgDXslAKe1UYdjCPLUg5R0Ls4God8YESr9ZMo3AdK1D+xh5Odi6Eff4BJ/jvmf219zQg+vpZRd9EDQJJkZ7B7kCPPOUBS+l5PZ8dfzf/0rsGCLkNq6Cz8uEu6iX72Ua4sP9P7Clt6X8ypEnZp7t6zhpsIcE/yp2lvJhvEfBWdUrR7aUC8EB0d7TOl3uMmSoFo890wiUQeKJUqqE92PcBxKkmqpHGvR6Nw+fg6mvCcArwA1UKgKkBi08Og4u4ZOjQ="
 
 before_install:
@@ -51,6 +52,40 @@ matrix:
           script: curl --upload-file ThunderEngine-linux-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-linux-x86_64.tar.gz
           on:
             tags: true
+            
+    - language: cpp
+      os: linux
+      dist: trusty
+      compiler: gcc
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - NDK_VERSION="android-ndk-r17c"
+      before_install:
+        - eval "${MATRIX_EVAL}"
+        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
+        - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -qq
+        - sudo apt-get -y install qt510base qt510script qt510tools binutils gcc-7 g++-7
+        - source /opt/qt510/bin/qt510-env.sh
+        - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-${QBS_VERSION}/qbs-${QBS_VERSION}.tar.gz -q
+        - tar -xvzf qbs-${QBS_VERSION}.tar.gz > /dev/null
+        - export PATH=$PATH:qbs-build/bin
+        - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
+        - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
+        - export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/${NDK_VERSION}
+        - qbs --version
+        - qbs setup-android android
+        - qbs setup-toolchains --detect
+      script:
+        - qbs config --list
+        - qbs build --all-products config:release profile:android
+        - tar -zcvf ThunderEngine-android.tar.gz release/install-root/sdk/${VERSION}/android
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file ThunderEngine-android.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-android.tar.gz
+          on:
+            tags: true
 
     - language: cpp
       os: osx
@@ -72,7 +107,7 @@ matrix:
           script: curl --upload-file ThunderEngine-macosx-x86_64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-macos-x86_64.tar.gz
           on:
             tags: true
-
+    
     - language: cpp
       os: osx
       osx_image: xcode9.3
@@ -92,6 +127,7 @@ matrix:
           script: curl --upload-file ThunderEngine-ios-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-ios-arm64.tar.gz
           on:
             tags: true
+    
     - language: cpp
       os: osx
       osx_image: xcode9.3
@@ -111,24 +147,3 @@ matrix:
           script: curl --upload-file ThunderEngine-tvos-arm64.tar.gz https://transfer.sh/ThunderEngine-${BUILD}-tvos-arm64.tar.gz
           on:
             tags: true
-        
-    #- lanuage: android
-    #  os: linux
-    #  jdk: oraclejdk8
-    #  android:
-    #    components:
-    #      - tools
-    #      - android-25
-    #      - build-tools-25.0.3
-    #  before_install:
-    #    - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
-    #    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-    #    - sudo apt-get update -qq
-    #    - sudo apt-get -y install qt510base qt510script qt510svg qt510imageformats qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
-    #    - source /opt/qt510/bin/qt510-env.sh
-    #    - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
-    #    - tar -xvzf qbs-1.11.0-linux.tar.gz
-    #    - export PATH=$PATH:qbs-build/bin
-    #    - qbs --version
-    #    - qbs setup-toolchains --detect
-    #    - qbs setup-qt --detect

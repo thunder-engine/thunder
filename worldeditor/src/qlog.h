@@ -14,6 +14,7 @@ class QLog : public QObject, public ILogHandler {
 public:
     void                setRecord       (Log::LogTypes type, const char *record) {
         emit postRecord(type, QString(record));
+        qDebug() << record;
 	}
 
 signals:

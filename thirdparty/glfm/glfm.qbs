@@ -37,6 +37,7 @@ Project {
 
             cpp.includePaths: outer.concat([nativePath])
             Android.ndk.appStl: "gnustl_shared"
+            Android.ndk.platform: glfm.ANDROID
         }
 
         Properties {

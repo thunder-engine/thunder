@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include <object.h>
+#include "object.h"
 #include <objectsystem.h>
 
 #include <file.h>

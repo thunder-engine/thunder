@@ -207,7 +207,7 @@ uint32_t AMaterialGL::buildShader(uint8_t type, const string &src) {
     if (result) {
         GLint compiled = GL_FALSE;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        glProgramParameteriEXT(result, GL_PROGRAM_SEPARABLE_EXT, GL_TRUE);
+        glProgramParameteri(result, GL_PROGRAM_SEPARABLE, GL_TRUE);
         if(compiled) {
             glAttachShader(result, shader);
             glLinkProgram(result);
@@ -222,7 +222,7 @@ uint32_t AMaterialGL::buildShader(uint8_t type, const string &src) {
         for(auto it : m_Textures) {
             int location    = glGetUniformLocation(result, it.first.c_str());
             if(location > -1) {
-                glProgramUniform1iEXT(result, location, t);
+                glProgramUniform1i(result, location, t);
             }
             t++;
         }

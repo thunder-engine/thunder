@@ -50,6 +50,8 @@ Project {
         }
     }
 
+    property string ANDROID: "android-21"
+
     property string COPYRIGHT_YEAR: probe.YEAR
 
     property string RESOURCE_ROOT: "../worldeditor/bin"
