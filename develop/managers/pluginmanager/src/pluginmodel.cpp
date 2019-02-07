@@ -156,6 +156,7 @@ void PluginModel::reloadPlugin(const QString &path) {
 
     // Rename old version of plugin
     if(dest.exists()) {
+        QFile::remove(temp.absoluteFilePath());
         QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 

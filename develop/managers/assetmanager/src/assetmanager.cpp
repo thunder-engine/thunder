@@ -187,7 +187,7 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
 
         if(settings->crc() == crc) {
             QFileInfo info(settings->absoluteDestination());
-            if(info.exists()) {
+            if(settings->type() == IConverter::ContentCode || info.exists()) {
                 result  = false;
             }
         }
