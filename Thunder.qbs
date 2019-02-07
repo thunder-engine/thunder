@@ -14,7 +14,7 @@ Project {
     property string ANDROID: "android-21"
     property string PLATFORM: {
         var arch = qbs.architecture;
-        if(qbs.targetOS[0] === "darwin" || qbs.targetOS[0] === "linux") {
+        if(qbs.targetOS[0].contains("darwin") || qbs.targetOS[0] === "linux") {
             arch = "x86_64"
         }
         return qbs.targetOS[0] + "/" + arch;

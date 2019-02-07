@@ -4,11 +4,13 @@
 
 #include <log.h>
 #include <file.h>
-#include <android/log.h>
 
 #include "engine.h"
 
+#ifdef GLFM_PLATFORM_ANDROID
+
 #include "androidfile.h"
+#include <android/log.h>
 
 class AndroidHandler : public ILogHandler {
 protected:
@@ -16,6 +18,7 @@ protected:
         __android_log_write(ANDROID_LOG_DEBUG, "ThunderEngine", record);
     }
 };
+#endif
 
 static GLFMDisplay *gDisplay = nullptr;
 static Engine *g_pEngine = nullptr;
@@ -26,9 +29,7 @@ struct Touch {
     uint32_t    phase;
     Vector2     pos;
 };
-
 typedef map<int, Touch> TouchMap;
-
 static TouchMap s_Touches;
 
 void onFrame(GLFMDisplay *, const double) {
@@ -59,12 +60,10 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
 void glfmMain(GLFMDisplay *display) {
     gDisplay = display;
 
-    Log::overrideHandler(new AndroidHandler());
-
     glfmSetDisplayConfig(gDisplay,
                          GLFMRenderingAPIOpenGLES31,
                          GLFMColorFormatRGBA8888,
-                         GLFMDepthFormatNone,
+                         GLFMDepthFormat16,
                          GLFMStencilFormatNone,
                          GLFMMultisampleNone);
 
@@ -74,13 +73,18 @@ void glfmMain(GLFMDisplay *display) {
 
     glfmSetTouchFunc(gDisplay, onTouch);
 
+    IFile *file = nullptr;
+#ifdef GLFM_PLATFORM_ANDROID
+    Log::overrideHandler(new AndroidHandler());
+    file = new AndroidFile();
+#endif
+
     char *path = "";
-    Engine *engine = new Engine(new AndroidFile(), 1, &path);
-    thunderMain(engine);
+    thunderMain(new Engine(file, 1, &path));
 }
 
 MobileAdaptor::MobileAdaptor(Engine *engine) {
-    g_pEngine   = engine;
+    g_pEngine = engine;
 }
 
 bool MobileAdaptor::init() {
