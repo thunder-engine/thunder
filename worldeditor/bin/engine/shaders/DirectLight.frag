@@ -1,18 +1,18 @@
 #pragma version
 
-#include ".embedded/Common.vert"
-#include ".embedded/BRDF.frag"
+#include "Common.vert"
+#include "BRDF.frag"
 
-uniform sampler2D normalsMap;
-uniform sampler2D diffuseMap;
-uniform sampler2D paramsMap;
-uniform sampler2D emissiveMap;
-uniform sampler2D depthMap;
-uniform sampler2D shadowMap;
+layout(location = 30) uniform sampler2D normalsMap;
+layout(location = 31) uniform sampler2D diffuseMap;
+layout(location = 32) uniform sampler2D paramsMap;
+layout(location = 33) uniform sampler2D emissiveMap;
+layout(location = 34) uniform sampler2D depthMap;
+layout(location = 35) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
 
-out vec4    rgb;
+layout(location = 0) out vec4 rgb;
 
 void main (void) {
     vec2 proj   = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5).xy;

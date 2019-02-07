@@ -19,14 +19,12 @@ RenderGLSystem::RenderGLSystem() :
         ISystem() {
     PROFILER_MARKER;
 
-    ObjectSystem system;
+    ATextureGL::registerClassFactory(this);
+    ARenderTextureGL::registerClassFactory(this);
+    AMaterialGL::registerClassFactory(this);
+    AMeshGL::registerClassFactory(this);
 
-    ATextureGL::registerClassFactory(&system);
-    ARenderTextureGL::registerClassFactory(&system);
-    AMaterialGL::registerClassFactory(&system);
-    AMeshGL::registerClassFactory(&system);
-
-    CommandBufferGL::registerClassFactory(&system);
+    CommandBufferGL::registerClassFactory(this);
 }
 
 RenderGLSystem::~RenderGLSystem() {
@@ -34,13 +32,12 @@ RenderGLSystem::~RenderGLSystem() {
 
     ObjectSystem system;
 
+    ATextureGL::unregisterClassFactory(this);
+    ARenderTextureGL::unregisterClassFactory(this);
+    AMaterialGL::unregisterClassFactory(this);
+    AMeshGL::unregisterClassFactory(this);
 
-    ATextureGL::unregisterClassFactory(&system);
-    ARenderTextureGL::unregisterClassFactory(&system);
-    AMaterialGL::unregisterClassFactory(&system);
-    AMeshGL::unregisterClassFactory(&system);
-
-    CommandBufferGL::unregisterClassFactory(&system);
+    CommandBufferGL::unregisterClassFactory(this);
 }
 
 /*!

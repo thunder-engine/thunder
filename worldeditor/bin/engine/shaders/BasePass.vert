@@ -2,7 +2,6 @@
 
 #pragma flags
 
-#include ".embedded/Common.vert"
 #include "Common.vert"
 
 #define MAX_BONES 60

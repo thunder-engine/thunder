@@ -72,9 +72,9 @@ Variant aVariant(QVariant &v, int type) {
             return Variant(v.toFloat());
         }
         case MetaType::STRING: {
-            if(v.canConvert<FilePath>()) {
-                FilePath p  = v.value<FilePath>();
-                return Variant(qUtf8Printable(p.path));
+            if(v.canConvert<QFileInfo>()) {
+                QFileInfo p  = v.value<QFileInfo>();
+                return Variant(qUtf8Printable(p.absoluteFilePath()));
             }
             if(v.canConvert<Template>()) {
                 Template p  = v.value<Template>();

@@ -3,23 +3,195 @@
     "Depth": false,
     "Links": [
         {
+            "RItem": "UV",
+            "Receiver": 1,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "UV",
+            "Receiver": 3,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "UV",
+            "Receiver": 4,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "UV",
+            "Receiver": 5,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "UV",
+            "Receiver": 6,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "UV",
+            "Receiver": 7,
+            "SItem": "",
+            "Sender": 2
+        },
+        {
+            "RItem": "A",
+            "Receiver": 11,
+            "SItem": "",
+            "Sender": 13
+        },
+        {
+            "RItem": "B",
+            "Receiver": 11,
+            "SItem": "",
+            "Sender": 10
+        },
+        {
+            "RItem": "A",
+            "Receiver": 9,
+            "SItem": "",
+            "Sender": 11
+        },
+        {
+            "RItem": "B",
+            "Receiver": 9,
+            "SItem": "",
+            "Sender": 11
+        },
+        {
+            "RItem": "A",
+            "Receiver": 13,
+            "SItem": "",
+            "Sender": 1
+        },
+        {
+            "RItem": "B",
+            "Receiver": 13,
+            "SItem": "",
+            "Sender": 12
+        },
+        {
             "RItem": "Emissive",
             "Receiver": 0,
             "SItem": "",
-            "Sender": 1
+            "Sender": 9
         }
     ],
     "Model": 0,
     "Nodes": [
         {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "normalsMap"
+            },
+            "X": -1093,
+            "Y": -306
+        },
+        {
+            "Type": "ProjectionCoord",
+            "Values": {
+            },
+            "X": -1459,
+            "Y": 30
+        },
+        {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "paramsMap"
+            },
+            "X": -1096,
+            "Y": -137
+        },
+        {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "emissiveMap"
+            },
+            "X": -1097,
+            "Y": 27
+        },
+        {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "depthMap"
+            },
+            "X": -1099,
+            "Y": 191
+        },
+        {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "diffuseMap"
+            },
+            "X": -1098,
+            "Y": 350
+        },
+        {
+            "Type": "RenderTargetSample",
+            "Values": {
+                "Target_Name": "shadowMap"
+            },
+            "X": -1095,
+            "Y": 509
+        },
+        {
             "Type": "ConstFloat",
             "Values": {
-                "Value": 1
+                "Value": 0.33
             },
-            "X": -200,
-            "Y": 0
+            "X": -875,
+            "Y": -78
+        },
+        {
+            "Type": "DotProduct",
+            "Values": {
+            },
+            "X": -571,
+            "Y": -311
+        },
+        {
+            "Type": "ConstVector3",
+            "Values": {
+                "Value": [
+                    67,
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "X": -892,
+            "Y": -245
+        },
+        {
+            "Type": "Subtraction",
+            "Values": {
+            },
+            "X": -729,
+            "Y": -311
+        },
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 2
+            },
+            "X": -1016,
+            "Y": -375
+        },
+        {
+            "Type": "Multiply",
+            "Values": {
+            },
+            "X": -854,
+            "Y": -343
         }
     ],
+    "Raw": "DirectLight.frag",
     "Side": true,
-    "Type": 2
+    "Type": 2,
+    "View": true
 }

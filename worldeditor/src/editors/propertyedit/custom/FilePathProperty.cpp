@@ -11,14 +11,14 @@ FilePathProperty::FilePathProperty(const QString &name /*= QString()*/, QObject 
 QVariant FilePathProperty::value(int role) const {
     QVariant data   = Property::value();
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        return QString("%1").arg(data.value<FilePath>().path);
+        return QString("%1").arg(data.value<QFileInfo>().absoluteFilePath());
     }
     return data;
 }
 
 void FilePathProperty::setValue(const QVariant &value) {
     if (value.type() == QVariant::String) {
-        Property::setValue(QVariant::fromValue( FilePath(value.toString()) ));
+        Property::setValue(QVariant::fromValue( QFileInfo(value.toString()) ));
     } else {
         Property::setValue(value);
     }
@@ -27,22 +27,29 @@ void FilePathProperty::setValue(const QVariant &value) {
 QWidget *FilePathProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option);
     QWidget *pEditor = new PathEdit(parent);
-    connect(pEditor, SIGNAL(openFileDlg()), this, SLOT(onFileDilog()));
+    connect(pEditor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
     return pEditor;
 }
 
-void FilePathProperty::onFileDilog() {
-    QString mDir    = QDir::currentPath();
-
-    QString mPath   = QFileDialog::getOpenFileName( dynamic_cast<QWidget *>(parent()),
-                                                    tr("Select File"),
-                                                    mDir,
-                                                    tr("All Files (*.*)"));
-
-    if(mPath.length() > 0) {
-        QDir path   = QDir(mDir);
-        mPath       = path.relativeFilePath(mPath);
-
-        setValue(mPath);
+bool FilePathProperty::setEditorData(QWidget *editor, const QVariant &data) {
+    PathEdit *e = dynamic_cast<PathEdit *>(editor);
+    if(e) {
+        e->blockSignals(true);
+        e->setText(data.toString());
+        e->blockSignals(false);
+        return true;
     }
+    return Property::setEditorData(editor, data);
+}
+
+QVariant FilePathProperty::editorData(QWidget *editor) {
+    PathEdit *e = dynamic_cast<PathEdit *>(editor);
+    if(e) {
+        return QVariant(e->text());
+    }
+    return Property::editorData(editor);
+}
+
+void FilePathProperty::onPathChanged(const QFileInfo &info) {
+    setValue(QVariant::fromValue( info ));
 }

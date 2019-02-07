@@ -103,14 +103,13 @@ void AssetManager::init(Engine *engine) {
 
     QString target  = m_pProjectManager->targetPath();
 
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/shaders",  !target.isEmpty());
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",!target.isEmpty());
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", !target.isEmpty());
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   !target.isEmpty());
 #ifndef BUILDER
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   !target.isEmpty());
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/materials",!target.isEmpty());
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/textures", !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   !target.isEmpty());
 #endif
     m_pDirWatcher->addPath(m_pProjectManager->contentPath());
     onDirectoryChanged(m_pProjectManager->contentPath(), !target.isEmpty());

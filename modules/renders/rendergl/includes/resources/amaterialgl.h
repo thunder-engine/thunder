@@ -42,21 +42,12 @@ public:
 
     TextureMap                  textures        () const { return m_Textures; }
 
-    string                      loadIncludes    (const string &path, const string &define = string());
-
 protected:
-    void                        addPragma       (const string &key, const string &value);
-
-    string                      parseData       (const string &data, const string &define);
-
     bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
 
 private:
     ObjectMap                   m_Programs;
 
-    typedef map<string, string> PragmaMap;
-
-    PragmaMap                   m_Pragmas;
 };
 
 #endif // MATERIALGL_H

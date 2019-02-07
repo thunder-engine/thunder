@@ -7,6 +7,8 @@
 #include <resources/material.h>
 #include <module.h>
 
+#include <QFileInfo>
+
 #include "abstractschememodel.h"
 
 class Log;
@@ -112,6 +114,7 @@ class ShaderBuilder : public AbstractSchemeModel {
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
     Q_PROPERTY(bool View_Space READ isViewSpace WRITE setViewSpace DESIGNABLE true USER true)
+    Q_PROPERTY(QFileInfo Raw_Path READ rawPath WRITE setRawPath DESIGNABLE true USER true)
 
 public:
     enum LightModel {
@@ -195,6 +198,9 @@ public:
 
     void                        reportError                 (QObject *, const QString &) { }
 
+    QFileInfo                   rawPath                     () const { return m_RawPath; }
+    void                        setRawPath                  (const QFileInfo &path) { m_RawPath = path; }
+
 private:
     bool                        build                       (QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
 
@@ -241,6 +247,8 @@ private:
     typedef map<string, string> PragmaMap;
 
     PragmaMap                   m_Pragmas;
+
+    QFileInfo                   m_RawPath;
 };
 
 #endif // SHADERBUILDER_H

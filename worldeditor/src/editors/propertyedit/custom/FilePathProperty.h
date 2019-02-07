@@ -3,26 +3,24 @@
 
 #include "Property.h"
 
-struct FilePath {
-    FilePath    () {}
-    FilePath    (QString p) : path(p) {}
-    QString     path;
-};
-
-Q_DECLARE_METATYPE(FilePath)
+#include <QFileInfo>
 
 class FilePathProperty : public Property {
     Q_OBJECT
 public:
-    FilePathProperty                    (const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0);
+    FilePathProperty                    (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
     QVariant            value           (int role = Qt::UserRole) const;
     void                setValue        (const QVariant& value);
 
     QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem& option);
 
-public slots:
-    void                onFileDilog    ();
+    bool                setEditorData   (QWidget *editor, const QVariant &data);
+
+    QVariant            editorData      (QWidget *editor);
+
+private slots:
+    void                onPathChanged   (const QFileInfo &info);
 
 };
 

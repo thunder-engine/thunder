@@ -49,6 +49,7 @@
 #define MODEL       "Model"
 #define SIDE        "Side"
 #define DEPTH       "Depth"
+#define RAW         "Raw"
 #define VIEW        "View"
 #define X           "X"
 #define Y           "Y"
@@ -315,6 +316,7 @@ void ShaderBuilder::load(const QString &path) {
     setLightModel(static_cast<LightModel>(json[MODEL].toInt()));
     setDoubleSided(json[SIDE].toBool());
     setDepthTest(json.contains(DEPTH) ? json[DEPTH].toBool() : true);
+    setRawPath(json[RAW].toString());
     blockSignals(false);
 
     emit schemeUpdated();
@@ -413,6 +415,7 @@ void ShaderBuilder::save(const QString &path) {
     data[SIDE]  = isDoubleSided();
     data[DEPTH] = isDepthTest();
     data[VIEW] = isViewSpace();
+    data[RAW] = rawPath().filePath();
 
     QJsonDocument doc(data);
     saveFile.write(doc.toJson());
@@ -527,7 +530,7 @@ Variant ShaderBuilder::data() const {
         } break;
     }
 
-    QString fragment = ProjectManager::instance()->resourcePath() + "/engine/shaders/Surface.frag";
+    QString fragment = (m_RawPath.filePath() != "") ? m_RawPath.filePath() : "Surface.frag";
     {
         QString buff = loadIncludes(fragment, define);
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
@@ -535,7 +538,7 @@ Variant ShaderBuilder::data() const {
             user["Shader"] = SpirVConverter::spvToGlsl(spv);
         }
     }
-    {
+    if(m_MaterialType == Surface) {
         define += "\n#define SIMPLE 1";
         QString buff = loadIncludes(fragment, define);
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
@@ -544,16 +547,16 @@ Variant ShaderBuilder::data() const {
         }
     }
 
-    QString vertex = ProjectManager::instance()->resourcePath() + "/engine/shaders/BasePass.vert";
+    QString vertex = "BasePass.vert";
+    define = "#define TYPE_STATIC 1";
     {
-        string define = "#define TYPE_STATIC 1";
-        {
-            QString buff = loadIncludes(vertex, define);
-            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
-            if(!spv.empty()) {
-                user["Static"] = SpirVConverter::spvToGlsl(spv);
-            }
+        QString buff = loadIncludes(vertex, define);
+        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+        if(!spv.empty()) {
+            user["Static"] = SpirVConverter::spvToGlsl(spv);
         }
+    }
+    if(m_MaterialType == Surface) {
         {
             define += "\n#define INSTANCING 1";
             QString buff = loadIncludes(vertex, define);
@@ -562,12 +565,12 @@ Variant ShaderBuilder::data() const {
                 user["StaticInst"] = SpirVConverter::spvToGlsl(spv);
             }
         }
-    }
-    {
-        QString buff = loadIncludes(vertex, "#define TYPE_BILLBOARD 1");
-        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
-        if(!spv.empty()) {
-            user["Particle"] = SpirVConverter::spvToGlsl(spv);
+        {
+            QString buff = loadIncludes(vertex, "#define TYPE_BILLBOARD 1");
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+            if(!spv.empty()) {
+                user["Particle"] = SpirVConverter::spvToGlsl(spv);
+            }
         }
     }
 
@@ -664,32 +667,38 @@ void ShaderBuilder::addPragma(const string &key, const string &value) {
 QString ShaderBuilder::loadIncludes(const QString &path, const string &define) const {
     QString output;
 
-    QFile file(path);
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        while(!file.atEnd()) {
-            QString line = file.readLine();
+    QStringList paths;
+    paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
+    paths << ProjectManager::instance()->contentPath() + "/";
 
-            smatch matches;
-
-            string data = line.toStdString();
-            if(regex_match(data, matches, include)) {
-                string next(matches[1]);
-                output += loadIncludes(ProjectManager::instance()->resourcePath() + "/engine/shaders/" + next.c_str(), define) + "\n";
-            } else if(regex_match(data, matches, pragma)) {
-                if(matches[1] == "flags") {
-                    output += QString(define.c_str()) + "\n";
-                } else {
-                    auto it = m_Pragmas.find(matches[1]);
-                    if(it != m_Pragmas.end()) {
-                        output += QString(m_Pragmas.at(matches[1]).c_str()) + "\n";
+    foreach(QString it, paths) {
+        QFile file(it + path);
+        if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            while(!file.atEnd()) {
+                QString line = file.readLine();
+                smatch matches;
+                string data = line.toStdString();
+                if(regex_match(data, matches, include)) {
+                    string next(matches[1]);
+                    output += loadIncludes(next.c_str(), define) + "\n";
+                } else if(regex_match(data, matches, pragma)) {
+                    if(matches[1] == "flags") {
+                        output += QString(define.c_str()) + "\n";
+                    } else {
+                        auto it = m_Pragmas.find(matches[1]);
+                        if(it != m_Pragmas.end()) {
+                            output += QString(m_Pragmas.at(matches[1]).c_str()) + "\n";
+                        }
                     }
+                } else {
+                    output += line + "\n";
                 }
-            } else {
-                output += line + "\n";
-            }
 
+            }
+            file.close();
+
+            return output;
         }
-        file.close();
     }
 
     return output;

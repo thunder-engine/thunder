@@ -16,15 +16,6 @@
 
 #include <timer.h>
 
-const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
-const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
-
-const char *gPost       = "PostEffect.frag";
-const char *gLight      = "DirectLight.frag";
-const char *gVertex     = "BasePass.vert";
-
-const string gEmbedded(".embedded/");
-
 AMaterialGL::~AMaterialGL() {
     clear();
 }
@@ -32,6 +23,7 @@ AMaterialGL::~AMaterialGL() {
 void AMaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
     // Number of shader pairs calculation
+
     switch(m_MaterialType) {
         case PostProcess: {
             m_DoubleSided   = true;
@@ -39,9 +31,6 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             m_LightModel    = Unlit;
             m_Surfaces      = Static;
             m_DepthTest     = false;
-
-            m_Programs[Static] = buildShader(Static, loadIncludes(gEmbedded + gVertex, "#define TYPE_STATIC 1"));
-            m_Programs[Default] = buildShader(Default, loadIncludes(gEmbedded + gPost));
         } break;
         case LightFunction: {
             /// \todo should be removed
@@ -51,27 +40,12 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             setTexture("emissiveMap",   nullptr);
             setTexture("depthMap",      nullptr);
             setTexture("shadowMap",     nullptr);
-
-            m_Programs[Static] = buildShader(Static, loadIncludes(gEmbedded + gVertex, "#define TYPE_STATIC 1"));
-            m_Programs[Default] = buildShader(Default, loadIncludes(gEmbedded + gLight));
         } break;
         default: { // Surface type
-            {
-                auto it = data.find("Shader");
-                if(it != data.end()) {
-                    m_Programs[Default] = buildShader(Default, (*it).second.toString());
-                }
-            }
             {
                 auto it = data.find("Simple");
                 if(it != data.end()) {
                     m_Programs[Simple] = buildShader(Simple, (*it).second.toString());
-                }
-            }
-            {
-                auto it = data.find("Static");
-                if(it != data.end()) {
-                    m_Programs[Static] = buildShader(Static, (*it).second.toString());
                 }
             }
             {
@@ -87,6 +61,19 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
                 }
             }
         } break;
+    }
+
+    {
+        auto it = data.find("Shader");
+        if(it != data.end()) {
+            m_Programs[Default] = buildShader(Default, (*it).second.toString());
+        }
+    }
+    {
+        auto it = data.find("Static");
+        if(it != data.end()) {
+            m_Programs[Static] = buildShader(Static, (*it).second.toString());
+        }
     }
 }
 
@@ -126,7 +113,7 @@ uint32_t AMaterialGL::bind(uint8_t layer) {
         glDisable(GL_DEPTH_TEST);
     } else {
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc((layer & ICommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
+        //glDepthFunc((layer & ICommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
     }
 
     if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
@@ -171,10 +158,6 @@ void AMaterialGL::unbind(uint8_t) {
 
 void AMaterialGL::clear() {
     Material::clear();
-
-    m_Pragmas.clear();
-
-    addPragma("version", "#version 430 core");
 
     for(auto it : m_Programs) {
         glDeleteProgram(it.second);
@@ -258,43 +241,4 @@ bool AMaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
         return false;
     }
     return true;
-}
-
-void AMaterialGL::addPragma(const string &key, const string &value) {
-    m_Pragmas[key]  = m_Pragmas[key].append(value).append("\r\n");
-}
-
-string AMaterialGL::parseData(const string &data, const string &define) {
-    stringstream input;
-    stringstream output;
-    input << data;
-
-    string line;
-    while( getline(input, line) ) {
-        smatch matches;
-        if(regex_match(line, matches, include)) {
-            output << loadIncludes(string(matches[1]), define) << endl;
-        } else if(regex_match(line, matches, pragma)) {
-            if(matches[1] == "flags") {
-                output << define << endl;
-            } else {
-                auto it = m_Pragmas.find(matches[1]);
-                if(it != m_Pragmas.end()) {
-                    output << m_Pragmas[matches[1]] << endl;
-                }
-            }
-        } else {
-            output << line << endl;
-        }
-    }
-    return output.str();
-}
-
-string AMaterialGL::loadIncludes(const string &path, const string &define) {
-    Text *text  = Engine::loadResource<Text>(path);
-    if(text) {
-        return parseData(text->text(), define);
-    }
-
-    return string();
 }

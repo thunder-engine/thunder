@@ -3,6 +3,7 @@
 
 #include <QLineEdit>
 #include <QToolButton>
+#include <QFileInfo>
 
 class PathEdit : public QLineEdit {
     Q_OBJECT
@@ -10,7 +11,10 @@ public:
     explicit PathEdit   (QWidget *parent = 0);
 
 signals:
-    void                openFileDlg         ();
+    void                pathChanged         (const QFileInfo &info);
+
+private slots:
+    void                onFileDialog        ();
 
 private:
     void                resizeEvent         (QResizeEvent *event);
