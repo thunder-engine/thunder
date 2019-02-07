@@ -30,24 +30,15 @@ VectorEdit::~VectorEdit() {
 }
 
 Vector3 VectorEdit::data() const {
-    QLocale locale;
-    return Vector3(locale.toFloat(ui->x->text()),
-                   locale.toFloat(ui->y->text()),
-                   locale.toFloat(ui->z->text()));
+    return Vector3(ui->x->text().toFloat(),
+                   ui->y->text().toFloat(),
+                   ui->z->text().toFloat());
 }
 
 void VectorEdit::setData(const Vector3 &v) {
-    ui->x->blockSignals(true);
     ui->x->setText(QString::number(v.x, 'f', 3));
-    ui->x->blockSignals(false);
-
-    ui->y->blockSignals(true);
     ui->y->setText(QString::number(v.y, 'f', 3));
-    ui->y->blockSignals(false);
-
-    ui->z->blockSignals(true);
     ui->z->setText(QString::number(v.z, 'f', 3));
-    ui->z->blockSignals(false);
 }
 
 void VectorEdit::onValueChanged() {
