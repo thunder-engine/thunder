@@ -86,7 +86,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            Android.ndk.appStl: "gnustl_shared"
+            Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: rendergl.ANDROID
         }
 

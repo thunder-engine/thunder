@@ -14,20 +14,45 @@
 #include <file.h>
 #include <utils.h>
 
+#include <mutex>
+#include <string.h>
+
 Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
 Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
 Vector2 DesktopAdaptor::s_Screen            = Vector2();
 
-static Engine *g_pEngine   = nullptr;
+static Engine *g_pEngine = nullptr;
+static IFile *g_pFile = nullptr;
+
+static string gAppConfig;
+
+class DesktopHandler : public ILogHandler {
+protected:
+    void            setRecord       (Log::LogTypes, const char *record) {
+        unique_lock<mutex> locker(m_Mutex);
+        _FILE *fp   = g_pFile->_fopen((gAppConfig + "/log.txt").c_str(), "a");
+        if(fp) {
+            g_pFile->_fwrite(record, strlen(record), 1, fp);
+            g_pFile->_fwrite("\n", 1, 1, fp);
+            g_pFile->_fclose(fp);
+        }
+    }
+
+    mutex           m_Mutex;
+};
 
 DesktopAdaptor::DesktopAdaptor(Engine *engine) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
         m_MouseButtons(0) {
     g_pEngine   = engine;
+
 }
 
 bool DesktopAdaptor::init() {
+    gAppConfig  = g_pEngine->locationAppConfig();
+    g_pFile = g_pEngine->file();
+
     glfwSetErrorCallback(errorCallback);
 
     if(!glfwInit()) {
@@ -48,7 +73,7 @@ bool DesktopAdaptor::init() {
     }
 
     const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-    s_Screen    =   Vector2(mode->width, mode->height);
+    s_Screen = Vector2(mode->width, mode->height);
 
     return true;
 }
@@ -66,6 +91,12 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
+    g_pFile->fsearchPathAdd(g_pEngine->locationConfig().c_str(), true);
+    g_pFile->_mkdir(g_pEngine->locationAppConfig().c_str());
+    g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
+
+    Log::overrideHandler(new DesktopHandler());
+
     const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
 
     m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor

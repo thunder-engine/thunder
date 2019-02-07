@@ -16,7 +16,12 @@
                     WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, argv[argc], len+1, NULL, NULL); \
                     ++argc; \
                 } \
-                result  = main(argc, argv); \
+                IFile *file = new IFile; \
+                file->finit(argv[0]); \
+                Engine *engine = new Engine(file, argc, argv); \
+                result  = thunderMain(engine); \
+                delete engine; \
+                delete file; \
                 for (int i = 0; i < argc; ++i) { \
                     delete []argv[i]; \
                 } \
@@ -25,6 +30,16 @@
             } \
             return result; \
         }
-#else
+#elif defined (THUNDER_MOBILE)
     #define THUNDER_MAIN()
+#else
+    #define THUNDER_MAIN() \
+    int main(int argc, char **argv) { \
+        IFile *file = new IFile; \
+        file->finit(argv[0]); \
+        Engine *engine = new Engine(file, argc, argv); \
+        thunderMain(engine); \
+        delete engine; \
+        delete file; \
+    }
 #endif

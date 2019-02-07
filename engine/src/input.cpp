@@ -70,3 +70,15 @@ Vector4 Input::joystickThumbs(uint8_t index) {
 Vector2 Input::joystickTriggers(uint8_t index) {
     return m_pPlatform->joystickTriggers(index);
 }
+
+uint16_t Input::touchCount() {
+    return m_pPlatform->touchCount();
+}
+
+uint16_t Input::touchState(uint8_t index) {
+    return m_pPlatform->touchState(index);
+}
+
+Vector2 Input::touchPosition(uint8_t index) {
+    return m_pPlatform->touchPosition(index);
+}

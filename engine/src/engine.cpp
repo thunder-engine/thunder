@@ -63,18 +63,17 @@ public:
     static unordered_map<string, Object*>   m_ResourceCache;
     static unordered_map<Object*, string>   m_ReferenceCache;
 
-    EnginePrivate() :
-        m_Valid(false) {
+    EnginePrivate() {
 
     }
 
     ~EnginePrivate() {
+        delete m_pScene;
+
         m_Values.clear();
 
         m_pPlatform->destroy();
         delete m_pPlatform;
-
-        delete m_pScene;
     }
 
     Scene                      *m_pScene;
@@ -82,8 +81,6 @@ public:
     list<ISystem *>             m_Systems;
 
     static IFile               *m_pFile;
-
-    bool                        m_Valid;
 
     string                      m_EntryLevel;
 
@@ -179,17 +176,18 @@ bool Engine::init() {
 
     bool result     = p_ptr->m_pPlatform->init();
 
-    reloadBundle();
-
     Timer::init(1.0f / 60.0f);
     Input::instance()->init(p_ptr->m_pPlatform);
 
     return result;
 }
 
-int32_t Engine::exec() {
+bool Engine::start() {
     PROFILER_MARKER;
 
+    p_ptr->m_pPlatform->start();
+
+    reloadBundle();
     for(auto it : p_ptr->m_Systems) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
@@ -198,46 +196,49 @@ int32_t Engine::exec() {
         }
     }
 
-    if(p_ptr->m_pScene) {
-        p_ptr->m_Valid  = true;
-
-        string path     = value(gEntry, "").toString();
-        Actor *level    = loadResource<Actor>(path);
-        Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
-        if(level) {
-            level->setParent(p_ptr->m_pScene);
-        }
-
-        Camera *component   = p_ptr->m_pScene->findChild<Camera *>();
-        if(component == nullptr) {
-            Log(Log::DBG) << "Camera not found creating new one.";
-            Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
-            camera->transform()->setPosition(Vector3(0.0f));
-            component       = camera->addComponent<Camera>();
-        }
-        component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
-        component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
-
-        Camera::setCurrent(component);
-        // Enter to game loop
-        while(p_ptr->m_Valid) {
-            Timer::update();
-            // fixed update
-            updateScene(p_ptr->m_pScene);
-
-            float lag  = Timer::deltaTime();
-            while(lag >= Timer::fixedDelta()) {
-                lag -= Timer::fixedDelta();
-            }
-            for(auto it : p_ptr->m_Systems) {
-                it->update(p_ptr->m_pScene);
-            }
-            p_ptr->m_Valid  = p_ptr->m_pPlatform->isValid();
-            p_ptr->m_pPlatform->update();
-        }
-        p_ptr->m_pPlatform->stop();
+    string path     = value(gEntry, "").toString();
+    Actor *level    = loadResource<Actor>(path);
+    Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
+    if(level) {
+        level->setParent(p_ptr->m_pScene);
     }
-    return 0;
+
+    Camera *component   = p_ptr->m_pScene->findChild<Camera *>();
+    if(component == nullptr) {
+        Log(Log::DBG) << "Camera not found creating new one.";
+        Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
+        camera->transform()->setPosition(Vector3(0.0f));
+        component       = camera->addComponent<Camera>();
+    }
+    component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
+    component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
+
+    Camera::setCurrent(component);
+
+#ifndef THUNDER_MOBILE
+    while(p_ptr->m_pPlatform->isValid()) {
+        update();
+    }
+    p_ptr->m_pPlatform->stop();
+#endif
+    return true;
+}
+
+void Engine::update() {
+    PROFILER_MARKER;
+
+    Timer::update();
+    // fixed update
+    updateScene(p_ptr->m_pScene);
+
+    float lag  = Timer::deltaTime();
+    while(lag >= Timer::fixedDelta()) {
+        lag -= Timer::fixedDelta();
+    }
+    for(auto it : p_ptr->m_Systems) {
+        it->update(p_ptr->m_pScene);
+    }
+    p_ptr->m_pPlatform->update();
 }
 
 Variant Engine::value(const string &key, const Variant &defaultValue) {
@@ -369,11 +370,6 @@ void Engine::addModule(IModule *mode) {
     if(mode->types() & IModule::SYSTEM) {
         p_ptr->m_Systems.push_back(mode->system());
     }
-}
-
-bool Engine::createWindow() {
-    PROFILER_MARKER;
-    return p_ptr->m_pPlatform->start();
 }
 
 Scene *Engine::scene() {

@@ -1,7 +1,7 @@
 #ifndef AGL_H
 #define AGL_H
 
-#if THUNDER_MOBILE
+#if defined(THUNDER_MOBILE)
     #if defined(__ANDROID__)
         #define GLFM_INCLUDE_ES31
     #else

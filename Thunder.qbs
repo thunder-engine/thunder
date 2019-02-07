@@ -11,9 +11,10 @@ Project {
     property string BUILDER_NAME: "Builder"
     property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
+    property string ANDROID: "android-21"
     property string PLATFORM: {
         var arch = qbs.architecture;
-        if(qbs.targetOS.contains("darwin") || qbs.targetOS.contains("linux")) {
+        if(qbs.targetOS[0] === "darwin" || qbs.targetOS[0] === "linux") {
             arch = "x86_64"
         }
         return qbs.targetOS[0] + "/" + arch;
@@ -49,8 +50,6 @@ Project {
             SDK_VERSION = new TextFile(thunder.sourceDirectory + "/version").readAll()
         }
     }
-
-    property string ANDROID: "android-21"
 
     property string COPYRIGHT_YEAR: probe.YEAR
 

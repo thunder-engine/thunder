@@ -67,16 +67,15 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            Android.ndk.appStl: "gnustl_shared"
+            Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: next.ANDROID
         }
 
         Group {
             name: "Install Static Platform"
-            condition: next.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir:  next.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: next.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
             qbs.installPrefix: next.PREFIX
         }
     }

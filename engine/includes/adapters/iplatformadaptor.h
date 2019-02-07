@@ -8,6 +8,8 @@
 
 #include "input.h"
 
+extern int thunderMain(Engine *engine);
+
 class IPlatformAdaptor {
 public:
     virtual ~IPlatformAdaptor           () {}
@@ -24,35 +26,42 @@ public:
 
     virtual bool                        isValid                     () = 0;
 
-    virtual bool                        key                         (Input::KeyCode code) = 0;
-
-    virtual Vector4                     mousePosition               () = 0;
-
-    virtual Vector4                     mouseDelta                  () = 0;
-
-    virtual uint8_t                     mouseButtons                () = 0;
-
     virtual uint32_t                    screenWidth                 () = 0;
 
     virtual uint32_t                    screenHeight                () = 0;
 
-    virtual void                        setMousePosition            (const Vector3 &position) = 0;
+    virtual bool                        key                         (Input::KeyCode code) { return false; }
 
-    virtual uint16_t                    joystickCount               () = 0;
+    virtual Vector4                     mousePosition               () { return Vector4(); }
 
-    virtual uint16_t                    joystickButtons             (uint8_t index) = 0;
+    virtual Vector4                     mouseDelta                  () { return Vector4(); }
 
-    virtual Vector4                     joystickThumbs              (uint8_t index) = 0;
+    virtual uint8_t                     mouseButtons                () { return 0; }
 
-    virtual Vector2                     joystickTriggers            (uint8_t index) = 0;
+    virtual void                        setMousePosition            (const Vector3 &position) { }
 
-    virtual void                       *pluginLoad                  (const char *name) = 0;
+    virtual uint16_t                    joystickCount               () { return 0; }
 
-    virtual bool                        pluginUnload                (void *plugin) = 0;
+    virtual uint16_t                    joystickButtons             (uint8_t index) { return 0; }
 
-    virtual void                       *pluginAddress               (void *plugin, const string &name) = 0;
+    virtual Vector4                     joystickThumbs              (uint8_t index) { return Vector4(); }
 
-    virtual string                      locationLocalDir            () = 0;
+    virtual Vector2                     joystickTriggers            (uint8_t index) { return Vector2(); }
+
+    virtual uint16_t                    touchCount                  () { return 0; }
+
+    virtual uint16_t                    touchState                  (uint8_t index) { return 0; }
+
+    virtual Vector2                     touchPosition               (uint8_t index) { return 0; }
+
+    virtual void                       *pluginLoad                  (const char *name) { return nullptr; }
+
+    virtual bool                        pluginUnload                (void *plugin) { return false; }
+
+    virtual void                       *pluginAddress               (void *plugin, const string &name) { return nullptr; }
+
+    virtual string                      locationLocalDir            () { return string(); }
+
 };
 
 #endif // AABSTRACTPLATFORMADAPTER_H

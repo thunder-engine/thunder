@@ -26,7 +26,9 @@ public:
 */
     bool                        init                        ();
 
-    int32_t                     exec                        ();
+    bool                        start                       ();
+
+    void                        update                      ();
 /*
     Settings
 */
@@ -52,8 +54,6 @@ public:
     Misc
 */
     void                        addModule                   (IModule *mode);
-
-    bool                        createWindow                ();
 
     Scene                      *scene                       ();
 

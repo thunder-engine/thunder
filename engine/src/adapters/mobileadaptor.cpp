@@ -3,25 +3,84 @@
 #include <glfm.h>
 
 #include <log.h>
+#include <file.h>
+#include <android/log.h>
 
-Vector4 MobileAdaptor::m_MouseDelta     = Vector4();
-Vector4 MobileAdaptor::m_MousePosition  = Vector4();
+#include "engine.h"
+
+#include "androidfile.h"
+
+class AndroidHandler : public ILogHandler {
+protected:
+    void setRecord (Log::LogTypes, const char *record) {
+        __android_log_write(ANDROID_LOG_DEBUG, "ThunderEngine", record);
+    }
+};
+
+static GLFMDisplay *gDisplay = nullptr;
+static Engine *g_pEngine = nullptr;
+
+Vector2 MobileAdaptor::s_Screen = Vector2();
+
+struct Touch {
+    uint32_t    phase;
+    Vector2     pos;
+};
+
+typedef map<int, Touch> TouchMap;
+
+static TouchMap s_Touches;
+
+void onFrame(GLFMDisplay *, const double) {
+    if(g_pEngine) {
+        g_pEngine->update();
+    }
+}
+
+void onResize(GLFMDisplay *, int width, int height) {
+    MobileAdaptor::s_Screen = Vector2(width, height);
+}
+
+bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y) {
+    if(phase < GLFMTouchPhaseEnded) {
+        Touch t;
+        t.phase = phase;
+        t.pos = Vector2(x, y);
+        s_Touches[touch] = t;
+    } else {
+        auto it = s_Touches.find(touch);
+        if(it != s_Touches.end()) {
+            s_Touches.erase(it);
+        }
+    }
+    return true;
+}
 
 void glfmMain(GLFMDisplay *display) {
-    glfmSetDisplayConfig(display,
-                         GLFMRenderingAPIOpenGLES2,
+    gDisplay = display;
+
+    Log::overrideHandler(new AndroidHandler());
+
+    glfmSetDisplayConfig(gDisplay,
+                         GLFMRenderingAPIOpenGLES31,
                          GLFMColorFormatRGBA8888,
                          GLFMDepthFormatNone,
                          GLFMStencilFormatNone,
                          GLFMMultisampleNone);
-    //glfmSetSurfaceCreatedFunc(display, onSurfaceCreated);
-    //glfmSetSurfaceResizedFunc(display, onSurfaceCreated);
-    //glfmSetSurfaceDestroyedFunc(display, onSurfaceDestroyed);
-    //glfmSetMainLoopFunc(display, onFrame);
+
+    glfmSetMainLoopFunc(gDisplay, onFrame);
+    glfmSetSurfaceCreatedFunc(gDisplay, onResize);
+    glfmSetSurfaceResizedFunc(gDisplay, onResize);
+
+    glfmSetTouchFunc(gDisplay, onTouch);
+
+    char *path = "";
+    Engine *engine = new Engine(new AndroidFile(), 1, &path);
+    thunderMain(engine);
 }
 
 MobileAdaptor::MobileAdaptor(Engine *engine) {
-    A_UNUSED(engine)
+    g_pEngine   = engine;
 }
 
 bool MobileAdaptor::init() {
@@ -48,63 +107,22 @@ bool MobileAdaptor::isValid() {
     return true;
 }
 
-bool MobileAdaptor::key(Input::KeyCode) {
-    return false;
-}
-
-Vector4 MobileAdaptor::mousePosition() {
-    return m_MousePosition;
-}
-
-Vector4 MobileAdaptor::mouseDelta() {
-    return m_MouseDelta;
-}
-
-uint8_t MobileAdaptor::mouseButtons() {
-    return m_MouseButtons;
-}
-
 uint32_t MobileAdaptor::screenWidth() {
-    return 0;
+    return s_Screen.x;
 }
 
 uint32_t MobileAdaptor::screenHeight() {
-    return 0;
+    return s_Screen.y;
 }
 
-void MobileAdaptor::setMousePosition(const Vector3 &) {
+uint16_t MobileAdaptor::touchCount() {
+    return s_Touches.size();
 }
 
-uint16_t MobileAdaptor::joystickCount() {
-    return 0;
+uint16_t MobileAdaptor::touchState(uint8_t index) {
+    return s_Touches[index].phase;
 }
 
-uint16_t MobileAdaptor::joystickButtons(uint8_t) {
-    return 0;
-}
-
-Vector4 MobileAdaptor::joystickThumbs(uint8_t) {
-    return Vector4();
-}
-
-Vector2 MobileAdaptor::joystickTriggers(uint8_t) {
-    return Vector2();
-}
-
-void *MobileAdaptor::pluginLoad(const char *) {
-    return nullptr;
-}
-
-bool MobileAdaptor::pluginUnload(void *) {
-    return false;
-}
-
-void *MobileAdaptor::pluginAddress(void *, const string &) {
-    return nullptr;
-}
-
-string MobileAdaptor::locationLocalDir() {
-    string result;
-
-    return result;
+Vector2 MobileAdaptor::touchPosition(uint8_t index) {
+    return s_Touches[index].pos;
 }

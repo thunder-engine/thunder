@@ -3,15 +3,13 @@ import qbs
 Project {
     id: project
     property string platform: {
-        if(qbs.targetOS.contains("windows")) {
-            return "/windows/x86";
+        var arch = qbs.architecture;
+        if(qbs.targetOS[0] === "darwin" || qbs.targetOS[0] === "linux") {
+            arch = "x86_64"
         }
-        if(qbs.targetOS.contains("linux")) {
-            return "/linux/x86_64"
-        }
-
-        return "/macos/x86_64";
+        return "/" + qbs.targetOS[0] + "/" + arch;
     }
+
     property string sdkPath: "${sdkPath}"
     property stringList includePaths: [
         sdkPath + "/include/engine",
@@ -19,8 +17,11 @@ Project {
         sdkPath + "/include/next/math",
         sdkPath + "/include/next/core"
     ]
+    property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
+    property bool isAndroid: qbs.targetOS.contains("android")
 
     DynamicLibrary {
+        condition: desktop
         name: "${Project_Name}-Editor"
         files: [ ${filesList},
             "plugin.cpp" ]
@@ -65,29 +66,43 @@ Project {
             "next",
             "physfs",
             "freetype",
-            "zlib",
-            "glfw",
-            "rendergl",
-            "glad"
+            "rendergl"
         ]
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: [
-                "Shell32",
-                "User32",
-                "Gdi32",
-                "Advapi32",
-                "opengl32"
+            condition: desktop
+            cpp.staticLibraries: outer.concat([
+                "zlib",
+                "glfw",
+                "glad"
+            ])
+        }
+        Properties {
+            condition: !desktop
+            cpp.staticLibraries: outer.concat([
+                "glfm"
+            ])
+        }
+
+        Properties {
+            condition: qbs.targetOS[0] === "windows"
+            cpp.dynamicLibraries: [ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32"
             ]
         }
         Properties {
-            condition: qbs.targetOS.contains("linux")
+            condition: qbs.targetOS[0] === "linux"
             cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ]
         }
         Properties {
-            condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["OpenGL", "Cocoa", "CoreVideo", "IOKit"]
+            condition: qbs.targetOS[0] === "darwin"
+            cpp.weakFrameworks: [ "OpenGL", "Cocoa", "CoreVideo", "IOKit" ]
+        }
+        Properties {
+            condition: qbs.targetOS[0] === "android"
+            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.platform: "android-21"
+            cpp.dynamicLibraries: [ "log", "android", "EGL", "GLESv3", "z" ]
+            cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
         }
 
         Group {
@@ -98,6 +113,15 @@ Project {
             fileTagsFilter: isBundle ? ["bundle.content"] : ["application"]
             qbs.installSourceBase: product.buildDirectory
         }
+    }
+
+    AndroidApk {
+        condition: isAndroid
+        name: "${Project_Name}Apk"
+        packageName: "com.thunderengine.${Project_Name}"
+        Depends { productTypes: ["android.nativelibrary"] }
+        assetsDir: "${assetsDir}"
+        manifestFile: "${manifestFile}"
     }
 }
 
