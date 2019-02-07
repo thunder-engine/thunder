@@ -26,6 +26,10 @@ Pipeline *Camera::pipeline() {
     return m_pPipeline;
 }
 
+void Camera::setPipeline(Pipeline *pipeline) {
+    m_pPipeline = pipeline;
+}
+
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
     p   = projectionMatrix();
 

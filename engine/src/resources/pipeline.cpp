@@ -17,6 +17,8 @@
 
 #include "commandbuffer.h"
 
+#include <algorithm>
+
 #define SM_RESOLUTION_DEFAULT 1024
 #define SM_RESOLUTION 2048
 
@@ -27,7 +29,6 @@
 #define G_PARAMS    "paramsMap"
 #define G_EMISSIVE  "emissiveMap"
 
-#define SELECT_MAP  "selectMap"
 #define DEPTH_MAP   "depthMap"
 #define SHADOW_MAP  "shadowMap"
 
@@ -46,12 +47,6 @@ Pipeline::Pipeline() :
         m_pSprite   = mtl->createInstance();
     }
     m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx");
-
-    RenderTexture *select   = Engine::objectCreate<RenderTexture>();
-    select->setTarget(Texture::RGBA8);
-    select->apply();
-    m_Targets[SELECT_MAP]   = select;
-    m_Buffer->setGlobalTexture(SELECT_MAP,  select);
 
     RenderTexture *depth    = Engine::objectCreate<RenderTexture>();
     depth->setDepth(24);
@@ -107,7 +102,9 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::draw(Scene *scene, Camera &camera) {
-    ObjectList filter   = filterComponents(camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
+    ObjectList filter = frustumCulling(m_Components, camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
+
+    sortByDistance(filter, camera.actor()->transform()->position());
 
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", scene->ambient());
@@ -119,16 +116,11 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
 
     m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
 
-    // Retrive object id
-    m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, Vector4(0.0));
-
     cameraReset(camera);
-    drawComponents(ICommandBuffer::RAYCAST, filter);
 
     // Step1 - Fill G buffer pass
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, camera.color(), false);
+    m_Buffer->clearRenderTarget(true, camera.color());
 
     // Draw Opaque pass
     drawComponents(ICommandBuffer::DEFAULT, filter);
@@ -229,10 +221,6 @@ void Pipeline::combineComponents(Object *object, bool first) {
 
 void Pipeline::setTarget(uint32_t resource) {
     m_Target = resource;
-}
-
-Object::ObjectList Pipeline::filterComponents(const array<Vector3, 8> &frustum) {
-    return frustumCulling(m_Components, frustum);
 }
 
 void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
@@ -400,3 +388,18 @@ Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3,
     return result;
 }
 
+struct ObjectComp {
+    bool operator() (const Object *left, const Object *right) {
+        Matrix4 m1 = static_cast<const Component *>(left)->actor()->transform()->worldTransform();
+        Matrix4 m2 = static_cast<const Component *>(right)->actor()->transform()->worldTransform();
+        return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+    }
+    Vector3 origin;
+};
+
+void Pipeline::sortByDistance(ObjectList &in, const Vector3 &origin) {
+    ObjectComp comp;
+    comp.origin = origin;
+
+    in.sort(comp);
+}

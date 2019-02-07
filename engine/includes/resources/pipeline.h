@@ -45,8 +45,6 @@ public:
     void                        setTarget           (uint32_t resource);
 
 protected:
-    ObjectList                  filterComponents    (const array<Vector3, 8> &frustum);
-
     void                        drawComponents      (uint32_t layer, ObjectList &list);
 
     void                        updateShadows       (Camera &camera, Object *object);
@@ -56,6 +54,8 @@ protected:
     RenderTexture              *postProcess         (RenderTexture &source);
 
     ObjectList                  frustumCulling      (ObjectList &in, const array<Vector3, 8> &frustum);
+
+    void                        sortByDistance      (ObjectList &in, const Vector3 &origin);
 
 protected:
     typedef map<string, RenderTexture *> TargetMap;

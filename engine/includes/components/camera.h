@@ -26,6 +26,8 @@ public:
 
     Pipeline                   *pipeline                ();
 
+    void                        setPipeline             (Pipeline *pipeline);
+
     void                        matrices                (Matrix4 &v, Matrix4 &p) const;
 
     Matrix4                     projectionMatrix        () const;

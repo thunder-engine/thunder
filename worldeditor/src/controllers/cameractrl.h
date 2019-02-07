@@ -27,7 +27,7 @@ public:
 public:
     CameraCtrl                          (QOpenGLWidget *view);
 
-    void                                init                        (Scene *scene);
+    virtual void                        init                        (Scene *scene);
 
     void                                update                      ();
 

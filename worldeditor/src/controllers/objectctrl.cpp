@@ -22,6 +22,8 @@
 #include "converters/converter.h"
 #include "projectmanager.h"
 
+#include "objectctrlpipeline.h"
+
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
 
 string findFreeObjectName(const string &name, Object *parent) {
@@ -73,13 +75,19 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
 
     mMousePosition  = Vector2();
 
-    m_pSelect   = Engine::objectCreate<Texture>();
+    m_pSelect = Engine::objectCreate<Texture>();
     m_pSelect->setFormat(Texture::RGBA8);
     m_pSelect->resize(1, 1);
 
-    m_pDepth    = Engine::objectCreate<Texture>();
+    m_pDepth = Engine::objectCreate<Texture>();
     m_pDepth->setFormat(Texture::Depth);
     m_pDepth->resize(1, 1);
+}
+
+void ObjectCtrl::init(Scene *scene) {
+    CameraCtrl::init(scene);
+
+    m_pActiveCamera->setPipeline(new ObjectCtrlPipeline);
 }
 
 void ObjectCtrl::drawHandles() {
@@ -211,9 +219,12 @@ void ObjectCtrl::drawHandles() {
 
             RenderTexture *rt;
             rt  = pipeline->target("depthMap");
-            rt->makeCurrent();
-            m_pDepth->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), 1, 1);
-            result  = m_pDepth->getPixel(0, 0);
+            if(rt) {
+                rt->makeCurrent();
+                m_pDepth->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), 1, 1);
+                result  = m_pDepth->getPixel(0, 0);
+            }
+
             if(result > 0) {
                 memcpy(&screen.z, &result, sizeof(float));
                 Matrix4 mv, p;
@@ -223,10 +234,11 @@ void ObjectCtrl::drawHandles() {
             }
 
             rt  = pipeline->target("selectMap");
-            rt->makeCurrent();
-
-            m_pSelect->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), uint32_t(size.x), uint32_t(size.y));
-            result  = m_pSelect->getPixel(0, 0);
+            if(rt) {
+                rt->makeCurrent();
+                m_pSelect->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), uint32_t(size.x), uint32_t(size.y));
+                result  = m_pSelect->getPixel(0, 0);
+            }
         }
 
         if(result) {

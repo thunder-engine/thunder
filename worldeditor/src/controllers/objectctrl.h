@@ -40,6 +40,8 @@ public:
 public:
     ObjectCtrl          (QOpenGLWidget *view);
 
+    void                init                        (Scene *scene);
+
     void                drawHandles                 ();
 
     void                clear                       (bool signal = true);
