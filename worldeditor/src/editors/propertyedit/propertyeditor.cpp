@@ -37,7 +37,7 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
     if(userType == QMetaType::type("QColor"))
         return new ColorProperty(name, propertyObject, parent);
 
-    if(userType == QMetaType::type("QFileInfo"))
+    if(userType == QMetaType::type("FilePath"))
         return new FilePathProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Template"))

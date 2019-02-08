@@ -415,7 +415,7 @@ void ShaderBuilder::save(const QString &path) {
     data[SIDE]  = isDoubleSided();
     data[DEPTH] = isDepthTest();
     data[VIEW] = isViewSpace();
-    data[RAW] = rawPath().filePath();
+    data[RAW] = rawPath();
 
     QJsonDocument doc(data);
     saveFile.write(doc.toJson());
@@ -530,7 +530,7 @@ Variant ShaderBuilder::data() const {
         } break;
     }
 
-    QString fragment = (m_RawPath.filePath() != "") ? m_RawPath.filePath() : "Surface.frag";
+    QString fragment = (!m_RawPath.isEmpty()) ? m_RawPath : "Surface.frag";
     {
         QString buff = loadIncludes(fragment, define);
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);

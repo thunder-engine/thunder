@@ -1,5 +1,7 @@
 #include "BoolProperty.h"
 
+#include <QCheckBox>
+
 BoolProperty::BoolProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
 
@@ -9,7 +11,7 @@ BoolProperty::~BoolProperty() {
 
 }
 
-#include <QCheckBox>
+
 QWidget *BoolProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     m_Editor = new QCheckBox(parent);
     connect(m_Editor, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));

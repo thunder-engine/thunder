@@ -73,7 +73,7 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
                 return QSize(1, 32);
             }
             return QSize(1, 24);
-        } break;
+        }
 
         default: break;
     }

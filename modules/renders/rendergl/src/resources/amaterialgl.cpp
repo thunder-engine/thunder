@@ -11,9 +11,6 @@
 #include <file.h>
 #include <log.h>
 
-#include <regex>
-#include <sstream>
-
 #include <timer.h>
 
 AMaterialGL::~AMaterialGL() {

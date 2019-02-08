@@ -35,6 +35,10 @@ struct Template {
 
 Q_DECLARE_METATYPE(Template)
 
+typedef QString FilePath;
+
+Q_DECLARE_METATYPE(FilePath)
+
 class IAssetEditor {
 public:
     IAssetEditor            (Engine *engine) :

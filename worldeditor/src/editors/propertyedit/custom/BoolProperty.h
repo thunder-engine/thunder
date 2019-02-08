@@ -7,7 +7,7 @@ class BoolProperty : public Property {
     Q_OBJECT
 
 public:
-    BoolProperty        (const QString& name = QString(), QObject* propertyObject = 0, QObject* parent = 0);
+    BoolProperty        (const QString& name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
     ~BoolProperty       ();
 
     QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem& option);
