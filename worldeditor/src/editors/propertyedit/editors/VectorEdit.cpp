@@ -15,6 +15,7 @@ VectorEdit::VectorEdit(QWidget *parent) :
     ui->setupUi(this);
 
     QDoubleValidator *validator = new QDoubleValidator(-DBL_MAX, DBL_MAX, 4, this);
+    validator->setLocale(QLocale("C"));
 
     ui->x->setValidator(validator);
     ui->y->setValidator(validator);
