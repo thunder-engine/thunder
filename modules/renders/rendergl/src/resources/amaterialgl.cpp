@@ -115,7 +115,11 @@ uint32_t AMaterialGL::bind(uint8_t layer) {
 
     if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
         glEnable    ( GL_CULL_FACE );
-        glCullFace  ( GL_BACK );
+        if(m_MaterialType == LightFunction) {
+            glCullFace  ( GL_FRONT );
+        } else {
+            glCullFace  ( GL_BACK );
+        }
     }
 
     if(b != Material::Opaque && !(layer & ICommandBuffer::RAYCAST)) {
@@ -123,7 +127,7 @@ uint32_t AMaterialGL::bind(uint8_t layer) {
         if(b == Material::Translucent) {
             glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         } else {
-            glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
+            glBlendFunc ( GL_ONE, GL_ONE );
         }
         glBlendEquation(GL_FUNC_ADD);
     }

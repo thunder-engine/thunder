@@ -200,7 +200,7 @@ void Pipeline::combineComponents(Object *object, bool first) {
                     m_Components.push_back(effect);
                 }
             } else {
-                DirectLight *light  = dynamic_cast<DirectLight *>(child);
+                BaseLight *light  = dynamic_cast<BaseLight *>(child);
                 if(light) {
                     if(light->isEnable()) {
                         m_Components.push_back(light);

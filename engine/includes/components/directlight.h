@@ -30,7 +30,7 @@ protected:
 
     Vector4                     m_NormalizedDistance;
 
-    Vector4                     m_Direction;
+    Vector3                     m_Direction;
 };
 
 #endif // DIRECTLIGHT_H

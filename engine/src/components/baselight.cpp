@@ -4,9 +4,9 @@
 #include "components/transform.h"
 
 BaseLight::BaseLight() :
-        m_Shadows(false),
-        m_Brightness(1.0f),
+        m_Shadows(0.0f),
         m_Bias(0.001f),
+        m_Params(1.0f, 1.0f, 0.5f, 1.0f),
         m_Color(1.0f),
         m_pShape(nullptr),
         m_pMaterialInstance(nullptr) {
@@ -22,15 +22,15 @@ bool BaseLight::castShadows() const {
 }
 
 void BaseLight::setCastShadows(const bool shadows) {
-    m_Shadows   = (shadows) ? 1.0f : 0.0f;
+    m_Shadows = (shadows) ? 1.0f : 0.0f;
 }
 
 float BaseLight::brightness() const {
-    return m_Brightness;
+    return m_Params.x;
 }
 
 void BaseLight::setBrightness(const float brightness) {
-    m_Brightness    = brightness;
+    m_Params.x    = brightness;
 }
 
 Vector4 BaseLight::color() const {

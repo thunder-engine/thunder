@@ -28,6 +28,7 @@
 #include "components/particlerender.h"
 #include "components/directlight.h"
 #include "components/pointlight.h"
+#include "components/spotlight.h"
 
 #include "components/animationcontroller.h"
 
@@ -137,6 +138,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     Atlas::registerClassFactory(this);
     Font::registerClassFactory(this);
     AnimationClip::registerClassFactory(this);
+    RenderTexture::registerClassFactory(this);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
@@ -148,7 +150,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     SpriteMesh::registerClassFactory(this);
     DirectLight::registerClassFactory(this);
     PointLight::registerClassFactory(this);
-    RenderTexture::registerClassFactory(this);
+    SpotLight::registerClassFactory(this);
 
     ParticleRender::registerClassFactory(this);
     ParticleEffect::registerClassFactory(this);

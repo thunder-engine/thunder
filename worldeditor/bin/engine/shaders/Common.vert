@@ -11,11 +11,11 @@ layout(location = 9) uniform struct Light {
     vec4    color;
     vec4    lod;
     vec4    map;
-    vec4    position;
-    float   bias;
+    vec4    params; // x - brightness, y - radius, z - cutoff
+    vec3    position;
+    vec3    direction;
     float   ambient;
-    float   brightness;
-    float   radius;
+    float   bias;
     float   shadows;
 } light;
 

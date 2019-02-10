@@ -38,9 +38,9 @@ public:
 protected:
     float                       m_Shadows;
 
-    float                       m_Brightness;
-
     float                       m_Bias;
+
+    Vector4                     m_Params;
 
     Vector4                     m_Color;
 

@@ -20,7 +20,7 @@
             "Y": 0
         }
     ],
-    "Raw": "PointLight.frag",
+    "Raw": "SpotLight.frag",
     "Side": false,
     "Type": 2,
     "View": true

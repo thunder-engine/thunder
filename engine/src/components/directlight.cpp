@@ -17,12 +17,13 @@ DirectLight::DirectLight() {
     m_pMaterialInstance = material->createInstance();
 
     m_pMaterialInstance->setVector4("light.color",      &m_Color);
-    m_pMaterialInstance->setFloat("light.brightness",   &m_Brightness);
+    m_pMaterialInstance->setVector4("light.lod",        &m_NormalizedDistance);
+    m_pMaterialInstance->setVector4("light.params",     &m_Params);
+
+    m_pMaterialInstance->setVector3("light.direction",  &m_Direction);
+
     m_pMaterialInstance->setFloat("light.shadows",      &m_Shadows);
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
-
-    m_pMaterialInstance->setVector4("light.lod",        &m_NormalizedDistance);
-    m_pMaterialInstance->setVector4("light.position",   &m_Direction);
 
     m_pMatrix       = new Matrix4[MAX_LODS];
     m_pTiles        = new Vector4[MAX_LODS];
@@ -38,7 +39,9 @@ DirectLight::~DirectLight() {
 
 void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
-        m_Direction = Vector4(actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f), 0.0);
+        Matrix4 m = actor()->transform()->worldTransform();
+
+        m_Direction = m.rotation() * Vector3(0.0f, 0.0f, 1.0f);
 
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), m_pShape, 0, layer, m_pMaterialInstance);

@@ -27,13 +27,18 @@ void main (void) {
     // Light model LIT
     if(slice0.w > 0.33) {
         float depth = texture( depthMap, proj ).x;
-        vec4 world  = getWorld(camera.mvpi, proj, depth );
+        vec4 world = getWorld(camera.mvpi, proj, depth );
 
-        vec3 dir = light.position.xyz - (world.xyz / world.w);
+        vec3 dir = light.position - (world.xyz / world.w);
         vec3 normDir = normalize(dir);
         float dist  = length(dir);
 
-        float fall  = getAttenuation( dist, light.params.y ) * light.params.x;
+        float spot  = dot(normDir, light.direction);
+        float fall = 0.0;
+        if(spot > light.params.z) {
+            fall  = 1.0 - (1.0 - spot) / (1.0 - light.params.z);
+            fall  = getAttenuation( dist, light.params.y ) * light.params.x * fall;
+        }
 
         vec4 slice1 = texture( diffuseMap, proj );
         float rough = max( 0.01, slice1.w );
@@ -44,13 +49,13 @@ void main (void) {
         vec3 v      = normalize( camera.position.xyz - (world.xyz / world.w) );
         vec3 h      = normalize( normDir + v );
 
-        float ln    = dot( normDir, n );
+        float ln    = dot(normDir, n);
 
         float shadow = 1.0;
 
         vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
         vec3 result = albedo * (1.0 - metal) + refl;
-        float diff  = max(getLambert( ln, light.params.x ) * fall, 0.0) * shadow;
+        float diff  = max(getLambert( ln, light.params.x ) * fall * shadow, 0.0);
 
         rgb = vec4( light.color.xyz * result * diff, 1.0 );
     } else {
