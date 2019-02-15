@@ -49,6 +49,8 @@
 
 #include "resources/particleeffect.h"
 
+#include "commandbuffer.h"
+
 #include "log.h"
 
 const char *gIndex("index");
@@ -85,6 +87,8 @@ public:
 
     string                      m_EntryLevel;
 
+    static bool                 m_Game;
+
     static string               m_ApplicationPath;
 
     static string               m_ApplicationDir;
@@ -100,6 +104,7 @@ public:
 
 IFile *EnginePrivate::m_pFile   = nullptr;
 
+bool                            EnginePrivate::m_Game = false;
 unordered_map<string, string>   EnginePrivate::m_IndexMap;
 unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
 unordered_map<Object*, string>  EnginePrivate::m_ReferenceCache;
@@ -108,7 +113,7 @@ string                          EnginePrivate::m_ApplicationPath;
 string                          EnginePrivate::m_ApplicationDir;
 string                          EnginePrivate::m_Organization;
 string                          EnginePrivate::m_Application;
-IPlatformAdaptor               *EnginePrivate::m_pPlatform;
+IPlatformAdaptor               *EnginePrivate::m_pPlatform = nullptr;
 
 typedef Vector4 Color;
 
@@ -142,6 +147,7 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
+    Component::registerClassFactory(this);
     Transform::registerClassFactory(this);
     Camera::registerClassFactory(this);
 
@@ -158,6 +164,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     AnimationController::registerClassFactory(this);
 
     Pipeline::registerClassFactory(this);
+
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
@@ -186,6 +193,8 @@ bool Engine::init() {
 
 bool Engine::start() {
     PROFILER_MARKER;
+
+    EnginePrivate::m_Game = true;
 
     p_ptr->m_pPlatform->start();
 
@@ -259,7 +268,7 @@ void Engine::setValue(const string &key, const Variant &value) {
     EnginePrivate::m_Values[key]    = value;
 }
 
-Object *Engine::loadResource(const string &path) {
+Object *Engine::loadResourceImpl(const string &path) {
     PROFILER_MARKER;
 
     if(!path.empty()) {
@@ -365,6 +374,10 @@ void Engine::reloadBundle() {
             }
         }
     }
+}
+
+bool Engine::isGameMode() {
+    return EnginePrivate::m_Game;
 }
 
 void Engine::addModule(IModule *mode) {

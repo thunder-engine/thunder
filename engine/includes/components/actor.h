@@ -13,6 +13,11 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     A_PROPERTIES(
         A_PROPERTY(bool, Enable, Actor::isEnable, Actor::setEnable)
     )
+    A_METHODS(
+        A_METHOD(Transform *, Actor::transform),
+        A_METHOD(Component *, Actor::findComponent),
+        A_METHOD(Component *, Actor::createComponent)
+    )
 
 public:
     Actor                       ();
@@ -23,23 +28,23 @@ public:
 
     Transform                  *transform               ();
 
-    Component                  *component               (const char *type);
+    Component                  *findComponent           (const char *type);
 
     template<typename T>
     T                          *component               () {
-        return static_cast<T *>(component(T::metaClass()->name()));
+        return static_cast<T *>(findComponent(T::metaClass()->name()));
     }
 
     void                        setEnable               (const bool enable);
 
     void                        setLayers               (const uint8_t layers);
 
-    Component                  *addComponent            (const string &type);
-
     template<typename T>
     T                          *addComponent            () {
-        return static_cast<T *>(addComponent(T::metaClass()->name()));
+        return static_cast<T *>(createComponent(T::metaClass()->name()));
     }
+
+    Component                  *createComponent         (const string type);
 
     void                        setParent               (Object *parent);
 

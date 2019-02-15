@@ -99,7 +99,7 @@ void ObjectSystem::update() {
 
     \sa factoryAdd(), factoryRemove()
 */
-Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object *parent) {
+Object *ObjectSystem::objectCreateImpl(const string &uri, const string &name, Object *parent) {
     PROFILE_FUNCTION()
     Object *object  = nullptr;
 
@@ -112,6 +112,8 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         object->setParent(parent);
         object->setUUID(generateUID());
         object->setSystem(pair->second);
+
+        pair->second->m_List.push_back(object);
     }
     return object;
 }
@@ -218,7 +220,7 @@ Object *ObjectSystem::toObject(const Variant &variant) {
             string name = (*i).toString();
             i++;
 
-            Object *object  = objectCreate(type, name, parent);
+            Object *object  = objectCreateImpl(type, name, parent);
             if(object) {
                 object->setUUID(uuid);
                 array[uuid] = object;

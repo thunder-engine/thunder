@@ -38,21 +38,24 @@ public:
 /*
     Resource management
 */
-    static Object              *loadResource                (const string &path);
+    static Object              *loadResourceImpl            (const string &path);
 
     static void                 unloadResource              (const string &path);
 
     template<typename T>
     static T                   *loadResource                (const string &path) {
-        return dynamic_cast<T *>(loadResource(path));
+        return dynamic_cast<T *>(loadResourceImpl(path));
     }
 
     static string               reference                   (Object *object);
 
     static void                 reloadBundle                ();
+
 /*
     Misc
 */
+    static bool                 isGameMode                  ();
+
     void                        addModule                   (IModule *mode);
 
     Scene                      *scene                       ();

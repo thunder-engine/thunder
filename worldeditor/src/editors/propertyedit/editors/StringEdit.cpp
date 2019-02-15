@@ -7,7 +7,6 @@ StringEdit::StringEdit(QWidget *parent) :
 
     ui->setupUi(this);
     ui->pushButton->hide();
-    connect(ui->lineEdit, SIGNAL(textEdited(QString)), this, SIGNAL(textEdited(QString)));
     connect(ui->lineEdit, SIGNAL(editingFinished()), this, SIGNAL(editFinished()));
 }
 

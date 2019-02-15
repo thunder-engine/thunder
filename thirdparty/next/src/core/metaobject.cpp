@@ -127,7 +127,7 @@ MetaMethod MetaObject::method(int index) const {
     }
 
     if(i >= 0 && i < m_MethodCount) {
-        return MetaMethod(m_pMethods + index);
+        return MetaMethod(m_pMethods + i);
     }
     return MetaMethod(nullptr);
 }

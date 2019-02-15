@@ -18,7 +18,6 @@ public:
     QString                 text            () const;
 
 signals:
-    void                    textEdited      (const QString &);
     void                    editFinished    ();
 
 private:

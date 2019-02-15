@@ -31,10 +31,10 @@ public:
 public:
     template<typename T>
     static T                           *objectCreate            (const string &name = string(), Object *parent = 0) {
-        return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
+        return dynamic_cast<T *>(objectCreateImpl(T::metaClass()->name(), name, parent));
     }
 
-    static Object                      *objectCreate            (const string &uri, const string &name = string(), Object *parent = 0);
+    static Object                      *objectCreateImpl        (const string &uri, const string &name = string(), Object *parent = 0);
 
     template<typename T>
     void                                factoryAdd              (const string &group, const MetaObject *meta) {

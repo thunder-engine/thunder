@@ -12,6 +12,18 @@
 
 #define DATA    "Data"
 
+#define BASE " \
+shared abstract class Behaviour { \
+    void start() { \
+    } \
+    void update() { \
+    } \
+    Actor@ actor() { \
+        return _root.actor(); \
+    } \
+    private AngelBehaviour @_root; \
+};"
+
 class CBytecodeStream : public asIBinaryStream {
 public:
     CBytecodeStream(ByteArray &ptr) :
@@ -43,18 +55,19 @@ VariantMap AngelSerial::saveUserData() const {
     return result;
 }
 
-AngelBuilder::AngelBuilder() {
+AngelBuilder::AngelBuilder(AngelSystem *system) :
+        m_pSystem(system){
     m_pScriptEngine = asCreateScriptEngine();
 
     m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
 
-    AngelSystem system;
-    system.registerClasses(m_pScriptEngine);
+    m_pSystem->registerClasses(m_pScriptEngine);
 }
 
 bool AngelBuilder::buildProject() {
     if(m_Outdated) {
         asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
+        mod->AddScriptSection("AngelData", BASE);
         foreach(QString it, m_Sources) {
             QFile file(it);
             if(file.open( QIODevice::ReadOnly)) {
@@ -75,6 +88,7 @@ bool AngelBuilder::buildProject() {
                 dst.close();
             }
             // Do the hot reload
+            m_pSystem->reload();
         }
 
         m_Outdated = false;

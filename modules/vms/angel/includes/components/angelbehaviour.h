@@ -12,8 +12,6 @@ class AngelBehaviour : public NativeBehaviour {
     )
 
     A_NOMETHODS()
-
-
 public:
     AngelBehaviour              ();
 
@@ -38,7 +36,7 @@ public:
         REGISTER_META_TYPE(AngelBehaviour);
         system->factoryAdd<AngelBehaviour>("Components", AngelBehaviour::metaClass());
     }
-    static void                     unregisterClassFactory  (ObjectSystem *system) {
+    static void                 unregisterClassFactory  (ObjectSystem *system) {
         UNREGISTER_META_TYPE(AngelBehaviour);
         system->factoryRemove<AngelBehaviour>("Components");
     }

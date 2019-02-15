@@ -456,8 +456,8 @@ void ObjectCtrl::onCreateSelected(const QString &name) {
     if(m_Selected.size() == 1) {
         Actor *actor    = m_Selected.begin()->second.object;
         if(actor) {
-            if(actor->component(qPrintable(name)) == nullptr) {
-                Component *comp = actor->addComponent(name.toStdString());
+            if(actor->findComponent(qPrintable(name)) == nullptr) {
+                Component *comp = actor->createComponent(name.toStdString());
                 if(comp) {
                     Object::ObjectList list;
                     list.push_back(comp);
@@ -527,7 +527,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
         if(actor) {
-            Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
+            Object *object  = Engine::objectCreateImpl(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
             if(comp) {
                 comp->setParent(actor);
