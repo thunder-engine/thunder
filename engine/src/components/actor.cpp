@@ -37,7 +37,7 @@ Transform *Actor::transform() {
     return m_pTransform;
 }
 
-Component *Actor::component(const char *type) {
+Component *Actor::findComponent(const char *type) {
     for(auto it : getChildren()) {
         const MetaObject *meta = it->metaObject();
         if(meta->canCastTo(type)) {
@@ -51,8 +51,8 @@ void Actor::setLayers(const uint8_t layers) {
     m_Layers    = layers;
 }
 
-Component *Actor::addComponent(const string &type) {
-    return static_cast<Component *>(Engine::objectCreate(type, type, this));
+Component *Actor::createComponent(const string type) {
+    return static_cast<Component *>(Engine::objectCreateImpl(type, type, this));
 }
 
 void Actor::addChild(Object *value) {

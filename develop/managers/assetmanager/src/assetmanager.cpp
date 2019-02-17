@@ -114,6 +114,8 @@ void AssetManager::init(Engine *engine) {
     m_pDirWatcher->addPath(m_pProjectManager->contentPath());
     onDirectoryChanged(m_pProjectManager->contentPath(), !target.isEmpty());
 
+    m_Paths["{00000000-0101-0000-0000-000000000000}"] = "Scripts";
+
     reimport();
     cleanupBundle();
 }

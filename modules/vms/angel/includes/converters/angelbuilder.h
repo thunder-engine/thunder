@@ -10,6 +10,8 @@
 class asSMessageInfo;
 class asIScriptEngine;
 
+class AngelSystem;
+
 class AngelSerial : public AngelScript {
 public:
     VariantMap saveUserData () const;
@@ -21,7 +23,7 @@ protected:
 class AngelBuilder : public IBuilder {
     Q_OBJECT
 public:
-    AngelBuilder ();
+    AngelBuilder (AngelSystem *system);
 
     bool buildProject ();
 
@@ -34,6 +36,8 @@ public:
 
 protected:
     static void messageCallback (const asSMessageInfo *msg, void *param);
+
+    AngelSystem *m_pSystem;
 
     asIScriptEngine *m_pScriptEngine;
 

@@ -3,6 +3,8 @@
 
 #include <module.h>
 
+class AngelSystem;
+
 class Angel : public IModule {
 public:
     Angel                       (Engine *engine);
@@ -22,6 +24,7 @@ public:
 protected:
     Engine                     *m_pEngine;
 
+    AngelSystem                *m_pSystem;
 };
 
 extern "C" {

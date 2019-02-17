@@ -60,14 +60,14 @@ void BaseMesh::setMaterials(const MaterialArray &material) {
     }
 }
 
-Material *BaseMesh::material(uint32_t index) const {
+Material *BaseMesh::material(int index) const {
     if(index < m_Materials.size()) {
         return m_Materials[index]->material();
     }
     return nullptr;
 }
 
-void BaseMesh::setMaterial(Material *material, uint32_t index) {
+void BaseMesh::setMaterial(Material *material, int index) {
     if(material && index < m_Materials.size()) {
         if(m_Materials[index]) {
             delete m_Materials[index];

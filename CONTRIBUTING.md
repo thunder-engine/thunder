@@ -4,7 +4,7 @@ All kinds of contributions are very appreciated, be it documentation, code or bu
 
 ## Reporting a Bug
 
-To report abug please folow this [template](../../issues/new?template=bug_report.md)
+To report a bug please folow this [template](../../issues/new?template=bug_report.md)
 
 ## Requesting a Feature
 

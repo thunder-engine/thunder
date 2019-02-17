@@ -17,6 +17,7 @@
 #include "resources/angelscript.h"
 
 #include "bindings/angelmath.h"
+#include "bindings/angelcore.h"
 
 #define TEMPALTE "{00000000-0101-0000-0000-000000000000}"
 
@@ -99,10 +100,11 @@ const char *AngelSystem::name() const {
 void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
-    for(auto &it : scene->findChildren<AngelBehaviour *>()) {
-        if(it->isEnable()) {
-            asIScriptObject *object = it->scriptObject();
-            string value    = it->script();
+    for(auto &component : scene->findChildren<AngelBehaviour *>()) { //  auto it : m_List
+        //AngelBehaviour *component = static_cast<Component *>(it);
+        if(component->isEnable()) {
+            asIScriptObject *object = component->scriptObject();
+            string value    = component->script();
             if(object == nullptr && !value.empty() && m_pScriptModule) {
                 asITypeInfo *type   = m_pScriptModule->GetTypeInfoByDecl(value.c_str());
                 if(type) {
@@ -117,18 +119,21 @@ void AngelSystem::update(Scene *scene) {
                     if(object) {
                         object->AddRef();
 
-                        it->setScriptObject(object);
-                        it->setScriptStart(type->GetMethodByDecl("void start()"));
-                        it->setScriptUpdate(type->GetMethodByDecl("void update()"));
-
-                        execute(object, it->scriptStart());
+                        component->setScriptObject(object);
+                        component->setScriptStart(type->GetMethodByDecl("void start()"));
+                        component->setScriptUpdate(type->GetMethodByDecl("void update()"));
                     } else {
                         Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << value.c_str();
                     }
                 }
             }
 
-            execute(object, it->scriptUpdate());
+            if(Engine::isGameMode()) {
+                if(!component->isStarted()) {
+                    execute(object, component->scriptStart());
+                }
+                execute(object, component->scriptUpdate());
+            }
         }
     }
 }
@@ -166,12 +171,17 @@ void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
     }
 }
 
+void *castTo(void *ptr) {
+    return ptr;
+}
+
 void AngelSystem::registerClasses(asIScriptEngine *engine) {
     PROFILER_MARKER;
 
     RegisterStdString(engine);
 
     registerMath(engine);
+    registerCore(engine);
 
     for(auto &it : MetaType::types()) {
         if(it.first > MetaType::USERTYPE) {
@@ -191,6 +201,16 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     for(auto &it: ISystem::factories()) {
         const char *typeName    = it.first.c_str();
         const MetaObject *meta  = ISystem::metaFactory(typeName)->first;
+
+        const MetaObject *super = meta->super();
+        while(super != nullptr) {
+            const char *superName   = super->name();
+
+            engine->RegisterObjectMethod(superName, (it.first + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+            engine->RegisterObjectMethod(typeName, (string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+
+            super = super->super();
+        }
 
         uint32_t type   = MetaType::type(typeName);
         MetaType::Table *table  = MetaType::table(type);

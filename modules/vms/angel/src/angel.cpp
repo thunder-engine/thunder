@@ -11,7 +11,8 @@ IModule *moduleCreate(Engine *engine) {
 }
 
 Angel::Angel(Engine *engine) :
-        m_pEngine(engine) {
+        m_pEngine(engine),
+        m_pSystem(new AngelSystem()) {
 }
 
 Angel::~Angel() {
@@ -35,12 +36,12 @@ uint8_t Angel::types() const {
 }
 
 ISystem *Angel::system() {
-    return new AngelSystem();
+    return m_pSystem;
 }
 
 IConverter *Angel::converter() {
 #ifdef NEXT_SHARED
-    return new AngelBuilder();
+    return new AngelBuilder(m_pSystem);
 #endif
     return nullptr;
 }

@@ -265,7 +265,7 @@ struct Invoker<Return(Class::*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        return (static_cast<Class *>(obj)->*f)(args[Is]...); // any_cast<Args>(args[Is])...
+        return (static_cast<Class *>(obj)->*f)(args[Is].value<Args>()...);
     }
 
     template<Fun fun>
@@ -425,7 +425,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
+        return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is].value<Args>()...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
@@ -503,7 +503,7 @@ struct Invoker<void(Class::*)(Args...)const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
+        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is].value<Args>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -542,8 +542,8 @@ struct Invoker<void(Class::*)()const> {
     }
 
     template<typename F, unsigned... Is>
-    inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is]...); // any_cast<Args>(args[Is])...
+    inline static Variant invoke(Object *obj, F f, const Variant *, unpack::indices<Is...>) {
+        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
