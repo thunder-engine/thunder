@@ -221,10 +221,9 @@ bool Engine::start() {
         camera->transform()->setPosition(Vector3(0.0f));
         component       = camera->addComponent<Camera>();
     }
-    component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
-    component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
-
     Camera::setCurrent(component);
+
+    resize();
 
 #ifndef THUNDER_MOBILE
     while(p_ptr->m_pPlatform->isValid()) {
@@ -233,6 +232,12 @@ bool Engine::start() {
     p_ptr->m_pPlatform->stop();
 #endif
     return true;
+}
+
+void Engine::resize() {
+    Camera *component = Camera::current();
+    component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
+    component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 }
 
 void Engine::update() {

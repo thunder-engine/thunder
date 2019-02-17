@@ -1,11 +1,11 @@
-layout(location = 5) uniform struct Camera {
+layout(location = 6) uniform struct Camera {
     mat4    mvpi;
     vec4    position;
     vec4    target;
     vec4    screen;
 } camera;
 
-layout(location = 9) uniform struct Light {
+layout(location = 10) uniform struct Light {
     mat4    matrix[6];
     vec4    tiles[6];
     vec4    color;

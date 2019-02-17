@@ -73,12 +73,6 @@
             "Receiver": 13,
             "SItem": "",
             "Sender": 12
-        },
-        {
-            "RItem": "Emissive",
-            "Receiver": 0,
-            "SItem": "",
-            "Sender": 9
         }
     ],
     "Model": 0,

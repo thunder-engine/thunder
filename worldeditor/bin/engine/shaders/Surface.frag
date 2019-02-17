@@ -4,9 +4,9 @@
 
 #include "Common.vert"
 
-layout(location = 2) uniform vec4   t_color;
-layout(location = 3) uniform float _time;
+layout(location = 3) uniform vec4  t_color;
 layout(location = 4) uniform float _clip;
+layout(location = 5) uniform float _time;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

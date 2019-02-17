@@ -6,6 +6,14 @@
 #include "resources/amaterialgl.h"
 #include "resources/ameshgl.h"
 
+#define VERTEX_ATRIB    0
+#define NORMAL_ATRIB    1
+#define TANGENT_ATRIB   2
+#define COLOR_ATRIB     3
+#define UV0_ATRIB       4
+
+#define INSTANCE_ATRIB  5
+
 class CommandBufferGL : public ICommandBuffer {
     A_OVERRIDE(CommandBufferGL, ICommandBuffer, System)
 
@@ -43,16 +51,10 @@ public:
     const Texture              *texture                     (const char *name) const;
 
 protected:
-    void                        bindVao                     (AMeshGL *mesh, uint32_t surface, uint32_t lod);
-
     void                        putUniforms                 (uint32_t program, MaterialInstance *instance);
 
 protected:
     AMaterialGL                 m_StaticVertex;
-
-    uint32_t                    m_Pipeline;
-
-    uint32_t                    m_InstanceBuffer;
 
     Matrix4                     m_View;
 
@@ -65,9 +67,6 @@ protected:
     VariantMap                  m_Uniforms;
 
     Material::TextureMap        m_Textures;
-
-    AMaterialGL::ObjectMap      m_Objects;
-
 
     Matrix4                     m_SaveView;
 

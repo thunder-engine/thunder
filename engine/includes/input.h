@@ -188,7 +188,7 @@ public:
 
     uint16_t                    touchState                  (uint8_t index);
 
-    Vector2                     touchPosition               (uint8_t index);
+    Vector4                     touchPosition               (uint8_t index);
 
 protected:
     IPlatformAdaptor           *m_pPlatform;

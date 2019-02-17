@@ -15,13 +15,15 @@ class AMaterialGL : public Material {
     A_OVERRIDE(AMaterialGL, Material, Resources)
 
     enum ShaderType {
-        Static      = 0,
+        Static      = 1,
         Instanced,
         Skinned,
         Particle,
+        LastVertex,
 
         Default     = 20,
-        Simple
+        Simple,
+        LastFragment
     };
 
     typedef unordered_map<uint16_t, uint32_t> ObjectMap;
@@ -33,16 +35,17 @@ public:
 
     void                        loadUserData    (const VariantMap &data);
 
-    uint32_t                    bind            (uint8_t layer);
-    void                        unbind          (uint8_t);
+    uint32_t                    bind            (uint8_t layer, uint16_t vertex);
 
     uint32_t                    getProgram      (uint16_t type) const;
-
-    uint32_t                    buildShader     (uint8_t type, const string &src = string());
 
     TextureMap                  textures        () const { return m_Textures; }
 
 protected:
+    uint32_t                    buildShader     (uint16_t type, const string &src = string());
+
+    uint32_t                    buildProgram    (uint32_t vertex, uint32_t fragment);
+
     bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
 
 private:

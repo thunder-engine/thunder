@@ -8,12 +8,31 @@
 #include <resources/pipeline.h>
 
 #include <analytics/profiler.h>
-#include <log.h>
 
 #include "resources/atexturegl.h"
 #include "resources/arendertexturegl.h"
 
 #include "commandbuffergl.h"
+
+#include <log.h>
+
+void _CheckGLError(const char* file, int line) {
+    GLenum err ( glGetError() );
+
+    while ( err != GL_NO_ERROR ) {
+        std::string error;
+        switch ( err ) {
+            case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION";      break;
+            case GL_INVALID_ENUM:       error="GL_INVALID_ENUM";           break;
+            case GL_INVALID_VALUE:      error="GL_INVALID_VALUE";          break;
+            case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY";          break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION";  break;
+        }
+        Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;;
+        err = glGetError();
+    }
+    return;
+}
 
 RenderGLSystem::RenderGLSystem() :
         ISystem() {
@@ -48,14 +67,17 @@ bool RenderGLSystem::init() {
 
 #ifndef THUNDER_MOBILE
     if(!gladLoadGL()) {
+        CheckGLError();
         Log(Log::ERR) << "[ Render::RenderGLSystem ] Failed to initialize OpenGL context";
         return false;
     }
     glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    CheckGLError();
 #endif
 
     int32_t targets;
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
+    CheckGLError();
 
     return true;
 }

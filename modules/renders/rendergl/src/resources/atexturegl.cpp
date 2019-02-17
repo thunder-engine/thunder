@@ -14,6 +14,7 @@ void ATextureGL::clear() {
 
     if(m_ID) {
         glDeleteTextures(1, &m_ID);
+        CheckGLError();
         m_ID = 0;
     }
 }
@@ -28,6 +29,7 @@ void ATextureGL::apply() {
     bool update = false;
     if(!m_ID) {
         glGenTextures(1, &m_ID);
+        CheckGLError();
     } else {
         update  = true;
     }
@@ -51,6 +53,7 @@ void ATextureGL::apply() {
     }
 
     glBindTexture(target, m_ID);
+    CheckGLError();
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
@@ -81,8 +84,11 @@ void ATextureGL::apply() {
         default: wrap       = GL_CLAMP_TO_EDGE; break;
     }
     glTexParameteri ( target, GL_TEXTURE_WRAP_S, wrap );
+    CheckGLError();
     glTexParameteri ( target, GL_TEXTURE_WRAP_T, wrap );
+    CheckGLError();
     glTexParameteri ( target, GL_TEXTURE_WRAP_R, wrap );
+    CheckGLError();
 
     //float aniso = 0.0f;
     //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
@@ -99,6 +105,7 @@ void ATextureGL::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t heigh
     glReadPixels( x, y, width, height,
                  (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
                  (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
+    CheckGLError();
 }
 
 bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {
@@ -111,6 +118,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
             glCompressedTexImage2D(target, i, internal, w, h, 0, size(w, h), data);
+            CheckGLError();
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);
         }
@@ -118,7 +126,9 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         GLint alignment = -1;
         if(!isDwordAligned()) {
             glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
+            CheckGLError();
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            CheckGLError();
         }
         // load all mipmaps
         uint32_t w  = m_Width;
@@ -127,8 +137,10 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
             uint8_t *data   = image[i];
             if(update) {
                 glTexSubImage2D(target, i, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
+                CheckGLError();
             } else {
                 glTexImage2D(target, i, internal, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+                CheckGLError();
             }
 
             w   = MAX(w / 2, 1);
@@ -136,6 +148,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
         }
         if(alignment != -1) {
             glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+            CheckGLError();
         }
     }
 

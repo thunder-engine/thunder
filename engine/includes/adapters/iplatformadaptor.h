@@ -52,7 +52,7 @@ public:
 
     virtual uint16_t                    touchState                  (uint8_t index) { return 0; }
 
-    virtual Vector2                     touchPosition               (uint8_t index) { return 0; }
+    virtual Vector4                     touchPosition               (uint8_t index) { return 0; }
 
     virtual void                       *pluginLoad                  (const char *name) { return nullptr; }
 

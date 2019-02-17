@@ -41,10 +41,6 @@ layout(location = 6) out vec4 _color;
 
 layout(location = 7) out vec3 _view;
 
-out gl_PerVertex {
-    vec4  gl_Position;
-};
-
 struct Vertex {
     vec3    v;
     vec3    t;

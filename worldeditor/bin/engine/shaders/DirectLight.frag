@@ -3,12 +3,11 @@
 #include "Common.vert"
 #include "BRDF.frag"
 
-layout(location = 30) uniform sampler2D normalsMap;
-layout(location = 31) uniform sampler2D diffuseMap;
-layout(location = 32) uniform sampler2D paramsMap;
-layout(location = 33) uniform sampler2D emissiveMap;
-layout(location = 34) uniform sampler2D depthMap;
-layout(location = 35) uniform sampler2D shadowMap;
+layout(location = 32) uniform sampler2D normalsMap;
+layout(location = 33) uniform sampler2D diffuseMap;
+layout(location = 34) uniform sampler2D paramsMap;
+layout(location = 35) uniform sampler2D depthMap;
+layout(location = 36) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
 
@@ -19,7 +18,6 @@ void main (void) {
 
     vec4 slice0 = texture( normalsMap,  proj );
     vec4 slice2 = texture( paramsMap,   proj );
-    vec3 emit   = texture( emissiveMap, proj ).xyz;
 
     vec3 n      = normalize( 2.0 * slice0.xyz - vec3( 1.0 ) );
     float ln    = dot( light.direction, n );

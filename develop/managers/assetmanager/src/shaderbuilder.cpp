@@ -54,7 +54,7 @@
 #define X           "X"
 #define Y           "Y"
 
-#define UNIFORM     30
+#define UNIFORM     32
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");

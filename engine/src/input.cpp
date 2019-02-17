@@ -79,6 +79,6 @@ uint16_t Input::touchState(uint8_t index) {
     return m_pPlatform->touchState(index);
 }
 
-Vector2 Input::touchPosition(uint8_t index) {
+Vector4 Input::touchPosition(uint8_t index) {
     return m_pPlatform->touchPosition(index);
 }

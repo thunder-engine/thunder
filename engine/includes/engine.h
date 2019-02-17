@@ -28,6 +28,8 @@ public:
 
     bool                        start                       ();
 
+    void                        resize                      ();
+
     void                        update                      ();
 /*
     Settings

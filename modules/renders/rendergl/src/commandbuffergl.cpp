@@ -9,38 +9,26 @@
 
 #include "resources/arendertexturegl.h"
 
+#include <log.h>
+
 #define TRANSFORM_BIND  0
-
-#define COLOR_BIND  2
-#define TIMER_BIND  3
-#define CLIP_BIND   4
-
-#define VERTEX_ATRIB    0
-#define NORMAL_ATRIB    1
-#define TANGENT_ATRIB   2
-#define COLOR_ATRIB     3
-#define UV0_ATRIB       4
-
-#define INSTANCE_ATRIB  5
 
 #define MODEL_UNIFORM   0
 #define VIEW_UNIFORM    1
 #define PROJ_UNIFORM    2
 
+#define COLOR_BIND  3
+#define TIMER_BIND  5
+#define CLIP_BIND   4
+
 CommandBufferGL::CommandBufferGL() {
     PROFILER_MARKER;
 
     m_StaticVertex.clear();
-
-    glGenBuffers(1, &m_InstanceBuffer);
-
-    glGenProgramPipelines(1, &m_Pipeline);
 }
 
 CommandBufferGL::~CommandBufferGL() {
-    glDeleteProgramPipelines(1, &m_Pipeline);
 
-    glDeleteBuffers(1, &m_InstanceBuffer);
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -59,22 +47,41 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 }
 
 void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) {
-    glProgramUniform1f   (program, TIMER_BIND, Timer::time());
-    glProgramUniform1f   (program, CLIP_BIND,  0.99f);
-    glProgramUniform4fv  (program, COLOR_BIND, 1, m_Color.v);
-
     int32_t location;
+
+    location = glGetUniformLocation(program, "t_view");
+    if(location > -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_View.mat);
+    }
+    location = glGetUniformLocation(program, "t_projection");
+    if(location > -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, m_Projection.mat);
+    }
+
+    location = glGetUniformLocation(program, "_timer");
+    if(location > -1) {
+        glUniform1f   (location, Timer::time());
+    }
+    location = glGetUniformLocation(program, "_clip");
+    if(location > -1) {
+        glUniform1f   (location,  0.99f);
+    }
+    location = glGetUniformLocation(program, "t_color");
+    if(location > -1) {
+        glUniform4fv  (location, 1, m_Color.v);
+    }
+
     // Push uniform values to shader
     for(const auto &it : m_Uniforms) {
         location = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
             const Variant &data = it.second;
             switch(data.type()) {
-                case MetaType::VECTOR2: glProgramUniform2fv      (program, location, 1, data.toVector2().v); break;
-                case MetaType::VECTOR3: glProgramUniform3fv      (program, location, 1, data.toVector3().v); break;
-                case MetaType::VECTOR4: glProgramUniform4fv      (program, location, 1, data.toVector4().v); break;
-                case MetaType::MATRIX4: glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                default:                glProgramUniform1f       (program, location, data.toFloat()); break;
+                case MetaType::VECTOR2: glUniform2fv      (location, 1, data.toVector2().v); break;
+                case MetaType::VECTOR3: glUniform3fv      (location, 1, data.toVector3().v); break;
+                case MetaType::VECTOR4: glUniform4fv      (location, 1, data.toVector4().v); break;
+                case MetaType::MATRIX4: glUniformMatrix4fv(location, 1, GL_FALSE, data.toMatrix4().mat); break;
+                default:                glUniform1f       (location, data.toFloat()); break;
             }
         }
     }
@@ -85,19 +92,18 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
             const MaterialInstance::Info &data  = it.second;
             switch(data.type) {
                 case 0: break;
-                case MetaType::INTEGER: glProgramUniform1iv      (program, location, data.count, static_cast<const int32_t *>(data.ptr)); break;
-                case MetaType::VECTOR2: glProgramUniform2fv      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR3: glProgramUniform3fv      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR4: glProgramUniform4fv      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::MATRIX4: glProgramUniformMatrix4fv(program, location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
-                default:                glProgramUniform1fv      (program, location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::INTEGER: glUniform1iv      (location, data.count, static_cast<const int32_t *>(data.ptr)); break;
+                case MetaType::VECTOR2: glUniform2fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR3: glUniform3fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::VECTOR4: glUniform4fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
+                case MetaType::MATRIX4: glUniformMatrix4fv(location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
+                default:                glUniform1fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
             }
         }
     }
 
     AMaterialGL *mat    = static_cast<AMaterialGL *>(instance->material());
 
-    glEnable(GL_TEXTURE_2D);
     uint8_t i   = 0;
     for(auto it : mat->textures()) {
         const Texture *tex  = static_cast<const ATextureGL *>(it.second);
@@ -126,43 +132,33 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
         AMeshGL *m      = static_cast<AMeshGL *>(mesh);
         uint32_t lod    = 0;
 
-        AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
-        uint32_t vertex     = mat->getProgram(AMaterialGL::Static);
-        uint32_t fragment   = mat->bind(layer);
-        if(vertex && fragment) {
-            glProgramUniformMatrix4fv(vertex, MODEL_UNIFORM, 1, GL_FALSE, model.mat);
-            glProgramUniformMatrix4fv(vertex, VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
-            glProgramUniformMatrix4fv(vertex, PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
+        AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
+        uint32_t program = mat->bind(layer, AMaterialGL::Static);
+        if(program) {
+            glUseProgram(program);
 
-            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, vertex);
-            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
-            glBindProgramPipeline(m_Pipeline);
+            int location = glGetUniformLocation(program, "t_model");
+            if(location > -1) {
+                glUniformMatrix4fv(location, 1, GL_FALSE, model.mat);
+            }
 
-            putUniforms(vertex, material);
-            putUniforms(fragment, material);
+            putUniforms(program, material);
 
-            bindVao(m, surface, lod);
+            m->bindVao(this, surface, lod);
 
             Mesh::Modes mode    = mesh->mode(surface);
             if(mode > Mesh::MODE_LINES) {
                 uint32_t vert   = mesh->vertexCount(surface, lod);
                 glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert);
-
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
                 uint32_t index  = mesh->indexCount(surface, lod);
-                glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES,
-                               index, GL_UNSIGNED_INT, nullptr);
-
+                glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
 
             glBindVertexArray(0);
-
-            mat->unbind(layer);
-
-            glBindProgramPipeline(0);
         }
     }
 }
@@ -174,26 +170,20 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
         AMeshGL *m      = static_cast<AMeshGL *>(mesh);
         uint32_t lod    = 0;
 
-        AMaterialGL *mat    = static_cast<AMaterialGL *>(material->material());
-        uint32_t vertex     = mat->getProgram((particle) ? AMaterialGL::Particle : AMaterialGL::Instanced);
-        uint32_t fragment   = mat->bind(layer);
+        AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
+        uint32_t program = mat->bind(layer, (particle) ? AMaterialGL::Particle : AMaterialGL::Instanced);
 
-        if(vertex && fragment) {
-            glProgramUniformMatrix4fv(vertex, MODEL_UNIFORM, 1, GL_FALSE, Matrix4().mat);
-            glProgramUniformMatrix4fv(vertex, VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
-            glProgramUniformMatrix4fv(vertex, PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
+        if(program) {
+            glUseProgram(program);
 
-            glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
+            glUniformMatrix4fv(MODEL_UNIFORM, 1, GL_FALSE, Matrix4().mat);
+
+            glBindBuffer(GL_ARRAY_BUFFER, m->instance());
             glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
 
-            glUseProgramStages(m_Pipeline, GL_VERTEX_SHADER_BIT, vertex);
-            glUseProgramStages(m_Pipeline, GL_FRAGMENT_SHADER_BIT, fragment);
-            glBindProgramPipeline(m_Pipeline);
+            putUniforms(program, material);
 
-            putUniforms(vertex, material);
-            putUniforms(fragment, material);
-
-            bindVao(m, surface, lod);
+            m->bindVao(this, surface, lod);
 
             Mesh::Modes mode    = mesh->mode(surface);
             if(mode > Mesh::MODE_LINES) {
@@ -203,18 +193,13 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
                 uint32_t index  = mesh->indexCount(surface, lod);
-                glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES,
-                               index, GL_UNSIGNED_INT, nullptr, count);
+                glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
 
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);
 
             glBindVertexArray(0);
-
-            mat->unbind(layer);
-
-            glBindProgramPipeline(0);
         }
     }
 }
@@ -260,71 +245,6 @@ const Texture *CommandBufferGL::texture(const char *name) const {
         return (*it).second;
     }
     return nullptr;
-}
-
-void CommandBufferGL::bindVao(AMeshGL *mesh, uint32_t surface, uint32_t lod) {
-    uint32_t key    = mesh->m_triangles[surface][lod];
-    auto it = m_Objects.find(key);
-    if(it == m_Objects.end()) {
-        uint32_t id;
-        glGenVertexArrays(1, &id);
-        glBindVertexArray(id);
-
-        // indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_triangles[surface][lod]);
-        // vertices
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vertices[surface][lod]);
-        glEnableVertexAttribArray(VERTEX_ATRIB);
-        glVertexAttribPointer(VERTEX_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-        uint8_t flags   = mesh->flags();
-        if(flags & Mesh::ATTRIBUTE_NORMALS) {
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_normals[surface][lod]);
-            glEnableVertexAttribArray(NORMAL_ATRIB);
-            glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        }
-        if(flags & Mesh::ATTRIBUTE_TANGENTS) {
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_tangents[surface][lod]);
-            glEnableVertexAttribArray(TANGENT_ATRIB);
-            glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        }
-        if(flags & Mesh::ATTRIBUTE_UV0) {
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_uv0[surface][lod]);
-            glEnableVertexAttribArray(UV0_ATRIB);
-            glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        }
-        if(flags & Mesh::ATTRIBUTE_COLOR) {
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_colors[surface][lod]);
-            glEnableVertexAttribArray(COLOR_ATRIB);
-            glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
-        for(uint32_t i = 0; i < 4; i++) {
-            glEnableVertexAttribArray(INSTANCE_ATRIB + i);
-            glVertexAttribPointer(INSTANCE_ATRIB + i, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix4), (void *)(i * sizeof(Vector4)));
-            glVertexAttribDivisor(INSTANCE_ATRIB + i, 1);
-        }
-/*
-        } else {
-            //// uv1
-            //glEnableVertexAttribArray(2);
-            //// uv2
-            //glEnableVertexAttribArray(3);
-            //// uv3
-            //glEnableVertexAttribArray(4);
-            //// colors
-            //glEnableVertexAttribArray(7);
-            //// indices
-            //glEnableVertexAttribArray(8);
-            //// weights
-            //glEnableVertexAttribArray(9);
-        }
-*/
-        m_Objects[key]  = id;
-    } else {
-        glBindVertexArray(it->second);
-    }
 }
 
 void CommandBufferGL::setColor(const Vector4 &color) {

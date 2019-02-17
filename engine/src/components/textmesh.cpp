@@ -32,8 +32,6 @@ void TextMesh::composeMesh() {
         m_Space = m_pFont->spaceWidth(m_Size);
         m_Line  = m_pFont->lineHeight(m_Size);
 
-        //m_pMesh->clear();
-
         u32string text  = Utils::utf8ToUtf32(m_Text);
         m_pFont->requestCharacters(text, m_Size);
 

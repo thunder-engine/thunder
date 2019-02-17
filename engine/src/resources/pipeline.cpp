@@ -50,42 +50,35 @@ Pipeline::Pipeline() :
 
     RenderTexture *depth    = Engine::objectCreate<RenderTexture>();
     depth->setDepth(24);
-    depth->apply();
     m_Targets[DEPTH_MAP]    = depth;
     m_Buffer->setGlobalTexture(DEPTH_MAP,   depth);
 
     RenderTexture *shadow   = Engine::objectCreate<RenderTexture>();
     shadow->setDepth(24);
-    depth->apply();
+    shadow->resize(SM_RESOLUTION, SM_RESOLUTION);
+    shadow->setFixed(true);
     m_Targets[SHADOW_MAP]   = shadow;
     m_Buffer->setGlobalTexture(SHADOW_MAP,  shadow);
 
     RenderTexture *normals  = Engine::objectCreate<RenderTexture>();
     normals->setTarget(Texture::RGB10A2);
-    normals->apply();
     m_Targets[G_NORMALS]    = normals;
     m_Buffer->setGlobalTexture(G_NORMALS,   normals);
 
     RenderTexture *diffuse  = Engine::objectCreate<RenderTexture>();
     diffuse->setTarget(Texture::RGBA8);
-    diffuse->apply();
     m_Targets[G_DIFFUSE]    = diffuse;
     m_Buffer->setGlobalTexture(G_DIFFUSE,   diffuse);
 
     RenderTexture *params   = Engine::objectCreate<RenderTexture>();
     params->setTarget(Texture::RGBA8);
-    params->apply();
     m_Targets[G_PARAMS]     = params;
     m_Buffer->setGlobalTexture(G_PARAMS,    params);
 
     RenderTexture *emissive = Engine::objectCreate<RenderTexture>();
     emissive->setTarget(Texture::R11G11B10Float);
-    emissive->apply();
     m_Targets[G_EMISSIVE]   = emissive;
     m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
-
-    shadow->resize(SM_RESOLUTION, SM_RESOLUTION);
-    shadow->setFixed(true);
 
   //m_pBlur     = new ABlurGL();
   //m_pAO       = new AAmbientOcclusionGL();
@@ -126,7 +119,6 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
     drawComponents(ICommandBuffer::DEFAULT, filter);
 
     /// \todo Screen Space Ambient Occlusion effect should be defined here
-
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
 
     // Step2 - Light pass
@@ -138,9 +130,18 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
 
     m_Buffer->setRenderTarget(m_Target);
     m_Buffer->setScreenProjection();
+    m_Buffer->clearRenderTarget(true, camera.color());
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
+/*
+    m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
+    cameraReset(camera);
+
+    m_Buffer->clearRenderTarget(true, camera.color());
+
+    drawComponents(ICommandBuffer::TRANSLUCENT, m_Components);
+*/
 }
 
 void Pipeline::cameraReset(Camera &camera) {
