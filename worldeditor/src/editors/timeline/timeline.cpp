@@ -184,7 +184,9 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
 
     emit animated(enable);
 
+    //m_pModel->blockSignals(true);
     on_begin_clicked();
+    //m_pModel->blockSignals(false);
 }
 
 void Timeline::onChanged(Object::ObjectList objects, const QString &property) {

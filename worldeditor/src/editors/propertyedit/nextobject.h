@@ -29,6 +29,7 @@ public slots:
     void                        onUpdated               ();
 
 signals:
+    void                        changed                 ();
     void                        changed                 (Object *object, const QString &property);
 
     void                        updated                 ();

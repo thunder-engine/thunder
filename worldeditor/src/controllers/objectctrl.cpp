@@ -299,10 +299,10 @@ void ObjectCtrl::drawHelpers(Object &object) {
                 result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
                 Handles::s_Color = Handles::s_Second = Handles::s_Normal;
             }
-            if(component->typeName() == "AudioSource") {
-                Vector3 pos     = t->position();
-                result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/soundsource.png"));
-            }
+            //if(component->typeName() == "AudioSource") {
+            //    Vector3 pos     = t->position();
+            //    result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/soundsource.png"));
+            //}
 
             if(result) {
                 m_ObjectsList = {object.uuid()};
@@ -685,8 +685,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseMove: {
             QMouseEvent *e  = static_cast<QMouseEvent *>(pe);
             mMousePosition  = Vector2(e->pos().x(), e->pos().y());
-            if(e->buttons() & Qt::LeftButton && !mDrag) {
-                setDrag(Handles::s_Axes);
+            if(e->buttons() & Qt::LeftButton) {
+                if(!mDrag) {
+                    setDrag(Handles::s_Axes);
+                }
+            } else {
+                setDrag(false);
             }
 
             if(!m_ObjectsList.empty()) {

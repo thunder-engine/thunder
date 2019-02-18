@@ -230,6 +230,7 @@ bool NextObject::event(QEvent *e) {
                     o->setProperty(qPrintable(list.front()), target);
                     onUpdated();
 
+                    emit changed();
                     setChanged(o, list.front());
                 }
             }

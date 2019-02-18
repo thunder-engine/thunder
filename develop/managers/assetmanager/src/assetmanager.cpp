@@ -71,6 +71,9 @@ AssetManager::AssetManager() :
 }
 
 AssetManager::~AssetManager() {
+    foreach(auto it, m_Editors) {
+        delete it;
+    }
     m_Editors.clear();
 }
 

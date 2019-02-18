@@ -195,8 +195,10 @@ void AMeshGL::clear() {
         }
         uint8_t lods = m_Surfaces[s].lods.size();
         for(uint32_t l = 0; l < lods; l++) {
-            for(auto it : m_Vao[s][l]) {
-                glDeleteVertexArrays(1, &(it.second));
+            if(m_Vao.size() > s && m_Vao[s].size() > l) {
+                for(auto it : m_Vao[s][l]) {
+                    glDeleteVertexArrays(1, &(it.second));
+                }
             }
         }
         m_Vao.clear();

@@ -165,6 +165,11 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     Pipeline::registerClassFactory(this);
 
+    NativeBehaviour::registerClassFactory(this);
+    BaseMesh::registerClassFactory(this);
+    BaseLight::registerClassFactory(this);
+
+    ICommandBuffer::registerClassFactory(this);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }

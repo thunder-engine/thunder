@@ -107,8 +107,8 @@ void AngelBehaviour::setScriptUpdate(asIScriptFunction *function) {
 
 const MetaObject *AngelBehaviour::metaObject() const {
     PROFILER_MARKER;
-    if(m_pMetaObject) {
-        return m_pMetaObject;
-    }
+    //if(m_pMetaObject) {
+    //    return m_pMetaObject;
+    //}
     return AngelBehaviour::metaClass();
 }

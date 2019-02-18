@@ -102,6 +102,8 @@ int main(int argc, char *argv[]) {
         ContentList::instance()->init(&engine);
 
         result  = a.exec();
+
+        asset->destroy();
     }
     UndoManager::destroy();
     AssetManager::destroy();

@@ -65,25 +65,19 @@ ObjectSystem::ObjectSystem() {
     PROFILE_FUNCTION()
 }
 /*!
-    Destructs ObjectSystem.
-    \note It just destroys the system but not registered factories or created object use ObjectSystem::destroy() instead.
+    Destructs ObjectSystem, related objects and registered object factories.
 */
 ObjectSystem::~ObjectSystem() {
     PROFILE_FUNCTION()
-}
-/*!
-    Destoroys all related objects and registered factories.
-    \note This method destroys the objects everywhere.
-*/
-void ObjectSystem::destroy() {
-    PROFILE_FUNCTION()
+
     s_Factories.clear();
     s_Groups.clear();
 
-    for(auto it : m_List) {
-        delete it;
+    auto it = m_List.begin();
+    while(it != m_List.end()) {
+        delete *it;
+        it = m_List.begin();
     }
-    m_List.clear();
 }
 /*!
     Updates all related objects.

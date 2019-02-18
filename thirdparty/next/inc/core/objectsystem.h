@@ -20,8 +20,6 @@ public:
     ObjectSystem                        ();
     ~ObjectSystem                       ();
 
-    virtual void                        destroy                 ();
-
     virtual void                        update                  ();
 
     GroupMap                            factories               () const;
