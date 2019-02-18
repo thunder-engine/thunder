@@ -201,7 +201,7 @@ SceneComposer::~SceneComposer() {
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
     if(ui->actionGame_Mode->isChecked()) {
-        Engine::updateScene(ui->preview->scene());
+        m_pEngine->updateScene(ui->preview->scene());
     }
     ui->viewport->repaint();
     ui->preview->repaint();

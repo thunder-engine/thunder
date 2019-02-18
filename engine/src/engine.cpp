@@ -252,10 +252,6 @@ void Engine::update() {
     // fixed update
     updateScene(p_ptr->m_pScene);
 
-    float lag  = Timer::deltaTime();
-    while(lag >= Timer::fixedDelta()) {
-        lag -= Timer::fixedDelta();
-    }
     for(auto it : p_ptr->m_Systems) {
         it->update(p_ptr->m_pScene);
     }
@@ -457,22 +453,17 @@ void Engine::setOrganizationName(const string &name) {
     EnginePrivate::m_Organization   = name;
 }
 
-void Engine::updateScene(Object *object) {
+void Engine::updateScene(Scene *scene) {
     PROFILER_MARKER;
 
-    if(object) {
-        for(auto &it : object->getChildren()) {
-            Object *child   = it;
-            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(child);
-            if(comp && comp->isEnable()) {
-                if(!comp->isStarted()) {
-                    comp->start();
-                    comp->setStarted(true);
-                }
-                comp->update();
-            } else {
-                updateScene(child);
+    for(auto it : m_List) {
+        NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
+        if(comp && comp->isEnable() && comp->actor()->scene() == scene) {
+            if(!comp->isStarted()) {
+                comp->start();
+                comp->setStarted(true);
             }
+            comp->update();
         }
     }
 }

@@ -81,7 +81,7 @@ ParticleEdit::~ParticleEdit() {
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
-    Engine::updateScene(ui->glWidget->scene());
+    m_pEngine->updateScene(ui->glWidget->scene());
     ui->glWidget->repaint();
 }
 

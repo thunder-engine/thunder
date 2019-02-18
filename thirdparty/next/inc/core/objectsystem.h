@@ -64,7 +64,7 @@ private:
 
     void                                factoryRemove           (const string &name, const string &uri);
 
-private:
+protected:
     Object::ObjectList                  m_List;
 
 };

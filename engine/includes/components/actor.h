@@ -3,6 +3,7 @@
 
 #include "engine.h"
 
+class Scene;
 class Component;
 class Transform;
 class Prefab;
@@ -27,6 +28,8 @@ public:
     uint8_t                     layers                  () const;
 
     Transform                  *transform               ();
+
+    Scene                      *scene                   () const;
 
     Component                  *findComponent           (const char *type);
 
@@ -69,6 +72,8 @@ protected:
     Transform                  *m_pTransform;
 
     Actor                      *m_pPrefab;
+
+    Scene                      *m_pScene;
 };
 
 #endif // ACTOR_H

@@ -10,6 +10,7 @@
 #include <scriptstdstring/scriptstdstring.h>
 
 #include <components/scene.h>
+#include <components/actor.h>
 #include <components/angelbehaviour.h>
 
 #include <cstring>
@@ -100,9 +101,9 @@ const char *AngelSystem::name() const {
 void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
-    for(auto &component : scene->findChildren<AngelBehaviour *>()) { //  auto it : m_List
-        //AngelBehaviour *component = static_cast<Component *>(it);
-        if(component->isEnable()) {
+    for(auto it : m_List) {
+        AngelBehaviour *component = static_cast<Component *>(it);
+        if(component->isEnable() && component->actor()->scene() == scene) {
             asIScriptObject *object = component->scriptObject();
             string value    = component->script();
             if(object == nullptr && !value.empty() && m_pScriptModule) {

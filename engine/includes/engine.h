@@ -78,7 +78,7 @@ public:
 
     void                        setOrganizationName         (const string &name);
 
-    static void                 updateScene                 (Object *object);
+    void                        updateScene                 (Scene *scene);
 
     static void                 setResource                 (Object *object, string &uuid);
 

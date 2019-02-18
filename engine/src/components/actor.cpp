@@ -1,5 +1,5 @@
 #include "components/actor.h"
-
+#include "components/scene.h"
 #include "components/transform.h"
 
 #include "commandbuffer.h"
@@ -11,7 +11,8 @@ Actor::Actor() :
         m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
         m_Enable(true),
         m_pTransform(nullptr),
-        m_pPrefab(nullptr) {
+        m_pPrefab(nullptr),
+        m_pScene(nullptr) {
 
 }
 
@@ -35,6 +36,10 @@ Transform *Actor::transform() {
         }
     }
     return m_pTransform;
+}
+
+Scene *Actor::scene() const {
+    return m_pScene;
 }
 
 Component *Actor::findComponent(const char *type) {
@@ -103,6 +108,11 @@ void Actor::setParent(Object *parent) {
     } else {
         Object::setParent(parent);
     }
+    Object *scene = parent;
+    while(scene->parent() != nullptr) {
+        scene = scene->parent();
+    }
+    m_pScene = dynamic_cast<Scene *>(scene);
 }
 
 bool Actor::isPrefab() const {
