@@ -108,11 +108,13 @@ void Actor::setParent(Object *parent) {
     } else {
         Object::setParent(parent);
     }
-    Object *scene = parent;
-    while(scene->parent() != nullptr) {
-        scene = scene->parent();
+    if(parent) {
+        Object *scene = parent;
+        while(scene->parent() != nullptr) {
+            scene = scene->parent();
+        }
+        m_pScene = dynamic_cast<Scene *>(scene);
     }
-    m_pScene = dynamic_cast<Scene *>(scene);
 }
 
 bool Actor::isPrefab() const {

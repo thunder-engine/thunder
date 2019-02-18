@@ -102,7 +102,7 @@ void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
     for(auto it : m_List) {
-        AngelBehaviour *component = static_cast<Component *>(it);
+        AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
         if(component->isEnable() && component->actor()->scene() == scene) {
             asIScriptObject *object = component->scriptObject();
             string value    = component->script();

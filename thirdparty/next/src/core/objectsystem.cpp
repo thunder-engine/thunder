@@ -70,15 +70,27 @@ ObjectSystem::ObjectSystem() {
 ObjectSystem::~ObjectSystem() {
     PROFILE_FUNCTION()
 
-    s_Factories.clear();
-    s_Groups.clear();
-
-    auto it = m_List.begin();
-    while(it != m_List.end()) {
-        delete *it;
-        it = m_List.begin();
+    {
+        auto it = s_Factories.begin();
+        while(it != s_Factories.end()) {
+            FactoryPair &pair = it->second;
+            if(pair.second == this) {
+                s_Groups.erase(pair.first->name());
+                it = s_Factories.erase(it);
+                continue;
+            }
+            it++;
+        }
+    }
+    {
+        auto it = m_List.begin();
+        while(it != m_List.end()) {
+            delete *it;
+            it = m_List.begin();
+        }
     }
 }
+
 /*!
     Updates all related objects.
 */

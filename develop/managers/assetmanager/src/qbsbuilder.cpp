@@ -26,6 +26,7 @@ const QString gIncludePaths("${includePaths}");
 const QString gLibraryPaths("${libraryPaths}");
 const QString gLibraries("${libraries}");
 const QString gManifestFile("${manifestFile}");
+const QString gAssetsPaths("${assetsPath}");
 
 const QString gEditorSuffix("-Editor");
 
@@ -83,7 +84,7 @@ QbsBuilder::QbsBuilder() :
 #elif defined(Q_OS_UNIX)
     m_Profiles << "clang";
 #endif
-    m_Profiles << "Android";
+    m_Profiles << "android";
 
     if(!checkProfile(m_Profiles[0])) {
         Log(Log::INF) << "Initializing QBS...";
@@ -152,22 +153,29 @@ void QbsBuilder::generateProject() {
     values[gFilesList]      = formatList(m_Sources);
     values[gLibraries]      = formatList(m_Libs);
     values[gManifestFile]   = "";
+    values[gAssetsPaths]    = ProjectManager::instance()->importPath();
 
     copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
 }
-
+#include <QDebug>
 bool QbsBuilder::buildProject() {
     if(m_Outdated && !m_Progress) {
         generateProject();
 
         QString product = m_pMgr->projectName();
         if(m_pMgr->targetPath().isEmpty()) {
-            product    += gEditorSuffix;
+            product += gEditorSuffix;
         }
         {
             QProcess qbs(this);
             qbs.setWorkingDirectory(m_Project);
-            qbs.start(m_pMgr->qbsPath(), QStringList() << "resolve" << gMode << "profile:" + m_Profiles[0]);
+
+            QStringList args;
+            args << "resolve" << gMode << "profile:" + m_Profiles[0];
+
+            qDebug() << args;
+
+            qbs.start(m_pMgr->qbsPath(), args);
             if(qbs.waitForStarted()) {
                 qbs.waitForFinished();
                 Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
@@ -177,6 +185,8 @@ bool QbsBuilder::buildProject() {
             QStringList args;
             args << "build" << m_Settings;
             args << "--products" << product << gMode << "profile:" + m_Profiles[0];
+            qDebug() << args;
+
             m_pProcess->start(m_pMgr->qbsPath(), args);
             if(!m_pProcess->waitForStarted()) {
                 Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
@@ -222,8 +232,7 @@ void QbsBuilder::builderInit() {
         args << "setup-android" << m_Settings;
         args << "--sdk-dir" << "D:/Environment/Android/sdk";
         args << "--ndk-dir" << "D:/Environment/Android/sdk/ndk-bundle";
-        //D:/Environment/Android/sdk/ndk-bundle/sysroot
-        args << "Android";
+        args << "android";
 
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);

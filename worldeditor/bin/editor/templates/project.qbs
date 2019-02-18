@@ -26,7 +26,7 @@ Project {
         files: [ ${filesList},
             "plugin.cpp" ]
         Depends { name: "cpp" }
-
+        cpp.cxxLanguageVersion: "c++14"
         cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
@@ -55,7 +55,7 @@ Project {
 
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.identifierPrefix: "com.thunderengine"
-
+        cpp.cxxLanguageVersion: "c++14"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/lib"
@@ -114,14 +114,15 @@ Project {
             qbs.installSourceBase: product.buildDirectory
         }
     }
-
+/*
     AndroidApk {
         condition: isAndroid
         name: "${Project_Name}Apk"
         packageName: "com.thunderengine.${Project_Name}"
         Depends { productTypes: ["android.nativelibrary"] }
-        assetsDir: "${assetsDir}"
+        assetsDir: "${assetsPath}"
         manifestFile: "${manifestFile}"
     }
+*/
 }
 

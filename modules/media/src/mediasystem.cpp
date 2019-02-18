@@ -18,11 +18,9 @@ MediaSystem::MediaSystem() :
         m_pContext(nullptr) {
     PROFILER_MARKER;
 
-    ObjectSystem system;
+    AudioSource::registerClassFactory(this);
 
-    AudioSource::registerClassFactory(&system);
-
-    AudioClip::registerClassFactory(&system);
+    AudioClip::registerClassFactory(this);
 }
 
 MediaSystem::~MediaSystem() {

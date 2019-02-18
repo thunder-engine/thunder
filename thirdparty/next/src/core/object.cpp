@@ -278,14 +278,14 @@ Object::~Object() {
     }
 
     while(!p_ptr->m_lSenders.empty()) {
-        disconnect(p_ptr->m_lSenders.front().sender, 0, this, 0);
+        disconnect(p_ptr->m_lSenders.front().sender, nullptr, this, nullptr);
     }
-    disconnect(this, 0, 0, 0);
+    disconnect(this, nullptr, nullptr, nullptr);
 
     for(const auto &it : p_ptr->m_mChildren) {
         Object *c  = it;
         if(c) {
-            c->p_ptr->m_pParent    = 0;
+            c->p_ptr->m_pParent    = nullptr;
             delete c;
         }
     }
@@ -696,7 +696,7 @@ void Object::processEvents() {
                 locker.unlock();
                 delete this;
                 return;
-            } break;
+            }
             default: {
                 event(e);
             } break;
