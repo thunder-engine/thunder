@@ -137,8 +137,8 @@ void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaO
 
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     PROFILE_FUNCTION()
-   s_Groups.erase(name);
-   s_Factories.erase(uri);
+    s_Groups.erase(name);
+    s_Factories.erase(uri);
 }
 /*!
     Returns all registered classes.

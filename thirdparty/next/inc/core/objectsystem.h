@@ -54,15 +54,15 @@ public:
 protected:
     static void                         processObject           (Object *object);
 
+    void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
+
+    void                                factoryRemove           (const string &name, const string &uri);
+
 private:
     friend class ObjectSystemTest;
     friend class Object;
 
     void                                removeObject            (Object *object);
-
-    void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
-
-    void                                factoryRemove           (const string &name, const string &uri);
 
 protected:
     Object::ObjectList                  m_List;

@@ -9,6 +9,7 @@
 #include <QFileInfo>
 
 #include "angelsystem.h"
+#include "components/angelbehaviour.h"
 
 #define DATA    "Data"
 
@@ -75,6 +76,19 @@ bool AngelBuilder::buildProject() {
                 file.close();
             }
         }
+
+        const MetaObject *meta = AngelBehaviour::metaClass();
+
+        for(uint32_t i = 0; i < mod->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = mod->GetObjectTypeByIndex(i);
+            if(info) {
+                asITypeInfo *super = info->GetBaseType();
+                if(super && strcmp(super->GetName(), "Behaviour") == 0) {
+                    //m_pSystem->registerMetaType(m_pScriptEngine, info->GetName(), meta);
+                }
+            }
+        }
+
         if(mod->Build() >= 0) {
             QFile dst(m_Destination);
             if(dst.open( QIODevice::WriteOnly)) {

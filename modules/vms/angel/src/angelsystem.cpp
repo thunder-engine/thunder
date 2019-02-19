@@ -7,6 +7,7 @@
 #include <analytics/profiler.h>
 
 #include <angelscript.h>
+#include <scriptarray/scriptarray.h>
 #include <scriptstdstring/scriptstdstring.h>
 
 #include <components/scene.h>
@@ -154,6 +155,18 @@ void AngelSystem::reload() {
         AngelStream stream(script->m_Array);
         m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
         m_pScriptModule->LoadByteCode(&stream);
+
+        const MetaObject *meta = AngelBehaviour::metaClass();
+
+        for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
+            if(info) {
+                asITypeInfo *super = info->GetBaseType();
+                if(super && strcmp(super->GetName(), "Behaviour") == 0) {
+                    //registerMetaType(m_pScriptEngine, info->GetName(), meta);
+                }
+            }
+        }
     } else {
         Log(Log::ERR) << __FUNCTION__ << "Filed to load a script";
     }
@@ -181,6 +194,7 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     PROFILER_MARKER;
 
     RegisterStdString(engine);
+    RegisterScriptArray(engine, true);
 
     registerMath(engine);
     registerCore(engine);
@@ -201,92 +215,95 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     }
 
     for(auto &it: ISystem::factories()) {
-        const char *typeName    = it.first.c_str();
-        const MetaObject *meta  = ISystem::metaFactory(typeName)->first;
+        registerMetaType(engine, it.first, ISystem::metaFactory(it.first)->first);
+    }
+}
 
-        const MetaObject *super = meta->super();
-        while(super != nullptr) {
-            const char *superName   = super->name();
+void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
+    const char *typeName    = name.c_str();
 
-            engine->RegisterObjectMethod(superName, (it.first + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
-            engine->RegisterObjectMethod(typeName, (string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+    const MetaObject *super = meta->super();
+    while(super != nullptr) {
+        const char *superName   = super->name();
 
-            super = super->super();
+        engine->RegisterObjectMethod(superName, (name + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+        engine->RegisterObjectMethod(typeName, (string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+
+        super = super->super();
+    }
+
+    uint32_t type   = MetaType::type(typeName);
+    MetaType::Table *table  = MetaType::table(type);
+    if(table) {
+        for(uint32_t m = 0; m < meta->methodCount(); m++) {
+            MetaMethod method   = meta->method(m);
+            if(method.isValid()) {
+                MetaType ret    = method.returnType();
+                string retName;
+                if(ret.isValid()) {
+                    retName = ret.name();
+                    retName += ' ';
+                } else {
+                    retName = "void ";
+                }
+
+                asSFuncPtr ptr(3);
+                method.table()->address(ptr.ptr.dummy, sizeof(void *));
+
+                string signature    = retName + method.signature();
+                for(auto &it : signature) {
+                    if(it == '*') {
+                        it = '@';
+                    }
+                }
+
+                engine->RegisterObjectMethod(typeName,
+                                             signature.c_str(),
+                                             ptr,
+                                             asCALL_THISCALL);
+            }
         }
 
-        uint32_t type   = MetaType::type(typeName);
-        MetaType::Table *table  = MetaType::table(type);
-        if(table) {
-            for(uint32_t m = 0; m < meta->methodCount(); m++) {
-                MetaMethod method   = meta->method(m);
-                if(method.isValid()) {
-                    MetaType ret    = method.returnType();
-                    string retName;
-                    if(ret.isValid()) {
-                        retName = ret.name();
-                        retName += ' ';
-                    } else {
-                        retName = "void ";
+        for(uint32_t p = 0; p < meta->propertyCount(); p++) {
+            MetaProperty property = meta->property(p);
+            if(property.isValid()) {
+
+                MetaType type   = property.type();
+                string name =  type.name();
+
+                bool ptr    = false;
+                for(auto &it : name) {
+                    if(it == '*') {
+                        it = '&';
                     }
-
-                    asSFuncPtr ptr(3);
-                    method.table()->address(ptr.ptr.dummy, sizeof(void *));
-
-                    string signature    = retName + method.signature();
-                    for(auto &it : signature) {
-                        if(it == '*') {
-                            it = '@';
-                        }
+                    if(it == '&') {
+                        ptr = true;
                     }
-
-                    engine->RegisterObjectMethod(typeName,
-                                                 signature.c_str(),
-                                                 ptr,
-                                                 asCALL_THISCALL);
                 }
+
+                string ref  = (ptr) ? "" : " &";
+
+                string get  = name + ref +"get_" + property.name() + "()";
+                string set  = string("void set_") + property.name() + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
+
+                asSFuncPtr ptr1(3);
+                property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
+
+                asSFuncPtr ptr2(3);
+                property.table()->writemem(ptr2.ptr.dummy, sizeof(void *));
+
+                engine->RegisterObjectMethod(typeName,
+                                             get.c_str(),
+                                             ptr1,
+                                             asCALL_THISCALL);
+
+                engine->RegisterObjectMethod(typeName,
+                                             set.c_str(),
+                                             ptr2,
+                                             asCALL_THISCALL);
             }
-
-            for(uint32_t p = 0; p < meta->propertyCount(); p++) {
-                MetaProperty property = meta->property(p);
-                if(property.isValid()) {
-
-                    MetaType type   = property.type();
-                    string name =  type.name();
-
-                    bool ptr    = false;
-                    for(auto &it : name) {
-                        if(it == '*') {
-                            it = '&';
-                        }
-                        if(it == '&') {
-                            ptr = true;
-                        }
-                    }
-
-                    string ref  = (ptr) ? "" : " &";
-
-                    string get  = name + ref +"get_" + property.name() + "()";
-                    string set  = string("void set_") + property.name() + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
-
-                    asSFuncPtr ptr1(3);
-                    property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
-
-                    asSFuncPtr ptr2(3);
-                    property.table()->writemem(ptr2.ptr.dummy, sizeof(void *));
-
-                    engine->RegisterObjectMethod(typeName,
-                                                 get.c_str(),
-                                                 ptr1,
-                                                 asCALL_THISCALL);
-
-                    engine->RegisterObjectMethod(typeName,
-                                                 set.c_str(),
-                                                 ptr2,
-                                                 asCALL_THISCALL);
-                }
-            }
-
         }
+
     }
 }
 

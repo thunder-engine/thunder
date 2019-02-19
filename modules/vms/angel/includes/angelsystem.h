@@ -28,6 +28,8 @@ public:
 
     void                        registerClasses             (asIScriptEngine *engine);
 
+    void                        registerMetaType            (asIScriptEngine *engine, const string &name, const MetaObject *meta);
+
 protected:
     void                        execute                     (asIScriptObject *object, asIScriptFunction *func);
 
