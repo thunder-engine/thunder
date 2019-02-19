@@ -40,8 +40,6 @@ void Viewport::initializeGL() {
         Camera::setCurrent(m_pController->camera());
     }
 
-    m_Systems.push_back(PluginModel::instance()->createSystem("AngelScript"));
-
     SceneView::initializeGL();
 
     m_pCommandBuffer    = Engine::objectCreate<ICommandBuffer>();

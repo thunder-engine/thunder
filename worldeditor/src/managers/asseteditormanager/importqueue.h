@@ -43,6 +43,8 @@ private:
     QMap<QString, uint32_t> m_UpdateQueue;
 
     Engine                 *m_pEngine;
+
+    IconRender             *m_pRender;
 };
 
 #endif // IMPORTQUEUE_H

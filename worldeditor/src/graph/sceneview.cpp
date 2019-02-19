@@ -29,10 +29,7 @@ SceneView::SceneView(QWidget *parent) :
 }
 
 SceneView::~SceneView() {
-    foreach(ISystem *it, m_Systems) {
-        delete it;
-    }
-    m_Systems.clear();
+
 }
 
 void SceneView::setScene(Scene *scene) {
@@ -48,15 +45,6 @@ void SceneView::setController(CameraCtrl *ctrl) {
 }
 
 void SceneView::initializeGL() {
-    m_Systems.push_back(PluginModel::instance()->createSystem("Media"));
-    m_Systems.push_back(PluginModel::instance()->createSystem("RenderGL"));
-
-    foreach(ISystem *it, m_Systems) {
-        if(it) {
-            it->init();
-        }
-    }
-
     emit inited();
 }
 
@@ -67,11 +55,7 @@ void SceneView::paintGL() {
     if(m_pScene) {
         findCamera();
 
-        foreach(ISystem *it, m_Systems) {
-            if(it) {
-                it->update(m_pScene);
-            }
-        }
+        PluginModel::instance()->updateSystems(m_pScene);
     }
 }
 

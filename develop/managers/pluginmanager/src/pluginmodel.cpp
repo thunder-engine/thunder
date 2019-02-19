@@ -116,7 +116,7 @@ bool PluginModel::loadPlugin(const QString &path) {
 
                 uint8_t types   = plugin->types();
                 if(types & IModule::SYSTEM) {
-                    registerSystemPlugin(plugin);
+                    registerSystem(plugin);
                 }
                 if(types & IModule::EXTENSION) {
                     registerExtensionPlugin(path, plugin);
@@ -237,21 +237,29 @@ void PluginModel::rescanPath(const QString &path) {
     }
 }
 
-void PluginModel::registerSystemPlugin(IModule *plugin) {
-    m_Systems[QString::fromStdString(plugin->system()->name())] = plugin;
+void PluginModel::registerSystem(IModule *plugin) {
+    m_Systems[QString::fromStdString(plugin->system()->name())] = plugin->system();
+}
+
+void PluginModel::initSystems() {
+    foreach(auto it, m_Systems) {
+        if(it) {
+            it->init();
+        }
+    }
+}
+
+void PluginModel::updateSystems(Scene *scene) {
+    foreach(auto it, m_Systems) {
+        if(it) {
+            it->update(scene);
+        }
+    }
 }
 
 void PluginModel::registerExtensionPlugin(const QString &path, IModule *plugin) {
     m_Extensions[path]  = plugin;
     emit updated();
-}
-
-ISystem *PluginModel::createSystem(const QString &name) {
-    QMap<QString, IModule *>::iterator it   = m_Systems.find(name);
-    if(it != m_Systems.end()) {
-        return it.value()->system();
-    }
-    return nullptr;
 }
 
 void PluginModel::addScene(Scene *scene) {

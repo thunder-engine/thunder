@@ -47,7 +47,7 @@ public:
     }
 
     static Variant                      toVariant               (const Object *object);
-    static Object                      *toObject                (const Variant &variant);
+    static Object                      *toObject                (const Variant &variant, Object *root = nullptr);
 
     static uint32_t                     generateUID             ();
 

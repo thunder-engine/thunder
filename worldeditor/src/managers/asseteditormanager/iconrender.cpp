@@ -41,12 +41,9 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_Context->create();
     m_Context->makeCurrent(m_Surface);
 
-    m_pFBO      = new QOpenGLFramebufferObject(128, 128);
+    PluginModel::instance()->initSystems();
 
-    m_pRender   = PluginModel::instance()->createSystem("RenderGL");
-    if(m_pRender) {
-        m_pRender->init();
-    }
+    m_pFBO      = new QOpenGLFramebufferObject(128, 128);
 
     m_pScene = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
@@ -112,10 +109,9 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
         default: break;
     }
 
-    if(m_pRender) {
-        Camera::setCurrent(m_pCamera);
-        m_pRender->update(m_pScene);
-    }
+    Camera::setCurrent(m_pCamera);
+    PluginModel::instance()->updateSystems(m_pScene);
+
     m_Context->functions()->glFinish();
 
     delete object;

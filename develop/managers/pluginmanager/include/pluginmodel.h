@@ -36,7 +36,9 @@ public:
 
     QVariant                    data                        (const QModelIndex &index, int role) const;
 
-    ISystem                    *createSystem                (const QString &name);
+    void                        initSystems                 ();
+
+    void                        updateSystems               (Scene *scene);
 
     void                        addScene                    (Scene *scene);
 
@@ -57,7 +59,7 @@ private:
 protected:
     void                        rescanPath                  (const QString &path);
 
-    void                        registerSystemPlugin        (IModule *plugin);
+    void                        registerSystem              (IModule *plugin);
 
     void                        registerExtensionPlugin     (const QString &path, IModule *plugin);
 
@@ -66,7 +68,7 @@ protected:
 private:
     void                        clear                       ();
 
-    typedef QMap<QString, IModule *>   PluginsMap;
+    typedef QMap<QString, IModule *>    PluginsMap;
 
     typedef QMap<QString, QLibrary *>   LibrariesMap;
 
@@ -74,7 +76,7 @@ private:
 
     QStringList                 m_Suffixes;
 
-    PluginsMap                  m_Systems;
+    QMap<QString, ISystem *>    m_Systems;
 
     PluginsMap                  m_Extensions;
 

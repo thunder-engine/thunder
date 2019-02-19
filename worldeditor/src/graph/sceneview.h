@@ -100,8 +100,6 @@ protected:
 
     CameraCtrl             *m_pController;
 
-    QList<ISystem *>        m_Systems;
-
     Scene                  *m_pScene;
 
     QMenu                   m_RenderModeMenu;

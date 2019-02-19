@@ -35,8 +35,6 @@ protected:
 
     Engine                     *m_pEngine;
 
-    ISystem                    *m_pRender;
-
     Scene                      *m_pScene;
 
     Actor                      *m_pActor;

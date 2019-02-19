@@ -364,11 +364,10 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
         data.resize(array.size());
         memcpy(&data[0], array.data(), array.size());
         Variant var = Json::load(data);
-        Object *map = Engine::toObject(var);
+        Object *map = Engine::toObject(var, ui->viewport->scene());
         if(map) {
             updateTitle();
 
-            map->setParent(ui->viewport->scene());
             delete m_pMap;
             m_pMap  = map;
             ui->hierarchy->setObject(m_pMap);

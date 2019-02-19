@@ -200,7 +200,7 @@ Variant ObjectSystem::toVariant(const Object *object) {
     The Variant representation can be loaded from BSON or JSON formats or retrieved from memory.
     Deserialization will try to restore objects hierarchy, its properties and connections.
 */
-Object *ObjectSystem::toObject(const Variant &variant) {
+Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
     PROFILE_FUNCTION()
     Object *result  = nullptr;
 
@@ -217,7 +217,7 @@ Object *ObjectSystem::toObject(const Variant &variant) {
             i++;
             uint32_t uuid   = (*i).toInt();
             i++;
-            Object *parent  = nullptr;
+            Object *parent  = root;
             auto a  = array.find((*i).toInt());
             if(a != array.end()) {
                 parent  = (*a).second;

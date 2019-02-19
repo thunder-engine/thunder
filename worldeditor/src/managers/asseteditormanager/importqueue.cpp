@@ -27,6 +27,8 @@ ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
 
     QRect r = QApplication::desktop()->screenGeometry();
     move(r.center() - rect().center());
+
+    m_pRender = new IconRender(m_pEngine, QOpenGLContext::globalShareContext());
 }
 
 ImportQueue::~ImportQueue() {
@@ -48,11 +50,11 @@ void ImportQueue::onStarted(int count, const QString &action) {
 }
 
 void ImportQueue::onImportFinished() {
-    IconRender render(m_pEngine, QOpenGLContext::globalShareContext());
+    //IconRender render(m_pEngine, QOpenGLContext::globalShareContext());
 
     auto i = m_UpdateQueue.constBegin();
     while(i != m_UpdateQueue.constEnd()) {
-        QImage image = render.render(i.key(), i.value());
+        QImage image = m_pRender->render(i.key(), i.value());
         if(!image.isNull()) {
             image.save(ProjectManager::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
         }
