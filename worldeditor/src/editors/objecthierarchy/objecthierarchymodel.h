@@ -34,6 +34,9 @@ public:
 
     Qt::ItemFlags               flags                       (const QModelIndex &index) const;
 
+private:
+    void                        timerEvent                  (QTimerEvent *);
+
 protected:
     Object                     *m_rootItem;
 

@@ -11,7 +11,14 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         m_Visible(QPixmap(":/Images/fontawesome/eye.png")),
         m_Invisible() {
 
+    startTimer(1000);
+}
 
+void ObjectHierarchyModel::timerEvent(QTimerEvent *) {
+    if(Engine::isGameMode()) {
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+    }
 }
 
 void ObjectHierarchyModel::setRoot(Object *scene) {

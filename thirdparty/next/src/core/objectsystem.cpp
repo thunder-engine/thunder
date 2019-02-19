@@ -283,7 +283,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                 array[uuid] = object;
             }
 
-            if(!object->parent()) {
+            if(object->parent() == root) {
                 result  = object;
             }
         }

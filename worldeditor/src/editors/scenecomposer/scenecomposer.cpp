@@ -200,9 +200,8 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
-    if(ui->actionGame_Mode->isChecked()) {
-        m_pEngine->updateScene(ui->preview->scene());
-    }
+    m_pEngine->updateScene(ui->preview->scene());
+
     ui->viewport->repaint();
     ui->preview->repaint();
 }
@@ -328,7 +327,7 @@ void SceneComposer::on_action_New_triggered() {
     m_pMap  = Engine::objectCreate<Actor>("Chunk", m_pEngine->scene());
     ui->hierarchy->setObject(m_pMap);
 
-    ObjectCtrl *ctrl    = static_cast<ObjectCtrl *>(ui->viewport->controller());
+    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
     ctrl->clear();
     ctrl->setMap(m_pMap);
@@ -371,8 +370,8 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
             delete m_pMap;
             m_pMap  = map;
             ui->hierarchy->setObject(m_pMap);
-            ObjectCtrl * ctrl   = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
+            ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
             ctrl->clear();
             ctrl->setMap(m_pMap);
 
@@ -424,18 +423,19 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
     ui->actionGame_Mode->setChecked(false);
 
     ui->centralwidget->activateToolWindow(ui->viewport);
-    Object *map = Engine::toObject(Bson::load(m_Back));
+    Object *map = Engine::toObject(Bson::load(m_Back), ui->viewport->scene());
     if(map) {
         delete m_pMap;
         m_pMap  = map;
 
-        map->setParent(ui->viewport->scene());
         ui->hierarchy->setObject(m_pMap);
 
-        ObjectCtrl *ctrl  = static_cast<ObjectCtrl *>(ui->viewport->controller());
+        ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
         ctrl->clear();
         ctrl->setMap(m_pMap);
     }
+
+    Engine::setGameMode(false);
 }
 
 void SceneComposer::on_actionGame_Mode_triggered() {
@@ -445,6 +445,8 @@ void SceneComposer::on_actionGame_Mode_triggered() {
     }
     ui->actionGame_Mode->setChecked(true);
     ui->actionEditor_Mode->setChecked(false);
+
+    Engine::setGameMode(true);
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {

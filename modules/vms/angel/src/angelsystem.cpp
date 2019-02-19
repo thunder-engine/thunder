@@ -103,7 +103,7 @@ void AngelSystem::update(Scene *scene) {
 
     for(auto it : m_List) {
         AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
-        if(component->isEnable() && component->actor()->scene() == scene) {
+        if(component->isEnable() && component->actor() && component->actor()->scene() == scene) {
             asIScriptObject *object = component->scriptObject();
             string value    = component->script();
             if(object == nullptr && !value.empty() && m_pScriptModule) {
@@ -132,6 +132,7 @@ void AngelSystem::update(Scene *scene) {
             if(Engine::isGameMode()) {
                 if(!component->isStarted()) {
                     execute(object, component->scriptStart());
+                    component->setStarted(true);
                 }
                 execute(object, component->scriptUpdate());
             }

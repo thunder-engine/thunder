@@ -58,6 +58,8 @@ public:
 */
     static bool                 isGameMode                  ();
 
+    static void                 setGameMode                 (bool game);
+
     void                        addModule                   (IModule *mode);
 
     Scene                      *scene                       ();

@@ -386,6 +386,10 @@ bool Engine::isGameMode() {
     return EnginePrivate::m_Game;
 }
 
+void Engine::setGameMode(bool game) {
+    EnginePrivate::m_Game = game;
+}
+
 void Engine::addModule(IModule *mode) {
     PROFILER_MARKER;
     if(mode->types() & IModule::SYSTEM) {
@@ -456,14 +460,16 @@ void Engine::setOrganizationName(const string &name) {
 void Engine::updateScene(Scene *scene) {
     PROFILER_MARKER;
 
-    for(auto it : m_List) {
-        NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-        if(comp && comp->isEnable() && comp->actor()->scene() == scene) {
-            if(!comp->isStarted()) {
-                comp->start();
-                comp->setStarted(true);
+    if(isGameMode) {
+        for(auto it : m_List) {
+            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
+            if(comp && comp->isEnable() && comp->actor()->scene() == scene) {
+                if(!comp->isStarted()) {
+                    comp->start();
+                    comp->setStarted(true);
+                }
+                comp->update();
             }
-            comp->update();
         }
     }
 }
