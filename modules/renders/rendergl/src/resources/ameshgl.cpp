@@ -92,9 +92,9 @@ void AMeshGL::apply() {
 void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t surface, uint32_t lod) {
     VaoMap *map = &(m_Vao[surface][lod]);
     auto it = map->find(buffer);
-    if(it != map->end()) {
-         glBindVertexArray(it->second);
-         return;
+    if(it != map->end() && glIsVertexArray(it->second)) {
+        glBindVertexArray(it->second);
+        return;
     }
     uint32_t id;
     glGenVertexArrays(1, &id);
