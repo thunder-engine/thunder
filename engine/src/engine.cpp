@@ -460,7 +460,7 @@ void Engine::setOrganizationName(const string &name) {
 void Engine::updateScene(Scene *scene) {
     PROFILER_MARKER;
 
-    if(isGameMode) {
+    if(isGameMode()) {
         for(auto it : m_List) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
             if(comp && comp->isEnable() && comp->actor()->scene() == scene) {
