@@ -33,9 +33,11 @@ src/zip.h
 add_library(quazip STATIC ${SRC_FILES})
 target_include_directories(quazip PUBLIC src)
 target_link_libraries(quazip PUBLIC zlib Qt5::Core)
+target_compile_definitions(quazip PUBLIC QUAZIP_STATIC)
 set_target_properties(quazip PROPERTIES AUTOMOC ON)
 
 add_library(quazip-editor SHARED ${SRC_FILES})
 target_include_directories(quazip-editor PUBLIC src)
+target_compile_definitions(quazip-editor PRIVATE QUAZIP_BUILD)
 target_link_libraries(quazip-editor PUBLIC zlib-editor Qt5::Core)
 set_target_properties(quazip-editor PROPERTIES AUTOMOC ON)

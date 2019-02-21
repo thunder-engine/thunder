@@ -1,11 +1,30 @@
 set(SRC_FILES
-    src/commandbuffergl.cpp  src/postprocess/aambientocclusiongl.cpp  src/postprocess/abloomgl.cpp  src/renderglsystem.cpp         src/resources/ameshgl.cpp           src/resources/atexturegl.cpp
-    src/filters/ablurgl.cpp  src/postprocess/aantialiasinggl.cpp      src/rendergl.cpp              src/resources/amaterialgl.cpp  src/resources/arendertexturegl.cpp    
+    src/commandbuffergl.cpp
+    src/postprocess/aambientocclusiongl.cpp
+    src/postprocess/abloomgl.cpp
+    src/renderglsystem.cpp
+    src/resources/ameshgl.cpp
+    src/resources/atexturegl.cpp
+    src/filters/ablurgl.cpp
+    src/postprocess/aantialiasinggl.cpp
+    src/rendergl.cpp
+    src/resources/amaterialgl.cpp
+    src/resources/arendertexturegl.cpp
 )
 set(INC_FILES
-    includes/agl.h               includes/postprocess/aambientocclusiongl.h   includes/postprocess/apostprocessor.h   includes/resources/amaterialgl.h        includes/resources/atexturegl.h
-    includes/commandbuffergl.h   includes/postprocess/aantialiasinggl.h       includes/rendergl.h                     includes/resources/ameshgl.h
-    includes/filters/ablurgl.h   includes/postprocess/abloomgl.h              includes/renderglsystem.h               includes/resources/arendertexturegl.h    
+    includes/agl.h
+    includes/postprocess/aambientocclusiongl.h
+    includes/postprocess/apostprocessor.h
+    includes/resources/amaterialgl.h
+    includes/resources/atexturegl.h
+    includes/commandbuffergl.h
+    includes/postprocess/aantialiasinggl.h
+    includes/rendergl.h
+    includes/resources/ameshgl.h
+    includes/filters/ablurgl.h
+    includes/postprocess/abloomgl.h
+    includes/renderglsystem.h
+    includes/resources/arendertexturegl.h
 )
 add_library(rendergl STATIC ${SRC_FILES} ${INC_FILES})
 target_include_directories(rendergl PUBLIC includes)

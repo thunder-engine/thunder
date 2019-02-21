@@ -17,6 +17,33 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+########################## Prepare global data and defines ####################
+set(PROJECT_DEFINES)
+list(APPEND PROJECT_DEFINES 
+    COMPANY_NAME="FrostSpear"
+    EDITOR_NAME="WorldEditor"
+    PRODUCT_NAME="Thunder Engine"
+    COPYRIGHT_AUTHOR="Evgeniy Prikazchikov"
+)
+file(READ ${PROJECT_SOURCE_DIR}/sponsors SPONSORS)
+file(READ ${PROJECT_SOURCE_DIR}/legal LEGAL)
+string(TIMESTAMP COPYRIGHT_YEAR "%Y")
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+list(APPEND PROJECT_DEFINES
+    SPONSORS="${SPONSORS}" 
+    LEGAL="${LEGAL}"
+    COPYRIGHT_YEAR="${COPYRIGHT_YEAR}"
+    REVISION="${GIT_BRANCH}"
+    BUILDER_NAME="Builder"
+    SDK_VERSION="1.0"
+    LAUNCHER_VERSION="1.0"
+)
+############################ add project component directories
 
 add_subdirectory(thirdparty)
 

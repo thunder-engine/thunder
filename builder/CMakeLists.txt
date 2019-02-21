@@ -67,55 +67,14 @@ target_link_libraries(builder PRIVATE
     fbx glsl spirvcross quazip-editor
     )
 target_compile_definitions(builder PRIVATE NEXT_SHARED BUILDER)
-target_compile_definitions(builder PUBLIC
-    -DCOMPANY_NAME="FrostSpear"
-    -DEDITOR_NAME="WorldEditor"
-    -DPRODUCT_NAME="Thunder Engine"
-    -DCOPYRIGHT_AUTHOR="Evgeniy Prikazchikov"
-    -DSPONSORS="${SPONSORS}"
-    -DCOPYRIGHT_YEAR="${COPYRIGHT_YEAR}"
-    -DLEGAL="${LEGAL}"
-    -DREVISION="${GIT_BRANCH}"
-    -DBUILDER_NAME="Builder"
-    -DSDK_VERSION="1.0"
-#    LAUNCHER_VERSION = "1.0"
-#    YEAR = 2017
-    )
+foreach(def ${PROJECT_DEFINES})
+	target_compile_definitions(builder PUBLIC ${def})
+endforeach()
 
-#Project {
-#    id: builder
-#
-#    property stringList incPaths: [
-#        "src",
-#        "../",
-#        "../common",
-#        "../engine/includes",
-#        "../engine/includes/resources",
-#        "../develop/managers/codemanager/include",
-#        "../develop/managers/projectmanager/include",
-#        "../develop/managers/assetmanager/include",
-#        "../develop/managers/pluginmanager/include",
-#        "../develop/models/include",
-#        "../modules/renders/rendergl/includes",
-#        "../thirdparty/next/inc",
-#        "../thirdparty/next/inc/math",
-#        "../thirdparty/next/inc/core",
-#        "../thirdparty/next/inc/anim",
-#        "../thirdparty/physfs/inc",
-#        "../thirdparty/glfw/inc",
-#        "../thirdparty/fbx/inc",
-#        "../thirdparty/zlib/src",
-#        "../thirdparty/quazip/src",
-#        "../thirdparty/glsl",
-#        "../thirdparty/spirvcross/src"
-#    ]
-#
 #    QtApplication {
 #        name: builder.BUILDER_NAME
 #        condition: builder.desktop
 #        files: builder.srcFiles
-#        Depends { name: "cpp" }
-#        Depends { name: "quazip-editor" }
 #
 #        bundle.isBundle: false
 #

@@ -58,6 +58,7 @@ set(SRC_FILES
     includes/components/textmesh.h
     includes/components/transform.h
     includes/engine.h
+    includes/engine_export.h
     includes/file.h
     includes/input.h
     includes/log.h
@@ -89,13 +90,9 @@ target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes in
 target_link_libraries(engine PUBLIC next freetype glfw physfs Qt5::Core)
 target_compile_definitions(engine PUBLIC ENGINE_STATIC_DEFINE) # since both builds use engine_export, this marks the export/import macro as no-op
 set_target_properties(engine PROPERTIES AUTOMOC ON)
+
 add_library(engine-editor SHARED ${SRC_FILES} ${CONVERTER_FILES})
 set_target_properties(engine-editor PROPERTIES AUTOMOC ON)
-target_include_directories(engine-editor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes includes/components includes/resources ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(engine-editor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes includes/components includes/resources)
 target_link_libraries(engine-editor PUBLIC next-editor freetype-editor glfw-editor physfs-editor Qt5::Core)
-target_compile_definitions(engine-editor PRIVATE NEXT_SHARED) # using `next` library in shared form ( exposr dllimport's on windows)
-
-generate_export_header(engine-editor BASE_NAME engine)
-
-list(APPEND SRC_FILES ${CMAKE_CURRENT_BINARY_DIR}/engine_export.h)
-
+target_compile_definitions(engine-editor PRIVATE NEXT_SHARED) # using `next` library in shared form ( expose dllimport's on windows)

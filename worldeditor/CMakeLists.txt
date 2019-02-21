@@ -210,25 +210,6 @@ target_include_directories(WorldEditor PRIVATE src
     ${PROJECT_SOURCE_DIR}/develop/managers/pluginmanager/include
     ${PROJECT_SOURCE_DIR}/develop/models/include/
     )
-file(READ ${PROJECT_SOURCE_DIR}/sponsors SPONSORS)
-file(READ ${PROJECT_SOURCE_DIR}/legal LEGAL)
-string(TIMESTAMP COPYRIGHT_YEAR "%Y")
-execute_process(
-  COMMAND git rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_BRANCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-target_compile_definitions(WorldEditor PUBLIC
-    -DCOMPANY_NAME="FrostSpear"
-    -DEDITOR_NAME="WorldEditor"
-    -DPRODUCT_NAME="Thunder Engine"
-    -DCOPYRIGHT_AUTHOR="Evgeniy Prikazchikov"
-    -DSPONSORS="${SPONSORS}"
-    -DCOPYRIGHT_YEAR="${COPYRIGHT_YEAR}"
-    -DLEGAL="${LEGAL}"
-    -DREVISION="${GIT_BRANCH}"
-    -DSDK_VERSION="1.0"
-#    LAUNCHER_VERSION = "1.0"
-#    YEAR = 2017
-    )
+foreach(def ${PROJECT_DEFINES})
+	target_compile_definitions(WorldEditor PUBLIC ${def})
+endforeach()
