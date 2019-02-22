@@ -19,3 +19,12 @@ target_include_directories(zlib PUBLIC src)
 add_library(zlib-editor SHARED ${SRC_FILES})
 target_include_directories(zlib-editor PUBLIC src)
 target_compile_definitions(zlib-editor PUBLIC ZLIB_DLL)
+
+install(TARGETS zlib
+        ARCHIVE DESTINATION lib
+)
+install(TARGETS zlib-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)

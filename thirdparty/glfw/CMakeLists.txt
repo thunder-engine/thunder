@@ -84,3 +84,12 @@ if(UNIX)
     target_link_libraries(glfw PUBLIC ${x11_libs} ${CMAKE_THREAD_LIBS_INIT})
     target_link_libraries(glfw-editor PUBLIC ${x11_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
+install(TARGETS glfw
+        ARCHIVE DESTINATION lib
+)
+install(TARGETS glfw-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)

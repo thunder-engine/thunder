@@ -71,6 +71,12 @@ foreach(def ${PROJECT_DEFINES})
 	target_compile_definitions(builder PUBLIC ${def})
 endforeach()
 
+install(TARGETS builder
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)
+
 #    QtApplication {
 #        name: builder.BUILDER_NAME
 #        condition: builder.desktop
@@ -98,14 +104,6 @@ endforeach()
 #            condition: qbs.targetOS.contains("darwin")
 #            cpp.sonamePrefix: "@rpath"
 #            cpp.rpaths: "@executable_path/../Frameworks/"
-#        }
-#
-#        Group {
-#            name: "Install " + builder.BUILDER_NAME
-#            fileTagsFilter: product.type
-#            qbs.install: true
-#            qbs.installDir: builder.BIN_PATH + "/" + builder.bundle
-#            qbs.installPrefix: builder.PREFIX
 #        }
 #    }
 #}

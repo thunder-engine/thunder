@@ -29,8 +29,17 @@ set(INC_FILES
 add_library(rendergl STATIC ${SRC_FILES} ${INC_FILES})
 target_include_directories(rendergl PUBLIC includes)
 target_link_libraries(rendergl PUBLIC engine glad)
-
+install(TARGETS rendergl
+        ARCHIVE DESTINATION lib
+)
 add_library(rendergl-editor SHARED ${SRC_FILES} ${INC_FILES})
 target_include_directories(rendergl-editor PUBLIC includes)
 target_link_libraries(rendergl-editor PUBLIC engine-editor glad)
 target_compile_definitions(rendergl-editor PRIVATE NEXT_SHARED) # TODO: use cmake support for export header generation
+
+install(DIRECTORY includes/ DESTINATION include/engine)
+install(TARGETS rendergl-editor
+        RUNTIME DESTINATION plugins/
+        LIBRARY DESTINATION plugins/
+        ARCHIVE DESTINATION lib
+)

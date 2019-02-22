@@ -41,3 +41,9 @@ target_include_directories(quazip-editor PUBLIC src)
 target_compile_definitions(quazip-editor PRIVATE QUAZIP_BUILD)
 target_link_libraries(quazip-editor PUBLIC zlib-editor Qt5::Core)
 set_target_properties(quazip-editor PROPERTIES AUTOMOC ON)
+
+install(TARGETS quazip-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)

@@ -50,3 +50,12 @@ add_library(freetype-editor
     SHARED ${SRC_FILES})
 target_include_directories(freetype-editor PUBLIC include)
 target_compile_definitions(freetype-editor PRIVATE FT2_BUILD_LIBRARY)
+
+install(TARGETS freetype
+        ARCHIVE DESTINATION lib
+)
+install(TARGETS freetype-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)

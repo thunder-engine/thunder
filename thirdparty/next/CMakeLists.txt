@@ -72,3 +72,10 @@ target_include_directories(next-editor PUBLIC inc/math)
 target_include_directories(next-editor PUBLIC inc/anim)
 target_compile_definitions(next-editor PRIVATE NEXT_LIBRARY)
 target_compile_definitions(next-editor PUBLIC NEXT_SHARED)
+
+install(TARGETS next-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)
+install(DIRECTORY inc/ DESTINATION include/next)

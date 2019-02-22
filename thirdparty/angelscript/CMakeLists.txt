@@ -52,3 +52,11 @@ add_library(angelscript-editor
     SHARED ${SRC_FILES})
 target_include_directories(angelscript-editor PRIVATE include)
 target_compile_definitions(angelscript-editor PUBLIC ANGELSCRIPT_EXPORT)
+install(TARGETS angelscript
+        ARCHIVE DESTINATION lib
+)
+install(TARGETS angelscript-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)

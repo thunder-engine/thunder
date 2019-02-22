@@ -213,3 +213,10 @@ target_include_directories(WorldEditor PRIVATE src
 foreach(def ${PROJECT_DEFINES})
 	target_compile_definitions(WorldEditor PUBLIC ${def})
 endforeach()
+
+install(TARGETS WorldEditor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)
+install(DIRECTORY bin/ DESTINATION resources)

@@ -96,3 +96,12 @@ set_target_properties(engine-editor PROPERTIES AUTOMOC ON)
 target_include_directories(engine-editor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes includes/components includes/resources)
 target_link_libraries(engine-editor PUBLIC next-editor freetype-editor glfw-editor physfs-editor Qt5::Core)
 target_compile_definitions(engine-editor PRIVATE NEXT_SHARED) # using `next` library in shared form ( expose dllimport's on windows)
+
+install(TARGETS engine-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)
+install(DIRECTORY includes/ DESTINATION include/engine
+    PATTERN "adapters" EXCLUDE
+)

@@ -41,3 +41,11 @@ if(WIN32)
     target_link_libraries(physfs PUBLIC advapi32)
     target_link_libraries(physfs-editor PUBLIC advapi32)
 endif()
+install(TARGETS physfs
+        ARCHIVE DESTINATION lib
+)
+install(TARGETS physfs-editor
+        RUNTIME DESTINATION .
+        LIBRARY DESTINATION .
+        ARCHIVE DESTINATION lib
+)
