@@ -169,6 +169,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->moveButton,     SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
     connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
     connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
+    connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
     connect(ui->renderMode,     SIGNAL(clicked()), ui->viewport, SLOT(onSetMode()));
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
@@ -179,8 +180,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
-
-
 
     ui->projectSettings->setObject(ProjectManager::instance());
 
@@ -213,7 +212,6 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     }
     if(!objects.empty()) {
         ui->viewport->makeCurrent();
-        /// \todo Don't reload mesh and materials for each repick
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
         m_pProperties   = new NextObject(*objects.begin(), ctl, this);
@@ -224,8 +222,6 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed()), this, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
-
-        connect(PluginModel::instance(), SIGNAL(pluginReloaded(QString)), m_pProperties, SLOT(onUpdated()));
 
         connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
     }

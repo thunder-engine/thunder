@@ -66,6 +66,7 @@ public slots:
 
     void                onCreateSelected            (const QString &name);
     void                onDeleteComponent           (const QString &name);
+    void                onUpdateSelected            ();
 
     void                onDrop                      ();
     void                onDragEnter                 (QDragEnterEvent *);

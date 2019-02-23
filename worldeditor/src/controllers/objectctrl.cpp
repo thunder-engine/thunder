@@ -505,6 +505,10 @@ void ObjectCtrl::onDeleteComponent(const QString &name) {
     }
 }
 
+void ObjectCtrl::onUpdateSelected() {
+    emit objectsSelected(selected());
+}
+
 void ObjectCtrl::onDrop() {
     if(!m_DragObjects.empty()) {
         mDrag   = false;

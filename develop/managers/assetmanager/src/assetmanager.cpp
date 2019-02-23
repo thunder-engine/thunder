@@ -106,16 +106,20 @@ void AssetManager::init(Engine *engine) {
 
     QString target  = m_pProjectManager->targetPath();
 
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",!target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", !target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   !target.isEmpty());
+    QFileInfo info(m_pProjectManager->importPath() + "/" + gIndex);
+
+    bool force = !target.isEmpty() || !info.exists();
+
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",force );
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", force);
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   force);
 #ifndef BUILDER
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/materials",!target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/textures", !target.isEmpty());
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/materials",force);
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/textures", force);
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   force);
 #endif
     m_pDirWatcher->addPath(m_pProjectManager->contentPath());
-    onDirectoryChanged(m_pProjectManager->contentPath(), !target.isEmpty());
+    onDirectoryChanged(m_pProjectManager->contentPath(), force);
 
     m_Paths["{00000000-0101-0000-0000-000000000000}"] = "Scripts";
 

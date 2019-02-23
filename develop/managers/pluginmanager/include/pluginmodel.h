@@ -4,6 +4,9 @@
 #include "baseobjectmodel.h"
 
 #include <stdint.h>
+#include <variant.h>
+
+#include <file.h>
 
 class QLibrary;
 
@@ -14,7 +17,7 @@ class ISystem;
 class Object;
 class Scene;
 
-typedef QMap<Object *, QString> ComponentMap;
+typedef QMap<Object *, ByteArray> ComponentMap;
 
 class PluginModel : public BaseObjectModel {
     Q_OBJECT
@@ -28,7 +31,7 @@ public:
 
     void                        rescan                      ();
 
-    bool                        loadPlugin                  (const QString &path);
+    bool                        loadPlugin                  (const QString &path, bool reload = false);
 
     int                         columnCount                 (const QModelIndex &) const;
 
@@ -43,7 +46,7 @@ public:
     void                        addScene                    (Scene *scene);
 
 signals:
-    void                        pluginReloaded              (const QString &path);
+    void                        pluginReloaded              ();
 
     void                        updated                     ();
 
@@ -63,7 +66,9 @@ protected:
 
     void                        registerExtensionPlugin     (const QString &path, IModule *plugin);
 
-    void                        serializeComponents         (Object *parent, const std::string &type, ComponentMap &map);
+    void                        serializeComponents         (const StringList &list, ComponentMap &map);
+
+    void                        deserializeComponents       (const ComponentMap &map);
 
 private:
     void                        clear                       ();
