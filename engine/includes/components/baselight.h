@@ -1,15 +1,15 @@
 #ifndef BASELIGHT_H
 #define BASELIGHT_H
 
-#include "nativebehaviour.h"
+#include "renderable.h"
 
 #include <amath.h>
 
 class Mesh;
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT BaseLight : public NativeBehaviour {
-    A_REGISTER(BaseLight, NativeBehaviour, Components)
+class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
+    A_REGISTER(BaseLight, Renderable, Components)
 
     A_PROPERTIES(
         A_PROPERTY(bool,    Cast_shadows,   BaseLight::castShadows, BaseLight::setCastShadows),

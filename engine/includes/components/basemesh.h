@@ -4,12 +4,12 @@
 #include "mesh.h"
 #include "material.h"
 
-#include "nativebehaviour.h"
+#include "renderable.h"
 
 #include <array>
 
-class NEXT_LIBRARY_EXPORT BaseMesh : public NativeBehaviour {
-    A_REGISTER(BaseMesh, NativeBehaviour, General);
+class NEXT_LIBRARY_EXPORT BaseMesh : public Renderable {
+    A_REGISTER(BaseMesh, Renderable, General);
 
     A_METHODS(
         A_METHOD(Material *, BaseMesh::material),

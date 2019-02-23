@@ -188,34 +188,20 @@ void Pipeline::combineComponents(Object *object, bool first) {
         m_Components.clear();
     }
     for(auto &it : object->getChildren()) {
-        Object *child   = it;
-        BaseMesh *mesh  = dynamic_cast<BaseMesh *>(child);
-        if(mesh) {
-            if(mesh->isEnable()) {
-                m_Components.push_back(mesh);
+        Object *child = it;
+        Renderable *comp = dynamic_cast<Renderable *>(child);
+        if(comp) {
+            if(comp->isEnable()) {
+                m_Components.push_back(comp);
             }
         } else {
-            ParticleRender *effect = dynamic_cast<ParticleRender *>(child);
-            if(effect) {
-                if(effect->isEnable()) {
-                    m_Components.push_back(effect);
-                }
-            } else {
-                BaseLight *light  = dynamic_cast<BaseLight *>(child);
-                if(light) {
-                    if(light->isEnable()) {
-                        m_Components.push_back(light);
-                    }
-                } else {
-                    Actor *actor    = dynamic_cast<Actor *>(child);
-                    if(actor) {
-                        if(!actor->isEnable()) {
-                            continue;
-                        }
-                    }
-                    combineComponents(child);
+            Actor *actor = dynamic_cast<Actor *>(child);
+            if(actor) {
+                if(!actor->isEnable()) {
+                    continue;
                 }
             }
+            combineComponents(child);
         }
     }
 }

@@ -166,6 +166,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     Pipeline::registerClassFactory(this);
 
     NativeBehaviour::registerClassFactory(this);
+    Renderable::registerClassFactory(this);
     BaseMesh::registerClassFactory(this);
     BaseLight::registerClassFactory(this);
 
