@@ -44,6 +44,8 @@ QbsBuilder::QbsBuilder() :
 
     m_pMgr      = ProjectManager::instance();
 
+    m_QBSPath   = QFileInfo(m_pMgr->sdkPath() + "/tools/qbs/bin/qbs");
+
     m_Suffix    = gShared;
     if(!m_pMgr->targetPath().isEmpty()) {
         m_Suffix= gApplication;
@@ -175,7 +177,7 @@ bool QbsBuilder::buildProject() {
 
             qDebug() << args;
 
-            qbs.start(m_pMgr->qbsPath(), args);
+            qbs.start(m_QBSPath.absoluteFilePath(), args);
             if(qbs.waitForStarted()) {
                 qbs.waitForFinished();
                 Log(Log::INF) << "Resolved:" << qbs.readAll().constData();
@@ -187,9 +189,9 @@ bool QbsBuilder::buildProject() {
             args << "--products" << product << gMode << "profile:" + m_Profiles[0];
             qDebug() << args;
 
-            m_pProcess->start(m_pMgr->qbsPath(), args);
+            m_pProcess->start(m_QBSPath.absoluteFilePath(), args);
             if(!m_pProcess->waitForStarted()) {
-                Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_pMgr->qbsPath());
+                Log(Log::ERR) << "Failed:" << qPrintable(m_pProcess->errorString()) << qPrintable(m_QBSPath.absoluteFilePath());
                 return false;
             }
             m_Progress = true;
@@ -210,7 +212,7 @@ void QbsBuilder::onBuildFinished(int exitCode) {
 QString QbsBuilder::builderVersion() {
     QProcess qbs(this);
     qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_pMgr->qbsPath(), QStringList() << "--version" );
+    qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "--version" );
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         return qbs.readAll().simplified();
     }
@@ -221,7 +223,7 @@ void QbsBuilder::builderInit() {
     {
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
+        qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
             Log(Log::INF) << "Found:" << qbs.readAll().constData();
@@ -236,7 +238,7 @@ void QbsBuilder::builderInit() {
 
         QProcess qbs(this);
         qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_pMgr->qbsPath(), args);
+        qbs.start(m_QBSPath.absoluteFilePath(), args);
         if(qbs.waitForStarted()) {
             qbs.waitForFinished();
         }
@@ -286,7 +288,7 @@ bool QbsBuilder::checkProfile(const QString &profile) {
     args << "config" << "--list" << m_Settings;
     QProcess qbs(this);
     qbs.setWorkingDirectory(m_Project);
-    qbs.start(m_pMgr->qbsPath(), args);
+    qbs.start(m_QBSPath.absoluteFilePath(), args);
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         return qbs.readAll().contains(qPrintable(profile));
     }

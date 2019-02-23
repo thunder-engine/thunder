@@ -53,10 +53,6 @@ public:
 
     QString                     myProjectsPath              () const { return m_MyProjectsPath.absoluteFilePath(); }
 
-    QString                     qbsPath                     () const { return m_QBSPath.absoluteFilePath(); }
-
-    void                        setQbsPath                  (const QString &path);
-
 public slots:
     void                        loadSettings                ();
     void                        saveSettings                ();
@@ -89,10 +85,6 @@ private:
     QFileInfo                   m_TemplatePath;
 
     QFileInfo                   m_MyProjectsPath;
-
-    QFileInfo                   m_QBSPath;
-    QFileInfo                   m_QBSDefault;
-
 };
 
 #endif // PROJECTMANAGER_H

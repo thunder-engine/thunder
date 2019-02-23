@@ -43,20 +43,6 @@ bool ConfigDialog::checkQbsVersion() {
     return false;
 }
 
-void ConfigDialog::on_toolButton_clicked() {
-    ProjectManager *mgr = ProjectManager::instance();
-    QString back    = mgr->qbsPath();
-    QString path    = QFileDialog::getOpenFileName(this, tr("Open QBS"), back, gQBS);
-    if(!path.isEmpty()) {
-        ui->pathEdit->setText(path);
-        mgr->setQbsPath(path);
-
-        if(checkQbsVersion()) {
-
-        }
-    }
-}
-
 void ConfigDialog::on_pushOK_clicked() {
     accept();
 }

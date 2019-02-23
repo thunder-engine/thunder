@@ -56,27 +56,15 @@ Product {
             }
         }
 
-		property string libPrefix: {
-            var result = "";
-            if (qbs.targetOS.contains("linux"))
-                result = "lib";
-            return result;
-        }
-		
-        property string libPostfix: {
-            var suffix = "";
-            if(qbs.targetOS.contains("windows") && qbs.debugInformation) {
-                suffix += "d";
-            }
-            suffix += cpp.dynamicLibrarySuffix
-            if(qbs.targetOS.contains("linux")) {
-                suffix += "." + Qt.core.versionMajor;
-            }
-            return suffix;
-        }
         files: {
             var list = [];
             if (!Qt.core.frameworkBuild) {
+                var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
+                var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
+                if(qbs.targetOS.contains("linux")) {
+                    libPostfix += "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch
+                }
+
                 list.push(
                     libPrefix + "Qt5Core" + libPostfix,
                     libPrefix + "Qt5Gui" + libPostfix,
@@ -91,20 +79,6 @@ Product {
                     libPrefix + "Qt5QuickControls2" + libPostfix,
                     libPrefix + "Qt5Qml" + libPostfix
                 );
-                if(qbs.targetOS.contains("linux")) {
-                    list.push(libPrefix + "Qt5Core" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Gui" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Widgets" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Script" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Xml" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Network" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Multimedia" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5QuickWidgets" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Quick" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5QuickTemplates2" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5QuickControls2" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch),
-                    list.push(libPrefix + "Qt5Qml" + libPostfix + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                }
             } else {
                 list.push("**/QtCore.framework/**");
                 list.push("**/QtGui.framework/**");
@@ -119,7 +93,7 @@ Product {
                 list.push("**/Qt5QuickControls2.framework/**");
                 list.push("**/QtQuickWidgets.framework/**");
             }
-            return list;
+            return list
         }
         qbs.install: install.desktop
         qbs.installDir: install.BIN_PATH + "/" + install.bundle + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
@@ -322,62 +296,5 @@ Product {
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/engine"
         qbs.installPrefix: install.PREFIX
-    }
-
-    property string qbsPath: install.BIN_PATH + "/" + install.bundle
-
-    Group {
-        name: "QBS Bin"
-        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
-        files: [
-            "/bin/**"
-        ]
-        qbs.install: true
-        qbs.installDir: install.qbsPath
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "QBS Lib"
-        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
-        files: [
-            "/lib/*"
-        ]
-        qbs.install: true
-        qbs.installDir: install.qbsPath;
-        Properties {
-            condition: qbs.targetOS.contains("darwin")
-            qbs.installDir: install.qbsPath + "../Frameworks/";
-        }
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            qbs.installDir: install.qbsPath + "../lib/";
-        }
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "QBS Plugins"
-        prefix: "../thirdparty/qbs/" + qbs.targetOS[0]
-        files: [
-            "/lib/qbs/**",
-            "/libexec/**"
-        ]
-        qbs.install: true
-        qbs.installDir: install.qbsPath + "../"
-        qbs.installPrefix: install.PREFIX
-        qbs.installSourceBase: prefix
-    }
-    Group {
-        name: "QBS Share"
-        prefix: "../thirdparty/qbs/"
-        files: [
-            "share/**"
-        ]
-        excludeFiles: [
-            "share/**/*.ts"
-        ]
-        qbs.install: true
-        qbs.installDir: install.qbsPath + "../"
-        qbs.installPrefix: install.PREFIX
-        qbs.installSourceBase: prefix
     }
 }

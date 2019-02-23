@@ -62,6 +62,7 @@ Project {
     property string BIN_PATH: PLATFORM_PATH + "/bin"
     property string LIB_PATH: PLATFORM_PATH + "/lib"
     property string INC_PATH: SDK_PATH + "/include"
+    property string TOOLS_PATH: SDK_PATH + "/tools"
 
     property stringList defines: {
         var result  = [
@@ -87,7 +88,8 @@ Project {
         "modules/vms/angel/angel.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
-        "build/install.qbs"
+        "build/install.qbs",
+        "build/qbsinstall.qbs"
     ]
 }
 

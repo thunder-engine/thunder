@@ -13,15 +13,13 @@ class ConfigDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ConfigDialog   (QWidget *parent = 0);
+    explicit ConfigDialog   (QWidget *parent = nullptr);
     ~ConfigDialog           ();
 
 protected:
     bool                    checkQbsVersion                     ();
 
 private slots:
-    void                    on_toolButton_clicked               ();
-
     void on_pushOK_clicked();
 
 private:

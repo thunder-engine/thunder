@@ -3,6 +3,8 @@
 
 #include "converters/builder.h"
 
+#include <QFileInfo>
+
 class QProcess;
 
 class QbsBuilder : public IBuilder {
@@ -51,6 +53,8 @@ protected:
     ProjectManager                 *m_pMgr;
 
     bool                            m_Progress;
+
+    QFileInfo                       m_QBSPath;
 };
 
 #endif // QBSBUILDER_H
