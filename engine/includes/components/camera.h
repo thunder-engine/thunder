@@ -14,7 +14,7 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
         A_PROPERTY(float, Fov,  Camera::fov, Camera::setFov),
         A_PROPERTY(float, Near, Camera::nearPlane, Camera::setNear),
         A_PROPERTY(float, Far,  Camera::farPlane, Camera::setFar),
-        A_PROPERTY(float, Size, Camera::orthoWidth, Camera::setOrthoWidth),
+        A_PROPERTY(float, Size, Camera::orthoHeight, Camera::setOrthoHeight),
         A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
         A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor),
         A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
@@ -55,8 +55,8 @@ public:
     Vector4                     color                   () const;
     void                        setColor                (const Vector4 &color);
 
-    float                       orthoWidth              () const;
-    void                        setOrthoWidth           (const float value);
+    float                       orthoHeight             () const;
+    void                        setOrthoHeight          (const float value);
 
     bool                        orthographic            () const;
     void                        setOrthographic         (const bool value);
@@ -79,7 +79,7 @@ protected:
 
     float                       m_Focal;
 
-    float                       m_OrthoWidth;
+    float                       m_OrthoHeight;
 
     Vector4                     m_Color;
 

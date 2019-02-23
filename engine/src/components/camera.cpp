@@ -8,15 +8,15 @@
 Camera *Camera::s_pCurrent  = nullptr;
 
 Camera::Camera() {
-    m_FOV       = 45.0; // 2*arctan(height/(2*distance))
-    m_Near      = 0.1f;
-    m_Far       = 1000.0;
-    m_Ratio     = 1.0;
-    m_Focal     = 1.0;
-    m_OrthoWidth= 1.0;
-    m_Ortho     = false;
-    m_Color     = Vector4();
-    m_pPipeline = nullptr;
+    m_FOV        = 45.0; // 2*arctan(height/(2*distance))
+    m_Near       = 0.1f;
+    m_Far        = 1000.0;
+    m_Ratio      = 1.0;
+    m_Focal      = 1.0;
+    m_OrthoHeight= 1.0;
+    m_Ortho      = false;
+    m_Color      = Vector4();
+    m_pPipeline  = nullptr;
 }
 
 Pipeline *Camera::pipeline() {
@@ -41,8 +41,8 @@ void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
 
 Matrix4 Camera::projectionMatrix() const {
     if(m_Ortho) {
-        float height    = m_OrthoWidth / m_Ratio;
-        return Matrix4::ortho(-m_OrthoWidth / 2, m_OrthoWidth / 2, -height / 2, height / 2, m_Near, m_Far);
+        float width = m_OrthoHeight * m_Ratio;
+        return Matrix4::ortho(-width / 2, width / 2, -m_OrthoHeight / 2, m_OrthoHeight / 2, m_Near, m_Far);
     }
     return Matrix4::perspective(m_FOV, m_Ratio, m_Near, m_Far);
 }
@@ -103,8 +103,8 @@ Ray Camera::castRay(float x, float y) {
 
     Vector3 view;
     if(m_Ortho) {
-        p   = Vector3(p.x + (x - 0.5f) * m_OrthoWidth,
-                      p.y - (y - 0.5f) * m_OrthoWidth / m_Ratio, p.z);
+        p   = Vector3(p.x + (x - 0.5f) * m_OrthoHeight * m_Ratio,
+                      p.y - (y - 0.5f) * m_OrthoHeight, p.z);
     } else {
         float tang      = tan(m_FOV * DEG2RAD);
         Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
@@ -166,11 +166,11 @@ void Camera::setColor(const Vector4 &color) {
     m_Color = color;
 }
 
-float Camera::orthoWidth() const {
-    return m_OrthoWidth;
+float Camera::orthoHeight() const {
+    return m_OrthoHeight;
 }
-void Camera::setOrthoWidth(const float value) {
-    m_OrthoWidth    = value;
+void Camera::setOrthoHeight(const float value) {
+    m_OrthoHeight = value;
 }
 
 bool Camera::orthographic() const {
@@ -187,9 +187,9 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
     float nw;
     float fw;
     if(m_Ortho) {
-        nw    = m_OrthoWidth * 0.5f;
+        nh    = m_OrthoHeight * 0.5f;
+        nw    = nh * m_Ratio;
         fw    = nw;
-        nh    = nw / m_Ratio;
         fh    = nh;
     } else {
         float tang  = tanf(m_FOV * DEG2RAD * 0.5f);

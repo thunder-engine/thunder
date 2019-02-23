@@ -33,7 +33,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera   = Engine::objectCreate<Actor>("Camera");
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(10.0f);
-    m_pActiveCamera->setOrthoWidth(10.0f);
+    m_pActiveCamera->setOrthoHeight(10.0f);
     m_pActiveCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
     m_pCamera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));
@@ -143,7 +143,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         }
 
         m_pActiveCamera->setFocal(radius);
-        m_pActiveCamera->setOrthoWidth(radius);
+        m_pActiveCamera->setOrthoHeight(radius);
         Transform *camera   = m_pCamera->transform();
         camera->setPosition(t->worldPosition() + pos + camera->rotation() * Vector3(0.0, 0.0, radius));
     }
@@ -246,7 +246,7 @@ void CameraCtrl::cameraZoom(float delta) {
         float focal = m_pActiveCamera->focal() - delta;
         if(focal > 0.0f) {
             m_pActiveCamera->setFocal(focal);
-            m_pActiveCamera->setOrthoWidth(focal);
+            m_pActiveCamera->setOrthoHeight(focal);
 
             Transform *t    = m_pCamera->transform();
 

@@ -249,7 +249,7 @@ void SceneComposer::onGLInit() {
             it++;
             camera->setFocal(it->toFloat());
             it++;
-            camera->setOrthoWidth(it->toFloat());
+            camera->setOrthoHeight(it->toFloat());
             it++;
         }
     }
@@ -285,7 +285,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
             params.push_back(t->euler());
             params.push_back(ui->orthoButton->isChecked());
             params.push_back(camera->focal());
-            params.push_back(camera->orthoWidth());
+            params.push_back(camera->orthoHeight());
         }
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);

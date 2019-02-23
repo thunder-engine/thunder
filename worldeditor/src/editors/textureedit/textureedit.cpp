@@ -118,7 +118,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     Camera *camera  = Camera::current();
     if(camera) {
         camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
-        camera->setOrthoWidth(SCALE);
+        camera->setOrthoHeight(SCALE);
         camera->setFocal(SCALE);
     }
 }
