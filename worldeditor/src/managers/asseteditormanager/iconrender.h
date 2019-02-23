@@ -23,6 +23,8 @@ public:
 
     ~IconRender                 ();
 
+    void                        init                ();
+
     const QImage                render              (const QString &resource, uint32_t type);
 
 protected:
@@ -44,6 +46,8 @@ protected:
     IController                *m_pController;
 
     Camera                     *m_pCamera;
+
+    bool                        m_Init;
 };
 
 #endif // ICONRENDER_H

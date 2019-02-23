@@ -28,7 +28,8 @@
 #include "controllers/cameractrl.h"
 
 IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
-        QObject(parent) {
+        QObject(parent),
+        m_Init(false) {
 
     m_pEngine   = engine;
 
@@ -43,31 +44,39 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 
     PluginModel::instance()->initSystems();
 
-    m_pFBO      = new QOpenGLFramebufferObject(128, 128);
+    m_pFBO = new QOpenGLFramebufferObject(128, 128);
 
     m_pScene = Engine::objectCreate<Scene>();
     m_pScene->setAmbient(0.3f);
     m_pActor = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_pCamera = m_pActor->addComponent<Camera>();
-
-    Pipeline *pipe = m_pCamera->pipeline();
-    pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
-    pipe->setTarget(m_pFBO->handle());
-
-    m_pLight = Engine::objectCreate<Actor>("LightSource", m_pScene);
-    Matrix3 rot;
-    rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_pLight->transform()->setRotation(rot);
-    m_pLight->addComponent<DirectLight>();
 }
 
 IconRender::~IconRender() {
 
 }
 
+void IconRender::init() {
+    if(!m_Init) {
+        Pipeline *pipe = m_pCamera->pipeline();
+        pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
+        pipe->setTarget(m_pFBO->handle());
+
+        m_pLight = Engine::objectCreate<Actor>("LightSource", m_pScene);
+        Matrix3 rot;
+        rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
+        m_pLight->transform()->setRotation(rot);
+        m_pLight->addComponent<DirectLight>();
+
+        m_Init = true;
+    }
+}
+
 const QImage IconRender::render(const QString &resource, uint32_t type) {
     m_Context->makeCurrent(m_Surface);
+
+    init();
 
     m_pCamera->setOrthographic(false);
     Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
