@@ -3,8 +3,6 @@
 
 #include "../shaderbuilder.h"
 
-#define A       "A"
-#define B       "B"
 #define OUT     "Out"
 
 class MathOperation : public ShaderFunction {
@@ -16,7 +14,7 @@ public:
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = A;
+            out->name   = a;
             out->out    = false;
             out->pos    = 0;
             out->type   = QMetaType::QVector2D;
@@ -24,7 +22,7 @@ public:
         }
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = B;
+            out->name   = b;
             out->out    = false;
             out->pos    = 1;
             out->type   = QMetaType::QVector2D;
@@ -45,7 +43,7 @@ public:
         if(m_Position == -1) {
             QString args;
 
-            vector<char *> names    = {(char *)A, (char *)B};
+            vector<const char *> names = {a, b};
 
             const AbstractSchemeModel::Link *l  = nullptr;
 

@@ -8,8 +8,6 @@
 #define UV      "UV"
 #define R       "R"
 #define G       "G"
-#define B       "B"
-#define A       "A"
 
 class TextureFunction : public ShaderFunction {
     Q_OBJECT
@@ -54,7 +52,7 @@ public:
         }
         {
             AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
-            out->name   = B;
+            out->name   = b;
             out->out    = true;
             out->pos    = 3;
             out->type   = QMetaType::Double;
@@ -62,7 +60,7 @@ public:
         }
         {
             AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
-            out->name   = A;
+            out->name   = a;
             out->out    = true;
             out->pos    = 4;
             out->type   = QMetaType::Double;
@@ -96,9 +94,9 @@ public:
                 QString channel = "x";
                 if(link.sitem->name == G) {
                     channel = "y";
-                } else if(link.sitem->name == B) {
+                } else if(link.sitem->name == b) {
                     channel = "z";
-                } else if(link.sitem->name == A) {
+                } else if(link.sitem->name == a) {
                     channel = "w";
                 }
                 value  += QString("\tfloat local%1 = lt%1.%2;\n").arg(depth).arg(channel);
@@ -208,9 +206,9 @@ public:
                     QString channel = "x";
                     if(link.sitem->name == G) {
                         channel = "y";
-                    } else if(link.sitem->name == B) {
+                    } else if(link.sitem->name == b) {
                         channel = "z";
-                    } else if(link.sitem->name == A) {
+                    } else if(link.sitem->name == a) {
                         channel = "w";
                     }
                     value  += QString("\tfloat local%1 = lt%1.%2;\n").arg(depth).arg(channel);

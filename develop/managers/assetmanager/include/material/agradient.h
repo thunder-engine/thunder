@@ -3,9 +3,6 @@
 
 #include "../shaderbuilder.h"
 
-#define X       "X"
-#define Y       "Y"
-#define A       "A"
 #define OUT     "Out"
 #define EDGE1   "Edge1"
 #define EDGE2   "Edge2"
@@ -22,7 +19,7 @@ public:
         APROPERTY(float,    X,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
     }
 
-    void                        build                   (string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
+    void build(string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
         string arg1;
         string arg2;
         string arg3;
@@ -96,7 +93,7 @@ public:
         APROPERTY(float,    A,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
     }
 
-    void                        build                   (string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
+    void build(string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
         string arg1;
         string arg2;
         string arg3;

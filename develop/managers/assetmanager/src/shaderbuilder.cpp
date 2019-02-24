@@ -27,6 +27,7 @@
 #include "material/amathfunction.h"
 #include "material/amathoperator.h"
 #include "material/atexturesample.h"
+#include "material/autils.h"
 
 #include "projectmanager.h"
 
@@ -88,19 +89,33 @@ ShaderBuilder::ShaderBuilder() :
 
     qRegisterMetaType<DotProduct*>("DotProduct");
     qRegisterMetaType<CrossProduct*>("CrossProduct");
-    qRegisterMetaType<Clamp*>("Clamp");
+    qRegisterMetaType<Mix*>("Mix");
     qRegisterMetaType<Mod*>("Mod");
+    qRegisterMetaType<Power*>("Power");
+    qRegisterMetaType<SquareRoot*>("SquareRoot");
+    qRegisterMetaType<Logarithm*>("Logarithm");
+    qRegisterMetaType<Logarithm2*>("Logarithm2");
+    m_Functions << "DotProduct" << "CrossProduct" << "Mix" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2";
+
+    qRegisterMetaType<Clamp*>("Clamp");
+    qRegisterMetaType<Min*>("Min");
+    qRegisterMetaType<Max*>("Max");
     qRegisterMetaType<Abs*>("Abs");
+    qRegisterMetaType<Sign*>("Sign");
     qRegisterMetaType<Floor*>("Floor");
     qRegisterMetaType<Ceil*>("Ceil");
+    qRegisterMetaType<Round*>("Round");
+    qRegisterMetaType<Truncate*>("Truncate");
+    qRegisterMetaType<Fract*>("Fract");
     qRegisterMetaType<Normalize*>("Normalize");
+    m_Functions << "Clamp" << "Min" << "Max" << "Abs" << "Sign" << "Floor" << "Ceil" << "Round" << "Truncate" << "Fract" << "Normalize";
+
     qRegisterMetaType<Sine*>("Sine");
     qRegisterMetaType<Cosine*>("Cosine");
     qRegisterMetaType<Tangent*>("Tangent");
     qRegisterMetaType<ArcSine*>("ArcSine");
     qRegisterMetaType<ArcCosine*>("ArcCosine");
     qRegisterMetaType<ArcTangent*>("ArcTangent");
-    m_Functions << "DotProduct" << "CrossProduct" << "Clamp" << "Mod" << "Abs" << "Floor" << "Ceil" << "Normalize";
     m_Functions << "Sine" << "Cosine" << "Tangent" << "ArcSine" << "ArcCosine" << "ArcTangent";
 
     qRegisterMetaType<Subtraction*>("Subtraction");
@@ -108,6 +123,10 @@ ShaderBuilder::ShaderBuilder() :
     qRegisterMetaType<Divide*>("Divide");
     qRegisterMetaType<Multiply*>("Multiply");
     m_Functions << "Subtraction" << "Add" << "Divide" << "Multiply";
+
+    qRegisterMetaType<Mask*>("Mask");
+    qRegisterMetaType<If*>("If");
+    m_Functions << "Mask" << "If";
 
     m_pNode = new Node;
     m_pNode->root   = true;
@@ -262,11 +281,7 @@ void ShaderBuilder::load(const QString &path) {
             obj->blockSignals(true);
             QJsonObject values  = n[VALUES].toObject();
             foreach(QString key, values.keys()) {
-                if(values[key].isString()) {
-                    obj->setProperty(qPrintable(key), values[key].toString());
-                } else if(values[key].isDouble()) {
-                    obj->setProperty(qPrintable(key), values[key].toDouble());
-                } else if(values[key].isArray()) {
+                if(values[key].isArray()) {
                     QJsonArray array    = values[key].toArray();
                     switch(array.first().toInt()) {
                         case QVariant::Color: {
@@ -279,6 +294,8 @@ void ShaderBuilder::load(const QString &path) {
                             }
                         } break;
                     }
+                } else {
+                    obj->setProperty(qPrintable(key), values[key].toVariant());
                 }
             }
             obj->blockSignals(false);
@@ -347,6 +364,9 @@ void ShaderBuilder::save(const QString &path) {
                     if(property.isUser(func)) {
                         QVariant value  = property.read(func);
                         switch(value.type()) {
+                            case QVariant::Bool: {
+                                values[property.name()] = value.toBool();
+                            } break;
                             case QVariant::String: {
                                 values[property.name()] = value.toString();
                             } break;

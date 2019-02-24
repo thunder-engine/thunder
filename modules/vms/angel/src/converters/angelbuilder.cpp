@@ -60,7 +60,7 @@ AngelBuilder::AngelBuilder(AngelSystem *system) :
         m_pSystem(system){
     m_pScriptEngine = asCreateScriptEngine();
 
-    m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
+    m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
 
     m_pSystem->registerClasses(m_pScriptEngine);
 }
@@ -74,18 +74,6 @@ bool AngelBuilder::buildProject() {
             if(file.open( QIODevice::ReadOnly)) {
                 mod->AddScriptSection("AngelData", file.readAll().data());
                 file.close();
-            }
-        }
-
-        const MetaObject *meta = AngelBehaviour::metaClass();
-
-        for(uint32_t i = 0; i < mod->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = mod->GetObjectTypeByIndex(i);
-            if(info) {
-                asITypeInfo *super = info->GetBaseType();
-                if(super && strcmp(super->GetName(), "Behaviour") == 0) {
-                    //m_pSystem->registerMetaType(m_pScriptEngine, info->GetName(), meta);
-                }
             }
         }
 

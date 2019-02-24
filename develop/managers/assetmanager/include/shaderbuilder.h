@@ -16,6 +16,11 @@
 class Log;
 class ShaderBuilder;
 
+static const char *a("A");
+static const char *b("B");
+static const char *x("X");
+static const char *y("Y");
+
 class ShaderFunction : public QObject {
     Q_OBJECT
 
@@ -38,7 +43,7 @@ public:
         return m_pNode;
     }
 
-    virtual uint32_t                    build       (QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    virtual uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
         Q_UNUSED(value);
         Q_UNUSED(link);
         Q_UNUSED(size);
@@ -50,7 +55,7 @@ public:
         return m_Position;
     }
 
-    static QString                      convert     (const QString &value, uint8_t current, uint8_t target, uint8_t component = 0) {
+    static QString convert(const QString &value, uint8_t current, uint8_t target, uint8_t component = 0) {
         QString prefix;
         QString suffix;
 

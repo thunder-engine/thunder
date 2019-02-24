@@ -233,11 +233,11 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
         Vector3 normal = position - camera->actor()->transform()->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
-            scale = normal.length() * (CONTROL_SIZE / m_sScreen.y);
+            scale = normal.length();
         } else {
-            scale = camera->orthoHeight() * (CONTROL_SIZE / m_sScreen.y);
+            scale = camera->orthoHeight();
         }
-
+        scale *= (CONTROL_SIZE / m_sScreen.y);
         Matrix4 model(position, Quaternion(), scale);
 
         Matrix4 x   = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
@@ -348,10 +348,11 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
         Vector3 normal = position - t->position();
         float scale = 1.0f;
         if(!camera->orthographic()) {
-            scale = normal.length() * (CONTROL_SIZE / m_sScreen.y);
+            scale = normal.length();
         } else {
-            scale = camera->orthoHeight() * (CONTROL_SIZE / m_sScreen.y);
+            scale = camera->orthoHeight();
         }
+        scale *= (CONTROL_SIZE / m_sScreen.y);
         normal.normalize();
 
         Matrix4 model(position, Quaternion(), scale);
@@ -413,11 +414,11 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
         Vector3 normal = position - camera->actor()->transform()->position();
         float size = 1.0f;
         if(!camera->orthographic()) {
-            size = normal.length() * (CONTROL_SIZE / m_sScreen.y);
+            size = normal.length();
         } else {
-            size = camera->orthoHeight() * (CONTROL_SIZE / m_sScreen.y);
+            size = camera->orthoHeight();
         }
-
+        size *= (CONTROL_SIZE / m_sScreen.y);
         Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
                       ((normal.y < 0) ? 1 : -1) * size,
                       ((normal.z < 0) ? 1 : -1) * size);
