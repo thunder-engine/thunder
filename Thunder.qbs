@@ -63,6 +63,7 @@ Project {
     property string LIB_PATH: PLATFORM_PATH + "/lib"
     property string INC_PATH: SDK_PATH + "/include"
     property string TOOLS_PATH: SDK_PATH + "/tools"
+    property string PLUGINS_PATH: BIN_PATH + "/plugins"
 
     property stringList defines: {
         var result  = [

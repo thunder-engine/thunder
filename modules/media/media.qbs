@@ -66,7 +66,7 @@ Project {
             name: "Install Dynamic media"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: media.BIN_PATH + "/plugins/" + media.bundle
+            qbs.installDir: media.PLUGINS_PATH
             qbs.installPrefix: media.PREFIX
         }
     }

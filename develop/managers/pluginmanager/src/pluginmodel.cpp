@@ -30,7 +30,11 @@ enum {
 
 #define VERSION "version"
 
+#if defined(Q_OS_MAC)
+#define PLUGINS "/../../../plugins"
+#else
 #define PLUGINS "/plugins"
+#endif
 
 typedef IModule *(*moduleHandler)  (Engine *engine);
 
@@ -40,7 +44,7 @@ PluginModel::PluginModel() :
         BaseObjectModel(),
         m_pEngine(nullptr) {
 
-    m_Suffixes = QStringList() << "*.dll";
+    m_Suffixes = QStringList() << "*.dll" << "*.dylib" << "*.so";
 }
 
 int PluginModel::columnCount(const QModelIndex &) const {
@@ -220,8 +224,9 @@ void PluginModel::clear() {
     beginResetModel();
     endResetModel();
 }
-
+#include <QDebug>
 void PluginModel::rescanPath(const QString &path) {
+    qDebug() << path;
     QDirIterator it(path, m_Suffixes, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         loadPlugin(it.next());

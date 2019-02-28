@@ -61,7 +61,7 @@ Project {
             name: "Install Dynamic RenderGL"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: rendergl.BIN_PATH + "/plugins/" + rendergl.bundle
+            qbs.installDir: rendergl.PLUGINS_PATH
             qbs.installPrefix: rendergl.PREFIX
         }
     }

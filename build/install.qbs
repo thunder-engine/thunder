@@ -47,7 +47,6 @@ Product {
 
     Group {
         name: "Qt DLLs"
-        condition: !qbs.targetOS.contains("darwin")
         prefix: {
             if (qbs.targetOS.contains("windows")) {
                 return Qt.core.binPath + "/"
@@ -110,7 +109,6 @@ Product {
 
     Group {
         name: "Qt Image Format Plugins"
-        condition: !qbs.targetOS.contains("darwin")
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/imageformats/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
@@ -121,7 +119,6 @@ Product {
 
     Group {
         name: "Qt Platform Plugins"
-        condition: !qbs.targetOS.contains("darwin")
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/platforms/")
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
@@ -132,7 +129,6 @@ Product {
 
     Group {
         name: "QML Plugins"
-        condition: !qbs.targetOS.contains("darwin")
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/../qml/")
         files: [
             "QtGraphicalEffects/**",

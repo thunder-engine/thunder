@@ -63,7 +63,7 @@ Project {
             name: "Install Dynamic angel"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: angel.BIN_PATH + "/plugins/" + angel.bundle
+            qbs.installDir: angel.PLUGINS_PATH
             qbs.installPrefix: angel.PREFIX
         }
     }

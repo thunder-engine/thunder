@@ -52,7 +52,6 @@ Project {
         Depends { name: "vorbis-editor" }
         Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "rendergl-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets"]; }
