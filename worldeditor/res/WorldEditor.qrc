@@ -47,5 +47,9 @@
         <file>qml/CurveEditor.qml</file>
         <file>qml/KeyframeEditor.qml</file>
         <file>qml/ContextMenu.qml</file>
+        <file>qml/Startup.qml</file>
+    </qresource>
+    <qresource prefix="/Workspaces">
+        <file alias="Default.ws">workspaces/Default.ws</file>
     </qresource>
 </RCC>

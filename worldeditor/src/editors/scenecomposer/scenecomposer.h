@@ -7,6 +7,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QProcess>
+#include <QMenu>
 
 #include <vector>
 #include <cstdint>
@@ -46,8 +47,12 @@ private:
 
     void                    closeEvent                                  (QCloseEvent *event);
     void                    timerEvent                                  (QTimerEvent *);
+    void                    resizeEvent                                 (QResizeEvent *);
 
     bool                    checkSave                                   ();
+
+    void                    saveWorkspace                               ();
+    void                    resetWorkspace                              ();
 
     Ui::SceneComposer      *ui;
 
@@ -59,7 +64,9 @@ private:
 
     Object                 *m_pMap;
 
-    QString                 mPath;
+    QString                 m_Path;
+
+    QString                 m_CurrentWorkspace;
 
     QProcess               *m_pBuilder;
 
@@ -97,12 +104,14 @@ private slots:
     void                    on_actionUndo_triggered                     ();
     void                    on_actionRedo_triggered                     ();
 
-    void                    onToolWindowActionToggled                   (bool checked);
+    void                    onWorkspaceActionClicked                    ();
+    void                    onToolWindowActionToggled                   (bool state);
 
     void                    onToolWindowVisibilityChanged               (QWidget *toolWindow, bool visible);
 
-    void                    on_actionSave_Layout_triggered              ();
-    void                    on_actionResore_Layout_triggered            ();
+    void                    on_actionSave_Workspace_triggered           ();
+    void                    on_actionReset_Workspace_triggered          ();
+
     void                    on_actionBuild_Project_triggered            ();
 
     void                    on_actionOptions_triggered                  ();

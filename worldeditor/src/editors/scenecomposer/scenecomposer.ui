@@ -277,7 +277,7 @@
      <rect>
       <x>430</x>
       <y>430</y>
-      <width>511</width>
+      <width>201</width>
       <height>221</height>
      </rect>
     </property>
@@ -429,11 +429,30 @@
    <widget class="Timeline" name="timeline" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>660</y>
-      <width>411</width>
-      <height>111</height>
+      <x>430</x>
+      <y>220</y>
+      <width>201</width>
+      <height>201</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QQuickWidget" name="quickWidget">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>220</y>
+      <width>201</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="resizeMode">
+     <enum>QQuickWidget::SizeRootObjectToView</enum>
     </property>
    </widget>
   </widget>
@@ -478,8 +497,15 @@
     <property name="title">
      <string>Window</string>
     </property>
-    <addaction name="actionSave_Layout"/>
-    <addaction name="actionResore_Layout"/>
+    <widget class="QMenu" name="menuWorkspace">
+     <property name="title">
+      <string>Workspace</string>
+     </property>
+     <addaction name="actionReset_Workspace"/>
+     <addaction name="actionSave_Workspace"/>
+    </widget>
+    <addaction name="menuWorkspace"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -666,14 +692,20 @@
     <string>Plugin Manager</string>
    </property>
   </action>
-  <action name="actionSave_Layout">
+  <action name="actionSave_Workspace">
    <property name="text">
-    <string>Save Layout</string>
+    <string>Save Workspace</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Workspace</string>
    </property>
   </action>
-  <action name="actionResore_Layout">
+  <action name="actionReset_Workspace">
    <property name="text">
-    <string>Resore Layout</string>
+    <string>Reset Workspace</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset Workspace</string>
    </property>
   </action>
   <action name="actionBuild_Project">
@@ -694,6 +726,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>QQuickWidget</class>
+   <extends>QWidget</extends>
+   <header>QtQuickWidgets/QQuickWidget</header>
+  </customwidget>
   <customwidget>
    <class>PropertyEditor</class>
    <extends>QTreeView</extends>
