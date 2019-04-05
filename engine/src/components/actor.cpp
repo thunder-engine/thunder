@@ -57,7 +57,7 @@ void Actor::setLayers(const uint8_t layers) {
 }
 
 Component *Actor::createComponent(const string type) {
-    return static_cast<Component *>(Engine::objectCreateImpl(type, type, this));
+    return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
 
 void Actor::addChild(Object *value) {

@@ -19,6 +19,7 @@ public:
         WriteMem                writer;
         AddressMem              readmem;
         AddressMem              writemem;
+        void                   *ptr;
     };
 
 public:

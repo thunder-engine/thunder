@@ -43,7 +43,9 @@ public:
         MATRIX3,
         MATRIX4,
 
-        USERTYPE                = 20
+        OBJECT                  = 30,
+
+        USERTYPE                = 40
     };
 
     struct Table {

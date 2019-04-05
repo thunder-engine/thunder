@@ -16,7 +16,7 @@ Angel::Angel(Engine *engine) :
 }
 
 Angel::~Angel() {
-
+    delete m_pSystem;
 }
 
 const char *Angel::description() const {

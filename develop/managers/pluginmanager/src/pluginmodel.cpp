@@ -43,6 +43,22 @@ PluginModel::PluginModel() :
     m_Suffixes = QStringList() << "*.dll";
 }
 
+PluginModel::~PluginModel() {
+    m_Scenes.clear();
+
+    m_Systems.clear();
+
+    foreach(auto it, m_Extensions) {
+        delete it;
+    }
+    m_Extensions.clear();
+
+    foreach(auto it, m_Libraries) {
+        delete it;
+    }
+    m_Libraries.clear();
+}
+
 int PluginModel::columnCount(const QModelIndex &) const {
     return 4;
 }
@@ -116,6 +132,7 @@ bool PluginModel::loadPlugin(const QString &path, bool reload) {
 
                 uint8_t types   = plugin->types();
                 if(types & IModule::SYSTEM) {
+                    registerExtensionPlugin(path, plugin);
                     registerSystem(plugin);
                 }
                 if(types & IModule::EXTENSION) {
@@ -169,7 +186,6 @@ void PluginModel::reloadPlugin(const QString &path) {
     PluginsMap::Iterator ext    = m_Extensions.find(dest.absoluteFilePath());
     LibrariesMap::Iterator lib  = m_Libraries.find(dest.absoluteFilePath());
 
-    ComponentMap result;
     if(ext != m_Extensions.end() && lib != m_Libraries.end()) { // Reload plugin
         IModule *plugin = ext.value();
         ComponentMap result;
@@ -192,7 +208,7 @@ void PluginModel::reloadPlugin(const QString &path) {
                     return;
                 }
             }
-
+            delete lib.value();
             m_Extensions.remove(ext.key());
         } else {
             Log(Log::ERR) << "Plugin unload:" << qPrintable(path) << "failed";

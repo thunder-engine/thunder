@@ -9,11 +9,12 @@ IModule *moduleCreate(Engine *engine) {
 }
 
 Media::Media(Engine *engine) :
-        m_pEngine(engine) {
+        m_pEngine(engine),
+        m_pSystem(new MediaSystem()){
 }
 
 Media::~Media() {
-
+    delete m_pSystem;
 }
 
 const char *Media::description() const {
@@ -33,7 +34,7 @@ uint8_t Media::types() const {
 }
 
 ISystem *Media::system() {
-    return new MediaSystem();
+    return m_pSystem;
 }
 
 IConverter *Media::converter() {

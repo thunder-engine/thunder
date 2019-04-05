@@ -24,10 +24,8 @@ public:
     void                        setScriptObject         (asIScriptObject *object);
 
     asIScriptFunction          *scriptStart             () const;
-    void                        setScriptStart          (asIScriptFunction *function);
 
     asIScriptFunction          *scriptUpdate            () const;
-    void                        setScriptUpdate         (asIScriptFunction *function);
 
     const MetaObject           *metaObject              () const;
 
@@ -43,6 +41,16 @@ public:
 
 private:
     static Object *construct() { return new AngelBehaviour(); }
+
+    void setScriptStart(asIScriptFunction *function);
+    void setScriptUpdate(asIScriptFunction *function);
+
+    VariantList saveData() const;
+    void loadData(const VariantList &data);
+
+    VariantMap saveUserData() const;
+    void loadUserData(const VariantMap &data);
+
 public:
     static const MetaObject *metaClass() {
         OBJECT_CHECK(AngelBehaviour)

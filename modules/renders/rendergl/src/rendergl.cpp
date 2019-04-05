@@ -7,11 +7,12 @@ IModule *moduleCreate(Engine *engine) {
 }
 
 RenderGL::RenderGL(Engine *engine) :
-        m_pEngine(engine) {
+        m_pEngine(engine),
+        m_pSystem(new RenderGLSystem()) {
 }
 
 RenderGL::~RenderGL() {
-
+    delete m_pSystem;
 }
 
 const char *RenderGL::description() const {
@@ -27,5 +28,5 @@ uint8_t RenderGL::types() const {
 }
 
 ISystem *RenderGL::system() {
-    return new RenderGLSystem();
+    return m_pSystem;
 }
