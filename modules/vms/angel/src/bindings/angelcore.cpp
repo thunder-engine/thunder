@@ -49,12 +49,12 @@ void registerInput(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("");
 }
 
-void log(string &in) {
+void logFunction(string &in) {
     Log(Log::DBG) << in.c_str();
 }
 
 void registerCore(asIScriptEngine *engine) {
-    engine->RegisterGlobalFunction("void log(const string &in)", asFUNCTION(log), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void log(const string &in)", asFUNCTION(logFunction), asCALL_CDECL);
 
     registerObject(engine);
 
