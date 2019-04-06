@@ -1,4 +1,9 @@
 #include "core/metaproperty.h"
+
+#if __linux__
+#include <cstring>
+#endif
+
 /*!
     \class MetaProperty
     \brief The MetaProperty provides an interface to retrieve information about object property at runtime.
@@ -58,14 +63,25 @@ const MetaType MetaProperty::type() const {
 */
 Variant MetaProperty::read(const Object *object) const {
     PROFILE_FUNCTION()
-    return m_pTable->reader(object);
+    if(m_pTable->reader) {
+        return m_pTable->reader(object);
+    } else if(m_pTable->ptr) {
+        int i;
+        memcpy(&i, m_pTable->ptr, 4);
+        return Variant(MetaType::type(m_pTable->type->name), m_pTable->ptr);
+    }
+    return Variant();
 }
 /*!
     Tries to write a \a value as Variant to provided \a object.
 */
 void MetaProperty::write(Object *object, const Variant &value) const {
     PROFILE_FUNCTION()
-    m_pTable->writer(object, value);
+    if(m_pTable->writer) {
+        m_pTable->writer(object, value);
+    } else if(m_pTable->ptr) {
+        memcpy(m_pTable->ptr, value.data(), MetaType(m_pTable->type).size());
+    }
 }
 /*!
     Returns property information table.

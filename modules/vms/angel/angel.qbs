@@ -34,6 +34,7 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/converters/*.cpp")
+            sources.push("src/converters/*.qrc")
             sources.push("includes/converters/*.h")
             return sources
         }

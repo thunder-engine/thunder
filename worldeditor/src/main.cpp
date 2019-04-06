@@ -77,10 +77,12 @@ int main(int argc, char *argv[]) {
         engine.reloadBundle();
         Log::overrideHandler(new QLog());
 
-        PluginModel::instance()->init(&engine);
-        PluginModel::instance()->rescan();
+        PluginModel *plugin = PluginModel::instance();
 
-        QApplication::connect(PluginModel::instance(), SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
+        plugin->init(&engine);
+        plugin->rescan();
+
+        QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
         AssetManager *asset = AssetManager::instance();
         asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
@@ -103,6 +105,7 @@ int main(int argc, char *argv[]) {
         result  = a.exec();
 
         asset->destroy();
+        plugin->destroy();
     }
     UndoManager::destroy();
     AssetManager::destroy();

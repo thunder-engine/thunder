@@ -61,6 +61,13 @@ AngelSystem::AngelSystem() :
 AngelSystem::~AngelSystem() {
     PROFILER_MARKER;
 
+    auto it = m_List.begin();
+    while(it != m_List.end()) {
+        delete *it;
+        it = m_List.begin();
+    }
+    m_List.clear();
+
     if(m_pContext) {
         m_pContext->Release();
     }
@@ -102,35 +109,11 @@ const char *AngelSystem::name() const {
 void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
-    for(auto it : m_List) {
-        AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
-        if(component->isEnable() && component->actor() && component->actor()->scene() == scene) {
+    if(Engine::isGameMode()) {
+        for(auto it : m_List) {
+            AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
-            string value    = component->script();
-            if(object == nullptr && !value.empty() && m_pScriptModule) {
-                asITypeInfo *type   = m_pScriptModule->GetTypeInfoByDecl(value.c_str());
-                if(type) {
-                    string stream   = value + " @+" + value + "()";
-                    execute(object, type->GetFactoryByDecl(stream.c_str()));
-
-                    asIScriptObject **obj   = (asIScriptObject**)m_pContext->GetAddressOfReturnValue();
-                    if(obj == nullptr) {
-                        continue;
-                    }
-                    object  = *obj;
-                    if(object) {
-                        object->AddRef();
-
-                        component->setScriptObject(object);
-                        component->setScriptStart(type->GetMethodByDecl("void start()"));
-                        component->setScriptUpdate(type->GetMethodByDecl("void update()"));
-                    } else {
-                        Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << value.c_str();
-                    }
-                }
-            }
-
-            if(Engine::isGameMode()) {
+            if(component->isEnable() && component->actor() && component->actor()->scene() == scene) {
                 if(!component->isStarted()) {
                     execute(object, component->scriptStart());
                     component->setStarted(true);
@@ -156,7 +139,7 @@ void AngelSystem::reload() {
         m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
         m_pScriptModule->LoadByteCode(&stream);
 
-        const MetaObject *meta = AngelBehaviour::metaClass();
+        //const MetaObject *meta = AngelBehaviour::metaClass();
 
         for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
@@ -181,9 +164,23 @@ void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
             m_pContext->SetObject(object);
         }
         if(m_pContext->Execute() == asEXECUTION_EXCEPTION) {
-            Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_pContext->GetExceptionString();
+            int column;
+            m_pContext->GetExceptionLineNumber(&column);
+            Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_pContext->GetExceptionString() << m_pContext->GetExceptionFunction()->GetName() << "Line:" << column;
         }
     }
+}
+
+asIScriptModule *AngelSystem::module() const {
+    PROFILER_MARKER;
+
+    return m_pScriptModule;
+}
+
+asIScriptContext *AngelSystem::context() const {
+    PROFILER_MARKER;
+
+    return m_pContext;
 }
 
 void *castTo(void *ptr) {
@@ -217,6 +214,18 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     for(auto &it: ISystem::factories()) {
         registerMetaType(engine, it.first, ISystem::metaFactory(it.first)->first);
     }
+
+    engine->RegisterInterface("IBehaviour");
+    engine->RegisterObjectMethod("AngelBehaviour",
+                                 "void setScriptObject(IBehaviour @)",
+                                 asMETHOD(AngelBehaviour, setScriptObject),
+                                 asCALL_THISCALL);
+
+    engine->RegisterObjectMethod("Actor", "Actor &get_Parent()", asMETHOD(Actor, parent), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "void set_Parent(Actor &)", asMETHOD(Actor, setParent), asCALL_THISCALL);
+
+    engine->RegisterObjectMethod("Actor", "string &get_Name()", asMETHOD(Object, name), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
 }
 
 void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
@@ -301,6 +310,7 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                                              set.c_str(),
                                              ptr2,
                                              asCALL_THISCALL);
+
             }
         }
 

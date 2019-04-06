@@ -56,6 +56,9 @@ QVariant qVariant(Variant &v, const string &type) {
         }
         default: break;
     }
+    if(v.data() == nullptr) {
+        return QVariant();
+    }
     Object *o   = *(reinterpret_cast<Object **>(v.data()));
     return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
 }

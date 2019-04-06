@@ -72,7 +72,7 @@ Variant::Variant() {
 */
 Variant::Variant(MetaType::Type type) {
     PROFILE_FUNCTION()
-    mData.type      = type;
+    mData.type = type;
 }
 /*!
     Constructs a new variant with a boolean \a value.

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Behaviour.txt</file>
+    </qresource>
+</RCC>
