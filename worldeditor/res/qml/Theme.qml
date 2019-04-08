@@ -19,5 +19,9 @@ Item {
     property string redColor: "#c62828"
     property string hoverRedColor: "#d32f2f"
 
+    property string gray400: "#bdbdbd"
+    property string gray500: "#9e9e9e"
+    property string gray600: "#757575"
+
     property var colors: [Qt.rgba(1,0,0), Qt.rgba(0,1,0), Qt.rgba(0,0,1), Qt.rgba(1,1,0), Qt.rgba(1,0,1), Qt.rgba(0,1,1)]
 }

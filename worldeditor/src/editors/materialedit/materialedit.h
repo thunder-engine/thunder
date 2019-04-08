@@ -15,6 +15,10 @@ class DirectLight;
 class Viewport;
 class ShaderBuilder;
 
+class ComponentBrowser;
+
+class QWidgetAction;
+
 namespace Ui {
     class MaterialEdit;
 }
@@ -56,13 +60,20 @@ private:
 
     Viewport               *glWidget;
 
+    QMenu                  *m_pCreateMenu;
+    QWidgetAction          *m_pAction;
+
+    ComponentBrowser       *m_pBrowser;
+
 private slots:
     void                    onGLInit                        ();
+
+    void                    onComponentSelected             (const QString &path);
 
     void                    onKeyPress                      (QKeyEvent *pe);
     void                    onKeyRelease                    (QKeyEvent *pe);
 
-    void                    onNodeSelected                  (void *node);
+    void                    onNodeSelected                  (int);
     void                    onUpdateTemplate                (bool update = true);
 
     void                    onToolWindowActionToggled       (bool checked);
@@ -74,6 +85,7 @@ private slots:
     void                    on_actionSphere_triggered       ();
 
     void                    on_actionSave_triggered         ();
+    void on_schemeWidget_customContextMenuRequested(const QPoint &);
 };
 
 #endif // MATERIALEDIT_H

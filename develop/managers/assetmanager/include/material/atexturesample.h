@@ -85,18 +85,18 @@ public:
             uv      = QString("vec2(%1, %2) + %3 * vec2(%4, %5)").arg(m_Sub.x).arg(m_Sub.y).arg(uv).arg(m_Sub.z).arg(m_Sub.w);
             value  += QString("\tvec4 lt%1 = texture(uni.%2, %3);\n").arg(depth).arg(m_Name).arg(uv);
 
-            if(link.sitem->name == "") {
+            if(link.oport->name == "") {
                 size    = QMetaType::QVector4D;
                 value  += QString("\tvec4 local%1 = lt%1;\n").arg(depth);
             } else {
                 size    = QMetaType::Double;
 
                 QString channel = "x";
-                if(link.sitem->name == G) {
+                if(link.oport->name == G) {
                     channel = "y";
-                } else if(link.sitem->name == b) {
+                } else if(link.oport->name == b) {
                     channel = "z";
-                } else if(link.sitem->name == a) {
+                } else if(link.oport->name == a) {
                     channel = "w";
                 }
                 value  += QString("\tfloat local%1 = lt%1.%2;\n").arg(depth).arg(channel);
@@ -198,17 +198,17 @@ public:
 
                 uv      = "vec3(" + uv + ", 1.0)";
                 value  += QString("\tvec4 lt%1 = texture(uni.texture%2, %3);\n").arg(depth).arg(result).arg(uv);
-                if(link.sitem->name == "") {
+                if(link.oport->name == "") {
                     size    = MetaType::VECTOR4;
                     value  += QString("\tvec4 local%1 = lt%1;\n").arg(depth);
                 } else {
                     size    = MetaType::FLOAT;
                     QString channel = "x";
-                    if(link.sitem->name == G) {
+                    if(link.oport->name == G) {
                         channel = "y";
-                    } else if(link.sitem->name == b) {
+                    } else if(link.oport->name == b) {
                         channel = "z";
-                    } else if(link.sitem->name == a) {
+                    } else if(link.oport->name == a) {
                         channel = "w";
                     }
                     value  += QString("\tfloat local%1 = lt%1.%2;\n").arg(depth).arg(channel);
