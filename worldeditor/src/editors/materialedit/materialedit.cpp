@@ -5,6 +5,11 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include <QQmlContext>
+#include <QQuickItem>
+
+#include <QWidgetAction>
+
 #include <engine.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -24,6 +29,8 @@
 #include "shaderbuilder.h"
 
 #include "functionmodel.h"
+
+#include "editors/componentbrowser/componentbrowser.h"
 
 MaterialEdit::MaterialEdit(Engine *engine) :
         QMainWindow(nullptr),
@@ -67,14 +74,29 @@ MaterialEdit::MaterialEdit(Engine *engine) :
         action->setChecked(true);
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
-
     ui->components->setModel(m_pBuilder->components());
 
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
-    connect(ui->schemeWidget, SIGNAL(nodeSelected(void*)), this, SLOT(onNodeSelected(void*)));
 
-    ui->schemeWidget->setModel(m_pBuilder);
+    ui->schemeWidget->rootContext()->setContextProperty("schemeModel", m_pBuilder);
+    ui->schemeWidget->rootContext()->setContextProperty("stateMachine", QVariant(false));
+    ui->schemeWidget->setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
+
+    //ui->schemeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->schemeWidget->setAcceptDrops(true);
+
+    QQuickItem *item = ui->schemeWidget->rootObject();
+    connect(item, SIGNAL(nodeSelected(int)), this, SLOT(onNodeSelected(int)));
+
+    m_pBrowser  = new ComponentBrowser(this);
+    m_pBrowser->setModel(m_pBuilder->components());
+    connect(m_pBrowser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
+
+    m_pCreateMenu = new QMenu(this);
+    m_pAction = new QWidgetAction(m_pCreateMenu);
+    m_pAction->setDefaultWidget(m_pBrowser);
+    m_pCreateMenu->addAction(m_pAction);
 
     readSettings();
 }
@@ -141,7 +163,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         m_pBuilder->load(m_Path);
 
         onUpdateTemplate(false);
-        onNodeSelected(m_pBuilder);
+        onNodeSelected(0);
     }
 }
 
@@ -192,8 +214,25 @@ void MaterialEdit::onGLInit() {
     on_actionSphere_triggered();
 }
 
-void MaterialEdit::onNodeSelected(void *node) {
-    ui->treeView->setObject(static_cast<QObject *>(node));
+
+void MaterialEdit::onComponentSelected(const QString &path) {
+    m_pCreateMenu->hide();
+
+    QQuickItem *ptr = ui->schemeWidget->rootObject()->findChild<QQuickItem *>("Canvas");
+    if(ptr) {
+        AbstractSchemeModel::Node *node = m_pBuilder->createNode(path);
+        if(node) {
+            node->pos = QPoint(ptr->property("mouseX").toInt(), ptr->property("mouseY").toInt());
+            m_pBuilder->schemeUpdated();
+        }
+    }
+}
+
+void MaterialEdit::onNodeSelected(int index) {
+    const AbstractSchemeModel::Node *node = m_pBuilder->node(index);
+    if(node) {
+        ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+    }
 }
 
 void MaterialEdit::on_actionPlane_triggered() {
@@ -247,4 +286,8 @@ void MaterialEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visib
         action->setChecked(visible);
         action->blockSignals(false);
     }
+}
+
+void MaterialEdit::on_schemeWidget_customContextMenuRequested(const QPoint &) {
+    m_pCreateMenu->exec(QCursor::pos());
 }

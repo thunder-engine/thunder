@@ -17,10 +17,10 @@
    <widget class="PropertyEditor" name="treeView">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>80</y>
+      <x>219</x>
+      <y>9</y>
       <width>300</width>
-      <height>200</height>
+      <height>201</height>
      </rect>
     </property>
     <property name="minimumSize">
@@ -33,8 +33,8 @@
    <widget class="ComponentBrowser" name="components" native="true">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>300</y>
+      <x>9</x>
+      <y>220</y>
       <width>200</width>
       <height>200</height>
      </rect>
@@ -49,8 +49,8 @@
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>300</y>
+      <x>219</x>
+      <y>219</y>
       <width>200</width>
       <height>200</height>
      </rect>
@@ -62,14 +62,23 @@
      </size>
     </property>
    </widget>
-   <widget class="SchemeEditor" name="schemeWidget" native="true">
+   <widget class="QQuickWidget" name="schemeWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>231</width>
-      <height>191</height>
+      <x>11</x>
+      <y>10</y>
+      <width>200</width>
+      <height>200</height>
      </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="resizeMode">
+     <enum>QQuickWidget::SizeRootObjectToView</enum>
     </property>
    </widget>
   </widget>
@@ -153,9 +162,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QQuickWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
+  </customwidget>
+  <customwidget>
    <class>PropertyEditor</class>
    <extends>QTreeView</extends>
    <header>editors/propertyedit/propertyeditor.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>ComponentBrowser</class>
@@ -167,12 +182,6 @@
    <class>QToolWindowManager</class>
    <extends>QWidget</extends>
    <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SchemeEditor</class>
-   <extends>QWidget</extends>
-   <header>editors/scemeeditor/schemeeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -19,18 +19,17 @@ class AbstractSchemeModel : public QObject {
 
 public:
     struct Item {
-        /// Derection of item
         bool                        out;
-        /// Type of item
+
         uint32_t                    type;
-        /// Displaying name of item.
+
         QString                     name;
-        /// Displaying position of item.
+
         int32_t                     pos;
 
         QVariant                    var;
     };
-    typedef list<Item *>            ItemList;
+    typedef QList<Item *>           ItemList;
 
     struct Node {
         bool                        root;
@@ -45,6 +44,8 @@ public:
 
         QPoint                      pos;
 
+        QColor                      color;
+
         QImage                      cache;
     };
     typedef QList<Node *>           NodeList;
@@ -52,41 +53,74 @@ public:
     struct Link {
         Node                       *sender;
 
-        Item                       *sitem;
+        Item                       *oport;
 
         Node                       *receiver;
 
-        Item                       *ritem;
+        Item                       *iport;
+
+        void                       *ptr;
     };
     typedef QList<Link *>           LinkList;
 
 public:
-    AbstractSchemeModel             () {}
+    AbstractSchemeModel();
 
-    AbstractSchemeModel             (const AbstractSchemeModel &) { assert(false && "DONT EVER USE THIS"); }
+    AbstractSchemeModel(const AbstractSchemeModel &) { assert(false && "DONT EVER USE THIS"); }
 
-    virtual Node                   *createNode              (const QString &path) = 0;
-    virtual void                    deleteNode              (Node *node) = 0;
+    virtual Node *createNode(const QString &path) = 0;
+    virtual void deleteNode(Node *node);
 
-    virtual void                    createLink              (Node *node1, Item *item1, Node *node2, Item *item2) = 0;
-    virtual void                    deleteLink              (Item *item, bool silent = false) = 0;
+    virtual void createLink(Node *sender, Item *oport, Node *receiver, Item *iport);
+    virtual void deleteLink(Item *item, bool silent = false);
 
-    virtual QAbstractItemModel     *components              () const = 0;
+    const Link *findLink(const Node *node, const char *item) const;
 
-    NodeList                       &nodes                   () {
+    const Node *node(int index);
+    const Link *link(int index);
+
+    virtual void load(const QString &path);
+    virtual void save(const QString &path);
+
+    virtual QAbstractItemModel *components () const = 0;
+
+    NodeList &getNodes() {
         return m_Nodes;
     }
 
-    const LinkList                 &links                   () const {
+    const LinkList &getLinks() {
         return m_Links;
     }
 
+    Q_INVOKABLE void createNode(const QString &path, int x, int y);
+
+    Q_INVOKABLE QVariant nodes() const;
+    Q_INVOKABLE QVariant links() const;
+
+    Q_INVOKABLE void moveNode(int index, int x, int y);
+    Q_INVOKABLE void deleteNode(int index);
+
+    Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
+    Q_INVOKABLE void deleteLink(int index);
+
+    Q_INVOKABLE void deleteLinksByNode(int index, int port);
+
 signals:
-    void                            schemeUpdated           ();
+    void schemeUpdated();
+
+    void nodeMoved();
 
 protected:
-    NodeList                        m_Nodes;
-    LinkList                        m_Links;
+    virtual void loadUserValues(Node *node, const QVariantMap &values) = 0;
+    virtual void saveUserValues(Node *node, QVariantMap &values) = 0;
+
+protected:
+    NodeList m_Nodes;
+    LinkList m_Links;
+
+    AbstractSchemeModel::Node *m_pRootNode;
+
+    QVariantMap m_Data;
 };
 
 #endif // ABSTRACTSCHEMEMODEL_H

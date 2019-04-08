@@ -38,22 +38,13 @@
 #include <regex>
 #include <sstream>
 
-#define NODES       "Nodes"
-#define LINKS       "Links"
 #define TYPE        "Type"
-#define VALUES      "Values"
-#define SENDER      "Sender"
-#define RECEIVER    "Receiver"
-#define SITEM       "SItem"
-#define RITEM       "RItem"
 #define BLEND       "Blend"
 #define MODEL       "Model"
 #define SIDE        "Side"
 #define DEPTH       "Depth"
 #define RAW         "Raw"
 #define VIEW        "View"
-#define X           "X"
-#define Y           "Y"
 
 #define UNIFORM     32
 
@@ -128,11 +119,6 @@ ShaderBuilder::ShaderBuilder() :
     qRegisterMetaType<If*>("If");
     m_Functions << "Mask" << "If";
 
-    m_pNode = new Node;
-    m_pNode->root   = true;
-    m_pNode->name   = "";
-    m_pNode->ptr    = this;
-
     QStringList list;
     list << "Diffuse" << "Emissive" << "Normal" << "Metallic" << "Roughness" << "Opacity" << "IOR";
 
@@ -147,10 +133,9 @@ ShaderBuilder::ShaderBuilder() :
         item->pos   = i;
         item->type  = (i < 3) ? QMetaType::QVector3D : QMetaType::Double;
         item->var   = value.at(i);
-        m_pNode->list.push_back(item);
+        m_pRootNode->list.push_back(item);
         i++;
     }
-    m_Nodes.push_back(m_pNode);
 }
 
 ShaderBuilder::~ShaderBuilder() {
@@ -168,6 +153,7 @@ AbstractSchemeModel::Node *ShaderBuilder::createNode(const QString &path) {
             connect(function, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
             Node *result    = function->createNode(this, path);
             result->type    = path;
+
             m_Nodes.push_back(result);
 
             return result;
@@ -177,269 +163,111 @@ AbstractSchemeModel::Node *ShaderBuilder::createNode(const QString &path) {
     return nullptr;
 }
 
-void ShaderBuilder::deleteNode(Node *node) {
-    bool result = false;
-    AbstractSchemeModel::NodeList::iterator it  = m_Nodes.begin();
-    while(it != m_Nodes.end()) {
-        if(*it == node) {
-            for(Item *it : node->list) {
-                deleteLink(it, true);
-                delete it;
-            }
-            it  = m_Nodes.erase(it);
-
-            result  = true;
-        } else {
-            ++it;
-        }
-    }
-    if(result) {
-        emit schemeUpdated();
-    }
-}
-
-void ShaderBuilder::createLink(Node *sender, Item *sitem, Node *receiver, Item *ritem) {
-    bool result     = true;
-    for(auto it : m_Links) {
-        if(it->sender == sender && it->receiver == receiver && it->sitem == sitem && it->ritem == ritem) {
-            result  = false;
-            break;
-        }
-    }
-    if(result) {
-        for(auto it : m_Links) {
-            if(it->ritem == ritem) {
-                deleteLink(ritem);
-            }
-        }
-
-        Link *link      = new Link;
-        link->sender    = sender;
-        link->receiver  = receiver;
-        link->sitem     = sitem;
-        link->ritem     = ritem;
-        m_Links.push_back(link);
-
-        emit schemeUpdated();
-    }
-}
-
-void ShaderBuilder::deleteLink(Item *item, bool silent) {
-    bool result = false;
-    AbstractSchemeModel::LinkList::iterator it  = m_Links.begin();
-    while(it != m_Links.end()) {
-        AbstractSchemeModel::Link *link   = *it;
-        if(link->sitem == item || link->ritem == item) {
-            it  = m_Links.erase(it);
-            result  = true;
-        } else {
-            ++it;
-        }
-    }
-    if(result && !silent) {
-        emit schemeUpdated();
-    }
-}
-
 QAbstractItemModel *ShaderBuilder::components() const {
     return new FunctionModel(m_Functions);
 }
 
 void ShaderBuilder::load(const QString &path) {
-    foreach(Link *it, m_Links) {
-        delete it;
-    }
-    m_Links.clear();
+    AbstractSchemeModel::load(path);
 
-    foreach(Node *it, m_Nodes) {
-        if(it != m_pNode) {
-            delete it;
-        }
-    }
-    m_Nodes.clear();
-
-    m_pNode->name  = QFileInfo(path).baseName();
-    m_Nodes.push_back(m_pNode);
-
-    QFile loadFile(path);
-    if (!loadFile.open(QIODevice::ReadOnly)) {
-        qWarning("Couldn't open file.");
-        return;
-    }
-
-    QByteArray saveData = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(saveData));
-
-    QJsonObject json   = doc.object();
-    QJsonArray nodes    = json[NODES].toArray();
-    for(int i = 0; i < nodes.size(); ++i) {
-        QJsonObject n   = nodes[i].toObject();
-        Node *node  = createNode(n[TYPE].toString());
-        node->pos   = QPoint(n[X].toInt(), n[Y].toInt());
-        QObject *obj    = static_cast<QObject *>(node->ptr);
-        if(obj) {
-            obj->blockSignals(true);
-            QJsonObject values  = n[VALUES].toObject();
-            foreach(QString key, values.keys()) {
-                if(values[key].isArray()) {
-                    QJsonArray array    = values[key].toArray();
-                    switch(array.first().toInt()) {
-                        case QVariant::Color: {
-                            obj->setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(), array.at(3).toInt(), array.at(4).toInt()));
-                        } break;
-                        default: {
-                            if(array.first().toString() == "Template") {
-                                obj->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                                               array.at(2).toInt())));
-                            }
-                        } break;
-                    }
-                } else {
-                    obj->setProperty(qPrintable(key), values[key].toVariant());
-                }
-            }
-            obj->blockSignals(false);
-        }
-    }
+    m_pRootNode->name = QFileInfo(path).baseName();
 
     blockSignals(true);
-    QJsonArray links    = json[LINKS].toArray();
-    for(int i = 0; i < links.size(); ++i) {
-        QJsonObject l   = links[i].toObject();
-        Node *sender    = m_Nodes.at(l[SENDER].toInt());
-        Node *receiver  = m_Nodes.at(l[RECEIVER].toInt());
-        if(sender && receiver) {
-            Item *sitem = nullptr;
-            Item *ritem = nullptr;
-            for(Item *it : sender->list) {
-                if(it->name == l[SITEM].toString()) {
-                    sitem   = it;
-                    break;
-                }
-            }
-            for(Item *it : receiver->list) {
-                if(it->name == l[RITEM].toString()) {
-                    ritem   = it;
-                    break;
-                }
-            }
-            if(sitem && ritem) {
-                createLink(sender, sitem, receiver, ritem);
-            }
-        }
-    }
-    setMaterialType(static_cast<Type>(json[TYPE].toInt()));
-    setBlend(static_cast<Blend>(json[BLEND].toInt()));
-    setLightModel(static_cast<LightModel>(json[MODEL].toInt()));
-    setDoubleSided(json[SIDE].toBool());
-    setDepthTest(json.contains(DEPTH) ? json[DEPTH].toBool() : true);
-    setRawPath(json[RAW].toString());
+
+    setMaterialType(static_cast<Type>(m_Data[TYPE].toInt()));
+    setBlend(static_cast<Blend>(m_Data[BLEND].toInt()));
+    setLightModel(static_cast<LightModel>(m_Data[MODEL].toInt()));
+    setDoubleSided(m_Data[SIDE].toBool());
+    setDepthTest(m_Data.contains(DEPTH) ? m_Data[DEPTH].toBool() : true);
+    setRawPath(m_Data[RAW].toString());
     blockSignals(false);
 
     emit schemeUpdated();
 }
 
 void ShaderBuilder::save(const QString &path) {
-    QFile saveFile(path);
-    if(!saveFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open file.");
-        return;
-    }
+    m_Data[TYPE] = materialType();
+    m_Data[BLEND] = blend();
+    m_Data[MODEL] = lightModel();
+    m_Data[SIDE] = isDoubleSided();
+    m_Data[DEPTH] = isDepthTest();
+    m_Data[VIEW] = isViewSpace();
+    m_Data[RAW] = rawPath();
 
-    QJsonObject data;
-    QJsonArray nodes;
-    for(Node *it : m_Nodes) {
-        if(it != m_pNode) {
-            QJsonObject node;
-            node[TYPE]  = it->type;
-            node[X]     = it->pos.x();
-            node[Y]     = it->pos.y();
-
-            QObject *func   = static_cast<QObject *>(it->ptr);
-            if(func) {
-                QJsonObject values;
-                const QMetaObject *meta   = func->metaObject();
-                for(int i = 0; i < meta->propertyCount(); i++) {
-                    QMetaProperty property  = meta->property(i);
-                    if(property.isUser(func)) {
-                        QVariant value  = property.read(func);
-                        switch(value.type()) {
-                            case QVariant::Bool: {
-                                values[property.name()] = value.toBool();
-                            } break;
-                            case QVariant::String: {
-                                values[property.name()] = value.toString();
-                            } break;
-                            case QVariant::Double: {
-                                values[property.name()] = value.toDouble();
-                            } break;
-                            case QVariant::Color: {
-                                QJsonArray v;
-                                v.push_back(static_cast<int32_t>(QVariant::Color));
-                                QColor col      = value.value<QColor>();
-                                v.push_back(col.red());
-                                v.push_back(col.green());
-                                v.push_back(col.blue());
-                                v.push_back(col.alpha());
-                                values[property.name()] = v;
-                            } break;
-                            default: {
-                                if(value.canConvert<Template>()) {
-                                    Template tmp    = value.value<Template>();
-                                    QJsonArray v;
-                                    v.push_back(value.typeName());
-                                    v.push_back(tmp.path);
-                                    v.push_back(QJsonValue::fromVariant(tmp.type));
-                                    values[property.name()] = v;
-                                }
-                            } break;
-                        }
-                    }
-                }
-                node[VALUES]    = values;
-            }
-            nodes.push_back(node);
-        }
-    }
-    data[NODES] = nodes;
-
-    QJsonArray links;
-    for(Link *it : m_Links) {
-        int s   = -1;
-        for(int i = 0; i < m_Nodes.size(); i++) {
-            if(m_Nodes.at(i) == it->sender) {
-                s   = i;
-                break;
-            }
-        }
-        int r   = - 1;
-        for(int i = 0; i < m_Nodes.size(); i++) {
-            if(m_Nodes.at(i) == it->receiver) {
-                r   = i;
-                break;
-            }
-        }
-        if(s > -1 && r > -1) {
-            QJsonObject link;
-            link[SENDER]    = s;
-            link[SITEM]     = it->sitem->name;
-            link[RECEIVER]  = r;
-            link[RITEM]     = it->ritem->name;
-            links.push_back(link);
-        }
-    }
-    data[LINKS] = links;
-    data[TYPE]  = materialType();
-    data[BLEND] = blend();
-    data[MODEL] = lightModel();
-    data[SIDE]  = isDoubleSided();
-    data[DEPTH] = isDepthTest();
-    data[VIEW] = isViewSpace();
-    data[RAW] = rawPath();
-
-    QJsonDocument doc(data);
-    saveFile.write(doc.toJson());
+    AbstractSchemeModel::save(path);
 }
+
+void ShaderBuilder::loadUserValues(Node *node, const QVariantMap &values) {
+    QObject *func = static_cast<QObject *>(node->ptr);
+    if(func) {
+        func->blockSignals(true);
+        foreach(QString key, values.keys()) {
+            if(values[key].type() == QMetaType::QVariantList) {
+                QVariantList array = values[key].toList();
+                switch(array.first().toInt()) {
+                    case QVariant::Color: {
+                        func->setProperty(qPrintable(key), QColor(array.at(1).toInt(), array.at(2).toInt(), array.at(3).toInt(), array.at(4).toInt()));
+                    } break;
+                    default: {
+                        if(array.first().toString() == "Template") {
+                            func->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
+                                                                                            array.at(2).toInt())));
+                        }
+                    } break;
+                }
+            } else {
+                func->setProperty(qPrintable(key), values[key]);
+            }
+        }
+        func->blockSignals(false);
+    }
+}
+
+void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
+    QObject *func = static_cast<QObject *>(node->ptr);
+    if(func) {
+        const QMetaObject *meta   = func->metaObject();
+        for(int i = 0; i < meta->propertyCount(); i++) {
+            QMetaProperty property  = meta->property(i);
+            if(property.isUser(func)) {
+                QVariant value  = property.read(func);
+                switch(value.type()) {
+                    case QVariant::Bool: {
+                        values[property.name()] = value.toBool();
+                    } break;
+                    case QVariant::String: {
+                        values[property.name()] = value.toString();
+                    } break;
+                    case QVariant::Double: {
+                        values[property.name()] = value.toDouble();
+                    } break;
+                    case QVariant::Color: {
+                        QJsonArray v;
+                        v.push_back(static_cast<int32_t>(QVariant::Color));
+                        QColor col      = value.value<QColor>();
+                        v.push_back(col.red());
+                        v.push_back(col.green());
+                        v.push_back(col.blue());
+                        v.push_back(col.alpha());
+                        values[property.name()] = v;
+                    } break;
+                    default: {
+                        if(value.canConvert<Template>()) {
+                            Template tmp    = value.value<Template>();
+                            QJsonArray v;
+                            v.push_back(value.typeName());
+                            v.push_back(tmp.path);
+                            v.push_back(QJsonValue::fromVariant(tmp.type));
+                            values[property.name()] = v;
+                        }
+                    } break;
+                }
+            }
+        }
+    }
+}
+
+
 
 bool ShaderBuilder::build() {
     cleanup();
@@ -617,7 +445,7 @@ void ShaderBuilder::addParam(const QString &param) {
 }
 
 void ShaderBuilder::buildRoot(QString &result) {
-    for(const auto it : m_pNode->list) {
+    for(const auto it : m_pRootNode->list) {
         for(auto it : m_Nodes) {
             ShaderFunction *node   = static_cast<ShaderFunction *>(it->ptr);
             if(node && it->ptr != this) {
@@ -634,9 +462,9 @@ void ShaderBuilder::buildRoot(QString &result) {
             default: break;
         }
 
-        const Link *link    = findLink(m_pNode, qPrintable(item->name));
+        const Link *link = findLink(m_pRootNode, qPrintable(item->name));
         if(link) {
-            ShaderFunction *node   = static_cast<ShaderFunction *>(link->sender->ptr);
+            ShaderFunction *node = static_cast<ShaderFunction *>(link->sender->ptr);
             if(node) {
                 uint32_t depth  = 0;
                 uint8_t size    = 0;

@@ -31,8 +31,8 @@ public:
         m_Position  = -1;
     }
 
-    virtual AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) {
-        m_pNode     = new AbstractSchemeModel::Node;
+    virtual AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
+        m_pNode = new AbstractSchemeModel::Node;
         m_pNode->root   = false;
         m_pNode->name   = path;
         m_pNode->ptr    = this;
@@ -102,10 +102,10 @@ signals:
     void                        updated     ();
 
 protected:
-    ShaderBuilder              *m_pModel;
-    AbstractSchemeModel::Node  *m_pNode;
+    ShaderBuilder *m_pModel;
+    AbstractSchemeModel::Node *m_pNode;
 
-    int32_t                     m_Position;
+    int32_t m_Position;
 
 };
 
@@ -149,29 +149,17 @@ public:
 
 public:
     ShaderBuilder               ();
-    ~ShaderBuilder              ();
+    ~ShaderBuilder              () Q_DECL_OVERRIDE;
 
-    Node                       *createNode                  (const QString &path);
-    void                        deleteNode                  (Node *node);
+    Node                       *createNode                  (const QString &path) Q_DECL_OVERRIDE;
 
-    void                        createLink                  (Node *sender, Item *sitem, Node *receiver, Item *ritem);
-    void                        deleteLink                  (Item *item, bool silent = false);
+    QAbstractItemModel         *components                  () const Q_DECL_OVERRIDE;
 
-    const AbstractSchemeModel::Link    *findLink            (const AbstractSchemeModel::Node *node, const char *item) {
-        for(const auto it : m_Links) {
-            QString str;
-            str.compare(item);
-            if(it->receiver == node && it->ritem->name.compare(item) == 0) {
-                return it;
-            }
-        }
-        return nullptr;
-    }
+    void                        load                        (const QString &path) Q_DECL_OVERRIDE;
+    void                        save                        (const QString &path) Q_DECL_OVERRIDE;
 
-    QAbstractItemModel         *components                  () const;
-
-    void                        load                        (const QString &path);
-    void                        save                        (const QString &path);
+    void                        loadUserValues              (Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
+    void                        saveUserValues              (Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
     Variant                     object                      () const;
 
@@ -248,8 +236,6 @@ private:
     bool                        m_DepthTest;
 
     bool                        m_ViewSpace;
-
-    AbstractSchemeModel::Node  *m_pNode;
 
     typedef map<string, string> PragmaMap;
 

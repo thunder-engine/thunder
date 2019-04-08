@@ -85,13 +85,13 @@ void SchemeEditor::draw(QPainter &painter, const QRect &r) {
         painter.translate(mTranslate.x(), mTranslate.y());
         painter.scale(mZoom, mZoom);
 
-        const AbstractSchemeModel::LinkList &links   = m_pModel->links();
-        const AbstractSchemeModel::NodeList &nodes   = m_pModel->nodes();
+        const AbstractSchemeModel::LinkList &links   = m_pModel->getLinks();
+        const AbstractSchemeModel::NodeList &nodes   = m_pModel->getNodes();
 
         for(auto it : links) {
             QColor color(255, 255, 255, 0);
 
-            if(m_pFocusItem == it->sitem || m_pFocusItem == it->ritem) {
+            if(m_pFocusItem == it->oport || m_pFocusItem == it->iport) {
                 color   = QColor(255, 255, 0);
             } else {
                 color   = QColor(255, 0, 0);
@@ -139,7 +139,7 @@ void SchemeEditor::select(const QPoint &pos) {
     m_pFocusNode    = nullptr;
     m_pFocusItem    = nullptr;
 
-    AbstractSchemeModel::NodeList &nodes    = m_pModel->nodes();
+    AbstractSchemeModel::NodeList &nodes = m_pModel->getNodes();
     for(auto it : nodes) {
         hitNode(it, pos);
     }
@@ -327,8 +327,8 @@ void SchemeEditor::drawLink(QPainter &painter, const QColor &color, const Abstra
     QRect rect1 = calcRect(link->sender);
     QRect rect2 = calcRect(link->receiver);
 
-    Vector2 b(rect1.x() + rect1.width(), rect1.y() + itemPos(link->sitem) + mFontStride);
-    Vector2 e(rect2.x(), rect2.y() + itemPos(link->ritem) + mFontStride);
+    Vector2 b(rect1.x() + rect1.width(), rect1.y() + itemPos(link->oport) + mFontStride);
+    Vector2 e(rect2.x(), rect2.y() + itemPos(link->iport) + mFontStride);
 
     int lenght  = abs(e.x - b.x) * 0.5;
 
