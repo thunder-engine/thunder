@@ -1,4 +1,4 @@
-#include "bindings/angelcore.h"
+#include "bindings/angelbindings.h"
 
 #include <angelscript.h>
 
@@ -38,13 +38,6 @@ void registerEngine(asIScriptEngine *engine) {
     //engine->RegisterGlobalFunction("Actor @actorCreate(const string &in, Object &in)", asFUNCTION(actorCreate), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(Engine::loadResourceImpl), asCALL_CDECL);
-
-    engine->SetDefaultNamespace("");
-}
-
-void registerInput(asIScriptEngine *engine) {
-    engine->SetDefaultNamespace("Input");
-
 
     engine->SetDefaultNamespace("");
 }

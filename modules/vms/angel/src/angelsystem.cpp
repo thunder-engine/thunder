@@ -18,8 +18,7 @@
 
 #include "resources/angelscript.h"
 
-#include "bindings/angelmath.h"
-#include "bindings/angelcore.h"
+#include "bindings/angelbindings.h"
 
 #define TEMPALTE "{00000000-0101-0000-0000-000000000000}"
 
@@ -193,7 +192,9 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     RegisterStdString(engine);
     RegisterScriptArray(engine, true);
 
+    registerTimer(engine);
     registerMath(engine);
+    registerInput(engine);
     registerCore(engine);
 
     for(auto &it : MetaType::types()) {

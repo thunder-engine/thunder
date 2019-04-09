@@ -1,4 +1,4 @@
-#include "bindings/angelmath.h"
+#include "bindings/angelbindings.h"
 
 #include <angelscript.h>
 
@@ -447,6 +447,14 @@ void registerRay(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Ray", "Ray diffuse(const Vector3 &in, const Vector3 &in, float, float)", asMETHOD(Ray, diffuse), asCALL_THISCALL);
 }
 
+int randomInt(int min, int max) {
+    return min + (rand() % (max - min + 1));
+}
+
+float randomFloat(int min, int max) {
+    return min + ((max - min) * (static_cast<float>(rand()) / RAND_MAX));
+}
+
 void registerMath(asIScriptEngine *engine) {
     registerVector2(engine);
     registerVector3(engine);
@@ -465,4 +473,8 @@ void registerMath(asIScriptEngine *engine) {
     registerPlane(engine);
 
     registerRay(engine);
+
+    engine->RegisterGlobalFunction("void seed(int)", asFUNCTION(srand), asCALL_CDECL);
+    engine->RegisterGlobalFunction("int irand(int, int)", asFUNCTION(randomInt), asCALL_CDECL);
+    engine->RegisterGlobalFunction("float frand(float, float)", asFUNCTION(randomFloat), asCALL_CDECL);
 }

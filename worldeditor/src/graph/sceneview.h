@@ -58,7 +58,7 @@ public:
 
     Vector4                 mouseDelta          () { return Vector4(); }
 
-    uint8_t                 mouseButtons        () { return m_MouseButtons; }
+    uint32_t                mouseButtons        () { return m_MouseButtons; }
 
     uint32_t                screenWidth         () { return width(); }
 
@@ -68,13 +68,13 @@ public:
         QCursor::setPos(mapToGlobal(QPoint(position.x, position.y)));
     }
 
-    uint16_t                joystickCount       () { return 0; }
+    uint32_t                joystickCount       () { return 0; }
 
-    uint16_t                joystickButtons     (uint8_t) { return 0; }
+    uint32_t                joystickButtons     (uint32_t) { return 0; }
 
-    Vector4                 joystickThumbs      (uint8_t) { return Vector4(); }
+    Vector4                 joystickThumbs      (uint32_t) { return Vector4(); }
 
-    Vector2                 joystickTriggers    (uint8_t) { return Vector2(); }
+    Vector2                 joystickTriggers    (uint32_t) { return Vector2(); }
 
     void                   *pluginLoad          (const char *) { return nullptr; }
 

@@ -101,7 +101,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
 
-    Input::instance()->init(ui->preview);
+    Input::init(ui->preview);
 
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
