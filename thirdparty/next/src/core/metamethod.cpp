@@ -31,27 +31,27 @@
 */
 MetaMethod::MetaMethod(const Table *table) :
         m_pTable(table) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 /*!
     Returns true if property is valid; otherwise returns false.
 */
 bool MetaMethod::isValid() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (m_pTable != nullptr);
 }
 /*!
     Returns a name of method.
 */
 const char *MetaMethod::name() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->name;
 }
 /*!
     Returns method signature in text format.
 */
 string MetaMethod::signature() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     string sig(m_pTable->name);
     int pos = sig.rfind(':');
     if(pos != -1) {
@@ -76,28 +76,28 @@ string MetaMethod::signature() const {
     Returns a type of method.
 */
 MetaMethod::MethodType MetaMethod::type() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->type;
 }
 /*!
     Returns a return type of method.
 */
 MetaType MetaMethod::returnType() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return MetaType(m_pTable->types[0]);
 }
 /*!
     Returns a parameter count of method.
 */
 int MetaMethod::parameterCount() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->argc;
 }
 /*!
     Returns the type of parameter at \a index position.
 */
 MetaType MetaMethod::parameterType(int index) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return MetaType(m_pTable->types[index + 1]);
 }
 /*!
@@ -111,7 +111,7 @@ MetaType MetaMethod::parameterType(int index) const {
 
 */
 bool MetaMethod::invoke(Object *object, Variant &returnValue, int argc, const Variant *args) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(m_pTable->type != Signal) {
          m_pTable->invoker(object, argc, args, returnValue);
         return true;
@@ -122,7 +122,7 @@ bool MetaMethod::invoke(Object *object, Variant &returnValue, int argc, const Va
     Returns method information table.
 */
 const MetaMethod::Table *MetaMethod::table() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable;
 }
 
@@ -137,26 +137,26 @@ MethodCallEvent::MethodCallEvent(int32_t method, Object *sender, const Variant &
         m_pSender(sender),
         m_Method(method),
         m_Args(args) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 /*!
     Returns the object that sent this event.
 */
 Object *MethodCallEvent::sender() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pSender;
 }
 /*!
     Returns an index of method.
 */
 int32_t MethodCallEvent::method() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_Method;
 }
 /*!
     Returns an arguments array for method invocation.
 */
 const Variant *MethodCallEvent::args() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return &m_Args;
 }

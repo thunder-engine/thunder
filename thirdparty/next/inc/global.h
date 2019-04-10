@@ -17,7 +17,7 @@
     #define PROFILE_BLOCK(name, ...) EASY_BLOCK(name, __VA_ARGS__)
     #define PROFILE_FUNCTION(...) EASY_FUNCTION(__VA_ARGS__)
     #define PROFILE_START EASY_PROFILER_ENABLE
-    #define PROFILE_STOP profiler::dumpBlocksToFile("profile.prof");
+    #define PROFILE_STOP profiler::dumpBlocksToFile("profile.prof")
 #else
     #define PROFILE_BLOCK(name, ...)
     #define PROFILE_FUNCTION(...)

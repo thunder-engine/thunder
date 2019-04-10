@@ -46,7 +46,7 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
 
 
 inline string readString(const string &data, uint32_t &it) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     uint32_t s  = ++it;
     char c      = data[s];
     while(it < data.length() && c != '"') {
@@ -59,19 +59,19 @@ inline string readString(const string &data, uint32_t &it) {
 }
 
 inline bool isSpace(uint8_t c) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
 inline void skipSpaces(const char *data, uint32_t &it) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     while(isSpace(data[it])) {
         it++;
     }
 }
 
 inline bool isDigit(uint8_t c) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return c >= '0' && c <= '9';
 }
 
@@ -110,7 +110,7 @@ enum States {
     Returns deserialized string \a data as Variant based DOM structure.
 */
 Variant Json::load(const string &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     Variant result;
 
     VariantStack    s;
@@ -238,7 +238,7 @@ Variant Json::load(const string &data) {
     Argument \a tab is used as JSON tabulation formatting offset (-1 for one line JSON)
 */
 string Json::save(const Variant &data, int32_t tab) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     string result;
     uint32_t type   = data.type();
     switch(type) {

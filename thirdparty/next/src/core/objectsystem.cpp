@@ -62,13 +62,13 @@ static ObjectSystem::GroupMap   s_Groups;
     Constructs ObjectSystem.
 */
 ObjectSystem::ObjectSystem() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 /*!
     Destructs ObjectSystem, related objects and registered object factories.
 */
 ObjectSystem::~ObjectSystem() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 
     {
         auto it = s_Factories.begin();
@@ -106,7 +106,7 @@ void ObjectSystem::update() {
     \sa factoryAdd(), factoryRemove()
 */
 Object *ObjectSystem::objectCreateImpl(const string &uri, const string &name, Object *parent) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     Object *object  = nullptr;
 
     FactoryPair *pair = metaFactory(uri);
@@ -125,18 +125,18 @@ Object *ObjectSystem::objectCreateImpl(const string &uri, const string &name, Ob
 }
 
 void ObjectSystem::processObject(Object *object) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     object->processEvents();
 }
 
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     s_Groups[name]   = uri;
     s_Factories[uri] = FactoryPair(meta, this);
 }
 
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     s_Groups.erase(name);
     s_Factories.erase(uri);
 }
@@ -144,14 +144,14 @@ void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     Returns all registered classes.
 */
 ObjectSystem::GroupMap ObjectSystem::factories() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return s_Groups;
 }
 /*!
     Returns MetaObject for registered factory by provided \a uri.
 */
 ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     FactoryMap::iterator it = s_Factories.find(uri);
     if(it == s_Factories.end()) {
         it  = s_Factories.find(s_Groups[uri]);
@@ -164,7 +164,7 @@ ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
 
 typedef list<const Object *> ObjectArray;
 void enumObjects(const Object *object, ObjectArray &list) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
         enumObjects(it, list);
@@ -179,7 +179,7 @@ void enumObjects(const Object *object, ObjectArray &list) {
     Developers is able to save own data using Object::saveUserData() mechanism.
 */
 Variant ObjectSystem::toVariant(const Object *object) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     VariantList result;
 
     ObjectArray list;
@@ -201,7 +201,7 @@ Variant ObjectSystem::toVariant(const Object *object) {
     Deserialization will try to restore objects hierarchy, its properties and connections.
 */
 Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     Object *result  = nullptr;
 
     typedef unordered_map<uint32_t, Object *> ObjectMap;
@@ -295,12 +295,12 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
     Returns the new unique ID based on random number generator.
 */
 uint32_t ObjectSystem::generateUID() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return dist(mt);
 }
 
 void ObjectSystem::removeObject(Object *object) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = m_List.begin();
     while(it != m_List.end()) {
         if(*it == object) {
