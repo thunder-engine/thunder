@@ -23,8 +23,7 @@ public:
     AnimationCurve                 &curve                       (int32_t component = 0) const;
     void                            setCurve                    (AnimationCurve &curve, int32_t component = 0);
 
-protected:
-    void                            update                      ();
+    void                            setCurrentTime              (uint32_t msecs) override;
 
 private:
     VariantAnimationPrivate        *p_ptr;

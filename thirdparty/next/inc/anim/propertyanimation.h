@@ -19,7 +19,6 @@ public:
 
     const char                     *targetProperty              () const;
 
-protected:
     void                            setCurrentValue             (const Variant &value);
 
 private:

@@ -79,7 +79,9 @@ void VariantAnimation::setCurve(AnimationCurve &curve, int32_t component) {
     \overload
     This function interpolates animated Variant value from one KeyFrame to another.
 */
-void VariantAnimation::update() {
+void VariantAnimation::setCurrentTime(uint32_t msecs) {
+    Animation::setCurrentTime(msecs);
+
     Variant data = currentValue();
     for(auto it : p_ptr->m_KeyFrames) {
         int32_t component = it.first;
