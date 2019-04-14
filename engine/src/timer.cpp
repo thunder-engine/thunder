@@ -11,10 +11,17 @@ void Timer::init(float fixed) {
     m_sFixedDelta   = fixed;
 }
 
+void Timer::reset() {
+    m_sFixedDelta  = 0.0;
+    m_sTime        = 0.0;
+    m_sDeltaTime   = 0.0;
+    m_sTimeScale   = 1.0;
+}
+
 void Timer::update() {
     TimePoint current   = std::chrono::high_resolution_clock::now();
 
-    m_sDeltaTime    = (std::chrono::duration_cast<std::chrono::duration<float> >(current - m_sLastTime)).count();
+    m_sDeltaTime    = (std::chrono::duration_cast<std::chrono::duration<float> >(current - m_sLastTime)).count() * m_sTimeScale;
     m_sTime        += m_sDeltaTime;
     m_sLastTime     = current;
 }

@@ -17,7 +17,8 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     A_METHODS(
         A_METHOD(Transform *, Actor::transform),
         A_METHOD(Component *, Actor::findComponent),
-        A_METHOD(Component *, Actor::createComponent)
+        A_METHOD(Component *, Actor::createComponent),
+        A_METHOD(Object *, Object::clone)
     )
 
 public:

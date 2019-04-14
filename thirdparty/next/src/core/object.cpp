@@ -260,6 +260,7 @@ Object::Object() :
         p_ptr(new ObjectPrivate) {
     PROFILE_FUNCTION();
 
+    setUUID(ObjectSystem::generateUID());
 }
 
 Object::~Object() {
@@ -329,7 +330,7 @@ const MetaObject *Object::metaObject() const {
     return Object::metaClass();
 }
 /*!
-    Clones this object and set \a parent for the clone.
+    Clones this object.
     Returns pointer to clone object.
 
     When you clone the Object or subclasses of it, all child objects also will be cloned.
@@ -339,11 +340,11 @@ const MetaObject *Object::metaObject() const {
 
     \sa connect()
 */
-Object *Object::clone(Object *parent) {
+Object *Object::clone() {
     PROFILE_FUNCTION();
     const MetaObject *meta  = metaObject();
     Object *result = meta->createInstance();
-    result->setParent(parent);
+    result->setParent(nullptr);
     int count  = meta->propertyCount();
     for(int i = 0; i < count; i++) {
         MetaProperty lp = result->metaObject()->property(i);
@@ -351,7 +352,8 @@ Object *Object::clone(Object *parent) {
         lp.write(result, rp.read(this));
     }
     for(auto it : getChildren()) {
-        Object *clone  = it->clone(result);
+        Object *clone  = it->clone();
+        clone->setParent(result);
         clone->setName(it->name());
     }
     for(auto it : p_ptr->m_lSenders) {
@@ -732,49 +734,7 @@ void Object::loadUserData(const VariantMap &data) {
     Returns serialized data as VariantList.
 */
 VariantList Object::saveData() const {
-    VariantList result;
-
-    result.push_back(typeName());
-    result.push_back((int32_t)p_ptr->m_UUID);
-    Object *parent = p_ptr->m_pParent;
-    result.push_back(int((parent) ? parent->uuid() : 0));
-    result.push_back(name());
-
-    // Save base properties
-    VariantMap properties;
-    const MetaObject *meta = metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        MetaProperty p = meta->property(i);
-        if(p.isValid()) {
-            Variant v  = p.read(this);
-            if(v.userType() < MetaType::USERTYPE) {
-                properties[p.name()] = v;
-            }
-        }
-    }
-
-    // Save links
-    VariantList links;
-    for(const auto &l : getReceivers()) {
-        VariantList link;
-
-        Object *sender  = l.sender;
-
-        link.push_back(int(sender->uuid()));
-        MetaMethod method  = sender->metaObject()->method(l.signal);
-        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
-
-        link.push_back((int32_t)p_ptr->m_UUID);
-        method      = metaObject()->method(l.method);
-        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
-
-        links.push_back(link);
-    }
-    result.push_back(properties);
-    result.push_back(links);
-    result.push_back(saveUserData());
-
-    return result;
+    return serializeData(metaObject());
 }
 
 /*!
@@ -832,6 +792,13 @@ Object *Object::sender() const {
     PROFILE_FUNCTION();
     return p_ptr->m_pCurrentSender;
 }
+/*!
+    Returns System which handles this object.
+*/
+ObjectSystem *Object::system() const {
+    PROFILE_FUNCTION()
+    return p_ptr->m_pSystem;
+}
 
 void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION();
@@ -841,4 +808,51 @@ void Object::setUUID(uint32_t id) {
 void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
     p_ptr->m_pSystem = system;
+}
+
+VariantList Object::serializeData(const MetaObject *meta) const {
+    PROFILE_FUNCTION()
+
+    VariantList result;
+
+    result.push_back(meta->name());
+    result.push_back((int32_t)uuid());
+    Object *p = parent();
+    result.push_back((int32_t)((p) ? p->uuid() : 0));
+    result.push_back(name());
+
+    // Save base properties
+    VariantMap properties;
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        MetaProperty p = meta->property(i);
+        if(p.isValid()) {
+            Variant v  = p.read(this);
+            if(v.userType() < MetaType::USERTYPE) {
+                properties[p.name()] = v;
+            }
+        }
+    }
+
+    // Save links
+    VariantList links;
+    for(const auto &l : getReceivers()) {
+        VariantList link;
+
+        Object *sender  = l.sender;
+
+        link.push_back((int32_t)sender->uuid());
+        MetaMethod method  = sender->metaObject()->method(l.signal);
+        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+
+        link.push_back((int32_t)uuid());
+        method      = meta->method(l.method);
+        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+
+        links.push_back(link);
+    }
+    result.push_back(properties);
+    result.push_back(links);
+    result.push_back(saveUserData());
+
+    return result;
 }

@@ -1,0 +1,18 @@
+shared abstract class Behaviour : IBehaviour {
+    void start() {
+    }
+
+    void update() {
+    }
+
+    Actor@ actor() {
+        if(_root is null) {
+            Actor @super = cast<Actor>(Engine::objectCreate("Actor"));
+            @_root = cast<AngelBehaviour>(super.createComponent("AngelBehaviour"));
+            _root.setScriptObject(@this);
+        }
+        return _root.actor();
+    }
+
+    private AngelBehaviour @_root;
+};

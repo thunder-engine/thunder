@@ -27,11 +27,11 @@ public:
 
     uint32_t                    screenHeight                ();
 
-    uint16_t                    touchCount                  ();
+    uint32_t                    touchCount                  ();
 
-    uint16_t                    touchState                  (uint8_t index);
+    uint32_t                    touchState                  (uint32_t index);
 
-    Vector4                     touchPosition               (uint8_t index);
+    Vector4                     touchPosition               (uint32_t index);
 
 public:
     static Vector2              s_Screen;

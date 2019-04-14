@@ -28,10 +28,14 @@ public:
 
     void                        registerClasses             (asIScriptEngine *engine);
 
-    void                        registerMetaType            (asIScriptEngine *engine, const string &name, const MetaObject *meta);
+    void                        execute                     (asIScriptObject *object, asIScriptFunction *func);
+
+    asIScriptModule            *module                      () const;
+
+    asIScriptContext           *context                     () const;
 
 protected:
-    void                        execute                     (asIScriptObject *object, asIScriptFunction *func);
+    void                        registerMetaType            (asIScriptEngine *engine, const string &name, const MetaObject *meta);
 
     static void                 messageCallback             (const asSMessageInfo *msg, void *param);
 

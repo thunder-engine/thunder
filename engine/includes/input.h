@@ -160,45 +160,31 @@ public:
         KEY_MENU            = 348
     };
 public:
-    static Input               *instance                    ();
+    static void                 init                        (IPlatformAdaptor *platform);
 
-    static void                 destroy                     ();
+    static bool                 isKey                       (KeyCode code);
 
-    void                        init                        (IPlatformAdaptor *platform);
+    static Vector4              mousePosition               ();
 
-    bool                        key                         (KeyCode code);
+    static Vector4              mouseDelta                  ();
 
-    Vector4                     mousePosition               ();
+    static uint32_t             mouseButtons                ();
 
-    Vector4                     mouseDelta                  ();
+    static void                 setMousePosition            (const Vector3 &position);
 
-    uint8_t                     mouseButtons                ();
+    static uint32_t             joystickCount               ();
 
-    void                        setMousePosition            (const Vector3 &position);
+    static uint32_t             joystickButtons             (uint32_t index);
 
-    uint16_t                    joystickCount               ();
+    static Vector4              joystickThumbs              (uint32_t index);
 
-    uint16_t                    joystickButtons             (uint8_t index);
+    static Vector2              joystickTriggers            (uint32_t index);
 
-    Vector4                     joystickThumbs              (uint8_t index);
+    static uint32_t             touchCount                  ();
 
-    Vector2                     joystickTriggers            (uint8_t index);
+    static uint32_t             touchState                  (uint32_t index);
 
-    uint16_t                    touchCount                  ();
-
-    uint16_t                    touchState                  (uint8_t index);
-
-    Vector4                     touchPosition               (uint8_t index);
-
-protected:
-    IPlatformAdaptor           *m_pPlatform;
-
-private:
-    Input                       ();
-    ~Input                      ();
-
-    static Input               *m_pInstance;
-
+    static Vector4              touchPosition               (uint32_t index);
 };
 
 #endif // INPUT_H

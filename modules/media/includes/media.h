@@ -22,6 +22,7 @@ public:
 protected:
     Engine                     *m_pEngine;
 
+    ISystem                    *m_pSystem;
 };
 
 extern "C" {

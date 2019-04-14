@@ -531,7 +531,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
         if(actor) {
-            Object *object  = Engine::objectCreateImpl(name, findFreeObjectName(name, actor));
+            Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
             if(comp) {
                 comp->setParent(actor);

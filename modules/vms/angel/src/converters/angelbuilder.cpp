@@ -13,18 +13,6 @@
 
 #define DATA    "Data"
 
-#define BASE " \
-shared abstract class Behaviour { \
-    void start() { \
-    } \
-    void update() { \
-    } \
-    Actor@ actor() { \
-        return _root.actor(); \
-    } \
-    private AngelBehaviour @_root; \
-};"
-
 class CBytecodeStream : public asIBinaryStream {
 public:
     CBytecodeStream(ByteArray &ptr) :
@@ -68,7 +56,12 @@ AngelBuilder::AngelBuilder(AngelSystem *system) :
 bool AngelBuilder::buildProject() {
     if(m_Outdated) {
         asIScriptModule *mod = m_pScriptEngine->GetModule("module", asGM_CREATE_IF_NOT_EXISTS);
-        mod->AddScriptSection("AngelData", BASE);
+
+        QFile base(":/Behaviour.txt");
+        if(base.open( QIODevice::ReadOnly)) {
+            mod->AddScriptSection("AngelData", base.readAll());
+            base.close();
+        }
         foreach(QString it, m_Sources) {
             QFile file(it);
             if(file.open( QIODevice::ReadOnly)) {

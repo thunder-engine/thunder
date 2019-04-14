@@ -137,7 +137,7 @@ Vector4 DesktopAdaptor::mouseDelta() {
     return s_MousePosition - s_OldMousePosition;
 }
 
-uint8_t DesktopAdaptor::mouseButtons() {
+uint32_t DesktopAdaptor::mouseButtons() {
     return m_MouseButtons;
 }
 
@@ -153,7 +153,7 @@ void DesktopAdaptor::setMousePosition(const Vector3 &position) {
     glfwSetCursorPos(m_pWindow, position.x, position.y);
 }
 
-uint16_t DesktopAdaptor::joystickCount() {
+uint32_t DesktopAdaptor::joystickCount() {
     uint16_t result  = 0;
     for(uint8_t i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
         if(glfwJoystickPresent(GLFW_JOYSTICK_1 + i)) {
@@ -163,7 +163,7 @@ uint16_t DesktopAdaptor::joystickCount() {
     return result;
 }
 
-uint16_t DesktopAdaptor::joystickButtons(uint8_t index) {
+uint32_t DesktopAdaptor::joystickButtons(uint32_t index) {
     int count;
     const unsigned char *axes = glfwGetJoystickButtons(index, &count);
     uint16_t result = 0;
@@ -175,7 +175,7 @@ uint16_t DesktopAdaptor::joystickButtons(uint8_t index) {
     return result;
 }
 
-Vector4 DesktopAdaptor::joystickThumbs(uint8_t index) {
+Vector4 DesktopAdaptor::joystickThumbs(uint32_t index) {
     int count;
     const float *axes = glfwGetJoystickAxes(index, &count);
     if(count >= 4) {
@@ -184,7 +184,7 @@ Vector4 DesktopAdaptor::joystickThumbs(uint8_t index) {
     return Vector4();
 }
 
-Vector2 DesktopAdaptor::joystickTriggers(uint8_t index) {
+Vector2 DesktopAdaptor::joystickTriggers(uint32_t index) {
     int count;
     const float* axes = glfwGetJoystickAxes(index, &count);
     if(count >= 6) {

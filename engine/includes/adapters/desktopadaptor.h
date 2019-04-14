@@ -30,7 +30,7 @@ public:
 
     Vector4                     mouseDelta                  ();
 
-    uint8_t                     mouseButtons                ();
+    uint32_t                    mouseButtons                ();
 
     uint32_t                    screenWidth                 ();
 
@@ -38,13 +38,13 @@ public:
 
     void                        setMousePosition            (const Vector3 &position);
 
-    uint16_t                    joystickCount               ();
+    uint32_t                    joystickCount               ();
 
-    uint16_t                    joystickButtons             (uint8_t index);
+    uint32_t                    joystickButtons             (uint32_t index);
 
-    Vector4                     joystickThumbs              (uint8_t index);
+    Vector4                     joystickThumbs              (uint32_t index);
 
-    Vector2                     joystickTriggers            (uint8_t index);
+    Vector2                     joystickTriggers            (uint32_t index);
 
     void                       *pluginLoad                  (const char *name);
 

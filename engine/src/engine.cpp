@@ -178,8 +178,6 @@ Engine::Engine(IFile *file, int, char **argv) :
 Engine::~Engine() {
     PROFILER_MARKER;
 
-    Input::destroy();
-
     delete p_ptr;
 }
 
@@ -192,7 +190,7 @@ bool Engine::init() {
     bool result     = p_ptr->m_pPlatform->init();
 
     Timer::init(1.0f / 60.0f);
-    Input::instance()->init(p_ptr->m_pPlatform);
+    Input::init(p_ptr->m_pPlatform);
 
     return result;
 }

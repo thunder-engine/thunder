@@ -126,14 +126,14 @@ uint32_t MobileAdaptor::screenHeight() {
     return s_Screen.y;
 }
 
-uint16_t MobileAdaptor::touchCount() {
+uint32_t MobileAdaptor::touchCount() {
     return s_Touches.size();
 }
 
-uint16_t MobileAdaptor::touchState(uint8_t index) {
+uint32_t MobileAdaptor::touchState(uint32_t index) {
     return s_Touches[index].phase;
 }
 
-Vector4 MobileAdaptor::touchPosition(uint8_t index) {
+Vector4 MobileAdaptor::touchPosition(uint32_t index) {
     return s_Touches[index].pos;
 }

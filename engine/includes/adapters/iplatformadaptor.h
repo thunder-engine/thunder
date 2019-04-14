@@ -36,23 +36,23 @@ public:
 
     virtual Vector4                     mouseDelta                  () { return Vector4(); }
 
-    virtual uint8_t                     mouseButtons                () { return 0; }
+    virtual uint32_t                    mouseButtons                () { return 0; }
 
     virtual void                        setMousePosition            (const Vector3 &position) { }
 
-    virtual uint16_t                    joystickCount               () { return 0; }
+    virtual uint32_t                    joystickCount               () { return 0; }
 
-    virtual uint16_t                    joystickButtons             (uint8_t index) { return 0; }
+    virtual uint32_t                    joystickButtons             (uint32_t index) { return 0; }
 
-    virtual Vector4                     joystickThumbs              (uint8_t index) { return Vector4(); }
+    virtual Vector4                     joystickThumbs              (uint32_t index) { return Vector4(); }
 
-    virtual Vector2                     joystickTriggers            (uint8_t index) { return Vector2(); }
+    virtual Vector2                     joystickTriggers            (uint32_t index) { return Vector2(); }
 
-    virtual uint16_t                    touchCount                  () { return 0; }
+    virtual uint32_t                    touchCount                  () { return 0; }
 
-    virtual uint16_t                    touchState                  (uint8_t index) { return 0; }
+    virtual uint32_t                    touchState                  (uint32_t index) { return 0; }
 
-    virtual Vector4                     touchPosition               (uint8_t index) { return 0; }
+    virtual Vector4                     touchPosition               (uint32_t index) { return 0; }
 
     virtual void                       *pluginLoad                  (const char *name) { return nullptr; }
 

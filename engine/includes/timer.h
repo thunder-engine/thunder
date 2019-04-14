@@ -11,6 +11,8 @@ class NEXT_LIBRARY_EXPORT Timer {
 public:
     static void                 init                        (float fixed);
 
+    static void                 reset                       ();
+
     static void                 update                      ();
 
     static float                deltaTime                   ();

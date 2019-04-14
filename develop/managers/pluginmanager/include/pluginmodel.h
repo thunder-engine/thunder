@@ -55,7 +55,8 @@ public slots:
 
 private:
     PluginModel                 ();
-    ~PluginModel                () {}
+
+    ~PluginModel                ();
 
     static PluginModel         *m_pInstance;
 

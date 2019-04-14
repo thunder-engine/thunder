@@ -92,7 +92,7 @@ public:
     static const MetaObject        *metaClass                   ();
     virtual const MetaObject       *metaObject                  () const;
 
-    Object                         *clone                       (Object *parent = nullptr);
+    Object                         *clone                       ();
 
     Object                         *parent                      () const;
 
@@ -173,9 +173,13 @@ protected:
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);
 
+    VariantList                     serializeData               (const MetaObject *meta) const;
+
     virtual void                    addChild                    (Object *value);
 
     Object                         *sender                      () const;
+
+    ObjectSystem                   *system                      () const;
 
 private:
     friend class ObjectTest;
