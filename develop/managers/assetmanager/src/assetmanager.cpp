@@ -26,11 +26,12 @@
 #include "animconverter.h"
 #include "textconverter.h"
 #include "textureconverter.h"
-#include "materialconverter.h"
+#include "shaderbuilder.h"
 #include "fbxconverter.h"
 #include "fontconverter.h"
 #include "prefabconverter.h"
 #include "effectconverter.h"
+#include "animationbuilder.h"
 
 #include "projectmanager.h"
 #include "pluginmodel.h"
@@ -93,9 +94,10 @@ void AssetManager::init(Engine *engine) {
     m_pEngine   = engine;
 
     registerConverter(new AnimConverter());
+    registerConverter(new AnimationBuilder());
     registerConverter(new TextConverter());
     registerConverter(new TextureConverter());
-    registerConverter(new MaterialConverter());
+    registerConverter(new ShaderBuilder());
     registerConverter(new FBXConverter());
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
@@ -484,6 +486,9 @@ QImage AssetManager::icon(const QString &path) {
         } break;
         case IConverter::ContentPrefab: {
             icon.load(":/Style/styles/dark/images/prefab.png", "PNG");
+        } break;
+        case IConverter::ContentAnimationStateMachine: {
+            icon.load(":/Style/styles/dark/images/actl.png", "PNG");
         } break;
         default: {
             QStringList list;

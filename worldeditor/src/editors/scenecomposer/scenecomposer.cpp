@@ -377,7 +377,7 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
             return;
         }
 
-        QByteArray array    = loadFile.readAll();
+        QByteArray array = loadFile.readAll();
         string data;
         data.resize(array.size());
         memcpy(&data[0], array.data(), array.size());
@@ -408,7 +408,7 @@ void SceneComposer::on_actionSave_triggered() {
             QFile file(dir.relativeFilePath(m_Path));
             if(file.open(QIODevice::WriteOnly)) {
                 string data = Json::save(Engine::toVariant(m_pMap), 0);
-                file.write((const char *)&data[0], data.size());
+                file.write(static_cast<const char *>(&data[0]), data.size());
                 file.close();
             }
             resetModified();

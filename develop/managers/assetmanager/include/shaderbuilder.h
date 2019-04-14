@@ -158,6 +158,11 @@ public:
     void                        load                        (const QString &path) Q_DECL_OVERRIDE;
     void                        save                        (const QString &path) Q_DECL_OVERRIDE;
 
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl"}; }
+    uint32_t contentType() const Q_DECL_OVERRIDE { return ContentMaterial; }
+    uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<Material *>(); }
+    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+
     void                        loadUserValues              (Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void                        saveUserValues              (Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 

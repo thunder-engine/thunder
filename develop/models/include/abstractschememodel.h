@@ -10,11 +10,13 @@
 
 #include <variant.h>
 
+#include "converters/converter.h"
+
 using namespace std;
 
 class QAbstractItemModel;
 
-class AbstractSchemeModel : public QObject {
+class AbstractSchemeModel : public IConverter {
     Q_OBJECT
 
 public:
