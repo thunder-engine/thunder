@@ -1,8 +1,11 @@
 #include "animationclipmodel.h"
 
 #include <resources/animationclip.h>
+#include <resources/animationstatemachine.h>
 #include <components/animationcontroller.h>
 #include <components/actor.h>
+
+#include "assetmanager.h"
 
 #include <iterator>
 
@@ -11,6 +14,8 @@
 AnimationClipModel::AnimationClipModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_pController(nullptr),
+        m_pStateMachine(nullptr),
+        m_pClip(nullptr),
         m_isHighlighted(false),
         m_Position(0.0f),
         m_Row(0),
@@ -20,15 +25,41 @@ AnimationClipModel::AnimationClipModel(QObject *parent) :
 
 void AnimationClipModel::setController(AnimationController *controller) {
     m_pController = controller;
+    m_pStateMachine = nullptr;
+    m_pClip = nullptr;
+    m_Clips.clear();
+
+    if(m_pController) {
+        m_pStateMachine = m_pController->stateMachine();
+        if(m_pStateMachine) {
+
+            for(auto it : m_pStateMachine->m_States) {
+                QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_pClip)).c_str());
+                m_Clips[info.baseName()] = it->m_pClip;
+            }
+            if(!m_Clips.isEmpty()) {
+                setClip(m_Clips.begin().key());
+                return;
+            }
+        }
+    }
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
+}
+
+void AnimationClipModel::setClip(const QString &clip) {
+    m_pClip = m_Clips.value(clip);
+
+    m_pController->setClip(m_pClip);
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
 
     setRow(0);
 }
-#include <QDebug>
+
 QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
-    if(!index.isValid() || m_pController == nullptr || m_pController->clip() == nullptr) {
+    if(!index.isValid() || m_pClip == nullptr) {
         return QVariant();
     }
 
@@ -36,9 +67,8 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
         case Qt::EditRole:
         case Qt::ToolTipRole:
         case Qt::DisplayRole: {
-            AnimationClip *clip = m_pController->clip();
-            auto it = clip->m_Tracks.begin();
-            if(index.internalPointer() == &clip->m_Tracks) {
+            auto it = m_pClip->m_Tracks.begin();
+            if(index.internalPointer() == &m_pClip->m_Tracks) {
                 advance(it, index.row());
 
                 QStringList lst = QString::fromStdString(it->path).split('/');
@@ -86,16 +116,16 @@ int AnimationClipModel::columnCount(const QModelIndex &) const {
 }
 
 QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    if(m_pController) {
-        AnimationClip *clip = m_pController->clip();
-        AnimationClip::TrackList *list  = &clip->m_Tracks;
+    if(m_pClip) {
+        AnimationClip::TrackList *list = &m_pClip->m_Tracks;
         if(!parent.isValid()) {
             return createIndex(row, column, list);
         } else {
             if(parent.internalPointer() == list) {
-                void *ptr = &(std::next(list->begin(), parent.row())->curves);
-                return createIndex(row, column, ptr);
+                if(static_cast<uint32_t>(parent.row()) < list->size()) {
+                    void *ptr = &(std::next(list->begin(), parent.row())->curves);
+                    return createIndex(row, column, ptr);
+                }
             }
         }
     }
@@ -103,12 +133,11 @@ QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &pa
 }
 
 QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
-    if(index.isValid() && m_pController) {
-        AnimationClip *clip = m_pController->clip();
-        AnimationClip::TrackList *list  = &clip->m_Tracks;
+    if(index.isValid() && m_pClip) {
+        AnimationClip::TrackList *list  = &m_pClip->m_Tracks;
         if(index.internalPointer() != list) {
             int row = 0;
-            for(auto &it : clip->m_Tracks) {
+            for(auto &it : m_pClip->m_Tracks) {
                 if(index.internalPointer() == &(it.curves)) {
                     break;
                 }
@@ -122,15 +151,16 @@ QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
 }
 
 int AnimationClipModel::rowCount(const QModelIndex &parent) const {
-    if(m_pController && m_pController->clip()) {
-        AnimationClip *clip = m_pController->clip();
-        AnimationClip::TrackList *list = &clip->m_Tracks;
+    if(m_pClip) {
+        AnimationClip::TrackList *list = &m_pClip->m_Tracks;
         if(!list->empty()) {
             if(!parent.isValid()) {
-                return list->size();
+                return static_cast<int32_t>(list->size());
             } else {
                 if(parent.internalPointer() == list) {
-                    return std::next(list->begin(), parent.row())->curves.size();
+                    if(static_cast<uint32_t>(parent.row()) < list->size()) {
+                        return static_cast<int32_t>(std::next(list->begin(), parent.row())->curves.size());
+                    }
                 }
             }
         }
@@ -139,10 +169,9 @@ int AnimationClipModel::rowCount(const QModelIndex &parent) const {
 }
 
 QVariant AnimationClipModel::trackData(int track) const {
-    if(m_pController && m_pController->clip() && track >= 0) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), track)).curves;
+    if(m_pClip && track >= 0) {
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
 
             QVariantList track;
             for(auto &it : curves) {
@@ -160,10 +189,9 @@ QVariant AnimationClipModel::trackData(int track) const {
 }
 
 void AnimationClipModel::setTrackData(int track, const QVariant &data) {
-    if(m_pController && m_pController->clip() && track >= 0 && data.isValid()) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), track)).curves;
+    if(m_pClip && track >= 0 && data.isValid()) {
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
 
             curves.clear();
 
@@ -194,15 +222,14 @@ void AnimationClipModel::setTrackData(int track, const QVariant &data) {
 }
 
 int AnimationClipModel::maxPosition(int track) {
-    if(m_pController && m_pController->clip() && track >= 0) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), track)).curves;
+    if(m_pClip && track >= 0) {
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
 
             int32_t result = 0;
             for(auto &it : curves) {
                 if(!it.second.m_Keys.empty())
-                result = MAX(it.second.m_Keys.back().m_Position, result);
+                result = MAX(static_cast<int32_t>(it.second.m_Keys.back().m_Position), result);
             }
             return result;
         }
@@ -254,11 +281,10 @@ void AnimationClipModel::selectItem(const QModelIndex &index) {
     }
 }
 
-AnimationCurve::KeyFrame *AnimationClipModel::key(int row, int col, int index) {
+AnimationCurve::KeyFrame *AnimationClipModel::key(int row, int col, uint32_t index) {
     if(row >= 0) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), row)).curves;
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), row)).curves;
 
             return &curves[col].m_Keys[index];
         }
@@ -268,9 +294,8 @@ AnimationCurve::KeyFrame *AnimationClipModel::key(int row, int col, int index) {
 
 void AnimationClipModel::onAddKey(int row, int col, int pos) {
     if(row >= 0) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), row)).curves;
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), row)).curves;
 
             AnimationCurve::KeyFrame key;
             key.m_Position = uint32_t(pos);
@@ -290,9 +315,8 @@ void AnimationClipModel::onAddKey(int row, int col, int pos) {
 
 void AnimationClipModel::onRemoveKey(int row, int col, int index) {
     if(row >= 0 && index >= 0) {
-        AnimationClip *clip = m_pController->clip();
-        if(!clip->m_Tracks.empty()) {
-            auto &curves = (*std::next(clip->m_Tracks.begin(), row)).curves;
+        if(!m_pClip->m_Tracks.empty()) {
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), row)).curves;
             auto &curve = curves[col];
 
             curve.m_Keys.erase(std::next(curve.m_Keys.begin(), index));
@@ -303,7 +327,7 @@ void AnimationClipModel::onRemoveKey(int row, int col, int index) {
 }
 
 void AnimationClipModel::updateController() {
-    m_pController->setClip(m_pController->clip());
+    m_pController->setStateMachine(m_pStateMachine);
     m_pController->setPosition(1000 * m_Position);
 
     emit changed();

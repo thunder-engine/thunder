@@ -2,78 +2,7 @@
     "Blend": 1,
     "Depth": false,
     "Links": [
-        {
-            "RItem": "UV",
-            "Receiver": 1,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "UV",
-            "Receiver": 3,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "UV",
-            "Receiver": 4,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "UV",
-            "Receiver": 5,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "UV",
-            "Receiver": 6,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "UV",
-            "Receiver": 7,
-            "SItem": "",
-            "Sender": 2
-        },
-        {
-            "RItem": "A",
-            "Receiver": 11,
-            "SItem": "",
-            "Sender": 13
-        },
-        {
-            "RItem": "B",
-            "Receiver": 11,
-            "SItem": "",
-            "Sender": 10
-        },
-        {
-            "RItem": "A",
-            "Receiver": 9,
-            "SItem": "",
-            "Sender": 11
-        },
-        {
-            "RItem": "B",
-            "Receiver": 9,
-            "SItem": "",
-            "Sender": 11
-        },
-        {
-            "RItem": "A",
-            "Receiver": 13,
-            "SItem": "",
-            "Sender": 1
-        },
-        {
-            "RItem": "B",
-            "Receiver": 13,
-            "SItem": "",
-            "Sender": 12
-        }
+
     ],
     "Model": 0,
     "Nodes": [

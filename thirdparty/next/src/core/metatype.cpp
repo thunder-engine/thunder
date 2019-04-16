@@ -33,7 +33,7 @@ typedef map<string, uint32_t>           NameMap;
 typedef map<uint32_t, map<uint32_t, MetaType::converterCallback> > ConverterMap;
 
 bool toBoolean(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     bool *r     = static_cast<bool *>(to);
     switch(fromType) {
@@ -49,7 +49,7 @@ bool toBoolean(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toInteger(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     int *r      = static_cast<int *>(to);
     switch(fromType) {
@@ -66,7 +66,7 @@ bool toInteger(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toFloat(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     float *r    = static_cast<float *>(to);
     switch(fromType) {
@@ -83,7 +83,7 @@ bool toFloat(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toString(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     string *r   = static_cast<string *>(to);
     switch(fromType) {
@@ -96,7 +96,7 @@ bool toString(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toList(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     VariantList *r = static_cast<VariantList *>(to);
     switch(fromType) {
@@ -142,7 +142,7 @@ bool toList(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toVector2(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result    = true;
     Vector2 *r    = static_cast<Vector2 *>(to);
     switch(fromType) {
@@ -161,7 +161,7 @@ bool toVector2(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toVector3(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result     = true;
     Vector3 *r    = static_cast<Vector3 *>(to);
     switch(fromType) {
@@ -181,7 +181,7 @@ bool toVector3(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toVector4(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result     = true;
     Vector4 *r    = static_cast<Vector4 *>(to);
     switch(fromType) {
@@ -202,7 +202,7 @@ bool toVector4(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toMatrix3(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     Matrix3 *r  = static_cast<Matrix3 *>(to);
     switch(fromType) {
@@ -219,7 +219,7 @@ bool toMatrix3(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toMatrix4(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result = true;
     Matrix4 *r  = static_cast<Matrix4 *>(to);
     switch(fromType) {
@@ -236,7 +236,7 @@ bool toMatrix4(void *to, const void *from, const uint32_t fromType) {
 }
 
 bool toQuaternion(void *to, const void *from, const uint32_t fromType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     bool result     = true;
     Quaternion *r   = static_cast<Quaternion *>(to);
     switch(fromType) {
@@ -401,20 +401,20 @@ static NameMap s_Names = {
 */
 MetaType::MetaType(const Table *table) :
         m_pTable(table) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 /*!
     Returns the name of type.
 */
 const char *MetaType::name() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->name;
 }
 /*!
     Returns the size of type.
 */
 int MetaType::size() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->get_size();
 }
 /*!
@@ -422,7 +422,7 @@ int MetaType::size() const {
     If \a copy is zero, the value is default constructed.
 */
 void *MetaType::construct(void *where, const void *copy) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(copy) {
         m_pTable->clone(&copy, &where);
     } else {
@@ -435,7 +435,7 @@ void *MetaType::construct(void *where, const void *copy) const {
     If \a copy is null, creates a default constructed instance.
 */
 void *MetaType::create(const void *copy) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     void *where = nullptr;
     if(copy) {
         m_pTable->clone(&copy, &where);
@@ -449,7 +449,7 @@ void *MetaType::create(const void *copy) const {
     This function calls delete operator.
 */
 void MetaType::destroy(void *data) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     m_pTable->static_delete(&data);
 }
 /*!
@@ -457,21 +457,21 @@ void MetaType::destroy(void *data) const {
     Unlike destroy(), this function only invokes the type's destructor, it doesn't invoke the delete operator.
 */
 void MetaType::destruct(void *data) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     m_pTable->destruct(data);
 }
 /*!
     Returns true in case of \a left value is equal to \a right value; otherwise returns false.
 */
 bool MetaType::compare(const void *left, const void *right) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->compare(&left, &right);
 }
 /*!
     Returns true in case of this MetaType object contain valid information; otherwise returns false.
 */
 bool MetaType::isValid() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (m_pTable != nullptr);
 }
 /*!
@@ -479,7 +479,7 @@ bool MetaType::isValid() const {
     Returns an ID of registered type.
 */
 uint32_t MetaType::registerType(Table &table) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     uint32_t result = ++MetaType::s_NextId;
     s_Types[result] = table;
     s_Names[table.name] = result;
@@ -489,7 +489,7 @@ uint32_t MetaType::registerType(Table &table) {
     Unregisters type by type MetaType::Table \a table. Use unregisterMetaType() instead this function.
 */
 void MetaType::unregisterType(Table &table) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Names.find(table.name);
     if(it != s_Names.end()) {
         uint32_t id = it->second;
@@ -505,7 +505,7 @@ void MetaType::unregisterType(Table &table) {
     Returns MetaType::INVALID for unregistered type.
 */
 uint32_t MetaType::type(const char *name) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Names.find(name);
     if(it != s_Names.end()) {
         return it->second;
@@ -517,7 +517,7 @@ uint32_t MetaType::type(const char *name) {
     Returns MetaType::INVALID for unregistered \a type.
 */
 uint32_t MetaType::type(const type_info &type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     for(auto it : s_Types) {
         if(it.second.index() == type_index(type) ) {
             return it.first;
@@ -530,7 +530,7 @@ uint32_t MetaType::type(const type_info &type) {
     Returns nullptr for unregistered \a type.
 */
 const char *MetaType::name(uint32_t type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return it->second.name;
@@ -542,7 +542,7 @@ const char *MetaType::name(uint32_t type) {
     Returns 0 for unregistered \a type.
 */
 int MetaType::size(uint32_t type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return it->second.get_size();
@@ -554,7 +554,7 @@ int MetaType::size(uint32_t type) {
     If \a copy is zero, the value is default constructed.
 */
 void *MetaType::construct(uint32_t type, void *where, const void *copy) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return MetaType(&(it->second)).construct(where, copy);
@@ -566,7 +566,7 @@ void *MetaType::construct(uint32_t type, void *where, const void *copy) {
     If \a copy is null, creates a default constructed instance.
 */
 void *MetaType::create(uint32_t type, const void *copy) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return MetaType(&(it->second)).create(copy);
@@ -578,7 +578,7 @@ void *MetaType::create(uint32_t type, const void *copy) {
     This function calls delete operator.
 */
 void MetaType::destroy(uint32_t type, void *data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         MetaType(&(it->second)).destroy(data);
@@ -589,7 +589,7 @@ void MetaType::destroy(uint32_t type, void *data) {
     Unlike destroy(), this function only invokes the type's destructor, it doesn't invoke the delete operator.
 */
 void MetaType::destruct(uint32_t type, void *data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         MetaType(&(it->second)).destruct(data);
@@ -599,7 +599,7 @@ void MetaType::destruct(uint32_t type, void *data) {
     Returns true in case of \a left value is equal to \a right value with \a type; otherwise returns false.
 */
 bool MetaType::compare(const void *left, const void *right, uint32_t type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return MetaType(&(it->second)).compare(left, right);
@@ -613,7 +613,7 @@ bool MetaType::compare(const void *left, const void *right, uint32_t type) {
     \sa hasConverter()
 */
 bool MetaType::convert(const void *from, uint32_t fromType, void *to, uint32_t toType) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto t = s_Converters.find(toType);
     if(t != s_Converters.end()) {
         auto it = t->second.find(fromType);
@@ -630,7 +630,7 @@ bool MetaType::convert(const void *from, uint32_t fromType, void *to, uint32_t t
     \sa hasConverter()
 */
 bool MetaType::registerConverter(uint32_t from, uint32_t to, converterCallback function) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(hasConverter(from, to)) {
         return false;
     }
@@ -649,7 +649,7 @@ bool MetaType::registerConverter(uint32_t from, uint32_t to, converterCallback f
     Returns true in case of type \a from can be converted to type \a to; otherwise returns false.
 */
 bool MetaType::hasConverter(uint32_t from, uint32_t to) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto t = s_Converters.find(to);
     if(t != s_Converters.end()) {
         auto it = t->second.find(from);
@@ -663,7 +663,7 @@ bool MetaType::hasConverter(uint32_t from, uint32_t to) {
     Returns type information table if type registered; otherwise returns nullptr.
 */
 MetaType::Table *MetaType::table(uint32_t type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     auto it = s_Types.find(type);
     if(it != s_Types.end()) {
         return &(it->second);

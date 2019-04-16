@@ -3,15 +3,15 @@
     "Depth": true,
     "Links": [
         {
-            "RItem": "Emissive",
+            "IPort": 1,
             "Receiver": 0,
-            "SItem": "",
+            "OPort": 1,
             "Sender": 1
         },
         {
-            "RItem": "Opacity",
+            "IPort": 5,
             "Receiver": 0,
-            "SItem": "A",
+            "OPort": 5,
             "Sender": 1
         }
     ],

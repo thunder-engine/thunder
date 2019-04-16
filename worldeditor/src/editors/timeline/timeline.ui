@@ -6,12 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
-    <height>315</height>
+    <width>1075</width>
+    <height>200</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>200</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Timeline</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -170,6 +176,16 @@
       </layout>
      </item>
      <item>
+      <widget class="QComboBox" name="clipBox">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <property name="spacing">
         <number>2</number>
@@ -300,64 +316,42 @@
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
-       <verstretch>1</verstretch>
+       <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QTreeView" name="treeView">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="verticalScrollMode">
-          <enum>QAbstractItemView::ScrollPerPixel</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <widget class="QTreeView" name="treeView">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="verticalScrollMode">
+       <enum>QAbstractItemView::ScrollPerPixel</enum>
+      </property>
      </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="spacing">
-          <number>2</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QQuickWidget" name="quickTimeline">
-           <property name="resizeMode">
-            <enum>QQuickWidget::SizeRootObjectToView</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
+     <widget class="QQuickWidget" name="quickTimeline">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="resizeMode">
+       <enum>QQuickWidget::SizeRootObjectToView</enum>
+      </property>
      </widget>
     </widget>
    </item>
@@ -367,7 +361,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header>QtQuickWidgets/QQuickWidget</header>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
  </customwidgets>
  <resources>

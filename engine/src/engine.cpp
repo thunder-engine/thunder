@@ -45,6 +45,7 @@
 #include "resources/mesh.h"
 #include "resources/font.h"
 #include "resources/animationclip.h"
+#include "resources/animationstatemachine.h"
 #include "resources/pipeline.h"
 
 #include "resources/particleeffect.h"
@@ -161,6 +162,7 @@ Engine::Engine(IFile *file, int, char **argv) :
     ParticleRender::registerClassFactory(this);
     ParticleEffect::registerClassFactory(this);
 
+    AnimationStateMachine::registerClassFactory(this);
     AnimationController::registerClassFactory(this);
 
     Pipeline::registerClassFactory(this);

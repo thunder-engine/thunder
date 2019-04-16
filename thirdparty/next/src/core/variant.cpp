@@ -1,7 +1,7 @@
 #include "core/variant.h"
 
 Variant::Data::Data() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     type    = MetaType::INVALID;
     so      = nullptr;
 }
@@ -64,139 +64,139 @@ Variant::Data::Data() {
     Constructs an invalid variant.
 */
 Variant::Variant() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 
 }
 /*!
     Constructs an uninitialized variant of \a type.
 */
 Variant::Variant(MetaType::Type type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     mData.type = type;
 }
 /*!
     Constructs a new variant with a boolean \a value.
 */
 Variant::Variant(bool value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<bool>(value);
 }
 /*!
     Constructs a new variant with an integer \a value.
 */
 Variant::Variant(int value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<int>(value);
 }
 /*!
     Constructs a new variant with a floating point \a value.
 */
 Variant::Variant(float value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<float>(value);
 }
 /*!
     Constructs a new variant with a string \a value.
 */
 Variant::Variant(const char *value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<string>(value);
 }
 /*!
     Constructs a new variant with a string \a value.
 */
 Variant::Variant(const string &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<string>(value);
 }
 /*!
     Constructs a new variant with a map of variants \a value.
 */
 Variant::Variant(const VariantMap &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<VariantMap>(value);
 }
 /*!
     Constructs a new variant with a list of variants \a value.
 */
 Variant::Variant(const VariantList &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<VariantList>(value);
 }
 /*!
     Constructs a new variant with a ByteArray \a value.
 */
 Variant::Variant(const ByteArray &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<ByteArray>(value);
 }
 /*!
     Constructs a new variant with a Vector2 \a value.
 */
 Variant::Variant(const Vector2 &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Vector2>(value);
 }
 /*!
     Constructs a new variant with a Vector3 \a value.
 */
 Variant::Variant(const Vector3 &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Vector3>(value);
 }
 /*!
     Constructs a new variant with a Vector4 \a value.
 */
 Variant::Variant(const Vector4 &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Vector4>(value);
 }
 /*!
     Constructs a new variant with a Quaternion \a value.
 */
 Variant::Variant(const Quaternion &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Quaternion>(value);
 }
 /*!
     Constructs a new variant with a Matrix3 \a value.
 */
 Variant::Variant(const Matrix3 &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Matrix3>(value);
 }
 /*!
     Constructs a new variant with a Matrix4 \a value.
 */
 Variant::Variant(const Matrix4 &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = fromValue<Matrix4>(value);
 }
 /*!
     Constructs a new variant of \a type and initialized with \a copy value.
 */
 Variant::Variant(uint32_t type, void *copy) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     mData.type  = type;
     mData.so    = MetaType::create(type, copy);
 }
 
 Variant::~Variant() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     clear();
 }
 /*!
     Constructs a copy of variant \a value.
 */
 Variant::Variant(const Variant &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     *this   = value;
 }
 /*!
     Assigns the \a value of the variant to this variant.
 */
 Variant &Variant::operator=(const Variant &value) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     clear();
     mData.type  = value.mData.type;
     mData.so    = MetaType::create(value.mData.type, value.mData.so);
@@ -207,7 +207,7 @@ Variant &Variant::operator=(const Variant &value) {
     Returns true if variants are equal; otherwise returns false.
 */
 bool Variant::operator==(const Variant &right) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(mData.type  == right.mData.type) {
         return MetaType::compare(mData.so, right.mData.so, mData.type);
     }
@@ -218,7 +218,7 @@ bool Variant::operator==(const Variant &right) const {
     Returns true if variants are NOT equal; otherwise returns false.
 */
 bool Variant::operator!=(const Variant &right) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return !(*this == right);
 }
 /*!
@@ -236,7 +236,7 @@ void Variant::clear() {
     \sa userType
 */
 uint32_t Variant::type() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (mData.type < MetaType::USERTYPE) ? mData.type : MetaType::USERTYPE;
 }
 /*!
@@ -245,28 +245,28 @@ uint32_t Variant::type() const {
     \sa type
 */
 uint32_t Variant::userType() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return mData.type;
 }
 /*!
     Returns pure pointer to value data.
 */
 void *Variant::data() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return mData.so;
 }
 /*!
     Returns \value true if variant value is valid; otherwise return \value false.
 */
 bool Variant::isValid() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (mData.type != MetaType::INVALID && mData.so);
 }
 /*!
     Returns \value true if variant converted to a \a type; otherwise return \value false.
 */
 bool Variant::canConvert(uint32_t type) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return MetaType::hasConverter(mData.type, type);
 }
 
@@ -278,7 +278,7 @@ bool Variant::canConvert(uint32_t type) const {
     \sa value, canConvert, MetaType::convert
 */
 bool Variant::toBool() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<bool>();
 }
 /*!
@@ -288,7 +288,7 @@ bool Variant::toBool() const {
     \sa value, canConvert, MetaType::convert
 */
 int Variant::toInt() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<int32_t>();
 }
 /*!
@@ -298,7 +298,7 @@ int Variant::toInt() const {
     \sa value, canConvert, MetaType::convert
 */
 float Variant::toFloat() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<float>();
 }
 /*!
@@ -308,7 +308,7 @@ float Variant::toFloat() const {
     \sa value, canConvert, MetaType::convert
 */
 const string Variant::toString() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<string>();
 }
 /*!
@@ -318,7 +318,7 @@ const string Variant::toString() const {
     \sa value, canConvert, MetaType::convert
 */
 const VariantMap Variant::toMap() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<VariantMap>();
 }
 /*!
@@ -328,7 +328,7 @@ const VariantMap Variant::toMap() const {
     \sa value, canConvert, MetaType::convert
 */
 const VariantList Variant::toList() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<VariantList>();
 }
 /*!
@@ -338,7 +338,7 @@ const VariantList Variant::toList() const {
     \sa value, canConvert, MetaType::convert
 */
 const ByteArray Variant::toByteArray() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<ByteArray>();
 }
 /*!
@@ -348,7 +348,7 @@ const ByteArray Variant::toByteArray() const {
     \sa value, canConvert, MetaType::convert
 */
 const Vector2 Variant::toVector2() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Vector2>();
 }
 /*!
@@ -358,7 +358,7 @@ const Vector2 Variant::toVector2() const {
     \sa value, canConvert, MetaType::convert
 */
 const Vector3 Variant::toVector3() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Vector3>();
 }
 /*!
@@ -368,7 +368,7 @@ const Vector3 Variant::toVector3() const {
     \sa value, canConvert, MetaType::convert
 */
 const Vector4 Variant::toVector4() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Vector4>();
 }
 /*!
@@ -378,7 +378,7 @@ const Vector4 Variant::toVector4() const {
     \sa value, canConvert, MetaType::convert
 */
 const Quaternion Variant::toQuaternion() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Quaternion>();
 }
 /*!
@@ -388,7 +388,7 @@ const Quaternion Variant::toQuaternion() const {
     \sa value, canConvert, MetaType::convert
 */
 const Matrix3 Variant::toMatrix3() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Matrix3>();
 }
 /*!
@@ -398,6 +398,6 @@ const Matrix3 Variant::toMatrix3() const {
     \sa value, canConvert, MetaType::convert
 */
 const Matrix4 Variant::toMatrix4() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return value<Matrix4>();
 }

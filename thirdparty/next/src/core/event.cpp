@@ -29,7 +29,7 @@
 */
 Event::Event(uint32_t type) :
         m_Type(type) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 
 Event::~Event() {
@@ -40,6 +40,6 @@ Event::~Event() {
     Returns type of event.
 */
 uint32_t Event::type() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_Type;
 }

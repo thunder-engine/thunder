@@ -38,6 +38,8 @@
 #include <regex>
 #include <sstream>
 
+#include <bson.h>
+
 #define TYPE        "Type"
 #define BLEND       "Blend"
 #define MODEL       "Model"
@@ -140,6 +142,21 @@ ShaderBuilder::ShaderBuilder() :
 
 ShaderBuilder::~ShaderBuilder() {
     cleanup();
+}
+
+uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
+    load(settings->source());
+    if(build()) {
+        QFile file(settings->absoluteDestination());
+        if(file.open(QIODevice::WriteOnly)) {
+            ByteArray data  = Bson::save( object() );
+            file.write((const char *)&data[0], data.size());
+            file.close();
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 AbstractSchemeModel::Node *ShaderBuilder::createNode(const QString &path) {

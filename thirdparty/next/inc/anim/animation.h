@@ -16,16 +16,10 @@ class NEXT_LIBRARY_EXPORT Animation : public Object {
     )
 
     A_PROPERTIES(
-        A_PROPERTY(Direction, Direction, Animation::direction, Animation::setDirection),
         A_PROPERTY(uint32_t, Time, Animation::currentTime, Animation::setCurrentTime)
     )
 
 public:
-    enum Direction {
-        FORWARD,
-        BACKWARD
-    };
-
     enum State {
         STOPPED,
         RUNNING,
@@ -37,11 +31,8 @@ public:
 
     ~Animation                      ();
 
-    Direction                       direction                   () const;
-    void                            setDirection                (Direction direction);
-
-    int32_t                         currentTime                 () const;
-    void                            setCurrentTime              (int32_t msecs);
+    uint32_t                        currentTime                 () const;
+    virtual void                    setCurrentTime              (uint32_t msecs);
 
     int32_t                         loopCount                   () const;
     void                            setLoopCount                (int32_t loops);
@@ -64,9 +55,6 @@ public:
     void                            pause                       ();
 
     void                            resume                      ();
-
-protected:
-    virtual void                    update                      ();
 
 private:
     AnimationPrivate               *p_ptr;

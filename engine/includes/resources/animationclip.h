@@ -1,7 +1,7 @@
 #ifndef ANIMATIONCLIP_H
 #define ANIMATIONCLIP_H
 
-#include "variantanimation.h"
+#include <variantanimation.h>
 
 class NEXT_LIBRARY_EXPORT AnimationClip : public Object {
     A_REGISTER(AnimationClip, Object, Resources)
@@ -18,6 +18,8 @@ public:
 
 public:
     void loadUserData(const VariantMap &data);
+
+    uint32_t duration() const;
 
     static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second);
 

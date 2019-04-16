@@ -24,8 +24,6 @@
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
-#include "materialconverter.h"
-
 #include "shaderbuilder.h"
 
 #include "functionmodel.h"
@@ -84,7 +82,6 @@ MaterialEdit::MaterialEdit(Engine *engine) :
     ui->schemeWidget->setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
 
     //ui->schemeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->schemeWidget->setAcceptDrops(true);
 
     QQuickItem *item = ui->schemeWidget->rootObject();
     connect(item, SIGNAL(nodeSelected(int)), this, SLOT(onNodeSelected(int)));

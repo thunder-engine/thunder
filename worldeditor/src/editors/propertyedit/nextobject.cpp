@@ -63,7 +63,7 @@ QVariant qVariant(Variant &v, const string &type) {
     return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
 }
 
-Variant aVariant(QVariant &v, int type) {
+Variant aVariant(QVariant &v, uint32_t type) {
     switch(type) {
         case MetaType::BOOLEAN: {
             return Variant(v.toBool());
@@ -213,7 +213,7 @@ bool NextObject::event(QEvent *e) {
                 Variant target;
                 if(current.userType() == MetaType::type<MaterialArray>()) {
                     MaterialArray array = current.value<MaterialArray>();
-                    uint32_t id = name.mid(name.indexOf(QRegExp("[0-9]"))).toInt();
+                    uint32_t id = name.mid(name.indexOf(QRegExp("[0-9]"))).toUInt();
                     if(id < array.size()) {
                         Material *m = aVariant(value, MetaType::type<Material *>()).value<Material *>();
                         if(m) {

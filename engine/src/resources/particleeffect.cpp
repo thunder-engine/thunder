@@ -260,12 +260,12 @@ public:
 
 
 ParticleEffect::ParticleEffect() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 
 }
 
 ParticleEffect::~ParticleEffect() {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 
 void ParticleEffect::apply() {
@@ -277,17 +277,17 @@ void ParticleEffect::clear() {
 }
 
 uint32_t ParticleEffect::emittersCount() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_Emitters.size();
 }
 
 ParticleEffect::Emitter &ParticleEffect::emitter(uint32_t index) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_Emitters[index];
 }
 
 void ParticleEffect::spawnParticle(uint32_t index, ParticleData &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     data.position.x = 0.0f;
     data.position.y = 0.0f;
     data.position.z = 0.0f;
@@ -297,14 +297,14 @@ void ParticleEffect::spawnParticle(uint32_t index, ParticleData &data) {
 }
 
 void ParticleEffect::updateParticle(uint32_t index, ParticleData &data, float dt) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     for(auto it : m_Emitters[index].m_Modifiers) {
         it->updateParticle(data, dt);
     }
 }
 
 void ParticleEffect::loadUserData(const VariantMap &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     clear();
     {
         auto section = data.find(EMITTERS);

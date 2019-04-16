@@ -30,7 +30,7 @@ MetaObject::MetaObject(const char *name, const MetaObject *super, const Construc
         m_pProperties(props),
         m_MethodCount(0),
         m_PropCount(0) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     while(methods && methods[m_MethodCount].name) {
         m_MethodCount++;
     }
@@ -42,21 +42,21 @@ MetaObject::MetaObject(const char *name, const MetaObject *super, const Construc
     Returns the name of the object type.
 */
 const char *MetaObject::name() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pName;
 }
 /*!
     Returns an introspection object for parent class.
 */
 const MetaObject *MetaObject::super() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pSuper;
 }
 /*!
     Constructs and return a new instance of associated class.
 */
 Object *MetaObject::createInstance() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (*m_Constructor)();
 }
 /*!
@@ -64,7 +64,7 @@ Object *MetaObject::createInstance() const {
     \note This method looks through class hierarchy.
 */
 int MetaObject::indexOfMethod(const char *signature) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     const MetaObject *s    = this;
 
     while(s) {
@@ -82,7 +82,7 @@ int MetaObject::indexOfMethod(const char *signature) const {
     \note This method looks through class hierarchy.
 */
 int MetaObject::indexOfSignal(const char *signature) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     const MetaObject *s    = this;
 
     while(s) {
@@ -101,7 +101,7 @@ int MetaObject::indexOfSignal(const char *signature) const {
     \note This method looks through class hierarchy.
 */
 int MetaObject::indexOfSlot(const char *signature) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     const MetaObject *s    = this;
 
     while(s) {
@@ -120,7 +120,7 @@ int MetaObject::indexOfSlot(const char *signature) const {
     \note This method looks through class hierarchy.
 */
 MetaMethod MetaObject::method(int index) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int i = index - methodOffset();
     if(i < 0 && m_pSuper) {
         return m_pSuper->method(index);
@@ -135,7 +135,7 @@ MetaMethod MetaObject::method(int index) const {
     Returns the sum of methods for the current class and parent classes. It's includes signals and slots.
 */
 int MetaObject::methodCount() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int count           = m_MethodCount;
     const MetaObject *s = m_pSuper;
     while(s) {
@@ -148,7 +148,7 @@ int MetaObject::methodCount() const {
     Returns the first index of method for current class. The offset is the sum of all methods in parent classes.
 */
 int MetaObject::methodOffset() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int offset          = 0;
     const MetaObject *s = m_pSuper;
     while(s) {
@@ -162,7 +162,7 @@ int MetaObject::methodOffset() const {
     \note This method looks through class hierarchy.
 */
 int MetaObject::indexOfProperty(const char *name) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     const MetaObject *s    = this;
 
     while(s) {
@@ -180,7 +180,7 @@ int MetaObject::indexOfProperty(const char *name) const {
     \note This method looks through class hierarchy.
 */
 MetaProperty MetaObject::property(int index) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int i = index - propertyOffset();
     if(i < 0 && m_pSuper) {
         return m_pSuper->property(index);
@@ -194,7 +194,7 @@ MetaProperty MetaObject::property(int index) const {
     Returns the sum of properties for the current class and parent classes.
 */
 int MetaObject::propertyCount() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int count           = m_PropCount;
     const MetaObject *s = m_pSuper;
     while(s) {
@@ -207,7 +207,7 @@ int MetaObject::propertyCount() const {
     Returns the first index of property for current class. The offset is the sum of all properties in parent classes.
 */
 int MetaObject::propertyOffset() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     int offset          = 0;
     const MetaObject *s = m_pSuper;
     while(s) {
@@ -223,7 +223,7 @@ int MetaObject::propertyOffset() const {
     Returns true if object can be cast to \a type; otherwise returns false.
 */
 bool MetaObject::canCastTo(const char *type) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     const MetaObject *s    = this;
 
     while(s) {

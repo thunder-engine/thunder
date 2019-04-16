@@ -6,13 +6,13 @@
 #define URI "uri"
 
 FunctionModel::FunctionModel(const QStringList &classes) :
-        BaseObjectModel(nullptr) {
-    m_Classes   = classes;
-    update();
+        BaseObjectModel(nullptr),
+        m_Classes(classes) {
 
+    update();
 }
 
-int FunctionModel::columnCount(const QModelIndex &parent) const {
+int FunctionModel::columnCount(const QModelIndex &) const {
     return 3;
 }
 
@@ -39,7 +39,7 @@ QVariant FunctionModel::data(const QModelIndex &index, int role) const {
                 case 2: return item->children().empty();
                 default: break;
             }
-        }
+        } break;
         default: break;
     }
     return QVariant();
@@ -62,7 +62,7 @@ void FunctionModel::update() {
                 int i   = 0;
                 for(const auto& part : list) {
                     QObject *p  = pItem;
-                    pItem       = 0;
+                    pItem = nullptr;
                     foreach(QObject *item, p->children()) {
                         if(part == item->objectName()) {
                             pItem = item;

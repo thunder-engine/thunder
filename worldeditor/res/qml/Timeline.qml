@@ -40,6 +40,7 @@ Rectangle {
             for(var i = 0; i < clipModel.rowCount(); i++) {
                 maxPos = clipModel.maxPosition(i)
             }
+            curve.row = 0
         }
     }
 
@@ -55,7 +56,7 @@ Rectangle {
         onClicked: {
             selectInd = -1
             selectRow = -1
-            clipModel.position = Math.max(Math.round((mouseX - posX) / timeStep), 0) * timeScale
+            clipModel.position = Math.max(Math.round((mouseX + posX) / timeStep), 0) * timeScale
         }
 
         onPressed: {
@@ -184,7 +185,7 @@ Rectangle {
 
         onVisibleChanged: {
             if(visible) {
-                vbar.size = (parent.height - 19) / (curve.toScreenSpaceY(Math.abs(maximum - minimum)))
+                vbar.size = (parent.height - 19) / (toScreenSpaceY(Math.abs(maximum - minimum)))
                 vbar.position = 0.5 - vbar.size * 0.5
             }
         }

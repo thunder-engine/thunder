@@ -127,7 +127,7 @@ void Actor::setPrefab(Actor *prefab) {
 
 typedef list<Object *> List;
 void enumObjects(Object *object, List &list) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
         enumObjects(it, list);
@@ -180,7 +180,7 @@ void Actor::loadUserData(const VariantMap &data) {
 
 typedef list<const Object *> ConstList;
 void enumConstObjects(const Object *object, ConstList &list) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
         enumConstObjects(it, list);

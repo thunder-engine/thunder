@@ -170,7 +170,7 @@ Rectangle {
 
                         context.bezierCurveTo(tx0,ty0, tx1,ty1, px1,py1)
                     }
-                    context.stroke();
+                    context.stroke()
 
                     if(selectInd >= 0 && selectCol == i) {
                         context.strokeStyle = Qt.rgba(0.3, 0.3, 0.3)
@@ -194,7 +194,7 @@ Rectangle {
                         context.beginPath()
                         context.moveTo(px1, py1)
                         context.lineTo(tx1 + px1, ty1 + py1)
-                        context.stroke();
+                        context.stroke()
 
                         d = 0
                         if((selectInd - 1) >= 0) {
@@ -211,10 +211,10 @@ Rectangle {
                         context.beginPath()
                         context.moveTo(px1, py1)
                         context.lineTo(tx1 + px1, ty1 + py1)
-                        context.stroke();
+                        context.stroke()
                     }
                 }
-                context.setTransform(1, 0, 0, 1, 0, 0);
+                context.setTransform(1, 0, 0, 1, 0, 0)
             }
         }
     }
@@ -244,7 +244,7 @@ Rectangle {
     }
 
     Repeater {
-        model: (curveEditor.col > -1) ? 1 : canvas.componentsNumber
+        model: (curve === undefined) ? 0 : ((curveEditor.col > -1) ? 1 : canvas.componentsNumber)
         Repeater {
             id: points
             model: curve[col].length - 1
@@ -293,8 +293,8 @@ Rectangle {
 
                         drag.onActiveChanged: {
                             if(!drag.active) {
-                                clipModel.setTrackData(curveEditor.row, curveEditor.curve)
                                 selectKey(row, selectCol, selectInd)
+                                clipModel.setTrackData(curveEditor.row, curveEditor.curve)
                             }
                         }
 
@@ -316,12 +316,6 @@ Rectangle {
                         onReleased: {
                             xLabel.visible = false
                             yLabel.visible = false
-                        }
-
-                        onClicked: {
-                            if(mouse.button === Qt.RightButton) {
-                                menu.open()
-                            }
                         }
 
                         onPositionChanged: {
@@ -348,8 +342,8 @@ Rectangle {
                     visible: (selectInd == index) && (selectCol == points.col) && (index > 0)
                     color: "#a0606060"
                     border.color: theme.textColor
-                    height: 6
-                    width: 6
+                    height: 7
+                    width: 7
 
                     property real d: {
                         var result = 0
@@ -382,7 +376,7 @@ Rectangle {
 
                         drag.onActiveChanged: {
                             if(!drag.active) {
-                                clipModel.setTrackData(curveEditor.row, curveEditor.curve)
+                                clipModel.setTrackData(row, curve)
                                 selectKey(row, selectCol, selectInd)
                             }
                         }
@@ -390,9 +384,9 @@ Rectangle {
                         onPositionChanged: {
                             if(drag.active) {
                                 var value = toLocalSpaceY((parent.y / parent.x) * parent.d)
-                                item.key[canvas.leftOffset] = value + item.key[canvas.offset]
-                                if(!breaked) {
-                                    item.key[canvas.rightOffset] = -value + item.key[canvas.offset]
+                                item.key[canvas.leftOffset] = item.key[canvas.offset] + value
+                                if(!item.breaked) {
+                                    item.key[canvas.rightOffset] = item.key[canvas.offset] - value
                                 }
                                 item.commitKey()
                             }
@@ -405,8 +399,8 @@ Rectangle {
                     visible: (selectInd == index) && (selectCol == points.col) && ((index + 1) < (curve[points.col].length - 1))
                     color: "#a0606060"
                     border.color: theme.textColor
-                    height: 6
-                    width: 6
+                    height: 7
+                    width: 7
 
                     property real d: {
                         var result = 0
@@ -439,7 +433,7 @@ Rectangle {
 
                         drag.onActiveChanged: {
                             if(!drag.active) {
-                                clipModel.setTrackData(curveEditor.row, curveEditor.curve)
+                                clipModel.setTrackData(row, curve)
                                 selectKey(row, selectCol, selectInd)
                             }
                         }
@@ -447,9 +441,9 @@ Rectangle {
                         onPositionChanged: {
                             if(drag.active) {
                                 var value = toLocalSpaceY((parent.y / parent.x) * parent.d)
-                                item.key[canvas.rightOffset] = value + item.key[canvas.offset]
-                                if(!breaked) {
-                                    item.key[canvas.leftOffset] = -value + item.key[canvas.offset]
+                                item.key[canvas.rightOffset] = item.key[canvas.offset] + value
+                                if(!item.breaked) {
+                                    item.key[canvas.leftOffset] = item.key[canvas.offset] - value
                                 }
                                 item.commitKey()
                             }
@@ -474,10 +468,12 @@ Rectangle {
             id: xlabel
             color: theme.textColor
             text: {
-                if(selectInd >= 0 && selectCol >= 0 && curve) {
+                if(selectInd >= 0 && selectCol >= 0 && curve !== undefined) {
                     var key = curve[selectCol][selectInd + 1]
-                    var value = key[0] / 1000.0
-                    return value.toLocaleString(Qt.locale("en_EN"), 'f', 2).replace('.', ':')
+                    if(key !== undefined) {
+                        var value = key[0] / 1000.0
+                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2).replace('.', ':')
+                    }
                 }
                 return ""
             }
@@ -499,10 +495,12 @@ Rectangle {
             id: ylabel
             color: theme.textColor
             text: {
-                if(selectInd >= 0 && selectCol >= 0 && curve) {
+                if(selectInd >= 0 && selectCol >= 0 && curve !== undefined) {
                     var key = curve[selectCol][selectInd + 1]
-                    var value = key[canvas.offset]
-                    return value.toLocaleString(Qt.locale("en_EN"), 'f', 2) * 1
+                    if(key !== undefined) {
+                        var value = key[canvas.offset]
+                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2) * 1
+                    }
                 }
                 return ""
             }

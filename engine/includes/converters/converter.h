@@ -66,6 +66,7 @@ public:
         ContentMap,
         ContentPipeline,
         ContentPrefab,
+        ContentAnimationStateMachine,
         ContentLast
     };
 public:

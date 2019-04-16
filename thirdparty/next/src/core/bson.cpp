@@ -39,7 +39,7 @@ enum DataTypes {
 };
 
 Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool first) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     Variant result(type);
     if(data.empty()) {
         return result;
@@ -173,7 +173,7 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
 }
 
 uint8_t type(const Variant &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     uint8_t result;
     switch (data.type()) {
         case MetaType::BOOLEAN:     result  = BOOL; break;
@@ -225,7 +225,7 @@ Variant Bson::load(const ByteArray &data, MetaType::Type type) {
     Returns serialized \a data as binary buffer.
 */
 ByteArray Bson::save(const Variant &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     ByteArray result;
 
     switch(data.type()) {

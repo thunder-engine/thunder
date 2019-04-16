@@ -5,10 +5,9 @@
 #include <string>
 #include <map>
 
-#include "object.h"
 #include <objectsystem.h>
 
-#include <file.h>
+#include "file.h"
 
 class IModule;
 

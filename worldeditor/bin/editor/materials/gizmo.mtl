@@ -2,9 +2,9 @@
     "Blend": 2,
     "Links": [
         {
-            "RItem": "Emissive",
+            "IPort": 1,
             "Receiver": 0,
-            "SItem": "",
+            "OPort": 0,
             "Sender": 1
         }
     ],

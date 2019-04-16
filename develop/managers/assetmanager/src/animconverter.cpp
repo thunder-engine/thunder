@@ -54,7 +54,7 @@ uint8_t AnimConverter::convertFile(IConverterSettings *settings) {
     if(src.open(QIODevice::ReadOnly)) {
         AnimationClipSerial clip;
         VariantMap map;
-        map["Tracks"]   = Json::load(src.readAll().toStdString()).toList();
+        map[TRACKS] = Json::load(src.readAll().toStdString()).toList();
         clip.loadUserData(map);
         src.close();
 

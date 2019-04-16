@@ -6,6 +6,8 @@
 #include <animationcurve.h>
 
 class AnimationController;
+class AnimationStateMachine;
+class AnimationClip;
 
 class AnimationClipModel : public QAbstractItemModel {
     Q_OBJECT
@@ -48,13 +50,19 @@ public:
 
     void                        selectItem                  (const QModelIndex &index);
 
-    AnimationCurve::KeyFrame   *key                         (int row, int col, int index);
+    AnimationCurve::KeyFrame   *key                         (int row, int col, uint32_t index);
 
     void                        updateController            ();
+
+    AnimationClip              *clip                        () const { return m_pClip; }
+
+    QStringList                 clips                       () const { return m_Clips.keys(); }
 
 public slots:
     void                        onAddKey                    (int row, int col, int pos);
     void                        onRemoveKey                 (int row, int col, int index);
+
+    void                        setClip                     (const QString &clip);
 
 signals:
     void                        changed                     ();
@@ -65,6 +73,10 @@ signals:
 protected:
     AnimationController        *m_pController;
 
+    AnimationStateMachine      *m_pStateMachine;
+
+    AnimationClip              *m_pClip;
+
     bool                        m_isHighlighted;
 
     QModelIndex                 m_HoverIndex;
@@ -73,6 +85,8 @@ protected:
 
     int                         m_Row;
     int                         m_Col;
+
+    QMap<QString, AnimationClip *> m_Clips;
 
 };
 

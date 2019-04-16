@@ -3,7 +3,6 @@
 class AnimationPrivate {
 public:
     AnimationPrivate() :
-            m_Direction(Animation::FORWARD),
             m_State(Animation::STOPPED),
             m_CurrentLoop(0),
             m_CurrentTime(0),
@@ -12,11 +11,10 @@ public:
 
     }
 
-    Animation::Direction    m_Direction;
     Animation::State        m_State;
-    int32_t                 m_CurrentLoop;
-    int32_t                 m_CurrentTime;
-    int32_t                 m_TotalCurrentTime;
+    uint32_t                m_CurrentLoop;
+    uint32_t                m_CurrentTime;
+    uint32_t                m_TotalCurrentTime;
     int32_t                 m_LoopCount;
 };
 /*!
@@ -56,58 +54,31 @@ Animation::~Animation() {
     delete p_ptr;
 }
 /*!
-    Abstract method for animation update mechanis.
-*/
-void Animation::update() {
-
-}
-/*!
-    Returns the derection of animation.
-*/
-Animation::Direction Animation::direction() const {
-    return p_ptr->m_Direction;
-}
-/*!
-    Sets the new \a direction of animation.
-*/
-void Animation::setDirection(Direction direction) {
-    p_ptr->m_Direction  = direction;
-}
-/*!
     Returns the current time (in milliseconds) in scope of current loop.
 */
-int32_t Animation::currentTime() const {
+uint32_t Animation::currentTime() const {
     return p_ptr->m_TotalCurrentTime;
 }
 /*!
     Sets the new position of animation to provided \a msecs position.
     \note If new position placed outside of current loop; Then current loop will be changed to appropriate.
 */
-void Animation::setCurrentTime(int32_t msecs) {
+void Animation::setCurrentTime(uint32_t msecs) {
     int32_t total   = duration();
-    if(total != -1) {
-        msecs = min(total, msecs);
+    if(total > -1) {
+        msecs = min(static_cast<uint32_t>(total), msecs);
     }
-    p_ptr->m_TotalCurrentTime   = msecs;
+    p_ptr->m_TotalCurrentTime = msecs;
 
-    int32_t length          = loopDuration();
-    p_ptr->m_CurrentLoop    = ((length > 0) ? (msecs / length) : 0);
-    if(p_ptr->m_CurrentLoop == p_ptr->m_LoopCount) {
-        p_ptr->m_CurrentTime = max(0, length);
-        p_ptr->m_CurrentLoop = max(0, p_ptr->m_LoopCount - 1);
+    int32_t length = loopDuration();
+    p_ptr->m_CurrentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
+    if(p_ptr->m_CurrentLoop == static_cast<uint32_t>(p_ptr->m_LoopCount)) {
+        p_ptr->m_CurrentTime = static_cast<uint32_t>(max(0, length));
+        p_ptr->m_CurrentLoop = static_cast<uint32_t>(max(0, p_ptr->m_LoopCount - 1));
     } else {
-        if(p_ptr->m_Direction == BACKWARD) {
-            p_ptr->m_CurrentTime    = (length > 0) ? ((msecs - 1) % length) + 1 : msecs;
-            if(p_ptr->m_CurrentTime == length) {
-                p_ptr->m_CurrentLoop--;
-            }
-        } else {
-            p_ptr->m_CurrentTime    = (length > 0) ? (msecs % length) : msecs;
-        }
+        p_ptr->m_CurrentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
     }
-    update();
-    if((p_ptr->m_Direction == FORWARD  && p_ptr->m_TotalCurrentTime == total) ||
-       (p_ptr->m_Direction == BACKWARD && p_ptr->m_TotalCurrentTime == 0)) {
+    if(p_ptr->m_TotalCurrentTime == static_cast<uint32_t>(total)) {
         stop();
     }
 }

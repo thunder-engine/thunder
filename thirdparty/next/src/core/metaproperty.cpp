@@ -35,34 +35,34 @@
 */
 MetaProperty::MetaProperty(const Table *table) :
         m_pTable(table) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
 }
 /*!
     Returns a name of method.
 */
 const char *MetaProperty::name() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable->name;
 }
 /*!
     Returns true if property is valid; otherwise returns false.
 */
 bool MetaProperty::isValid() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return (m_pTable != nullptr);
 }
 /*!
     Returns a type of property.
 */
 const MetaType MetaProperty::type() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return MetaType(m_pTable->type);
 }
 /*!
     Returns the value as Variant which contain current property of provided \a object.
 */
 Variant MetaProperty::read(const Object *object) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(m_pTable->reader) {
         return m_pTable->reader(object);
     } else if(m_pTable->ptr) {
@@ -76,7 +76,7 @@ Variant MetaProperty::read(const Object *object) const {
     Tries to write a \a value as Variant to provided \a object.
 */
 void MetaProperty::write(Object *object, const Variant &value) const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     if(m_pTable->writer) {
         m_pTable->writer(object, value);
     } else if(m_pTable->ptr) {
@@ -87,6 +87,6 @@ void MetaProperty::write(Object *object, const Variant &value) const {
     Returns property information table.
 */
 const MetaProperty::Table *MetaProperty::table() const {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     return m_pTable;
 }

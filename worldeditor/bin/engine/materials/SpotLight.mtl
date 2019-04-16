@@ -2,12 +2,7 @@
     "Blend": 1,
     "Depth": false,
     "Links": [
-        {
-            "RItem": "Emissive",
-            "Receiver": 0,
-            "SItem": "",
-            "Sender": 1
-        }
+
     ],
     "Model": 0,
     "Nodes": [

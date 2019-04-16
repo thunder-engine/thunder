@@ -240,9 +240,8 @@ void PluginModel::clear() {
     beginResetModel();
     endResetModel();
 }
-#include <QDebug>
+
 void PluginModel::rescanPath(const QString &path) {
-    qDebug() << path;
     QDirIterator it(path, m_Suffixes, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         loadPlugin(it.next());

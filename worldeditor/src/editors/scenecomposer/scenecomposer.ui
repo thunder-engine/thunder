@@ -729,7 +729,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header>QtQuickWidgets/QQuickWidget</header>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
   <customwidget>
    <class>PropertyEditor</class>
@@ -738,15 +738,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QToolWindowManager</class>
-   <extends>QWidget</extends>
-   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ComponentBrowser</class>
    <extends>QWidget</extends>
    <header>editors/componentbrowser/componentbrowser.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QToolWindowManager</class>
+   <extends>QWidget</extends>
+   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

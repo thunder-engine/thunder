@@ -3,7 +3,7 @@
 #define TRACKS  "Tracks"
 
 void AnimationClip::loadUserData(const VariantMap &data) {
-    PROFILE_FUNCTION()
+    PROFILE_FUNCTION();
     {
         auto section = data.find(TRACKS);
         if(section != data.end()) {
@@ -50,6 +50,16 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             }
         }
     }
+}
+
+uint32_t AnimationClip::duration() const {
+    uint32_t result = 0;
+    for(auto track : m_Tracks) {
+        for(auto curve : track.curves) {
+            result = MAX(curve.second.m_Keys.back().m_Position, result);
+        }
+    }
+    return result;
 }
 
 bool AnimationClip::compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second) {
