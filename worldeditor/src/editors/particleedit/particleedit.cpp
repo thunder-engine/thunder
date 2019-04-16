@@ -25,7 +25,8 @@ ParticleEdit::ParticleEdit(Engine *engine) :
         ui(new Ui::ParticleEdit),
         m_pEditor(nullptr),
         m_pEffect(nullptr),
-        m_pBuilder(new EffectConverter) {
+        m_pBuilder(new EffectConverter),
+        m_pRender(nullptr) {
 
     ui->setupUi(this);
 
@@ -81,7 +82,9 @@ ParticleEdit::~ParticleEdit() {
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
-    m_pEngine->updateScene(ui->glWidget->scene());
+    if(m_pRender) {
+        m_pRender->update();
+    }
     ui->glWidget->repaint();
 }
 
@@ -125,10 +128,7 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
     if(m_Path != settings->source()) {
         m_Path = settings->source();
 
-        ParticleRender *render = m_pEffect->component<ParticleRender>();
-        if(render) {
-            render->setEffect( Engine::loadResource<ParticleEffect>(settings->destination()) );
-        }
+        m_pRender->setEffect( Engine::loadResource<ParticleEffect>(settings->destination()) );
         m_pBuilder->load(m_Path);
 
         onUpdateTemplate(false);
@@ -137,7 +137,7 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
 
 void ParticleEdit::onGLInit() {
     m_pEffect = Engine::objectCreate<Actor>("ParticleEffect", ui->glWidget->scene());
-    m_pEffect->addComponent<ParticleRender>();
+    m_pRender = m_pEffect->addComponent<ParticleRender>();
 }
 
 void ParticleEdit::onNodeSelected(void *node) {

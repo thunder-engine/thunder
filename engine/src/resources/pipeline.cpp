@@ -88,9 +88,6 @@ Pipeline::Pipeline() :
 }
 
 Pipeline::~Pipeline() {
-    for(auto it : m_Targets) {
-        it.second->deleteLater();
-    }
     m_Targets.clear();
 }
 

@@ -10,6 +10,7 @@ class QSettings;
 
 class Engine;
 class Actor;
+class ParticleRender;
 
 class Viewport;
 
@@ -70,6 +71,8 @@ private:
     QString m_Path;
 
     EffectConverter *m_pBuilder;
+
+    ParticleRender *m_pRender;
 };
 
 #endif // PARTICLEEDIT_H

@@ -20,6 +20,8 @@ class Actor;
 class Scene;
 class Texture;
 
+class Pipeline;
+
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
@@ -39,6 +41,8 @@ public:
 
 public:
     ObjectCtrl          (QOpenGLWidget *view);
+
+    ~ObjectCtrl         ();
 
     void                init                        (Scene *scene);
 
@@ -130,6 +134,8 @@ protected:
     Texture            *m_pDepth;
     Texture            *m_pSelect;
 
+    Pipeline           *m_pPipeline;
+
     Object::ObjectList  m_DragObjects;
 
     QString             m_DragMap;
@@ -138,7 +144,7 @@ protected:
     Vector2             m_Screen;
 
     Vector3             mWorld;
-    Vector3             mSaved;
+    Vector3             mSavedWorld;
     Vector3             mPosition;
 
     Vector3             mMouseWorld;

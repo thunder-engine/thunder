@@ -159,7 +159,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         }
         m_pBuilder->load(m_Path);
 
-        onUpdateTemplate(false);
+        setModified(false);
         onNodeSelected(0);
     }
 }

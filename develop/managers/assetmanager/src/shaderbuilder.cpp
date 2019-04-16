@@ -185,11 +185,10 @@ QAbstractItemModel *ShaderBuilder::components() const {
 }
 
 void ShaderBuilder::load(const QString &path) {
+    blockSignals(true);
     AbstractSchemeModel::load(path);
 
     m_pRootNode->name = QFileInfo(path).baseName();
-
-    blockSignals(true);
 
     setMaterialType(static_cast<Type>(m_Data[TYPE].toInt()));
     setBlend(static_cast<Blend>(m_Data[BLEND].toInt()));

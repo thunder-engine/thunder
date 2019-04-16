@@ -9,8 +9,6 @@ class NEXT_LIBRARY_EXPORT RenderTexture : public Texture {
 public:
     RenderTexture               ();
 
-    ~RenderTexture              ();
-
     void                        setTarget                   (FormatType format);
 
     void                        setDepth                    (uint8_t bits);

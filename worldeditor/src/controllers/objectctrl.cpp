@@ -82,12 +82,19 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     m_pDepth = Engine::objectCreate<Texture>();
     m_pDepth->setFormat(Texture::Depth);
     m_pDepth->resize(1, 1);
+
+    m_pPipeline = nullptr;
+}
+
+ObjectCtrl::~ObjectCtrl() {
+    delete m_pPipeline;
 }
 
 void ObjectCtrl::init(Scene *scene) {
     CameraCtrl::init(scene);
 
-    m_pActiveCamera->setPipeline(new ObjectCtrlPipeline);
+    m_pPipeline = new ObjectCtrlPipeline;
+    m_pActiveCamera->setPipeline(m_pPipeline);
 }
 
 void ObjectCtrl::drawHandles() {
@@ -114,7 +121,7 @@ void ObjectCtrl::drawHandles() {
                 mWorld  = Handles::moveTool(objectPosition(), mDrag);
 
                 if(mDrag) {
-                    Vector3 delta = mWorld - mSaved;
+                    Vector3 delta = mWorld - mSavedWorld;
                     if(mMoveGrid > 0.0f) {
                         for(int32_t i = 0; i < 3; i++) {
                             delta[i] = mMoveGrid[i] * int(delta[i] / mMoveGrid[i]);
@@ -139,7 +146,7 @@ void ObjectCtrl::drawHandles() {
                 mWorld  = Handles::rotationTool(objectPosition(), mDrag);
 
                 if(mDrag) {
-                    Vector3 delta = mWorld - mSaved;
+                    Vector3 delta = mWorld - mSavedWorld;
                     float angle   = (delta.x + delta.y + delta.z) * 0.5f;
                     if(mAngleGrid > 0) {
                         angle   = mAngleGrid * int(angle / mAngleGrid);
@@ -184,7 +191,7 @@ void ObjectCtrl::drawHandles() {
                 mWorld  = Handles::scaleTool(objectPosition(), mDrag);
 
                 if(mDrag) {
-                    Vector3 delta = (mWorld - mSaved);
+                    Vector3 delta = (mWorld - mSavedWorld);
                     float scale = (delta.x + delta.y + delta.z) * 0.01f;
                     if(mScaleGrid > 0) {
                         scale = mScaleGrid * int(scale / mScaleGrid);
@@ -211,14 +218,13 @@ void ObjectCtrl::drawHandles() {
     }
 
     Camera *camera  = Camera::current();
-    Pipeline *pipeline  = camera->pipeline();
-    if(pipeline) {
+     if(m_pPipeline) {
         uint32_t result = 0;
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
 
             RenderTexture *rt;
-            rt  = pipeline->target("depthMap");
+            rt  = m_pPipeline->target("depthMap");
             if(rt) {
                 rt->makeCurrent();
                 m_pDepth->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), 1, 1);
@@ -233,7 +239,7 @@ void ObjectCtrl::drawHandles() {
                 //Camera::unproject(screen, mv, p, mMouseWorld);
             }
 
-            rt  = pipeline->target("selectMap");
+            rt  = m_pPipeline->target("selectMap");
             if(rt) {
                 rt->makeCurrent();
                 m_pSelect->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), uint32_t(size.x), uint32_t(size.y));
@@ -357,7 +363,7 @@ void ObjectCtrl::setDrag(bool drag) {
             it.second.scale     = t->scale();
             it.second.euler     = t->euler();
         }
-        mSaved  = mWorld;
+        mSavedWorld = mWorld;
         mPosition   = objectPosition();
         m_pPropertyState    = new UndoManager::PropertyObjects(selected(), this);
     }
