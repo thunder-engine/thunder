@@ -1,5 +1,5 @@
 ## Thunder Engine
-Thunder Engine is an open-source multi-functional lightweight game engine for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
+Thunder Engine is free for all purposes an open-source multi-functional lightweight game engine for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
 
 #### Build Status
 [![Build status](https://ci.appveyor.com/api/projects/status/vbx35q9xyugwsn2p/branch/master?svg=true)](https://ci.appveyor.com/project/eprikazchikov/thunder/branch/master)
@@ -14,6 +14,11 @@ The main ideology of project is to create the modular engine to give developers 
 ![Screenshot of Thunder Engine](https://raw.githubusercontent.com/eprikazchikov/thunder/master/doc/media/ScreenShot01.png)
 
 #### Features
+- Cross-platform
+- Rendering System Based on Physical Principles
+- Scripts supported by AngelScipt engine
+- Module based architecture
+
 Please find a complete [list of features](https://github.com/eprikazchikov/thunder-doc/blob/master/basics/features.rst).
 
 #### Have a question or an idea?
