@@ -48,7 +48,7 @@ public:
 
     bool                    isValid             () { return true; }
 
-    bool                    key                 (Input::KeyCode) { return false; }
+    bool                    key                 (Input::KeyCode);
 
     Vector4                 mousePosition       () {
         QPoint p    = mapFromGlobal(QCursor::pos());
@@ -95,6 +95,9 @@ protected:
     void                    mousePressEvent     (QMouseEvent *);
     void                    mouseReleaseEvent   (QMouseEvent *);
 
+    void                    keyPressEvent       (QKeyEvent *);
+    void                    keyReleaseEvent     (QKeyEvent *);
+
 protected:
     virtual void            findCamera          ();
 
@@ -105,6 +108,8 @@ protected:
     QMenu                   m_RenderModeMenu;
 
     int32_t                 m_MouseButtons;
+
+    QList<int32_t>          m_Keys;
 };
 
 #endif // SCENEVIEW_H

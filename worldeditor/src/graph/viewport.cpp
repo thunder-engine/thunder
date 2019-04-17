@@ -116,12 +116,14 @@ void Viewport::wheelEvent(QWheelEvent *pe) {
 }
 
 void Viewport::keyPressEvent(QKeyEvent *pe) {
+    QWidget::keyPressEvent(pe);
     if(m_pController) {
         static_cast<CameraCtrl *>(m_pController)->onInputEvent(pe);
     }
 }
 
 void Viewport::keyReleaseEvent(QKeyEvent *pe) {
+    QWidget::keyReleaseEvent(pe);
     if(m_pController) {
         static_cast<CameraCtrl *>(m_pController)->onInputEvent(pe);
     }
