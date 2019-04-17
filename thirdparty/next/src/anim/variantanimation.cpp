@@ -2,7 +2,8 @@
 
 class VariantAnimationPrivate {
 public:
-    VariantAnimationPrivate() {
+    VariantAnimationPrivate() :
+        m_Type(MetaType::FLOAT) {
     }
 
     map<int32_t, AnimationCurve> m_KeyFrames;

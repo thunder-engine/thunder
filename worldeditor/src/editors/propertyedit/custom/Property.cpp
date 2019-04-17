@@ -62,15 +62,15 @@ QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
         act->setMenu(next->menu(m_name));
         m_Editor        = act;
     } else {
-        switch(value().type()) {
-            case QVariant::Int: {
+        switch(static_cast<QMetaType::Type>(value().type())) {
+            case QMetaType::Int: {
                 m_Editor    = new QSpinBox(parent);
                 m_Editor->setProperty("minimum", -INT_MAX);
                 m_Editor->setProperty("maximum",  INT_MAX);
                 connect(m_Editor, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
             } break;
             case QMetaType::Float:
-            case QVariant::Double: {
+            case QMetaType::Double: {
                 m_Editor    = new QDoubleSpinBox(parent);
                 m_Editor->setProperty("minimum", -DBL_MAX);
                 m_Editor->setProperty("maximum",  DBL_MAX);
@@ -88,15 +88,15 @@ QSize Property::sizeHint(const QSize &size) const {
 }
 
 bool Property::setEditorData(QWidget *editor, const QVariant &data) {
-    switch(value().type()) {
-        case QVariant::Int: {
+    switch(static_cast<QMetaType::Type>(value().type())) {
+        case QMetaType::Int: {
             editor->blockSignals(true);
             static_cast<QSpinBox*>(editor)->setValue(data.toInt());
             editor->blockSignals(false);
             return true;
         }
         case QMetaType::Float:
-        case QVariant::Double: {
+        case QMetaType::Double: {
             editor->blockSignals(true);
             static_cast<QDoubleSpinBox*>(editor)->setValue(data.toDouble());
             editor->blockSignals(false);
@@ -108,12 +108,12 @@ bool Property::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant Property::editorData(QWidget *editor) {
-    switch(value().type()) {
-        case QVariant::Int: {
+    switch(static_cast<QMetaType::Type>(value().type())) {
+        case QMetaType::Int: {
             return QVariant(static_cast<QSpinBox*>(editor)->value());
         }
         case QMetaType::Float:
-        case QVariant::Double: {
+        case QMetaType::Double: {
             return QVariant(static_cast<QDoubleSpinBox*>(editor)->value());
         }
         default: return QVariant();
@@ -128,7 +128,7 @@ Property *Property::findPropertyObject(QObject *propertyObject) {
         if (child)
             return child;
     }
-    return 0;
+    return nullptr;
 }
 
 void Property::setValue(double value) {

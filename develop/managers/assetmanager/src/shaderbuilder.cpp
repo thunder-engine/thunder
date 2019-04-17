@@ -58,7 +58,8 @@ ShaderBuilder::ShaderBuilder() :
         m_LightModel(Lit),
         m_MaterialType(Surface),
         m_DoubleSided(false),
-        m_DepthTest(true) {
+        m_DepthTest(true),
+        m_ViewSpace(true) {
 
     qRegisterMetaType<ConstFloat*>("ConstFloat");
     qRegisterMetaType<ConstVector2*>("ConstVector2");
@@ -150,7 +151,7 @@ uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
             ByteArray data  = Bson::save( object() );
-            file.write((const char *)&data[0], data.size());
+            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
             return 0;
         }
@@ -218,7 +219,7 @@ void ShaderBuilder::loadUserValues(Node *node, const QVariantMap &values) {
     if(func) {
         func->blockSignals(true);
         foreach(QString key, values.keys()) {
-            if(values[key].type() == QMetaType::QVariantList) {
+            if(static_cast<QMetaType::Type>(values[key].type()) == QMetaType::QVariantList) {
                 QVariantList array = values[key].toList();
                 switch(array.first().toInt()) {
                     case QVariant::Color: {
@@ -227,7 +228,7 @@ void ShaderBuilder::loadUserValues(Node *node, const QVariantMap &values) {
                     default: {
                         if(array.first().toString() == "Template") {
                             func->setProperty(qPrintable(key), QVariant::fromValue(Template(array.at(1).toString(),
-                                                                                            array.at(2).toInt())));
+                                                                                            array.at(2).toUInt())));
                         }
                     } break;
                 }
@@ -354,7 +355,7 @@ Variant ShaderBuilder::data() const {
     VariantList properties;
     properties.push_back(materialType());
     properties.push_back(isDoubleSided());
-    properties.push_back((materialType() == Material::Surface) ?
+    properties.push_back((materialType() == ShaderBuilder::Surface) ?
                              (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) :
                              Material::Static );
     properties.push_back(blend());

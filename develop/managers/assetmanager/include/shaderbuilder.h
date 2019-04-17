@@ -25,7 +25,11 @@ class ShaderFunction : public QObject {
     Q_OBJECT
 
 public:
-    ShaderFunction() { reset(); }
+    ShaderFunction() :
+            m_pModel(nullptr),
+            m_pNode(nullptr) {
+        reset();
+    }
 
     void reset() {
         m_Position  = -1;
@@ -55,7 +59,7 @@ public:
         return m_Position;
     }
 
-    static QString convert(const QString &value, uint8_t current, uint8_t target, uint8_t component = 0) {
+    static QString convert(const QString &value, uint8_t current, uint32_t target, uint8_t component = 0) {
         QString prefix;
         QString suffix;
 

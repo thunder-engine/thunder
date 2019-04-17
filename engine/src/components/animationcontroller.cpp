@@ -212,7 +212,7 @@ Object *AnimationController::findTarget(Object *src, const string &path) {
             return src;
         } else {
             string sub = path;
-            uint32_t index = path.find('/', 1);
+            size_t index = path.find('/', 1);
             if(index != string::npos) {
                 sub = path.substr(index + 1);
             }

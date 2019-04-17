@@ -32,8 +32,9 @@ public:
     };
 
     enum FilteringType {
-        None,
-        Bilinear
+        None        = Texture::None,
+        Bilinear    = Texture::Bilinear,
+        Trilinear   = Texture::Trilinear
     };
 
     enum WrapType {

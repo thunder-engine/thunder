@@ -57,6 +57,10 @@ ParticleRender::ParticleRender() :
 
 }
 
+ParticleRender::~ParticleRender() {
+    delete m_effect;
+}
+
 void ParticleRender::update() {
     float dt    = Timer::deltaTime() * Timer::scale();
     Matrix4 &m  = actor()->transform()->worldTransform();

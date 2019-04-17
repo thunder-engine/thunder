@@ -67,7 +67,8 @@ public:
     static unordered_map<string, Object*>   m_ResourceCache;
     static unordered_map<Object*, string>   m_ReferenceCache;
 
-    EnginePrivate() {
+    EnginePrivate() :
+            m_pScene(nullptr) {
 
     }
 

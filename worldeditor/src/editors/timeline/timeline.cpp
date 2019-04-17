@@ -35,7 +35,10 @@ Timeline::Timeline(QWidget *parent) :
         m_TimerId(0),
         m_ContentMenu(this),
         m_Modified(false),
-        m_pKey(nullptr) {
+        m_pKey(nullptr),
+        m_Row(-1),
+        m_Col(-1),
+        m_Ind(-1) {
     ui->setupUi(this);
     ui->pause->setVisible(false);
 

@@ -17,6 +17,8 @@ class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
 public:
     ParticleRender();
 
+    ~ParticleRender();
+
     void update();
 
     void draw(ICommandBuffer &buffer, int8_t layer);

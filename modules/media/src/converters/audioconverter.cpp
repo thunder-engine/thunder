@@ -137,7 +137,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, uint32
     vorbis_analysis_init(&state, &info);
     vorbis_block_init(&state, &block);
 
-    srand(time(NULL));
+    srand(time(nullptr));
     ogg_stream_init(&stream, rand());
 
     ogg_packet header_packet;
