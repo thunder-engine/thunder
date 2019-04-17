@@ -6,11 +6,7 @@
 #include "core/bson.h"
 #include "core/json.h"
 
-#include <random>
-
-static random_device rd;
-static mt19937 mt(rd());
-static uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
+#include "math/amath.h"
 
 static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;

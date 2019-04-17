@@ -448,11 +448,11 @@ void registerRay(asIScriptEngine *engine) {
 }
 
 int randomInt(int min, int max) {
-    return min + (rand() % (max - min + 1));
+    return min + (dist(mt) % (max - min + 1));
 }
 
-float randomFloat(int min, int max) {
-    return min + ((max - min) * (static_cast<float>(rand()) / RAND_MAX));
+float randomFloat(float min, float max) {
+    return RANGE(min, max);
 }
 
 void registerMath(asIScriptEngine *engine) {
