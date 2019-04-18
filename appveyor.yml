@@ -24,15 +24,3 @@ build_script:
 artifacts:
   - path: 'ThunderEngine*.7z'
     name: Binaries
-
-deploy:
-  - provider: FTP
-    protocol: ftp
-    host: ftp.thunderengine.ru
-    username:
-      secure: /p8MbuOVjNDQWc6qoXm+Zg==
-    password:
-      secure: bSl/ZDdDyvSPlyBdsEEZIg==
-    on:
-        branch: master
-        appveyor_repo_tag: true
