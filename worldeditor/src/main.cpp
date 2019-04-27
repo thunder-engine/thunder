@@ -73,8 +73,6 @@ int main(int argc, char *argv[]) {
     asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
     asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
 
-    asset->init(&engine);
-
     SceneComposer w(&engine);
     w.show();
 

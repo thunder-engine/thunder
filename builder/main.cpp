@@ -50,12 +50,17 @@ int main(int argc, char *argv[]) {
     file->finit(qPrintable(QCoreApplication::arguments().at(0)));
     file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
-    Engine engine(file, argc, argv);
+    Log(Log::INF) << "Starting builder...";
 
-    Builder builder;
+    Engine engine(file, argc, argv);
 
     PluginModel::instance()->init(&engine);
     AssetManager::instance()->init(&engine);
+
+    Builder builder;
+
+    PluginModel::instance()->rescan();
+    AssetManager::instance()->rescan();
 
     return a.exec();
 }

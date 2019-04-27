@@ -477,6 +477,7 @@ void SceneComposer::onOpenProject(const QString &path) {
 
     m_pProjectModel->addProject(path);
     ProjectManager::instance()->init(path);
+    AssetManager::instance()->init(m_pEngine);
     m_pEngine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
     ui->viewport->makeCurrent();
@@ -493,7 +494,7 @@ void SceneComposer::onNewProject() {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             file.close();
-            m_pProjectModel->addProject(path);
+            onOpenProject(path);
         }
     }
 }
@@ -501,7 +502,7 @@ void SceneComposer::onNewProject() {
 void SceneComposer::onImportProject() {
     QString path = QFileDialog::getOpenFileName(this, tr("Import Existing Project"), ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
-        m_pProjectModel->addProject(path);
+        onOpenProject(path);
     }
 }
 

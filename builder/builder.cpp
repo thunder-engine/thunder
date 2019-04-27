@@ -17,7 +17,7 @@ Builder::Builder() {
 void Builder::package(const QString &target) {
     QFileInfo info(target);
     QString dir = info.absolutePath();
-#if __APPLE__
+#if defined(Q_OS_MAC)
     dir     = target + "/Contents/MacOS";
 #endif
     dir    += "/base.pak";

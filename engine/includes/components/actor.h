@@ -30,7 +30,7 @@ public:
 
     Transform                  *transform               ();
 
-    Scene                      *scene                   () const;
+    Scene                      *scene                   ();
 
     Component                  *findComponent           (const char *type);
 
