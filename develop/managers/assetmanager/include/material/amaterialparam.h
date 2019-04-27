@@ -26,7 +26,7 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = MetaType::FLOAT;
             m_pModel->addUniform(objectName(), size);
@@ -59,7 +59,7 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector4D;
             m_pModel->addUniform(objectName(), size);

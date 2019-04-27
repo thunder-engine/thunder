@@ -50,7 +50,7 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         size    = 0;
 
         const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, IN);
@@ -58,33 +58,36 @@ public:
             ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
 
             uint8_t type;
-            uint32_t index = node->build(value, *l, depth, type);
+            int32_t index = node->build(value, *l, depth, type);
+            if(index >= 0) {
+                QString mask;
+                if(m_R && type > 0) {
+                    mask += "r";
+                    size++;
+                }
+                if(m_G && type > 1) {
+                    mask += "g";
+                    size++;
+                }
+                if(m_B && type > 2) {
+                    mask += "b";
+                    size++;
+                }
+                if(m_A && type > 3) {
+                    mask += "a";
+                    size++;
+                }
 
-            QString mask;
-            if(m_R && type > 0) {
-                mask += "r";
-                size++;
+                switch (size) {
+                    case QMetaType::QVector2D:  value.append("\tvec2");  break;
+                    case QMetaType::QVector3D:  value.append("\tvec3");  break;
+                    case QMetaType::QVector4D:  value.append("\tvec4");  break;
+                    default: value.append("\tfloat"); break;
+                }
+                value.append(QString(" local%1 = local%2.%3;\n").arg(depth).arg(index).arg(mask));
+            } else {
+                return -1;
             }
-            if(m_G && type > 1) {
-                mask += "g";
-                size++;
-            }
-            if(m_B && type > 2) {
-                mask += "b";
-                size++;
-            }
-            if(m_A && type > 3) {
-                mask += "a";
-                size++;
-            }
-
-            switch (size) {
-                case QMetaType::QVector2D:  value.append("\tvec2");  break;
-                case QMetaType::QVector3D:  value.append("\tvec3");  break;
-                case QMetaType::QVector4D:  value.append("\tvec4");  break;
-                default: value.append("\tfloat"); break;
-            }
-            value.append(QString(" local%1 = local%2.%3;\n").arg(depth).arg(index).arg(mask));
         } else {
             m_pModel->reportError(this, "Missing argument");
             return -1;
@@ -176,7 +179,7 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         size    = 0;
 
         const AbstractSchemeModel::Link *al  = m_pModel->findLink(m_pNode, a);

@@ -34,7 +34,7 @@ public:
         return result;
     }
 
-    uint32_t compile(AbstractSchemeModel::Node *object, const QString &func, QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size, uint8_t expect = 0, uint8_t last = 0) {
+    int32_t compile(AbstractSchemeModel::Node *object, const QString &func, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size, uint8_t expect = 0, uint8_t last = 0) {
         if(m_Position == -1) {
             QString args;
 
@@ -46,17 +46,21 @@ public:
                     ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
                     if(node) {
                         uint8_t type;
-                        uint32_t index = node->build(value, *l, depth, type);
-                        if(i == 0 && !expect) {
-                            expect = type;
-                        }
+                        int32_t index = node->build(value, *l, depth, type);
+                        if(index >= 0) {
+                            if(i == 0 && !expect) {
+                                expect = type;
+                            }
 
-                        uint8_t final = expect;
-                        if(i == (m_Params.size() - 1) && last) {
-                            final = last;
-                        }
+                            uint8_t final = expect;
+                            if(i == (m_Params.size() - 1) && last) {
+                                final = last;
+                            }
 
-                        args += convert(QString("local%1").arg(index), type, final) + ((i == m_Params.size() - 1) ? "" : ", ");
+                            args += convert(QString("local%1").arg(index), type, final) + ((i == m_Params.size() - 1) ? "" : ", ");
+                        } else {
+                            return -1;
+                        }
                     }
                 } else {
                     m_pModel->reportError(this, QString("Missing argument ") + it);
@@ -88,7 +92,7 @@ class DotProduct : public MathFunction {
 public:
     Q_INVOKABLE DotProduct() { m_Params << a << b; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         size    = QMetaType::Double;
         return compile(m_pNode, "dot", value, link, depth, size);
     }
@@ -100,7 +104,7 @@ class CrossProduct : public MathFunction {
 public:
     Q_INVOKABLE CrossProduct() { m_Params << a << b; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         size    = QMetaType::QVector3D;
         return compile(m_pNode, "cross", value, link, depth, size, size);
     }
@@ -112,7 +116,7 @@ class Mix : public MathFunction {
 public:
     Q_INVOKABLE Mix() { m_Params << x << y << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "mix", value, link, depth, size, 0, 1);
     }
 };
@@ -123,7 +127,7 @@ class Clamp : public MathFunction {
 public:
     Q_INVOKABLE Clamp() { m_Params << a << MINV << MAXV; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "clamp", value, link, depth, size);
     }
 };
@@ -134,7 +138,7 @@ class Min : public MathFunction {
 public:
     Q_INVOKABLE Min() { m_Params << x << y; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "min", value, link, depth, size);
     }
 };
@@ -145,7 +149,7 @@ class Max : public MathFunction {
 public:
     Q_INVOKABLE Max() { m_Params << x << y; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "max", value, link, depth, size);
     }
 };
@@ -156,7 +160,7 @@ class Mod : public MathFunction {
 public:
     Q_INVOKABLE Mod() { m_Params << x << y; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "mod", value, link, depth, size);
     }
 };
@@ -167,7 +171,7 @@ class Power : public MathFunction {
 public:
     Q_INVOKABLE Power() { m_Params << "Base" << "Exp"; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "pow", value, link, depth, size);
     }
 };
@@ -178,7 +182,7 @@ class SquareRoot : public MathFunction {
 public:
     Q_INVOKABLE SquareRoot() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "sqrt", value, link, depth, size);
     }
 };
@@ -189,7 +193,7 @@ class Logarithm : public MathFunction {
 public:
     Q_INVOKABLE Logarithm() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "log", value, link, depth, size);
     }
 };
@@ -200,7 +204,7 @@ class Logarithm2 : public MathFunction {
 public:
     Q_INVOKABLE Logarithm2() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "log2", value, link, depth, size);
     }
 };
@@ -212,7 +216,7 @@ class Abs : public MathFunction {
 public:
     Q_INVOKABLE Abs() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "abs", value, link, depth, size);
     }
 };
@@ -223,7 +227,7 @@ class Sign : public MathFunction {
 public:
     Q_INVOKABLE Sign() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "sign", value, link, depth, size);
     }
 };
@@ -234,7 +238,7 @@ class Floor : public MathFunction {
 public:
     Q_INVOKABLE Floor() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "floor", value, link, depth, size);
     }
 };
@@ -245,7 +249,7 @@ class Ceil : public MathFunction {
 public:
     Q_INVOKABLE Ceil() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "ceil", value, link, depth, size);
     }
 };
@@ -256,7 +260,7 @@ class Round : public MathFunction {
 public:
     Q_INVOKABLE Round() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "round", value, link, depth, size);
     }
 };
@@ -267,7 +271,7 @@ class Truncate : public MathFunction {
 public:
     Q_INVOKABLE Truncate() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "trunc", value, link, depth, size);
     }
 };
@@ -278,7 +282,7 @@ class Fract : public MathFunction {
 public:
     Q_INVOKABLE Fract() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "fract", value, link, depth, size);
     }
 };
@@ -289,7 +293,7 @@ class Normalize : public MathFunction {
 public:
     Q_INVOKABLE Normalize() { m_Params << x; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "normalize", value, link, depth, size);
     }
 };
@@ -300,7 +304,7 @@ class Sine : public MathFunction {
 public:
     Q_INVOKABLE Sine() { m_Params << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "sin", value, link, depth, size);
     }
 };
@@ -311,7 +315,7 @@ class Cosine : public MathFunction {
 public:
     Q_INVOKABLE Cosine() { m_Params << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "cos", value, link, depth, size);
     }
 };
@@ -322,7 +326,7 @@ class Tangent : public MathFunction {
 public:
     Q_INVOKABLE Tangent() { m_Params << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "tan", value, link, depth, size);
     }
 };
@@ -333,7 +337,7 @@ class ArcSine : public MathFunction {
 public:
     Q_INVOKABLE ArcSine() { m_Params << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "asin", value, link, depth, size);
     }
 };
@@ -344,7 +348,7 @@ class ArcCosine : public MathFunction {
 public:
     Q_INVOKABLE ArcCosine() { m_Params << a; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "acos", value, link, depth, size);
     }
 };
@@ -355,7 +359,7 @@ class ArcTangent : public MathFunction {
 public:
     Q_INVOKABLE ArcTangent() {m_Params << a << b; }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, "atan", value, link, depth, size);
     }
 };

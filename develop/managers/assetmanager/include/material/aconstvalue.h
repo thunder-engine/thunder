@@ -36,7 +36,7 @@ public:
         emit updated();
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::Double;
             value  += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_Value);
@@ -87,7 +87,7 @@ public:
         emit updated();
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector2D;
             value  += QString("\tvec2 local%1 = vec2(%2, %3);\n").arg(depth).arg(m_Value.x()).arg(m_Value.y());
@@ -128,7 +128,7 @@ public:
         emit updated();
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
             value  += QString("\tvec3 local%1 = vec3(%2, %3, %4);\n").arg(depth).arg(m_Value.redF()).arg(m_Value.greenF()).arg(m_Value.blueF());
@@ -169,7 +169,7 @@ public:
         emit updated();
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector4D;
             value  += QString("\tvec4 local%1 = vec4(%2, %3, %4, %5);\n").arg(depth).arg(m_Value.redF()).arg(m_Value.greenF()).arg(m_Value.blueF()).arg(m_Value.alphaF());

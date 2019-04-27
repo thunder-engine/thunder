@@ -43,9 +43,7 @@ QbsBuilder::QbsBuilder() :
         m_Progress(false) {
 
     m_pMgr      = ProjectManager::instance();
-
     m_QBSPath   = QFileInfo(m_pMgr->sdkPath() + "/tools/qbs/bin/qbs");
-
     m_Suffix    = gShared;
     if(!m_pMgr->targetPath().isEmpty()) {
         m_Suffix= gApplication;
@@ -124,9 +122,9 @@ void QbsBuilder::generateProject() {
 
     StringMap values(m_Values);
 
-    values[gRegisterComponents]     = "";
-    values[gUnregisterComponents]   = "";
-    values[gComponentNames]         = "";
+    values[gRegisterComponents]   = "";
+    values[gUnregisterComponents] = "";
+    values[gComponentNames]       = "";
 
     const QMetaObject *meta = m_pMgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -159,7 +157,7 @@ void QbsBuilder::generateProject() {
 
     copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
 }
-#include <QDebug>
+
 bool QbsBuilder::buildProject() {
     if(m_Outdated && !m_Progress) {
         generateProject();
@@ -175,8 +173,6 @@ bool QbsBuilder::buildProject() {
             QStringList args;
             args << "resolve" << gMode << "profile:" + m_Profiles[0];
 
-            qDebug() << args;
-
             qbs.start(m_QBSPath.absoluteFilePath(), args);
             if(qbs.waitForStarted()) {
                 qbs.waitForFinished();
@@ -187,7 +183,6 @@ bool QbsBuilder::buildProject() {
             QStringList args;
             args << "build" << m_Settings;
             args << "--products" << product << gMode << "profile:" + m_Profiles[0];
-            qDebug() << args;
 
             m_pProcess->start(m_QBSPath.absoluteFilePath(), args);
             if(!m_pProcess->waitForStarted()) {

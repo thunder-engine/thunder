@@ -70,16 +70,18 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             QString uv  = "_uv0";
             const AbstractSchemeModel::Link *l  = m_pModel->findLink(m_pNode, UV);
             if(l) {
-                ShaderFunction *node    = static_cast<ShaderFunction *>(l->sender->ptr);
+                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
                 if(node) {
                     uint8_t type;
-                    int32_t index   = node->build(value, *l, depth, type);
-                    uv  = convert("local" + QString::number(index), type, QMetaType::QVector2D);
+                    int32_t index = node->build(value, *l, depth, type);
+                    if(index >= 0) {
+                        uv  = convert("local" + QString::number(index), type, QMetaType::QVector2D);
+                    }
                 }
             }
             uv      = QString("vec2(%1, %2) + %3 * vec2(%4, %5)").arg(m_Sub.x).arg(m_Sub.y).arg(uv).arg(m_Sub.z).arg(m_Sub.w);
@@ -122,7 +124,7 @@ public:
         m_Path  = Template("", MetaType::type<Texture *>());
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         int result  = m_pModel->setTexture(m_Path.path, m_Sub, false);
 
         if(result < 0) {
@@ -156,7 +158,7 @@ class RenderTargetSample : public TextureFunction {
 public:
     Q_INVOKABLE RenderTargetSample() { }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         m_pModel->setTexture(m_Name, m_Sub, ShaderBuilder::Target);
 
         return TextureFunction::build(value, link, depth, size);
@@ -179,7 +181,7 @@ class TextureSampleCube : public TextureSample {
 public:
     Q_INVOKABLE TextureSampleCube() {}
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             Vector4 sub;
             int result  = m_pModel->setTexture(m_Path.path, sub, ShaderBuilder::Cube);

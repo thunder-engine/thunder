@@ -483,12 +483,14 @@ void ShaderBuilder::buildRoot(QString &result) {
         if(link) {
             ShaderFunction *node = static_cast<ShaderFunction *>(link->sender->ptr);
             if(node) {
-                uint32_t depth  = 0;
-                uint8_t size    = 0;
-                uint32_t index  = node->build(result, *link, depth, size);
-                result  += "\treturn " + ShaderFunction::convert("local" + QString::number(index), size, item->type) + ";\n";
-                result.append("}\n\n");
-                continue;
+                int32_t depth = 0;
+                uint8_t size = 0;
+                int32_t index = node->build(result, *link, depth, size);
+                if(index >= 0) {
+                    result += "\treturn " + ShaderFunction::convert("local" + QString::number(index), size, item->type) + ";\n";
+                    result.append("}\n\n");
+                    continue;
+                }
             }
         }
 

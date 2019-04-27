@@ -24,7 +24,7 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector2D;
             value  += QString("\tvec2 local%1 = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5).xy;\n").arg(depth);
@@ -44,7 +44,7 @@ public:
             m_Index(0) {
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             size    = QMetaType::QVector2D;
             value  += QString("\tvec2 local%1 = _uv%2;\n").arg(depth).arg(m_Index);
@@ -97,19 +97,21 @@ public:
         return result;
     }
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, UV);
             if(l) {
                 ShaderFunction *node   = static_cast<ShaderFunction *>(l->sender->ptr);
                 if(node) {
                     uint8_t type;
-                    uint32_t index  = node->build(value, *l, depth, type);
-                    size    = type;
-                    QString sub = convert("local" + QString::number(index), type, size);
-                    depth++;
-                    value  += QString("\tvec2 local%1 = %2").arg(depth).arg(sub);
-                    value  += QString(" + vec2(%1, %2) * p.time;\n").arg(m_Speed.x).arg(m_Speed.y);
+                    int32_t index  = node->build(value, *l, depth, type);
+                    if(index >= 0) {
+                        size    = type;
+                        QString sub = convert("local" + QString::number(index), type, size);
+                        depth++;
+                        value  += QString("\tvec2 local%1 = %2").arg(depth).arg(sub);
+                        value  += QString(" + vec2(%1, %2) * p.time;\n").arg(m_Speed.x).arg(m_Speed.y);
+                    }
                 }
             }
         }

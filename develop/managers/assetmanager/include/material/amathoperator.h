@@ -39,7 +39,7 @@ public:
         return result;
     }
 
-    uint32_t compile(AbstractSchemeModel::Node *object, const QString &operation, QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t compile(AbstractSchemeModel::Node *object, const QString &operation, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             QString args;
 
@@ -53,11 +53,15 @@ public:
                     ShaderFunction *node   = static_cast<ShaderFunction *>(l->sender->ptr);
                     if(node) {
                         uint8_t type;
-                        uint32_t index  = node->build(value, *l, depth, type);
-                        if(i == 0) {
-                            size    = type;
+                        int32_t index = node->build(value, *l, depth, type);
+                        if(index >= 0) {
+                            if(i == 0) {
+                                size    = type;
+                            }
+                            args    += ((i == 0) ? "" : operation) + convert("local" + QString::number(index), type, size);
+                        } else {
+                            return -1;
                         }
-                        args    += ((i == 0) ? "" : operation) + convert("local" + QString::number(index), type, size);
                     }
                 }
             }
@@ -81,7 +85,7 @@ class Subtraction : public MathOperation {
 public:
     Q_INVOKABLE Subtraction() {}
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, " - ", value, link, depth, size);
     }
 };
@@ -92,7 +96,7 @@ class Add : public MathOperation {
 public:
     Q_INVOKABLE Add() {}
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, " + ", value, link, depth, size);
     }
 };
@@ -103,7 +107,7 @@ class Divide : public MathOperation {
 public:
     Q_INVOKABLE Divide() {}
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, " / ", value, link, depth, size);
     }
 };
@@ -114,7 +118,7 @@ class Multiply : public MathOperation {
 public:
     Q_INVOKABLE Multiply() {}
 
-    uint32_t build(QString &value, const AbstractSchemeModel::Link &link, uint32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         return compile(m_pNode, " * ", value, link, depth, size);
     }
 };
