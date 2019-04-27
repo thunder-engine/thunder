@@ -21,7 +21,7 @@ bool Actor::isEnable() const {
 }
 
 void Actor::setEnable(const bool enable) {
-    m_Enable    = enable;
+    m_Enable = enable;
 }
 
 uint8_t Actor::layers() const {
@@ -38,7 +38,16 @@ Transform *Actor::transform() {
     return m_pTransform;
 }
 
-Scene *Actor::scene() const {
+Scene *Actor::scene() {
+    if(m_pScene == nullptr) {
+        Object *scene = parent();
+        if(scene) {
+            while(scene->parent() != nullptr) {
+                scene = scene->parent();
+            }
+            m_pScene = dynamic_cast<Scene *>(scene);
+        }
+    }
     return m_pScene;
 }
 
@@ -107,13 +116,6 @@ void Actor::setParent(Object *parent) {
         t->setScale(s);
     } else {
         Object::setParent(parent);
-    }
-    if(parent) {
-        Object *scene = parent;
-        while(scene->parent() != nullptr) {
-            scene = scene->parent();
-        }
-        m_pScene = dynamic_cast<Scene *>(scene);
     }
 }
 
