@@ -5,6 +5,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <random>
+
+static std::random_device rd;
+static std::mt19937 mt(rd());
+static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
+
 #define EPSILON 1e-6f
 #define PI 3.14159265358979323846f
 #define DEG2RAD (PI / 180.0f)
@@ -21,7 +27,7 @@
 #define QMIX(a, b, c, f)    (a * SQR((1 - f)) + b * 2 * f * (1 - f) + c * SQR(f))
 #define CMIX(a, b, c, d, f) (a * QUAD((1 - f)) + b * 3 * f * SQR((1 - f)) + c * 3 * SQR(f) * (1 - f) + d * QUAD(f))
 
-#define RANGE(min, max) (min + ((max - min) * (static_cast<areal>(rand()) / RAND_MAX)))
+#define RANGE(min, max) (min + ((max - min) * (static_cast<areal>(dist(mt)) / UINT32_MAX)))
 
 #include "vector2.h"
 #include "vector3.h"
