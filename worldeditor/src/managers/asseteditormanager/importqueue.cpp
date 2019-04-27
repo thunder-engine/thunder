@@ -50,6 +50,7 @@ void ImportQueue::onStarted(int count, const QString &action) {
 }
 
 void ImportQueue::onImportFinished() {
+    m_pEngine->reloadBundle();
     auto i = m_UpdateQueue.constBegin();
     while(i != m_UpdateQueue.constEnd()) {
         QImage image = m_pRender->render(i.key(), i.value());

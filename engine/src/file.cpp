@@ -54,20 +54,20 @@ bool IFile::_isdir(const char *path) {
 }
 
 int IFile::_fclose(_FILE *stream) {
-    return PHYSFS_close((PHYSFS_file *)stream);
+    return PHYSFS_close(static_cast<PHYSFS_file *>(stream));
 }
 
-_size_t IFile::_fseek(_FILE *stream, long int offset, int origin) {
+_size_t IFile::_fseek(_FILE *stream, uint64_t offset, int origin) {
     A_UNUSED(origin)
-    return PHYSFS_seek((PHYSFS_file *)stream, offset);
+    return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), offset));
 }
 
 _FILE *IFile::_fopen(const char *path, const char *mode) {
-    _FILE *result = 0;
+    _FILE *result = nullptr;
     switch (mode[0]) {
-        case 'r': result    = (void *)PHYSFS_openRead(path); break;
-        case 'w': result    = (void *)PHYSFS_openWrite(path); break;
-        case 'a': result    = (void *)PHYSFS_openAppend(path); break;
+        case 'r': result = static_cast<void *>(PHYSFS_openRead(path)); break;
+        case 'w': result = static_cast<void *>(PHYSFS_openWrite(path)); break;
+        case 'a': result = static_cast<void *>(PHYSFS_openAppend(path)); break;
         default: break;
     }
     if(result == nullptr) {
@@ -77,19 +77,19 @@ _FILE *IFile::_fopen(const char *path, const char *mode) {
 }
 
 _size_t IFile::_fread(void *ptr, _size_t size, _size_t count, _FILE *stream) {
-    return PHYSFS_read((PHYSFS_file *)stream, ptr, size, count);
+    return static_cast<_size_t>(PHYSFS_read(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
 
 _size_t IFile::_fwrite(const void *ptr, _size_t size, _size_t count, _FILE *stream) {
-    return PHYSFS_write((PHYSFS_file *)stream, ptr, size, count);
+    return static_cast<_size_t>(PHYSFS_write(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
 
 _size_t IFile::_fsize(_FILE *stream) {
-    return PHYSFS_fileLength((PHYSFS_file *)stream);
+    return static_cast<_size_t>(PHYSFS_fileLength(static_cast<PHYSFS_file *>(stream)));
 }
 
 _size_t IFile::_ftell(_FILE *stream) {
-    return PHYSFS_tell((PHYSFS_file *)stream);
+    return static_cast<_size_t>(PHYSFS_tell(static_cast<PHYSFS_file *>(stream)));
 }
 
 const char *IFile::baseDir() const {

@@ -60,17 +60,16 @@ public:
 public slots:
     void                        onRendered                  (const QString &uuid);
 
-protected slots:
     void                        update                      (const QString &path);
 
 protected:
-    void                        scan                        (const QString &path);
-
     Qt::DropActions             supportedDropActions        () const;
     QStringList                 mimeTypes                   () const;
     QMimeData                  *mimeData                    (const QModelIndexList &indexes) const;
     bool                        canDropMimeData             (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
     bool                        dropMimeData                (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent);
+
+    void                        scan                        (const QString &path);
 
 private:
     ContentList                 ();

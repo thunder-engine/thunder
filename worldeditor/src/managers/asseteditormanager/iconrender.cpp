@@ -42,7 +42,7 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_Context->create();
     m_Context->makeCurrent(m_Surface);
 
-    PluginModel::instance()->initSystems();
+    //PluginModel::instance()->initSystems();
 
     m_pFBO = new QOpenGLFramebufferObject(128, 128);
 
@@ -62,7 +62,15 @@ IconRender::~IconRender() {
 }
 
 void IconRender::init() {
+
+}
+
+const QImage IconRender::render(const QString &resource, uint32_t type) {
+    m_Context->makeCurrent(m_Surface);
+
     if(!m_Init) {
+        //PluginModel::instance()->initSystems();
+
         Pipeline *pipe = m_pCamera->pipeline();
         pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
         pipe->setTarget(m_pFBO->handle());
@@ -75,12 +83,6 @@ void IconRender::init() {
 
         m_Init = true;
     }
-}
-
-const QImage IconRender::render(const QString &resource, uint32_t type) {
-    m_Context->makeCurrent(m_Surface);
-
-    init();
 
     m_pCamera->setOrthographic(false);
     Actor *object   = Engine::objectCreate<Actor>("", m_pScene);

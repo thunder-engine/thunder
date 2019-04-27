@@ -45,6 +45,7 @@ PluginModel::PluginModel() :
         m_pEngine(nullptr) {
 
     m_Suffixes = QStringList() << "*.dll" << "*.dylib" << "*.so";
+
 }
 
 PluginModel::~PluginModel() {
@@ -116,19 +117,35 @@ void PluginModel::destroy() {
 
 void PluginModel::init(Engine *engine) {
     m_pEngine   = engine;
+
+    rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
 void PluginModel::rescan() {
     clear();
 
-    rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
+    QString system(QCoreApplication::applicationDirPath() + PLUGINS);
+    for(auto it = m_Libraries.begin(); it != m_Libraries.end(); it++) {
+        if(!it.key().contains(system)) {
+            PluginsMap::Iterator ext    = m_Extensions.find(it.key());
+            if(ext != m_Extensions.end()) {
+                IModule *plugin = ext.value();
+                delete plugin;
+            }
+            if(it.value()->unload()) {
+                delete it.value();
+            }
+            m_Libraries.remove(it.key());
+        }
+    }
+
     rescanPath(ProjectManager::instance()->pluginsPath());
 }
 
 bool PluginModel::loadPlugin(const QString &path, bool reload) {
     QLibrary *lib   = new QLibrary(path);
     if(lib->load()) {
-        moduleHandler moduleCreate  = (moduleHandler)lib->resolve("moduleCreate");
+        moduleHandler moduleCreate = reinterpret_cast<moduleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
             IModule *plugin = moduleCreate(m_pEngine);
             if(plugin) {

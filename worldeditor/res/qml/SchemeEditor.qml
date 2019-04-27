@@ -124,7 +124,7 @@ Rectangle {
 
         onPaint: {
             context.clearRect(0, 0, canvas.width, canvas.height)
-            context.strokeStyle = theme.gray600
+            context.strokeStyle = theme.greyLight
             context.translate(translateX, translateY)
             // Grid
             var beforeX = Math.round(-translateX / cell)
@@ -211,7 +211,7 @@ Rectangle {
         id: glow
         glowRadius: 5
         spread: 0.2
-        color: theme.redColor
+        color: theme.red
         cornerRadius: glowRadius
     }
 

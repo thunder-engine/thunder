@@ -69,6 +69,8 @@ public:
 
     void                    init                (Engine *engine);
 
+    void                    rescan              ();
+
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
 
@@ -129,7 +131,6 @@ private:
     ~AssetManager           ();
 
     static AssetManager    *m_pInstance;
-
 
 protected:
     typedef QMap<int32_t, IAssetEditor *>   EditorsMap;

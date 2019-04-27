@@ -46,6 +46,8 @@ MaterialEdit::MaterialEdit(Engine *engine) :
     CameraCtrl *ctrl = new CameraCtrl(glWidget);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
+    ctrl->init(nullptr);
+
     glWidget->setController(ctrl);
     glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
@@ -192,20 +194,19 @@ void MaterialEdit::changeMesh(const string &path) {
 }
 
 void MaterialEdit::onGLInit() {
-    Scene *scene    = glWidget->scene();
-
-    m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
+    Scene *scene = glWidget->scene();
+    m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->transform()->setRotation(rot);
     m_pLight->addComponent<DirectLight>();
 
-    Camera *camera  = Camera::current();
+    Camera *camera = glWidget->controller()->camera();
     if(camera) {
         camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
     }
 
-    m_pMesh     = Engine::objectCreate<Actor>("StaticMesh", scene);
+    m_pMesh = Engine::objectCreate<Actor>("StaticMesh", scene);
     m_pMesh->addComponent<StaticMesh>();
 
     on_actionSphere_triggered();

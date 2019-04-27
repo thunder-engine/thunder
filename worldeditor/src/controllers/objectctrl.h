@@ -46,7 +46,7 @@ public:
 
     void                init                        (Scene *scene);
 
-    void                drawHandles                 ();
+    void                drawHandles                 (ICommandBuffer *buffer);
 
     void                clear                       (bool signal = true);
 

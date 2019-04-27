@@ -11,7 +11,6 @@ class DirectLight;
 
 class Viewport;
 class NextObject;
-class IconRender;
 
 namespace Ui {
     class MeshEdit;

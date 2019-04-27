@@ -44,6 +44,8 @@ protected:
     asIScriptModule            *m_pScriptModule;
 
     asIScriptContext           *m_pContext;
+
+    bool                        m_Inited;
 };
 
 #endif // ANGELSYSTEM_H

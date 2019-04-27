@@ -212,7 +212,7 @@ Rectangle {
         x: (clipModel.position / timeScale) * timeStep - posX + minStep - 1
         width: 2
         height: parent.height
-        color: theme.redColor
+        color: theme.red
     }
 
     ScrollBar {

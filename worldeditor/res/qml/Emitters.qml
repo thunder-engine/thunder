@@ -182,15 +182,15 @@ Rectangle {
                     anchors.bottom: parent.bottom
                     anchors.topMargin: 3
                     height: 32
-                    radius: 3
+                    radius: theme.frameRadius
                     color: "#00000000"
-                    border.color: theme.redColor
+                    border.color: theme.red
 
                     Text {
                         id: deleteLabel
                         anchors.fill: parent
                         text: "Delete Emitter"
-                        color: theme.redColor
+                        color: theme.red
                         font.pointSize: 16
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -200,14 +200,14 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         onEntered: {
-                            deleteEmitter.color = theme.hoverRedColor
+                            deleteEmitter.color = theme.redHover
                             deleteLabel.color = theme.textColor
                             deleteEmitter.border.color = "#00000000"
                         }
                         onExited: {
                             deleteEmitter.color = "#00000000"
-                            deleteLabel.color = theme.redColor
-                            deleteEmitter.border.color = theme.redColor
+                            deleteLabel.color = theme.red
+                            deleteEmitter.border.color = theme.red
                         }
                         onClicked: {
                             emitterDelete(Name)
@@ -225,8 +225,8 @@ Rectangle {
                             id: addFunction
                             anchors.fill: parent
                             anchors.bottomMargin: 3
-                            radius: 3
-                            color: theme.greenColor
+                            radius: theme.frameRadius
+                            color: theme.green
 
                             Text {
                                 id: nameLabel
@@ -241,8 +241,8 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onEntered: addFunction.color = theme.hoverGreenColor
-                                onExited: addFunction.color = theme.greenColor
+                                onEntered: addFunction.color = theme.greenHover
+                                onExited: addFunction.color = theme.green
                                 onClicked: {
                                     menu.open()
                                 }

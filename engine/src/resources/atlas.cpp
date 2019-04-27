@@ -9,9 +9,6 @@ Atlas::~Atlas() {
 }
 
 void Atlas::clear() {
-    for(auto it : m_Sources) {
-        delete it;
-    }
     m_Sources.clear();
     m_Elements.clear();
 }

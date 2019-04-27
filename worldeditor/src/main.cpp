@@ -33,8 +33,6 @@
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
 
-#include "managers/asseteditormanager/importqueue.h"
-
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setVersion(4, 2);
@@ -55,60 +53,44 @@ int main(int argc, char *argv[]) {
         qss.close();
     }
 
-    ProjectManager *mgr = ProjectManager::instance();
+    IFile *file = new IFile();
+    file->finit(qPrintable(QApplication::arguments().at(0)));
 
-    QString project;
+    Log::setLogLevel(Log::DBG);
+
+    Engine engine(file, argc, argv);
+    engine.init();
+    Log::overrideHandler(new QLog());
+
+    PluginModel *plugin = PluginModel::instance();
+    plugin->init(&engine);
+    QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
+
+    AssetManager *asset = AssetManager::instance();
+    asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
+    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
+    asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
+    asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
+    asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
+
+    asset->init(&engine);
+
+    SceneComposer w(&engine);
+    w.show();
+
     if(argc > 1) {
-        project = QApplication::arguments().at(1);
-    } else {
-        project = ProjectDialog::projectPath();
+        w.onOpenProject(QApplication::arguments().at(1));
     }
-    int result = 0;
-    if(!project.isEmpty()) {
-        mgr->init(project);
 
-        IFile *file = new IFile();
-        file->finit(qPrintable(QApplication::arguments().at(0)));
-        file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
+    UndoManager::instance()->init();
+    ComponentModel::instance()->init(&engine);
+    ContentList::instance()->init(&engine);
 
-        Log::setLogLevel(Log::DBG);
+    int result  = a.exec();
 
-        Engine engine(file, argc, argv);
-        engine.init();
-        engine.reloadBundle();
-        Log::overrideHandler(new QLog());
+    asset->destroy();
+    plugin->destroy();
 
-        PluginModel *plugin = PluginModel::instance();
-
-        plugin->init(&engine);
-        plugin->rescan();
-
-        QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
-
-        AssetManager *asset = AssetManager::instance();
-        asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
-        asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
-        asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
-        asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
-        asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
-
-        ImportQueue queue(&engine);
-        QApplication::connect(&queue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
-
-        SceneComposer w(&engine);
-        QApplication::connect(&queue, &ImportQueue::finished, &w, &SceneComposer::show);
-
-        asset->init(&engine);
-        UndoManager::instance()->init();
-
-        ComponentModel::instance()->init(&engine);
-        ContentList::instance()->init(&engine);
-
-        result  = a.exec();
-
-        asset->destroy();
-        plugin->destroy();
-    }
     UndoManager::destroy();
     AssetManager::destroy();
     return result;

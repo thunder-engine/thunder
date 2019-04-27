@@ -106,6 +106,14 @@ void AssetManager::init(Engine *engine) {
 
     m_Formats["map"]    = IConverter::ContentMap;
 
+    m_Paths["{00000000-0101-0000-0000-000000000000}"] = "Scripts";
+}
+
+void AssetManager::rescan() {
+    QStringList paths = m_pDirWatcher->directories();
+    if(!paths.isEmpty()) {
+        m_pDirWatcher->removePaths(paths);
+    }
     QString target  = m_pProjectManager->targetPath();
 
     QFileInfo info(m_pProjectManager->importPath() + "/" + gIndex);
@@ -122,8 +130,7 @@ void AssetManager::init(Engine *engine) {
 #endif
     m_pDirWatcher->addPath(m_pProjectManager->contentPath());
     onDirectoryChanged(m_pProjectManager->contentPath(), force);
-
-    m_Paths["{00000000-0101-0000-0000-000000000000}"] = "Scripts";
+    emit directoryChanged(m_pProjectManager->contentPath());
 
     reimport();
     cleanupBundle();

@@ -182,6 +182,8 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ui->contentList->setItemDelegate(m_pContentDeligate);
     ui->contentList->setModel(m_pContentProxy);
 
+    connect(ContentList::instance(), &ContentList::layoutChanged, this, &ContentBrowser::onContentUpdated);
+
     m_pTreeProxy = new QSortFilterProxyModel(this);
     m_pTreeProxy->setSourceModel(new ContentTree(this));
     m_pTreeProxy->sort(0);
@@ -334,6 +336,10 @@ QImage ContentBrowser::icon(const QString &resource) const {
 
 void ContentBrowser::on_findContent_textChanged(const QString &arg1) {
     m_pContentProxy->setFilterFixedString(arg1);
+}
+
+void ContentBrowser::onContentUpdated() {
+    on_contentTree_clicked(QModelIndex());
 }
 
 void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {

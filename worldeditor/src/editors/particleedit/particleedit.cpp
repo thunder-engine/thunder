@@ -33,6 +33,7 @@ ParticleEdit::ParticleEdit(Engine *engine) :
     CameraCtrl *ctrl = new CameraCtrl(ui->glWidget);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
+    ctrl->init(nullptr);
     ui->glWidget->setController(ctrl);
     ui->glWidget->setScene( Engine::objectCreate<Scene>("Scene") );
     ui->glWidget->setObjectName("Preview");

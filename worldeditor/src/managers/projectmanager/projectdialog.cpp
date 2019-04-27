@@ -8,10 +8,9 @@
 #include <QFileDialog>
 
 ProjectDialog::ProjectDialog(QWidget *parent) :
-    QDialog(parent),
-    m_pModel(new ProjectModel()),
-    ui(new Ui::ProjectDialog)
-{
+        QDialog(parent),
+        ui(new Ui::ProjectDialog),
+        m_pModel(new ProjectModel()) {
     ui->setupUi(this);
 
     setWindowFlags(Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -20,8 +19,7 @@ ProjectDialog::ProjectDialog(QWidget *parent) :
     ui->loadBtn->setEnabled(false);
 }
 
-ProjectDialog::~ProjectDialog()
-{
+ProjectDialog::~ProjectDialog() {
     delete ui;
 }
 

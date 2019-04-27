@@ -74,7 +74,7 @@ void CameraCtrl::update() {
     }
 }
 
-void CameraCtrl::drawHandles() {
+void CameraCtrl::drawHandles(ICommandBuffer *) {
 
 }
 

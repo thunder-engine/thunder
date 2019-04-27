@@ -14,15 +14,9 @@ ContentTree::ContentTree(QObject *parent) :
         BaseObjectModel(parent) {
 
     m_pContent  = new QObject(m_rootItem);
-
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pContent->setObjectName(dir.absolutePath());
-
     m_Folder    = QImage(":/Images/Folder.png").scaled(16, 16);
 
     connect(AssetManager::instance(), SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
-
-    update(dir.absolutePath());
 }
 
 int ContentTree::columnCount(const QModelIndex &parent) const {
@@ -72,13 +66,18 @@ QString ContentTree::dirPath(const QModelIndex &index) const {
 }
 
 void ContentTree::update(const QString &path) {
+    delete m_pContent;
+    m_pContent = new QObject(m_rootItem);
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pContent->setObjectName(dir.absolutePath());
+
     QDir content(path);
     QObject *parent = m_rootItem->findChild<QObject *>(content.absolutePath());
     if(parent) {
         foreach(QObject *it, parent->children()) {
             QDir dir(it->objectName());
             if(!dir.exists()) {
-                it->setParent(NULL);
+                it->setParent(nullptr);
                 delete it;
             }
         }

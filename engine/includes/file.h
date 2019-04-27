@@ -49,7 +49,7 @@ public:
 
     virtual int         _fclose         (_FILE *stream);
 
-    virtual _size_t     _fseek          (_FILE *stream, long int offset, int origin);
+    virtual _size_t     _fseek          (_FILE *stream, uint64_t offset, int origin);
 
     virtual _FILE      *_fopen          (const char *path, const char *mode);
 

@@ -11,6 +11,7 @@ class Scene;
 class Camera;
 
 class QOpenGLWidget;
+class ICommandBuffer;
 
 class CameraCtrl : public QObject {
     Q_OBJECT
@@ -31,7 +32,7 @@ public:
 
     void                                update                      ();
 
-    virtual void                        drawHandles                 ();
+    virtual void                        drawHandles                 (ICommandBuffer *);
 
     void                                setFocusOn                  (Actor *actor, float &bottom);
 

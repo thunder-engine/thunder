@@ -46,7 +46,6 @@ void ContentList::init(Engine *engine) {
     connect(m_pAssetManager, SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
 
     scan(m_pProjectManager->resourcePath());
-    scan(m_pProjectManager->contentPath());
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
@@ -79,7 +78,7 @@ QVariant ContentList::data(const QModelIndex &index, int role) const {
     switch(role) {
         case Qt::EditRole: {
             return info.baseName();
-        } break;
+        }
         case Qt::DisplayRole: {
             switch(index.column()) {
                 case 1:     return info.path();
@@ -87,16 +86,16 @@ QVariant ContentList::data(const QModelIndex &index, int role) const {
                 case 3:     return item->property(qPrintable(gType));
                 default:    return info.baseName();
             }
-        } break;
+        }
         case Qt::SizeHintRole: {
             return QSize(m_DefaultIcon.width() + 16, m_DefaultIcon.height() + 32);
-        } break;
+        }
         case Qt::DecorationRole: {
             QImage img  = item->property(qPrintable(gIcon)).value<QImage>();
             if(!img.isNull()) {
                 return (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height());
             }
-        }
+        } break;
         case Qt::ToolTipRole: {
             return info.path();
         }
@@ -123,7 +122,7 @@ bool ContentList::setData(const QModelIndex &index, const QVariant &value, int r
             QFileInfo dest(path + value.toString() + suff);
             m_pAssetManager->renameResource(dir.relativeFilePath(info.filePath()),
                                             dir.relativeFilePath(dest.filePath()));
-        }
+        } break;
         default: break;
     }
     return true;

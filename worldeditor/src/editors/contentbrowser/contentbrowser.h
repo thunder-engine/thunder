@@ -79,6 +79,8 @@ private slots:
     void                    onItemDelete                    ();
     void                    onItemReimport                  ();
 
+    void                    onContentUpdated                ();
+
     void                    on_contentTree_clicked          (const QModelIndex &index);
     void                    on_contentList_clicked          (const QModelIndex &index);
     void                    on_contentList_doubleClicked    (const QModelIndex &index);

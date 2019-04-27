@@ -15,7 +15,8 @@
 MediaSystem::MediaSystem() :
         ISystem(),
         m_pDevice(nullptr),
-        m_pContext(nullptr) {
+        m_pContext(nullptr),
+        m_Inited(false) {
     PROFILER_MARKER;
 
     AudioSource::registerClassFactory(this);
@@ -32,17 +33,17 @@ MediaSystem::~MediaSystem() {
 
 bool MediaSystem::init() {
     PROFILER_MARKER;
-
-    m_pDevice   = alcOpenDevice(nullptr);
-    if(m_pDevice) {
-        m_pContext  = alcCreateContext(m_pDevice, nullptr);
-        if(alcGetError(m_pDevice) == AL_NO_ERROR) {
-            alcMakeContextCurrent(m_pContext);
-
-            return true;
+    if(!m_Inited) {
+        m_pDevice   = alcOpenDevice(nullptr);
+        if(m_pDevice) {
+            m_pContext  = alcCreateContext(m_pDevice, nullptr);
+            if(alcGetError(m_pDevice) == AL_NO_ERROR) {
+                alcMakeContextCurrent(m_pContext);
+                return m_Inited;
+            }
         }
     }
-    return false;
+    return m_Inited;
 }
 
 const char *MediaSystem::name() const {

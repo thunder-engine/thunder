@@ -23,11 +23,10 @@ public:
 
     ~IconRender                 ();
 
-    void                        init                ();
-
     const QImage                render              (const QString &resource, uint32_t type);
 
 protected:
+    void                        init                ();
 
     QOffscreenSurface          *m_Surface;
 

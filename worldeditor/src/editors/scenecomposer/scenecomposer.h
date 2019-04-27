@@ -23,6 +23,9 @@ class Object;
 class PluginDialog;
 class ProjectManager;
 class SceneView;
+class ImportQueue;
+
+class ProjectModel;
 
 namespace Ui {
     class SceneComposer;
@@ -41,6 +44,8 @@ public:
 
 public slots:
     void                    onObjectSelected                            (Object::ObjectList objects);
+
+    void                    onOpenProject                               (const QString &path);
 
 private:
     void                    updateTitle                                 ();
@@ -70,16 +75,23 @@ private:
 
     QProcess               *m_pBuilder;
 
+    ImportQueue            *m_pQueue;
+
     ByteArray               m_Back;
 
     bool                    mModified;
 
+    ProjectModel           *m_pProjectModel;
+
 private slots:
-    void                    onGLInit                                    ();
+    void                    onNewProject                                ();
+    void                    onImportProject                             ();
 
     void                    onUpdated                                   ();
 
     void                    onUndoRedoUpdated                           ();
+
+    void                    onImportFinished                            ();
 
     void                    readOutput                                  ();
 
@@ -116,6 +128,7 @@ private slots:
 
     void                    on_actionOptions_triggered                  ();
     void                    on_actionAbout_triggered                    ();
+    void                    on_actionStart_triggered                    (bool checked);
 };
 
 #endif // WORLDBUILDER_H

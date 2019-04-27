@@ -4,7 +4,7 @@ Rectangle {
     width: radius * 2
     height: radius * 2
     radius: 6
-    color: theme.blueColor
+    color: theme.blue
 
     property int node: -1
     property int port: -1
@@ -30,14 +30,14 @@ Rectangle {
         }
 
         onEntered: {
-            parent.color = theme.hoverBlueColor
+            parent.color = theme.blueHover
             focusNode = node
             focusPort = port
 
             canvas.requestPaint()
         }
         onExited: {
-            parent.color = theme.blueColor
+            parent.color = theme.blue
             focusNode = -1
             focusPort = -1
 

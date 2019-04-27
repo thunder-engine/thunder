@@ -36,6 +36,7 @@ MeshEdit::MeshEdit(Engine *engine) :
     CameraCtrl *ctrl    = new CameraCtrl(glWidget);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
+    ctrl->init(nullptr);
     glWidget->setController(ctrl);
     glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
     glWidget->setObjectName("Preview");
@@ -102,7 +103,7 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
     prepareScene(settings->destination());
 
     delete m_pEditor;
-    m_pEditor   = new NextObject(m_pMesh, nullptr, this);
+    m_pEditor = new NextObject(m_pMesh, nullptr, this);
     ui->treeView->setObject(dynamic_cast<QObject *>(settings));
 }
 
@@ -126,19 +127,19 @@ void MeshEdit::onGLInit() {
     m_pMesh     = Engine::objectCreate<Actor>("Model", scene);
     m_pMesh->addComponent<StaticMesh>();
 
-    m_pLight    = Engine::objectCreate<Actor>("LightSource", scene);
+    m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     m_pLight->transform()->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
     DirectLight *light  = m_pLight->addComponent<DirectLight>();
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
-    m_pGround   = Engine::objectCreate<Actor>("Ground", scene);
+    m_pGround = Engine::objectCreate<Actor>("Ground", scene);
     m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
     m_pGround->addComponent<StaticMesh>()->setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx"));
 
-    m_pDome     = Engine::objectCreate<Actor>("Dome", scene);
+    m_pDome = Engine::objectCreate<Actor>("Dome", scene);
     m_pDome->transform()->setScale(Vector3(250.0f, 250.0f, 250.0f));
-    StaticMesh *mesh    = m_pDome->addComponent<StaticMesh>();
+    StaticMesh *mesh = m_pDome->addComponent<StaticMesh>();
     if(mesh) {
         //mesh->setMesh(Cache::load<Mesh>(".embedded/sphere.fbx"));
     }

@@ -22,6 +22,7 @@ protected:
     ALCdevice                  *m_pDevice;
     ALCcontext                 *m_pContext;
 
+    bool                        m_Inited;
 };
 
 #endif // MEDIASYSTEM_H

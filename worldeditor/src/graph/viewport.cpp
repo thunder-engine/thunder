@@ -35,14 +35,9 @@ void Viewport::onSetMode() {
 }
 
 void Viewport::initializeGL() {
-    if(m_pController) {
-        m_pController->init(m_pScene);
-        Camera::setCurrent(m_pController->camera());
-    }
-
     SceneView::initializeGL();
-
-    m_pCommandBuffer    = Engine::objectCreate<ICommandBuffer>();
+    PluginModel::instance()->initSystems();
+    m_pCommandBuffer = Engine::objectCreate<ICommandBuffer>();
 }
 
 void Viewport::paintGL() {
@@ -58,9 +53,7 @@ void Viewport::paintGL() {
             m_pCommandBuffer->setScreenProjection();
             m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);
         } else {
-            Handles::beginDraw(m_pCommandBuffer);
-            m_pController->drawHandles();
-            Handles::endDraw();
+            m_pController->drawHandles(m_pCommandBuffer);
         }
     }
 }

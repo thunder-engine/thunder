@@ -25,9 +25,9 @@ TextureEdit::TextureEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl    = new CameraCtrl(ui->Preview);
+    CameraCtrl *ctrl  = new CameraCtrl(ui->Preview);
     ctrl->blockRotations(true);
-
+    ctrl->init(nullptr);
     ui->Preview->setController(ctrl);
     ui->Preview->setScene(Engine::objectCreate<Scene>("Scene"));
     ui->Preview->setWindowTitle("Preview");
@@ -68,7 +68,6 @@ void TextureEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     restoreGeometry(settings.value("texture.geometry").toByteArray());
     ui->centralwidget->restoreState(settings.value("texture.windows"));
-
 }
 
 void TextureEdit::writeSettings() {
@@ -115,7 +114,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
         ui->treeView->setObject(m_pSettings);
     }
 
-    Camera *camera  = Camera::current();
+    Camera *camera = ui->Preview->controller()->camera();
     if(camera) {
         camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         camera->setOrthoHeight(SCALE);
@@ -131,7 +130,7 @@ void TextureEdit::onUpdateTemplate(bool update) {
 
 void TextureEdit::onGLInit() {
     Scene *scene    = ui->Preview->scene();
-    Camera *camera  = Camera::current();
+    Camera *camera  = ui->Preview->controller()->camera();
     if(camera) {
         camera->setOrthographic(true);
     }

@@ -95,10 +95,14 @@ void ObjectCtrl::init(Scene *scene) {
 
     m_pPipeline = new ObjectCtrlPipeline;
     m_pActiveCamera->setPipeline(m_pPipeline);
+
+    Handles::init();
 }
 
-void ObjectCtrl::drawHandles() {
-    CameraCtrl::drawHandles();
+void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
+    CameraCtrl::drawHandles(buffer);
+
+    Handles::beginDraw(buffer);
 
     Vector2 position, size;
     selectGeometry(position, size);
@@ -251,7 +255,7 @@ void ObjectCtrl::drawHandles() {
             m_ObjectsList = { result };
         }
     }
-
+    Handles::endDraw();
 }
 
 void ObjectCtrl::clear(bool signal) {

@@ -49,7 +49,8 @@ AngelSystem::AngelSystem() :
         ISystem(),
         m_pScriptEngine(nullptr),
         m_pScriptModule(nullptr),
-        m_pContext(nullptr) {
+        m_pContext(nullptr),
+        m_Inited(false) {
     PROFILER_MARKER;
 
     AngelScript::registerClassFactory(this);
@@ -86,19 +87,20 @@ AngelSystem::~AngelSystem() {
 
 bool AngelSystem::init() {
     PROFILER_MARKER;
+    if(!m_Inited) {
+        m_pScriptEngine = asCreateScriptEngine();
 
-    m_pScriptEngine = asCreateScriptEngine();
+        int32_t r = m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
+        if(r >= 0) {
+            m_pContext = m_pScriptEngine->CreateContext();
 
-    int32_t r = m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), 0, asCALL_CDECL);
-    if(r >= 0) {
-        m_pContext = m_pScriptEngine->CreateContext();
+            registerClasses(m_pScriptEngine);
 
-        registerClasses(m_pScriptEngine);
-
-        reload();
+            reload();
+        }
+        m_Inited = (r >= 0);
     }
-
-    return (r >= 0);
+    return m_Inited;
 }
 
 const char *AngelSystem::name() const {
@@ -213,7 +215,10 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     }
 
     for(auto &it: ISystem::factories()) {
-        registerMetaType(engine, it.first, ISystem::metaFactory(it.first)->first);
+        auto factory = ISystem::metaFactory(it.first);
+        if(factory) {
+            registerMetaType(engine, it.first, factory->first);
+        }
     }
 
     engine->RegisterInterface("IBehaviour");
