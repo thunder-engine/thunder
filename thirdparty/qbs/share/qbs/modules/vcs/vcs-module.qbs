@@ -1,4 +1,3 @@
-import qbs
 import qbs.File
 import qbs.FileInfo
 import qbs.Process
@@ -51,6 +50,8 @@ Module {
                     found = true;
                     type = "git";
                     metaDataBaseDir = detector.readStdOut().trim();
+                    if (!FileInfo.isAbsolutePath(metaDataBaseDir))
+                        metaDataBaseDir = FileInfo.joinPaths(theRepoDir, metaDataBaseDir);
                     return;
                 }
                 if (detector.exec(tool || "svn",
@@ -115,7 +116,7 @@ Module {
                 proc.setWorkingDirectory(theRepoDir);
                 proc.exec(tool, ["info", "-r", "HEAD", "--show-item", "revision", "--no-newline"],
                           true);
-                repoState = proc.readStdOut();
+                repoState = proc.readStdOut().trim();
                 if (repoState)
                     found = true;
             } finally {
@@ -125,7 +126,7 @@ Module {
     }
 
     Rule {
-        condition: repoState && headerFileName
+        condition: headerFileName
         multiplex: true
         Artifact {
             filePath: FileInfo.joinPaths(product.vcs.includeDir, product.vcs.headerFileName)
@@ -141,7 +142,7 @@ Module {
                 try {
                     f.writeLine("#ifndef VCS_REPO_STATE_H");
                     f.writeLine("#define VCS_REPO_STATE_H");
-                    f.writeLine('#define VCS_REPO_STATE "' + repoState + '"')
+                    f.writeLine('#define VCS_REPO_STATE "' + (repoState ? repoState : "none") + '"')
                     f.writeLine("#endif");
                 } finally {
                     f.close();

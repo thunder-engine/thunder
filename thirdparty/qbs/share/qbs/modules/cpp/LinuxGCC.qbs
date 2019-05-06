@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.Process
 
 UnixGCC {
@@ -42,8 +41,7 @@ UnixGCC {
 
     Probe {
         id: runPathsProbe
-        condition: qbs.targetOS.length === qbs.hostOS.length
-                   && qbs.targetOS.every(function(v, i) { return v === qbs.hostOS[i]; })
+        condition: !_skipAllChecks && qbs.targetPlatform === qbs.hostPlatform
         property stringList systemRunPaths: []
         configure: {
             var paths = [];
@@ -55,8 +53,12 @@ UnixGCC {
                 var line;
                 do {
                     line = ldconfig.readLine();
-                    if (line.charAt(0) === '/')
-                        paths.push(line.slice(0, line.length - 1));
+                    if (line.charAt(0) === '/') {
+                        var colonIndex = line.indexOf(':');
+                        if (colonIndex == -1)
+                            continue;
+                        paths.push(line.slice(0, colonIndex));
+                    }
                 } while (line && line.length > 0)
                 found = true;
                 systemRunPaths = paths;

@@ -5,8 +5,6 @@
 
 class PrefabConverter : public IConverter {
 public:
-    PrefabConverter             () {}
-
     QStringList suffixes() const { return {"fab"}; }
     uint32_t                    contentType                 () const { return ContentPrefab; }
     uint32_t                    type                        () const { return MetaType::type<Actor *>(); }

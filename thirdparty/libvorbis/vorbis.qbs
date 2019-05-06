@@ -37,6 +37,7 @@ Project {
         condition: vorbis.desktop
         files: vorbis.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "ogg-editor" }
         bundle.isBundle: false
 
@@ -64,6 +65,7 @@ Project {
         name: "vorbis"
         files: vorbis.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "ogg" }
         bundle.isBundle: false
 
@@ -85,6 +87,7 @@ Project {
         condition: vorbis.desktop
         files: [ "src/vorbisfile.c" ]
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "ogg-editor" }
         Depends { name: "vorbis-editor" }
         bundle.isBundle: false
@@ -115,6 +118,7 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "ogg" }
         Depends { name: "vorbis" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [  ]

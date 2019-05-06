@@ -6,8 +6,6 @@
 
 class AnimConverter : public IConverter {
 public:
-    AnimConverter               () {}
-
     QStringList                 suffixes                    () const { return {"anim"}; }
     uint32_t                    contentType                 () const { return ContentAnimation; }
     uint32_t                    type                        () const { return MetaType::type<AnimationClip *>(); }

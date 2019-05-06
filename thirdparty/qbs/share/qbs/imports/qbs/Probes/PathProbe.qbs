@@ -28,8 +28,8 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import "path-probe.js" as PathProbeConfigure
+import qbs.ModUtils
 
 Probe {
     // Inputs
@@ -37,10 +37,12 @@ Probe {
     property stringList nameSuffixes
     property var nameFilter
     property pathList pathPrefixes
+    property pathList searchPaths
     property stringList pathSuffixes
-    property pathList platformPaths: hostOS.contains("unix") ? ['/usr', '/usr/local'] : []
-    property pathList environmentPaths
-    property pathList platformEnvironmentPaths
+    property pathList platformSearchPaths: hostOS.contains("unix") ? ['/usr', '/usr/local'] : []
+    property pathList platformPaths
+    property stringList environmentPaths
+    property stringList platformEnvironmentPaths
     property stringList hostOS: qbs.hostOS
     property string pathListSeparator: qbs.pathListSeparator
 
@@ -51,9 +53,16 @@ Probe {
     property string fileName
 
     configure: {
-        var result = PathProbeConfigure.configure(names, nameSuffixes, nameFilter, pathPrefixes,
-                                                  pathSuffixes, platformPaths, environmentPaths,
-                                                  platformEnvironmentPaths, pathListSeparator);
+        if (pathPrefixes)
+            console.warn("PathProbe.pathPrefixes is deprecated, use searchPaths instead");
+        if (platformPaths)
+            console.warn("PathProbe.platformPaths is deprecated, use platformSearchPaths instead");
+        var _searchPaths = ModUtils.concatAll(pathPrefixes, searchPaths);
+        var _platformSearchPaths = ModUtils.concatAll(platformPaths, platformSearchPaths);
+        var result = PathProbeConfigure.configure(names, nameSuffixes, nameFilter, _searchPaths,
+                                                  pathSuffixes, _platformSearchPaths,
+                                                  environmentPaths, platformEnvironmentPaths,
+                                                  pathListSeparator);
         found = result.found;
         candidatePaths = result.candidatePaths;
         path = result.path;

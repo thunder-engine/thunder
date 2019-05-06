@@ -84,7 +84,7 @@ T findClosestParent(QWidget *widget)
             return result;
         widget = widget->parentWidget();
     }
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -185,19 +185,19 @@ T findClosestParent(QWidget *widget)
  * \brief Creates a manager with given \a parent.
  */
 QToolWindowManager::QToolWindowManager(QWidget *parent) :
-    QWidget(parent, 0)
+    QWidget(parent, nullptr)
 {
     d_ptr = new QToolWindowManagerPrivate();
     d_ptr->q_ptr = this;
     Q_D(QToolWindowManager);
     d->slots_object.d = d;
-    d->m_lastUsedArea = 0;
+    d->m_lastUsedArea = nullptr;
     d->m_borderSensitivity = 12;
     d->m_tabsClosable = true;
     QSplitter *testSplitter = new QSplitter();
     d->m_rubberBandLineWidth = testSplitter->handleWidth();
     delete testSplitter;
-    d->m_dragIndicator = new QLabel(0, Qt::ToolTip );
+    d->m_dragIndicator = new QLabel(nullptr, Qt::ToolTip );
     d->m_dragIndicator->setAttribute(Qt::WA_ShowWithoutActivating);
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -363,7 +363,7 @@ void QToolWindowManagerPrivate::addToolWindows(QList<QWidget *> toolWindows,
             continue;
         }
         toolWindow->hide();
-        toolWindow->setParent(0);
+        toolWindow->setParent(nullptr);
         m_toolWindows << toolWindow;
     }
     moveToolWindows(toolWindows, area);
@@ -387,7 +387,7 @@ void QToolWindowManagerPrivate::moveToolWindows(const QWidgetList &toolWindows,
             qWarning("unknown tool window");
             return;
         }
-        if (toolWindow->parentWidget() != 0)
+        if (toolWindow->parentWidget() != nullptr)
             releaseToolWindow(toolWindow);
     }
     if (!area.isReference() && area.areaType() == QToolWindowManager::LastUsedArea && !m_lastUsedArea) {
@@ -442,7 +442,7 @@ void QToolWindowManagerPrivate::moveToolWindows(const QWidgetList &toolWindows,
             parentSplitter->insertWidget(indexInParentSplitter, newArea);
         } else {
             area.widget()->hide();
-            area.widget()->setParent(0);
+            area.widget()->setParent(nullptr);
             QSplitter *splitter = createAndSetupSplitter();
             if (area.referenceType() == QToolWindowManager::ReferenceTopOf ||
                 area.referenceType() == QToolWindowManager::ReferenceBottomOf)
@@ -476,7 +476,7 @@ void QToolWindowManagerPrivate::moveToolWindows(const QWidgetList &toolWindows,
     }
     simplifyLayout();
     foreach (QWidget *toolWindow, toolWindows)
-        emit q->toolWindowVisibilityChanged(toolWindow, toolWindow->parent() != 0);
+        emit q->toolWindowVisibilityChanged(toolWindow, toolWindow->parent() != nullptr);
 }
 
 /*!
@@ -668,7 +668,7 @@ void QToolWindowManager::restoreState(const QVariant &data)
     }
     d->simplifyLayout();
     foreach (QWidget *toolWindow, d->m_toolWindows)
-        emit toolWindowVisibilityChanged(toolWindow, toolWindow->parentWidget() != 0);
+        emit toolWindowVisibilityChanged(toolWindow, toolWindow->parentWidget() != nullptr);
 }
 
 
@@ -695,21 +695,21 @@ void QToolWindowManagerPrivate::releaseToolWindow(QWidget *toolWindow)
     }
     previousArea->removeToolWindow(toolWindow);
     toolWindow->hide();
-    toolWindow->setParent(0);
+    toolWindow->setParent(nullptr);
 }
 
 void QToolWindowManagerPrivate::simplifyLayout()
 {
     foreach (QAbstractToolWindowManagerArea *area, m_areas) {
-        if (area->parentWidget() == 0) {
+        if (area->parentWidget() == nullptr) {
             if (area->toolWindows().isEmpty()) {
                 area->deleteLater();
             }
             continue;
         }
         QSplitter *splitter = qobject_cast<QSplitter*>(area->parentWidget());
-        QSplitter *validSplitter = 0; // least top level splitter that should remain
-        QSplitter *invalidSplitter = 0; //most top level splitter that should be deleted
+        QSplitter *validSplitter = nullptr; // least top level splitter that should remain
+        QSplitter *invalidSplitter = nullptr; //most top level splitter that should be deleted
         while (splitter) {
             if (splitter->count() > 1) {
                 validSplitter = splitter;
@@ -739,12 +739,12 @@ void QToolWindowManagerPrivate::simplifyLayout()
         }
         if (invalidSplitter) {
             invalidSplitter->hide();
-            invalidSplitter->setParent(0);
+            invalidSplitter->setParent(nullptr);
             invalidSplitter->deleteLater();
         }
         if (area->toolWindows().isEmpty()) {
             area->hide();
-            area->setParent(0);
+            area->setParent(nullptr);
             area->deleteLater();
         }
     }

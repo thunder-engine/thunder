@@ -10,6 +10,8 @@
 #include <spirv_glsl.hpp>
 #include <spirv_msl.hpp>
 
+static spirv_cross::CompilerGLSL::Options options;
+
 const TBuiltInResource DefaultResource = {
         /* .MaxLights = */ 32,
         /* .MaxClipPlanes = */ 6,
@@ -170,18 +172,18 @@ public:
         return vector<uint32_t>();
     }
 
+    static void setGlslVersion(uint32_t version, bool es) {
+        options.version = version;
+        options.es = es;
+        options.separate_shader_objects = false;
+    }
+
     static string spvToGlsl(vector<uint32_t> spv) {
         spirv_cross::CompilerGLSL glsl(spv);
-
-        spirv_cross::CompilerGLSL::Options options;
-        options.version = 430;
-        options.es = false;
-        options.separate_shader_objects = true;
         glsl.set_common_options(options);
 
         return glsl.compile();
     }
-
 
     static string spvToMetal(vector<uint32_t> spv) {
         spirv_cross::CompilerMSL msl(spv);

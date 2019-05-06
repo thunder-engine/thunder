@@ -28,8 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
-
 DynamicLibrary {
     type: isForDarwin ? ["loadablemodule"] : base
 }

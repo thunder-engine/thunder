@@ -52,13 +52,13 @@ Project {
             "application.cpp",
             "plugin.cpp" ]
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
 
-        property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.identifierPrefix: "com.thunderengine"
         cpp.cxxLanguageVersion: "c++14"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + project.platform + "/lib"
+            project.sdkPath + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
         ]
 
         cpp.staticLibraries: [
@@ -101,28 +101,24 @@ Project {
             condition: qbs.targetOS[0] === "android"
             Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: "android-21"
+            Android.sdk.packageName: "com.${Company_Name}.${Project_Name}"
+            Android.sdk.manifestFile: "${manifestFile}"
+            Android.sdk.assetsDir: "${assetsPath}"
+            Android.sdk.resourcesDir: "${resourceDir}"
             cpp.dynamicLibraries: [ "log", "android", "EGL", "GLESv3", "z" ]
             cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
+            Depends { productTypes: ["android.nativelibrary"] }
         }
 
         Group {
             name: "Install Application"
             qbs.install: true
             qbs.installDir: ""
-
-            fileTagsFilter: isBundle ? ["bundle.content"] : ["application"]
             qbs.installSourceBase: product.buildDirectory
+            qbs.installPrefix: ""
+
+            fileTagsFilter: isForAndroid ? ["android.apk"] : (isBundle ? ["bundle.content"] : ["application"])
         }
     }
-/*
-    AndroidApk {
-        condition: isAndroid
-        name: "${Project_Name}Apk"
-        packageName: "com.thunderengine.${Project_Name}"
-        Depends { productTypes: ["android.nativelibrary"] }
-        assetsDir: "${assetsPath}"
-        manifestFile: "${manifestFile}"
-    }
-*/
 }
 

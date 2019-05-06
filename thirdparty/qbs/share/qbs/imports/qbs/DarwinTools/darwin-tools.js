@@ -98,8 +98,11 @@ function applePlatformDirectoryName(targetOSList, platformType, version, throwOn
     };
 
     for (var key in _platformMap) {
-        if (targetOSList.contains(key))
-            return _platformMap[key] + (suffixMap[platformType] || "") + (version || "");
+        if (targetOSList.contains(key)) {
+            // there are no MacOSXOS or MacOSXSimulator platforms
+            var suffix = (key !== "macos") ? (suffixMap[platformType] || "") : "";
+            return _platformMap[key] + suffix + (version || "");
+        }
     }
 
     if (throwOnError || throwOnError === undefined)

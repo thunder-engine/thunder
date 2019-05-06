@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import "../../../modules/java/utils.js" as JavaUtils
 
 Probe {

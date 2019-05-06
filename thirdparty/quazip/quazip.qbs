@@ -19,6 +19,7 @@ Project {
         files: quazip.srcFiles
 
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["core"]; }
         bundle.isBundle: false

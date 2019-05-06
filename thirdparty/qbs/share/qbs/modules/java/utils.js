@@ -136,8 +136,10 @@ function findJdkVersion(compilerFilePath) {
     var p = new Process();
     try {
         p.exec(compilerFilePath, ["-version"]);
-        var re = /^javac (([0-9]+(?:\.[0-9]+){2,2})_([0-9]+))$/m;
+        var re = /^javac (([0-9]+(?:\.[0-9]+){2,2})(_([0-9]+))?)$/m;
         var match = p.readStdErr().trim().match(re);
+        if (!match)
+            match = p.readStdOut().trim().match(re);
         if (match !== null)
             return match;
     } finally {
@@ -194,8 +196,10 @@ function javacArguments(product, inputs, overrides) {
     if (languageVersion)
         args.push("-source", languageVersion);
     var bootClassPaths = getModuleProperties(product, "bootClassPaths", overrides);
-    if (bootClassPaths && bootClassPaths.length > 0)
+    if (bootClassPaths && bootClassPaths.length > 0
+            && (!runtimeVersion || Utilities.versionCompare(runtimeVersion, "9") < 0)) {
         args.push("-bootclasspath", bootClassPaths.join(pathListSeparator));
+    }
     if (!getModuleProperty(product, "enableWarnings", overrides))
         args.push("-nowarn");
     if (getModuleProperty(product, "warningsAsErrors", overrides))
@@ -255,8 +259,10 @@ function helperOverrideArgs(product, tool) {
         // compiled with. Both are irrelevant here since the resulting tool will only be run
         // with the same JDK as it was built with, and we know in advance the source is
         // compatible with all Java language versions from 1.6 and above.
-        var jdkVersion = [ModUtils.moduleProperty(product, "compilerVersionMajor"),
-                          ModUtils.moduleProperty(product, "compilerVersionMinor")].join(".");
+        var jdkVersionArray = [product.java.compilerVersionMajor];
+        if (product.java.compilerVersionMajor < 9)
+            jdkVersionArray.push(product.java.compilerVersionMinor);
+        var jdkVersion = jdkVersionArray.join(".");
         overrides["languageVersion"] = jdkVersion;
         overrides["runtimeVersion"] = jdkVersion;
 
@@ -273,7 +279,8 @@ function helperOverrideArgs(product, tool) {
     // Inject the current JDK's runtime classes into the boot class path when building/running the
     // dependency scanner. This is normally not necessary but is important for Android platforms
     // where android.jar is the only JAR on the boot classpath and JSR 199 is unavailable.
-    overrides["bootClassPaths"] = [ModUtils.moduleProperty(product, "runtimeJarPath")].concat(
+    var rtJarPath = product.java.runtimeJarPath;
+    overrides["bootClassPaths"] = (rtJarPath ? [rtJarPath] : []).concat(
                 ModUtils.moduleProperty(product, "bootClassPaths"));
     return overrides;
 }

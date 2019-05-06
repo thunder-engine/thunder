@@ -1,4 +1,4 @@
-#include "nextobject.h"
+ #include "nextobject.h"
 
 #include <QVariant>
 #include <QColor>
@@ -24,7 +24,6 @@
 
 #include "assetmanager.h"
 
-#include <QDebug>
 #include <QMap>
 #include <QMenu>
 

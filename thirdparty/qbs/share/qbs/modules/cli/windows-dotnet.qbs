@@ -1,4 +1,3 @@
-import qbs
 import qbs.Utilities
 
 CLIModule {

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing
 **
-** This file is part of the Qt Build Suite.
+** This file is part of Qbs.
 **
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.File
 import qbs.ModUtils
 import "../../../modules/cpp/gcc.js" as Gcc
@@ -48,6 +47,7 @@ PathProbe {
     // Outputs
     property string architecture
     property string endianness
+    property string targetPlatform
     property stringList includePaths
     property stringList libraryPaths
     property stringList frameworkPaths
@@ -95,6 +95,7 @@ PathProbe {
         // We have to dump the compiler's macros; -dumpmachine is not suitable because it is not
         // always complete (for example, the subarch is not included for arm architectures).
         architecture = ModUtils.guessArchitecture(macros);
+        targetPlatform = ModUtils.guessTargetPlatform(macros);
 
         switch (macros["__BYTE_ORDER__"]) {
             case "__ORDER_BIG_ENDIAN__":

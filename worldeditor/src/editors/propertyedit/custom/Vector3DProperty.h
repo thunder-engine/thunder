@@ -10,7 +10,7 @@ class Vector3DProperty : public Property {
     Q_OBJECT
 
 public:
-    Vector3DProperty                    (const QString& name = QString(), QObject* propertyObject = 0, QObject* parent = 0);
+    Vector3DProperty                    (const QString& name = QString(), QObject* propertyObject = nullptr, QObject* parent = nullptr);
 
     QVariant            value           (int role = Qt::UserRole) const;
 

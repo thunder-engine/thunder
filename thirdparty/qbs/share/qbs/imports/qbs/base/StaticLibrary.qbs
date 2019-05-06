@@ -28,8 +28,15 @@
 **
 ****************************************************************************/
 
-import qbs
-
 Library {
     type: ["staticlibrary"]
+
+    installDir: isBundle ? "Library/Frameworks" : "lib"
+    Group {
+        condition: install
+        fileTagsFilter: isBundle ? "bundle.content" : "staticlibrary";
+        qbs.install: true
+        qbs.installDir: installDir
+        qbs.installSourceBase: isBundle ? destinationDirectory : outer
+    }
 }

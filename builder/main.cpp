@@ -35,6 +35,11 @@ int main(int argc, char *argv[]) {
                 QCoreApplication::translate("main", "directory"));
     parser.addOption(targetDirectoryOption);
 
+    QCommandLineOption platformOption(QStringList() << "p" << "platform",
+                QCoreApplication::translate("main", "Specify the target <platform>."),
+                QCoreApplication::translate("main", "platform"));
+    parser.addOption(platformOption);
+
     parser.process(a);
 
     if(!parser.isSet(sourceFileOption) || !parser.isSet(targetDirectoryOption)) {
@@ -48,7 +53,6 @@ int main(int argc, char *argv[]) {
     Log::setLogLevel(Log::DBG);
     IFile *file = new IFile();
     file->finit(qPrintable(QCoreApplication::arguments().at(0)));
-    file->fsearchPathAdd(qPrintable(mgr->importPath()), true);
 
     Log(Log::INF) << "Starting builder...";
 
@@ -60,7 +64,8 @@ int main(int argc, char *argv[]) {
     Builder builder;
 
     PluginModel::instance()->rescan();
-    AssetManager::instance()->rescan();
+
+    builder.setPlatform(parser.value(platformOption));
 
     return a.exec();
 }

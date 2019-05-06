@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.FileInfo
 
 UnixGCC {
@@ -85,11 +84,12 @@ UnixGCC {
     targetAbi: "qnx" + qnx.version + (qnxTargetArchName === "armv7le" ? "eabi" : "")
 
     buildEnv: qnx.buildEnv
+    probeEnv: buildEnv
 
     setupBuildEnvironment: {
-        for (var key in buildEnv) {
+        for (var key in product.cpp.buildEnv) {
             v = new ModUtils.EnvironmentVariable(key);
-            v.value = buildEnv[key];
+            v.value = product.cpp.buildEnv[key];
             v.set();
         }
     }

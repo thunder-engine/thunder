@@ -216,7 +216,7 @@ def build_dmg(filename, volume_name, settings_file=None, settings={},
                                               bounds[1][1])
     bwsp = {
         'ShowStatusBar': options['show_status_bar'],
-        'WindowBounds': bounds_string.encode('utf-8'),
+        'WindowBounds': bounds_string,
         'ContainerShowSidebar': False,
         'PreviewPaneVisibility': False,
         'SidebarWidth': options['sidebar_width'],
@@ -479,7 +479,7 @@ def build_dmg(filename, volume_name, settings_file=None, settings={},
                         try:
                             subprocess.check_call(
                                 ['/usr/bin/tiffutil', '-cathidpicheck'] +
-                                filter(None, orderedImages) +
+                                list(filter(None, orderedImages)) +
                                 ['-out', background], stdout=output, stderr=output)
                         except Exception as e:
                             output.seek(0)

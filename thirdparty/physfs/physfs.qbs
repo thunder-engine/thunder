@@ -26,6 +26,7 @@ Project {
         condition: physfs.desktop
         files: physfs.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         bundle.isBundle: false
 
@@ -57,6 +58,7 @@ Project {
         name: "physfs"
         files: physfs.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]

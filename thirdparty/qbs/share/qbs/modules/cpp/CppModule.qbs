@@ -33,6 +33,8 @@ import qbs.ModUtils
 import qbs.Utilities
 import qbs.WindowsUtils
 
+import "setuprunenv.js" as SetupRunEnv
+
 Module {
     condition: false
 
@@ -165,24 +167,26 @@ Module {
     property string linkerName
     property string linkerPath: linkerName
     property stringList linkerWrapper
-    property string staticLibraryPrefix
-    property string dynamicLibraryPrefix
-    property string loadableModulePrefix
-    property string executablePrefix
-    property string staticLibrarySuffix
-    property string dynamicLibrarySuffix
-    property string loadableModuleSuffix
-    property string executableSuffix
-    property string debugInfoSuffix
-    property string debugInfoBundleSuffix
-    property string variantSuffix
+    property string staticLibraryPrefix: ""
+    property string dynamicLibraryPrefix: ""
+    property string loadableModulePrefix: ""
+    property string executablePrefix: ""
+    property string staticLibrarySuffix: ""
+    property string dynamicLibrarySuffix: ""
+    property string loadableModuleSuffix: ""
+    property string executableSuffix: ""
+    property string debugInfoSuffix: ""
+    property string debugInfoBundleSuffix: ""
+    property string variantSuffix: ""
+    property string dynamicLibraryImportSuffix: ".lib"
     property bool createSymlinks: true
     property stringList dynamicLibraries // list of names, will be linked with -lname
     property stringList staticLibraries // list of static library files
     property stringList frameworks // list of frameworks, will be linked with '-framework <name>'
     property stringList weakFrameworks // list of weakly-linked frameworks, will be linked with '-weak_framework <name>'
+    property string rpathOrigin
     property stringList rpaths
-    property string sonamePrefix
+    property string sonamePrefix: ""
     property bool useRPaths: true
     property bool useRPathLink
     property string rpathLinkFlag
@@ -241,6 +245,12 @@ Module {
         description: "additional compiler driver flags"
     }
 
+    property stringList driverLinkerFlags
+    PropertyOptions {
+        name: "driverLinkerFlags"
+        description: "additional compiler driver flags used for linking only"
+    }
+
     property bool positionIndependentCode: true
     PropertyOptions {
         name: "positionIndependentCode"
@@ -267,18 +277,25 @@ Module {
         allowedValues: ['default', 'hidden', 'hiddenInlines', 'minimal']
     }
 
-    property string cLanguageVersion
+    property stringList cLanguageVersion
     PropertyOptions {
         name: "cLanguageVersion"
         allowedValues: ["c89", "c99", "c11"]
         description: "The version of the C standard with which the code must comply."
     }
 
-    property string cxxLanguageVersion
+    property stringList cxxLanguageVersion
     PropertyOptions {
         name: "cxxLanguageVersion"
-        allowedValues: ["c++98", "c++11", "c++14"]
+        allowedValues: ["c++98", "c++11", "c++14", "c++17"]
         description: "The version of the C++ standard with which the code must comply."
+    }
+
+    property bool useLanguageVersionFallback
+    PropertyOptions {
+        name: "useLanguageVersionFallback"
+        description: "whether to explicitly use the language standard version fallback values in " +
+                     "compiler command line invocations"
     }
 
     property string cxxStandardLibrary
@@ -336,6 +353,10 @@ Module {
     property stringList targetAssemblerFlags
     property stringList targetDriverFlags
     property stringList targetLinkerFlags
+
+    property bool _skipAllChecks: false // Internal
+
+    property bool validateTargetTriple: true
 
     // TODO: The following four rules could use a convenience base item if rule properties
     //       were available in Artifact items and prepare scripts.
@@ -465,18 +486,12 @@ Module {
                 + "'; expected one of: "
                 + WindowsUtils.knownWindowsVersions().map(function (a) {
                     return '"' + a + '"'; }).join(", ")
-                + ". See https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832.aspx");
+                + ". See https://docs.microsoft.com/en-us/windows/desktop/SysInfo/operating-system-version");
         }
     }
 
     setupRunEnvironment: {
-        var env = qbs.commonRunEnvironment;
-        for (var i in env) {
-            var v = new ModUtils.EnvironmentVariable(i, qbs.pathListSeparator,
-                                                     qbs.hostOS.contains("windows"));
-            v.value = env[i];
-            v.set();
-        }
+        SetupRunEnv.setupRunEnvironment(product, config);
     }
 
     Parameter {

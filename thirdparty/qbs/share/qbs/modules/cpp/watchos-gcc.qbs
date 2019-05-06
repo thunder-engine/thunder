@@ -29,8 +29,6 @@
 **
 ****************************************************************************/
 
-import qbs
-
 DarwinGCC {
     priority: 1
     condition: qbs.targetOS.contains('watchos') &&

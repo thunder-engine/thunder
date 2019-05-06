@@ -71,6 +71,7 @@ Project {
         condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["_GLFW_BUILD_DLL"]
@@ -110,6 +111,7 @@ Project {
         condition: glfw.desktop
         files: glfw.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.includePaths: glfw.incPaths

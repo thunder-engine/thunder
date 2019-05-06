@@ -28,6 +28,7 @@
 **
 ****************************************************************************/
 
+var Cpp = require("cpp.js");
 var File = require("qbs.File");
 var FileInfo = require("qbs.FileInfo");
 var DarwinTools = require("qbs.DarwinTools");
@@ -77,6 +78,8 @@ function collectLibraryDependencies(product, isDarwin) {
     var publicDeps = {};
     var objects = [];
     var objectByFilePath = {};
+    var tagForLinkingAgainstSharedLib = product.qbs.toolchain.contains("mingw")
+            ? "dynamiclibrary_import" : "dynamiclibrary";
 
     function addObject(obj, addFunc) {
         addFunc.call(objects, obj);
@@ -114,6 +117,8 @@ function collectLibraryDependencies(product, isDarwin) {
     }
 
     function addExternalLibs(obj) {
+        if (!obj.cpp)
+            return;
         function ensureArray(a) {
             return Array.isArray(a) ? a : [];
         }
@@ -148,12 +153,18 @@ function collectLibraryDependencies(product, isDarwin) {
 
         var isStaticLibrary = typeof dep.artifacts["staticlibrary"] !== "undefined";
         var isDynamicLibrary = !isStaticLibrary
-                && typeof dep.artifacts["dynamiclibrary"] !== "undefined";
+                && typeof dep.artifacts[tagForLinkingAgainstSharedLib] !== "undefined";
         if (!isStaticLibrary && !isDynamicLibrary)
             return;
 
         var nextIsBelowIndirectDynamicLib = isBelowIndirectDynamicLib || isDynamicLibrary;
         dep.dependencies.forEach(function(depdep) {
+            // If "dep" is an aggregate product, and "depdep" is one of the multiplexed variants
+            // of the same product, we don't want to depend on the multiplexed variants, because
+            // that could mean linking more than one time against the same library. Instead skip
+            // the multiplexed dependency, and depend only on the aggregate one.
+            if (depdep.name === dep.name)
+                return;
             traverse(depdep, nextIsBelowIndirectDynamicLib);
         });
         if (isStaticLibrary) {
@@ -164,10 +175,10 @@ function collectLibraryDependencies(product, isDarwin) {
             }
         } else if (isDynamicLibrary) {
             if (!isBelowIndirectDynamicLib) {
-                addArtifactFilePaths(dep, "dynamiclibrary", addPublicFilePath);
+                addArtifactFilePaths(dep, tagForLinkingAgainstSharedLib, addPublicFilePath);
                 publicDeps[dep.name] = true;
             } else {
-                addArtifactFilePaths(dep, "dynamiclibrary", addPrivateFilePath);
+                addArtifactFilePaths(dep, tagForLinkingAgainstSharedLib, addPrivateFilePath);
             }
         }
     }
@@ -236,7 +247,7 @@ function escapeLinkerFlags(product, inputs, linkerFlags) {
     return linkerFlags;
 }
 
-function linkerFlags(project, product, inputs, output, linkerPath) {
+function linkerFlags(project, product, inputs, outputs, primaryOutput, linkerPath) {
     var libraryPaths = product.cpp.libraryPaths;
     var distributionLibraryPaths = product.cpp.distributionLibraryPaths;
     var isDarwin = product.qbs.targetOS.contains("darwin");
@@ -245,11 +256,14 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
     var weakFrameworks = product.cpp.weakFrameworks;
     var rpaths = (product.cpp.useRPaths !== false) ? product.cpp.rpaths : undefined;
     var systemRunPaths = product.cpp.systemRunPaths || [];
+    var canonicalSystemRunPaths = systemRunPaths.map(function(p) {
+        return File.canonicalFilePath(p);
+    });
     var i, args = additionalCompilerAndLinkerFlags(product);
 
     var escapableLinkerFlags = [];
 
-    if (output.fileTags.contains("dynamiclibrary")) {
+    if (primaryOutput.fileTags.contains("dynamiclibrary")) {
         if (isDarwin) {
             args.push((function () {
                 var tags = ["c", "cpp", "objc", "objcpp", "asm_cpp"];
@@ -267,16 +281,18 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
             var internalVersion = product.cpp.internalVersion;
             if (internalVersion && isNumericProductVersion(internalVersion))
                 args.push("-current_version", internalVersion);
-            escapableLinkerFlags.push("-install_name", UnixUtils.soname(product, output.fileName));
+            escapableLinkerFlags.push("-install_name", UnixUtils.soname(product,
+                                                                        primaryOutput.fileName));
         } else {
-            escapableLinkerFlags.push("-soname=" + UnixUtils.soname(product, output.fileName));
+            escapableLinkerFlags.push("-soname=" + UnixUtils.soname(product,
+                                                                    primaryOutput.fileName));
         }
     }
 
-    if (output.fileTags.contains("loadablemodule"))
+    if (primaryOutput.fileTags.contains("loadablemodule"))
         args.push(isDarwin ? "-bundle" : "-shared");
 
-    if (output.fileTags.containsAny(["dynamiclibrary", "loadablemodule"])) {
+    if (primaryOutput.fileTags.containsAny(["dynamiclibrary", "loadablemodule"])) {
         if (isDarwin)
             escapableLinkerFlags.push("-headerpad_max_install_names");
         else
@@ -311,9 +327,30 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
             escapableLinkerFlags.push("--unresolved-symbols=ignore-all");
     }
 
+    function fixupRPath(rpath) {
+        // iOS, tvOS, watchOS, and others, are fine
+        if (!product.qbs.targetOS.contains("macos"))
+            return rpath;
+
+        // ...as are newer versions of macOS
+        var min = product.cpp.minimumMacosVersion;
+        if (min && Utilities.versionCompare(min, "10.10") >= 0)
+            return rpath;
+
+        // In older versions of dyld, a trailing slash is required
+        if (!rpath.endsWith("/"))
+            return rpath + "/";
+
+        return rpath;
+    }
+
+    function isNotSystemRunPath(p) {
+        return !FileInfo.isAbsolutePath(p) || (!systemRunPaths.contains(p)
+                && !canonicalSystemRunPaths.contains(File.canonicalFilePath(p)));
+    };
     for (i in rpaths) {
-        if (systemRunPaths.indexOf(rpaths[i]) === -1)
-            escapableLinkerFlags.push("-rpath", rpaths[i]);
+        if (isNotSystemRunPath(rpaths[i]))
+            escapableLinkerFlags.push("-rpath", fixupRPath(rpaths[i]));
     }
 
     if (product.cpp.entryPoint)
@@ -356,6 +393,8 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
         allLibraryPaths = allLibraryPaths.uniqueConcat(libraryPaths);
     if (distributionLibraryPaths)
         allLibraryPaths = allLibraryPaths.uniqueConcat(distributionLibraryPaths);
+    if (systemRunPaths.length > 0)
+        allLibraryPaths = allLibraryPaths.filter(isNotSystemRunPath);
     args = args.concat(allLibraryPaths.map(function(path) { return '-L' + path }));
 
     var linkerScripts = inputs.linkerscript
@@ -371,14 +410,15 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
     if (isDarwin && product.cpp.warningLevel === "none")
         args.push('-w');
 
-    args = args.concat(configFlags(product, useCompilerDriverLinker(product, inputs)));
+    var useCompilerDriver = useCompilerDriverLinker(product, inputs);
+    args = args.concat(configFlags(product, useCompilerDriver));
     Array.prototype.push.apply(escapableLinkerFlags, product.cpp.platformLinkerFlags);
     Array.prototype.push.apply(escapableLinkerFlags, product.cpp.linkerFlags);
 
     // Note: due to the QCC response files hack in prepareLinker(), at least one object file or
     // library file must follow the output file path so that QCC has something to process before
     // sending the rest of the arguments through the response file.
-    args.push("-o", output.filePath);
+    args.push("-o", primaryOutput.filePath);
 
     if (inputs.obj)
         args = args.concat(inputs.obj.map(function (obj) { return obj.filePath }));
@@ -465,8 +505,15 @@ function linkerFlags(project, product, inputs, output, linkerPath) {
                                        }));
     }
 
+    var importLibs = outputs.dynamiclibrary_import;
+    if (importLibs)
+        escapableLinkerFlags.push("--out-implib", importLibs[0].filePath);
+
     var escapedLinkerFlags = escapeLinkerFlags(product, inputs, escapableLinkerFlags);
     Array.prototype.push.apply(escapedLinkerFlags, args);
+    var driverLinkerFlags = useCompilerDriver ? product.cpp.driverLinkerFlags : undefined;
+    if (driverLinkerFlags)
+        Array.prototype.push.apply(escapedLinkerFlags, driverLinkerFlags);
     return escapedLinkerFlags;
 }
 
@@ -606,6 +653,80 @@ function handleCpuFeatures(input, flags) {
     }
 }
 
+function standardFallbackValueOrDefault(toolchain, compilerVersion, languageVersion,
+                                        useLanguageVersionFallback) {
+    // NEVER use the fallback values (safety brake for users in case our version map is ever wrong)
+    if (useLanguageVersionFallback === false)
+        return languageVersion;
+
+    // Deprecated, but compatible with older compiler versions.
+    // Note that these versions are the first to support the *value* to the -std= command line
+    // option, not necessarily the first versions where support for that language standard was
+    // considered fully implemented. Tested manually.
+    var languageVersionsMap = {
+        "c++11": {
+            "fallback": "c++0x",
+            "toolchains": [
+                {"name": "xcode", "version": "4.3"},
+                {"name": "clang", "version": "3.0"},
+                {"name": "gcc", "version": "4.7"}
+            ]
+        },
+        "c11": {
+            "fallback": "c1x",
+            "toolchains": [
+                {"name": "xcode", "version": "5.0"},
+                {"name": "clang", "version": "3.1"},
+                {"name": "gcc", "version": "4.7"}
+            ]
+        },
+        "c++14": {
+            "fallback": "c++1y",
+            "toolchains": [
+                {"name": "xcode", "version": "6.3"},
+                {"name": "clang", "version": "3.5"},
+                {"name": "gcc", "version": "4.9"}
+            ]
+        },
+        "c++17": {
+            "fallback": "c++1z",
+            "toolchains": [
+                {"name": "xcode", "version": "9.3"},
+                {"name": "clang", "version": "5.0"},
+                {"name": "gcc", "version": "5.1"}
+            ]
+        },
+        "c++20": {
+            "fallback": "c++2a",
+            "toolchains": [
+                {"name": "xcode"}, // not yet implemented
+                {"name": "clang"}, // not yet implemented
+                {"name": "gcc"} // not yet implemented
+            ]
+        }
+    };
+
+    var m = languageVersionsMap[languageVersion];
+    if (m) {
+        for (var idx = 0; idx < m.toolchains.length; ++idx) {
+            var tc = m.toolchains[idx];
+            if (toolchain.contains(tc.name)) {
+                // If we found our toolchain and it doesn't yet support the language standard
+                // we're requesting, or we're using an older version that only supports the
+                // preliminary flag, use that.
+                if (useLanguageVersionFallback
+                        || !tc.version
+                        || Utilities.versionCompare(compilerVersion, tc.version) < 0)
+                    return m.fallback;
+                break;
+            }
+        }
+    }
+
+    // If we didn't find our toolchain at all, simply use the standard value.
+    return languageVersion;
+}
+
 function compilerFlags(project, product, input, output, explicitlyDependsOn) {
     var i;
 
@@ -702,12 +823,6 @@ function compilerFlags(project, product, input, output, explicitlyDependsOn) {
             args.push('-fvisibility=default')
     }
 
-    var prefixHeaders = input.cpp.prefixHeaders;
-    for (i in prefixHeaders) {
-        args.push('-include');
-        args.push(prefixHeaders[i]);
-    }
-
     if (compilerInfo.language)
         // Only push language arguments if we have to.
         Array.prototype.push.apply(args, compilerInfo.language);
@@ -726,6 +841,12 @@ function compilerFlags(project, product, input, output, explicitlyDependsOn) {
         var pchFilePath = FileInfo.joinPaths(FileInfo.path(pchInput.filePath),
                                              pchInput.completeBaseName);
         args.push('-include', pchFilePath);
+    }
+
+    var prefixHeaders = input.cpp.prefixHeaders;
+    for (i in prefixHeaders) {
+        args.push('-include');
+        args.push(prefixHeaders[i]);
     }
 
     var positionIndependentCode = input.cpp.positionIndependentCode;
@@ -765,26 +886,30 @@ function compilerFlags(project, product, input, output, explicitlyDependsOn) {
         }
     }
 
-    if (tag === "c" || tag === "objc") {
-        var cVersion = input.cpp.cLanguageVersion;
-        if (cVersion) {
-            var gccCVersionsMap = {
-                "c11": "c1x" // Deprecated, but compatible with older gcc versions.
-            };
-            args.push("-std=" + (gccCVersionsMap[cVersion] || cVersion));
+    function currentLanguageVersion(tag) {
+        switch (tag) {
+        case "c":
+        case "objc":
+            var knownValues = ["c11", "c99", "c90", "c89"];
+            return Cpp.languageVersion(input.cpp.cLanguageVersion, knownValues, "C");
+        case "cpp":
+        case "objcpp":
+            knownValues = ["c++20", "c++2a", "c++17", "c++1z",
+                           "c++14", "c++1y", "c++11", "c++0x",
+                           "c++03", "c++98"];
+            return Cpp.languageVersion(input.cpp.cxxLanguageVersion, knownValues, "C++");
         }
     }
 
-    if (tag === "cpp" || tag === "objcpp") {
-        var cxxVersion = input.cpp.cxxLanguageVersion;
-        if (cxxVersion) {
-            var gccCxxVersionsMap = {
-                "c++11": "c++0x", // Deprecated, but compatible with older gcc versions.
-                "c++14": "c++1y"
-            };
-            args.push("-std=" + (gccCxxVersionsMap[cxxVersion] || cxxVersion));
-        }
+    var langVersion = currentLanguageVersion(tag);
+    if (langVersion) {
+        args.push("-std=" + standardFallbackValueOrDefault(product.qbs.toolchain,
+                                                           product.cpp.compilerVersion,
+                                                           langVersion,
+                                                           product.cpp.useLanguageVersionFallback));
+    }
 
+    if (tag === "cpp" || tag === "objcpp") {
         var cxxStandardLibrary = product.cpp.cxxStandardLibrary;
         if (cxxStandardLibrary && product.qbs.toolchain.contains("clang")) {
             args.push("-stdlib=" + cxxStandardLibrary);
@@ -859,18 +984,8 @@ function prepareAssembler(project, product, inputs, outputs, input, output) {
     var cmd = new Command(assemblerPath, args);
     cmd.description = "assembling " + input.fileName;
     cmd.highlight = "compiler";
+    cmd.jobPool = "assembler";
     return cmd;
-}
-
-function nativeConfigString(product) {
-    var props = [];
-    if ((product.multiplexed || product.aggregate) && product.multiplexConfigurationId) {
-        if (product.qbs.targetOS.containsAny(["android", "darwin"]))
-            props.push(product.qbs.architecture);
-        if (product.qbs.targetOS.contains("darwin"))
-            props.push(product.qbs.buildVariant);
-    }
-    return props.length > 0 ? (" (" + props.join(", ") + ")") : "";
 }
 
 function compilerEnvVars(config, compilerInfo)
@@ -914,6 +1029,12 @@ function linkerEnvVars(config, inputs)
     return list;
 }
 
+function setResponseFileThreshold(command, product)
+{
+    if (product.qbs.toolchain.contains("mingw") && product.qbs.hostOS.contains("windows"))
+        command.responseFileThreshold = 10000;
+}
+
 function prepareCompiler(project, product, inputs, outputs, input, output, explicitlyDependsOn) {
     var compilerInfo = effectiveCompilerInfo(product.qbs.toolchain,
                                              input, output);
@@ -923,7 +1044,25 @@ function prepareCompiler(project, product, inputs, outputs, input, output, expli
     var args = compilerFlags(project, product, input, output, explicitlyDependsOn);
     var wrapperArgsLength = 0;
     var wrapperArgs = product.cpp.compilerWrapper;
+    var extraEnv;
     if (wrapperArgs && wrapperArgs.length > 0) {
+
+        // distcc cannot deal with absolute compiler paths (QBS-1336).
+        for (var i = 0; i < wrapperArgs.length; ++i) {
+            if (FileInfo.baseName(wrapperArgs[i]) !== "distcc")
+                continue;
+            if (i === wrapperArgs.length - 1) {
+                if (FileInfo.isAbsolutePath(compilerPath)) {
+                    extraEnv = ["PATH=" + FileInfo.path(compilerPath)];
+                    compilerPath = FileInfo.fileName(compilerPath);
+                }
+            } else if (FileInfo.isAbsolutePath(wrapperArgs[i + 1])) {
+                extraEnv = ["PATH=" + FileInfo.path(FileInfo.path(wrapperArgs[i + 1]))];
+                wrapperArgs[i + 1] = FileInfo.fileName(wrapperArgs[i + 1]);
+            }
+            break;
+        }
+
         wrapperArgsLength = wrapperArgs.length;
         args.unshift(compilerPath);
         compilerPath = wrapperArgs.shift();
@@ -934,11 +1073,14 @@ function prepareCompiler(project, product, inputs, outputs, input, output, expli
     cmd.description = (pchOutput ? 'pre' : '') + 'compiling ' + input.fileName;
     if (pchOutput)
         cmd.description += ' (' + compilerInfo.tag + ')';
-    cmd.description += nativeConfigString(product);
     cmd.highlight = "compiler";
+    cmd.jobPool = "compiler";
     cmd.relevantEnvironmentVariables = compilerEnvVars(input, compilerInfo);
+    if (extraEnv)
+        cmd.environment = extraEnv;
     cmd.responseFileArgumentIndex = wrapperArgsLength;
     cmd.responseFileUsagePrefix = '@';
+    setResponseFileThreshold(cmd, product);
     return cmd;
 }
 
@@ -1042,31 +1184,31 @@ function readSymbolFile(filePath)
 
 function createSymbolCheckingCommands(product, outputs) {
     var commands = [];
-    if (!outputs.dynamiclibrary || !outputs.dynamiclibrary_copy)
+    if (!outputs.dynamiclibrary || !outputs.dynamiclibrary_symbols)
         return commands;
 
-    if (outputs.dynamiclibrary.length !== outputs.dynamiclibrary_copy.length)
+    if (outputs.dynamiclibrary.length !== outputs.dynamiclibrary_symbols.length)
         throw new Error("The number of outputs tagged dynamiclibrary ("
                         + outputs.dynamiclibrary.length + ") must be equal to the number of "
-                        + "outputs tagged dynamiclibrary_copy ("
-                        + outputs.dynamiclibrary_copy.length + ")");
+                        + "outputs tagged dynamiclibrary_symbols ("
+                        + outputs.dynamiclibrary_symbols.length + ")");
 
-    for (var d = 0; d < outputs.dynamiclibrary_copy.length; ++d) {
+    for (var d = 0; d < outputs.dynamiclibrary_symbols.length; ++d) {
         // Update the symbols file if the list of relevant symbols has changed.
         var cmd = new JavaScriptCommand();
         cmd.silent = true;
         cmd.d = d;
         cmd.sourceCode = function() {
             if (outputs.dynamiclibrary[d].qbs.buildVariant
-                    !== outputs.dynamiclibrary_copy[d].qbs.buildVariant)
+                    !== outputs.dynamiclibrary_symbols[d].qbs.buildVariant)
                 throw new Error("Build variant of output tagged dynamiclibrary ("
                                 + outputs.dynamiclibrary[d].qbs.buildVariant + ") is not equal to "
-                                + "build variant of output tagged dynamiclibrary_copy ("
-                                + outputs.dynamiclibrary_copy[d].qbs.buildVariant + ") at index "
+                                + "build variant of output tagged dynamiclibrary_symbols ("
+                                + outputs.dynamiclibrary_symbols[d].qbs.buildVariant + ") at index "
                                 + d);
 
             var libFilePath = outputs.dynamiclibrary[d].filePath;
-            var symbolFilePath = outputs.dynamiclibrary_copy[d].filePath;
+            var symbolFilePath = outputs.dynamiclibrary_symbols[d].filePath;
 
             var newNmResult = getSymbolInfo(product, libFilePath);
             if (!newNmResult.success)
@@ -1128,7 +1270,7 @@ function prepareLinker(project, product, inputs, outputs, input, output) {
 
     var linkerPath = effectiveLinkerPath(product, inputs)
 
-    var args = linkerFlags(project, product, inputs, primaryOutput, linkerPath);
+    var args = linkerFlags(project, product, inputs, outputs, primaryOutput, linkerPath);
     var wrapperArgsLength = 0;
     var wrapperArgs = product.cpp.linkerWrapper;
     if (wrapperArgs && wrapperArgs.length > 0) {
@@ -1152,11 +1294,13 @@ function prepareLinker(project, product, inputs, outputs, input, output) {
     }
 
     cmd = new Command(linkerPath, args);
-    cmd.description = 'linking ' + primaryOutput.fileName + nativeConfigString(product);
+    cmd.description = 'linking ' + primaryOutput.fileName;
     cmd.highlight = 'linker';
+    cmd.jobPool = "linker";
     cmd.relevantEnvironmentVariables = linkerEnvVars(product, inputs);
     cmd.responseFileArgumentIndex = responseFileArgumentIndex;
     cmd.responseFileUsagePrefix = useQnxResponseFileHack ? "-Wl,@" : "@";
+    setResponseFileThreshold(cmd, product);
     commands.push(cmd);
 
     var debugInfo = outputs.debuginfo_app || outputs.debuginfo_dll

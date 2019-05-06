@@ -25,6 +25,7 @@ Project {
         condition: next.desktop
         files: next.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]

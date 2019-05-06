@@ -28,8 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
-
 NativeBinary {
     type: {
         if (qbs.targetOS.contains("ios") && parseInt(cpp.minimumIosVersion, 10) < 8)

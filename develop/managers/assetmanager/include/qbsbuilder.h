@@ -18,6 +18,9 @@ public:
 
     QStringList                     suffixes            () const { return {"cpp", "h"}; }
 
+public slots:
+    void                            builderInit         ();
+
 protected slots:
     void                            readOutput          ();
 
@@ -28,15 +31,13 @@ protected slots:
 protected:
     void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
 
-    void                            builderInit         ();
-
     void                            generateProject     ();
 
     QString                         formatList          (const QStringList &list);
 
     void                            parseLogs           (const QString &log);
 
-    bool                            checkProfile        (const QString &profile);
+    bool                            checkProfiles       ();
 
     QString                         m_Artifact;
 
@@ -47,8 +48,6 @@ protected:
     QProcess                       *m_pProcess;
 
     QStringList                     m_Settings;
-
-    QStringList                     m_Profiles;
 
     ProjectManager                 *m_pMgr;
 

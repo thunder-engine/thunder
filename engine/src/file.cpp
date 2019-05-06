@@ -71,7 +71,7 @@ _FILE *IFile::_fopen(const char *path, const char *mode) {
         default: break;
     }
     if(result == nullptr) {
-        Log(Log::ERR) << "[ FileIO ] Can't open file" << path << PHYSFS_getLastError();
+        Log(Log::ERR) << "[ FileIO ] Can't open file" << path;
     }
     return result;
 }

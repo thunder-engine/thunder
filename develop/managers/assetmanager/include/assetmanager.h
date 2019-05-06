@@ -32,12 +32,9 @@ struct Template {
     QString path;
     uint32_t type;
 };
-
 Q_DECLARE_METATYPE(Template)
 
-typedef QString FilePath;
-
-Q_DECLARE_METATYPE(FilePath)
+typedef QFileInfo FilePath;
 
 class IAssetEditor {
 public:

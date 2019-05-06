@@ -28,22 +28,32 @@
 **
 ****************************************************************************/
 
-import qbs
-
 Product {
     property bool isForAndroid: qbs.targetOS.contains("android")
     property bool isForDarwin: qbs.targetOS.contains("darwin")
+    property bool isBundle: isForDarwin && bundle.isBundle
 
-    Depends { name: "bundle" }
+    property bool install: false
+    property string installDir
+
+    Depends { name: "bundle"; condition: isForDarwin }
 
     aggregate: {
         if (!isForDarwin)
             return false;
-        var archs = qbs.architectures;
-        if (archs && archs.length > 1)
-            return true;
-        var variants = qbs.buildVariants;
-        return variants && variants.length > 1;
+        var multiplexProps = multiplexByQbsProperties;
+        if (!multiplexProps)
+            return false;
+        if (multiplexProps.contains("architectures")) {
+            var archs = qbs.architectures;
+            if (archs && archs.length > 1)
+                return true;
+        }
+        if (multiplexProps.contains("buildVariants")) {
+            var variants = qbs.buildVariants;
+            return variants && variants.length > 1;
+        }
+        return false;
     }
 
     multiplexByQbsProperties: {

@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.DarwinTools
 import qbs.File
 import qbs.FileInfo

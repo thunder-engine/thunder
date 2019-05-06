@@ -1,5 +1,3 @@
-import qbs
-
 Module {
     property bool arm_neon
     property bool arm_vfpv4

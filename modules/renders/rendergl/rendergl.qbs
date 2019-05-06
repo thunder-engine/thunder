@@ -35,6 +35,7 @@ Project {
         condition: rendergl.desktop
         files: rendergl.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "glfw-editor" }
@@ -70,6 +71,7 @@ Project {
         name: "rendergl"
         files: rendergl.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.includePaths: rendergl.incPaths

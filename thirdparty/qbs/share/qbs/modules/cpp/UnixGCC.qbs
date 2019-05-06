@@ -28,21 +28,22 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
+import qbs.File
 
 GenericGCC {
-    condition: false
+    condition: qbs.toolchain && qbs.toolchain.contains("gcc")
+               && qbs.targetOS && qbs.targetOS.contains("unix")
+    priority: -50
+
     staticLibraryPrefix: "lib"
     dynamicLibraryPrefix: "lib"
     loadableModulePrefix: "lib"
-    executablePrefix: ""
     staticLibrarySuffix: ".a"
     dynamicLibrarySuffix: ".so"
-    loadableModuleSuffix: ""
-    executableSuffix: ""
     debugInfoSuffix: ".debug"
     imageFormat: "elf"
-    systemRunPaths: ["/lib", "/usr/lib"]
+    systemRunPaths: ["/lib", "/usr/lib"].filter(function(p) { return File.exists(p); })
+    rpathOrigin: "$ORIGIN"
     useRPathLink: true
     rpathLinkFlag: "-rpath-link="
 }

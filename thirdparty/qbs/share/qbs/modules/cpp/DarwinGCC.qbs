@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.DarwinTools
 import qbs.File
 import qbs.FileInfo
@@ -48,8 +47,9 @@ UnixGCC {
 
     Probes.BinaryProbe {
         id: lipoProbe
+        condition: !_skipAllChecks
         names: [lipoName]
-        platformPaths: {
+        platformSearchPaths: {
             var paths = (xcode.present && xcode.devicePlatformPath)
                     ? [xcode.devicePlatformPath + "/Developer/usr/bin"]
                     : [];
@@ -63,6 +63,7 @@ UnixGCC {
 
     lipoName: "lipo"
     lipoPath: lipoPathPrefix + lipoName
+    property bool enableAggregationRules: product.aggregate && !product.multiplexConfigurationId
 
     targetVendor: "apple"
     targetSystem: "darwin"
@@ -85,6 +86,7 @@ UnixGCC {
     separateDebugInformation: true
     debugInfoBundleSuffix: ".dSYM"
     debugInfoSuffix: ".dwarf"
+    rpathOrigin: "@loader_path"
     useRPathLink: !minimumDarwinVersion
                   || Utilities.versionCompare(minimumDarwinVersion, "10.5") < 0
     rpathLinkFlag: "-L"
@@ -95,9 +97,9 @@ UnixGCC {
     sysrootFlags: sysroot ? ["-isysroot", sysroot] : []
 
     setupBuildEnvironment: {
-        for (var key in buildEnv) {
+        for (var key in product.cpp.buildEnv) {
             v = new ModUtils.EnvironmentVariable(key);
-            v.value = buildEnv[key];
+            v.value = product.cpp.buildEnv[key];
             v.set();
         }
     }
@@ -204,18 +206,19 @@ UnixGCC {
     property bool libcxxAvailable: qbs.toolchain.contains("clang") && cxxLanguageVersion !== "c++98"
 
     Rule {
-        condition: product.aggregate
+        condition: enableAggregationRules
         inputsFromDependencies: ["application"]
         multiplex: true
 
-        outputFileTags: ["bundle.input", "application", "primary", "debuginfo_app"]
+        outputFileTags: ["bundle.input", "application", "primary", "debuginfo_app",
+                         "debuginfo_bundle", "bundle.variant_symlink", "debuginfo_plist"]
         outputArtifacts: Darwin.lipoOutputArtifacts(product, inputs, "application", "app")
 
         prepare: Darwin.prepareLipo.apply(Darwin, arguments)
     }
 
     Rule {
-        condition: product.aggregate
+        condition: enableAggregationRules
         inputsFromDependencies: ["loadablemodule"]
         multiplex: true
 
@@ -227,19 +230,20 @@ UnixGCC {
     }
 
     Rule {
-        condition: product.aggregate
+        condition: enableAggregationRules
         inputsFromDependencies: ["dynamiclibrary"]
         multiplex: true
 
-        outputFileTags: ["bundle.input", "dynamiclibrary", "dynamiclibrary_copy", "primary",
-                         "debuginfo_dll"]
+        outputFileTags: ["bundle.input", "dynamiclibrary", "dynamiclibrary_symbols", "primary",
+                         "debuginfo_dll","debuginfo_bundle","bundle.variant_symlink",
+                         "debuginfo_plist"]
         outputArtifacts: Darwin.lipoOutputArtifacts(product, inputs, "dynamiclibrary", "dll")
 
         prepare: Darwin.prepareLipo.apply(Darwin, arguments)
     }
 
     Rule {
-        condition: product.aggregate
+        condition: enableAggregationRules
         inputsFromDependencies: ["staticlibrary"]
         multiplex: true
 

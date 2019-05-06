@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.BundleTools
 import qbs.DarwinTools
 import qbs.Environment
@@ -48,6 +47,11 @@ Module {
         condition: qbs.targetOS.contains("darwin")
 
         property string xcodeDeveloperPath: xcode.developerPath
+        property var xcodeArchSettings: xcode._architectureSettings
+        property string productTypeIdentifier: _productTypeIdentifier
+        property bool useXcodeBuildSpecs: _useXcodeBuildSpecs
+        property bool isMacOs: qbs.targetOS.contains("macos")
+        property bool xcodePresent: xcode.present
 
         // Note that we include several settings pointing to properties which reference the output
         // of this probe (WRAPPER_NAME, WRAPPER_EXTENSION, etc.). This is to ensure that derived
@@ -74,7 +78,7 @@ Module {
         configure: {
             var specsPath = path;
             var specsSeparator = "-";
-            if (xcodeDeveloperPath && _useXcodeBuildSpecs) {
+            if (xcodeDeveloperPath && useXcodeBuildSpecs) {
                 specsPath = xcodeDeveloperPath
                         + "/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications";
                 specsSeparator = " ";
@@ -83,12 +87,12 @@ Module {
             var reader = new Bundle.XcodeBuildSpecsReader(specsPath,
                                                           specsSeparator,
                                                           additionalSettings,
-                                                          !qbs.targetOS.contains("macos"));
-            var settings = reader.expandedSettings(_productTypeIdentifier,
-                                                   xcode.present
-                                                   ? xcode._architectureSettings
+                                                          !isMacOs);
+            var settings = reader.expandedSettings(productTypeIdentifier,
+                                                   xcodePresent
+                                                   ? xcodeArchSettings
                                                    : {});
-            var chain = reader.productTypeIdentifierChain(_productTypeIdentifier);
+            var chain = reader.productTypeIdentifierChain(productTypeIdentifier);
             if (settings && chain) {
                 xcodeSettings = settings;
                 productTypeIdentifierChain = chain;
@@ -259,7 +263,8 @@ Module {
     Rule {
         condition: qbs.targetOS.contains("darwin")
         multiplex: true
-        inputs: ["qbs", "infoplist", "partial_infoplist"]
+        requiresInputs: false // TODO: The resources property should probably be a tag instead.
+        inputs: ["infoplist", "partial_infoplist"]
 
         outputFileTags: ["bundle.input", "aggregate_infoplist"]
         outputArtifacts: {
@@ -284,8 +289,6 @@ Module {
             var cmd = new JavaScriptCommand();
             cmd.description = "generating Info.plist for " + product.name;
             cmd.highlight = "codegen";
-            cmd.infoPlistFiles = inputs.infoplist;
-            cmd.partialInfoPlistFiles = inputs.partial_infoplist;
             cmd.infoPlist = ModUtils.moduleProperty(product, "infoPlist") || {};
             cmd.processInfoPlist = ModUtils.moduleProperty(product, "processInfoPlist");
             cmd.infoPlistFormat = ModUtils.moduleProperty(product, "infoPlistFormat");
@@ -307,10 +310,12 @@ Module {
                 // Contains the combination of default, file, and in-source keys and values
                 // Start out with the contents of this file as the "base", if given
                 var aggregatePlist = {};
-                for (i in infoPlistFiles) {
-                    aggregatePlist = BundleTools.infoPlistContents(infoPlistFiles[i].filePath);
+
+                for (i = 0; i < (inputs.infoplist || []).length; ++i) {
+                    aggregatePlist =
+                            BundleTools.infoPlistContents(inputs.infoplist[i].filePath);
                     infoPlistFormat = (infoPlistFormat === "same-as-input")
-                            ? BundleTools.infoPlistFormat(infoPlistFiles[i].filePath)
+                            ? BundleTools.infoPlistFormat(inputs.infoplist[i].filePath)
                             : "xml1";
                     break;
                 }
@@ -401,8 +406,10 @@ Module {
                                 + varName + "' when expanding value for key '" + key
                                 + "', defined in one of the following files:\n\t";
                         var allFilePaths = [];
-                        for (i in infoPlistFiles)
-                            allFilePaths.push(infoPlistFiles[i].filePath);
+
+                        for (i = 0; i < (inputs.infoplist || []).length; ++i)
+                            allFilePaths.push(inputs.infoplist[i].filePath);
+
                         if (platformInfoPlist)
                             allFilePaths.push(platformInfoPlist);
                         msg += allFilePaths.join("\n\t") + "\n";
@@ -412,14 +419,18 @@ Module {
                     };
                     aggregatePlist = expander.expand(aggregatePlist, env);
 
-                    // Add keys from partial Info.plists from asset catalogs, XIBs, and storyboards
-                    for (i in partialInfoPlistFiles) {
-                        var partialInfoPlist = BundleTools.infoPlistContents(partialInfoPlistFiles[i].filePath) || {};
+                    // Add keys from partial Info.plists from asset catalogs, XIBs, and storyboards.
+                    for (var j = 0; j < (inputs.partial_infoplist || []).length; ++j) {
+                        var partialInfoPlist =
+                                BundleTools.infoPlistContents(
+                                    inputs.partial_infoplist[j].filePath)
+                                || {};
                         for (key in partialInfoPlist) {
                             if (partialInfoPlist.hasOwnProperty(key))
                                 aggregatePlist[key] = partialInfoPlist[key];
                         }
                     }
+
                 }
 
                 // Anything with an undefined or otherwise empty value should be removed
@@ -500,14 +511,14 @@ Module {
 
         // Make sure the inputs of this rule are only those rules which produce outputs compatible
         // with the type of the bundle being produced.
-        excludedAuxiliaryInputs: Bundle.excludedAuxiliaryInputs(project, product)
+        excludedInputs: Bundle.excludedAuxiliaryInputs(project, product)
 
         outputFileTags: [
             "bundle.content",
             "bundle.symlink.headers", "bundle.symlink.private-headers",
             "bundle.symlink.resources", "bundle.symlink.executable",
             "bundle.symlink.version", "bundle.hpp", "bundle.resource",
-            "bundle.provisioningprofile"]
+            "bundle.provisioningprofile", "bundle.content.copied", "bundle.application-executable"]
         outputArtifacts: {
             var i, artifacts = [];
             if (ModUtils.moduleProperty(product, "isBundle")) {

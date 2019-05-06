@@ -6,27 +6,28 @@
 
 const QString gContent("content");
 const QString gCache("cache");
-const QString gImport("import");
+const QString gImport("assets");
 const QString gIcons("thumbnails");
 const QString gGenerated("generated");
 const QString gPlugins("plugins");
 const QString gType("type");
 const QString gSubItems("subitems");
 const QString gSettings("settings");
+const QString gPlatforms("platforms");
 
 const QString gProjectExt(".forge");
 const QString gMetaExt(".set");
 const QString gIndex("index");
 
-#if _WIN32
+#if defined(Q_OS_WIN)
 const QString gShared(".dll");
 const QString gStatic(".lib");
 const QString gApplication(".exe");
-#elif __APPLE__
+#elif defined(Q_OS_MAC)
 const QString gShared(".dylib");
 const QString gStatic(".a");
 const QString gApplication(".app");
-#elif __linux__
+#elif defined(Q_OS_UNIX)
 const QString gShared(".so");
 const QString gStatic(".a");
 const QString gApplication("");

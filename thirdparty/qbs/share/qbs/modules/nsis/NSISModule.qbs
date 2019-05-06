@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
@@ -123,8 +122,8 @@ Module {
     setupBuildEnvironment: {
         if (toolchainInstallPath) {
             var v = new ModUtils.EnvironmentVariable("PATH", ";", true);
-            v.prepend(toolchainInstallPath);
-            v.prepend(FileInfo.joinPaths(toolchainInstallPath, "bin"));
+            v.prepend(product.nsis.toolchainInstallPath);
+            v.prepend(FileInfo.joinPaths(product.nsis.toolchainInstallPath, "bin"));
             v.set();
         }
     }
@@ -145,6 +144,7 @@ Module {
         id: nsisCompiler
         multiplex: true
         inputs: ["nsi"]
+        auxiliaryInputs: ["installable"]
 
         Artifact {
             fileTags: ["nsissetup", "application"]

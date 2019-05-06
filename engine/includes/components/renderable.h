@@ -10,7 +10,10 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_NOMETHODS()
 
 public:
-    virtual void draw(ICommandBuffer &buffer, int8_t layer) {}
+    virtual void draw(ICommandBuffer &buffer, int8_t layer) {
+        A_UNUSED(buffer);
+        A_UNUSED(layer);
+    }
 
 };
 

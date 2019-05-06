@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
@@ -45,12 +44,13 @@ CppModule {
 
     Probes.BinaryProbe {
         id: compilerPathProbe
-        condition: !toolchainInstallPath
+        condition: !toolchainInstallPath && !_skipAllChecks
         names: ["cl"]
     }
 
     Probes.MsvcProbe {
         id: msvcProbe
+        condition: !_skipAllChecks
         compilerFilePath: compilerPath
         enableDefinesByLanguage: enableCompilerDefinesByLanguage
         preferredArchitecture: qbs.architecture
@@ -109,14 +109,10 @@ CppModule {
                                                                   : undefined
     architecture: qbs.architecture
     endianness: "little"
-    staticLibraryPrefix: ""
-    dynamicLibraryPrefix: ""
-    executablePrefix: ""
     staticLibrarySuffix: ".lib"
     dynamicLibrarySuffix: ".dll"
     executableSuffix: ".exe"
     debugInfoSuffix: ".pdb"
-    property string dynamicLibraryImportSuffix: ".lib"
     imageFormat: "pe"
     Properties {
         condition: product.multiplexByQbsProperties.contains("buildVariants")
@@ -129,9 +125,9 @@ CppModule {
     property var buildEnv: msvcProbe.buildEnv
 
     setupBuildEnvironment: {
-        for (var key in buildEnv) {
+        for (var key in product.cpp.buildEnv) {
             var v = new ModUtils.EnvironmentVariable(key, ';');
-            v.prepend(buildEnv[key]);
+            v.prepend(product.cpp.buildEnv[key]);
             v.set();
         }
     }
@@ -172,14 +168,20 @@ CppModule {
     }
 
     Rule {
-        id: compiler
+        name: "compiler"
         inputs: ["cpp", "c"]
         auxiliaryInputs: ["hpp"]
         explicitlyDependsOn: ["c_pch", "cpp_pch"]
 
-        Artifact {
-            fileTags: ['obj']
-            filePath: Utilities.getHash(input.baseDir) + "/" + input.fileName + ".obj"
+        outputFileTags: ["obj", "intermediate_obj"]
+        outputArtifacts: {
+            var tags = input.fileTags.contains("cpp_intermediate_object")
+                ? ["intermediate_obj"]
+                : ["obj"];
+            return [{
+                fileTags: tags,
+                filePath: Utilities.getHash(input.baseDir) + "/" + input.fileName + ".obj"
+            }];
         }
 
         prepare: {
@@ -193,7 +195,7 @@ CppModule {
     }
 
     Rule {
-        id: applicationLinker
+        name: "applicationLinker"
         multiplex: true
         inputs: ['obj', 'native.pe.manifest']
         inputsFromDependencies: ['staticlibrary', 'dynamiclibrary_import', "debuginfo_app"]
@@ -223,7 +225,7 @@ CppModule {
     }
 
     Rule {
-        id: dynamicLibraryLinker
+        name: "dynamicLibraryLinker"
         multiplex: true
         inputs: ['obj', 'native.pe.manifest']
         inputsFromDependencies: ['staticlibrary', 'dynamiclibrary_import', "debuginfo_dll"]
@@ -258,28 +260,41 @@ CppModule {
     }
 
     Rule {
-        id: libtool
+        name: "libtool"
         multiplex: true
         inputs: ["obj"]
         inputsFromDependencies: ["staticlibrary", "dynamiclibrary_import"]
-
-        Artifact {
-            fileTags: ["staticlibrary"]
-            filePath: product.destinationDirectory + "/" + PathTools.staticLibraryFilePath(product)
+        outputFileTags: ["staticlibrary", "debuginfo_cl"]
+        outputArtifacts: {
+            var artifacts = [
+                {
+                    fileTags: ["staticlibrary"],
+                    filePath: FileInfo.joinPaths(product.destinationDirectory,
+                                                 PathTools.staticLibraryFilePath(product))
+                }
+            ];
+            if (product.cpp.debugInformation && product.cpp.separateDebugInformation) {
+                artifacts.push({
+                    fileTags: ["debuginfo_cl"],
+                    filePath: product.targetName + ".cl" + product.cpp.debugInfoSuffix
+                });
+            }
+            return artifacts;
         }
-
         prepare: {
             var args = ['/nologo']
-            var nativeOutputFileName = FileInfo.toWindowsSeparators(output.filePath)
+            var lib = outputs["staticlibrary"][0];
+            var nativeOutputFileName = FileInfo.toWindowsSeparators(lib.filePath)
             args.push('/OUT:' + nativeOutputFileName)
             for (var i in inputs.obj) {
                 var fileName = FileInfo.toWindowsSeparators(inputs.obj[i].filePath)
                 args.push(fileName)
             }
             var cmd = new Command("lib.exe", args);
-            cmd.description = 'creating ' + output.fileName;
+            cmd.description = 'creating ' + lib.fileName;
             cmd.highlight = 'linker';
-            cmd.workingDirectory = FileInfo.path(output.filePath)
+            cmd.jobPool = "linker";
+            cmd.workingDirectory = FileInfo.path(lib.filePath)
             cmd.responseFileUsagePrefix = '@';
             return cmd;
          }
@@ -331,6 +346,7 @@ CppModule {
             var cmd = new Command('rc', args);
             cmd.description = 'compiling ' + input.fileName;
             cmd.highlight = 'compiler';
+            cmd.jobPool = "compiler";
 
             if (!hasNoLogo) {
                 // Remove the first two lines of stdout. That's the logo.
@@ -367,6 +383,7 @@ CppModule {
                                ModUtils.moduleProperty(input, 'flags', 'asm'));
             var cmd = new Command(product.cpp.assemblerPath, args);
             cmd.description = "assembling " + input.fileName;
+            cmd.jobPool = "assembler";
             cmd.inputFileName = input.fileName;
             cmd.stdoutFilterFunction = function(output) {
                 var lines = output.split("\r\n").filter(function (s) {

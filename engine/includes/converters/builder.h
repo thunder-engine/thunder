@@ -34,7 +34,6 @@ public:
 protected:
     StringMap                       m_Values;
 
-    QString                         m_Suffix;
     QString                         m_Project;
 
     QStringList                     m_Sources;

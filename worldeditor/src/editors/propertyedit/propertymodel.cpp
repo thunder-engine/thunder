@@ -163,7 +163,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
     }
     // finally insert properties for classes containing them
     int i = rowCount();
-    Property *propertyItem  = static_cast<Property *>(parent);
+    Property *propertyItem  = static_cast<Property *>((parent == nullptr) ? m_rootItem : parent);
     beginInsertRows( QModelIndex(), i, i + finalClassList.count() );
     foreach(const QMetaObject *metaObject, finalClassList) {
         QString name    = propertyObject->objectName();

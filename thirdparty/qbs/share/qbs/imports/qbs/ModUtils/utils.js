@@ -498,14 +498,14 @@ var BlackboxOutputArtifactTracker = (function () {
     return BlackboxOutputArtifactTracker;
 })();
 
-function guessArchitecture(m) {
-    function hasAnyOf(m, tokens) {
-        for (var i = 0; i < tokens.length; ++i) {
-            if (m[tokens[i]] !== undefined)
-                return true;
-        }
+function hasAnyOf(m, tokens) {
+    for (var i = 0; i < tokens.length; ++i) {
+        if (m[tokens[i]] !== undefined)
+            return true;
     }
+}
 
+function guessArchitecture(m) {
     var architecture;
     if (m) {
         // based on the search algorithm from qprocessordetection.h in qtbase
@@ -563,11 +563,45 @@ function guessArchitecture(m) {
                 architecture += "64";
         } else if (hasAnyOf(m, ["__AVR__"])) {
             architecture = "avr";
-            var avrSuffix = m["__AVR_ARCH__"];
-            if (avrSuffix)
-                architecture += avrSuffix;
+        } else if (hasAnyOf(m, ["__AVR32__"])) {
+            architecture = "avr32";
         }
     }
 
     return Utilities.canonicalArchitecture(architecture);
+}
+
+function guessTargetPlatform(m) {
+    if (m) {
+        if (hasAnyOf(m, ["__ANDROID__", "ANDROID"]))
+            return "android";
+        if (hasAnyOf(m, ["__QNXNTO__"]))
+            return "qnx";
+        if (hasAnyOf(m, ["__INTEGRITY"]))
+            return "integrity";
+        if (hasAnyOf(m, ["__vxworks"]))
+            return "vxworks";
+        if (hasAnyOf(m, ["__APPLE__"]))
+            return "darwin";
+        if (hasAnyOf(m, ["WIN32", "_WIN32", "__WIN32__", "__NT__"]))
+            return "windows";
+        if (hasAnyOf(m, ["_AIX"]))
+            return "aix";
+        if (hasAnyOf(m, ["hpux", "__hpux"]))
+            return "hpux";
+        if (hasAnyOf(m, ["__sun", "sun"]))
+            return "solaris";
+        if (hasAnyOf(m, ["__linux__", "__linux"]))
+            return "linux";
+        if (hasAnyOf(m, ["__FreeBSD__", "__DragonFly__", "__FreeBSD_kernel__"]))
+            return "freebsd";
+        if (hasAnyOf(m, ["__NetBSD__"]))
+            return "netbsd";
+        if (hasAnyOf(m, ["__OpenBSD__"]))
+            return "openbsd";
+        if (hasAnyOf(m, ["__GNU__"]))
+            return "hurd";
+        if (hasAnyOf(m, ["__HAIKU__"]))
+            return "haiku";
+    }
 }

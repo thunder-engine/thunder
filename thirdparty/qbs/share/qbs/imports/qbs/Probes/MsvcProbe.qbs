@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
@@ -82,6 +81,8 @@ PathProbe {
         var inclPath = FileInfo.joinPaths(clParentDir, "INCLUDE");
         if (!File.exists(inclPath))
             inclPath = FileInfo.joinPaths(clParentDir, "..", "INCLUDE");
+        if (!File.exists(inclPath))
+            inclPath = FileInfo.joinPaths(clParentDir, "..", "..", "INCLUDE");
         if (File.exists(inclPath))
             includePaths = [inclPath];
 

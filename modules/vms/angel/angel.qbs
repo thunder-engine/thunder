@@ -39,6 +39,7 @@ Project {
             return sources
         }
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "angelscript-editor" }
@@ -73,6 +74,7 @@ Project {
         name: "angel"
         files: angel.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.includePaths: angel.incPaths

@@ -36,6 +36,7 @@ Project {
             return sources
         }
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "ogg-editor" }
@@ -75,6 +76,7 @@ Project {
         name: "media"
         files: media.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.includePaths: media.incPaths

@@ -15,6 +15,7 @@ Project {
         condition: angelscript.desktop
         files: angelscript.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [ "ANGELSCRIPT_EXPORT" ]

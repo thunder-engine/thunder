@@ -24,6 +24,7 @@ Project {
         "../develop/managers/projectmanager/include",
         "../develop/managers/assetmanager/include",
         "../develop/managers/pluginmanager/include",
+        "../develop/managers/settingsmanager/",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
         "../modules/media/includes",
@@ -47,6 +48,7 @@ Project {
         files: worldEditor.srcFiles
 
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "vorbis-editor" }

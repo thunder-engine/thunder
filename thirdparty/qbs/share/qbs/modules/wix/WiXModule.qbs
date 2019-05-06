@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
@@ -152,9 +151,9 @@ Module {
     }
 
     setupBuildEnvironment: {
-        var v = new ModUtils.EnvironmentVariable("PATH", qbs.pathListSeparator, true);
-        v.prepend(toolchainInstallPath);
-        v.prepend(toolchainInstallRoot);
+        var v = new ModUtils.EnvironmentVariable("PATH", product.qbs.pathListSeparator, true);
+        v.prepend(product.wix.toolchainInstallPath);
+        v.prepend(product.wix.toolchainInstallRoot);
         v.set();
     }
 
@@ -179,7 +178,7 @@ Module {
     Rule {
         id: candleCompiler
         inputs: ["wxs"]
-        auxiliaryInputs: ['wxi']
+        auxiliaryInputs: ["wxi", "installable"]
 
         Artifact {
             fileTags: ["wixobj"]
@@ -334,6 +333,7 @@ Module {
         id: lightLinker
         multiplex: true
         inputs: ["wixobj", "wxl"]
+        auxiliaryInputs: ["installable"]
         inputsFromDependencies: product.type.contains("wixsetup") ? ["msi"] : []
 
         outputArtifacts: {

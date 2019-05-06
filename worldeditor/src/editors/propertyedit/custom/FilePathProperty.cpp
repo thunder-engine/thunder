@@ -43,7 +43,7 @@ bool FilePathProperty::setEditorData(QWidget *editor, const QVariant &data) {
 QVariant FilePathProperty::editorData(QWidget *editor) {
     PathEdit *e = dynamic_cast<PathEdit *>(editor);
     if(e) {
-        return QVariant(e->data());
+        return QVariant::fromValue(e->data());
     }
     return Property::editorData(editor);
 }

@@ -28,25 +28,27 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
 import qbs.PathTools
 import qbs.Probes
 import qbs.Process
+import qbs.TextFile
 import qbs.Utilities
 import qbs.UnixUtils
 import qbs.WindowsUtils
 import 'gcc.js' as Gcc
 
 CppModule {
-    condition: false
+    condition: qbs.toolchain && qbs.toolchain.contains("gcc")
+    priority: -100
 
-    Probes.BinaryProbe {
+    Probes.GccBinaryProbe {
         id: compilerPathProbe
-        condition: !toolchainInstallPath
-        names: [toolchainPrefix ? toolchainPrefix + compilerName : compilerName]
+        condition: !toolchainInstallPath && !_skipAllChecks
+        _compilerName: compilerName
+        _toolchainPrefix: toolchainPrefix
     }
 
     // Find the version as early as possible in case other things depend on it,
@@ -55,21 +57,23 @@ CppModule {
     Probes.GccVersionProbe {
         id: gccVersionProbe
         compilerFilePath: compilerPath
-        environment: buildEnv
+        environment: probeEnv
     }
 
     Probes.GccProbe {
         id: gccProbe
+        condition: !_skipAllChecks
         compilerFilePathByLanguage: compilerPathByLanguage
         enableDefinesByLanguage: enableCompilerDefinesByLanguage
-        environment: buildEnv
+        environment: probeEnv
         flags: targetDriverFlags.concat(sysrootFlags)
         _sysroot: sysroot
     }
+    property var probeEnv
 
     Probes.BinaryProbe {
         id: binutilsProbe
-        condition: !File.exists(archiverPath)
+        condition: !File.exists(archiverPath) && !_skipAllChecks
         names: Gcc.toolNames([archiverName, assemblerName, linkerName, nmName,
                               objcopyName, stripName], toolchainPrefix)
     }
@@ -83,6 +87,7 @@ CppModule {
 
     Probe {
         id: nmProbe
+        condition: !_skipAllChecks
         property string theNmPath: nmPath
         property bool hasDynamicOption
         configure: {
@@ -123,7 +128,9 @@ CppModule {
     property string targetSystem: "unknown"
     property string targetAbi: "unknown"
 
-    property string toolchainPrefix
+    property string toolchainPrefix: compilerPathProbe.found
+                                     ? compilerPathProbe.tcPrefix
+                                     : undefined
     property string toolchainInstallPath: compilerPathProbe.found ? compilerPathProbe.path
                                                                   : undefined
     property string binutilsPath: binutilsProbe.found ? binutilsProbe.path : toolchainInstallPath
@@ -165,6 +172,18 @@ CppModule {
             + "which means we do not care about undefined symbols being added or removed. "
             + "If you do care about that, e.g. because you link dependent products with an option "
             + "such as \"--no-undefined\", then you should set this property to \"strict\"."
+    }
+
+    property string linkerVariant
+    PropertyOptions {
+        name: "linkerVariant"
+        allowedValues: ["bfd", "gold", "lld"]
+        description: "Allows to specify the linker variant. Maps to gcc's and clang's -fuse-ld "
+                     + "option."
+    }
+    Properties {
+        condition: linkerVariant
+        driverLinkerFlags: "-fuse-ld=" + linkerVariant
     }
 
     property string toolchainPathPrefix: Gcc.pathPrefix(toolchainInstallPath, toolchainPrefix)
@@ -262,6 +281,8 @@ CppModule {
     }
 
     validate: {
+        if (_skipAllChecks)
+            return;
         if (!File.exists(compilerPath)) {
             var pathMessage = FileInfo.isAbsolutePath(compilerPath)
                     ? "at '" + compilerPath + "'"
@@ -273,43 +294,76 @@ CppModule {
                                        + "cpp.compilerName instead.");
         }
 
-        var validator = new ModUtils.PropertyValidator("cpp");
-        validator.setRequiredProperty("architecture", architecture,
-                                      "you might want to re-run 'qbs-setup-toolchains'");
+        var isWrongTriple = false;
+
         if (gccProbe.architecture) {
-            validator.addCustomValidator("architecture", architecture, function (value) {
-                return Utilities.canonicalArchitecture(architecture) === Utilities.canonicalArchitecture(gccProbe.architecture);
-            }, "'" + architecture + "' differs from the architecture produced by this compiler (" +
-            gccProbe.architecture +")");
-        } else {
+            if (Utilities.canonicalArchitecture(architecture)
+                    !== Utilities.canonicalArchitecture(gccProbe.architecture))
+                isWrongTriple = true;
+        } else if (architecture) {
             // This is a warning and not an error on the rare chance some new architecture comes
             // about which qbs does not know about the macros of. But it *might* still work.
-            if (architecture)
-                console.warn("Unknown architecture '" + architecture + "' " +
-                             "may not be supported by this compiler.");
+            console.warn("Unknown architecture '" + architecture + "' " +
+                         "may not be supported by this compiler.");
         }
 
         if (gccProbe.endianness) {
-            validator.addCustomValidator("endianness", endianness, function (value) {
-                return endianness === gccProbe.endianness;
-            }, "'" + endianness + "' differs from the endianness produced by this compiler (" +
-            gccProbe.endianness + ")");
+            if (endianness !== gccProbe.endianness)
+                isWrongTriple = true;
         } else if (endianness) {
-            console.warn("Could not detect endianness ('" + endianness + "' given)");
+            console.warn("Could not detect endianness ('"
+                         + endianness + "' given)");
+        }
+
+        if (gccProbe.targetPlatform) {
+            // Can't differentiate Darwin OSes at the compiler level alone
+            if (gccProbe.targetPlatform === "darwin"
+                    ? !qbs.targetOS.contains("darwin")
+                    : qbs.targetPlatform !== gccProbe.targetPlatform)
+                isWrongTriple = true;
+        } else if (qbs.targetPlatform) {
+            console.warn("Could not detect target platform ('"
+                         + qbs.targetPlatform + "' given)");
+        }
+
+        if (isWrongTriple) {
+            var realTriple = [
+                Utilities.canonicalArchitecture(gccProbe.architecture),
+                gccProbe.targetPlatform,
+                gccProbe.endianness ? gccProbe.endianness + "-endian" : undefined
+            ].join("-");
+            var givenTriple = [
+                Utilities.canonicalArchitecture(architecture),
+                qbs.targetPlatform,
+                endianness ? endianness + "-endian" : undefined
+            ].join("-");
+            var msg = "The selected compiler '" + compilerPath + "' produces code for '" +
+                    realTriple + "', but '" + givenTriple + "' was given, which is incompatible.";
+            if (validateTargetTriple) {
+                msg +=  " If you are absolutely certain that your configuration is correct " +
+                        "(check the values of the qbs.architecture, qbs.targetPlatform, " +
+                        "and qbs.endianness properties) and that this message has been " +
+                        "emitted in error, set the cpp.validateTargetTriple property to " +
+                        "false. However, you should consider submitting a bug report in any " +
+                        "case.";
+                throw ModUtils.ModuleError(msg);
+            } else {
+                console.warn(msg);
+            }
         }
 
         var validateFlagsFunction = function (value) {
             if (value) {
                 for (var i = 0; i < value.length; ++i) {
-                    if (["-target", "-triple", "-arch"].contains(value[i])
-                            || value[i].startsWith("-march="))
+                    if (["-target", "-triple", "-arch"].contains(value[i]))
                         return false;
                 }
             }
             return true;
         }
 
-        var msg = "'-target', '-triple', '-arch' and '-march' cannot appear in flags; set qbs.architecture instead";
+        var validator = new ModUtils.PropertyValidator("cpp");
+        var msg = "'-target', '-triple' and '-arch' cannot appear in flags; set qbs.architecture instead";
         validator.addCustomValidator("assemblerFlags", assemblerFlags, validateFlagsFunction, msg);
         validator.addCustomValidator("cppFlags", cppFlags, validateFlagsFunction, msg);
         validator.addCustomValidator("cFlags", cFlags, validateFlagsFunction, msg);
@@ -347,7 +401,7 @@ CppModule {
                                        || product.multiplexConfigurationId
 
     Rule {
-        id: dynamicLibraryLinker
+        name: "dynamicLibraryLinker"
         condition: product.cpp.shouldLink
         multiplex: true
         inputs: {
@@ -358,11 +412,12 @@ CppModule {
             }
             return tags;
         }
-        inputsFromDependencies: ["dynamiclibrary_copy", "staticlibrary"]
+        inputsFromDependencies: ["dynamiclibrary_symbols", "staticlibrary", "dynamiclibrary_import"]
 
         outputFileTags: [
             "bundle.input",
-            "dynamiclibrary", "dynamiclibrary_symlink", "dynamiclibrary_copy", "debuginfo_dll"
+            "dynamiclibrary", "dynamiclibrary_symlink", "dynamiclibrary_symbols", "debuginfo_dll",
+            "debuginfo_bundle","dynamiclibrary_import", "debuginfo_plist",
         ]
         outputArtifacts: {
             var artifacts = [{
@@ -374,12 +429,19 @@ CppModule {
                                      + PathTools.bundleExecutableFilePath(product)
                 }
             }];
-            if (!product.qbs.toolchain.contains("mingw")) {
+            if (product.qbs.toolchain.contains("mingw")) {
+                artifacts.push({
+                    fileTags: ["dynamiclibrary_import"],
+                    filePath: FileInfo.joinPaths(product.destinationDirectory,
+                                                 PathTools.importLibraryFilePath(product)),
+                    alwaysUpdated: false
+                });
+            } else {
                 // List of libfoo's public symbols for smart re-linking.
                 artifacts.push({
                     filePath: product.destinationDirectory + "/.sosymbols/"
                               + PathTools.dynamicLibraryFilePath(product),
-                    fileTags: ["dynamiclibrary_copy"],
+                    fileTags: ["dynamiclibrary_symbols"],
                     alwaysUpdated: false,
                 });
             }
@@ -409,11 +471,11 @@ CppModule {
     }
 
     Rule {
-        id: staticLibraryLinker
+        name: "staticLibraryLinker"
         condition: product.cpp.shouldLink
         multiplex: true
         inputs: ["obj", "linkerscript"]
-        inputsFromDependencies: ["dynamiclibrary", "staticlibrary"]
+        inputsFromDependencies: ["dynamiclibrary_symbols", "dynamiclibrary_import", "staticlibrary"]
 
         outputFileTags: ["bundle.input", "staticlibrary", "c_staticlibrary", "cpp_staticlibrary"]
         outputArtifacts: {
@@ -445,13 +507,14 @@ CppModule {
             var cmd = new Command(product.cpp.archiverPath, args);
             cmd.description = 'creating ' + output.fileName;
             cmd.highlight = 'linker'
+            cmd.jobPool = "linker";
             cmd.responseFileUsagePrefix = '@';
             return cmd;
         }
     }
 
     Rule {
-        id: loadableModuleLinker
+        name: "loadableModuleLinker"
         condition: product.cpp.shouldLink
         multiplex: true
         inputs: {
@@ -462,9 +525,10 @@ CppModule {
             }
             return tags;
         }
-        inputsFromDependencies: ["dynamiclibrary_copy", "staticlibrary"]
+        inputsFromDependencies: ["dynamiclibrary_symbols", "dynamiclibrary_import", "staticlibrary"]
 
-        outputFileTags: ["bundle.input", "loadablemodule", "debuginfo_loadablemodule"]
+        outputFileTags: ["bundle.input", "loadablemodule", "debuginfo_loadablemodule",
+                         "debuginfo_bundle","debuginfo_plist"]
         outputArtifacts: {
             var app = {
                 filePath: FileInfo.joinPaths(product.destinationDirectory,
@@ -488,7 +552,7 @@ CppModule {
     }
 
     Rule {
-        id: applicationLinker
+        name: "applicationLinker"
         condition: product.cpp.shouldLink
         multiplex: true
         inputs: {
@@ -499,9 +563,10 @@ CppModule {
             }
             return tags;
         }
-        inputsFromDependencies: ["dynamiclibrary_copy", "staticlibrary"]
+        inputsFromDependencies: ["dynamiclibrary_symbols", "dynamiclibrary_import", "staticlibrary"]
 
-        outputFileTags: ["bundle.input", "application", "debuginfo_app"]
+        outputFileTags: ["bundle.input", "application", "debuginfo_app","debuginfo_bundle",
+                         "debuginfo_plist"]
         outputArtifacts: {
             var app = {
                 filePath: FileInfo.joinPaths(product.destinationDirectory,
@@ -524,14 +589,18 @@ CppModule {
     }
 
     Rule {
-        id: compiler
+        name: "compiler"
         inputs: ["cpp", "c", "objcpp", "objc", "asm_cpp"]
         auxiliaryInputs: ["hpp"]
         explicitlyDependsOn: ["c_pch", "cpp_pch", "objc_pch", "objcpp_pch"]
 
-        outputFileTags: ["obj", "c_obj", "cpp_obj"]
+        outputFileTags: ["obj", "c_obj", "cpp_obj", "intermediate_obj"]
         outputArtifacts: {
-            var tags = ["obj"];
+            var tags;
+            if (input.fileTags.contains("cpp_intermediate_object"))
+                tags = ["intermediate_obj"];
+            else
+                tags = ["obj"];
             if (inputs.c || inputs.objc)
                 tags.push("c_obj");
             if (inputs.cpp || inputs.objcpp)
@@ -549,7 +618,7 @@ CppModule {
     }
 
     Rule {
-        id: assembler
+        name: "assembler"
         inputs: ["asm"]
 
         Artifact {
@@ -627,5 +696,44 @@ CppModule {
     FileTagger {
         patterns: "*.sx"
         fileTags: ["asm_cpp"]
+    }
+
+    Scanner {
+        inputs: ["linkerscript"]
+        recursive: true
+        scan: {
+            console.debug("scanning linkerscript " + filePath + " for dependencies");
+            var retval = [];
+            var linkerScript = new TextFile(filePath, TextFile.ReadOnly);
+            var regexp = /[\s]*INCLUDE[\s]+(\S+).*/ // "INCLUDE filename"
+            var match;
+            while (!linkerScript.atEof()) {
+                match = regexp.exec(linkerScript.readLine());
+                if (match) {
+                    var dependencyFileName = match[1];
+                    retval.push(dependencyFileName);
+                    console.debug("linkerscript " + filePath + " depends on " + dependencyFileName);
+                }
+            }
+            linkerScript.close();
+            return retval;
+        }
+        searchPaths: {
+            var retval = [];
+            for (var i = 0; i < (product.cpp.libraryPaths || []).length; i++)
+                retval.push(product.cpp.libraryPaths[i]);
+            var regexp = /[\s]*SEARCH_DIR\((\S+)\).*/ // "SEARCH_DIR(path)"
+            var match;
+            var linkerScript = new TextFile(input.filePath, TextFile.ReadOnly);
+            while (!linkerScript.atEof()) {
+                match = regexp.exec(linkerScript.readLine());
+                if(match) {
+                    var additionalPath = match[1];
+                    retval.push(additionalPath);
+                }
+            }
+            linkerScript.close();
+            return retval;
+        }
     }
 }

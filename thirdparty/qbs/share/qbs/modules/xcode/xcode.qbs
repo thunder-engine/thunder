@@ -1,4 +1,3 @@
-import qbs
 import qbs.BundleTools
 import qbs.Environment
 import qbs.File
@@ -223,14 +222,14 @@ Module {
     }
 
     setupBuildEnvironment: {
-        var v = new ModUtils.EnvironmentVariable("PATH", qbs.pathListSeparator, false);
-        v.prepend(platformPath + "/Developer/usr/bin");
-        v.prepend(developerPath + "/usr/bin");
+        var v = new ModUtils.EnvironmentVariable("PATH", product.qbs.pathListSeparator, false);
+        v.prepend(product.xcode.platformPath + "/Developer/usr/bin");
+        v.prepend(product.xcode.developerPath + "/usr/bin");
         v.set();
 
-        for (var key in buildEnv) {
+        for (var key in product.xcode.buildEnv) {
             v = new ModUtils.EnvironmentVariable(key);
-            v.value = buildEnv[key];
+            v.value = product.xcode.buildEnv[key];
             v.set();
         }
     }

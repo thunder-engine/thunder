@@ -17,6 +17,7 @@ Project {
         condition: spirvcross.desktop
         files: spirvcross.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [ ]

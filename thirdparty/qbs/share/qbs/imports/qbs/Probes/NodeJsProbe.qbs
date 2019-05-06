@@ -28,13 +28,12 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.Environment
 import qbs.FileInfo
 
 BinaryProbe {
     names: ["node", "nodejs"]
-    platformPaths: {
+    platformSearchPaths: {
         var paths = base;
         if (qbs.hostOS.contains("windows")) {
             var env32 = Environment.getEnv("PROGRAMFILES(X86)");

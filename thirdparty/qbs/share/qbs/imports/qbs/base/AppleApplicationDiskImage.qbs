@@ -41,7 +41,6 @@ AppleDiskImage {
 
     Rule {
         multiplex: true
-        inputs: ["qbs"]
         outputFileTags: ["dmg.input", "dmg.input.symlink"]
         outputArtifacts: Array.prototype.map.call(product.symlinks, function (symlink) {
             var symlinkTarget = symlink.split(':')[0];

@@ -4,11 +4,15 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 #include <QMetaProperty>
 #include <QCoreApplication>
 
 #include "config.h"
+
+#include "platforms/desktop.h"
+#include "platforms/android.h"
 
 const QString gCompany("Company");
 const QString gProject("ProjectId");
@@ -20,7 +24,7 @@ ProjectManager::ProjectManager() {
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
-#if defined(__APPLE__)
+#if defined(Q_OS_MAC)
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
@@ -30,7 +34,12 @@ ProjectManager::ProjectManager() {
     m_ResourcePath  = QFileInfo(sdkPath() + "/resources");
     m_TemplatePath  = QFileInfo(resourcePath() + "/editor/templates");
 
-    m_MyProjectsPath    = QFileInfo(dir.absolutePath());
+    m_MyProjectsPath  = QFileInfo(dir.absolutePath());
+
+    setSupportedPlatform(new DesktopPlatform);
+    setSupportedPlatform(new AndroidPlatform);
+
+    setCurrentPlatform();
 }
 
 ProjectManager *ProjectManager::instance() {
@@ -59,19 +68,21 @@ void ProjectManager::init(const QString &project, const QString &target) {
     m_ProjectName   = m_ProjectPath.completeBaseName();
 
     m_ContentPath   = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gContent);
-    m_CachePath     = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gCache);
     m_PluginsPath   = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlugins);
+    m_CachePath     = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gCache);
 
-    m_ImportPath    = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gImport);
     m_IconPath      = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gIcons);
     m_GeneratedPath = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gGenerated);
 
+    m_ManifestFile  = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlatforms + "/android/AndroidManifest.xml");
+
     QDir dir;
     dir.mkpath(m_ContentPath.absoluteFilePath());
-    dir.mkpath(m_ImportPath.absoluteFilePath());
     dir.mkpath(m_IconPath.absoluteFilePath());
     dir.mkpath(m_GeneratedPath.absoluteFilePath());
     dir.mkpath(m_PluginsPath.absoluteFilePath());
+
+    setCurrentPlatform();
 }
 
 void ProjectManager::loadSettings() {
@@ -82,7 +93,7 @@ void ProjectManager::loadSettings() {
 
         if(!doc.isNull()) {
             const QMetaObject *meta = metaObject();
-            QJsonObject object      = doc.object();
+            QJsonObject object  = doc.object();
             foreach(const QString &it, object.keys()) {
                 int index   = meta->indexOfProperty(qPrintable(it));
                 if(index > -1) {
@@ -95,13 +106,22 @@ void ProjectManager::loadSettings() {
                     property.write(this, value);
                 }
             }
-
-            QJsonObject::iterator it    = object.find(gProject);
-            if(it != doc.object().end()) {
-                m_ProjectId = it.value().toString();
-            } else {
-                m_ProjectId = QUuid::createUuid().toString();
-                saveSettings();
+            {
+                QJsonObject::iterator it = object.find(gProject);
+                if(it != doc.object().end()) {
+                    m_ProjectId = it.value().toString();
+                } else {
+                    m_ProjectId = QUuid::createUuid().toString();
+                    saveSettings();
+                }
+            }
+            {
+                QJsonObject::iterator it = object.find(gPlatforms);
+                if(it != doc.object().end()) {
+                    foreach(auto platform, it.value().toArray()) {
+                        m_Platforms << platform.toString();
+                    }
+                }
             }
         }
     }
@@ -116,8 +136,8 @@ void ProjectManager::saveSettings() {
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property  = meta->property(i);
         if(property.isUser(this)) {
-            const char *name    = property.name();
-            QVariant value      = property.read(this);
+            const char *name = property.name();
+            QVariant value = property.read(this);
             if(value.canConvert<Template>()) {
                 object[name] = QJsonValue(value.value<Template>().path);
             } else {
@@ -125,7 +145,10 @@ void ProjectManager::saveSettings() {
             }
         }
     }
-    object[gProject]    = QJsonValue(m_ProjectId);
+    object[gProject] = QJsonValue(m_ProjectId);
+    if(!m_Platforms.isEmpty()) {
+        object[gPlatforms] = QJsonArray::fromStringList(m_Platforms);
+    }
 
     doc.setObject(object);
 
@@ -136,3 +159,30 @@ void ProjectManager::saveSettings() {
     }
 }
 
+QStringList ProjectManager::platforms() const {
+    QStringList list = m_SupportedPlatforms.keys();
+    return (m_Platforms.isEmpty()) ? list : m_Platforms;
+}
+
+IPlatform *ProjectManager::supportedPlatform(const QString &platform) {
+    return m_SupportedPlatforms[platform];
+}
+
+void ProjectManager::setSupportedPlatform(IPlatform *platform) {
+    m_SupportedPlatforms[platform->name()] = platform;
+}
+
+IPlatform *ProjectManager::currentPlatform() const {
+    return m_pCurrentPlatform;
+}
+
+void ProjectManager::setCurrentPlatform(const QString &platform) {
+    m_pCurrentPlatform = (platform.isEmpty()) ?  m_SupportedPlatforms["desktop"] : m_SupportedPlatforms[platform];
+
+    m_ImportPath = QFileInfo(m_CachePath.absoluteFilePath() +
+                             ((platform == nullptr) ? "" : QDir::separator() + m_pCurrentPlatform->name()) +
+                             QDir::separator() + gImport);
+
+    QDir dir;
+    dir.mkpath(m_ImportPath.absoluteFilePath());
+}

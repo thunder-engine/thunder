@@ -117,6 +117,7 @@ void AssetManager::rescan() {
     QString target  = m_pProjectManager->targetPath();
 
     QFileInfo info(m_pProjectManager->importPath() + "/" + gIndex);
+    m_pEngine->file()->fsearchPathAdd(qPrintable(m_pProjectManager->importPath()), true);
 
     bool force = !target.isEmpty() || !info.exists();
 
@@ -567,6 +568,8 @@ void AssetManager::onPerform() {
             saveSettings(settings);
         }
     } else {
+        dumpBundle();
+
         if(isOutdated()) {
             foreach(IBuilder *it, m_pBuilders) {
                 it->rescanSources(ProjectManager::instance()->contentPath());
@@ -574,8 +577,6 @@ void AssetManager::onPerform() {
             }
             return;
         }
-
-        dumpBundle();
         m_pTimer->stop();
 
         emit importFinished();

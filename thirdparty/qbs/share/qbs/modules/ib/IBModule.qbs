@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.BundleTools
 import qbs.DarwinTools
 import qbs.File
@@ -175,7 +174,7 @@ Module {
         inputs: ["nib", "storyboard"]
 
         outputFileTags: {
-            var tags = [];
+            var tags = ["partial_infoplist"];
             for (var i = 0; i < inputs.length; ++i)
                 tags = tags.uniqueConcat(ModUtils.allFileTags(Ib.ibtoolFileTaggers(inputs[i])));
             return tags;

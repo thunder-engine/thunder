@@ -1,17 +1,35 @@
 #include "builder.h"
 
 #include "log.h"
+#include "pluginmodel.h"
 #include "projectmanager.h"
+#include "settingsmanager.h"
+
+#include "platforms/iplatform.h"
 
 #include <QCoreApplication>
 
 Builder::Builder() {
-    //connect(AssetManager::instance(), &AssetManager::importFinished, AssetManager::instance(), &AssetManager::rebuildProject);
-
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished);
 
     connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit);
     connect(this, &Builder::moveDone, this, &Builder::package);
+}
+
+void Builder::setPlatform(const QString &platform) {
+    SettingsManager::instance()->loadSettings();
+    if(platform.isEmpty()) {
+        for(QString it : ProjectManager::instance()->platforms()) {
+            m_Stack.push(it);
+        }
+    } else  {
+        m_Stack.push(platform);
+    }
+
+    if(!m_Stack.isEmpty()) {
+        ProjectManager::instance()->setCurrentPlatform(m_Stack.pop());
+        AssetManager::instance()->rescan();
+    }
 }
 
 void Builder::package(const QString &target) {
@@ -59,7 +77,13 @@ void Builder::package(const QString &target) {
         }
     }
     Log(Log::INF) << "Packaging Done";
-    emit packDone();
+
+    if(m_Stack.isEmpty()) {
+        emit packDone();
+    } else {
+        ProjectManager::instance()->setCurrentPlatform(m_Stack.pop());
+        AssetManager::instance()->rescan();
+    }
 }
 
 bool copyRecursively(QString sourceFolder, QString destFolder) {
@@ -77,8 +101,8 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 
     QStringList files = sourceDir.entryList(QDir::Files);
     for(int i = 0; i< files.count(); i++) {
-        QString srcName     = sourceFolder + QDir::separator() + files[i];
-        QString destName    = destFolder   + QDir::separator() + files[i];
+        QString srcName = sourceFolder + "/" + files[i];
+        QString destName = destFolder + "/" + files[i];
         success = QFile::copy(srcName, destName);
         if(!success)
             return false;
@@ -87,8 +111,8 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
     files.clear();
     files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
     for(int i = 0; i< files.count(); i++) {
-        QString srcName     = sourceFolder + QDir::separator() + files[i];
-        QString destName    = destFolder   + QDir::separator() + files[i];
+        QString srcName = sourceFolder + "/" + files[i];
+        QString destName = destFolder + "/" + files[i];
         success = copyRecursively(srcName, destName);
         if(!success) {
             return false;
@@ -98,9 +122,14 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 }
 
 void Builder::onImportFinished() {
+    ProjectManager *mgr = ProjectManager::instance();
     QString path = AssetManager::instance()->artifact();
     QFileInfo info(path);
-    QFileInfo target(ProjectManager::instance()->targetPath() + "/" + info.fileName());
+    QString targetPath = mgr->targetPath() + "/" + mgr->currentPlatform()->name() + "/";
+
+    QDir dir;
+    dir.mkpath(targetPath);
+    QFileInfo target(targetPath + info.fileName());
 
     if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
         Log(Log::INF) << "Previous build removed.";
@@ -108,9 +137,17 @@ void Builder::onImportFinished() {
 
     if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
         Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
-        emit moveDone(target.absoluteFilePath());
-        return;
-    }
 
+        if(!mgr->currentPlatform()->isPackage()) {
+            emit moveDone(target.absoluteFilePath());
+            return;
+        } else {
+            if(!m_Stack.isEmpty()) {
+                mgr->setCurrentPlatform(m_Stack.pop());
+                AssetManager::instance()->rescan();
+                return;
+            }
+        }
+    }
     QCoreApplication::exit(0);
 }

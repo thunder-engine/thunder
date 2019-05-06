@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
@@ -38,7 +37,7 @@ import "../../../modules/typescript/typescript.js" as TypeScript
 BinaryProbe {
     id: tsc
     names: ["tsc"]
-    pathPrefixes: packageManagerBinPath ? [packageManagerBinPath] : []
+    searchPaths: packageManagerBinPath ? [packageManagerBinPath] : []
 
     // Inputs
     property path interpreterPath
@@ -58,9 +57,10 @@ BinaryProbe {
         if (!packageManagerRootPath)
             throw '"packageManagerRootPath" must be specified';
 
-        var result = PathProbeConfigure.configure(names, nameSuffixes, nameFilter, pathPrefixes,
-                                                  pathSuffixes, platformPaths, environmentPaths,
-                                                  platformEnvironmentPaths, pathListSeparator);
+        var result = PathProbeConfigure.configure(names, nameSuffixes, nameFilter, searchPaths,
+                                                  pathSuffixes, platformSearchPaths,
+                                                  environmentPaths, platformEnvironmentPaths,
+                                                  pathListSeparator);
 
         var v = new ModUtils.EnvironmentVariable("PATH", pathListSeparator,
                                                  hostOS.contains("windows"));

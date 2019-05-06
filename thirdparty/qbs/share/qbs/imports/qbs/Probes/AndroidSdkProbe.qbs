@@ -28,15 +28,15 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.Environment
 import qbs.File
 import qbs.FileInfo
 import "../../../modules/Android/sdk/utils.js" as SdkUtils
+import "../../../modules/Android/android-utils.js" as AndroidUtils
 
-PathProbe {
+BinaryProbe {
     environmentPaths: Environment.getEnv("ANDROID_HOME")
-    platformPaths: {
+    platformSearchPaths: {
         if (qbs.hostOS.contains("windows"))
             return [FileInfo.joinPaths(Environment.getEnv("LOCALAPPDATA"), "Android", "sdk")];
         if (qbs.hostOS.contains("macos"))
@@ -46,22 +46,28 @@ PathProbe {
     }
 
     // Outputs
+    property stringList candidatePaths
     property var buildToolsVersions
     property string buildToolsVersion
     property var platforms
     property string platform
 
     configure: {
-        var i, allPaths = (environmentPaths || []).concat(platformPaths || []);
+        var suffixes = nameSuffixes || [""];
+        var i, allPaths = (environmentPaths || []).concat(platformSearchPaths || []);
+        candidatePaths = allPaths;
         for (i in allPaths) {
-            if (File.exists(FileInfo.joinPaths(allPaths[i], "tools", "android"))) {
-                path = allPaths[i];
-                buildToolsVersions = SdkUtils.availableBuildToolsVersions(path)
-                buildToolsVersion = buildToolsVersions[buildToolsVersions.length - 1];
-                platforms = SdkUtils.availableSdkPlatforms(path)
-                platform = platforms[platforms.length - 1];
-                found = true;
-                return;
+            for (var j in suffixes) {
+                if (File.exists(FileInfo.joinPaths(allPaths[i],
+                                                   "tools", "android" + suffixes[j]))) {
+                    path = allPaths[i];
+                    buildToolsVersions = SdkUtils.availableBuildToolsVersions(path)
+                    buildToolsVersion = buildToolsVersions[buildToolsVersions.length - 1];
+                    platforms = AndroidUtils.availablePlatforms(path)
+                    platform = platforms[platforms.length - 1];
+                    found = true;
+                    return;
+                }
             }
         }
     }

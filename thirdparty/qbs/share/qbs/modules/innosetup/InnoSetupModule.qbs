@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.FileInfo
 import qbs.ModUtils
 import qbs.Probes
@@ -99,6 +98,7 @@ Module {
     Rule {
         id: innoSetupCompiler
         inputs: ["innosetup.iss"]
+        auxiliaryInputs: ["installable"]
 
         Artifact {
             fileTags: ["innosetup.exe", "application"]

@@ -87,6 +87,8 @@ private slots:
     void                    onNewProject                                ();
     void                    onImportProject                             ();
 
+    void                    onBuildProject                              ();
+
     void                    onUpdated                                   ();
 
     void                    onUndoRedoUpdated                           ();
@@ -123,8 +125,6 @@ private slots:
 
     void                    on_actionSave_Workspace_triggered           ();
     void                    on_actionReset_Workspace_triggered          ();
-
-    void                    on_actionBuild_Project_triggered            ();
 
     void                    on_actionOptions_triggered                  ();
     void                    on_actionAbout_triggered                    ();

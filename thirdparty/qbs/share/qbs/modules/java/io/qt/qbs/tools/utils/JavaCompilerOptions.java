@@ -61,11 +61,15 @@ public class JavaCompilerOptions {
                 argumentCount = fileManager.isSupportedOption(arguments[i]);
 
             if (argumentCount >= 0) {
+
+                // isSupportedOption() returns 1 for -Xlint* in Java 9. Bug?
+                if (arguments[i].startsWith("-Xlint"))
+                    argumentCount = 0;
+
                 for (int j = 0; j < argumentCount + 1; ++j) {
                     if (i + j >= arguments.length) {
                         throw new IllegalArgumentException(arguments[i]);
                     }
-
                     recognizedOptions.add(arguments[i + j]);
                 }
 

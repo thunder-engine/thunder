@@ -28,18 +28,18 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.ModUtils
 import qbs.TextFile
 import qbs.Utilities
 import qbs.WindowsUtils
 
+import "setuprunenv.js" as SetupRunEnv
+
 GenericGCC {
     condition: qbs.targetOS.contains("windows") &&
                qbs.toolchain && qbs.toolchain.contains("mingw")
+    priority: 0
     staticLibraryPrefix: "lib"
-    dynamicLibraryPrefix: ""
-    executablePrefix: ""
     staticLibrarySuffix: ".a"
     dynamicLibrarySuffix: ".dll"
     executableSuffix: ".exe"
@@ -48,6 +48,7 @@ GenericGCC {
     windowsApiCharacterSet: "unicode"
     platformDefines: base.concat(WindowsUtils.characterSetDefines(windowsApiCharacterSet))
                          .concat("WIN32")
+    probeEnv: buildEnv
 
     Properties {
         condition: product.multiplexByQbsProperties.contains("buildVariants")
@@ -61,15 +62,16 @@ GenericGCC {
     property path windresPath: { return toolchainPathPrefix + windresName }
 
     setupBuildEnvironment: {
-        var v = new ModUtils.EnvironmentVariable("PATH", qbs.pathListSeparator, true);
-        v.prepend(toolchainInstallPath);
+        var v = new ModUtils.EnvironmentVariable("PATH", product.qbs.pathListSeparator, true);
+        v.prepend(product.cpp.toolchainInstallPath);
         v.set();
     }
 
     setupRunEnvironment: {
-        var v = new ModUtils.EnvironmentVariable("PATH", qbs.pathListSeparator, true);
-        v.prepend(toolchainInstallPath);
+        var v = new ModUtils.EnvironmentVariable("PATH", product.qbs.pathListSeparator, true);
+        v.prepend(product.cpp.toolchainInstallPath);
         v.set();
+        SetupRunEnv.setupRunEnvironment(product, config);
     }
 
     FileTagger {

@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.DarwinTools
 import qbs.File
 import qbs.FileInfo
@@ -140,7 +139,7 @@ Module {
 
     Rule {
         multiplex: true
-        inputs: ["qbs", "dmg.input", "dmg.license", "icns", "tiff"]
+        inputs: ["dmg.input", "dmg.license", "icns", "tiff"]
 
         Artifact {
             fileTags: ["dmg.dmg"]

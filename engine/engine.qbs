@@ -40,6 +40,7 @@ Project {
             return sources
         }
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "zlib-editor" }
@@ -85,6 +86,7 @@ Project {
         name: "engine"
         files: engine.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "next" }
         bundle.isBundle: false
 

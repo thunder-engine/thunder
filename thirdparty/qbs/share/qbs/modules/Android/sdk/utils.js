@@ -34,52 +34,6 @@ var Process = require("qbs.Process");
 var TextFile = require("qbs.TextFile");
 var Utilities = require("qbs.Utilities");
 
-function sourceAndTargetFilePathsFromInfoFiles(inputs, product, inputTag)
-{
-    var sourceFilePaths = [];
-    var targetFilePaths = [];
-    var inputsLength = inputs[inputTag] ? inputs[inputTag].length : 0;
-    for (var i = 0; i < inputsLength; ++i) {
-        var infoFile = new TextFile(inputs[inputTag][i].filePath, TextFile.ReadOnly);
-        var sourceFilePath = infoFile.readLine();
-        var targetFilePath = FileInfo.joinPaths(product.Android.sdk.apkContentsDir,
-                                                infoFile.readLine());
-        if (!targetFilePaths.contains(targetFilePath)) {
-            sourceFilePaths.push(sourceFilePath);
-            targetFilePaths.push(targetFilePath);
-        }
-        infoFile.close();
-    }
-    return { sourcePaths: sourceFilePaths, targetPaths: targetFilePaths };
-}
-
-function outputArtifactsFromInfoFiles(inputs, product, inputTag, outputTag)
-{
-    var pathSpecs = sourceAndTargetFilePathsFromInfoFiles(inputs, product, inputTag)
-    var artifacts = [];
-    for (i = 0; i < pathSpecs.targetPaths.length; ++i)
-        artifacts.push({filePath: pathSpecs.targetPaths[i], fileTags: [outputTag]});
-    return artifacts;
-}
-
-function availableSdkPlatforms(sdkDir) {
-    var re = /^android-([0-9]+)$/;
-    var platforms = File.directoryEntries(FileInfo.joinPaths(sdkDir, "platforms"),
-                                          File.Dirs | File.NoDotAndDotDot);
-    var versions = [];
-    for (var i = 0; i < platforms.length; ++i) {
-        var match = platforms[i].match(re);
-        if (match !== null) {
-            versions.push(platforms[i]);
-        }
-    }
-
-    versions.sort(function (a, b) {
-        return parseInt(a.match(re)[1], 10) - parseInt(b.match(re)[1], 10);
-    });
-    return versions;
-}
-
 function availableBuildToolsVersions(sdkDir) {
     var re = /^([0-9]+)\.([0-9]+)\.([0-9]+)$/;
     var buildTools = File.directoryEntries(FileInfo.joinPaths(sdkDir, "build-tools"),
@@ -129,19 +83,56 @@ function prepareDex(project, product, inputs, outputs, input, output, explicitly
     return [cmd];
 }
 
+function findParentDir(filePath, parentDirName)
+{
+    var lastDir;
+    var currentDir = FileInfo.path(filePath);
+    while (lastDir !== currentDir) {
+        if (FileInfo.fileName(currentDir) === parentDirName)
+            return currentDir;
+        lastDir = currentDir;
+        currentDir = FileInfo.path(currentDir);
+    }
+}
+
 function commonAaptPackageArgs(project, product, inputs, outputs, input, output,
                                explicitlyDependsOn) {
-    var manifestFilePath = inputs["android.manifest"][0].filePath;
+    var manifestFilePath = inputs["android.manifest_final"][0].filePath;
     var args = ["package", "-f",
                 "-M", manifestFilePath,
                 "-I", product.Android.sdk.androidJarFilePath];
     var resources = inputs["android.resources"];
-    if (resources && resources.length)
-        args.push("-S", product.resourcesDir);
+    var resourceDirs = [];
+    if (resources) {
+        for (var i = 0; i < resources.length; ++i) {
+            var resDir = findParentDir(resources[i].filePath, "res");
+            if (!resDir) {
+                throw "File '" + resources[i].filePath + "' is tagged as an Android resource, "
+                        + "but is not located under a directory called 'res'.";
+            }
+            if (!resourceDirs.contains(resDir))
+                resourceDirs.push(resDir);
+        }
+    }
+    for (i = 0; i < resourceDirs.length; ++i)
+        args.push("-S", resourceDirs[i]);
+    var assets = inputs["android.assets"];
+    var assetDirs = [];
+    if (assets) {
+        for (i = 0; i < assets.length; ++i) {
+            var assetDir = findParentDir(assets[i].filePath, "assets");
+            if (!assetDir) {
+                throw "File '" + assets[i].filePath + "' is tagged as an Android asset, "
+                        + "but is not located under a directory called 'assets'.";
+            }
+            if (!assetDirs.contains(assetDir))
+                assetDirs.push(assetDir);
+        }
+    }
+    for (i = 0; i < assetDirs.length; ++i)
+        args.push("-A", assetDirs[i]);
     if (product.qbs.buildVariant === "debug")
         args.push("--debug-mode");
-    if (File.exists(product.assetsDir))
-        args.push("-A", product.assetsDir);
     return args;
 }
 
@@ -209,4 +200,25 @@ function createDebugKeyStoreCommandString(keytoolFilePath, keystoreFilePath) {
                 "-keysize", "2048", "-validity", "10000", "-dname",
                 "CN=Android Debug,O=Android,C=US"];
     return Process.shellQuote(keytoolFilePath, args);
+}
+
+function gdbserverOrStlDeploymentData(product, inputs, type)
+{
+    var data = { uniqueInputs: [], outputFilePaths: []};
+    var uniqueFilePaths = [];
+    var theInputs = inputs[type === "gdbserver" ? "android.gdbserver" : "android.stl"];
+    if (!theInputs)
+        return data;
+    for (var i = 0; i < theInputs.length; ++i) {
+        var currentInput = theInputs[i];
+        if (uniqueFilePaths.contains(currentInput.filePath))
+            continue;
+        uniqueFilePaths.push(currentInput.filePath);
+        data.uniqueInputs.push(currentInput);
+        var outputFileName = type === "gdbserver" ? "libgdbserver.so" : currentInput.fileName;
+        data.outputFilePaths.push(FileInfo.joinPaths(product.Android.sdk.apkContentsDir, "lib",
+                                                     currentInput.Android.ndk.abi,
+                                                     outputFileName));
+    }
+    return data;
 }

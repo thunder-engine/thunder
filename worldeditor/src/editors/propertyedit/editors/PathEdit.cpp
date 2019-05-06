@@ -14,26 +14,35 @@ PathEdit::PathEdit(QWidget *parent) :
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(onFileDialog()));
 }
 
-QString PathEdit::data() const {
-    return ui->lineEdit->text();
+QFileInfo PathEdit::data() const {
+    return m_Info;
 }
 
-void PathEdit::setData(const QString &v) {
-    ui->lineEdit->setText(v);
+void PathEdit::setData(const QFileInfo &v) {
+    m_Info = v;
+    ui->lineEdit->setText(m_Info.filePath());
+    emit pathChanged(v.filePath());
 }
 
 void PathEdit::onFileDialog() {
     QString current = ProjectManager::instance()->contentPath();
 
-    QString path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
-                                                tr("Select File"),
-                                                current,
-                                                tr("All Files (*.*)"));
+    QString path;
+    if(m_Info.isDir()) {
+        path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
+                                                 tr("Open Directory"),
+                                                 "/",
+                                                 QFileDialog::ShowDirsOnly);
+    } else {
+        path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
+                                            tr("Select File"),
+                                            current,
+                                            tr("All Files (*.*)"));
+
+        path = QDir(current).relativeFilePath(path);
+    }
 
     if(path.length() > 0) {
-        path = QDir(current).relativeFilePath(path);
-
-        emit pathChanged(path);
-        ui->lineEdit->setText(path);
+        setData(path);
     }
 }

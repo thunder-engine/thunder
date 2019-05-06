@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>800</height>
+    <height>980</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -52,7 +52,7 @@
       <x>0</x>
       <y>0</y>
       <width>830</width>
-      <height>641</height>
+      <height>771</height>
      </rect>
     </property>
     <widget class="ContentBrowser" name="contentBrowser" native="true">
@@ -74,10 +74,10 @@
     <widget class="QWidget" name="propertyWidget" native="true">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>210</y>
+       <x>630</x>
+       <y>420</y>
        <width>200</width>
-       <height>200</height>
+       <height>231</height>
       </rect>
      </property>
      <property name="minimumSize">
@@ -158,107 +158,101 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="projectWidget" native="true">
+    <widget class="SettingsBrowser" name="projectWidget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>-1</x>
+       <y>420</y>
+       <width>201</width>
+       <height>231</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="HierarchyBrowser" name="hierarchy" native="true">
      <property name="geometry">
       <rect>
        <x>210</x>
-       <y>210</y>
+       <y>0</y>
        <width>200</width>
        <height>200</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <layout class="QHBoxLayout" name="projectLayout">
-        <property name="spacing">
-         <number>2</number>
-        </property>
-        <property name="leftMargin">
-         <number>2</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
-        </property>
-        <property name="rightMargin">
-         <number>2</number>
-        </property>
-        <property name="bottomMargin">
-         <number>2</number>
-        </property>
-        <item>
-         <widget class="QToolButton" name="commitButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Commit</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="revertButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Revert</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="PropertyEditor" name="projectSettings">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>200</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>200</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="ComponentBrowser" name="components" native="true">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>0</y>
+       <width>200</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>200</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="Timeline" name="timeline" native="true">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>210</y>
+       <width>201</width>
+       <height>201</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="SceneView" name="preview" native="true">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>420</y>
+       <width>201</width>
+       <height>231</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="ConsoleManager" name="consoleOutput" native="true">
+     <property name="geometry">
+      <rect>
+       <x>630</x>
+       <y>0</y>
+       <width>200</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>200</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="SettingsBrowser" name="preferencesWidget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>420</y>
+       <width>201</width>
+       <height>231</height>
+      </rect>
+     </property>
     </widget>
     <widget class="QWidget" name="viewportWidget" native="true">
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>420</y>
+       <y>210</y>
        <width>411</width>
-       <height>221</height>
+       <height>201</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -396,74 +390,6 @@
       </item>
      </layout>
     </widget>
-    <widget class="HierarchyBrowser" name="hierarchy" native="true">
-     <property name="geometry">
-      <rect>
-       <x>210</x>
-       <y>0</y>
-       <width>200</width>
-       <height>200</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>200</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="ComponentBrowser" name="components" native="true">
-     <property name="geometry">
-      <rect>
-       <x>420</x>
-       <y>0</y>
-       <width>200</width>
-       <height>200</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>200</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="Timeline" name="timeline" native="true">
-     <property name="geometry">
-      <rect>
-       <x>420</x>
-       <y>210</y>
-       <width>201</width>
-       <height>201</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="SceneView" name="preview" native="true">
-     <property name="geometry">
-      <rect>
-       <x>420</x>
-       <y>420</y>
-       <width>201</width>
-       <height>221</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="ConsoleManager" name="consoleOutput" native="true">
-     <property name="geometry">
-      <rect>
-       <x>630</x>
-       <y>0</y>
-       <width>200</width>
-       <height>200</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>200</height>
-      </size>
-     </property>
-    </widget>
    </widget>
    <zorder>toolWidget</zorder>
    <zorder>quickWidget</zorder>
@@ -481,12 +407,19 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuBuild_Project">
+     <property name="title">
+      <string>Build Project</string>
+     </property>
+     <addaction name="actionBuild_All"/>
+     <addaction name="separator"/>
+    </widget>
     <addaction name="action_New"/>
     <addaction name="action_Open"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
-    <addaction name="actionBuild_Project"/>
+    <addaction name="menuBuild_Project"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -721,11 +654,6 @@
     <string>Reset Workspace</string>
    </property>
   </action>
-  <action name="actionBuild_Project">
-   <property name="text">
-    <string>Build Project</string>
-   </property>
-  </action>
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
@@ -734,6 +662,11 @@
   <action name="actionOptions">
    <property name="text">
     <string>Options...</string>
+   </property>
+  </action>
+  <action name="actionBuild_All">
+   <property name="text">
+    <string>Build All</string>
    </property>
   </action>
  </widget>
@@ -796,6 +729,12 @@
    <class>Timeline</class>
    <extends>QWidget</extends>
    <header>editors/timeline/timeline.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SettingsBrowser</class>
+   <extends>QWidget</extends>
+   <header>managers/settingsmanager/settingsbrowser.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

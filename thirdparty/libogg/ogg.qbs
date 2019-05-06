@@ -16,6 +16,7 @@ Project {
         condition: ogg.desktop
         files: ogg.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["LIBOGG_LIBRARY"]
@@ -42,6 +43,7 @@ Project {
         name: "ogg"
         files: ogg.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [  ]

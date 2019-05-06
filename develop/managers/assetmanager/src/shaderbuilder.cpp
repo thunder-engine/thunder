@@ -30,6 +30,7 @@
 #include "material/autils.h"
 
 #include "projectmanager.h"
+#include "platforms/android.h"
 
 #include "functionmodel.h"
 #include "spirvconverter.h"
@@ -209,7 +210,7 @@ void ShaderBuilder::save(const QString &path) {
     m_Data[SIDE] = isDoubleSided();
     m_Data[DEPTH] = isDepthTest();
     m_Data[VIEW] = isViewSpace();
-    m_Data[RAW] = rawPath();
+    m_Data[RAW] = rawPath().filePath();
 
     AbstractSchemeModel::save(path);
 }
@@ -395,7 +396,16 @@ Variant ShaderBuilder::data() const {
         } break;
     }
 
-    QString fragment = (!m_RawPath.isEmpty()) ? m_RawPath : "Surface.frag";
+    uint32_t version = 430;
+    bool es = false;
+    IPlatform *platform = ProjectManager::instance()->currentPlatform();
+    if(dynamic_cast<AndroidPlatform *>(platform) != nullptr) {
+        version = 300;
+        es = true;
+    }
+    SpirVConverter::setGlslVersion(version, es);
+
+    QString fragment = (!m_RawPath.filePath().isEmpty()) ? m_RawPath.filePath() : "Surface.frag";
     {
         QString buff = loadIncludes(fragment, define);
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);

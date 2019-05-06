@@ -19,6 +19,7 @@ Project {
         "../develop/managers/projectmanager/include",
         "../develop/managers/assetmanager/include",
         "../develop/managers/pluginmanager/include",
+        "../develop/managers/settingsmanager",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
         "../thirdparty/next/inc",
@@ -39,6 +40,7 @@ Project {
         condition: builder.desktop
         files: builder.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         Depends { name: "quazip-editor" }
         Depends { name: "next-editor" }

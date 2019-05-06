@@ -326,7 +326,9 @@ function parseActoolOutput(output) {
                         ? ["partial_infoplist"]
                         : ["bundle.input", "compiled_assetcatalog"];
                 artifacts.push({
-                    filePath: files[i],
+                    // Even though we pass in a canonical base dir, the paths in the XML File
+                    // are non-canonical. See QBS-1417.
+                    filePath: FileInfo.canonicalPath(files[i]),
                     fileTags: tags
                 });
             }

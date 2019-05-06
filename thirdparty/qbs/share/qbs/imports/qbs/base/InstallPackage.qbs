@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.FileInfo
 import qbs.ModUtils
 import qbs.TextFile

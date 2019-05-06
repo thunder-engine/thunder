@@ -28,11 +28,9 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.File
 import qbs.FileInfo
 import qbs.ModUtils
-import qbs.Utilities
 
 Product {
     name: "autotest-runner"
@@ -42,30 +40,59 @@ Product {
     property stringList environment: ModUtils.flattenDictionary(qbs.commonRunEnvironment)
     property bool limitToSubProject: true
     property stringList wrapper: []
+    property string workingDir
+    property stringList auxiliaryInputs
+
     Depends {
         productTypes: "autotest"
         limitToSubProject: product.limitToSubProject
     }
+    Depends {
+        productTypes: auxiliaryInputs
+        limitToSubProject: product.limitToSubProject
+    }
+
     Rule {
         inputsFromDependencies: "application"
-        Artifact {
-            filePath: Utilities.getHash(input.filePath) + ".result.dummy" // Will never exist.
-            fileTags: "autotest-result"
-            alwaysUpdated: false
-        }
+        auxiliaryInputs: product.auxiliaryInputs
+        outputFileTags: "autotest-result"
         prepare: {
+            // TODO: This is hacky. Possible solution: Add autotest tag to application
+            // in autotest module and have that as inputsFromDependencies instead of application.
+            if (!input.product.type.contains("autotest")) {
+                var cmd = new JavaScriptCommand();
+                cmd.silent = true;
+                return cmd;
+            }
             var commandFilePath;
             var installed = input.moduleProperty("qbs", "install");
             if (installed)
                 commandFilePath = ModUtils.artifactInstalledFilePath(input);
             if (!commandFilePath || !File.exists(commandFilePath))
                 commandFilePath = input.filePath;
+            var workingDir = product.workingDir ? product.workingDir
+                                                : FileInfo.path(commandFilePath);
+            var arguments = product.arguments;
+            var allowFailure = false;
+            if (input.autotest) {
+                // FIXME: We'd like to let the user override with an empty list, but
+                //        qbscore turns undefined lists into empty ones at the moment.
+                if (input.autotest.arguments && input.autotest.arguments.length > 0)
+                    arguments = input.autotest.arguments;
+
+                if (input.autotest.workingDir)
+                    workingDir = input.autotest.workingDir;
+                allowFailure = input.autotest.allowFailure;
+            }
             var fullCommandLine = product.wrapper
                 .concat([commandFilePath])
-                .concat(product.arguments);
+                .concat(arguments);
             var cmd = new Command(fullCommandLine[0], fullCommandLine.slice(1));
             cmd.description = "Running test " + input.fileName;
             cmd.environment = product.environment;
+            cmd.workingDirectory = workingDir;
+            if (allowFailure)
+                cmd.maxExitCode = 32767;
             return cmd;
         }
     }

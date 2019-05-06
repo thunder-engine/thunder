@@ -26,6 +26,7 @@ Project {
         condition: glsl.desktop
         files: glsl.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.includePaths: glsl.incPaths

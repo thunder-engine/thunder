@@ -55,6 +55,7 @@ Project {
         condition: freetype.desktop
         files: freetype.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["FT2_BUILD_LIBRARY"]

@@ -15,6 +15,7 @@ Project {
         condition: glad.desktop
         files: glad.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [  ]

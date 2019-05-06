@@ -35,12 +35,13 @@
 
 #include "managers/undomanager/undomanager.h"
 #include "managers/pluginmanager/plugindialog.h"
-#include "managers/configmanager/configdialog.h"
 #include "managers/asseteditormanager/importqueue.h"
 
-#include "projectmodel.h"
-#include "projectmanager.h"
-#include "pluginmodel.h"
+#include <projectmodel.h>
+#include <projectmanager.h>
+#include <pluginmodel.h>
+#include <settingsmanager.h>
+
 #include "aboutdialog.h"
 
 // System
@@ -98,7 +99,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(handler, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
 
     connect(m_pQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
-    connect(m_pQueue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
 
     cmToolbars      = new QMenu(this);
 
@@ -116,9 +116,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
+    ui->preferencesWidget->setWindowTitle("Editor Preferences");
     ui->timeline->setWindowTitle("Timeline");
 
-    ui->commitButton->setProperty("green", true);
     ui->componentButton->setProperty("blue", true);
     ui->moveButton->setProperty("blue", true);
     ui->rotateButton->setProperty("blue", true);
@@ -127,6 +127,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->moveButton->setProperty("checkred", true);
     ui->rotateButton->setProperty("checkred", true);
     ui->scaleButton->setProperty("checkred", true);
+
+    connect(ui->actionBuild_All, &QAction::triggered, this, &SceneComposer::onBuildProject);
 
     m_pProjectModel = new ProjectModel();
 
@@ -149,7 +151,12 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     comp->setGroups(QStringList("Components"));
     ui->components->setGroups(QStringList() << "Scene" << "Components");
 
-    connect(ui->commitButton, SIGNAL(clicked(bool)), ProjectManager::instance(), SLOT(saveSettings()));
+    connect(ui->projectWidget, &SettingsBrowser::commited, ProjectManager::instance(), &ProjectManager::saveSettings);
+    connect(ui->projectWidget, &SettingsBrowser::reverted, ProjectManager::instance(), &ProjectManager::loadSettings);
+
+    connect(ui->preferencesWidget, &SettingsBrowser::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
+    connect(ui->preferencesWidget, &SettingsBrowser::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
+    ui->preferencesWidget->setModel(SettingsManager::instance());
 
     startTimer(16);
 
@@ -162,6 +169,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
 
     QDirIterator it(":/Workspaces", QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -213,8 +221,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
-
-    ui->projectSettings->setObject(ProjectManager::instance());
 
     resetWorkspace();
     on_actionEditor_Mode_triggered();
@@ -473,11 +479,12 @@ void SceneComposer::onUndoRedoUpdated() {
 }
 
 void SceneComposer::onOpenProject(const QString &path) {
+    connect(m_pQueue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
+
     on_actionStart_triggered(false);
 
     m_pProjectModel->addProject(path);
     ProjectManager::instance()->init(path);
-    AssetManager::instance()->init(m_pEngine);
     m_pEngine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
     ui->viewport->makeCurrent();
@@ -486,6 +493,14 @@ void SceneComposer::onOpenProject(const QString &path) {
     AssetManager::instance()->rescan();
 
     PluginModel::instance()->initSystems();
+
+    for(QString it : ProjectManager::instance()->platforms()) {
+        QString name = it;
+        name.replace(0, 1, name.at(0).toUpper());
+        QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
+        action->setProperty(qPrintable(gPlatforms), it);
+        connect(action, &QAction::triggered, this, &SceneComposer::onBuildProject);
+    }
 }
 
 void SceneComposer::onNewProject() {
@@ -540,7 +555,9 @@ void SceneComposer::onImportFinished() {
             it++;
         }
     }
+    disconnect(m_pQueue, nullptr, this, nullptr);
 
+    ui->projectWidget->setModel(ProjectManager::instance());
 }
 
 void SceneComposer::on_actionUndo_triggered() {
@@ -644,21 +661,31 @@ void SceneComposer::onUpdated() {
     mModified   = true;
 }
 
-void SceneComposer::on_actionBuild_Project_triggered() {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Target Directory"),
-                                                 "",
-                                                 QFileDialog::ShowDirsOnly
-                                                 | QFileDialog::DontResolveSymlinks);
+void SceneComposer::onBuildProject() {
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QString dir = QFileDialog::getExistingDirectory(this, tr("Select Target Directory"),
+                                                     "",
+                                                     QFileDialog::ShowDirsOnly |
+                                                     QFileDialog::DontResolveSymlinks);
 
-    if(!dir.isEmpty()) {
-        ProjectManager *mgr = ProjectManager::instance();
+        if(!dir.isEmpty()) {
+            ProjectManager *mgr = ProjectManager::instance();
 
-        QStringList args;
-        args << "-s" << mgr->projectPath() << "-t" << dir;
+            QStringList args;
+            args << "-s" << mgr->projectPath() << "-t" << dir;
 
-        m_pBuilder->start("Builder", args);
-        if(!m_pBuilder->waitForStarted()) {
-            Log(Log::ERR) << qPrintable(m_pBuilder->errorString());
+            QString platform = action->property(qPrintable(gPlatforms)).toString();
+            if(!platform.isEmpty()) {
+                args << "-p" << platform;
+            }
+
+            qDebug() << args.join(" ");
+
+            m_pBuilder->start("Builder", args);
+            if(!m_pBuilder->waitForStarted()) {
+                Log(Log::ERR) << qPrintable(m_pBuilder->errorString());
+            }
         }
     }
 }
@@ -700,8 +727,7 @@ void SceneComposer::parseLogs(const QString &log) {
 }
 
 void SceneComposer::on_actionOptions_triggered() {
-    ConfigDialog dlg;
-    dlg.exec();
+
 }
 
 void SceneComposer::on_actionAbout_triggered() {

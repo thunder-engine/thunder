@@ -15,6 +15,7 @@ Project {
         condition: zlib.desktop
         files: zlib.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: ["ZLIB_DLL", "ZLIB_LIBRARY"]
@@ -40,6 +41,7 @@ Project {
         name: "zlib"
         files: zlib.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [  ]

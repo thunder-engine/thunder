@@ -12,6 +12,9 @@
 
 #include "assetmanager.h"
 #include "projectmanager.h"
+#include "pluginmodel.h"
+#include "settingsmanager.h"
+
 #include <engine.h>
 
 #include <global.h>
@@ -20,9 +23,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-#include "managers/projectmanager/projectdialog.h"
 
-#include "pluginmodel.h"
 
 #include "editors/textureedit/textureedit.h"
 #include "editors/materialedit/materialedit.h"
@@ -67,11 +68,14 @@ int main(int argc, char *argv[]) {
     QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
     AssetManager *asset = AssetManager::instance();
+    asset->init(&engine);
     asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
     asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
     asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
     asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
     asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
+
+    SettingsManager::instance()->loadSettings();
 
     SceneComposer w(&engine);
     w.show();

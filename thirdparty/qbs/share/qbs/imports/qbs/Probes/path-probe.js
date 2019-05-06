@@ -33,7 +33,7 @@ var File = require("qbs.File");
 var FileInfo = require("qbs.FileInfo");
 var ModUtils = require("qbs.ModUtils");
 
-function configure(names, nameSuffixes, nameFilter, pathPrefixes, pathSuffixes, platformPaths,
+function configure(names, nameSuffixes, nameFilter, searchPaths, pathSuffixes, platformSearchPaths,
                    environmentPaths, platformEnvironmentPaths, pathListSeparator) {
     var result = { found: false, candidatePaths: [] };
     if (!names)
@@ -45,7 +45,7 @@ function configure(names, nameSuffixes, nameFilter, pathPrefixes, pathSuffixes, 
         return (nameSuffixes || [""]).map(function(suffix) { return name + suffix; });
     }));
     // FIXME: Suggest how to obtain paths from system
-    var _paths = ModUtils.concatAll(pathPrefixes, platformPaths);
+    var _paths = ModUtils.concatAll(searchPaths, platformSearchPaths);
     // FIXME: Add getenv support
     var envs = ModUtils.concatAll(platformEnvironmentPaths, environmentPaths);
     for (var i = 0; i < envs.length; ++i) {

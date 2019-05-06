@@ -28,12 +28,12 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.FileInfo
 import qbs.ModUtils
 import qbs.Probes
 import qbs.Process
 import qbs.TextFile
+import qbs.Utilities
 
 import "utils.js" as JavaUtils
 
@@ -64,9 +64,11 @@ Module {
     property string keytoolFilePath: FileInfo.joinPaths(jdkPath, "bin", keytoolName)
     property string keytoolName: "keytool"
 
+    property bool _tagJniHeaders: true
+
     property string jdkPath: jdk.path
 
-    version: compilerVersion
+    version: [compilerVersionMajor, compilerVersionMinor, compilerVersionPatch].join(".")
     property string compilerVersion: jdkVersionProbe.version
                                      ? jdkVersionProbe.version[1] : undefined
     property var compilerVersionParts: compilerVersion ? compilerVersion.split(/[\._]/).map(function(item) { return parseInt(item, 10); }) : []
@@ -151,12 +153,16 @@ Module {
     }
 
     property path runtimeJarPath: {
+        if (compilerVersionMajor >= 9)
+            return undefined;
         if (classesJarPath)
             return classesJarPath;
         return FileInfo.joinPaths(jdkPath, "jre", "lib", "rt.jar");
     }
 
     property path toolsJarPath: {
+        if (compilerVersionMajor >= 9)
+            return undefined;
         if (classesJarPath)
             return classesJarPath;
         return FileInfo.joinPaths(jdkPath, "lib", "tools.jar");
@@ -169,13 +175,15 @@ Module {
         validator.setRequiredProperty("compilerVersionParts", compilerVersionParts);
         validator.setRequiredProperty("compilerVersionMajor", compilerVersionMajor);
         validator.setRequiredProperty("compilerVersionMinor", compilerVersionMinor);
-        validator.setRequiredProperty("compilerVersionUpdate", compilerVersionUpdate);
+        if (Utilities.versionCompare(version, "9") < 0)
+            validator.setRequiredProperty("compilerVersionUpdate", compilerVersionUpdate);
         validator.addVersionValidator("compilerVersion", compilerVersion
-                                      ? compilerVersion.replace("_", ".") : undefined, 4, 4);
+                                      ? compilerVersion.replace("_", ".") : undefined, 3, 4);
         validator.addRangeValidator("compilerVersionMajor", compilerVersionMajor, 1);
         validator.addRangeValidator("compilerVersionMinor", compilerVersionMinor, 0);
         validator.addRangeValidator("compilerVersionPatch", compilerVersionPatch, 0);
-        validator.addRangeValidator("compilerVersionUpdate", compilerVersionUpdate, 0);
+        if (Utilities.versionCompare(version, "9") < 0)
+            validator.addRangeValidator("compilerVersionUpdate", compilerVersionUpdate, 0);
         validator.validate();
     }
 
@@ -226,9 +234,17 @@ Module {
         inputsFromDependencies: ["java.jar"]
         explicitlyDependsOn: ["java.class-internal"]
 
-        outputFileTags: ["java.class", "hpp"] // Annotations can produce additional java source files. Ignored for now.
+        outputFileTags: ["java.class"].concat(_tagJniHeaders ? ["hpp"] : []) // Annotations can produce additional java source files. Ignored for now.
         outputArtifacts: {
-            return JavaUtils.outputArtifacts(product, inputs);
+            var artifacts = JavaUtils.outputArtifacts(product, inputs);
+            if (!product.java._tagJniHeaders) {
+                for (var i = 0; i < artifacts.length; ++i) {
+                    var a = artifacts[i];
+                    if (Array.isArray(a.fileTags))
+                        a.fileTags = a.fileTags.filter(function(tag) { return tag != "hpp"; });
+                }
+            }
+            return artifacts;
         }
         prepare: {
             var cmd = new Command(ModUtils.moduleProperty(product, "compilerFilePath"),

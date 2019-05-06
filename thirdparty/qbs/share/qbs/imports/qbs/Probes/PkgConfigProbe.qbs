@@ -28,7 +28,6 @@
 **
 ****************************************************************************/
 
-import qbs 1.0
 import qbs.Process
 import qbs.FileInfo
 
@@ -62,13 +61,6 @@ Probe {
             throw 'PkgConfigProbe.packageNames must be specified.';
         var p = new Process();
         try {
-            var args = packageNames;
-            if (minVersion !== undefined)
-                args.unshift("--atleast-version=" + minVersion);
-            if (exactVersion !== undefined)
-                args.unshift("--exact-version=" + exactVersion);
-            if (maxVersion !== undefined)
-                args.unshift("--max-version=" + maxVersion);
             var libDirsToSet = libDirs;
             if (sysroot) {
                 p.setEnv("PKG_CONFIG_SYSROOT_DIR", sysroot);
@@ -81,6 +73,18 @@ Probe {
             }
             if (libDirsToSet)
                 p.setEnv("PKG_CONFIG_LIBDIR", libDirsToSet.join(pathListSeparator));
+            var versionArgs = [];
+            if (minVersion !== undefined)
+                versionArgs.push("--atleast-version=" + minVersion);
+            if (exactVersion !== undefined)
+                versionArgs.push("--exact-version=" + exactVersion);
+            if (maxVersion !== undefined)
+                versionArgs.push("--max-version=" + maxVersion);
+            if (versionArgs.length !== 0
+                    && p.exec(executable, versionArgs.concat(packageNames)) !== 0) {
+                return;
+            }
+            var args = packageNames;
             if (p.exec(executable, args.concat([ '--cflags' ])) === 0) {
                 cflags = p.readStdOut().trim();
                 cflags = cflags ? cflags.split(/\s/) : [];

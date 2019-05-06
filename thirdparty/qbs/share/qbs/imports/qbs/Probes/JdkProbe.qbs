@@ -29,7 +29,6 @@
 **
 ****************************************************************************/
 
-import qbs
 import qbs.Environment
 import "../../../modules/java/utils.js" as JavaUtils
 
@@ -41,14 +40,14 @@ PathProbe {
                                           && !qbs.hostOS.contains("android")
 
     environmentPaths: Environment.getEnv("JAVA_HOME")
-    platformPaths: [
+    platformSearchPaths: [
         "/usr/lib/jvm/default-java", // Debian/Ubuntu
         "/etc/alternatives/java_sdk_openjdk", // Fedora
         "/usr/lib/jvm/default" // Arch
     ]
 
     configure: {
-        path = JavaUtils.findJdkPath(hostOS, architecture, environmentPaths, platformPaths);
+        path = JavaUtils.findJdkPath(hostOS, architecture, environmentPaths, platformSearchPaths);
         found = !!path;
     }
 }
