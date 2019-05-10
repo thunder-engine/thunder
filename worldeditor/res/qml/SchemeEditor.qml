@@ -155,17 +155,27 @@ Rectangle {
                 var y0 = nodes[selectNode].pos.y
                 var width = nodeWidth(nodes[selectNode])
                 if(selectPort > -1) {
-                    x0 += (nodes[selectNode].ports[selectPort].out) ? width : 0
-                    y0 += nodes[selectNode].ports[selectPort].pos * (cell * 2) + (cell * 3)
+                    var port = nodes[selectNode].ports[selectPort]
+                    if(typeof(port) !== "undefined") {
+                        x0 += (port.out) ? width : 0
+                        y0 += port.pos * (cell * 2) + (cell * 3)
 
-                    var length = Math.abs(x0 - mouseX) * 0.5;
+                        var length = Math.abs(x0 - mouseX) * 0.5;
 
-                    context.beginPath()
-                    context.moveTo(x0, y0)
-                    context.bezierCurveTo(x0 + length, y0,
-                                          mouseX - length, mouseY,
-                                          mouseX, mouseY)
-                    context.stroke()
+                        context.beginPath()
+                        if(port.out) {
+                            context.moveTo(x0, y0)
+                            context.bezierCurveTo(x0 + length, y0,
+                                                  mouseX - length, mouseY,
+                                                  mouseX, mouseY)
+                        } else {
+                            context.moveTo(mouseX, mouseY)
+                            context.bezierCurveTo(mouseX + length, mouseY,
+                                                  x0 - length, y0,
+                                                  x0, y0)
+                        }
+                        context.stroke()
+                    }
                 } else {
                     x0 += (width + border) / 2
                     y0 += (nodeHeight(nodes[selectNode]) + border) / 2
@@ -187,20 +197,22 @@ Rectangle {
                     var oport = nodes[links[i].sender].ports[links[i].oport]
                     var iport = nodes[links[i].receiver].ports[links[i].iport]
 
-                    var x1 = nodes[links[i].sender].pos.x + ((oport.out) ? nodeWidth(nodes[links[i].sender]) - radius : -radius)
-                    var y1 = nodes[links[i].sender].pos.y + oport.pos * (cell * 2) + (cell * 3) - radius
+                    if(typeof(oport) !== "undefined" && typeof(iport) !== "undefined") {
+                        var x1 = nodes[links[i].sender].pos.x + ((oport.out) ? nodeWidth(nodes[links[i].sender]) - radius : -radius)
+                        var y1 = nodes[links[i].sender].pos.y + oport.pos * (cell * 2) + (cell * 3) - radius
 
-                    var x2 = nodes[links[i].receiver].pos.x + ((iport.out) ? nodeWidth(nodes[links[i].receiver]) - radius : -radius)
-                    var y2 = nodes[links[i].receiver].pos.y + iport.pos * (cell * 2) + (cell * 3) - radius
+                        var x2 = nodes[links[i].receiver].pos.x + ((iport.out) ? nodeWidth(nodes[links[i].receiver]) - radius : -radius)
+                        var y2 = nodes[links[i].receiver].pos.y + iport.pos * (cell * 2) + (cell * 3) - radius
 
-                    length = Math.abs(x2 - x1) * 0.5;
+                        length = Math.abs(x2 - x1) * 0.5;
 
-                    context.beginPath()
-                    context.moveTo(x1, y1)
-                    context.bezierCurveTo(x1 + length, y1,
-                                          x2 - length, y2,
-                                          x2, y2)
-                    context.stroke()
+                        context.beginPath()
+                        context.moveTo(x1, y1)
+                        context.bezierCurveTo(x1 + length, y1,
+                                              x2 - length, y2,
+                                              x2, y2)
+                        context.stroke()
+                    }
                 }
             }
             context.setTransform(1, 0, 0, 1, 0, 0)
