@@ -307,6 +307,12 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
         settings.setValue(str, QString::fromStdString(Json::save(params)));
     }
+    QString path = ProjectManager::instance()->iconPath() + "/auto.png";
+
+    QImage result = ui->viewport->grabFramebuffer();
+    QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
+    qDebug() << path << result.copy(rect).scaled(128, 128).save(path);
+
     saveWorkspace();
     QApplication::quit();
 }

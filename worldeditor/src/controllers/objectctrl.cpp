@@ -222,8 +222,7 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
         }
     }
 
-    Camera *camera  = Camera::current();
-     if(m_pPipeline) {
+    if(m_pPipeline) {
         uint32_t result = 0;
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
@@ -235,15 +234,16 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
                 m_pDepth->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), 1, 1);
                 result  = m_pDepth->getPixel(0, 0);
             }
-
+/*
             if(result > 0) {
+                Camera *camera  = Camera::current();
                 memcpy(&screen.z, &result, sizeof(float));
                 Matrix4 mv, p;
                 camera->matrices(mv, p);
-                screen.y    = (1.0f - screen.y);
-                //Camera::unproject(screen, mv, p, mMouseWorld);
+                screen.y = (1.0f - screen.y);
+                Camera::unproject(screen, mv, p, mMouseWorld);
             }
-
+*/
             rt  = m_pPipeline->target("selectMap");
             if(rt) {
                 rt->makeCurrent();

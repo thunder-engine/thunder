@@ -40,13 +40,15 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
     }
     QFileInfo info( m_List.at(index.row()) );
     switch(role) {
-        case Qt::DisplayRole:
         case NameRole: { return info.baseName(); }
         case PathRole: { return info.absoluteFilePath(); }
-        case Qt::ToolTipRole:
         case DirRole:  { return info.absolutePath(); }
-        case Qt::DecorationRole: {
-            return QImage(":/Images/icons/thunder.png").scaled(96, 96);
+        case IconRole: {
+            QFileInfo icon(info.absolutePath() + "/cache/thumbnails/auto.png");
+            if(icon.isReadable()) {
+                return "file:///" + icon.absoluteFilePath();
+            }
+            return "qrc:/Images/icons/thunderlight.svg";
         }
         default: break;
     }
@@ -58,6 +60,7 @@ QHash<int, QByteArray> ProjectModel::roleNames() const {
     roles[NameRole] = "name";
     roles[PathRole] = "path";
     roles[DirRole]  = "dir";
+    roles[IconRole]  = "icon";
 
     return roles;
 }

@@ -23,7 +23,7 @@ Item {
                 Image {
                     width: 128
                     height: 128
-                    source: "qrc:/Images/icons/thunderlight.svg"
+                    source: icon
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 Rectangle {

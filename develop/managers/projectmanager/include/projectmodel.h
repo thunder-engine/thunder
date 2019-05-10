@@ -2,6 +2,7 @@
 #define PROJECTMODEL_H
 
 #include <QAbstractListModel>
+#include <QImage>
 
 class ProjectModel : public QAbstractListModel {
     Q_OBJECT
@@ -9,7 +10,8 @@ public:
     enum Roles {
         NameRole = Qt::UserRole + 1,
         PathRole,
-        DirRole
+        DirRole,
+        IconRole
     };
 
     ProjectModel            ();
@@ -26,7 +28,6 @@ public:
 
 protected:
     QStringList             m_List;
-
 };
 
 #endif // PROJECTMODEL_H
