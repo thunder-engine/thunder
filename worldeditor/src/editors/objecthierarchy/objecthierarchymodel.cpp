@@ -25,9 +25,23 @@ void ObjectHierarchyModel::setRoot(Object *scene) {
     m_rootItem  = scene;
 }
 
-Object *ObjectHierarchyModel::findObject(const QString &ref) {
-    QUrl path(ref);
-    return m_rootItem->find(path.path().toStdString()); /// \todo Review need to check this on errors
+Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
+    Object *result = nullptr;
+    if(parent == nullptr) {
+        parent = m_rootItem;
+    }
+    for(Object *it : parent->getChildren()) {
+        if(it->uuid() == uuid) {
+            return it;
+        } else {
+            result = findObject(uuid, it);
+            if(result != nullptr) {
+                return result;
+            }
+        }
+    }
+
+    return result;
 }
 
 void ObjectHierarchyModel::reset() {
@@ -62,13 +76,14 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::UserRole: {
             return QString::number(item->uuid());
-        } break;
+        }
         default: break;
     }
     return QVariant();
 }
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+    Q_UNUSED(role)
     Object *item    = static_cast<Object* >(index.internalPointer());
     switch(index.column()) {
         default: {
@@ -91,6 +106,7 @@ QVariant ObjectHierarchyModel::headerData(int section, Qt::Orientation orientati
 }
 
 int ObjectHierarchyModel::columnCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent)
     return 3;
 }
 

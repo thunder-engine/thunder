@@ -152,7 +152,7 @@ void HierarchyBrowser::onDragEnter(QDragEnterEvent *e) {
     e->ignore();
 }
 
-void HierarchyBrowser::onDragLeave(QDragLeaveEvent *e) {
+void HierarchyBrowser::onDragLeave(QDragLeaveEvent *) {
     m_pRect->hide();
 }
 
@@ -180,7 +180,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
-            Object *item    = model->findObject(it);
+            Object *item    = model->findObject(it.toUInt());
             QModelIndex index   = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
             if(item) {
                 objects.push_back(item);
@@ -200,13 +200,6 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
     m_pRect->hide();
 }
 
-string objectPath(const Object *object) {
-    if(object->parent()) {
-        return objectPath(object->parent()) + "/" + object->name();
-    }
-    return "/" + object->name();
-}
-
 void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
     QMimeData *mimeData = new QMimeData;
     QStringList list;
@@ -214,7 +207,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
         QModelIndex index   = m_pFilter->mapToSource(it);
         if(index.column() == 0) {
             Object *object  = static_cast<Object *>(index.internalPointer());
-            list.push_back(QString::fromStdString(objectPath(object)));
+            list.push_back(QString::number(object->uuid()));
         }
     }
     mimeData->setData(gMimeObject, qPrintable(list.join(";")));

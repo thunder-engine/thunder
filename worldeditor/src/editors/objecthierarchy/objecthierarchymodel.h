@@ -14,7 +14,7 @@ public:
 
     Object                     *root                        () const { return m_rootItem; }
 
-    Object                     *findObject                  (const QString &ref);
+    Object                     *findObject                  (const uint32_t uuid, Object *parent = nullptr);
 
     void                        reset                       ();
 

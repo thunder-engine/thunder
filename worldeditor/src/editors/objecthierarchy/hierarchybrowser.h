@@ -81,7 +81,7 @@ public slots:
 
     void                    onDragEnter                 (QDragEnterEvent *e);
 
-    void                    onDragLeave                 (QDragLeaveEvent *e);
+    void                    onDragLeave                 (QDragLeaveEvent *);
 
     void                    onDragMove                  (QDragMoveEvent *e);
 
