@@ -125,7 +125,7 @@ class ShaderBuilder : public AbstractSchemeModel {
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
     Q_PROPERTY(bool View_Space READ isViewSpace WRITE setViewSpace DESIGNABLE true USER true)
-    Q_PROPERTY(FilePath Raw_Path READ rawPath WRITE setRawPath DESIGNABLE true USER true)
+    Q_PROPERTY(QFileInfo Raw_Path READ rawPath WRITE setRawPath DESIGNABLE true USER true)
 
 public:
     enum LightModel {

@@ -26,8 +26,8 @@ public:
 
     int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
-            size    = QMetaType::QVector2D;
-            value  += QString("\tvec2 local%1 = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5).xy;\n").arg(depth);
+            size    = QMetaType::QVector3D;
+            value  += QString("\tvec3 local%1 = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
         }
         return ShaderFunction::build(value, link, depth, size);
     }
@@ -52,7 +52,7 @@ public:
         return ShaderFunction::build(value, link, depth, size);
     }
 
-    uint16_t index() const {
+    uint32_t index() const {
         return m_Index;
     }
 

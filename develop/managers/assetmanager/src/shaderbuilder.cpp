@@ -285,8 +285,6 @@ void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
     }
 }
 
-
-
 bool ShaderBuilder::build() {
     cleanup();
 

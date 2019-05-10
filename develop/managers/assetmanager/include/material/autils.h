@@ -63,19 +63,35 @@ public:
                 QString mask;
                 if(m_R && type > 0) {
                     mask += "r";
-                    size++;
+                    size = QMetaType::Double;
                 }
                 if(m_G && type > 1) {
                     mask += "g";
-                    size++;
+                    if(size == 0) {
+                        size = QMetaType::Double;
+                    } else {
+                        size = QMetaType::QVector2D;
+                    }
                 }
                 if(m_B && type > 2) {
                     mask += "b";
-                    size++;
+                    if(size == 0) {
+                        size = QMetaType::Double;
+                    } else if(size == QMetaType::Double) {
+                        size = QMetaType::QVector2D;
+                    } else {
+                        size++;
+                    }
                 }
                 if(m_A && type > 3) {
                     mask += "a";
-                    size++;
+                    if(size == 0) {
+                        size = QMetaType::Double;
+                    } else if(size == QMetaType::Double) {
+                        size = QMetaType::QVector2D;
+                    } else {
+                        size++;
+                    }
                 }
 
                 switch (size) {
@@ -128,7 +144,7 @@ public:
             out->name   = a;
             out->out    = false;
             out->pos    = 0;
-            out->type   = QMetaType::Float;
+            out->type   = QMetaType::Double;
             result->list.push_back(out);
             i++;
         }
@@ -137,7 +153,7 @@ public:
             out->name   = b;
             out->out    = false;
             out->pos    = 1;
-            out->type   = QMetaType::Float;
+            out->type   = QMetaType::Double;
             result->list.push_back(out);
             i++;
         }
