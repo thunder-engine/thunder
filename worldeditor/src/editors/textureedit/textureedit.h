@@ -9,7 +9,7 @@ class Viewport;
 class Engine;
 
 class Texture;
-class SpriteMesh;
+class SpriteRender;
 class TextureConverter;
 class TextureImportSettings;
 
@@ -41,7 +41,7 @@ private:
 
     Texture                    *m_pTexture;
 
-    SpriteMesh                 *m_pSprite;
+    SpriteRender               *m_pSprite;
 
     TextureImportSettings      *m_pSettings;
 

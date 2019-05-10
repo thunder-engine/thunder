@@ -1,4 +1,4 @@
-#include "components/basemesh.h"
+#include "components/meshrender.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
@@ -7,11 +7,11 @@
 #define MESH "Mesh"
 #define MATERAILS "Materials"
 
-BaseMesh::BaseMesh() :
+MeshRender::MeshRender() :
         m_pMesh(nullptr) {
 }
 
-void BaseMesh::draw(ICommandBuffer &buffer, int8_t layer) {
+void MeshRender::draw(ICommandBuffer &buffer, int8_t layer) {
     Actor *a    = actor();
     if(m_pMesh && layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
@@ -26,11 +26,11 @@ void BaseMesh::draw(ICommandBuffer &buffer, int8_t layer) {
     }
 }
 
-Mesh *BaseMesh::mesh() const {
+Mesh *MeshRender::mesh() const {
     return m_pMesh;
 }
 
-void BaseMesh::setMesh(Mesh *mesh) {
+void MeshRender::setMesh(Mesh *mesh) {
     m_pMesh    = mesh;
     if(m_pMesh) {
         for(auto it : m_Materials) {
@@ -45,11 +45,11 @@ void BaseMesh::setMesh(Mesh *mesh) {
     }
 }
 
-MaterialArray BaseMesh::materials() const {
+MaterialArray MeshRender::materials() const {
     return m_Materials;
 }
 
-void BaseMesh::setMaterials(const MaterialArray &material) {
+void MeshRender::setMaterials(const MaterialArray &material) {
     for(uint32_t index = 0; index < m_Materials.size(); index++) {
         if(index < material.size() && m_Materials[index] != material[index]) {
             Material *org = nullptr;
@@ -68,7 +68,7 @@ void BaseMesh::setMaterials(const MaterialArray &material) {
     }
 }
 
-Material *BaseMesh::material(int index) const {
+Material *MeshRender::material(int index) const {
     if(index < m_Materials.size()) {
         if(m_Materials[index]) {
             return m_Materials[index]->material();
@@ -77,7 +77,7 @@ Material *BaseMesh::material(int index) const {
     return nullptr;
 }
 
-void BaseMesh::setMaterial(Material *material, int index) {
+void MeshRender::setMaterial(Material *material, int index) {
     if(material && index < m_Materials.size()) {
         if(m_Materials[index]) {
             delete m_Materials[index];
@@ -86,11 +86,11 @@ void BaseMesh::setMaterial(Material *material, int index) {
     }
 }
 
-uint32_t BaseMesh::materialCount() const {
+uint32_t MeshRender::materialCount() const {
     return m_Materials.size();
 }
 
-void BaseMesh::loadUserData(const VariantMap &data) {
+void MeshRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
         auto it = data.find(MESH);
@@ -111,7 +111,7 @@ void BaseMesh::loadUserData(const VariantMap &data) {
     }
 }
 
-VariantMap BaseMesh::saveUserData() const {
+VariantMap MeshRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
         string ref  = Engine::reference(mesh());

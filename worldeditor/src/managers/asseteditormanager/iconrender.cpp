@@ -17,8 +17,8 @@
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
-#include <components/staticmesh.h>
-#include <components/spritemesh.h>
+#include <components/meshrender.h>
+#include <components/spriterender.h>
 
 #include <resources/pipeline.h>
 
@@ -92,7 +92,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             m_pCamera->setOrthographic(true);
             m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
-            SpriteMesh *sprite  = object->addComponent<SpriteMesh>();
+            SpriteRender *sprite = object->addComponent<SpriteRender>();
             if(sprite) {
                 sprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
                 Texture *t  = Engine::loadResource<Texture>(resource.toStdString());
@@ -100,7 +100,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentMaterial: {
-            StaticMesh *mesh    = object->addComponent<StaticMesh>();
+            MeshRender *mesh    = object->addComponent<MeshRender>();
             Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx");
             if(m) {
                 mesh->setMesh(m);
@@ -113,7 +113,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentMesh: {
-            StaticMesh *mesh    = object->addComponent<StaticMesh>();
+            MeshRender *mesh    = object->addComponent<MeshRender>();
             Mesh *m = Engine::loadResource<Mesh>(resource.toStdString());
             if(m) {
                 mesh->setMesh(m);

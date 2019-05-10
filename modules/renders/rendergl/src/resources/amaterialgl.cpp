@@ -6,8 +6,6 @@
 #include "resources/text.h"
 #include "resources/atexturegl.h"
 
-#include "components/staticmesh.h"
-
 #include <file.h>
 #include <log.h>
 

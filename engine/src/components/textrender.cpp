@@ -1,4 +1,4 @@
-#include "components/textmesh.h"
+#include "components/textrender.h"
 #include "components/actor.h"
 #include "components/transform.h"
 
@@ -11,13 +11,14 @@
 
 #define OVERRIDE "uni.texture0"
 
-TextMesh::TextMesh() :
+TextRender::TextRender() :
         m_pFont(nullptr),
         m_Size(16),
         m_Space(0),
         m_Line(0),
         m_Color(1.0f),
-        m_Kerning(true) {
+        m_Kerning(true),
+        m_pMaterial(nullptr) {
 
     m_pMesh = Engine::objectCreate<Mesh>();
     m_pMesh->makeDynamic();
@@ -25,11 +26,25 @@ TextMesh::TextMesh() :
 
     Material *material  = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
     if(material) {
-        m_Materials.push_back(material->createInstance());
+        m_pMaterial = material->createInstance();
     }
 }
 
-void TextMesh::composeMesh() {
+void TextRender::draw(ICommandBuffer &buffer, int8_t layer) {
+    Actor *a    = actor();
+    if(m_pMesh && layer & a->layers()) {
+        if(layer & ICommandBuffer::RAYCAST) {
+            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
+        }
+
+        for(uint32_t s = 0; s < m_pMesh->surfacesCount(); s++) {
+            buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, s, layer, m_pMaterial);
+        }
+        buffer.setColor(Vector4(1.0f));
+    }
+}
+
+void TextRender::composeMesh() {
     if(m_pFont) {
         m_Space = m_pFont->spaceWidth(m_Size);
         m_Line  = m_pFont->lineHeight(m_Size);
@@ -108,57 +123,61 @@ void TextMesh::composeMesh() {
     }
 }
 
-string TextMesh::text() const {
+Mesh *TextRender::mesh() const {
+    return m_pMesh;
+}
+
+string TextRender::text() const {
     return m_Text;
 }
 
-void TextMesh::setText(const string &text) {
+void TextRender::setText(const string &text) {
     m_Text  = text;
     composeMesh();
 }
 
-Font *TextMesh::font() const {
+Font *TextRender::font() const {
     return m_pFont;
 }
 
-void TextMesh::setFont(Font *font) {
+void TextRender::setFont(Font *font) {
     m_pFont = font;
-    if(m_pFont && !m_Materials.empty()) {
-        m_Materials[0]->setTexture(OVERRIDE, m_pFont->texture());
+    if(m_pFont && m_pMaterial) {
+        m_pMaterial->setTexture(OVERRIDE, m_pFont->texture());
     }
     composeMesh();
 }
 
-int TextMesh::fontSize() const {
+int TextRender::fontSize() const {
     return m_Size;
 }
 
-void TextMesh::setFontSize(int size) {
+void TextRender::setFontSize(int size) {
     m_Size  = size;
     composeMesh();
 }
 
-Vector4 TextMesh::color() const {
+Vector4 TextRender::color() const {
     return m_Color;
 }
 
-void TextMesh::setColor(const Vector4 &color) {
+void TextRender::setColor(const Vector4 &color) {
     m_Color = color;
-    if(!m_Materials.empty()) {
-        m_Materials[0]->setVector4("uni.color0", &m_Color);
+    if(m_pMaterial) {
+        m_pMaterial->setVector4("uni.color0", &m_Color);
     }
 }
 
-bool TextMesh::kerning() const {
+bool TextRender::kerning() const {
     return m_Kerning;
 }
 
-void TextMesh::setKerning(const bool kerning) {
+void TextRender::setKerning(const bool kerning) {
     m_Kerning = kerning;
     composeMesh();
 }
 
-void TextMesh::loadUserData(const VariantMap &data) {
+void TextRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
         auto it = data.find(FONT);
@@ -168,7 +187,7 @@ void TextMesh::loadUserData(const VariantMap &data) {
     }
 }
 
-VariantMap TextMesh::saveUserData() const {
+VariantMap TextRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
         Font *f = font();

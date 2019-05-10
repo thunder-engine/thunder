@@ -13,7 +13,7 @@
 #include <engine.h>
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/staticmesh.h>
+#include <components/meshrender.h>
 #include <components/directlight.h>
 #include <components/camera.h>
 
@@ -155,7 +155,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
     if(m_Path != settings->source()) {
         m_Path      = settings->source();
         m_pMaterial = Engine::loadResource<Material>(settings->destination());
-        StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
+        MeshRender *mesh = m_pMesh->component<MeshRender>();
         if(mesh) {
             mesh->setMaterial(m_pMaterial);
         }
@@ -170,7 +170,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder && m_pBuilder->build()) {
         ui->textEdit->setText(m_pBuilder->shader());
         glWidget->makeCurrent();
-        StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
+        MeshRender *mesh    = m_pMesh->component<MeshRender>();
         if(mesh) {
             VariantMap map  = m_pBuilder->data().toMap();
             for(auto it : mesh->materials()) {
@@ -182,7 +182,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
 }
 
 void MaterialEdit::changeMesh(const string &path) {
-    StaticMesh *mesh    = m_pMesh->component<StaticMesh>();
+    MeshRender *mesh    = m_pMesh->component<MeshRender>();
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
         if(m_pMaterial) {
@@ -206,8 +206,8 @@ void MaterialEdit::onGLInit() {
         camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
     }
 
-    m_pMesh = Engine::objectCreate<Actor>("StaticMesh", scene);
-    m_pMesh->addComponent<StaticMesh>();
+    m_pMesh = Engine::objectCreate<Actor>("MeshRender", scene);
+    m_pMesh->addComponent<MeshRender>();
 
     on_actionSphere_triggered();
 }

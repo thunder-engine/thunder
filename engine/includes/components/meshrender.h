@@ -1,5 +1,5 @@
-#ifndef BASEMESH_H
-#define BASEMESH_H
+#ifndef MESHRENDER_H
+#define MESHRENDER_H
 
 #include "mesh.h"
 #include "material.h"
@@ -8,16 +8,21 @@
 
 #include <array>
 
-class NEXT_LIBRARY_EXPORT BaseMesh : public Renderable {
-    A_REGISTER(BaseMesh, Renderable, General);
+class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
+    A_REGISTER(MeshRender, Renderable, General);
+
+    A_PROPERTIES (
+        A_PROPERTY(Mesh *, Mesh, MeshRender::mesh, MeshRender::setMesh),
+        A_PROPERTY(MateralArray, Materials, MeshRender::materials, MeshRender::setMaterials)
+    )
 
     A_METHODS(
-        A_METHOD(Material *, BaseMesh::material),
-        A_METHOD(void, BaseMesh::setMaterial)
+        A_METHOD(Material *, MeshRender::material),
+        A_METHOD(void, MeshRender::setMaterial)
     )
 
 public:
-    BaseMesh                    ();
+    MeshRender                  ();
 
     void                        draw                    (ICommandBuffer &buffer, int8_t layer);
 
@@ -46,4 +51,4 @@ protected:
 
 };
 
-#endif // BASEMESH_H
+#endif // MESHRENDER_H

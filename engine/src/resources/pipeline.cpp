@@ -5,7 +5,7 @@
 #include "components/scene.h"
 #include "components/camera.h"
 #include "components/directlight.h"
-#include "components/basemesh.h"
+#include "components/meshrender.h"
 #include "components/particlerender.h"
 
 #include "resources/mesh.h"
@@ -336,7 +336,7 @@ Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3,
 
     Object::ObjectList result;
     for(auto it : in) {
-        BaseMesh *mesh  = dynamic_cast<BaseMesh *>(it);
+        MeshRender *mesh  = dynamic_cast<MeshRender *>(it);
         if(mesh && mesh->mesh()) {
             Matrix4 &transform   = mesh->actor()->transform()->worldTransform();
             Vector3 min, max;

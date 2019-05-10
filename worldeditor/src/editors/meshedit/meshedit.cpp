@@ -8,7 +8,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/staticmesh.h>
+#include <components/meshrender.h>
 #include <components/directlight.h>
 #include <components/camera.h>
 
@@ -108,10 +108,10 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
 }
 
 void MeshEdit::prepareScene(const QString &resource) {
-    StaticMesh *staticMesh  = m_pMesh->component<StaticMesh>();
-    if(staticMesh) {
+    MeshRender *meshRender  = m_pMesh->component<MeshRender>();
+    if(meshRender) {
         Mesh *m = Engine::loadResource<Mesh>(qPrintable(resource));
-        staticMesh->setMesh(m);
+        meshRender->setMesh(m);
     }
     float bottom;
     static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
@@ -125,7 +125,7 @@ void MeshEdit::onGLInit() {
     scene->setAmbient(0.5f);
 
     m_pMesh     = Engine::objectCreate<Actor>("Model", scene);
-    m_pMesh->addComponent<StaticMesh>();
+    m_pMesh->addComponent<MeshRender>();
 
     m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     m_pLight->transform()->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
@@ -135,11 +135,11 @@ void MeshEdit::onGLInit() {
 
     m_pGround = Engine::objectCreate<Actor>("Ground", scene);
     m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
-    m_pGround->addComponent<StaticMesh>()->setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx"));
+    m_pGround->addComponent<MeshRender>()->setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx"));
 
     m_pDome = Engine::objectCreate<Actor>("Dome", scene);
     m_pDome->transform()->setScale(Vector3(250.0f, 250.0f, 250.0f));
-    StaticMesh *mesh = m_pDome->addComponent<StaticMesh>();
+    MeshRender *mesh = m_pDome->addComponent<MeshRender>();
     if(mesh) {
         //mesh->setMesh(Cache::load<Mesh>(".embedded/sphere.fbx"));
     }

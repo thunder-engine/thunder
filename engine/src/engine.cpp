@@ -22,9 +22,9 @@
 #include "components/transform.h"
 #include "components/camera.h"
 
-#include "components/staticmesh.h"
-#include "components/textmesh.h"
-#include "components/spritemesh.h"
+#include "components/meshrender.h"
+#include "components/textrender.h"
+#include "components/spriterender.h"
 #include "components/particlerender.h"
 #include "components/directlight.h"
 #include "components/pointlight.h"
@@ -153,9 +153,9 @@ Engine::Engine(IFile *file, int, char **argv) :
     Transform::registerClassFactory(this);
     Camera::registerClassFactory(this);
 
-    StaticMesh::registerClassFactory(this);
-    TextMesh::registerClassFactory(this);
-    SpriteMesh::registerClassFactory(this);
+    MeshRender::registerClassFactory(this);
+    TextRender::registerClassFactory(this);
+    SpriteRender::registerClassFactory(this);
     DirectLight::registerClassFactory(this);
     PointLight::registerClassFactory(this);
     SpotLight::registerClassFactory(this);
@@ -170,7 +170,6 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     NativeBehaviour::registerClassFactory(this);
     Renderable::registerClassFactory(this);
-    BaseMesh::registerClassFactory(this);
     BaseLight::registerClassFactory(this);
 
     ICommandBuffer::registerClassFactory(this);

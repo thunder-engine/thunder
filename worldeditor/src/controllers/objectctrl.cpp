@@ -10,8 +10,8 @@
 #include <components/scene.h>
 #include <components/camera.h>
 #include <components/directlight.h>
-#include <components/spritemesh.h>
-#include <components/staticmesh.h>
+#include <components/spriterender.h>
+#include <components/meshrender.h>
 
 #include <resources/pipeline.h>
 #include <resources/rendertexture.h>
@@ -459,7 +459,7 @@ void ObjectCtrl::onCreateSelected(const QString &name) {
                     Object::ObjectList list;
                     list.push_back(comp);
                     UndoManager::instance()->push(new UndoManager::CreateObjects(list, this, tr("Create Component ") + name));
-                    SpriteMesh *sprite  = dynamic_cast<SpriteMesh *>(comp);
+                    SpriteRender *sprite  = dynamic_cast<SpriteRender *>(comp);
                     if(sprite) {
                         sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
                     }
@@ -533,7 +533,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
             if(comp) {
                 comp->setParent(actor);
                 actor->setName(findFreeObjectName(comp->typeName(), m_pMap));
-                SpriteMesh *sprite  = dynamic_cast<SpriteMesh *>(comp);
+                SpriteRender *sprite  = dynamic_cast<SpriteRender *>(comp);
                 if(sprite) {
                     sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
                 }
@@ -557,7 +557,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentMesh: {
                         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        StaticMesh *m   = actor->addComponent<StaticMesh>();
+                        MeshRender *m   = actor->addComponent<MeshRender>();
                         if(m) {
                             m->setMesh(Engine::loadResource<Mesh>( qPrintable(str) ));
                         }
@@ -565,7 +565,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentTexture: {
                         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        SpriteMesh *sprite  = actor->addComponent<SpriteMesh>();
+                        SpriteRender *sprite  = actor->addComponent<SpriteRender>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
                             sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));

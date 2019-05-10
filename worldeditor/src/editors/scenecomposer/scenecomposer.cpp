@@ -23,8 +23,8 @@
 #include <timer.h>
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/spritemesh.h>
-#include <components/staticmesh.h>
+#include <components/spriterender.h>
+#include <components/meshrender.h>
 #include <components/camera.h>
 
 #include <analytics/profiler.h>

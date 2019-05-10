@@ -5,7 +5,7 @@
 
 #include "assetmanager.h"
 
-#include <components/staticmesh.h>
+#include <components/meshrender.h>
 
 using namespace std;
 

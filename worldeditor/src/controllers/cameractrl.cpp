@@ -11,9 +11,9 @@
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/staticmesh.h>
-#include <components/spritemesh.h>
-#include <components/textmesh.h>
+#include <components/meshrender.h>
+#include <components/spriterender.h>
+#include <components/textrender.h>
 
 #include "graph/sceneview.h"
 
@@ -101,15 +101,15 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         for(auto it : actor->getChildren()) {
             Mesh *mesh  = nullptr;
             /// \todo Bad switch case
-            StaticMesh *staticMesh  = dynamic_cast<StaticMesh *>(it);
-            if(staticMesh) {
-                mesh    = staticMesh->mesh();
+            MeshRender *meshRender  = dynamic_cast<MeshRender *>(it);
+            if(meshRender) {
+                mesh    = meshRender->mesh();
             } else {
-                SpriteMesh *spriteMesh  = dynamic_cast<SpriteMesh *>(it);
-                if(spriteMesh) {
-                    mesh    = spriteMesh->mesh();
+                SpriteRender *spriteRender  = dynamic_cast<SpriteRender *>(it);
+                if(spriteRender) {
+                    mesh    = spriteRender->mesh();
                 } else {
-                    TextMesh *textMesh  = dynamic_cast<TextMesh *>(it);
+                    TextRender *textMesh  = dynamic_cast<TextRender *>(it);
                     if(textMesh) {
                         mesh    = textMesh->mesh();
                     }

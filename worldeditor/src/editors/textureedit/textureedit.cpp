@@ -11,7 +11,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/spritemesh.h"
+#include "components/spriterender.h"
 #include "components/camera.h"
 
 #include "resources/texture.h"
@@ -137,7 +137,7 @@ void TextureEdit::onGLInit() {
 
     Actor *object   = Engine::objectCreate<Actor>("Sprite", scene);
     object->transform()->setScale(Vector3(SCALE));
-    m_pSprite       = object->addComponent<SpriteMesh>();
+    m_pSprite       = object->addComponent<SpriteRender>();
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
