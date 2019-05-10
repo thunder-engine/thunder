@@ -9,10 +9,6 @@ Component::Component() :
 
 }
 
-void Component::draw(ICommandBuffer &, int8_t) {
-
-}
-
 Actor *Component::actor() const {
     return (static_cast<Actor *>(parent()));
 }

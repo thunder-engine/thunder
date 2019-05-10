@@ -110,7 +110,7 @@ protected:
     void                setDrag                     (bool drag);
 
 private slots:
-
+    void                onApplySettings             ();
 
 protected:
     typedef map<uint32_t, Select>   SelectMap;

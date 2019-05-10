@@ -58,7 +58,7 @@ void CameraCtrl::update() {
         }
     }
 
-    if( m_pActiveCamera && (mCameraSpeed.x != 0 || mCameraSpeed.y != 0 || mCameraSpeed.z != 0) ) {
+    if( m_pActiveCamera && (mCameraSpeed.x != 0.0f || mCameraSpeed.y != 0.0f || mCameraSpeed.z != 0.0f) ) {
         Transform *t    = m_pCamera->transform();
         Vector3 pos     = t->position();
         Vector3 dir     = t->rotation() * Vector3(0.0, 0.0, 1.0);
@@ -139,7 +139,6 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
             } else {
                 radius = 1.0f;
             }
-
         }
 
         m_pActiveCamera->setFocal(radius);
@@ -156,11 +155,15 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             switch(e->key()) {
                 case Qt::Key_W:
                 case Qt::Key_Up: {
-                    mCameraMove |= MOVE_FORWARD;
+                    if(!m_pActiveCamera->orthographic()) {
+                        mCameraMove |= MOVE_FORWARD;
+                    }
                 } break;
                 case Qt::Key_S:
                 case Qt::Key_Down: {
-                    mCameraMove |= MOVE_BACKWARD;
+                    if(!m_pActiveCamera->orthographic()) {
+                        mCameraMove |= MOVE_BACKWARD;
+                    }
                 } break;
                 case Qt::Key_A:
                 case Qt::Key_Left: {
@@ -208,8 +211,8 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 
             if(e->buttons() & Qt::RightButton) {
                 if(m_pActiveCamera->orthographic()) {
-                    cameraMove(Vector3((float)delta.x() / (float)m_pView->width(),
-                                     -((float)delta.y() / ((float)m_pView->height() * m_pActiveCamera->ratio())), 0.0f));
+                    cameraMove(Vector3(static_cast<float>(delta.x()) / (static_cast<float>(m_pView->width())),
+                                      -static_cast<float>(delta.y()) / (static_cast<float>(m_pView->height()) * m_pActiveCamera->ratio()), 0.0f));
                 } else {
                     if(!mBlockRot)  {
                         cameraRotate(Vector3(delta.y(), delta.x(), 0.0f) * 0.1f);
@@ -243,14 +246,17 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 
 void CameraCtrl::cameraZoom(float delta) {
     if(m_pActiveCamera && m_pCamera) {
-        float focal = m_pActiveCamera->focal() - delta;
-        if(focal > 0.0f) {
-            m_pActiveCamera->setFocal(focal);
-            m_pActiveCamera->setOrthoHeight(focal);
+        if(m_pActiveCamera->orthographic()) {
+            m_pActiveCamera->setOrthoHeight(m_pActiveCamera->orthoHeight() - delta);
+        } else {
+            float focal = m_pActiveCamera->focal() - delta;
+            if(focal > 0.0f) {
+                m_pActiveCamera->setFocal(focal);
+                m_pActiveCamera->setOrthoHeight(focal);
 
-            Transform *t    = m_pCamera->transform();
-
-            t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, delta));
+                Transform *t = m_pCamera->transform();
+                t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, delta));
+            }
         }
     }
 }
@@ -269,5 +275,5 @@ void CameraCtrl::cameraRotate(const Vector3 &delta) {
 
 void CameraCtrl::cameraMove(const Vector3 &delta) {
     Transform *t    = m_pCamera->transform();
-    t->setPosition(t->position() - delta * m_pActiveCamera->focal());
+    t->setPosition(t->position() - delta * ((m_pActiveCamera->orthographic()) ? m_pActiveCamera->orthoHeight() : m_pActiveCamera->focal()));
 }

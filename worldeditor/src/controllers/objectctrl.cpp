@@ -21,6 +21,7 @@
 #include "assetmanager.h"
 #include "converters/converter.h"
 #include "projectmanager.h"
+#include "settingsmanager.h"
 
 #include "objectctrlpipeline.h"
 
@@ -84,6 +85,8 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     m_pDepth->resize(1, 1);
 
     m_pPipeline = nullptr;
+
+    connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
 }
 
 ObjectCtrl::~ObjectCtrl() {
@@ -372,6 +375,11 @@ void ObjectCtrl::setDrag(bool drag) {
         m_pPropertyState    = new UndoManager::PropertyObjects(selected(), this);
     }
     mDrag   = drag;
+}
+
+void ObjectCtrl::onApplySettings() {
+    ObjectCtrlPipeline *pipeline = static_cast<ObjectCtrlPipeline *>(m_pActiveCamera->pipeline());
+    pipeline->loadSettings();
 }
 
 Object::ObjectList ObjectCtrl::selected() {

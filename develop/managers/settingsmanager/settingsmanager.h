@@ -19,6 +19,11 @@ public slots:
     void                        saveSettings                ();
 
 private:
+    bool                        eventFilter                 (QObject *obj, QEvent *event);
+
+private:
+    SettingsManager             ();
+
     static SettingsManager     *m_pInstance;
 
 };

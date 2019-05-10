@@ -104,7 +104,7 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
 
     updateShadows(camera, scene);
 
-    m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
+    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
     cameraReset(camera);
 
@@ -127,18 +127,10 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
 
     m_Buffer->setRenderTarget(m_Target);
     m_Buffer->setScreenProjection();
-    m_Buffer->clearRenderTarget(true, camera.color());
+    m_Buffer->clearRenderTarget(true, camera.color(), false);
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
-/*
-    m_Buffer->setViewport(0, 0, m_Screen.x, m_Screen.y);
-    cameraReset(camera);
-
-    m_Buffer->clearRenderTarget(true, camera.color());
-
-    drawComponents(ICommandBuffer::TRANSLUCENT, m_Components);
-*/
 }
 
 void Pipeline::cameraReset(Camera &camera) {
@@ -209,7 +201,7 @@ void Pipeline::setTarget(uint32_t resource) {
 
 void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
     for(auto it : list) {
-        static_cast<Component *>(it)->draw(*m_Buffer, layer);
+        static_cast<Renderable *>(it)->draw(*m_Buffer, layer);
     }
 }
 

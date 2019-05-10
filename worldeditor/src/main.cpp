@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
     plugin->init(&engine);
     QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
+    SettingsManager::instance()->setProperty("General/Colors/Grid_Color", QColor(102, 102, 102, 102));
+
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);
     asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));

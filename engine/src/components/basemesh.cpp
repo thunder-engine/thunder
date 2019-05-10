@@ -92,7 +92,7 @@ void BaseMesh::loadUserData(const VariantMap &data) {
         auto it = data.find(MATERAILS);
         if(it != data.end()) {
             VariantList list    = (*it).second.value<VariantList>();
-            uint32_t i  = 0;
+            int32_t i  = 0;
             for(auto it : list) {
                 setMaterial(Engine::loadResource<Material>(it.toString()), i);
                 i++;
