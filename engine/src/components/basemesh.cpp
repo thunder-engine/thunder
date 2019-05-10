@@ -52,7 +52,11 @@ MaterialArray BaseMesh::materials() const {
 void BaseMesh::setMaterials(const MaterialArray &material) {
     for(uint32_t index = 0; index < m_Materials.size(); index++) {
         if(index < material.size() && m_Materials[index] != material[index]) {
-            Material *org = m_Materials[index]->material();
+            Material *org = nullptr;
+            if(m_Materials[index]) {
+                org = m_Materials[index]->material();
+            }
+
             Material *dst = material[index]->material();
             if(org != dst) {
                 MaterialInstance *inst  = m_Materials[index];
@@ -66,7 +70,9 @@ void BaseMesh::setMaterials(const MaterialArray &material) {
 
 Material *BaseMesh::material(int index) const {
     if(index < m_Materials.size()) {
-        return m_Materials[index]->material();
+        if(m_Materials[index]) {
+            return m_Materials[index]->material();
+        }
     }
     return nullptr;
 }

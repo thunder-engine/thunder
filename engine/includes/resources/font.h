@@ -18,9 +18,11 @@ public:
 
     uint32_t                    size                        () const;
 
-    uint32_t                    atlasIndex                  (uint32_t character, uint32_t size = 0) const;
+    uint32_t                    atlasIndex                  (uint32_t glyph, uint32_t size = 0) const;
 
     void                        requestCharacters           (const u32string &characters, uint32_t size = 0);
+
+    int32_t                     requestKerning              (uint32_t glyph, uint32_t previous) const;
 
     void                        setFontName                 (const string &name);
 
@@ -47,6 +49,8 @@ protected:
     typedef unordered_map<uint32_t, Vector2>    SpecialMap;
 
     ByteArray                   m_Data;
+
+    bool                        m_UseKerning;
 
 };
 

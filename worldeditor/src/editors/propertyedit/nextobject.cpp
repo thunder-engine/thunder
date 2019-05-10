@@ -175,7 +175,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
         if(data.userType() == MetaType::type<MaterialArray>()) {
             MaterialArray array = data.value<MaterialArray>();
             for(uint32_t i = 0; i < array.size(); i++) {
-                Variant v = Variant::fromValue(array[i]->material());
+                Variant v = Variant::fromValue((array[i]) ? array[i]->material() : nullptr);
                 blockSignals(true);
                 setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
                 blockSignals(false);

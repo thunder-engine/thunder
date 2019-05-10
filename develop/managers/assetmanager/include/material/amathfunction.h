@@ -109,6 +109,16 @@ public:
         return compile(m_pNode, "cross", value, link, depth, size, size);
     }
 };
+class Smoothstep : public MathFunction {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Smoothstep() { m_Params << x << y << a; }
+
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+        return compile(m_pNode, "smoothstep", value, link, depth, size, 0, 1);
+    }
+};
 
 class Mix : public MathFunction {
     Q_OBJECT

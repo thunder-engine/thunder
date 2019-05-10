@@ -16,7 +16,9 @@ TextMesh::TextMesh() :
         m_Size(16),
         m_Space(0),
         m_Line(0),
-        m_Color(1.0f) {
+        m_Color(1.0f),
+        m_Kerning(true) {
+
     m_pMesh = Engine::objectCreate<Mesh>();
     m_pMesh->makeDynamic();
     m_pMesh->setFlags(Mesh::ATTRIBUTE_UV0);
@@ -43,6 +45,7 @@ void TextMesh::composeMesh() {
             lod.uv0.resize(length * 4);
 
             Vector3 pos;
+            uint32_t previous = 0;
             for(uint32_t i = 0; i < length; i++) {
                 uint32_t ch = text[i];
                 switch(ch) {
@@ -53,6 +56,10 @@ void TextMesh::composeMesh() {
                         pos = Vector3(0.0f, pos.y - m_Line, 0.0f);
                     } break;
                     default: {
+                        if(m_Kerning) {
+                            pos.x += m_pFont->requestKerning(ch, previous);
+                        }
+
                         uint32_t index  = m_pFont->atlasIndex(ch, m_Size);
                         Vector2Vector shape = m_pFont->shape(index);
                         lod.vertices[i * 4 + 0] = pos + Vector3(shape[0], 0.0f);
@@ -74,9 +81,10 @@ void TextMesh::composeMesh() {
                         lod.indices[i * 6 + 4]  = i * 4 + 2;
                         lod.indices[i * 6 + 5]  = i * 4 + 3;
 
-                        pos += Vector3(shape[2].x - shape[0].x, 0.0f, 0.0f);
+                        pos += Vector3(shape[2].x, 0.0f, 0.0f);
                     } break;
                 }
+                previous = ch;
             }
 
             Vector3 bb[2];
@@ -139,6 +147,15 @@ void TextMesh::setColor(const Vector4 &color) {
     if(!m_Materials.empty()) {
         m_Materials[0]->setVector4("uni.color0", &m_Color);
     }
+}
+
+bool TextMesh::kerning() const {
+    return m_Kerning;
+}
+
+void TextMesh::setKerning(const bool kerning) {
+    m_Kerning = kerning;
+    composeMesh();
 }
 
 void TextMesh::loadUserData(const VariantMap &data) {

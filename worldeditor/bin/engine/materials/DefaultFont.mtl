@@ -1,18 +1,72 @@
 {
-    "Blend": 2,
+    "Blend": 0,
     "Depth": true,
     "Links": [
         {
-            "IPort": 5,
-            "Receiver": 0,
+            "IPort": 2,
+            "OPort": -1,
+            "Receiver": 1,
+            "Sender": 3
+        },
+        {
+            "IPort": 2,
             "OPort": 2,
+            "Receiver": 4,
             "Sender": 1
         },
         {
-            "IPort": 1,
-            "Receiver": 0,
+            "IPort": 0,
             "OPort": 0,
+            "Receiver": 2,
+            "Sender": 3
+        },
+        {
+            "IPort": 1,
+            "OPort": 0,
+            "Receiver": 2,
+            "Sender": 5
+        },
+        {
+            "IPort": 3,
+            "OPort": -1,
+            "Receiver": 4,
+            "Sender": 0
+        },
+        {
+            "IPort": 5,
+            "OPort": 3,
+            "Receiver": 0,
+            "Sender": 4
+        },
+        {
+            "IPort": 0,
+            "OPort": 2,
+            "Receiver": 4,
             "Sender": 2
+        },
+        {
+            "IPort": 1,
+            "OPort": 2,
+            "Receiver": 4,
+            "Sender": 6
+        },
+        {
+            "IPort": 0,
+            "OPort": 0,
+            "Receiver": 6,
+            "Sender": 3
+        },
+        {
+            "IPort": 1,
+            "OPort": 0,
+            "Receiver": 6,
+            "Sender": 5
+        },
+        {
+            "IPort": 1,
+            "OPort": 0,
+            "Receiver": 0,
+            "Sender": 8
         }
     ],
     "Model": 0,
@@ -23,21 +77,74 @@
                 "Texture": [
                     "Template",
                     ".embedded/invalid.png",
-                    22
+                    45
                 ]
             },
-            "X": -199,
-            "Y": 0
+            "X": -580,
+            "Y": 340
+        },
+        {
+            "Type": "Subtraction",
+            "Values": {
+            },
+            "X": -580,
+            "Y": 60
+        },
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 0.5
+            },
+            "X": -840,
+            "Y": 60
+        },
+        {
+            "Type": "Smoothstep",
+            "Values": {
+            },
+            "X": -380,
+            "Y": 160
+        },
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 0.0625
+            },
+            "X": -840,
+            "Y": 240
+        },
+        {
+            "Type": "Add",
+            "Values": {
+            },
+            "X": -580,
+            "Y": 200
         },
         {
             "Type": "ParamVector",
             "Values": {
                 "Parameter_Name": "color0"
             },
-            "X": -183,
-            "Y": -82
+            "X": -280,
+            "Y": 20
+        },
+        {
+            "Type": "ConstVector3",
+            "Values": {
+                "Value": [
+                    67,
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "X": -280,
+            "Y": -100
         }
     ],
+    "Raw": "",
     "Side": true,
-    "Type": 0
+    "Type": 0,
+    "View": true
 }

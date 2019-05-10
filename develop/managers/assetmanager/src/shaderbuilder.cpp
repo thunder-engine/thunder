@@ -84,13 +84,14 @@ ShaderBuilder::ShaderBuilder() :
 
     qRegisterMetaType<DotProduct*>("DotProduct");
     qRegisterMetaType<CrossProduct*>("CrossProduct");
+    qRegisterMetaType<Smoothstep*>("Smoothstep");
     qRegisterMetaType<Mix*>("Mix");
     qRegisterMetaType<Mod*>("Mod");
     qRegisterMetaType<Power*>("Power");
     qRegisterMetaType<SquareRoot*>("SquareRoot");
     qRegisterMetaType<Logarithm*>("Logarithm");
     qRegisterMetaType<Logarithm2*>("Logarithm2");
-    m_Functions << "DotProduct" << "CrossProduct" << "Mix" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2";
+    m_Functions << "DotProduct" << "CrossProduct" << "Mix" << "Smoothstep" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2";
 
     qRegisterMetaType<Clamp*>("Clamp");
     qRegisterMetaType<Min*>("Min");
