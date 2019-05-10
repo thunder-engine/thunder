@@ -52,7 +52,7 @@ public:
 
     void                deleteSelected              (bool force = false);
 
-    void                selectActor                 (const list<uint32_t> &list, bool undo = true);
+    void                selectActor                 (const list<uint32_t> &list, bool undo = true, bool additive = false);
 
     Object::ObjectList  selected                    ();
 
@@ -77,7 +77,7 @@ public slots:
     void                onDragMove                  (QDragMoveEvent *);
     void                onDragLeave                 (QDragLeaveEvent *);
 
-    void                onSelectActor               (Object::ObjectList list, bool undo = true);
+    void                onSelectActor               (Object::ObjectList list, bool undo = true, bool additive = false);
     void                onRemoveActor               (Object::ObjectList, bool undo = true);
     void                onParentActor               (Object::ObjectList objects, Object::ObjectList parents, bool undo = true);
 
@@ -116,8 +116,6 @@ protected:
     typedef map<uint32_t, Select>   SelectMap;
     SelectMap           m_Selected;
 
-    bool                mAdditive;
-    bool                mCopy;
     bool                mDrag;
 
     /// Current mode (see AController::ModeTypes)

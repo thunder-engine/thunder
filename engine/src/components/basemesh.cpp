@@ -52,10 +52,14 @@ MaterialArray BaseMesh::materials() const {
 void BaseMesh::setMaterials(const MaterialArray &material) {
     for(uint32_t index = 0; index < m_Materials.size(); index++) {
         if(index < material.size() && m_Materials[index] != material[index]) {
-            MaterialInstance *inst  = m_Materials[index];
-            delete inst;
+            Material *org = m_Materials[index]->material();
+            Material *dst = material[index]->material();
+            if(org != dst) {
+                MaterialInstance *inst  = m_Materials[index];
+                delete inst;
 
-            m_Materials[index]  = material[index];
+                m_Materials[index]  = dst->createInstance();
+            }
         }
     }
 }

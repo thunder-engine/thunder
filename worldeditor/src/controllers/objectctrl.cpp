@@ -57,9 +57,7 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
 
-    mCopy       = false;
     mDrag       = false;
-    mAdditive   = false;
 
     mMode       = ObjectCtrl::MODE_SCALE;
 
@@ -344,25 +342,6 @@ Vector3 ObjectCtrl::objectPosition() {
 
 void ObjectCtrl::setDrag(bool drag) {
     if(drag) {
-        if(mCopy) {
-            m_pView->makeCurrent();
-            // Making the copy of selected objects
-            Object::ObjectList objects;
-            for(auto it : m_Selected) {
-                Actor *origin   = it.second.object;
-                Actor *actor    = dynamic_cast<Actor *>(origin->clone());
-                if(actor) {
-                    actor->setName(findFreeObjectName(origin->name(), origin->parent()));
-                    actor->setParent(origin->parent());
-                    objects.push_back(actor);
-                    emit mapUpdated();
-                }
-            }
-            UndoManager::instance()->push(new UndoManager::CreateObjects(objects, this, tr("Copy Objects")));
-            clear();
-            onSelectActor(objects, false);
-            objects.clear();
-        }
         // Save params
         for(auto &it : m_Selected) {
             Transform *t    = it.second.object->transform();
@@ -390,24 +369,24 @@ Object::ObjectList ObjectCtrl::selected() {
     return result;
 }
 
-void ObjectCtrl::selectActor(const list<uint32_t> &list, bool undo) {
+void ObjectCtrl::selectActor(const list<uint32_t> &list, bool undo, bool additive) {
     bool select = list.empty();
 
     Object::ObjectList l;
     for(auto it : list) {
-        if(m_Selected.find(it) == m_Selected.end() || !mAdditive) {
+        if(m_Selected.find(it) == m_Selected.end() || additive) {
             l.push_back(findObject(it));
             select  = true;
         }
     }
     if(select) {
-        onSelectActor(l, undo);
+        onSelectActor(l, undo, additive);
     }
 }
 
-void ObjectCtrl::onSelectActor(Object::ObjectList list, bool undo) {
+void ObjectCtrl::onSelectActor(Object::ObjectList list, bool undo, bool additive) {
     Object::ObjectList sel = selected();
-    if(!mAdditive) {
+    if(!additive) {
         clear();
     }
     bool push   = false;
@@ -645,24 +624,6 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 case Qt::Key_Delete: {
                     deleteSelected();
                 } break;
-                case Qt::Key_Control: {
-                    mAdditive = true;
-                } break;
-                case Qt::Key_Shift: {
-                    mCopy = true;
-                } break;
-                default: break;
-            }
-        } break;
-        case QEvent::KeyRelease: {
-            QKeyEvent *e    = static_cast<QKeyEvent *>(pe);
-            switch(e->key()) {
-                case Qt::Key_Control: {
-                    mAdditive = false;
-                } break;
-                case Qt::Key_Shift: {
-                    mCopy = false;
-                } break;
                 default: break;
             }
         } break;
@@ -694,7 +655,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                    UndoManager::instance()->push(m_pPropertyState);
                    m_pPropertyState = nullptr;
                 } else {
-                    selectActor( m_ObjectsList );
+                    selectActor( m_ObjectsList, true, e->modifiers() & Qt::ControlModifier );
 
                     if(m_pPropertyState) {
                         delete m_pPropertyState;
@@ -709,6 +670,26 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
             mMousePosition  = Vector2(e->pos().x(), e->pos().y());
             if(e->buttons() & Qt::LeftButton) {
                 if(!mDrag) {
+                    if(e->modifiers() & Qt::ShiftModifier) {
+                        m_pView->makeCurrent();
+                        // Making the copy of selected objects
+                        Object::ObjectList objects;
+                        for(auto it : m_Selected) {
+                            Actor *origin   = it.second.object;
+                            Actor *actor    = dynamic_cast<Actor *>(origin->clone());
+                            if(actor) {
+                                actor->setName(findFreeObjectName(origin->name(), origin->parent()));
+                                actor->setParent(origin->parent());
+                                objects.push_back(actor);
+                                emit mapUpdated();
+                            }
+                        }
+                        UndoManager::instance()->push(new UndoManager::CreateObjects(objects, this, tr("Copy Objects")));
+                        clear();
+                        onSelectActor(objects, false);
+                        objects.clear();
+                    }
+
                     setDrag(Handles::s_Axes);
                 }
             } else {
