@@ -30,6 +30,9 @@ Rectangle {
 
     property variant nodes: undefined
     property variant links: undefined
+
+    property variant selection: []
+
     property int cell: 20
     property int nodeBorder: (stateMachine) ? cell / 2 : 0
 
@@ -68,6 +71,33 @@ Rectangle {
         return (Math.max(iport, oport) + 1) * (cell * 2)
     }
 
+    function moveNodes(id, x, y) {
+        var dx = x - nodes[id].pos.x
+        var dy = y - nodes[id].pos.y
+        schemeModel.moveNode(id, nodes[id].pos.x + dx, nodes[id].pos.y + dy)
+
+        for(var i = 0; i < selection.length; i++) {
+            var index = selection[i]
+            if(index === 0 || index === id) {
+                continue
+            }
+            schemeModel.moveNode(index, nodes[index].pos.x + dx, nodes[index].pos.y + dy)
+        }
+    }
+
+    function nodeSelect(id) {
+        selectNode = id
+        nodeSelected(selectNode)
+        selection = [id]
+    }
+
+    function deleteSelected() {
+        if(selection.length > -1) {
+            schemeModel.deleteNodes(selection)
+            nodeSelect(0)
+        }
+    }
+
     MouseArea {
         id: rootArea
         anchors.fill: parent
@@ -78,9 +108,11 @@ Rectangle {
         property int oldY: 0
 
         onPositionChanged: {
-            if(selectNode > -1) {
-                canvas.requestPaint()
-            }
+            canvas.mouseX = mouse.x - canvas.translateX
+            canvas.mouseY = mouse.y - canvas.translateY
+
+            canvas.requestPaint()
+
             if(mouse.buttons & Qt.RightButton) {
                 canvas.translateX += mouse.x - oldX
                 canvas.translateY += mouse.y - oldY
@@ -88,12 +120,44 @@ Rectangle {
             }
             oldX = mouse.x
             oldY = mouse.y
+
+            if(rubberBand.visible) {
+                rubberBand.width = mouse.x - rubberBand.x
+                rubberBand.height = mouse.y - rubberBand.y
+            }
         }
+
         onClicked: {
-            selectNode = -1
-            selectNode = -1
+            if(selection.length === 0) {
+                nodeSelect(0)
+            }
             selectPort = -1
+
             canvas.requestPaint()
+        }
+
+        onPressed: {
+            rubberBand.x = mouse.x
+            rubberBand.y = mouse.y
+            rubberBand.width = 0
+            rubberBand.height = 0
+            rubberBand.visible = true
+
+            selection = []
+        }
+
+        onReleased: {
+            rubberBand.visible = false
+            if(nodes !== undefined) {
+                var array = new Array
+                for(var i = 0; i < nodes.length; i++) {
+                    if(nodes[i].focus !== undefined) {
+                        nodes[i].focus = undefined
+                        array.push(i)
+                    }
+                }
+                selection = array
+            }
         }
     }
 
@@ -119,8 +183,8 @@ Rectangle {
         property int translateY: rect.height / 2
         property string linkColor: "white"
 
-        property int mouseX: rootArea.mouseX - translateX
-        property int mouseY: rootArea.mouseY - translateY
+        property int mouseX: 0
+        property int mouseY: 0
 
         onPaint: {
             context.clearRect(0, 0, canvas.width, canvas.height)
@@ -156,7 +220,7 @@ Rectangle {
                 var width = nodeWidth(nodes[selectNode])
                 if(selectPort > -1) {
                     var port = nodes[selectNode].ports[selectPort]
-                    if(typeof(port) !== "undefined") {
+                    if(port !== undefined) {
                         x0 += (port.out) ? width : 0
                         y0 += port.pos * (cell * 2) + (cell * 3)
 
@@ -197,7 +261,7 @@ Rectangle {
                     var oport = nodes[links[i].sender].ports[links[i].oport]
                     var iport = nodes[links[i].receiver].ports[links[i].iport]
 
-                    if(typeof(oport) !== "undefined" && typeof(iport) !== "undefined") {
+                    if(oport !== undefined && iport !== undefined) {
                         var x1 = nodes[links[i].sender].pos.x + ((oport.out) ? nodeWidth(nodes[links[i].sender]) - radius : -radius)
                         var y1 = nodes[links[i].sender].pos.y + oport.pos * (cell * 2) + (cell * 3) - radius
 
@@ -217,14 +281,6 @@ Rectangle {
             }
             context.setTransform(1, 0, 0, 1, 0, 0)
         }
-    }
-
-    RectangularGlow {
-        id: glow
-        glowRadius: 5
-        spread: 0.2
-        color: theme.red
-        cornerRadius: glowRadius
     }
 
     Repeater {
@@ -293,6 +349,7 @@ Rectangle {
     }
 
     Repeater {
+        id: nodeRepeater
         model: (nodes !== undefined) ? nodes.length : 0
         SchemePort {
             id: nodeObject
@@ -304,6 +361,29 @@ Rectangle {
 
             node: index
 
+            property bool isFocus: {
+                var result = (rubberBand.visible && isCollide(nodeObject.x, nodeObject.y, nodeObject.width, nodeObject.height,
+                                                              rubberBand.x, rubberBand.y, rubberBand.width, rubberBand.height))
+
+                if(result === true) {
+                    nodes[index].focus = true
+                }
+                return result
+            }
+            property bool isSelected: false
+
+            Connections {
+                target: rect
+                onSelectionChanged: {
+                    isSelected = (selection.indexOf(index) !== -1)
+                }
+            }
+
+            function isCollide(x1, y1, width1, height1, x2, y2, width2, height2) {
+                return !(x1 > x2 + width2 || x1 + width1 < x2 ||
+                         y1 > y2 + height2 || y1 + height1 < y2)
+            }
+
             Rectangle {
                 x: nodeBorder
                 y: nodeBorder
@@ -311,6 +391,9 @@ Rectangle {
                 height: parent.height - (nodeBorder * 2)
                 radius: 4
                 color: "#e0e0e0"
+
+                border.color: theme.red
+                border.width: (nodeObject.isFocus || nodeObject.isSelected) ? 2 : 0
 
                 MouseArea {
                     anchors.fill: parent
@@ -320,16 +403,16 @@ Rectangle {
 
                     onPositionChanged: {
                         if(drag.active) {
-                            schemeModel.moveNode(nodeObject.node,
-                                                 Math.round((nodeObject.x - canvas.translateX) / cell) * cell,
-                                                 Math.round((nodeObject.y - canvas.translateY) / cell) * cell)
+                            moveNodes(node,
+                                      Math.round((nodeObject.x - canvas.translateX) / cell) * cell,
+                                      Math.round((nodeObject.y - canvas.translateY) / cell) * cell)
                         }
+                        canvas.mouseX = nodeObject.x + mouse.x - canvas.translateX
+                        canvas.mouseY = nodeObject.y + mouse.y - canvas.translateY
+                        canvas.requestPaint()
                     }
                     onClicked: {
-                        nodeSelected(nodeObject.node)
-                        glow.anchors.fill = nodeObject
-                        glow.visible = true
-                        selectNode = nodeObject.node
+                        nodeSelect(nodeObject.node)
                     }
                 }
 
@@ -373,20 +456,26 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: rubberBand
+        visible: false
+        color: theme.emitterColor;
+        border.width: 1
+        border.color: theme.hoverColor
+    }
+
     Keys.onPressed: {
         if(event.key === Qt.Key_Delete) {
-            if(selectNode > -1) {
-                schemeModel.deleteNode(selectNode)
-                selectNode = 0
-                nodeSelected(0)
-                glow.visible = false
-            }
+            deleteSelected()
+
             if(selectLink > -1) {
                 schemeModel.deleteLink(selectLink)
                 selectLink = -1
                 linkSelected(selectLink)
                 focusLink = -1
             }
+        } else if(event.key === Qt.Key_V) {
+
         }
     }
     focus: true

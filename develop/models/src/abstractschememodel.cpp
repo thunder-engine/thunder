@@ -294,7 +294,12 @@ void AbstractSchemeModel::moveNode(int index, int x, int y) {
     emit nodeMoved();
 }
 
-void AbstractSchemeModel::deleteNode(int index) {
-    deleteNode(m_Nodes.at(index));
-    emit schemeUpdated();
+void AbstractSchemeModel::deleteNodes(QVariant list) {
+    NodeList toDelete;
+    for(QVariant it : list.toList()) {
+        toDelete.push_back(m_Nodes.at(it.toInt()));
+    }
+    for(Node *it : toDelete) {
+        deleteNode(it);
+    }
 }

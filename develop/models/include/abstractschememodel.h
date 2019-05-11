@@ -100,7 +100,7 @@ public:
     Q_INVOKABLE QVariant links() const;
 
     Q_INVOKABLE void moveNode(int index, int x, int y);
-    Q_INVOKABLE void deleteNode(int index);
+    Q_INVOKABLE void deleteNodes(QVariant list);
 
     Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
     Q_INVOKABLE void deleteLink(int index);
