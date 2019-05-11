@@ -359,6 +359,9 @@ void ObjectCtrl::setDrag(bool drag) {
 void ObjectCtrl::onApplySettings() {
     ObjectCtrlPipeline *pipeline = static_cast<ObjectCtrlPipeline *>(m_pActiveCamera->pipeline());
     pipeline->loadSettings();
+
+    QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();
+    m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }
 
 Object::ObjectList ObjectCtrl::selected() {

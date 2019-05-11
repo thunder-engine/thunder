@@ -34,6 +34,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pActiveCamera = m_pCamera->addComponent<Camera>();
     m_pActiveCamera->setFocal(10.0f);
     m_pActiveCamera->setOrthoHeight(10.0f);
+
     m_pActiveCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
     m_pCamera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));

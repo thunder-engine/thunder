@@ -9,6 +9,8 @@ SettingsBrowser::SettingsBrowser(QWidget *parent) :
 
     ui->commitButton->setProperty("green", true);
 
+    ui->categoriesView->setVisible(false);
+
     connect(ui->commitButton, &QToolButton::clicked, this, &SettingsBrowser::commited);
     connect(ui->revertButton, &QToolButton::clicked, this, &SettingsBrowser::reverted);
 }

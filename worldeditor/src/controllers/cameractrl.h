@@ -30,6 +30,8 @@ public:
 
     virtual void                        init                        (Scene *scene);
 
+    void                                loadSettings                ();
+
     void                                update                      ();
 
     virtual void                        drawHandles                 (ICommandBuffer *);
