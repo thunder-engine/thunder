@@ -16,11 +16,11 @@ public:
 
     virtual void                clear                       ();
 
-    uint32_t                    size                        () const;
+    int32_t                     scale                       () const;
 
-    uint32_t                    atlasIndex                  (uint32_t glyph, uint32_t size = 0) const;
+    uint32_t                    atlasIndex                  (uint32_t glyph) const;
 
-    void                        requestCharacters           (const u32string &characters, uint32_t size = 0);
+    void                        requestCharacters           (const u32string &characters);
 
     int32_t                     requestKerning              (uint32_t glyph, uint32_t previous) const;
 
@@ -28,15 +28,15 @@ public:
 
     uint32_t                    length                      (const u32string &characters) const;
 
-    uint32_t                    spaceWidth                  (uint32_t size = 0) const;
+    int32_t                     spaceWidth                  () const;
 
-    uint32_t                    lineHeight                  (uint32_t size = 0) const;
+    int32_t                     lineHeight                  () const;
 
 protected:
     void                        loadUserData                (const VariantMap &data);
 
 protected:
-    uint32_t                    m_Size;
+    int32_t                     m_Scale;
 
     string                      m_FontName;
 

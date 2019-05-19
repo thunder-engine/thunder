@@ -1,13 +1,12 @@
-#ifndef BOOLPROPERTY_H
-#define BOOLPROPERTY_H
+#ifndef ALIGNMENTPROPERTY_H
+#define ALIGNMENTPROPERTY_H
 
 #include "Property.h"
 
-class BoolProperty : public Property {
+class AlignmentProperty : public Property {
     Q_OBJECT
-
 public:
-    BoolProperty        (const QString& name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
+    AlignmentProperty                   (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
     QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem& option);
 
@@ -20,4 +19,4 @@ protected slots:
 
 };
 
-#endif // BOOLPROPERTY_H
+#endif // ALIGNMENTPROPERTY_H

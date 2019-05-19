@@ -20,9 +20,6 @@ public:
     Material                   *material            () const;
     void                        setMaterial         (Material *material);
 
-    Vector2                     center              () const;
-    void                        setCenter           (const Vector2 &value);
-
     Texture                    *texture             () const;
     virtual void                setTexture          (Texture *texture);
 
@@ -32,8 +29,6 @@ public:
     VariantMap                  saveUserData        () const;
 
 protected:
-    Vector2                     m_Center;
-
     Texture                    *m_Texture;
 
     MaterialInstance           *m_pMaterial;

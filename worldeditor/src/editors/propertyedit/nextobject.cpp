@@ -18,6 +18,7 @@
 #include <components/component.h>
 #include <components/actor.h>
 #include <components/transform.h>
+#include <components/textrender.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -31,8 +32,14 @@
 #define COMPONENT   "Component"
 
 Q_DECLARE_METATYPE(Vector4)
+Q_DECLARE_METATYPE(Alignment)
 
 QVariant qVariant(Variant &v, const string &type) {
+    if(v.userType() == MetaType::type<Alignment>()) {
+        Alignment value = v.value<Alignment>();
+        return QVariant::fromValue(value);
+    }
+
     switch(v.userType()) {
         case MetaType::BOOLEAN:
             return QVariant(v.toBool());
@@ -55,6 +62,7 @@ QVariant qVariant(Variant &v, const string &type) {
         }
         default: break;
     }
+
     if(v.data() == nullptr) {
         return QVariant();
     }
@@ -63,6 +71,11 @@ QVariant qVariant(Variant &v, const string &type) {
 }
 
 Variant aVariant(QVariant &v, uint32_t type) {
+    if(type == MetaType::type<Alignment>()) {
+        Alignment value = v.value<Alignment>();
+        return Variant::fromValue(value);
+    }
+
     switch(type) {
         case MetaType::BOOLEAN: {
             return Variant(v.toBool());
@@ -77,8 +90,7 @@ Variant aVariant(QVariant &v, uint32_t type) {
             if(v.canConvert<QFileInfo>()) {
                 QFileInfo p  = v.value<QFileInfo>();
                 return Variant(qUtf8Printable(p.absoluteFilePath()));
-            }
-            if(v.canConvert<Template>()) {
+            } else if(v.canConvert<Template>()) {
                 Template p  = v.value<Template>();
                 return Variant(qUtf8Printable(p.path));
             }

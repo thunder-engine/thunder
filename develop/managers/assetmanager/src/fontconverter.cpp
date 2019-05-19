@@ -25,7 +25,7 @@ protected:
         {
             VariantList header;
             header.push_back(0); // Reserved
-            header.push_back((int)m_Size);
+            header.push_back(m_Scale);
             header.push_back(m_FontName);
             result[HEADER]  = header;
         }

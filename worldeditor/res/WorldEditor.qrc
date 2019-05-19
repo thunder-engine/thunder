@@ -25,6 +25,10 @@
         <file>fontawesome/close.svg</file>
         <file>fontawesome/curve.png</file>
         <file>icons/thunderlight.svg</file>
+        <file>fontawesome/align/align-center-solid.png</file>
+        <file>fontawesome/align/align-justify-solid.png</file>
+        <file>fontawesome/align/align-left-solid.png</file>
+        <file>fontawesome/align/align-right-solid.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

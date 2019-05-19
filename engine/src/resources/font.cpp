@@ -140,7 +140,7 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
 
 Font::Font() :
         Atlas(),
-        m_Size(12),
+        m_Scale(32),
         m_pFace(nullptr),
         m_UseKerning(false) {
 
@@ -155,31 +155,23 @@ Font::~Font() {
      clear();
 }
 
-uint32_t Font::size() const {
-    return m_Size;
+int32_t Font::scale() const {
+    return m_Scale;
 }
 
-uint32_t Font::atlasIndex(uint32_t glyph, uint32_t size) const {
-    if(size == 0) {
-        size    = m_Size;
-    }
-    uint32_t ch = glyph ^ size;
-    auto it = m_GlyphMap.find(ch);
+uint32_t Font::atlasIndex(uint32_t glyph) const {
+    auto it = m_GlyphMap.find(glyph);
     if(it != m_GlyphMap.end()) {
         return (*it).second;
     }
     return 0;
 }
 
-void Font::requestCharacters(const u32string &characters, uint32_t size) {
-    if(size == 0) {
-        size    = m_Size;
-    }
-
-    FT_Error error  = FT_Set_Char_Size( m_pFace, size * 64, 0, 100, 0 );
+void Font::requestCharacters(const u32string &characters) {
+    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
     if(!error) {
         for(auto it : characters) {
-            uint32_t ch = it ^ size;
+            uint32_t ch = it;
             if(m_GlyphMap.find(ch) == m_GlyphMap.end() && m_pFace) {
                 error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, it ), FT_LOAD_DEFAULT );
                 if(!error) {
@@ -251,12 +243,8 @@ uint32_t Font::length(const u32string &characters) const {
     return characters.length();
 }
 
-uint32_t Font::spaceWidth(uint32_t size) const {
-    if(size == 0) {
-        size    = m_Size;
-    }
-
-    FT_Error error  = FT_Set_Char_Size( m_pFace, size * 64, 0, 100, 0 );
+int32_t Font::spaceWidth() const {
+    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
     if(!error) {
         error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, ' ' ), FT_LOAD_DEFAULT );
         if(!error) {
@@ -266,12 +254,8 @@ uint32_t Font::spaceWidth(uint32_t size) const {
     return 0;
 }
 
-uint32_t Font::lineHeight(uint32_t size) const {
-    if(size == 0) {
-        size    = m_Size;
-    }
-
-    FT_Error error  = FT_Set_Char_Size( m_pFace, size * 64, 0, 100, 0 );
+int32_t Font::lineHeight() const {
+    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
     if(!error) {
         error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, '\n' ), FT_LOAD_DEFAULT );
         if(!error) {
@@ -291,7 +275,7 @@ void Font::loadUserData(const VariantMap &data) {
             auto i      = header.begin();
             //Reserved
             i++;
-            m_Size      = (*i).toInt();
+            m_Scale     = (*i).toInt();
             i++;
             string name = (*i).toString();
             i++;

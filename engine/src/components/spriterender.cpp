@@ -13,7 +13,6 @@
 #define OVERRIDE "uni.texture0"
 
 SpriteRender::SpriteRender() {
-    m_Center    = Vector2();
     m_Texture   = nullptr;
     m_pMaterial = nullptr;
     m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx");
@@ -49,14 +48,6 @@ void SpriteRender::setMaterial(Material *material) {
     if(material) {
         m_pMaterial = material->createInstance();
     }
-}
-
-Vector2 SpriteRender::center() const {
-    return m_Center;
-}
-
-void SpriteRender::setCenter(const Vector2 &value) {
-    m_Center    = value;
 }
 
 Texture *SpriteRender::texture() const {

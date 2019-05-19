@@ -7,12 +7,8 @@ BoolProperty::BoolProperty(const QString &name, QObject *propertyObject, QObject
 
 }
 
-BoolProperty::~BoolProperty() {
-
-}
-
-
 QWidget *BoolProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
+    Q_UNUSED(option)
     m_Editor = new QCheckBox(parent);
     connect(m_Editor, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));
     return m_Editor;

@@ -6,12 +6,13 @@
 #include "nextobject.h"
 #include "custom/Property.h"
 
+#include "custom/AlignmentProperty.h"
+#include "custom/AssetProperty.h"
 #include "custom/BoolProperty.h"
+#include "custom/ColorProperty.h"
 #include "custom/StringProperty.h"
 #include "custom/Vector3DProperty.h"
 #include "custom/FilePathProperty.h"
-#include "custom/AssetProperty.h"
-#include "custom/ColorProperty.h"
 
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
@@ -42,6 +43,9 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::type("Template"))
         return new TemplateProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Alignment"))
+        return new AlignmentProperty(name, propertyObject, parent);
 
     return nullptr;
 }

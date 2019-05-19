@@ -54,12 +54,12 @@
 
 #include "log.h"
 
-const char *gIndex("index");
+static const char *gIndex("index");
 
-const char *gContent("content");
-const char *gSettings("settings");
+static const char *gContent("content");
+static const char *gSettings("settings");
 
-const char *gEntry(".entry");
+static const char *gEntry(".entry");
 
 class EnginePrivate {
 public:
@@ -173,6 +173,8 @@ Engine::Engine(IFile *file, int, char **argv) :
     BaseLight::registerClassFactory(this);
 
     ICommandBuffer::registerClassFactory(this);
+
+    registerMetaType<Alignment>("Alignment");
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
