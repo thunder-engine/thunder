@@ -117,11 +117,8 @@ class ShaderBuilder : public AbstractSchemeModel {
     Q_OBJECT
 
     Q_PROPERTY(Type Material_Type READ materialType WRITE setMaterialType DESIGNABLE true USER true)
-    Q_ENUMS(Type)
     Q_PROPERTY(Blend Blending_Mode READ blend WRITE setBlend DESIGNABLE true USER true)
-    Q_ENUMS(Blend)
     Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
-    Q_ENUMS(LightModel)
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
     Q_PROPERTY(bool View_Space READ isViewSpace WRITE setViewSpace DESIGNABLE true USER true)
@@ -150,6 +147,10 @@ public:
         Cube    = (1<<0),
         Target  = (1<<1)
     };
+
+    Q_ENUM(Type)
+    Q_ENUM(LightModel)
+    Q_ENUM(Blend)
 
 public:
     ShaderBuilder               ();
@@ -252,5 +253,9 @@ private:
 
     FilePath                    m_RawPath;
 };
+
+Q_DECLARE_METATYPE(ShaderBuilder::LightModel)
+Q_DECLARE_METATYPE(ShaderBuilder::Blend)
+Q_DECLARE_METATYPE(ShaderBuilder::Type)
 
 #endif // SHADERBUILDER_H

@@ -94,7 +94,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
     return 0;
 }
 
-uint32_t AMaterialGL::bind(uint8_t layer, uint16_t vertex) {
+uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
     int32_t b   = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&

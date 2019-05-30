@@ -2,10 +2,15 @@
 #define BASECONVERTERSETTINGS_H
 
 #include <QObject>
+#include <QMap>
 
 #include <engine.h>
 
-class NEXT_LIBRARY_EXPORT IConverterSettings {
+typedef QMap<QString, QString> QStringMap;
+
+class NEXT_LIBRARY_EXPORT IConverterSettings : public QObject {
+    Q_OBJECT
+
 public:
     IConverterSettings              ();
     virtual ~IConverterSettings     () {}
@@ -28,12 +33,14 @@ public:
     uint32_t                crc                     () const;
     void                    setCRC                  (uint32_t crc);
 
-    virtual void            loadProperties          (const QVariantMap &) {}
+    const QStringList       subKeys                 () const;
+    QString                 subItem                 (const QString &key) const;
+    int32_t                 subType                 (const QString &key) const;
 
-    uint32_t                subItemsCount           () const;
-    const char             *subItem                 (uint32_t index) const;
+    void                    setSubItem              (const QString &name, const QString &uuid, int32_t type);
 
-    void                    addSubItem              (const char *item);
+signals:
+    void                    updated                 ();
 
 protected:
     bool                    mValid;
@@ -46,10 +53,13 @@ protected:
     string                  mAbsoluteDestination;
     string                  mSource;
 
-    vector<string>          mSubItems;
+    QStringMap              mSubItems;
+    QMap<QString, int32_t>  mSubTypes;
 };
 
 class NEXT_LIBRARY_EXPORT IConverter : public QObject {
+    Q_OBJECT
+
 public:
     enum ContentTypes {
         ContentInvalid              = MetaType::USERTYPE,

@@ -7,18 +7,14 @@
 
 class QImage;
 
-class TextureImportSettings : public QObject, public IConverterSettings {
+class TextureImportSettings : public IConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(TextureType Type READ textureType WRITE setTextureType DESIGNABLE true USER true)
-    Q_ENUMS(TextureType)
     Q_PROPERTY(FormatType Format READ formatType WRITE setFormatType DESIGNABLE true USER true)
-    Q_ENUMS(FormatType)
     Q_PROPERTY(WrapType Wrap READ wrap WRITE setWrap DESIGNABLE true USER true)
-    Q_ENUMS(WrapType)
     Q_PROPERTY(bool MIP_maping READ lod WRITE setLod DESIGNABLE true USER true)
     Q_PROPERTY(FilteringType Filtering READ filtering WRITE setFiltering DESIGNABLE true USER true)
-    Q_ENUMS(FilteringType)
 
 public:
     enum FormatType {
@@ -43,11 +39,13 @@ public:
         Mirrored
     };
 
-signals:
-    void                        updated                     ();
+    Q_ENUM(WrapType)
+    Q_ENUM(FilteringType)
+    Q_ENUM(TextureType)
+    Q_ENUM(FormatType)
 
 public:
-    TextureImportSettings       (QObject *parent = 0);
+    TextureImportSettings       ();
 
     TextureType                 textureType                 () const;
     void                        setTextureType              (TextureType type);
@@ -63,8 +61,6 @@ public:
 
     bool                        lod                         () const;
     void                        setLod                      (bool lod);
-
-    void                        loadProperties              (const QVariantMap &map);
 
 protected:
     TextureType                 m_TextureType;

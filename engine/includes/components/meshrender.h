@@ -9,36 +9,28 @@
 #include <array>
 
 class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
-    A_REGISTER(MeshRender, Renderable, General);
+    A_REGISTER(MeshRender, Renderable, Components);
 
     A_PROPERTIES (
         A_PROPERTY(Mesh *, Mesh, MeshRender::mesh, MeshRender::setMesh),
-        A_PROPERTY(MateralArray, Materials, MeshRender::materials, MeshRender::setMaterials)
+        A_PROPERTY(Material *, Material, MeshRender::material, MeshRender::setMaterial)
     )
-
-    A_METHODS(
-        A_METHOD(Material *, MeshRender::material),
-        A_METHOD(void, MeshRender::setMaterial)
-    )
+    A_NOMETHODS()
 
 public:
     MeshRender                  ();
 
-    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
+    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
+
+    AABBox                      bound                   () const override;
 
     Mesh                       *mesh                    () const;
 
     virtual void                setMesh                 (Mesh *mesh);
 
-    MaterialArray               materials               () const;
+    Material                   *material                () const;
 
-    virtual void                setMaterials            (const MaterialArray &material);
-
-    Material                   *material                (int index = 0) const;
-
-    virtual void                setMaterial             (Material *material, int index = 0);
-
-    uint32_t                    materialCount           () const;
+    virtual void                setMaterial             (Material *material);
 
     void                        loadUserData            (const VariantMap &data);
 
@@ -47,7 +39,7 @@ public:
 protected:
     Mesh                       *m_pMesh;
 
-    MaterialArray               m_Materials;
+    MaterialInstance           *m_pMaterial;
 
 };
 

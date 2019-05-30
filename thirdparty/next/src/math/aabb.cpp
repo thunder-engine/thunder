@@ -1,6 +1,7 @@
 #include "math/amath.h"
 
 #include <float.h>
+#include <vector>
 
 /*!
     \class AABBox
@@ -28,6 +29,51 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &size) :
         center(center),
         size(size) {
 }
+
+void AABBox::encapsulate(const Vector3 &point) {
+    Vector3 bb[2];
+    box(bb[0], bb[1]);
+
+    bb[0].x = MIN(bb[0].x, point.x);
+    bb[0].y = MIN(bb[0].y, point.y);
+    bb[0].z = MIN(bb[0].z, point.z);
+
+    bb[1].x = MAX(bb[1].x, point.x);
+    bb[1].y = MAX(bb[1].y, point.y);
+    bb[1].z = MAX(bb[1].z, point.z);
+
+    setBox(bb[0], bb[1]);
+}
+
+void AABBox::encapsulate(const AABBox &box) {
+    Vector3 bb0[2];
+    this->box(bb0[0], bb0[1]);
+
+    Vector3 bb1[2];
+    box.box(bb1[0], bb1[1]);
+
+    std::vector<Vector3> points = { Vector3(bb1[0].x, bb1[0].y, bb1[0].z),
+                                    Vector3(bb1[1].x, bb1[0].y, bb1[0].z),
+                                    Vector3(bb1[0].x, bb1[1].y, bb1[0].z),
+                                    Vector3(bb1[0].x, bb1[0].y, bb1[1].z),
+                                    Vector3(bb1[1].x, bb1[1].y, bb1[0].z),
+                                    Vector3(bb1[0].x, bb1[1].y, bb1[1].z),
+                                    Vector3(bb1[1].x, bb1[1].y, bb1[1].z),
+                                    Vector3(bb1[1].x, bb1[0].y, bb1[1].z)};
+
+    for(auto it : points) {
+        bb0[0].x = MIN(bb0[0].x, it.x);
+        bb0[0].y = MIN(bb0[0].y, it.y);
+        bb0[0].z = MIN(bb0[0].z, it.z);
+
+        bb0[1].x = MAX(bb0[1].x, it.x);
+        bb0[1].y = MAX(bb0[1].y, it.y);
+        bb0[1].z = MAX(bb0[1].z, it.z);
+    }
+
+    setBox(bb0[0], bb0[1]);
+}
+
 /*!
     Returns true if this bounding box intersects the given sphere at \a position and \a radius; otherwise returns false.
 */

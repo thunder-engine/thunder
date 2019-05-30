@@ -53,7 +53,7 @@ TextureEdit::TextureEdit(Engine *engine) :
 
     readSettings();
 
-    m_pConverter    = new TextureConverter;
+    m_pConverter = new TextureConverter;
 }
 
 TextureEdit::~TextureEdit() {
@@ -82,8 +82,8 @@ void TextureEdit::closeEvent(QCloseEvent *event) {
     if(isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The texture import settings has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setText(tr("The %1 import settings has been modified.").arg(tr("texture")));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -108,18 +108,16 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
         m_pSprite->setTexture(m_pTexture);
     }
 
-    m_pSettings = dynamic_cast<TextureImportSettings *>(settings);
-    if(m_pSettings) {
-        connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
-        ui->treeView->setObject(m_pSettings);
-    }
-
     Camera *camera = ui->Preview->controller()->camera();
     if(camera) {
         camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         camera->setOrthoHeight(SCALE);
         camera->setFocal(SCALE);
     }
+
+    m_pSettings = settings;
+    connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
+    ui->treeView->setObject(m_pSettings);
 }
 
 void TextureEdit::onUpdateTemplate(bool update) {

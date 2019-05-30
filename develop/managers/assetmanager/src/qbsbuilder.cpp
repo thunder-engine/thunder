@@ -112,7 +112,7 @@ QbsBuilder::QbsBuilder() :
 }
 
 void QbsBuilder::generateProject() {
-    StringMap classes;
+    QStringMap classes;
     // Generate plugin loader
     foreach(QString it, m_Sources) {
         QFile file(it);
@@ -138,7 +138,7 @@ void QbsBuilder::generateProject() {
             file.close();
         }
     }
-    StringMap values(m_Values);
+    QStringMap values(m_Values);
 
     values[gRegisterComponents]   = "";
     values[gUnregisterComponents] = "";

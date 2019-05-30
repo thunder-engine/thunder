@@ -43,7 +43,7 @@ private:
 
     SpriteRender               *m_pSprite;
 
-    TextureImportSettings      *m_pSettings;
+    IConverterSettings         *m_pSettings;
 
     TextureConverter           *m_pConverter;
 

@@ -38,8 +38,6 @@ ProjectManager::ProjectManager() {
 
     setSupportedPlatform(new DesktopPlatform);
     setSupportedPlatform(new AndroidPlatform);
-
-    setCurrentPlatform();
 }
 
 ProjectManager *ProjectManager::instance() {

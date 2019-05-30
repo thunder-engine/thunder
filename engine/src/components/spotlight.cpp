@@ -12,7 +12,7 @@ SpotLight::SpotLight() {
 
     setAngle(45.0f);
 
-    m_pShape = Engine::loadResource<Mesh>(".embedded/cube.fbx");
+    m_pShape = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
 
     Material *material  = Engine::loadResource<Material>(".embedded/SpotLight.mtl");
     m_pMaterialInstance = material->createInstance();
@@ -27,7 +27,7 @@ SpotLight::SpotLight() {
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
 }
 
-void SpotLight::draw(ICommandBuffer &buffer, int8_t layer) {
+void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
         m_Position = actor()->transform()->worldPosition();

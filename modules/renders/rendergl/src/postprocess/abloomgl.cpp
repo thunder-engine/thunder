@@ -5,9 +5,7 @@
 #include "pipeline.h"
 
 #include <cmath>
-#if __linux__
 #include <cstring>
-#endif
 
 ABloomGL::ABloomGL() {
     reset("shaders/Downsample.frag");

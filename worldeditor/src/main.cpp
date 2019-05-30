@@ -33,6 +33,7 @@
 
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
+#include "editors/assetselect/assetlist.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;

@@ -46,7 +46,7 @@ Pipeline::Pipeline() :
     if(mtl) {
         m_pSprite   = mtl->createInstance();
     }
-    m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+    m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
     RenderTexture *depth    = Engine::objectCreate<RenderTexture>();
     depth->setDepth(24);

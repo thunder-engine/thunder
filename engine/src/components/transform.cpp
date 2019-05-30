@@ -30,8 +30,8 @@ Vector3 Transform::scale() const {
 
 
 void Transform::setPosition(const Vector3 &value) {
-    m_Position  = value;
-    m_Dirty     = true;
+    m_Position = value;
+    setDirty();
 }
 
 void Transform::setEuler(const Vector3 &value) {
@@ -40,21 +40,26 @@ void Transform::setEuler(const Vector3 &value) {
 }
 
 void Transform::setRotation(const Quaternion &value) {
-    m_Rotation  = value;
-    m_Dirty     = true;
+    m_Rotation = value;
+    setDirty();
 }
 
 void Transform::setScale(const Vector3 &value) {
     m_Scale = value;
+}
+
+void Transform::setDirty() {
     m_Dirty = true;
+    Actor *a = actor();
+    if(a) {
+        for(auto &it : a->findChildren<Actor *>(false)) {
+            it->transform()->setDirty();
+        }
+    }
 }
 
 Matrix4 &Transform::worldTransform() {
     if(m_Dirty) {
-        for(auto &it : actor()->findChildren<Actor *>(false)) {
-            it->transform()->m_Dirty = true;
-        }
-
         m_Transform = Matrix4(m_Position, m_Rotation, m_Scale);
         Actor *cur  = dynamic_cast<Actor *>(actor()->parent());
         while(cur) {

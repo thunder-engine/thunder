@@ -71,6 +71,8 @@ protected:
     Vector4 m_Max;
 };
 
+Q_DECLARE_METATYPE(EffectFunction::ModificatorType)
+
 class Lifetime : public EffectFunction {
     Q_OBJECT
     Q_PROPERTY(float Value READ minFloatValue WRITE setFloatMinValue DESIGNABLE true USER true)

@@ -3,6 +3,8 @@
 
 #include "nativebehaviour.h"
 
+#include <amath.h>
+
 class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)
 
@@ -10,11 +12,11 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_NOMETHODS()
 
 public:
-    virtual void draw(ICommandBuffer &buffer, int8_t layer) {
-        A_UNUSED(buffer);
-        A_UNUSED(layer);
+    virtual void draw(ICommandBuffer &buffer, uint32_t layer) {
+        A_UNUSED(buffer)
+        A_UNUSED(layer)
     }
-
+    virtual AABBox bound() const { return AABBox(); }
 };
 
 #endif // RENDERABLE_H

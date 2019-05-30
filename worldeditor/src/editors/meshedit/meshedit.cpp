@@ -2,7 +2,7 @@
 #include "ui_meshedit.h"
 
 #include <QSettings>
-#include <QKeyEvent>
+#include <QMessageBox>
 
 #include <engine.h>
 
@@ -28,7 +28,8 @@ MeshEdit::MeshEdit(Engine *engine) :
         m_pGround(nullptr),
         m_pDome(nullptr),
         m_pLight(nullptr),
-        m_pEditor(nullptr) {
+        m_pSettings(nullptr),
+        m_pConverter(nullptr) {
 
     ui->setupUi(this);
 
@@ -67,7 +68,6 @@ MeshEdit::~MeshEdit() {
     writeSettings();
 
     delete ui;
-    delete m_pEditor;
 
     delete glWidget;
     delete m_pMesh;
@@ -96,36 +96,55 @@ void MeshEdit::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
     writeSettings();
+
+    if(isModified()) {
+        QMessageBox msgBox(this);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText(tr("The %1 import settings has been modified.").arg(tr("mesh")));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result  = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            event->ignore();
+            return;
+        }
+        if(result == QMessageBox::Yes) {
+            on_actionSave_triggered();
+        }
+    }
 }
 
 void MeshEdit::loadAsset(IConverterSettings *settings) {
     show();
-    prepareScene(settings->destination());
 
-    delete m_pEditor;
-    m_pEditor = new NextObject(m_pMesh, nullptr, this);
-    ui->treeView->setObject(dynamic_cast<QObject *>(settings));
-}
-
-void MeshEdit::prepareScene(const QString &resource) {
-    MeshRender *meshRender  = m_pMesh->component<MeshRender>();
-    if(meshRender) {
-        Mesh *m = Engine::loadResource<Mesh>(qPrintable(resource));
-        meshRender->setMesh(m);
+    if(m_pMesh) {
+        delete m_pMesh;
     }
+
+    Actor *prefab = Engine::loadResource<Actor>( settings->destination() );
+    if(prefab) {
+        m_pMesh = static_cast<Actor *>(prefab->clone());
+        m_pMesh->setPrefab(prefab);
+        m_pMesh->setParent(glWidget->scene());
+    }
+
     float bottom;
-    static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
-    Transform *t    = m_pGround->transform();
-    Vector3 pos(0.0f, bottom - (t->scale().y * 0.5f), 0.0f);
-    t->setPosition(pos);
+    glWidget->controller()->setFocusOn(m_pMesh, bottom);
+    Transform *t = m_pGround->transform();
+    t->setPosition(Vector3(0.0f, bottom - (t->scale().y * 0.5f), 0.0f));
+
+    m_pSettings = settings;
+    connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
+    ui->treeView->setObject(m_pSettings);
+
+    m_pConverter = AssetManager::instance()->getConverter(m_pSettings);
 }
 
 void MeshEdit::onGLInit() {
-    Scene *scene    = glWidget->scene();
+    Scene *scene = glWidget->scene();
     scene->setAmbient(0.5f);
-
-    m_pMesh     = Engine::objectCreate<Actor>("Model", scene);
-    m_pMesh->addComponent<MeshRender>();
 
     m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     m_pLight->transform()->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
@@ -133,35 +152,18 @@ void MeshEdit::onGLInit() {
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
-    m_pGround = Engine::objectCreate<Actor>("Ground", scene);
-    m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
-    m_pGround->addComponent<MeshRender>()->setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx"));
-
-    m_pDome = Engine::objectCreate<Actor>("Dome", scene);
-    m_pDome->transform()->setScale(Vector3(250.0f, 250.0f, 250.0f));
-    MeshRender *mesh = m_pDome->addComponent<MeshRender>();
-    if(mesh) {
-        //mesh->setMesh(Cache::load<Mesh>(".embedded/sphere.fbx"));
-    }
-    //m_pDome->setEnable(false);
-}
-
-void MeshEdit::onKeyPress(QKeyEvent *pe) {
-    switch (pe->key()) {
-        case Qt::Key_L: {
-            /// \todo: Light control
-        } break;
-        default: break;
+    Actor *prefab = Engine::loadResource<Actor>( ".embedded/cube.fbx/Box001" );
+    if(prefab) {
+        m_pGround = static_cast<Actor *>(prefab->clone());
+        m_pGround->setPrefab(prefab);
+        m_pGround->setParent(scene);
+        m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
     }
 }
 
-void MeshEdit::onKeyRelease(QKeyEvent *pe) {
-    switch (pe->key()) {
-        case Qt::Key_L: {
-            /// \todo: Light control
-        } break;
-        default: break;
-    }
+void MeshEdit::onUpdateTemplate() {
+    setModified(true);
+    //m_pMesh->loadUserData(m_pConverter->convertResource(m_pSettings));
 }
 
 void MeshEdit::onToolWindowActionToggled(bool state) {
@@ -178,4 +180,9 @@ void MeshEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) 
         action->setChecked(visible);
         action->blockSignals(false);
     }
+}
+
+void MeshEdit::on_actionSave_triggered() {
+    AssetManager::saveSettings(m_pSettings);
+    setModified(false);
 }

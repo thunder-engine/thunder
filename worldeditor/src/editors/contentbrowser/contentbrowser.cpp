@@ -98,9 +98,9 @@ protected:
     TypeList    m_List;
 };
 
-class AssetItemDeligate : public QStyledItemDelegate  {
+class ContentItemDeligate : public QStyledItemDelegate  {
 public:
-    explicit AssetItemDeligate(QObject *parent = nullptr) :
+    explicit ContentItemDeligate(QObject *parent = nullptr) :
             QStyledItemDelegate(parent),
             m_Scale(1.0f) {
     }
@@ -168,12 +168,11 @@ private:
 
 ContentBrowser::ContentBrowser(QWidget* parent) :
         QWidget(parent),
-        ui(new Ui::ContentBrowser),
-        m_pSelected(nullptr) {
+        ui(new Ui::ContentBrowser) {
 
     ui->setupUi(this);
 
-    m_pContentDeligate  = new AssetItemDeligate();
+    m_pContentDeligate  = new ContentItemDeligate();
     m_pContentProxy     = new ContentFilter(this);
     m_pContentProxy->setSourceModel(ContentList::instance());
 
@@ -182,7 +181,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ui->contentList->setItemDelegate(m_pContentDeligate);
     ui->contentList->setModel(m_pContentProxy);
 
-    connect(ContentList::instance(), &ContentList::layoutChanged, this, &ContentBrowser::onContentUpdated);
+    connect(ContentList::instance(), &ContentList::layoutChanged, m_pContentProxy, &ContentFilter::invalidate);
 
     m_pTreeProxy = new QSortFilterProxyModel(this);
     m_pTreeProxy->setSourceModel(new ContentTree(this));
@@ -201,9 +200,6 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     connect(m_pFilterMenu, SIGNAL(triggered(QAction*)), this, SLOT(onFilterMenuTriggered(QAction*)));
 
     readSettings();
-
-    setCompact(false);
-    on_contentTree_clicked(QModelIndex());
 
     QString showIn(tr("Show in Explorer"));
 
@@ -235,8 +231,6 @@ ContentBrowser::~ContentBrowser() {
     writeSettings();
 
     delete ui;
-
-    delete m_pSelected;
 }
 
 void ContentBrowser::readSettings() {
@@ -315,61 +309,17 @@ void ContentBrowser::onItemDelete() {
     }
 }
 
-void ContentBrowser::setCompact(bool value) {
-    m_Compact   = value;
-    ui->contentTree->setVisible(!value);
-    ui->filterButton->setVisible(!value);
-    ui->contentList->setViewMode((value) ? QListView::ListMode : QListView::IconMode);
-}
-
-void ContentBrowser::filterByType(const uint32_t type) {
-    m_pContentProxy->setContentTypes({ AssetManager::instance()->toContentType(type) });
-}
-
-void ContentBrowser::setSelected(const QString &resource) {
-    ui->contentList->setCurrentIndex( m_pContentProxy->mapFromSource(ContentList::instance()->findResource(resource)) );
-}
-
-QImage ContentBrowser::icon(const QString &resource) const {
-    return ContentList::instance()->icon(ContentList::instance()->findResource(resource));
+void ContentBrowser::rescan() {
+    on_contentTree_clicked(QModelIndex());
 }
 
 void ContentBrowser::on_findContent_textChanged(const QString &arg1) {
     m_pContentProxy->setFilterFixedString(arg1);
 }
 
-void ContentBrowser::onContentUpdated() {
-    on_contentTree_clicked(QModelIndex());
-}
-
 void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
     ui->findContent->clear();
     m_pContentProxy->setRootPath(static_cast<ContentTree *>(m_pTreeProxy->sourceModel())->dirPath(m_pTreeProxy->mapToSource(index)));
-}
-
-void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
-    QModelIndex origin   = m_pContentProxy->mapToSource(index);
-
-    QString source = ContentList::instance()->path(origin);
-    QFileInfo path(source);
-    bool embedded = false;
-    if(source.contains(".embedded/")) {
-        embedded = true;
-    } else {
-        path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
-    }
-
-    if(embedded || path.isFile()) {
-        if(m_pSelected) {
-            delete m_pSelected;
-        }
-        m_pSelected = AssetManager::instance()->createSettings(path);
-        if(embedded) {
-            string guid = AssetManager::instance()->pathToGuid(source.toStdString());
-            m_pSelected->setDestination(guid.c_str());
-        }
-        emit assetSelected(m_pSelected);
-    }
 }
 
 void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
@@ -382,12 +332,9 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
 
         m_pContentProxy->setRootPath( info.absoluteFilePath() );
     } else {
-        if(!m_Compact) {
-            QObject *sender = AssetManager::instance()->openEditor(inst->path(origin));
-            connect(sender, SIGNAL(templateUpdate()), ui->contentList, SLOT(update()));
-        }
+        QObject *sender = AssetManager::instance()->openEditor(inst->path(origin));
+        connect(sender, SIGNAL(templateUpdate()), ui->contentList, SLOT(update()));
     }
-
 }
 
 void ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {

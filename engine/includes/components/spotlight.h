@@ -17,7 +17,7 @@ class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
 public:
     SpotLight                   ();
 
-    void                        draw                    (ICommandBuffer &buffer, int8_t layer);
+    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
 
     float                       radius                  () const;
     void                        setRadius               (float value);

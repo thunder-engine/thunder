@@ -9,7 +9,7 @@
 #include "resources/mesh.h"
 
 PointLight::PointLight() {
-    m_pShape = Engine::loadResource<Mesh>(".embedded/cube.fbx");
+    m_pShape = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
 
     Material *material  = Engine::loadResource<Material>(".embedded/PointLight.mtl");
     m_pMaterialInstance = material->createInstance();
@@ -22,7 +22,7 @@ PointLight::PointLight() {
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
 }
 
-void PointLight::draw(ICommandBuffer &buffer, int8_t layer) {
+void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
 
         Matrix4 m = actor()->transform()->worldTransform();

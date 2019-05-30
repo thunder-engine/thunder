@@ -12,7 +12,7 @@
 #include "converters/converter.h"
 
 class QSortFilterProxyModel;
-class AssetItemDeligate;
+class ContentItemDeligate;
 class ContentFilter;
 
 namespace Ui {
@@ -24,15 +24,20 @@ class ContentBrowser : public QWidget {
 
 public:
     enum ContentTypes {
-        Text        = IConverter::ContentText,
-        Texture     = IConverter::ContentTexture,
-        Material    = IConverter::ContentMaterial,
-        Static      = IConverter::ContentMesh,
-        Animation   = IConverter::ContentAnimation,
-        Effect      = IConverter::ContentEffect,
-        Sound       = IConverter::ContentSound,
-        Code        = IConverter::ContentCode,
-        Map         = IConverter::ContentMap
+        Text                  = IConverter::ContentText,
+        Texture               = IConverter::ContentTexture,
+        Material              = IConverter::ContentMaterial,
+        Mesh                  = IConverter::ContentMesh,
+        Atlas                 = IConverter::ContentAtlas,
+        Font                  = IConverter::ContentFont,
+        Animation             = IConverter::ContentAnimation,
+        Effect                = IConverter::ContentEffect,
+        Sound                 = IConverter::ContentSound,
+        Code                  = IConverter::ContentCode,
+        Map                   = IConverter::ContentMap,
+        Pipeline              = IConverter::ContentPipeline,
+        Prefab                = IConverter::ContentPrefab,
+        AnimationStateMachine = IConverter::ContentAnimationStateMachine
     };
 
     enum FileTypes {
@@ -46,22 +51,13 @@ public:
 
     ~ContentBrowser         ();
 
-    void                    setCompact              (bool value);
-
-    void                    filterByType            (const uint32_t);
-
-    void                    setSelected             (const QString &resource);
-
-    QImage                  icon                    (const QString &resource) const;
-
-signals:
-    void                    assetSelected           (IConverterSettings *settings);
+    void                    rescan                  ();
 
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();
 
-    AssetItemDeligate      *m_pContentDeligate;
+    ContentItemDeligate    *m_pContentDeligate;
 
     ContentFilter          *m_pContentProxy;
 
@@ -79,10 +75,7 @@ private slots:
     void                    onItemDelete                    ();
     void                    onItemReimport                  ();
 
-    void                    onContentUpdated                ();
-
     void                    on_contentTree_clicked          (const QModelIndex &index);
-    void                    on_contentList_clicked          (const QModelIndex &index);
     void                    on_contentList_doubleClicked    (const QModelIndex &index);
 
     void                    on_contentList_customContextMenuRequested   (const QPoint &pos);
@@ -96,13 +89,9 @@ private:
 private:
     Ui::ContentBrowser     *ui;
 
-    bool                    m_Compact;
-
     QMenu                   m_ContentMenu;
 
     QMenu                   m_CreationMenu;
-
-    IConverterSettings     *m_pSelected;
 
 };
 

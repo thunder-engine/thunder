@@ -7,7 +7,7 @@ void ICommandBuffer::clearRenderTarget(bool clearColor, const Vector4 &color, bo
      A_UNUSED(depth);
 }
 
-void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material) {
     A_UNUSED(model);
     A_UNUSED(mesh);
     A_UNUSED(surface);
@@ -15,7 +15,7 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface
     A_UNUSED(material);
 }
 
-void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material, bool particle) {
+void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material, bool particle) {
     A_UNUSED(models);
     A_UNUSED(count);
     A_UNUSED(mesh);

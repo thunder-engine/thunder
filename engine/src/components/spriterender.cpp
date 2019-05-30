@@ -15,19 +15,17 @@
 SpriteRender::SpriteRender() {
     m_Texture   = nullptr;
     m_pMaterial = nullptr;
-    m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+    m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 }
 
-void SpriteRender::draw(ICommandBuffer &buffer, int8_t layer) {
+void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a    = actor();
     if(m_pMesh && layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
 
-        for(uint32_t s = 0; s < m_pMesh->surfacesCount(); s++) {
-            buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, s, layer, m_pMaterial);
-        }
+        buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, 0, layer, m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }

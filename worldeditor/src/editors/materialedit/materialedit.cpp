@@ -173,9 +173,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
         MeshRender *mesh    = m_pMesh->component<MeshRender>();
         if(mesh) {
             VariantMap map  = m_pBuilder->data().toMap();
-            for(auto it : mesh->materials()) {
-                it->material()->loadUserData(map);
-            }
+            mesh->material()->loadUserData(map);
         }
         setModified(update);
     }
@@ -234,15 +232,15 @@ void MaterialEdit::onNodeSelected(int index) {
 }
 
 void MaterialEdit::on_actionPlane_triggered() {
-    changeMesh(".embedded/plane.fbx");
+    changeMesh(".embedded/plane.fbx/Plane001");
 }
 
 void MaterialEdit::on_actionCube_triggered() {
-    changeMesh(".embedded/cube.fbx");
+    changeMesh(".embedded/cube.fbx/Box001");
 }
 
 void MaterialEdit::on_actionSphere_triggered() {
-    changeMesh(".embedded/sphere.fbx");
+    changeMesh(".embedded/sphere.fbx/Sphere002");
 }
 
 void MaterialEdit::on_actionSave_triggered() {

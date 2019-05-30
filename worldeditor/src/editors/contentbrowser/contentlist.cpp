@@ -17,7 +17,6 @@ const QString gIcon("icon");
 
 ContentList *ContentList::m_pInstance   = nullptr;
 
-
 ContentList::ContentList() :
         BaseObjectModel(nullptr),
         m_pEngine(nullptr) {
@@ -41,9 +40,9 @@ void ContentList::destroy() {
 }
 
 void ContentList::init(Engine *engine) {
-    m_pEngine       = engine;
+    m_pEngine = engine;
 
-    connect(m_pAssetManager, SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
+    connect(m_pAssetManager, SIGNAL(directoryChanged(QString)), this, SLOT(update()));
 
     scan(m_pProjectManager->resourcePath());
 
@@ -153,22 +152,6 @@ bool ContentList::removeResource(const QModelIndex &index) {
     return true;
 }
 
-QModelIndex ContentList::findResource(const QString &resource) const {
-    QObject *item   = m_rootItem->findChild<QObject *>(resource);
-    if(item) {
-        return createIndex(item->parent()->children().indexOf(item), 0, item);
-    }
-    return QModelIndex();
-}
-
-QImage ContentList::icon(const QModelIndex &index) const {
-    QObject *item   = static_cast<QObject *>(index.internalPointer());
-    if(item) {
-        return item->property(qPrintable(gIcon)).value<QImage>();
-    }
-    return QImage();
-}
-
 QString ContentList::path(const QModelIndex &index) const {
     QObject *item   = static_cast<QObject *>(index.internalPointer());
     if(item) {
@@ -265,8 +248,9 @@ bool ContentList::dropMimeData(const QMimeData *data, Qt::DropAction, int, int, 
     return true;
 }
 
-void ContentList::update(const QString &path) {
-    QDir dir(m_pProjectManager->contentPath());
+void ContentList::update() {
+    QString path = m_pProjectManager->contentPath();
+    QDir dir(path);
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(!parent) {
         parent  = m_rootItem;
@@ -287,7 +271,7 @@ void ContentList::update(const QString &path) {
 }
 
 void ContentList::scan(const QString &path) {
-    QDir dir(m_pProjectManager->contentPath());
+    QDir dir(path);
 
     QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {

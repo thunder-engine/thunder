@@ -2,6 +2,11 @@
     "crc": 417231686,
     "guid": "{00000000-0502-0000-0000-000000000000}",
     "settings": {
+        "Custom_Scale": 1.0,
+        "Import_Animation": false,
+        "Import_Color": true,
+        "Import_Normals": true,
+        "Use_Custom_Scale": true
     },
     "type": 24
 }

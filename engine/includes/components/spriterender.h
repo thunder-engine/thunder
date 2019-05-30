@@ -15,7 +15,7 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
 public:
     SpriteRender                ();
 
-    void                        draw                (ICommandBuffer &buffer, int8_t layer);
+    void                        draw                (ICommandBuffer &buffer, uint32_t layer);
 
     Material                   *material            () const;
     void                        setMaterial         (Material *material);

@@ -11,7 +11,7 @@
 #define MAX_LODS 4
 
 DirectLight::DirectLight() {
-    m_pShape        = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+    m_pShape        = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
     Material *material  = Engine::loadResource<Material>(".embedded/DirectLight.mtl");
     m_pMaterialInstance = material->createInstance();
@@ -37,7 +37,7 @@ DirectLight::~DirectLight() {
     delete m_pTiles;
 }
 
-void DirectLight::draw(ICommandBuffer &buffer, int8_t layer) {
+void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
         Matrix4 m = actor()->transform()->worldTransform();
 

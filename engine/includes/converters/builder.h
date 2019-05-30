@@ -8,8 +8,6 @@
 
 class ProjectManager;
 
-typedef QMap<QString, QString>      StringMap;
-
 class NEXT_LIBRARY_EXPORT IBuilder : public IConverter {
     Q_OBJECT
 public:
@@ -23,7 +21,7 @@ public:
     virtual uint32_t                type                () const { return MetaType::type<Text *>(); }
     virtual uint8_t                 convertFile         (IConverterSettings *);
 
-    void                            copyTemplate        (const QString &src, const QString &dst, StringMap &values);
+    void                            copyTemplate        (const QString &src, const QString &dst, QStringMap &values);
 
     QString                         project             () const { return m_Project; }
 
@@ -32,7 +30,7 @@ public:
     bool                            isOutdated          () const { return m_Outdated; }
 
 protected:
-    StringMap                       m_Values;
+    QStringMap                      m_Values;
 
     QString                         m_Project;
 

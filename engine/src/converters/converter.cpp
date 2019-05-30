@@ -49,20 +49,22 @@ void IConverterSettings::setAbsoluteDestination(const char *destination) {
     mAbsoluteDestination    = destination;
 }
 
-uint32_t IConverterSettings::subItemsCount() const {
-    return mSubItems.size();
+const QStringList IConverterSettings::subKeys() const {
+    return mSubItems.keys();
 }
 
-const char *IConverterSettings::subItem(uint32_t index) const {
-    if(index < mSubItems.size()) {
-        return mSubItems[index].c_str();
-    }
-    return nullptr;
+QString IConverterSettings::subItem(const QString &key) const {
+    return mSubItems.value(key);
 }
 
-void IConverterSettings::addSubItem(const char *item) {
-    if(item) {
-        mSubItems.push_back(item);
+int32_t IConverterSettings::subType(const QString &key) const {
+    return mSubTypes.value(key);
+}
+
+void IConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
+    if(!name.isEmpty() && !uuid.isEmpty()) {
+        mSubItems[name] = uuid;
+        mSubTypes[name] = type;
     }
 }
 

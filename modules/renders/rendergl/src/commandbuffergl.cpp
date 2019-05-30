@@ -125,7 +125,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     }
 }
 
-void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material) {
+void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material) {
     PROFILER_MARKER;
 
     if(mesh && material) {
@@ -163,7 +163,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     }
 }
 
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint8_t layer, MaterialInstance *material, bool particle) {
+void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material, bool particle) {
     PROFILER_MARKER;
 
     if(mesh && material) {

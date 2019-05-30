@@ -63,7 +63,7 @@ static const char *gEntry(".entry");
 
 class EnginePrivate {
 public:
-    static unordered_map<string, string>    m_IndexMap;
+    static StringMap                        m_IndexMap;
     static unordered_map<string, Object*>   m_ResourceCache;
     static unordered_map<Object*, string>   m_ReferenceCache;
 
@@ -107,7 +107,7 @@ public:
 IFile *EnginePrivate::m_pFile   = nullptr;
 
 bool                            EnginePrivate::m_Game = false;
-unordered_map<string, string>   EnginePrivate::m_IndexMap;
+StringMap                       EnginePrivate::m_IndexMap;
 unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
 unordered_map<Object*, string>  EnginePrivate::m_ReferenceCache;
 VariantMap                      EnginePrivate::m_Values;
@@ -277,7 +277,7 @@ void Engine::setValue(const string &key, const Variant &value) {
     EnginePrivate::m_Values[key]    = value;
 }
 
-Object *Engine::loadResourceImpl(const string &path) {
+Object *Engine::loadResource(const string &path) {
     PROFILER_MARKER;
 
     if(!path.empty()) {
@@ -327,7 +327,7 @@ void Engine::unloadResource(const string &path) {
         {
             auto it = EnginePrivate::m_IndexMap.find(path);
             if(it != EnginePrivate::m_IndexMap.end()) {
-                uuid    = it->second;
+                uuid = it->second;
             }
         }
         {
@@ -341,7 +341,7 @@ void Engine::unloadResource(const string &path) {
     }
 }
 
-void Engine::setResource(Object *object, string &uuid) {
+void Engine::setResource(Object *object, const string &uuid) {
     PROFILER_MARKER;
 
     EnginePrivate::m_ResourceCache[uuid]    = object;
@@ -383,6 +383,10 @@ void Engine::reloadBundle() {
             }
         }
     }
+}
+
+StringMap Engine::indices() const {
+    return EnginePrivate::m_IndexMap;
 }
 
 bool Engine::isGameMode() {

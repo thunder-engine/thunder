@@ -9,7 +9,7 @@ class Mesh;
 class MaterialInstance;
 
 class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
-    A_REGISTER(BaseLight, Renderable, Components)
+    A_REGISTER(BaseLight, Renderable, General)
 
     A_PROPERTIES(
         A_PROPERTY(bool,    Cast_shadows,   BaseLight::castShadows, BaseLight::setCastShadows),

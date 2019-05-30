@@ -4,7 +4,7 @@
 
 #include <engine.h>
 
-#include "editors/contentbrowser/contentselect.h"
+#include "editors/assetselect/contentselect.h"
 
 #include "assetmanager.h"
 

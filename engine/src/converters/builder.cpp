@@ -16,7 +16,7 @@ uint8_t IBuilder::convertFile(IConverterSettings *) {
     return 1;
 }
 
-void IBuilder::copyTemplate(const QString &src, const QString &dst, StringMap &values) {
+void IBuilder::copyTemplate(const QString &src, const QString &dst, QStringMap &values) {
     QFile file(src);
     if(file.open(QFile::ReadOnly | QFile::Text)) {
         QByteArray data(file.readAll());

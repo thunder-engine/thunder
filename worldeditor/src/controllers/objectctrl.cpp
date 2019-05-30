@@ -556,29 +556,22 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                 QFileInfo info(str);
                 switch(mgr->resourceType(info)) {
                     case IConverter::ContentMap: {
-                        m_DragMap   = str;
-                    } break;
-                    case IConverter::ContentMesh: {
-                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        MeshRender *m   = actor->addComponent<MeshRender>();
-                        if(m) {
-                            m->setMesh(Engine::loadResource<Mesh>( qPrintable(str) ));
-                        }
-                        m_DragObjects.push_back(actor);
+                        m_DragMap = str;
                     } break;
                     case IConverter::ContentTexture: {
-                        Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        SpriteRender *sprite  = actor->addComponent<SpriteRender>();
+                        Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        SpriteRender *sprite = actor->addComponent<SpriteRender>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
                             sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));
                         }
                         m_DragObjects.push_back(actor);
                     } break;
+                    case IConverter::ContentMesh:
                     case IConverter::ContentPrefab: {
-                        Actor *prefab  = Engine::loadResource<Actor>( qPrintable(str) );
+                        Actor *prefab = Engine::loadResource<Actor>( qPrintable(str) );
                         if(prefab) {
-                            Actor *actor    = static_cast<Actor *>(prefab->clone());
+                            Actor *actor = static_cast<Actor *>(prefab->clone());
                             actor->setPrefab(prefab);
                             actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                             m_DragObjects.push_back(actor);
@@ -590,7 +583,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         }
     }
     for(Object *o : m_DragObjects) {
-        Actor *a    = static_cast<Actor *>(o);
+        Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(mMouseWorld);
         a->setParent(m_pMap);
     }

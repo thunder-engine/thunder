@@ -96,56 +96,24 @@ void CameraCtrl::onOrthographic(bool flag) {
 void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
     bottom  = 0;
     if(actor) {
-        Vector3 pos;
-        float radius    = 0;
-        Transform *t    = actor->transform();
-        for(auto it : actor->getChildren()) {
-            Mesh *mesh  = nullptr;
-            /// \todo Bad switch case
-            MeshRender *meshRender  = dynamic_cast<MeshRender *>(it);
-            if(meshRender) {
-                mesh    = meshRender->mesh();
-            } else {
-                SpriteRender *spriteRender  = dynamic_cast<SpriteRender *>(it);
-                if(spriteRender) {
-                    mesh    = spriteRender->mesh();
-                } else {
-                    TextRender *textMesh  = dynamic_cast<TextRender *>(it);
-                    if(textMesh) {
-                        mesh    = textMesh->mesh();
-                    }
-                }
-            }
 
-            if(mesh) {
-                radius = 0;
-                uint32_t i  = 0;
-                for(uint32_t s = 0; s < mesh->surfacesCount(); s++) {
-                    AABBox aabb = mesh->bound(s);
-                    Vector3 scale   = t->worldScale();
-                    pos    += aabb.center * scale;
-                    radius += (aabb.size * scale).length();
-                    Vector3 min, max;
-                    aabb.box(min, max);
-                    if(i == 0) {
-                        bottom  = min.y;
-                    }
-                    bottom = MIN(bottom, min.y);
-                    i++;
-                }
-                uint32_t size   = mesh->surfacesCount();
-                pos    /= size;
-                radius /= size;
-                radius /= sinf(m_pActiveCamera->fov() * DEG2RAD);
-            } else {
-                radius = 1.0f;
-            }
+        Transform *t = actor->transform();
+
+        /// \todo Encapsulation may go wrong in case of all points on the one side of axis
+        AABBox bb(Vector3(0.0f), Vector3(0.0f));
+        for(auto it : actor->findChildren<Renderable *>()) {
+            bb.encapsulate(it->bound());
         }
+        float radius = bb.size.length() / sinf(m_pActiveCamera->fov() * DEG2RAD);
+
+        Vector3 min, max;
+        bb.box(min, max);
+        bottom = min.y;
 
         m_pActiveCamera->setFocal(radius);
         m_pActiveCamera->setOrthoHeight(radius);
         Transform *camera   = m_pCamera->transform();
-        camera->setPosition(t->worldPosition() + pos + camera->rotation() * Vector3(0.0, 0.0, radius));
+        camera->setPosition(t->worldPosition() + bb.center + camera->rotation() * Vector3(0.0, 0.0, radius));
     }
 }
 

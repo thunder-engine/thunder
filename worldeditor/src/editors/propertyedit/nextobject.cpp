@@ -184,19 +184,9 @@ void NextObject::buildObject(Object *object, const QString &path) {
         QString name    = (path.isEmpty() ? "" : path + "/") + property.name();
         Variant data    = property.read(object);
 
-        if(data.userType() == MetaType::type<MaterialArray>()) {
-            MaterialArray array = data.value<MaterialArray>();
-            for(uint32_t i = 0; i < array.size(); i++) {
-                Variant v = Variant::fromValue((array[i]) ? array[i]->material() : nullptr);
-                blockSignals(true);
-                setProperty( qPrintable(name + "/Item" + QString::number(i)), qVariant(v, "") );
-                blockSignals(false);
-            }
-        } else {
-            blockSignals(true);
-            setProperty( qPrintable(name), qVariant(data, property.type().name()) );
-            blockSignals(false);
-        }
+        blockSignals(true);
+        setProperty( qPrintable(name), qVariant(data, property.type().name()) );
+        blockSignals(false);
     }
     for(Object *it : object->getChildren()) {
         Invalid *invalid = dynamic_cast<Invalid *>(it);

@@ -2,9 +2,7 @@
 
 #include <variant.h>
 
-#if __linux__
 #include <cstring>
-#endif
 
 #define HEADER  "Header"
 #define DATA    "Data"
@@ -30,8 +28,8 @@ public:
             return child[1]->insert(texture, padding);
         }
 
-        uint32_t width  = (texture->width() + padding);
-        uint32_t height = (texture->height() + padding);
+        int32_t width  = (texture->width() + padding);
+        int32_t height = (texture->height() + padding);
 
         if(fill || w < width || h < height) {
             return nullptr;
@@ -41,8 +39,8 @@ public:
             return this;
         }
         // Texture is smaller then node start splitting
-        uint32_t sw = w - width;
-        uint32_t sh = h - height;
+        int32_t sw = w - width;
+        int32_t sh = h - height;
 
         child[0]    = new Node;
         child[1]    = new Node;
@@ -74,10 +72,10 @@ public:
 
     bool            fill;
 
-    uint32_t        x;
-    uint32_t        y;
-    uint32_t        w;
-    uint32_t        h;
+    int32_t         x;
+    int32_t         y;
+    int32_t         w;
+    int32_t         h;
 
     Node           *child[2];
 };
@@ -135,8 +133,8 @@ void Texture::loadUserData(const VariantMap &data) {
             const VariantList &surfaces = (*it).second.value<VariantList>();
             for(auto s : surfaces) {
                 Surface img;
-                uint32_t w  = m_Width;
-                uint32_t h  = m_Height;
+                int32_t w  = m_Width;
+                int32_t h  = m_Height;
                 const VariantList &lods = s.value<VariantList>();
                 for(auto l : lods) {
                     ByteArray bits = l.toByteArray();
@@ -199,34 +197,34 @@ uint32_t Texture::getPixel(int32_t x, int32_t y) const {
     return result;
 }
 
-uint32_t Texture::width() const {
+int32_t Texture::width() const {
     return m_Width;
 }
 
-uint32_t Texture::height() const {
+int32_t Texture::height() const {
     return m_Height;
 }
 
-void Texture::setWidth(uint32_t width) {
+void Texture::setWidth(int32_t width) {
     m_Width     = width;
 }
 
-void Texture::setHeight(uint32_t height) {
+void Texture::setHeight(int32_t height) {
     m_Height    = height;
 }
 
-uint32_t Texture::size(uint32_t width, uint32_t height) const {
-    uint32_t (Texture::*sizefunc)(uint32_t, uint32_t) const;
+uint32_t Texture::size(int32_t width, int32_t height) const {
+    uint32_t (Texture::*sizefunc)(int32_t, int32_t) const;
     sizefunc    = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
 
     return (this->*sizefunc)(width, height);
 }
 
-inline uint32_t Texture::sizeDXTc(uint32_t width, uint32_t height) const {
+inline uint32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
     return ((width + 3) / 4) * ((height + 3) / 4) * (m_Compress == DXT1 ? 8 : 16);
 }
 
-inline uint32_t Texture::sizeRGB(uint32_t width, uint32_t height) const {
+inline uint32_t Texture::sizeRGB(int32_t width, int32_t height) const {
     return width * height * components();
 }
 
@@ -245,11 +243,11 @@ Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
         if(n) {
             n->fill = true;
             /// \todo can be optimized to do all copies in the end of packing
-            uint8_t *src    = it->m_Sides[0][0];
-            uint8_t *dst    = m_Sides[0][0];
-            uint32_t w      = n->w - padding;
-            uint32_t h      = n->h - padding;
-            for(uint32_t y = 0; y < h; y++) {
+            uint8_t *src = it->m_Sides[0][0];
+            uint8_t *dst = m_Sides[0][0];
+            int32_t w = n->w - padding;
+            int32_t h = n->h - padding;
+            for(int32_t y = 0; y < h; y++) {
                 memcpy(&dst[(y + n->y) * m_Width + n->x], &src[y * w], w);
             }
 
@@ -268,7 +266,7 @@ Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
     return result;
 }
 
-void Texture::resize(uint32_t width, uint32_t height) {
+void Texture::resize(int32_t width, int32_t height) {
     clear();
 
     m_Width     = width;
@@ -276,7 +274,7 @@ void Texture::resize(uint32_t width, uint32_t height) {
 
     m_pRoot->w  = m_Width;
     m_pRoot->h  = m_Height;
-    int32_t length  = size(m_Width, m_Height);
+    uint32_t length  = size(m_Width, m_Height);
     uint8_t *pixels = new uint8_t[length];
     memset(pixels, 0, length);
     Texture::Surface s;

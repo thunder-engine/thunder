@@ -33,8 +33,6 @@ signals:
     void                    templateUpdate                              ();
 
 private:
-    void                    prepareScene                                (const QString &resource);
-
     void                    timerEvent                                  (QTimerEvent *);
 
     Ui::MeshEdit           *ui;
@@ -44,19 +42,22 @@ private:
     Actor                  *m_pDome;
     Actor                  *m_pLight;
 
-    NextObject             *m_pEditor;
+    IConverterSettings     *m_pSettings;
+
+    IConverter             *m_pConverter;
 
     Viewport               *glWidget;
 
 private slots:
     void                    onGLInit                                    ();
 
-    void                    onKeyPress                                  (QKeyEvent *pe);
-    void                    onKeyRelease                                (QKeyEvent *pe);
+    void                    onUpdateTemplate                            ();
 
     void                    onToolWindowActionToggled                   (bool checked);
 
     void                    onToolWindowVisibilityChanged               (QWidget *toolWindow, bool visible);
+
+    void                    on_actionSave_triggered                     ();
 
 };
 

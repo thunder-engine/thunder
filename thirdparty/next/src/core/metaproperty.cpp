@@ -1,8 +1,6 @@
 #include "core/metaproperty.h"
 
-#if __linux__
 #include <cstring>
-#endif
 
 /*!
     \class MetaProperty

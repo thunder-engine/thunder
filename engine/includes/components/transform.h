@@ -43,6 +43,8 @@ public:
     virtual void                setRotation             (const Quaternion &value);
 
 protected:
+    void                        setDirty                ();
+
     bool                        m_Dirty;
 
     Vector3                     m_Position;

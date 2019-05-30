@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #include <objectsystem.h>
 
@@ -15,6 +15,8 @@ class EnginePrivate;
 
 class Actor;
 class Scene;
+
+typedef unordered_map<string, string> StringMap;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
@@ -39,18 +41,20 @@ public:
 /*
     Resource management
 */
-    static Object              *loadResourceImpl            (const string &path);
+    static Object              *loadResource                (const string &path);
 
     static void                 unloadResource              (const string &path);
 
     template<typename T>
     static T                   *loadResource                (const string &path) {
-        return dynamic_cast<T *>(loadResourceImpl(path));
+        return dynamic_cast<T *>(loadResource(path));
     }
 
     static string               reference                   (Object *object);
 
     static void                 reloadBundle                ();
+
+    StringMap                   indices                     () const;
 
 /*
     Misc
@@ -81,7 +85,7 @@ public:
 
     void                        updateScene                 (Scene *scene);
 
-    static void                 setResource                 (Object *object, string &uuid);
+    static void                 setResource                 (Object *object, const string &uuid);
 
 private:
     EnginePrivate              *p_ptr;

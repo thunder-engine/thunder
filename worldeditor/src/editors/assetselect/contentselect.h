@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 class QSortFilterProxyModel;
-class ContentBrowser;
+class AssetBrowser;
 
 class IConverterSettings;
 
@@ -23,7 +23,7 @@ public:
 
     QString                     data                            () const;
 
-    void                        setType                         (const uint8_t type);
+    void                        setType                         (const int32_t type);
     void                        setData                         (const QString &guid);
 
 signals:
@@ -35,7 +35,7 @@ private slots:
 private:
     Ui::ContentSelect *ui;
 
-    ContentBrowser *m_pBrowser;
+    AssetBrowser *m_pBrowser;
 
     QString m_Guid;
 };

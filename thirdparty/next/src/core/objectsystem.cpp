@@ -91,6 +91,8 @@ ObjectSystem::~ObjectSystem() {
     Updates all related objects.
 */
 void ObjectSystem::update() {
+    PROFILE_FUNCTION();
+
     for(auto it : m_List) {
         it->processEvents();
     }

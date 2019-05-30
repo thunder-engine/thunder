@@ -11,8 +11,6 @@
 
 #include "baseobjectmodel.h"
 
-class QOpenGLContext;
-
 class ProjectManager;
 class AssetManager;
 
@@ -43,11 +41,7 @@ public:
     bool                        reimportResource            (const QModelIndex &index);
     bool                        removeResource              (const QModelIndex &index);
 
-    QImage                      icon                        (const QModelIndex &index) const;
-
     QString                     path                        (const QModelIndex &index) const;
-
-    QModelIndex                 findResource                (const QString &resource) const;
 
     void setRootPath(const QString &path) {
         m_rootPath  = path;
@@ -60,7 +54,7 @@ public:
 public slots:
     void                        onRendered                  (const QString &uuid);
 
-    void                        update                      (const QString &path);
+    void                        update                      ();
 
 protected:
     Qt::DropActions             supportedDropActions        () const;

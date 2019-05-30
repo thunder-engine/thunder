@@ -52,6 +52,7 @@
 #include "editors/propertyedit/nextobject.h"
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
+#include "editors/assetselect/assetlist.h"
 
 #define FPS         "FPS"
 #define VERTICES    "Vertices"
@@ -306,12 +307,15 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
         settings.setValue(str, QString::fromStdString(Json::save(params)));
-    }
-    QString path = ProjectManager::instance()->iconPath() + "/auto.png";
 
-    QImage result = ui->viewport->grabFramebuffer();
-    QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
-    qDebug() << path << result.copy(rect).scaled(128, 128).save(path);
+        if(!isModified()) {
+            QString path = ProjectManager::instance()->iconPath() + "/auto.png";
+
+            QImage result = ui->viewport->grabFramebuffer();
+            QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
+            result.copy(rect).scaled(128, 128).save(path);
+        }
+    }
 
     saveWorkspace();
     QApplication::quit();
@@ -500,6 +504,8 @@ void SceneComposer::onOpenProject(const QString &path) {
 
     PluginModel::instance()->initSystems();
 
+    ui->contentBrowser->rescan();
+
     for(QString it : ProjectManager::instance()->platforms()) {
         QString name = it;
         name.replace(0, 1, name.at(0).toUpper());
@@ -530,7 +536,8 @@ void SceneComposer::onImportProject() {
 void SceneComposer::onImportFinished() {
     ui->viewport->makeCurrent();
 
-    ContentList::instance()->update(ProjectManager::instance()->contentPath());
+    ContentList::instance()->update();
+    AssetList::instance()->update();
 
     ui->preview->controller()->init(ui->preview->scene());
 

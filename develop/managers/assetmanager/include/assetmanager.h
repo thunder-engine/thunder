@@ -72,6 +72,7 @@ public:
     QObject                *openEditor          (const QFileInfo &source);
 
     int32_t                 resourceType        (const QFileInfo &source);
+    int32_t                 assetType           (const QString &uuid);
 
     int32_t                 toContentType       (int32_t type);
 
@@ -97,6 +98,7 @@ public:
 
     IConverterSettings     *createSettings      (const QFileInfo &source);
 
+    IConverter             *getConverter        (IConverterSettings *settings);
 
     bool                    isOutdated          () const;
 
@@ -144,6 +146,7 @@ protected:
 
     VariantMap              m_Guids;
     VariantMap              m_Paths;
+    FormatsMap              m_Types;
 
     QFileSystemWatcher     *m_pDirWatcher;
     QFileSystemWatcher     *m_pFileWatcher;

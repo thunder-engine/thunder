@@ -60,7 +60,7 @@ enum {
 
 void Handles::init() {
     if(s_Quad == nullptr) {
-        s_Quad      = Engine::loadResource<Mesh>(".embedded/plane.fbx");
+        s_Quad      = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
     }
     if(s_Sprite == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
@@ -71,7 +71,7 @@ void Handles::init() {
     }
 
     if(s_Cone == nullptr) {
-        s_Cone      = Engine::loadResource<Mesh>(".embedded/cone.fbx");
+        s_Cone      = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
     }
     if(s_Gizmo == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");

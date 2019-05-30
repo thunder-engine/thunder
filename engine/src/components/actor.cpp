@@ -30,9 +30,9 @@ uint8_t Actor::layers() const {
 
 Transform *Actor::transform() {
     if(m_pTransform == nullptr) {
-        m_pTransform    = component<Transform>();
+        m_pTransform = component<Transform>();
         if(m_pTransform == nullptr) {
-            m_pTransform    = addComponent<Transform>();
+            m_pTransform = addComponent<Transform>();
         }
     }
     return m_pTransform;
@@ -72,12 +72,12 @@ Component *Actor::createComponent(const string type) {
 void Actor::addChild(Object *value) {
     Object::addChild(value);
 
-    Transform *t    = dynamic_cast<Transform *>(value);
+    Transform *t = dynamic_cast<Transform *>(value);
     if(t) {
         if(m_pTransform != nullptr) {
             delete m_pTransform;
         }
-        m_pTransform    = t;
+        m_pTransform = t;
     }
 }
 
@@ -98,12 +98,12 @@ void Actor::setParent(Object *parent) {
 
         Object::setParent(parent);
 
-        Actor *actor   = dynamic_cast<Actor *>(parent);
+        Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
-            Transform *par  = actor->transform();
+            Transform *par = actor->transform();
             if(par) {
-                Vector3 scale   = par->worldScale();
-                scale   = Vector3(1.0 / scale.x, 1.0 / scale.y, 1.0 / scale.z);
+                Vector3 scale = par->worldScale();
+                scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
 
                 p   = par->worldRotation().inverse() * ((p - par->worldPosition()) * scale);
                 e   = e - par->worldEuler();
@@ -124,7 +124,7 @@ bool Actor::isPrefab() const {
 }
 
 void Actor::setPrefab(Actor *prefab) {
-    m_pPrefab   = prefab;
+    m_pPrefab = prefab;
 }
 
 typedef list<Object *> List;
@@ -140,13 +140,15 @@ void Actor::loadUserData(const VariantMap &data) {
     auto it = data.find(PREFAB);
     if(it != data.end()) {
         setPrefab(Engine::loadResource<Actor>((*it).second.toString()));
-        Actor *actor    = static_cast<Actor *>(m_pPrefab->clone());
+        if(m_pPrefab) {
+            Actor *actor = static_cast<Actor *>(m_pPrefab->clone());
 
-        Object::ObjectList list = actor->getChildren();
-        for(auto &it : list) {
-            it->setParent(this);
+            Object::ObjectList list = actor->getChildren();
+            for(auto &it : list) {
+                it->setParent(this);
+            }
+            delete actor;
         }
-        delete actor;
 
         it  = data.find(DATA);
         if(it != data.end()) {
@@ -172,7 +174,6 @@ void Actor::loadUserData(const VariantMap &data) {
                         if(index > -1) {
                              meta->property(index).write((*object).second, property.second);
                         }
-
                     }
                 }
             }
@@ -209,11 +210,11 @@ VariantMap Actor::saveUserData() const {
             ConstList objects;
             enumConstObjects(this, objects);
             for(auto it : objects) {
-                int32_t cloned  = it->clonedFrom();
+                int32_t cloned = it->clonedFrom();
                 if(cloned) {
                     auto fab = cache.find(cloned);
                     if(fab != cache.end()) {
-                        VariantMap map;
+                        VariantMap prop;
 
                         const MetaObject *meta = it->metaObject();
                         int count  = meta->propertyCount();
@@ -223,14 +224,19 @@ VariantMap Actor::saveUserData() const {
                             Variant lv  = lp.read((*fab).second);
                             Variant rv  = rp.read(it);
                             if(lv != rv) {
-                                map[rp.name()]  = rv;
+                                prop[rp.name()]  = rv;
                             }
                         }
 
-                        if(!map.empty()) {
+                        //VariantMap user = (*fab).second->saveUserData();
+                        //for(auto item : it->saveUserData()) {
+                        //
+                        //}
+
+                        if(!prop.empty()) {
                             VariantList array;
                             array.push_back(cloned);
-                            array.push_back(map);
+                            array.push_back(prop);
                             list.push_back(array);
                         }
                     }

@@ -142,7 +142,7 @@ void ParticleRender::update() {
 
 }
 
-void ParticleRender::draw(ICommandBuffer &buffer, int8_t layer) {
+void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a    = actor();
     if(layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {

@@ -7,8 +7,8 @@
 #include <QWidgetAction>
 #include <QMenu>
 
-#include "contentlist.h"
-#include "contentbrowser.h"
+#include "assetlist.h"
+#include "assetbrowser.h"
 
 #include "assetmanager.h"
 
@@ -18,17 +18,16 @@ ContentSelect::ContentSelect(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QMenu *assetMenu    = new QMenu();
+    QMenu *assetMenu = new QMenu();
     ui->toolButton->setMenu(assetMenu);
 
     //assetMenu->addAction(new QAction(tr("Copy"), assetMenu));
 
-    m_pBrowser  = new ContentBrowser(this);
-    m_pBrowser->setCompact(true);
+    m_pBrowser  = new AssetBrowser(this);
     connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SLOT(onAssetSelected(IConverterSettings *)));
     connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SIGNAL(assetChanged(IConverterSettings *)));
 
-    QWidgetAction *action   = new QWidgetAction(assetMenu);
+    QWidgetAction *action = new QWidgetAction(assetMenu);
     action->setDefaultWidget(m_pBrowser);
     assetMenu->addAction(action);
 }
@@ -63,7 +62,7 @@ void ContentSelect::setData(const QString &guid) {
     }
 }
 
-void ContentSelect::setType(const uint8_t type) {
+void ContentSelect::setType(const int32_t type) {
     m_pBrowser->filterByType(type);
 }
 

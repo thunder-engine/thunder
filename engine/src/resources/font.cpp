@@ -123,8 +123,6 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
     generateSDF(grid[0]);
     generateSDF(grid[1]);
 
-
-
     for(int32_t y = 1; y <= h; y++) {
         for(int32_t x = 1; x <= w; x++) {
             double dist1 = sqrt((double)(get(grid[0], x, y).f + 1));
@@ -140,7 +138,7 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
 
 Font::Font() :
         Atlas(),
-        m_Scale(32),
+        m_Scale(86),
         m_pFace(nullptr),
         m_UseKerning(false) {
 
@@ -198,10 +196,10 @@ void Font::requestCharacters(const u32string &characters) {
 
                         Vector2Vector shape;
                         shape.resize(4);
-                        shape[0] = Vector2(bbox.xMin, bbox.yMax);
-                        shape[1] = Vector2(bbox.xMax, bbox.yMax);
-                        shape[2] = Vector2(bbox.xMax, bbox.yMin);
-                        shape[3] = Vector2(bbox.xMin, bbox.yMin);
+                        shape[0] = Vector2(bbox.xMin, bbox.yMax) / m_Scale;
+                        shape[1] = Vector2(bbox.xMax, bbox.yMax) / m_Scale;
+                        shape[2] = Vector2(bbox.xMax, bbox.yMin) / m_Scale;
+                        shape[3] = Vector2(bbox.xMin, bbox.yMin) / m_Scale;
 
                         t->setShape(shape);
                         t->addSurface(s);

@@ -21,7 +21,7 @@ public:
 
     void update();
 
-    void draw(ICommandBuffer &buffer, int8_t layer);
+    void draw(ICommandBuffer &buffer, uint32_t layer);
 
     ParticleEffect *effect() const;
 

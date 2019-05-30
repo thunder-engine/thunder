@@ -63,11 +63,11 @@ public:
 
     uint32_t                    getPixel                    (int32_t x, int32_t y) const;
 
-    uint32_t                    width                       () const;
-    uint32_t                    height                      () const;
+    int32_t                     width                       () const;
+    int32_t                     height                      () const;
 
-    void                        setWidth                    (uint32_t width);
-    void                        setHeight                   (uint32_t height);
+    void                        setWidth                    (int32_t width);
+    void                        setHeight                   (int32_t height);
 
     Vector2Vector               shape                       () const;
     void                        setShape                    (const Vector2Vector &shape);
@@ -81,14 +81,14 @@ public:
 
     void                        addSurface                  (const Surface &surface);
 
-    void                        resize                      (uint32_t width, uint32_t height);
+    void                        resize                      (int32_t width, int32_t height);
 
     void                        setFormat                   (FormatType type);
 
 protected:
-    uint32_t                    size                        (uint32_t width, uint32_t height) const;
-    uint32_t                    sizeDXTc                    (uint32_t width, uint32_t height) const;
-    uint32_t                    sizeRGB                     (uint32_t width, uint32_t height) const;
+    uint32_t                    size                        (int32_t width, int32_t height) const;
+    uint32_t                    sizeDXTc                    (int32_t width, int32_t height) const;
+    uint32_t                    sizeRGB                     (int32_t width, int32_t height) const;
 
     uint8_t                     components                  () const;
 
@@ -98,8 +98,8 @@ protected:
     FilteringType               m_Filtering;
     WrapType                    m_Wrap;
 
-    uint32_t                    m_Width;
-    uint32_t                    m_Height;
+    int32_t                     m_Width;
+    int32_t                     m_Height;
 
     Vector2Vector               m_Shape;
 

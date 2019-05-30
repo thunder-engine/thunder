@@ -4,9 +4,7 @@
 #include <QFile>
 #include <QFileInfo>
 
-#if __linux__
 #include <cstring>
-#endif
 
 #include <bson.h>
 #include <resources/texture.h>
@@ -31,41 +29,12 @@ void copyData(const uchar *src, int8_t *dst, uint32_t size, uint8_t channels) {
 
 #include <QVariantMap>
 
-TextureImportSettings::TextureImportSettings(QObject *parent) :
-        QObject(parent),
+TextureImportSettings::TextureImportSettings() :
         m_TextureType(TextureType::Texture2D),
         m_FormType(Uncompressed_R8G8B8),
         m_Filtering(None),
         m_Wrap(Repeat),
         m_Lod(false) {
-
-}
-
-void TextureImportSettings::loadProperties(const QVariantMap &map) {
-    auto it  = map.find("Type");
-    if(it != map.end()) {
-        setTextureType( TextureType(it.value().toInt()) );
-    }
-
-    it  = map.find("Format");
-    if(it != map.end()) {
-        setFormatType( FormatType(it.value().toInt()) );
-    }
-
-    it  = map.find("Wrap");
-    if(it != map.end()) {
-        setWrap( WrapType(it.value().toInt()) );
-    }
-
-    it  = map.find("MIP_maping");
-    if(it != map.end()) {
-        setLod( it.value().toBool() );
-    }
-
-    it  = map.find("Filtering");
-    if(it != map.end()) {
-        setFiltering( FilteringType(it.value().toInt()) );
-    }
 
 }
 
@@ -104,7 +73,7 @@ TextureImportSettings::WrapType TextureImportSettings::wrap() const {
 }
 void TextureImportSettings::setWrap(WrapType wrap) {
     if(m_Wrap != wrap) {
-        m_Wrap = wrap;
+        m_Wrap = WrapType(wrap);
         emit updated();
     }
 }
@@ -143,20 +112,20 @@ VariantMap TextureSerial::saveUserData() const {
     header.push_back((int)m_Filtering);
     header.push_back((int)m_Wrap);
 
-    result["Header"]    = header;
-    result["Data"]      = m_Surfaces;
+    result["Header"] = header;
+    result["Data"] = m_Surfaces;
 
     return result;
 }
 
 uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
     TextureSerial texture;
-    VariantMap data    = convertResource(settings);
+    VariantMap data = convertResource(settings);
     texture.loadUserData(data);
 
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data  = Bson::save( Engine::toVariant(&texture) );
+        ByteArray data = Bson::save( Engine::toVariant(&texture) );
         file.write((const char *)&data[0], data.size());
         file.close();
     }

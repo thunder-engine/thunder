@@ -13,7 +13,7 @@ class QAudioDecoder;
 class QAudioFormat;
 class QEventLoop;
 
-class AudioImportSettings : public QObject, public IConverterSettings {
+class AudioImportSettings : public IConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(bool Streamed READ stream WRITE setStream DESIGNABLE true USER true)
@@ -21,7 +21,7 @@ class AudioImportSettings : public QObject, public IConverterSettings {
     Q_PROPERTY(float Quality READ quality WRITE setQuality DESIGNABLE true USER true)
 
 public:
-    AudioImportSettings         (QObject *parent = 0);
+    AudioImportSettings         (QObject *parent = nullptr);
 
     bool                        stream                      () const;
     void                        setStream                   (bool stream);
@@ -31,8 +31,6 @@ public:
 
     float                       quality                     () const;
     void                        setQuality                  (float quality);
-
-    void                        loadProperties              (const QVariantMap &map);
 
 protected:
     bool                        m_Stream;
@@ -61,7 +59,7 @@ public:
     uint32_t                    type                        () const { return MetaType::type<AudioClip *>(); }
     uint8_t                     convertFile                 (IConverterSettings *);
 
-    VariantMap                  convertResource             (AudioImportSettings *, uint32_t srcChanels);
+    VariantMap                  convertResource             (AudioImportSettings *, int32_t srcChanels);
 
     IConverterSettings         *createSettings              () const;
 
@@ -70,7 +68,7 @@ public slots:
     void                        onFinished                  ();
 
 protected:
-    bool                        readOgg                     (IConverterSettings *settings, uint32_t &channels);
+    bool                        readOgg                     (IConverterSettings *settings, int32_t &channels);
 
     QAudioDecoder              *m_pDecoder;
 

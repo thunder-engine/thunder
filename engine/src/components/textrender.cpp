@@ -31,14 +31,17 @@ TextRender::TextRender() :
     }
 }
 
-void TextRender::draw(ICommandBuffer &buffer, int8_t layer) {
+void TextRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a    = actor();
     if(m_pMesh && layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, 0, layer, m_pMaterial);
+        if(m_pMesh->surfacesCount() > 0) {
+            buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, 0, layer, m_pMaterial);
+        }
+
         buffer.setColor(Vector4(1.0f));
     }
 }

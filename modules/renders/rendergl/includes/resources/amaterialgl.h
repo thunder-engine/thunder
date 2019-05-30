@@ -35,7 +35,7 @@ public:
 
     void                        loadUserData    (const VariantMap &data);
 
-    uint32_t                    bind            (uint8_t layer, uint16_t vertex);
+    uint32_t                    bind            (uint32_t layer, uint16_t vertex);
 
     uint32_t                    getProgram      (uint16_t type) const;
 

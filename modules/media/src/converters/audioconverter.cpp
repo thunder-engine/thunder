@@ -20,6 +20,8 @@ AudioImportSettings::AudioImportSettings(QObject *parent) :
         m_Mono(false),
         m_Quality(1.0) {
 
+    Q_UNUSED(parent)
+
 }
 
 bool AudioImportSettings::stream() const {
@@ -46,23 +48,6 @@ void AudioImportSettings::setQuality(float quality) {
     m_Quality   = quality;
 }
 
-void AudioImportSettings::loadProperties(const QVariantMap &map) {
-    auto it  = map.find("Streamed");
-    if(it != map.end()) {
-        setStream( it.value().toBool() );
-    }
-
-    it  = map.find("Force_Mono");
-    if(it != map.end()) {
-        setMono( it.value().toBool() );
-    }
-
-    it  = map.find("Quality");
-    if(it != map.end()) {
-        setQuality( it.value().toFloat() );
-    }
-}
-
 VariantMap AudioClipSerial::saveUserData() const {
     VariantMap result;
 
@@ -85,7 +70,7 @@ AudioConverter::AudioConverter() :
 uint8_t AudioConverter::convertFile(IConverterSettings *settings) {
     m_Buffer.clear();
 
-    uint32_t channels   = 1;
+    int32_t channels   = 1;
     QFileInfo info(settings->source());
 
     if(info.suffix() == "ogg") {
@@ -113,7 +98,7 @@ uint8_t AudioConverter::convertFile(IConverterSettings *settings) {
     return 0;
 }
 
-VariantMap AudioConverter::convertResource(AudioImportSettings *settings, uint32_t srcChanels) {
+VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels) {
     VariantMap result;
 
     ogg_stream_state    stream;
@@ -127,7 +112,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, uint32
     vorbis_info_init(&info);
     vorbis_comment_init(&comment);
 
-    uint32_t channels   = srcChanels;
+    int32_t channels = srcChanels;
     if(settings->mono()) {
         channels    = 1;
     }
@@ -149,10 +134,11 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, uint32
     ogg_stream_packetin(&stream, &header_comm);
     ogg_stream_packetin(&stream, &header_code);
 
-    QString uuid    = settings->subItem(0);
-    if(settings->subItemsCount() < 1) {
-        uuid    = QUuid::createUuid().toString();
-        settings->addSubItem(qPrintable(uuid));
+    QString path("stream");
+    QString uuid = settings->subItem(path);
+    if(uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toString();
+        settings->setSubItem(uuid, path, 0);
     }
     QFileInfo dst(settings->absoluteDestination());
 
@@ -174,7 +160,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, uint32
         QBuffer buffer(&m_Buffer);
         buffer.open(QIODevice::ReadOnly);
 
-        uint32_t offset = 2 * srcChanels;
+        int64_t offset = 2 * srcChanels;
 
         char *ptr   = new char[BLOCK_SIZE * offset];
 
@@ -254,7 +240,7 @@ void AudioConverter::onFinished() {
     m_pLoop->exit();
 }
 
-bool AudioConverter::readOgg(IConverterSettings *settings, uint32_t &channels) {
+bool AudioConverter::readOgg(IConverterSettings *settings, int32_t &channels) {
     OggVorbis_File vorbisFile;
     if(ov_fopen(settings->source(), &vorbisFile) < 0) {
         return false;

@@ -100,8 +100,8 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentMaterial: {
-            MeshRender *mesh    = object->addComponent<MeshRender>();
-            Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx");
+            MeshRender *mesh = object->addComponent<MeshRender>();
+            Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere002");
             if(m) {
                 mesh->setMesh(m);
                 Material *mat   = Engine::loadResource<Material>(resource.toStdString());
@@ -112,16 +112,29 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
                 m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
             }
         } break;
-        case IConverter::ContentMesh: {
-            MeshRender *mesh    = object->addComponent<MeshRender>();
-            Mesh *m = Engine::loadResource<Mesh>(resource.toStdString());
-            if(m) {
-                mesh->setMesh(m);
-                AABBox bb   = m->bound();
+        case IConverter::ContentPrefab: {
+            Actor *prefab  = Engine::loadResource<Actor>(resource.toStdString());
+            if(prefab) {
+                Actor *actor = static_cast<Actor *>(prefab->clone());
+                actor->setPrefab(prefab);
+                actor->setParent(object);
+
+                AABBox bb;
+                for(auto it : actor->findChildren<Renderable *>()) {
+                    bb.encapsulate(it->bound());
+                }
                 m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
             }
         } break;
-        default: break;
+        case IConverter::ContentMesh: {
+            MeshRender *mesh = object->addComponent<MeshRender>();
+            mesh->setMesh(Engine::loadResource<Mesh>(resource.toStdString()));
+            mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
+
+            AABBox bb = mesh->bound();
+            m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
+        } break;
+        default: return QImage();
     }
 
     Camera::setCurrent(m_pCamera);

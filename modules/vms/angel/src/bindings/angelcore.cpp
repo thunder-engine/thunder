@@ -28,6 +28,10 @@ Actor *actorCreate(string &name, Object *parent) {
     return Engine::objectCreate<Actor>(name, parent);
 }
 
+Object *loadResource(string &name) {
+    return Engine::loadResource(name);
+}
+
 void registerEngine(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("Engine");
 
@@ -37,7 +41,7 @@ void registerEngine(asIScriptEngine *engine) {
 
     //engine->RegisterGlobalFunction("Actor @actorCreate(const string &in, Object &in)", asFUNCTION(actorCreate), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(Engine::loadResourceImpl), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(loadResource), asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }
