@@ -8,6 +8,10 @@ about: Create a report to help us improve
 
 [Description of the issue]
 
+## Prerequisites
+
+[Please describe the state of Engine or Tools before the issue]
+
 ## Steps to Reproduce
 
 1. [First Step]

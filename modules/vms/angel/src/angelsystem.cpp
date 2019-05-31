@@ -247,10 +247,10 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
         super = super->super();
     }
 
-    uint32_t type   = MetaType::type(typeName);
+    uint32_t type = MetaType::type(typeName);
     MetaType::Table *table  = MetaType::table(type);
     if(table) {
-        for(uint32_t m = 0; m < meta->methodCount(); m++) {
+        for(int32_t m = 0; m < meta->methodCount(); m++) {
             MetaMethod method   = meta->method(m);
             if(method.isValid()) {
                 MetaType ret    = method.returnType();
@@ -279,12 +279,12 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
             }
         }
 
-        for(uint32_t p = 0; p < meta->propertyCount(); p++) {
+        for(int32_t p = 0; p < meta->propertyCount(); p++) {
             MetaProperty property = meta->property(p);
             if(property.isValid()) {
 
-                MetaType type   = property.type();
-                string name =  type.name();
+                MetaType type = property.type();
+                string name = type.name();
 
                 bool ptr    = false;
                 for(auto &it : name) {

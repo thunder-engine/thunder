@@ -4,6 +4,8 @@
 
 #include "commandbuffer.h"
 
+#include <cstring>
+
 #define PREFAB  "Prefab"
 #define DATA    "PrefabData"
 
@@ -165,14 +167,31 @@ void Actor::loadUserData(const VariantMap &data) {
             for(auto &it : list) {
                 const VariantList &fields   = it.toList();
 
-                uint32_t cloned = fields.front().toInt();
+                uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
                 auto object = cache.find(cloned);
                 if(object != cache.end()) {
                     const MetaObject *meta = (*object).second->metaObject();
                     for(auto &property : fields.back().toMap()) {
-                        int32_t index   = meta->indexOfProperty(property.first.c_str());
+                        int32_t index = meta->indexOfProperty(property.first.c_str());
                         if(index > -1) {
-                             meta->property(index).write((*object).second, property.second);
+                            MetaProperty prop = meta->property(index);
+                            bool ptr = false;
+
+                            const char *name = prop.type().name();
+                            for(uint32_t i = 0; i < strlen(name); i++) {
+                                if(name[i] == '*') {
+                                    ptr = true;
+                                    break;
+                                }
+                            }
+                            Variant var = property.second;
+                            if(ptr && var.type() == MetaType::STRING) {
+                                Object *res = Engine::loadResource(var.toString());
+                                if(res) {
+                                    var = Variant(prop.read((*object).second).userType(), &res);
+                                }
+                            }
+                            prop.write((*object).second, var);
                         }
                     }
                 }
@@ -210,7 +229,7 @@ VariantMap Actor::saveUserData() const {
             ConstList objects;
             enumConstObjects(this, objects);
             for(auto it : objects) {
-                int32_t cloned = it->clonedFrom();
+                uint32_t cloned = it->clonedFrom();
                 if(cloned) {
                     auto fab = cache.find(cloned);
                     if(fab != cache.end()) {
@@ -224,18 +243,25 @@ VariantMap Actor::saveUserData() const {
                             Variant lv  = lp.read((*fab).second);
                             Variant rv  = rp.read(it);
                             if(lv != rv) {
-                                prop[rp.name()]  = rv;
+                                const char *name = rp.type().name();
+                                for(uint32_t i = 0; i < strlen(name); i++) {
+                                    if(name[i] == '*') {
+                                        Object *o = *(reinterpret_cast<Object **>(rv.data()));
+                                        string ref = Engine::reference(o);
+                                        if(!ref.empty()) {
+                                            rv = ref;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                prop[rp.name()] = rv;
                             }
                         }
 
-                        //VariantMap user = (*fab).second->saveUserData();
-                        //for(auto item : it->saveUserData()) {
-                        //
-                        //}
-
                         if(!prop.empty()) {
                             VariantList array;
-                            array.push_back(cloned);
+                            array.push_back(static_cast<int32_t>(cloned));
                             array.push_back(prop);
                             list.push_back(array);
                         }
