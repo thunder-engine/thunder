@@ -60,6 +60,8 @@ static const char *gContent("content");
 static const char *gSettings("settings");
 
 static const char *gEntry(".entry");
+static const char *gCompany(".company");
+static const char *gProject(".project");
 
 class EnginePrivate {
 public:
@@ -118,15 +120,36 @@ string                          EnginePrivate::m_Application;
 IPlatformAdaptor               *EnginePrivate::m_pPlatform = nullptr;
 
 typedef Vector4 Color;
+/*!
+    \class Engine
+    \brief The Engine one of the central parts of Thunder Engine.
+    \inmodule Engine
 
+    The Engine class is one of the central parts of the Thunder Engine.
+    This class is created first and removed last in your game.
+    It is responsible for many basic functions, such as game cycle, management of game modules, loading and unloading of game resources, work with game settings.
+*/
+
+/*!
+    \fn T *Engine::loadResource(const string &path)
+
+    Returns an instance of type T for loading resource by the provided \a path.
+    \note In case of resource was loaded previously this function will return the same instance.
+
+    \sa unloadResource()
+*/
+/*!
+    Constructs Engine.
+    Creates necessary platform adapters, register basic component types and resource types.
+*/
 Engine::Engine(IFile *file, int, char **argv) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_ApplicationPath    = argv[0];
+    EnginePrivate::m_ApplicationPath = argv[0];
     Uri uri(EnginePrivate::m_ApplicationPath);
-    EnginePrivate::m_ApplicationDir     = uri.dir();
-    EnginePrivate::m_Application        = uri.baseName();
+    EnginePrivate::m_ApplicationDir = uri.dir();
+    EnginePrivate::m_Application = uri.baseName();
 
     p_ptr->m_pFile  = file;
 
@@ -135,8 +158,6 @@ Engine::Engine(IFile *file, int, char **argv) :
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
-
-    REGISTER_META_TYPE_IMPL(MaterialArray);
 
     Text::registerClassFactory(this);
     Texture::registerClassFactory(this);
@@ -178,27 +199,31 @@ Engine::Engine(IFile *file, int, char **argv) :
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
-
+/*!
+    Destructs Engine, related objects, registered object factories and platform adaptor.
+*/
 Engine::~Engine() {
     PROFILER_MARKER;
 
     delete p_ptr;
 }
-
 /*!
-    Initialize all engine systems.
+    Initializes all engine systems.
 */
 bool Engine::init() {
     PROFILER_MARKER;
 
-    bool result     = p_ptr->m_pPlatform->init();
+    bool result = p_ptr->m_pPlatform->init();
 
     Timer::init(1.0f / 60.0f);
     Input::init(p_ptr->m_pPlatform);
 
     return result;
 }
-
+/*!
+    Starts the main game cicle.
+    Also this method loads the first level of your game.
+*/
 bool Engine::start() {
     PROFILER_MARKER;
 
@@ -215,8 +240,8 @@ bool Engine::start() {
         }
     }
 
-    string path     = value(gEntry, "").toString();
-    Actor *level    = loadResource<Actor>(path);
+    string path = value(gEntry, "").toString();
+    Actor *level = loadResource<Actor>(path);
     Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
     if(level) {
         level->setParent(p_ptr->m_pScene);
@@ -225,9 +250,9 @@ bool Engine::start() {
     Camera *component   = p_ptr->m_pScene->findChild<Camera *>();
     if(component == nullptr) {
         Log(Log::DBG) << "Camera not found creating new one.";
-        Actor *camera   = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
+        Actor *camera = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
         camera->transform()->setPosition(Vector3(0.0f));
-        component       = camera->addComponent<Camera>();
+        component = camera->addComponent<Camera>();
     }
     Camera::setCurrent(component);
 
@@ -241,13 +266,20 @@ bool Engine::start() {
 #endif
     return true;
 }
-
+/*!
+    This method must be called each time when your game screen changes its size.
+    \note Usually, this method calls internally and must not be called manually.
+*/
 void Engine::resize() {
     Camera *component = Camera::current();
     component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
     component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
 }
-
+/*!
+    This method launches all your game modules responsible for processing all the game logic.
+    It calls on each iteration of the game cycle.
+    \note Usually, this method calls internally and must not be called manually.
+*/
 void Engine::update() {
     PROFILER_MARKER;
 
@@ -260,7 +292,9 @@ void Engine::update() {
     }
     p_ptr->m_pPlatform->update();
 }
-
+/*!
+    Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue.
+*/
 Variant Engine::value(const string &key, const Variant &defaultValue) {
     PROFILER_MARKER;
 
@@ -270,13 +304,20 @@ Variant Engine::value(const string &key, const Variant &defaultValue) {
     }
     return defaultValue;
 }
-
+/*!
+    Sets the value of setting \a key to \a value. If the \a key already exists, the previous value is overwritten.
+*/
 void Engine::setValue(const string &key, const Variant &value) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_Values[key]    = value;
+    EnginePrivate::m_Values[key] = value;
 }
+/*!
+    Returns an instance for loading resource by the provided \a path.
+    \note In case of resource was loaded previously this function will return the same instance.
 
+    \sa unloadResource()
+*/
 Object *Engine::loadResource(const string &path) {
     PROFILER_MARKER;
 
@@ -318,7 +359,11 @@ Object *Engine::loadResource(const string &path) {
     }
     return nullptr;
 }
+/*!
+    Unloads a resource located along the \a path from memory.
 
+    \sa loadResource()
+*/
 void Engine::unloadResource(const string &path) {
     PROFILER_MARKER;
 
@@ -340,14 +385,22 @@ void Engine::unloadResource(const string &path) {
         }
     }
 }
+/*!
+    Register resource \a object by \a uuid path.
 
+    \sa setResource()
+*/
 void Engine::setResource(Object *object, const string &uuid) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_ResourceCache[uuid]    = object;
+    EnginePrivate::m_ResourceCache[uuid] = object;
     EnginePrivate::m_ReferenceCache[object] = uuid;
 }
+/*!
+    Returns resource path for the provided resource \a object.
 
+    \sa setResource()
+*/
 string Engine::reference(Object *object) {
     PROFILER_MARKER;
 
@@ -357,7 +410,10 @@ string Engine::reference(Object *object) {
     }
     return string();
 }
-
+/*!
+    This method reads the index file for the resource bundle.
+    The index file helps to find required game resources.
+*/
 void Engine::reloadBundle() {
     PROFILER_MARKER;
     EnginePrivate::m_IndexMap.clear();
@@ -381,89 +437,111 @@ void Engine::reloadBundle() {
             for(auto it : root[gSettings].toMap()) {
                 EnginePrivate::m_Values[it.first]   = it.second;
             }
+
+            EnginePrivate::m_Application = value(gProject, "").toString();
+            EnginePrivate::m_Organization = value(gCompany, "").toString();
         }
     }
 }
-
+/*!
+    Returns all loaded indices for game resources.
+*/
 StringMap Engine::indices() const {
     return EnginePrivate::m_IndexMap;
 }
-
+/*!
+    Returns true if game started; otherwise returns false.
+*/
 bool Engine::isGameMode() {
     return EnginePrivate::m_Game;
 }
-
-void Engine::setGameMode(bool game) {
-    EnginePrivate::m_Game = game;
+/*!
+    Set game \a flag to true if game started; otherwise set false.
+*/
+void Engine::setGameMode(bool flag) {
+    EnginePrivate::m_Game = flag;
 }
+/*!
+    Adds a game \a module to pool.
+    This module will be used during update() method execution.
 
-void Engine::addModule(IModule *mode) {
+    Example:
+    \code
+    if(engine->init()) {
+        engine->addModule(new RenderGL(engine));
+
+        engine->start();
+    }
+    \endcode
+*/
+void Engine::addModule(IModule *module) {
     PROFILER_MARKER;
-    if(mode->types() & IModule::SYSTEM) {
-        p_ptr->m_Systems.push_back(mode->system());
+    if(module->types() & IModule::SYSTEM) {
+        p_ptr->m_Systems.push_back(module->system());
     }
 }
-
+/*!
+    Returns game Scene.
+    \note The game can have only one scene. Scene is a root object, all map loads on this scene.
+*/
 Scene *Engine::scene() {
     PROFILER_MARKER;
     return p_ptr->m_pScene;
 }
-
+/*!
+    Returns file system module.
+*/
 IFile *Engine::file() {
     PROFILER_MARKER;
 
     return EnginePrivate::m_pFile;
 }
-
+/*!
+    Returns path to application binary directory.
+*/
 string Engine::locationAppDir() {
     PROFILER_MARKER;
 
     return EnginePrivate::m_ApplicationDir;
 }
-
-string Engine::locationConfig() {
-    PROFILER_MARKER;
-
-    return EnginePrivate::m_pPlatform->locationLocalDir();
-}
-
+/*!
+    Returns path to application config directory.
+*/
 string Engine::locationAppConfig() {
     PROFILER_MARKER;
 
-    string result;
+    string result = EnginePrivate::m_pPlatform->locationLocalDir();
+#ifndef THUNDER_MOBILE
     if(!EnginePrivate::m_Organization.empty()) {
         result  += "/" + EnginePrivate::m_Organization;
     }
     if(!EnginePrivate::m_Application.empty()) {
         result  += "/" + EnginePrivate::m_Application;
     }
+#endif
     return result;
 }
-
+/*!
+    Returns application name.
+*/
 string Engine::applicationName() const {
     PROFILER_MARKER;
 
     return EnginePrivate::m_Application;
 }
-
-void Engine::setApplicationName(const string &name) {
-    PROFILER_MARKER;
-
-    EnginePrivate::m_Application    = name;
-}
-
+/*!
+    Returns organization name.
+*/
 string Engine::organizationName() const {
     PROFILER_MARKER;
 
     return EnginePrivate::m_Organization;
 }
-
-void Engine::setOrganizationName(const string &name) {
-    PROFILER_MARKER;
-
-    EnginePrivate::m_Organization   = name;
-}
-
+/*!
+    This method launches your game logic.
+    It calls on each iteration of the game cycle.
+    \note Usually, this method calls internally and must not be called manually.
+*/
 void Engine::updateScene(Scene *scene) {
     PROFILER_MARKER;
 

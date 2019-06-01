@@ -211,20 +211,7 @@ bool NextObject::event(QEvent *e) {
             if(m_pObject) {
                 Object *o = findChild(list);
                 Variant current = o->property(qPrintable(list.front()));
-                Variant target;
-                if(current.userType() == MetaType::type<MaterialArray>()) {
-                    MaterialArray array = current.value<MaterialArray>();
-                    uint32_t id = name.mid(name.indexOf(QRegExp("[0-9]"))).toUInt();
-                    if(id < array.size()) {
-                        Material *m = aVariant(value, MetaType::type<Material *>()).value<Material *>();
-                        if(m) {
-                            array[id] = m->createInstance();
-                        }
-                    }
-                    target  = Variant::fromValue(array);
-                } else {
-                    target  = aVariant(value, current.userType());
-                }
+                Variant target = aVariant(value, current.userType());
 
                 if(target.isValid() && current != target) {
                     if(m_pController) {

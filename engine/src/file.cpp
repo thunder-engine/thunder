@@ -4,12 +4,50 @@
 
 #include <physfs.h>
 
+/*!
+    \class IFile
+    \brief Basic file system I/O module.
+    \inmodule Engine
+
+    The IFile class provides an interface for reading from and writing to files.
+    IFile expects the file separator to be '/' regardless of operating system. The use of other separators (e.g., '\') is not supported.
+
+    You can check for a file's existence using _exists(), and remove a file using _delete().
+    You can create a directory using _mkdir(), list all files in directory using _flist() and retrive other basic information.
+
+    The file can be opened with _open() and closed with _fclose(). Data is usually can be read with _fread() and written with _fwrite().
+
+    Common usecase:
+    \code
+    IFile *file = Engine::file();
+    _FILE *fp   = file->_fopen("filename", "r");
+    if(fp) {
+        ByteArray data;
+        data.resize(file->_fsize(fp));
+        file->_fread(&data[0], data.size(), 1, fp);
+        file->_fclose(fp);
+    }
+    \endcode
+*/
+
+/*!
+    Initialize the file system module at \a argv0 application file path.
+    This method must be called before any operations with filesytem.
+
+    \note Usually, this method calls internally and must not be called manually.
+*/
 void IFile::finit(const char *argv0) {
     if(!PHYSFS_init(argv0)) {
         Log(Log::ERR) << "[ FileIO ] Can't initialize.";
     }
 }
+/*!
+    Add an archive or directory to the search \a path.
+    If \a isFirst provided as true the directory will be marked as writable.
+    The Method can be called multiple time to add more directories to work with.
 
+    \note Usually, this method calls internally and must not be called manually.
+*/
 void IFile::fsearchPathAdd(const char *path, bool isFirst) {
     if(PHYSFS_addToSearchPath(path, isFirst ? 0 : 1) == 0) {
         Log(Log::ERR) << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
@@ -18,7 +56,17 @@ void IFile::fsearchPathAdd(const char *path, bool isFirst) {
         Log(Log::ERR) << "[ FileIO ] Can't set directory for writing.";
     }
 }
+/*!
+    Get a file listing of a search \a path directory.
 
+    \code
+    StringList rc = file->_flist("savegames");
+
+    for(auto it : rc) {
+        printf("Found - [%s].\n", it.c_str());
+    }
+    \endcode
+*/
 StringList IFile::_flist(const char *path) {
     char **rc = PHYSFS_enumerateFiles(path);
     char **i;
@@ -32,11 +80,17 @@ StringList IFile::_flist(const char *path) {
 
     return result;
 }
-
+/*!
+    Create directory. Returns true if the operation succeeded; otherwise returns false.
+    \note Directory can be created only if \a path marked as writable.
+*/
 bool IFile::_mkdir(const char *path) {
     return (PHYSFS_mkdir(path) == 0);
 }
-
+/*!
+    Delete file. Returns true if the operation succeeded; otherwise returns false.
+    \note The file can be deleted only if \a path marked as writable.
+*/
 bool IFile::_delete(const char *path) {
     bool result = (PHYSFS_delete(path) != 0);
     if(!result) {
@@ -44,24 +98,50 @@ bool IFile::_delete(const char *path) {
     }
     return result;
 }
-
+/*!
+    Check if file exist. Returns true if operation succeeded; otherwise returns false.
+*/
 bool IFile::_exists(const char *path) {
     return PHYSFS_exists(path);
 }
+/*!
+    Determine if a file in the search path is really a directory.
 
+    Returns true if operation succeeded; otherwise returns false.
+*/
 bool IFile::_isdir(const char *path) {
     return PHYSFS_isDirectory(path);
 }
-
+/*!
+    Closes file \a stream. Returns 0 if succeeded; otherwise returns non-zero value.
+*/
 int IFile::_fclose(_FILE *stream) {
     return PHYSFS_close(static_cast<PHYSFS_file *>(stream));
 }
+/*!
+    Seek to a new position within a file \a stream.
+    Returns 0 if succeeded; otherwise returns non-zero value.
+    The next read or write will occur at that \a origin position.
+    Seeking past the beginning or end of the file is not allowed, and causes an error.
 
-_size_t IFile::_fseek(_FILE *stream, uint64_t offset, int origin) {
+    \sa _tell()
+ */
+_size_t IFile::_fseek(_FILE *stream, uint64_t origin) {
     A_UNUSED(origin)
-    return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), offset));
+    return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), origin));
 }
+/*!
+    Opens the file whose name is specified in the \a filename and associates it with a stream that can be identified in future operations.
+    The operations that are allowed on the stream and how these are performed are defined by the \a mode parameter.
+    Allowed values of \a mode parameter:
+    \list
+        \li "r" - Open a file for reading.
+        \li "w" - Open a file for writing. The \a path must marked as writable.
+        \li "a" - Open a file for appending. The \a path must marked as writable.
+    \endlist
 
+    Returns _FILE pointer to file stream if succeeded; otherwise returns nullptr value.
+*/
 _FILE *IFile::_fopen(const char *path, const char *mode) {
     _FILE *result = nullptr;
     switch (mode[0]) {
@@ -75,28 +155,37 @@ _FILE *IFile::_fopen(const char *path, const char *mode) {
     }
     return result;
 }
+/*!
+    Reads an array of \a count elements, each one with a size of \a size bytes, from the \a stream and stores them in the block of memory specified by \a ptr.
+    The file must be opened for reading.
 
+    Returns number of objects read.
+*/
 _size_t IFile::_fread(void *ptr, _size_t size, _size_t count, _FILE *stream) {
     return static_cast<_size_t>(PHYSFS_read(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
+/*!
+    Writes an array of \a count elements, each one with a size of \a size bytes, from the block of memory pointed by \a ptr to the current position in the \a stream.
+    The file must be opened for writing.
 
+    Returns number of objects written.
+*/
 _size_t IFile::_fwrite(const void *ptr, _size_t size, _size_t count, _FILE *stream) {
     return static_cast<_size_t>(PHYSFS_write(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
-
+/*!
+    Get total length of a file \a stream in bytes.
+*/
 _size_t IFile::_fsize(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_fileLength(static_cast<PHYSFS_file *>(stream)));
 }
+/*!
+    Determine current position within a file \a stream.
 
+    Returns offset in bytes from start of file.
+
+    \sa _seek()
+ */
 _size_t IFile::_ftell(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_tell(static_cast<PHYSFS_file *>(stream)));
 }
-
-const char *IFile::baseDir() const {
-    return PHYSFS_getBaseDir();
-}
-
-const char *IFile::userDir() const {
-    return PHYSFS_getUserDir();
-}
-

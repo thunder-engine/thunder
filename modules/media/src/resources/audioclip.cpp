@@ -116,7 +116,7 @@ int AudioClip::seek(void *datasource, int64_t offset, int whence) {
         if(whence == SEEK_END) { // Physfs workaround
             object->m_SizeFlag  = true;
         }
-        return object->m_pFile->_fseek(object->m_pClip, offset, whence);
+        return object->m_pFile->_fseek(object->m_pClip, offset);
     }
     return 0;
 }

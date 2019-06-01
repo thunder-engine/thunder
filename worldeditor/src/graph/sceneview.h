@@ -7,6 +7,8 @@
 #include <QMenu>
 #include <QPainter>
 
+#include <QStandardPaths>
+
 #include <components/scene.h>
 #include <adapters/iplatformadaptor.h>
 #include "config.h"
@@ -82,7 +84,7 @@ public:
 
     void                   *pluginAddress       (void *, const string &) { return nullptr; }
 
-    string                  locationLocalDir    () { return string(); }
+    string                  locationLocalDir    () { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
 
 signals:
     void                    inited              ();

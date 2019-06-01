@@ -23,6 +23,8 @@ public:
 
     bool                        isValid                     ();
 
+    string                      locationLocalDir            ();
+
     uint32_t                    screenWidth                 ();
 
     uint32_t                    screenHeight                ();

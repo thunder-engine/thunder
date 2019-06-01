@@ -1,11 +1,11 @@
 #include "adapters/desktopadaptor.h"
-#if(_MSC_VER)
-    #include <windows.h>
-    #include <Shlobj.h>
+#ifdef _WIN32
+    #include <Windows.h>
+    #include <ShlObj.h>
 #elif __APPLE__
     #include <CoreFoundation/CoreFoundation.h>
 #endif
-#if(__GNUC__)
+#ifdef __GNUC__
     #include <dlfcn.h>
 #endif
 #include <GLFW/glfw3.h>
@@ -91,7 +91,7 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    g_pFile->fsearchPathAdd(g_pEngine->locationConfig().c_str(), true);
+    g_pFile->fsearchPathAdd(g_pEngine->locationAppConfig().c_str(), true);
     g_pFile->_mkdir(g_pEngine->locationAppConfig().c_str());
     g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
 
@@ -194,24 +194,24 @@ Vector2 DesktopAdaptor::joystickTriggers(uint32_t index) {
 }
 
 void *DesktopAdaptor::pluginLoad(const char *name) {
-#if(_MSC_VER)
-    return (void*)LoadLibrary((LPCWSTR)name);
+#ifdef WIN32
+    return static_cast<void*>(LoadLibraryW(reinterpret_cast<LPCWSTR>(name)));
 #elif(__GNUC__)
     return dlopen(name, RTLD_NOW);
 #endif
 }
 
 bool DesktopAdaptor::pluginUnload(void *plugin) {
-#if(_MSC_VER)
-    return FreeLibrary((HINSTANCE)plugin);
+#ifdef WIN32
+    return FreeLibrary(reinterpret_cast<HINSTANCE>(plugin));
 #elif(__GNUC__)
     return dlclose(plugin);
 #endif
 }
 
 void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
-#if(_MSC_VER)
-    return (void*)GetProcAddress((HINSTANCE)plugin, name.c_str());
+#ifdef WIN32
+    return (void*)GetProcAddress(reinterpret_cast<HINSTANCE>(plugin), name.c_str());
 #elif(__GNUC__)
     return dlsym(plugin, name.c_str());
 #endif
@@ -223,7 +223,7 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
     s_OldMousePosition  = s_MousePosition;
-    s_MousePosition     = Vector4(xpos, ypos, xpos / s_Screen.x, ypos / s_Screen.y);
+    s_MousePosition = Vector4(xpos, ypos, xpos / s_Screen.x, ypos / s_Screen.y);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
@@ -234,13 +234,12 @@ string DesktopAdaptor::locationLocalDir() {
     string result;
 #if _WIN32
     wchar_t path[MAX_PATH];
-    if(SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE)) {
+    if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
         result  = Utils::wstringToUtf8(wstring(path));
-        std::replace(result.begin(), result.end(), '\\', '/');
+        replace(result.begin(), result.end(), '\\', '/');
     }
 #elif __APPLE__
-    result  = g_pEngine->file()->userDir();
-    result += "/Library/Preferences";
+    result = "~/Library/Preferences";
 #endif
     return result;
 }

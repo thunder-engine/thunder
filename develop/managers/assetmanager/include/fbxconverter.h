@@ -9,6 +9,8 @@
 
 class MeshSerial;
 
+class Actor;
+
 class FbxImportSettings : public IConverterSettings {
     Q_OBJECT
 

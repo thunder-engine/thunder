@@ -55,6 +55,8 @@ private:
 
 class ILogHandler {
 public:
+    virtual ~ILogHandler() {}
+
     virtual void        setRecord                   (Log::LogTypes type, const char *record) = 0;
 
 };

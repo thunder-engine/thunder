@@ -3,6 +3,8 @@
 
 #include "converters/converter.h"
 
+class Actor;
+
 class PrefabConverter : public IConverter {
 public:
     QStringList suffixes() const { return {"fab"}; }

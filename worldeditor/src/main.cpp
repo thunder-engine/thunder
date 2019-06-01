@@ -23,8 +23,6 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-
-
 #include "editors/textureedit/textureedit.h"
 #include "editors/materialedit/materialedit.h"
 #include "editors/meshedit/meshedit.h"

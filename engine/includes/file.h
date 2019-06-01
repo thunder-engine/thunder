@@ -49,7 +49,7 @@ public:
 
     virtual int         _fclose         (_FILE *stream);
 
-    virtual _size_t     _fseek          (_FILE *stream, uint64_t offset, int origin);
+    virtual _size_t     _fseek          (_FILE *stream, uint64_t origin);
 
     virtual _FILE      *_fopen          (const char *path, const char *mode);
 
@@ -60,10 +60,6 @@ public:
     virtual _size_t     _fsize          (_FILE *stream);
 
     virtual _size_t     _ftell          (_FILE *stream);
-
-    virtual const char *baseDir         () const;
-
-    virtual const char *userDir         () const;
 };
 
 #endif // FILEIO_H

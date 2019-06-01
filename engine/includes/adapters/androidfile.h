@@ -47,8 +47,8 @@ public:
         return 0;
     }
 
-    _size_t     _fseek          (_FILE *stream, long int offset, int origin) {
-        return AAsset_seek((AAsset *)stream, offset, origin);
+    _size_t     _fseek          (_FILE *stream, uint64_t origin) {
+        return AAsset_seek((AAsset *)stream, origin, SEEK_SET);
     }
 
     _FILE      *_fopen          (const char *path, const char *mode) {

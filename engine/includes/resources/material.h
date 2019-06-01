@@ -122,7 +122,6 @@ protected:
     uint8_t                     m_Surfaces;
 
 };
-typedef vector<MaterialInstance*>   MaterialArray;
 
 #endif // SHADER
 

@@ -13,7 +13,6 @@ class IModule;
 
 class EnginePrivate;
 
-class Actor;
 class Scene;
 
 typedef unordered_map<string, string> StringMap;
@@ -61,9 +60,9 @@ public:
 */
     static bool                 isGameMode                  ();
 
-    static void                 setGameMode                 (bool game);
+    static void                 setGameMode                 (bool flag);
 
-    void                        addModule                   (IModule *mode);
+    void                        addModule                   (IModule *module);
 
     Scene                      *scene                       ();
 
@@ -71,17 +70,11 @@ public:
 
     static string               locationAppDir              ();
 
-    static string               locationConfig              ();
-
     static string               locationAppConfig           ();
 
     string                      applicationName             () const;
 
-    void                        setApplicationName          (const string &name);
-
     string                      organizationName            () const;
-
-    void                        setOrganizationName         (const string &name);
 
     void                        updateScene                 (Scene *scene);
 

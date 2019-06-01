@@ -118,6 +118,12 @@ bool MobileAdaptor::isValid() {
     return true;
 }
 
+string MobileAdaptor::locationLocalDir() {
+#ifdef GLFM_PLATFORM_ANDROID
+    return glfmAndroidGetActivity()->internalDataPath;
+#endif
+}
+
 uint32_t MobileAdaptor::screenWidth() {
     return s_Screen.x;
 }
