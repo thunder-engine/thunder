@@ -8,14 +8,21 @@
 #include "engine.h"
 
 #ifdef GLFM_PLATFORM_ANDROID
-
 #include "androidfile.h"
 #include <android/log.h>
 
 class AndroidHandler : public ILogHandler {
 protected:
-    void setRecord (Log::LogTypes, const char *record) {
-        __android_log_write(ANDROID_LOG_DEBUG, "ThunderEngine", record);
+    void setRecord (Log::LogTypes type, const char *record) {
+        int32_t lvl;
+        switch(type) {
+            case Log::ERR: lvl = ANDROID_LOG_ERROR; break;
+            case Log::WRN: lvl = ANDROID_LOG_WARN; break;
+            case Log::INF: lvl = ANDROID_LOG_INFO; break;
+            case Log::DBG: lvl = ANDROID_LOG_DEBUG; break;
+            default: break;
+        }
+        __android_log_write(lvl, "ThunderEngine", record);
     }
 };
 #endif

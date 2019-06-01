@@ -36,7 +36,7 @@ public:
 
     uint32_t                    screenHeight                ();
 
-    void                        setMousePosition            (const Vector3 &position);
+    void                        setMousePosition            (int32_t x, int32_t y);
 
     uint32_t                    joystickCount               ();
 

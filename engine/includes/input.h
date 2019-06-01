@@ -159,6 +159,14 @@ public:
         KEY_RIGHT_SUPER     = 347,
         KEY_MENU            = 348
     };
+    enum TouchState {
+        TOUCH_HOVER         = 0,
+        TOUCH_BEGAN,
+        TOUCH_MOVED,
+        TOUCH_ENDED,
+        TOUCH_CANCELLED
+    };
+
 public:
     static void                 init                        (IPlatformAdaptor *platform);
 
@@ -170,7 +178,7 @@ public:
 
     static uint32_t             mouseButtons                ();
 
-    static void                 setMousePosition            (const Vector3 &position);
+    static void                 setMousePosition            (int32_t x, int32_t y);
 
     static uint32_t             joystickCount               ();
 

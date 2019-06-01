@@ -11,7 +11,7 @@ void registerInput(asIScriptEngine *engine) {
 
     engine->RegisterGlobalFunction("Vector4 mousePosition()", asFUNCTION(Input::mousePosition), asCALL_CDECL);
     engine->RegisterGlobalFunction("Vector4 mouseDelta()", asFUNCTION(Input::mouseDelta), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void setMousePosition(Vector3 &in)", asFUNCTION(Input::setMousePosition), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void setMousePosition(int, int)", asFUNCTION(Input::setMousePosition), asCALL_CDECL);
     engine->RegisterGlobalFunction("int mouseButtons()", asFUNCTION(Input::mouseButtons), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("int joystickCount()", asFUNCTION(Input::joystickCount), asCALL_CDECL);

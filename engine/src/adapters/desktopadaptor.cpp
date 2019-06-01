@@ -149,8 +149,8 @@ uint32_t DesktopAdaptor::screenHeight() {
     return s_Screen.y;
 }
 
-void DesktopAdaptor::setMousePosition(const Vector3 &position) {
-    glfwSetCursorPos(m_pWindow, position.x, position.y);
+void DesktopAdaptor::setMousePosition(int32_t x, int32_t y) {
+    glfwSetCursorPos(m_pWindow, x, y);
 }
 
 uint32_t DesktopAdaptor::joystickCount() {

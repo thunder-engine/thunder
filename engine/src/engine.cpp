@@ -215,7 +215,7 @@ bool Engine::init() {
 
     bool result = p_ptr->m_pPlatform->init();
 
-    Timer::init(1.0f / 60.0f);
+    Timer::init();
     Input::init(p_ptr->m_pPlatform);
 
     return result;

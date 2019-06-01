@@ -26,14 +26,6 @@ public:
     The Animation class contain basic state machine to control animation processing.
 */
 /*!
-    \enum Animation::Direction
-
-    This enum defines the direction of playing animation.
-
-    \value FORWARD \c Animation is playing normaly.
-    \value BACKWARD \c Animation is reverted.
-*/
-/*!
     \enum Animation::State
 
     This enum defines the state of animation track.

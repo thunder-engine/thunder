@@ -66,8 +66,8 @@ public:
 
     uint32_t                screenHeight        () { return height(); }
 
-    void                    setMousePosition    (const Vector3 &position) {
-        QCursor::setPos(mapToGlobal(QPoint(position.x, position.y)));
+    void                    setMousePosition    (int32_t x, int32_t y) {
+        QCursor::setPos(mapToGlobal(QPoint(x, y)));
     }
 
     uint32_t                joystickCount       () { return 0; }

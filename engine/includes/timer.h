@@ -9,7 +9,7 @@ typedef std::chrono::high_resolution_clock::time_point  TimePoint;
 
 class NEXT_LIBRARY_EXPORT Timer {
 public:
-    static void                 init                        (float fixed);
+    static void                 init                        ();
 
     static void                 reset                       ();
 

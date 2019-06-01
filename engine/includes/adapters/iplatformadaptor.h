@@ -38,7 +38,7 @@ public:
 
     virtual uint32_t                    mouseButtons                () { return 0; }
 
-    virtual void                        setMousePosition            (const Vector3 &position) { }
+    virtual void                        setMousePosition            (int32_t x, int32_t y) { }
 
     virtual uint32_t                    joystickCount               () { return 0; }
 

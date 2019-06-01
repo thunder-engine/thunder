@@ -27,7 +27,7 @@ public:
 
     static ILogHandler *handler                     ();
 
-    static void         setLogLevel                 (LogTypes lvl);
+    static void         setLogLevel                 (LogTypes level);
 
     Log                &operator<<                  (bool b);
 
@@ -55,9 +55,7 @@ private:
 
 class ILogHandler {
 public:
-    virtual ~ILogHandler() {}
-
-    virtual void        setRecord                   (Log::LogTypes type, const char *record) = 0;
+    virtual void setRecord (Log::LogTypes type, const char *record) = 0;
 
 };
 
