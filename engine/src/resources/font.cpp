@@ -12,6 +12,34 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
+#define DF_GLYPH_SIZE 128
+#define DF_DEFAULT_SCALE 4
+
+class FontPrivate {
+public:
+    FontPrivate() :
+        m_Scale(DF_GLYPH_SIZE * DF_DEFAULT_SCALE),
+        m_pFace(nullptr),
+        m_UseKerning(false) {
+    }
+
+    int32_t m_Scale;
+
+    string                      m_FontName;
+
+    FT_FaceRec_                *m_pFace;
+
+    typedef unordered_map<uint32_t, uint32_t>   GlyphMap;
+
+    GlyphMap                    m_GlyphMap;
+
+    typedef unordered_map<uint32_t, Vector2>    SpecialMap;
+
+    ByteArray                   m_Data;
+
+    bool                        m_UseKerning;
+};
+
 struct Point {
     short dx, dy;
     int f;
@@ -86,7 +114,7 @@ static void generateSDF(Grid &g) {
     }
 }
 
-void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) {
+void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
     Grid grid[2];
 
     int32_t w = img.width;
@@ -95,7 +123,7 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
     grid[0].h = grid[1].h = h;
     grid[0].grid = static_cast<Point*>(malloc(sizeof(Point) * (w + 2) * (h + 2)));
     grid[1].grid = static_cast<Point*>(malloc(sizeof(Point) * (w + 2) * (h + 2)));
-    /* create 1-pixel gap */
+
     for(int32_t x = 0; x < w + 2; x++) {
         put(grid[0], x, 0, pointInside);
         put(grid[1], x, 0, pointEmpty);
@@ -123,13 +151,13 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
     generateSDF(grid[0]);
     generateSDF(grid[1]);
 
-    for(int32_t y = 1; y <= h; y++) {
-        for(int32_t x = 1; x <= w; x++) {
-            double dist1 = sqrt((double)(get(grid[0], x, y).f + 1));
-            double dist2 = sqrt((double)(get(grid[1], x, y).f + 1));
+    for(int32_t y = 0; y < dh - 0; y++) {
+        for(int32_t x = 0; x < dw - 0; x++) {
+            double dist1 = sqrt((double)(get(grid[0], x * w / dw, y * h / dh).f + 1));
+            double dist2 = sqrt((double)(get(grid[1], x * w / dw, y * h / dh).f + 1));
             double dist = dist1 - dist2;
-            uint32_t index = (y - 1) * w + (x - 1);
-            dst[index] = CLAMP(dist * 64 / distanceFieldScale + 128, 0, 255);
+            uint32_t index = (y - 0) * dw + (x - 0);
+            dst[index] = CLAMP(dist * 64 + 128, 0, 255);
         }
     }
     free(grid[0].grid);
@@ -137,128 +165,97 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, double distanceFieldScale) 
 }
 
 Font::Font() :
-        Atlas(),
-        m_Scale(86),
-        m_pFace(nullptr),
-        m_UseKerning(false) {
+        p_ptr(new FontPrivate()) {
 
     clear();
 
-    if(FT_Init_FreeType( &library )) {
-        // FT_Init_FreeType failed
-    }
+    FT_Init_FreeType( &library );
 }
 
 Font::~Font() {
      clear();
 }
 
-int32_t Font::scale() const {
-    return m_Scale;
-}
-
 uint32_t Font::atlasIndex(uint32_t glyph) const {
-    auto it = m_GlyphMap.find(glyph);
-    if(it != m_GlyphMap.end()) {
+    auto it = p_ptr->m_GlyphMap.find(glyph);
+    if(it != p_ptr->m_GlyphMap.end()) {
         return (*it).second;
     }
     return 0;
 }
 
 void Font::requestCharacters(const u32string &characters) {
-    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
-    if(!error) {
-        for(auto it : characters) {
-            uint32_t ch = it;
-            if(m_GlyphMap.find(ch) == m_GlyphMap.end() && m_pFace) {
-                error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, it ), FT_LOAD_DEFAULT );
+    for(auto it : characters) {
+        uint32_t ch = it;
+        if(p_ptr->m_GlyphMap.find(ch) == p_ptr->m_GlyphMap.end() && p_ptr->m_pFace) {
+            FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, it ), FT_LOAD_DEFAULT );
+            if(!error) {
+                FT_Glyph glyph;
+                error   = FT_Get_Glyph( p_ptr->m_pFace->glyph, &glyph );
                 if(!error) {
-                    FT_Glyph glyph;
-                    error   = FT_Get_Glyph( m_pFace->glyph, &glyph );
-                    if(!error) {
-                        FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, nullptr, 1 );
-                        FT_Bitmap &bitmap   = reinterpret_cast<FT_BitmapGlyph>(glyph)->bitmap;
+                    FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, nullptr, 1 );
+                    FT_Bitmap &bitmap   = reinterpret_cast<FT_BitmapGlyph>(glyph)->bitmap;
 
-                        uint32_t size   = bitmap.width * bitmap.rows;
+                    uint32_t w = bitmap.width / DF_DEFAULT_SCALE;
+                    uint32_t h = bitmap.rows / DF_DEFAULT_SCALE;
 
-                        Texture::Surface s;
-                        uint8_t *buffer = new uint8_t[size];
-                        calculateDF(bitmap, buffer, 1);
+                    Texture::Surface s;
+                    uint8_t *buffer = new uint8_t[w * h];
+                    calculateDF(bitmap, buffer, w, h);
 
-                        s.push_back(buffer);
+                    s.push_back(buffer);
 
-                        FT_BBox bbox;
-                        FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
+                    FT_BBox bbox;
+                    FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
 
-                        Texture *t  = Engine::objectCreate<Texture>("", this);
-                        t->setWidth(bitmap.width);
-                        t->setHeight(bitmap.rows);
+                    Texture *t  = Engine::objectCreate<Texture>("", this);
+                    t->setWidth(w);
+                    t->setHeight(h);
 
-                        Vector2Vector shape;
-                        shape.resize(4);
-                        shape[0] = Vector2(bbox.xMin, bbox.yMax) / m_Scale;
-                        shape[1] = Vector2(bbox.xMax, bbox.yMax) / m_Scale;
-                        shape[2] = Vector2(bbox.xMax, bbox.yMin) / m_Scale;
-                        shape[3] = Vector2(bbox.xMin, bbox.yMin) / m_Scale;
+                    Vector2Vector shape;
+                    shape.resize(4);
+                    shape[0] = Vector2(bbox.xMin, bbox.yMax) / p_ptr->m_Scale;
+                    shape[1] = Vector2(bbox.xMax, bbox.yMax) / p_ptr->m_Scale;
+                    shape[2] = Vector2(bbox.xMax, bbox.yMin) / p_ptr->m_Scale;
+                    shape[3] = Vector2(bbox.xMin, bbox.yMin) / p_ptr->m_Scale;
 
-                        t->setShape(shape);
-                        t->addSurface(s);
+                    t->setShape(shape);
+                    t->addSurface(s);
 
-                        m_GlyphMap[ch] = addElement(t);
-                    }
+                    p_ptr->m_GlyphMap[ch] = addElement(t);
                 }
             }
         }
-        pack(1);
-        m_pTexture->apply();
     }
+    pack(1);
+    m_pTexture->apply();
 }
 
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
-    if(m_UseKerning && previous)  {
+    if(p_ptr->m_UseKerning && previous)  {
         FT_Vector delta;
-        FT_Get_Kerning( m_pFace, previous, glyph, FT_KERNING_DEFAULT, &delta );
+        FT_Get_Kerning( p_ptr->m_pFace, previous, glyph, FT_KERNING_DEFAULT, &delta );
         return delta.x >> 6;
     }
     return 0;
-}
-
-void Font::setFontName(const string &name) {
-    clear();
-
-    m_FontName  = name;
-
-    FT_Error error  = FT_New_Face( library, m_FontName.c_str(), 0, &m_pFace );
-    if(error) {
-        Log(Log::ERR) << "Can't load font" << name.c_str() << "system returned error:" << error;
-        return;
-    }
-
-    m_UseKerning = FT_HAS_KERNING( m_pFace );
 }
 
 uint32_t Font::length(const u32string &characters) const {
     return characters.length();
 }
 
-int32_t Font::spaceWidth() const {
-    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
+float Font::spaceWidth() const {
+    FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, ' ' ), FT_LOAD_DEFAULT );
     if(!error) {
-        error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, ' ' ), FT_LOAD_DEFAULT );
-        if(!error) {
-            return m_pFace->glyph->advance.x / 64;
-        }
+        return static_cast<float>(p_ptr->m_pFace->glyph->advance.x) / p_ptr->m_Scale / 64.0f;
     }
     return 0;
 }
 
-int32_t Font::lineHeight() const {
-    FT_Error error  = FT_Set_Char_Size( m_pFace, m_Scale * 64, 0, 100, 0 );
+float Font::lineHeight() const {
+    FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, '\n' ), FT_LOAD_DEFAULT );
     if(!error) {
-        error   = FT_Load_Glyph( m_pFace, FT_Get_Char_Index( m_pFace, '\n' ), FT_LOAD_DEFAULT );
-        if(!error) {
-            return m_pFace->glyph->metrics.height / 32;
-        }
+        return static_cast<float>(p_ptr->m_pFace->glyph->metrics.height) / p_ptr->m_Scale / 32.0f;
     }
     return 0;
 }
@@ -270,33 +267,35 @@ void Font::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             VariantList header  = (*it).second.value<VariantList>();
 
-            auto i      = header.begin();
+            auto i = header.begin();
             //Reserved
             i++;
-            m_Scale     = (*i).toInt();
+            //m_Scale = (*i).toInt();
             i++;
-            string name = (*i).toString();
+            //string name = (*i).toString();
             i++;
-            if(!name.empty()) {
-                setFontName(name);
-            }
         }
     }
 
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
-            m_Data  = (*it).second.toByteArray();
-            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&m_Data[0]), m_Data.size(), 0, &m_pFace);
+            p_ptr->m_Data  = (*it).second.toByteArray();
+            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_Data[0]), p_ptr->m_Data.size(), 0, &p_ptr->m_pFace);
             if(error) {
                 Log(Log::ERR) << "Can't load font. System returned error:" << error;
                 return;
             }
-            m_UseKerning = FT_HAS_KERNING( m_pFace );
+            error  = FT_Set_Char_Size( p_ptr->m_pFace, p_ptr->m_Scale * 64, 0, 0, 0 );
+            if(error) {
+                Log(Log::ERR) << "Can't set default font size. System returned error:" << error;
+                return;
+            }
+            p_ptr->m_UseKerning = FT_HAS_KERNING( p_ptr->m_pFace );
         }
     }
 }
 
 void Font::clear() {
-    FT_Done_Face(m_pFace);
+    FT_Done_Face(p_ptr->m_pFace);
 }

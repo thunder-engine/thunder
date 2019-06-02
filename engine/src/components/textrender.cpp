@@ -7,7 +7,8 @@
 #include "commandbuffer.h"
 #include "utils.h"
 
-#define FONT  "Font"
+#define FONT        "Font"
+#define MATERIAL    "Material"
 
 #define OVERRIDE "uni.texture0"
 
@@ -179,6 +180,25 @@ void TextRender::setFont(Font *font) {
     composeMesh();
 }
 
+Material *TextRender::material() const {
+    if(m_pMaterial) {
+        return m_pMaterial->material();
+    }
+    return nullptr;
+}
+
+void TextRender::setMaterial(Material *material) {
+    if(m_pMaterial) {
+        delete m_pMaterial;
+        m_pMaterial = nullptr;
+    }
+
+    if(material) {
+        m_pMaterial = material->createInstance();
+        m_pMaterial->setTexture(OVERRIDE, m_pFont->texture());
+    }
+}
+
 int TextRender::fontSize() const {
     return m_Size;
 }
@@ -221,15 +241,28 @@ void TextRender::loadUserData(const VariantMap &data) {
             setFont(Engine::loadResource<Font>((*it).second.toString()));
         }
     }
+    {
+        auto it = data.find(MATERIAL);
+        if(it != data.end()) {
+            setMaterial(Engine::loadResource<Material>((*it).second.toString()));
+        }
+    }
 }
 
 VariantMap TextRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
-        Font *f = font();
-        string ref  = Engine::reference(f);
+        Font *o = font();
+        string ref  = Engine::reference(o);
         if(!ref.empty()) {
-            result[FONT]    = ref;
+            result[FONT] = ref;
+        }
+    }
+    {
+        Material *o = material();
+        string ref  = Engine::reference(o);
+        if(!ref.empty()) {
+            result[MATERIAL] = ref;
         }
     }
     return result;

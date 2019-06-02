@@ -207,7 +207,7 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             mSaved  = pos;
         } break;
         case QEvent::Wheel: {
-            cameraZoom(static_cast<QWheelEvent *>(pe)->delta() * 0.01f);
+            cameraZoom(static_cast<QWheelEvent *>(pe)->delta());
         } break;
         default: break;
     }
@@ -216,15 +216,16 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 void CameraCtrl::cameraZoom(float delta) {
     if(m_pActiveCamera && m_pCamera) {
         if(m_pActiveCamera->orthographic()) {
-            m_pActiveCamera->setOrthoHeight(m_pActiveCamera->orthoHeight() - delta);
+            float scale = m_pActiveCamera->orthoHeight() * 0.001f;
+            m_pActiveCamera->setOrthoHeight(MAX(0.0f, m_pActiveCamera->orthoHeight() - delta * scale));
         } else {
-            float focal = m_pActiveCamera->focal() - delta;
+            float scale = delta * 0.01f;
+            float focal = m_pActiveCamera->focal() - scale;
             if(focal > 0.0f) {
                 m_pActiveCamera->setFocal(focal);
-                m_pActiveCamera->setOrthoHeight(focal);
 
                 Transform *t = m_pCamera->transform();
-                t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, delta));
+                t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, scale));
             }
         }
     }

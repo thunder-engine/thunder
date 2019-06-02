@@ -85,6 +85,8 @@ public:
 
     void                        setFormat                   (FormatType type);
 
+    void                        setFiltering                (FilteringType type);
+
 protected:
     uint32_t                    size                        (int32_t width, int32_t height) const;
     uint32_t                    sizeDXTc                    (int32_t width, int32_t height) const;

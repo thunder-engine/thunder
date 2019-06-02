@@ -1,7 +1,10 @@
 #ifndef SPRITERENDER
 #define SPRITERENDER
 
-#include "meshrender.h"
+#include "renderable.h"
+
+#include "mesh.h"
+#include "material.h"
 
 class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components)

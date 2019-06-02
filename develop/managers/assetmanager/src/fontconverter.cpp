@@ -25,15 +25,17 @@ protected:
         {
             VariantList header;
             header.push_back(0); // Reserved
-            header.push_back(m_Scale);
-            header.push_back(m_FontName);
+            header.push_back(0);
+            header.push_back("");
             result[HEADER]  = header;
         }
         {
-            result[DATA]    = m_Data;
+            result[DATA] = m_Data;
         }
         return result;
     }
+
+    ByteArray m_Data;
 };
 
 uint8_t FontConverter::convertFile(IConverterSettings *settings) {

@@ -1,10 +1,10 @@
 #ifndef MESHRENDER_H
 #define MESHRENDER_H
 
+#include "renderable.h"
+
 #include "mesh.h"
 #include "material.h"
-
-#include "renderable.h"
 
 #include <array>
 

@@ -283,7 +283,11 @@ void Texture::resize(int32_t width, int32_t height) {
 }
 
 void Texture::setFormat(FormatType type) {
-    m_Format    = type;
+    m_Format = type;
+}
+
+void Texture::setFiltering(FilteringType type) {
+    m_Filtering = type;
 }
 
 bool Texture::isCompressed() const {

@@ -4,9 +4,9 @@
 #include "renderable.h"
 
 #include "font.h"
+#include "material.h"
 
 class Mesh;
-class MaterialInstance;
 
 enum Alignment {
     Left,
@@ -21,6 +21,7 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
         A_PROPERTY(string, Text, TextRender::text, TextRender::setText),
         A_PROPERTY(Alignment, Alignment, TextRender::align, TextRender::setAlign),
         A_PROPERTY(Font, Font_Name, TextRender::font, TextRender::setFont),
+        A_PROPERTY(Material *, Material, TextRender::material, TextRender::setMaterial),
         A_PROPERTY(int, Font_Size, TextRender::fontSize, TextRender::setFontSize),
         A_PROPERTY(Color, Color, TextRender::color, TextRender::setColor),
         A_PROPERTY(bool, Use_Kerning, TextRender::kerning, TextRender::setKerning)
@@ -42,6 +43,9 @@ public:
 
     Font               *font                () const;
     void                setFont             (Font *font);
+
+    Material           *material            () const;
+    void                setMaterial         (Material *material);
 
     int                 fontSize            () const;
     void                setFontSize         (int size);
