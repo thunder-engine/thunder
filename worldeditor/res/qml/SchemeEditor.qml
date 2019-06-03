@@ -89,6 +89,8 @@ Rectangle {
         selectNode = id
         nodeSelected(selectNode)
         selection = [id]
+        selectPort = -1
+        createMode = false
     }
 
     function deleteSelected() {
@@ -122,8 +124,20 @@ Rectangle {
             oldY = mouse.y
 
             if(rubberBand.visible) {
-                rubberBand.width = mouse.x - rubberBand.x
-                rubberBand.height = mouse.y - rubberBand.y
+                if(mouse.x < rubberBand.sx) {
+                    rubberBand.x = mouse.x
+                    rubberBand.width = Math.abs(rubberBand.sx - mouse.x)
+                } else {
+                    rubberBand.x = rubberBand.sx
+                    rubberBand.width = Math.abs(mouse.x - rubberBand.sx)
+                }
+                if(mouse.y < rubberBand.sy) {
+                    rubberBand.y = mouse.y
+                    rubberBand.height = Math.abs(rubberBand.sy - mouse.y)
+                } else {
+                    rubberBand.y = rubberBand.sy
+                    rubberBand.height = Math.abs(mouse.y - rubberBand.sy)
+                }
             }
         }
 
@@ -132,17 +146,19 @@ Rectangle {
                 nodeSelect(0)
             }
             selectPort = -1
+            createMode = false
 
             canvas.requestPaint()
         }
 
         onPressed: {
-            rubberBand.x = mouse.x
-            rubberBand.y = mouse.y
-            rubberBand.width = 0
-            rubberBand.height = 0
-            rubberBand.visible = true
-
+            if(mouse.buttons & Qt.LeftButton) {
+                rubberBand.width = 0
+                rubberBand.height = 0
+                rubberBand.sx = mouse.x
+                rubberBand.sy = mouse.y
+                rubberBand.visible = true
+            }
             selection = []
         }
 
@@ -195,6 +211,7 @@ Rectangle {
             var afterX = Math.round((canvas.width - translateX) / cell)
             for(var x = beforeX; x < afterX; x++) {
                 context.lineWidth = (x % 9 == 0) ? 2 : 1
+
                 context.beginPath()
                 context.moveTo(x * cell, -translateY)
                 context.lineTo(x * cell, canvas.height - translateY)
@@ -205,6 +222,7 @@ Rectangle {
             var afterY = Math.round((canvas.height - translateY) / cell)
             for(var y = beforeY; y < afterY; y++) {
                 context.lineWidth = (y % 9 == 0) ? 2 : 1
+
                 context.beginPath()
                 context.moveTo(-translateX, y * cell)
                 context.lineTo(canvas.width - translateX, y * cell)
@@ -243,7 +261,6 @@ Rectangle {
                 } else {
                     x0 += (width + border) / 2
                     y0 += (nodeHeight(nodes[selectNode]) + border) / 2
-
                     context.beginPath()
                     context.moveTo(x0, y0)
                     context.lineTo(mouseX, mouseY)
@@ -413,6 +430,7 @@ Rectangle {
                     }
                     onClicked: {
                         nodeSelect(nodeObject.node)
+
                     }
                 }
 
@@ -462,6 +480,8 @@ Rectangle {
         color: theme.emitterColor;
         border.width: 1
         border.color: theme.hoverColor
+        property int sx: 0
+        property int sy: 0
     }
 
     Keys.onPressed: {

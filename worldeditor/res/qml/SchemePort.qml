@@ -17,13 +17,13 @@ Rectangle {
         onClicked: {
             if(mouse.modifiers & Qt.AltModifier) {
                 schemeModel.deleteLinksByNode(node, port)
-            } else if(selectNode > -1 && selectNode != node) {
+            } else if(createMode && selectNode != node) {
                 schemeModel.createLink(selectNode, selectPort, node, port)
                 selectNode = -1
                 selectPort = -1
                 createMode = false
             } else {
-                selectNode = node
+                nodeSelect(node)
                 selectPort = port
                 createMode = true
             }
