@@ -61,24 +61,6 @@ QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
         Actions *act    = new Actions(parent);
         act->setMenu(next->menu(m_name));
         m_Editor        = act;
-    } else {
-        switch(static_cast<QMetaType::Type>(value().type())) {
-            case QMetaType::Int: {
-                m_Editor    = new QSpinBox(parent);
-                m_Editor->setProperty("minimum", -INT_MAX);
-                m_Editor->setProperty("maximum",  INT_MAX);
-                connect(m_Editor, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
-            } break;
-            case QMetaType::Float:
-            case QMetaType::Double: {
-                m_Editor    = new QDoubleSpinBox(parent);
-                m_Editor->setProperty("minimum", -DBL_MAX);
-                m_Editor->setProperty("maximum",  DBL_MAX);
-                m_Editor->setProperty("decimals", 6);
-                connect(m_Editor, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
-            } break;
-            default: break;
-        }
     }
     return m_Editor;
 }
@@ -87,37 +69,12 @@ QSize Property::sizeHint(const QSize &size) const {
     return size;
 }
 
-bool Property::setEditorData(QWidget *editor, const QVariant &data) {
-    switch(static_cast<QMetaType::Type>(value().type())) {
-        case QMetaType::Int: {
-            editor->blockSignals(true);
-            static_cast<QSpinBox*>(editor)->setValue(data.toInt());
-            editor->blockSignals(false);
-            return true;
-        }
-        case QMetaType::Float:
-        case QMetaType::Double: {
-            editor->blockSignals(true);
-            static_cast<QDoubleSpinBox*>(editor)->setValue(data.toDouble());
-            editor->blockSignals(false);
-            return true;
-        }
-        default: break;
-    }
+bool Property::setEditorData(QWidget *, const QVariant &) {
     return false;
 }
 
-QVariant Property::editorData(QWidget *editor) {
-    switch(static_cast<QMetaType::Type>(value().type())) {
-        case QMetaType::Int: {
-            return QVariant(static_cast<QSpinBox*>(editor)->value());
-        }
-        case QMetaType::Float:
-        case QMetaType::Double: {
-            return QVariant(static_cast<QDoubleSpinBox*>(editor)->value());
-        }
-        default: return QVariant();
-    }
+QVariant Property::editorData(QWidget *) {
+    return QVariant();
 }
 
 Property *Property::findPropertyObject(QObject *propertyObject) {
@@ -129,16 +86,4 @@ Property *Property::findPropertyObject(QObject *propertyObject) {
             return child;
     }
     return nullptr;
-}
-
-void Property::setValue(double value) {
-    setValue(QVariant(value));
-}
-
-void Property::setValue(int value) {
-    setValue(QVariant(value));
-}
-
-void Property::setValue(const QString &value) {
-    setValue(QVariant(value));
 }

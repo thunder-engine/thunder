@@ -38,20 +38,13 @@ public:
 
     virtual QWidget            *createEditor            (QWidget *parent, const QStyleOptionViewItem&);
 
-    virtual QVariant            editorData              (QWidget *editor);
+    virtual QVariant            editorData              (QWidget *);
 
-    virtual bool                setEditorData           (QWidget *editor, const QVariant &data);
+    virtual bool                setEditorData           (QWidget *, const QVariant &);
 
     virtual QSize               sizeHint                (const QSize &size) const;
 
     Property                   *findPropertyObject      (QObject *propertyObject);
-
-private slots:
-    void                        setValue                (double value);
-
-    void                        setValue                (int value);
-
-    void                        setValue                (const QString &value);
 
 protected:
     QObject                    *m_propertyObject;

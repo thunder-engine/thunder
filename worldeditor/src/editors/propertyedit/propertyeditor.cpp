@@ -9,6 +9,8 @@
 #include "custom/AlignmentProperty.h"
 #include "custom/AssetProperty.h"
 #include "custom/BoolProperty.h"
+#include "custom/IntegerProperty.h"
+#include "custom/FloatProperty.h"
 #include "custom/ColorProperty.h"
 #include "custom/StringProperty.h"
 #include "custom/Vector3DProperty.h"
@@ -28,6 +30,12 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::Bool)
         return new BoolProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::Int)
+        return new IntegerProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::Float || userType == QMetaType::Double)
+        return new FloatProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::QString)
         return new StringProperty(name, propertyObject, parent);

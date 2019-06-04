@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -51,7 +51,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../../../res/WorldBuilder.qrc">
+      <iconset resource="../../../../res/WorldEditor.qrc">
        <normaloff>:/Style/styles/dark/icons/revert.png</normaloff>:/Style/styles/dark/icons/revert.png</iconset>
      </property>
     </widget>
@@ -59,7 +59,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../../res/WorldBuilder.qrc"/>
+  <include location="../../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>
 </ui>

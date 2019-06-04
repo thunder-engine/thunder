@@ -186,20 +186,21 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             if(pair.Object == metaObject) {
                 QMetaProperty property(pair.Property);
                 Property *p = nullptr;
-                if (!m_userCallbacks.isEmpty()) {
-                    QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
-                    while( p == nullptr && iter != m_userCallbacks.end() ) {
-                        p   = (*iter)(property.name(), propertyObject, propertyItem);
-                        ++iter;
+                if(property.isEnumType()) {
+                    p   = new EnumProperty(property.name(), propertyObject, propertyItem);
+                } else {
+                    if(!m_userCallbacks.isEmpty()) {
+                        QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
+                        while( p == nullptr && iter != m_userCallbacks.end() ) {
+                            p   = (*iter)(property.name(), propertyObject, propertyItem);
+                            ++iter;
+                        }
+                    }
+                    if(p == nullptr) {
+                        p = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
                     }
                 }
-                if(p == nullptr) {
-                    if(property.isEnumType()) {
-                        p   = new EnumProperty(property.name(), propertyObject, propertyItem);
-                    } else {
-                        p   = new Property(property.name(), propertyObject, (propertyItem) ? propertyItem : m_rootItem);
-                    }
-                }
+
                 p->setName(propertyName);
 
                 int index   = metaObject->indexOfClassInfo(property.name());

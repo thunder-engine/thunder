@@ -144,7 +144,7 @@ void ObjectCtrlPipeline::drawGrid(Camera &camera) {
         length = (pos - cam).length();
     }
 
-    float scale = 0.01f;
+    float scale = 0.001f;
     while(scale < length) {
         scale *= 10.0f;
     }
