@@ -13,6 +13,7 @@
 #include "custom/FloatProperty.h"
 #include "custom/ColorProperty.h"
 #include "custom/StringProperty.h"
+#include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
 #include "custom/FilePathProperty.h"
 
@@ -39,6 +40,9 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::QString)
         return new StringProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Vector2"))
+        return new Vector2DProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Vector3"))
         return new Vector3DProperty(name, propertyObject, parent);

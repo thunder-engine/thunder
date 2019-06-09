@@ -11,7 +11,7 @@ class StringEdit : public QWidget {
     Q_OBJECT
 
 public:
-    explicit StringEdit     (QWidget *parent = 0);
+    explicit StringEdit     (QWidget *parent = nullptr);
     ~StringEdit             ();
 
     void                    setText         (const QString &text);

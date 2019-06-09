@@ -1,6 +1,8 @@
 #include "IntegerEdit.h"
 #include "ui_IntegerEdit.h"
 
+#include <limits.h>
+
 IntegerEdit::IntegerEdit(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::IntegerEdit) {
@@ -8,6 +10,8 @@ IntegerEdit::IntegerEdit(QWidget *parent) :
 
     ui->spinBox->setProperty("minimum", -INT_MAX);
     ui->spinBox->setProperty("maximum",  INT_MAX);
+
+    connect(ui->spinBox, SIGNAL(editingFinished()), this, SIGNAL(editingFinished()));
 }
 
 IntegerEdit::~IntegerEdit() {

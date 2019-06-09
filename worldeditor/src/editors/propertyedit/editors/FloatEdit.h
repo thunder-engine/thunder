@@ -4,11 +4,10 @@
 #include <QWidget>
 
 namespace Ui {
-class FloatEdit;
+    class FloatEdit;
 }
 
-class FloatEdit : public QWidget
-{
+class FloatEdit : public QWidget {
     Q_OBJECT
 
 public:
@@ -18,6 +17,9 @@ public:
     void setValue(double value);
 
     double value() const;
+
+signals:
+    void editingFinished();
 
 private:
     Ui::FloatEdit *ui;

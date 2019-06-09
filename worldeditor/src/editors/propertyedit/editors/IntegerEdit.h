@@ -17,6 +17,9 @@ public:
     int32_t value() const;
     void setValue(int32_t value);
 
+signals:
+    void editingFinished();
+
 private:
     Ui::IntegerEdit *ui;
 };

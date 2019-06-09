@@ -10,9 +10,6 @@
 
 #include "../nextobject.h"
 
-#include <limits.h>
-#include <float.h>
-
 Property::Property(const QString &name, QObject *propertyObject, QObject *parent, bool root) :
         QObject(parent),
         m_propertyObject(propertyObject),

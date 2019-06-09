@@ -20,6 +20,8 @@ public:
 
     void                setData             (const Vector3 &);
 
+    void                setComponents       (uint8_t value);
+
 signals:
     void                dataChanged         (const QVariant &);
 

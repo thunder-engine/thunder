@@ -37,9 +37,17 @@ Vector3 VectorEdit::data() const {
 }
 
 void VectorEdit::setData(const Vector3 &v) {
-    ui->x->setText(QString::number(v.x, 'f', 3));
-    ui->y->setText(QString::number(v.y, 'f', 3));
-    ui->z->setText(QString::number(v.z, 'f', 3));
+    ui->x->setText(QString::number(v.x, 'f', 4));
+    ui->y->setText(QString::number(v.y, 'f', 4));
+    ui->z->setText(QString::number(v.z, 'f', 4));
+}
+
+void VectorEdit::setComponents(uint8_t value) {
+    if(value == 2) {
+        ui->z->hide();
+    } else {
+        ui->z->show();
+    }
 }
 
 void VectorEdit::onValueChanged() {

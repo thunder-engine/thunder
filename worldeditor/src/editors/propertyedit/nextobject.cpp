@@ -7,6 +7,7 @@
 #include <object.h>
 #include <invalid.h>
 
+#include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
 #include "custom/ColorProperty.h"
 #include "custom/FilePathProperty.h"
@@ -49,6 +50,8 @@ QVariant qVariant(Variant &v, const string &type) {
             return QVariant(v.toFloat());
         case MetaType::STRING:
             return QVariant(v.toString().c_str());
+        case MetaType::VECTOR2:
+            return QVariant::fromValue(v.toVector2());
         case MetaType::VECTOR3:
             return QVariant::fromValue(v.toVector3());
         case MetaType::VECTOR4: {
@@ -95,6 +98,9 @@ Variant aVariant(QVariant &v, uint32_t type) {
                 return Variant(qUtf8Printable(p.path));
             }
             return Variant(qUtf8Printable(v.toString()));
+        }
+        case MetaType::VECTOR2: {
+            return Variant(v.value<Vector2>());
         }
         case MetaType::VECTOR3: {
             return Variant(v.value<Vector3>());
