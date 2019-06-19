@@ -19,18 +19,22 @@ Actor::Actor() :
 }
 
 bool Actor::isEnable() const {
+    PROFILE_FUNCTION();
     return m_Enable;
 }
 
 void Actor::setEnable(const bool enable) {
+    PROFILE_FUNCTION();
     m_Enable = enable;
 }
 
 uint8_t Actor::layers() const {
+    PROFILE_FUNCTION();
     return m_Layers;
 }
 
 Transform *Actor::transform() {
+    PROFILE_FUNCTION();
     if(m_pTransform == nullptr) {
         m_pTransform = component<Transform>();
         if(m_pTransform == nullptr) {
@@ -41,6 +45,7 @@ Transform *Actor::transform() {
 }
 
 Scene *Actor::scene() {
+    PROFILE_FUNCTION();
     if(m_pScene == nullptr) {
         Object *scene = parent();
         if(scene) {
@@ -54,6 +59,7 @@ Scene *Actor::scene() {
 }
 
 Component *Actor::findComponent(const char *type) {
+    PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         const MetaObject *meta = it->metaObject();
         if(meta->canCastTo(type)) {
@@ -64,14 +70,17 @@ Component *Actor::findComponent(const char *type) {
 }
 
 void Actor::setLayers(const uint8_t layers) {
+    PROFILE_FUNCTION();
     m_Layers    = layers;
 }
 
 Component *Actor::createComponent(const string type) {
+    PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
 
 void Actor::addChild(Object *value) {
+    PROFILE_FUNCTION();
     Object::addChild(value);
 
     Transform *t = dynamic_cast<Transform *>(value);
@@ -84,6 +93,7 @@ void Actor::addChild(Object *value) {
 }
 
 bool Actor::isSerializable() const {
+    PROFILE_FUNCTION();
     Actor *actor   = dynamic_cast<Actor *>(parent());
     if(actor) {
         return !actor->isPrefab();
@@ -92,6 +102,7 @@ bool Actor::isSerializable() const {
 }
 
 void Actor::setParent(Object *parent) {
+    PROFILE_FUNCTION();
     Transform *t    = transform();
     if(t) {
         Vector3 p   = t->worldPosition();
@@ -122,10 +133,12 @@ void Actor::setParent(Object *parent) {
 }
 
 bool Actor::isPrefab() const {
+    PROFILE_FUNCTION();
     return (m_pPrefab != nullptr);
 }
 
 void Actor::setPrefab(Actor *prefab) {
+    PROFILE_FUNCTION();
     m_pPrefab = prefab;
 }
 
@@ -139,6 +152,7 @@ void enumObjects(Object *object, List &list) {
 }
 
 void Actor::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
     auto it = data.find(PREFAB);
     if(it != data.end()) {
         setPrefab(Engine::loadResource<Actor>((*it).second.toString()));
@@ -210,6 +224,7 @@ void enumConstObjects(const Object *object, ConstList &list) {
 }
 
 VariantMap Actor::saveUserData() const {
+    PROFILE_FUNCTION();
     VariantMap result   = Object::saveUserData();
     if(m_pPrefab) {
         string ref      = Engine::reference(m_pPrefab);

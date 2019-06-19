@@ -9,6 +9,8 @@
 #include "commandbuffer.h"
 #include "utils.h"
 
+#include <array>
+
 #define FONT        "Font"
 #define MATERIAL    "Material"
 
@@ -25,7 +27,8 @@ public:
         m_Alignment(Left),
         m_Kerning(true),
         m_pMaterial(nullptr),
-        m_Wrap(false) {
+        m_Wrap(false),
+        m_Blocked(false) {
 
         m_pMesh = Engine::objectCreate<Mesh>();
         m_pMesh->makeDynamic();
@@ -39,6 +42,9 @@ public:
     }
 
     void composeMesh() {
+        if(m_Blocked) {
+            return;
+        }
         if(m_pFont) {
             m_Space = m_pFont->spaceWidth() * m_Size;
             m_Line  = m_pFont->lineHeight() * m_Size;
@@ -196,6 +202,8 @@ public:
     Vector2             m_Boundaries;
 
     bool                m_Wrap;
+
+    bool                m_Blocked;
 };
 
 TextRender::TextRender() :
@@ -304,6 +312,14 @@ void TextRender::setKerning(const bool kerning) {
     p_ptr->composeMesh();
 }
 
+
+void TextRender::loadData(const VariantList &data) {
+    p_ptr->m_Blocked = true;
+    Component::loadData(data);
+    p_ptr->m_Blocked = false;
+    p_ptr->composeMesh();
+}
+
 void TextRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
@@ -338,3 +354,18 @@ VariantMap TextRender::saveUserData() const {
     }
     return result;
 }
+
+#ifdef NEXT_SHARED
+#include "handles.h"
+
+bool TextRender::drawHandles() {
+    Vector3Vector points = {Vector3(),
+                            Vector3(p_ptr->m_Boundaries.x, 0.0f, 0.0f),
+                            Vector3(p_ptr->m_Boundaries.x,-p_ptr->m_Boundaries.y, 0.0f),
+                            Vector3(0.0f,-p_ptr->m_Boundaries.y, 0.0f)};
+    Mesh::IndexVector indices = {0, 1, 1, 2, 2, 3, 3, 0};
+
+    Handles::drawLines(actor()->transform()->worldTransform(), points, indices);
+    return false;
+}
+#endif

@@ -16,7 +16,8 @@
 #include <resources/pipeline.h>
 #include <resources/rendertexture.h>
 
-#include "graph/handletools.h"
+#include <handles/handletools.h>
+
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
 #include "converters/converter.h"
@@ -222,7 +223,7 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
         }
     }
 
-    if(m_pPipeline) {
+    if(m_pPipeline && m_ObjectsList.empty()) {
         uint32_t result = 0;
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
@@ -256,6 +257,7 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
             m_ObjectsList = { result };
         }
     }
+
     Handles::endDraw();
 }
 
@@ -285,37 +287,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
         Component *component    = dynamic_cast<Component *>(it);
         if(component) {
-            Transform *t    = component->actor()->transform();
-
-            bool result     = false;
-            Camera *camera  = dynamic_cast<Camera *>(component);
-            if(camera) {
-                array<Vector3, 8> a = camera->frustumCorners(camera->nearPlane(), camera->farPlane());
-
-                Vector3Vector points(a.begin(), a.end());
-                Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                                               4, 5, 5, 6, 6, 7, 7, 4,
-                                               0, 4, 1, 5, 2, 6, 3, 7};
-
-                //Handles::drawLines(Matrix4(), points, indices);
-                result  = Handles::drawBillboard(t->position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
-            }
-            DirectLight *direct = dynamic_cast<DirectLight *>(component);
-            if(direct) {
-                Vector3 pos     = t->position();
-
-                Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
-                Handles::s_Color = Handles::s_Second = direct->color();
-                Handles::drawArrow(Matrix4(pos, t->rotation(), Vector3(0.5f)) * z);
-                result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
-                Handles::s_Color = Handles::s_Second = Handles::s_Normal;
-            }
-            //if(component->typeName() == "AudioSource") {
-            //    Vector3 pos     = t->position();
-            //    result  = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/soundsource.png"));
-            //}
-
-            if(result) {
+            if(component->drawHandles()) {
                 m_ObjectsList = {object.uuid()};
             }
         } else {

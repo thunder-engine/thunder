@@ -7,7 +7,8 @@
 
 #include <resources/pipeline.h>
 
-#include "handles.h"
+#include <handles/handles.h>
+
 #include "controllers/objectctrl.h"
 
 #include "commandbuffer.h"

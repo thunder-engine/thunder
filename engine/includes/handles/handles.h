@@ -14,7 +14,7 @@ class ICommandBuffer;
 
 using namespace std;
 
-class Handles {
+class NEXT_LIBRARY_EXPORT Handles {
 public:
     enum Axes {
         AXIS_X  = (1 << 0),

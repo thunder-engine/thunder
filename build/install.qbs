@@ -277,7 +277,8 @@ Product {
             "**/*.h"
         ]
         excludeFiles: [
-            "adapters/*.h"
+            "adapters/*.h",
+            "handles/*.h"
         ]
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/engine"

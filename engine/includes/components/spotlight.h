@@ -3,8 +3,7 @@
 
 #include "baselight.h"
 
-class Mesh;
-class MaterialInstance;
+class SpotLightPrivate;
 
 class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
     A_REGISTER(SpotLight, BaseLight, Components)
@@ -15,23 +14,24 @@ class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
     )
 
 public:
-    SpotLight                   ();
+    SpotLight ();
+    ~SpotLight ();
 
-    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
+    void draw (ICommandBuffer &buffer, uint32_t layer);
 
-    float                       radius                  () const;
-    void                        setRadius               (float value);
+    float radius () const;
+    void setRadius (float value);
 
-    float                       angle                   () const;
-    void                        setAngle                (float value);
+    float angle () const;
+    void setAngle (float value);
 
-protected:
-    Vector3                     m_Position;
+private:
+#ifdef NEXT_SHARED
+    bool drawHandles() override;
+#endif
 
-    Vector3                     m_Direction;
-
-
-    float                       m_Angle;
+private:
+    SpotLightPrivate *p_ptr;
 
 };
 

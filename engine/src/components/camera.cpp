@@ -5,29 +5,61 @@
 
 #include "resources/pipeline.h"
 
-Camera *Camera::s_pCurrent  = nullptr;
+class CameraPrivate {
+public:
+    CameraPrivate() {
+        m_FOV        = 45.0; // 2*arctan(height/(2*distance))
+        m_Near       = 0.1f;
+        m_Far        = 1000.0;
+        m_Ratio      = 1.0;
+        m_Focal      = 1.0;
+        m_OrthoHeight= 1.0;
+        m_Ortho      = false;
+        m_Color      = Vector4();
+        m_pPipeline  = nullptr;
+    }
 
-Camera::Camera() {
-    m_FOV        = 45.0; // 2*arctan(height/(2*distance))
-    m_Near       = 0.1f;
-    m_Far        = 1000.0;
-    m_Ratio      = 1.0;
-    m_Focal      = 1.0;
-    m_OrthoHeight= 1.0;
-    m_Ortho      = false;
-    m_Color      = Vector4();
-    m_pPipeline  = nullptr;
+    bool m_Ortho;
+
+    float m_FOV;
+
+    float m_Near;
+
+    float m_Far;
+
+    float m_Ratio;
+
+    float m_Focal;
+
+    float m_OrthoHeight;
+
+    Vector4 m_Color;
+
+    Pipeline *m_pPipeline;
+
+    static Camera *s_pCurrent;
+};
+
+Camera *CameraPrivate::s_pCurrent  = nullptr;
+
+Camera::Camera() :
+    p_ptr(new CameraPrivate) {
+
+}
+
+Camera::~Camera() {
+    delete p_ptr;
 }
 
 Pipeline *Camera::pipeline() {
-    if(m_pPipeline == nullptr) {
-        m_pPipeline = Engine::objectCreate<Pipeline>("Pipeline");
+    if(p_ptr->m_pPipeline == nullptr) {
+        p_ptr->m_pPipeline = Engine::objectCreate<Pipeline>("Pipeline");
     }
-    return m_pPipeline;
+    return p_ptr->m_pPipeline;
 }
 
 void Camera::setPipeline(Pipeline *pipeline) {
-    m_pPipeline = pipeline;
+    p_ptr->m_pPipeline = pipeline;
 }
 
 void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
@@ -40,11 +72,11 @@ void Camera::matrices(Matrix4 &v, Matrix4 &p) const {
 }
 
 Matrix4 Camera::projectionMatrix() const {
-    if(m_Ortho) {
-        float width = m_OrthoHeight * m_Ratio;
-        return Matrix4::ortho(-width / 2, width / 2, -m_OrthoHeight / 2, m_OrthoHeight / 2, m_Near, m_Far);
+    if(p_ptr->m_Ortho) {
+        float width = p_ptr->m_OrthoHeight * p_ptr->m_Ratio;
+        return Matrix4::ortho(-width / 2, width / 2, -p_ptr->m_OrthoHeight / 2, p_ptr->m_OrthoHeight / 2, p_ptr->m_Near, p_ptr->m_Far);
     }
-    return Matrix4::perspective(m_FOV, m_Ratio, m_Near, m_Far);
+    return Matrix4::perspective(p_ptr->m_FOV, p_ptr->m_Ratio, p_ptr->m_Near, p_ptr->m_Far);
 }
 
 bool Camera::project(const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss) {
@@ -102,14 +134,14 @@ Ray Camera::castRay(float x, float y) {
     dir.normalize();
 
     Vector3 view;
-    if(m_Ortho) {
-        p   = Vector3(p.x + (x - 0.5f) * m_OrthoHeight * m_Ratio,
-                      p.y - (y - 0.5f) * m_OrthoHeight, p.z);
+    if(p_ptr->m_Ortho) {
+        p   = Vector3(p.x + (x - 0.5f) * p_ptr->m_OrthoHeight * p_ptr->m_Ratio,
+                      p.y - (y - 0.5f) * p_ptr->m_OrthoHeight, p.z);
     } else {
-        float tang      = tan(m_FOV * DEG2RAD);
+        float tang      = tan(p_ptr->m_FOV * DEG2RAD);
         Vector3 right   = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
         Vector3 up      = right.cross(dir);
-        view    = Vector3( (x - 0.5f) * tang * m_Ratio) * right +
+        view    = Vector3( (x - 0.5f) * tang * p_ptr->m_Ratio) * right +
                   Vector3(-(y - 0.5f) * tang) * up + p + dir;
 
         dir = (view - p);
@@ -120,65 +152,65 @@ Ray Camera::castRay(float x, float y) {
 }
 
 float Camera::fov() const {
-    return m_FOV;
+    return p_ptr->m_FOV;
 }
 
 float Camera::nearPlane() const {
-    return m_Near;
+    return p_ptr->m_Near;
 }
 
 void Camera::setNear(float value) {
-    m_Near  = value;
+    p_ptr->m_Near  = value;
 }
 
 float Camera::farPlane() const {
-    return m_Far;
+    return p_ptr->m_Far;
 }
 
 void Camera::setFar(const float value) {
-    m_Far   = value;
+    p_ptr->m_Far   = value;
 }
 
 float Camera::ratio() const {
-    return m_Ratio;
+    return p_ptr->m_Ratio;
 }
 void Camera::setRatio(float value) {
-    m_Ratio = value;
+    p_ptr->m_Ratio = value;
 }
 
 float Camera::focal() const {
-    return m_Focal;
+    return p_ptr->m_Focal;
 }
 
 void Camera::setFocal(const float focal) {
-    m_Focal = focal;
+    p_ptr->m_Focal = focal;
 }
 
 void Camera::setFov(const float value) {
-    m_FOV   = value;
+    p_ptr->m_FOV   = value;
 }
 
 Vector4 Camera::color() const {
-    return m_Color;
+    return p_ptr->m_Color;
 }
 
 void Camera::setColor(const Vector4 &color) {
-    m_Color = color;
+    p_ptr->m_Color = color;
 }
 
 float Camera::orthoHeight() const {
-    return m_OrthoHeight;
+    return p_ptr->m_OrthoHeight;
 }
 void Camera::setOrthoHeight(const float value) {
-    m_OrthoHeight = value;
+    p_ptr->m_OrthoHeight = value;
 }
 
 bool Camera::orthographic() const {
-    return m_Ortho;
+    return p_ptr->m_Ortho;
 }
 
 void Camera::setOrthographic(const bool value) {
-    m_Ortho = value;
+    p_ptr->m_Ortho = value;
 }
 
 array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const {
@@ -186,17 +218,17 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
     float fh;
     float nw;
     float fw;
-    if(m_Ortho) {
-        nh    = m_OrthoHeight * 0.5f;
-        nw    = nh * m_Ratio;
+    if(p_ptr->m_Ortho) {
+        nh    = p_ptr->m_OrthoHeight * 0.5f;
+        nw    = nh * p_ptr->m_Ratio;
         fw    = nw;
         fh    = nh;
     } else {
-        float tang  = tanf(m_FOV * DEG2RAD * 0.5f);
+        float tang  = tanf(p_ptr->m_FOV * DEG2RAD * 0.5f);
         nh    = nearPlane * tang;
         fh    = farPlane * tang;
-        nw    = nh * m_Ratio;
-        fw    = fh * m_Ratio;
+        nw    = nh * p_ptr->m_Ratio;
+        fw    = fh * p_ptr->m_Ratio;
     }
 
     Transform *t    = actor()->transform();
@@ -222,9 +254,25 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
 }
 
 Camera *Camera::current() {
-    return s_pCurrent;
+    return CameraPrivate::s_pCurrent;
 }
 
 void Camera::setCurrent(Camera *current) {
-    s_pCurrent  = current;
+    CameraPrivate::s_pCurrent = current;
 }
+
+#ifdef NEXT_SHARED
+#include "handles.h"
+
+bool Camera::drawHandles() {
+    array<Vector3, 8> a = frustumCorners(nearPlane(), farPlane());
+
+    Vector3Vector points(a.begin(), a.end());
+    Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                                   4, 5, 5, 6, 6, 7, 7, 4,
+                                   0, 4, 1, 5, 2, 6, 3, 7};
+
+    Handles::drawLines(Matrix4(), points, indices);
+    return Handles::drawBillboard(actor()->transform()->position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
+}
+#endif

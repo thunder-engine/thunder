@@ -8,7 +8,21 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 
-SpotLight::SpotLight() {
+class SpotLightPrivate {
+public:
+    SpotLightPrivate() :
+            m_Angle(45.0f) {
+    }
+
+    Vector3                     m_Position;
+
+    Vector3                     m_Direction;
+
+    float                       m_Angle;
+};
+
+SpotLight::SpotLight() :
+        p_ptr(new SpotLightPrivate) {
 
     setAngle(45.0f);
 
@@ -20,22 +34,26 @@ SpotLight::SpotLight() {
     m_pMaterialInstance->setVector4("light.color",      &m_Color);
     m_pMaterialInstance->setVector4("light.params",     &m_Params);
 
-    m_pMaterialInstance->setVector3("light.position",   &m_Position);
-    m_pMaterialInstance->setVector3("light.direction",  &m_Direction);
+    m_pMaterialInstance->setVector3("light.position",   &p_ptr->m_Position);
+    m_pMaterialInstance->setVector3("light.direction",  &p_ptr->m_Direction);
 
     m_pMaterialInstance->setFloat("light.shadows",      &m_Shadows);
     m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
 }
 
+SpotLight::~SpotLight() {
+    delete p_ptr;
+}
+
 void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
-        m_Position = actor()->transform()->worldPosition();
+        p_ptr->m_Position = actor()->transform()->worldPosition();
 
-        m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
-        m_Direction.normalize();
+        p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
+        p_ptr->m_Direction.normalize();
 
-        Matrix4 t(m_Position - m_Direction * radius() * 0.5f,
+        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * radius() * 0.5f,
                   q, Vector3(m_Params.y * 2.0f, m_Params.y * 2.0f, m_Params.y));
 
         buffer.drawMesh(t, m_pShape, 0, layer, m_pMaterialInstance);
@@ -51,10 +69,24 @@ void SpotLight::setRadius(float value) {
 }
 
 float SpotLight::angle() const {
-    return m_Angle;
+    return p_ptr->m_Angle;
 }
 
 void SpotLight::setAngle(float value) {
-    m_Angle = value;
-    m_Params.z = cos(DEG2RAD * m_Angle);
+    p_ptr->m_Angle = value;
+    m_Params.z = cos(DEG2RAD * p_ptr->m_Angle);
 }
+
+#ifdef NEXT_SHARED
+#include "handles.h"
+
+bool SpotLight::drawHandles() {
+    Vector3 pos = actor()->transform()->position();
+
+    Handles::s_Color = Handles::s_Second = color();
+    bool result = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/spotlight.png"));
+    Handles::s_Color = Handles::s_Second = Handles::s_Normal;
+
+    return result;
+}
+#endif

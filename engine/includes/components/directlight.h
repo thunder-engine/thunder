@@ -3,8 +3,7 @@
 
 #include "baselight.h"
 
-class Mesh;
-class MaterialInstance;
+class DirectLightPrivate;
 
 class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
     A_REGISTER(DirectLight, BaseLight, Components)
@@ -12,25 +11,26 @@ class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
     A_NOPROPERTIES()
 
 public:
-    DirectLight                 ();
+    DirectLight ();
 
-    ~DirectLight                ();
+    ~DirectLight ();
 
-    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
+    void draw (ICommandBuffer &buffer, uint32_t layer);
 
-    Vector4                    &normalizedDistance      ();
+    Vector4 &normalizedDistance ();
 
-    Vector4                    *tiles                   ();
+    Vector4 *tiles ();
 
-    Matrix4                    *matrix                  ();
+    Matrix4 *matrix ();
 
-protected:
-    Matrix4                    *m_pMatrix;
-    Vector4                    *m_pTiles;
+private:
+#ifdef NEXT_SHARED
+    bool drawHandles() override;
+#endif
 
-    Vector4                     m_NormalizedDistance;
+private:
+    DirectLightPrivate *p_ptr;
 
-    Vector3                     m_Direction;
 };
 
 #endif // DIRECTLIGHT_H

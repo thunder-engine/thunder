@@ -2,11 +2,26 @@
 
 #include "components/actor.h"
 
-Component::Component() :
-        Object(),
+class ComponentPrivate {
+public:
+    ComponentPrivate() :
         m_Enable(true),
         m_Started(false) {
 
+    }
+
+    bool m_Enable;
+
+    bool m_Started;
+};
+
+Component::Component() :
+        p_ptr(new ComponentPrivate) {
+
+}
+
+Component::~Component() {
+    delete p_ptr;
 }
 
 Actor *Component::actor() const {
@@ -14,21 +29,25 @@ Actor *Component::actor() const {
 }
 
 bool Component::isEnable() const {
-    return m_Enable;
+    return p_ptr->m_Enable;
 }
 
 void Component::setEnable(bool enable) {
-    m_Enable    = enable;
+    p_ptr->m_Enable = enable;
 }
 
 bool Component::isStarted() const {
-    return m_Started;
+    return p_ptr->m_Started;
 }
 
 void Component::setStarted(bool started) {
-    m_Started   = started;
+    p_ptr->m_Started = started;
 }
 
 bool Component::isSerializable() const {
     return (!actor()->isPrefab() && actor()->isSerializable());
 }
+
+#ifdef NEXT_SHARED
+bool Component::drawHandles() { return false; }
+#endif

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-class HandleTools {
+class NEXT_LIBRARY_EXPORT HandleTools {
 public:
     HandleTools             ();
 

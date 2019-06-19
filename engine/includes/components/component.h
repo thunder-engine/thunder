@@ -5,6 +5,7 @@
 
 class Actor;
 class ICommandBuffer;
+class ComponentPrivate;
 
 class NEXT_LIBRARY_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
@@ -17,25 +18,25 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
     )
 
 public:
-    Component                   ();
+    Component();
+    ~Component();
 
-    Actor                      *actor                   () const;
+    Actor *actor () const;
 
-    bool                        isEnable                () const;
+    bool isEnable () const;
+    void setEnable (bool enable);
 
-    void                        setEnable               (bool enable);
+    bool isStarted () const;
+    void setStarted (bool started);
 
-    bool                        isStarted               () const;
-
-    void                        setStarted              (bool started);
-
+#ifdef NEXT_SHARED
+    virtual bool drawHandles();
+#endif
 protected:
-    bool                        isSerializable          () const;
+    bool isSerializable () const;
 
-protected:
-    bool                        m_Enable;
-
-    bool                        m_Started;
+private:
+    ComponentPrivate *p_ptr;
 
 };
 

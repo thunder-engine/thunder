@@ -6,6 +6,7 @@
 #include "nativebehaviour.h"
 
 class Pipeline;
+class CameraPrivate;
 
 class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
@@ -23,6 +24,7 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
 
 public:
     Camera                      ();
+    ~Camera                     ();
 
     Pipeline                   *pipeline                ();
 
@@ -66,26 +68,14 @@ public:
     static Camera              *current                 ();
     static void                 setCurrent              (Camera *current);
 
-protected:
-    bool                        m_Ortho;
+private:
+#ifdef NEXT_SHARED
+    bool drawHandles() override;
+#endif
 
-    float                       m_FOV;
+private:
+    CameraPrivate *p_ptr;
 
-    float                       m_Near;
-
-    float                       m_Far;
-
-    float                       m_Ratio;
-
-    float                       m_Focal;
-
-    float                       m_OrthoHeight;
-
-    Vector4                     m_Color;
-
-    Pipeline                   *m_pPipeline;
-
-    static Camera              *s_pCurrent;
 };
 
 #endif // CAMERA_H

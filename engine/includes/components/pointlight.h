@@ -3,8 +3,7 @@
 
 #include "baselight.h"
 
-class Mesh;
-class MaterialInstance;
+class PointLightPrivate;
 
 class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
     A_REGISTER(PointLight, BaseLight, Components)
@@ -14,15 +13,21 @@ class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
     )
 
 public:
-    PointLight                  ();
+    PointLight ();
+    ~PointLight ();
 
-    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
+    void draw (ICommandBuffer &buffer, uint32_t layer);
 
-    float                       radius                  () const;
-    void                        setRadius               (float value);
+    float radius () const;
+    void setRadius (float value);
 
-protected:
-    Vector3                     m_Position;
+private:
+#ifdef NEXT_SHARED
+    bool drawHandles() override;
+#endif
+
+private:
+    PointLightPrivate *p_ptr;
 
 };
 

@@ -3,7 +3,6 @@
 
 #include "renderable.h"
 
-class Mesh;
 class Material;
 class Font;
 
@@ -32,45 +31,49 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
     A_NOMETHODS()
 
 public:
+    TextRender ();
 
+    void draw (ICommandBuffer &buffer, uint32_t layer);
 
-public:
-    TextRender          ();
+    string text () const;
+    void setText (const string &text);
 
-    void                draw                (ICommandBuffer &buffer, uint32_t layer);
+    Font *font () const;
+    void setFont (Font *font);
 
-    string              text                () const;
-    void                setText             (const string &text);
+    Material *material () const;
+    void setMaterial (Material *material);
 
-    Font               *font                () const;
-    void                setFont             (Font *font);
+    int fontSize () const;
+    void setFontSize (int size);
 
-    Material           *material            () const;
-    void                setMaterial         (Material *material);
+    Vector4 color () const;
+    void setColor (const Vector4 &color);
 
-    int                 fontSize            () const;
-    void                setFontSize         (int size);
+    bool wrap () const;
+    void setWrap (bool wrap);
 
-    Vector4             color               () const;
-    void                setColor            (const Vector4 &color);
+    Vector2 boundaries () const;
+    void setBoundaries (const Vector2 &value);
 
-    bool                wrap                () const;
-    void                setWrap             (bool wrap);
+    Alignment  align () const;
+    void setAlign (Alignment align);
 
-    Vector2             boundaries          () const;
-    void                setBoundaries       (const Vector2 &value);
-
-    Alignment           align               () const;
-    void                setAlign            (Alignment align);
-
-    bool                kerning             () const;
-    void                setKerning          (const bool kerning);
+    bool kerning () const;
+    void setKerning (const bool kerning);
 
 private:
-    void                loadUserData        (const VariantMap &data);
-    VariantMap          saveUserData        () const;
+#ifdef NEXT_SHARED
+    bool drawHandles () override;
+#endif
 
-    TextRenderPrivate  *p_ptr;
+    void loadData (const VariantList &data);
+    void loadUserData (const VariantMap &data);
+    VariantMap saveUserData () const;
+
+private:
+   TextRenderPrivate  *p_ptr;
+
 };
 
 #endif // TEXTRENDER_H

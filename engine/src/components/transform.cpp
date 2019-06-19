@@ -46,6 +46,7 @@ void Transform::setRotation(const Quaternion &value) {
 
 void Transform::setScale(const Vector3 &value) {
     m_Scale = value;
+    setDirty();
 }
 
 void Transform::setDirty() {

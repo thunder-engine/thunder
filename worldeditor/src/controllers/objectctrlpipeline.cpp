@@ -8,6 +8,8 @@
 #include "components/transform.h"
 #include "components/scene.h"
 
+#include "components/renderable.h"
+
 #include "resources/material.h"
 #include "resources/mesh.h"
 
