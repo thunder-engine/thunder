@@ -32,6 +32,8 @@ public:
 
     static void             drawLines           (const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
 
+    static void             drawCircle          (const Matrix4 &transform, float radius);
+
     static void             drawAABB            (AABBox &box);
 
     static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);

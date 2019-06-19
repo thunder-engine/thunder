@@ -49,7 +49,9 @@ public:
     static Variant                      toVariant               (const Object *object);
     static Object                      *toObject                (const Variant &variant, Object *root = nullptr);
 
-    static uint32_t                     generateUID             ();
+    static uint32_t                     generateUUID            ();
+
+    static void                         replaceUUID             (Object *object, uint32_t uuid);
 
 protected:
     static void                         processObject           (Object *object);

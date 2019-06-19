@@ -260,7 +260,7 @@ Object::Object() :
         p_ptr(new ObjectPrivate) {
     PROFILE_FUNCTION();
 
-    setUUID(ObjectSystem::generateUID());
+    setUUID(ObjectSystem::generateUUID());
 }
 
 Object::~Object() {
@@ -371,7 +371,7 @@ Object *Object::clone() {
                 it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
     }
     result->p_ptr->m_Cloned = p_ptr->m_UUID;
-    result->p_ptr->m_UUID   = ObjectSystem::generateUID();
+    result->p_ptr->m_UUID   = ObjectSystem::generateUUID();
     return result;
 }
 /*!

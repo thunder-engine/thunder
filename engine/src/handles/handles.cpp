@@ -60,7 +60,7 @@ enum {
 
 void Handles::init() {
     if(s_Quad == nullptr) {
-        s_Quad      = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+        s_Quad = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
     }
     if(s_Sprite == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
@@ -71,7 +71,7 @@ void Handles::init() {
     }
 
     if(s_Cone == nullptr) {
-        s_Cone      = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
+        s_Cone = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
     }
     if(s_Gizmo == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
@@ -222,6 +222,22 @@ void Handles::drawAABB(AABBox &box) {
                                    0, 4, 1, 5, 2, 6, 3, 7};
 
     drawLines(Matrix4(), points, indices);
+}
+
+void Handles::drawCircle(const Matrix4 &transform, float radius) {
+    if(inited) {
+        Mesh::Lod lod;
+        lod.vertices    = HandleTools::pointsArc(Quaternion(), radius, 0, 180);
+        {
+            Mesh::Surface surface;
+            surface.mode    = Mesh::MODE_LINE_STRIP;
+            surface.lods.push_back(lod);
+            s_Lines->setSurface(0, surface);
+            s_Lines->apply();
+        }
+        s_Buffer->setColor(s_Color);
+        s_Buffer->drawMesh(transform, s_Lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    }
 }
 
 bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {

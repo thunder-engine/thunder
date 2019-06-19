@@ -12,7 +12,8 @@ Project {
         "includes/analytics/*.h",
         "includes/adapters/*.h",
         "includes/components/*.h",
-        "includes/resources/*.h"
+        "includes/resources/*.h",
+        "includes/handles/*.h"
     ]
 
     property stringList incPaths: [

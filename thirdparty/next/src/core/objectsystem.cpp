@@ -292,9 +292,18 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
 /*!
     Returns the new unique ID based on random number generator.
 */
-uint32_t ObjectSystem::generateUID() {
+uint32_t ObjectSystem::generateUUID() {
     PROFILE_FUNCTION();
     return dist(mt);
+}
+/*!
+    Replaces current \a uuid of the \a object with the new one.
+*/
+void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
+    PROFILE_FUNCTION();
+    if(object) {
+        object->setUUID(uuid);
+    }
 }
 
 void ObjectSystem::removeObject(Object *object) {

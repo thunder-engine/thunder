@@ -37,11 +37,11 @@ struct index_data {
 typedef vector<index_data>  indexVector;
 
 FbxImportSettings::FbxImportSettings() :
-    m_UseScale(false),
-    m_Scale(1.0f),
-    m_Colors(true),
-    m_Normals(true),
-    m_Animation(false) {
+        m_UseScale(false),
+        m_Scale(1.0f),
+        m_Colors(true),
+        m_Normals(true),
+        m_Animation(false) {
 
 }
 
@@ -260,6 +260,8 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
         for(auto it : actors) {
             it->setParent(root);
         }
+        Engine::replaceUUID(root, qHash(settings->destination()));
+        Engine::replaceUUID(root->transform(), qHash(QString(settings->destination()) + ".Transform"));
     }
 
     QFile file(settings->absoluteDestination());
@@ -314,6 +316,8 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
         if(uuid.isEmpty()) {
             uuid = QUuid::createUuid().toString();
         }
+        Engine::replaceUUID(actor, qHash(uuid));
+        Engine::replaceUUID(actor->transform(), qHash(uuid + ".Transform"));
         settings->setSubItem(path, uuid, IConverter::ContentMesh);
         QFileInfo dst(settings->absoluteDestination());
 
@@ -323,11 +327,11 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
         }
-
         Engine::setResource(mesh, uuid.toStdString());
 
         MeshRender *render = actor->addComponent<MeshRender>();
         render->setMesh(mesh);
+        Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 
         list.push_back(uuid);
 
