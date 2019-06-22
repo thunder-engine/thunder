@@ -102,15 +102,15 @@ VariantMap TextureSerial::saveUserData() const {
 
     VariantList header;
 
-    header.push_back((int)m_Width);
-    header.push_back((int)m_Height);
+    header.push_back(width());
+    header.push_back(height());
     header.push_back(0); // Reserved
 
-    header.push_back(m_Type);
+    header.push_back(type());
     header.push_back(0); // Reserved
-    header.push_back((int)m_Format);
-    header.push_back((int)m_Filtering);
-    header.push_back((int)m_Wrap);
+    header.push_back((int)format());
+    header.push_back((int)filtering());
+    header.push_back((int)wrap());
 
     result["Header"] = header;
     result["Data"] = m_Surfaces;
@@ -151,12 +151,12 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
             } break;
         }
 
-        texture.m_Format    = (channels == 3) ? Texture::RGB8 : Texture::RGBA8;
-        texture.m_Type      = Texture::TextureType(s->textureType());
-        texture.m_Filtering = Texture::FilteringType(s->filtering());
-        texture.m_Wrap      = Texture::WrapType(s->wrap());
+        texture.setFormat((channels == 3) ? Texture::RGB8 : Texture::RGBA8);
+        texture.setType(Texture::TextureType(s->textureType()));
+        texture.setFiltering(Texture::FilteringType(s->filtering()));
+        texture.setWrap(Texture::WrapType(s->wrap()));
 
-        if(!texture.m_Width || !texture.m_Height) {
+        if(!texture.width() || !texture.height()) {
             //tgaReader(settings, img);
             //return 1;
         }
@@ -165,52 +165,52 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
         if(texture.isCubemap()) {
             QList<QPoint> positions;
             float ratio = (float)img.width() / (float)img.height();
-            texture.m_Width     = img.width();
-            texture.m_Height    = img.height();
+            texture.setWidth(img.width());
+            texture.setHeight(img.height());
             if(ratio == 6.0f / 1.0f) { // Row
-                texture.m_Width     = img.width() / 6;
-                texture.m_Height    = img.height();
+                texture.setWidth(img.width() / 6);
+                texture.setHeight(img.height());
                 for(int i = 0; i < 6; i++) {
-                    positions.push_back(QPoint(i * texture.m_Width, 0));
+                    positions.push_back(QPoint(i * texture.width(), 0));
                 }
             } else if(ratio == 1.0f / 6.0f) { // Column
-                texture.m_Width     = img.width();
-                texture.m_Height    = img.height() / 6;
+                texture.setWidth(img.width());
+                texture.setHeight(img.height() / 6);
                 for(int i = 0; i < 6; i++) {
-                    positions.push_back(QPoint(0, i * texture.m_Height));
+                    positions.push_back(QPoint(0, i * texture.height()));
                 }
             } else if(ratio == 4.0f / 3.0f) { // Horizontal cross
-                texture.m_Width     = img.width() / 4;
-                texture.m_Height    = img.height() / 3;
-                positions.push_back(QPoint(2 * texture.m_Width, 1 * texture.m_Height));
-                positions.push_back(QPoint(0 * texture.m_Width, 1 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 0 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 2 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 1 * texture.m_Height));
-                positions.push_back(QPoint(3 * texture.m_Width, 1 * texture.m_Height));
+                texture.setWidth(img.width() / 4);
+                texture.setHeight(img.height() / 3);
+                positions.push_back(QPoint(2 * texture.width(), 1 * texture.height()));
+                positions.push_back(QPoint(0 * texture.width(), 1 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 0 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 2 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 1 * texture.height()));
+                positions.push_back(QPoint(3 * texture.width(), 1 * texture.height()));
             } else if(ratio == 3.0f / 4.0f) { // Vertical cross
-                texture.m_Width     = img.width() / 3;
-                texture.m_Height    = img.height() / 4;
-                positions.push_back(QPoint(1 * texture.m_Width, 1 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 3 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 0 * texture.m_Height));
-                positions.push_back(QPoint(1 * texture.m_Width, 2 * texture.m_Height));
-                positions.push_back(QPoint(0 * texture.m_Width, 1 * texture.m_Height));
-                positions.push_back(QPoint(2 * texture.m_Width, 1 * texture.m_Height));
+                texture.setWidth(img.width() / 3);
+                texture.setHeight(img.height() / 4);
+                positions.push_back(QPoint(1 * texture.width(), 1 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 3 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 0 * texture.height()));
+                positions.push_back(QPoint(1 * texture.width(), 2 * texture.height()));
+                positions.push_back(QPoint(0 * texture.width(), 1 * texture.height()));
+                positions.push_back(QPoint(2 * texture.width(), 1 * texture.height()));
             } else {
                 //qDebug() << "Unsupported ratio";
             }
 
             QRect sub;
-            sub.setSize(QSize(texture.m_Width, texture.m_Height));
+            sub.setSize(QSize(texture.width(), texture.height()));
             foreach(const QPoint &it, positions) {
                 sub.moveTo(it);
                 sides.push_back(img.copy(sub));
             }
 
         } else {
-            texture.m_Width     = img.width();
-            texture.m_Height    = img.height();
+            texture.setWidth(img.width());
+            texture.setHeight(img.height());
             sides.push_back(img.mirrored());
         }
 
@@ -227,8 +227,8 @@ VariantMap TextureConverter::convertResource(IConverterSettings *settings) {
 
             if(s->lod()) {
                 /// \todo Specular convolution for cubemaps
-                int w   = texture.m_Width;
-                int h   = texture.m_Height;
+                int w   = texture.width();
+                int h   = texture.height();
                 QImage mip  = it;
                 while(w > 1 || h > 1 ) {
                     w   = MAX(w / 2, 1);

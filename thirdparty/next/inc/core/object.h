@@ -63,7 +63,7 @@ public: \
     virtual string                  typeName                () const { \
         return Super::metaClass()->name(); \
     }
-#elif
+#else
 #define A_OVERRIDE(Class, Super, Group)
 #endif
 

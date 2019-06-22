@@ -5,8 +5,8 @@
 ARenderTextureGL::ARenderTextureGL() :
         m_Buffer(0),
         m_ID(0) {
-    m_Width = 1;
-    m_Height = 1;
+    setWidth(1);
+    setHeight(1);
 }
 
 ARenderTextureGL::~ARenderTextureGL() {
@@ -46,17 +46,17 @@ void ARenderTextureGL::apply() {
     glTexParameterf ( target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
     uint32_t internal   = GL_RGBA8;
-    uint32_t format     = GL_RGBA;
+    uint32_t glformat   = GL_RGBA;
     uint32_t type       = GL_UNSIGNED_BYTE;
 
-    switch(m_Format) {
+    switch(format()) {
         case R8: {
             internal    = GL_R8;
-            format      = GL_RED;
+            glformat    = GL_RED;
         } break;
         case RGB8: {
             internal    = GL_RGB8;
-            format      = GL_RGB;
+            glformat    = GL_RGB;
         } break;
         case RGB10A2: {
 #ifndef THUNDER_MOBILE
@@ -69,7 +69,7 @@ void ARenderTextureGL::apply() {
         } break;
         case R11G11B10Float: {
             internal    = GL_R11F_G11F_B10F;
-            format      = GL_RGB;
+            glformat    = GL_RGB;
             type        = GL_FLOAT;
         } break;
         default: break;
@@ -78,7 +78,7 @@ void ARenderTextureGL::apply() {
     }
 
     if(m_DepthBits) {
-        format  = GL_DEPTH_COMPONENT;
+        glformat= GL_DEPTH_COMPONENT;
         type    = GL_UNSIGNED_INT;
 
         switch(m_DepthBits) {
@@ -94,10 +94,10 @@ void ARenderTextureGL::apply() {
 
     if(target == GL_TEXTURE_CUBE_MAP) {
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, m_Width, m_Height, 0, format, type, nullptr );
+            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, width(), height(), 0, glformat, type, nullptr );
         }
     } else {
-        glTexImage2D    ( target, 0, internal, m_Width, m_Height, 0, format, type, nullptr );
+        glTexImage2D    ( target, 0, internal, width(), height(), 0, glformat, type, nullptr );
     }
 }
 

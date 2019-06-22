@@ -22,7 +22,7 @@ void ATextureGL::clear() {
 void ATextureGL::apply() {
     Texture::apply();
 
-    if(m_Sides.empty()) {
+    if(getSides()->empty()) {
         return;
     }
 
@@ -36,16 +36,16 @@ void ATextureGL::apply() {
 
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     uint32_t internal   = GL_RGBA8;
-    uint32_t format     = GL_RGBA;
+    uint32_t glformat   = GL_RGBA;
 
-    switch(m_Format) {
+    switch(format()) {
         case R8: {
             internal    = GL_R8;
-            format      = GL_RED;
+            glformat    = GL_RED;
         } break;
         case RGB8: {
             internal    = GL_RGB8;
-            format      = GL_RGB;
+            glformat    = GL_RGB;
         } break;
         default: break;
       //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
@@ -57,37 +57,37 @@ void ATextureGL::apply() {
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(m_Sides, internal, format);
+            uploadTextureCubemap(getSides(), internal, glformat);
         } break;
         default: {
-            uploadTexture2D(m_Sides, 0, target, internal, format, update);
+            uploadTexture2D(getSides(), 0, target, internal, glformat, update);
         } break;
     }
 
     //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
 
-    bool mipmap = (m_Sides[0].size() > 1);
+    bool mipmap = (getSides()->at(0).size() > 1);
 
-    int32_t filtering;
-    switch(m_Filtering) {
-        case Bilinear:  filtering = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
-        case Trilinear: filtering = GL_LINEAR_MIPMAP_LINEAR; break;
-        default: filtering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
+    int32_t glfiltering;
+    switch(filtering()) {
+        case Bilinear:  glfiltering = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
+        case Trilinear: glfiltering = GL_LINEAR_MIPMAP_LINEAR; break;
+        default: glfiltering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
     }
     //glTexParameteri ( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, filtering );
+    glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, glfiltering );
 
-    int32_t wrap;
-    switch (m_Wrap) {
-        case Repeat: wrap   = GL_REPEAT; break;
-        case Mirrored: wrap = GL_MIRRORED_REPEAT; break;
-        default: wrap       = GL_CLAMP_TO_EDGE; break;
+    int32_t glwrap;
+    switch (wrap()) {
+        case Repeat: glwrap   = GL_REPEAT; break;
+        case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
+        default: glwrap       = GL_CLAMP_TO_EDGE; break;
     }
-    glTexParameteri ( target, GL_TEXTURE_WRAP_S, wrap );
+    glTexParameteri ( target, GL_TEXTURE_WRAP_S, glwrap );
     CheckGLError();
-    glTexParameteri ( target, GL_TEXTURE_WRAP_T, wrap );
+    glTexParameteri ( target, GL_TEXTURE_WRAP_T, glwrap );
     CheckGLError();
-    glTexParameteri ( target, GL_TEXTURE_WRAP_R, wrap );
+    glTexParameteri ( target, GL_TEXTURE_WRAP_R, glwrap );
     CheckGLError();
 
     //float aniso = 0.0f;
@@ -97,10 +97,10 @@ void ATextureGL::apply() {
     glBindTexture(target, 0);
 }
 
-void ATextureGL::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) {
-    bool depth = (m_Format == Depth);
+void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
+    bool depth = (format() == Depth);
 
-    Surface &surface    = m_Sides[0];
+    Surface &surface = getSides()->at(0);
 
     glReadPixels( x, y, width, height,
                  (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
@@ -108,13 +108,13 @@ void ATextureGL::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t heigh
     CheckGLError();
 }
 
-bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {
-    const Surface &image    = sides[imageIndex];
+bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {
+    const Surface &image = (*sides)[imageIndex];
 
     if(isCompressed()) {
         // load all mipmaps
-        uint32_t w  = m_Width;
-        uint32_t h  = m_Height;
+        int32_t w  = width();
+        int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
             glCompressedTexImage2D(target, i, internal, w, h, 0, size(w, h), data);
@@ -131,8 +131,8 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
             CheckGLError();
         }
         // load all mipmaps
-        uint32_t w  = m_Width;
-        uint32_t h  = m_Height;
+        int32_t w  = width();
+        int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
             if(update) {
@@ -155,7 +155,7 @@ bool ATextureGL::uploadTexture2D(const Sides &sides, uint32_t imageIndex, uint32
     return true;
 }
 
-bool ATextureGL::uploadTextureCubemap(const Sides &sides, uint32_t internal, uint32_t format) {
+bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t internal, uint32_t format) {
     GLenum target;
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {

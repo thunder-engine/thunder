@@ -80,18 +80,44 @@ public:
     Node           *child[2];
 };
 
+class TexturePrivate {
+public:
+    TexturePrivate() :
+            m_Format(Texture::R8),
+            m_Compress(Texture::Uncompressed),
+            m_Type(Texture::Flat),
+            m_Filtering(Texture::None),
+            m_Wrap(Texture::Clamp),
+            m_pRoot(nullptr) {
+
+    }
+
+    Texture::FormatType m_Format;
+    Texture::CompressionType m_Compress;
+    Texture::TextureType m_Type;
+    Texture::FilteringType m_Filtering;
+    Texture::WrapType m_Wrap;
+
+    int32_t m_Width;
+    int32_t  m_Height;
+
+    Vector2Vector m_Shape;
+
+    Texture::Sides m_Sides;
+
+    Node *m_pRoot;
+};
+
 Texture::Texture() :
-        m_Format(R8),
-        m_Compress(Uncompressed),
-        m_Type(Flat),
-        m_Filtering(None),
-        m_Wrap(Clamp),
-        m_pRoot(nullptr) {
+        p_ptr(new TexturePrivate) {
+
     setShape({ Vector2(0.0f), Vector2(0.0f, 1.0f), Vector2(1.0f), Vector2(1.0f, 0.0f) });
 }
 
 Texture::~Texture() {
     clear();
+
+    delete p_ptr;
 }
 
 void Texture::apply() {
@@ -107,22 +133,22 @@ void Texture::loadUserData(const VariantMap &data) {
             VariantList header  = (*it).second.value<VariantList>();
 
             auto i      = header.begin();
-            m_Width     = (*i).toInt();
+            p_ptr->m_Width  = (*i).toInt();
             i++;
-            m_Height    = (*i).toInt();
+            p_ptr->m_Height = (*i).toInt();
             i++;
             //Reserved
             i++;
 
-            m_Type      = TextureType((*i).toInt());
+            p_ptr->m_Type      = TextureType((*i).toInt());
             i++;
-            m_Compress  = CompressionType((*i).toInt());
+            p_ptr->m_Compress  = CompressionType((*i).toInt());
             i++;
-            m_Format    = FormatType((*i).toInt());
+            p_ptr->m_Format    = FormatType((*i).toInt());
             i++;
-            m_Filtering = FilteringType((*i).toInt());
+            p_ptr->m_Filtering = FilteringType((*i).toInt());
             i++;
-            m_Wrap      = WrapType((*i).toInt());
+            p_ptr->m_Wrap      = WrapType((*i).toInt());
             i++;
         }
     }
@@ -133,8 +159,8 @@ void Texture::loadUserData(const VariantMap &data) {
             const VariantList &surfaces = (*it).second.value<VariantList>();
             for(auto s : surfaces) {
                 Surface img;
-                int32_t w  = m_Width;
-                int32_t h  = m_Height;
+                int32_t w  = p_ptr->m_Width;
+                int32_t h  = p_ptr->m_Height;
                 const VariantList &lods = s.value<VariantList>();
                 for(auto l : lods) {
                     ByteArray bits = l.toByteArray();
@@ -147,7 +173,7 @@ void Texture::loadUserData(const VariantMap &data) {
                     w   = MAX(w / 2, 1);
                     h   = MAX(h / 2, 1);
                 }
-                m_Sides.push_back(img);
+                p_ptr->m_Sides.push_back(img);
             }
         }
     }
@@ -156,32 +182,32 @@ void Texture::loadUserData(const VariantMap &data) {
 }
 
 void Texture::addSurface(const Surface &surface) {
-    m_Sides.push_back(surface);
+    p_ptr->m_Sides.push_back(surface);
 }
 
 void Texture::clear() {
-    m_Width     = 1;
-    m_Height    = 1;
+    p_ptr->m_Width  = 1;
+    p_ptr->m_Height = 1;
 
-    for(auto side : m_Sides) {
+    for(auto side : p_ptr->m_Sides) {
         for(auto lod : side) {
             delete []lod;
         }
     }
-    m_Sides.clear();
-    m_Shape.clear();
+    p_ptr->m_Sides.clear();
+    p_ptr->m_Shape.clear();
 
-    if(m_pRoot) {
-        delete m_pRoot;
+    if(p_ptr->m_pRoot) {
+        delete p_ptr->m_pRoot;
     }
-    m_pRoot     = new Node;
+    p_ptr->m_pRoot = new Node;
 }
 
 void *Texture::nativeHandle() const {
     return nullptr;
 }
 
-void Texture::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) {
+void Texture::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
     A_UNUSED(x)
     A_UNUSED(y)
     A_UNUSED(width)
@@ -190,27 +216,27 @@ void Texture::readPixels(int32_t x, int32_t y, uint32_t width, uint32_t height) 
 
 uint32_t Texture::getPixel(int32_t x, int32_t y) const {
     uint32_t result = 0;
-    if(!m_Sides.empty() && !m_Sides[0].empty()) {
-        uint8_t *ptr    = m_Sides[0][0] + (y * m_Width + x);
+    if(!p_ptr->m_Sides.empty() && !p_ptr->m_Sides[0].empty()) {
+        uint8_t *ptr = p_ptr->m_Sides[0][0] + (y * p_ptr->m_Width + x);
         memcpy(&result, ptr, sizeof(uint32_t));
     }
     return result;
 }
 
 int32_t Texture::width() const {
-    return m_Width;
+    return p_ptr->m_Width;
 }
 
 int32_t Texture::height() const {
-    return m_Height;
+    return p_ptr->m_Height;
 }
 
 void Texture::setWidth(int32_t width) {
-    m_Width     = width;
+    p_ptr->m_Width = width;
 }
 
 void Texture::setHeight(int32_t height) {
-    m_Height    = height;
+    p_ptr->m_Height  = height;
 }
 
 uint32_t Texture::size(int32_t width, int32_t height) const {
@@ -221,7 +247,7 @@ uint32_t Texture::size(int32_t width, int32_t height) const {
 }
 
 inline uint32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (m_Compress == DXT1 ? 8 : 16);
+    return ((width + 3) / 4) * ((height + 3) / 4) * (p_ptr->m_Compress == DXT1 ? 8 : 16);
 }
 
 inline uint32_t Texture::sizeRGB(int32_t width, int32_t height) const {
@@ -229,37 +255,37 @@ inline uint32_t Texture::sizeRGB(int32_t width, int32_t height) const {
 }
 
 Vector2Vector Texture::shape() const {
-    return m_Shape;
+    return p_ptr->m_Shape;
 }
 
 void Texture::setShape(const Vector2Vector &shape) {
-    m_Shape = shape;
+    p_ptr->m_Shape = shape;
 }
 
 Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
     Vector4Vector result;
     for(auto it : textures) {
-        Node *n = m_pRoot->insert(it, padding);
+        Node *n = p_ptr->m_pRoot->insert(it, padding);
         if(n) {
             n->fill = true;
             /// \todo can be optimized to do all copies in the end of packing
-            uint8_t *src = it->m_Sides[0][0];
-            uint8_t *dst = m_Sides[0][0];
+            uint8_t *src = it->p_ptr->m_Sides[0][0];
+            uint8_t *dst = p_ptr->m_Sides[0][0];
             int32_t w = n->w - padding;
             int32_t h = n->h - padding;
             for(int32_t y = 0; y < h; y++) {
-                memcpy(&dst[(y + n->y) * m_Width + n->x], &src[y * w], w);
+                memcpy(&dst[(y + n->y) * p_ptr->m_Width + n->x], &src[y * w], w);
             }
 
             Vector4 res;
-            res.x   = n->x / (float)m_Width;
-            res.y   = n->y / (float)m_Height;
-            res.z   = res.x + w / (float)m_Width;
-            res.w   = res.y + h / (float)m_Height;
+            res.x   = n->x / (float)p_ptr->m_Width;
+            res.y   = n->y / (float)p_ptr->m_Height;
+            res.z   = res.x + w / (float)p_ptr->m_Width;
+            res.w   = res.y + h / (float)p_ptr->m_Height;
 
             result.push_back(res);
         } else {
-            resize(m_Width * 2, m_Height * 2);
+            resize(p_ptr->m_Width * 2, p_ptr->m_Height * 2);
             return pack(textures, padding);
         }
     }
@@ -269,12 +295,12 @@ Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
 void Texture::resize(int32_t width, int32_t height) {
     clear();
 
-    m_Width     = width;
-    m_Height    = height;
+    p_ptr->m_Width     = width;
+    p_ptr->m_Height    = height;
 
-    m_pRoot->w  = m_Width;
-    m_pRoot->h  = m_Height;
-    uint32_t length  = size(m_Width, m_Height);
+    p_ptr->m_pRoot->w  = p_ptr->m_Width;
+    p_ptr->m_pRoot->h  = p_ptr->m_Height;
+    uint32_t length  = size(p_ptr->m_Width, p_ptr->m_Height);
     uint8_t *pixels = new uint8_t[length];
     memset(pixels, 0, length);
     Texture::Surface s;
@@ -282,24 +308,51 @@ void Texture::resize(int32_t width, int32_t height) {
     addSurface(s);
 }
 
+Texture::FormatType Texture::format () const {
+    return p_ptr->m_Format;
+}
+
 void Texture::setFormat(FormatType type) {
-    m_Format = type;
+    p_ptr->m_Format = type;
+}
+
+Texture::TextureType Texture::type() const {
+    return p_ptr->m_Type;
+}
+
+void Texture::setType(TextureType type) {
+    p_ptr->m_Type = type;
+}
+
+Texture::FilteringType Texture::filtering() const {
+    return p_ptr->m_Filtering;
 }
 
 void Texture::setFiltering(FilteringType type) {
-    m_Filtering = type;
+    p_ptr->m_Filtering = type;
+}
+
+Texture::WrapType Texture::wrap() const {
+    return p_ptr->m_Wrap;
+}
+void Texture::setWrap (WrapType type) {
+    p_ptr->m_Wrap = type;
+}
+
+Texture::Sides *Texture::getSides() {
+    return &p_ptr->m_Sides;
 }
 
 bool Texture::isCompressed() const {
-    return m_Compress != Uncompressed;
+    return p_ptr->m_Compress != Uncompressed;
 }
 
 bool Texture::isCubemap() const {
-    return (m_Type == Cubemap);
+    return (p_ptr->m_Type == Cubemap);
 }
 
 uint8_t Texture::components() const {
-    switch(m_Format) {
+    switch(p_ptr->m_Format) {
         case R8:    return 1;
         case RGB8:  return 3;
         default: break;

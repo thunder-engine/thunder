@@ -7,7 +7,7 @@ RenderTexture::RenderTexture() :
 }
 
 void RenderTexture::setTarget(FormatType format) {
-    m_Format    = format;
+    setFormat(format);
 }
 
 void RenderTexture::setDepth(uint8_t bits) {
@@ -18,10 +18,10 @@ void RenderTexture::setFixed(bool fixed) {
     m_Fixed = fixed;
 }
 
-void RenderTexture::resize(uint32_t width, uint32_t height) {
+void RenderTexture::resize(int32_t width, int32_t height) {
     if(!m_Fixed) {
-        m_Width     = width;
-        m_Height    = height;
+        setWidth(width);
+        setHeight(height);
         apply();
     }
 }

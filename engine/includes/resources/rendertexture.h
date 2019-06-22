@@ -15,7 +15,7 @@ public:
 
     void                        setFixed                    (bool fixed);
 
-    void                        resize                      (uint32_t width, uint32_t height);
+    void                        resize                      (int32_t width, int32_t height);
 
     virtual void                makeCurrent                 (uint32_t index = 0) const;
 

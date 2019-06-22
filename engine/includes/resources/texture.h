@@ -6,6 +6,7 @@
 #include "engine.h"
 
 class Node;
+class TexturePrivate;
 
 class NEXT_LIBRARY_EXPORT Texture : public Object {
     A_REGISTER(Texture, Object, Resources)
@@ -50,64 +51,60 @@ public:
     typedef deque<const Texture *>  Textures;
 
 public:
-    Texture                     ();
+    Texture ();
+    virtual ~Texture ();
 
-    virtual ~Texture            ();
+    virtual void apply ();
+    virtual void clear ();
 
-    virtual void                apply                       ();
-    virtual void                clear                       ();
+    virtual void *nativeHandle () const;
 
-    virtual void               *nativeHandle                () const;
+    virtual void readPixels (int32_t x, int32_t y, int32_t width, int32_t height);
+    uint32_t getPixel (int32_t x, int32_t y) const;
 
-    virtual void                readPixels                  (int32_t x, int32_t y, uint32_t width, uint32_t height);
+    int32_t width () const;
+    void setWidth (int32_t width);
 
-    uint32_t                    getPixel                    (int32_t x, int32_t y) const;
+    int32_t height () const;
+    void setHeight (int32_t height);
 
-    int32_t                     width                       () const;
-    int32_t                     height                      () const;
+    Vector2Vector shape () const;
+    void setShape (const Vector2Vector &shape);
 
-    void                        setWidth                    (int32_t width);
-    void                        setHeight                   (int32_t height);
+    Vector4Vector pack (const Textures &textures, uint8_t padding = 0);
 
-    Vector2Vector               shape                       () const;
-    void                        setShape                    (const Vector2Vector &shape);
+    bool isCompressed () const;
+    bool isCubemap () const;
 
-    Vector4Vector               pack                        (const Textures &textures, uint8_t padding = 0);
+    void addSurface (const Surface &surface);
 
-    bool                        isCompressed                () const;
-    bool                        isCubemap                   () const;
+    void resize (int32_t width, int32_t height);
 
-    void                        loadUserData                (const VariantMap &data);
+    FormatType format () const;
+    void setFormat (FormatType type);
 
-    void                        addSurface                  (const Surface &surface);
+    void loadUserData (const VariantMap &data) override;
 
-    void                        resize                      (int32_t width, int32_t height);
-
-    void                        setFormat                   (FormatType type);
-
-    void                        setFiltering                (FilteringType type);
+private:
+    TexturePrivate *p_ptr;
 
 protected:
-    uint32_t                    size                        (int32_t width, int32_t height) const;
-    uint32_t                    sizeDXTc                    (int32_t width, int32_t height) const;
-    uint32_t                    sizeRGB                     (int32_t width, int32_t height) const;
+    TextureType type() const;
+    void setType (TextureType type);
 
-    uint8_t                     components                  () const;
+    FilteringType filtering() const;
+    void setFiltering (FilteringType type);
 
-    FormatType                  m_Format;
-    CompressionType             m_Compress;
-    TextureType                 m_Type;
-    FilteringType               m_Filtering;
-    WrapType                    m_Wrap;
+    WrapType wrap() const;
+    void setWrap (WrapType type);
 
-    int32_t                     m_Width;
-    int32_t                     m_Height;
+    Sides *getSides();
 
-    Vector2Vector               m_Shape;
+    uint32_t size (int32_t width, int32_t height) const;
+    uint32_t sizeDXTc (int32_t width, int32_t height) const;
+    uint32_t sizeRGB (int32_t width, int32_t height) const;
 
-    Sides                       m_Sides;
-
-    Node                       *m_pRoot;
+    uint8_t components () const;
 };
 
 #endif // TEXTURE_H

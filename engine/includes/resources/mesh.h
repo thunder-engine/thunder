@@ -60,26 +60,24 @@ public:
     typedef deque<Lod>          LodQueue;
 
 public:
-    Mesh                        ();
-    virtual ~Mesh               ();
+    Mesh ();
+    virtual ~Mesh ();
 
-    virtual void                apply               ();
-    virtual void                clear               ();
+    virtual void apply ();
+    virtual void clear ();
 
-    bool                        isDynamic           () const;
-    void                        makeDynamic         ();
+    bool isDynamic () const;
+    void makeDynamic ();
 
-    Material                   *material            (uint32_t lod) const;
+    Material *material (uint32_t lod) const;
 
-    Vector3Vector               vertices            (uint32_t lod) const;
+    Vector3Vector vertices (uint32_t lod) const;
+    IndexVector indices (uint32_t lod) const;
 
-    IndexVector                 indices             (uint32_t lod) const;
+    uint32_t lodsCount () const;
 
-    uint32_t                    lodsCount           () const;
-
-    uint32_t                    vertexCount         (uint32_t lod) const;
-
-    uint32_t                    indexCount          (uint32_t lod) const;
+    uint32_t vertexCount (uint32_t lod) const;
+    uint32_t indexCount (uint32_t lod) const;
 
     AABBox bound () const;
     void setBound (const AABBox &box);
