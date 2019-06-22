@@ -60,10 +60,8 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
         lod.indices[index + 1] = index + 1;
     }
 
-    Mesh::Surface surface;
-    surface.mode = Mesh::MODE_LINES;
-    surface.lods.push_back(lod);
-    m_pGrid->addSurface(surface);
+    m_pGrid->setMode(Mesh::MODE_LINES);
+    m_pGrid->addLod(lod);
     m_pGrid->apply();
 
     Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
@@ -129,7 +127,7 @@ void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
     m_Buffer->clearRenderTarget(true, camera.color(), false);
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
-    m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
+    m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
 }
 
 void ObjectCtrlPipeline::drawGrid(Camera &camera) {
@@ -156,13 +154,13 @@ void ObjectCtrlPipeline::drawGrid(Camera &camera) {
                      (camera.orthographic()) ? Quaternion() : Quaternion(Vector3(1, 0, 0), 90.0f), scale);
 
     m_Buffer->setColor(m_PrimaryGridColor);
-    m_Buffer->drawMesh(transform, m_pGrid, 0, ICommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_Buffer->drawMesh(transform, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);
 
     Matrix4 m;
     m.scale(0.1f);
 
     m_Buffer->setColor(m_SecondaryGridColor);
-    m_Buffer->drawMesh(transform * m, m_pGrid, 0, ICommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_Buffer->drawMesh(transform * m, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);
 
     m_Buffer->setColor(Vector4(1.0f));
 }

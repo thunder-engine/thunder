@@ -20,7 +20,7 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
     A_PROPERTIES(
         A_PROPERTY(string, Text, TextRender::text, TextRender::setText),
         A_PROPERTY(Alignment, Alignment, TextRender::align, TextRender::setAlign),
-        A_PROPERTY(Font, Font_Name, TextRender::font, TextRender::setFont),
+        A_PROPERTY(Font *, Font_Name, TextRender::font, TextRender::setFont),
         A_PROPERTY(Material *, Material, TextRender::material, TextRender::setMaterial),
         A_PROPERTY(int, Font_Size, TextRender::fontSize, TextRender::setFontSize),
         A_PROPERTY(Color, Color, TextRender::color, TextRender::setColor),
@@ -31,9 +31,8 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
     A_NOMETHODS()
 
 public:
-    TextRender ();
-
-    void draw (ICommandBuffer &buffer, uint32_t layer);
+    TextRender();
+    ~TextRender();
 
     string text () const;
     void setText (const string &text);
@@ -54,25 +53,27 @@ public:
     void setWrap (bool wrap);
 
     Vector2 boundaries () const;
-    void setBoundaries (const Vector2 &value);
+    void setBoundaries (const Vector2 &boundaries);
 
-    Alignment  align () const;
-    void setAlign (Alignment align);
+    Alignment align () const;
+    void setAlign (Alignment alignment);
 
     bool kerning () const;
     void setKerning (const bool kerning);
 
 private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+
 #ifdef NEXT_SHARED
     bool drawHandles () override;
 #endif
 
-    void loadData (const VariantList &data);
-    void loadUserData (const VariantMap &data);
-    VariantMap saveUserData () const;
+    void loadData (const VariantList &data) override;
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
 
 private:
-   TextRenderPrivate  *p_ptr;
+   TextRenderPrivate *p_ptr;
 
 };
 

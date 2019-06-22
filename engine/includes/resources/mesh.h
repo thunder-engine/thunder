@@ -10,7 +10,9 @@
 #include <amath.h>
 
 #include "engine.h"
-#include "material.h"
+
+class Material;
+class MeshPrivate;
 
 class NEXT_LIBRARY_EXPORT Mesh : public Object {
     A_REGISTER(Mesh, Object, Resources)
@@ -57,17 +59,6 @@ public:
     };
     typedef deque<Lod>          LodQueue;
 
-    struct Surface {
-        LodQueue                lods;
-        /// Special tag indicating that a given surface in calculation of collision
-        bool                    collision;
-
-        Modes                   mode;
-
-        AABBox                  aabb;
-    };
-    typedef deque<Surface>      SurfaceQueue;
-
 public:
     Mesh                        ();
     virtual ~Mesh               ();
@@ -75,46 +66,42 @@ public:
     virtual void                apply               ();
     virtual void                clear               ();
 
+    bool                        isDynamic           () const;
     void                        makeDynamic         ();
 
-    Material                   *material            (uint32_t surface, uint32_t lod) const;
+    Material                   *material            (uint32_t lod) const;
 
-    Vector3Vector               vertices            (uint32_t surface, uint32_t lod) const;
+    Vector3Vector               vertices            (uint32_t lod) const;
 
-    IndexVector                 indices             (uint32_t surface, uint32_t lod) const;
+    IndexVector                 indices             (uint32_t lod) const;
 
-    uint32_t                    surfacesCount       () const;
+    uint32_t                    lodsCount           () const;
 
-    uint32_t                    lodsCount           (uint32_t surface) const;
+    uint32_t                    vertexCount         (uint32_t lod) const;
 
-    uint32_t                    vertexCount         (uint32_t surface, uint32_t lod) const;
+    uint32_t                    indexCount          (uint32_t lod) const;
 
-    uint32_t                    indexCount          (uint32_t surface, uint32_t lod) const;
+    AABBox bound () const;
+    void setBound (const AABBox &box);
 
-    AABBox                      bound               () const;
+    Modes mode () const;
+    void setMode (Mesh::Modes mode);
 
-    AABBox                      bound               (uint32_t surface) const;
+    uint8_t flags () const;
+    void setFlags (uint8_t flags);
 
-    Modes                       mode                (uint32_t surface) const;
-
-    uint8_t                     flags               () const;
-
-    void                        setFlags            (uint8_t flags);
-
-    void                        addSurface          (const Surface &surface);
-
-    void                        setSurface          (uint32_t index, Surface &surface);
-
-    void                        loadUserData        (const VariantMap &data);
+    void addLod (const Lod &lod);
+    void setLod (uint32_t index, const Lod &lod);
 
 protected:
-    bool                        m_Dynamic;
+    Lod *getLod(uint32_t lod) const;
 
-    uint8_t                     m_Flags;
+private:
+    void loadUserData (const VariantMap &data) override;
 
-    SurfaceQueue                m_Surfaces;
+private:
+    MeshPrivate *p_ptr;
 
-    AABBox                      m_Box;
 };
 
 #endif // MESH_H

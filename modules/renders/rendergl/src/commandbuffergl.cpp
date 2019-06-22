@@ -125,7 +125,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     }
 }
 
-void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material) {
+void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
     PROFILER_MARKER;
 
     if(mesh && material) {
@@ -144,15 +144,15 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
 
             putUniforms(program, material);
 
-            m->bindVao(this, surface, lod);
+            m->bindVao(this, lod);
 
-            Mesh::Modes mode    = mesh->mode(surface);
+            Mesh::Modes mode    = mesh->mode();
             if(mode > Mesh::MODE_LINES) {
-                uint32_t vert   = mesh->vertexCount(surface, lod);
+                uint32_t vert   = mesh->vertexCount(lod);
                 glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                uint32_t index  = mesh->indexCount(surface, lod);
+                uint32_t index  = mesh->indexCount(lod);
                 glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
@@ -163,7 +163,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t surfac
     }
 }
 
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t surface, uint32_t layer, MaterialInstance *material, bool particle) {
+void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material, bool particle) {
     PROFILER_MARKER;
 
     if(mesh && material) {
@@ -183,16 +183,16 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
             putUniforms(program, material);
 
-            m->bindVao(this, surface, lod);
+            m->bindVao(this, lod);
 
-            Mesh::Modes mode    = mesh->mode(surface);
+            Mesh::Modes mode    = mesh->mode();
             if(mode > Mesh::MODE_LINES) {
-                uint32_t vert   = mesh->vertexCount(surface, lod);
+                uint32_t vert   = mesh->vertexCount(lod);
                 glDrawArraysInstanced((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
 
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
-                uint32_t index  = mesh->indexCount(surface, lod);
+                uint32_t index  = mesh->indexCount(lod);
                 glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
 
                 PROFILER_STAT(POLYGONS, (index / 3) * count);

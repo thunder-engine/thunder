@@ -86,7 +86,6 @@ ObjectSystem::~ObjectSystem() {
         }
     }
 }
-
 /*!
     Updates all related objects.
 */
@@ -121,18 +120,24 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     }
     return object;
 }
-
+/*!
+    \internal
+*/
 void ObjectSystem::processObject(Object *object) {
     PROFILE_FUNCTION();
     object->processEvents();
 }
-
+/*!
+    \internal
+*/
 void ObjectSystem::factoryAdd(const string &name, const string &uri, const MetaObject *meta) {
     PROFILE_FUNCTION();
     s_Groups[name]   = uri;
     s_Factories[uri] = FactoryPair(meta, this);
 }
-
+/*!
+    \internal
+*/
 void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     PROFILE_FUNCTION();
     s_Groups.erase(name);
@@ -196,7 +201,7 @@ Variant ObjectSystem::toVariant(const Object *object) {
 /*!
     Returns object deserialized from \a variant based representation.
     The Variant representation can be loaded from BSON or JSON formats or retrieved from memory.
-    Deserialization will try to restore objects hierarchy, its properties and connections.
+    Deserialization will try to restore objects hierarchy with \a root as parent, its properties and connections.
 */
 Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
     PROFILE_FUNCTION();
@@ -213,10 +218,10 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             auto i          = o.begin();
             string type = (*i).toString();
             i++;
-            uint32_t uuid   = (*i).toInt();
+            uint32_t uuid   = static_cast<uint32_t>((*i).toInt());
             i++;
             Object *parent  = root;
-            auto a  = array.find((*i).toInt());
+            auto a  = array.find(static_cast<uint32_t>((*i).toInt()));
             if(a != array.end()) {
                 parent  = (*a).second;
             }
@@ -244,7 +249,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                     Object *receiver    = nullptr;
                     if(list.size() == 4) {
                         auto l  = list.begin();
-                        auto s  = array.find((*l).toInt());
+                        auto s  = array.find(static_cast<uint32_t>((*l).toInt()));
                         if(s != array.end()) {
                             sender  = (*s).second;
                         }
@@ -253,7 +258,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                         string signal = (*l).toString();
                         l++;
 
-                        s = array.find((*l).toInt());
+                        s = array.find(static_cast<uint32_t>((*l).toInt()));
                         if(s != array.end()) {
                             receiver  = (*s).second;
                         }
@@ -305,7 +310,9 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
         object->setUUID(uuid);
     }
 }
-
+/*!
+    \internal
+*/
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
     auto it = m_List.begin();

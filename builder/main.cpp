@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     Log(Log::INF) << "Starting builder...";
 
-    Engine engine(file, argc, argv);
+    Engine engine(file, argv[0]);
 
     PluginModel::instance()->init(&engine);
     AssetManager::instance()->init(&engine);

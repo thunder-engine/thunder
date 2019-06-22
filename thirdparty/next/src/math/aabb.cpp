@@ -29,7 +29,9 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &size) :
         center(center),
         size(size) {
 }
-
+/*!
+    Grows the AABBox to include the \a point.
+*/
 void AABBox::encapsulate(const Vector3 &point) {
     Vector3 bb[2];
     box(bb[0], bb[1]);
@@ -44,7 +46,9 @@ void AABBox::encapsulate(const Vector3 &point) {
 
     setBox(bb[0], bb[1]);
 }
-
+/*!
+    Grow the AABBox to encapsulate the \a box.
+*/
 void AABBox::encapsulate(const AABBox &box) {
     Vector3 bb0[2];
     this->box(bb0[0], bb0[1]);

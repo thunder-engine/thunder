@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     Log::setLogLevel(Log::DBG);
 
-    Engine engine(file, argc, argv);
+    Engine engine(file, argv[0]);
     engine.init();
     Log::overrideHandler(new QLog());
 

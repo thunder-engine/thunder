@@ -84,7 +84,7 @@ ParticleEdit::~ParticleEdit() {
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
     if(m_pRender) {
-        m_pRender->update();
+        static_cast<NativeBehaviour *>(m_pRender)->update();
     }
     ui->glWidget->repaint();
 }

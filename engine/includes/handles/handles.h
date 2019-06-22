@@ -8,6 +8,8 @@
 #include <resources/mesh.h>
 
 class Texture;
+class MaterialInstance;
+
 class Camera;
 
 class ICommandBuffer;
@@ -63,13 +65,17 @@ public:
     static uint8_t          s_Axes;
 
 protected:
-    static Mesh            *s_Cone;
+    static Mesh *s_Cone;
+    static Mesh *s_Quad;
+    static Mesh *s_Lines;
 
-    static Mesh            *s_Quad;
-
-    static Mesh            *s_Move;
-
-    static Mesh            *s_Lines;
+    static Mesh *s_Axis;
+    static Mesh *s_Scale;
+    static Mesh *s_ScaleXY;
+    static Mesh *s_ScaleXYZ;
+    static Mesh *s_Move;
+    static Mesh *s_MoveXY;
+    static Mesh *s_Circle;
 
     static MaterialInstance*s_Gizmo;
 

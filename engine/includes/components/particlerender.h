@@ -3,8 +3,8 @@
 
 #include "renderable.h"
 
-class ParticleRenderPrivate;
 class ParticleEffect;
+class ParticleRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
     A_REGISTER(ParticleRender, Renderable, Components)
@@ -16,22 +16,22 @@ class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
 
 public:
     ParticleRender();
-
     ~ParticleRender();
 
-    void update();
-
-    void draw(ICommandBuffer &buffer, uint32_t layer);
-
-    ParticleEffect *effect() const;
-
-    void setEffect(ParticleEffect *effect);
+    ParticleEffect *effect () const;
+    void setEffect (ParticleEffect *effect);
 
 private:
-    ParticleRenderPrivate *m_effect;
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
-    void loadUserData(const VariantMap &data);
-    VariantMap saveUserData() const;
+    void update () override;
+
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
+
+private:
+    ParticleRenderPrivate *m_ptr;
+
 };
 
 #endif // PARTICLERENDER_H

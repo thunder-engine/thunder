@@ -9,7 +9,7 @@ class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
     A_REGISTER(SpotLight, BaseLight, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float,   Attenuation_Radius,   SpotLight::radius, SpotLight::setRadius),
+        A_PROPERTY(float,   Attenuation_Distance, SpotLight::distance, SpotLight::setDistance),
         A_PROPERTY(float,   Outer_Angle,          SpotLight::angle, SpotLight::setAngle)
     )
 
@@ -17,15 +17,15 @@ public:
     SpotLight ();
     ~SpotLight ();
 
-    void draw (ICommandBuffer &buffer, uint32_t layer);
-
-    float radius () const;
-    void setRadius (float value);
+    float distance () const;
+    void setDistance (float value);
 
     float angle () const;
     void setAngle (float value);
 
 private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+
 #ifdef NEXT_SHARED
     bool drawHandles() override;
 #endif

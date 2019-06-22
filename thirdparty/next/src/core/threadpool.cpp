@@ -105,7 +105,8 @@ bool ThreadPoolPrivate::APoolWorker::isFree() {
 }
 /*!
     \class ThreadPool
-    \brief
+    \brief The ThreadPool class manages a collection of threads.
+
     \since Next 1.0
     \inmodule Core
 */

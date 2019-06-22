@@ -3,8 +3,10 @@
 
 #include "renderable.h"
 
-#include "mesh.h"
-#include "material.h"
+class Texture;
+class Material;
+class Mesh;
+class SpriteRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components)
@@ -16,27 +18,27 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
     A_NOMETHODS()
 
 public:
-    SpriteRender                ();
+    SpriteRender ();
+    ~SpriteRender ();
 
-    void                        draw                (ICommandBuffer &buffer, uint32_t layer);
+    Material *material () const;
+    void setMaterial (Material *material);
 
-    Material                   *material            () const;
-    void                        setMaterial         (Material *material);
+    Texture *texture () const;
+    void setTexture (Texture *texture);
 
-    Texture                    *texture             () const;
-    virtual void                setTexture          (Texture *texture);
+    Mesh *mesh () const;
 
-    Mesh                       *mesh                () const;
+private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
-    void                        loadUserData        (const VariantMap &data);
-    VariantMap                  saveUserData        () const;
+    AABBox bound () const override;
 
-protected:
-    Texture                    *m_Texture;
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
 
-    MaterialInstance           *m_pMaterial;
-
-    Mesh                       *m_pMesh;
+private:
+    SpriteRenderPrivate *p_ptr;
 
 };
 

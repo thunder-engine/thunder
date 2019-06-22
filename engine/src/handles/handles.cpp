@@ -42,11 +42,18 @@ static bool inited = false;
 
 Mesh *Handles::s_Cone   = nullptr;
 Mesh *Handles::s_Quad   = nullptr;
-Mesh *Handles::s_Move   = nullptr;
 Mesh *Handles::s_Lines  = nullptr;
 
 MaterialInstance *Handles::s_Gizmo  = nullptr;
 MaterialInstance *Handles::s_Sprite = nullptr;
+
+Mesh *Handles::s_Axis       = nullptr;
+Mesh *Handles::s_Scale      = nullptr;
+Mesh *Handles::s_ScaleXY    = nullptr;
+Mesh *Handles::s_ScaleXYZ   = nullptr;
+Mesh *Handles::s_Move       = nullptr;
+Mesh *Handles::s_MoveXY     = nullptr;
+Mesh *Handles::s_Circle     = nullptr;
 
 enum {
     AXIS,
@@ -85,66 +92,80 @@ void Handles::init() {
         s_Lines->makeDynamic();
     }
 
-    if(s_Move == nullptr) {
-        s_Move  = Engine::objectCreate<Mesh>("Move");
-
+    if(s_Axis == nullptr) {
         Mesh::Lod lod;
         lod.vertices    = {Vector3(0.0f), Vector3(0, 5, 0)};
         lod.indices     = {0, 1};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_Axis = Engine::objectCreate<Mesh>("Axis");
+        s_Axis->setMode(Mesh::MODE_LINES);
+        s_Axis->addLod(lod);
+        s_Axis->apply();
+    }
+
+    if(s_Scale == nullptr) {
+        Mesh::Lod lod;
         lod.vertices    = {Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)};
         lod.indices     = {0, 1, 2, 3};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_Scale = Engine::objectCreate<Mesh>("Scale");
+        s_Scale->setMode(Mesh::MODE_LINES);
+        s_Scale->addLod(lod);
+        s_Scale->apply();
+    }
+
+    if(s_ScaleXY == nullptr) {
+        Mesh::Lod lod;
         lod.indices     = {0, 1, 2, 1, 3, 2};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_TRIANGLES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");
+        s_ScaleXY->setMode(Mesh::MODE_TRIANGLES);
+        s_ScaleXY->addLod(lod);
+        s_ScaleXY->apply();
+    }
+
+    if(s_ScaleXYZ == nullptr) {
+        Mesh::Lod lod;
         lod.vertices    = {Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)};
         lod.indices     = {0, 1, 2};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_TRIANGLES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_ScaleXYZ = Engine::objectCreate<Mesh>("ScaleXYZ");
+        s_ScaleXYZ->setMode(Mesh::MODE_TRIANGLES);
+        s_ScaleXYZ->addLod(lod);
+        s_ScaleXYZ->apply();
+    }
+
+    if(s_Move == nullptr) {
+        Mesh::Lod lod;
         lod.vertices    = {Vector3(0, 1, 0), Vector3(2, 1, 0)};
         lod.indices     = {0, 1};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_Move = Engine::objectCreate<Mesh>("Move");
+        s_Move->setMode(Mesh::MODE_LINES);
+        s_Move->addLod(lod);
+        s_Move->apply();
+    }
+
+    if(s_MoveXY == nullptr) {
+        Mesh::Lod lod;
         lod.vertices    = {Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)};
         lod.indices     = {0, 1, 2, 1, 3, 2};
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_TRIANGLES;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
+
+        s_MoveXY = Engine::objectCreate<Mesh>("MoveXY");
+        s_MoveXY->setMode(Mesh::MODE_TRIANGLES);
+        s_MoveXY->addLod(lod);
+        s_MoveXY->apply();
+    }
+
+    if(s_Circle == nullptr) {
+        Mesh::Lod lod;
         lod.vertices    = HandleTools::pointsArc(Quaternion(), 5.0, 0, 180);
         lod.indices.clear();
-        {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINE_STRIP;
-            surface.lods.push_back(lod);
-            s_Move->addSurface(surface);
-        }
-        s_Move->apply();
+
+        s_Circle = Engine::objectCreate<Mesh>("Circle");
+        s_Circle->setMode(Mesh::MODE_LINE_STRIP);
+        s_Circle->addLod(lod);
+        s_Circle->apply();
     }
 
     inited = true;
@@ -176,12 +197,12 @@ void Handles::endDraw() {
 void Handles::drawArrow(const Matrix4 &transform) {
     if(inited) {
         s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(transform, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform, s_Axis, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
         Matrix4 m;
         m.translate(Vector3(0, 4.0, 0));
         s_Buffer->setColor(s_Second);
-        s_Buffer->drawMesh(transform * m, s_Cone, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform * m, s_Cone, ICommandBuffer::TRANSLUCENT, s_Gizmo);
     }
 }
 
@@ -191,14 +212,12 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
         lod.vertices    = points;
         lod.indices     = indices;
         {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINES;
-            surface.lods.push_back(lod);
-            s_Lines->setSurface(0, surface);
+            s_Lines->setMode(Mesh::MODE_LINES);
+            s_Lines->setLod(0, lod);
             s_Lines->apply();
         }
         s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(transform, s_Lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
     }
 }
 
@@ -229,14 +248,12 @@ void Handles::drawCircle(const Matrix4 &transform, float radius) {
         Mesh::Lod lod;
         lod.vertices    = HandleTools::pointsArc(Quaternion(), radius, 0, 180);
         {
-            Mesh::Surface surface;
-            surface.mode    = Mesh::MODE_LINE_STRIP;
-            surface.lods.push_back(lod);
-            s_Lines->setSurface(0, surface);
+            s_Lines->setMode(Mesh::MODE_LINE_STRIP);
+            s_Lines->setLod(0, lod);
             s_Lines->apply();
         }
         s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(transform, s_Lines, 0, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
     }
 }
 
@@ -252,7 +269,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
 
         s_Sprite->setTexture(OVERRIDE,  texture);
         s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(q, s_Quad, 0, ICommandBuffer::TRANSLUCENT, s_Sprite);
+        s_Buffer->drawMesh(q, s_Quad, ICommandBuffer::TRANSLUCENT, s_Sprite);
     }
     return result;
 }
@@ -281,20 +298,20 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             if(!locked) {
                 if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
                     s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, s_Move, MOVE) <= sense) ||
-                          (HandleTools::distanceToMesh(z * r, s_Move, MOVE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(x, s_Move) <= sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Move) <= sense)) {
                     s_Axes  = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, s_Move, MOVE) <= sense) ||
-                          (HandleTools::distanceToMesh(x * r, s_Move, MOVE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(y, s_Move) <= sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Move) <= sense)) {
                     s_Axes  = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, s_Move, MOVE) <= sense) ||
-                          (HandleTools::distanceToMesh(y * r, s_Move, MOVE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(z, s_Move) <= sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Move) <= sense)) {
                     s_Axes  = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Move) <= sense) {
                     s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Move) <= sense) {
                     s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Move) <= sense) {
                     s_Axes  = AXIS_Z;
                 }
             }
@@ -303,39 +320,39 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
             drawArrow(x);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
-            s_Buffer->drawMesh(x, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(x, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
-            s_Buffer->drawMesh(x * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(x * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Second    = s_yColor;
             s_Color     = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
             drawArrow(y);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
-            s_Buffer->drawMesh(y, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
-            s_Buffer->drawMesh(y * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(y * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Second    = s_zColor;
             s_Color     = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
             drawArrow(z);
             s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
-            s_Buffer->drawMesh(z, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor);
-            s_Buffer->drawMesh(z * r, s_Move, MOVE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(z * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Color = s_Selected;
             s_Color.w = ALPHA;
             if(s_Axes == (AXIS_X | AXIS_Z)) {
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(x, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, s_MoveXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             if(s_Axes == (AXIS_X | AXIS_Y)) {
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(y, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, s_MoveXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             if(s_Axes == (AXIS_Y | AXIS_Z)) {
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(z, s_Move, MOVE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, s_MoveXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             s_Color     = s_Normal;
             s_Second    = s_Normal;
@@ -403,38 +420,38 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             m.scale(1.2f);
 
             if(!locked) {
-                if((HandleTools::distanceToMesh(q1 * m, s_Move, CIRCLE) <= sense) ||
-                   (HandleTools::distanceToMesh(q2 * m, s_Move, CIRCLE) <= sense)) {
+                if((HandleTools::distanceToMesh(q1 * m, s_Circle) <= sense) ||
+                   (HandleTools::distanceToMesh(q2 * m, s_Circle) <= sense)) {
                     s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if(HandleTools::distanceToMesh(x, s_Move, CIRCLE) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Circle) <= sense) {
                     s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Move, CIRCLE) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Circle) <= sense) {
                     s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Move, CIRCLE) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Circle) <= sense) {
                     s_Axes  = AXIS_Z;
                 }
             }
 
             s_Buffer->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-            s_Buffer->drawMesh(q1 * m, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2 * m, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q2 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(grey);
-            s_Buffer->drawMesh(q1, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q1, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q2, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             if(!locked || s_Axes == AXIS_X) {
                 s_Buffer->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
-                s_Buffer->drawMesh(x, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
 
             if(!locked || s_Axes == AXIS_Y) {
                 s_Buffer->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
-                s_Buffer->drawMesh(y, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
 
             if(!locked || s_Axes == AXIS_Z) {
                 s_Buffer->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
-                s_Buffer->drawMesh(z, s_Move, CIRCLE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             s_Buffer->setColor(s_Normal);
         }
@@ -468,20 +485,20 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             if(!locked) {
                 if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
                     s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, s_Move, SCALE) <= sense) ||
-                          (HandleTools::distanceToMesh(z * r, s_Move, SCALE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(x, s_Scale) <= sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Scale) <= sense)) {
                     s_Axes  = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, s_Move, SCALE) <= sense) ||
-                          (HandleTools::distanceToMesh(x * r, s_Move, SCALE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(y, s_Scale) <= sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Scale) <= sense)) {
                     s_Axes  = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, s_Move, SCALE) <= sense) ||
-                          (HandleTools::distanceToMesh(y * r, s_Move, SCALE) <= sense)) {
+                } else if((HandleTools::distanceToMesh(z, s_Scale) <= sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Scale) <= sense)) {
                     s_Axes  = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Axis) <= sense) {
                     s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Axis) <= sense) {
                     s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Move, AXIS) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Axis) <= sense) {
                     s_Axes  = AXIS_Z;
                 }
             }
@@ -492,73 +509,72 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
                 s_Buffer->setColor(s_xColor);
                 if(s_Axes == (AXIS_X | AXIS_Z)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(x, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(x, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(x, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor(s_xColor);
                 if(s_Axes == (AXIS_X | AXIS_Y)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(x * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(x * r, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(x * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x * r, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor((s_Axes & AXIS_X) ? s_Selected : s_xColor);
-                s_Buffer->drawMesh(x, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, s_Axis, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             {
                 s_Buffer->setColor(s_yColor);
                 if(s_Axes == (AXIS_Y | AXIS_X)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(y, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(y, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(y, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor(s_yColor);
                 if(s_Axes == (AXIS_Y | AXIS_Z)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(y * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(y * r, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(y * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y * r, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor((s_Axes & AXIS_Y) ? s_Selected : s_yColor);
-                s_Buffer->drawMesh(y, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, s_Axis, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             {
                 s_Buffer->setColor(s_zColor);
                 if(s_Axes == (AXIS_Z | AXIS_Y)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(z, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(z, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(z, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor(s_zColor);
                 if(s_Axes == (AXIS_Z | AXIS_X)) {
                     s_Buffer->setColor(s_Color);
-                    s_Buffer->drawMesh(z * r, s_Move, SCALE_XY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                    s_Buffer->drawMesh(z * r, s_ScaleXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                     s_Buffer->setColor(s_Selected);
                 }
-                s_Buffer->drawMesh(z * r, s_Move, SCALE, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z * r, s_Scale, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Buffer->setColor((s_Axes & AXIS_Z) ? s_Selected : s_zColor);
-                s_Buffer->drawMesh(z, s_Move, AXIS, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, s_Axis, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
 
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(x,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(x * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(y,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(y * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(z,       s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(z * r,   s_Move, SCALE_XYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
-
             s_Color = s_Normal;
         }
     }

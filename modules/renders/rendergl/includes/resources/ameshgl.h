@@ -11,7 +11,7 @@ class CommandBufferGL;
 class AMeshGL : public Mesh {
     A_OVERRIDE(AMeshGL, Mesh, Resources)
 public:
-    typedef vector<IndexVector> BufferVector;
+    typedef IndexVector         BufferVector;
 
 public:
     AMeshGL                     ();
@@ -22,31 +22,31 @@ public:
 
     void                        clear               ();
 
-    void                        bindVao             (CommandBufferGL *buffer, uint32_t surface, uint32_t lod);
+    void                        bindVao             (CommandBufferGL *buffer, uint32_t lod);
 
     uint32_t                    instance            () const;
 
 protected:
-    void                        updateVao           (uint32_t surface, uint32_t lod);
+    void                        updateVao           (uint32_t lod);
 
 public:
-    BufferVector                m_triangles;
-    BufferVector                m_uv0;
-    BufferVector                m_uv1;
-    BufferVector                m_uv2;
-    BufferVector                m_uv3;
-    BufferVector                m_normals;
-    BufferVector                m_tangents;
-    BufferVector                m_vertices;
-    BufferVector                m_colors;
-    BufferVector                m_weights;
-    BufferVector                m_indices;
+    IndexVector m_triangles;
+    IndexVector m_uv0;
+    IndexVector m_uv1;
+    IndexVector m_uv2;
+    IndexVector m_uv3;
+    IndexVector m_normals;
+    IndexVector m_tangents;
+    IndexVector m_vertices;
+    IndexVector m_colors;
+    IndexVector m_weights;
+    IndexVector m_indices;
 
-    uint32_t                    m_InstanceBuffer;
+    uint32_t m_InstanceBuffer;
 
     typedef map<CommandBufferGL *, uint32_t>  VaoMap;
 
-    typedef vector<vector<VaoMap>> VaoVector;
+    typedef vector<VaoMap>      VaoVector;
 
     VaoVector                   m_Vao;
 };

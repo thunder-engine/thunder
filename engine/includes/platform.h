@@ -1,5 +1,5 @@
 #ifdef _WIN32
-    #include <windows.h>
+    #include <Windows.h>
 
     #define THUNDER_MAIN() \
         int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) { \
@@ -18,7 +18,7 @@
                 } \
                 IFile *file = new IFile; \
                 file->finit(argv[0]); \
-                Engine *engine = new Engine(file, argc, argv); \
+                Engine *engine = new Engine(file, argv[0]); \
                 result  = thunderMain(engine); \
                 delete engine; \
                 delete file; \
@@ -37,7 +37,7 @@
     int main(int argc, char **argv) { \
         IFile *file = new IFile; \
         file->finit(argv[0]); \
-        Engine *engine = new Engine(file, argc, argv); \
+        Engine *engine = new Engine(file, argv[0]); \
         thunderMain(engine); \
         delete engine; \
         delete file; \

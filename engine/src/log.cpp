@@ -151,9 +151,9 @@ Log &Log::operator<<(double d) {
     return *this;
 }
 /*!
-    Writes the '\0'-terminated string, s, to the stream and returns a reference to the stream.
+    Writes the '\\0'-terminated \a string, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(const char *s) {
-    p_ptr->stream << " " << s;
+Log &Log::operator<<(const char *string) {
+    p_ptr->stream << " " << string;
     return *this;
 }

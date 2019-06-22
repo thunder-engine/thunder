@@ -16,6 +16,8 @@
 #include "converters/converter.h"
 #include "projectmanager.h"
 
+#include "resources/material.h"
+
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/meshrender.h"
@@ -100,87 +102,87 @@ public:
     VariantMap saveUserData() const {
         VariantMap result;
 
+        int32_t flag = flags();
+
         VariantList header;
-        header.push_back(m_Flags);
+        header.push_back(flag);
         result[HEADER]  = header;
 
-        VariantList surfaces;
-        for(auto s : m_Surfaces) {
-            VariantList surface;
-            surface.push_back(s.collision);
-            surface.push_back(s.mode);
+        VariantList surface;
+        surface.push_back(mode());
 
-            for(auto l : s.lods) {
-                VariantList lod;
-                string path = Engine::reference(l.material);
-                // Push material
-                lod.push_back(path);
-                uint32_t vCount = l.vertices.size();
-                lod.push_back((int)vCount);
-                lod.push_back((int)l.indices.size() / 3);
+        for(uint32_t index = 0; index < lodsCount(); index++) {
+            Lod *l = getLod(index);
 
-                { // Required field
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector3) * vCount);
-                    memcpy(&buffer[0], &l.vertices[0], sizeof(Vector3) * vCount);
-                    lod.push_back(buffer);
-                }
-                { // Required field
-                    ByteArray buffer;
-                    buffer.resize(sizeof(uint32_t) * l.indices.size());
-                    memcpy(&buffer[0], &l.indices[0], sizeof(uint32_t) * l.indices.size());
-                    lod.push_back(buffer);
-                }
-                if(m_Flags & ATTRIBUTE_COLOR) { // Optional field
+            VariantList lod;
+            string path = Engine::reference(l->material);
+            // Push material
+            lod.push_back(path);
+            uint32_t vCount = l->vertices.size();
+            lod.push_back((int)vCount);
+            lod.push_back((int)l->indices.size() / 3);
+
+            { // Required field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->vertices[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            { // Required field
+                ByteArray buffer;
+                buffer.resize(sizeof(uint32_t) * l->indices.size());
+                memcpy(&buffer[0], &l->indices[0], sizeof(uint32_t) * l->indices.size());
+                lod.push_back(buffer);
+            }
+
+            if(flag & ATTRIBUTE_COLOR) { // Optional field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector4) * vCount);
+                memcpy(&buffer[0], &l->colors[0], sizeof(Vector4) * vCount);
+                lod.push_back(buffer);
+            }
+            if(flag & ATTRIBUTE_UV0) { // Optional field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l->uv0[0], sizeof(Vector2) * vCount);
+                lod.push_back(buffer);
+            }
+            if(flag & ATTRIBUTE_UV1) { // Optional field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l->uv1[0], sizeof(Vector2) * vCount);
+                lod.push_back(buffer);
+            }
+
+            if(flag & ATTRIBUTE_NORMALS) { // Optional field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->normals[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            if(flag & ATTRIBUTE_TANGENTS) { // Optional field
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->tangents[0], sizeof(Vector3) * vCount);
+                lod.push_back(buffer);
+            }
+            if(flag & ATTRIBUTE_ANIMATED) { // Optional field
+                {
                     ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
-                    memcpy(&buffer[0], &l.colors[0], sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l->weights[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
                 }
-                if(m_Flags & ATTRIBUTE_UV0) { // Optional field
+                {
                     ByteArray buffer;
-                    buffer.resize(sizeof(Vector2) * vCount);
-                    memcpy(&buffer[0], &l.uv0[0], sizeof(Vector2) * vCount);
+                    buffer.resize(sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l->bones[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
                 }
-                if(m_Flags & ATTRIBUTE_UV1) { // Optional field
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector2) * vCount);
-                    memcpy(&buffer[0], &l.uv1[0], sizeof(Vector2) * vCount);
-                    lod.push_back(buffer);
-                }
-
-                if(m_Flags & ATTRIBUTE_NORMALS) { // Optional field
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector3) * vCount);
-                    memcpy(&buffer[0], &l.normals[0], sizeof(Vector3) * vCount);
-                    lod.push_back(buffer);
-                }
-                if(m_Flags & ATTRIBUTE_TANGENTS) { // Optional field
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector3) * vCount);
-                    memcpy(&buffer[0], &l.tangents[0], sizeof(Vector3) * vCount);
-                    lod.push_back(buffer);
-                }
-                if(m_Flags & ATTRIBUTE_ANIMATED) { // Optional field
-                    {
-                        ByteArray buffer;
-                        buffer.resize(sizeof(Vector4) * vCount);
-                        memcpy(&buffer[0], &l.weights[0], sizeof(Vector4) * vCount);
-                        lod.push_back(buffer);
-                    }
-                    {
-                        ByteArray buffer;
-                        buffer.resize(sizeof(Vector4) * vCount);
-                        memcpy(&buffer[0], &l.bones[0], sizeof(Vector4) * vCount);
-                        lod.push_back(buffer);
-                    }
-                }
-                surface.push_back(lod);
             }
-            surfaces.push_back(surface);
+            surface.push_back(lod);
         }
-        result[DATA]    = surfaces;
+        result[DATA] = surface;
 
         return result;
     }
@@ -306,12 +308,6 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
     if(attrib && attrib->GetAttributeType() == FbxNodeAttribute::eMesh) {
         MeshSerial *mesh = importMesh(static_cast<FbxMesh *>(attrib), settings->customScale());
 
-        for(auto &surface : mesh->m_Surfaces) {
-            for(auto &lod : surface.lods) {
-                lod.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
-            }
-        }
-
         QString uuid = settings->subItem(path);
         if(uuid.isEmpty()) {
             uuid = QUuid::createUuid().toString();
@@ -380,6 +376,7 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
 
 MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     MeshSerial *mesh = new MeshSerial;
+    mesh->setMode(Mesh::MODE_TRIANGLES);
 
     vector<FbxCluster *> boneCluster;
 
@@ -404,14 +401,10 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
         }
     }
 
-    Mesh::Surface s;
     Mesh::Lod l;
-
-    s.collision	= false;
-    s.mode = Mesh::MODE_TRIANGLES;
+    l.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
 
     indexVector indices;
-
     // Export
     FbxVector4 *verts = m->GetControlPoints();
 
@@ -533,9 +526,7 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
             }
         }
     }
-
-    s.lods.push_back(l);
-    mesh->addSurface(s);
+    mesh->addLod(l);
 
     return mesh;
 }

@@ -3,6 +3,8 @@
 
 #include "component.h"
 
+class TransformPrivate;
+
 class NEXT_LIBRARY_EXPORT Transform : public Component {
     A_REGISTER(Transform, Component, Components)
 
@@ -14,45 +16,37 @@ class NEXT_LIBRARY_EXPORT Transform : public Component {
     A_NOMETHODS()
 
 public:
-    Transform                   ();
+    Transform ();
+    ~Transform ();
 
-    Vector3                     position                () const;
+    Vector3 position () const;
+    void setPosition (const Vector3 &position);
 
-    Vector3                     euler                   () const;
+    Vector3 euler () const;
+    void setEuler (const Vector3 &angles);
 
-    Vector3                     scale                   () const;
+    virtual Quaternion rotation () const;
+    void setRotation (const Quaternion &rotation);
 
-    virtual Quaternion          rotation                () const;
+    Vector3 scale () const;
+    void setScale (const Vector3 &scale);
 
-    virtual Matrix4            &worldTransform          ();
+    Transform *parent () const;
+    void setParent (Transform *parent);
 
-    virtual Vector3             worldPosition           () const;
+    Matrix4 &worldTransform ();
 
-    virtual Vector3             worldEuler              () const;
+    Vector3 worldPosition () const;
+    Vector3 worldEuler () const;
+    Quaternion worldRotation () const;
+    Vector3 worldScale () const;
 
-    virtual Quaternion          worldRotation           () const;
+private:
+    void setDirty ();
 
-    virtual Vector3             worldScale              () const;
+private:
+    TransformPrivate *p_ptr;
 
-    void                        setPosition             (const Vector3 &value);
-
-    void                        setEuler                (const Vector3 &value);
-
-    void                        setScale                (const Vector3 &value);
-
-    virtual void                setRotation             (const Quaternion &value);
-
-protected:
-    void                        setDirty                ();
-
-    bool                        m_Dirty;
-
-    Vector3                     m_Position;
-    Vector3                     m_Euler;
-    Quaternion                  m_Rotation;
-    Vector3                     m_Scale;
-
-    Matrix4                     m_Transform;
 };
 
 #endif // TRANSFORM_H

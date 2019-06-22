@@ -19,6 +19,8 @@ static IPlatformAdaptor *s_pPlatform = nullptr;
     Initialize the Input module.
     The \a platform adaptor is used to handle platform specific inputs.
     \note This method calls internally and must not be called manually.
+
+    \internal
 */
 void Input::init(IPlatformAdaptor *platform) {
     s_pPlatform = platform;

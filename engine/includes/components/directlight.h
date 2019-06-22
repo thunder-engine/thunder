@@ -12,10 +12,7 @@ class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
 
 public:
     DirectLight ();
-
     ~DirectLight ();
-
-    void draw (ICommandBuffer &buffer, uint32_t layer);
 
     Vector4 &normalizedDistance ();
 
@@ -24,6 +21,8 @@ public:
     Matrix4 *matrix ();
 
 private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+
 #ifdef NEXT_SHARED
     bool drawHandles() override;
 #endif

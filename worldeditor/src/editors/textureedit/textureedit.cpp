@@ -15,6 +15,7 @@
 #include "components/camera.h"
 
 #include "resources/texture.h"
+#include "resources/material.h"
 
 #define SCALE 100.0f
 

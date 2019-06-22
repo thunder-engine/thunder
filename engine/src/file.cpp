@@ -99,13 +99,13 @@ bool IFile::_delete(const char *path) {
     return result;
 }
 /*!
-    Check if file exist. Returns true if operation succeeded; otherwise returns false.
+    Checks if a file by \a path exists. Returns true if operation succeeded; otherwise returns false.
 */
 bool IFile::_exists(const char *path) {
     return PHYSFS_exists(path);
 }
 /*!
-    Determine if a file in the search path is really a directory.
+    Determine if a file by \a path in the search path is really a directory.
 
     Returns true if operation succeeded; otherwise returns false.
 */
@@ -124,14 +124,14 @@ int IFile::_fclose(_FILE *stream) {
     The next read or write will occur at that \a origin position.
     Seeking past the beginning or end of the file is not allowed, and causes an error.
 
-    \sa _tell()
+    \sa _ftell()
  */
 _size_t IFile::_fseek(_FILE *stream, uint64_t origin) {
     A_UNUSED(origin)
     return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), origin));
 }
 /*!
-    Opens the file whose name is specified in the \a filename and associates it with a stream that can be identified in future operations.
+    Opens the file whose name is specified in the \a path and associates it with a stream that can be identified in future operations.
     The operations that are allowed on the stream and how these are performed are defined by the \a mode parameter.
     Allowed values of \a mode parameter:
     \list
@@ -184,8 +184,8 @@ _size_t IFile::_fsize(_FILE *stream) {
 
     Returns offset in bytes from start of file.
 
-    \sa _seek()
- */
+    \sa _fseek()
+*/
 _size_t IFile::_ftell(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_tell(static_cast<PHYSFS_file *>(stream)));
 }

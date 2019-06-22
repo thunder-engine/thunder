@@ -17,8 +17,10 @@
 #include <components/directlight.h>
 #include <components/camera.h>
 
+#include <resources/mesh.h>
+
 #include <global.h>
-#include "json.h"
+#include <json.h>
 
 #include "editors/propertyedit/nextobject.h"
 #include "controllers/objectctrl.h"

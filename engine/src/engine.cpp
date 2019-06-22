@@ -120,6 +120,13 @@ string                          EnginePrivate::m_Application;
 IPlatformAdaptor               *EnginePrivate::m_pPlatform = nullptr;
 
 typedef Vector4 Color;
+
+/*!
+    \module Engine
+
+    \title Thunder Engine Software Developer Kit
+*/
+
 /*!
     \class Engine
     \brief The Engine one of the central parts of Thunder Engine.
@@ -140,13 +147,13 @@ typedef Vector4 Color;
 */
 /*!
     Constructs Engine.
-    Creates necessary platform adapters, register basic component types and resource types.
+    Using \a file and \a path parameters creates necessary platform adapters, register basic component types and resource types.
 */
-Engine::Engine(IFile *file, int, char **argv) :
+Engine::Engine(IFile *file, const char *path) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_ApplicationPath = argv[0];
+    EnginePrivate::m_ApplicationPath = path;
     Uri uri(EnginePrivate::m_ApplicationPath);
     EnginePrivate::m_ApplicationDir = uri.dir();
     EnginePrivate::m_Application = uri.baseName();
@@ -208,7 +215,7 @@ Engine::~Engine() {
     delete p_ptr;
 }
 /*!
-    Initializes all engine systems.
+    Initializes all engine systems. Returns true if successful; otherwise returns false.
 */
 bool Engine::init() {
     PROFILER_MARKER;
@@ -223,6 +230,7 @@ bool Engine::init() {
 /*!
     Starts the main game cicle.
     Also this method loads the first level of your game.
+    Returns true if successful; otherwise returns false.
 */
 bool Engine::start() {
     PROFILER_MARKER;
@@ -538,7 +546,7 @@ string Engine::organizationName() const {
     return EnginePrivate::m_Organization;
 }
 /*!
-    This method launches your game logic.
+    This method launches your game logic for the current \a scene.
     It calls on each iteration of the game cycle.
     \note Usually, this method calls internally and must not be called manually.
 */
@@ -548,7 +556,7 @@ void Engine::updateScene(Scene *scene) {
     if(isGameMode()) {
         for(auto it : m_List) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnable() && comp->actor()->scene() == scene) {
+            if(comp && comp->isEnabled() && comp->actor()->scene() == scene) {
                 if(!comp->isStarted()) {
                     comp->start();
                     comp->setStarted(true);

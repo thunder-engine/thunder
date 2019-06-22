@@ -226,7 +226,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
 
     if(index.column() == 2) {
         Actor *object  = static_cast<Actor *>(m_pFilter->mapToSource(index).internalPointer());
-        object->setEnable(!object->isEnable());
+        object->setEnabled(!object->isEnabled());
     }
     emit selected(list);
 }

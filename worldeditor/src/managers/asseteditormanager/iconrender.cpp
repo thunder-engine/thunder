@@ -21,6 +21,9 @@
 #include <components/spriterender.h>
 
 #include <resources/pipeline.h>
+#include <resources/mesh.h>
+#include <resources/material.h>
+#include <resources/texture.h>
 
 #include "pluginmodel.h"
 #include "assetmanager.h"

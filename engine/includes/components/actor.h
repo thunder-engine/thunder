@@ -6,13 +6,14 @@
 class Scene;
 class Component;
 class Transform;
-class Prefab;
+
+class ActorPrivate;
 
 class NEXT_LIBRARY_EXPORT Actor : public Object {
     A_REGISTER(Actor, Object, Scene)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Enable, Actor::isEnable, Actor::setEnable)
+        A_PROPERTY(bool, Enabled, Actor::isEnabled, Actor::setEnabled)
     )
     A_METHODS(
         A_METHOD(Transform *, Actor::transform),
@@ -22,59 +23,48 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     )
 
 public:
-    Actor                       ();
+    Actor ();
+    ~Actor ();
 
-    bool                        isEnable                () const;
+    Transform *transform ();
 
-    uint8_t                     layers                  () const;
+    Scene *scene ();
 
-    Transform                  *transform               ();
-
-    Scene                      *scene                   ();
-
-    Component                  *findComponent           (const char *type);
+    Component *findComponent (const char *type);
 
     template<typename T>
-    T                          *component               () {
+    T *component () {
         return static_cast<T *>(findComponent(T::metaClass()->name()));
     }
 
-    void                        setEnable               (const bool enable);
+    bool isEnabled () const;
+    void setEnabled (const bool enabled);
 
-    void                        setLayers               (const uint8_t layers);
+    uint8_t layers () const;
+    void setLayers (const uint8_t layers);
 
     template<typename T>
-    T                          *addComponent            () {
+    T *addComponent () {
         return static_cast<T *>(createComponent(T::metaClass()->name()));
     }
 
-    Component                  *createComponent         (const string type);
+    Component *createComponent (const string type);
 
-    void                        setParent               (Object *parent);
+    void setParent (Object *parent);
 
-    bool                        isPrefab                () const;
+    bool isPrefab () const;
+    void setPrefab (Actor *prefab);
 
-    void                        setPrefab               (Actor *prefab);
+private:
+    void addChild (Object *value) override;
 
-    bool                        isSerializable          () const;
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
 
-protected:
-    void                        addChild                (Object *value);
+    bool isSerializable () const override;
+private:
+    ActorPrivate *p_ptr;
 
-    void                        loadUserData            (const VariantMap &data);
-
-    VariantMap                  saveUserData            () const;
-
-protected:
-    uint8_t                     m_Layers;
-
-    bool                        m_Enable;
-
-    Transform                  *m_pTransform;
-
-    Actor                      *m_pPrefab;
-
-    Scene                      *m_pScene;
 };
 
 #endif // ACTOR_H

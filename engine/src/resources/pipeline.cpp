@@ -130,7 +130,7 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
     m_Buffer->clearRenderTarget(true, camera.color(), false);
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
-    m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, ICommandBuffer::UI, m_pSprite);
+    m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
 }
 
 void Pipeline::cameraReset(Camera &camera) {
@@ -180,13 +180,13 @@ void Pipeline::combineComponents(Object *object, bool first) {
         Object *child = it;
         Renderable *comp = dynamic_cast<Renderable *>(child);
         if(comp) {
-            if(comp->isEnable()) {
+            if(comp->isEnabled()) {
                 m_Components.push_back(comp);
             }
         } else {
             Actor *actor = dynamic_cast<Actor *>(child);
             if(actor) {
-                if(!actor->isEnable()) {
+                if(!actor->isEnabled()) {
                     continue;
                 }
             }

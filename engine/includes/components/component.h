@@ -11,7 +11,7 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
 
     A_PROPERTIES (
-        A_PROPERTY(bool, Enable, Component::isEnable, Component::setEnable)
+        A_PROPERTY(bool, Enabled, Component::isEnabled, Component::setEnabled)
     )
     A_METHODS(
         A_METHOD(Actor *, Component::actor)
@@ -23,8 +23,8 @@ public:
 
     Actor *actor () const;
 
-    bool isEnable () const;
-    void setEnable (bool enable);
+    bool isEnabled () const;
+    void setEnabled (bool enable);
 
     bool isStarted () const;
     void setStarted (bool started);

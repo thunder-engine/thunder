@@ -4,64 +4,103 @@
 #include "components/transform.h"
 #include "commandbuffer.h"
 
+
+#include "mesh.h"
+#include "material.h"
+
 #define MESH "Mesh"
 #define MATERAIL "Material"
 
+class MeshRenderPrivate {
+public:
+    MeshRenderPrivate() :
+            m_pMesh(nullptr),
+            m_pMaterial(nullptr) {
+    }
+
+    Mesh *m_pMesh;
+
+    MaterialInstance *m_pMaterial;
+};
+/*!
+    \class MeshRender
+    \brief Draws a mesh for the 3D graphics.
+    \inmodule Engine
+
+    The MeshRender component allows you to display 3D Mesh to use in both 2D and 3D scenes.
+*/
+
 MeshRender::MeshRender() :
-        m_pMesh(nullptr),
-        m_pMaterial(nullptr) {
+        p_ptr(new MeshRenderPrivate) {
+
 }
 
+MeshRender::~MeshRender() {
+    delete p_ptr;
+}
+/*!
+    \internal
+*/
 void MeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
-    Actor *a    = actor();
-    if(m_pMesh && layer & a->layers()) {
+    Actor *a = actor();
+    if(p_ptr->m_pMesh && layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), m_pMesh, 0, layer, m_pMaterial);
+        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, layer, p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }
-
+/*!
+    Returns a bound box of assigned Mesh.
+*/
 AABBox MeshRender::bound() const {
-    if(m_pMesh) {
-        return m_pMesh->bound();
+    if(p_ptr->m_pMesh) {
+        return p_ptr->m_pMesh->bound();
     }
     return Renderable::bound();
 }
-
+/*!
+    Returns a Mesh assigned to MeshRender.
+*/
 Mesh *MeshRender::mesh() const {
-    return m_pMesh;
+    return p_ptr->m_pMesh;
 }
-
+/*!
+    Assigns a new \a mesh to draw.
+*/
 void MeshRender::setMesh(Mesh *mesh) {
-    m_pMesh    = mesh;
-    if(m_pMesh) {
-        delete m_pMaterial;
-        for(uint32_t l = 0; l < mesh->lodsCount(0); l++) {
-            Material *m = mesh->material(0, l);
-            m_pMaterial = (m) ? m->createInstance() : nullptr;
-        }
+    p_ptr->m_pMesh = mesh;
+    if(p_ptr->m_pMesh) {
+        delete p_ptr->m_pMaterial;
+         Material *m = mesh->material(0);
+         p_ptr->m_pMaterial = (m) ? m->createInstance() : nullptr;
     }
 }
-
+/*!
+    Returns an instantiated Material assigned to MeshRender.
+*/
 Material *MeshRender::material() const {
-    if(m_pMaterial) {
-        return m_pMaterial->material();
+    if(p_ptr->m_pMaterial) {
+        return p_ptr->m_pMaterial->material();
     }
     return nullptr;
 }
-
+/*!
+    Creates a new instance of \a material and assigns it.
+*/
 void MeshRender::setMaterial(Material *material) {
     if(material) {
-        if(m_pMaterial) {
-            delete m_pMaterial;
+        if(p_ptr->m_pMaterial) {
+            delete p_ptr->m_pMaterial;
         }
-        m_pMaterial = material->createInstance();
+        p_ptr->m_pMaterial = material->createInstance();
     }
 }
-
+/*!
+    \internal
+*/
 void MeshRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
@@ -70,14 +109,16 @@ void MeshRender::loadUserData(const VariantMap &data) {
             setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
         }
     }
-    if(m_pMesh) {
+    if(p_ptr->m_pMesh) {
         auto it = data.find(MATERAIL);
         if(it != data.end()) {
             setMaterial(Engine::loadResource<Material>((*it).second.toString()));
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap MeshRender::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {

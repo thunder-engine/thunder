@@ -19,7 +19,7 @@ typedef unordered_map<string, string> StringMap;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
-    Engine                      (IFile *file, int argc, char **argv);
+    Engine                      (IFile *file, const char *path);
     ~Engine                     ();
 /*
     Main system

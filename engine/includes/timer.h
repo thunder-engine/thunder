@@ -17,8 +17,6 @@ public:
 
     static float                deltaTime                   ();
 
-    static float                fixedDelta                  ();
-
     static float                scale                       ();
 
     static void                 setScale                    (float scale);

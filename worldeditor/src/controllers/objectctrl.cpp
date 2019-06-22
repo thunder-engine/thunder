@@ -15,6 +15,7 @@
 
 #include <resources/pipeline.h>
 #include <resources/rendertexture.h>
+#include <resources/material.h>
 
 #include <handles/handletools.h>
 

@@ -66,7 +66,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::DecorationRole: {
             if(index.column() == 2) {
-                return item->isEnable() ? m_Visible : m_Invisible;
+                return item->isEnabled() ? m_Visible : m_Invisible;
             }
         } break;
         case Qt::SizeHintRole: {

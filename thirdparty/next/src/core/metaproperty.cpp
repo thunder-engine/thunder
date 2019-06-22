@@ -24,11 +24,6 @@
     Callback which contain address to setter method of property.
 */
 /*!
-    \fn void MetaProperty::write(Object *object, const T &value) const
-
-    Tries to write a \a value with type T to provided \a object.
-*/
-/*!
     Constructs MetaProperty object wich will contain information provided in a \a table.
 */
 MetaProperty::MetaProperty(const Table *table) :
@@ -88,3 +83,7 @@ const MetaProperty::Table *MetaProperty::table() const {
     PROFILE_FUNCTION();
     return m_pTable;
 }
+/*! \fn void MetaProperty::write(Object *object, const T &value) const
+
+    Tries to write a \a value with type T to provided \a object.
+*/

@@ -53,12 +53,12 @@ public:
 };
 
 ParticleRender::ParticleRender() :
-        m_effect(new ParticleRenderPrivate) {
+        m_ptr(new ParticleRenderPrivate) {
 
 }
 
 ParticleRender::~ParticleRender() {
-    delete m_effect;
+    delete m_ptr;
 }
 
 void ParticleRender::update() {
@@ -71,16 +71,16 @@ void ParticleRender::update() {
     }
     Vector3 pos = camera->actor()->transform()->worldPosition();
 
-    if(m_effect->m_pEffect) {
+    if(m_ptr->m_pEffect) {
         uint32_t index  = 0;
-        for(auto &it : m_effect->m_Emitters) {
-            ParticleEffect::Emitter &emitter    = m_effect->m_pEffect->emitter(index);
+        for(auto &it : m_ptr->m_Emitters) {
+            ParticleEffect::Emitter &emitter = m_ptr->m_pEffect->emitter(index);
             it.m_Count = 0;
             uint32_t i = 0;
             for(auto &particle : it.m_Particles) {
                 particle.life   -= dt;
                 if(particle.life >= 0.0f) {
-                    m_effect->m_pEffect->updateParticle(index, particle, dt);
+                    m_ptr->m_pEffect->updateParticle(index, particle, dt);
 
                     particle.transform  = (emitter.m_Local) ? m * particle.position : particle.position;
                     particle.distance   = (pos - particle.transform).sqrLength();
@@ -88,8 +88,8 @@ void ParticleRender::update() {
                     it.m_Count++;
                 } else {
                     particle.distance   = -1.0f;
-                    if(isEnable() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
-                        m_effect->m_pEffect->spawnParticle(index, particle);
+                    if(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
+                        m_ptr->m_pEffect->spawnParticle(index, particle);
                         particle.transform  = m * particle.position;
                         it.m_Counter   -= 1.0f;
                     }
@@ -117,9 +117,9 @@ void ParticleRender::update() {
                 i++;
             }
 
-            while(isEnable() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
+            while(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
                 ParticleEffect::ParticleData particle;
-                m_effect->m_pEffect->spawnParticle(index, particle);
+                m_ptr->m_pEffect->spawnParticle(index, particle);
                 particle.transform  = m * particle.position;
                 it.m_Particles.push_back(particle);
                 it.m_Counter   -= 1.0f;
@@ -149,10 +149,10 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
         uint32_t index  = 0;
-        for(auto &it : m_effect->m_Emitters) {
+        for(auto &it : m_ptr->m_Emitters) {
             if(it.m_Count > 0) {
-                ParticleEffect::Emitter &emitter    = m_effect->m_pEffect->emitter(index);
-                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, 0, layer, emitter.m_pMaterial, true);
+                ParticleEffect::Emitter &emitter    = m_ptr->m_pEffect->emitter(index);
+                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, emitter.m_pMaterial, true);
             }
             index++;
         }
@@ -161,14 +161,14 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
 }
 
 ParticleEffect *ParticleRender::effect() const {
-    return m_effect->m_pEffect;
+    return m_ptr->m_pEffect;
 }
 
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
-        m_effect->m_pEffect   = effect;
-        m_effect->m_Emitters.clear();
-        m_effect->m_Emitters.resize(effect->emittersCount());
+        m_ptr->m_pEffect   = effect;
+        m_ptr->m_Emitters.clear();
+        m_ptr->m_Emitters.resize(effect->emittersCount());
     }
 }
 
@@ -185,9 +185,9 @@ void ParticleRender::loadUserData(const VariantMap &data) {
 VariantMap ParticleRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
-        string ref  = Engine::reference(m_effect->m_pEffect);
+        string ref  = Engine::reference(m_ptr->m_pEffect);
         if(!ref.empty()) {
-            result[EFFECT]    = ref;
+            result[EFFECT] = ref;
         }
     }
     return result;

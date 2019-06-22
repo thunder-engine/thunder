@@ -340,7 +340,6 @@ const MetaObject *Object::metaObject() const {
 
     \sa connect()
 */
-
 Object *Object::clone() {
     PROFILE_FUNCTION();
 
@@ -411,6 +410,7 @@ string Object::typeName() const {
 }
 /*!
     Creates connection beteen the \a signal of the \a sender and the \a method of the \a receiver.
+    Returns true if successful; otherwise returns false.
 
     You must use the _SIGNAL() and _SLOT() macros when specifying \a signal and the \a method.
     \note The _SIGNAL() and _SLOT() must not contain any parameter values only parameter types.
@@ -629,25 +629,30 @@ void Object::setName(const string &name) {
         p_ptr->m_sName = name;
     }
 }
-
-void Object::addChild(Object *value) {
+/*!
+    Pushes a \a child object to the internal list of children.
+*/
+void Object::addChild(Object *child) {
     PROFILE_FUNCTION();
-    if(value) {
-        p_ptr->m_mChildren.push_back(value);
+    if(child) {
+        p_ptr->m_mChildren.push_back(child);
     }
 }
-
-void Object::removeChild(Object *value) {
+/*!
+    Removes a \a child object from the internal list of children.
+*/
+void Object::removeChild(Object *child) {
     PROFILE_FUNCTION();
     auto it = p_ptr->m_mChildren.begin();
     while(it != p_ptr->m_mChildren.end()) {
-        if(*it == value) {
+        if(*it == child) {
             p_ptr->m_mChildren.erase(it);
             return;
         }
         it++;
     }
 }
+
 /*!
     Send specific \a signal with \a args for all connected receivers.
 
@@ -811,16 +816,18 @@ void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
     p_ptr->m_pSystem = system;
 }
-
+/*!
+    \internal
+*/
 VariantList Object::serializeData(const MetaObject *meta) const {
     PROFILE_FUNCTION()
 
     VariantList result;
 
     result.push_back(meta->name());
-    result.push_back((int32_t)uuid());
+    result.push_back(static_cast<int32_t>(uuid()));
     Object *p = parent();
-    result.push_back((int32_t)((p) ? p->uuid() : 0));
+    result.push_back(static_cast<int32_t>(((p) ? p->uuid() : 0)));
     result.push_back(name());
 
     // Save base properties
@@ -842,11 +849,11 @@ VariantList Object::serializeData(const MetaObject *meta) const {
 
         Object *sender  = l.sender;
 
-        link.push_back((int32_t)sender->uuid());
+        link.push_back(static_cast<int32_t>(sender->uuid()));
         MetaMethod method  = sender->metaObject()->method(l.signal);
         link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
-        link.push_back((int32_t)uuid());
+        link.push_back(static_cast<int32_t>(uuid()));
         method      = meta->method(l.method);
         link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 

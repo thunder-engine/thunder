@@ -4,6 +4,7 @@
 #include "components/transform.h"
 
 #include "resources/pipeline.h"
+#include "resources/texture.h"
 
 class CameraPrivate {
 public:

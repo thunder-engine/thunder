@@ -7,6 +7,7 @@
 
 class Mesh;
 class MaterialInstance;
+class BaseLightPrivate;
 
 class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
@@ -19,34 +20,34 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     )
 
 public:
-    BaseLight                   ();
+    BaseLight ();
+    ~BaseLight ();
 
-    ~BaseLight                  ();
+    bool castShadows () const;
+    void setCastShadows (const bool shadows);
 
-    bool                        castShadows             () const;
-    void                        setCastShadows          (const bool shadows);
+    float brightness () const;
+    void setBrightness (const float brightness);
 
-    float                       brightness              () const;
-    void                        setBrightness           (const float brightness);
+    Vector4 color () const;
+    void setColor (const Vector4 &color);
 
-    Vector4                     color                   () const;
-    void                        setColor                (const Vector4 &color);
-
-    float                       bias                    () const;
-    void                        setBias                 (const float bias);
+    float bias () const;
+    void setBias (const float bias);
 
 protected:
-    float                       m_Shadows;
+    MaterialInstance *material() const;
+    void setMaterial(MaterialInstance *instance);
 
-    float                       m_Bias;
+    Mesh *shape() const;
+    void setShape(Mesh *shape);
 
-    Vector4                     m_Params;
+    Vector4 params() const;
+    void setParams(Vector4 &params);
 
-    Vector4                     m_Color;
+private:
+    BaseLightPrivate *p_ptr;
 
-    Mesh                       *m_pShape;
-
-    MaterialInstance           *m_pMaterialInstance;
 };
 
 #endif // BASELIGHT_H

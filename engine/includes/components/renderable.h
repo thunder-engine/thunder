@@ -12,11 +12,9 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_NOMETHODS()
 
 public:
-    virtual void draw(ICommandBuffer &buffer, uint32_t layer) {
-        A_UNUSED(buffer)
-        A_UNUSED(layer)
-    }
-    virtual AABBox bound() const { return AABBox(); }
+    virtual void draw (ICommandBuffer &buffer, uint32_t layer);
+
+    virtual AABBox bound () const;
 };
 
 #endif // RENDERABLE_H

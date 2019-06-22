@@ -23,50 +23,50 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_NOMETHODS()
 
 public:
-    Camera                      ();
-    ~Camera                     ();
+    Camera ();
+    ~Camera ();
 
-    Pipeline                   *pipeline                ();
+    Pipeline *pipeline ();
 
-    void                        setPipeline             (Pipeline *pipeline);
+    void setPipeline (Pipeline *pipeline);
 
-    void                        matrices                (Matrix4 &v, Matrix4 &p) const;
+    void matrices (Matrix4 &v, Matrix4 &p) const;
 
-    Matrix4                     projectionMatrix        () const;
+    Matrix4 projectionMatrix () const;
 
-    static bool                 project                 (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss);
-    static bool                 unproject               (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ws);
+    static bool project (const Vector3 &ws, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ss);
+    static bool unproject (const Vector3 &ss, const Matrix4 &modelview, const Matrix4 &projection, Vector3 &ws);
 
-    Ray                         castRay                 (float x, float y);
+    Ray castRay (float x, float y);
 
-    float                       ratio                   () const;
-    void                        setRatio                (float value);
+    float ratio () const;
+    void setRatio (float value);
 
-    float                       nearPlane               () const;
-    void                        setNear                 (const float value);
+    float nearPlane () const;
+    void setNear (const float value);
 
-    float                       farPlane                () const;
-    void                        setFar                  (const float value);
+    float farPlane () const;
+    void  setFar (const float value);
 
-    float                       focal                   () const;
-    virtual void                setFocal                (const float focal);
+    float focal () const;
+    void setFocal (const float focal);
 
-    float                       fov                     () const;
-    virtual void                setFov                  (const float value);
+    float fov () const;
+    void setFov (const float value);
 
-    Vector4                     color                   () const;
-    void                        setColor                (const Vector4 &color);
+    Vector4 color () const;
+    void setColor (const Vector4 &color);
 
-    float                       orthoHeight             () const;
-    void                        setOrthoHeight          (const float value);
+    float orthoHeight () const;
+    void setOrthoHeight (const float value);
 
-    bool                        orthographic            () const;
-    void                        setOrthographic         (const bool value);
+    bool orthographic () const;
+    void setOrthographic (const bool value);
 
-    array<Vector3, 8>           frustumCorners          (float nearPlane, float farPlane) const;
+    array<Vector3, 8> frustumCorners (float nearPlane, float farPlane) const;
 
-    static Camera              *current                 ();
-    static void                 setCurrent              (Camera *current);
+    static Camera *current ();
+    static void setCurrent (Camera *current);
 
 private:
 #ifdef NEXT_SHARED

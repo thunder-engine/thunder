@@ -19,7 +19,7 @@ public:
 
     static float            distanceToPath      (const Matrix4 &matrix, const Vector3Vector &points);
 
-    static float            distanceToMesh      (const Matrix4 &matrix, const Mesh *mesh, uint32_t surface);
+    static float            distanceToMesh      (const Matrix4 &matrix, const Mesh *mesh);
 
     static void             setViewProjection   (const Matrix4 &view, const Matrix4 &projection);
 

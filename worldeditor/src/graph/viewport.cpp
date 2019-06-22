@@ -6,6 +6,7 @@
 #include <components/camera.h>
 
 #include <resources/pipeline.h>
+#include <resources/material.h>
 
 #include <handles/handles.h>
 
@@ -52,7 +53,7 @@ void Viewport::paintGL() {
             sprite->setTexture(OVERRIDE, reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
 
             m_pCommandBuffer->setScreenProjection();
-            m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), 0, ICommandBuffer::UI, sprite);
+            m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), ICommandBuffer::UI, sprite);
         } else {
             m_pController->drawHandles(m_pCommandBuffer);
         }

@@ -88,9 +88,9 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
     return sqrtf(result);
 }
 
-float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh, uint32_t surface) {
-    Mesh::IndexVector indices   = mesh->indices(surface, 0);
-    Vector3Vector vertices      = mesh->vertices(surface, 0);
+float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh) {
+    Mesh::IndexVector indices   = mesh->indices(0);
+    Vector3Vector vertices      = mesh->vertices(0);
     if(indices.empty()) {
         return distanceToPath(matrix, vertices);
     }

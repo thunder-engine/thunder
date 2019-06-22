@@ -29,51 +29,65 @@ public:
 
     Vector3  m_Direction;
 };
+/*!
+    \class DirectLight
+    \brief The Directional Light simulates light that is being emitted from a source that is infinitely far away.
+    \inmodule Engine
+
+    To determine the emit direction DirectLight uses Transform component of the own Actor.
+*/
 
 DirectLight::DirectLight() :
         p_ptr(new DirectLightPrivate) {
-    m_pShape = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+    setShape(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001"));
 
     Material *material  = Engine::loadResource<Material>(".embedded/DirectLight.mtl");
-    m_pMaterialInstance = material->createInstance();
 
-    m_pMaterialInstance->setVector4("light.color",      &m_Color);
-    m_pMaterialInstance->setVector4("light.lod",        &p_ptr->m_NormalizedDistance);
-    m_pMaterialInstance->setVector4("light.params",     &m_Params);
+    MaterialInstance *instance = material->createInstance();
 
-    m_pMaterialInstance->setVector3("light.direction",  &p_ptr->m_Direction);
+    instance->setVector4("light.lod",        &p_ptr->m_NormalizedDistance);
+    instance->setVector3("light.direction",  &p_ptr->m_Direction);
 
-    m_pMaterialInstance->setFloat("light.shadows",      &m_Shadows);
-    m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
+    instance->setMatrix4("light.matrix",     p_ptr->m_pMatrix, MAX_LODS);
+    instance->setVector4("light.tiles",      p_ptr->m_pTiles,  MAX_LODS);
 
-    m_pMaterialInstance->setMatrix4("light.matrix",     p_ptr->m_pMatrix, MAX_LODS);
-    m_pMaterialInstance->setVector4("light.tiles",      p_ptr->m_pTiles,  MAX_LODS);
+    setMaterial(instance);
 }
 
 DirectLight::~DirectLight() {
     delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
-    if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
+    Mesh *mesh = shape();
+    MaterialInstance *instance = material();
+    if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
         Matrix4 m = actor()->transform()->worldTransform();
 
         p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 0.0f, 1.0f);
 
         buffer.setScreenProjection();
-        buffer.drawMesh(Matrix4(), m_pShape, 0, layer, m_pMaterialInstance);
+        buffer.drawMesh(Matrix4(), mesh, layer, instance);
         buffer.resetViewProjection();
     }
 }
-
+/*!
+    \internal
+*/
 Vector4 &DirectLight::normalizedDistance() {
     return p_ptr->m_NormalizedDistance;
 }
-
+/*!
+    \internal
+*/
 Vector4 *DirectLight::tiles() {
     return p_ptr->m_pTiles;
 }
-
+/*!
+    \internal
+*/
 Matrix4 *DirectLight::matrix() {
     return p_ptr->m_pMatrix;
 }

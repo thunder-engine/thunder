@@ -20,61 +20,82 @@ public:
 
     float                       m_Angle;
 };
+/*!
+    \class SpotLight
+    \brief A Spot Light emits light from a single point in a cone shape.
+    \inmodule Engine
+
+    To determine the emitter position and emit direction SpotLight uses Transform component of the own Actor.
+*/
 
 SpotLight::SpotLight() :
         p_ptr(new SpotLightPrivate) {
 
     setAngle(45.0f);
 
-    m_pShape = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
+    setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
-    Material *material  = Engine::loadResource<Material>(".embedded/SpotLight.mtl");
-    m_pMaterialInstance = material->createInstance();
+    Material *material = Engine::loadResource<Material>(".embedded/SpotLight.mtl");
+    MaterialInstance *instance = material->createInstance();
 
-    m_pMaterialInstance->setVector4("light.color",      &m_Color);
-    m_pMaterialInstance->setVector4("light.params",     &m_Params);
+    instance->setVector3("light.position",   &p_ptr->m_Position);
+    instance->setVector3("light.direction",  &p_ptr->m_Direction);
 
-    m_pMaterialInstance->setVector3("light.position",   &p_ptr->m_Position);
-    m_pMaterialInstance->setVector3("light.direction",  &p_ptr->m_Direction);
-
-    m_pMaterialInstance->setFloat("light.shadows",      &m_Shadows);
-    m_pMaterialInstance->setFloat("light.bias",         &m_Bias);
+    setMaterial(instance);
 }
 
 SpotLight::~SpotLight() {
     delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
-    if(m_pShape && m_pMaterialInstance && (layer & ICommandBuffer::LIGHT)) {
+    Mesh *mesh = shape();
+    MaterialInstance *instance = material();
+    if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
         p_ptr->m_Position = actor()->transform()->worldPosition();
 
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
         p_ptr->m_Direction.normalize();
 
-        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * radius() * 0.5f,
-                  q, Vector3(m_Params.y * 2.0f, m_Params.y * 2.0f, m_Params.y));
+        Vector4 p = params();
 
-        buffer.drawMesh(t, m_pShape, 0, layer, m_pMaterialInstance);
+        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * distance() * 0.5f,
+                  q, Vector3(p.y * 2.0f, p.y * 2.0f, p.y));
+
+        buffer.drawMesh(t, mesh, layer, instance);
     }
 }
-
-float SpotLight::radius() const {
-    return m_Params.y;
+/*!
+    Returns the attenuation distance of the light cone.
+*/
+float SpotLight::distance() const {
+    return params().y;
 }
-
-void SpotLight::setRadius(float value) {
-    m_Params.y = value;
+/*!
+    Changes the attenuation \a distance of the light cone.
+*/
+void SpotLight::setDistance(float distance) {
+    Vector4 p = params();
+    p.y = distance;
+    setParams(p);
 }
-
+/*!
+    Returns the angle of the light cone in degrees.
+*/
 float SpotLight::angle() const {
     return p_ptr->m_Angle;
 }
-
-void SpotLight::setAngle(float value) {
-    p_ptr->m_Angle = value;
-    m_Params.z = cos(DEG2RAD * p_ptr->m_Angle);
+/*!
+    Changes the \a angle of the light cone in degrees.
+*/
+void SpotLight::setAngle(float angle) {
+    p_ptr->m_Angle = angle;
+    Vector4 p = params();
+    p.z = cos(DEG2RAD * p_ptr->m_Angle);
+    setParams(p);
 }
 
 #ifdef NEXT_SHARED

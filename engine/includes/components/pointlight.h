@@ -16,12 +16,12 @@ public:
     PointLight ();
     ~PointLight ();
 
-    void draw (ICommandBuffer &buffer, uint32_t layer);
-
     float radius () const;
-    void setRadius (float value);
+    void setRadius (float radius);
 
 private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+
 #ifdef NEXT_SHARED
     bool drawHandles() override;
 #endif

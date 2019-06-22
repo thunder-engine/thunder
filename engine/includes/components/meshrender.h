@@ -3,10 +3,9 @@
 
 #include "renderable.h"
 
-#include "mesh.h"
-#include "material.h"
-
-#include <array>
+class Material;
+class Mesh;
+class MeshRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components);
@@ -18,28 +17,25 @@ class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
     A_NOMETHODS()
 
 public:
-    MeshRender                  ();
+    MeshRender();
+    ~MeshRender();
 
-    void                        draw                    (ICommandBuffer &buffer, uint32_t layer);
+    Mesh *mesh () const;
+    void setMesh (Mesh *mesh);
 
-    AABBox                      bound                   () const override;
+    Material *material () const;
+    void setMaterial (Material *material);
 
-    Mesh                       *mesh                    () const;
+    AABBox bound () const override;
 
-    virtual void                setMesh                 (Mesh *mesh);
+private:
+    void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
-    Material                   *material                () const;
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
 
-    virtual void                setMaterial             (Material *material);
-
-    void                        loadUserData            (const VariantMap &data);
-
-    VariantMap                  saveUserData            () const;
-
-protected:
-    Mesh                       *m_pMesh;
-
-    MaterialInstance           *m_pMaterial;
+private:
+    MeshRenderPrivate *p_ptr;
 
 };
 

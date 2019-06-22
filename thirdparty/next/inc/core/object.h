@@ -33,6 +33,7 @@
 #include "metaobject.h"
 #include "event.h"
 
+#ifndef Q_QDOC
 #define A_REGISTER(Class, Super, Group) \
     A_OBJECT(Class, Super) \
 public: \
@@ -44,8 +45,11 @@ public: \
         UNREGISTER_META_TYPE(Class); \
         system->factoryRemove<Class>(#Group); \
     }
+#elif
+#define A_REGISTER(Class, Super, Group)
+#endif
 
-
+#ifndef Q_QDOC
 #define A_OVERRIDE(Class, Super, Group) \
     A_OBJECT(Class, Super) \
 public: \
@@ -59,6 +63,9 @@ public: \
     virtual string                  typeName                () const { \
         return Super::metaClass()->name(); \
     }
+#elif
+#define A_OVERRIDE(Class, Super, Group)
+#endif
 
 class ObjectPrivate;
 class ObjectSystem;
@@ -175,7 +182,8 @@ protected:
 
     VariantList                     serializeData               (const MetaObject *meta) const;
 
-    virtual void                    addChild                    (Object *value);
+    virtual void                    addChild                    (Object *child);
+    void                            removeChild                 (Object *child);
 
     Object                         *sender                      () const;
 
@@ -188,8 +196,6 @@ private:
 
 private:
     virtual void                    processEvents               ();
-
-    void                            removeChild                 (Object *value);
 
     void                            setUUID                     (uint32_t id);
 
