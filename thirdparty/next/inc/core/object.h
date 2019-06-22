@@ -45,7 +45,7 @@ public: \
         UNREGISTER_META_TYPE(Class); \
         system->factoryRemove<Class>(#Group); \
     }
-#elif
+#else
 #define A_REGISTER(Class, Super, Group)
 #endif
 
