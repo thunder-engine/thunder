@@ -1,10 +1,12 @@
 #ifndef ANIMATIONCLIP_H
 #define ANIMATIONCLIP_H
 
+#include "resource.h"
+
 #include <variantanimation.h>
 
-class NEXT_LIBRARY_EXPORT AnimationClip : public Object {
-    A_REGISTER(AnimationClip, Object, Resources)
+class NEXT_LIBRARY_EXPORT AnimationClip : public Resource {
+    A_REGISTER(AnimationClip, Resource, Resources)
 
 public:
    struct Track {
@@ -17,11 +19,11 @@ public:
    typedef list<Track> TrackList;
 
 public:
-    void loadUserData(const VariantMap &data);
-
     uint32_t duration() const;
 
     static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second);
+
+    void loadUserData(const VariantMap &data) override;
 
 public:
     TrackList m_Tracks;

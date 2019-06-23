@@ -2,6 +2,8 @@
 
 #include "components/actor.h"
 
+#include <algorithm>
+
 class TransformPrivate {
 public:
     TransformPrivate() :

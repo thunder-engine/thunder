@@ -1,7 +1,7 @@
 #ifndef PARTICLEEFFECT_H
 #define PARTICLEEFFECT_H
 
-#include "engine.h"
+#include "resource.h"
 
 #include <deque>
 
@@ -11,8 +11,8 @@ class Mesh;
 class ParticleModificator;
 typedef deque<ParticleModificator *> ModifiersDeque;
 
-class NEXT_LIBRARY_EXPORT ParticleEffect : public Object {
-    A_REGISTER(ParticleEffect, Object, Resources)
+class NEXT_LIBRARY_EXPORT ParticleEffect : public Resource {
+    A_REGISTER(ParticleEffect, Resource, Resources)
 public:
     enum ModificatorType {
         MODIFICATOR_LIFETIME    = 1,
@@ -85,9 +85,8 @@ public:
     };
 
 public:
-    ParticleEffect();
-
-    ~ParticleEffect();
+    ParticleEffect ();
+    ~ParticleEffect ();
 
     void apply();
     void clear();

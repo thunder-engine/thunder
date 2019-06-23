@@ -6,29 +6,39 @@
 
 #include <log.h>
 
-Text::Text() {
+class TextPrivate {
+public:
+    ByteArray m_Data;
+};
+
+Text::Text() :
+        p_ptr(new TextPrivate) {
 
 }
 
 Text::~Text() {
-
+    delete p_ptr;
 }
 
 void Text::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {
-        m_Data  = (*it).second.toByteArray();
+        p_ptr->m_Data = (*it).second.toByteArray();
     }
 }
 
-const int8_t *Text::data() const {
-    return &m_Data[0];
+char *Text::data() const {
+    return reinterpret_cast<char *>(&p_ptr->m_Data[0]);
 }
 
 uint32_t Text::size() const {
-    return m_Data.size();
+    return p_ptr->m_Data.size();
 }
 
-string Text::text() const {
-    return string((const char *)data(), size());
+void Text::setSize(uint32_t size) {
+    p_ptr->m_Data.resize(size);
+}
+
+string Text::text() {
+    return string(data(), size());
 }

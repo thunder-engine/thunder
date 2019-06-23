@@ -3,13 +3,13 @@
 
 #include <amath.h>
 
-#include "engine.h"
+#include "resource.h"
 
 class Node;
 class TexturePrivate;
 
-class NEXT_LIBRARY_EXPORT Texture : public Object {
-    A_REGISTER(Texture, Object, Resources)
+class NEXT_LIBRARY_EXPORT Texture : public Resource {
+    A_REGISTER(Texture, Resource, Resources)
 
 public:
     enum TextureType {
@@ -52,7 +52,7 @@ public:
 
 public:
     Texture ();
-    virtual ~Texture ();
+    ~Texture ();
 
     virtual void apply ();
     virtual void clear ();

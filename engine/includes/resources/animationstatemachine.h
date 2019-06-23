@@ -1,12 +1,14 @@
 #ifndef ANIMATIONSTATEMACHINE_H
 #define ANIMATIONSTATEMACHINE_H
 
-#include "engine.h"
+#include "resource.h"
 
 #include "animationclip.h"
 
-class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Object {
-    A_REGISTER(AnimationStateMachine, Object, Resources)
+class AnimationStateMachinePrivate;
+
+class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
+    A_REGISTER(AnimationStateMachine, Resource, Resources)
 
 public:
     class NEXT_LIBRARY_EXPORT State {
@@ -34,22 +36,26 @@ public:
 
         bool m_Loop;
     };
-    typedef vector<State *> StateVector;
 
     typedef unordered_map<size_t, Variant> VariableMap;
+
+    typedef vector<AnimationStateMachine::State *> StateVector;
 
 public:
     AnimationStateMachine();
 
-    void loadUserData(const VariantMap &data);
-
     State *findState(size_t hash) const;
-public:
-    StateVector m_States;
 
-    State *m_pInitialState;
+    State *initialState() const;
 
-    VariableMap m_Variables;
+    StateVector &states() const;
+
+private:
+    void loadUserData(const VariantMap &data) override;
+
+private:
+    AnimationStateMachinePrivate *p_ptr;
+
 };
 
 #endif // ANIMATIONSTATEMACHINE_H

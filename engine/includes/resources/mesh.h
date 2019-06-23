@@ -1,21 +1,15 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <list>
-#include <map>
-
 #include <amath.h>
 
-#include "engine.h"
+#include "resource.h"
 
 class Material;
 class MeshPrivate;
 
-class NEXT_LIBRARY_EXPORT Mesh : public Object {
-    A_REGISTER(Mesh, Object, Resources)
+class NEXT_LIBRARY_EXPORT Mesh : public Resource {
+    A_REGISTER(Mesh, Resource, Resources)
 
 public:
     enum Attributes {
@@ -61,7 +55,7 @@ public:
 
 public:
     Mesh ();
-    virtual ~Mesh ();
+    ~Mesh ();
 
     virtual void apply ();
     virtual void clear ();

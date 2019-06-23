@@ -1,26 +1,29 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "engine.h"
+#include "resource.h"
 
-class NEXT_LIBRARY_EXPORT Text : public Object {
-    A_REGISTER(Text, Object, Resources)
+class TextPrivate;
+
+class NEXT_LIBRARY_EXPORT Text : public Resource {
+    A_REGISTER(Text, Resource, Resources)
 
 public:
-    Text                        ();
+    Text ();
+    ~Text ();
 
-    virtual ~Text               ();
+    char *data() const;
 
-    const int8_t               *data                        () const;
-    uint32_t                    size                        () const;
+    uint32_t size () const;
+    void setSize (uint32_t);
 
-    string                      text                        () const;
+    string text ();
 
-protected:
-    void                        loadUserData                (const VariantMap &data);
+private:
+    void loadUserData (const VariantMap &data);
 
-protected:
-    ByteArray                   m_Data;
+private:
+    TextPrivate *p_ptr;
 
 };
 

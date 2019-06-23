@@ -46,8 +46,8 @@ protected:
     InfoMap                     m_Info;
 };
 
-class NEXT_LIBRARY_EXPORT Material : public Object {
-    A_REGISTER(Material, Object, Resources)
+class NEXT_LIBRARY_EXPORT Material : public Resource {
+    A_REGISTER(Material, Resource, Resources)
 
 public:
     enum MaterialType {
@@ -80,9 +80,8 @@ public:
     typedef map<string, const Texture *>    TextureMap;
 
 public:
-    Material                    ();
-
-    virtual ~Material           ();
+    Material ();
+    ~Material ();
 
     virtual void                clear                       ();
 

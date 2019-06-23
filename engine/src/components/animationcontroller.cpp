@@ -111,8 +111,8 @@ void AnimationController::setStateMachine(AnimationStateMachine *machine) {
     p_ptr->m_pStateMachine = machine;
     p_ptr->m_pCurrentState = nullptr;
     if(p_ptr->m_pStateMachine) {
-        p_ptr->m_pCurrentState = p_ptr->m_pStateMachine->m_pInitialState;
-        for(auto state : p_ptr->m_pStateMachine->m_States) {
+        p_ptr->m_pCurrentState = p_ptr->m_pStateMachine->initialState();
+        for(auto state : p_ptr->m_pStateMachine->states()) {
             AnimationControllerPrivate::PropertyList list;
             auto target = p_ptr->m_Properties.find(state->m_pClip);
             if(target == p_ptr->m_Properties.end()) {

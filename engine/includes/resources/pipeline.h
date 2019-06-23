@@ -6,7 +6,7 @@
 
 #include <amath.h>
 
-#include "engine.h"
+#include "resource.h"
 
 class ICommandBuffer;
 
@@ -20,13 +20,12 @@ class MaterialInstance;
 class RenderTexture;
 class PostProcessor;
 
-class NEXT_LIBRARY_EXPORT Pipeline : public Object {
-    A_REGISTER(Pipeline, Object, Resources)
+class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
+    A_REGISTER(Pipeline, Resource, Resources)
 
 public:
-    Pipeline                    ();
-
-    virtual ~Pipeline           ();
+    Pipeline ();
+    ~Pipeline ();
 
     virtual void                draw                (Scene *scene, Camera &camera);
 

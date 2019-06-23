@@ -4,6 +4,20 @@
 
 static hash<string> hash_str;
 
+class AnimationStateMachinePrivate {
+public:
+    AnimationStateMachinePrivate() :
+            m_pInitialState(nullptr) {
+
+    }
+
+    AnimationStateMachine::StateVector m_States;
+
+    AnimationStateMachine::State *m_pInitialState;
+
+    AnimationStateMachine::VariableMap m_Variables;
+};
+
 AnimationStateMachine::State::State() :
         m_Hash(0),
         m_pClip(nullptr),
@@ -16,7 +30,7 @@ uint8_t AnimationStateMachine::State::type() const {
 }
 
 AnimationStateMachine::AnimationStateMachine() :
-        m_pInitialState(nullptr) {
+         p_ptr(new AnimationStateMachinePrivate) {
 
 }
 
@@ -42,12 +56,12 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 i++;
                 state->m_Loop = (*i).toBool();
 
-                m_States.push_back(state);
+                p_ptr->m_States.push_back(state);
             }
             block++;
             // Unpack variables
             for(auto it : (*block).toMap()) {
-                m_Variables[hash_str(it.first)] = it.second;
+                p_ptr->m_Variables[hash_str(it.first)] = it.second;
             }
             block++;
             // Unpack transitions
@@ -67,16 +81,24 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 }
             }
             block++;
-            m_pInitialState = findState(hash_str((*block).toString()));
+            p_ptr->m_pInitialState = findState(hash_str((*block).toString()));
         }
     }
 }
 
 AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) const {
-    for(auto state : m_States) {
+    for(auto state : p_ptr->m_States) {
         if(state->m_Hash == hash) {
             return state;
         }
     }
     return nullptr;
+}
+
+AnimationStateMachine::State *AnimationStateMachine::initialState() const {
+    return p_ptr->m_pInitialState;
+}
+
+AnimationStateMachine::StateVector &AnimationStateMachine::states() const {
+    return p_ptr->m_States;
 }

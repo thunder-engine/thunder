@@ -8,17 +8,17 @@
 
 class TextSerial : public Text {
 public:
-    void                        setData         (const QByteArray &data) {
-        if(!data.isEmpty()) {
-            m_Data.resize(data.size());
-            memcpy(&m_Data[0], data.data(), data.size());
+    void setData (const QByteArray &array) {
+        if(!array.isEmpty()) {
+            setSize(array.size());
+            memcpy(data(), array.data(), array.size());
         }
     }
 
 protected:
-    VariantMap                  saveUserData    () const {
+    VariantMap saveUserData () const {
         VariantMap result;
-        result["Data"]  = m_Data;
+        result["Data"]  = data();
         return result;
     }
 };

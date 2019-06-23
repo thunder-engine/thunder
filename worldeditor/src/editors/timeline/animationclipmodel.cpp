@@ -33,7 +33,7 @@ void AnimationClipModel::setController(AnimationController *controller) {
         m_pStateMachine = m_pController->stateMachine();
         if(m_pStateMachine) {
 
-            for(auto it : m_pStateMachine->m_States) {
+            for(auto it : m_pStateMachine->states()) {
                 QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_pClip)).c_str());
                 m_Clips[info.baseName()] = it->m_pClip;
             }
