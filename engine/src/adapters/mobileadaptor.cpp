@@ -54,8 +54,8 @@ void onCreate(GLFMDisplay *, int width, int height) {
     file = new AndroidFile();
 #endif
 
-    char *path = "";
-    thunderMain(new Engine(file, 1, &path));
+    const char *path = "";
+    thunderMain(new Engine(file, path));
 }
 
 void onResize(GLFMDisplay *, int width, int height) {

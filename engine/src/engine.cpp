@@ -165,6 +165,7 @@ Engine::Engine(IFile *file, const char *path) :
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
+    Resource::registerClassFactory(this);
 
     Text::registerClassFactory(this);
     Texture::registerClassFactory(this);

@@ -3,26 +3,28 @@
 
 #include "texture.h"
 
+class RenderTexturePrivate;
+
 class NEXT_LIBRARY_EXPORT RenderTexture : public Texture {
     A_REGISTER(RenderTexture, Texture, Resources)
 
 public:
-    RenderTexture               ();
+    RenderTexture ();
+    ~RenderTexture ();
 
-    void                        setTarget                   (FormatType format);
+    void setTarget (FormatType format);
 
-    void                        setDepth                    (uint8_t bits);
+    uint8_t depth () const;
+    void setDepth (uint8_t bits);
 
-    void                        setFixed                    (bool fixed);
+    void setFixed (bool fixed);
 
-    void                        resize                      (int32_t width, int32_t height);
+    void resize  (int32_t width, int32_t height);
 
-    virtual void                makeCurrent                 (uint32_t index = 0) const;
+    virtual void makeCurrent (uint32_t index = 0) const;
 
-protected:
-    uint8_t                     m_DepthBits;
-
-    bool                        m_Fixed;
+private:
+    RenderTexturePrivate *p_ptr;
 
 };
 

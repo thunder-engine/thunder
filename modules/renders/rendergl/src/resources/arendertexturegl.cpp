@@ -77,11 +77,12 @@ void ARenderTextureGL::apply() {
       //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
     }
 
-    if(m_DepthBits) {
+    uint8_t depthBits = depth();
+    if(depthBits) {
         glformat= GL_DEPTH_COMPONENT;
         type    = GL_UNSIGNED_INT;
 
-        switch(m_DepthBits) {
+        switch(depthBits) {
             case 16: {
                 internal    = GL_DEPTH_COMPONENT16;
             } break;
@@ -105,5 +106,5 @@ void ARenderTextureGL::makeCurrent(uint32_t index) const {
     if(index == 0) {
         glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
     }
-    glFramebufferTexture2D( GL_FRAMEBUFFER, (m_DepthBits) ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, m_ID, 0 );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, (depth()) ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, m_ID, 0 );
 }

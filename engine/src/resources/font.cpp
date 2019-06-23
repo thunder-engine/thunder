@@ -7,6 +7,8 @@
 #include <freetype/fttrigon.h>
 #include <freetype/ftbitmap.h>
 
+#include "texture.h"
+
 #include "log.h"
 
 #define HEADER  "Header"
@@ -228,7 +230,7 @@ void Font::requestCharacters(const u32string &characters) {
         }
     }
     pack(1);
-    m_pTexture->apply();
+    texture()->apply();
 }
 
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
