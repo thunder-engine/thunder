@@ -47,8 +47,14 @@
      <property name="expandsOnDoubleClick">
       <bool>false</bool>
      </property>
+     <attribute name="headerMinimumSectionSize">
+      <number>20</number>
+     </attribute>
      <attribute name="headerDefaultSectionSize">
-      <number>100</number>
+      <number>30</number>
+     </attribute>
+     <attribute name="headerStretchLastSection">
+      <bool>false</bool>
      </attribute>
     </widget>
    </item>

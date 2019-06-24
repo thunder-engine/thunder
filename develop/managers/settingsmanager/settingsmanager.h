@@ -11,6 +11,8 @@ public:
 
     static void                 destroy                     ();
 
+    void                        registerProperty            (const char *name, const QVariant &value);
+
 signals:
     void                        updated                     ();
 

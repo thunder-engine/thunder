@@ -69,7 +69,7 @@ void ProjectManager::init(const QString &project, const QString &target) {
     m_PluginsPath   = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlugins);
     m_CachePath     = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gCache);
 
-    m_IconPath      = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gIcons);
+    m_IconPath      = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gThumbnails);
     m_GeneratedPath = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gGenerated);
 
     m_ManifestFile  = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlatforms + "/android/AndroidManifest.xml");
@@ -108,6 +108,10 @@ void ProjectManager::loadSettings() {
                 QJsonObject::iterator it = object.find(gProject);
                 if(it != doc.object().end()) {
                     m_ProjectId = it.value().toString();
+                    if(m_ProjectId.isEmpty()) {
+                        m_ProjectId = QUuid::createUuid().toString();
+                        saveSettings();
+                    }
                 } else {
                     m_ProjectId = QUuid::createUuid().toString();
                     saveSettings();

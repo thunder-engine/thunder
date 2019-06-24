@@ -16,6 +16,7 @@ Project {
         "libvorbis/vorbis.qbs",
         "quazip/quazip.qbs",
         "glad/glad.qbs",
-        "freetype/freetype.qbs"
+        "freetype/freetype.qbs",
+        "syntaxhighlighting/syntaxhighlighting.qbs"
     ]
 }

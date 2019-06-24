@@ -28,6 +28,7 @@
 #include "editors/meshedit/meshedit.h"
 #include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
+#include "editors/textedit/textedit.h"
 
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
@@ -76,6 +77,10 @@ int main(int argc, char *argv[]) {
     asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
     asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
     asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
+
+    TextEdit *editor = new TextEdit(&engine);
+    //asset->addEditor(IConverter::ContentText, editor);
+    asset->addEditor(IConverter::ContentCode, editor);
 
     SettingsManager::instance()->loadSettings();
 

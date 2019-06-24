@@ -105,9 +105,9 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
     connect(ui->treeView, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
     connect(ui->treeView, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop(QDropEvent *)));
 
-    ui->treeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->treeView->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    ui->treeView->header()->moveSection(2, 0);
+    ui->treeView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->treeView->header()->setSectionResizeMode(2, QHeaderView::Fixed);
+    ui->treeView->header()->resizeSection(1, 50);
     ui->treeView->header()->hideSection(1);
     ui->treeView->header()->hideSection(3);
 

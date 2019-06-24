@@ -98,7 +98,7 @@ QVariant ObjectHierarchyModel::headerData(int section, Qt::Orientation orientati
         switch (section) {
             case 0: return tr("Name");
             case 1: return tr("Class");
-            case 2: return tr("");
+            case 2: return "";
             default: break;
         }
     }

@@ -72,7 +72,7 @@ QToolWindowManagerWrapper::QToolWindowManagerWrapper(QToolWindowManager *manager
     QWidget(manager),
     m_manager(manager)
 {
-    setWindowFlags(windowFlags() | Qt::Tool);
+    setWindowFlags(windowFlags() | Qt::Window);
     setWindowTitle(QLatin1String(" "));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

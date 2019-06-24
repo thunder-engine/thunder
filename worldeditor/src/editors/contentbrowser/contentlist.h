@@ -8,6 +8,7 @@
 
 #include <QMimeData>
 #include <QDir>
+#include <QSortFilterProxyModel>
 
 #include "baseobjectmodel.h"
 
@@ -15,6 +16,38 @@ class ProjectManager;
 class AssetManager;
 
 class Engine;
+
+class ContentListFilter : public QSortFilterProxyModel {
+public:
+    typedef QList<int32_t> TypeList;
+
+    explicit ContentListFilter(QObject *parent);
+
+    void setContentTypes(const TypeList &list);
+
+    QString rootPath() const;
+
+    void setRootPath(const QString &path);
+
+protected:
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent);
+
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+
+    bool checkRootPath(int sourceRow, const QModelIndex &sourceParent) const;
+
+    bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const;
+
+    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const;
+
+    TypeList m_List;
+
+    QString m_rootPath;
+};
 
 class ContentList  : public BaseObjectModel {
     Q_OBJECT
@@ -43,13 +76,7 @@ public:
 
     QString                     path                        (const QModelIndex &index) const;
 
-    void setRootPath(const QString &path) {
-        m_rootPath  = path;
-    }
-
-    QString rootPath() const {
-        return m_rootPath;
-    }
+    QModelIndex                 findResource                (const QString &resource) const;
 
 public slots:
     void                        onRendered                  (const QString &uuid);
@@ -60,8 +87,6 @@ protected:
     Qt::DropActions             supportedDropActions        () const;
     QStringList                 mimeTypes                   () const;
     QMimeData                  *mimeData                    (const QModelIndexList &indexes) const;
-    bool                        canDropMimeData             (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
-    bool                        dropMimeData                (const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent);
 
     void                        scan                        (const QString &path);
 
@@ -79,7 +104,7 @@ protected:
     ProjectManager             *m_pProjectManager;
     AssetManager               *m_pAssetManager;
 
-    QString                     m_rootPath;
+    QObject                    *m_pContent;
 };
 
 #endif // CONTENTLIST_H

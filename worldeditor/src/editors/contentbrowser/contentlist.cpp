@@ -13,13 +13,144 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
-const QString gIcon("icon");
-
 ContentList *ContentList::m_pInstance   = nullptr;
+
+ContentListFilter::ContentListFilter(QObject *parent) :
+        QSortFilterProxyModel(parent) {
+
+    sort(0);
+}
+
+void ContentListFilter::setContentTypes(const TypeList &list) {
+    m_List = list;
+    invalidate();
+}
+
+void ContentListFilter::setRootPath(const QString &path) {
+    m_rootPath = path;
+    invalidate();
+}
+
+QString ContentListFilter::rootPath() const {
+    return m_rootPath;
+}
+
+bool ContentListFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
+    ProjectManager *mgr = ProjectManager::instance();
+
+    QModelIndex index   = mapToSource(parent);
+
+    QFileInfo target;
+    if(!index.isValid()) {
+        target  = QFileInfo(m_rootPath);
+    } else {
+        QObject *item   = static_cast<QObject *>(index.internalPointer());
+        target  = QFileInfo (mgr->contentPath() + QDir::separator() + item->objectName());
+    }
+    bool result = target.isDir();
+    if(result) {
+        if(data->hasFormat(gMimeContent)) {
+            QStringList list = QString(data->data(gMimeContent)).split(";");
+            foreach(QString path, list) {
+                if( !path.isEmpty() ) {
+                    QFileInfo source(mgr->contentPath() + QDir::separator() + path);
+                    result  &= (source.absolutePath() != target.absoluteFilePath());
+                    result  &= (source != target);
+                }
+            }
+        }
+        if(data->hasFormat(gMimeObject)) {
+            result   = true;
+        }
+    }
+    return result;
+}
+
+bool ContentListFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
+    QModelIndex index   = mapToSource(parent);
+
+    QFileInfo target;
+    if(!index.isValid()) {
+        target  = QFileInfo(m_rootPath);
+    } else {
+        QObject *item   = static_cast<QObject *>(index.internalPointer());
+        target  = QFileInfo (item->objectName());
+    }
+
+    AssetManager *mgr = AssetManager::instance();
+
+    if(data->hasUrls()) {
+        foreach (const QUrl &url, data->urls()) {
+            mgr->import(QFileInfo(url.toLocalFile()), target);
+        }
+    } else if(data->hasFormat(gMimeContent)) {
+        QStringList list    = QString(data->data(gMimeContent)).split(";");
+        foreach(QString path, list) {
+            if( !path.isEmpty() ) {
+                QFileInfo info(path);
+                mgr->renameResource(info.filePath(), target.filePath() + "/" + info.fileName());
+            }
+        }
+    } else if(data->hasFormat(gMimeObject)) {
+         QStringList list   = QString(data->data(gMimeObject)).split(";");
+         foreach(QString path, list) {
+             if( !path.isEmpty() ) {
+                 mgr->makePrefab(path, target.filePath());
+             }
+         }
+    }
+    return true;
+}
+
+bool ContentListFilter::lessThan(const QModelIndex &left, const QModelIndex &right) const {
+    bool asc = sortOrder() == Qt::AscendingOrder ? true : false;
+
+    ContentList *inst   = ContentList::instance();
+    bool isFile1    = inst->data(inst->index(left.row(), 2, left.parent()), Qt::DisplayRole).toBool();
+    bool isFile2    = inst->data(inst->index(right.row(), 2, right.parent()), Qt::DisplayRole).toBool();
+    if(!isFile1 && isFile2) {
+        return asc;
+    }
+    if(isFile1 && !isFile2) {
+        return !asc;
+    }
+    return QSortFilterProxyModel::lessThan(left, right);
+}
+
+bool ContentListFilter::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+    bool result = checkRootPath(sourceRow, sourceParent);
+    if(!m_List.isEmpty()) {
+        result = checkContentTypeFilter(sourceRow, sourceParent);
+    }
+    result &= checkNameFilter(sourceRow, sourceParent);
+    return result;
+}
+
+bool ContentListFilter::checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
+    QModelIndex index   = sourceModel()->index(sourceRow, 3, sourceParent);
+    foreach (int32_t it, m_List) {
+        int32_t type    = sourceModel()->data(index).toInt();
+        if(it == type) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ContentListFilter::checkRootPath(int sourceRow, const QModelIndex &sourceParent) const {
+    QString path = sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString();
+    return (rootPath() == path);
+}
+
+bool ContentListFilter::checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
+    QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
+    return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
+}
 
 ContentList::ContentList() :
         BaseObjectModel(nullptr),
-        m_pEngine(nullptr) {
+        m_pEngine(nullptr),
+        m_pContent(nullptr) {
 
     m_pProjectManager   = ProjectManager::instance();
     m_pAssetManager     = AssetManager::instance();
@@ -43,8 +174,6 @@ void ContentList::init(Engine *engine) {
     m_pEngine = engine;
 
     connect(m_pAssetManager, SIGNAL(directoryChanged(QString)), this, SLOT(update()));
-
-    scan(m_pProjectManager->resourcePath());
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
@@ -190,67 +319,10 @@ QMimeData *ContentList::mimeData(const QModelIndexList &indexes) const {
     return mimeData;
 }
 
-bool ContentList::canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
-    QFileInfo target;
-    if(!parent.isValid()) {
-        target  = QFileInfo(m_rootPath);
-    } else {
-        QObject *item   = static_cast<QObject *>(parent.internalPointer());
-        target  = QFileInfo (m_pProjectManager->contentPath() + QDir::separator() + item->objectName());
-    }
-    bool result = target.isDir();
-    if(result) {
-        if(data->hasFormat(gMimeContent)) {
-            QStringList list    = QString(data->data(gMimeContent)).split(";");
-            foreach(QString path, list) {
-                if( !path.isEmpty() ) {
-                    QFileInfo source(m_pProjectManager->contentPath() + QDir::separator() + path);
-                    result  &= (source.absolutePath() != target.absoluteFilePath());
-                    result  &= (source != target);
-                }
-            }
-        }
-        if(data->hasFormat(gMimeObject)) {
-            result   = true;
-        }
-    }
-    return result;
-}
-
-bool ContentList::dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
-    QFileInfo target;
-    if(!parent.isValid()) {
-        target  = QFileInfo(m_rootPath);
-    } else {
-        QObject *item   = static_cast<QObject *>(parent.internalPointer());
-        target  = QFileInfo (item->objectName());
-    }
-    if(data->hasUrls()) {
-        foreach (const QUrl &url, data->urls()) {
-            m_pAssetManager->import(QFileInfo(url.toLocalFile()), target);
-        }
-    } else if(data->hasFormat(gMimeContent)) {
-        QStringList list    = QString(data->data(gMimeContent)).split(";");
-        foreach(QString path, list) {
-            if( !path.isEmpty() ) {
-                QFileInfo info(path);
-                m_pAssetManager->renameResource(info.filePath(), target.filePath() + "/" + info.fileName());
-            }
-        }
-    } else if(data->hasFormat(gMimeObject)) {
-         QStringList list   = QString(data->data(gMimeObject)).split(";");
-         foreach(QString path, list) {
-             if( !path.isEmpty() ) {
-                 m_pAssetManager->makePrefab(path, target.filePath());
-             }
-         }
-    }
-    return true;
-}
-
 void ContentList::update() {
     QString path = m_pProjectManager->contentPath();
     QDir dir(path);
+
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(!parent) {
         parent  = m_rootItem;
@@ -263,7 +335,6 @@ void ContentList::update() {
             delete it;
         }
     }
-
     scan(path);
 
     emit layoutAboutToBeChanged();
@@ -286,10 +357,11 @@ void ContentList::scan(const QString &path) {
         if(!m_rootItem->findChild<QObject *>(source)) {
             QObject *item   = new QObject(m_rootItem);
             item->setObjectName(source);
-            item->setProperty(qPrintable(gIcon), m_DefaultIcon);
             if(!info.isDir()) {
                 item->setProperty(qPrintable(gType), m_pAssetManager->resourceType(source));
                 item->setProperty(qPrintable(gIcon), m_pAssetManager->icon(source) );
+            } else {
+                item->setProperty(qPrintable(gIcon), m_DefaultIcon);
             }
         }
     }

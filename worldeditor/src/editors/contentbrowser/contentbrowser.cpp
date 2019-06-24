@@ -25,86 +25,13 @@
 
 const QString gTemplateName("${templateName}");
 
-class ContentFilter : public QSortFilterProxyModel {
-public:
-    typedef QList<int32_t> TypeList;
-
-    explicit ContentFilter(QObject *parent) :
-            QSortFilterProxyModel(parent) {
-
-        sort(0);
-    }
-
-    void setContentTypes(const TypeList &list) {
-        m_List      = list;
-        invalidate();
-    }
-
-    void setRootPath(const QString &path) {
-        ContentList::instance()->setRootPath(path);
-        invalidate();
-    }
-
-    QString rootPath() const {
-        return ContentList::instance()->rootPath();
-    }
-
-protected:
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const {
-        bool asc = sortOrder() == Qt::AscendingOrder ? true : false;
-
-        ContentList *inst   = ContentList::instance();
-        bool isFile1    = inst->data(inst->index(left.row(), 2, left.parent()), Qt::DisplayRole).toBool();
-        bool isFile2    = inst->data(inst->index(right.row(), 2, right.parent()), Qt::DisplayRole).toBool();
-        if(!isFile1 && isFile2) {
-            return asc;
-        }
-        if(isFile1 && !isFile2) {
-            return !asc;
-        }
-        return QSortFilterProxyModel::lessThan(left, right);
-    }
-
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
-        bool result = checkRootPath(sourceRow, sourceParent);
-        if(!m_List.isEmpty()) {
-            result  = checkContentTypeFilter(sourceRow, sourceParent);
-        }
-        result     &= checkNameFilter(sourceRow, sourceParent);
-
-        return result;
-    }
-
-    bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 3, sourceParent);
-        foreach (int32_t it, m_List) {
-            int32_t type    = sourceModel()->data(index).toInt();
-            if(it == type) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool checkRootPath(int sourceRow, const QModelIndex &sourceParent) const {
-        return (rootPath() == sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString());
-    }
-
-    bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 2, sourceParent);
-        return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
-    }
-
-    TypeList    m_List;
-};
-
 class ContentItemDeligate : public QStyledItemDelegate  {
+
 public:
     explicit ContentItemDeligate(QObject *parent = nullptr) :
             QStyledItemDelegate(parent),
             m_Scale(1.0f) {
     }
-
 
     float itemScale() const {
         return m_Scale;
@@ -123,10 +50,10 @@ private:
             case QVariant::Image: {
                 QImage image    = value.value<QImage>();
                 if(!image.isNull()) {
-                    QSize origin    = image.size();
-                    image           = image.scaled(origin.width() * m_Scale, origin.height() * m_Scale,
-                                                   Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                    option->icon    = QIcon(QPixmap::fromImage(image));
+                    QSize origin = image.size();
+                    image = image.scaled(origin.width() * m_Scale, origin.height() * m_Scale,
+                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                    option->icon = QIcon(QPixmap::fromImage(image));
                     option->decorationSize = image.size();
                 }
             } break;
@@ -173,7 +100,8 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ui->setupUi(this);
 
     m_pContentDeligate  = new ContentItemDeligate();
-    m_pContentProxy     = new ContentFilter(this);
+    m_pContentProxy     = new ContentListFilter(this);
+
     m_pContentProxy->setSourceModel(ContentList::instance());
 
     m_pContentDeligate->setItemScale(0.75f);
@@ -181,10 +109,11 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ui->contentList->setItemDelegate(m_pContentDeligate);
     ui->contentList->setModel(m_pContentProxy);
 
-    connect(ContentList::instance(), &ContentList::layoutChanged, m_pContentProxy, &ContentFilter::invalidate);
+    connect(ContentList::instance(), &ContentList::layoutChanged, m_pContentProxy, &ContentListFilter::invalidate);
 
-    m_pTreeProxy = new QSortFilterProxyModel(this);
-    m_pTreeProxy->setSourceModel(new ContentTree(this));
+    m_pTreeProxy = new ContentTreeFilter(this);
+    m_pTreeProxy->setSourceModel(ContentTree::instance());
+    m_pTreeProxy->setContentTypes({0});
     m_pTreeProxy->sort(0);
 
     ui->contentTree->setModel(m_pTreeProxy);
@@ -202,7 +131,6 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     readSettings();
 
     QString showIn(tr("Show in Explorer"));
-
     {
         QLabel *label = new QLabel(tr("Create Asset"), this);
         QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
@@ -278,7 +206,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
 }
 
 void ContentBrowser::onFilterMenuTriggered(QAction *) {
-    ContentFilter::TypeList list;
+    ContentListFilter::TypeList list;
     foreach (QAction *it, m_pFilterMenu->findChildren<QAction *>()) {
         if(it->isChecked()) {
             list.append(QMetaEnum::fromType<ContentTypes>().keyToValue(qPrintable(it->text())));
@@ -319,13 +247,13 @@ void ContentBrowser::on_findContent_textChanged(const QString &arg1) {
 
 void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
     ui->findContent->clear();
-    m_pContentProxy->setRootPath(static_cast<ContentTree *>(m_pTreeProxy->sourceModel())->dirPath(m_pTreeProxy->mapToSource(index)));
+    m_pContentProxy->setRootPath(static_cast<ContentTree *>(m_pTreeProxy->sourceModel())->path(m_pTreeProxy->mapToSource(index)));
 }
 
 void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
-    const QModelIndex origin    = m_pContentProxy->mapToSource(index);
+    const QModelIndex origin = m_pContentProxy->mapToSource(index);
 
-    ContentList *inst   = ContentList::instance();
+    ContentList *inst = ContentList::instance();
     if(inst->isDir(origin)) {
         QObject *item   = static_cast<QObject *>(origin.internalPointer());
         QFileInfo info(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());

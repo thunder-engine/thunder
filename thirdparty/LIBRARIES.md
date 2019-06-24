@@ -74,6 +74,12 @@
 - Version: 2018-08-07
 - License: Apache 2.0
 
+## syntaxhighlighting
+
+- Link: https://github.com/KDE/syntax-highlighting
+- Version: 5.57.0
+- License: MIT
+
 ## Zlib
 
 - Link: https://zlib.net/

@@ -28,6 +28,13 @@ void SettingsManager::destroy() {
     m_pInstance = nullptr;
 }
 
+void SettingsManager::registerProperty(const char *name, const QVariant &value) {
+    int32_t index = dynamicPropertyNames().indexOf(name);
+    if(index == -1) {
+        setProperty(name, value);
+    }
+}
+
 void SettingsManager::loadSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariantMap data = settings.value(SETTINGS).toMap();

@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/org.kde.syntax-highlighting/syntax">
+        <file>actionscript.xml</file>
+        <file>c.xml</file>
+        <file>cpp.xml</file>
+        <file>cs.xml</file>
+        <file>css.xml</file>
+        <file>glsl.xml</file>
+        <file>html.xml</file>
+        <file>ini.xml</file>
+        <file>java.xml</file>
+        <file>javascript.xml</file>
+        <file>json.xml</file>
+        <file>lua.xml</file>
+        <file>markdown.xml</file>
+        <file>objectivec.xml</file>
+        <file>objectivecpp.xml</file>
+        <file>python.xml</file>
+        <file>rest.xml</file>
+        <file>rtf.xml</file>
+        <file>xml.xml</file>
+        <file>yaml.xml</file>
+    </qresource>
+</RCC>

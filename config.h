@@ -7,10 +7,11 @@
 const QString gContent("content");
 const QString gCache("cache");
 const QString gImport("assets");
-const QString gIcons("thumbnails");
+const QString gThumbnails("thumbnails");
 const QString gGenerated("generated");
 const QString gPlugins("plugins");
 const QString gType("type");
+const QString gIcon("icon");
 const QString gSubItems("subitems");
 const QString gSettings("settings");
 const QString gPlatforms("platforms");

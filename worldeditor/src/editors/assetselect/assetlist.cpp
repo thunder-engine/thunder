@@ -8,7 +8,6 @@
 
 #include <QUuid>
 
-const QString gIcon("icon");
 const QString gUuid("uuid");
 
 AssetList *AssetList::m_pInstance   = nullptr;

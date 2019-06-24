@@ -105,7 +105,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
 QVariant AnimationClipModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         switch (section) {
-            case 0: return tr("");
+            case 0: return "";
         }
     }
     return QVariant();

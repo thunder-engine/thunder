@@ -13,7 +13,8 @@
 
 class QSortFilterProxyModel;
 class ContentItemDeligate;
-class ContentFilter;
+class ContentListFilter;
+class ContentTreeFilter;
 
 namespace Ui {
     class ContentBrowser;
@@ -59,9 +60,9 @@ protected:
 
     ContentItemDeligate    *m_pContentDeligate;
 
-    ContentFilter          *m_pContentProxy;
+    ContentListFilter      *m_pContentProxy;
 
-    QSortFilterProxyModel  *m_pTreeProxy;
+    ContentTreeFilter      *m_pTreeProxy;
 
     QMenu                  *m_pFilterMenu;
 

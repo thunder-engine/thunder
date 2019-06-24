@@ -134,10 +134,11 @@ void AngelSystem::reload() {
         Engine::unloadResource(TEMPALTE);
     }
 
+    m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
+
     AngelScript *script = Engine::loadResource<AngelScript>(TEMPALTE);
     if(script) {
         AngelStream stream(script->m_Array);
-        m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
         m_pScriptModule->LoadByteCode(&stream);
 
         //const MetaObject *meta = AngelBehaviour::metaClass();
