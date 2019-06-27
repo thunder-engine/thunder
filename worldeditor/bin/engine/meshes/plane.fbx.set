@@ -1,12 +1,18 @@
 {
-    "crc": -507969592,
+    "crc": -490652827,
     "guid": "{00000000-0501-0000-0000-000000000000}",
     "settings": {
-        "Custom_Scale": 1.0,
+        "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
         "Use_Custom_Scale": true
     },
-    "type": 24
+    "subitems": {
+        "Plane001": [
+            "{e394db15-d7a2-481c-8926-eb3bbcf0d21a}",
+            44
+        ]
+    },
+    "type": 53
 }

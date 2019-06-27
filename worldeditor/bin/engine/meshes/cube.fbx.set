@@ -2,11 +2,17 @@
     "crc": 417231686,
     "guid": "{00000000-0502-0000-0000-000000000000}",
     "settings": {
-        "Custom_Scale": 1.0,
+        "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
         "Use_Custom_Scale": true
     },
-    "type": 24
+    "subitems": {
+        "Box001": [
+            "{42376049-06ff-4de3-816d-820d6428e07e}",
+            44
+        ]
+    },
+    "type": 53
 }

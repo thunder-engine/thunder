@@ -30,11 +30,11 @@ class DesktopHandler : public ILogHandler {
 protected:
     void            setRecord       (Log::LogTypes, const char *record) {
         unique_lock<mutex> locker(m_Mutex);
-        _FILE *fp   = g_pFile->_fopen((gAppConfig + "/log.txt").c_str(), "a");
+        FILE *fp   = fopen((gAppConfig + "/log.txt").c_str(), "a");
         if(fp) {
-            g_pFile->_fwrite(record, strlen(record), 1, fp);
-            g_pFile->_fwrite("\n", 1, 1, fp);
-            g_pFile->_fclose(fp);
+            fwrite(record, strlen(record), 1, fp);
+            fwrite("\n", 1, 1, fp);
+            fclose(fp);
         }
     }
 
@@ -60,7 +60,7 @@ bool DesktopAdaptor::init() {
     }
 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -93,13 +93,12 @@ void DesktopAdaptor::update() {
 bool DesktopAdaptor::start() {
     g_pFile->fsearchPathAdd(g_pEngine->locationAppConfig().c_str(), true);
     g_pFile->_mkdir(g_pEngine->locationAppConfig().c_str());
-    g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
-
     Log::overrideHandler(new DesktopHandler());
 
-    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
+    g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
 
-    m_pWindow   = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor
+    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
+    m_pWindow = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor
     if(!m_pWindow) {
         stop();
         return false;

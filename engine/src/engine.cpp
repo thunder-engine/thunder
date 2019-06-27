@@ -250,10 +250,13 @@ bool Engine::start() {
     }
 
     string path = value(gEntry, "").toString();
-    Actor *level = loadResource<Actor>(path);
     Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
+    Actor *level = loadResource<Actor>(path);
     if(level) {
         level->setParent(p_ptr->m_pScene);
+    } else {
+        p_ptr->m_pPlatform->stop();
+        return false;
     }
 
     Camera *component   = p_ptr->m_pScene->findChild<Camera *>();

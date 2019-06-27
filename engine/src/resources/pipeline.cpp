@@ -127,7 +127,7 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
 
     m_Buffer->setRenderTarget(m_Target);
     m_Buffer->setScreenProjection();
-    m_Buffer->clearRenderTarget(true, camera.color(), false);
+    m_Buffer->clearRenderTarget(true, Vector4());
 
     m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
     m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);

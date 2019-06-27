@@ -2,11 +2,17 @@
     "crc": 1991879951,
     "guid": "{00000000-0582-0000-0000-000000000000}",
     "settings": {
-        "Custom_Scale": 1.0,
+        "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
         "Use_Custom_Scale": true
     },
-    "type": 24
+    "subitems": {
+        "Sphere002": [
+            "{0ca06588-d34e-4484-8316-961dca7aeb9c}",
+            44
+        ]
+    },
+    "type": 53
 }

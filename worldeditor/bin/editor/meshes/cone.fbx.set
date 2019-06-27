@@ -2,11 +2,17 @@
     "crc": -1902349827,
     "guid": "{00000000-0581-0000-0000-000000000000}",
     "settings": {
-        "Custom_Scale": 1.0,
+        "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
         "Use_Custom_Scale": true
     },
-    "type": 24
+    "subitems": {
+        "Cone001": [
+            "{165d583d-e41a-49c2-817c-5e434453b077}",
+            44
+        ]
+    },
+    "type": 53
 }
