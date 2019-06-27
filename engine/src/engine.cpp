@@ -297,9 +297,12 @@ void Engine::update() {
 
     Timer::update();
     // fixed update
+
+    processEvents();
     updateScene(p_ptr->m_pScene);
 
     for(auto it : p_ptr->m_Systems) {
+        it->processEvents();
         it->update(p_ptr->m_pScene);
     }
     p_ptr->m_pPlatform->update();

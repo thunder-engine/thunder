@@ -20,11 +20,11 @@ public:
     ObjectSystem                        ();
     ~ObjectSystem                       ();
 
-    virtual void                        update                  ();
-
     GroupMap                            factories               () const;
 
     static FactoryPair                 *metaFactory             (const string &uri);
+
+    void                                processEvents           () override;
 
 public:
     template<typename T>
@@ -54,8 +54,6 @@ public:
     static void                         replaceUUID             (Object *object, uint32_t uuid);
 
 protected:
-    static void                         processObject           (Object *object);
-
     void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
 
     void                                factoryRemove           (const string &name, const string &uri);

@@ -89,8 +89,10 @@ ObjectSystem::~ObjectSystem() {
 /*!
     Updates all related objects.
 */
-void ObjectSystem::update() {
+void ObjectSystem::processEvents() {
     PROFILE_FUNCTION();
+
+    Object::processEvents();
 
     for(auto it : m_List) {
         it->processEvents();
@@ -119,13 +121,6 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         pair->second->m_List.push_back(object);
     }
     return object;
-}
-/*!
-    \internal
-*/
-void ObjectSystem::processObject(Object *object) {
-    PROFILE_FUNCTION();
-    object->processEvents();
 }
 /*!
     \internal
