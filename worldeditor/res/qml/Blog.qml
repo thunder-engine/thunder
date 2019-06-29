@@ -30,21 +30,27 @@ Item {
                     width: parent.width / 2
                     fillMode: Image.PreserveAspectCrop
                     clip: true
-                    //source: (typeof(tile00.headerData) !== "undefined") ? tile00.headerData.thumbnail : ""
+                    source: (typeof(tile00.headerData) !== "undefined") ? tile00.headerData.thumbnail : ""
                 }
                 Column {
                     anchors.top: parent.top
                     anchors.topMargin: 30
                     spacing: 20
+                    width: parent.width / 2
+                    anchors.margins: spacing
                     Text {
+                        width: parent.width - parent.spacing * 2
                         font.pixelSize: 24
                         color: theme.textColor
                         text: (typeof(tile00.headerData) !== "undefined") ? tile00.headerData.title : ""
+                        wrapMode: Text.WordWrap
                     }
                     Text {
+                        width: parent.width - parent.spacing * 2
                         font.pixelSize: 16
                         color: theme.textColor
                         text: (typeof(tile00.headerData) !== "undefined") ? tile00.headerData.summary : ""
+                        wrapMode: Text.WordWrap
                     }
                 }
             }

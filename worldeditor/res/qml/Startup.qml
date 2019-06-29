@@ -194,7 +194,7 @@ Rectangle {
         anchors.left: leftPanel.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        width: 1400
 
         Loader {
             id: pageLoader

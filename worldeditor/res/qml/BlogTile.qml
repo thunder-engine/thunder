@@ -13,7 +13,7 @@ Rectangle {
         height: rect.height / 2
         fillMode: Image.PreserveAspectCrop
         clip: true
-        //source: (typeof(blogData) !== "undefined") ? blogData.thumbnail : ""
+        source: (typeof(blogData) !== "undefined") ? blogData.thumbnail : ""
     }
     Column {
         anchors.left: parent.left
@@ -22,7 +22,7 @@ Rectangle {
         spacing: 20
         Text {
             anchors.leftMargin: 20
-            width: rect.width
+            width: rect.width - 20
             font.pixelSize: 24
             color: theme.textColor
             text: (typeof(blogData) !== "undefined") ? blogData.title : ""
@@ -30,7 +30,7 @@ Rectangle {
         }
         Text {
             anchors.leftMargin: 20
-            width: rect.width
+            width: rect.width - 20
             font.pixelSize: 16
             color: theme.textColor
             text: (typeof(blogData) !== "undefined") ? blogData.summary : ""

@@ -8,6 +8,7 @@
         <file>glsl.xml</file>
         <file>html.xml</file>
         <file>ini.xml</file>
+        <file>isocpp.xml</file>
         <file>java.xml</file>
         <file>javascript.xml</file>
         <file>json.xml</file>
