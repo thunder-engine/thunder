@@ -373,7 +373,7 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
     }
 */
 }
-
+#include <QThread>
 MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     MeshSerial *mesh = new MeshSerial;
     mesh->setMode(Mesh::MODE_TRIANGLES);
@@ -383,7 +383,7 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     for(int d = 0; d < m->GetDeformerCount(); d++) {
         FbxDeformer *deformer = m->GetDeformer(d);
         if(deformer->GetDeformerType() == FbxDeformer::eSkin) {
-            mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
+            //mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
 
             FbxSkin *skin = static_cast<FbxSkin *>(deformer);
             for(int s = 0; s < skin->GetClusterCount(); s++) {
@@ -410,11 +410,13 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
 
     FbxGeometryElementVertexColor *colors = m->GetElementVertexColor();
     if(colors) {
+        colors->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_COLOR);
     }
 
     FbxGeometryElementUV *uv = m->GetElementUV();
     if(uv) {
+        uv->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_UV0);
     } else {
         Log(Log::WRN) << "No uv exist";
@@ -422,6 +424,7 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
 
     FbxGeometryElementNormal *normals = m->GetElementNormal();
     if(normals) {
+        normals->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_NORMALS);
     } else {
         Log(Log::WRN) << "No normals exist";
@@ -429,6 +432,7 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
 
     FbxGeometryElementTangent *tangents = m->GetElementTangent();
     if(tangents) {
+        tangents->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_TANGENTS);
     } else {
         Log(Log::WRN) << "No tangents exist";
@@ -508,14 +512,14 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
 
                     if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
                         for(uint32_t b = 0; b < boneCluster.size(); b++) {
-                            int *indices = boneCluster[b]->GetControlPointIndices();
+                            int *controllIndices = boneCluster[b]->GetControlPointIndices();
                             double *w = boneCluster[b]->GetControlPointWeights();
 
                             Vector4 weights, bones;
-                            for(int i = 0; i < boneCluster[b]->GetControlPointIndicesCount(); i++) {
-                                if(indices[i] == data.vIndex) {
-                                    bones[i] = b;
-                                    weights[i] = w[i];
+                            for(int index = 0; index < boneCluster[b]->GetControlPointIndicesCount(); index++) {
+                                if(controllIndices[index] == data.vIndex) {
+                                    bones[index] = b;
+                                    weights[index] = w[index];
                                 }
                             }
                             l.bones.push_back(bones);

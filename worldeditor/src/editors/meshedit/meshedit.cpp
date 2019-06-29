@@ -152,7 +152,7 @@ void MeshEdit::onGLInit() {
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
-    Actor *prefab = Engine::loadResource<Actor>( ".embedded/cube.fbx/Box001" );
+    Actor *prefab = Engine::loadResource<Actor>( ".embedded/cube.fbx" );
     if(prefab) {
         m_pGround = static_cast<Actor *>(prefab->clone());
         m_pGround->setPrefab(prefab);

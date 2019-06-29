@@ -116,6 +116,7 @@ void Handles::init() {
 
     if(s_ScaleXY == nullptr) {
         Mesh::Lod lod;
+        lod.vertices    = {Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)};
         lod.indices     = {0, 1, 2, 1, 3, 2};
 
         s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");

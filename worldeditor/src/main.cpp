@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     asset->init(&engine);
     asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
     asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
-    asset->addEditor(IConverter::ContentMesh, new MeshEdit(&engine));
+    asset->addEditor(IConverter::ContentPrefab, new MeshEdit(&engine));
     asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
     asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
 
