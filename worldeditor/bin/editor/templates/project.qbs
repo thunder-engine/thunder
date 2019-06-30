@@ -59,6 +59,7 @@ Project {
 
         bundle.identifierPrefix: "com.thunderengine"
         cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxStandardLibrary: "libc++"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"

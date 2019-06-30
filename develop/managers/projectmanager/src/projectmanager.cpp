@@ -14,6 +14,7 @@
 #include "platforms/desktop.h"
 #include "platforms/android.h"
 #include "platforms/ios.h"
+#include "platforms/tvos.h"
 
 const QString gCompany("Company");
 const QString gProject("ProjectId");

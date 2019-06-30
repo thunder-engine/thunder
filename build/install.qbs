@@ -70,13 +70,15 @@ Product {
                     libPrefix + "Qt5Widgets" + libPostfix,
                     libPrefix + "Qt5Script" + libPostfix,
                     libPrefix + "Qt5Xml" + libPostfix,
+                    libPrefix + "Qt5XmlPatterns" + libPostfix,
                     libPrefix + "Qt5Network" + libPostfix,
                     libPrefix + "Qt5Multimedia" + libPostfix,
                     libPrefix + "Qt5QuickWidgets" + libPostfix,
                     libPrefix + "Qt5Quick" + libPostfix,
                     libPrefix + "Qt5QuickTemplates2" + libPostfix,
                     libPrefix + "Qt5QuickControls2" + libPostfix,
-                    libPrefix + "Qt5Qml" + libPostfix
+                    libPrefix + "Qt5Qml" + libPostfix,
+                    libPrefix + "Qt5Svg" + libPostfix
                 );
             } else {
                 list.push("**/QtCore.framework/**");
@@ -84,6 +86,7 @@ Product {
                 list.push("**/QtWidgets.framework/**");
                 list.push("**/QtScript.framework/**");
                 list.push("**/QtXml.framework/**");
+                list.push("**/Qt5XmlPatterns.framework/**");
                 list.push("**/QtNetwork.framework/**");
                 list.push("**/QtMultimedia.framework/**"),
                 list.push("**/QtQml.framework/**");
@@ -91,6 +94,7 @@ Product {
                 list.push("**/Qt5QuickTemplates2.framework/**");
                 list.push("**/Qt5QuickControls2.framework/**");
                 list.push("**/QtQuickWidgets.framework/**");
+                list.push("**/Qt5Svg.framework/**");
             }
             return list
         }
@@ -133,11 +137,28 @@ Product {
         files: [
             "QtGraphicalEffects/**",
             "QtQuick/Controls.2/**",
+            "QtQuick/Shapes/**",
+            "QtQuick/Templates.2/**",
+            "QtQuick/XmlListModel/**",
+            "QtQuick/Layouts/**",
+            "QtQuick/Window.2/**",
             "QtQuick.2/**"
         ]
         excludeFiles: pluginExcludeFiles
         qbs.install: true
         qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/qml"
+        qbs.installPrefix: install.PREFIX
+        qbs.installSourceBase: prefix
+    }
+
+    Group {
+        name: "Qt config"
+        files: [
+            install.RESOURCE_ROOT + "/qt.conf"
+        ]
+        excludeFiles: pluginExcludeFiles
+        qbs.install: true
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }
