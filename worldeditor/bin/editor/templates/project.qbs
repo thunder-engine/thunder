@@ -4,7 +4,7 @@ Project {
     id: project
     property string platform: {
         var arch = qbs.architecture;
-        if(qbs.targetOS[0] === "darwin" || qbs.targetOS[0] === "linux") {
+        if(qbs.targetOS[0] === "macos" || qbs.targetOS[0] === "linux") {
             arch = "x86_64"
         }
         return "/" + qbs.targetOS[0] + "/" + arch;
@@ -19,6 +19,7 @@ Project {
     ]
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
     property bool isAndroid: qbs.targetOS.contains("android")
+    property bool isBundle: qbs.targetOS.contains("darwin")
 
     DynamicLibrary {
         condition: desktop
@@ -94,8 +95,15 @@ Project {
             cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ]
         }
         Properties {
-            condition: qbs.targetOS[0] === "darwin"
+            condition: qbs.targetOS[0] === "macos"
             cpp.weakFrameworks: [ "OpenGL", "Cocoa", "CoreVideo", "IOKit" ]
+        }
+        Properties {
+            condition: qbs.targetOS[0] === "ios"
+            cpp.weakFrameworks: [ "OpenGLES", "UIKit", "CoreGraphics", "Foundation", "QuartzCore" ]
+            cpp.dynamicLibraries: [ "z" ]
+            cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
+            cpp.minimumIosVersion: "10.0"
         }
         Properties {
             condition: qbs.targetOS[0] === "android"
@@ -117,7 +125,7 @@ Project {
             qbs.installSourceBase: product.buildDirectory
             qbs.installPrefix: ""
 
-            fileTagsFilter: isForAndroid ? ["android.apk"] : (isBundle ? ["bundle.content"] : ["application"])
+            fileTagsFilter: isForAndroid ? ["android.apk"] : (project.isBundle ? ["bundle.content"] : ["application"])
         }
     }
 }

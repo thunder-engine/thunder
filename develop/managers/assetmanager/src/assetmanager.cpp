@@ -59,13 +59,6 @@ AssetManager::AssetManager() :
 
     m_pDirWatcher   = new QFileSystemWatcher(this);
     m_pFileWatcher  = new QFileSystemWatcher(this);
-    connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SIGNAL(directoryChanged(QString)));
-    connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(onDirectoryChanged(QString)));
-    connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(reimport()));
-
-    connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SIGNAL(fileChanged(QString)));
-    connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(onFileChanged(QString)));
-    connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(reimport()));
 
     m_pTimer    = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onPerform()));
@@ -122,6 +115,16 @@ void AssetManager::rescan() {
     m_pEngine->file()->fsearchPathAdd(qPrintable(m_pProjectManager->importPath()), true);
 
     bool force = !target.isEmpty() || !info.exists();
+
+    if(target.isEmpty()) {
+        connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SIGNAL(directoryChanged(QString)));
+        connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(onDirectoryChanged(QString)));
+        connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(reimport()));
+
+        connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SIGNAL(fileChanged(QString)));
+        connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(onFileChanged(QString)));
+        connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(reimport()));
+    }
 
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",force );
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", force);
