@@ -109,6 +109,18 @@ QbsBuilder::QbsBuilder() :
         platform->setProperty(qPrintable(gProfile), "android");
         platform->setProperty(qPrintable(gArchitectures), QStringList() << "x86" << "armv7a");
     }
+#if defined(Q_OS_MAC)
+    platform = m_pMgr->supportedPlatform("ios");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-iphoneos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+    platform = m_pMgr->supportedPlatform("tvos");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-appletvos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+#endif
 }
 
 void QbsBuilder::generateProject() {
@@ -185,7 +197,6 @@ bool QbsBuilder::buildProject() {
         m_pProcess->setWorkingDirectory(m_Project);
 
         builderInit();
-
         generateProject();
 
         IPlatform *platform = m_pMgr->currentPlatform();
@@ -226,7 +237,6 @@ bool QbsBuilder::buildProject() {
             }
             args << "--products" << product << "profile:" + profile;
             args << "config:" + gMode << "qbs.architecture:" + architecture;
-            //args << "config:" + gMode << "qbs.architectures: [armv7a, x86]";
 
             qDebug() << args.join(" ");
 
@@ -277,7 +287,6 @@ void QbsBuilder::builderInit() {
         args << "--ndk-dir" << settings->property(qPrintable(gAndroidNdk)).value<FilePath>().filePath();
         args << "android";
 
-        qDebug() << args;
         QProcess qbs(this);
         QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
         env.insert("JAVA_HOME", settings->property(qPrintable(gAndroidJava)).value<FilePath>().path());

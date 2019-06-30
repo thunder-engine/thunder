@@ -13,6 +13,7 @@
 
 #include "platforms/desktop.h"
 #include "platforms/android.h"
+#include "platforms/ios.h"
 
 const QString gCompany("Company");
 const QString gProject("ProjectId");
@@ -38,6 +39,10 @@ ProjectManager::ProjectManager() {
 
     setSupportedPlatform(new DesktopPlatform);
     setSupportedPlatform(new AndroidPlatform);
+#if defined(Q_OS_MAC)
+    setSupportedPlatform(new IOSPlatform);
+    setSupportedPlatform(new TvOSPlatform);
+#endif
 }
 
 ProjectManager *ProjectManager::instance() {

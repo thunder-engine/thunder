@@ -6,6 +6,8 @@ Project {
         var arch = qbs.architecture;
         if(qbs.targetOS[0] === "macos" || qbs.targetOS[0] === "linux") {
             arch = "x86_64"
+        } else if(qbs.targetOS[0] === "ios") {
+            arch = "arm64"
         }
         return "/" + qbs.targetOS[0] + "/" + arch;
     }
