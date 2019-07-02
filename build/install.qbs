@@ -95,6 +95,8 @@ Product {
                 list.push("**/Qt5QuickControls2.framework/**");
                 list.push("**/QtQuickWidgets.framework/**");
                 list.push("**/Qt5Svg.framework/**");
+                list.push("**/QtPrintSupport.framework/**");
+                list.push("**/QtDBus.framework/**");
             }
             return list
         }
@@ -153,6 +155,7 @@ Product {
 
     Group {
         name: "Qt config"
+        condition: qbs.targetOS.contains("windows")
         files: [
             install.RESOURCE_ROOT + "/qt.conf"
         ]
