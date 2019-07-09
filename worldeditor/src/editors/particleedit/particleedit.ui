@@ -46,11 +46,6 @@
     <property name="resizeMode">
      <enum>QQuickWidget::SizeRootObjectToView</enum>
     </property>
-    <property name="source">
-     <url>
-      <string>qrc:/QML/qml/Emitters.qml</string>
-     </url>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -60,6 +60,9 @@ ParticleEdit::ParticleEdit(Engine *engine) :
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
 
+    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_pBuilder->children()));
+    ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Emitters.qml"));
+
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(emitterSelected(QString)), this, SLOT(onEmitterSelected(QString)));
     connect(item, SIGNAL(emitterCreate()), this, SLOT(onEmitterCreated()));

@@ -47,12 +47,18 @@
    </widget>
    <addaction name="menuWindow"/>
   </widget>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>PropertyEditor</class>
    <extends>QTreeView</extends>
    <header>editors/propertyedit/propertyeditor.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QToolWindowManager</class>

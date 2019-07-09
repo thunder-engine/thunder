@@ -202,7 +202,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->timeline, SLOT(onObjectSelected(Object::ObjectList)));
     connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onUpdated()));
     connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onUpdated()));
-    connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(on_action_Open_triggered(QString)));
+    connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(onOpen(QString)));
     connect(ui->hierarchy, SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
     connect(ui->hierarchy, SIGNAL(parented(Object::ObjectList, Object::ObjectList)), ctl, SLOT(onParentActor(Object::ObjectList,Object::ObjectList)));
@@ -225,7 +225,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     resetWorkspace();
     on_actionEditor_Mode_triggered();
-    on_action_New_triggered();
+    on_actionNew_triggered();
 }
 
 SceneComposer::~SceneComposer() {
@@ -238,6 +238,7 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
+    m_pEngine->processEvents();
     m_pEngine->updateScene(ui->preview->scene());
 
     ui->viewport->repaint();
@@ -307,16 +308,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
         settings.setValue(str, QString::fromStdString(Json::save(params)));
-
-        if(!isModified()) {
-            QString path = ProjectManager::instance()->iconPath() + "/auto.png";
-
-            QImage result = ui->viewport->grabFramebuffer();
-            QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
-            result.copy(rect).scaled(128, 128).save(path);
-        }
     }
-
     saveWorkspace();
     QApplication::quit();
 }
@@ -336,12 +328,17 @@ bool SceneComposer::checkSave() {
         }
         if(result == QMessageBox::Yes) {
             on_actionSave_triggered();
+
+            QString path = ProjectManager::instance()->iconPath() + "/auto.png";
+            QImage result = ui->viewport->grabFramebuffer();
+            QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
+            result.copy(rect).scaled(128, 128).save(path);
         }
     }
     return true;
 }
 
-void SceneComposer::on_action_New_triggered() {
+void SceneComposer::on_actionNew_triggered() {
     checkSave();
 
     delete m_pMap;
@@ -361,14 +358,14 @@ void SceneComposer::on_action_New_triggered() {
     updateTitle();
 }
 
-void SceneComposer::on_action_Open_triggered(const QString &arg) {
+void SceneComposer::onOpen(const QString &arg) {
     checkSave();
     if(arg.isEmpty()) {
         QString dir = ProjectManager::instance()->contentPath();
-        m_Path       = QFileDialog::getOpenFileName(this,
-                                                   tr("Open Map"),
-                                                   dir + "/maps",
-                                                   tr("Maps (*.map)") );
+        m_Path = QFileDialog::getOpenFileName(this,
+                                              tr("Open Map"),
+                                              dir + "/maps",
+                                              tr("Maps (*.map)") );
     } else {
         m_Path   = arg;
     }
@@ -389,7 +386,7 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
         if(map) {
             updateTitle();
 
-            delete m_pMap;
+            m_pMap->deleteLater();
             m_pMap  = map;
             ui->hierarchy->setObject(m_pMap);
 
@@ -399,6 +396,8 @@ void SceneComposer::on_action_Open_triggered(const QString &arg) {
 
             UndoManager::instance()->clear();
             onUndoRedoUpdated();
+
+            ui->toolWidget->activateToolWindow(ui->viewport);
         }
     }
 }
@@ -491,7 +490,7 @@ void SceneComposer::onUndoRedoUpdated() {
 void SceneComposer::onOpenProject(const QString &path) {
     connect(m_pQueue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
 
-    on_actionStart_triggered(false);
+    ui->quickWidget->stackUnder(ui->toolWidget);
 
     m_pProjectModel->addProject(path);
     ProjectManager::instance()->init(path);
@@ -549,7 +548,7 @@ void SceneComposer::onImportFinished() {
     if(map.isValid()) {
         VariantList list = Json::load(map.toString().toStdString()).toList();
         auto it = list.begin();
-        on_action_Open_triggered(it->toString().c_str());
+        onOpen(it->toString().c_str());
 
         it++;
         Camera *camera = ctrl->camera();
@@ -746,13 +745,4 @@ void SceneComposer::on_actionOptions_triggered() {
 void SceneComposer::on_actionAbout_triggered() {
     AboutDialog dlg;
     dlg.exec();
-}
-
-void SceneComposer::on_actionStart_triggered(bool checked) {
-    if(checked) {
-        ui->toolWidget->stackUnder(ui->quickWidget);
-    } else {
-        ui->quickWidget->stackUnder(ui->toolWidget);
-    }
-
 }

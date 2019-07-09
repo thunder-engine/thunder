@@ -15,10 +15,8 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
 }
 
 void ObjectHierarchyModel::timerEvent(QTimerEvent *) {
-    if(Engine::isGameMode()) {
-        emit layoutAboutToBeChanged();
-        emit layoutChanged();
-    }
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 void ObjectHierarchyModel::setRoot(Object *scene) {
@@ -54,6 +52,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
     Actor *item = static_cast<Actor* >(index.internalPointer());
+
     switch(role) {
         case Qt::EditRole:
         case Qt::ToolTipRole:
@@ -116,7 +115,8 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
         if(parent.isValid()) {
             parentItem      = static_cast<Object *>(parent.internalPointer());
         }
-        return parentItem->getChildren().size();
+        const Object::ObjectList &children = parentItem->getChildren();
+        return children.size();
     }
     return 0;
 }
@@ -125,15 +125,18 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
     if(m_rootItem) {
         Object *parentItem  = m_rootItem;
         if(parent.isValid()) {
-            parentItem      = static_cast<Object *>(parent.internalPointer());
+            parentItem = static_cast<Object *>(parent.internalPointer());
         }
-        if(row >= parentItem->getChildren().size() || row < 0) {
+
+        const Object::ObjectList &children = parentItem->getChildren();
+        if(row >= children.size() || row < 0) {
             return QModelIndex();
         }
         QList<Object *> list;
-        for(auto it : parentItem->getChildren()) {
+        for(auto it : children) {
             list.push_back(it);
         }
+
         return createIndex(row, column, list.at(row));
     }
     return QModelIndex();
