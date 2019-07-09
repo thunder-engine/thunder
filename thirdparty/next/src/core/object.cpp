@@ -44,9 +44,8 @@ public:
         }
         return false;
     }
-    /// Parent object
     Object                         *m_pParent;
-    /// Object name
+
     string                          m_sName;
 
     Object::ObjectList              m_mChildren;
@@ -65,6 +64,8 @@ public:
 
     ObjectSystem                   *m_pSystem;
 };
+
+
 /*!
     \class Object
     \brief The Object class is the base calss for all object classes.
@@ -287,7 +288,7 @@ Object::~Object() {
         Object *c  = it;
         if(c) {
             c->p_ptr->m_pParent    = nullptr;
-            delete c;
+            c->deleteLater();
         }
     }
     p_ptr->m_mChildren.clear();
@@ -693,6 +694,9 @@ void Object::processEvents() {
     while(!p_ptr->m_EventQueue.empty()) {
         unique_lock<mutex> locker(p_ptr->m_Mutex);
         Event *e   = p_ptr->m_EventQueue.front();
+        p_ptr->m_EventQueue.pop();
+        locker.unlock();
+
         switch (e->type()) {
             case Event::METHODCALL: {
                 MethodCallEvent *call   = reinterpret_cast<MethodCallEvent *>(e);
@@ -702,7 +706,11 @@ void Object::processEvents() {
                 p_ptr->m_pCurrentSender = nullptr;
             } break;
             case Event::DESTROY: {
-                locker.unlock();
+                if(p_ptr->m_pSystem) {
+                    p_ptr->m_pSystem->suspendObject(this);
+                }
+
+                delete e;
                 delete this;
                 return;
             }
@@ -711,7 +719,6 @@ void Object::processEvents() {
             } break;
         }
         delete e;
-        p_ptr->m_EventQueue.pop();
     }
 }
 /*!

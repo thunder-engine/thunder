@@ -57,7 +57,8 @@ static ObjectSystem::GroupMap   s_Groups;
 /*!
     Constructs ObjectSystem.
 */
-ObjectSystem::ObjectSystem() {
+ObjectSystem::ObjectSystem() :
+        m_SuspendObject(nullptr) {
     PROFILE_FUNCTION();
 }
 /*!
@@ -79,11 +80,12 @@ ObjectSystem::~ObjectSystem() {
         }
     }
     {
-        auto it = m_List.begin();
-        while(it != m_List.end()) {
+        auto it = m_ObjectList.begin();
+        while(it != m_ObjectList.end()) {
             delete *it;
-            it = m_List.begin();
+            it = m_ObjectList.begin();
         }
+        m_SuspendObject = nullptr;
     }
 }
 /*!
@@ -94,8 +96,17 @@ void ObjectSystem::processEvents() {
 
     Object::processEvents();
 
-    for(auto it : m_List) {
-        it->processEvents();
+    auto it = m_ObjectList.begin();
+    while(it != m_ObjectList.end()) {
+        Object *o = *it;
+        o->processEvents();
+
+        if(m_SuspendObject != nullptr) {
+            m_SuspendObject = nullptr;
+            it = m_ObjectList.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 /*!
@@ -118,7 +129,7 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         object->setParent(parent);
         object->setSystem(pair->second);
 
-        pair->second->m_List.push_back(object);
+        pair->second->m_ObjectList.push_back(object);
     }
     return object;
 }
@@ -206,16 +217,16 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
     ObjectMap array;
 
     // Create all declared objects
-    VariantList objects    = variant.value<VariantList>();
+    VariantList objects = variant.value<VariantList>();
     for(auto it : objects) {
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
-            auto i          = o.begin();
+            auto i = o.begin();
             string type = (*i).toString();
             i++;
-            uint32_t uuid   = static_cast<uint32_t>((*i).toInt());
+            uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
-            Object *parent  = root;
+            Object *parent = root;
             auto a  = array.find(static_cast<uint32_t>((*i).toInt()));
             if(a != array.end()) {
                 parent  = (*a).second;
@@ -239,9 +250,9 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                 i++;
                 // Restore connections
                 for(const auto &link : (*i).value<VariantList>()) {
-                    VariantList list    = link.value<VariantList>();
-                    Object *sender      = nullptr;
-                    Object *receiver    = nullptr;
+                    VariantList list = link.value<VariantList>();
+                    Object *sender = nullptr;
+                    Object *receiver = nullptr;
                     if(list.size() == 4) {
                         auto l  = list.begin();
                         auto s  = array.find(static_cast<uint32_t>((*l).toInt()));
@@ -310,12 +321,20 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
-    auto it = m_List.begin();
-    while(it != m_List.end()) {
-        if(*it == object) {
-            m_List.erase(it);
-            return;
+    if(m_SuspendObject == nullptr) {
+        auto it = m_ObjectList.begin();
+        while(it != m_ObjectList.end()) {
+            if(*it == object) {
+                m_ObjectList.erase(it);
+                return;
+            }
+            ++it;
         }
-        it++;
     }
+}
+/*!
+    \internal
+*/
+void ObjectSystem::suspendObject(Object *object) {
+    m_SuspendObject = object;
 }

@@ -61,12 +61,12 @@ AngelSystem::AngelSystem() :
 AngelSystem::~AngelSystem() {
     PROFILER_MARKER;
 
-    auto it = m_List.begin();
-    while(it != m_List.end()) {
+    auto it = m_ObjectList.begin();
+    while(it != m_ObjectList.end()) {
         delete *it;
-        it = m_List.begin();
+        it = m_ObjectList.begin();
     }
-    m_List.clear();
+    m_ObjectList.clear();
 
     if(m_pContext) {
         m_pContext->Release();
@@ -111,7 +111,7 @@ void AngelSystem::update(Scene *scene) {
     PROFILER_MARKER;
 
     if(Engine::isGameMode()) {
-        for(auto it : m_List) {
+        for(auto it : m_ObjectList) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
             if(component->isEnabled() && component->actor() && component->actor()->scene() == scene) {
@@ -123,6 +123,10 @@ void AngelSystem::update(Scene *scene) {
             }
         }
     }
+}
+
+bool AngelSystem::isThreadFriendly() const {
+    return true;
 }
 
 void AngelSystem::reload() {

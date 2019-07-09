@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include <engine.h>
+#include <systems/resourcesystem.h>
 
 #include "assetmanager.h"
 
@@ -92,7 +93,7 @@ void AssetList::update() {
     }
 
     AssetManager *inst = AssetManager::instance();
-    for(auto it : m_pEngine->indices()) {
+    for(auto it : static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->indices()) {
         QObject *item   = new QObject(m_rootItem);
         QFileInfo info(it.first.c_str());
 

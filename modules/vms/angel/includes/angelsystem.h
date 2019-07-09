@@ -24,6 +24,8 @@ public:
 
     void                        update                      (Scene *);
 
+    bool                        isThreadFriendly            () const;
+
     void                        reload                      ();
 
     void                        registerClasses             (asIScriptEngine *engine);

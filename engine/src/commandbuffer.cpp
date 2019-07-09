@@ -23,7 +23,7 @@ void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Me
     A_UNUSED(particle);
 }
 
-void ICommandBuffer::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
+void ICommandBuffer::setRenderTarget(const TargetBuffer &target, RenderTexture *depth) {
     A_UNUSED(target);
     A_UNUSED(depth);
 }
@@ -64,7 +64,7 @@ void ICommandBuffer::setGlobalValue(const char *name, const Variant &value) {
     A_UNUSED(value);
 }
 
-void ICommandBuffer::setGlobalTexture(const char *name, const Texture *value) {
+void ICommandBuffer::setGlobalTexture(const char *name, Texture *value) {
     A_UNUSED(name);
     A_UNUSED(value);
 }
@@ -77,7 +77,7 @@ Matrix4 ICommandBuffer::modelView() const {
     return Matrix4();
 }
 
-const Texture *ICommandBuffer::texture(const char *name) const {
+Texture *ICommandBuffer::texture(const char *name) const {
     A_UNUSED(name);
     return nullptr;
 }

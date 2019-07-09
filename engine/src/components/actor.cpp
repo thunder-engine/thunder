@@ -108,7 +108,7 @@ void Actor::addChild(Object *value) {
     Transform *t = dynamic_cast<Transform *>(value);
     if(t) {
         if(p_ptr->m_pTransform != nullptr) {
-            delete p_ptr->m_pTransform;
+            p_ptr->m_pTransform->deleteLater();
         }
         p_ptr->m_pTransform = t;
     }

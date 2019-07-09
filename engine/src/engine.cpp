@@ -11,6 +11,7 @@
 #include <json.h>
 #include <metatype.h>
 #include <uri.h>
+#include <threadpool.h>
 
 #include "module.h"
 #include "system.h"
@@ -50,6 +51,8 @@
 
 #include "resources/particleeffect.h"
 
+#include "systems/resourcesystem.h"
+
 #include "commandbuffer.h"
 
 #include "log.h"
@@ -65,17 +68,13 @@ static const char *gProject(".project");
 
 class EnginePrivate {
 public:
-    static StringMap                        m_IndexMap;
-    static unordered_map<string, Object*>   m_ResourceCache;
-    static unordered_map<Object*, string>   m_ReferenceCache;
-
     EnginePrivate() :
             m_pScene(nullptr) {
 
     }
 
     ~EnginePrivate() {
-        delete m_pScene;
+        m_pScene->deleteLater();
 
         m_Values.clear();
 
@@ -85,7 +84,8 @@ public:
 
     Scene                      *m_pScene;
 
-    list<ISystem *>             m_Systems;
+    list<ISystem *>             m_Friendly;
+    list<ISystem *>             m_Unfriendly;
 
     static IFile               *m_pFile;
 
@@ -104,20 +104,22 @@ public:
     static IPlatformAdaptor    *m_pPlatform;
 
     static VariantMap           m_Values;
+
+    ThreadPool                  m_ThreadPool;
+
+    static ResourceSystem      *m_pResourceSystem;
 };
 
 IFile *EnginePrivate::m_pFile   = nullptr;
 
-bool                            EnginePrivate::m_Game = false;
-StringMap                       EnginePrivate::m_IndexMap;
-unordered_map<string, Object*>  EnginePrivate::m_ResourceCache;
-unordered_map<Object*, string>  EnginePrivate::m_ReferenceCache;
-VariantMap                      EnginePrivate::m_Values;
-string                          EnginePrivate::m_ApplicationPath;
-string                          EnginePrivate::m_ApplicationDir;
-string                          EnginePrivate::m_Organization;
-string                          EnginePrivate::m_Application;
-IPlatformAdaptor               *EnginePrivate::m_pPlatform = nullptr;
+bool              EnginePrivate::m_Game = false;
+VariantMap        EnginePrivate::m_Values;
+string            EnginePrivate::m_ApplicationPath;
+string            EnginePrivate::m_ApplicationDir;
+string            EnginePrivate::m_Organization;
+string            EnginePrivate::m_Application;
+IPlatformAdaptor *EnginePrivate::m_pPlatform = nullptr;
+ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
 
 typedef Vector4 Color;
 
@@ -153,6 +155,9 @@ Engine::Engine(IFile *file, const char *path) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
+    p_ptr->m_pResourceSystem = new ResourceSystem;
+    p_ptr->m_Unfriendly.push_back(p_ptr->m_pResourceSystem);
+
     EnginePrivate::m_ApplicationPath = path;
     Uri uri(EnginePrivate::m_ApplicationPath);
     EnginePrivate::m_ApplicationDir = uri.dir();
@@ -165,16 +170,17 @@ Engine::Engine(IFile *file, const char *path) :
 #else
     p_ptr->m_pPlatform  = new DesktopAdaptor(this);
 #endif
-    Resource::registerClassFactory(this);
 
-    Text::registerClassFactory(this);
-    Texture::registerClassFactory(this);
-    Material::registerClassFactory(this);
-    Mesh::registerClassFactory(this);
-    Atlas::registerClassFactory(this);
-    Font::registerClassFactory(this);
-    AnimationClip::registerClassFactory(this);
-    RenderTexture::registerClassFactory(this);
+    Resource::registerClassFactory(p_ptr->m_pResourceSystem);
+
+    Text::registerClassFactory(p_ptr->m_pResourceSystem);
+    Texture::registerClassFactory(p_ptr->m_pResourceSystem);
+    Material::registerClassFactory(p_ptr->m_pResourceSystem);
+    Mesh::registerClassFactory(p_ptr->m_pResourceSystem);
+    Atlas::registerClassFactory(p_ptr->m_pResourceSystem);
+    Font::registerClassFactory(p_ptr->m_pResourceSystem);
+    AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
+    RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
@@ -190,12 +196,12 @@ Engine::Engine(IFile *file, const char *path) :
     SpotLight::registerClassFactory(this);
 
     ParticleRender::registerClassFactory(this);
-    ParticleEffect::registerClassFactory(this);
+    ParticleEffect::registerClassFactory(p_ptr->m_pResourceSystem);
 
-    AnimationStateMachine::registerClassFactory(this);
+    AnimationStateMachine::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationController::registerClassFactory(this);
 
-    Pipeline::registerClassFactory(this);
+    Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
 
     NativeBehaviour::registerClassFactory(this);
     Renderable::registerClassFactory(this);
@@ -226,6 +232,8 @@ bool Engine::init() {
     Timer::init();
     Input::init(p_ptr->m_pPlatform);
 
+    p_ptr->m_ThreadPool.setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
+
     return result;
 }
 /*!
@@ -236,18 +244,25 @@ bool Engine::init() {
 bool Engine::start() {
     PROFILER_MARKER;
 
-    EnginePrivate::m_Game = true;
-
     p_ptr->m_pPlatform->start();
 
-    reloadBundle();
-    for(auto it : p_ptr->m_Systems) {
+    for(auto it : p_ptr->m_Friendly) {
+        if(!it->init()) {
+            Log(Log::ERR) << "Failed to initialize system:" << it->name();
+            p_ptr->m_pPlatform->stop();
+            return false;
+        }
+        it->setActiveScene(p_ptr->m_pScene);
+    }
+    for(auto it : p_ptr->m_Unfriendly) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
             p_ptr->m_pPlatform->stop();
             return false;
         }
     }
+
+    EnginePrivate::m_Game = true;
 
     string path = value(gEntry, "").toString();
     Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
@@ -283,6 +298,8 @@ bool Engine::start() {
     \note Usually, this method calls internally and must not be called manually.
 */
 void Engine::resize() {
+    PROFILER_MARKER;
+
     Camera *component = Camera::current();
     component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
     component->setRatio(float(p_ptr->m_pPlatform->screenWidth()) / float(p_ptr->m_pPlatform->screenHeight()));
@@ -296,16 +313,27 @@ void Engine::update() {
     PROFILER_MARKER;
 
     Timer::update();
-    // fixed update
 
     processEvents();
-    updateScene(p_ptr->m_pScene);
+    //p_ptr->m_ThreadPool.start(*this);
 
-    for(auto it : p_ptr->m_Systems) {
-        it->processEvents();
+    for(auto it : p_ptr->m_Friendly) {
+        p_ptr->m_ThreadPool.start(*it);
+    }
+    for(auto it : p_ptr->m_Unfriendly) {
         it->update(p_ptr->m_pScene);
     }
+
     p_ptr->m_pPlatform->update();
+}
+/*!
+    \internal
+*/
+void Engine::processEvents() {
+    PROFILER_MARKER;
+
+    ObjectSystem::processEvents();
+    updateScene(p_ptr->m_pScene);
 }
 /*!
     Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue.
@@ -328,6 +356,14 @@ void Engine::setValue(const string &key, const Variant &value) {
     EnginePrivate::m_Values[key] = value;
 }
 /*!
+    Writes all values.
+*/
+void Engine::syncValues() {
+    PROFILER_MARKER;
+
+    p_ptr->m_pPlatform->syncConfiguration(EnginePrivate::m_Values);
+}
+/*!
     Returns an instance for loading resource by the provided \a path.
     \note In case of resource was loaded previously this function will return the same instance.
 
@@ -336,69 +372,18 @@ void Engine::setValue(const string &key, const Variant &value) {
 Object *Engine::loadResource(const string &path) {
     PROFILER_MARKER;
 
-    if(!path.empty()) {
-        string uuid = path;
-        {
-            auto it = EnginePrivate::m_IndexMap.find(path);
-            if(it != EnginePrivate::m_IndexMap.end()) {
-                uuid    = it->second;
-            }
-        }
-        {
-            auto it = EnginePrivate::m_ResourceCache.find(uuid);
-            if(it != EnginePrivate::m_ResourceCache.end() && it->second) {
-                return it->second;
-            } else {
-                IFile *file = Engine::file();
-                _FILE *fp   = file->_fopen(uuid.c_str(), "r");
-                if(fp) {
-                    ByteArray data;
-                    data.resize(file->_fsize(fp));
-                    file->_fread(&data[0], data.size(), 1, fp);
-                    file->_fclose(fp);
-
-                    Variant var     = Bson::load(data);
-                    if(!var.isValid()) {
-                        var = Json::load(string(data.begin(), data.end()));
-                    }
-                    if(var.isValid()) {
-                        Object *res = Engine::toObject(var);
-                        if(res) {
-                            setResource(res, uuid);
-                            return res;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return nullptr;
+    return EnginePrivate::m_pResourceSystem->loadResource(path);
 }
 /*!
-    Unloads a resource located along the \a path from memory.
+    Force unloads the resource located along the \a path from memory.
+    \warning After this call, the reference on the resource may become an invalid at any time and must not be used anymore.
 
     \sa loadResource()
 */
 void Engine::unloadResource(const string &path) {
     PROFILER_MARKER;
 
-    if(!path.empty()) {
-        string uuid = path;
-        {
-            auto it = EnginePrivate::m_IndexMap.find(path);
-            if(it != EnginePrivate::m_IndexMap.end()) {
-                uuid = it->second;
-            }
-        }
-        {
-            auto it = EnginePrivate::m_ResourceCache.find(uuid);
-            if(it != EnginePrivate::m_ResourceCache.end() && it->second) {
-                delete it->second;
-
-                EnginePrivate::m_ResourceCache.erase(it);
-            }
-        }
-    }
+    EnginePrivate::m_pResourceSystem->unloadResource(path);
 }
 /*!
     Register resource \a object by \a uuid path.
@@ -408,8 +393,7 @@ void Engine::unloadResource(const string &path) {
 void Engine::setResource(Object *object, const string &uuid) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_ResourceCache[uuid] = object;
-    EnginePrivate::m_ReferenceCache[object] = uuid;
+    EnginePrivate::m_pResourceSystem->setResource(object, uuid);
 }
 /*!
     Returns resource path for the provided resource \a object.
@@ -419,11 +403,7 @@ void Engine::setResource(Object *object, const string &uuid) {
 string Engine::reference(Object *object) {
     PROFILER_MARKER;
 
-    auto it = EnginePrivate::m_ReferenceCache.find(object);
-    if(it != EnginePrivate::m_ReferenceCache.end()) {
-        return it->second;
-    }
-    return string();
+    return EnginePrivate::m_pResourceSystem->reference(object);
 }
 /*!
     This method reads the index file for the resource bundle.
@@ -431,7 +411,8 @@ string Engine::reference(Object *object) {
 */
 void Engine::reloadBundle() {
     PROFILER_MARKER;
-    EnginePrivate::m_IndexMap.clear();
+    StringMap &indices = EnginePrivate::m_pResourceSystem->indices();
+    indices.clear();
 
     IFile *file = Engine::file();
     _FILE *fp   = file->_fopen(gIndex, "r");
@@ -446,7 +427,7 @@ void Engine::reloadBundle() {
             VariantMap root    = var.toMap();
 
             for(auto it : root[gContent].toMap()) {
-                EnginePrivate::m_IndexMap[it.second.toString()] = it.first;
+                indices[it.second.toString()] = it.first;
             }
 
             for(auto it : root[gSettings].toMap()) {
@@ -459,10 +440,10 @@ void Engine::reloadBundle() {
     }
 }
 /*!
-    Returns all loaded indices for game resources.
+    Returns the resource management system which can be used in external modules.
 */
-StringMap Engine::indices() const {
-    return EnginePrivate::m_IndexMap;
+ISystem *Engine::resourceSystem() const {
+    return EnginePrivate::m_pResourceSystem;
 }
 /*!
     Returns true if game started; otherwise returns false.
@@ -492,7 +473,12 @@ void Engine::setGameMode(bool flag) {
 void Engine::addModule(IModule *module) {
     PROFILER_MARKER;
     if(module->types() & IModule::SYSTEM) {
-        p_ptr->m_Systems.push_back(module->system());
+        ISystem *system = module->system();
+        if(system->isThreadFriendly()) {
+            p_ptr->m_Friendly.push_back(system);
+        } else {
+            p_ptr->m_Unfriendly.push_back(system);
+        }
     }
 }
 /*!
@@ -561,7 +547,7 @@ void Engine::updateScene(Scene *scene) {
     PROFILER_MARKER;
 
     if(isGameMode()) {
-        for(auto it : m_List) {
+        for(auto it : m_ObjectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
             if(comp && comp->isEnabled() && comp->actor()->scene() == scene) {
                 if(!comp->isStarted()) {

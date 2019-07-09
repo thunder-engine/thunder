@@ -18,7 +18,7 @@ public:
 
 public:
     ObjectSystem                        ();
-    ~ObjectSystem                       ();
+    ~ObjectSystem                       () override;
 
     GroupMap                            factories               () const;
 
@@ -64,8 +64,12 @@ private:
 
     void                                removeObject            (Object *object);
 
+    void                                suspendObject           (Object *object);
+
 protected:
-    Object::ObjectList                  m_List;
+    Object::ObjectList                  m_ObjectList;
+
+    Object*                             m_SuspendObject;
 
 };
 

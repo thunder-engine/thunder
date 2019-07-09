@@ -56,7 +56,7 @@ public:
 
     set<APoolWorker *>          m_Workers;
 
-    queue<Object *>            m_Tasks;
+    queue<Object *>             m_Tasks;
 
     int32_t                     m_ActiveThreads;
 };
