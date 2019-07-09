@@ -13,13 +13,22 @@
 #include <log.h>
 #include <file.h>
 #include <utils.h>
+#include <json.h>
 
 #include <mutex>
 #include <string.h>
 
+#define CONFIG_NAME "config.json"
+
+#define SCREEN_WIDTH "screen.width"
+#define SCREEN_HEIGHT "screen.height"
+#define SCREEN_WINDOWED "screen.windowed"
+
 Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
 Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
-Vector2 DesktopAdaptor::s_Screen            = Vector2();
+int32_t DesktopAdaptor::s_Width     = 0;
+int32_t DesktopAdaptor::s_Height    = 0;
+bool DesktopAdaptor::s_Windowed     = false;
 
 static Engine *g_pEngine = nullptr;
 static IFile *g_pFile = nullptr;
@@ -50,9 +59,6 @@ DesktopAdaptor::DesktopAdaptor(Engine *engine) :
 }
 
 bool DesktopAdaptor::init() {
-    gAppConfig  = g_pEngine->locationAppConfig();
-    g_pFile = g_pEngine->file();
-
     glfwSetErrorCallback(errorCallback);
 
     if(!glfwInit()) {
@@ -65,15 +71,6 @@ bool DesktopAdaptor::init() {
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    m_pMonitor  = glfwGetPrimaryMonitor();
-    if(!m_pMonitor) {
-        stop();
-        return false;
-    }
-
-    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-    s_Screen = Vector2(mode->width, mode->height);
 
     return true;
 }
@@ -91,19 +88,70 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    g_pFile->fsearchPathAdd(g_pEngine->locationAppConfig().c_str(), true);
-    g_pFile->_mkdir(g_pEngine->locationAppConfig().c_str());
     Log::overrideHandler(new DesktopHandler());
 
     g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
 
-    const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-    m_pWindow = glfwCreateWindow(mode->width, mode->height, "Thunder Engine", nullptr, nullptr); // m_pMonitor
+    Engine::reloadBundle();
+
+    gAppConfig = g_pEngine->locationAppConfig();
+    g_pFile = g_pEngine->file();
+
+#if _WIN32
+    int32_t size = MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), nullptr, 0);
+    if(size) {
+        wstring path;
+        path.resize(size);
+        MultiByteToWideChar(CP_UTF8, 0, gAppConfig.c_str(), gAppConfig.size(), &path[0], size);
+
+        uint32_t start = 0;
+        for(int32_t slash=0; slash != -1; start = slash) {
+            slash = path.find(L"/", start + 1);
+            if(slash) {
+                CreateDirectoryW(&path.substr(0, slash)[0], nullptr);
+                DWORD error = GetLastError();
+                if(error == ERROR_ALREADY_EXISTS || error == ERROR_ACCESS_DENIED) {
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+#else
+    ::mkdir(gAppConfig.c_str(), 0777);
+#endif
+    g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
+
+    _FILE *fp = g_pFile->_fopen(CONFIG_NAME, "r");
+    if(fp) {
+        ByteArray data;
+        data.resize(g_pFile->_fsize(fp));
+        g_pFile->_fread(&data[0], data.size(), 1, fp);
+        g_pFile->_fclose(fp);
+
+        Variant var = Json::load(string(data.begin(), data.end()));
+        if(var.isValid()) {
+            for(auto it : var.toMap()) {
+                Engine::setValue(it.first, it.second);
+            }
+        }
+    }
+
+    m_pMonitor  = glfwGetPrimaryMonitor();
+    if(m_pMonitor) {
+        const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
+        s_Width = mode->width;
+        s_Height = mode->height;
+    }
+    s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
+    s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
+    s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
+
+    m_pWindow = glfwCreateWindow(s_Width, s_Height, g_pEngine->applicationName().c_str(), (s_Windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
         stop();
         return false;
     }
-
     glfwSetScrollCallback(m_pWindow, scrollCallback);
     glfwSetCursorPosCallback(m_pWindow, cursorPositionCallback);
 
@@ -141,11 +189,11 @@ uint32_t DesktopAdaptor::mouseButtons() {
 }
 
 uint32_t DesktopAdaptor::screenWidth() {
-    return s_Screen.x;
+    return s_Width;
 }
 
 uint32_t DesktopAdaptor::screenHeight() {
-    return s_Screen.y;
+    return s_Height;
 }
 
 void DesktopAdaptor::setMousePosition(int32_t x, int32_t y) {
@@ -222,7 +270,7 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
     s_OldMousePosition  = s_MousePosition;
-    s_MousePosition = Vector4(xpos, ypos, xpos / s_Screen.x, ypos / s_Screen.y);
+    s_MousePosition = Vector4(xpos, ypos, xpos / s_Width, ypos / s_Height);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
@@ -239,6 +287,17 @@ string DesktopAdaptor::locationLocalDir() {
     }
 #elif __APPLE__
     result = "~/Library/Preferences";
+#else
+    result = "~/.config";
 #endif
     return result;
+}
+
+void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
+    _FILE *fp = g_pFile->_fopen(CONFIG_NAME, "w");
+    if(fp) {
+        string data = Json::save(map, 0);
+        g_pFile->_fwrite(&data[0], data.size(), 1, fp);
+        g_pFile->_fclose(fp);
+    }
 }

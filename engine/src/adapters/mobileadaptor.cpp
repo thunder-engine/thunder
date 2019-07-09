@@ -110,6 +110,8 @@ void MobileAdaptor::update() {
 }
 
 bool MobileAdaptor::start() {
+    Engine::reloadBundle();
+
     return true;
 }
 

@@ -62,6 +62,8 @@ public:
 
     virtual string                      locationLocalDir            () { return string(); }
 
+    virtual void                        syncConfiguration           (VariantMap &map) const { }
+
 };
 
 #endif // AABSTRACTPLATFORMADAPTER_H

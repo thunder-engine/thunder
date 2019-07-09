@@ -54,6 +54,8 @@ public:
 
     string                      locationLocalDir            ();
 
+    void                        syncConfiguration           (VariantMap &map) const;
+
 protected:
     static void                 scrollCallback              (GLFWwindow *, double, double yoffset);
 
@@ -72,7 +74,9 @@ protected:
 
     static Vector4              s_OldMousePosition;
 
-    static Vector2              s_Screen;
+    static int32_t              s_Width;
+    static int32_t              s_Height;
+    static bool                 s_Windowed;
 };
 
 #endif // DESKTOPAADAPTOR_H
