@@ -17,11 +17,11 @@ Material *MaterialInstance::material() const {
     return m_pMaterial;
 }
 
-const Texture *MaterialInstance::texture(const char *name) {
-    const Texture *result = nullptr;
+Texture *MaterialInstance::texture(const char *name) {
+    Texture *result = nullptr;
     auto it = m_Info.find(name);
     if(it != m_Info.end()) {
-        result  = static_cast<const Texture *>((*it).second.ptr);
+        result  = static_cast<Texture *>((*it).second.ptr);
     }
     return result;
 }
@@ -30,7 +30,7 @@ MaterialInstance::InfoMap MaterialInstance::params() const {
     return m_Info;
 }
 
-void MaterialInstance::setInteger(const char *name, const int32_t *value, uint32_t count) {
+void MaterialInstance::setInteger(const char *name, int32_t *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -38,7 +38,7 @@ void MaterialInstance::setInteger(const char *name, const int32_t *value, uint32
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setFloat(const char *name, const float *value, uint32_t count) {
+void MaterialInstance::setFloat(const char *name, float *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -46,7 +46,7 @@ void MaterialInstance::setFloat(const char *name, const float *value, uint32_t c
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector2(const char *name, const Vector2 *value, uint32_t count) {
+void MaterialInstance::setVector2(const char *name, Vector2 *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -54,7 +54,7 @@ void MaterialInstance::setVector2(const char *name, const Vector2 *value, uint32
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector3(const char *name, const Vector3 *value, uint32_t count) {
+void MaterialInstance::setVector3(const char *name, Vector3 *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -62,7 +62,7 @@ void MaterialInstance::setVector3(const char *name, const Vector3 *value, uint32
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector4(const char *name, const Vector4 *value, uint32_t count) {
+void MaterialInstance::setVector4(const char *name, Vector4 *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -70,7 +70,7 @@ void MaterialInstance::setVector4(const char *name, const Vector4 *value, uint32
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, uint32_t count) {
+void MaterialInstance::setMatrix4(const char *name, Matrix4 *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -79,7 +79,7 @@ void MaterialInstance::setMatrix4(const char *name, const Matrix4 *value, uint32
     m_Info[name]    = info;
 }
 
-void MaterialInstance::setTexture(const char *name, const Texture *value, uint32_t count) {
+void MaterialInstance::setTexture(const char *name, Texture *value, uint32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -127,7 +127,12 @@ void Material::loadUserData(const VariantMap &data) {
         auto it = data.find(TEXTURES);
         if(it != data.end()) {
             for(auto t : (*it).second.toMap()) {
-                m_Textures[t.first] = Engine::loadResource<Texture>(t.second.toString());
+                string path = t.second.toString();
+                if(!path.empty()) {
+                    m_Textures[t.first] = Engine::loadResource<Texture>(path);
+                } else {
+                    m_Textures[t.first] = nullptr;
+                }
             }
         }
     }
@@ -165,8 +170,8 @@ void Material::setDepthTest(bool flag) {
     m_DepthTest = flag;
 }
 
-void Material::setTexture(const string &name, const Texture *texture) {
-    m_Textures[name]    = texture;
+void Material::setTexture(const string &name, Texture *texture) {
+    m_Textures[name] = texture;
 }
 
 uint8_t Material::surfaces() const {

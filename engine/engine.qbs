@@ -8,12 +8,14 @@ Project {
         "src/components/*.cpp",
         "src/resources/*.cpp",
         "src/handles/*.cpp",
+        "src/systems/*.cpp",
         "includes/*.h",
         "includes/analytics/*.h",
         "includes/adapters/*.h",
         "includes/components/*.h",
         "includes/resources/*.h",
-        "includes/handles/*.h"
+        "includes/handles/*.h",
+        "includes/systems/*.h"
     ]
 
     property stringList incPaths: [

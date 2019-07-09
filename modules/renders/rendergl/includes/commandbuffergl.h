@@ -28,7 +28,7 @@ public:
 
     void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false);
 
-    void                        setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
+    void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr);
 
     void                        setRenderTarget             (uint32_t target);
 
@@ -40,7 +40,7 @@ public:
 
     void                        setGlobalValue              (const char *name, const Variant &value);
 
-    void                        setGlobalTexture            (const char *name, const Texture *value);
+    void                        setGlobalTexture            (const char *name, Texture *value);
 
     void                        setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -48,7 +48,7 @@ public:
 
     Matrix4                     view                        () const { return m_View; }
 
-    const Texture              *texture                     (const char *name) const;
+    Texture                    *texture                     (const char *name) const;
 
 protected:
     void                        putUniforms                 (uint32_t program, MaterialInstance *instance);

@@ -24,6 +24,7 @@ RenderTexture::~RenderTexture() {
 
 void RenderTexture::setTarget(FormatType format) {
     setFormat(format);
+    setState(ToBeUpdated);
 }
 
 uint8_t RenderTexture::depth () const {
@@ -32,6 +33,7 @@ uint8_t RenderTexture::depth () const {
 
 void RenderTexture::setDepth(uint8_t bits) {
     p_ptr->m_DepthBits = bits;
+    setState(ToBeUpdated);
 }
 
 void RenderTexture::setFixed(bool fixed) {
@@ -42,7 +44,8 @@ void RenderTexture::resize(int32_t width, int32_t height) {
     if(!p_ptr->m_Fixed) {
         setWidth(width);
         setHeight(height);
-        apply();
+
+        setState(ToBeUpdated);
     }
 }
 

@@ -100,7 +100,6 @@ void Handles::init() {
         s_Axis = Engine::objectCreate<Mesh>("Axis");
         s_Axis->setMode(Mesh::MODE_LINES);
         s_Axis->addLod(lod);
-        s_Axis->apply();
     }
 
     if(s_Scale == nullptr) {
@@ -111,7 +110,6 @@ void Handles::init() {
         s_Scale = Engine::objectCreate<Mesh>("Scale");
         s_Scale->setMode(Mesh::MODE_LINES);
         s_Scale->addLod(lod);
-        s_Scale->apply();
     }
 
     if(s_ScaleXY == nullptr) {
@@ -122,7 +120,6 @@ void Handles::init() {
         s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");
         s_ScaleXY->setMode(Mesh::MODE_TRIANGLES);
         s_ScaleXY->addLod(lod);
-        s_ScaleXY->apply();
     }
 
     if(s_ScaleXYZ == nullptr) {
@@ -133,7 +130,6 @@ void Handles::init() {
         s_ScaleXYZ = Engine::objectCreate<Mesh>("ScaleXYZ");
         s_ScaleXYZ->setMode(Mesh::MODE_TRIANGLES);
         s_ScaleXYZ->addLod(lod);
-        s_ScaleXYZ->apply();
     }
 
     if(s_Move == nullptr) {
@@ -144,7 +140,6 @@ void Handles::init() {
         s_Move = Engine::objectCreate<Mesh>("Move");
         s_Move->setMode(Mesh::MODE_LINES);
         s_Move->addLod(lod);
-        s_Move->apply();
     }
 
     if(s_MoveXY == nullptr) {
@@ -155,7 +150,6 @@ void Handles::init() {
         s_MoveXY = Engine::objectCreate<Mesh>("MoveXY");
         s_MoveXY->setMode(Mesh::MODE_TRIANGLES);
         s_MoveXY->addLod(lod);
-        s_MoveXY->apply();
     }
 
     if(s_Circle == nullptr) {
@@ -166,7 +160,6 @@ void Handles::init() {
         s_Circle = Engine::objectCreate<Mesh>("Circle");
         s_Circle->setMode(Mesh::MODE_LINE_STRIP);
         s_Circle->addLod(lod);
-        s_Circle->apply();
     }
 
     inited = true;
@@ -215,7 +208,6 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
         {
             s_Lines->setMode(Mesh::MODE_LINES);
             s_Lines->setLod(0, lod);
-            s_Lines->apply();
         }
         s_Buffer->setColor(s_Color);
         s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -251,7 +243,6 @@ void Handles::drawCircle(const Matrix4 &transform, float radius) {
         {
             s_Lines->setMode(Mesh::MODE_LINE_STRIP);
             s_Lines->setLod(0, lod);
-            s_Lines->apply();
         }
         s_Buffer->setColor(s_Color);
         s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);

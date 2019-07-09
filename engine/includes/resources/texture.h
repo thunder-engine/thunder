@@ -54,10 +54,7 @@ public:
     Texture ();
     ~Texture ();
 
-    virtual void apply ();
-    virtual void clear ();
-
-    virtual void *nativeHandle () const;
+    virtual void *nativeHandle ();
 
     virtual void readPixels (int32_t x, int32_t y, int32_t width, int32_t height);
     uint32_t getPixel (int32_t x, int32_t y) const;
@@ -97,6 +94,8 @@ protected:
 
     WrapType wrap() const;
     void setWrap (WrapType type);
+
+    void clear ();
 
     Sides *getSides();
 

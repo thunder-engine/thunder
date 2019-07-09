@@ -9,21 +9,18 @@ class ARenderTextureGL : public RenderTexture {
     A_OVERRIDE(ARenderTextureGL, RenderTexture, Resources)
 
 public:
-     ARenderTextureGL           ();
-
-    ~ARenderTextureGL           ();
-
-    void                        apply                       ();
-
-    void                        clear                       ();
+    ARenderTextureGL            ();
 
     uint32_t                    buffer                      () const { return m_Buffer; }
 
-    void                       *nativeHandle                () const { return reinterpret_cast<void *>(m_ID); }
+    void                       *nativeHandle                ();
 
     void                        makeCurrent                 (uint32_t index = 0) const;
 
 private:
+    void                        updateTexture               ();
+    void                        destroyTexture              ();
+
     uint32_t                    m_Buffer;
 
     uint32_t                    m_ID;

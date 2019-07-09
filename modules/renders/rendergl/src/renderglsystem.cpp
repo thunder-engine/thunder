@@ -102,3 +102,7 @@ void RenderGLSystem::update(Scene *scene) {
         pipe->draw(scene, *camera);
     }
 }
+
+bool RenderGLSystem::isThreadFriendly() const {
+    return false;
+}

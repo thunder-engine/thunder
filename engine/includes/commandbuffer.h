@@ -32,7 +32,7 @@ public:
 
     virtual void                drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false);
 
-    virtual void                setRenderTarget             (const TargetBuffer &target, const RenderTexture *depth = nullptr);
+    virtual void                setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr);
 
     virtual void                setRenderTarget             (uint32_t target);
 
@@ -46,7 +46,7 @@ public:
 
     virtual void                setGlobalValue              (const char *name, const Variant &value);
 
-    virtual void                setGlobalTexture            (const char *name, const Texture *value);
+    virtual void                setGlobalTexture            (const char *name, Texture *value);
 
     virtual void                setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -54,7 +54,7 @@ public:
 
     virtual Matrix4             modelView                   () const;
 
-    virtual const Texture      *texture                     (const char *name) const;
+    virtual Texture            *texture                     (const char *name) const;
 
     static Vector4              idToColor                   (uint32_t id);
 

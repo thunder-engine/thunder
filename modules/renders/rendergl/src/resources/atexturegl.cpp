@@ -5,33 +5,41 @@
 #define DATA    "Data"
 
 ATextureGL::ATextureGL() :
-    m_ID(0) {
+        m_ID(0) {
 
 }
 
-void ATextureGL::clear() {
-    Texture::clear();
-
-    if(m_ID) {
-        glDeleteTextures(1, &m_ID);
-        CheckGLError();
-        m_ID = 0;
+void *ATextureGL::nativeHandle() {
+    switch(state()) {
+        case Suspend: {
+            destroyTexture();
+            setState(ToBeDeleted);
+        } break;
+        case ToBeUpdated: {
+            updateTexture();
+            setState(Ready);
+        } break;
+        default: break;
     }
+
+    return (void *)m_ID;
 }
 
-void ATextureGL::apply() {
-    Texture::apply();
+void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
+    bool depth = (format() == Depth);
 
-    if(getSides()->empty()) {
-        return;
-    }
+    Surface &surface = getSides()->at(0);
 
-    bool update = false;
+    glReadPixels( x, y, width, height,
+                 (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
+                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
+    CheckGLError();
+}
+
+void ATextureGL::updateTexture() {
     if(!m_ID) {
         glGenTextures(1, &m_ID);
         CheckGLError();
-    } else {
-        update  = true;
     }
 
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
@@ -60,10 +68,9 @@ void ATextureGL::apply() {
             uploadTextureCubemap(getSides(), internal, glformat);
         } break;
         default: {
-            uploadTexture2D(getSides(), 0, target, internal, glformat, update);
+            uploadTexture2D(getSides(), 0, target, internal, glformat);
         } break;
     }
-
     //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
 
     bool mipmap = (getSides()->at(0).size() > 1);
@@ -93,22 +100,17 @@ void ATextureGL::apply() {
     //float aniso = 0.0f;
     //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
     //glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
-
-    glBindTexture(target, 0);
 }
 
-void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
-    bool depth = (format() == Depth);
-
-    Surface &surface = getSides()->at(0);
-
-    glReadPixels( x, y, width, height,
-                 (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
-                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
-    CheckGLError();
+void ATextureGL::destroyTexture() {
+    if(m_ID) {
+        glDeleteTextures(1, &m_ID);
+        CheckGLError();
+        m_ID = 0;
+    }
 }
 
-bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, bool update) {
+bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format) {
     const Surface &image = (*sides)[imageIndex];
 
     if(isCompressed()) {
@@ -135,13 +137,8 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            if(update) {
-                glTexSubImage2D(target, i, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
-                CheckGLError();
-            } else {
-                glTexImage2D(target, i, internal, w, h, 0, format, GL_UNSIGNED_BYTE, data);
-                CheckGLError();
-            }
+            glTexImage2D(target, i, internal, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+            CheckGLError();
 
             w   = MAX(w / 2, 1);
             h   = MAX(h / 2, 1);

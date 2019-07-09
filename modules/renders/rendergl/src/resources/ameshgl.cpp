@@ -8,81 +8,23 @@ AMeshGL::AMeshGL() :
         m_InstanceBuffer(0) {
 }
 
-AMeshGL::~AMeshGL() {
-    clear();
-}
-
-void AMeshGL::apply() {
-    Mesh::apply();
-
-    if(!m_InstanceBuffer) {
-        glGenBuffers(1, &m_InstanceBuffer);
-    }
-
-    uint8_t flag = flags();
-    uint32_t count = lodsCount();
-
-    m_triangles.resize(count);
-    m_vertices.resize(count);
-
-    glGenBuffers(count, &m_triangles[0]);
-    glGenBuffers(count, &m_vertices[0]);
-
-    if(flag & Mesh::ATTRIBUTE_NORMALS) {
-        m_normals.resize(count);
-        glGenBuffers(count, &m_normals[0]);
-    }
-    if(flag & Mesh::ATTRIBUTE_TANGENTS) {
-        m_tangents.resize(count);
-        glGenBuffers(count, &m_tangents[0]);
-    }
-    if(flag & Mesh::ATTRIBUTE_UV0) {
-        m_uv0.resize(count);
-        glGenBuffers(count, &m_uv0[0]);
-    }
-
-    bool dynamic = isDynamic();
-
-    for(uint32_t l = 0; l < count; l++) {
-        Lod *lod = getLod(l);
-
-        uint32_t vCount = lod->vertices.size();
-        if(!lod->vertices.empty()) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_vertices[l]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->vertices[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(!lod->indices.empty()) {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[l]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * lod->indices.size(), &lod->indices[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::ATTRIBUTE_NORMALS) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_normals[l]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->normals[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::ATTRIBUTE_TANGENTS) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_tangents[l]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->tangents[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::ATTRIBUTE_UV0) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_uv0[l]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, &lod->uv0[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(m_Vao.size() <= l) {
-            m_Vao.push_back(VaoMap());
-        }
-        if(dynamic) {
-            for(auto it : m_Vao[l]) {
-                glDeleteVertexArrays(1, &(it.second));
-            }
-            m_Vao[l].clear();
-        }
-    }
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
+    switch(state()) {
+        case ToBeUpdated: {
+            updateVbo();
+
+            setState(Ready);
+        }
+        case Ready: break;
+        case Suspend: {
+            destroyVbo();
+            destroyVao();
+
+            setState(ToBeDeleted);
+        }
+        default: return;
+    }
+
     VaoMap *map = &(m_Vao[lod]);
     auto it = map->find(buffer);
     if(it != map->end() && glIsVertexArray(it->second)) {
@@ -151,13 +93,87 @@ void AMeshGL::updateVao(uint32_t lod) {
 */
 }
 
-uint32_t AMeshGL::instance() const {
-    return m_InstanceBuffer;
+void AMeshGL::updateVbo() {
+    if(!m_InstanceBuffer) {
+        glGenBuffers(1, &m_InstanceBuffer);
+    }
+
+    uint32_t count = lodsCount();
+    uint8_t flag = flags();
+
+    if(m_triangles.size() < count) {
+        m_triangles.resize(count);
+        m_vertices.resize(count);
+
+        glGenBuffers(count, &m_triangles[0]);
+        glGenBuffers(count, &m_vertices[0]);
+
+        if(flag & Mesh::ATTRIBUTE_NORMALS) {
+            m_normals.resize(count);
+            glGenBuffers(count, &m_normals[0]);
+        }
+        if(flag & Mesh::ATTRIBUTE_TANGENTS) {
+            m_tangents.resize(count);
+            glGenBuffers(count, &m_tangents[0]);
+        }
+        if(flag & Mesh::ATTRIBUTE_UV0) {
+            m_uv0.resize(count);
+            glGenBuffers(count, &m_uv0[0]);
+        }
+    }
+
+    bool dynamic = isDynamic();
+
+    for(uint32_t l = 0; l < count; l++) {
+        Lod *lod = getLod(l);
+
+        uint32_t vCount = lod->vertices.size();
+        if(!lod->vertices.empty()) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertices[l]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->vertices[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        if(!lod->indices.empty()) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[l]);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * lod->indices.size(), &lod->indices[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        if(flag & Mesh::ATTRIBUTE_NORMALS) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_normals[l]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->normals[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        if(flag & Mesh::ATTRIBUTE_TANGENTS) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_tangents[l]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &lod->tangents[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        if(flag & Mesh::ATTRIBUTE_UV0) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_uv0[l]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, &lod->uv0[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        if(m_Vao.size() <= l) {
+            m_Vao.push_back(VaoMap());
+        }
+        if(dynamic) {
+            for(auto it : m_Vao[l]) {
+                glDeleteVertexArrays(1, &(it.second));
+            }
+            m_Vao[l].clear();
+        }
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void AMeshGL::clear() {
+void AMeshGL::destroyVao() {
+    for(uint32_t l = 0; l < lodsCount(); l++) {
+        for(auto it : m_Vao[l]) {
+            glDeleteVertexArrays(1, &(it.second));
+        }
+    }
+    m_Vao.clear();
+}
+
+void AMeshGL::destroyVbo() {
     if(m_vertices.empty() && m_triangles.empty()) {
-        Mesh::clear();
         return;
     }
     glDeleteBuffers(static_cast<int32_t>(m_vertices.size()), &m_vertices[0]);
@@ -177,13 +193,6 @@ void AMeshGL::clear() {
         glDeleteBuffers(static_cast<int32_t>(m_uv0.size()), &m_uv0[0]);
     }
 
-    for(uint32_t l = 0; l < lodsCount(); l++) {
-        for(auto it : m_Vao[l]) {
-            glDeleteVertexArrays(1, &(it.second));
-        }
-    }
-    m_Vao.clear();
-
     glDeleteBuffers(1, &m_InstanceBuffer);
 
     m_triangles.clear();
@@ -192,6 +201,8 @@ void AMeshGL::clear() {
     m_normals.clear();
     m_tangents.clear();
     m_uv0.clear();
+}
 
-    Mesh::clear();
+uint32_t AMeshGL::instance() const {
+    return m_InstanceBuffer;
 }

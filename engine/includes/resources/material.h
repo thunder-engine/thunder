@@ -9,11 +9,11 @@ class Material;
 class NEXT_LIBRARY_EXPORT MaterialInstance {
 public:
     struct Info {
-        uint32_t                type;
+        uint32_t type;
 
-        uint32_t                count;
+        uint32_t count;
 
-        const void             *ptr;
+        void *ptr;
     };
 
     typedef unordered_map<string, Info>             InfoMap;
@@ -25,20 +25,20 @@ public:
 
     Material                   *material            () const;
 
-    const Texture              *texture             (const char *name);
+    Texture                    *texture             (const char *name);
 
     InfoMap                     params              () const;
 
-    void                        setInteger          (const char *name, const int32_t *value, uint32_t count = 1);
+    void                        setInteger          (const char *name, int32_t *value, uint32_t count = 1);
 
-    void                        setFloat            (const char *name, const float   *value, uint32_t count = 1);
-    void                        setVector2          (const char *name, const Vector2 *value, uint32_t count = 1);
-    void                        setVector3          (const char *name, const Vector3 *value, uint32_t count = 1);
-    void                        setVector4          (const char *name, const Vector4 *value, uint32_t count = 1);
+    void                        setFloat            (const char *name, float *value, uint32_t count = 1);
+    void                        setVector2          (const char *name, Vector2 *value, uint32_t count = 1);
+    void                        setVector3          (const char *name, Vector3 *value, uint32_t count = 1);
+    void                        setVector4          (const char *name, Vector4 *value, uint32_t count = 1);
 
-    void                        setMatrix4          (const char *name, const Matrix4 *value, uint32_t count = 1);
+    void                        setMatrix4          (const char *name, Matrix4 *value, uint32_t count = 1);
 
-    void                        setTexture          (const char *name, const Texture *value, uint32_t count = 1);
+    void                        setTexture          (const char *name, Texture *value, uint32_t count = 1);
 
 protected:
     Material                   *m_pMaterial;
@@ -77,7 +77,7 @@ public:
         Oriented                = (1<<3)
     };
 
-    typedef map<string, const Texture *>    TextureMap;
+    typedef map<string, Texture *> TextureMap;
 
 public:
     Material ();
@@ -99,7 +99,7 @@ public:
     bool                        isDepthTest                 () const;
     void                        setDepthTest                (bool flag);
 
-    void                        setTexture                  (const string &name, const Texture *texture);
+    void                        setTexture                  (const string &name, Texture *texture);
 
     uint8_t                     surfaces                    () const;
 

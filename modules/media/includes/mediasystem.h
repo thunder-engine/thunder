@@ -18,6 +18,8 @@ public:
 
     void                        update                      (Scene *);
 
+    bool                        isThreadFriendly            () const;
+
 protected:
     ALCdevice                  *m_pDevice;
     ALCcontext                 *m_pContext;

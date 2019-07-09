@@ -9,29 +9,28 @@ ARenderTextureGL::ARenderTextureGL() :
     setHeight(1);
 }
 
-ARenderTextureGL::~ARenderTextureGL() {
-    clear();
+void *ARenderTextureGL::nativeHandle() {
+    switch(state()) {
+        case Suspend: {
+            destroyTexture();
+
+            setState(ToBeDeleted);
+        } break;
+        case ToBeUpdated: {
+            updateTexture();
+
+            setState(Ready);
+        } break;
+        default: break;
+    }
+
+    return reinterpret_cast<void *>(m_ID);
 }
 
-void ARenderTextureGL::clear() {
-    Texture::clear();
-
-    if(m_Buffer) {
-        glDeleteFramebuffers(1, &m_Buffer);
-    }
-    m_Buffer    = 0;
-
-    if(m_ID) {
-        glDeleteTextures(1, &m_ID);
-    }
-    m_ID = 0;
-}
-
-void ARenderTextureGL::apply() {
+void ARenderTextureGL::updateTexture() {
     if(!m_Buffer) {
         glGenFramebuffers(1, &m_Buffer);
     }
-
     if(!m_ID) {
         glGenTextures(1, &m_ID);
     }
@@ -100,6 +99,18 @@ void ARenderTextureGL::apply() {
     } else {
         glTexImage2D    ( target, 0, internal, width(), height(), 0, glformat, type, nullptr );
     }
+}
+
+void ARenderTextureGL::destroyTexture() {
+    if(m_Buffer) {
+        glDeleteFramebuffers(1, &m_Buffer);
+    }
+    m_Buffer    = 0;
+
+    if(m_ID) {
+        glDeleteTextures(1, &m_ID);
+    }
+    m_ID = 0;
 }
 
 void ARenderTextureGL::makeCurrent(uint32_t index) const {

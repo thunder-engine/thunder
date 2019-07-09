@@ -18,6 +18,8 @@ public:
 
     void                        update                      (Scene *scene);
 
+    bool                        isThreadFriendly            () const;
+
 };
 
 #endif // RENDERGLSYSTEM_H

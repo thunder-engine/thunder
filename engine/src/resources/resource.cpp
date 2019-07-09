@@ -3,10 +3,14 @@
 class ResourcePrivate {
 public:
     ResourcePrivate() :
-        m_Valid(false) {
+        m_State(Resource::Invalid),
+        m_Last(Resource::Invalid),
+        m_ReferenceCount(0) {
 
     }
-    bool m_Valid;
+    Resource::ResourceState m_State;
+    Resource::ResourceState m_Last;
+    uint32_t m_ReferenceCount;
 };
 
 Resource::Resource() :
@@ -18,10 +22,25 @@ Resource::~Resource() {
     delete p_ptr;
 }
 
-bool Resource::isValid() {
-    return p_ptr->m_Valid;
+Resource::ResourceState Resource::state() const {
+    return p_ptr->m_State;
 }
 
-void Resource::setValid(bool valid) {
-    p_ptr->m_Valid = valid;
+void Resource::setState(ResourceState state) {
+    p_ptr->m_State = state;
+}
+
+void Resource::incRef() {
+    if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State == Suspend) {
+        p_ptr->m_State = p_ptr->m_Last;
+    }
+    p_ptr->m_ReferenceCount++;
+}
+
+void Resource::decRef() {
+    p_ptr->m_ReferenceCount--;
+    if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State != Suspend) {
+        p_ptr->m_Last = p_ptr->m_State;
+        p_ptr->m_State = Suspend;
+    }
 }

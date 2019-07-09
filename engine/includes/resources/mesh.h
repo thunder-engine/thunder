@@ -57,9 +57,6 @@ public:
     Mesh ();
     ~Mesh ();
 
-    virtual void apply ();
-    virtual void clear ();
-
     bool isDynamic () const;
     void makeDynamic ();
 
@@ -87,6 +84,8 @@ public:
 
 protected:
     Lod *getLod(uint32_t lod) const;
+
+    virtual void clear ();
 
 private:
     void loadUserData (const VariantMap &data) override;

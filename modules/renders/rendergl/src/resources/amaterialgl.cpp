@@ -9,15 +9,9 @@
 #include <file.h>
 #include <log.h>
 
-AMaterialGL::~AMaterialGL() {
-    clear();
-}
-
 void AMaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
-    // Number of shader pairs calculation
 
-    map<uint16_t, string> shaders;
     switch(m_MaterialType) {
         case PostProcess: {
             m_DoubleSided   = true;
@@ -39,19 +33,19 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             {
                 auto it = data.find("Simple");
                 if(it != data.end()) {
-                    shaders[Simple] = (*it).second.toString();
+                    m_ShaderSources[Simple] = (*it).second.toString();
                 }
             }
             {
                 auto it = data.find("StaticInst");
                 if(it != data.end()) {
-                    shaders[Instanced] = (*it).second.toString();
+                    m_ShaderSources[Instanced] = (*it).second.toString();
                 }
             }
             {
                 auto it = data.find("Particle");
                 if(it != data.end()) {
-                    shaders[Particle] = (*it).second.toString();
+                    m_ShaderSources[Particle] = (*it).second.toString();
                 }
             }
         } break;
@@ -60,33 +54,50 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
     {
         auto it = data.find("Shader");
         if(it != data.end()) {
-            shaders[Default] = (*it).second.toString();
+            m_ShaderSources[Default] = (*it).second.toString();
         }
     }
     {
         auto it = data.find("Static");
         if(it != data.end()) {
-            shaders[Static] = (*it).second.toString();
-        }
-    }
-    for(uint16_t v = Static; v < LastVertex; v++) {
-        auto itv = shaders.find(v);
-        if(itv != shaders.end()) {
-            for(uint16_t f = Default; f < LastFragment; f++) {
-                auto itf = shaders.find(f);
-                if(itf != shaders.end()) {
-                    uint32_t vertex = buildShader(itv->first, itv->second);
-                    uint32_t fragment = buildShader(itf->first, itf->second);
-                    uint32_t index = v * f;
-                    m_Programs[index] = buildProgram(vertex, fragment);
-                }
-            }
+            m_ShaderSources[Static] = (*it).second.toString();
         }
     }
 
+    setState(ToBeUpdated);
 }
 
-uint32_t AMaterialGL::getProgram(uint16_t type) const {
+uint32_t AMaterialGL::getProgram(uint16_t type) {
+    switch(state()) {
+        case Suspend: {
+            for(auto it : m_Programs) {
+                glDeleteProgram(it.second);
+            }
+            m_Programs.clear();
+
+            setState(ToBeDeleted);
+        }
+        case ToBeUpdated: {
+            for(uint16_t v = Static; v < LastVertex; v++) {
+                auto itv = m_ShaderSources.find(v);
+                if(itv != m_ShaderSources.end()) {
+                    for(uint16_t f = Default; f < LastFragment; f++) {
+                        auto itf = m_ShaderSources.find(f);
+                        if(itf != m_ShaderSources.end()) {
+                            uint32_t vertex = buildShader(itv->first, itv->second);
+                            uint32_t fragment = buildShader(itf->first, itf->second);
+                            uint32_t index = v * f;
+                            m_Programs[index] = buildProgram(vertex, fragment);
+                        }
+                    }
+                }
+            }
+
+            setState(Ready);
+        }
+        default: break;
+    }
+
     auto it = m_Programs.find(type);
     if(it != m_Programs.end()) {
         return it->second;
@@ -95,7 +106,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) const {
 }
 
 uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
-    int32_t b   = blendMode();
+    int32_t b = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
@@ -113,7 +124,7 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
         } break;
         default: break;
     }
-    uint32_t program    = getProgram(vertex * type);
+    uint32_t program = getProgram(vertex * type);
     if(!program) {
         return 0;
     }
@@ -149,15 +160,6 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
     }
 
     return program;
-}
-
-void AMaterialGL::clear() {
-    Material::clear();
-
-    for(auto it : m_Programs) {
-        glDeleteProgram(it.second);
-    }
-    m_Programs.clear();
 }
 
 uint32_t AMaterialGL::buildShader(uint16_t type, const string &src) {

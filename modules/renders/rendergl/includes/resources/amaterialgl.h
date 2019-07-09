@@ -29,15 +29,11 @@ class AMaterialGL : public Material {
     typedef unordered_map<uint16_t, uint32_t> ObjectMap;
 
 public:
-    ~AMaterialGL                ();
-
-    void                        clear           ();
-
     void                        loadUserData    (const VariantMap &data);
 
     uint32_t                    bind            (uint32_t layer, uint16_t vertex);
 
-    uint32_t                    getProgram      (uint16_t type) const;
+    uint32_t                    getProgram      (uint16_t type);
 
     TextureMap                  textures        () const { return m_Textures; }
 
@@ -50,6 +46,8 @@ protected:
 
 private:
     ObjectMap                   m_Programs;
+
+    map<uint16_t, string>       m_ShaderSources;
 
 };
 

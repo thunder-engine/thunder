@@ -230,7 +230,6 @@ void Font::requestCharacters(const u32string &characters) {
         }
     }
     pack(1);
-    texture()->apply();
 }
 
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {

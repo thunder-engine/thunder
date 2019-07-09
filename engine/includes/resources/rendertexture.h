@@ -19,7 +19,7 @@ public:
 
     void setFixed (bool fixed);
 
-    void resize  (int32_t width, int32_t height);
+    void resize (int32_t width, int32_t height);
 
     virtual void makeCurrent (uint32_t index = 0) const;
 

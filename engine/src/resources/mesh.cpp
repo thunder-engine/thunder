@@ -42,10 +42,6 @@ Mesh::~Mesh() {
     delete p_ptr;
 }
 
-void Mesh::apply() {
-
-}
-
 void Mesh::clear() {
     p_ptr->m_Lods.clear();
 }
@@ -161,7 +157,7 @@ void Mesh::loadUserData(const VariantMap &data) {
         }
         p_ptr->m_Box.setBox(bb[0], bb[1]);
     }
-    apply();
+    setState(ToBeUpdated);
 }
 
 Material *Mesh::material(uint32_t lod) const {
@@ -229,11 +225,14 @@ void Mesh::setFlags(uint8_t flags) {
 
 void Mesh::addLod(const Lod &lod) {
     p_ptr->m_Lods.push_back(lod);
+
+    setState(ToBeUpdated);
 }
 
 void Mesh::setLod(uint32_t index, const Lod &lod) {
     if(index < lodsCount()) {
         p_ptr->m_Lods[index] = lod;
+        setState(ToBeUpdated);
     } else {
         addLod(lod);
     }

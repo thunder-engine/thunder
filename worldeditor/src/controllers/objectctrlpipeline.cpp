@@ -34,7 +34,6 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
         Pipeline() {
     RenderTexture *select   = Engine::objectCreate<RenderTexture>();
     select->setTarget(Texture::RGBA8);
-    select->apply();
     m_Targets[SELECT_MAP]   = select;
     m_Buffer->setGlobalTexture(SELECT_MAP,  select);
 
@@ -62,7 +61,6 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
 
     m_pGrid->setMode(Mesh::MODE_LINES);
     m_pGrid->addLod(lod);
-    m_pGrid->apply();
 
     Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
     if(m) {

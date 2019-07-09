@@ -7,6 +7,7 @@
 
 #include <resources/pipeline.h>
 #include <resources/material.h>
+#include <resources/rendertexture.h>
 
 #include <handles/handles.h>
 
@@ -50,7 +51,7 @@ void Viewport::paintGL() {
             Pipeline *pipeline  = Camera::current()->pipeline();
 
             MaterialInstance *sprite    = pipeline->sprite();
-            sprite->setTexture(OVERRIDE, reinterpret_cast<const Texture *>(pipeline->target(m_Target)));
+            sprite->setTexture(OVERRIDE, pipeline->target(m_Target));
 
             m_pCommandBuffer->setScreenProjection();
             m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), ICommandBuffer::UI, sprite);

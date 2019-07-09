@@ -16,18 +16,16 @@ public:
 public:
     AMeshGL                     ();
 
-    ~AMeshGL                    ();
-
-    void                        apply               ();
-
-    void                        clear               ();
-
     void                        bindVao             (CommandBufferGL *buffer, uint32_t lod);
 
     uint32_t                    instance            () const;
 
 protected:
     void                        updateVao           (uint32_t lod);
+    void                        updateVbo           ();
+
+    void                        destroyVao          ();
+    void                        destroyVbo          ();
 
 public:
     IndexVector m_triangles;
@@ -46,9 +44,9 @@ public:
 
     typedef map<CommandBufferGL *, uint32_t>  VaoMap;
 
-    typedef vector<VaoMap>      VaoVector;
+    typedef vector<VaoMap> VaoVector;
 
-    VaoVector                   m_Vao;
+    VaoVector m_Vao;
 };
 
 #endif // MESHGL_H

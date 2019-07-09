@@ -120,10 +120,6 @@ Texture::~Texture() {
     delete p_ptr;
 }
 
-void Texture::apply() {
-
-}
-
 void Texture::loadUserData(const VariantMap &data) {
     clear();
 
@@ -152,7 +148,6 @@ void Texture::loadUserData(const VariantMap &data) {
             i++;
         }
     }
-
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
@@ -178,7 +173,7 @@ void Texture::loadUserData(const VariantMap &data) {
         }
     }
 
-    apply();
+    setState(ToBeUpdated);
 }
 
 void Texture::addSurface(const Surface &surface) {
@@ -203,7 +198,7 @@ void Texture::clear() {
     p_ptr->m_pRoot = new Node;
 }
 
-void *Texture::nativeHandle() const {
+void *Texture::nativeHandle() {
     return nullptr;
 }
 
@@ -289,6 +284,10 @@ Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
             return pack(textures, padding);
         }
     }
+    ResourceState s = state();
+    if(s != ToBeUpdated) {
+        setState(ToBeUpdated);
+    }
     return result;
 }
 
@@ -306,9 +305,11 @@ void Texture::resize(int32_t width, int32_t height) {
     Texture::Surface s;
     s.push_back(pixels);
     addSurface(s);
+
+    setState(ToBeUpdated);
 }
 
-Texture::FormatType Texture::format () const {
+Texture::FormatType Texture::format() const {
     return p_ptr->m_Format;
 }
 

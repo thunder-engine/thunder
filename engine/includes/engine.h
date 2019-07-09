@@ -14,8 +14,7 @@ class IModule;
 class EnginePrivate;
 
 class Scene;
-
-typedef unordered_map<string, string> StringMap;
+class ISystem;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
@@ -37,6 +36,8 @@ public:
     static Variant              value                       (const string &key, const Variant &defaultValue = Variant());
 
     static void                 setValue                    (const string &key, const Variant &value);
+
+    void                        syncValues                  ();
 /*
     Resource management
 */
@@ -53,7 +54,7 @@ public:
 
     static void                 reloadBundle                ();
 
-    StringMap                   indices                     () const;
+    ISystem                    *resourceSystem              () const;
 
 /*
     Misc
@@ -79,6 +80,8 @@ public:
     void                        updateScene                 (Scene *scene);
 
     static void                 setResource                 (Object *object, const string &uuid);
+
+    void                        processEvents               ();
 
 private:
     EnginePrivate              *p_ptr;

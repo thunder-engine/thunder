@@ -11,9 +11,9 @@
                 int argc    = 0; \
                 for (int i = 0; i < w_argc; ++i) { \
                     int w_len   = lstrlenW(w_argv[i]); \
-                    int len     = WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, NULL, 0, NULL, NULL); \
+                    int len     = WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, nullptr, 0, nullptr, nullptr); \
                     argv[argc]  = new char[len+1]; \
-                    WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, argv[argc], len+1, NULL, NULL); \
+                    WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, argv[argc], len+1, nullptr, nullptr); \
                     ++argc; \
                 } \
                 IFile *file = new IFile; \

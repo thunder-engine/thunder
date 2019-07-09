@@ -170,7 +170,6 @@ public:
                 m_pMesh->setBound(AABBox(bb[0], bb[1]));
                 m_pMesh->setMode(Mesh::MODE_TRIANGLES);
                 m_pMesh->setLod(0, lod);
-                m_pMesh->apply();
             }
         }
     }

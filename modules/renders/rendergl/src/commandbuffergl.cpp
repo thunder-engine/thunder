@@ -106,8 +106,8 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
 
     uint8_t i   = 0;
     for(auto it : mat->textures()) {
-        const Texture *tex  = static_cast<const ATextureGL *>(it.second);
-        const Texture *tmp  = instance->texture(it.first.c_str());
+        Texture *tex  = static_cast<ATextureGL *>(it.second);
+        Texture *tmp  = instance->texture(it.first.c_str());
         if(tmp) {
             tex = tmp;
         } else {
@@ -204,7 +204,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     }
 }
 
-void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTexture *depth) {
+void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture *depth) {
     PROFILER_MARKER;
 
     uint32_t colors[8];
@@ -212,7 +212,7 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTe
     uint32_t buffer = 0;
     if(!target.empty()) {
         for(uint32_t i = 0; i < target.size(); i++) {
-            const ARenderTextureGL *c = static_cast<const ARenderTextureGL *>(target[i]);
+            ARenderTextureGL *c = static_cast<ARenderTextureGL *>(target[i]);
             if(i == 0) {
                 buffer  = c->buffer();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer);
@@ -223,7 +223,7 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, const RenderTe
     }
 
     if(depth) {
-        const ARenderTextureGL *t = static_cast<const ARenderTextureGL *>(depth);
+        ARenderTextureGL *t = static_cast<ARenderTextureGL *>(depth);
         if(!buffer) {
             glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
         }
@@ -239,7 +239,7 @@ void CommandBufferGL::setRenderTarget(uint32_t target) {
     glBindFramebuffer(GL_FRAMEBUFFER, target);
 }
 
-const Texture *CommandBufferGL::texture(const char *name) const {
+Texture *CommandBufferGL::texture(const char *name) const {
     auto it = m_Textures.find(name);
     if(it != m_Textures.end()) {
         return (*it).second;
@@ -267,7 +267,7 @@ void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
     m_Uniforms[name]    = value;
 }
 
-void CommandBufferGL::setGlobalTexture(const char *name, const Texture *value) {
+void CommandBufferGL::setGlobalTexture(const char *name, Texture *value) {
     m_Textures[name]    = value;
 }
 

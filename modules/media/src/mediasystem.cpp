@@ -69,3 +69,7 @@ void MediaSystem::update(Scene *) {
         alListenerfv(AL_ORIENTATION, orientation);
     }
 }
+
+bool MediaSystem::isThreadFriendly() const {
+    return true;
+}
