@@ -7,6 +7,7 @@
 #endif
 #ifdef __GNUC__
     #include <dlfcn.h>
+    #include <sys/stat.h>
 #endif
 #include <GLFW/glfw3.h>
 
