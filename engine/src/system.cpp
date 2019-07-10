@@ -5,6 +5,10 @@ ISystem::ISystem() :
 
 }
 
+void ISystem::syncSettings() const {
+
+}
+
 void ISystem::setActiveScene(Scene *scene) {
     m_pScene = scene;
 }

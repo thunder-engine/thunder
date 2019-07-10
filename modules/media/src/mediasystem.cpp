@@ -70,6 +70,6 @@ void MediaSystem::update(Scene *) {
     }
 }
 
-bool MediaSystem::isThreadFriendly() const {
+bool MediaSystem::isThreadSafe() const {
     return true;
 }

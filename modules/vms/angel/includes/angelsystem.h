@@ -24,7 +24,7 @@ public:
 
     void                        update                      (Scene *);
 
-    bool                        isThreadFriendly            () const;
+    bool                        isThreadSafe                () const;
 
     void                        reload                      ();
 

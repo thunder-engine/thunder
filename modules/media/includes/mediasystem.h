@@ -18,7 +18,7 @@ public:
 
     void                        update                      (Scene *);
 
-    bool                        isThreadFriendly            () const;
+    bool                        isThreadSafe                () const;
 
 protected:
     ALCdevice                  *m_pDevice;

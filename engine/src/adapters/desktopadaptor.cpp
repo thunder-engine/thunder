@@ -295,6 +295,14 @@ string DesktopAdaptor::locationLocalDir() {
 }
 
 void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
+    s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
+    s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
+    s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
+
+    int32_t x, y;
+    glfwGetWindowPos(m_pWindow, &x, &y);
+    glfwSetWindowMonitor(m_pWindow, (s_Windowed) ? nullptr : m_pMonitor, x, y, s_Width, s_Height, GLFW_DONT_CARE);
+
     _FILE *fp = g_pFile->_fopen(CONFIG_NAME, "w");
     if(fp) {
         string data = Json::save(map, 0);

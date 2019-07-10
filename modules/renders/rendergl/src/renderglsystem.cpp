@@ -103,6 +103,6 @@ void RenderGLSystem::update(Scene *scene) {
     }
 }
 
-bool RenderGLSystem::isThreadFriendly() const {
+bool RenderGLSystem::isThreadSafe() const {
     return false;
 }

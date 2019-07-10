@@ -15,7 +15,7 @@ public:
 
     void update (Scene *) override;
 
-    bool isThreadFriendly() const override;
+    bool isThreadSafe() const override;
 
     void setResource(Object *object, const string &uuid);
 

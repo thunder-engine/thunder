@@ -125,7 +125,7 @@ void AngelSystem::update(Scene *scene) {
     }
 }
 
-bool AngelSystem::isThreadFriendly() const {
+bool AngelSystem::isThreadSafe() const {
     return true;
 }
 

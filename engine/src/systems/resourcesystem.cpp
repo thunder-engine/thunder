@@ -30,7 +30,7 @@ void ResourceSystem::update(Scene *) {
     }
 }
 
-bool ResourceSystem::isThreadFriendly() const {
+bool ResourceSystem::isThreadSafe() const {
     return true;
 }
 

@@ -18,7 +18,7 @@ public:
 
     void                        update                      (Scene *scene);
 
-    bool                        isThreadFriendly            () const;
+    bool                        isThreadSafe                () const;
 
 };
 

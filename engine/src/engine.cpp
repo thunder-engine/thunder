@@ -84,8 +84,8 @@ public:
 
     Scene                      *m_pScene;
 
-    list<ISystem *>             m_Friendly;
-    list<ISystem *>             m_Unfriendly;
+    static list<ISystem *>      m_Pool;
+    static list<ISystem *>      m_Serial;
 
     static IFile               *m_pFile;
 
@@ -120,6 +120,9 @@ string            EnginePrivate::m_Organization;
 string            EnginePrivate::m_Application;
 IPlatformAdaptor *EnginePrivate::m_pPlatform = nullptr;
 ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
+
+list<ISystem *>   EnginePrivate::m_Pool;
+list<ISystem *>   EnginePrivate::m_Serial;
 
 typedef Vector4 Color;
 
@@ -156,7 +159,7 @@ Engine::Engine(IFile *file, const char *path) :
     PROFILER_MARKER;
 
     p_ptr->m_pResourceSystem = new ResourceSystem;
-    p_ptr->m_Unfriendly.push_back(p_ptr->m_pResourceSystem);
+    EnginePrivate::m_Serial.push_back(p_ptr->m_pResourceSystem);
 
     EnginePrivate::m_ApplicationPath = path;
     Uri uri(EnginePrivate::m_ApplicationPath);
@@ -246,7 +249,7 @@ bool Engine::start() {
 
     p_ptr->m_pPlatform->start();
 
-    for(auto it : p_ptr->m_Friendly) {
+    for(auto it : EnginePrivate::m_Pool) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
             p_ptr->m_pPlatform->stop();
@@ -254,7 +257,7 @@ bool Engine::start() {
         }
         it->setActiveScene(p_ptr->m_pScene);
     }
-    for(auto it : p_ptr->m_Unfriendly) {
+    for(auto it : EnginePrivate::m_Serial) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
             p_ptr->m_pPlatform->stop();
@@ -317,10 +320,10 @@ void Engine::update() {
     processEvents();
     //p_ptr->m_ThreadPool.start(*this);
 
-    for(auto it : p_ptr->m_Friendly) {
+    for(auto it : EnginePrivate::m_Pool) {
         p_ptr->m_ThreadPool.start(*it);
     }
-    for(auto it : p_ptr->m_Unfriendly) {
+    for(auto it : EnginePrivate::m_Serial) {
         it->update(p_ptr->m_pScene);
     }
 
@@ -356,12 +359,19 @@ void Engine::setValue(const string &key, const Variant &value) {
     EnginePrivate::m_Values[key] = value;
 }
 /*!
-    Writes all values.
+    Applies all unsaved settings.
 */
 void Engine::syncValues() {
     PROFILER_MARKER;
 
-    p_ptr->m_pPlatform->syncConfiguration(EnginePrivate::m_Values);
+    for(auto it : EnginePrivate::m_Pool) {
+        it->syncSettings();
+    }
+    for(auto it : EnginePrivate::m_Serial) {
+        it->syncSettings();
+    }
+
+    EnginePrivate::m_pPlatform->syncConfiguration(EnginePrivate::m_Values);
 }
 /*!
     Returns an instance for loading resource by the provided \a path.
@@ -474,10 +484,10 @@ void Engine::addModule(IModule *module) {
     PROFILER_MARKER;
     if(module->types() & IModule::SYSTEM) {
         ISystem *system = module->system();
-        if(system->isThreadFriendly()) {
-            p_ptr->m_Friendly.push_back(system);
+        if(system->isThreadSafe()) {
+            EnginePrivate::m_Pool.push_back(system);
         } else {
-            p_ptr->m_Unfriendly.push_back(system);
+            EnginePrivate::m_Serial.push_back(system);
         }
     }
 }

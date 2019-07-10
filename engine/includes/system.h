@@ -18,7 +18,9 @@ public:
 
     virtual void update (Scene *scene) = 0;
 
-    virtual bool isThreadFriendly() const = 0;
+    virtual bool isThreadSafe () const = 0;
+
+    virtual void syncSettings () const;
 
     void setActiveScene (Scene *scene);
 

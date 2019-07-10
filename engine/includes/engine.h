@@ -37,7 +37,7 @@ public:
 
     static void                 setValue                    (const string &key, const Variant &value);
 
-    void                        syncValues                  ();
+    static void                 syncValues                  ();
 /*
     Resource management
 */
