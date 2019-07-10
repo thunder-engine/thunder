@@ -267,7 +267,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
-    Vector3 result  = position;
+    Vector3 result = position;
     if(inited) {
         Camera *camera  = Camera::current();
         if(camera) {
@@ -299,11 +299,11 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
                 } else if((HandleTools::distanceToMesh(z, s_Move) <= sense) ||
                           (HandleTools::distanceToMesh(y * r, s_Move) <= sense)) {
                     s_Axes  = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, s_Move) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Axis) <= sense) {
                     s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Move) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Axis) <= sense) {
                     s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Move) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Axis) <= sense) {
                     s_Axes  = AXIS_Z;
                 }
             }
@@ -351,15 +351,17 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 
             Plane plane;
             plane.point     = position;
-            plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0, 0.0, 1.0);
+            plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X || s_Axes == AXIS_Z) {
                 plane.normal    = Vector3(0.0f, plane.normal.y, plane.normal.z);
+            }  else if(s_Axes == (AXIS_X | AXIS_Z)) {
+                plane.normal    = Vector3(0.0f, 1.0f, 0.0f);
             } else if(s_Axes == (AXIS_X | AXIS_Y)) {
                 plane.normal    = Vector3(0.0f, 0.0f, 1.0f);
             } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
                 plane.normal    = Vector3(1.0f, 0.0f, 0.0f);
             } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-                plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0, 0.0, 1.0);
+                plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
                 plane.normal    = Vector3(plane.normal.x, 0.0f, plane.normal.z);
             }
             plane.d = plane.normal.dot(plane.point);
@@ -368,13 +370,13 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             Vector3 point;
             ray.intersect(plane, &point, true);
             if(s_Axes & AXIS_X) {
-                result.x    = point.x;
+                result.x = point.x;
             }
             if(s_Axes & AXIS_Y) {
-                result.y    = point.y;
+                result.y = point.y;
             }
             if(s_Axes & AXIS_Z) {
-                result.z    = point.z;
+                result.z = point.z;
             }
 
         }
