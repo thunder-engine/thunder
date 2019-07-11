@@ -76,6 +76,9 @@ void ObjectCtrlPipeline::loadSettings() {
 }
 
 void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
+    ObjectList filter = frustumCulling(m_Components, camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
+    sortByDistance(filter, camera.actor()->transform()->position());
+
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget(true, Vector4(0.0));
@@ -83,11 +86,7 @@ void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::RAYCAST, m_Components);
-
-    ObjectList filter = frustumCulling(m_Components, camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
-
-    sortByDistance(filter, camera.actor()->transform()->position());
+    drawComponents(ICommandBuffer::RAYCAST, filter);
 
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", scene->ambient());

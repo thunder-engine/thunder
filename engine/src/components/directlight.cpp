@@ -64,9 +64,9 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
-        Matrix4 m = actor()->transform()->worldTransform();
+        Quaternion q = actor()->transform()->worldRotation();
 
-        p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 0.0f, 1.0f);
+        p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), mesh, layer, instance);
@@ -101,7 +101,7 @@ bool DirectLight::drawHandles() {
     Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
     Handles::s_Color = Handles::s_Second = color();
     Handles::drawArrow(Matrix4(pos, actor()->transform()->rotation(), Vector3(0.5f)) * z);
-    bool result = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/directlight.png"));
+    bool result = Handles::drawBillboard(pos, Vector2(0.1f), Engine::loadResource<Texture>(".embedded/directlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

@@ -5,7 +5,7 @@
 #include "projectmanager.h"
 #include "settingsmanager.h"
 
-#include "platforms/iplatform.h"
+#include "platforms/desktop.h"
 
 #include <QCoreApplication>
 
@@ -36,7 +36,10 @@ void Builder::package(const QString &target) {
     QFileInfo info(target);
     QString dir = info.absolutePath();
 #if defined(Q_OS_MAC)
-    dir     = target + "/Contents/MacOS";
+    dir = target;
+    if(dynamic_cast<DesktopPlatform *>(ProjectManager::instance()->currentPlatform())) {
+        dir += "/Contents/MacOS";
+    }
 #endif
     dir    += "/base.pak";
 

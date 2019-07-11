@@ -95,9 +95,9 @@ float getShadowVarianceSample(sampler2D map, vec2 coord, float t) {
     float d = t - m.x;
     float pm = linstep(0.2, 1.0, v / (v + d * d));
 
-    return clamp(max(p, pm), 0.0, 1.0);
+    return max(p, pm);
 }
 
 float getShadow(sampler2D map, vec2 coord, float t) {
-    return getShadowSample(map, coord, t);
+    return clamp(getShadowSamplePCF(map, coord, t), 0.0, 1.0);
 }

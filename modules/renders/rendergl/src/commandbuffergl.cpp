@@ -252,7 +252,8 @@ void CommandBufferGL::setColor(const Vector4 &color) {
 }
 
 void CommandBufferGL::resetViewProjection() {
-    setViewProjection(m_SaveView, m_SaveProjection);
+    m_View          = m_SaveView;
+    m_Projection    = m_SaveProjection;
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {

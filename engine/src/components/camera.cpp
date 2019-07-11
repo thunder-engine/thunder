@@ -268,12 +268,14 @@ void Camera::setCurrent(Camera *current) {
 bool Camera::drawHandles() {
     array<Vector3, 8> a = frustumCorners(nearPlane(), farPlane());
 
+    Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
     Vector3Vector points(a.begin(), a.end());
     Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
                                    4, 5, 5, 6, 6, 7, 7, 4,
                                    0, 4, 1, 5, 2, 6, 3, 7};
 
     Handles::drawLines(Matrix4(), points, indices);
-    return Handles::drawBillboard(actor()->transform()->position(), Vector2(1.0), Engine::loadResource<Texture>(".embedded/camera.png"));
+    Handles::s_Color = Handles::s_Normal;
+    return Handles::drawBillboard(actor()->transform()->position(), Vector2(0.1f), Engine::loadResource<Texture>(".embedded/camera.png"));
 }
 #endif

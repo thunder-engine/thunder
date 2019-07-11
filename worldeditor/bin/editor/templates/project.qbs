@@ -109,6 +109,13 @@ Project {
             cpp.minimumIosVersion: "10.0"
         }
         Properties {
+            condition: qbs.targetOS[0] === "tvos"
+            cpp.weakFrameworks: [ "OpenGLES", "UIKit", "CoreGraphics", "Foundation", "QuartzCore" ]
+            cpp.dynamicLibraries: [ "z" ]
+            cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
+            cpp.minimumTvosVersion: "10.0"
+        }
+        Properties {
             condition: qbs.targetOS[0] === "android"
             Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: "android-21"

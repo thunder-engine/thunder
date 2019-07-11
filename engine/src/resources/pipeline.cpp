@@ -19,10 +19,14 @@
 
 #include <algorithm>
 
-#define SM_RESOLUTION_DEFAULT 1024
-#define SM_RESOLUTION 2048
+#include <float.h>
+
+#define SM_RESOLUTION_DEFAULT 2048
+#define SM_RESOLUTION 4096
 
 #define MAX_LODS 4
+
+#define SPLIT_WEIGHT 0.95f // 0.75f
 
 #define G_NORMALS   "normalsMap"
 #define G_DIFFUSE   "diffuseMap"
@@ -219,24 +223,36 @@ void Pipeline::updateShadows(Camera &camera, Object *object) {
 void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
     Vector4 distance;
 
+    float nearPlane = camera.nearPlane();
+
     Matrix4 p   = camera.projectionMatrix();
     {
-        float split     = 0.95f;
-        float nearPlane = camera.nearPlane();
+        float split     = SPLIT_WEIGHT;
         float farPlane  = camera.farPlane();
+        float ratio = farPlane / nearPlane;
+
         for(int i = 0; i < MAX_LODS; i++) {
             float f = (i + 1) / static_cast<float>(MAX_LODS);
-            float l = nearPlane * powf(farPlane / nearPlane, f);
+            float l = nearPlane * powf(ratio, f);
             float u = nearPlane + (farPlane - nearPlane) * f;
             float v = MIX(u, l, split);
-            distance[i]     = v;
-            Vector4 depth   = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
+            distance[i] = v;
+            Vector4 depth = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
             light->normalizedDistance()[i] = depth.z / depth.w;
         }
     }
 
-    float nearPlane = camera.nearPlane();
     Matrix4 view    = Matrix4(light->actor()->transform()->rotation().toMatrix()).inverse();
+
+    Matrix4 scale;
+    scale[0]  = 0.5f;
+    scale[5]  = 0.5f;
+    scale[10] = 0.5f;
+
+    scale[12] = 0.5f;
+    scale[13] = 0.5f;
+    scale[14] = 0.5f;
+
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist  = distance[lod];
         const array<Vector3, 8> &points = camera.frustumCorners(nearPlane, dist);
@@ -259,22 +275,32 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
             view * Vector3(max.x, max.y, max.z),
             view * Vector3(max.x, max.y, min.z)
         };
-        box.setBox(rot, 8);
-        box.box(min, max);
 
-        Matrix4 crop    = Matrix4::ortho(min.x, max.x,
-                                         min.y, max.y,
-                                         -100, 100);
+        float minX = FLT_MAX;
+        float maxX =-FLT_MAX;
+
+        float minY = FLT_MAX;
+        float maxY =-FLT_MAX;
+        for(uint32_t i = 0; i < 8; i++) {
+            minX = MIN(minX, rot[i].x);
+            maxX = MAX(maxX, rot[i].x);
+
+            minY = MIN(minY, rot[i].y);
+            maxY = MAX(maxY, rot[i].y);
+        }
+
+        Matrix4 crop = Matrix4::ortho(minX, maxX,
+                                      minY, maxY,
+                                      -100, 100); /// \todo Must be replaced by the calculations
+
+        light->matrix()[lod] = scale * crop * view;
 
         m_Buffer->setViewProjection(view, crop);
 
-        light->matrix()[lod]    = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f)) * crop * view;
-        // Draw in the depth buffer from position of the light source
         int32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
         int32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
-        //float ratio = camera->ratio();
-        int32_t w  = SM_RESOLUTION_DEFAULT;// / ((ratio < 1.0f) ? ratio : 1.0f);
-        int32_t h  = SM_RESOLUTION_DEFAULT;// / ((ratio > 1.0f) ? ratio : 1.0f);
+        int32_t w  = SM_RESOLUTION_DEFAULT;
+        int32_t h  = SM_RESOLUTION_DEFAULT;
         m_Buffer->setViewport(x, y, w, h);
 
         light->tiles()[lod] = Vector4(static_cast<float>(x) / SM_RESOLUTION,
@@ -282,6 +308,7 @@ void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
                                       static_cast<float>(w) / SM_RESOLUTION,
                                       static_cast<float>(h) / SM_RESOLUTION);
 
+        // Draw in the depth buffer from position of the light source
         drawComponents(ICommandBuffer::SHADOWCAST, m_Components);
     }
 }
@@ -366,9 +393,13 @@ Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3,
 
 struct ObjectComp {
     bool operator() (const Object *left, const Object *right) {
-        Matrix4 m1 = static_cast<const Component *>(left)->actor()->transform()->worldTransform();
-        Matrix4 m2 = static_cast<const Component *>(right)->actor()->transform()->worldTransform();
-        return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+        if(dynamic_cast<const DirectLight *>(left)) {
+            return false;
+        } else {
+            Matrix4 m1 = static_cast<const Component *>(left)->actor()->transform()->worldTransform();
+            Matrix4 m2 = static_cast<const Component *>(right)->actor()->transform()->worldTransform();
+            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+        }
     }
     Vector3 origin;
 };

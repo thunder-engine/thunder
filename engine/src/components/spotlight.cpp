@@ -58,12 +58,11 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         p_ptr->m_Position = actor()->transform()->worldPosition();
 
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
-        p_ptr->m_Direction.normalize();
 
         Vector4 p = params();
 
         Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * distance() * 0.5f,
-                  q, Vector3(p.y * 2.0f, p.y * 2.0f, p.y));
+                  q, Vector3(p.y * 1.5f, p.y * 1.5f, p.y)); // (1.0f - p.z)
 
         buffer.drawMesh(t, mesh, layer, instance);
     }
@@ -105,7 +104,7 @@ bool SpotLight::drawHandles() {
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/spotlight.png"));
+    bool result = Handles::drawBillboard(pos, Vector2(0.1), Engine::loadResource<Texture>(".embedded/spotlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

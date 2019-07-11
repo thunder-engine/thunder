@@ -109,9 +109,9 @@ Transform *Transform::parent() const {
     Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
 */
 void Transform::setParent(Transform *parent) {
-    Vector3 p   = worldPosition();
-    Vector3 e   = worldEuler();
-    Vector3 s   = worldScale();
+    Vector3 p = worldPosition();
+    Vector3 e = worldEuler();
+    Vector3 s = worldScale();
 
     if(p_ptr->m_pParent) {
         auto it = std::find(p_ptr->m_pParent->p_ptr->m_Children.begin(),
@@ -140,7 +140,7 @@ void Transform::setParent(Transform *parent) {
 Matrix4 &Transform::worldTransform() {
     if(p_ptr->m_Dirty) {
         p_ptr->m_Transform = Matrix4(p_ptr->m_Position, p_ptr->m_Rotation, p_ptr->m_Scale);
-        Transform *cur  = p_ptr->m_pParent;
+        Transform *cur = p_ptr->m_pParent;
         while(cur) {
             p_ptr->m_Transform = cur->worldTransform() * p_ptr->m_Transform;
             cur = cur->parent();
@@ -153,11 +153,11 @@ Matrix4 &Transform::worldTransform() {
     Returns current position of the transform in world space.
 */
 Vector3 Transform::worldPosition() const {
-    Vector3 result  = p_ptr->m_Position;
-    Transform *cur  = p_ptr->m_pParent;
+    Vector3 result = p_ptr->m_Position;
+    Transform *cur = p_ptr->m_pParent;
     while(cur) {
-        result  = result * cur->p_ptr->m_Scale;
-        result  = cur->p_ptr->m_Rotation.toMatrix() * result;
+        result = result * cur->p_ptr->m_Scale;
+        result = cur->p_ptr->m_Rotation.toMatrix() * result;
         result += cur->p_ptr->m_Position;
         cur = cur->parent();
     }
@@ -167,8 +167,8 @@ Vector3 Transform::worldPosition() const {
     Returns current rotation of the transform in world space as Euler angles in degrees.
 */
 Vector3 Transform::worldEuler() const {
-    Vector3 result  = p_ptr->m_Euler;
-    Transform *cur  = p_ptr->m_pParent;
+    Vector3 result = p_ptr->m_Euler;
+    Transform *cur = p_ptr->m_pParent;
     while(cur) {
         result += cur->p_ptr->m_Euler;
         cur = cur->parent();
@@ -180,9 +180,9 @@ Vector3 Transform::worldEuler() const {
 */
 Quaternion Transform::worldRotation() const {
     Quaternion result = p_ptr->m_Rotation;
-    Transform *cur  = p_ptr->m_pParent;
+    Transform *cur = p_ptr->m_pParent;
     while(cur) {
-        result = result * cur->p_ptr->m_Rotation;
+        result = cur->p_ptr->m_Rotation * result;
         cur = cur->parent();
     }
     return result;
@@ -191,8 +191,8 @@ Quaternion Transform::worldRotation() const {
     Returns current scale of the transform in world space.
 */
 Vector3 Transform::worldScale() const {
-    Vector3 result  = p_ptr->m_Scale;
-    Transform *cur  = p_ptr->m_pParent;
+    Vector3 result = p_ptr->m_Scale;
+    Transform *cur = p_ptr->m_pParent;
     while(cur) {
         result = result * cur->p_ptr->m_Scale;
         cur = cur->parent();

@@ -252,7 +252,7 @@ void Handles::drawCircle(const Matrix4 &transform, float radius) {
 bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {
     bool result = false;
     if(inited) {
-        Matrix4 model(position, Quaternion(), Vector3(size, 1.0));
+        Matrix4 model(position, Quaternion(), Vector3(size, size.x));
         Matrix4 q   = model * Matrix4(Vector3(), Camera::current()->actor()->transform()->rotation(), Vector3(1.0));
 
         if(HandleTools::distanceToPoint(q, Vector3()) <= sense) {

@@ -77,7 +77,7 @@ bool PointLight::drawHandles() {
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(pos, Vector2(1.0), Engine::loadResource<Texture>(".embedded/pointlight.png"));
+    bool result = Handles::drawBillboard(pos, Vector2(0.1), Engine::loadResource<Texture>(".embedded/pointlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

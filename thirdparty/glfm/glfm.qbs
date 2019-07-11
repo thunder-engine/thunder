@@ -41,7 +41,7 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("ios")
+            condition: qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos")
             files: outer.concat(["src/glfm_platform_ios.m"])
         }
 
