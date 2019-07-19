@@ -76,7 +76,10 @@ void ObjectCtrlPipeline::loadSettings() {
 }
 
 void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
-    ObjectList filter = frustumCulling(m_Components, camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
+    Transform *t = camera.actor()->transform();
+    ObjectList filter = Camera::frustumCulling(m_Components,
+                                               Camera::frustumCorners(camera.orthographic(), (camera.orthographic()) ? camera.orthoHeight() : camera.fov(),
+                                                                      camera.ratio(), t->worldPosition(), t->worldRotation(), camera.nearPlane(), camera.farPlane()));
     sortByDistance(filter, camera.actor()->transform()->position());
 
     // Retrive object id

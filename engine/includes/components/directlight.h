@@ -5,6 +5,8 @@
 
 class DirectLightPrivate;
 
+class Camera;
+
 class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
     A_REGISTER(DirectLight, BaseLight, Components)
 
@@ -22,6 +24,8 @@ public:
 
 private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;
+
+    void shadowsUpdate (const Camera &camera, ICommandBuffer &buffer, ObjectList &components) override;
 
 #ifdef NEXT_SHARED
     bool drawHandles() override;

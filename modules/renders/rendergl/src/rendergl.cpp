@@ -8,7 +8,7 @@ IModule *moduleCreate(Engine *engine) {
 
 RenderGL::RenderGL(Engine *engine) :
         m_pEngine(engine),
-        m_pSystem(new RenderGLSystem()) {
+        m_pSystem(new RenderGLSystem(engine)) {
 }
 
 RenderGL::~RenderGL() {

@@ -21,13 +21,6 @@
 
 #include <float.h>
 
-#define SM_RESOLUTION_DEFAULT 2048
-#define SM_RESOLUTION 4096
-
-#define MAX_LODS 4
-
-#define SPLIT_WEIGHT 0.95f // 0.75f
-
 #define G_NORMALS   "normalsMap"
 #define G_DIFFUSE   "diffuseMap"
 #define G_PARAMS    "paramsMap"
@@ -96,19 +89,15 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::draw(Scene *scene, Camera &camera) {
-    ObjectList filter = frustumCulling(m_Components, camera.frustumCorners(camera.nearPlane(), camera.farPlane()));
-
+    Transform *t = camera.actor()->transform();
+    ObjectList filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(camera.orthographic(), (camera.orthographic()) ? camera.orthoHeight() : camera.fov(),
+                                                                                    camera.ratio(), t->worldPosition(), t->worldRotation(), camera.nearPlane(), camera.farPlane()));
     sortByDistance(filter, camera.actor()->transform()->position());
-
-    // Light prepass
-    m_Buffer->setGlobalValue("light.ambient", scene->ambient());
-
-    m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
-    m_Buffer->clearRenderTarget();
 
     updateShadows(camera, scene);
 
-    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
+    // Light prepass
+    m_Buffer->setGlobalValue("light.ambient", scene->ambient());
 
     cameraReset(camera);
 
@@ -210,107 +199,18 @@ void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
 }
 
 void Pipeline::updateShadows(Camera &camera, Object *object) {
+    m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
+
     for(auto &it : object->getChildren()) {
-        DirectLight *light = dynamic_cast<DirectLight *>(it);
+        BaseLight *light = dynamic_cast<BaseLight *>(it);
         if(light) {
-            directUpdate(camera, light);
+            light->shadowsUpdate(camera, *m_Buffer, m_Components);
         } else {
             updateShadows(camera, it);
         }
     }
-}
 
-void Pipeline::directUpdate(Camera &camera, DirectLight *light) {
-    Vector4 distance;
-
-    float nearPlane = camera.nearPlane();
-
-    Matrix4 p   = camera.projectionMatrix();
-    {
-        float split     = SPLIT_WEIGHT;
-        float farPlane  = camera.farPlane();
-        float ratio = farPlane / nearPlane;
-
-        for(int i = 0; i < MAX_LODS; i++) {
-            float f = (i + 1) / static_cast<float>(MAX_LODS);
-            float l = nearPlane * powf(ratio, f);
-            float u = nearPlane + (farPlane - nearPlane) * f;
-            float v = MIX(u, l, split);
-            distance[i] = v;
-            Vector4 depth = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
-            light->normalizedDistance()[i] = depth.z / depth.w;
-        }
-    }
-
-    Matrix4 view    = Matrix4(light->actor()->transform()->rotation().toMatrix()).inverse();
-
-    Matrix4 scale;
-    scale[0]  = 0.5f;
-    scale[5]  = 0.5f;
-    scale[10] = 0.5f;
-
-    scale[12] = 0.5f;
-    scale[13] = 0.5f;
-    scale[14] = 0.5f;
-
-    for(int32_t lod = 0; lod < MAX_LODS; lod++) {
-        float dist  = distance[lod];
-        const array<Vector3, 8> &points = camera.frustumCorners(nearPlane, dist);
-        nearPlane   = dist;
-
-        AABBox box;
-        box.setBox(&(points.at(0)), 8);
-
-        Vector3 min, max;
-        box.box(min, max);
-
-        Vector3 rot[8]  = {
-            view * Vector3(min.x, min.y, min.z),
-            view * Vector3(min.x, min.y, max.z),
-            view * Vector3(max.x, min.y, max.z),
-            view * Vector3(max.x, min.y, min.z),
-
-            view * Vector3(min.x, max.y, min.z),
-            view * Vector3(min.x, max.y, max.z),
-            view * Vector3(max.x, max.y, max.z),
-            view * Vector3(max.x, max.y, min.z)
-        };
-
-        float minX = FLT_MAX;
-        float maxX =-FLT_MAX;
-
-        float minY = FLT_MAX;
-        float maxY =-FLT_MAX;
-        for(uint32_t i = 0; i < 8; i++) {
-            minX = MIN(minX, rot[i].x);
-            maxX = MAX(maxX, rot[i].x);
-
-            minY = MIN(minY, rot[i].y);
-            maxY = MAX(maxY, rot[i].y);
-        }
-
-        Matrix4 crop = Matrix4::ortho(minX, maxX,
-                                      minY, maxY,
-                                      -100, 100); /// \todo Must be replaced by the calculations
-
-        light->matrix()[lod] = scale * crop * view;
-
-        m_Buffer->setViewProjection(view, crop);
-
-        int32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
-        int32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
-        int32_t w  = SM_RESOLUTION_DEFAULT;
-        int32_t h  = SM_RESOLUTION_DEFAULT;
-        m_Buffer->setViewport(x, y, w, h);
-
-        light->tiles()[lod] = Vector4(static_cast<float>(x) / SM_RESOLUTION,
-                                      static_cast<float>(y) / SM_RESOLUTION,
-                                      static_cast<float>(w) / SM_RESOLUTION,
-                                      static_cast<float>(h) / SM_RESOLUTION);
-
-        // Draw in the depth buffer from position of the light source
-        drawComponents(ICommandBuffer::SHADOWCAST, m_Components);
-    }
+    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 }
 
 RenderTexture *Pipeline::postProcess(RenderTexture &source) {
@@ -318,76 +218,6 @@ RenderTexture *Pipeline::postProcess(RenderTexture &source) {
     //for(auto it : m_PostEffects) {
     //    result  = it->draw(*result, *m_Buffer);
     //}
-    return result;
-}
-
-inline bool intersect(Plane pl[6], Vector3 points[8]) {
-    for(int i = 0; i < 6; i++) {
-        if(pl[i].sqrDistance(points[0]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[1]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[2]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[3]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[4]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[5]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[6]) > 0) {
-            continue;
-        }
-        if(pl[i].sqrDistance(points[7]) > 0) {
-            continue;
-        }
-        return false;
-    }
-    return true;
-}
-
-Object::ObjectList Pipeline::frustumCulling(ObjectList &in, const array<Vector3, 8> &frustum) {
-    Plane pl[6];
-    pl[0]   = Plane(frustum[1], frustum[0], frustum[4]); // top
-    pl[1]   = Plane(frustum[7], frustum[3], frustum[2]); // bottom
-    pl[2]   = Plane(frustum[3], frustum[7], frustum[0]); // left
-    pl[3]   = Plane(frustum[2], frustum[1], frustum[6]); // right
-    pl[4]   = Plane(frustum[0], frustum[1], frustum[3]); // near
-    pl[5]   = Plane(frustum[5], frustum[4], frustum[6]); // far
-
-    Object::ObjectList result;
-    for(auto it : in) {
-        MeshRender *mesh  = dynamic_cast<MeshRender *>(it);
-        if(mesh && mesh->mesh()) {
-            Matrix4 &transform   = mesh->actor()->transform()->worldTransform();
-            Vector3 min, max;
-            mesh->mesh()->bound().box(min, max);
-            Matrix3 r   = transform.rotation();
-            Vector3 t(transform[12], transform[13], transform[14]);
-
-            Vector3 p[8];
-            p[0]    = r * Vector3(min.x, min.y, min.z) + t;
-            p[1]    = r * Vector3(min.x, min.y, max.z) + t;
-            p[2]    = r * Vector3(max.x, min.y, max.z) + t;
-            p[3]    = r * Vector3(max.x, min.y, min.z) + t;
-            p[4]    = r * Vector3(min.x, max.y, min.z) + t;
-            p[5]    = r * Vector3(min.x, max.y, max.z) + t;
-            p[6]    = r * Vector3(max.x, max.y, max.z) + t;
-            p[7]    = r * Vector3(max.x, max.y, min.z) + t;
-
-            if(intersect(pl, p)) {
-                result.push_back(it);
-            }
-        } else {
-            result.push_back(it);
-        }
-    }
     return result;
 }
 

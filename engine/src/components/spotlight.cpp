@@ -2,6 +2,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
+#include "components/camera.h"
 
 #include "commandbuffer.h"
 
@@ -11,14 +12,19 @@
 class SpotLightPrivate {
 public:
     SpotLightPrivate() :
-            m_Angle(45.0f) {
+            m_Angle(45.0f),
+            m_Near(0.1f) {
     }
 
-    Vector3                     m_Position;
+    Vector3 m_Position;
+    Vector3 m_Direction;
 
-    Vector3                     m_Direction;
+    Vector4 m_Tiles;
 
-    float                       m_Angle;
+    Matrix4 m_Matrix;
+
+    float m_Angle;
+    float m_Near;
 };
 /*!
     \class SpotLight
@@ -36,12 +42,17 @@ SpotLight::SpotLight() :
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
     Material *material = Engine::loadResource<Material>(".embedded/SpotLight.mtl");
-    MaterialInstance *instance = material->createInstance();
+    if(material) {
+        MaterialInstance *instance = material->createInstance();
 
-    instance->setVector3("light.position",   &p_ptr->m_Position);
-    instance->setVector3("light.direction",  &p_ptr->m_Direction);
+        instance->setVector3("light.position",   &p_ptr->m_Position);
+        instance->setVector3("light.direction",  &p_ptr->m_Direction);
 
-    setMaterial(instance);
+        instance->setMatrix4("light.matrix",     &p_ptr->m_Matrix);
+        instance->setVector4("light.tiles",      &p_ptr->m_Tiles);
+
+        setMaterial(instance);
+    }
 }
 
 SpotLight::~SpotLight() {
@@ -65,6 +76,51 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
                   q, Vector3(p.y * 1.5f, p.y * 1.5f, p.y)); // (1.0f - p.z)
 
         buffer.drawMesh(t, mesh, layer, instance);
+    }
+}
+/*!
+    \internal
+*/
+void SpotLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components) {
+    A_UNUSED(camera)
+
+    Transform *t = actor()->transform();
+    Vector3 pos = t->worldPosition();
+    Quaternion rot = t->worldRotation();
+    Matrix4 view = Matrix4(rot.toMatrix()).inverse();
+
+    Matrix4 scale;
+    scale[0]  = 0.5f;
+    scale[5]  = 0.5f;
+    scale[10] = 0.5f;
+
+    scale[12] = 0.5f;
+    scale[13] = 0.5f;
+    scale[14] = 0.5f;
+
+    float zFar = params().y;
+    Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle, 1.0f, p_ptr->m_Near, zFar);
+
+    p_ptr->m_Matrix = scale * crop * view;
+
+    int32_t x  = (0 % 2) * SM_RESOLUTION_DEFAULT;
+    int32_t y  = (0 / 2) * SM_RESOLUTION_DEFAULT;
+    int32_t w  = SM_RESOLUTION_DEFAULT;
+    int32_t h  = SM_RESOLUTION_DEFAULT;
+
+    p_ptr->m_Tiles = Vector4(static_cast<float>(x) / SM_RESOLUTION,
+                             static_cast<float>(y) / SM_RESOLUTION,
+                             static_cast<float>(w) / SM_RESOLUTION,
+                             static_cast<float>(h) / SM_RESOLUTION);
+
+    buffer.setViewProjection(view, crop);
+    buffer.setViewport(x, y, w, h);
+
+    ObjectList filter = Camera::frustumCulling(components,
+                                               Camera::frustumCorners(false, p_ptr->m_Angle, 1.0f, pos, rot, p_ptr->m_Near, zFar));
+    // Draw in the depth buffer from position of the light source
+    for(auto it : filter) {
+        static_cast<Renderable *>(it)->draw(buffer, ICommandBuffer::SHADOWCAST);
     }
 }
 /*!

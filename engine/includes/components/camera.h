@@ -63,10 +63,11 @@ public:
     bool orthographic () const;
     void setOrthographic (const bool value);
 
-    array<Vector3, 8> frustumCorners (float nearPlane, float farPlane) const;
-
     static Camera *current ();
     static void setCurrent (Camera *current);
+
+    static array<Vector3, 8> frustumCorners (bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
+    static Object::ObjectList Camera::frustumCulling(ObjectList &in, const array<Vector3, 8> &frustum);
 
 private:
 #ifdef NEXT_SHARED

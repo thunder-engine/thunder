@@ -2,6 +2,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
+#include "components/meshrender.h"
 
 #include "resources/pipeline.h"
 #include "resources/texture.h"
@@ -18,6 +19,37 @@ public:
         m_Ortho      = false;
         m_Color      = Vector4();
         m_pPipeline  = nullptr;
+    }
+
+    static inline bool intersect(Plane pl[6], Vector3 points[8]) {
+        for(int i = 0; i < 6; i++) {
+            if(pl[i].sqrDistance(points[0]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[1]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[2]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[3]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[4]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[5]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[6]) > 0) {
+                continue;
+            }
+            if(pl[i].sqrDistance(points[7]) > 0) {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 
     bool m_Ortho;
@@ -214,34 +246,37 @@ void Camera::setOrthographic(const bool value) {
     p_ptr->m_Ortho = value;
 }
 
-array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const {
+Camera *Camera::current() {
+    return CameraPrivate::s_pCurrent;
+}
+
+void Camera::setCurrent(Camera *current) {
+    CameraPrivate::s_pCurrent = current;
+}
+
+array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane) {
     float nh;
     float fh;
     float nw;
     float fw;
-    if(p_ptr->m_Ortho) {
-        nh    = p_ptr->m_OrthoHeight * 0.5f;
-        nw    = nh * p_ptr->m_Ratio;
+    if(ortho) {
+        nh    = sigma * 0.5f;
+        nw    = nh * ratio;
         fw    = nw;
         fh    = nh;
     } else {
-        float tang  = tanf(p_ptr->m_FOV * DEG2RAD * 0.5f);
+        float tang  = tanf(sigma * DEG2RAD * 0.5f);
         nh    = nearPlane * tang;
         fh    = farPlane * tang;
-        nw    = nh * p_ptr->m_Ratio;
-        fw    = fh * p_ptr->m_Ratio;
+        nw    = nh * ratio;
+        fw    = fh * ratio;
     }
 
-    Transform *t    = actor()->transform();
-
-    Vector3 pos     = t->worldPosition();
-    Quaternion rot  = t->worldRotation();
-
-    Vector3 dir     = rot * Vector3(0.0f, 0.0f,-1.0f);
-    Vector3 right   = dir.cross(rot * Vector3(0.0f, 1.0f, 0.0f));
+    Vector3 dir     = rotation * Vector3(0.0f, 0.0f,-1.0f);
+    Vector3 right   = dir.cross(rotation * Vector3(0.0f, 1.0f, 0.0f));
     Vector3 up      = right.cross(dir);
-    Vector3 nc      = pos + dir * nearPlane;
-    Vector3 fc      = pos + dir * farPlane;
+    Vector3 nc      = position + dir * nearPlane;
+    Vector3 fc      = position + dir * farPlane;
 
     return {nc + up * nh - right * nw,
             nc + up * nh + right * nw,
@@ -254,19 +289,53 @@ array<Vector3, 8> Camera::frustumCorners(float nearPlane, float farPlane) const 
             fc - up * fh - right * fw};
 }
 
-Camera *Camera::current() {
-    return CameraPrivate::s_pCurrent;
-}
+Object::ObjectList Camera::frustumCulling(ObjectList &in, const array<Vector3, 8> &frustum) {
+    Plane pl[6];
+    pl[0]   = Plane(frustum[1], frustum[0], frustum[4]); // top
+    pl[1]   = Plane(frustum[7], frustum[3], frustum[2]); // bottom
+    pl[2]   = Plane(frustum[3], frustum[7], frustum[0]); // left
+    pl[3]   = Plane(frustum[2], frustum[1], frustum[6]); // right
+    pl[4]   = Plane(frustum[0], frustum[1], frustum[3]); // near
+    pl[5]   = Plane(frustum[5], frustum[4], frustum[6]); // far
 
-void Camera::setCurrent(Camera *current) {
-    CameraPrivate::s_pCurrent = current;
+    Object::ObjectList result;
+    for(auto it : in) {
+        MeshRender *mesh  = dynamic_cast<MeshRender *>(it);
+        if(mesh && mesh->mesh()) {
+            Matrix4 &transform   = mesh->actor()->transform()->worldTransform();
+            Vector3 min, max;
+            mesh->bound().box(min, max);
+            Matrix3 r   = transform.rotation();
+            Vector3 t(transform[12], transform[13], transform[14]);
+
+            Vector3 p[8];
+            p[0]    = r * Vector3(min.x, min.y, min.z) + t;
+            p[1]    = r * Vector3(min.x, min.y, max.z) + t;
+            p[2]    = r * Vector3(max.x, min.y, max.z) + t;
+            p[3]    = r * Vector3(max.x, min.y, min.z) + t;
+            p[4]    = r * Vector3(min.x, max.y, min.z) + t;
+            p[5]    = r * Vector3(min.x, max.y, max.z) + t;
+            p[6]    = r * Vector3(max.x, max.y, max.z) + t;
+            p[7]    = r * Vector3(max.x, max.y, min.z) + t;
+
+            if(CameraPrivate::intersect(pl, p)) {
+                result.push_back(it);
+            }
+        } else {
+            result.push_back(it);
+        }
+    }
+    return result;
 }
 
 #ifdef NEXT_SHARED
 #include "handles.h"
 
 bool Camera::drawHandles() {
-    array<Vector3, 8> a = frustumCorners(nearPlane(), farPlane());
+    Transform *t = actor()->transform();
+
+    array<Vector3, 8> a = frustumCorners(p_ptr->m_Ortho, (p_ptr->m_Ortho) ? p_ptr->m_OrthoHeight : p_ptr->m_FOV,
+                                         p_ptr->m_Ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
 
     Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
     Vector3Vector points(a.begin(), a.end());

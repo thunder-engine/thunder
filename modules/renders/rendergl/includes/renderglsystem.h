@@ -5,11 +5,11 @@
 
 #include <system.h>
 
-class APipeline;
+class Engine;
 
 class RenderGLSystem : public ISystem {
 public:
-    RenderGLSystem              ();
+    RenderGLSystem              (Engine *engine);
     ~RenderGLSystem             ();
 
     bool                        init                        ();
@@ -20,6 +20,7 @@ public:
 
     bool                        isThreadSafe                () const;
 
+    Engine *m_pEngine;
 };
 
 #endif // RENDERGLSYSTEM_H

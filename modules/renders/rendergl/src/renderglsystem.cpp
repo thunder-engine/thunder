@@ -16,6 +16,8 @@
 
 #include <log.h>
 
+#define MAX_RESOLUTION 8192
+
 void _CheckGLError(const char* file, int line) {
     GLenum err ( glGetError() );
 
@@ -34,29 +36,32 @@ void _CheckGLError(const char* file, int line) {
     return;
 }
 
-RenderGLSystem::RenderGLSystem() :
-        ISystem() {
+RenderGLSystem::RenderGLSystem(Engine *engine) :
+        ISystem(),
+        m_pEngine(engine) {
     PROFILER_MARKER;
 
-    ATextureGL::registerClassFactory(this);
-    ARenderTextureGL::registerClassFactory(this);
-    AMaterialGL::registerClassFactory(this);
-    AMeshGL::registerClassFactory(this);
+    ISystem *system = m_pEngine->resourceSystem();
 
-    CommandBufferGL::registerClassFactory(this);
+    ATextureGL::registerClassFactory(system);
+    ARenderTextureGL::registerClassFactory(system);
+    AMaterialGL::registerClassFactory(system);
+    AMeshGL::registerClassFactory(system);
+
+    CommandBufferGL::registerClassFactory(m_pEngine);
 }
 
 RenderGLSystem::~RenderGLSystem() {
     PROFILER_MARKER;
 
-    ObjectSystem system;
+    ISystem *system = m_pEngine->resourceSystem();
 
-    ATextureGL::unregisterClassFactory(this);
-    ARenderTextureGL::unregisterClassFactory(this);
-    AMaterialGL::unregisterClassFactory(this);
-    AMeshGL::unregisterClassFactory(this);
+    ATextureGL::unregisterClassFactory(system);
+    ARenderTextureGL::unregisterClassFactory(system);
+    AMaterialGL::unregisterClassFactory(system);
+    AMeshGL::unregisterClassFactory(system);
 
-    CommandBufferGL::unregisterClassFactory(this);
+    CommandBufferGL::unregisterClassFactory(m_pEngine);
 }
 
 /*!
@@ -78,6 +83,12 @@ bool RenderGLSystem::init() {
     int32_t targets;
     glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
     CheckGLError();
+
+    int32_t texture;
+    glGetIntegerv	(GL_MAX_TEXTURE_SIZE, &texture);
+    CheckGLError();
+
+    texture = MIN(texture, MAX_RESOLUTION);
 
     return true;
 }

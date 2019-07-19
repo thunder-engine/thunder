@@ -9,6 +9,11 @@ class Mesh;
 class MaterialInstance;
 class BaseLightPrivate;
 
+class Camera;
+
+#define SM_RESOLUTION_DEFAULT 2048
+#define SM_RESOLUTION 4096
+
 class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
 
@@ -22,6 +27,8 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
 public:
     BaseLight ();
     ~BaseLight ();
+
+    virtual void shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components);
 
     bool castShadows () const;
     void setCastShadows (const bool shadows);

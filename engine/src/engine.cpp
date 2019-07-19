@@ -194,6 +194,7 @@ Engine::Engine(IFile *file, const char *path) :
     MeshRender::registerClassFactory(this);
     TextRender::registerClassFactory(this);
     SpriteRender::registerClassFactory(this);
+
     DirectLight::registerClassFactory(this);
     PointLight::registerClassFactory(this);
     SpotLight::registerClassFactory(this);

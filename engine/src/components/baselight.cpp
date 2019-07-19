@@ -46,6 +46,16 @@ BaseLight::BaseLight() :
 BaseLight::~BaseLight() {
     delete p_ptr;
 }
+
+/*!
+    Updates the shadowmaps for the particular lightsource.
+*/
+void BaseLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components) {
+    A_UNUSED(camera);
+    A_UNUSED(buffer);
+    A_UNUSED(components);
+}
+
 /*!
     Returns true if the light source can cast shadows; otherwise returns false.
 */

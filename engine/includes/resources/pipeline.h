@@ -12,6 +12,7 @@ class ICommandBuffer;
 
 class Component;
 class DirectLight;
+class SpotLight;
 class Scene;
 class Camera;
 
@@ -48,11 +49,9 @@ protected:
 
     void                        updateShadows       (Camera &camera, Object *object);
 
-    void                        directUpdate        (Camera &camera, DirectLight *light);
-
     RenderTexture              *postProcess         (RenderTexture &source);
 
-    ObjectList                  frustumCulling      (ObjectList &in, const array<Vector3, 8> &frustum);
+    array<Vector3, 8>           frustumCorners      (float nearPlane, float farPlane) const;
 
     void                        sortByDistance      (ObjectList &in, const Vector3 &origin);
 
