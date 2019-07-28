@@ -356,7 +356,7 @@ void registerAABBox(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("AABBox", "AABBox opMul(const Vector3 &in)", asMETHODPR(AABBox, operator*, (const Vector3 &) const, const AABBox), asCALL_THISCALL);
     engine->RegisterObjectMethod("AABBox", "AABBox opMul(const Matrix4 &in)", asMETHODPR(AABBox, operator*, (const Matrix4 &) const, const AABBox), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("AABBox", "bool intersect(const Vector3 &in, float)", asMETHOD(AABBox, intersect), asCALL_THISCALL);
+    //engine->RegisterObjectMethod("AABBox", "bool intersect(const Vector3 &in, float)", asMETHOD(AABBox, intersect), asCALL_THISCALL);
     engine->RegisterObjectMethod("AABBox", "void box(Vector3 &out, Vector3 &out)", asMETHOD(AABBox, box), asCALL_THISCALL);
     engine->RegisterObjectMethod("AABBox", "void setBox(const Vector3 &in, const Vector3 &in)", asMETHODPR(AABBox, setBox, (const Vector3 &, const Vector3 &), void), asCALL_THISCALL);
 }

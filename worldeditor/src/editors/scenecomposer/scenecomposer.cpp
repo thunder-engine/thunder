@@ -102,7 +102,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(m_pQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
 
     cmToolbars      = new QMenu(this);
-
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
 
     ui->viewport->setController(ctl);
@@ -212,7 +211,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
     connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
     connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
-    connect(ui->renderMode,     SIGNAL(clicked()), ui->viewport, SLOT(onSetMode()));
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 

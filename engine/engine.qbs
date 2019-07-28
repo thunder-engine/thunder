@@ -9,13 +9,19 @@ Project {
         "src/resources/*.cpp",
         "src/handles/*.cpp",
         "src/systems/*.cpp",
+        "src/filters/*.cpp",
+        "src/postprocess/*.cpp",
+        "src/managers/*.cpp",
         "includes/*.h",
         "includes/analytics/*.h",
         "includes/adapters/*.h",
         "includes/components/*.h",
         "includes/resources/*.h",
         "includes/handles/*.h",
-        "includes/systems/*.h"
+        "includes/systems/*.h",
+        "includes/filters/*.h",
+        "includes/postprocess/*.h",
+        "includes/managers/*.h"
     ]
 
     property stringList incPaths: [

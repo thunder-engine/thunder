@@ -41,7 +41,7 @@ void RenderTexture::setFixed(bool fixed) {
 }
 
 void RenderTexture::resize(int32_t width, int32_t height) {
-    if(!p_ptr->m_Fixed) {
+    if(!p_ptr->m_Fixed && (Texture::width() != width || Texture::height() != height)) {
         setWidth(width);
         setHeight(height);
 

@@ -38,7 +38,7 @@ bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
         areal t0    = tca - thc;
         areal t1    = tca + thc;
 
-        if(t0 < 0.001) {
+        if(t0 < 0.001f) {
             t0      = t1;
         }
 
@@ -64,7 +64,7 @@ bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
     }
 
     areal t = -n.dot(pos - plane.point) / d;
-    if(t <= 0.0) {
+    if(t <= 0.0f) {
         return false;
     }
 
@@ -154,16 +154,16 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vec
         return false;
     }
 
-    Vector3 ve0   = v3 - v1;
-    Vector3 ve1   = v2 - v1;
-    Vector3 ve2   = ip - v1;
-    areal dot00     = ve0.dot(ve0);
-    areal dot01     = ve0.dot(ve1);
-    areal dot02     = ve0.dot(ve2);
-    areal dot11     = ve1.dot(ve1);
-    areal dot12     = ve1.dot(ve2);
+    Vector3 ve0 = v3 - v1;
+    Vector3 ve1 = v2 - v1;
+    Vector3 ve2 = ip - v1;
+    areal dot00 = ve0.dot(ve0);
+    areal dot01 = ve0.dot(ve1);
+    areal dot02 = ve0.dot(ve2);
+    areal dot11 = ve1.dot(ve1);
+    areal dot12 = ve1.dot(ve2);
     areal invDenom  = 1.0f / (dot00 * dot11 - dot01 * dot01);
-    Vector2 b     = Vector2((dot11 * dot02 - dot01 * dot12) * invDenom, (dot00 * dot12 - dot01 * dot02) * invDenom);
+    Vector2 b = Vector2((dot11 * dot02 - dot01 * dot12) * invDenom, (dot00 * dot12 - dot01 * dot02) * invDenom);
 
     if((b.x >= 0) && (b.y >= 0) && (b.x + b.y <= 1.0f)) {
         if(pt) {
@@ -178,10 +178,10 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vec
     Reflection calculating by \a normal vector of reflection surface and intersection \a point.
 */
 Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
-    Ray ret(0.0, 0.0);
+    Ray ret(0.0f, 0.0f);
 
     ret.pos     = point;
-    ret.dir     = dir - normal * ((areal)2.0 * dir.dot(normal));
+    ret.dir     = dir - normal * (2.0f * dir.dot(normal));
     ret.dir.normalize();
 
     return ret;
@@ -191,10 +191,10 @@ Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
     Refraction calculating by \a normal vector of reflection surface and intersection \a point with \a ior (Index of Refraction).
 */
 Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
-    Ray ret(0.0, 0.0);
+    Ray ret(0.0f, 0.0f);
 
     areal theta = normal.dot(dir);
-    areal k     = (areal)1.0 - ior * ior * ((areal)1.0 - theta * theta);
+    areal k     = 1.0f - ior * ior * (1.0f - theta * theta);
 
     ret.pos     = point;
     ret.dir     = dir * ior - normal * (ior * theta + sqrt(k));
@@ -207,9 +207,9 @@ Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
     Diffuse reflection calculating by \a normal vector of reflection surface and intersection \a point. With \a min and \a max constraints.
 */
 Ray Ray::diffuse(const Vector3 &normal, const Vector3 &point, areal min, areal max) {
-    Ray ret(0.0, 0.0);
+    Ray ret(0.0f, 0.0f);
 
-    areal r1    = (areal)2.0 * PI * RANGE(min, max);
+    areal r1    = 2.0f * PI * RANGE(min, max);
     areal r2    = RANGE(min, max);
     areal r2s   = sqrt(r2);
 

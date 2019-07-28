@@ -15,6 +15,8 @@
 
 #include "settingsmanager.h"
 
+#include "objectctrl.h"
+
 #include <QVariant>
 #include <QColor>
 
@@ -75,11 +77,12 @@ void ObjectCtrlPipeline::loadSettings() {
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 }
 
+void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
+    m_pController = ctrl;
+}
+
 void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
-    Transform *t = camera.actor()->transform();
-    ObjectList filter = Camera::frustumCulling(m_Components,
-                                               Camera::frustumCorners(camera.orthographic(), (camera.orthographic()) ? camera.orthoHeight() : camera.fov(),
-                                                                      camera.ratio(), t->worldPosition(), t->worldRotation(), camera.nearPlane(), camera.farPlane()));
+    ObjectList filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(camera));
     sortByDistance(filter, camera.actor()->transform()->position());
 
     // Retrive object id
@@ -94,10 +97,7 @@ void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
     // Light prepass
     m_Buffer->setGlobalValue("light.ambient", scene->ambient());
 
-    m_Buffer->setRenderTarget(TargetBuffer(), m_Targets[SHADOW_MAP]);
-    m_Buffer->clearRenderTarget();
-
-    updateShadows(camera, scene);
+    updateShadows(camera, filter);
 
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
@@ -122,11 +122,13 @@ void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
 
     drawGrid(camera);
 
-    m_Buffer->setRenderTarget(m_Target);
     m_Buffer->setScreenProjection();
+    RenderTexture *post = postProcess(m_Targets[G_EMISSIVE]);
+
+    m_Buffer->setRenderTarget(m_Target);
     m_Buffer->clearRenderTarget(true, camera.color(), false);
 
-    m_pSprite->setTexture(OVERRIDE, postProcess(*m_Targets[G_EMISSIVE]));
+    m_pSprite->setTexture(OVERRIDE, post);
     m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
 }
 

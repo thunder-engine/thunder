@@ -27,7 +27,7 @@ public:
 
     Texture                    *texture             (const char *name);
 
-    InfoMap                     params              () const;
+    InfoMap                    &params              ();
 
     void                        setInteger          (const char *name, int32_t *value, uint32_t count = 1);
 
@@ -101,7 +101,7 @@ public:
 
     void                        setTexture                  (const string &name, Texture *texture);
 
-    uint8_t                     surfaces                    () const;
+    int32_t                     surfaces                    () const;
 
     virtual MaterialInstance   *createInstance              ();
 
@@ -118,7 +118,7 @@ protected:
 
     TextureMap                  m_Textures;
 
-    uint8_t                     m_Surfaces;
+    int32_t                     m_Surfaces;
 
 };
 

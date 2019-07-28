@@ -560,7 +560,7 @@ void Engine::updateScene(Scene *scene) {
     if(isGameMode()) {
         for(auto it : m_ObjectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnabled() && comp->actor()->scene() == scene) {
+            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() == scene) {
                 if(!comp->isStarted()) {
                     comp->start();
                     comp->setStarted(true);

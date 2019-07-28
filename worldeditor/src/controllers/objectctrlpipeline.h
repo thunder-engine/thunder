@@ -5,14 +5,17 @@
 
 #include <QObject>
 
-class ObjectCtrlPipeline : public Pipeline {
+class ObjectCtrl;
 
+class ObjectCtrlPipeline : public Pipeline {
 public:
     ObjectCtrlPipeline();
 
     void draw(Scene *scene, Camera &camera);
 
     void loadSettings();
+
+    void setController(ObjectCtrl *ctrl);
 
 protected:
     void drawGrid(Camera &camera);
@@ -23,6 +26,8 @@ protected:
     Mesh *m_pGrid;
 
     MaterialInstance *m_pGizmo;
+
+    ObjectCtrl *m_pController;
 
 };
 

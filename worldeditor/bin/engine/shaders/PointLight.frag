@@ -16,6 +16,16 @@ layout(location = 0) in vec4 _vertex;
 
 layout(location = 0) out vec4 rgb;
 
+int sampleCube(const vec3 v) {
+    vec3 vAbs = abs(v);
+    if(vAbs.z >= vAbs.x && vAbs.z >= vAbs.y) {
+        return (v.z < 0.0) ? 5 : 4;
+    } else if(vAbs.y >= vAbs.x) {
+        return (v.y < 0.0) ? 3 : 2;
+    }
+    return (v.x < 0.0) ? 1 : 0;
+}
+
 void main (void) {
     vec2 proj   = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5).xy;
 
@@ -47,6 +57,13 @@ void main (void) {
         float ln    = dot( normDir, n );
 
         float shadow = 1.0;
+        if(light.shadows == 1.0) {
+            int index = sampleCube(-normDir);
+            vec4 offset = light.tiles[index];
+            vec4 proj   = light.matrix[index] * world;
+            vec3 coord  = (proj.xyz / proj.w);
+            shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
+        }
 
         vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
         vec3 result = albedo * (1.0 - metal) + refl;

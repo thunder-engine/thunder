@@ -6,6 +6,26 @@
 class Texture;
 class AtlasPrivate;
 
+class PackNode {
+public:
+    PackNode ();
+    ~PackNode ();
+
+    PackNode *insert (int32_t width, int32_t height);
+
+    bool clean ();
+
+    bool fill;
+
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
+
+    PackNode *parent;
+    PackNode *child[2];
+};
+
 class NEXT_LIBRARY_EXPORT Atlas : public Resource {
     A_REGISTER(Atlas, Resource, Resources)
 
@@ -13,7 +33,7 @@ public:
     Atlas ();
     ~Atlas ();
 
-    uint32_t addElement (const Texture *texture);
+    uint32_t addElement (Texture *texture);
 
     Vector2Vector shape (uint32_t index) const;
 
@@ -26,6 +46,8 @@ public:
     void pack (uint8_t padding);
 
 private:
+    void resize (int32_t width, int32_t height);
+
     AtlasPrivate *p_ptr;
 
 };

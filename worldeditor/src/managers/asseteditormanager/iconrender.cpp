@@ -112,7 +112,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
                     mesh->setMaterial(mat);
                 }
                 AABBox bb   = m->bound();
-                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() * 0.6 / sinf(fov * DEG2RAD)) );
+                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.extent.length() * 1.1f / sinf(fov * DEG2RAD)) );
             }
         } break;
         case IConverter::ContentPrefab: {
@@ -126,7 +126,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
                 for(auto it : actor->findChildren<Renderable *>()) {
                     bb.encapsulate(it->bound());
                 }
-                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
+                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, (bb.extent.length() * 2) / sinf(fov * DEG2RAD)) );
             }
         } break;
         case IConverter::ContentMesh: {
@@ -135,7 +135,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
             AABBox bb = mesh->bound();
-            m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.size.length() / sinf(fov * DEG2RAD)) );
+            m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, (bb.extent.length() * 2) / sinf(fov * DEG2RAD)) );
         } break;
         default: return QImage();
     }

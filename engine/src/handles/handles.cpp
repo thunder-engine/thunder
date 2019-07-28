@@ -209,8 +209,10 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
             s_Lines->setMode(Mesh::MODE_LINES);
             s_Lines->setLod(0, lod);
         }
-        s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        if(s_Buffer) {
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        }
     }
 }
 
@@ -260,8 +262,10 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
         }
 
         s_Sprite->setTexture(OVERRIDE,  texture);
-        s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(q, s_Quad, ICommandBuffer::TRANSLUCENT, s_Sprite);
+        if(s_Buffer) {
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(q, s_Quad, ICommandBuffer::TRANSLUCENT, s_Sprite);
+        }
     }
     return result;
 }

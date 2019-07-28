@@ -20,35 +20,39 @@ class CommandBufferGL : public ICommandBuffer {
 public:
     CommandBufferGL             ();
 
-    ~CommandBufferGL            ();
+    ~CommandBufferGL            () override;
 
-    void                        clearRenderTarget           (bool clearColor = true, const Vector4 &color = Vector4(), bool clearDepth = true, float depth = 1.0f);
+    void                        clearRenderTarget           (bool clearColor = true, const Vector4 &color = Vector4(), bool clearDepth = true, float depth = 1.0f) override;
 
-    void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+    void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
-    void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false);
+    void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false) override;
 
-    void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr);
+    void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr) override;
 
-    void                        setRenderTarget             (uint32_t target);
+    void                        setRenderTarget             (uint32_t target) override;
 
-    void                        setColor                    (const Vector4 &color);
+    void                        setColor                    (const Vector4 &color) override;
 
-    void                        resetViewProjection         ();
+    void                        resetViewProjection         () override;
 
-    void                        setViewProjection           (const Matrix4 &view, const Matrix4 &projection);
+    void                        setViewProjection           (const Matrix4 &view, const Matrix4 &projection) override;
 
-    void                        setGlobalValue              (const char *name, const Variant &value);
+    void                        setGlobalValue              (const char *name, const Variant &value) override;
 
-    void                        setGlobalTexture            (const char *name, Texture *value);
+    void                        setGlobalTexture            (const char *name, Texture *value) override;
 
-    void                        setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height);
+    void                        setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height) override;
 
-    Matrix4                     projection                  () const { return m_Projection; }
+    void                        enableScissor               (int32_t x, int32_t y, int32_t width, int32_t height) override;
+
+    void                        disableScissor              () override;
+
+    Matrix4                     projection                  () const override { return m_Projection; }
 
     Matrix4                     view                        () const { return m_View; }
 
-    Texture                    *texture                     (const char *name) const;
+    Texture                    *texture                     (const char *name) const override;
 
 protected:
     void                        putUniforms                 (uint32_t program, MaterialInstance *instance);

@@ -60,9 +60,7 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
 
     mDrag       = false;
-
     mMode       = ObjectCtrl::MODE_SCALE;
-
     mWorld      = Vector3();
 
     mAxes       = 0;
@@ -97,6 +95,7 @@ void ObjectCtrl::init(Scene *scene) {
     CameraCtrl::init(scene);
 
     m_pPipeline = new ObjectCtrlPipeline;
+    m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);
 
     Handles::init();
@@ -159,28 +158,28 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
                         angle   = mAngleGrid * int(angle / mAngleGrid);
                     }
                     for(const auto &it : m_Selected) {
-                        Transform *tr   = it.second.object->transform();
-                        Vector3 t       = Vector3(mPosition - it.second.position);
-                        Quaternion q    = tr->rotation();
-                        Vector3 euler   = it.second.euler;
+                        Transform *tr  = it.second.object->transform();
+                        Vector3 t      = Vector3(mPosition - it.second.position);
+                        Quaternion q   = tr->rotation();
+                        Vector3 euler  = it.second.euler;
                         switch(Handles::s_Axes) {
                             case Handles::AXIS_X: {
-                                q       = q * Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
-                                euler  += Vector3(angle, 0.0f, 0.0f);
+                                q      = q * Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
+                                euler += Vector3(angle, 0.0f, 0.0f);
                             } break;
                             case Handles::AXIS_Y: {
-                                q       = q * Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
-                                euler  += Vector3(0.0f, angle, 0.0f);
+                                q      = q * Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
+                                euler += Vector3(0.0f, angle, 0.0f);
                             } break;
                             case Handles::AXIS_Z: {
-                                q       = q * Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
-                                euler  += Vector3(0.0f, 0.0f, angle);
+                                q      = q * Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
+                                euler += Vector3(0.0f, 0.0f, angle);
                             } break;
                             default: {
                                 Vector3 axis  = m_pActiveCamera->actor()->transform()->position() - mPosition;
                                 axis.normalize();
-                                q       = q * Quaternion(axis, angle);
-                                euler  += axis * angle;
+                                q      = q * Quaternion(axis, angle);
+                                euler += axis * angle;
                             } break;
                         }
                         tr->setPosition(mPosition - q * t);

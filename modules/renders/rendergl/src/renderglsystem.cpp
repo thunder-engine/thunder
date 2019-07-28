@@ -90,6 +90,8 @@ bool RenderGLSystem::init() {
 
     texture = MIN(texture, MAX_RESOLUTION);
 
+    Pipeline::setShadowPageSize(texture, texture);
+
     return true;
 }
 

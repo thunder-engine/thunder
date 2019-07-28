@@ -275,3 +275,12 @@ void CommandBufferGL::setGlobalTexture(const char *name, Texture *value) {
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     glViewport(x, y, width, height);
 }
+
+void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(x, y, width, height);
+}
+
+void CommandBufferGL::disableScissor() {
+    glDisable(GL_SCISSOR_TEST);
+}

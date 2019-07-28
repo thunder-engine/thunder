@@ -8,9 +8,6 @@ class Viewport : public SceneView {
 public:
     Viewport                (QWidget *parent = 0);
 
-public slots:
-    void                    onSetMode           ();
-
 protected:
     void                    initializeGL        ();
     void                    paintGL             ();
@@ -45,7 +42,6 @@ private:
 
     ICommandBuffer         *m_pCommandBuffer;
 
-    string                  m_Target;
 };
 
 #endif // VIEWPORT_H

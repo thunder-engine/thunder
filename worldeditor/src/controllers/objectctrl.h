@@ -20,7 +20,7 @@ class Actor;
 class Scene;
 class Texture;
 
-class Pipeline;
+class ObjectCtrlPipeline;
 
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
@@ -87,6 +87,8 @@ public slots:
     void                onRotateActor               ();
     void                onScaleActor                ();
 
+    void                drawHelpers                 (Object &object);
+
 signals:
     void                mapUpdated                  ();
 
@@ -99,8 +101,6 @@ signals:
     void                loadMap                     (const QString &map);
 
 protected:
-    void                drawHelpers                 (Object &object);
-
     void                selectGeometry              (Vector2 &, Vector2 &size);
 
     Vector3             objectPosition              ();
@@ -132,7 +132,7 @@ protected:
     Texture            *m_pDepth;
     Texture            *m_pSelect;
 
-    Pipeline           *m_pPipeline;
+    ObjectCtrlPipeline *m_pPipeline;
 
     Object::ObjectList  m_DragObjects;
 

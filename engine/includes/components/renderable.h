@@ -5,6 +5,8 @@
 
 #include <amath.h>
 
+class RenderablePrivate;
+
 class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)
 
@@ -12,9 +14,15 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_NOMETHODS()
 
 public:
+    Renderable ();
+
     virtual void draw (ICommandBuffer &buffer, uint32_t layer);
 
     virtual AABBox bound () const;
+
+private:
+    RenderablePrivate *p_ptr;
+
 };
 
 #endif // RENDERABLE_H

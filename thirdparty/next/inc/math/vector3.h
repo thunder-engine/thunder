@@ -60,6 +60,8 @@ public:
     Vector3                     cross                       (const Vector3 &vector) const;
     areal                       dot                         (const Vector3 &vector) const;
 
+    Vector3                     abs                         () const;
+
     union {
         struct {
             areal x, y, z;

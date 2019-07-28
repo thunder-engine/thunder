@@ -11,23 +11,23 @@
 
     Bounded volume in space in the form of a rectangular parallelepiped, with a period parallel to the coordinate axes in the world system.
     When the object rotates, the AABB changes its dimensions, but it always remains oriented along the coordinate axes.
-    Axis Aligned Bounding Box represented by \a center of box and \a size.
+    Axis Aligned Bounding Box represented by \a center of box and \a extent.
 
     \sa Vector3, OBBox
 */
 /*!
-    Constructs an bounding box with center (0, 0, 0) and size (1, 1, 1).
+    Constructs an bounding box with center (0, 0, 0) and extent (0.5, 0.5, 0.5).
 */
 AABBox::AABBox() :
-        center(0.0),
-        size(1.0) {
+        center(0.0f),
+        extent(0.5f) {
 }
 /*!
-    Constructs a bounding box with \a center and \a size.
+    Constructs a bounding box with \a center and \a extent.
 */
-AABBox::AABBox(const Vector3 &center, const Vector3 &size) :
+AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
         center(center),
-        size(size) {
+        extent(extent) {
 }
 /*!
     Grows the AABBox to include the \a point.
@@ -77,7 +77,6 @@ void AABBox::encapsulate(const AABBox &box) {
 
     setBox(bb0[0], bb0[1]);
 }
-
 /*!
     Returns true if this bounding box intersects the given sphere at \a position and \a radius; otherwise returns false.
 */
@@ -100,37 +99,53 @@ bool AABBox::intersect(const Vector3 &position, areal radius) const {
     return d <= radius * radius;
 }
 /*!
-    Returns a copy of this vector, multiplied by the given \a factor.
+    Returns true if this bounding box intersects the given \a count of \a planes; otherwise returns false.
+*/
+bool AABBox::intersect(const Plane *planes, areal count) const {
+    for(int32_t i = 0; i < count; i++) {
+        float d = planes[i].sqrDistance(center);
+        float r = extent.dot(planes[i].normal.abs());
+        if(d + r < 0.0f) {
+            return false;
+        }
+    }
+    return true;
+}
+/*!
+    Returns a copy of this box, multiplied by the given \a factor.
 */
 const AABBox AABBox::operator*(areal factor) const {
-    return AABBox(center * factor, size * factor);
+    return AABBox(center * factor, extent * factor);
 }
 /*!
-    Returns a copy of this vector, multiplied by the given \a vector.
+    Returns a copy of this box, multiplied by the given \a vector.
 */
 const AABBox AABBox::operator*(const Vector3 &vector) const {
-    return AABBox(center * vector, size * vector);
+    return AABBox(center * vector, extent * vector);
 }
 /*!
-    Returns a copy of this vector, multiplied by the given \a matrix.
+    Returns a copy of this box, multiplied by the given \a matrix.
 */
 const AABBox AABBox::operator*(const Matrix4 &matrix) const {
-    return AABBox(center * Vector3(matrix[0], matrix[5], matrix[10]) + Vector3(matrix[12], matrix[13], matrix[14]),
-                 size * Vector3(matrix[0], matrix[5], matrix[10]));
+    AABBox result;
+    result.center = center + Vector3(matrix[12], matrix[13], matrix[14]);
+    result.extent = (matrix.rotation() * extent).abs();
+
+    return result;
 }
 /*!
     Returns \a min and \a max points of bounding box as output arguments.
 */
 void AABBox::box(Vector3 &min, Vector3 &max) const {
-    min     = center - size * 0.5;
-    max     = min + size;
+    min = center - extent;
+    max = center + extent;
 }
 /*!
     Set current bounding box by \a min and \a max points.
 */
 void AABBox::setBox(const Vector3 &min, const Vector3 &max) {
-    size    = max - min;
-    center  = min + size * 0.5;
+    extent = (max - min) * 0.5f;
+    center = min + extent;
 }
 /*!
     Set curent bounding box by provided array of \a points and \a number of them.

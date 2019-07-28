@@ -5,15 +5,11 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/components/*.cpp",
-        "src/postprocess/*.cpp",
         "src/resources/*.cpp",
-        "src/filters/*.cpp",
 
         "includes/*.h",
         "includes/components/*.h",
-        "includes/resources/*.h",
-        "includes/postprocess/*.h",
-        "includes/filters/*.h"
+        "includes/resources/*.h"
     ]
 
     property stringList incPaths: [

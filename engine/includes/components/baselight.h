@@ -8,11 +8,13 @@
 class Mesh;
 class MaterialInstance;
 class BaseLightPrivate;
+class Pipeline;
 
 class Camera;
 
 #define SM_RESOLUTION_DEFAULT 2048
-#define SM_RESOLUTION 4096
+
+#define SHADOW_MAP  "shadowMap"
 
 class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
@@ -28,7 +30,7 @@ public:
     BaseLight ();
     ~BaseLight ();
 
-    virtual void shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components);
+    virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components);
 
     bool castShadows () const;
     void setCastShadows (const bool shadows);

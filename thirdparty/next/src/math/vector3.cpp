@@ -241,3 +241,9 @@ Vector3 Vector3::cross(const Vector3 &vector) const {
 areal Vector3::dot(const Vector3 &vector) const {
     return x * vector.x + y * vector.y + z * vector.z;
 }
+/*!
+    Returns the absplute value of this vector.
+*/
+Vector3 Vector3::abs() const {
+    return Vector3(std::abs(x), std::abs(y), std::abs(z));
+}

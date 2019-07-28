@@ -8,6 +8,8 @@
 
 #include "resources/material.h"
 #include "resources/mesh.h"
+#include "resources/pipeline.h"
+#include "resources/rendertexture.h"
 
 #define MAX_LODS 4
 
@@ -15,22 +17,14 @@
 
 class DirectLightPrivate {
 public:
-    DirectLightPrivate() {
-        m_pMatrix = new Matrix4[MAX_LODS];
-        m_pTiles  = new Vector4[MAX_LODS];
-    }
+    Matrix4 m_pMatrix[MAX_LODS];
+    Vector4 m_pTiles[MAX_LODS];
 
-    ~DirectLightPrivate() {
-        delete m_pMatrix;
-        delete m_pTiles;
-    }
+    Vector4 m_NormalizedDistance;
 
-    Matrix4 *m_pMatrix;
-    Vector4 *m_pTiles;
+    Vector3 m_Direction;
 
-    Vector4  m_NormalizedDistance;
-
-    Vector3  m_Direction;
+    RenderTexture *m_pTarget;
 };
 /*!
     \class DirectLight
@@ -72,6 +66,8 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
+        buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
+
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), mesh, layer, instance);
         buffer.resetViewProjection();
@@ -80,7 +76,12 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void DirectLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components) {
+void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+    if(!castShadows()) {
+        p_ptr->m_pTarget = nullptr;
+        return;
+    }
+
     Vector4 distance;
 
     float nearPlane = camera.nearPlane();
@@ -120,6 +121,12 @@ void DirectLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, Ob
     float ratio = camera.ratio();
     Vector3 wPosition = t->worldPosition();
     Quaternion wRotation = t->worldRotation();
+
+    int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
+    p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
+
+    int32_t pageWidth, pageHeight;
+    Pipeline::shadowPageSize(pageWidth, pageHeight);
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist  = distance[lod];
@@ -165,18 +172,20 @@ void DirectLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, Ob
 
         p_ptr->m_pMatrix[lod] = scale * crop * view;
 
-        int32_t x  = (lod % 2) * SM_RESOLUTION_DEFAULT;
-        int32_t y  = (lod / 2) * SM_RESOLUTION_DEFAULT;
-        int32_t w  = SM_RESOLUTION_DEFAULT;
-        int32_t h  = SM_RESOLUTION_DEFAULT;
+        p_ptr->m_pTiles[lod] = Vector4(static_cast<float>(x[lod]) / pageWidth,
+                                       static_cast<float>(y[lod]) / pageHeight,
+                                       static_cast<float>(w[lod]) / pageWidth,
+                                       static_cast<float>(h[lod]) / pageHeight);
 
-        p_ptr->m_pTiles[lod] = Vector4(static_cast<float>(x) / SM_RESOLUTION,
-                                       static_cast<float>(y) / SM_RESOLUTION,
-                                       static_cast<float>(w) / SM_RESOLUTION,
-                                       static_cast<float>(h) / SM_RESOLUTION);
+        ICommandBuffer *buffer = pipeline->buffer();
 
-        buffer.setViewProjection(view, crop);
-        buffer.setViewport(x, y, w, h);
+        buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
+        buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);
+        buffer->clearRenderTarget();
+        buffer->disableScissor();
+
+        buffer->setViewProjection(view, crop);
+        buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         Vector3 size = max - min;
         Vector3 pos(min + size * 0.5f);
@@ -186,7 +195,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, Ob
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(buffer, ICommandBuffer::SHADOWCAST);
+            static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
         }
     }
 }
@@ -207,6 +216,10 @@ Vector4 *DirectLight::tiles() {
 */
 Matrix4 *DirectLight::matrix() {
     return p_ptr->m_pMatrix;
+}
+
+AABBox DirectLight::bound() const {
+    return AABBox(0.0f, -1.0f);
 }
 
 #ifdef NEXT_SHARED

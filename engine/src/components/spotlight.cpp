@@ -8,6 +8,8 @@
 
 #include "resources/material.h"
 #include "resources/mesh.h"
+#include "resources/pipeline.h"
+#include "resources/rendertexture.h"
 
 class SpotLightPrivate {
 public:
@@ -25,6 +27,10 @@ public:
 
     float m_Angle;
     float m_Near;
+
+    RenderTexture *m_pTarget;
+
+    AABBox m_Box;
 };
 /*!
     \class SpotLight
@@ -72,8 +78,10 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         Vector4 p = params();
 
-        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * distance() * 0.5f,
+        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * p.y * 0.5f,
                   q, Vector3(p.y * 1.5f, p.y * 1.5f, p.y)); // (1.0f - p.z)
+
+        buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
 
         buffer.drawMesh(t, mesh, layer, instance);
     }
@@ -81,13 +89,18 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void SpotLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components) {
+void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
     A_UNUSED(camera)
+
+    if(!castShadows()) {
+        p_ptr->m_pTarget = nullptr;
+        return;
+    }
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
     Quaternion rot = t->worldRotation();
-    Matrix4 view = Matrix4(rot.toMatrix()).inverse();
+    Matrix4 view = t->worldTransform().inverse();
 
     Matrix4 scale;
     scale[0]  = 0.5f;
@@ -99,30 +112,41 @@ void SpotLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, Obje
     scale[14] = 0.5f;
 
     float zFar = params().y;
-    Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle, 1.0f, p_ptr->m_Near, zFar);
+    Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle * 2.0f, 1.0f, p_ptr->m_Near, zFar);
+
+    int32_t x, y, w, h;
+    p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
+
+    int32_t pageWidth, pageHeight;
+    Pipeline::shadowPageSize(pageWidth, pageHeight);
 
     p_ptr->m_Matrix = scale * crop * view;
+    p_ptr->m_Tiles = Vector4(static_cast<float>(x) / pageWidth,
+                             static_cast<float>(y) / pageHeight,
+                             static_cast<float>(w) / pageWidth,
+                             static_cast<float>(h) / pageHeight);
 
-    int32_t x  = (0 % 2) * SM_RESOLUTION_DEFAULT;
-    int32_t y  = (0 / 2) * SM_RESOLUTION_DEFAULT;
-    int32_t w  = SM_RESOLUTION_DEFAULT;
-    int32_t h  = SM_RESOLUTION_DEFAULT;
+    ICommandBuffer *buffer = pipeline->buffer();
+    buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
+    buffer->enableScissor(x, y, w, h);
+    buffer->clearRenderTarget();
+    buffer->disableScissor();
 
-    p_ptr->m_Tiles = Vector4(static_cast<float>(x) / SM_RESOLUTION,
-                             static_cast<float>(y) / SM_RESOLUTION,
-                             static_cast<float>(w) / SM_RESOLUTION,
-                             static_cast<float>(h) / SM_RESOLUTION);
-
-    buffer.setViewProjection(view, crop);
-    buffer.setViewport(x, y, w, h);
+    buffer->setViewProjection(view, crop);
+    buffer->setViewport(x, y, w, h);
 
     ObjectList filter = Camera::frustumCulling(components,
-                                               Camera::frustumCorners(false, p_ptr->m_Angle, 1.0f, pos, rot, p_ptr->m_Near, zFar));
+                                               Camera::frustumCorners(false, p_ptr->m_Angle * 2.0f, 1.0f, pos, rot, p_ptr->m_Near, zFar));
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
-        static_cast<Renderable *>(it)->draw(buffer, ICommandBuffer::SHADOWCAST);
+        static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
     }
 }
+
+AABBox SpotLight::bound() const {
+    return p_ptr->m_Box * actor()->transform()->worldTransform();
+}
+
 /*!
     Returns the attenuation distance of the light cone.
 */
@@ -136,6 +160,8 @@ void SpotLight::setDistance(float distance) {
     Vector4 p = params();
     p.y = distance;
     setParams(p);
+
+    p_ptr->m_Box = AABBox(Vector3(0.0f, 0.0f,-0.5f) * distance, Vector3(distance * 1.5f, distance * 1.5f, distance));
 }
 /*!
     Returns the angle of the light cone in degrees.

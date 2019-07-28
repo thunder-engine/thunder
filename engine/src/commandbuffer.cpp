@@ -88,3 +88,14 @@ void ICommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t he
     A_UNUSED(width);
     A_UNUSED(height);
 }
+
+void ICommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    A_UNUSED(width);
+    A_UNUSED(height);
+}
+
+void ICommandBuffer::disableScissor() {
+
+}

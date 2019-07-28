@@ -254,6 +254,17 @@ void Camera::setCurrent(Camera *current) {
     CameraPrivate::s_pCurrent = current;
 }
 
+array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
+    Transform *t = camera.actor()->transform();
+
+    return Camera::frustumCorners(camera.p_ptr->m_Ortho, (camera.p_ptr->m_Ortho) ?
+                                                          camera.p_ptr->m_OrthoHeight :
+                                                          camera.p_ptr->m_FOV,
+                                                          camera.p_ptr->m_Ratio,
+                                  t->worldPosition(), t->worldRotation(),
+                                  camera.p_ptr->m_Near, camera.p_ptr->m_Far);
+}
+
 array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane) {
     float nh;
     float fh;
@@ -291,38 +302,19 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
 
 Object::ObjectList Camera::frustumCulling(ObjectList &in, const array<Vector3, 8> &frustum) {
     Plane pl[6];
-    pl[0]   = Plane(frustum[1], frustum[0], frustum[4]); // top
-    pl[1]   = Plane(frustum[7], frustum[3], frustum[2]); // bottom
-    pl[2]   = Plane(frustum[3], frustum[7], frustum[0]); // left
-    pl[3]   = Plane(frustum[2], frustum[1], frustum[6]); // right
-    pl[4]   = Plane(frustum[0], frustum[1], frustum[3]); // near
-    pl[5]   = Plane(frustum[5], frustum[4], frustum[6]); // far
+    pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
+    pl[1] = Plane(frustum[7], frustum[3], frustum[2]); // bottom
+    pl[2] = Plane(frustum[3], frustum[7], frustum[0]); // left
+    pl[3] = Plane(frustum[2], frustum[1], frustum[6]); // right
+    pl[4] = Plane(frustum[0], frustum[1], frustum[3]); // near
+    pl[5] = Plane(frustum[5], frustum[4], frustum[6]); // far
 
     Object::ObjectList result;
     for(auto it : in) {
-        MeshRender *mesh  = dynamic_cast<MeshRender *>(it);
-        if(mesh && mesh->mesh()) {
-            Matrix4 &transform   = mesh->actor()->transform()->worldTransform();
-            Vector3 min, max;
-            mesh->bound().box(min, max);
-            Matrix3 r   = transform.rotation();
-            Vector3 t(transform[12], transform[13], transform[14]);
-
-            Vector3 p[8];
-            p[0]    = r * Vector3(min.x, min.y, min.z) + t;
-            p[1]    = r * Vector3(min.x, min.y, max.z) + t;
-            p[2]    = r * Vector3(max.x, min.y, max.z) + t;
-            p[3]    = r * Vector3(max.x, min.y, min.z) + t;
-            p[4]    = r * Vector3(min.x, max.y, min.z) + t;
-            p[5]    = r * Vector3(min.x, max.y, max.z) + t;
-            p[6]    = r * Vector3(max.x, max.y, max.z) + t;
-            p[7]    = r * Vector3(max.x, max.y, min.z) + t;
-
-            if(CameraPrivate::intersect(pl, p)) {
-                result.push_back(it);
-            }
-        } else {
-            result.push_back(it);
+        Renderable *item = static_cast<Renderable *>(it);
+        AABBox box = item->bound();
+        if(box.extent.x < 0.0f || box.intersect(pl, 6)) {
+            result.push_back(item);
         }
     }
     return result;

@@ -52,6 +52,12 @@ void main (void) {
         float ln    = dot(normDir, n);
 
         float shadow = 1.0;
+        if(light.shadows == 1.0) {
+            vec4 offset = light.tiles[0];
+            vec4 proj   = light.matrix[0] * world;
+            vec3 coord  = (proj.xyz / proj.w);
+            shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
+        }
 
         vec3 refl   = mix(vec3(spec), albedo, metal) * getCookTorrance( n, v, h, ln, rough );
         vec3 result = albedo * (1.0 - metal) + refl;

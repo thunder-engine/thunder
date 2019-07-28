@@ -104,7 +104,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         for(auto it : actor->findChildren<Renderable *>()) {
             bb.encapsulate(it->bound());
         }
-        float radius = bb.size.length() / sinf(m_pActiveCamera->fov() * DEG2RAD);
+        float radius = (bb.extent.length() * 2) / sinf(m_pActiveCamera->fov() * DEG2RAD);
 
         Vector3 min, max;
         bb.box(min, max);

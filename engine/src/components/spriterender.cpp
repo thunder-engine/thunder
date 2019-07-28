@@ -61,7 +61,7 @@ void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
 */
 AABBox SpriteRender::bound() const {
     if(p_ptr->m_pMesh) {
-        return p_ptr->m_pMesh->bound();
+        return p_ptr->m_pMesh->bound() * actor()->transform()->worldTransform();
     }
     return Renderable::bound();
 }

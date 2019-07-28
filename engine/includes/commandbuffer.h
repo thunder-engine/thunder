@@ -50,6 +50,10 @@ public:
 
     virtual void                setViewport                 (int32_t x, int32_t y, int32_t width, int32_t height);
 
+    virtual void                enableScissor               (int32_t x, int32_t y, int32_t width, int32_t height);
+
+    virtual void                disableScissor              ();
+
     virtual Matrix4             projection                  () const;
 
     virtual Matrix4             modelView                   () const;

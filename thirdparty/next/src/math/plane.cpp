@@ -33,6 +33,6 @@ Plane::Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)  {
 /*!
     Calculate a squared distance between \a point and this Plane
 */
-areal Plane::sqrDistance(const Vector3 &point) {
+areal Plane::sqrDistance(const Vector3 &point) const {
     return normal.dot(point) - d;
 }

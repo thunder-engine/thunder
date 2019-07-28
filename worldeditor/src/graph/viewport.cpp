@@ -29,14 +29,6 @@ Viewport::Viewport(QWidget *parent) :
     setAutoFillBackground(false);
 }
 
-void Viewport::onSetMode() {
-    if(m_Target.empty()) {
-        m_Target    = "normalsMap";
-    } else {
-        m_Target.clear();
-    }
-}
-
 void Viewport::initializeGL() {
     SceneView::initializeGL();
     PluginModel::instance()->initSystems();
@@ -47,17 +39,7 @@ void Viewport::paintGL() {
     SceneView::paintGL();
 
     if(m_pController) {
-        if(!m_Target.empty()) {
-            Pipeline *pipeline  = Camera::current()->pipeline();
-
-            MaterialInstance *sprite    = pipeline->sprite();
-            sprite->setTexture(OVERRIDE, pipeline->target(m_Target));
-
-            m_pCommandBuffer->setScreenProjection();
-            m_pCommandBuffer->drawMesh(Matrix4(), pipeline->plane(), ICommandBuffer::UI, sprite);
-        } else {
-            m_pController->drawHandles(m_pCommandBuffer);
-        }
+        m_pController->drawHandles(m_pCommandBuffer);
     }
 }
 

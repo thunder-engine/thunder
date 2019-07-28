@@ -50,9 +50,9 @@ BaseLight::~BaseLight() {
 /*!
     Updates the shadowmaps for the particular lightsource.
 */
-void BaseLight::shadowsUpdate(const Camera &camera, ICommandBuffer &buffer, ObjectList &components) {
+void BaseLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
     A_UNUSED(camera);
-    A_UNUSED(buffer);
+    A_UNUSED(pipeline);
     A_UNUSED(components);
 }
 

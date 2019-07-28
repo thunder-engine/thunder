@@ -23,13 +23,14 @@
 #include <stdint.h>
 
 #include "vector3.h"
+#include "plane.h"
 
 class Matrix4;
 
 class NEXT_LIBRARY_EXPORT AABBox {
 public:
     AABBox                      ();
-    AABBox                      (const Vector3 &center, const Vector3 &size);
+    AABBox                      (const Vector3 &center, const Vector3 &extent);
 
     const AABBox                operator*                   (areal factor) const;
     const AABBox                operator*                   (const Vector3 &vector) const;
@@ -39,13 +40,14 @@ public:
     void                        encapsulate                 (const AABBox &box);
 
     bool                        intersect                   (const Vector3 &position, areal radius) const;
+    bool                        intersect                   (const Plane *planes, areal count) const;
 
     void                        box                         (Vector3 &min, Vector3 &max) const;
     void                        setBox                      (const Vector3 &min, const Vector3 &max);
     void                        setBox                      (const Vector3 *points, uint32_t number);
 
     Vector3                     center;
-    Vector3                     size;
+    Vector3                     extent;
 };
 
 #endif /* AABB_H_HEADER_INCLUDED */

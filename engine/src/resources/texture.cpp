@@ -7,79 +7,6 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-class Node {
-public:
-    Node() :
-            fill(false),
-            x(0),
-            y(0),
-            w(1),
-            h(1) {
-        child[0]    = nullptr;
-        child[1]    = nullptr;
-    }
-
-    Node *insert(const Texture *texture, uint8_t padding) {
-        if(child[0]) {
-            Node *node  = child[0]->insert(texture, padding);
-            if(node) {
-                return node;
-            }
-            return child[1]->insert(texture, padding);
-        }
-
-        int32_t width  = (texture->width() + padding);
-        int32_t height = (texture->height() + padding);
-
-        if(fill || w < width || h < height) {
-            return nullptr;
-        }
-
-        if(w == width && h == height) {
-            return this;
-        }
-        // Texture is smaller then node start splitting
-        int32_t sw = w - width;
-        int32_t sh = h - height;
-
-        child[0]    = new Node;
-        child[1]    = new Node;
-
-        if(sw > sh) {    // Horizontal
-            child[0]->x = x;
-            child[0]->y = y;
-            child[0]->w = width;
-            child[0]->h = h;
-
-            child[1]->x = x + width;
-            child[1]->y = y;
-            child[1]->w = sw;
-            child[1]->h = h;
-        } else {    // Vertical
-            child[0]->x = x;
-            child[0]->y = y;
-            child[0]->w = w;
-            child[0]->h = height;
-
-            child[1]->x = x;
-            child[1]->y = y + height;
-            child[1]->w = w;
-            child[1]->h = sh;
-        }
-
-        return child[0]->insert(texture, padding);
-    }
-
-    bool            fill;
-
-    int32_t         x;
-    int32_t         y;
-    int32_t         w;
-    int32_t         h;
-
-    Node           *child[2];
-};
-
 class TexturePrivate {
 public:
     TexturePrivate() :
@@ -87,8 +14,7 @@ public:
             m_Compress(Texture::Uncompressed),
             m_Type(Texture::Flat),
             m_Filtering(Texture::None),
-            m_Wrap(Texture::Clamp),
-            m_pRoot(nullptr) {
+            m_Wrap(Texture::Clamp) {
 
     }
 
@@ -99,13 +25,10 @@ public:
     Texture::WrapType m_Wrap;
 
     int32_t m_Width;
-    int32_t  m_Height;
+    int32_t m_Height;
 
     Vector2Vector m_Shape;
-
     Texture::Sides m_Sides;
-
-    Node *m_pRoot;
 };
 
 Texture::Texture() :
@@ -176,8 +99,16 @@ void Texture::loadUserData(const VariantMap &data) {
     setState(ToBeUpdated);
 }
 
+Texture::Surface &Texture::surface(uint32_t face) {
+    return p_ptr->m_Sides[face];
+}
+
 void Texture::addSurface(const Surface &surface) {
     p_ptr->m_Sides.push_back(surface);
+}
+
+void Texture::setDirty() {
+    setState(ToBeUpdated);
 }
 
 void Texture::clear() {
@@ -191,11 +122,6 @@ void Texture::clear() {
     }
     p_ptr->m_Sides.clear();
     p_ptr->m_Shape.clear();
-
-    if(p_ptr->m_pRoot) {
-        delete p_ptr->m_pRoot;
-    }
-    p_ptr->m_pRoot = new Node;
 }
 
 void *Texture::nativeHandle() {
@@ -257,49 +183,13 @@ void Texture::setShape(const Vector2Vector &shape) {
     p_ptr->m_Shape = shape;
 }
 
-Vector4Vector Texture::pack(const Textures &textures, uint8_t padding) {
-    Vector4Vector result;
-    for(auto it : textures) {
-        Node *n = p_ptr->m_pRoot->insert(it, padding);
-        if(n) {
-            n->fill = true;
-            /// \todo can be optimized to do all copies in the end of packing
-            uint8_t *src = it->p_ptr->m_Sides[0][0];
-            uint8_t *dst = p_ptr->m_Sides[0][0];
-            int32_t w = n->w - padding;
-            int32_t h = n->h - padding;
-            for(int32_t y = 0; y < h; y++) {
-                memcpy(&dst[(y + n->y) * p_ptr->m_Width + n->x], &src[y * w], w);
-            }
-
-            Vector4 res;
-            res.x   = n->x / (float)p_ptr->m_Width;
-            res.y   = n->y / (float)p_ptr->m_Height;
-            res.z   = res.x + w / (float)p_ptr->m_Width;
-            res.w   = res.y + h / (float)p_ptr->m_Height;
-
-            result.push_back(res);
-        } else {
-            resize(p_ptr->m_Width * 2, p_ptr->m_Height * 2);
-            return pack(textures, padding);
-        }
-    }
-    ResourceState s = state();
-    if(s != ToBeUpdated) {
-        setState(ToBeUpdated);
-    }
-    return result;
-}
-
 void Texture::resize(int32_t width, int32_t height) {
     clear();
 
-    p_ptr->m_Width     = width;
-    p_ptr->m_Height    = height;
+    p_ptr->m_Width = width;
+    p_ptr->m_Height = height;
 
-    p_ptr->m_pRoot->w  = p_ptr->m_Width;
-    p_ptr->m_pRoot->h  = p_ptr->m_Height;
-    uint32_t length  = size(p_ptr->m_Width, p_ptr->m_Height);
+    uint32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
     uint8_t *pixels = new uint8_t[length];
     memset(pixels, 0, length);
     Texture::Surface s;

@@ -27,7 +27,7 @@ public:
     Plane                       ();
     Plane                       (const Vector3 &v1, const Vector3 &v2, const Vector3 &v3);
 
-    areal                       sqrDistance                 (const Vector3 &point);
+    areal                       sqrDistance                 (const Vector3 &point) const;
 
     Vector3                     normal;
     Vector3                     point;

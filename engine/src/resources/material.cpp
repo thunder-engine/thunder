@@ -26,7 +26,7 @@ Texture *MaterialInstance::texture(const char *name) {
     return result;
 }
 
-MaterialInstance::InfoMap MaterialInstance::params() const {
+MaterialInstance::InfoMap &MaterialInstance::params() {
     return m_Info;
 }
 
@@ -174,7 +174,7 @@ void Material::setTexture(const string &name, Texture *texture) {
     m_Textures[name] = texture;
 }
 
-uint8_t Material::surfaces() const {
+int32_t Material::surfaces() const {
     return m_Surfaces;
 }
 
