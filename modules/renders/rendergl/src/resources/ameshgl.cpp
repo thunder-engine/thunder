@@ -14,13 +14,14 @@ void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
             updateVbo();
 
             setState(Ready);
-        }
+        } break;
         case Ready: break;
         case Suspend: {
             destroyVbo();
             destroyVao();
 
             setState(ToBeDeleted);
+            return;
         }
         default: return;
     }

@@ -22,7 +22,7 @@ void *ATextureGL::nativeHandle() {
         default: break;
     }
 
-    return (void *)m_ID;
+    return reinterpret_cast<void *>(m_ID);
 }
 
 void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -30,7 +30,7 @@ void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height)
 
     Surface &surface = getSides()->at(0);
 
-    glReadPixels( x, y, width, height,
+    glReadPixels(x, y, width, height,
                  (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
                  (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
     CheckGLError();
@@ -53,6 +53,10 @@ void ATextureGL::updateTexture() {
         } break;
         case RGB8: {
             internal    = GL_RGB8;
+            glformat    = GL_RGB;
+        } break;
+        case RGB16Float: {
+            internal    = GL_RGB16F;
             glformat    = GL_RGB;
         } break;
         default: break;
@@ -82,7 +86,7 @@ void ATextureGL::updateTexture() {
         default: glfiltering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
     }
     //glTexParameteri ( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, glfiltering );
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glfiltering);
 
     int32_t glwrap;
     switch (wrap()) {
@@ -90,11 +94,11 @@ void ATextureGL::updateTexture() {
         case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
         default: glwrap       = GL_CLAMP_TO_EDGE; break;
     }
-    glTexParameteri ( target, GL_TEXTURE_WRAP_S, glwrap );
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
     CheckGLError();
-    glTexParameteri ( target, GL_TEXTURE_WRAP_T, glwrap );
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
     CheckGLError();
-    glTexParameteri ( target, GL_TEXTURE_WRAP_R, glwrap );
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
     CheckGLError();
 
     //float aniso = 0.0f;
@@ -132,12 +136,15 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             CheckGLError();
         }
+
+        bool isFloat = (Texture::format() == RGB16Float);
+
         // load all mipmaps
         int32_t w  = width();
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             uint8_t *data   = image[i];
-            glTexImage2D(target, i, internal, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(target, i, internal, w, h, 0, format, (isFloat) ? GL_FLOAT : GL_UNSIGNED_BYTE, data);
             CheckGLError();
 
             w   = MAX(w / 2, 1);
@@ -167,8 +174,8 @@ bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t internal, uin
 }
 
 bool ATextureGL::isDwordAligned() {
-    int dwordLineSize   = dwordAlignedLineSize(width(), components() * 8);
-    int curLineSize     = width() * components();
+    int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
+    int curLineSize   = width() * components();
 
     return (dwordLineSize == curLineSize);
 }

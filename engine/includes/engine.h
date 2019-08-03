@@ -43,7 +43,7 @@ public:
 */
     static Object              *loadResource                (const string &path);
 
-    static void                 unloadResource              (const string &path);
+    static void                 unloadResource              (const string &path, bool force = false);
 
     template<typename T>
     static T                   *loadResource                (const string &path) {

@@ -3,6 +3,8 @@
 #include "engine.h"
 #include "texture.h"
 
+#include <cstring>
+
 typedef deque<Texture *>  Textures;
 
 PackNode::PackNode() :

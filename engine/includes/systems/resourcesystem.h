@@ -21,7 +21,7 @@ public:
 
     Object *loadResource(const string &path);
 
-    void unloadResource(const string &path);
+    void unloadResource(const string &path, bool force = false);
 
     string reference(Object *object);
 

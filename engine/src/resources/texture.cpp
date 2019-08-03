@@ -160,19 +160,19 @@ void Texture::setHeight(int32_t height) {
     p_ptr->m_Height  = height;
 }
 
-uint32_t Texture::size(int32_t width, int32_t height) const {
-    uint32_t (Texture::*sizefunc)(int32_t, int32_t) const;
-    sizefunc    = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
+int32_t Texture::size(int32_t width, int32_t height) const {
+    int32_t (Texture::*sizefunc)(int32_t, int32_t) const;
+    sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
 
     return (this->*sizefunc)(width, height);
 }
 
-inline uint32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
+inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
     return ((width + 3) / 4) * ((height + 3) / 4) * (p_ptr->m_Compress == DXT1 ? 8 : 16);
 }
 
-inline uint32_t Texture::sizeRGB(int32_t width, int32_t height) const {
-    return width * height * components();
+inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
+    return width * height * components() * ((p_ptr->m_Format == RGB16Float) ? 4 : 1);
 }
 
 Vector2Vector Texture::shape() const {
@@ -189,7 +189,7 @@ void Texture::resize(int32_t width, int32_t height) {
     p_ptr->m_Width = width;
     p_ptr->m_Height = height;
 
-    uint32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
+    int32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
     uint8_t *pixels = new uint8_t[length];
     memset(pixels, 0, length);
     Texture::Surface s;
@@ -226,7 +226,7 @@ void Texture::setFiltering(FilteringType type) {
 Texture::WrapType Texture::wrap() const {
     return p_ptr->m_Wrap;
 }
-void Texture::setWrap (WrapType type) {
+void Texture::setWrap(WrapType type) {
     p_ptr->m_Wrap = type;
 }
 
@@ -244,8 +244,10 @@ bool Texture::isCubemap() const {
 
 uint8_t Texture::components() const {
     switch(p_ptr->m_Format) {
-        case R8:    return 1;
-        case RGB8:  return 3;
+        case R8: return 1;
+        case RGB8:
+        case RGB16Float:
+        case R11G11B10Float: return 3;
         default: break;
     }
     return 4;

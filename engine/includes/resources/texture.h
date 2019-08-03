@@ -21,6 +21,7 @@ public:
         RGB8,
         RGBA8,
         RGB10A2,
+        RGB16Float,
         R11G11B10Float,
         Depth
     };
@@ -78,30 +79,28 @@ public:
     FormatType format () const;
     void setFormat (FormatType type);
 
+    WrapType wrap () const;
+    void setWrap (WrapType type);
+
+    FilteringType filtering () const;
+    void setFiltering (FilteringType type);
+
     void loadUserData (const VariantMap &data) override;
-
-
 
 private:
     TexturePrivate *p_ptr;
 
 protected:
-    TextureType type() const;
+    TextureType type () const;
     void setType (TextureType type);
-
-    FilteringType filtering() const;
-    void setFiltering (FilteringType type);
-
-    WrapType wrap() const;
-    void setWrap (WrapType type);
 
     void clear ();
 
-    Sides *getSides();
+    Sides *getSides ();
 
-    uint32_t size (int32_t width, int32_t height) const;
-    uint32_t sizeDXTc (int32_t width, int32_t height) const;
-    uint32_t sizeRGB (int32_t width, int32_t height) const;
+    int32_t size (int32_t width, int32_t height) const;
+    int32_t sizeDXTc (int32_t width, int32_t height) const;
+    int32_t sizeRGB (int32_t width, int32_t height) const;
 
     uint8_t components () const;
 };

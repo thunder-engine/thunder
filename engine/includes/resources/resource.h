@@ -28,7 +28,7 @@ public:
     void decRef();
 
 protected:
-    void setState(ResourceState state);
+    virtual void setState(ResourceState state);
 
 private:
     friend class ResourceSystem;

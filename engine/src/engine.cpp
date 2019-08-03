@@ -386,15 +386,15 @@ Object *Engine::loadResource(const string &path) {
     return EnginePrivate::m_pResourceSystem->loadResource(path);
 }
 /*!
-    Force unloads the resource located along the \a path from memory.
+    Force unloads the resource located along the \a path from memory. In case of flag \a force provided the resource will be deleted immediately.
     \warning After this call, the reference on the resource may become an invalid at any time and must not be used anymore.
 
     \sa loadResource()
 */
-void Engine::unloadResource(const string &path) {
+void Engine::unloadResource(const string &path, bool force) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_pResourceSystem->unloadResource(path);
+    EnginePrivate::m_pResourceSystem->unloadResource(path, force);
 }
 /*!
     Register resource \a object by \a uuid path.

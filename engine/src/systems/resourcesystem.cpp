@@ -22,10 +22,13 @@ const char *ResourceSystem::name() const {
 }
 
 void ResourceSystem::update(Scene *) {
-    for(auto it : s_ResourceCache) {
-        Resource *resource = dynamic_cast<Resource *>(it.second);
+    for(auto it = s_ResourceCache.begin(); it != s_ResourceCache.end();) {
+        Resource *resource = dynamic_cast<Resource *>(it->second);
         if(resource && resource->state() == Resource::ToBeDeleted) {
-
+            delete resource;
+            it = s_ResourceCache.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -87,7 +90,7 @@ Object *ResourceSystem::loadResource(const string &path) {
     return nullptr;
 }
 
-void ResourceSystem::unloadResource(const string &path) {
+void ResourceSystem::unloadResource(const string &path, bool force) {
     PROFILER_MARKER;
 
     if(!path.empty()) {
@@ -104,6 +107,9 @@ void ResourceSystem::unloadResource(const string &path) {
                 Resource *resource = dynamic_cast<Resource *>(it->second);
                 if(resource) {
                     resource->setState(Resource::Suspend);
+                    if(force) {
+                        update(nullptr);
+                    }
                 } else {
                     delete it->second;
                     s_ResourceCache.erase(it);

@@ -14,13 +14,11 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
 
     switch(m_MaterialType) {
         case PostProcess: {
-            //m_DoubleSided   = true;
-            //m_BlendMode     = Opaque;
-            //m_LightModel    = Unlit;
-            //m_Surfaces      = Static;
-            //m_DepthTest     = false;
             /// \todo should be removed
-            setTexture("rgbMap", nullptr);
+            setTexture("rgbMap",        nullptr);
+            setTexture("depthMap",      nullptr);
+            setTexture("normalsMap",    nullptr);
+            setTexture("diffuseMap",    nullptr);
         } break;
         case LightFunction: {
             /// \todo should be removed

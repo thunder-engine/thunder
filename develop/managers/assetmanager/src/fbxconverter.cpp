@@ -187,6 +187,13 @@ public:
         return result;
     }
 
+    void setState(ResourceState state) {
+        if(state == Suspend) {
+            state = ToBeDeleted;
+        }
+        Resource::setState(state);
+    }
+
 protected:
     friend class FBXConverter;
 
@@ -279,7 +286,7 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
     lSdkManager->Destroy();
 
     for(auto it : resources) {
-        Engine::unloadResource(it.toStdString());
+        Engine::unloadResource(it.toStdString(), true);
     }
 
     Log(Log::INF) << "Mesh imported in:" << t.elapsed() << "msec";
