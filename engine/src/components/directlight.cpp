@@ -11,6 +11,8 @@
 #include "resources/pipeline.h"
 #include "resources/rendertexture.h"
 
+#include <float.h>
+
 #define MAX_LODS 4
 
 #define SPLIT_WEIGHT 0.95f // 0.75f
