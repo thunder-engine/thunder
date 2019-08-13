@@ -34,6 +34,8 @@
 #include "editors/contentbrowser/contentlist.h"
 #include "editors/assetselect/assetlist.h"
 
+#include "qbsbuilder.h"
+
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setVersion(4, 2);
@@ -72,6 +74,7 @@ int main(int argc, char *argv[]) {
 
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);
+    asset->registerConverter(new QbsBuilder());
     asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
     asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
     asset->addEditor(IConverter::ContentPrefab, new MeshEdit(&engine));

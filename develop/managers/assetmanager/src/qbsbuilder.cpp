@@ -18,28 +18,21 @@
 #include <pluginmodel.h>
 #include <platforms/android.h>
 
-const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
-
-const QString gRegisterComponents("${RegisterComponents}");
-const QString gUnregisterComponents("${UnregisterComponents}");
-const QString gComponentNames("${ComponentNames}");
-const QString gIncludes("${Includes}");
-
-const QString gFilesList("${filesList}");
-
 const QString gSdkPath("${sdkPath}");
 
 const QString gIncludePaths("${includePaths}");
 const QString gLibraryPaths("${libraryPaths}");
 const QString gLibraries("${libraries}");
-const QString gManifestFile("${manifestFile}");
-const QString gResourceDir("${resourceDir}");
-const QString gAssetsPaths("${assetsPath}");
 
 const QString gEditorSuffix("-Editor");
 
 const QString gProfile("profile");
 const QString gArchitectures("architectures");
+
+// Android specific
+const QString gManifestFile("${manifestFile}");
+const QString gResourceDir("${resourceDir}");
+const QString gAssetsPaths("${assetsPath}");
 
 const QString gAndroidJava("Platforms/Android/Java_Path");
 const QString gAndroidSdk("Platforms/Android/SDK_Path");
@@ -54,23 +47,16 @@ const QString gAndroidNdk("Platforms/Android/NDK_Path");
 // generate --generator visualstudio2013
 
 QbsBuilder::QbsBuilder() :
-        IBuilder(),
+        m_pProcess(new QProcess(this)),
+        m_pMgr(ProjectManager::instance()),
         m_Progress(false) {
 
-    m_pMgr      = ProjectManager::instance();
+    m_Values[gSdkPath] = m_pMgr->sdkPath();
     m_QBSPath   = QFileInfo(m_pMgr->sdkPath() + "/tools/qbs/bin/qbs");
 
     setEnvironment(QStringList(), QStringList(), QStringList());
 
-    const QMetaObject *meta = m_pMgr->metaObject();
-    for(int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property  = meta->property(i);
-        m_Values[QString("${%1}").arg(property.name())] = property.read(m_pMgr).toString();
-    }
-
     m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
-
-    m_pProcess = new QProcess(this);
 
     SettingsManager *settings = SettingsManager::instance();
     settings->setProperty(qPrintable(gAndroidJava), QVariant::fromValue(FilePath("/")));
@@ -124,71 +110,24 @@ QbsBuilder::QbsBuilder() :
 }
 
 void QbsBuilder::generateProject() {
-    QStringMap classes;
-    // Generate plugin loader
-    foreach(QString it, m_Sources) {
-        QFile file(it);
-        if(file.open(QFile::ReadOnly | QFile::Text)) {
-            QByteArray data = file.readLine();
-            bool valid      = true;
-            while(!data.isEmpty()) {
-                if(!valid && data.indexOf("*/") != -1) {
-                    valid = true;
-                }
-                int comment = data.indexOf("/*");
-                if(comment == -1) {
-                    int comment = data.indexOf("//");
-                    int index   = gClass.indexIn(QString(data));
-                    if(valid && index != -1 && !gClass.cap(1).isEmpty() && (comment == -1 || comment > index)) {
-                        classes[gClass.cap(1)] = it;
-                    }
-                } else if(data.indexOf("*/", comment + 2) == -1) {
-                    valid   = false;
-                }
-                data = file.readLine();
-            }
-            file.close();
-        }
-    }
-    QStringMap values(m_Values);
-
-    values[gRegisterComponents]   = "";
-    values[gUnregisterComponents] = "";
-    values[gComponentNames]       = "";
-
     const QMetaObject *meta = m_pMgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property  = meta->property(i);
-        values[QString("${%1}").arg(property.name())]   = property.read(m_pMgr).toString();
+        m_Values[QString("${%1}").arg(property.name())] = property.read(m_pMgr).toString();
     }
 
-    QStringList includes;
-    QMapIterator<QString, QString> it(classes);
-    while(it.hasNext()) {
-        it.next();
-        includes << "#include \"" + it.value() + "\"\n";
-        values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_pEngine);\n\t\t");
-        values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_pEngine);\n\t\t");
-        values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n\t\t");
-    }
-    includes.removeDuplicates();
-    values[gIncludes].append(includes.join(""));
+    generateLoader(m_pMgr->templatePath());
 
-    copyTemplate(m_pMgr->templatePath() + "/plugin.cpp", project() + "plugin.cpp", values);
-    copyTemplate(m_pMgr->templatePath() + "/application.cpp", project() + "application.cpp", values);
-
-    values[gSdkPath]        = m_pMgr->sdkPath();
-    values[gIncludePaths]   = formatList(m_IncludePath);
-    values[gLibraryPaths]   = formatList(m_LibPath);
-    values[gFilesList]      = formatList(m_Sources);
-    values[gLibraries]      = formatList(m_Libs);
-
+    m_Values[gIncludePaths]   = formatList(m_IncludePath);
+    m_Values[gLibraryPaths]   = formatList(m_LibPath);
+    m_Values[gLibraries]      = formatList(m_Libs);
+    // Android specific settings
     QFileInfo info(ProjectManager::instance()->manifestFile());
-    values[gManifestFile]   = info.absoluteFilePath();
-    values[gResourceDir]    = info.absolutePath() + "/res";
-    values[gAssetsPaths]    = ProjectManager::instance()->importPath();
+    m_Values[gManifestFile]   = info.absoluteFilePath();
+    m_Values[gResourceDir]    = info.absolutePath() + "/res";
+    m_Values[gAssetsPaths]    = ProjectManager::instance()->importPath();
 
-    copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", values);
+    copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", m_Values);
 }
 
 bool QbsBuilder::buildProject() {
@@ -314,16 +253,6 @@ void QbsBuilder::readError() {
     if(p) {
         parseLogs(p->readAllStandardError());
     }
-}
-
-QString QbsBuilder::formatList(const QStringList &list) {
-    bool first  = true;
-    QString result;
-    foreach(QString it, list) {
-        result += QString("%2\n\t\t\t\"%1\"").arg(it).arg((!first) ? "," : "");
-        first   = false;
-    }
-    return result;
 }
 
 void QbsBuilder::parseLogs(const QString &log) {

@@ -2,10 +2,11 @@
 
 #include <glfm.h>
 
-#include <log.h>
-#include <file.h>
+#include "log.h"
+#include "file.h"
 
 #include "engine.h"
+#include "input.h"
 
 #ifdef GLFM_PLATFORM_ANDROID
 #include "androidfile.h"
@@ -25,11 +26,32 @@ protected:
         __android_log_write(lvl, "ThunderEngine", record);
     }
 };
+#else
+
+const char *configLocation();
+const char *assetsLocation();
+
+class AppleHandler : public ILogHandler {
+protected:
+    void setRecord (Log::LogTypes type, const char *record) {
+        const char *lvl;
+        switch(type) {
+            case Log::ERR: lvl = "ERROR"; break;
+            case Log::WRN: lvl = "WARNING"; break;
+            case Log::INF: lvl = "INFO"; break;
+            case Log::DBG: lvl = "DEBUG"; break;
+            default: break;
+        }
+        printf("[%s] %s\n", lvl, record);
+    }
+};
 #endif
 
 static GLFMDisplay *gDisplay = nullptr;
 static Engine *g_pEngine = nullptr;
 
+uint32_t MobileAdaptor::s_Buttons = 0;
+Vector4 MobileAdaptor::s_Thumbs = Vector4();
 Vector2 MobileAdaptor::s_Screen = Vector2();
 
 struct Touch {
@@ -49,12 +71,17 @@ void onCreate(GLFMDisplay *, int width, int height) {
     MobileAdaptor::s_Screen = Vector2(width, height);
 
     IFile *file = nullptr;
+    const char *path = "";
 #ifdef GLFM_PLATFORM_ANDROID
     Log::overrideHandler(new AndroidHandler());
     file = new AndroidFile();
+#else
+    Log::overrideHandler(new AppleHandler());
+    file = new IFile();
+    file->finit(path);
+    file->fsearchPathAdd(assetsLocation());
 #endif
 
-    const char *path = "";
     thunderMain(new Engine(file, path));
 }
 
@@ -66,6 +93,14 @@ void onResize(GLFMDisplay *, int width, int height) {
 }
 
 bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y) {
+#ifdef GLFM_PLATFORM_TVOS
+    if(phase < GLFMTouchPhaseEnded) {
+        MobileAdaptor::s_Thumbs.z = MobileAdaptor::s_Thumbs.x = CLAMP(x / MobileAdaptor::s_Screen.x - 0.5f, -1.0f, 1.0f);
+        MobileAdaptor::s_Thumbs.w = MobileAdaptor::s_Thumbs.y = CLAMP(y / MobileAdaptor::s_Screen.y - 0.5f, -1.0f, 1.0f);
+    } else {
+        MobileAdaptor::s_Thumbs = Vector4(0.0f);
+    }
+#else
     if(phase < GLFMTouchPhaseEnded) {
         Touch t;
         t.phase = phase;
@@ -77,7 +112,34 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
             s_Touches.erase(it);
         }
     }
+#endif
     return true;
+}
+
+bool onKey(GLFMDisplay *, GLFMKey keyCode, GLFMKeyAction, int) {
+    switch(keyCode) {
+        case GLFMKeyNavSelect: {
+            MobileAdaptor::s_Buttons ^= Input::A;
+        } return true;
+        case GLFMKeyPlayPause: {
+            MobileAdaptor::s_Buttons ^= Input::X;
+        } return true;
+        case GLFMKeyLeft: {
+            MobileAdaptor::s_Buttons ^= Input::LEFT_ARROW;
+        } return true;
+        case GLFMKeyUp: {
+            MobileAdaptor::s_Buttons ^= Input::UP_ARROW;
+        } return true;
+        case GLFMKeyRight: {
+            MobileAdaptor::s_Buttons ^= Input::RIGHT_ARROW;
+        } return true;
+        case GLFMKeyDown: {
+            MobileAdaptor::s_Buttons ^= Input::DOWN_ARROW;
+        } return true;
+        default: break;
+    }
+
+    return false;
 }
 
 void glfmMain(GLFMDisplay *display) {
@@ -95,6 +157,7 @@ void glfmMain(GLFMDisplay *display) {
     glfmSetSurfaceResizedFunc(gDisplay, onResize);
 
     glfmSetTouchFunc(gDisplay, onTouch);
+    glfmSetKeyFunc(gDisplay, onKey);
 }
 
 MobileAdaptor::MobileAdaptor(Engine *engine) {
@@ -130,6 +193,8 @@ bool MobileAdaptor::isValid() {
 string MobileAdaptor::locationLocalDir() {
 #ifdef GLFM_PLATFORM_ANDROID
     return glfmAndroidGetActivity()->internalDataPath;
+#else
+    return configLocation();
 #endif
 }
 
@@ -151,4 +216,20 @@ uint32_t MobileAdaptor::touchState(uint32_t index) {
 
 Vector4 MobileAdaptor::touchPosition(uint32_t index) {
     return s_Touches[index].pos;
+}
+
+uint32_t MobileAdaptor::joystickCount() {
+#ifdef GLFM_PLATFORM_TVOS
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+uint32_t MobileAdaptor::joystickButtons(uint32_t) {
+    return s_Buttons;
+}
+
+Vector4 MobileAdaptor::joystickThumbs(uint32_t) {
+    return s_Thumbs;
 }

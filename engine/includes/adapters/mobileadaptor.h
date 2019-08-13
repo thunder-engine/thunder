@@ -35,8 +35,18 @@ public:
 
     Vector4                     touchPosition               (uint32_t index);
 
+    uint32_t                    joystickCount               ();
+
+    uint32_t                    joystickButtons             (uint32_t);
+
+    Vector4                     joystickThumbs              (uint32_t);
+
 public:
+    static uint32_t             s_Buttons;
+
     static Vector2              s_Screen;
+
+    static Vector4              s_Thumbs;
 
 };
 

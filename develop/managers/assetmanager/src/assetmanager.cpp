@@ -19,6 +19,7 @@
 #include <json.h>
 
 #include "converters/converter.h"
+#include "converters/builder.h"
 
 #include "components/scene.h"
 #include "components/actor.h"
@@ -35,8 +36,6 @@
 
 #include "projectmanager.h"
 #include "pluginmodel.h"
-
-#include "qbsbuilder.h"
 
 #include "log.h"
 
@@ -95,7 +94,6 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
-    registerConverter(new QbsBuilder());
 
     m_Formats["map"]    = IConverter::ContentMap;
 
@@ -126,7 +124,7 @@ void AssetManager::rescan() {
         connect(m_pFileWatcher, SIGNAL(fileChanged(QString)), this, SLOT(reimport()));
     }
 
-    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",force );
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   force);
 #ifndef BUILDER

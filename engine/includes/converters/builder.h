@@ -1,8 +1,7 @@
-#ifndef BUILDER_H
-#define BUILDER_H
+#ifndef IBUILDER_H
+#define IBUILDER_H
 
 #include "converter.h"
-#include "resources/text.h"
 
 #include <QMap>
 
@@ -11,32 +10,36 @@ class ProjectManager;
 class NEXT_LIBRARY_EXPORT IBuilder : public IConverter {
     Q_OBJECT
 public:
-    IBuilder                        ();
+    IBuilder ();
 
-    virtual bool                    buildProject        () = 0;
+    virtual bool buildProject () = 0;
 
-    virtual QString                 builderVersion      () = 0;
+    virtual QString builderVersion () = 0;
 
-    virtual uint32_t                contentType         () const { return IConverter::ContentCode; }
-    virtual uint32_t                type                () const { return MetaType::type<Text *>(); }
-    virtual uint8_t                 convertFile         (IConverterSettings *);
+    virtual uint32_t contentType () const { return IConverter::ContentCode; }
+    virtual uint32_t type () const;
+    virtual uint8_t convertFile (IConverterSettings *);
 
-    void                            copyTemplate        (const QString &src, const QString &dst, QStringMap &values);
+    QString project () const { return m_Project; }
 
-    QString                         project             () const { return m_Project; }
+    void rescanSources (const QString &path);
 
-    void                            rescanSources       (const QString &path);
-
-    bool                            isOutdated          () const { return m_Outdated; }
+    bool isOutdated () const { return m_Outdated; }
 
 protected:
-    QStringMap                      m_Values;
+    void copyTemplate (const QString &src, const QString &dst, QStringMap &values);
+    void generateLoader (const QString &dst);
 
-    QString                         m_Project;
+    QString formatList(const QStringList &list);
 
-    QStringList                     m_Sources;
+protected:
+    QStringMap m_Values;
 
-    bool                            m_Outdated;
+    QString m_Project;
+
+    QStringList m_Sources;
+
+    bool m_Outdated;
 };
 
-#endif // BUILDER_H
+#endif // IBUILDER_H

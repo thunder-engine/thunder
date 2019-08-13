@@ -7,6 +7,9 @@
 
 #include "platforms/desktop.h"
 
+#include "xcodebuilder.h"
+#include "qbsbuilder.h"
+
 #include <QCoreApplication>
 
 Builder::Builder() {
@@ -17,9 +20,10 @@ Builder::Builder() {
 }
 
 void Builder::setPlatform(const QString &platform) {
+    ProjectManager *project = ProjectManager::instance();
     SettingsManager::instance()->loadSettings();
     if(platform.isEmpty()) {
-        for(QString it : ProjectManager::instance()->platforms()) {
+        for(QString it : project->platforms()) {
             m_Stack.push(it);
         }
     } else  {
@@ -27,8 +31,11 @@ void Builder::setPlatform(const QString &platform) {
     }
 
     if(!m_Stack.isEmpty()) {
-        ProjectManager::instance()->setCurrentPlatform(m_Stack.pop());
-        AssetManager::instance()->rescan();
+        project->setCurrentPlatform(m_Stack.pop());
+
+        AssetManager *asset = AssetManager::instance();
+        asset->registerConverter(project->currentPlatform()->builder());
+        asset->rescan();
     }
 }
 

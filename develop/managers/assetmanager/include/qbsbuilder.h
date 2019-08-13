@@ -1,7 +1,8 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include "converters/builder.h"
+#include <converters/converter.h>
+#include <converters/builder.h>
 
 #include <QFileInfo>
 
@@ -32,8 +33,6 @@ protected:
     void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
 
     void                            generateProject     ();
-
-    QString                         formatList          (const QStringList &list);
 
     void                            parseLogs           (const QString &log);
 

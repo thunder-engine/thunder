@@ -125,6 +125,18 @@ Project {
             Android.ndk.platform: engine.ANDROID
         }
 
+        Properties {
+            condition: qbs.targetOS.contains("ios")
+            files: outer.concat(["src/adapters/appleplatform.mm"])
+            cpp.defines: ["TARGET_OS_IOS"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("tvos")
+            files: outer.concat(["src/adapters/appleplatform.mm"])
+            cpp.defines: ["TARGET_OS_TV"]
+        }
+
         Group {
             name: "Install Static Engine"
             fileTagsFilter: product.type

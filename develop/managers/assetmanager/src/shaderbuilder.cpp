@@ -31,6 +31,7 @@
 
 #include "projectmanager.h"
 #include "platforms/android.h"
+#include "platforms/ios.h"
 
 #include "functionmodel.h"
 #include "spirvconverter.h"
@@ -398,7 +399,8 @@ Variant ShaderBuilder::data() const {
     uint32_t version = 430;
     bool es = false;
     IPlatform *platform = ProjectManager::instance()->currentPlatform();
-    if(dynamic_cast<AndroidPlatform *>(platform) != nullptr) {
+    if(dynamic_cast<AndroidPlatform *>(platform) != nullptr ||
+       dynamic_cast<IOSPlatform *>(platform) != nullptr) {
         version = 300;
         es = true;
     }

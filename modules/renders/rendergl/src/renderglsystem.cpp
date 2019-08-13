@@ -110,7 +110,11 @@ void RenderGLSystem::update(Scene *scene) {
 
     Camera *camera  = Camera::current();
     if(camera) {
+        int32_t target;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
+
         Pipeline *pipe  = camera->pipeline();
+        pipe->setTarget(target);
         pipe->combineComponents(scene, true);
         pipe->draw(scene, *camera);
     }

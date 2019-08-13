@@ -1,13 +1,12 @@
 #ifndef TVOS_H
 #define TVOS_H
 
-#include "iplatform.h"
+#include "ios.h"
 
-class TvOSPlatform : public IPlatform {
+class TvOSPlatform : public IOSPlatform {
     Q_OBJECT
 public:
     QString name() const { return "tvos"; }
-    bool isPackage() const { return false; }
 };
 
 #endif // TVOS_H
