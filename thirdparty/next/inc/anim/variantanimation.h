@@ -15,7 +15,7 @@ public:
 
     ~VariantAnimation               ();
 
-    int32_t                         loopDuration                () const;
+    int32_t                         loopDuration                () const override;
 
     Variant                         currentValue                () const;
     virtual void                    setCurrentValue             (const Variant &value);

@@ -11,11 +11,11 @@
 AudioSource::AudioSource() :
         m_pClip(nullptr),
         m_Format(0),
+        m_PositionSamples(0),
         m_Loop(false),
         m_AutoPlay(false),
         m_pData(nullptr),
-        m_Current(0),
-        m_PositionSamples(0) {
+        m_Current(0) {
 
     alGenSources(1, &m_ID);
 

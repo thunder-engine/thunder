@@ -25,7 +25,7 @@ public: \
         ); \
         return &staticMetaData; \
     } \
-    virtual const MetaObject *metaObject() const { \
+    const MetaObject *metaObject() const override { \
         return Class::metaClass(); \
     }
 

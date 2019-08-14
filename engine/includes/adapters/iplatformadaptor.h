@@ -30,7 +30,7 @@ public:
 
     virtual uint32_t                    screenHeight                () = 0;
 
-    virtual bool                        key                         (Input::KeyCode code) { return false; }
+    virtual bool                        key                         (Input::KeyCode code) { A_UNUSED(code); return false; }
 
     virtual Vector4                     mousePosition               () { return Vector4(); }
 
@@ -38,31 +38,31 @@ public:
 
     virtual uint32_t                    mouseButtons                () { return 0; }
 
-    virtual void                        setMousePosition            (int32_t x, int32_t y) { }
+    virtual void                        setMousePosition            (int32_t x, int32_t y) { A_UNUSED(x); A_UNUSED(y); }
 
     virtual uint32_t                    joystickCount               () { return 0; }
 
-    virtual uint32_t                    joystickButtons             (uint32_t index) { return 0; }
+    virtual uint32_t                    joystickButtons             (uint32_t index) { A_UNUSED(index); return 0; }
 
-    virtual Vector4                     joystickThumbs              (uint32_t index) { return Vector4(); }
+    virtual Vector4                     joystickThumbs              (uint32_t index) { A_UNUSED(index); return Vector4(); }
 
-    virtual Vector2                     joystickTriggers            (uint32_t index) { return Vector2(); }
+    virtual Vector2                     joystickTriggers            (uint32_t index) { A_UNUSED(index); return Vector2(); }
 
     virtual uint32_t                    touchCount                  () { return 0; }
 
-    virtual uint32_t                    touchState                  (uint32_t index) { return 0; }
+    virtual uint32_t                    touchState                  (uint32_t index) { A_UNUSED(index); return 0; }
 
-    virtual Vector4                     touchPosition               (uint32_t index) { return 0; }
+    virtual Vector4                     touchPosition               (uint32_t index) { A_UNUSED(index); return 0; }
 
-    virtual void                       *pluginLoad                  (const char *name) { return nullptr; }
+    virtual void                       *pluginLoad                  (const char *name) { A_UNUSED(name); return nullptr; }
 
-    virtual bool                        pluginUnload                (void *plugin) { return false; }
+    virtual bool                        pluginUnload                (void *plugin) { A_UNUSED(plugin); return false; }
 
-    virtual void                       *pluginAddress               (void *plugin, const string &name) { return nullptr; }
+    virtual void                       *pluginAddress               (void *plugin, const string &name) { A_UNUSED(plugin); A_UNUSED(name); return nullptr; }
 
     virtual string                      locationLocalDir            () { return string(); }
 
-    virtual void                        syncConfiguration           (VariantMap &map) const { }
+    virtual void                        syncConfiguration           (VariantMap &map) const { A_UNUSED(map); }
 
 };
 

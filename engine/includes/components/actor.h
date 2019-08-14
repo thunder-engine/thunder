@@ -50,7 +50,7 @@ public:
 
     Component *createComponent (const string type);
 
-    void setParent (Object *parent);
+    void setParent (Object *parent) override;
 
     bool isPrefab () const;
     void setPrefab (Actor *prefab);

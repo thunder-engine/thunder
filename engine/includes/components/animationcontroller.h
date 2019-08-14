@@ -34,11 +34,11 @@ public:
     uint32_t duration () const;
 
 private:
-    void start ();
-    void update ();
+    void start () override;
+    void update () override;
 
-    void loadUserData (const VariantMap &data);
-    VariantMap saveUserData () const;
+    void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData () const override;
 
     Object *findTarget (Object *src, const string &path);
 

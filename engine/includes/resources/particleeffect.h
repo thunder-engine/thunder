@@ -100,7 +100,7 @@ public:
 
     void updateParticle(uint32_t index, ParticleData &data, float dt);
 
-    void loadUserData(const VariantMap &data);
+    void loadUserData(const VariantMap &data) override;
 
 protected:
     EmitterDeque m_Emitters;

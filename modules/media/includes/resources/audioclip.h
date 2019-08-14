@@ -13,7 +13,7 @@ public:
     AudioClip                   ();
     virtual ~AudioClip          ();
 
-    void                        loadUserData        (const VariantMap &data);
+    void                        loadUserData        (const VariantMap &data) override;
 
     uint32_t                    channels            () const;
 

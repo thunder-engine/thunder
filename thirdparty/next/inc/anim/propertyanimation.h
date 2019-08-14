@@ -19,7 +19,7 @@ public:
 
     const char                     *targetProperty              () const;
 
-    void                            setCurrentValue             (const Variant &value);
+    void                            setCurrentValue             (const Variant &value) override;
 
 private:
     PropertyAnimationPrivate       *p_ptr;

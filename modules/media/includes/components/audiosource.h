@@ -19,9 +19,9 @@ public:
 
     ~AudioSource                ();
 
-    virtual void                update                  ();
+    void                        start                   () override;
 
-    virtual void                start                   ();
+    void                        update                  () override;
 
     void                        play                    ();
 
@@ -31,9 +31,9 @@ public:
 
     void                        setClip                 (AudioClip *clip);
 
-    void                        loadUserData            (const VariantMap &data);
+    void                        loadUserData            (const VariantMap &data) override;
 
-    VariantMap                  saveUserData            () const;
+    VariantMap                  saveUserData            () const override;
 
     bool                        autoPlay                () const;
     void                        setAutoPlay             (bool play);

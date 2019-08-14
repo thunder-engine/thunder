@@ -20,7 +20,7 @@ public:
     string text ();
 
 private:
-    void loadUserData (const VariantMap &data);
+    void loadUserData (const VariantMap &data) override;
 
 private:
     TextPrivate *p_ptr;

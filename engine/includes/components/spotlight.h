@@ -28,7 +28,7 @@ private:
 
     void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
 
-    AABBox bound() const;
+    AABBox bound() const override;
 #ifdef NEXT_SHARED
     bool drawHandles() override;
 #endif

@@ -13,9 +13,9 @@ public:
 
     uint32_t                    buffer                      () const { return m_Buffer; }
 
-    void                       *nativeHandle                ();
+    void                       *nativeHandle                () override;
 
-    void                        makeCurrent                 (uint32_t index = 0) const;
+    void                        makeCurrent                 (uint32_t index = 0) const override;
 
 private:
     void                        updateTexture               ();

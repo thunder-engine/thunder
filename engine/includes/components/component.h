@@ -33,7 +33,7 @@ public:
     virtual bool drawHandles();
 #endif
 protected:
-    bool isSerializable () const;
+    bool isSerializable () const override;
 
 private:
     ComponentPrivate *p_ptr;

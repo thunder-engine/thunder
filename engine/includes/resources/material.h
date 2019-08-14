@@ -85,7 +85,7 @@ public:
 
     virtual void                clear                       ();
 
-    void                        loadUserData                (const VariantMap &data);
+    void                        loadUserData                (const VariantMap &data) override;
 
     MaterialType                materialType                () const;
 

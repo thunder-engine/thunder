@@ -37,11 +37,11 @@
 #define A_REGISTER(Class, Super, Group) \
     A_OBJECT(Class, Super) \
 public: \
-    static void                     registerClassFactory    (ObjectSystem *system) { \
+    static void registerClassFactory (ObjectSystem *system) { \
         REGISTER_META_TYPE(Class); \
         system->factoryAdd<Class>(#Group, Class::metaClass()); \
     } \
-    static void                     unregisterClassFactory  (ObjectSystem *system) { \
+    static void unregisterClassFactory (ObjectSystem *system) { \
         UNREGISTER_META_TYPE(Class); \
         system->factoryRemove<Class>(#Group); \
     }
@@ -53,14 +53,14 @@ public: \
 #define A_OVERRIDE(Class, Super, Group) \
     A_OBJECT(Class, Super) \
 public: \
-    static void                     registerClassFactory    (ObjectSystem *system) { \
+    static void registerClassFactory (ObjectSystem *system) { \
         system->factoryAdd<Super>(#Group, Class::metaClass()); \
     } \
-    static void                     unregisterClassFactory  (ObjectSystem *system) { \
+    static void unregisterClassFactory (ObjectSystem *system) { \
         system->factoryRemove<Super>(#Group); \
         system->factoryAdd<Super>(#Group, Super::metaClass()); \
     } \
-    virtual string                  typeName                () const { \
+    string typeName () const override { \
         return Super::metaClass()->name(); \
     }
 #else

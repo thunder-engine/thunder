@@ -7,9 +7,9 @@ class AngelScript : public Object {
     A_REGISTER(AngelScript, Object, Resources)
 
 public:
-    void                        loadUserData                (const VariantMap &data);
+    void loadUserData (const VariantMap &data) override;
 
-    ByteArray                   m_Array;
+    ByteArray m_Array;
 
 };
 

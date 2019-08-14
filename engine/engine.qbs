@@ -113,28 +113,25 @@ Project {
             condition: engine.desktop
             files: outer.concat(["src/adapters/desktopadaptor.cpp"])
         }
-        Properties {
-            condition: !engine.desktop
-            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
-            cpp.defines: ["THUNDER_MOBILE"]
-        }
 
         Properties {
             condition: qbs.targetOS.contains("android")
+            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
+            cpp.defines: ["THUNDER_MOBILE"]
             Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: engine.ANDROID
         }
 
         Properties {
             condition: qbs.targetOS.contains("ios")
-            files: outer.concat(["src/adapters/appleplatform.mm"])
-            cpp.defines: ["TARGET_OS_IOS"]
+            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_IOS"]
         }
 
         Properties {
             condition: qbs.targetOS.contains("tvos")
-            files: outer.concat(["src/adapters/appleplatform.mm"])
-            cpp.defines: ["TARGET_OS_TV"]
+            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_TV"]
         }
 
         Group {

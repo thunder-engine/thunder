@@ -9,7 +9,7 @@ class asIScriptContext;
 class asIScriptFunction;
 class asIScriptObject;
 
-class asSMessageInfo;
+struct asSMessageInfo;
 
 class MetaObject;
 
