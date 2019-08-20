@@ -66,12 +66,9 @@ bool Component::isStarted() const {
 void Component::setStarted(bool started) {
     p_ptr->m_Started = started;
 }
-/*!
-    Returns true if the component is flagged as serializable; otherwise returns false.
-    This flag is used during serialization process to the binary structure to save it on disk or transmit by the network.
-*/
+
 bool Component::isSerializable() const {
-    return (!actor()->isPrefab() && static_cast<Object*>(actor())->isSerializable());
+    return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
 }
 
 #ifdef NEXT_SHARED

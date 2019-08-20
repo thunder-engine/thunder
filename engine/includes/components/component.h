@@ -32,7 +32,7 @@ public:
 #ifdef NEXT_SHARED
     virtual bool drawHandles();
 #endif
-protected:
+private:
     bool isSerializable () const override;
 
 private:

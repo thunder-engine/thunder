@@ -56,8 +56,6 @@ public:
     void setPrefab (Actor *prefab);
 
 private:
-    void addChild (Object *value) override;
-
     void loadUserData (const VariantMap &data) override;
     VariantMap saveUserData () const override;
 

@@ -101,19 +101,6 @@ Component *Actor::createComponent(const string type) {
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
 
-void Actor::addChild(Object *value) {
-    PROFILE_FUNCTION();
-    Object::addChild(value);
-
-    Transform *t = dynamic_cast<Transform *>(value);
-    if(t) {
-        if(p_ptr->m_pTransform != nullptr) {
-            p_ptr->m_pTransform->deleteLater();
-        }
-        p_ptr->m_pTransform = t;
-    }
-}
-
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
     Actor *actor   = dynamic_cast<Actor *>(parent());
@@ -125,13 +112,12 @@ bool Actor::isSerializable() const {
 
 void Actor::setParent(Object *parent) {
     PROFILE_FUNCTION();
-    Transform *t    = transform();
-    if(t) {
+    if(p_ptr->m_pTransform) {
         Object::setParent(parent);
 
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
-            t->setParent(actor->transform());
+            p_ptr->m_pTransform->setParent(actor->transform());
         }
     } else {
         Object::setParent(parent);
