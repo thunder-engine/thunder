@@ -71,6 +71,23 @@ Timeline::Timeline(QWidget *parent) :
     connect(ui->clipBox, SIGNAL(activated(QString)), m_pModel, SLOT(setClip(QString)));
 
     m_ContentMenu.addAction(tr("Remove Properties"), this, SLOT(onRemoveProperty()));
+/*
+    ui->record->hide();
+    ui->begin->hide();
+    ui->previous->hide();
+    ui->play->hide();
+    ui->pause->hide();
+    ui->next->hide();
+    ui->end->hide();
+
+    ui->curve->hide();
+    ui->flatKey->hide();
+    ui->breakKey->hide();
+
+    ui->clipBox->hide();
+
+    ui->clipBox->hide();
+*/
 }
 
 Timeline::~Timeline() {
@@ -301,12 +318,8 @@ void Timeline::onModified() {
 
 void Timeline::onRemoveProperty() {
     QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
-    AnimationClip *clip = m_pModel->clip();
     foreach(const QModelIndex &index, list) {
-        auto it = clip->m_Tracks.begin();
-        advance(it, index.row());
-
-        clip->m_Tracks.erase(it);
+        m_pModel->removeItem(index);
     }
     m_pModel->setController(m_pController);
     m_pModel->updateController();

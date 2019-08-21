@@ -50,6 +50,8 @@ public:
 
     void                        selectItem                  (const QModelIndex &index);
 
+    void                        removeItem                  (const QModelIndex &index);
+
     AnimationCurve::KeyFrame   *key                         (int row, int col, uint32_t index);
 
     void                        updateController            ();

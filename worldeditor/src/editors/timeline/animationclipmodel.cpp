@@ -281,6 +281,24 @@ void AnimationClipModel::selectItem(const QModelIndex &index) {
     }
 }
 
+void AnimationClipModel::removeItem(const QModelIndex &index) {
+    if(index.parent().isValid()) { // Sub component
+        QModelIndex p = parent(index);
+        if(p.isValid()) {
+            auto it = m_pClip->m_Tracks.begin();
+            advance(it, p.row());
+
+            auto curve = std::next(it->curves.begin(), index.row());
+            it->curves.erase(curve);
+        }
+    } else {
+        auto it = m_pClip->m_Tracks.begin();
+        advance(it, index.row());
+
+        m_pClip->m_Tracks.erase(it);
+    }
+}
+
 AnimationCurve::KeyFrame *AnimationClipModel::key(int row, int col, uint32_t index) {
     if(row >= 0) {
         if(!m_pClip->m_Tracks.empty()) {
