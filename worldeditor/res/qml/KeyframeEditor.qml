@@ -127,7 +127,7 @@ Rectangle {
 
                     Rectangle {
                         id: item
-                        color: (selectInd == index && selectRow == row && selectCol == col) ? theme.hoverBlueColor : "#a0606060"
+                        color: (selectInd == index && selectRow == row && selectCol == col) ? theme.blueHover : "#a0606060"
                         border.color: theme.textColor
 
                         height: 7

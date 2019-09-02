@@ -220,6 +220,7 @@ void Timeline::onChanged(Object::ObjectList objects, const QString &property) {
 
 void Timeline::onUpdated(Object *object, const QString &property) {
     m_pModel->setController(m_pController);
+    ui->clipBox->clear();
     ui->clipBox->addItems(m_pModel->clips());
 
     if(object && !property.isEmpty() && ui->record->isChecked()) {
@@ -305,6 +306,7 @@ void Timeline::onUpdated(Object *object, const QString &property) {
 
                 m_pModel->setController(m_pController);
                 m_pModel->updateController();
+                ui->clipBox->clear();
                 ui->clipBox->addItems(m_pModel->clips());
                 onModified();
             }
@@ -321,7 +323,6 @@ void Timeline::onRemoveProperty() {
     foreach(const QModelIndex &index, list) {
         m_pModel->removeItem(index);
     }
-    m_pModel->setController(m_pController);
     m_pModel->updateController();
 
     onModified();

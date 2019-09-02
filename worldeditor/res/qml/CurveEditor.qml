@@ -270,7 +270,7 @@ Rectangle {
                 }
 
                 Rectangle {
-                    color: (selectInd == index && selectCol == points.col) ? theme.hoverBlueColor : "#a0606060"
+                    color: (selectInd == index && selectCol == points.col) ? theme.blueHover : "#a0606060"
                     border.color: theme.textColor
 
                     height: points.pointSize

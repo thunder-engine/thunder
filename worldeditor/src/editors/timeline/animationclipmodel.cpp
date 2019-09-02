@@ -70,20 +70,21 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
             auto it = m_pClip->m_Tracks.begin();
             if(index.internalPointer() == &m_pClip->m_Tracks) {
                 advance(it, index.row());
+                if(it != m_pClip->m_Tracks.end()) {
+                    QStringList lst = QString::fromStdString(it->path).split('/');
+                    QString name = lst.last();
+                    int32_t size = lst.size();
+                    if(name.isEmpty()) {
+                        name    = QString::fromStdString(m_pController->actor()->name());
+                        size    = 0;
+                    }
 
-                QStringList lst = QString::fromStdString(it->path).split('/');
-                QString name = lst.last();
-                int32_t size = lst.size();
-                if(name.isEmpty()) {
-                    name    = QString::fromStdString(m_pController->actor()->name());
-                    size    = 0;
+                    QString spaces;
+                    for(int32_t i = 0; i < size; i++) {
+                        spaces  += "    ";
+                    }
+                    return QString("%1%2 : %3").arg(spaces).arg(name).arg(it->property.c_str());
                 }
-
-                QString spaces;
-                for(int32_t i = 0; i < size; i++) {
-                    spaces  += "    ";
-                }
-                return QString("%1%2 : %3").arg(spaces).arg(name).arg(it->property.c_str());
             } else {
                 static QStringList list = {"x", "y", "z", "w"};
                 advance(it, index.parent().row());
@@ -170,7 +171,7 @@ int AnimationClipModel::rowCount(const QModelIndex &parent) const {
 
 QVariant AnimationClipModel::trackData(int track) const {
     if(m_pClip && track >= 0) {
-        if(!m_pClip->m_Tracks.empty()) {
+        if(track < m_pClip->m_Tracks.size()) {
             auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
 
             QVariantList track;
@@ -282,16 +283,7 @@ void AnimationClipModel::selectItem(const QModelIndex &index) {
 }
 
 void AnimationClipModel::removeItem(const QModelIndex &index) {
-    if(index.parent().isValid()) { // Sub component
-        QModelIndex p = parent(index);
-        if(p.isValid()) {
-            auto it = m_pClip->m_Tracks.begin();
-            advance(it, p.row());
-
-            auto curve = std::next(it->curves.begin(), index.row());
-            it->curves.erase(curve);
-        }
-    } else {
+    if(!index.parent().isValid()) { // Not sub component
         auto it = m_pClip->m_Tracks.begin();
         advance(it, index.row());
 
