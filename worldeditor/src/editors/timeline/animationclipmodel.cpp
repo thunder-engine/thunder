@@ -58,6 +58,20 @@ void AnimationClipModel::setClip(const QString &clip) {
     setRow(0);
 }
 
+void AnimationClipModel::onExpanded(const QModelIndex &index) {
+    m_Expands.append(index.row());
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
+}
+
+void AnimationClipModel::onCollapsed(const QModelIndex &index) {
+    m_Expands.removeAll(index.row());
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
+}
+
 QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid() || m_pClip == nullptr) {
         return QVariant();
@@ -91,7 +105,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 int component = std::next(it->curves.begin(), index.row())->first;
                 return QString("%1.%2").arg(it->property.c_str()).arg(list.at(component));
             }
-        }
+        } break;
         case Qt::BackgroundColorRole: {
             if(m_isHighlighted && (index == m_HoverIndex)) {
                 return QColor(229, 0, 0);
@@ -160,13 +174,36 @@ int AnimationClipModel::rowCount(const QModelIndex &parent) const {
             } else {
                 if(parent.internalPointer() == list) {
                     if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                        return static_cast<int32_t>(std::next(list->begin(), parent.row())->curves.size());
+                        int result = static_cast<int32_t>(std::next(list->begin(), parent.row())->curves.size());
+                        return (result > 1) ? result : 0;
                     }
                 }
             }
         }
     }
     return 0;
+}
+
+bool AnimationClipModel::isExpanded(int track) const {
+    return (m_Expands.indexOf(track) > -1);
+}
+
+int AnimationClipModel::expandHeight(int track) const {
+    int result = 0;
+    if(m_pClip && track >= 0) {
+        int i = 0;
+        for(auto it : m_pClip->m_Tracks) {
+            if(i >= track) {
+                break;
+            }
+            result += 1;
+            if(m_Expands.indexOf(i) > -1 && it.curves.size() > 1) {
+                result += it.curves.size();
+            }
+            i++;
+        }
+    }
+    return result;
 }
 
 QVariant AnimationClipModel::trackData(int track) const {
@@ -339,6 +376,7 @@ void AnimationClipModel::onRemoveKey(int row, int col, int index) {
 void AnimationClipModel::updateController() {
     m_pController->setStateMachine(m_pStateMachine);
     m_pController->setPosition(1000 * m_Position);
+    m_pController->setClip(m_pClip);
 
     emit changed();
 

@@ -12,7 +12,7 @@ Rectangle {
 
     property int posX: (width / hbar.size * hbar.position)
 
-    property int rowHeight: 17
+    property int rowHeight: 15
 
     property int selectInd: -1
     property int selectRow: -1
@@ -199,12 +199,9 @@ Rectangle {
         anchors.topMargin: 19
 
         posX: (width / hbar.size * hbar.position)
-        //posY: (height / vbar.size * vbar.position)
 
         timeStep: parent.timeStep
         timeScale: parent.timeScale
-
-        //visible: false
     }
 
     Rectangle {

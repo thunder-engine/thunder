@@ -70,6 +70,9 @@ Timeline::Timeline(QWidget *parent) :
 
     connect(ui->clipBox, SIGNAL(activated(QString)), m_pModel, SLOT(setClip(QString)));
 
+    connect(ui->treeView, SIGNAL(expanded(const QModelIndex)), m_pModel, SLOT(onExpanded(const QModelIndex)));
+    connect(ui->treeView, SIGNAL(collapsed(const QModelIndex)), m_pModel, SLOT(onCollapsed(const QModelIndex)));
+
     m_ContentMenu.addAction(tr("Remove Properties"), this, SLOT(onRemoveProperty()));
 /*
     ui->record->hide();

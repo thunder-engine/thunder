@@ -53,12 +53,15 @@ Rectangle {
 
             height: rowHeight
             width: parent.width
-            y: index * height - posY
+            y: expanded * height - posY
+
             color: "#40000000"
 
             property int row: index
             property variant curve: clipModel.trackData(row)
             property int componentsNumber: curve.length
+
+            property int expanded: clipModel.expandHeight(row)
 
             MouseArea {
                 anchors.fill: parent
@@ -125,62 +128,19 @@ Rectangle {
                     property int col: index
                     property int component: keys.curve[col][0]
 
-                    Rectangle {
-                        id: item
-                        color: (selectInd == index && selectRow == row && selectCol == col) ? theme.blueHover : "#a0606060"
-                        border.color: theme.textColor
-
-                        height: 7
-                        width: 7
-
-                        x: toScreenSpaceX(key[0]) - posX - points.pointCenter
-                        y: 2
-                        rotation: 45
-
-                        property variant key: keys.curve[comp.col][index + 1]
-
-                        function commitKey() {
-                            var data = keys.curve
-                            data[comp.col][index + 1] = item.key
-                            keys.curve = data
+                    Item {
+                        Keyframe {
+                            x: toScreenSpaceX(key[0]) - posX - points.pointCenter
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-
-                            drag.target: parent
-                            drag.axis: Drag.XAxis
-                            drag.minimumX: 0
-                            drag.maximumX: keyframeEditor.width
-                            drag.threshold: 0
-
-                            drag.onActiveChanged: {
-                                if(!drag.active) {
-                                    clipModel.setTrackData(keys.row, keys.curve)
-                                }
-                            }
-
-                            onPressed: {
-                                selectInd = index
-                                selectRow = row
-                                selectCol = col
-
-                                selectKey(row, col, index)
-                            }
-
-                            onPositionChanged: {
-                                if(drag.active) {
-                                    var x = Math.round(item.x / timeStep) * timeStep - points.pointSize
-
-                                    item.key[0] = Math.max(Math.round((x + posX) / timeStep), 0) * timeScale * 1000
-                                    item.commitKey()
-                                }
-                            }
+                        Keyframe {
+                            x: toScreenSpaceX(key[0]) - posX - points.pointCenter
+                            y: (comp.col + 1) * rowHeight + 2
+                            visible: clipModel.isExpanded(row)
                         }
                     }
                 }
             }
-
         }
     }
 }

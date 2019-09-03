@@ -33,6 +33,10 @@ public:
 
     int                         rowCount                    (const QModelIndex &) const;
 
+    Q_INVOKABLE bool            isExpanded                  (int track) const;
+
+    Q_INVOKABLE int             expandHeight                (int track) const;
+
     Q_INVOKABLE QVariant        trackData                   (int track) const;
 
     Q_INVOKABLE void            setTrackData                (int track, const QVariant &data);
@@ -66,6 +70,9 @@ public slots:
 
     void                        setClip                     (const QString &clip);
 
+    void                        onExpanded                  (const QModelIndex &index);
+    void                        onCollapsed                 (const QModelIndex &index);
+
 signals:
     void                        changed                     ();
 
@@ -89,6 +96,8 @@ protected:
     int                         m_Col;
 
     QMap<QString, AnimationClip *> m_Clips;
+
+    QList<int>                  m_Expands;
 
 };
 
