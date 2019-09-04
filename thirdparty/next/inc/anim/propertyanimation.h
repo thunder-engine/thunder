@@ -1,12 +1,12 @@
 #ifndef PROPERTYANIMATION_H
 #define PROPERTYANIMATION_H
 
-#include "variantanimation.h"
+#include "blenderanimation.h"
 
 class PropertyAnimationPrivate;
 
-class NEXT_LIBRARY_EXPORT PropertyAnimation : public VariantAnimation {
-    A_REGISTER(PropertyAnimation, VariantAnimation, Animation)
+class NEXT_LIBRARY_EXPORT PropertyAnimation : public BlenderAnimation {
+    A_REGISTER(PropertyAnimation, BlenderAnimation, Animation)
 
 public:
     PropertyAnimation               ();
@@ -20,6 +20,8 @@ public:
     const char                     *targetProperty              () const;
 
     void                            setCurrentValue             (const Variant &value) override;
+
+    void                            setValid                    (bool valid) override;
 
 private:
     PropertyAnimationPrivate       *p_ptr;

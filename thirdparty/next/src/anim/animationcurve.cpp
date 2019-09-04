@@ -29,10 +29,10 @@ float AnimationCurve::value(uint32_t pos) {
                 break;
             }
         }
-        float f1    = float(a.m_Position) / duration;
-        float f2    = float(b.m_Position) / duration;
-        float f     = float(pos) / duration;
-        float factor    = (f - f1) / (f2 - f1);
+        float f1 = float(a.m_Position) / duration;
+        float f2 = float(b.m_Position) / duration;
+        float f  = float(pos) / duration;
+        float factor = (f - f1) / (f2 - f1);
 
         switch(a.m_Type) {
             case AnimationCurve::KeyFrame::Constant: {
@@ -47,4 +47,8 @@ float AnimationCurve::value(uint32_t pos) {
         }
     }
     return result;
+}
+
+uint32_t AnimationCurve::duration() {
+    return m_Keys.back().m_Position;
 }

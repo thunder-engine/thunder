@@ -2,6 +2,8 @@
 
 #define TRACKS  "Tracks"
 
+static hash<string> hash_str;
+
 void AnimationClip::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     {
@@ -16,6 +18,8 @@ void AnimationClip::loadUserData(const VariantMap &data) {
                 i++;
                 track.property = (*i).toString();
                 i++;
+
+                track.hash = hash_str(track.path + "." + track.property);
 
                 for(auto it : (*i).toList()) {
                     VariantList curveList = it.toList();
@@ -53,6 +57,8 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 }
 
 uint32_t AnimationClip::duration() const {
+    PROFILE_FUNCTION();
+
     uint32_t result = 0;
     for(auto track : m_Tracks) {
         for(auto curve : track.curves) {
@@ -63,5 +69,7 @@ uint32_t AnimationClip::duration() const {
 }
 
 bool AnimationClip::compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second) {
+    PROFILE_FUNCTION();
+
     return ( first.m_Position < second.m_Position );
 }

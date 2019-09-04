@@ -14,6 +14,8 @@ public:
 
        string property;
 
+       uint32_t hash;
+
        map<int32_t, AnimationCurve> curves;
    };
    typedef list<Track> TrackList;

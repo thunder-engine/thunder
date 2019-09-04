@@ -21,6 +21,8 @@ public:
             State *m_pTargetState;
 
             size_t m_ConditionHash;
+
+            bool checkCondition (const Variant &value);
         };
         typedef vector<Transition> TransitionArray;
 
@@ -49,6 +51,8 @@ public:
     State *initialState() const;
 
     StateVector &states() const;
+
+    VariableMap &variables() const;
 
 private:
     void loadUserData(const VariantMap &data) override;

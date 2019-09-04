@@ -25,6 +25,10 @@ AnimationStateMachine::State::State() :
 
 }
 
+bool AnimationStateMachine::State::Transition::checkCondition(const Variant &value) {
+    return value.toBool();
+}
+
 uint8_t AnimationStateMachine::State::type() const {
     return Base;
 }
@@ -35,6 +39,8 @@ AnimationStateMachine::AnimationStateMachine() :
 }
 
 void AnimationStateMachine::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
+
     auto section = data.find(MACHINE);
     if(section != data.end()) {
         VariantList machine = (*section).second.value<VariantList>();
@@ -87,6 +93,8 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
 }
 
 AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) const {
+    PROFILE_FUNCTION();
+
     for(auto state : p_ptr->m_States) {
         if(state->m_Hash == hash) {
             return state;
@@ -96,9 +104,19 @@ AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) cons
 }
 
 AnimationStateMachine::State *AnimationStateMachine::initialState() const {
+    PROFILE_FUNCTION();
+
     return p_ptr->m_pInitialState;
 }
 
 AnimationStateMachine::StateVector &AnimationStateMachine::states() const {
+    PROFILE_FUNCTION();
+
     return p_ptr->m_States;
+}
+
+AnimationStateMachine::VariableMap &AnimationStateMachine::variables() const {
+    PROFILE_FUNCTION();
+
+    return p_ptr->m_Variables;
 }

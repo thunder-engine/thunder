@@ -1,36 +1,38 @@
 #ifndef ANIMATIONCURVE_H
 #define ANIMATIONCURVE_H
 
-#include "core/variant.h"
+#include "variant.h"
 
 class NEXT_LIBRARY_EXPORT AnimationCurve {
 public:
     class NEXT_LIBRARY_EXPORT KeyFrame {
     public:
         enum Type {
-            Constant            = 0,
+            Constant = 0,
             Linear,
             Cubic
         };
 
-        KeyFrame                ();
+        KeyFrame ();
 
     public:
-        uint32_t                m_Position;
+        uint32_t m_Position;
 
-        Type                    m_Type;
+        Type m_Type;
 
-        float                   m_Value;
+        float m_Value;
 
-        float                   m_LeftTangent;
-        float                   m_RightTangent;
+        float m_LeftTangent;
+        float m_RightTangent;
     };
 
-    typedef vector<KeyFrame>    Keys;
+    typedef vector<KeyFrame> Keys;
 
-    float                       value                       (uint32_t pos);
+    float value (uint32_t pos);
 
-    Keys                        m_Keys;
+    uint32_t duration ();
+
+    Keys m_Keys;
 };
 
 #endif // ANIMATIONCURVE_H

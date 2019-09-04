@@ -47,6 +47,9 @@ public:
 
     int32_t                         duration                    () const;
 
+    bool                            isValid                     () const;
+    virtual void                    setValid                    (bool valid);
+
 public:
     void                            start                       ();
 

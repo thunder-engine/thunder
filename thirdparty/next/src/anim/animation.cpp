@@ -7,7 +7,8 @@ public:
             m_CurrentLoop(0),
             m_CurrentTime(0),
             m_TotalCurrentTime(0),
-            m_LoopCount(-1) {
+            m_LoopCount(-1),
+            m_Valid(true) {
 
     }
 
@@ -16,6 +17,7 @@ public:
     uint32_t                m_CurrentTime;
     uint32_t                m_TotalCurrentTime;
     int32_t                 m_LoopCount;
+    bool                    m_Valid;
 };
 /*!
     \class Animation
@@ -125,6 +127,19 @@ int32_t Animation::duration() const {
     }
     return length * count;
 }
+/*!
+    Returns true in case of animation is valid; otherwise returns false.
+*/
+bool Animation::isValid() const {
+    return p_ptr->m_Valid;
+}
+/*!
+    Sets the \a valid state of animation. The invalid animations will not affect anything.
+*/
+void Animation::setValid(bool valid) {
+    p_ptr->m_Valid = valid;
+}
+
 /*!
     Starts the animation from the beginning.
 */

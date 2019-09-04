@@ -2,13 +2,8 @@
 
 class VariantAnimationPrivate {
 public:
-    VariantAnimationPrivate() :
-        m_Type(MetaType::FLOAT) {
-    }
+    map<int32_t, AnimationCurve *> m_KeyFrames;
 
-    map<int32_t, AnimationCurve> m_KeyFrames;
-
-    uint32_t        m_Type;
     Variant         m_CurrentValue;
 };
 /*!
@@ -31,9 +26,7 @@ public:
         \li MetaType::VECTOR4
     \endlist
 */
-/*!
-    Constructs VariantAnimation object
-*/
+
 VariantAnimation::VariantAnimation() :
         p_ptr(new VariantAnimationPrivate()) {
 
@@ -48,7 +41,7 @@ VariantAnimation::~VariantAnimation() {
 int32_t VariantAnimation::loopDuration() const {
     uint32_t result = 0;
     for(auto it : p_ptr->m_KeyFrames) {
-        result = MAX(it.second.m_Keys.back().m_Position, result);
+        result = MAX(it.second->duration(), result);
     }
     return result;
 }
@@ -64,16 +57,18 @@ Variant VariantAnimation::currentValue() const {
 void VariantAnimation::setCurrentValue(const Variant &value) {
     p_ptr->m_CurrentValue   = value;
 }
-/*!
-    Returns the sequence of key frames as curve for the \a component of animation track.
-*/
-AnimationCurve &VariantAnimation::curve(int32_t component) const {
-    return p_ptr->m_KeyFrames[component];
+
+AnimationCurve *VariantAnimation::curve(int32_t component) const {
+    auto it = p_ptr->m_KeyFrames.find(component);
+    if(it != p_ptr->m_KeyFrames.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 /*!
-    Sets the new sequence of the key \a frames.
+    Sets the new sequence of the key frames as \a curve for the provided \a conponent.
 */
-void VariantAnimation::setCurve(AnimationCurve &curve, int32_t component) {
+void VariantAnimation::setCurve(AnimationCurve *curve, int32_t component) {
     p_ptr->m_KeyFrames[component] = curve;
 }
 /*!
@@ -82,12 +77,14 @@ void VariantAnimation::setCurve(AnimationCurve &curve, int32_t component) {
 */
 void VariantAnimation::setCurrentTime(uint32_t msecs) {
     Animation::setCurrentTime(msecs);
-
+    if(!isValid()) {
+        return;
+    }
     Variant data = currentValue();
     for(auto it : p_ptr->m_KeyFrames) {
         int32_t component = it.first;
 
-        float value = it.second.value(loopTime());
+        float value = it.second->value(loopTime());
 
         switch(p_ptr->m_CurrentValue.type()) {
             case MetaType::BOOLEAN: {
