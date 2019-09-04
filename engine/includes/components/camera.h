@@ -17,7 +17,7 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
         A_PROPERTY(float, Far,  Camera::farPlane, Camera::setFar),
         A_PROPERTY(float, Size, Camera::orthoHeight, Camera::setOrthoHeight),
         A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
-        A_PROPERTY(Color, Background_Color, Camera::color, Camera::setColor),
+        A_PROPERTYEX(Vector4, Background_Color, Camera::color, Camera::setColor, "editor=Color"),
         A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
     )
     A_NOMETHODS()
@@ -72,7 +72,7 @@ public:
 
 private:
 #ifdef NEXT_SHARED
-    bool drawHandles() override;
+    bool drawHandles(bool selected) override;
 #endif
 
 private:

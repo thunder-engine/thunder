@@ -168,7 +168,7 @@ AABBox PointLight::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool PointLight::drawHandles() {
+bool PointLight::drawHandles(bool selected) {
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();

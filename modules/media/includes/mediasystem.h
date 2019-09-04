@@ -5,8 +5,6 @@
 
 #include <AL/alc.h>
 
-class Camera;
-
 class MediaSystem : public ISystem {
 public:
     MediaSystem                 ();

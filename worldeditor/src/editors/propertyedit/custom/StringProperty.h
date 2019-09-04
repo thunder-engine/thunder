@@ -7,19 +7,19 @@ class StringProperty : public Property {
     Q_OBJECT
 
 public:
-    StringProperty      (const QString& name = QString(), QObject* propertyObject = 0, QObject* parent = 0);
-    ~StringProperty     ();
+    StringProperty (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
+    ~StringProperty ();
 
-    QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem& option);
+    QWidget *createEditor (QWidget *parent, const QStyleOptionViewItem &option);
 
-    bool                setEditorData   (QWidget *editor, const QVariant &data);
+    bool setEditorData (QWidget *editor, const QVariant &data);
 
-    QVariant            editorData      (QWidget *editor);
+    QVariant editorData (QWidget *editor);
 
-    QSize               sizeHint        (const QSize& size) const;
+    QSize sizeHint (const QSize& size) const;
 
 protected slots:
-    void                onDataChanged   ();
+    void onDataChanged   ();
 
 };
 

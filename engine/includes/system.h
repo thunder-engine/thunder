@@ -24,7 +24,6 @@ public:
 
     void setActiveScene (Scene *scene);
 
-private:
     void processEvents () override;
 
 private:

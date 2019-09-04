@@ -77,6 +77,7 @@ public:
         ContentPipeline,
         ContentPrefab,
         ContentAnimationStateMachine,
+        ContentPhysicMaterial,
         ContentLast
     };
 public:

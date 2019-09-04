@@ -5,6 +5,7 @@ Project {
 
     references: [
 		"angelscript/angelscript.qbs",
+        "bullet/bullet3.qbs",
         "next/next.qbs",
         "zlib/zlib.qbs",
         "physfs/physfs.qbs",

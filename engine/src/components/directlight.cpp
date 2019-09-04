@@ -227,7 +227,7 @@ AABBox DirectLight::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool DirectLight::drawHandles() {
+bool DirectLight::drawHandles(bool selected) {
     Vector3 pos = actor()->transform()->position();
 
     Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));

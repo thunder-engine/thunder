@@ -18,7 +18,7 @@ using namespace std;
 
 class NEXT_LIBRARY_EXPORT Handles {
 public:
-    enum Axes {
+    enum Axises {
         AXIS_X  = (1 << 0),
         AXIS_Y  = (1 << 1),
         AXIS_Z  = (1 << 2)
@@ -34,9 +34,11 @@ public:
 
     static void             drawLines           (const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
 
-    static void             drawCircle          (const Matrix4 &transform, float radius);
+    static void             drawBox             (const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
-    static void             drawAABB            (AABBox &box);
+    static void             drawCircle          (const Vector3 &center, const Quaternion &rotation, float radius);
+    static void             drawSphere          (const Vector3 &center, const Quaternion &rotation, float radius);
+    static void             drawCapsule         (const Vector3 &center, const Quaternion &rotation, float radius, float height);
 
     static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);
 
@@ -75,7 +77,9 @@ protected:
     static Mesh *s_ScaleXYZ;
     static Mesh *s_Move;
     static Mesh *s_MoveXY;
+    static Mesh *s_Arc;
     static Mesh *s_Circle;
+    static Mesh *s_Box;
 
     static MaterialInstance*s_Gizmo;
 

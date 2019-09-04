@@ -30,13 +30,17 @@ public:
 
     virtual uint32_t                    screenHeight                () = 0;
 
-    virtual bool                        key                         (Input::KeyCode code) { A_UNUSED(code); return false; }
+    virtual bool                        keyPressed                  (Input::KeyCode code) { A_UNUSED(code); return false; }
+    virtual bool                        keyReleased                 (Input::KeyCode code) { A_UNUSED(code); return false; }
 
     virtual Vector4                     mousePosition               () { return Vector4(); }
 
     virtual Vector4                     mouseDelta                  () { return Vector4(); }
 
     virtual uint32_t                    mouseButtons                () { return 0; }
+
+    virtual bool                        mousePressed                (Input::MouseButton code) { A_UNUSED(code); return false; }
+    virtual bool                        mouseReleased               (Input::MouseButton code) { A_UNUSED(code); return false; }
 
     virtual void                        setMousePosition            (int32_t x, int32_t y) { A_UNUSED(x); A_UNUSED(y); }
 

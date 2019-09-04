@@ -50,7 +50,11 @@ public:
 
     bool                    isValid             () { return true; }
 
-    bool                    key                 (Input::KeyCode);
+    bool                    keyPressed          (Input::KeyCode) override;
+    bool                    keyReleased         (Input::KeyCode) override;
+
+    bool                    mousePressed        (Input::MouseButton) override;
+    bool                    mouseReleased       (Input::MouseButton) override;
 
     Vector4                 mousePosition       () {
         QPoint p    = mapFromGlobal(QCursor::pos());
@@ -110,8 +114,10 @@ protected:
     QMenu                   m_RenderModeMenu;
 
     int32_t                 m_MouseButtons;
+    int32_t                 m_LastMouseButtons;
 
     QList<int32_t>          m_Keys;
+    QList<int32_t>          m_LastKeys;
 };
 
 #endif // SCENEVIEW_H

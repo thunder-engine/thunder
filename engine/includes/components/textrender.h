@@ -19,11 +19,11 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTY(string, Text, TextRender::text, TextRender::setText),
-        A_PROPERTY(Alignment, Alignment, TextRender::align, TextRender::setAlign),
-        A_PROPERTY(Font *, Font_Name, TextRender::font, TextRender::setFont),
-        A_PROPERTY(Material *, Material, TextRender::material, TextRender::setMaterial),
+        A_PROPERTYEX(int, Alignment, TextRender::align, TextRender::setAlign, "editor=Alignment"),
+        A_PROPERTYEX(Font *, Font_Name, TextRender::font, TextRender::setFont, "editor=Template"),
+        A_PROPERTYEX(Material *, Material, TextRender::material, TextRender::setMaterial, "editor=Template"),
         A_PROPERTY(int, Font_Size, TextRender::fontSize, TextRender::setFontSize),
-        A_PROPERTY(Color, Color, TextRender::color, TextRender::setColor),
+        A_PROPERTYEX(Vector4, Color, TextRender::color, TextRender::setColor, "editor=Color"),
         A_PROPERTY(bool, Word_Wrap, TextRender::wrap, TextRender::setWrap),
         A_PROPERTY(Vector2, Boundaries, TextRender::boundaries, TextRender::setBoundaries),
         A_PROPERTY(bool, Use_Kerning, TextRender::kerning, TextRender::setKerning)
@@ -55,8 +55,8 @@ public:
     Vector2 boundaries () const;
     void setBoundaries (const Vector2 &boundaries);
 
-    Alignment align () const;
-    void setAlign (Alignment alignment);
+    int align () const;
+    void setAlign (int alignment);
 
     bool kerning () const;
     void setKerning (const bool kerning);
@@ -65,7 +65,7 @@ private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
 #ifdef NEXT_SHARED
-    bool drawHandles () override;
+    bool drawHandles (bool selected) override;
 #endif
 
     void loadData (const VariantList &data) override;

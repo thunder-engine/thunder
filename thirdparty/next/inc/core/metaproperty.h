@@ -15,6 +15,7 @@ public:
     struct Table {
         const char             *name;
         const MetaType::Table  *type;
+        const char             *annotation;
         ReadMem                 reader;
         WriteMem                writer;
         AddressMem              readmem;

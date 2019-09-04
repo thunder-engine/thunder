@@ -10,22 +10,22 @@ ColorEdit::ColorEdit(QWidget *parent) :
 
     connect(this, SIGNAL(clicked()), this, SLOT(colorPickDlg()));
 
-    mBrush  = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
+    m_Brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
 }
 
 QColor ColorEdit::color() const {
-    return mColor;
+    return m_Color;
 }
 
 void ColorEdit::setColor(const QString &color) {
-    mColor.setNamedColor(color);
+    m_Color.setNamedColor(color);
 }
 
 void ColorEdit::colorPickDlg() {
-    QColor color    = QColorDialog::getColor(mColor, this, QString(), QColorDialog::ShowAlphaChannel);
+    QColor color = QColorDialog::getColor(m_Color, this, QString(), QColorDialog::ShowAlphaChannel);
     if(color.isValid()) {
-        mColor      = color;
-        emit colorChanged(mColor.name(QColor::HexArgb));
+        m_Color = color;
+        emit colorChanged(m_Color.name(QColor::HexArgb));
     }
 }
 
@@ -36,13 +36,13 @@ void ColorEdit::paintEvent(QPaintEvent *ev) {
 
     QPainter painter;
     painter.begin(this);
-    painter.setBrush(mBrush);
+    painter.setBrush(m_Brush);
     painter.drawRect(r);
     r.setWidth(r.width() / 2);
-    painter.setBrush(QColor(mColor.rgb()));
+    painter.setBrush(QColor(m_Color.rgb()));
     painter.drawRect(r);
     r.translate(r.width(), 0);
-    painter.setBrush(mColor);
+    painter.setBrush(m_Color);
     painter.drawRect(r);
     painter.end();
 }

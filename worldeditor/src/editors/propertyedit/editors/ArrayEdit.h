@@ -9,21 +9,17 @@
 class ArrayEdit : public QLineEdit {
     Q_OBJECT
 public:
-    explicit        ArrayEdit           (QWidget *parent = 0);
+    explicit ArrayEdit (QWidget *parent = nullptr);
 
 signals:
-    void            elementAdded        ();
-    void            allCleared          ();
+    void elementAdded ();
+    void allCleared ();
     
-private slots:
-    void            addElement          ();
-    void            clearAll            ();
-
 private:
-    void            resizeEvent         (QResizeEvent *event);
+    void resizeEvent (QResizeEvent *event);
 
-    QToolButton    *mAddBtn;
-    QToolButton    *mClearBtn;
+    QToolButton *m_pAddBtn;
+    QToolButton *m_pClearBtn;
 };
 
 #endif // ARRAYEDIT_H

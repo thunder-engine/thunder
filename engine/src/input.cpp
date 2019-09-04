@@ -29,8 +29,15 @@ void Input::init(IPlatformAdaptor *platform) {
     Returns true in case of a key with \a code is pressed; otherwise returns false.
     Please refer to Input::KeyCode to see possible key codes.
 */
-bool Input::isKey(KeyCode code) {
-    return s_pPlatform->key(code);
+bool Input::isKeyDown(KeyCode code) {
+    return s_pPlatform->keyPressed(code);
+}
+/*!
+    Returns true in case of a key with \a code is released; otherwise returns false.
+    Please refer to Input::KeyCode to see possible key codes.
+*/
+bool Input::isKeyUp(KeyCode code) {
+    return s_pPlatform->keyReleased(code);
 }
 /*!
     Returns the mouse position.
@@ -66,6 +73,21 @@ Vector4 Input::mouseDelta() {
 uint32_t Input::mouseButtons() {
     return s_pPlatform->mouseButtons();
 }
+/*!
+    Returns true in case of the \a button is pressed; otherwise returns false.
+    Please refer to Input::MouseButton to see possible buttons.
+*/
+bool Input::isMouseButtonDown(MouseButton button) {
+    return s_pPlatform->mousePressed(button);
+}
+/*!
+    Returns true in case of the \a button is released; otherwise returns false.
+    Please refer to Input::MouseButton to see possible buttons.
+*/
+bool Input::isMouseButtonUp(MouseButton button) {
+    return s_pPlatform->mouseReleased(button);
+}
+
 /*!
     Moves the mouse cursor to the global screen position (\a x, \a y).
 */

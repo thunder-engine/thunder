@@ -182,7 +182,7 @@ void SpotLight::setAngle(float angle) {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool SpotLight::drawHandles() {
+bool SpotLight::drawHandles(bool selected) {
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();

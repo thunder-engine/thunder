@@ -9,7 +9,7 @@ class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
     A_REGISTER(PointLight, BaseLight, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float,   Attenuation_Radius,   PointLight::radius, PointLight::setRadius)
+        A_PROPERTY(float, Attenuation_Radius,   PointLight::radius, PointLight::setRadius)
     )
 
 public:
@@ -27,7 +27,7 @@ private:
     AABBox bound () const override;
 
 #ifdef NEXT_SHARED
-    bool drawHandles() override;
+    bool drawHandles(bool selected) override;
 #endif
 
 private:

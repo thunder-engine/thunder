@@ -118,7 +118,6 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
     }
 
     m_ObjectsList.clear();
-
     drawHelpers(*m_pMap);
 
     if(!m_Selected.empty()) {
@@ -285,9 +284,10 @@ void ObjectCtrl::deleteSelected(bool force) {
 
 void ObjectCtrl::drawHelpers(Object &object) {
     for(auto &it : object.getChildren()) {
-        Component *component    = dynamic_cast<Component *>(it);
+        Component *component = dynamic_cast<Component *>(it);
         if(component) {
-            if(component->drawHandles()) {
+            bool isSelected = (m_Selected.find(object.uuid()) != m_Selected.end());
+            if(component->drawHandles(isSelected)) {
                 m_ObjectsList = {object.uuid()};
             }
         } else {

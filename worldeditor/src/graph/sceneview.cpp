@@ -23,7 +23,8 @@ SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
         m_pController(nullptr),
         m_pScene(nullptr),
-        m_MouseButtons(0) {
+        m_MouseButtons(0),
+        m_LastMouseButtons(0) {
 
     setMouseTracking(true);
 }
@@ -54,6 +55,9 @@ void SceneView::paintGL() {
     }
     if(m_pScene) {
         findCamera();
+
+        m_LastKeys = m_Keys;
+        m_LastMouseButtons = m_MouseButtons;
 
         PluginModel::instance()->updateSystems(m_pScene);
     }
@@ -210,8 +214,20 @@ int32_t mapToInput(uint32_t key) {
     return result;
 }
 
-bool SceneView::key(Input::KeyCode code) {
+bool SceneView::keyPressed(Input::KeyCode code) {
     return (m_Keys.indexOf(code) != -1);
+}
+
+bool SceneView::keyReleased(Input::KeyCode code) {
+    return (m_LastKeys.indexOf(code) != -1) && (m_Keys.indexOf(code) == -1);
+}
+
+bool SceneView::mousePressed(Input::MouseButton button) {
+    return (m_MouseButtons & button);
+}
+
+bool SceneView::mouseReleased(Input::MouseButton button) {
+    return (m_LastMouseButtons & button && !(m_MouseButtons & button));
 }
 
 void SceneView::keyPressEvent(QKeyEvent *ev) {

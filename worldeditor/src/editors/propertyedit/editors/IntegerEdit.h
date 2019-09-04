@@ -11,14 +11,14 @@ class IntegerEdit : public QWidget {
     Q_OBJECT
 
 public:
-    explicit IntegerEdit(QWidget *parent = nullptr);
-    ~IntegerEdit();
+    explicit IntegerEdit (QWidget *parent = nullptr);
+    ~IntegerEdit ();
 
-    int32_t value() const;
-    void setValue(int32_t value);
+    int32_t value () const;
+    void setValue (int32_t value);
 
 signals:
-    void editingFinished();
+    void editingFinished ();
 
 private:
     Ui::IntegerEdit *ui;

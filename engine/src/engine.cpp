@@ -213,8 +213,6 @@ Engine::Engine(IFile *file, const char *path) :
 
     ICommandBuffer::registerClassFactory(this);
 
-    registerMetaType<Alignment>("Alignment");
-
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
 /*!
@@ -325,7 +323,7 @@ void Engine::update() {
         p_ptr->m_ThreadPool.start(*it);
     }
     for(auto it : EnginePrivate::m_Serial) {
-        it->update(p_ptr->m_pScene);
+        it->processEvents();
     }
 
     p_ptr->m_pPlatform->update();

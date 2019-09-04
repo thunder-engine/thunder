@@ -281,7 +281,8 @@ void PluginModel::initSystems() {
 void PluginModel::updateSystems(Scene *scene) {
     foreach(auto it, m_Systems) {
         if(it) {
-            it->update(scene);
+            it->setActiveScene(scene);
+            it->processEvents();
         }
     }
 }

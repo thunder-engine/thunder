@@ -12,7 +12,7 @@ class NEXT_LIBRARY_EXPORT AnimationController : public NativeBehaviour {
     A_REGISTER(AnimationController, NativeBehaviour, Components)
 
     A_PROPERTIES (
-        A_PROPERTY(AnimationStateMachine*, State_Machine, AnimationController::stateMachine, AnimationController::setStateMachine)
+        A_PROPERTYEX(AnimationStateMachine*, State_Machine, AnimationController::stateMachine, AnimationController::setStateMachine, "editor=Template")
     )
 
 public:

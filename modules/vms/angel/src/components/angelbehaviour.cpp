@@ -129,7 +129,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
                         MetaType::Table *table = MetaType::table(metaType);
                         if(table) {
                             void *ptr = object->GetAddressOfProperty(i);
-                            m_Table.push_back({name, table, nullptr, nullptr, nullptr, nullptr, ptr});
+                            m_Table.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr, ptr});
                         }
                     }
                 }

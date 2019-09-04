@@ -19,7 +19,7 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
 
 public:
     Component();
-    ~Component();
+    ~Component() override;
 
     Actor *actor () const;
 
@@ -30,7 +30,7 @@ public:
     void setStarted (bool started);
 
 #ifdef NEXT_SHARED
-    virtual bool drawHandles();
+    virtual bool drawHandles(bool selected);
 #endif
 private:
     bool isSerializable () const override;

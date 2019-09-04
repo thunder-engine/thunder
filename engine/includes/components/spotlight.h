@@ -30,7 +30,7 @@ private:
 
     AABBox bound() const override;
 #ifdef NEXT_SHARED
-    bool drawHandles() override;
+    bool drawHandles(bool selected) override;
 #endif
 
 private:

@@ -11,17 +11,17 @@ class StringEdit : public QWidget {
     Q_OBJECT
 
 public:
-    explicit StringEdit     (QWidget *parent = nullptr);
-    ~StringEdit             ();
+    explicit StringEdit (QWidget *parent = nullptr);
+    ~StringEdit ();
 
-    void                    setText         (const QString &text);
-    QString                 text            () const;
+    void setText (const QString &text);
+    QString text () const;
 
 signals:
-    void                    editFinished    ();
+    void editFinished ();
 
 private:
-    Ui::StringEdit         *ui;
+    Ui::StringEdit *ui;
 };
 
 #endif // STRINGEDIT_H

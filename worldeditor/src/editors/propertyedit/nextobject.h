@@ -42,6 +42,8 @@ protected slots:
 protected:
     bool                        event                   (QEvent *e);
 
+    QString                     editor                  (MetaProperty &property);
+
     void                        buildObject             (Object *object, const QString &path = QString());
 
     Object                     *m_pObject;

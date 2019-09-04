@@ -13,13 +13,13 @@ class Actions : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Actions    (QWidget *parent = 0);
-    ~Actions            ();
+    explicit Actions (QWidget *parent = nullptr);
+    ~Actions ();
 
-    void                setMenu                 (QMenu *menu);
+    void setMenu (QMenu *menu);
 
 private:
-    Ui::Actions        *ui;
+    Ui::Actions *ui;
 };
 
 #endif // ACTIONS_H

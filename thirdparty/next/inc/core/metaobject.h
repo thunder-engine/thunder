@@ -34,7 +34,7 @@ public: \
     static const MetaProperty::Table *properties() { \
         static const MetaProperty::Table table[] { \
             __VA_ARGS__, \
-            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
+            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
         }; \
         return table; \
     }
@@ -43,7 +43,7 @@ public: \
 public: \
     static const MetaProperty::Table *properties() { \
         static const MetaProperty::Table table[] { \
-            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
+            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
         }; \
         return table; \
     }
@@ -71,6 +71,19 @@ public: \
 { \
     #p, \
     Reader<decltype(&r), &r>::type(#t), \
+    nullptr, \
+   &Reader<decltype(&r), &r>::read, \
+   &Writer<decltype(&w), &w>::write, \
+   &Reader<decltype(&r), &r>::address<&r>, \
+   &Writer<decltype(&w), &w>::address<&w>, \
+    nullptr \
+}
+
+#define A_PROPERTYEX(t, p, r, w, a) \
+{ \
+    #p, \
+    Reader<decltype(&r), &r>::type(#t), \
+    a, \
    &Reader<decltype(&r), &r>::read, \
    &Writer<decltype(&w), &w>::write, \
    &Reader<decltype(&r), &r>::address<&r>, \

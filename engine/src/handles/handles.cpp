@@ -53,7 +53,9 @@ Mesh *Handles::s_ScaleXY    = nullptr;
 Mesh *Handles::s_ScaleXYZ   = nullptr;
 Mesh *Handles::s_Move       = nullptr;
 Mesh *Handles::s_MoveXY     = nullptr;
+Mesh *Handles::s_Arc        = nullptr;
 Mesh *Handles::s_Circle     = nullptr;
+Mesh *Handles::s_Box        = nullptr;
 
 enum {
     AXIS,
@@ -152,14 +154,50 @@ void Handles::init() {
         s_MoveXY->addLod(lod);
     }
 
-    if(s_Circle == nullptr) {
+    if(s_Arc == nullptr) {
         Mesh::Lod lod;
         lod.vertices    = HandleTools::pointsArc(Quaternion(), 5.0, 0, 180);
+        lod.indices.clear();
+
+        s_Arc = Engine::objectCreate<Mesh>("Arc");
+        s_Arc->setMode(Mesh::MODE_LINE_STRIP);
+        s_Arc->addLod(lod);
+    }
+
+    if(s_Circle == nullptr) {
+        Mesh::Lod lod;
+        lod.vertices    = HandleTools::pointsArc(Quaternion(), 1.0, 0, 360);
         lod.indices.clear();
 
         s_Circle = Engine::objectCreate<Mesh>("Circle");
         s_Circle->setMode(Mesh::MODE_LINE_STRIP);
         s_Circle->addLod(lod);
+    }
+
+    if(s_Box == nullptr) {
+        Mesh::Lod lod;
+
+        Vector3 min(-1);
+        Vector3 max( 1);
+
+        lod.vertices = {
+            Vector3(min.x, min.y, min.z),
+            Vector3(max.x, min.y, min.z),
+            Vector3(max.x, min.y, max.z),
+            Vector3(min.x, min.y, max.z),
+
+            Vector3(min.x, max.y, min.z),
+            Vector3(max.x, max.y, min.z),
+            Vector3(max.x, max.y, max.z),
+            Vector3(min.x, max.y, max.z)
+        };
+        lod.indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                         4, 5, 5, 6, 6, 7, 7, 4,
+                         0, 4, 1, 5, 2, 6, 3, 7};
+
+        s_Box = Engine::objectCreate<Mesh>("Box");
+        s_Box->setMode(Mesh::MODE_LINES);
+        s_Box->addLod(lod);
     }
 
     inited = true;
@@ -216,38 +254,71 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
     }
 }
 
-void Handles::drawAABB(AABBox &box) {
-    Vector3 min, max;
-    box.box(min, max);
+void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size) {
+    if(inited) {
+        s_Buffer->setColor(s_Color);
 
-    Vector3Vector points = {
-        Vector3(min.x, min.y, min.z),
-        Vector3(max.x, min.y, min.z),
-        Vector3(max.x, min.y, max.z),
-        Vector3(min.x, min.y, max.z),
+        Matrix4 transform(center, rotation, size);
 
-        Vector3(min.x, max.y, min.z),
-        Vector3(max.x, max.y, min.z),
-        Vector3(max.x, max.y, max.z),
-        Vector3(min.x, max.y, max.z)
-    };
-    Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                                   4, 5, 5, 6, 6, 7, 7, 4,
-                                   0, 4, 1, 5, 2, 6, 3, 7};
-
-    drawLines(Matrix4(), points, indices);
+        s_Buffer->drawMesh(transform, s_Box, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    }
 }
 
-void Handles::drawCircle(const Matrix4 &transform, float radius) {
+void Handles::drawCircle(const Vector3 &center, const Quaternion &rotation, float radius) {
     if(inited) {
-        Mesh::Lod lod;
-        lod.vertices    = HandleTools::pointsArc(Quaternion(), radius, 0, 180);
-        {
-            s_Lines->setMode(Mesh::MODE_LINE_STRIP);
-            s_Lines->setLod(0, lod);
-        }
         s_Buffer->setColor(s_Color);
-        s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+
+        Matrix4 transform(center, rotation, Vector3(radius));
+
+        s_Buffer->drawMesh(transform, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    }
+}
+
+void Handles::drawSphere(const Vector3 &center, const Quaternion &rotation, float radius) {
+    if(inited) {
+        s_Buffer->setColor(s_Color);
+
+        Matrix4 transform(center, rotation, Vector3(radius));
+
+        s_Buffer->drawMesh(transform, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform * Matrix4(Quaternion(Vector3(1, 0, 0), 90).toMatrix()), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        s_Buffer->drawMesh(transform * Matrix4(Quaternion(Vector3(0, 0, 1), 90).toMatrix()), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    }
+}
+
+void Handles::drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height) {
+    if(inited) {
+        s_Buffer->setColor(s_Color);
+
+        Matrix4 transform(center, rotation, Vector3(1.0));
+
+        float half = height * 0.5f - radius;
+
+        {
+            Vector3 cap(0, half, 0);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(), Vector3(radius)), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90, 90, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        }
+        {
+            Vector3 cap(0,-half, 0);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(), Vector3(radius)), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90,  0, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90, 90, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        }
+
+        Vector3Vector points = { Vector3( radius, half, 0),
+                                 Vector3( radius,-half, 0),
+                                 Vector3(-radius, half, 0),
+                                 Vector3(-radius,-half, 0),
+                                 Vector3( 0, half, radius),
+                                 Vector3( 0,-half, radius),
+                                 Vector3( 0, half,-radius),
+                                 Vector3( 0,-half,-radius)};
+
+        Mesh::IndexVector indices = {0, 1, 2, 3, 4, 5, 6, 7};
+
+        drawLines(transform, points, indices);
     }
 }
 
@@ -255,7 +326,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
     bool result = false;
     if(inited) {
         Matrix4 model(position, Quaternion(), Vector3(size, size.x));
-        Matrix4 q   = model * Matrix4(Vector3(), Camera::current()->actor()->transform()->rotation(), Vector3(1.0));
+        Matrix4 q   = model * Matrix4(Camera::current()->actor()->transform()->rotation().toMatrix());
 
         if(HandleTools::distanceToPoint(q, Vector3()) <= sense) {
             result = true;
@@ -406,7 +477,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             Matrix4 model(position, Quaternion(), scale);
 
             Matrix4 q1  = model * Matrix4(Vector3(), t->rotation() * Quaternion(Vector3( 90, 0, 0)), Vector3(conesize));
-            Matrix4 q2  = q1 * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), 180), Vector3(1));
+            Matrix4 q2  = q1 * Matrix4(Quaternion(Vector3( 0, 1, 0), 180).toMatrix());
 
             Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 90)) *
                                                      Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
@@ -418,38 +489,38 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             m.scale(1.2f);
 
             if(!locked) {
-                if((HandleTools::distanceToMesh(q1 * m, s_Circle) <= sense) ||
-                   (HandleTools::distanceToMesh(q2 * m, s_Circle) <= sense)) {
+                if((HandleTools::distanceToMesh(q1 * m, s_Arc) <= sense) ||
+                   (HandleTools::distanceToMesh(q2 * m, s_Arc) <= sense)) {
                     s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if(HandleTools::distanceToMesh(x, s_Circle) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Arc) <= sense) {
                     s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Circle) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Arc) <= sense) {
                     s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Circle) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Arc) <= sense) {
                     s_Axes  = AXIS_Z;
                 }
             }
 
             s_Buffer->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-            s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q1 * m, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q2 * m, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(grey);
-            s_Buffer->drawMesh(q1, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q1, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(q2, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             if(!locked || s_Axes == AXIS_X) {
                 s_Buffer->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
-                s_Buffer->drawMesh(x, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
 
             if(!locked || s_Axes == AXIS_Y) {
                 s_Buffer->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
-                s_Buffer->drawMesh(y, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
 
             if(!locked || s_Axes == AXIS_Z) {
                 s_Buffer->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
-                s_Buffer->drawMesh(z, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             s_Buffer->setColor(s_Normal);
         }

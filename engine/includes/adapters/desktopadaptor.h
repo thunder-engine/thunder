@@ -24,13 +24,17 @@ public:
 
     bool                        isValid                     ();
 
-    bool                        key                         (Input::KeyCode code);
+    bool                        keyPressed                  (Input::KeyCode code);
+    bool                        keyReleased                 (Input::KeyCode code);
 
     Vector4                     mousePosition               ();
 
     Vector4                     mouseDelta                  ();
 
     uint32_t                    mouseButtons                ();
+
+    bool                        mousePressed                (Input::MouseButton button);
+    bool                        mouseReleased               (Input::MouseButton button);
 
     uint32_t                    screenWidth                 ();
 
@@ -69,6 +73,7 @@ protected:
     GLFWmonitor                *m_pMonitor;
 
     uint8_t                     m_MouseButtons;
+    uint8_t                     m_LastMouseButtons;
 
     static Vector4              s_MousePosition;
 

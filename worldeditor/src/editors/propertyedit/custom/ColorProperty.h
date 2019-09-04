@@ -9,20 +9,20 @@ class ColorProperty : public Property {
     Q_OBJECT
 
 public:
-    ColorProperty                       (const QString& name = QString(), QObject* propertyObject = 0, QObject* parent = 0);
+    ColorProperty (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
-    QVariant            value           (int role = Qt::UserRole) const;
-    void                setValue        (const QVariant& value);
+    QVariant value (int role = Qt::UserRole) const;
+    void setValue (const QVariant &value);
 
-    QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem &option);
+    QWidget *createEditor (QWidget *parent, const QStyleOptionViewItem &option);
 
-    bool                setEditorData   (QWidget *editor, const QVariant &data);
-    QVariant            editorData      (QWidget *editor);
+    bool setEditorData (QWidget *editor, const QVariant &data);
+    QVariant editorData (QWidget *editor);
 
-    QSize               sizeHint        (const QSize& size) const;
+    QSize sizeHint (const QSize &size) const;
 
 private slots:
-    void                onColorChanged  (const QString &color);
+    void onColorChanged (const QString &color);
 
 };
 

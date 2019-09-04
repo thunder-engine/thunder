@@ -11,8 +11,8 @@ class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components);
 
     A_PROPERTIES (
-        A_PROPERTY(Mesh *, Mesh, MeshRender::mesh, MeshRender::setMesh),
-        A_PROPERTY(Material *, Material, MeshRender::material, MeshRender::setMaterial)
+        A_PROPERTYEX(Mesh *, Mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Template"),
+        A_PROPERTYEX(Material *, Material, MeshRender::material, MeshRender::setMaterial, "editor=Template")
     )
     A_NOMETHODS()
 

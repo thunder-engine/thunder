@@ -12,8 +12,8 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(Material*, Material, SpriteRender::material, SpriteRender::setMaterial),
-        A_PROPERTY(Texture*, Texture, SpriteRender::texture, SpriteRender::setTexture)
+        A_PROPERTYEX(Material *, Material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),
+        A_PROPERTYEX(Texture *, Texture, SpriteRender::texture, SpriteRender::setTexture, "editor=Template")
     )
     A_NOMETHODS()
 

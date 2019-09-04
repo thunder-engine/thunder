@@ -29,34 +29,52 @@
 #include <QMap>
 #include <QMenu>
 
-#define COLOR       "Color"
-#define COMPONENT   "Component"
+enum Axises {
+    AXIS_X = (1<<0),
+    AXIS_Y = (1<<1),
+    AXIS_Z = (1<<2)
+};
 
 Q_DECLARE_METATYPE(Vector4)
 Q_DECLARE_METATYPE(Alignment)
+Q_DECLARE_METATYPE(Axises)
 
-QVariant qVariant(Variant &v, const string &type) {
-    if(v.userType() == MetaType::type<Alignment>()) {
-        Alignment value = v.value<Alignment>();
-        return QVariant::fromValue(value);
-    }
+#define COLOR       "Color"
+#define AXISES      "Axises"
+#define ALIGNMENT   "Alignment"
+#define COMPONENT   "Component"
 
+const QString EditorTag("editor=");
+
+QVariant qVariant(Variant &v, const QString &editor) {
     switch(v.userType()) {
-        case MetaType::BOOLEAN:
+        case MetaType::BOOLEAN: {
             return QVariant(v.toBool());
-        case MetaType::INTEGER:
+        }
+        case MetaType::INTEGER: {
+            int32_t value = v.toInt();
+            if(editor == AXISES) {
+                return QVariant::fromValue(static_cast<Axises>(value));
+            } else if(editor == ALIGNMENT) {
+                return QVariant::fromValue(static_cast<Alignment>(value));
+            }
             return QVariant(v.toInt());
-        case MetaType::FLOAT:
+        }
+        case MetaType::FLOAT: {
             return QVariant(v.toFloat());
-        case MetaType::STRING:
+        }
+        case MetaType::STRING: {
             return QVariant(v.toString().c_str());
-        case MetaType::VECTOR2:
+        }
+        case MetaType::VECTOR2: {
             return QVariant::fromValue(v.toVector2());
-        case MetaType::VECTOR3:
+        }
+        case MetaType::VECTOR3: {
             return QVariant::fromValue(v.toVector3());
+        }
         case MetaType::VECTOR4: {
             Vector4 value = v.toVector4();
-            if(type == COLOR) {
+            if(editor == COLOR) {
                 QColor r;
                 r.setRgbF(value.x, value.y, value.z, value.w);
                 return QVariant(r);
@@ -73,7 +91,7 @@ QVariant qVariant(Variant &v, const string &type) {
     return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
 }
 
-Variant aVariant(QVariant &v, uint32_t type) {
+Variant aVariant(QVariant &v, uint32_t type, const QString &editor) {
     if(type == MetaType::type<Alignment>()) {
         Alignment value = v.value<Alignment>();
         return Variant::fromValue(value);
@@ -84,6 +102,9 @@ Variant aVariant(QVariant &v, uint32_t type) {
             return Variant(v.toBool());
         }
         case MetaType::INTEGER: {
+            if(editor == AXISES) {
+
+            }
             return Variant(v.toInt());
         }
         case MetaType::FLOAT: {
@@ -91,10 +112,10 @@ Variant aVariant(QVariant &v, uint32_t type) {
         }
         case MetaType::STRING: {
             if(v.canConvert<QFileInfo>()) {
-                QFileInfo p  = v.value<QFileInfo>();
+                QFileInfo p = v.value<QFileInfo>();
                 return Variant(qUtf8Printable(p.absoluteFilePath()));
             } else if(v.canConvert<Template>()) {
-                Template p  = v.value<Template>();
+                Template p = v.value<Template>();
                 return Variant(qUtf8Printable(p.path));
             }
             return Variant(qUtf8Printable(v.toString()));
@@ -106,10 +127,9 @@ Variant aVariant(QVariant &v, uint32_t type) {
             return Variant(v.value<Vector3>());
         }
         case MetaType::VECTOR4: {
-            if(v.canConvert<QColor>()) {
-                QColor c    = v.value<QColor>();
-                Vector4 v(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-                return Variant(v);
+            if(editor == COLOR) {
+                QColor c = v.value<QColor>();
+                return Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
             }
             return Variant(v.value<Vector4>());
         }
@@ -147,7 +167,7 @@ void NextObject::setName(const QString &name) {
 }
 
 QMenu *NextObject::menu(const QString &name) {
-    QMenu *result   = nullptr;
+    QMenu *result = nullptr;
 
     QStringList path(name.split(' ').first());
     Object *obj = findChild(path);
@@ -187,11 +207,11 @@ void NextObject::buildObject(Object *object, const QString &path) {
     const MetaObject *meta = object->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
-        QString name    = (path.isEmpty() ? "" : path + "/") + property.name();
-        Variant data    = property.read(object);
+        QString name = (path.isEmpty() ? "" : path + "/") + property.name();
+        Variant data = property.read(object);
 
         blockSignals(true);
-        setProperty( qPrintable(name), qVariant(data, property.type().name()) );
+        setProperty(qPrintable(name), qVariant(data, editor(property)));
         blockSignals(false);
     }
     for(Object *it : object->getChildren()) {
@@ -217,7 +237,12 @@ bool NextObject::event(QEvent *e) {
             if(m_pObject) {
                 Object *o = findChild(list);
                 Variant current = o->property(qPrintable(list.front()));
-                Variant target = aVariant(value, current.userType());
+
+                const MetaObject *meta  = o->metaObject();
+                int index = meta->indexOfProperty(qPrintable(list.front()));
+                MetaProperty property = meta->property(index);
+
+                Variant target = aVariant(value, current.userType(), editor(property));
 
                 if(target.isValid() && current != target) {
                     if(m_pController) {
@@ -234,6 +259,20 @@ bool NextObject::event(QEvent *e) {
         }
     }
     return false;
+}
+
+QString NextObject::editor(MetaProperty &property) {
+    if(property.table()->annotation) {
+        QString annotation(property.table()->annotation);
+        QStringList list = annotation.split(',');
+        foreach(QString it, list) {
+            int index = it.indexOf(EditorTag);
+            if(index > -1) {
+                return it.remove(EditorTag);
+            }
+        }
+    }
+    return QString();
 }
 
 Object *NextObject::findChild(QStringList &path) {

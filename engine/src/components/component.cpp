@@ -72,5 +72,5 @@ bool Component::isSerializable() const {
 }
 
 #ifdef NEXT_SHARED
-bool Component::drawHandles() { return false; }
+bool Component::drawHandles(bool selected) { return false; }
 #endif

@@ -54,7 +54,8 @@ protected:
 DesktopAdaptor::DesktopAdaptor(Engine *engine) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr),
-        m_MouseButtons(0) {
+        m_MouseButtons(0),
+        m_LastMouseButtons(0) {
     g_pEngine   = engine;
 
 }
@@ -80,6 +81,7 @@ void DesktopAdaptor::update() {
     glfwSwapBuffers(m_pWindow);
     glfwPollEvents();
 
+    m_LastMouseButtons = m_MouseButtons;
     m_MouseButtons  = 0;
     for(uint8_t i = 0; i < 8; i++) {
         if(glfwGetMouseButton(m_pWindow, i)) {
@@ -173,8 +175,12 @@ bool DesktopAdaptor::isValid() {
     return !glfwWindowShouldClose(m_pWindow);
 }
 
-bool DesktopAdaptor::key(Input::KeyCode code) {
+bool DesktopAdaptor::keyPressed(Input::KeyCode code) {
     return (glfwGetKey(m_pWindow, code) == GLFW_PRESS);
+}
+
+bool DesktopAdaptor::keyReleased(Input::KeyCode code) {
+    return (glfwGetKey(m_pWindow, code) == GLFW_RELEASE);
 }
 
 Vector4 DesktopAdaptor::mousePosition() {
@@ -187,6 +193,14 @@ Vector4 DesktopAdaptor::mouseDelta() {
 
 uint32_t DesktopAdaptor::mouseButtons() {
     return m_MouseButtons;
+}
+
+bool DesktopAdaptor::mousePressed(Input::MouseButton button) {
+    return (m_MouseButtons & button);
+}
+
+bool DesktopAdaptor::mouseReleased(Input::MouseButton button) {
+    return (m_LastMouseButtons & button && !(m_MouseButtons & button));
 }
 
 uint32_t DesktopAdaptor::screenWidth() {

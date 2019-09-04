@@ -7,16 +7,16 @@ class BoolProperty : public Property {
     Q_OBJECT
 
 public:
-    BoolProperty        (const QString& name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
+    BoolProperty (const QString& name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
-    QWidget            *createEditor    (QWidget *parent, const QStyleOptionViewItem& option);
+    QWidget *createEditor (QWidget *parent, const QStyleOptionViewItem &option);
 
-    bool                setEditorData   (QWidget *editor, const QVariant &data);
+    bool setEditorData (QWidget *editor, const QVariant &data);
 
-    QVariant            editorData      (QWidget *editor);
+    QVariant editorData (QWidget *editor);
 
 protected slots:
-    void                onDataChanged   (int data);
+    void onDataChanged (int data);
 
 };
 

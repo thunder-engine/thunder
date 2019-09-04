@@ -7,6 +7,7 @@
 #include "custom/Property.h"
 
 #include "custom/AlignmentProperty.h"
+#include "custom/AxisesProperty.h"
 #include "custom/AssetProperty.h"
 #include "custom/BoolProperty.h"
 #include "custom/IntegerProperty.h"
@@ -58,6 +59,9 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::type("Alignment"))
         return new AlignmentProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Axises"))
+        return new AxisesProperty(name, propertyObject, parent);
 
     return nullptr;
 }

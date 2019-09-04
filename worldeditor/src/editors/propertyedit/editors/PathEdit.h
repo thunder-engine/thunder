@@ -11,21 +11,21 @@ namespace Ui {
 class PathEdit : public QWidget {
     Q_OBJECT
 public:
-    explicit PathEdit(QWidget *parent = nullptr);
+    explicit PathEdit (QWidget *parent = nullptr);
 
-    QFileInfo data() const;
-    void setData(const QFileInfo &v);
+    QFileInfo data () const;
+    void setData (const QFileInfo &v);
 
 signals:
-    void pathChanged(const QFileInfo &info);
+    void pathChanged (const QFileInfo &info);
 
 private slots:
-    void onFileDialog();
+    void onFileDialog ();
 
 private:
-    Ui::PathEdit   *ui;
+    Ui::PathEdit *ui;
 
-    QFileInfo       m_Info;
+    QFileInfo m_Info;
 };
 
 #endif // PATHEDIT_H

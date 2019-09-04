@@ -170,13 +170,17 @@ public:
 public:
     static void                 init                        (IPlatformAdaptor *platform);
 
-    static bool                 isKey                       (KeyCode code);
+    static bool                 isKeyDown                   (KeyCode code);
+    static bool                 isKeyUp                     (KeyCode code);
 
     static Vector4              mousePosition               ();
 
     static Vector4              mouseDelta                  ();
 
     static uint32_t             mouseButtons                ();
+
+    static bool                 isMouseButtonDown           (MouseButton button);
+    static bool                 isMouseButtonUp             (MouseButton button);
 
     static void                 setMousePosition            (int32_t x, int32_t y);
 

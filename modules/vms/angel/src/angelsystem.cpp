@@ -267,6 +267,10 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                     retName = "void ";
                 }
 
+                if(method.table()->type == MetaMethod::Signal) {
+                    continue;
+                }
+
                 asSFuncPtr ptr(3);
                 method.table()->address(ptr.ptr.dummy, sizeof(void *));
 
