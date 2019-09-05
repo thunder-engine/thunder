@@ -503,6 +503,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         string name     = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor    = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
         if(actor) {
+            actor->transform()->setPosition(Vector3(0.0f));
             Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
             Component *comp = dynamic_cast<Component *>(object);
             if(comp) {

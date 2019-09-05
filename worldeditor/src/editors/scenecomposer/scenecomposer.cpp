@@ -744,3 +744,8 @@ void SceneComposer::on_actionAbout_triggered() {
     AboutDialog dlg;
     dlg.exec();
 }
+
+void SceneComposer::on_actionNew_Object_triggered() {
+    Actor *actor = Engine::objectCreate<Actor>("NewActor", m_pMap);
+    actor->transform()->setPosition(0.0f);
+}
