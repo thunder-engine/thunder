@@ -15,6 +15,7 @@
 #define MATERIAL    "Material"
 
 #define OVERRIDE "uni.texture0"
+#define COLOR "uni.color0"
 
 class TextRenderPrivate {
 public:
@@ -271,14 +272,17 @@ Material *TextRender::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void TextRender::setMaterial(Material *material) {
-    if(p_ptr->m_pMaterial) {
-        delete p_ptr->m_pMaterial;
-        p_ptr->m_pMaterial = nullptr;
-    }
+    if(!p_ptr->m_pMaterial || p_ptr->m_pMaterial->material() != material) {
+        if(p_ptr->m_pMaterial) {
+            delete p_ptr->m_pMaterial;
+            p_ptr->m_pMaterial = nullptr;
+        }
 
-    if(material) {
-        p_ptr->m_pMaterial = material->createInstance();
-        p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+        if(material) {
+            p_ptr->m_pMaterial = material->createInstance();
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+            p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
+        }
     }
 }
 /*!
@@ -306,7 +310,7 @@ Vector4 TextRender::color() const {
 void TextRender::setColor(const Vector4 &color) {
     p_ptr->m_Color = color;
     if(p_ptr->m_pMaterial) {
-        p_ptr->m_pMaterial->setVector4("uni.color0", &p_ptr->m_Color);
+        p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
     }
 }
 /*!
@@ -393,17 +397,17 @@ void TextRender::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap TextRender::saveUserData() const {
-    VariantMap result   = Component::saveUserData();
+    VariantMap result = Component::saveUserData();
     {
         Font *o = font();
-        string ref  = Engine::reference(o);
+        string ref = Engine::reference(o);
         if(!ref.empty()) {
             result[FONT] = ref;
         }
     }
     {
         Material *o = material();
-        string ref  = Engine::reference(o);
+        string ref = Engine::reference(o);
         if(!ref.empty()) {
             result[MATERIAL] = ref;
         }

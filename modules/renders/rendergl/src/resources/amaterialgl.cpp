@@ -76,7 +76,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) {
             m_Programs.clear();
 
             setState(ToBeDeleted);
-        }
+        } break;
         case ToBeUpdated: {
             for(uint16_t v = Static; v < LastVertex; v++) {
                 auto itv = m_ShaderSources.find(v);
@@ -94,7 +94,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) {
             }
 
             setState(Ready);
-        }
+        } break;
         default: break;
     }
 
