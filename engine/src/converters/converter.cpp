@@ -38,7 +38,7 @@ const char *IConverterSettings::destination() const {
     return mDestination.c_str();
 }
 void IConverterSettings::setDestination(const char *destination) {
-    mDestination    = destination;
+    mDestination = destination;
 }
 
 const char *IConverterSettings::absoluteDestination() const {
@@ -46,7 +46,7 @@ const char *IConverterSettings::absoluteDestination() const {
 }
 
 void IConverterSettings::setAbsoluteDestination(const char *destination) {
-    mAbsoluteDestination    = destination;
+    mAbsoluteDestination = destination;
 }
 
 const QStringList IConverterSettings::subKeys() const {

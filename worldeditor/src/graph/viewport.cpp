@@ -31,7 +31,6 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::initializeGL() {
     SceneView::initializeGL();
-    PluginModel::instance()->initSystems();
     m_pCommandBuffer = Engine::objectCreate<ICommandBuffer>();
 }
 

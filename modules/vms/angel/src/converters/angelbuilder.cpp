@@ -20,20 +20,22 @@ public:
 
     }
     int Write(const void *ptr, asUINT size) {
-        if( size == 0 ) {
-            return size;
+        if(size == 0) {
+            return 0;
         }
         uint32_t offset = array.size();
         array.resize(offset + size);
         memcpy(&array[offset], ptr, size);
 
-        return size;
+        return static_cast<int>(size);
     }
     int Read(void *ptr, asUINT size) {
+        A_UNUSED(ptr)
+        A_UNUSED(size)
         return 0;
     }
 protected:
-    ByteArray        &array;
+    ByteArray &array;
 };
 
 VariantMap AngelSerial::saveUserData() const {
@@ -79,7 +81,7 @@ bool AngelBuilder::buildProject() {
                 mod->SaveByteCode(&stream);
 
                 ByteArray data = Bson::save( Engine::toVariant(&serial) );
-                dst.write((const char *)&data[0], data.size());
+                dst.write(reinterpret_cast<const char *>(&data[0]), data.size());
                 dst.close();
             }
             // Do the hot reload
@@ -105,5 +107,5 @@ QString AngelBuilder::builderVersion() {
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
     A_UNUSED(param)
-    Log((Log::LogTypes)msg->type) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
+    Log(static_cast<Log::LogTypes>(msg->type)) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
 }

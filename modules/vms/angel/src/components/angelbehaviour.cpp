@@ -45,7 +45,7 @@ void AngelBehaviour::setScript(const string &value) {
             string stream = value + " @+" + value + "()";
             ptr->execute(nullptr, type->GetFactoryByDecl(stream.c_str()));
 
-            asIScriptObject **obj = (asIScriptObject**)ptr->context()->GetAddressOfReturnValue();
+            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->context()->GetAddressOfReturnValue());
             if(obj == nullptr) {
                 return;
             }
@@ -92,7 +92,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
             uint32_t count = info->GetPropertyCount();
             for(uint32_t i = 0; i <= count; i++) {
                 if(i == count) {
-                    m_Table.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+                    m_Table.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
                 } else {
                     const char *name;
                     int typeId;
