@@ -79,14 +79,15 @@ void ATextureGL::updateTexture() {
 
     bool mipmap = (getSides()->at(0).size() > 1);
 
-    int32_t glfiltering;
+    int32_t min = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+    int32_t mag = GL_NEAREST;
     switch(filtering()) {
-        case Bilinear:  glfiltering = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
-        case Trilinear: glfiltering = GL_LINEAR_MIPMAP_LINEAR; break;
-        default: glfiltering  = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST; break;
+        case Bilinear:  mag = GL_LINEAR; min = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
+        case Trilinear: mag = GL_LINEAR; min = GL_LINEAR_MIPMAP_LINEAR; break;
+        default: break;
     }
-    //glTexParameteri ( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glfiltering);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
 
     int32_t glwrap;
     switch (wrap()) {
