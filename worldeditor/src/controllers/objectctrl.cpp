@@ -532,6 +532,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentTexture: {
                         Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        actor->transform()->setPosition(Vector3(0.0f));
                         SpriteRender *sprite = actor->addComponent<SpriteRender>();
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
