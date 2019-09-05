@@ -347,6 +347,7 @@ Object *Object::clone() {
     const MetaObject *meta  = metaObject();
     Object *result = meta->createInstance();
     result->setParent(nullptr);
+    result->setSystem(p_ptr->m_pSystem);
     int count  = meta->propertyCount();
     for(int i = 0; i < count; i++) {
         MetaProperty lp = result->metaObject()->property(i);
