@@ -52,6 +52,21 @@ AssetManager *AssetManager::m_pInstance   = nullptr;
 
 Q_DECLARE_METATYPE(IConverterSettings *)
 
+Object *findObject(const uint32_t uuid, Object *parent) {
+    Object *result = nullptr;
+    for(Object *it : parent->getChildren()) {
+        if(it->uuid() == uuid) {
+            return it;
+        } else {
+            result = findObject(uuid, it);
+            if(result != nullptr) {
+                return result;
+            }
+        }
+    }
+    return result;
+}
+
 AssetManager::AssetManager() :
         m_pEngine(nullptr) {
     m_pProjectManager   = ProjectManager::instance();
@@ -369,10 +384,13 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
 }
 
 void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
-    Actor *actor  = dynamic_cast<Actor *>(m_pEngine->scene()->find(source.toStdString()));
+    int index = source.indexOf(':');
+    QString id = source.left(index);
+    QString name = source.mid(index + 1);
+    Actor *actor = dynamic_cast<Actor *>(findObject(id.toUInt(), m_pEngine->scene()));
     if(actor) {
-        Actor *prefab   = static_cast<Actor *>(actor->clone());
-        QString path    = target.absoluteFilePath() + "/" + QUrl(source).fileName() + ".fab";
+        Actor *prefab = static_cast<Actor *>(actor->clone());
+        QString path = target.absoluteFilePath() + "/" + name + ".fab";
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             string str  = Json::save(Engine::toVariant(prefab), 0);
@@ -398,16 +416,15 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
             actor->setPrefab(prefab);
         }
     }
-
 }
 
 bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
     QString name    = source.baseName();
     QString path;
     if(!target.isAbsolute()) {
-        path    = m_pProjectManager->contentPath() + "/";
+        path = m_pProjectManager->contentPath() + "/";
     }
-    path       += target.filePath() + "/";
+    path += target.filePath() + "/";
     QString suff    = "." + source.suffix();
     findFreeName(name, path, suff);
     return QFile::copy(source.absoluteFilePath(), path + name + suff);
@@ -456,11 +473,8 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
     } else {
         settings->setDestination( qPrintable(QUuid::createUuid().toString()) );
     }
-    if(settings->type() == IConverter::ContentCode) {
-        settings->setAbsoluteDestination(qPrintable(artifact()));
-    } else {
-        settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
-    }
+    settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
+
     return settings;
 }
 
@@ -480,10 +494,10 @@ void AssetManager::registerConverter(IConverter *converter) {
 }
 
 void AssetManager::findFreeName(QString &name, const QString &path, const QString &suff) {
-   QString base    = name;
-   uint32_t it     = 1;
+   QString base = name;
+   uint32_t it = 1;
    while(QFileInfo(path + QDir::separator() + name + suff).exists()) {
-       name        = base + QString::number(it);
+       name = base + QString::number(it);
        it++;
    }
 }

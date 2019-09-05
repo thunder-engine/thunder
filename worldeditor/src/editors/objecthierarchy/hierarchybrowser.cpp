@@ -179,9 +179,10 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
     if(e->mimeData()->hasFormat(gMimeObject)) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
+            QString id = it.left(it.indexOf(':'));
             ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
-            Object *item    = model->findObject(it.toUInt());
-            QModelIndex index   = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
+            Object *item = model->findObject(id.toUInt());
+            QModelIndex index = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
             if(item) {
                 objects.push_back(item);
                 if(index.isValid()) {
@@ -207,7 +208,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
         QModelIndex index   = m_pFilter->mapToSource(it);
         if(index.column() == 0) {
             Object *object  = static_cast<Object *>(index.internalPointer());
-            list.push_back(QString::number(object->uuid()));
+            list.push_back(QString::number(object->uuid()) + ":" + object->name().c_str());
         }
     }
     mimeData->setData(gMimeObject, qPrintable(list.join(";")));
