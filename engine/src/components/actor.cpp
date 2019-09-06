@@ -62,6 +62,10 @@ Transform *Actor::transform() {
         if(p_ptr->m_pTransform == nullptr) {
             p_ptr->m_pTransform = addComponent<Transform>();
         }
+        Actor *p = dynamic_cast<Actor *>(parent());
+        if(p) {
+            p_ptr->m_pTransform->setParent(p->transform(), true);
+        }
     }
     return p_ptr->m_pTransform;
 }

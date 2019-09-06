@@ -32,7 +32,7 @@ public:
     void setScale (const Vector3 &scale);
 
     Transform *parent () const;
-    void setParent (Transform *parent);
+    void setParent (Transform *parent, bool force = false);
 
     Matrix4 &worldTransform ();
 

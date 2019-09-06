@@ -107,8 +107,9 @@ Transform *Transform::parent() const {
 }
 /*!
     Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
+    In case of \a force flag provided as true, no recalculations of transform happen.
 */
-void Transform::setParent(Transform *parent) {
+void Transform::setParent(Transform *parent, bool force) {
     Vector3 p = worldPosition();
     Vector3 e = worldEuler();
     Vector3 s = worldScale();
@@ -125,13 +126,14 @@ void Transform::setParent(Transform *parent) {
     p_ptr->m_pParent = parent;
     if(p_ptr->m_pParent) {
         p_ptr->m_pParent->p_ptr->m_Children.push_back(this);
+        if(!force) {
+            Vector3 scale = p_ptr->m_pParent->worldScale();
+            scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
 
-        Vector3 scale = p_ptr->m_pParent->worldScale();
-        scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
-
-        p_ptr->m_Position = p_ptr->m_pParent->worldRotation().inverse() * ((p - p_ptr->m_pParent->worldPosition()) * scale);
-        p_ptr->m_Scale = s * scale;
-        setEuler(e - p_ptr->m_pParent->worldEuler());
+            p_ptr->m_Position = p_ptr->m_pParent->worldRotation().inverse() * ((p - p_ptr->m_pParent->worldPosition()) * scale);
+            p_ptr->m_Scale = s * scale;
+            setEuler(e - p_ptr->m_pParent->worldEuler());
+        }
     }
 }
 /*!
@@ -141,9 +143,8 @@ Matrix4 &Transform::worldTransform() {
     if(p_ptr->m_Dirty) {
         p_ptr->m_Transform = Matrix4(p_ptr->m_Position, p_ptr->m_Rotation, p_ptr->m_Scale);
         Transform *cur = p_ptr->m_pParent;
-        while(cur) {
+        if(cur) {
             p_ptr->m_Transform = cur->worldTransform() * p_ptr->m_Transform;
-            cur = cur->parent();
         }
         p_ptr->m_Dirty = false;
     }
