@@ -1,9 +1,9 @@
-class ${templateName} : AngelBehaviour {
-    ${templateName}() {
+class ${templateName} : Behaviour {
+    void start() override {
 
     }
 
-    ~${templateName}() {
+    void update() override {
 
     }
 };

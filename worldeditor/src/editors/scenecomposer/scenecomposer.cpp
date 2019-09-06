@@ -438,10 +438,11 @@ void SceneComposer::on_actionPlugin_Manager_triggered() {
 }
 
 void SceneComposer::on_actionEditor_Mode_triggered() {
+    ui->toolWidget->activateToolWindow(ui->viewportWidget);
+
     ui->actionEditor_Mode->setChecked(true);
     ui->actionGame_Mode->setChecked(false);
 
-    ui->toolWidget->activateToolWindow(ui->viewport);
     Object *map = Engine::toObject(Bson::load(m_Back), ui->viewport->scene());
     if(map) {
         delete m_pMap;

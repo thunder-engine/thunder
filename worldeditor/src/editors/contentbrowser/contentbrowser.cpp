@@ -141,6 +141,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
         m_CreationMenu.addSeparator();
         m_CreationMenu.addAction(a);
         m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
+        m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
         m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
         m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
     }
