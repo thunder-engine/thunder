@@ -42,10 +42,9 @@ void AngelBehaviour::setScript(const string &value) {
         AngelSystem *ptr = static_cast<AngelSystem *>(system());
         asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(value.c_str());
         if(type) {
+            int result = ptr->context()->PushState();
             string stream = value + " @+" + value + "()";
-            ptr->execute(nullptr, type->GetFactoryByDecl(stream.c_str()));
-
-            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->context()->GetAddressOfReturnValue());
+            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, type->GetFactoryByDecl(stream.c_str())));
             if(obj == nullptr) {
                 return;
             }
@@ -56,6 +55,9 @@ void AngelBehaviour::setScript(const string &value) {
                 setScriptObject(object);
             } else {
                 Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << value.c_str();
+            }
+            if(result == 0) {
+                ptr->context()->PopState();
             }
         }
     }

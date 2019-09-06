@@ -161,7 +161,7 @@ void AngelSystem::reload() {
     }
 }
 
-void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
+void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
     PROFILER_MARKER;
 
     if(func) {
@@ -175,6 +175,7 @@ void AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
             Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_pContext->GetExceptionString() << m_pContext->GetExceptionFunction()->GetName() << "Line:" << column;
         }
     }
+    return m_pContext->GetAddressOfReturnValue();
 }
 
 asIScriptModule *AngelSystem::module() const {

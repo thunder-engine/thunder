@@ -15,39 +15,39 @@ class MetaObject;
 
 class AngelSystem : public ISystem {
 public:
-    AngelSystem                 ();
-    ~AngelSystem                ();
+    AngelSystem ();
+    ~AngelSystem ();
 
-    bool                        init                        ();
+    bool init ();
 
-    const char                 *name                        () const;
+    const char *name () const;
 
-    void                        update                      (Scene *);
+    void update (Scene *);
 
-    bool                        isThreadSafe                () const;
+    bool isThreadSafe () const;
 
-    void                        reload                      ();
+    void reload ();
 
-    void                        registerClasses             (asIScriptEngine *engine);
+    void registerClasses (asIScriptEngine *engine);
 
-    void                        execute                     (asIScriptObject *object, asIScriptFunction *func);
+    void *execute (asIScriptObject *object, asIScriptFunction *func);
 
-    asIScriptModule            *module                      () const;
+    asIScriptModule *module () const;
 
-    asIScriptContext           *context                     () const;
+    asIScriptContext *context() const;
 
 protected:
-    void                        registerMetaType            (asIScriptEngine *engine, const string &name, const MetaObject *meta);
+    void registerMetaType (asIScriptEngine *engine, const string &name, const MetaObject *meta);
 
-    static void                 messageCallback             (const asSMessageInfo *msg, void *param);
+    static void messageCallback (const asSMessageInfo *msg, void *param);
 
-    asIScriptEngine            *m_pScriptEngine;
+    asIScriptEngine *m_pScriptEngine;
 
-    asIScriptModule            *m_pScriptModule;
+    asIScriptModule *m_pScriptModule;
 
-    asIScriptContext           *m_pContext;
+    asIScriptContext *m_pContext;
 
-    bool                        m_Inited;
+    bool m_Inited;
 };
 
 #endif // ANGELSYSTEM_H

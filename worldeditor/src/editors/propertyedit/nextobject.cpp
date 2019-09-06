@@ -262,7 +262,7 @@ bool NextObject::event(QEvent *e) {
 }
 
 QString NextObject::editor(MetaProperty &property) {
-    if(property.table()->annotation) {
+    if(property.table() && property.table()->annotation) {
         QString annotation(property.table()->annotation);
         QStringList list = annotation.split(',');
         foreach(QString it, list) {
