@@ -64,6 +64,8 @@ public:
 private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
+    AABBox bound () const override;
+
 #ifdef NEXT_SHARED
     bool drawHandles (bool selected) override;
 #endif

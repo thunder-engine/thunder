@@ -100,7 +100,7 @@ public:
                             bb[0].y = MIN(bb[0].y, shape[0].y * m_Size);
 
                             float x = pos.x + shape[0].x * m_Size;
-                            if(m_Wrap && m_Boundaries.x < x) {
+                            if(m_Wrap && m_Boundaries.x < x && m_Boundaries.x > 0.0f) {
                                 float shift = lod.vertices[space * 4 + 0].x;
                                 for(uint32_t s = space; s < it; s++) {
                                     lod.vertices[s * 4 + 0] -= Vector3(shift, m_Line, 0.0f);
@@ -413,6 +413,15 @@ VariantMap TextRender::saveUserData() const {
         }
     }
     return result;
+}
+/*!
+    \internal
+*/
+AABBox TextRender::bound() const {
+    if(p_ptr->m_pMesh) {
+        return p_ptr->m_pMesh->bound() * actor()->transform()->worldTransform();
+    }
+    return Renderable::bound();
 }
 
 #ifdef NEXT_SHARED
