@@ -188,18 +188,10 @@ QString ContentTree::path(const QModelIndex &index) const {
 }
 
 void ContentTree::update(const QString &path) {
-    delete m_pContent;
-    m_pContent = new QObject(m_rootItem);
     QDir dir(ProjectManager::instance()->contentPath());
     m_pContent->setObjectName(dir.absolutePath());
 
-    foreach(QObject *it, m_rootItem->children()) {
-        QFileInfo dir(it->objectName());
-        if(!dir.exists()) {
-            it->setParent(nullptr);
-            delete it;
-        }
-    }
+    clean(m_rootItem);
 
     AssetManager *instance = AssetManager::instance();
 
@@ -231,6 +223,18 @@ void ContentTree::update(const QString &path) {
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
+}
+
+void ContentTree::clean(QObject *parent) {
+    foreach(QObject *it, parent->children()) {
+        QFileInfo dir(it->objectName());
+        if(!dir.exists()) {
+            it->setParent(nullptr);
+            delete it;
+        } else {
+            clean(it);
+        }
+    }
 }
 
 Qt::DropActions ContentTree::supportedDropActions() const {

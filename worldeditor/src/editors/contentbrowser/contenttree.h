@@ -53,6 +53,8 @@ public:
 public slots:
     void                        update                      (const QString &path);
 
+    void                        clean                       (QObject *parent);
+
 private:
     ContentTree                 ();
     ~ContentTree                () {}
