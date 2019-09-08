@@ -11,12 +11,12 @@ public:
     struct Info {
         uint32_t type;
 
-        uint32_t count;
+        int32_t count;
 
         void *ptr;
     };
 
-    typedef unordered_map<string, Info>             InfoMap;
+    typedef unordered_map<string, Info> InfoMap;
 
 public:
     MaterialInstance            (Material *material);
@@ -29,18 +29,20 @@ public:
 
     InfoMap                    &params              ();
 
-    void                        setInteger          (const char *name, int32_t *value, uint32_t count = 1);
+    void                        setInteger          (const char *name, int32_t *value, int32_t count = 1);
 
-    void                        setFloat            (const char *name, float *value, uint32_t count = 1);
-    void                        setVector2          (const char *name, Vector2 *value, uint32_t count = 1);
-    void                        setVector3          (const char *name, Vector3 *value, uint32_t count = 1);
-    void                        setVector4          (const char *name, Vector4 *value, uint32_t count = 1);
+    void                        setFloat            (const char *name, float *value, int32_t count = 1);
+    void                        setVector2          (const char *name, Vector2 *value, int32_t count = 1);
+    void                        setVector3          (const char *name, Vector3 *value, int32_t count = 1);
+    void                        setVector4          (const char *name, Vector4 *value, int32_t count = 1);
 
-    void                        setMatrix4          (const char *name, Matrix4 *value, uint32_t count = 1);
+    void                        setMatrix4          (const char *name, Matrix4 *value, int32_t count = 1);
 
-    void                        setTexture          (const char *name, Texture *value, uint32_t count = 1);
+    void                        setTexture          (const char *name, Texture *value, int32_t count = 1);
 
 protected:
+    friend class Material;
+
     Material                   *m_pMaterial;
 
     InfoMap                     m_Info;
@@ -78,6 +80,7 @@ public:
     };
 
     typedef map<string, Texture *> TextureMap;
+    typedef map<string, Variant> UniformMap;
 
 public:
     Material ();
@@ -117,6 +120,8 @@ protected:
     bool                        m_DepthTest;
 
     TextureMap                  m_Textures;
+
+    UniformMap                  m_Uniforms;
 
     int32_t                     m_Surfaces;
 

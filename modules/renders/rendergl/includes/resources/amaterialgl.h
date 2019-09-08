@@ -26,7 +26,7 @@ class AMaterialGL : public Material {
         LastFragment
     };
 
-    typedef unordered_map<uint16_t, uint32_t> ObjectMap;
+    typedef unordered_map<uint32_t, uint32_t> ObjectMap;
 
 public:
     void                        loadUserData    (const VariantMap &data) override;

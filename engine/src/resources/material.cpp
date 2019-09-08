@@ -3,6 +3,7 @@
 
 #define PROPERTIES  "Properties"
 #define TEXTURES    "Textures"
+#define UNIFORMS    "Uniforms"
 
 MaterialInstance::MaterialInstance(Material *material) :
         m_pMaterial(material) {
@@ -30,7 +31,7 @@ MaterialInstance::InfoMap &MaterialInstance::params() {
     return m_Info;
 }
 
-void MaterialInstance::setInteger(const char *name, int32_t *value, uint32_t count) {
+void MaterialInstance::setInteger(const char *name, int32_t *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -38,7 +39,7 @@ void MaterialInstance::setInteger(const char *name, int32_t *value, uint32_t cou
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setFloat(const char *name, float *value, uint32_t count) {
+void MaterialInstance::setFloat(const char *name, float *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -46,7 +47,7 @@ void MaterialInstance::setFloat(const char *name, float *value, uint32_t count) 
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector2(const char *name, Vector2 *value, uint32_t count) {
+void MaterialInstance::setVector2(const char *name, Vector2 *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -54,7 +55,7 @@ void MaterialInstance::setVector2(const char *name, Vector2 *value, uint32_t cou
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector3(const char *name, Vector3 *value, uint32_t count) {
+void MaterialInstance::setVector3(const char *name, Vector3 *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -62,7 +63,7 @@ void MaterialInstance::setVector3(const char *name, Vector3 *value, uint32_t cou
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setVector4(const char *name, Vector4 *value, uint32_t count) {
+void MaterialInstance::setVector4(const char *name, Vector4 *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -70,7 +71,7 @@ void MaterialInstance::setVector4(const char *name, Vector4 *value, uint32_t cou
 
     m_Info[name]    = info;
 }
-void MaterialInstance::setMatrix4(const char *name, Matrix4 *value, uint32_t count) {
+void MaterialInstance::setMatrix4(const char *name, Matrix4 *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -79,7 +80,7 @@ void MaterialInstance::setMatrix4(const char *name, Matrix4 *value, uint32_t cou
     m_Info[name]    = info;
 }
 
-void MaterialInstance::setTexture(const char *name, Texture *value, uint32_t count) {
+void MaterialInstance::setTexture(const char *name, Texture *value, int32_t count) {
     Info info;
     info.count      = count;
     info.ptr        = value;
@@ -136,6 +137,14 @@ void Material::loadUserData(const VariantMap &data) {
             }
         }
     }
+    {
+        auto it = data.find(UNIFORMS);
+        if(it != data.end()) {
+            for(auto u : (*it).second.toMap()) {
+                m_Uniforms[u.first] = u.second;
+            }
+        }
+    }
 }
 
 Material::MaterialType Material::materialType() const {
@@ -179,5 +188,15 @@ int32_t Material::surfaces() const {
 }
 
 MaterialInstance *Material::createInstance() {
-    return new MaterialInstance(this);
+    MaterialInstance *result = new MaterialInstance(this);
+    for(auto &it : m_Uniforms) {
+        MaterialInstance::Info info;
+        info.count = 1;
+        info.ptr   = it.second.data();
+        info.type  = it.second.type();
+
+        result->m_Info[it.first] = info;
+    }
+
+    return result;
 }

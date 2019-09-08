@@ -199,7 +199,7 @@ public:
 
     int                         setTexture                  (const QString &path, Vector4 &sub, uint8_t flags = 0);
 
-    void                        addUniform                  (const QString &name, uint8_t type);
+    void                        addUniform                  (const QString &name, uint8_t type, const QVariant &value);
 
     void                        reportError                 (QObject *, const QString &) { }
 
@@ -218,7 +218,9 @@ private:
     void                        addPragma                   (const string &key, const string &value);
     QString                     loadIncludes                (const QString &path, const string &define) const;
 
-    typedef map<QString, uint8_t>   UniformMap;
+    typedef QPair<uint8_t, QVariant> UniformPair;
+
+    typedef map<QString, UniformPair> UniformMap;
 
     typedef QPair<QString, uint8_t> TexturePair;
 

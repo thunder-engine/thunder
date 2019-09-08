@@ -299,7 +299,7 @@ bool ShaderBuilder::build() {
     }
     // Make uniforms
     for(const auto &it : m_Uniforms) {
-        switch(it.second) {
+        switch(it.second.first) {
             case QMetaType::QVector2D:  m_Shader += "\tvec2 " + it.first + ";\n"; break;
             case QMetaType::QVector3D:  m_Shader += "\tvec3 " + it.first + ";\n"; break;
             case QMetaType::QVector4D:  m_Shader += "\tvec4 " + it.first + ";\n"; break;
@@ -362,6 +362,7 @@ Variant ShaderBuilder::data() const {
     properties.push_back(blend());
     properties.push_back(lightModel());
     properties.push_back(isDepthTest());
+    user["Properties"]  = properties;
 
     VariantMap textures;
     uint16_t i  = 0;
@@ -369,8 +370,23 @@ Variant ShaderBuilder::data() const {
         textures[string("uni.") + ((it.second & Target) ? it.first : QString("texture%1").arg(i)).toStdString()]  = it.first.toStdString();
         i++;
     }
-    user["Textures"]    = textures;
-    user["Properties"]  = properties;
+    user["Textures"] = textures;
+
+    VariantMap uniforms;
+    for(auto it : m_Uniforms) {
+        Variant value;
+        switch(it.second.first) {
+            case QMetaType::QVector4D: {
+                QColor c = it.second.second.value<QColor>();
+                value = Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
+            } break;
+            default: {
+                value = Variant(it.second.second.toFloat());
+            } break;
+        }
+        uniforms[string("uni.") + it.first.toStdString()] = value;
+    }
+    user["Uniforms"] = uniforms;
 
     string define;
     switch(m_BlendMode) {
@@ -464,8 +480,8 @@ int ShaderBuilder::setTexture(const QString &path, Vector4 &sub, uint8_t flags) 
     return index;
 }
 
-void ShaderBuilder::addUniform(const QString &name, uint8_t type) {
-    m_Uniforms[name] = type;
+void ShaderBuilder::addUniform(const QString &name, uint8_t type, const QVariant &value) {
+    m_Uniforms[name] = UniformPair(type, value);
 }
 
 void ShaderBuilder::addParam(const QString &param) {

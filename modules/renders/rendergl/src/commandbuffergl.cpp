@@ -87,27 +87,27 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     }
 
     for(const auto &it : instance->params()) {
-        location    = glGetUniformLocation(program, it.first.c_str());
+        location = glGetUniformLocation(program, it.first.c_str());
         if(location > -1) {
-            const MaterialInstance::Info &data  = it.second;
+            const MaterialInstance::Info &data = it.second;
             switch(data.type) {
-                case 0: break;
                 case MetaType::INTEGER: glUniform1iv      (location, data.count, static_cast<const int32_t *>(data.ptr)); break;
+                case MetaType::FLOAT:   glUniform1fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
                 case MetaType::VECTOR2: glUniform2fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
                 case MetaType::VECTOR3: glUniform3fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
                 case MetaType::VECTOR4: glUniform4fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
                 case MetaType::MATRIX4: glUniformMatrix4fv(location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
-                default:                glUniform1fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
+                default: break;
             }
         }
     }
 
-    AMaterialGL *mat    = static_cast<AMaterialGL *>(instance->material());
+    AMaterialGL *mat = static_cast<AMaterialGL *>(instance->material());
 
     uint8_t i   = 0;
     for(auto it : mat->textures()) {
-        Texture *tex  = static_cast<ATextureGL *>(it.second);
-        Texture *tmp  = instance->texture(it.first.c_str());
+        Texture *tex = static_cast<ATextureGL *>(it.second);
+        Texture *tmp = instance->texture(it.first.c_str());
         if(tmp) {
             tex = tmp;
         } else {

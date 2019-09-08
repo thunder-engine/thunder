@@ -200,13 +200,27 @@ uint32_t AMaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
         glDeleteShader(fragment);
 
         glUseProgram(result);
-        uint8_t t   = 0;
+        uint8_t t = 0;
         for(auto it : m_Textures) {
-            int location    = glGetUniformLocation(result, it.first.c_str());
+            int32_t location = glGetUniformLocation(result, it.first.c_str());
             if(location > -1) {
                 glUniform1i(location, t);
             }
             t++;
+        }
+
+        for(auto it : m_Uniforms) {
+            int32_t location = glGetUniformLocation(result, it.first.c_str());
+            if(location > -1) {
+                switch(it.second.type()) {
+                    case MetaType::VECTOR4: {
+                        glUniform4fv(location, 1, it.second.toVector4().v);
+                    } break;
+                    default: {
+                        glUniform1f(location, it.second.toFloat());
+                    } break;
+                }
+            }
         }
     }
 
