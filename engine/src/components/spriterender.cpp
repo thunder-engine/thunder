@@ -11,13 +11,16 @@
 #define BASEMAP     "BaseMap"
 
 #define OVERRIDE "uni.texture0"
+#define COLOR "uni.color0"
 
 class SpriteRenderPrivate {
 public:
-    SpriteRenderPrivate() {
-        m_Texture   = nullptr;
-        m_pMaterial = nullptr;
-        m_pMesh     = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+    SpriteRenderPrivate() :
+            m_Texture(nullptr),
+            m_pMaterial(nullptr),
+            m_pMesh(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
+            m_Color(1.0f) {
+
     }
 
     Texture *m_Texture;
@@ -25,6 +28,8 @@ public:
     MaterialInstance *m_pMaterial;
 
     Mesh *m_pMesh;
+
+    Vector4 m_Color;
 };
 /*!
     \class SpriteRender
@@ -78,13 +83,17 @@ Material *SpriteRender::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void SpriteRender::setMaterial(Material *material) {
-    if(p_ptr->m_pMaterial) {
-        delete p_ptr->m_pMaterial;
-        p_ptr->m_pMaterial = nullptr;
-    }
+    if(!p_ptr->m_pMaterial || p_ptr->m_pMaterial->material() != material) {
+        if(p_ptr->m_pMaterial) {
+            delete p_ptr->m_pMaterial;
+            p_ptr->m_pMaterial = nullptr;
+        }
 
-    if(material) {
-        p_ptr->m_pMaterial = material->createInstance();
+        if(material) {
+            p_ptr->m_pMaterial = material->createInstance();
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_Texture);
+            p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
+        }
     }
 }
 /*!
@@ -100,6 +109,21 @@ void SpriteRender::setTexture(Texture *texture) {
     p_ptr->m_Texture   = texture;
     if(p_ptr->m_pMaterial) {
         p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_Texture);
+    }
+}
+/*!
+    Returns the color of the sprite to be drawn.
+*/
+Vector4 SpriteRender::color() const {
+    return p_ptr->m_Color;
+}
+/*!
+    Changes the \a color of the sprite to be drawn.
+*/
+void SpriteRender::setColor(const Vector4 &color) {
+    p_ptr->m_Color = color;
+    if(p_ptr->m_pMaterial) {
+        p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
     }
 }
 /*!

@@ -13,7 +13,8 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTYEX(Material *, Material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),
-        A_PROPERTYEX(Texture *, Texture, SpriteRender::texture, SpriteRender::setTexture, "editor=Template")
+        A_PROPERTYEX(Texture *, Texture, SpriteRender::texture, SpriteRender::setTexture, "editor=Template"),
+        A_PROPERTYEX(Vector4, Color, SpriteRender::color, SpriteRender::setColor, "editor=Color")
     )
     A_NOMETHODS()
 
@@ -26,6 +27,9 @@ public:
 
     Texture *texture () const;
     void setTexture (Texture *texture);
+
+    Vector4 color () const;
+    void setColor (const Vector4 &color);
 
     Mesh *mesh () const;
 

@@ -3,15 +3,27 @@
     "Depth": true,
     "Links": [
         {
-            "IPort": 1,
+            "IPort": 5,
+            "OPort": 5,
             "Receiver": 0,
-            "OPort": 1,
             "Sender": 1
         },
         {
-            "IPort": 5,
+            "IPort": 0,
+            "OPort": 0,
+            "Receiver": 3,
+            "Sender": 2
+        },
+        {
+            "IPort": 1,
+            "OPort": 2,
             "Receiver": 0,
-            "OPort": 5,
+            "Sender": 3
+        },
+        {
+            "IPort": 1,
+            "OPort": 1,
+            "Receiver": 3,
             "Sender": 1
         }
     ],
@@ -23,13 +35,37 @@
                 "Texture": [
                     "Template",
                     ".embedded/invalid.png",
-                    22
+                    46
                 ]
             },
-            "X": -200,
-            "Y": 0
+            "X": -400,
+            "Y": 80
+        },
+        {
+            "Type": "ParamVector",
+            "Values": {
+                "Default_Value": [
+                    67,
+                    255,
+                    255,
+                    255,
+                    255
+                ],
+                "Parameter_Name": "color0"
+            },
+            "X": -400,
+            "Y": -20
+        },
+        {
+            "Type": "Multiply",
+            "Values": {
+            },
+            "X": -180,
+            "Y": 40
         }
     ],
+    "Raw": "",
     "Side": true,
-    "Type": 0
+    "Type": 0,
+    "View": true
 }
