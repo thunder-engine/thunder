@@ -64,7 +64,7 @@ Transform *Actor::transform() {
         }
         Actor *p = dynamic_cast<Actor *>(parent());
         if(p) {
-            p_ptr->m_pTransform->setParent(p->transform(), true);
+            p_ptr->m_pTransform->setParentTransform(p->transform(), true);
         }
     }
     return p_ptr->m_pTransform;
@@ -121,7 +121,7 @@ void Actor::setParent(Object *parent) {
 
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
-            p_ptr->m_pTransform->setParent(actor->transform());
+            p_ptr->m_pTransform->setParentTransform(actor->transform());
         }
     } else {
         Object::setParent(parent);

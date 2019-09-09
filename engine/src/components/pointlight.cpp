@@ -169,6 +169,7 @@ AABBox PointLight::bound() const {
 #include "handles.h"
 
 bool PointLight::drawHandles(bool selected) {
+    A_UNUSED(selected);
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();

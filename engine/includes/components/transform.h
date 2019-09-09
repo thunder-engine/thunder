@@ -31,8 +31,8 @@ public:
     Vector3 scale () const;
     void setScale (const Vector3 &scale);
 
-    Transform *parent () const;
-    void setParent (Transform *parent, bool force = false);
+    Transform *parentTransform () const;
+    void setParentTransform (Transform *parent, bool force = false);
 
     Matrix4 &worldTransform ();
 

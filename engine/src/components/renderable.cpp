@@ -1,15 +1,5 @@
 #include "components/renderable.h"
 
-class RenderablePrivate {
-public:
-    bool m_WorldBoxDirty;
-
-    AABBox m_WorldBox;
-
-
-
-};
-
 Renderable::Renderable() {
 
 }

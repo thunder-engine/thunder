@@ -16,7 +16,7 @@ addons:
       name: eprikazchikov/thunder
       description: Light Weight Game Engine
     notification_email: eprikazchikov@mail.ru
-    build_command_prepend: qbs config defaultProfile qt-5-10-1
+    build_command_prepend: qbs config defaultProfile qt-5-12-3
     build_command: qbs build --all-products config:release
     branch_pattern: coverity_scan
 
@@ -24,17 +24,17 @@ matrix:
   include:
     - language: cpp
       os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
+        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.12.3-xenial
         - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
         - sudo apt-get update -qq
-        - sudo apt-get -y install qt510base qt510multimedia qt510script qt510svg qt510imageformats qt510graphicaleffects qt510quickcontrols2 qt510tools binutils zlib1g-dev xorg-dev gcc-7 g++-7
-        - source /opt/qt510/bin/qt510-env.sh
+        - sudo apt-get -y install qt512base qt512multimedia qt512script qt512svg qt512imageformats qt512graphicaleffects qt512quickcontrols2 qt512tools qt512xmlpatterns binutils zlib1g-dev xorg-dev gcc-7 g++-7
+        - source /opt/qt512/bin/qt512-env.sh
         - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
         - tar -xvzf qbs-1.11.0-linux.tar.gz > /dev/null
         - export PATH=$PATH:qbs-build/bin
@@ -42,7 +42,7 @@ matrix:
         - qbs setup-toolchains --detect
         - qbs setup-qt --detect
       script:
-        - qbs config defaultProfile qt-5-10-1
+        - qbs config defaultProfile qt-5-12-3
         - qbs config --list
         - qbs install --all-products config:release
         - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/${VERSION}/linux
@@ -55,18 +55,18 @@ matrix:
             
     - language: cpp
       os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - NDK_VERSION="android-ndk-r17c"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.10.1-trusty
+        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.12.3-xenial
         - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
         - sudo apt-get update -qq
-        - sudo apt-get -y install qt510base qt510script qt510tools binutils gcc-7 g++-7
-        - source /opt/qt510/bin/qt510-env.sh
+        - sudo apt-get -y install qt512base qt512script qt512tools binutils gcc-7 g++-7
+        - source /opt/qt512/bin/qt512-env.sh
         - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-${QBS_VERSION}/qbs-${QBS_VERSION}.tar.gz -q
         - tar -xvzf qbs-${QBS_VERSION}.tar.gz > /dev/null
         - export PATH=$PATH:qbs-build/bin
@@ -89,7 +89,7 @@ matrix:
 
     - language: cpp
       os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.3
       before_install:
         - brew update
         - brew install qbs
@@ -110,7 +110,7 @@ matrix:
     
     - language: cpp
       os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.3
       before_install:
         - brew update
         - brew install qbs
@@ -130,7 +130,7 @@ matrix:
     
     - language: cpp
       os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.3
       before_install:
         - brew update
         - brew install qbs

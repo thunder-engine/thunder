@@ -20,9 +20,6 @@ public:
 
     virtual AABBox bound () const;
 
-private:
-    RenderablePrivate *p_ptr;
-
 };
 
 #endif // RENDERABLE_H

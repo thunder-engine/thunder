@@ -60,7 +60,7 @@ private:
     void enableBlockSelection(int32_t positionBlock, int32_t positionColumn, int32_t anchorBlock, int32_t anchorColumn);
     void disableBlockSelection();
 
-    void doSetTextCursor(const QTextCursor &cursor);
+    void doSetTextCursor(const QTextCursor &cursor) Q_DECL_OVERRIDE;
     int32_t firstNonIndent(const QString &text) const;
 
     QString m_FileName;

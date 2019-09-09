@@ -428,6 +428,7 @@ AABBox TextRender::bound() const {
 #include "handles.h"
 
 bool TextRender::drawHandles(bool selected) {
+    A_UNUSED(selected);
     Vector3Vector points = {Vector3(),
                             Vector3(p_ptr->m_Boundaries.x, 0.0f, 0.0f),
                             Vector3(p_ptr->m_Boundaries.x,-p_ptr->m_Boundaries.y, 0.0f),

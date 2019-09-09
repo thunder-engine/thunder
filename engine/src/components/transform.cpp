@@ -102,14 +102,14 @@ void Transform::setScale(const Vector3 &scale) {
 /*!
     Returns parent of the transform.
 */
-Transform *Transform::parent() const {
+Transform *Transform::parentTransform() const {
     return p_ptr->m_pParent;
 }
 /*!
     Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
     In case of \a force flag provided as true, no recalculations of transform happen.
 */
-void Transform::setParent(Transform *parent, bool force) {
+void Transform::setParentTransform(Transform *parent, bool force) {
     Vector3 p = worldPosition();
     Vector3 e = worldEuler();
     Vector3 s = worldScale();
@@ -160,7 +160,7 @@ Vector3 Transform::worldPosition() const {
         result = result * cur->p_ptr->m_Scale;
         result = cur->p_ptr->m_Rotation.toMatrix() * result;
         result += cur->p_ptr->m_Position;
-        cur = cur->parent();
+        cur = cur->parentTransform();
     }
     return result;
 }
@@ -172,7 +172,7 @@ Vector3 Transform::worldEuler() const {
     Transform *cur = p_ptr->m_pParent;
     while(cur) {
         result += cur->p_ptr->m_Euler;
-        cur = cur->parent();
+        cur = cur->parentTransform();
     }
     return result;
 }
@@ -184,7 +184,7 @@ Quaternion Transform::worldRotation() const {
     Transform *cur = p_ptr->m_pParent;
     while(cur) {
         result = cur->p_ptr->m_Rotation * result;
-        cur = cur->parent();
+        cur = cur->parentTransform();
     }
     return result;
 }
@@ -196,7 +196,7 @@ Vector3 Transform::worldScale() const {
     Transform *cur = p_ptr->m_pParent;
     while(cur) {
         result = result * cur->p_ptr->m_Scale;
-        cur = cur->parent();
+        cur = cur->parentTransform();
     }
     return result;
 }
