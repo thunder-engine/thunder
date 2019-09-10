@@ -823,6 +823,7 @@ void Object::setUUID(uint32_t id) {
 void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
     p_ptr->m_pSystem = system;
+    p_ptr->m_pSystem->addObject(this);
 }
 /*!
     \internal

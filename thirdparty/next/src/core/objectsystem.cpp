@@ -128,8 +128,6 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
         object->setName(name);
         object->setParent(parent);
         object->setSystem(pair->second);
-
-        pair->second->m_ObjectList.push_back(object);
     }
     return object;
 }
@@ -316,6 +314,12 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
         object->setUUID(uuid);
     }
 }
+
+void ObjectSystem::addObject(Object *object) {
+    PROFILE_FUNCTION();
+    m_ObjectList.push_back(object);
+}
+
 /*!
     \internal
 */

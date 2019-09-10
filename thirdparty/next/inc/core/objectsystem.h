@@ -62,6 +62,8 @@ private:
     friend class ObjectSystemTest;
     friend class Object;
 
+    void                                addObject               (Object *object);
+
     void                                removeObject            (Object *object);
 
     void                                suspendObject           (Object *object);
