@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2017 Andreas Jonsson
+   Copyright (c) 2003-2018 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -187,23 +187,35 @@ int PrepareSystemFunctionGeneric(asCScriptFunction *func, asSSystemFunctionInter
 		{
 			if (dt.IsFuncdef())
 			{
-				asSSystemFunctionInterface::SClean clean;
-				clean.op = 0; // call release
-				clean.ot = &engine->functionBehaviours;
-				clean.off = short(offset);
-				internal->cleanArgs.PushLast(clean);
+				// If the generic call mode is set to old behaviour then always release handles
+				// else only release the handle if the function is declared with auto handles
+				if (engine->ep.genericCallMode == 0 || (internal->paramAutoHandles.GetLength() > n && internal->paramAutoHandles[n]))
+				{
+					asSSystemFunctionInterface::SClean clean;
+					clean.op = 0; // call release
+					clean.ot = &engine->functionBehaviours;
+					clean.off = short(offset);
+					internal->cleanArgs.PushLast(clean);
+				}
 			}
 			else if( dt.GetTypeInfo()->flags & asOBJ_REF )
 			{
-				asSTypeBehaviour *beh = &CastToObjectType(dt.GetTypeInfo())->beh;
-				asASSERT( (dt.GetTypeInfo()->flags & asOBJ_NOCOUNT) || beh->release );
-				if( beh->release )
+				// If the generic call mode is set to old behaviour then always release handles
+				// else only release the handle if the function is declared with auto handles
+				if (!dt.IsObjectHandle() ||
+					engine->ep.genericCallMode == 0 || 
+					(internal->paramAutoHandles.GetLength() > n && internal->paramAutoHandles[n]) )
 				{
-					asSSystemFunctionInterface::SClean clean;
-					clean.op  = 0; // call release
-					clean.ot  = CastToObjectType(dt.GetTypeInfo());
-					clean.off = short(offset);
-					internal->cleanArgs.PushLast(clean);
+					asSTypeBehaviour *beh = &CastToObjectType(dt.GetTypeInfo())->beh;
+					asASSERT((dt.GetTypeInfo()->flags & asOBJ_NOCOUNT) || beh->release);
+					if (beh->release)
+					{
+						asSSystemFunctionInterface::SClean clean;
+						clean.op = 0; // call release
+						clean.ot = CastToObjectType(dt.GetTypeInfo());
+						clean.off = short(offset);
+						internal->cleanArgs.PushLast(clean);
+					}
 				}
 			}
 			else
@@ -723,7 +735,7 @@ int CallSystemFunction(int id, asCContext *context)
 
 		// Convert the exception to a script exception so the VM can
 		// properly report the error to the application and then clean up
-		context->SetException(TXT_EXCEPTION_CAUGHT);
+		context->HandleAppException();
 	}
 #endif
 	context->m_callingSystemFunction = 0;

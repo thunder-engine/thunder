@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2017 Andreas Jonsson
+   Copyright (c) 2003-2018 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -514,7 +514,7 @@ void asCModule::CallExit()
 // internal
 bool asCModule::HasExternalReferences(bool shuttingDown)
 {
-	// Check all entiteis in the module for any external references.
+	// Check all entities in the module for any external references.
 	// If there are any external references the module cannot be deleted yet.
 
 	asCSymbolTableIterator<asCGlobalProperty> it = scriptGlobals.List();
@@ -540,10 +540,16 @@ bool asCModule::HasExternalReferences(bool shuttingDown)
 		it++;
 	}
 
-	for( asUINT n = 0; n < scriptFunctions.GetLength(); n++ )
-		if( scriptFunctions[n] && scriptFunctions[n]->externalRefCount.get() )
+	for (asUINT n = 0; n < scriptFunctions.GetLength(); n++)
+	{
+		asCScriptFunction *func = scriptFunctions[n];
+		if (func && func->externalRefCount.get())
 		{
-			if( !shuttingDown )
+			// If the func is shared and can be moved to another module then this is not a reason to keep the module alive
+			if (func->IsShared() && engine->FindNewOwnerForSharedFunc(func, this) != this)
+				continue;
+
+			if (!shuttingDown)
 				return true;
 			else
 			{
@@ -555,11 +561,18 @@ bool asCModule::HasExternalReferences(bool shuttingDown)
 				engine->WriteMessage("", 0, 0, asMSGTYPE_INFORMATION, msg.AddressOf());
 			}
 		}
+	}
 
-	for( asUINT n = 0; n < classTypes.GetLength(); n++ )
-		if( classTypes[n] && classTypes[n]->externalRefCount.get() )
+	for (asUINT n = 0; n < classTypes.GetLength(); n++)
+	{
+		asCObjectType *obj = classTypes[n];
+		if (obj && obj->externalRefCount.get())
 		{
-			if( !shuttingDown )
+			// If the obj is shared and can be moved to another module then this is not a reason to keep the module alive
+			if (obj->IsShared() && engine->FindNewOwnerForSharedType(obj, this) != this)
+				continue;
+
+			if (!shuttingDown)
 				return true;
 			else
 			{
@@ -571,11 +584,18 @@ bool asCModule::HasExternalReferences(bool shuttingDown)
 				engine->WriteMessage("", 0, 0, asMSGTYPE_INFORMATION, msg.AddressOf());
 			}
 		}
+	}
 
-	for( asUINT n = 0; n < funcDefs.GetLength(); n++ )
-		if( funcDefs[n] && funcDefs[n]->externalRefCount.get() )
+	for (asUINT n = 0; n < funcDefs.GetLength(); n++)
+	{
+		asCFuncdefType *func = funcDefs[n];
+		if (func && func->externalRefCount.get())
 		{
-			if( !shuttingDown )
+			// If the funcdef is shared and can be moved to another module then this is not a reason to keep the module alive
+			if (func->IsShared() && engine->FindNewOwnerForSharedType(func, this) != this)
+				continue;
+
+			if (!shuttingDown)
 				return true;
 			else
 			{
@@ -587,11 +607,18 @@ bool asCModule::HasExternalReferences(bool shuttingDown)
 				engine->WriteMessage("", 0, 0, asMSGTYPE_INFORMATION, msg.AddressOf());
 			}
 		}
+	}
 
-	for( asUINT n = 0; n < templateInstances.GetLength(); n++ )
-		if( templateInstances[n] && templateInstances[n]->externalRefCount.get() )
+	for (asUINT n = 0; n < templateInstances.GetLength(); n++)
+	{
+		asCObjectType *obj = templateInstances[n];
+		if (obj && obj->externalRefCount.get())
 		{
-			if( !shuttingDown )
+			// If the template can be moved to another module then this is not a reason to keep the module alive
+			if (obj->IsShared() && engine->FindNewOwnerForSharedType(obj, this) != this)
+				continue;
+
+			if (!shuttingDown)
 				return true;
 			else
 			{
@@ -603,6 +630,7 @@ bool asCModule::HasExternalReferences(bool shuttingDown)
 				engine->WriteMessage("", 0, 0, asMSGTYPE_INFORMATION, msg.AddressOf());
 			}
 		}
+	}
 
 	return false;
 }

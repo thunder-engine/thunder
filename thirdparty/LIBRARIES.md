@@ -1,3 +1,15 @@
+## AngelScript
+
+- Link: https://www.angelcode.com/angelscript/
+- Version: 2.33.0
+- License: zLib
+
+## Bullet
+
+- Link: https://github.com/bulletphysics/bullet3
+- Version: 2.88
+- License: zLib
+
 ## FBX SDK
 
 - Link: https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-archives
