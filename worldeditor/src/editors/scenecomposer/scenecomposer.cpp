@@ -12,6 +12,7 @@
 
 #include <QQmlContext>
 #include <QQuickItem>
+#include <QMenuBar>
 
 #include <json.h>
 #include <bson.h>
@@ -246,8 +247,11 @@ void SceneComposer::timerEvent(QTimerEvent *) {
 void SceneComposer::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
 
-    ui->quickWidget->setGeometry(QRect(QPoint(), event->size()));
-    ui->toolWidget->setGeometry(QRect(QPoint(), event->size()));
+    QSize size(event->size());
+    size.setHeight(size.height() - menuBar()->height());
+
+    ui->quickWidget->setGeometry(QRect(QPoint(), size));
+    ui->toolWidget->setGeometry(QRect(QPoint(), size));
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
