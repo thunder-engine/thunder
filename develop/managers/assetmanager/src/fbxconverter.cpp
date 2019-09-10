@@ -332,7 +332,7 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
         }
         Engine::setResource(mesh, uuid.toStdString());
 
-        MeshRender *render = actor->addComponent<MeshRender>();
+        MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
         render->setMesh(mesh);
         Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 

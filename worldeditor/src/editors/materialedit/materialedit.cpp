@@ -157,7 +157,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
     if(m_Path != settings->source()) {
         m_Path      = settings->source();
         m_pMaterial = Engine::loadResource<Material>(settings->destination());
-        MeshRender *mesh = m_pMesh->component<MeshRender>();
+        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
         if(mesh) {
             mesh->setMaterial(m_pMaterial);
         }
@@ -172,7 +172,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder && m_pBuilder->build()) {
         ui->textEdit->setText(m_pBuilder->shader());
         glWidget->makeCurrent();
-        MeshRender *mesh    = m_pMesh->component<MeshRender>();
+        MeshRender *mesh    = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
         if(mesh) {
             VariantMap map  = m_pBuilder->data().toMap();
             mesh->material()->loadUserData(map);
@@ -182,7 +182,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
 }
 
 void MaterialEdit::changeMesh(const string &path) {
-    MeshRender *mesh    = m_pMesh->component<MeshRender>();
+    MeshRender *mesh    = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
         if(m_pMaterial) {
@@ -199,7 +199,7 @@ void MaterialEdit::onGLInit() {
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->transform()->setRotation(rot);
-    m_pLight->addComponent<DirectLight>();
+    m_pLight->addComponent("DirectLight");
 
     Camera *camera = glWidget->controller()->camera();
     if(camera) {
@@ -207,7 +207,7 @@ void MaterialEdit::onGLInit() {
     }
 
     m_pMesh = Engine::objectCreate<Actor>("MeshRender", scene);
-    m_pMesh->addComponent<MeshRender>();
+    m_pMesh->addComponent("MeshRender");
 
     on_actionSphere_triggered();
 }

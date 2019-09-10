@@ -53,7 +53,7 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_pScene->setAmbient(0.3f);
     m_pActor = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
-    m_pCamera = m_pActor->addComponent<Camera>();
+    m_pCamera = static_cast<Camera *>(m_pActor->addComponent("Camera"));
 
     m_pLight = nullptr;
 
@@ -82,7 +82,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
         Matrix3 rot;
         rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
         m_pLight->transform()->setRotation(rot);
-        m_pLight->addComponent<DirectLight>();
+        m_pLight->addComponent("DirectLight");
 
         m_Init = true;
     }
@@ -95,7 +95,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             m_pCamera->setOrthographic(true);
             m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
-            SpriteRender *sprite = object->addComponent<SpriteRender>();
+            SpriteRender *sprite = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
             if(sprite) {
                 sprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
                 Texture *t  = Engine::loadResource<Texture>(resource.toStdString());
@@ -103,7 +103,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentMaterial: {
-            MeshRender *mesh = object->addComponent<MeshRender>();
+            MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
             Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere002");
             if(m) {
                 mesh->setMesh(m);
@@ -130,7 +130,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentMesh: {
-            MeshRender *mesh = object->addComponent<MeshRender>();
+            MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
             mesh->setMesh(Engine::loadResource<Mesh>(resource.toStdString()));
             mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 

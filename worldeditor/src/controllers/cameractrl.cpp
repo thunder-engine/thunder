@@ -31,7 +31,7 @@ CameraCtrl::CameraCtrl(QOpenGLWidget *view) :
 void CameraCtrl::init(Scene *scene) {
     Q_UNUSED(scene)
     m_pCamera   = Engine::objectCreate<Actor>("Camera");
-    m_pActiveCamera = m_pCamera->addComponent<Camera>();
+    m_pActiveCamera = static_cast<Camera *>(m_pCamera->addComponent("Camera"));
     m_pActiveCamera->setFocal(10.0f);
     m_pActiveCamera->setOrthoHeight(10.0f);
 

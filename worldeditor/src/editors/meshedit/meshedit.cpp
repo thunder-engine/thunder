@@ -148,7 +148,7 @@ void MeshEdit::onGLInit() {
 
     m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     m_pLight->transform()->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
-    DirectLight *light  = m_pLight->addComponent<DirectLight>();
+    DirectLight *light  = static_cast<DirectLight *>(m_pLight->addComponent("DirectLight"));
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 

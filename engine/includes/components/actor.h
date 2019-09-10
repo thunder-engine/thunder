@@ -17,8 +17,9 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     )
     A_METHODS(
         A_METHOD(Transform *, Actor::transform),
-        A_METHOD(Component *, Actor::findComponent),
-        A_METHOD(Component *, Actor::createComponent),
+        A_METHOD(Component *, Actor::component),
+        A_METHOD(Component *, Actor::componentInChild),
+        A_METHOD(Component *, Actor::addComponent),
         A_METHOD(Object *, Object::clone)
     )
 
@@ -30,25 +31,16 @@ public:
 
     Scene *scene ();
 
-    Component *findComponent (const char *type);
+    Component *component (const string type);
+    Component *componentInChild (const string type);
 
-    template<typename T>
-    T *component () {
-        return static_cast<T *>(findComponent(T::metaClass()->name()));
-    }
+    Component *addComponent (const string type);
 
     bool isEnabled () const;
     void setEnabled (const bool enabled);
 
     uint8_t layers () const;
     void setLayers (const uint8_t layers);
-
-    template<typename T>
-    T *addComponent () {
-        return static_cast<T *>(createComponent(T::metaClass()->name()));
-    }
-
-    Component *createComponent (const string type);
 
     void setParent (Object *parent) override;
 

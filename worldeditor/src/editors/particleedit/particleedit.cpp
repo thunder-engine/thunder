@@ -141,7 +141,7 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
 
 void ParticleEdit::onGLInit() {
     m_pEffect = Engine::objectCreate<Actor>("ParticleEffect", ui->glWidget->scene());
-    m_pRender = m_pEffect->addComponent<ParticleRender>();
+    m_pRender = static_cast<ParticleRender *>(m_pEffect->addComponent("ParticleRender"));
 }
 
 void ParticleEdit::onNodeSelected(void *node) {
@@ -209,7 +209,7 @@ void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
 
 void ParticleEdit::onUpdateTemplate(bool update) {
     ui->glWidget->makeCurrent();
-    ParticleRender *render = m_pEffect->component<ParticleRender>();
+    ParticleRender *render = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
     if(render) {
         render->effect()->loadUserData(m_pBuilder->data().toMap());
         render->setEffect(render->effect());

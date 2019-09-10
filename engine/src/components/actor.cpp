@@ -58,9 +58,9 @@ uint8_t Actor::layers() const {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(p_ptr->m_pTransform == nullptr) {
-        p_ptr->m_pTransform = component<Transform>();
+        p_ptr->m_pTransform = static_cast<Transform *>(component("Transform"));
         if(p_ptr->m_pTransform == nullptr) {
-            p_ptr->m_pTransform = addComponent<Transform>();
+            p_ptr->m_pTransform = static_cast<Transform *>(addComponent("Transform"));
         }
         Actor *p = dynamic_cast<Actor *>(parent());
         if(p) {
@@ -84,12 +84,37 @@ Scene *Actor::scene() {
     return p_ptr->m_pScene;
 }
 
-Component *Actor::findComponent(const char *type) {
+Component *Actor::component(const string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         const MetaObject *meta = it->metaObject();
-        if(meta->canCastTo(type)) {
+        if(meta->canCastTo(type.c_str())) {
             return static_cast<Component *>(it);
+        }
+    }
+    return nullptr;
+}
+
+Component *componentInChildHelper(const string &type, Object *parent) {
+    for(auto it : parent->getChildren()) {
+        const MetaObject *meta = it->metaObject();
+        if(meta->canCastTo(type.c_str())) {
+            return static_cast<Component *>(it);
+        } else {
+            Component *result = componentInChildHelper(type, it);
+            if(result) {
+                return static_cast<Component *>(result);
+            }
+        }
+    }
+    return nullptr;
+}
+
+Component *Actor::componentInChild(const string type) {
+    for(auto it : getChildren()) {
+        Component *result = componentInChildHelper(type, it);
+        if(result) {
+            return static_cast<Component *>(result);
         }
     }
     return nullptr;
@@ -100,7 +125,7 @@ void Actor::setLayers(const uint8_t layers) {
     p_ptr->m_Layers = layers;
 }
 
-Component *Actor::createComponent(const string type) {
+Component *Actor::addComponent(const string type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }

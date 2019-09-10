@@ -281,7 +281,7 @@ bool Engine::start() {
         Log(Log::DBG) << "Camera not found creating new one.";
         Actor *camera = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
         camera->transform()->setPosition(Vector3(0.0f));
-        component = camera->addComponent<Camera>();
+        component = static_cast<Camera *>(camera->addComponent("Camera"));
     }
     Camera::setCurrent(component);
 

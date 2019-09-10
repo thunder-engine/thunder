@@ -136,7 +136,7 @@ void TextureEdit::onGLInit() {
 
     Actor *object   = Engine::objectCreate<Actor>("Sprite", scene);
     object->transform()->setScale(Vector3(SCALE));
-    m_pSprite       = object->addComponent<SpriteRender>();
+    m_pSprite       = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }

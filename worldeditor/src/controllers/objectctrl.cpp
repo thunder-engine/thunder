@@ -428,8 +428,8 @@ void ObjectCtrl::onCreateSelected(const QString &name) {
     if(m_Selected.size() == 1) {
         Actor *actor    = m_Selected.begin()->second.object;
         if(actor) {
-            if(actor->findComponent(qPrintable(name)) == nullptr) {
-                Component *comp = actor->createComponent(name.toStdString());
+            if(actor->component(qPrintable(name)) == nullptr) {
+                Component *comp = actor->addComponent(name.toStdString().c_str());
                 if(comp) {
                     Object::ObjectList list;
                     list.push_back(comp);
@@ -534,7 +534,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     case IConverter::ContentTexture: {
                         Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                         actor->transform()->setPosition(Vector3(0.0f));
-                        SpriteRender *sprite = actor->addComponent<SpriteRender>();
+                        SpriteRender *sprite = static_cast<SpriteRender *>(actor->addComponent("SpriteRender"));
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
                             sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));
