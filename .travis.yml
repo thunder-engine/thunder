@@ -87,26 +87,26 @@ matrix:
           on:
             tags: true
 
-    - language: cpp
-      os: osx
-      osx_image: xcode10.3
-      before_install:
-        - brew update
-        - brew install qbs
-        - qbs --version
-        - qbs setup-toolchains --detect
-        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
-      script:
-        - qbs config --list
-        - qbs install --all-products config:release profile:qt-brew
-        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: osx
+    #  osx_image: xcode10.3
+    #  before_install:
+    #    - brew update
+    #    - brew install qbs
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #    - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
+    #  script:
+    #    - qbs config --list
+    #    - qbs install --all-products config:release profile:qt-brew
+    #    - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
+    #    - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
+    #      on:
+    #        tags: true
     
     - language: cpp
       os: osx
