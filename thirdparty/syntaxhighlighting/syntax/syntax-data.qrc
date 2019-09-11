@@ -21,5 +21,13 @@
         <file>rtf.xml</file>
         <file>xml.xml</file>
         <file>yaml.xml</file>
+        <file>javadoc.xml</file>
+        <file>alert.xml</file>
+        <file>doxygen.xml</file>
+        <file>javascript-react.xml</file>
+        <file>modelines.xml</file>
+        <file>typescript.xml</file>
+        <file>mustache.xml</file>
+        <file>gcc.xml</file>
     </qresource>
 </RCC>
