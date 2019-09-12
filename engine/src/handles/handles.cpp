@@ -38,8 +38,6 @@ static float length    = 1.0f;
 static float sense     = 0.02f;
 static float conesize  = length / 5.0f;
 
-static bool inited = false;
-
 Mesh *Handles::s_Cone   = nullptr;
 Mesh *Handles::s_Quad   = nullptr;
 Mesh *Handles::s_Lines  = nullptr;
@@ -199,12 +197,10 @@ void Handles::init() {
         s_Box->setMode(Mesh::MODE_LINES);
         s_Box->addLod(lod);
     }
-
-    inited = true;
 }
 
 void Handles::beginDraw(ICommandBuffer *buffer) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Matrix4 v, p;
         Camera *cam = Camera::current();
         if(cam) {
@@ -221,13 +217,13 @@ void Handles::beginDraw(ICommandBuffer *buffer) {
 }
 
 void Handles::endDraw() {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Normal);
     }
 }
 
 void Handles::drawArrow(const Matrix4 &transform) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
         s_Buffer->drawMesh(transform, s_Axis, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
@@ -239,7 +235,7 @@ void Handles::drawArrow(const Matrix4 &transform) {
 }
 
 void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Mesh::Lod lod;
         lod.vertices    = points;
         lod.indices     = indices;
@@ -255,7 +251,7 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
 }
 
 void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
 
         Matrix4 transform(center, rotation, size);
@@ -265,7 +261,7 @@ void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const V
 }
 
 void Handles::drawCircle(const Vector3 &center, const Quaternion &rotation, float radius) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
 
         Matrix4 transform(center, rotation, Vector3(radius));
@@ -275,7 +271,7 @@ void Handles::drawCircle(const Vector3 &center, const Quaternion &rotation, floa
 }
 
 void Handles::drawSphere(const Vector3 &center, const Quaternion &rotation, float radius) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
 
         Matrix4 transform(center, rotation, Vector3(radius));
@@ -287,7 +283,7 @@ void Handles::drawSphere(const Vector3 &center, const Quaternion &rotation, floa
 }
 
 void Handles::drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
 
         Matrix4 transform(center, rotation, Vector3(1.0));
@@ -324,7 +320,7 @@ void Handles::drawCapsule(const Vector3 &center, const Quaternion &rotation, flo
 
 bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture) {
     bool result = false;
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Matrix4 model(position, Quaternion(), Vector3(size, size.x));
         Matrix4 q   = model * Matrix4(Camera::current()->actor()->transform()->rotation().toMatrix());
 
@@ -343,7 +339,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
 
 Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
     Vector3 result = position;
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
         if(camera) {
             Vector3 normal = position - camera->actor()->transform()->position();
@@ -460,7 +456,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
 }
 
 Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
         if(camera) {
             Transform *t = camera->actor()->transform();
@@ -529,7 +525,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
-    if(inited) {
+    if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
         if(camera) {
             Vector3 normal = position - camera->actor()->transform()->position();

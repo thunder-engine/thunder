@@ -92,6 +92,8 @@ bool RenderGLSystem::init() {
 
     Pipeline::setShadowPageSize(texture, texture);
 
+    CommandBufferGL::setInited();
+
     return true;
 }
 
@@ -109,7 +111,7 @@ void RenderGLSystem::update(Scene *scene) {
     PROFILER_RESET(DRAWCALLS);
 
     Camera *camera  = Camera::current();
-    if(camera) {
+    if(camera && CommandBufferGL::isInited()) {
         int32_t target;
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
 

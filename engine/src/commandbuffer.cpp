@@ -1,5 +1,7 @@
 #include "commandbuffer.h"
 
+static bool s_Inited = false;
+
 void ICommandBuffer::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
      A_UNUSED(clearColor);
      A_UNUSED(color);
@@ -40,6 +42,14 @@ Vector4 ICommandBuffer::idToColor(uint32_t id) {
     rgb[3]  = id >> 24;
 
     return Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f);
+}
+
+bool ICommandBuffer::isInited() {
+    return s_Inited;
+}
+
+void ICommandBuffer::setInited() {
+    s_Inited = true;
 }
 
 void ICommandBuffer::setColor(const Vector4 &color) {
