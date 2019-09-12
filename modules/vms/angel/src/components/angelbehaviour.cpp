@@ -50,14 +50,15 @@ void AngelBehaviour::setScript(const string &value) {
             }
             asIScriptObject *object = *obj;
             if(object) {
-                object->AddRef();
-
                 setScriptObject(object);
             } else {
                 Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << value.c_str();
             }
             if(result == 0) {
                 ptr->context()->PopState();
+                if(object) {
+                    object->AddRef();
+                }
             }
         }
     }
@@ -71,6 +72,7 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     PROFILER_MARKER;
     m_pObject   = object;
     if(m_pObject) {
+        m_pObject->AddRef();
         asITypeInfo *info = m_pObject->GetObjectType();
         if(info) {
             if(object->GetPropertyCount() > 0) {

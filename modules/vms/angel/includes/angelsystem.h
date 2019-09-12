@@ -12,10 +12,11 @@ class asIScriptObject;
 struct asSMessageInfo;
 
 class MetaObject;
+class Engine;
 
 class AngelSystem : public ISystem {
 public:
-    AngelSystem ();
+    AngelSystem (Engine *engine);
     ~AngelSystem ();
 
     bool init ();

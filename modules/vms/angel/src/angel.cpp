@@ -12,7 +12,7 @@ IModule *moduleCreate(Engine *engine) {
 
 Angel::Angel(Engine *engine) :
         m_pEngine(engine),
-        m_pSystem(new AngelSystem()) {
+        m_pSystem(new AngelSystem(engine)) {
 }
 
 Angel::~Angel() {

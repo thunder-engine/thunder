@@ -20,7 +20,8 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
         A_METHOD(Component *, Actor::component),
         A_METHOD(Component *, Actor::componentInChild),
         A_METHOD(Component *, Actor::addComponent),
-        A_METHOD(Object *, Object::clone)
+        A_METHOD(Object *, Object::clone),
+        A_METHOD(Object *, Object::deleteLater)
     )
 
 public:

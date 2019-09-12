@@ -143,7 +143,7 @@ void registerVector4(asIScriptEngine *engine) {
     engine->RegisterObjectType("Vector4", sizeof(Vector4), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(vec4), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(float)", asFUNCTION(new1Float4), asCALL_CDECL_OBJLAST);
-    engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(float, float, float)", asFUNCTION(new4Float4), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(float, float, float, float)", asFUNCTION(new4Float4), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(const Vector2 &in, float, float)", asFUNCTION(newVec2Float4), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Vector4", asBEHAVE_CONSTRUCT, "void f(const Vector3 &in, float)", asFUNCTION(newVec3Float4), asCALL_CDECL_OBJLAST);
 

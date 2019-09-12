@@ -7,8 +7,16 @@
 #include <analytics/profiler.h>
 
 #include <angelscript.h>
+
 #include <scriptarray/scriptarray.h>
+#include <scriptgrid/scriptgrid.h>
+#include <scriptdictionary/scriptdictionary.h>
 #include <scriptstdstring/scriptstdstring.h>
+#include <scriptmath/scriptmath.h>
+
+#ifdef NEXT_SHARED
+    #include <debugger/debugger.h>
+#endif
 
 #include <components/scene.h>
 #include <components/actor.h>
@@ -45,7 +53,7 @@ protected:
     uint32_t            m_Offset;
 };
 
-AngelSystem::AngelSystem() :
+AngelSystem::AngelSystem(Engine *engine) :
         ISystem(),
         m_pScriptEngine(nullptr),
         m_pScriptModule(nullptr),
@@ -53,9 +61,9 @@ AngelSystem::AngelSystem() :
         m_Inited(false) {
     PROFILER_MARKER;
 
-    AngelScript::registerClassFactory(this);
-
     AngelBehaviour::registerClassFactory(this);
+
+    AngelScript::registerClassFactory(engine->resourceSystem());
 }
 
 AngelSystem::~AngelSystem() {
@@ -81,8 +89,6 @@ AngelSystem::~AngelSystem() {
     }
 
     AngelBehaviour::unregisterClassFactory(this);
-
-    AngelScript::unregisterClassFactory(this);
 }
 
 bool AngelSystem::init() {
@@ -199,6 +205,9 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
     RegisterStdString(engine);
     RegisterScriptArray(engine, true);
+    RegisterScriptGrid(engine);
+    RegisterScriptDictionary(engine);
+    RegisterScriptMath(engine);
 
     registerTimer(engine);
     registerMath(engine);
@@ -231,6 +240,10 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("AngelBehaviour",
                                  "void setScriptObject(IBehaviour @)",
                                  asMETHOD(AngelBehaviour, setScriptObject),
+                                 asCALL_THISCALL);
+    engine->RegisterObjectMethod("AngelBehaviour",
+                                 "IBehaviour @scriptObject()",
+                                 asMETHOD(AngelBehaviour, scriptObject),
                                  asCALL_THISCALL);
 
     engine->RegisterObjectMethod("Actor", "Actor &get_Parent()", asMETHOD(Actor, parent), asCALL_THISCALL);
