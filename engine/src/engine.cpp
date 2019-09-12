@@ -262,6 +262,7 @@ bool Engine::start() {
             p_ptr->m_pPlatform->stop();
             return false;
         }
+        it->setActiveScene(p_ptr->m_pScene);
     }
 
     EnginePrivate::m_Game = true;
