@@ -6,23 +6,6 @@ QWidget:disabled {
     color: #80ffffff;
 }
 
-QCheckBox::indicator {
-    background-color: #525252;
-    border-radius: 3px;
-}
-
-QCheckBox::indicator:checked:hover {
-    background-color: #757575;
-}
-
-QCheckBox::indicator:checked {
-    image: url(:/Style/styles/dark/icons/close-hover.png);
-}
-
-QCheckBox::indicator:unchecked:hover {
-    background-color: #757575;
-}
-
 QToolBar {
     spacing: 3px;
     border: 0px;
@@ -332,4 +315,25 @@ QProgressBar {
 QProgressBar::chunk {
     background-color: #0277bd;
     border-radius: 3px;
+}
+
+QCheckBox {
+    padding: 2px 2px;
+}
+
+QCheckBox::indicator {
+    background-color: #525252;
+    border-radius: 3px;
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: #757575;
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/Style/styles/dark/icons/close-hover.png);
+}
+
+QCheckBox::indicator:unchecked:hover {
+    background-color: #757575;
 }

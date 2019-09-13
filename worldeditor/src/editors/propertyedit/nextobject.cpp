@@ -168,10 +168,7 @@ void NextObject::setName(const QString &name) {
 
 QMenu *NextObject::menu(const QString &name) {
     QMenu *result = nullptr;
-
-    QStringList path(name.split(' ').first());
-    Object *obj = findChild(path);
-
+    Object *obj = component(name);
     if(obj == nullptr || dynamic_cast<Transform *>(obj) || dynamic_cast<Actor *>(obj)) {
         return result;
     }
@@ -184,6 +181,14 @@ QMenu *NextObject::menu(const QString &name) {
     connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
 
     return result;
+}
+
+Object *NextObject::component(const QString &name) {
+    if(name == "Actor") {
+        return m_pObject;
+    }
+    QStringList path(name.split(' ').first());
+    return findChild(path);
 }
 
 void NextObject::onUpdated() {
@@ -207,12 +212,15 @@ void NextObject::buildObject(Object *object, const QString &path) {
     const MetaObject *meta = object->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
-        QString name = (path.isEmpty() ? "" : path + "/") + property.name();
-        Variant data = property.read(object);
+        QString name(property.name());
+        if(name != "Enabled") {
+            name = (path.isEmpty() ? "" : path + "/") + name;
+            Variant data = property.read(object);
 
-        blockSignals(true);
-        setProperty(qPrintable(name), qVariant(data, editor(property)));
-        blockSignals(false);
+            blockSignals(true);
+            setProperty(qPrintable(name), qVariant(data, editor(property)));
+            blockSignals(false);
+        }
     }
     for(Object *it : object->getChildren()) {
         Invalid *invalid = dynamic_cast<Invalid *>(it);

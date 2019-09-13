@@ -32,7 +32,7 @@ void ColorEdit::colorPickDlg() {
 void ColorEdit::paintEvent(QPaintEvent *ev) {
     QRect r = ev->rect();
     r.setTop(1);
-    r.setSize(QSize(r.width() - 2, r.height() - 2));
+    r.setSize(QSize(r.width() - 4, r.height() - 2));
 
     QPainter painter;
     painter.begin(this);

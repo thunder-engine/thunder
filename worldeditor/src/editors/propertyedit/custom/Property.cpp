@@ -57,6 +57,7 @@ QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     if(m_Root && next) {
         Actions *act    = new Actions(parent);
         act->setMenu(next->menu(m_name));
+        act->setObject(next->component(m_name));
         m_Editor        = act;
     }
     return m_Editor;

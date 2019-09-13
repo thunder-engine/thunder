@@ -24,23 +24,34 @@
     <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+    <widget class="QCheckBox" name="checkBox">
+     <property name="styleSheet">
+      <string notr="true">background-color: #00000000</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
+     <property name="text">
+      <string/>
      </property>
-    </spacer>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="commitButton">
+     <property name="text">
+      <string>Commit</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="revertButton">
+     <property name="text">
+      <string>Revert</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QToolButton" name="toolButton">

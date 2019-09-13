@@ -21,6 +21,8 @@ public:
 
     QMenu                      *menu                    (const QString &name);
 
+    Object                     *component               (const QString &name);
+
     Object                     *findChild               (QStringList &path);
 
     void                        setChanged              (Object *object, const QString &property);

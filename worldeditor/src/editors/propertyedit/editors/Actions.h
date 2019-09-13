@@ -4,6 +4,9 @@
 #include <QWidget>
 
 class QMenu;
+class Object;
+class Component;
+class Actor;
 
 namespace Ui {
     class Actions;
@@ -17,9 +20,15 @@ public:
     ~Actions ();
 
     void setMenu (QMenu *menu);
+    void setObject (Object *object);
+
+private slots:
+    void onDataChanged (int);
 
 private:
     Ui::Actions *ui;
+    Component *m_pComponent;
+    Actor *m_pActor;
 };
 
 #endif // ACTIONS_H
