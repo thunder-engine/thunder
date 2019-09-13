@@ -14,7 +14,7 @@ The main ideology of project is to create the modular engine to give developers 
 ![Screenshot of Thunder Engine](https://raw.githubusercontent.com/eprikazchikov/thunder/master/doc/media/ScreenShot01.png)
 
 #### Features
-- Cross-platform
+- Cross-platform (Windows, Linux, macOS, Android, iOS, tvOS)
 - Rendering System Based on Physical Principles
 - Scripts supported by AngelScipt engine
 - Module based architecture
