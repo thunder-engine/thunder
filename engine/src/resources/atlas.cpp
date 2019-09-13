@@ -111,8 +111,8 @@ Atlas::Atlas() :
         p_ptr(new AtlasPrivate) {
 
     p_ptr->m_pTexture  = Engine::objectCreate<Texture>("", this);
-    p_ptr->m_pTexture->resize(128, 128);
     p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
+    resize(1024, 1024);
 }
 
 Atlas::~Atlas() {

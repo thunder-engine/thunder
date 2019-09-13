@@ -128,7 +128,7 @@ const AABBox AABBox::operator*(const Vector3 &vector) const {
 */
 const AABBox AABBox::operator*(const Matrix4 &matrix) const {
     AABBox result;
-    result.center = center + Vector3(matrix[12], matrix[13], matrix[14]);
+    result.center = matrix * center;
     result.extent = (matrix.rotation() * extent).abs();
 
     return result;

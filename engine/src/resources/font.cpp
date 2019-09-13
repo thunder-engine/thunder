@@ -187,6 +187,7 @@ uint32_t Font::atlasIndex(uint32_t glyph) const {
 }
 
 void Font::requestCharacters(const u32string &characters) {
+    bool isNew = false;
     for(auto it : characters) {
         uint32_t ch = it;
         if(p_ptr->m_GlyphMap.find(ch) == p_ptr->m_GlyphMap.end() && p_ptr->m_pFace) {
@@ -225,11 +226,15 @@ void Font::requestCharacters(const u32string &characters) {
                     t->addSurface(s);
 
                     p_ptr->m_GlyphMap[ch] = addElement(t);
+
+                    isNew = true;
                 }
             }
         }
     }
-    pack(1);
+    if(isNew) {
+        pack(1);
+    }
 }
 
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {

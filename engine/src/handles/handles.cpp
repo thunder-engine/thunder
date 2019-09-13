@@ -175,8 +175,8 @@ void Handles::init() {
     if(s_Box == nullptr) {
         Mesh::Lod lod;
 
-        Vector3 min(-1);
-        Vector3 max( 1);
+        Vector3 min(-0.5);
+        Vector3 max( 0.5);
 
         lod.vertices = {
             Vector3(min.x, min.y, min.z),

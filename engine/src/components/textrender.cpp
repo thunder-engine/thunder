@@ -68,15 +68,16 @@ public:
                 uint32_t space = 0;
 
                 Vector3 bb[2];
+                bb[1].y = -m_Line;
                 for(uint32_t i = 0; i < length; i++) {
                     uint32_t ch = text[i];
                     switch(ch) {
                         case ' ': {
-                            pos = Vector3(pos.x + m_Space, pos.y, 0.0f);
+                            pos += Vector3(m_Space, 0.0f, 0.0f);
                             space = it;
                         } break;
                         case '\t': {
-                            pos = Vector3(pos.x + m_Space * 4, pos.y, 0.0f);
+                            pos += Vector3(m_Space * 4, 0.0f, 0.0f);
                             space = it;
                         } break;
                         case '\r': break;
@@ -142,7 +143,7 @@ public:
                 }
                 if(m_Wrap) {
                     bb[1].x = m_Boundaries.x;
-                    bb[1].y = m_Boundaries.y;
+                    bb[1].y = -m_Boundaries.y;
                 } else {
                     bb[1].x = MAX(bb[1].x, pos.x);
                     bb[1].y = MAX(bb[1].y, pos.y);
@@ -168,7 +169,9 @@ public:
                         lod.vertices[i].x += shift;
                     }
                 }
-                m_pMesh->setBound(AABBox(bb[0], bb[1]));
+                AABBox box;
+                box.setBox(bb[0], bb[1]);
+                m_pMesh->setBound(box);
                 m_pMesh->setMode(Mesh::MODE_TRIANGLES);
                 m_pMesh->setLod(0, lod);
             }
@@ -429,13 +432,8 @@ AABBox TextRender::bound() const {
 
 bool TextRender::drawHandles(bool selected) {
     A_UNUSED(selected);
-    Vector3Vector points = {Vector3(),
-                            Vector3(p_ptr->m_Boundaries.x, 0.0f, 0.0f),
-                            Vector3(p_ptr->m_Boundaries.x,-p_ptr->m_Boundaries.y, 0.0f),
-                            Vector3(0.0f,-p_ptr->m_Boundaries.y, 0.0f)};
-    Mesh::IndexVector indices = {0, 1, 1, 2, 2, 3, 3, 0};
-
-    Handles::drawLines(actor()->transform()->worldTransform(), points, indices);
+    AABBox box = bound();
+    Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
     return false;
 }
 #endif
