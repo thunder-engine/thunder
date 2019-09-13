@@ -205,18 +205,19 @@ void ContentTree::update(const QString &path) {
         QObject *parent = m_rootItem->findChild<QObject *>(info.absolutePath());
         if(parent) {
             QString source = info.absoluteFilePath();
-
-            QObject *item = new QObject(parent);
-            item->setObjectName(source);
-            if(!info.isDir()) {
-                int32_t type = instance->resourceType(source);
-                item->setProperty(qPrintable(gType), type);
-                QImage img = instance->icon(source);
-                if(!img.isNull()) {
-                    item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_Folder.width()) : img.scaledToHeight(m_Folder.height()));
+            if(parent->findChild<QObject *>(source) == nullptr) {
+                QObject *item = new QObject(parent);
+                item->setObjectName(source);
+                if(!info.isDir()) {
+                    int32_t type = instance->resourceType(source);
+                    item->setProperty(qPrintable(gType), type);
+                    QImage img = instance->icon(source);
+                    if(!img.isNull()) {
+                        item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_Folder.width()) : img.scaledToHeight(m_Folder.height()));
+                    }
+                } else {
+                    item->setProperty(qPrintable(gIcon), m_Folder);
                 }
-            } else {
-                item->setProperty(qPrintable(gIcon), m_Folder);
             }
         }
     }
