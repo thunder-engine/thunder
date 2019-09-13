@@ -86,6 +86,23 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
     return result;
 }
 
+void AssetList::onRendered(const QString &uuid) {
+    AssetManager *mgr = AssetManager::instance();
+    QString path    = mgr->guidToPath(uuid.toStdString()).c_str();
+    QObject *item   = m_rootItem->findChild<QObject *>(path);
+    if(item) {
+        item->setProperty(qPrintable(gType), mgr->resourceType(path));
+
+        QImage img = mgr->icon(path);
+        if(!img.isNull()) {
+            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height()));
+        }
+
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+    }
+}
+
 void AssetList::update() {
     foreach(QObject *it, m_rootItem->children()) {
         it->setParent(nullptr);

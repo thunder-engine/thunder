@@ -51,6 +51,8 @@ public:
     QString                     path                        (const QModelIndex &index) const;
 
 public slots:
+    void                        onRendered                  (const QString &uuid);
+
     void                        update                      (const QString &path);
 
     void                        clean                       (QObject *parent);

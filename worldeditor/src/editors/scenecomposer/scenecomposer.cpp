@@ -53,6 +53,7 @@
 #include "editors/propertyedit/nextobject.h"
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
+#include "editors/contentbrowser/contenttree.h"
 #include "editors/assetselect/assetlist.h"
 
 #define FPS         "FPS"
@@ -101,6 +102,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(handler, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
 
     connect(m_pQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
+    connect(m_pQueue, SIGNAL(rendered(QString)), ContentTree::instance(), SLOT(onRendered(QString)));
+    connect(m_pQueue, SIGNAL(rendered(QString)), AssetList::instance(), SLOT(onRendered(QString)));
 
     cmToolbars      = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);

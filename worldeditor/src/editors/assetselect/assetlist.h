@@ -32,6 +32,8 @@ public:
     QModelIndex                 findResource                (const QString &resource) const;
 
 public slots:
+    void                        onRendered                  (const QString &uuid);
+
     void                        update                      ();
 
 private:

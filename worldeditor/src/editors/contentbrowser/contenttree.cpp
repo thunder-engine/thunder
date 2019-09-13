@@ -187,6 +187,23 @@ QString ContentTree::path(const QModelIndex &index) const {
     return item->objectName();
 }
 
+void ContentTree::onRendered(const QString &uuid) {
+    AssetManager *mgr = AssetManager::instance();
+    QString path    = ProjectManager::instance()->contentPath() + "/" + mgr->guidToPath(uuid.toStdString()).c_str();
+    QObject *item   = m_rootItem->findChild<QObject *>(path);
+    if(item) {
+        item->setProperty(qPrintable(gType), mgr->resourceType(path));
+
+        QImage img = mgr->icon(path);
+        if(!img.isNull()) {
+            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_Folder.width()) : img.scaledToHeight(m_Folder.height()));
+        }
+
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+    }
+}
+
 void ContentTree::update(const QString &path) {
     QDir dir(ProjectManager::instance()->contentPath());
     m_pContent->setObjectName(dir.absolutePath());
