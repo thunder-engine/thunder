@@ -26,10 +26,9 @@ class SceneView : public QOpenGLWidget, public IPlatformAdaptor {
     Q_OBJECT
 public:
     SceneView               (QWidget *parent = nullptr);
+    ~SceneView              () override;
 
-    ~SceneView              ();
-
-    void                    setRender           (const QString &render);
+    void                    setEngine           (Engine *engine);
 
     void                    setScene            (Scene *scene);
     Scene                  *scene               ()              { return m_pScene; }
@@ -38,71 +37,73 @@ public:
     CameraCtrl             *controller          () const        { return m_pController; }
 
 public:
-    bool                    init                () { return true; }
+    bool                    init                () override { return true; }
 
-    void                    update              () {}
+    void                    update              () override {}
 
-    bool                    start               () { return true; }
+    bool                    start               () override { return true; }
 
-    void                    stop                () {}
+    void                    stop                () override {}
 
-    void                    destroy             () {}
+    void                    destroy             () override {}
 
-    bool                    isValid             () { return true; }
+    bool                    isValid             () override { return true; }
 
+    bool                    key                 (Input::KeyCode) override;
     bool                    keyPressed          (Input::KeyCode) override;
     bool                    keyReleased         (Input::KeyCode) override;
 
+    bool                    mouseButton         (Input::MouseButton) override;
     bool                    mousePressed        (Input::MouseButton) override;
     bool                    mouseReleased       (Input::MouseButton) override;
 
-    Vector4                 mousePosition       () {
+    Vector4                 mousePosition       () override {
         QPoint p    = mapFromGlobal(QCursor::pos());
-        return Vector4(p.x(), p.y(),
-                       (float)p.x() / width(), (float)p.y() / height());
+        return Vector4(p.x(),
+                       p.y(),
+                       static_cast<float>(p.x()) / width(),
+                       static_cast<float>(p.y()) / height());
     }
 
-    Vector4                 mouseDelta          () { return Vector4(); }
+    Vector4                 mouseDelta          () override { return Vector4(); }
 
-    uint32_t                mouseButtons        () { return m_MouseButtons; }
-
-    uint32_t                screenWidth         () { return width(); }
-
-    uint32_t                screenHeight        () { return height(); }
-
-    void                    setMousePosition    (int32_t x, int32_t y) {
+    void                    setMousePosition    (int32_t x, int32_t y) override {
         QCursor::setPos(mapToGlobal(QPoint(x, y)));
     }
 
-    uint32_t                joystickCount       () { return 0; }
+    uint32_t                screenWidth         () override { return width(); }
 
-    uint32_t                joystickButtons     (uint32_t) { return 0; }
+    uint32_t                screenHeight        () override { return height(); }
 
-    Vector4                 joystickThumbs      (uint32_t) { return Vector4(); }
+    uint32_t                joystickCount       () override { return 0; }
 
-    Vector2                 joystickTriggers    (uint32_t) { return Vector2(); }
+    uint32_t                joystickButtons     (uint32_t) override { return 0; }
 
-    void                   *pluginLoad          (const char *) { return nullptr; }
+    Vector4                 joystickThumbs      (uint32_t) override { return Vector4(); }
 
-    bool                    pluginUnload        (void *) { return false; }
+    Vector2                 joystickTriggers    (uint32_t) override { return Vector2(); }
 
-    void                   *pluginAddress       (void *, const string &) { return nullptr; }
+    void                   *pluginLoad          (const char *) override { return nullptr; }
 
-    string                  locationLocalDir    () { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
+    bool                    pluginUnload        (void *) override { return false; }
+
+    void                   *pluginAddress       (void *, const string &) override { return nullptr; }
+
+    string                  locationLocalDir    () override { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
 
 signals:
     void                    inited              ();
 
 protected:
-    void                    initializeGL        ();
-    void                    paintGL             ();
-    void                    resizeGL            (int width, int height);
+    void                    initializeGL        () override;
+    void                    paintGL             () override;
+    void                    resizeGL            (int width, int height) override;
 
-    void                    mousePressEvent     (QMouseEvent *);
-    void                    mouseReleaseEvent   (QMouseEvent *);
+    void                    mousePressEvent     (QMouseEvent *) override;
+    void                    mouseReleaseEvent   (QMouseEvent *) override;
 
-    void                    keyPressEvent       (QKeyEvent *);
-    void                    keyReleaseEvent     (QKeyEvent *);
+    void                    keyPressEvent       (QKeyEvent *) override;
+    void                    keyReleaseEvent     (QKeyEvent *) override;
 
 protected:
     virtual void            findCamera          ();
@@ -111,13 +112,13 @@ protected:
 
     Scene                  *m_pScene;
 
+    Engine                 *m_pEngine;
+
     QMenu                   m_RenderModeMenu;
 
-    int32_t                 m_MouseButtons;
-    int32_t                 m_LastMouseButtons;
+    unordered_map<int32_t, int32_t> m_Keys;
+    unordered_map<int32_t, int32_t> m_MouseButtons;
 
-    QList<int32_t>          m_Keys;
-    QList<int32_t>          m_LastKeys;
 };
 
 #endif // SCENEVIEW_H

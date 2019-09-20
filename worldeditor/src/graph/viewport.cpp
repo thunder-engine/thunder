@@ -23,7 +23,6 @@ Viewport::Viewport(QWidget *parent) :
         SceneView(parent),
         m_pCommandBuffer(nullptr)  {
 
-    setFocusPolicy(Qt::StrongFocus);
     setAcceptDrops(true);
     //setContextMenuPolicy(Qt::CustomContextMenu);
     setAutoFillBackground(false);

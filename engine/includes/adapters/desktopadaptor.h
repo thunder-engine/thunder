@@ -1,5 +1,5 @@
-#ifndef DESKTOPAADAPTOR_H
-#define DESKTOPAADAPTOR_H
+#ifndef DESKTOPADAPTOR_H
+#define DESKTOPADAPTOR_H
 
 #include "iplatformadaptor.h"
 
@@ -24,6 +24,7 @@ public:
 
     bool                        isValid                     ();
 
+    bool                        key                         (Input::KeyCode code);
     bool                        keyPressed                  (Input::KeyCode code);
     bool                        keyReleased                 (Input::KeyCode code);
 
@@ -31,8 +32,7 @@ public:
 
     Vector4                     mouseDelta                  ();
 
-    uint32_t                    mouseButtons                ();
-
+    bool                        mouseButton                 (Input::MouseButton button);
     bool                        mousePressed                (Input::MouseButton button);
     bool                        mouseReleased               (Input::MouseButton button);
 
@@ -61,6 +61,10 @@ public:
     void                        syncConfiguration           (VariantMap &map) const;
 
 protected:
+    static void                 keyCallback                 (GLFWwindow *, int, int, int, int);
+
+    static void                 buttonCallback              (GLFWwindow*,int, int, int);
+
     static void                 scrollCallback              (GLFWwindow *, double, double yoffset);
 
     static void                 cursorPositionCallback      (GLFWwindow *, double xpos, double ypos);
@@ -69,14 +73,9 @@ protected:
 
 protected:
     GLFWwindow                 *m_pWindow;
-
     GLFWmonitor                *m_pMonitor;
 
-    uint8_t                     m_MouseButtons;
-    uint8_t                     m_LastMouseButtons;
-
     static Vector4              s_MousePosition;
-
     static Vector4              s_OldMousePosition;
 
     static int32_t              s_Width;
@@ -84,4 +83,4 @@ protected:
     static bool                 s_Windowed;
 };
 
-#endif // DESKTOPAADAPTOR_H
+#endif // DESKTOPADAPTOR_H

@@ -10,14 +10,14 @@ class IPlatformAdaptor;
 class NEXT_LIBRARY_EXPORT Input {
 public:
     enum MouseButton {
-        LEFT                = 0x01,
-        RIGHT               = 0x02,
-        MIDDLE              = 0x04,
-        BUTTON0             = 0x08,
-        BUTTON1             = 0x10,
-        BUTTON2             = 0x20,
-        BUTTON3             = 0x40,
-        BUTTON4             = 0x80
+        LEFT                = 0,
+        RIGHT,
+        MIDDLE,
+        BUTTON0,
+        BUTTON1,
+        BUTTON2,
+        BUTTON3,
+        BUTTON4
     };
 
     enum JoystickButton {
@@ -170,18 +170,16 @@ public:
 public:
     static void                 init                        (IPlatformAdaptor *platform);
 
+    static bool                 isKey                       (KeyCode code);
     static bool                 isKeyDown                   (KeyCode code);
     static bool                 isKeyUp                     (KeyCode code);
 
-    static Vector4              mousePosition               ();
-
-    static Vector4              mouseDelta                  ();
-
-    static uint32_t             mouseButtons                ();
-
+    static bool                 isMouseButton               (MouseButton button);
     static bool                 isMouseButtonDown           (MouseButton button);
     static bool                 isMouseButtonUp             (MouseButton button);
 
+    static Vector4              mousePosition               ();
+    static Vector4              mouseDelta                  ();
     static void                 setMousePosition            (int32_t x, int32_t y);
 
     static uint32_t             joystickCount               ();

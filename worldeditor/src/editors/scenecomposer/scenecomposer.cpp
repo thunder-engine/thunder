@@ -112,6 +112,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->viewport->setScene(m_pEngine->scene());
 
     ui->preview->setController(new CameraCtrl(ui->preview));
+    ui->preview->setEngine(m_pEngine);
     ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
 
@@ -240,8 +241,6 @@ SceneComposer::~SceneComposer() {
 
 void SceneComposer::timerEvent(QTimerEvent *) {
     Timer::update();
-    m_pEngine->processEvents();
-    m_pEngine->updateScene(ui->preview->scene());
 
     ui->viewport->repaint();
     ui->preview->repaint();

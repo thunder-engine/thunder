@@ -19,18 +19,27 @@
 
 #include "pluginmodel.h"
 
+#define NONE 0
+#define RELEASE 1
+#define PRESS 2
+#define REPEAT 3
+
 SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
         m_pController(nullptr),
         m_pScene(nullptr),
-        m_MouseButtons(0),
-        m_LastMouseButtons(0) {
+        m_pEngine(nullptr) {
 
     setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 SceneView::~SceneView() {
 
+}
+
+void SceneView::setEngine(Engine *engine) {
+    m_pEngine = engine;
 }
 
 void SceneView::setScene(Scene *scene) {
@@ -56,10 +65,29 @@ void SceneView::paintGL() {
     if(m_pScene) {
         findCamera();
 
-        m_LastKeys = m_Keys;
-        m_LastMouseButtons = m_MouseButtons;
+        if(m_pEngine) {
+            m_pEngine->processEvents();
+        }
 
         PluginModel::instance()->updateSystems(m_pScene);
+
+        if(m_pEngine) {
+            for(auto &it : m_Keys) {
+                switch(it.second) {
+                    case RELEASE: it.second = NONE; break;
+                    case PRESS: it.second = REPEAT; break;
+                    default: break;
+                }
+            }
+
+            for(auto &it : m_MouseButtons) {
+                switch(it.second) {
+                    case RELEASE: it.second = NONE; break;
+                    case PRESS: it.second = REPEAT; break;
+                    default: break;
+                }
+            }
+        }
     }
 }
 
@@ -76,16 +104,8 @@ void SceneView::resizeGL(int width, int height) {
     }
 }
 
-void SceneView::mousePressEvent(QMouseEvent *ev) {
-    m_MouseButtons  = ev->buttons();
-}
-
-void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
-    m_MouseButtons  = ev->buttons();
-}
-
-int32_t mapToInput(uint32_t key) {
-    int32_t result = Input::KEY_UNKNOWN;
+Input::KeyCode mapToInput(int32_t key) {
+    Input::KeyCode result = Input::KEY_UNKNOWN;
 
     switch(key) {
     case Qt::Key_Space: result = Input::KEY_SPACE; break;
@@ -214,30 +234,70 @@ int32_t mapToInput(uint32_t key) {
     return result;
 }
 
+bool SceneView::key(Input::KeyCode code) {
+    return (m_Keys[code] > RELEASE);
+}
+
 bool SceneView::keyPressed(Input::KeyCode code) {
-    return (m_Keys.indexOf(code) != -1);
+    return (m_Keys[code] == PRESS);
 }
 
 bool SceneView::keyReleased(Input::KeyCode code) {
-    return (m_LastKeys.indexOf(code) != -1) && (m_Keys.indexOf(code) == -1);
+    return (m_Keys[code] == RELEASE);
+}
+
+bool SceneView::mouseButton(Input::MouseButton button) {
+    return (m_MouseButtons[button] > RELEASE);
 }
 
 bool SceneView::mousePressed(Input::MouseButton button) {
-    return (m_MouseButtons & button);
+    return (m_MouseButtons[button] == PRESS);
 }
 
 bool SceneView::mouseReleased(Input::MouseButton button) {
-    return (m_LastMouseButtons & button && !(m_MouseButtons & button));
+    return (m_MouseButtons[button] == RELEASE);
+}
+
+void SceneView::mousePressEvent(QMouseEvent *ev) {
+    Input::MouseButton btn = Input::LEFT;
+    switch(ev->button()) {
+        case Qt::LeftButton: btn = Input::LEFT; break;
+        case Qt::RightButton: btn = Input::RIGHT; break;
+        case Qt::MiddleButton: btn = Input::MIDDLE; break;
+        case Qt::ExtraButton1: btn = Input::BUTTON0; break;
+        case Qt::ExtraButton2: btn = Input::BUTTON1; break;
+        case Qt::ExtraButton3: btn = Input::BUTTON2; break;
+        case Qt::ExtraButton4: btn = Input::BUTTON3; break;
+        case Qt::ExtraButton5: btn = Input::BUTTON4; break;
+        default: break;
+    }
+    m_MouseButtons[btn] = PRESS;
+}
+
+void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
+    Input::MouseButton btn = Input::LEFT;
+    switch(ev->button()) {
+        case Qt::LeftButton: btn = Input::LEFT; break;
+        case Qt::RightButton: btn = Input::RIGHT; break;
+        case Qt::MiddleButton: btn = Input::MIDDLE; break;
+        case Qt::ExtraButton1: btn = Input::BUTTON0; break;
+        case Qt::ExtraButton2: btn = Input::BUTTON1; break;
+        case Qt::ExtraButton3: btn = Input::BUTTON2; break;
+        case Qt::ExtraButton4: btn = Input::BUTTON3; break;
+        case Qt::ExtraButton5: btn = Input::BUTTON4; break;
+        default: break;
+    }
+    m_MouseButtons[btn] = RELEASE;
 }
 
 void SceneView::keyPressEvent(QKeyEvent *ev) {
-    m_Keys.push_back(mapToInput(ev->key()));
     QOpenGLWidget::keyPressEvent(ev);
+    m_Keys[mapToInput(ev->key())] = ev->isAutoRepeat() ? REPEAT : PRESS;
 }
 
 void SceneView::keyReleaseEvent(QKeyEvent *ev) {
-    m_Keys.removeAll(mapToInput(ev->key()));
     QOpenGLWidget::keyReleaseEvent(ev);
+    m_Keys[mapToInput(ev->key())] = RELEASE;
 }
 
 void SceneView::findCamera() {
@@ -252,4 +312,3 @@ void SceneView::findCamera() {
         Camera::setCurrent(camera);
     }
 }
-

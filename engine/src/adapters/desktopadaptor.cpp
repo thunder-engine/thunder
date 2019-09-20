@@ -25,6 +25,11 @@
 #define SCREEN_HEIGHT "screen.height"
 #define SCREEN_WINDOWED "screen.windowed"
 
+#define NONE 0
+#define RELEASE 1
+#define PRESS 2
+#define REPEAT 3
+
 Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
 Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
 int32_t DesktopAdaptor::s_Width     = 0;
@@ -35,6 +40,9 @@ static Engine *g_pEngine = nullptr;
 static IFile *g_pFile = nullptr;
 
 static string gAppConfig;
+
+static unordered_map<int32_t, int32_t> s_Keys;
+static unordered_map<int32_t, int32_t> s_MouseButtons;
 
 class DesktopHandler : public ILogHandler {
 protected:
@@ -48,14 +56,12 @@ protected:
         }
     }
 
-    mutex           m_Mutex;
+    mutex m_Mutex;
 };
 
 DesktopAdaptor::DesktopAdaptor(Engine *engine) :
         m_pWindow(nullptr),
-        m_pMonitor(nullptr),
-        m_MouseButtons(0),
-        m_LastMouseButtons(0) {
+        m_pMonitor(nullptr) {
     g_pEngine   = engine;
 
 }
@@ -79,15 +85,24 @@ bool DesktopAdaptor::init() {
 
 void DesktopAdaptor::update() {
     glfwSwapBuffers(m_pWindow);
-    glfwPollEvents();
 
-    m_LastMouseButtons = m_MouseButtons;
-    m_MouseButtons  = 0;
-    for(uint8_t i = 0; i < 8; i++) {
-        if(glfwGetMouseButton(m_pWindow, i)) {
-            m_MouseButtons  |= (1<<i);
+    for(auto &it : s_Keys) {
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
         }
     }
+
+    for(auto &it : s_MouseButtons) {
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
+        }
+    }
+
+    glfwPollEvents();
 }
 
 bool DesktopAdaptor::start() {
@@ -155,6 +170,8 @@ bool DesktopAdaptor::start() {
         stop();
         return false;
     }
+    glfwSetKeyCallback(m_pWindow, keyCallback);
+    glfwSetMouseButtonCallback(m_pWindow, buttonCallback);
     glfwSetScrollCallback(m_pWindow, scrollCallback);
     glfwSetCursorPosCallback(m_pWindow, cursorPositionCallback);
 
@@ -175,12 +192,16 @@ bool DesktopAdaptor::isValid() {
     return !glfwWindowShouldClose(m_pWindow);
 }
 
-bool DesktopAdaptor::keyPressed(Input::KeyCode code) {
+bool DesktopAdaptor::key(Input::KeyCode code) {
     return (glfwGetKey(m_pWindow, code) == GLFW_PRESS);
 }
 
+bool DesktopAdaptor::keyPressed(Input::KeyCode code) {
+    return (s_Keys[code] == PRESS);
+}
+
 bool DesktopAdaptor::keyReleased(Input::KeyCode code) {
-    return (glfwGetKey(m_pWindow, code) == GLFW_RELEASE);
+    return (s_Keys[code] == RELEASE);
 }
 
 Vector4 DesktopAdaptor::mousePosition() {
@@ -191,16 +212,16 @@ Vector4 DesktopAdaptor::mouseDelta() {
     return s_MousePosition - s_OldMousePosition;
 }
 
-uint32_t DesktopAdaptor::mouseButtons() {
-    return m_MouseButtons;
+bool DesktopAdaptor::mouseButton(Input::MouseButton button) {
+    return (glfwGetMouseButton(m_pWindow, button) == GLFW_PRESS);
 }
 
 bool DesktopAdaptor::mousePressed(Input::MouseButton button) {
-    return (m_MouseButtons & button);
+    return (s_MouseButtons[button] == PRESS);
 }
 
 bool DesktopAdaptor::mouseReleased(Input::MouseButton button) {
-    return (m_LastMouseButtons & button && !(m_MouseButtons & button));
+    return (s_MouseButtons[button] == RELEASE);
 }
 
 uint32_t DesktopAdaptor::screenWidth() {
@@ -277,6 +298,14 @@ void *DesktopAdaptor::pluginAddress(void *plugin, const string &name) {
 #elif(__GNUC__)
     return dlsym(plugin, name.c_str());
 #endif
+}
+
+void DesktopAdaptor::keyCallback(GLFWwindow *, int code, int, int action, int) {
+    s_Keys[static_cast<Input::KeyCode>(code)] = action;
+}
+
+void DesktopAdaptor::buttonCallback(GLFWwindow *,int button, int action, int) {
+    s_MouseButtons[static_cast<Input::MouseButton>(button)] = action;
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {

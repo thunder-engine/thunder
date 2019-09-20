@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
     //format.setRenderableType(QSurfaceFormat::OpenGLES);
     QSurfaceFormat::setDefaultFormat(format);
 
+    QApplication::setKeyboardInputInterval(1);
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication a(argc, argv);
 

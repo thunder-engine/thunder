@@ -29,11 +29,18 @@ void Input::init(IPlatformAdaptor *platform) {
     Returns true in case of a key with \a code is pressed; otherwise returns false.
     Please refer to Input::KeyCode to see possible key codes.
 */
+bool Input::isKey(KeyCode code) {
+    return s_pPlatform->key(code);
+}
+/*!
+    Returns true during the frame in case of a key with \a code is pressed; otherwise returns false.
+    Please refer to Input::KeyCode to see possible key codes.
+*/
 bool Input::isKeyDown(KeyCode code) {
     return s_pPlatform->keyPressed(code);
 }
 /*!
-    Returns true in case of a key with \a code is released; otherwise returns false.
+    Returns true during the frame in case of a key with \a code is released; otherwise returns false.
     Please refer to Input::KeyCode to see possible key codes.
 */
 bool Input::isKeyUp(KeyCode code) {
@@ -61,17 +68,15 @@ Vector4 Input::mouseDelta() {
 /*!
     Returns the states of mouse buttons.
     Please refer to Input::MouseButton to see possible buttons.
-    \note This method returns a bit masked value. To retrieve the state of the required button please make bit comparison.
-
     Example code:
     \code
-        if(Input::mouseButtons() & Input::LEFT) {
+        if(Input::isMouseButton(Input::LEFT)) {
             ...
         }
     \endcode
 */
-uint32_t Input::mouseButtons() {
-    return s_pPlatform->mouseButtons();
+bool Input::isMouseButton(MouseButton button) {
+    return s_pPlatform->mouseButton(button);
 }
 /*!
     Returns true in case of the \a button is pressed; otherwise returns false.
@@ -87,7 +92,6 @@ bool Input::isMouseButtonDown(MouseButton button) {
 bool Input::isMouseButtonUp(MouseButton button) {
     return s_pPlatform->mouseReleased(button);
 }
-
 /*!
     Moves the mouse cursor to the global screen position (\a x, \a y).
 */

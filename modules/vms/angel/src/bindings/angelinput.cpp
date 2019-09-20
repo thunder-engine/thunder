@@ -7,16 +7,17 @@
 void registerInput(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("Input");
 
+    engine->RegisterGlobalFunction("bool isKey(int)", asFUNCTION(Input::isKey), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isKeyDown(int)", asFUNCTION(Input::isKeyDown), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isKeyUp(int)", asFUNCTION(Input::isKeyUp), asCALL_CDECL);
 
+    engine->RegisterGlobalFunction("bool isMouseButton()", asFUNCTION(Input::isMouseButton), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isMouseButtonDown(int)", asFUNCTION(Input::isMouseButtonDown), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isMouseButtonUp(int)", asFUNCTION(Input::isMouseButtonUp), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Vector4 mousePosition()", asFUNCTION(Input::mousePosition), asCALL_CDECL);
     engine->RegisterGlobalFunction("Vector4 mouseDelta()", asFUNCTION(Input::mouseDelta), asCALL_CDECL);
     engine->RegisterGlobalFunction("void setMousePosition(int, int)", asFUNCTION(Input::setMousePosition), asCALL_CDECL);
-    engine->RegisterGlobalFunction("int mouseButtons()", asFUNCTION(Input::mouseButtons), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("int joystickCount()", asFUNCTION(Input::joystickCount), asCALL_CDECL);
     engine->RegisterGlobalFunction("int joystickButtons(int)", asFUNCTION(Input::joystickButtons), asCALL_CDECL);

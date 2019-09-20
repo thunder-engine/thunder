@@ -95,7 +95,7 @@ void IBuilder::generateLoader(const QString &dst) {
         m_Values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n\t\t");
     }
     includes.removeDuplicates();
-    m_Values[gIncludes].append(includes.join(""));
+    m_Values[gIncludes] = includes.join("");
 
     copyTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_Values);
     copyTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
