@@ -18,6 +18,7 @@ Project {
         condition: syntaxhighlighting.desktop
         files: syntaxhighlighting.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         Depends { name: "Qt"; submodules: ["core", "gui", "network"]; }
         bundle.isBundle: false
 

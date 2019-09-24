@@ -60,26 +60,21 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
+                var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
+                            "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
+                            "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2",
+                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg"]
                 if(qbs.targetOS.contains("linux")) {
-                    libPostfix += "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch
+                    for(var it in libs) {
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor)
+                    }
+                } else {
+                    for(var it in libs) {
+                        list.push(libPrefix + libs[it] + libPostfix)
+                    }
                 }
-
-                list.push(
-                    libPrefix + "Qt5Core" + libPostfix,
-                    libPrefix + "Qt5Gui" + libPostfix,
-                    libPrefix + "Qt5Widgets" + libPostfix,
-                    libPrefix + "Qt5Script" + libPostfix,
-                    libPrefix + "Qt5Xml" + libPostfix,
-                    libPrefix + "Qt5XmlPatterns" + libPostfix,
-                    libPrefix + "Qt5Network" + libPostfix,
-                    libPrefix + "Qt5Multimedia" + libPostfix,
-                    libPrefix + "Qt5QuickWidgets" + libPostfix,
-                    libPrefix + "Qt5Quick" + libPostfix,
-                    libPrefix + "Qt5QuickTemplates2" + libPostfix,
-                    libPrefix + "Qt5QuickControls2" + libPostfix,
-                    libPrefix + "Qt5Qml" + libPostfix,
-                    libPrefix + "Qt5Svg" + libPostfix
-                );
             } else {
                 list.push("**/QtCore.framework/**");
                 list.push("**/QtGui.framework/**");
@@ -155,7 +150,7 @@ Product {
 
     Group {
         name: "Qt config"
-        condition: qbs.targetOS.contains("windows")
+        condition: qbs.targetOS.contains("windows") || qbs.targetOS.contains("linux")
         files: [
             install.RESOURCE_ROOT + "/qt.conf"
         ]
