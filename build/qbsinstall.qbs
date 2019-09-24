@@ -75,21 +75,31 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux")) ? "lib" : ""
                 var libPostfix = cpp.dynamicLibrarySuffix
-                if(qbs.targetOS.contains("linux")) {
-                    libPostfix += "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch
-                }
 
-                list.push(
-                    libPrefix + "Qt5Core" + libPostfix,
-                    libPrefix + "Qt5Script" + libPostfix,
-                    libPrefix + "Qt5Xml" + libPostfix,
-                    libPrefix + "Qt5Network" + libPostfix
-                )
+                var libs = ["Qt5Core", "Qt5Script", "Qt5Xml", "Qt5Network"]
+                if(qbs.targetOS.contains("linux")) {
+                    for(var it in libs) {
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor)
+                    }
+                } else {
+                    for(var it in libs) {
+                        list.push(libPrefix + libs[it] + libPostfix)
+                    }
+                }
             }
             return list
         }
         qbs.install: qbsinstall.desktop
-        qbs.installDir: qbsinstall.qbsPath + "/bin"
+        qbs.installDir: {
+            var dir = "/bin"
+            if(qbs.targetOS.contains("linux")) {
+                dir = "/lib"
+            }
+
+            return qbsinstall.qbsPath + dir
+        }
         qbs.installPrefix: qbsinstall.PREFIX
         qbs.installSourceBase: prefix
     }
