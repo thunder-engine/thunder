@@ -56,7 +56,7 @@ Project {
             name: "Install Dynamic Vorbis"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: vorbis.BIN_PATH + "/" + vorbis.bundle
+            qbs.installDir: vorbis.LIB_PATH + "/" + vorbis.bundle
             qbs.installPrefix: vorbis.PREFIX
         }
     }
@@ -77,7 +77,7 @@ Project {
             condition: vorbis.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: vorbis.STATIC_PATH
             qbs.installPrefix: vorbis.PREFIX
         }
     }
@@ -107,7 +107,7 @@ Project {
             name: "Install Dynamic VorbisFile"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: vorbis.BIN_PATH + "/" + vorbis.bundle
+            qbs.installDir: vorbis.LIB_PATH + "/" + vorbis.bundle
             qbs.installPrefix: vorbis.PREFIX
         }
     }
@@ -129,7 +129,7 @@ Project {
             condition: vorbis.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: vorbis.STATIC_PATH
             qbs.installPrefix: vorbis.PREFIX
         }
     }

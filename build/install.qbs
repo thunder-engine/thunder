@@ -21,6 +21,9 @@ Product {
         return ".so";
     }
 
+    property string QTPLUGINS_PATH: install.PLATFORM_PATH + "/" + install.bundle + "/plugins"
+    property string QML_PATH: install.PLATFORM_PATH + "/" + install.bundle + "/qml"
+
     property var pluginFiles: {
         var files = []
         if(qbs.targetOS.contains("windows")) {
@@ -63,7 +66,7 @@ Product {
                 var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
                             "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
                             "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2",
-                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg"]
+                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets"]
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
@@ -96,7 +99,14 @@ Product {
             return list
         }
         qbs.install: install.desktop
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle + (qbs.targetOS.contains("darwin") ? "../Frameworks/" : "")
+        qbs.installDir: {
+            if(qbs.targetOS.contains("darwin")) {
+                return install.BIN_PATH + "/" + install.bundle + "../Frameworks/"
+            } else if(qbs.targetOS.contains("windows")) {
+                return install.BIN_PATH + "/" + install.bundle
+            }
+            return install.LIB_PATH
+        }
         qbs.installPrefix: install.PREFIX
 
         excludeFiles: [
@@ -114,7 +124,7 @@ Product {
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/imageformats"
+        qbs.installDir: install.QTPLUGINS_PATH + "/imageformats"
         qbs.installPrefix: install.PREFIX
     }
 
@@ -124,7 +134,18 @@ Product {
         files: pluginFiles
         excludeFiles: pluginExcludeFiles
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/platforms"
+        qbs.installDir: install.QTPLUGINS_PATH + "/platforms"
+        qbs.installPrefix: install.PREFIX
+    }
+
+    Group {
+        name: "Qt XCB Integrations Plugins"
+        condition: qbs.targetOS.contains("linux")
+        prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/xcbglintegrations/")
+        files: pluginFiles
+        excludeFiles: pluginExcludeFiles
+        qbs.install: true
+        qbs.installDir: install.QTPLUGINS_PATH + "/xcbglintegrations"
         qbs.installPrefix: install.PREFIX
     }
 
@@ -143,23 +164,23 @@ Product {
         ]
         excludeFiles: pluginExcludeFiles
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle + "/qml"
+        qbs.installDir: install.QML_PATH
         qbs.installPrefix: install.PREFIX
         qbs.installSourceBase: prefix
     }
 
-    Group {
-        name: "Qt config"
-        condition: qbs.targetOS.contains("windows") || qbs.targetOS.contains("linux")
-        files: [
-            install.RESOURCE_ROOT + "/qt.conf"
-        ]
-        excludeFiles: pluginExcludeFiles
-        qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-        qbs.installSourceBase: prefix
-    }
+    //Group {
+    //    name: "Qt config"
+    //    condition: qbs.targetOS.contains("windows")
+    //    files: [
+    //        install.RESOURCE_ROOT + "/qt.conf"
+    //    ]
+    //    excludeFiles: pluginExcludeFiles
+    //    qbs.install: true
+    //    qbs.installDir: install.BIN_PATH + "/" + install.bundle
+    //    qbs.installPrefix: install.PREFIX
+    //    qbs.installSourceBase: prefix
+    //}
 
     Group {
         name: "Runtime DLLs"

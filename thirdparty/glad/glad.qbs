@@ -25,7 +25,7 @@ Project {
             name: "Install Static GLAD"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: glad.LIB_PATH
+            qbs.installDir: glad.STATIC_PATH
             qbs.installPrefix: glad.PREFIX
         }
     }

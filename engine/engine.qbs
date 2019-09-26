@@ -88,7 +88,7 @@ Project {
             name: "Install Dynamic Engine"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: engine.BIN_PATH + "/" + engine.bundle
+            qbs.installDir: engine.LIB_PATH + "/" + engine.bundle
             qbs.installPrefix: engine.PREFIX
         }
     }
@@ -138,7 +138,7 @@ Project {
             name: "Install Static Engine"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: engine.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: engine.STATIC_PATH
             qbs.installPrefix: engine.PREFIX
         }
     }

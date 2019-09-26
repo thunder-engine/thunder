@@ -72,7 +72,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: freetype.BIN_PATH + "/" + freetype.bundle
+            qbs.installDir: freetype.LIB_PATH + "/" + freetype.bundle
             qbs.installPrefix: freetype.PREFIX
         }
 
@@ -98,7 +98,7 @@ Project {
             name: "Install Static Freetype"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: freetype.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: freetype.STATIC_PATH
             qbs.installPrefix: freetype.PREFIX
         }
     }

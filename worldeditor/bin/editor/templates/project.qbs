@@ -63,7 +63,7 @@ Project {
         cpp.cxxStandardLibrary: "libc++"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            project.sdkPath + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
         ]
 
         cpp.staticLibraries: [

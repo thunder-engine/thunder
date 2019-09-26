@@ -97,7 +97,7 @@ Project {
             name: "Install Static RenderGL"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: rendergl.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: rendergl.STATIC_PATH
             qbs.installPrefix: rendergl.PREFIX
         }
     }

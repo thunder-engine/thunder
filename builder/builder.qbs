@@ -52,7 +52,7 @@ Project {
         bundle.isBundle: false
 
         cpp.defines: {
-            var result  = builder.defines
+            var result = builder.defines
             result.push("NEXT_SHARED")
             result.push("BUILDER")
             return result
@@ -70,7 +70,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("linux")
-            cpp.rpaths: "$ORIGIN"
+            cpp.rpaths: "$ORIGIN/../lib"
         }
 
         Properties {

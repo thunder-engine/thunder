@@ -38,7 +38,7 @@ Project {
             name: "Install Dynamic zLib"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: quazip.BIN_PATH + "/" + quazip.bundle
+            qbs.installDir: quazip.LIB_PATH + "/" + quazip.bundle
             qbs.installPrefix: quazip.PREFIX
         }
     }

@@ -34,7 +34,7 @@ Project {
             name: "Install Dynamic Ogg"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: ogg.BIN_PATH + "/" + ogg.bundle
+            qbs.installDir: ogg.LIB_PATH + "/" + ogg.bundle
             qbs.installPrefix: ogg.PREFIX
         }
     }
@@ -54,7 +54,7 @@ Project {
             condition: ogg.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: ogg.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/lib"
+            qbs.installDir: ogg.STATIC_PATH
             qbs.installPrefix: ogg.PREFIX
         }
     }

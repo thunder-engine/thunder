@@ -60,7 +60,8 @@ Project {
     property string SDK_PATH: "sdk/" + probe.SDK_VERSION
     property string PLATFORM_PATH: SDK_PATH + "/" + PLATFORM
     property string BIN_PATH: PLATFORM_PATH + "/bin"
-    property string LIB_PATH: PLATFORM_PATH + "/lib"
+    property string LIB_PATH: (qbs.targetOS[0] === "linux") ? PLATFORM_PATH + "/lib" : BIN_PATH
+    property string STATIC_PATH: PLATFORM_PATH + "/static"
     property string INC_PATH: SDK_PATH + "/include"
     property string TOOLS_PATH: SDK_PATH + "/tools"
     property string PLUGINS_PATH: BIN_PATH + "/plugins"
