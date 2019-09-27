@@ -658,7 +658,7 @@ void SceneComposer::saveWorkspace() {
 void SceneComposer::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant windows = settings.value(WINDOWS);
-    m_CurrentWorkspace = settings.value(WORKSPACE).toString();
+    m_CurrentWorkspace = settings.value(WORKSPACE, m_CurrentWorkspace).toString();
     restoreGeometry(settings.value(GEOMETRY).toByteArray());
     if(!windows.isValid()) {
         on_actionReset_Workspace_triggered();
