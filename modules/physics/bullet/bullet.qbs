@@ -104,7 +104,7 @@ Project {
             name: "Install Static bullet"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: bullet.STATIC_PATH
+            qbs.installDir:  bullet.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: bullet.PREFIX
         }
     }

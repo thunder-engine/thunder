@@ -49,7 +49,7 @@ Project {
             name: "Install Static glfm"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: glfm.STATIC_PATH
+            qbs.installDir: glfm.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: glfm.PREFIX
         }
     }

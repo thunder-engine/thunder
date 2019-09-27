@@ -71,7 +71,7 @@ Project {
             name: "Install Static angelscript"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: angelscript.STATIC_PATH
+            qbs.installDir:  angelscript.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: angelscript.PREFIX
         }
     }

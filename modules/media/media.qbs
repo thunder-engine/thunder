@@ -110,7 +110,7 @@ Project {
             name: "Install Static media"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: media.STATIC_PATH
+            qbs.installDir: media.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: media.PREFIX
         }
     }

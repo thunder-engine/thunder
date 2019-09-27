@@ -77,7 +77,7 @@ Project {
             condition: vorbis.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: vorbis.STATIC_PATH
+            qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: vorbis.PREFIX
         }
     }
@@ -129,7 +129,7 @@ Project {
             condition: vorbis.desktop
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: vorbis.STATIC_PATH
+            qbs.installDir: vorbis.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
             qbs.installPrefix: vorbis.PREFIX
         }
     }
