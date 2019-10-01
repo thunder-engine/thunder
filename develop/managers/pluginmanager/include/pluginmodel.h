@@ -43,6 +43,8 @@ public:
 
     void                        updateSystems               (Scene *scene);
 
+    void                        updateRender                (Scene *scene);
+
     void                        addScene                    (Scene *scene);
 
 signals:
@@ -89,6 +91,8 @@ private:
     LibrariesMap                m_Libraries;
 
     QList<Scene *>              m_Scenes;
+
+    ISystem *                   m_pRender;
 };
 
 #endif // PLUGINMODEL_H

@@ -34,7 +34,14 @@ void Viewport::initializeGL() {
 }
 
 void Viewport::paintGL() {
-    SceneView::paintGL();
+    if(m_pController) {
+        m_pController->update();
+    }
+    if(m_pScene) {
+        findCamera();
+
+        PluginModel::instance()->updateRender(m_pScene);
+    }
 
     if(m_pController) {
         m_pController->drawHandles(m_pCommandBuffer);

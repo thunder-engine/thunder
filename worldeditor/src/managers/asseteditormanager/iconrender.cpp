@@ -141,8 +141,8 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
     }
 
     Camera::setCurrent(m_pCamera);
-    PluginModel::instance()->updateSystems(m_pScene);
-    PluginModel::instance()->updateSystems(m_pScene);
+    PluginModel::instance()->updateRender(m_pScene);
+    PluginModel::instance()->updateRender(m_pScene);
 
     m_Context->functions()->glFinish();
 

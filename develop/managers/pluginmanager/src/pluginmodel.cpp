@@ -42,7 +42,8 @@ PluginModel *PluginModel::m_pInstance   = nullptr;
 
 PluginModel::PluginModel() :
         BaseObjectModel(),
-        m_pEngine(nullptr) {
+        m_pEngine(nullptr),
+        m_pRender(nullptr) {
 
     m_Suffixes = QStringList() << "*.dll" << "*.dylib" << "*.so";
 
@@ -268,6 +269,9 @@ void PluginModel::rescanPath(const QString &path) {
 void PluginModel::registerSystem(IModule *plugin) {
     ISystem *system = plugin->system();
     m_Systems[QString::fromStdString(system->name())] = system;
+    if(QString(system->name()) == "RenderGL") {
+        m_pRender = system;
+    }
 }
 
 void PluginModel::initSystems() {
@@ -284,6 +288,13 @@ void PluginModel::updateSystems(Scene *scene) {
             it->setActiveScene(scene);
             it->processEvents();
         }
+    }
+}
+
+void PluginModel::updateRender(Scene *scene) {
+    if(m_pRender) {
+        m_pRender->setActiveScene(scene);
+        m_pRender->processEvents();
     }
 }
 
@@ -321,7 +332,6 @@ void PluginModel::serializeComponents(const StringList &list, ComponentMap &map)
             }
         }
     }
-
 }
 
 void PluginModel::deserializeComponents(const ComponentMap &map) {
