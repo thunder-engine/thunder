@@ -20,6 +20,7 @@ Project {
         condition: !glfm.desktop
         files: glfm.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "bundle" }
         bundle.isBundle: false
 
         cpp.defines: [ ]

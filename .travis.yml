@@ -2,9 +2,10 @@ sudo: required
 
 env:
   global:
-    - VERSION="2019.3"
+    - VERSION="2019.4"
     - BUILD="${VERSION}.${TRAVIS_BUILD_NUMBER}"
-    - QBS_VERSION="1.12.2"
+    - QT_VERSION="5.12.4"
+    - QBS_VERSION="4.9.2"
     - secure: "BU6qOLe+/3SunZygJZO98o/SgUn4EgRHPu95hbXtGwJeAjJX57BtivSOVjdIX+EHEuAybgtbY6ckVHfx0n8zDNTHfyotLbyWK8XKW91AVk882/rLNMDLKIJ1o396dWLZ0nIlE4uAn8M8YNHBChnkkeIKTxH0+OwS2jRpxNTD3Z5KPS8AKuqzscwkm9FA/XxjR8XQLXcnCsiCkhf0/RA9tmve01qRZX5PkHpHXJk69ZGhbqEhphRTkSbtvrTlOVrwAQnsqMvGyzl2efp47VPwEdk4feNnoGbhi9npGRTKA2l79Y+RJZAMz+SGmxgrSNOxJOTIBiPNeTd9iOuturNpwnBV04Gx4NK6DA1rrXtu1GhKWjiyTDOz9LVo2060F1QhexfKKlXeL9JwQNPd1mrqVP9cvUbNcexJQ2bQVfb6/6iZgDXslAKe1UYdjCPLUg5R0Ls4God8YESr9ZMo3AdK1D+xh5Odi6Eff4BJ/jvmf219zQg+vpZRd9EDQJJkZ7B7kCPPOUBS+l5PZ8dfzf/0rsGCLkNq6Cz8uEu6iX72Ua4sP9P7Clt6X8ypEnZp7t6zhpsIcE/yp2lvJhvEfBWdUrR7aUC8EB0d7TOl3uMmSoFo890wiUQeKJUqqE92PcBxKkmqpHGvR6Nw+fg6mvCcArwA1UKgKkBi08Og4u4ZOjQ="
 
 before_install:
@@ -16,7 +17,7 @@ addons:
       name: eprikazchikov/thunder
       description: Light Weight Game Engine
     notification_email: eprikazchikov@mail.ru
-    build_command_prepend: qbs config defaultProfile qt-5-12-3
+    build_command_prepend: qbs config defaultProfile
     build_command: qbs build --all-products config:release
     branch_pattern: coverity_scan
 
@@ -26,23 +27,32 @@ matrix:
       os: linux
       dist: xenial
       compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - binutils
+          - g++-7
+          - libgl1-mesa-dev
+          - zlib1g-dev
+          - libzstd-dev
+          - p7zip-full
+          - xorg-dev 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
+        - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.12.3-xenial
-        - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-        - sudo apt-get update -qq
-        - sudo apt-get -y install qt512base qt512multimedia qt512script qt512svg qt512imageformats qt512graphicaleffects qt512quickcontrols2 qt512tools qt512xmlpatterns binutils zlib1g-dev xorg-dev gcc-7 g++-7
-        - source /opt/qt512/bin/qt512-env.sh
-        - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-1.11.0/qbs-1.11.0-linux.tar.gz
-        - tar -xvzf qbs-1.11.0-linux.tar.gz > /dev/null
-        - export PATH=$PATH:qbs-build/bin
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative icu
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - qbs --version
         - qbs setup-toolchains --detect
         - qbs setup-qt --detect
       script:
-        - qbs config defaultProfile qt-5-12-3
+        - qbs config defaultProfile
         - qbs config --list
         - qbs install --all-products config:release
         - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/${VERSION}/linux
@@ -57,19 +67,27 @@ matrix:
       os: linux
       dist: xenial
       compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - binutils
+          - g++-7
+          - libgl1-mesa-dev
+          - zlib1g-dev
+          - libzstd-dev
+          - p7zip-full
+          - xorg-dev 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
+        - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
         - NDK_VERSION="android-ndk-r17c"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - sudo add-apt-repository --yes ppa:beineri/opt-qt-5.12.3-xenial
-        - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-        - sudo apt-get update -qq
-        - sudo apt-get -y install qt512base qt512script qt512tools binutils gcc-7 g++-7
-        - source /opt/qt512/bin/qt512-env.sh
-        - wget https://github.com/eprikazchikov/dependencies/releases/download/qbs-${QBS_VERSION}/qbs-${QBS_VERSION}.tar.gz -q
-        - tar -xvzf qbs-${QBS_VERSION}.tar.gz > /dev/null
-        - export PATH=$PATH:qbs-build/bin
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
         - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
         - export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/${NDK_VERSION}
@@ -87,36 +105,53 @@ matrix:
           on:
             tags: true
 
-    #- language: cpp
-    #  os: osx
-    #  osx_image: xcode10.3
-    #  before_install:
-    #    - brew update
-    #    - brew install qbs
-    #    - qbs --version
-    #    - qbs setup-toolchains --detect
-    #    - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
-    #  script:
-    #    - qbs config --list
-    #    - qbs install --all-products config:release profile:qt-brew
-    #    - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-    #    - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
-    #  deploy:
-    #    - provider: script
-    #      skip_cleanup: true
-    #      script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
-    #      on:
-    #        tags: true
+    - language: cpp
+      os: osx
+      addons:
+        homebrew:
+          packages:
+            - p7zip
+          update: true
+      env:
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
+      osx_image: xcode10.3
+      before_install:
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+        - qbs --version
+        - qbs setup-toolchains --detect
+        - qbs setup-qt ${QT_BIN}/qmake qt-brew
+      script:
+        - qbs config --list
+        - qbs install --all-products config:release profile:qt-brew
+        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
+        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
+          on:
+            tags: true
     
     - language: cpp
       os: osx
       osx_image: xcode10.3
+      addons:
+        homebrew:
+          packages:
+            - p7zip
+          update: true
+      env:
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
+      osx_image: xcode10.3
       before_install:
-        - brew update
-        - brew install qbs
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - qbs --version
         - qbs setup-toolchains --detect
-        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:xcode-iphoneos-arm64
@@ -131,12 +166,20 @@ matrix:
     - language: cpp
       os: osx
       osx_image: xcode10.3
+      addons:
+        homebrew:
+          packages:
+            - p7zip
+          update: true
+      env:
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
+      osx_image: xcode10.3
       before_install:
-        - brew update
-        - brew install qbs
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - qbs --version
         - qbs setup-toolchains --detect
-        - qbs setup-qt /usr/local/opt/qt/bin/qmake qt-brew
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:xcode-appletvos-arm64
