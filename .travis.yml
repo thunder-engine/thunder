@@ -100,8 +100,8 @@ matrix:
         - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
       osx_image: xcode10.3
       before_install:
-        - ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version 5.12.4 qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns icu
-        - ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version 4.9.2 qtcreator
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version 5.12.4 qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns icu
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version 4.9.2 qtcreator
         - qbs --version
         - qbs setup-toolchains --detect
         - qbs setup-qt ${QT_BIN}/qmake qt-brew
