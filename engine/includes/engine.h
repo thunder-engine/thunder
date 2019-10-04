@@ -73,6 +73,8 @@ public:
 
     static string               locationAppConfig           ();
 
+    static string               translate                   (const string &source);
+
     string                      applicationName             () const;
 
     string                      organizationName            () const;

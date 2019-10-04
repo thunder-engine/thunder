@@ -48,6 +48,7 @@
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
 #include "resources/pipeline.h"
+#include "resources/translator.h"
 
 #include "resources/particleeffect.h"
 
@@ -108,6 +109,8 @@ public:
     ThreadPool                  m_ThreadPool;
 
     static ResourceSystem      *m_pResourceSystem;
+
+    static Translator          *m_pTranslator;
 };
 
 IFile *EnginePrivate::m_pFile   = nullptr;
@@ -120,6 +123,7 @@ string            EnginePrivate::m_Organization;
 string            EnginePrivate::m_Application;
 IPlatformAdaptor *EnginePrivate::m_pPlatform = nullptr;
 ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
+Translator       *EnginePrivate::m_pTranslator = nullptr;
 
 list<ISystem *>   EnginePrivate::m_Pool;
 list<ISystem *>   EnginePrivate::m_Serial;
@@ -531,6 +535,15 @@ string Engine::locationAppConfig() {
     }
 #endif
     return result;
+}
+/*!
+    Returns the translation text for the \a source string.
+*/
+string Engine::translate(const string &source) {
+    if(EnginePrivate::m_pTranslator) {
+        return EnginePrivate::m_pTranslator->translate(source);
+    }
+    return source;
 }
 /*!
     Returns application name.
