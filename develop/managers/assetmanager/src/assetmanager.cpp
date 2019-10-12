@@ -33,6 +33,7 @@
 #include "prefabconverter.h"
 #include "effectconverter.h"
 #include "animationbuilder.h"
+#include "translatorconverter.h"
 
 #include "projectmanager.h"
 #include "pluginmodel.h"
@@ -109,6 +110,7 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
+    registerConverter(new TranslatorConverter());
 
     m_Formats["map"]    = IConverter::ContentMap;
 
@@ -552,7 +554,9 @@ QImage AssetManager::icon(const QString &path) {
             case IConverter::ContentAnimationStateMachine: {
                 icon.load(":/Style/styles/dark/images/actl.png", "PNG");
             } break;
-
+            case IConverter::ContentLocalization: {
+                icon.load(":/Style/styles/dark/images/l10n.png", "PNG");
+            } break;
             default: break;
         }
     }

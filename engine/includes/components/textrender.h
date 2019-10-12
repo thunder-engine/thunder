@@ -74,6 +74,7 @@ private:
     void loadUserData (const VariantMap &data) override;
     VariantMap saveUserData () const override;
 
+    bool event (Event *ev) override;
 private:
    TextRenderPrivate *p_ptr;
 

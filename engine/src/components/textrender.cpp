@@ -49,7 +49,7 @@ public:
             m_Space = m_pFont->spaceWidth() * m_Size;
             m_Line  = m_pFont->lineHeight() * m_Size;
 
-            u32string text  = Utils::utf8ToUtf32(m_Text);
+            u32string text  = Utils::utf8ToUtf32(Engine::translate(m_Text));
             m_pFont->requestCharacters(text);
 
             uint32_t length = m_pFont->length(text);
@@ -417,6 +417,15 @@ VariantMap TextRender::saveUserData() const {
     }
     return result;
 }
+
+bool TextRender::event(Event *ev) {
+    if(ev->type() == Event::LanguageChange) {
+        p_ptr->composeMesh();
+    }
+
+    return true;
+}
+
 /*!
     \internal
 */

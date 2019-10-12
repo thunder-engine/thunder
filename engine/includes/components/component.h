@@ -29,9 +29,12 @@ public:
     bool isStarted () const;
     void setStarted (bool started);
 
+    string tr (const string &source);
+
 #ifdef NEXT_SHARED
     virtual bool drawHandles(bool selected);
 #endif
+
 private:
     bool isSerializable () const override;
 

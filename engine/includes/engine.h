@@ -73,6 +73,10 @@ public:
 
     static string               locationAppConfig           ();
 
+    static bool                 loadTranslator              (const string &table);
+
+    static string               translate                   (const string &source);
+
     string                      applicationName             () const;
 
     string                      organizationName            () const;
@@ -82,6 +86,9 @@ public:
     static void                 setResource                 (Object *object, const string &uuid);
 
     void                        processEvents               ();
+
+private:
+    bool                        event                       (Event *event) override;
 
 private:
     EnginePrivate              *p_ptr;

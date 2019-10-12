@@ -23,6 +23,8 @@ public:
 
     void unloadResource(const string &path, bool force = false);
 
+    void unloadResource(Resource *resource, bool force = false);
+
     string reference(Object *object);
 
     StringMap &indices() const;
