@@ -42,7 +42,7 @@ public:
 
     template<typename T>
     void                                factoryRemove           (const string &group) {
-        const char *name    = T::metaClass()->name();
+        const char *name = T::metaClass()->name();
         factoryRemove(name, string("thor://") + group + "/" + name);
     }
 

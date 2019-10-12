@@ -85,6 +85,8 @@ public:
 
     Scene                      *m_pScene;
 
+    static Engine              *m_pInstance;
+
     static list<ISystem *>      m_Pool;
     static list<ISystem *>      m_Serial;
 
@@ -124,6 +126,7 @@ string            EnginePrivate::m_Application;
 IPlatformAdaptor *EnginePrivate::m_pPlatform = nullptr;
 ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
 Translator       *EnginePrivate::m_pTranslator = nullptr;
+Engine           *EnginePrivate::m_pInstance = nullptr;
 
 list<ISystem *>   EnginePrivate::m_Pool;
 list<ISystem *>   EnginePrivate::m_Serial;
@@ -162,9 +165,10 @@ Engine::Engine(IFile *file, const char *path) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
-    p_ptr->m_pResourceSystem = new ResourceSystem;
-    EnginePrivate::m_Serial.push_back(p_ptr->m_pResourceSystem);
+    EnginePrivate::m_pInstance = this;
 
+    EnginePrivate::m_pResourceSystem = new ResourceSystem;
+    EnginePrivate::m_Serial.push_back(p_ptr->m_pResourceSystem);
     EnginePrivate::m_ApplicationPath = path;
     Uri uri(EnginePrivate::m_ApplicationPath);
     EnginePrivate::m_ApplicationDir = uri.dir();
@@ -216,6 +220,8 @@ Engine::Engine(IFile *file, const char *path) :
     BaseLight::registerClassFactory(this);
 
     ICommandBuffer::registerClassFactory(this);
+
+    Translator::registerClassFactory(p_ptr->m_pResourceSystem);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
@@ -341,6 +347,20 @@ void Engine::processEvents() {
 
     ObjectSystem::processEvents();
     updateScene(p_ptr->m_pScene);
+}
+/*!
+    \internal
+*/
+bool Engine::event(Event *event) {
+    switch(event->type()) {
+    case Event::LanguageChange: {
+        for(auto it : m_ObjectList) {
+            it->event(event);
+        }
+    } break;
+    default: break;
+    }
+    return false;
 }
 /*!
     Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue.
@@ -501,6 +521,7 @@ void Engine::addModule(IModule *module) {
 */
 Scene *Engine::scene() {
     PROFILER_MARKER;
+
     return p_ptr->m_pScene;
 }
 /*!
@@ -537,9 +558,31 @@ string Engine::locationAppConfig() {
     return result;
 }
 /*!
+    Loads translation table with provided file \a name.
+    This method generates the LanguageChange event for the Engine instance.
+    An Engine instance will propagate the event to all top-level widgets, where reimplementation of event() can re-translate user-visible strings.
+    Returns true on success; otherwise returns false.
+*/
+bool Engine::loadTranslator(const string &name) {
+    PROFILER_MARKER;
+
+    if(EnginePrivate::m_pTranslator) {
+        EnginePrivate::m_pResourceSystem->unloadResource(EnginePrivate::m_pTranslator, true);
+    }
+
+    EnginePrivate::m_pTranslator = Engine::loadResource<Translator>(name);
+    if(EnginePrivate::m_pTranslator) {
+        EnginePrivate::m_pInstance->postEvent(new Event(Event::LanguageChange));
+        return true;
+    }
+    return false;
+}
+/*!
     Returns the translation text for the \a source string.
 */
 string Engine::translate(const string &source) {
+    PROFILER_MARKER;
+
     if(EnginePrivate::m_pTranslator) {
         return EnginePrivate::m_pTranslator->translate(source);
     }

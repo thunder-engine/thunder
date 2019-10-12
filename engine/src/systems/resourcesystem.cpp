@@ -106,16 +106,20 @@ void ResourceSystem::unloadResource(const string &path, bool force) {
             if(it != s_ResourceCache.end() && it->second) {
                 Resource *resource = dynamic_cast<Resource *>(it->second);
                 if(resource) {
-                    resource->setState(Resource::Suspend);
-                    if(force) {
-                        update(nullptr);
-                    }
+                    unloadResource(resource, force);
                 } else {
                     delete it->second;
                     s_ResourceCache.erase(it);
                 }
             }
         }
+    }
+}
+
+void ResourceSystem::unloadResource(Resource *resource, bool force) {
+    resource->setState(Resource::Suspend);
+    if(force) {
+        update(nullptr);
     }
 }
 

@@ -8,11 +8,12 @@
 class NEXT_LIBRARY_EXPORT Event {
 public:
     enum Type {
-        INVALID                 = 0,
-        METHODCALL,
-        TIMEREVENT,
-        DESTROY,
-        USERTYPE                = 100
+        Invalid                 = 0,
+        MethodCall,
+        TimerEvent,
+        Destroy,
+        LanguageChange,
+        UserType                = 100
     };
 
 public:

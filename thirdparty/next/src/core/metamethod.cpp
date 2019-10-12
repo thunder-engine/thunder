@@ -133,7 +133,7 @@ const MetaMethod::Table *MetaMethod::table() const {
     \inmodule Core
 */
 MethodCallEvent::MethodCallEvent(int32_t method, Object *sender, const Variant &args) :
-        Event(METHODCALL),
+        Event(MethodCall),
         m_pSender(sender),
         m_Method(method),
         m_Args(args) {

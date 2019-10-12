@@ -78,6 +78,7 @@ public:
         ContentPrefab,
         ContentAnimationStateMachine,
         ContentPhysicMaterial,
+        ContentLocalization,
         ContentLast
     };
 public:

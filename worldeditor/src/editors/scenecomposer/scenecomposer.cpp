@@ -575,6 +575,8 @@ void SceneComposer::onImportFinished() {
     disconnect(m_pQueue, nullptr, this, nullptr);
 
     ui->projectWidget->setModel(ProjectManager::instance());
+
+    Engine::loadTranslator("Ru_ru.loc");
 }
 
 void SceneComposer::on_actionUndo_triggered() {

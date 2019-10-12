@@ -545,7 +545,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
 */
 void Object::deleteLater() {
     PROFILE_FUNCTION();
-    postEvent(new Event(Event::DESTROY));
+    postEvent(new Event(Event::Destroy));
 }
 /*!
     Returns list of child objects for this object.
@@ -699,14 +699,14 @@ void Object::processEvents() {
         locker.unlock();
 
         switch (e->type()) {
-            case Event::METHODCALL: {
+            case Event::MethodCall: {
                 MethodCallEvent *call   = reinterpret_cast<MethodCallEvent *>(e);
                 p_ptr->m_pCurrentSender = call->sender();
                 Variant result;
                 metaObject()->method(call->method()).invoke(this, result, 1, call->args());
                 p_ptr->m_pCurrentSender = nullptr;
             } break;
-            case Event::DESTROY: {
+            case Event::Destroy: {
                 if(p_ptr->m_pSystem) {
                     p_ptr->m_pSystem->suspendObject(this);
                 }
@@ -729,7 +729,7 @@ void Object::processEvents() {
 */
 bool Object::event(Event *event) {
     PROFILE_FUNCTION();
-    A_UNUSED(event);
+    A_UNUSED(event)
     return false;
 }
 /*!

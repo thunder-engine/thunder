@@ -66,6 +66,12 @@ bool Component::isStarted() const {
 void Component::setStarted(bool started) {
     p_ptr->m_Started = started;
 }
+/*!
+    Returns a translated version of \a source text; otherwise returns source text if no appropriate translated string is available.
+*/
+string Component::tr(const string &source) {
+    return Engine::translate(source);
+}
 
 bool Component::isSerializable() const {
     return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());

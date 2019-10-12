@@ -46,6 +46,7 @@
         <file>styles/dark/images/prefab.png</file>
         <file>styles/dark/images/actl.png</file>
         <file>styles/dark/images/effect.png</file>
+        <file>styles/dark/images/l10n.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>
