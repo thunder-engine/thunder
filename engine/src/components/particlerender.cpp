@@ -53,14 +53,16 @@ public:
 };
 
 ParticleRender::ParticleRender() :
-        m_ptr(new ParticleRenderPrivate) {
+        p_ptr(new ParticleRenderPrivate) {
 
 }
 
 ParticleRender::~ParticleRender() {
-    delete m_ptr;
+    delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void ParticleRender::update() {
     float dt    = Timer::deltaTime() * Timer::scale();
     Matrix4 &m  = actor()->transform()->worldTransform();
@@ -71,16 +73,16 @@ void ParticleRender::update() {
     }
     Vector3 pos = camera->actor()->transform()->worldPosition();
 
-    if(m_ptr->m_pEffect) {
+    if(p_ptr->m_pEffect) {
         uint32_t index  = 0;
-        for(auto &it : m_ptr->m_Emitters) {
-            ParticleEffect::Emitter &emitter = m_ptr->m_pEffect->emitter(index);
+        for(auto &it : p_ptr->m_Emitters) {
+            ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
             it.m_Count = 0;
             uint32_t i = 0;
             for(auto &particle : it.m_Particles) {
                 particle.life   -= dt;
                 if(particle.life >= 0.0f) {
-                    m_ptr->m_pEffect->updateParticle(index, particle, dt);
+                    p_ptr->m_pEffect->updateParticle(index, particle, dt);
 
                     particle.transform  = (emitter.m_Local) ? m * particle.position : particle.position;
                     particle.distance   = (pos - particle.transform).sqrLength();
@@ -89,7 +91,7 @@ void ParticleRender::update() {
                 } else {
                     particle.distance   = -1.0f;
                     if(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
-                        m_ptr->m_pEffect->spawnParticle(index, particle);
+                        p_ptr->m_pEffect->spawnParticle(index, particle);
                         particle.transform  = m * particle.position;
                         it.m_Counter   -= 1.0f;
                     }
@@ -119,7 +121,7 @@ void ParticleRender::update() {
 
             while(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
                 ParticleEffect::ParticleData particle;
-                m_ptr->m_pEffect->spawnParticle(index, particle);
+                p_ptr->m_pEffect->spawnParticle(index, particle);
                 particle.transform  = m * particle.position;
                 it.m_Particles.push_back(particle);
                 it.m_Counter   -= 1.0f;
@@ -139,9 +141,10 @@ void ParticleRender::update() {
             index++;
         }
     }
-
 }
-
+/*!
+    \internal
+*/
 void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a    = actor();
     if(layer & a->layers()) {
@@ -149,9 +152,9 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
         uint32_t index  = 0;
-        for(auto &it : m_ptr->m_Emitters) {
+        for(auto &it : p_ptr->m_Emitters) {
             if(it.m_Count > 0) {
-                ParticleEffect::Emitter &emitter    = m_ptr->m_pEffect->emitter(index);
+                ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
                 buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, emitter.m_pMaterial, true);
             }
             index++;
@@ -161,17 +164,28 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
 }
 
 ParticleEffect *ParticleRender::effect() const {
-    return m_ptr->m_pEffect;
+    return p_ptr->m_pEffect;
 }
 
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
-        m_ptr->m_pEffect   = effect;
-        m_ptr->m_Emitters.clear();
-        m_ptr->m_Emitters.resize(effect->emittersCount());
+        p_ptr->m_pEffect   = effect;
+        p_ptr->m_Emitters.clear();
+        p_ptr->m_Emitters.resize(effect->emittersCount());
     }
 }
-
+/*!
+    Returns a bound box of assigned Effect.
+*/
+AABBox ParticleRender::bound() const {
+    if(p_ptr->m_pEffect) {
+        return p_ptr->m_pEffect->bound() * actor()->transform()->worldTransform();
+    }
+    return Renderable::bound();
+}
+/*!
+    \internal
+*/
 void ParticleRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
@@ -181,11 +195,13 @@ void ParticleRender::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap ParticleRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
-        string ref  = Engine::reference(m_ptr->m_pEffect);
+        string ref  = Engine::reference(p_ptr->m_pEffect);
         if(!ref.empty()) {
             result[EFFECT] = ref;
         }

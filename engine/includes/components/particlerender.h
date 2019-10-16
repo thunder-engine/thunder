@@ -16,12 +16,14 @@ class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
 
 public:
     ParticleRender();
-    ~ParticleRender();
+    ~ParticleRender() override;
 
     ParticleEffect *effect () const;
     void setEffect (ParticleEffect *effect);
 
 private:
+    AABBox bound () const override;
+
     void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
     void update () override;
@@ -30,7 +32,7 @@ private:
     VariantMap saveUserData () const override;
 
 private:
-    ParticleRenderPrivate *m_ptr;
+    ParticleRenderPrivate *p_ptr;
 
 };
 

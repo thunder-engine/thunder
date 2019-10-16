@@ -88,19 +88,20 @@ public:
     ParticleEffect ();
     ~ParticleEffect ();
 
-    void apply();
-    void clear();
+    void apply ();
+    void clear ();
 
-public:
-    uint32_t emittersCount() const;
+    uint32_t emittersCount () const;
 
-    Emitter &emitter(uint32_t index);
+    Emitter &emitter (uint32_t index);
 
-    void spawnParticle(uint32_t index, ParticleData &data);
+    void spawnParticle (uint32_t index, ParticleData &data);
 
-    void updateParticle(uint32_t index, ParticleData &data, float dt);
+    void updateParticle (uint32_t index, ParticleData &data, float dt);
 
-    void loadUserData(const VariantMap &data) override;
+    AABBox bound () const;
+
+    void loadUserData (const VariantMap &data) override;
 
 protected:
     EmitterDeque m_Emitters;

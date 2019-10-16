@@ -18,7 +18,7 @@ class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
 
 public:
     MeshRender();
-    ~MeshRender();
+    ~MeshRender() override;
 
     Mesh *mesh () const;
     void setMesh (Mesh *mesh);
@@ -26,9 +26,9 @@ public:
     Material *material () const;
     void setMaterial (Material *material);
 
+private:
     AABBox bound () const override;
 
-private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;
 
     void loadUserData (const VariantMap &data) override;
