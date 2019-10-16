@@ -303,6 +303,11 @@ void ParticleEffect::updateParticle(uint32_t index, ParticleData &data, float dt
     }
 }
 
+AABBox ParticleEffect::bound() const {
+    PROFILE_FUNCTION();
+    return AABBox();
+}
+
 void ParticleEffect::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     clear();

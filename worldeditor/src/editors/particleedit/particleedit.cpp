@@ -132,9 +132,10 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
     if(m_Path != settings->source()) {
         m_Path = settings->source();
 
-        m_pRender->setEffect( Engine::loadResource<ParticleEffect>(settings->destination()) );
+        m_pRender->setEffect(Engine::loadResource<ParticleEffect>(settings->destination()));
         m_pBuilder->load(m_Path);
 
+        ui->treeView->setObject(nullptr);
         onUpdateTemplate(false);
     }
 }
@@ -208,13 +209,13 @@ void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
 }
 
 void ParticleEdit::onUpdateTemplate(bool update) {
-    ui->glWidget->makeCurrent();
     ParticleRender *render = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
     if(render) {
         render->effect()->loadUserData(m_pBuilder->data().toMap());
         render->setEffect(render->effect());
     }
-    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_pBuilder->children()));
+    QObjectList list = m_pBuilder->children();
+    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
 
     setModified(update);
 }

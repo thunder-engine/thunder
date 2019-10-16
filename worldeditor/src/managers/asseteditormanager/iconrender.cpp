@@ -134,7 +134,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             mesh->setMesh(Engine::loadResource<Mesh>(resource.toStdString()));
             mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
-            AABBox bb = mesh->bound();
+            AABBox bb = static_cast<Renderable*>(mesh)->bound();
             m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, (bb.extent.length() * 2) / sinf(fov * DEG2RAD)) );
         } break;
         default: return QImage();
