@@ -43,7 +43,6 @@ Project {
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
         cpp.cxxStandardLibrary: "libc++"
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -52,6 +51,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["OpenGL"]
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {

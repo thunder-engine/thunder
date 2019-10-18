@@ -212,7 +212,24 @@ Product {
             "../thirdparty/fbx/lib/libfbxsdk" + suffix
         ]
         qbs.install: true
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            qbs.installDir: install.LIB_PATH + "/" + install.bundle
+        }
         qbs.installDir: install.BIN_PATH + "/" + install.bundle
+        qbs.installPrefix: install.PREFIX
+    }
+
+    Group {
+        name: "ICU Binaries"
+        condition: qbs.targetOS.contains("linux")
+        files: [
+            "/usr/lib/libicui18n.so.*",
+            "/usr/lib/libicuuc.so.*",
+            "/usr/lib/libicudata.so.*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.LIB_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 

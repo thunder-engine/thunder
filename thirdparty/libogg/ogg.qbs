@@ -23,11 +23,15 @@ Project {
         cpp.includePaths: ogg.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.linkerFlags: ["/DEF:" + path + "/src/ogg.def"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {
