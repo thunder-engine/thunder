@@ -45,11 +45,15 @@ Project {
         cpp.includePaths: vorbis.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.linkerFlags: ["/DEF:" + path + "/src/vorbis.def"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {
@@ -96,11 +100,15 @@ Project {
         cpp.includePaths: vorbis.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.sonamePrefix: "@executable_path"
 
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.linkerFlags: ["/DEF:" + path + "/src/vorbisfile.def"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {
