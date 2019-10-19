@@ -101,6 +101,8 @@ public:
 
     Q_INVOKABLE void moveNode(int index, int x, int y);
     Q_INVOKABLE void deleteNodes(QVariant list);
+    Q_INVOKABLE void copyNodes(QVariant list);
+    Q_INVOKABLE QVariant pasteNodes(int x, int y);
 
     Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
     Q_INVOKABLE void deleteLink(int index);
@@ -115,6 +117,8 @@ signals:
 protected:
     virtual void loadUserValues(Node *node, const QVariantMap &values) = 0;
     virtual void saveUserValues(Node *node, QVariantMap &values) = 0;
+
+    QVariant saveNode(Node *node);
 
 protected:
     NodeList m_Nodes;
