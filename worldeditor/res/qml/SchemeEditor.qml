@@ -33,7 +33,7 @@ Rectangle {
 
     property variant selection: []
 
-    property int cell: 20
+    property int cell: 16
     property int nodeBorder: (stateMachine) ? cell / 2 : 0
 
     property int focusNode: -1
@@ -429,8 +429,12 @@ Rectangle {
                         canvas.requestPaint()
                     }
                     onClicked: {
-                        nodeSelect(nodeObject.node)
-
+                        if((selection.length > 0) && ((mouse.modifiers & Qt.ControlModifier) || (mouse.modifiers & Qt.ShiftModifier))) {
+                            selection.push(nodeObject.node)
+                            nodeObject.isSelected = true
+                        } else {
+                            nodeSelect(nodeObject.node)
+                        }
                     }
                 }
 
@@ -484,8 +488,9 @@ Rectangle {
         property int sy: 0
     }
 
-    Keys.onPressed: {
-        if(event.key === Qt.Key_Delete) {
+    Shortcut {
+        sequence: StandardKey.Delete
+        onActivated: {
             deleteSelected()
 
             if(selectLink > -1) {
@@ -494,9 +499,29 @@ Rectangle {
                 linkSelected(selectLink)
                 focusLink = -1
             }
-        } else if(event.key === Qt.Key_V) {
-
         }
     }
+
+    Shortcut {
+        sequence: StandardKey.Copy
+        onActivated: {
+            if(selection.length > -1) {
+                schemeModel.copyNodes(selection)
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.Paste
+        onActivated: {
+            var result = schemeModel.pasteNodes(canvas.mouseX, canvas.mouseY)
+            selection = []
+            for(var i = 0; i < result.length; i++) {
+                nodeRepeater.itemAt(result[i]).isSelected = true
+                selection.push(result[i])
+            }
+        }
+    }
+
     focus: true
 }

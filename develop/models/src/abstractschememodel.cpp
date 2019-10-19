@@ -1,7 +1,11 @@
 #include "abstractschememodel.h"
 
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QFile>
+#include <QGuiApplication>
+#include <QClipboard>
+#include <QDebug>
 
 #define NODES       "Nodes"
 #define LINKS       "Links"
@@ -165,16 +169,7 @@ void AbstractSchemeModel::save(const QString &path) {
     QVariantList nodes;
     for(Node *it : m_Nodes) {
         if(it != m_pRootNode) {
-            QVariantMap node;
-            node[TYPE] = it->type;
-            node[X] = it->pos.x();
-            node[Y] = it->pos.y();
-
-            QVariantMap values;
-            saveUserValues(it, values);
-            node[VALUES]    = values;
-
-            nodes.push_back(node);
+            nodes.push_back(saveNode(it));
         }
     }
     m_Data[NODES] = nodes;
@@ -196,6 +191,19 @@ void AbstractSchemeModel::save(const QString &path) {
         saveFile.write(QJsonDocument::fromVariant(m_Data).toJson());
         saveFile.close();
     }
+}
+
+QVariant AbstractSchemeModel::saveNode(Node *node) {
+    QVariantMap result;
+    result[TYPE] = node->type;
+    result[X] = node->pos.x();
+    result[Y] = node->pos.y();
+
+    QVariantMap values;
+    saveUserValues(node, values);
+    result[VALUES] = values;
+
+    return result;
 }
 
 void AbstractSchemeModel::createNode(const QString &path, int x, int y) {
@@ -227,7 +235,6 @@ QVariant AbstractSchemeModel::nodes() const {
         node["ports"] = ports;
         result.push_back(node);
     }
-
     return result;
 }
 
@@ -302,4 +309,42 @@ void AbstractSchemeModel::deleteNodes(QVariant list) {
     for(Node *it : toDelete) {
         deleteNode(it);
     }
+}
+
+void AbstractSchemeModel::copyNodes(QVariant list) {
+    QJsonArray array;
+    for(QVariant it : list.toList()) {
+        Node *node = m_Nodes.at(it.toInt());
+
+        array.push_back(QJsonValue::fromVariant(saveNode(node)));
+    }
+
+    QGuiApplication::clipboard()->setText(QJsonDocument(array).toJson());
+}
+
+QVariant AbstractSchemeModel::pasteNodes(int x, int y) {
+    QJsonDocument doc = QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toLocal8Bit());
+
+    int maxX = INT_MIN;
+    int maxY = INT_MIN;
+    for(QJsonValue it : doc.array()) {
+        QVariantMap n = it.toVariant().toMap();
+        maxX = MAX(maxX, n[X].toInt());
+        maxY = MAX(maxY, n[Y].toInt());
+    }
+
+    QVariantList list;
+    for(QJsonValue it : doc.array()) {
+        QVariantMap n = it.toVariant().toMap();
+
+        Node *node = createNode(n[TYPE].toString());
+        int deltaX = maxX - n[X].toInt();
+        int deltaY = maxY - n[Y].toInt();
+        node->pos = QPoint(x + deltaX, y + deltaY);
+        loadUserValues(node, n[VALUES].toMap());
+
+        list.push_back(m_Nodes.indexOf(node));
+    }
+    emit schemeUpdated();
+    return list;
 }
