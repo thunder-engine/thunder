@@ -12,6 +12,9 @@
 #include <QTime>
 #include <QVariantMap>
 #include <QUuid>
+#include <QDebug>
+
+#include <fbxsdk.h>
 
 #include "converters/converter.h"
 #include "projectmanager.h"
@@ -115,12 +118,11 @@ public:
             Lod *l = getLod(index);
 
             VariantList lod;
-            string path = Engine::reference(l->material);
             // Push material
-            lod.push_back(path);
+            lod.push_back("{00000000-0402-0000-0000-000000000000}");
             uint32_t vCount = l->vertices.size();
-            lod.push_back((int)vCount);
-            lod.push_back((int)l->indices.size() / 3);
+            lod.push_back(static_cast<int32_t>(vCount));
+            lod.push_back(static_cast<int32_t>(l->indices.size() / 3));
 
             { // Required field
                 ByteArray buffer;
@@ -255,7 +257,7 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
 
     list<Actor *> actors;
     for(int n = 0; n < lRootNode->GetChildCount(); n++) {
-        Actor *a = importNode(lRootNode->GetChild(n), s, resources);
+        Actor *a = importNode(lRootNode->GetChild(n), lScene, s, resources);
         if(a) {
             actors.push_back(a);
         }
@@ -294,19 +296,25 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
     return 0;
 }
 
-Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStringList &list) {
+Actor *FBXConverter::importNode(FbxNode *node, FbxScene *scene, FbxImportSettings *settings, QStringList &list) {
     FbxNodeAttribute *attrib = node->GetNodeAttribute();
 
     Actor *actor = Engine::objectCreate<Actor>();
 
     FbxDouble3 p = node->LclTranslation.Get();
-    actor->transform()->setPosition(gInvert * (Vector3(p[0], p[1], p[2]) * settings->customScale()));
+    actor->transform()->setPosition(gInvert * (Vector3(static_cast<areal>(p[0]),
+                                                       static_cast<areal>(p[1]),
+                                                       static_cast<areal>(p[2])) * settings->customScale()));
 
     FbxDouble3 r = node->LclRotation.Get();
-    actor->transform()->setEuler(gInvert * Vector3(r[0], r[1], r[2]));
+    actor->transform()->setEuler(gInvert * Vector3(static_cast<areal>(r[0]),
+                                                   static_cast<areal>(r[1]),
+                                                   static_cast<areal>(r[2])));
 
     FbxDouble3 s = node->LclScaling.Get();
-    actor->transform()->setScale(Vector3(s[0], s[1], s[2]));
+    actor->transform()->setScale(Vector3(static_cast<areal>(s[0]),
+                                         static_cast<areal>(s[1]),
+                                         static_cast<areal>(s[2])));
 
     QString path(node->GetNameOnly());
 
@@ -314,6 +322,10 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
 
     if(attrib && attrib->GetAttributeType() == FbxNodeAttribute::eMesh) {
         MeshSerial *mesh = importMesh(static_cast<FbxMesh *>(attrib), settings->customScale());
+
+        if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+            importAnimation(node, scene);
+        }
 
         QString uuid = settings->subItem(path);
         if(uuid.isEmpty()) {
@@ -380,7 +392,7 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxImportSettings *settings, QStr
     }
 */
 }
-#include <QThread>
+
 MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     MeshSerial *mesh = new MeshSerial;
     mesh->setMode(Mesh::MODE_TRIANGLES);
@@ -390,7 +402,7 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     for(int d = 0; d < m->GetDeformerCount(); d++) {
         FbxDeformer *deformer = m->GetDeformer(d);
         if(deformer->GetDeformerType() == FbxDeformer::eSkin) {
-            //mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
+            mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
 
             FbxSkin *skin = static_cast<FbxSkin *>(deformer);
             for(int s = 0; s < skin->GetClusterCount(); s++) {
@@ -409,9 +421,8 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     }
 
     Mesh::Lod l;
-    l.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
+    l.material = Engine::loadResource<Material>("{00000000-0402-0000-0000-000000000000}");
 
-    indexVector indices;
     // Export
     FbxVector4 *verts = m->GetControlPoints();
 
@@ -445,6 +456,8 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
         Log(Log::WRN) << "No tangents exist";
     }
 
+    indexVector indices;
+
     int tCount  = m->GetPolygonCount();
     for(int triangle = 0; triangle < tCount; triangle++) {
         int size = m->GetPolygonSize(triangle);
@@ -472,12 +485,17 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
                     indices.push_back(data);
 
                     FbxVector4 v = verts[data.vIndex];
-                    l.vertices.push_back(gInvert * (Vector3(v[0], v[1], v[2]) * scale));
+                    l.vertices.push_back(gInvert * (Vector3(static_cast<areal>(v[0]),
+                                                            static_cast<areal>(v[1]),
+                                                            static_cast<areal>(v[2])) * scale));
                     l.indices.push_back(count);
 
                     if(colors) {
                         FbxColor c = colors->GetDirectArray().GetAt(data.vIndex);
-                        l.colors.push_back(Vector4(c.mRed, c.mGreen, c.mBlue, c.mAlpha));
+                        l.colors.push_back(Vector4(static_cast<areal>(c.mRed),
+                                                   static_cast<areal>(c.mGreen),
+                                                   static_cast<areal>(c.mBlue),
+                                                   static_cast<areal>(c.mAlpha)));
                     }
 
                     if(normals) {
@@ -493,7 +511,9 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
                                 Log(Log::ERR) << "Invalid normals reference mode";
                             } break;
                         }
-                        l.normals.push_back(gInvert * Vector3(v[0], v[1], v[2]));
+                        l.normals.push_back(gInvert * Vector3(static_cast<areal>(v[0]),
+                                                              static_cast<areal>(v[1]),
+                                                              static_cast<areal>(v[2])));
                     }
 
                     if(tangents) {
@@ -509,29 +529,41 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
                                 Log(Log::ERR) << "Invalid tangents reference mode";
                             } break;
                         }
-                        l.tangents.push_back(gInvert * Vector3(v[0], v[1], v[2]));
+                        l.tangents.push_back(gInvert * Vector3(static_cast<areal>(v[0]),
+                                                               static_cast<areal>(v[1]),
+                                                               static_cast<areal>(v[2])));
                     }
 
                     if(uv) {
                         v = uv->GetDirectArray().GetAt(data.uIndex);
-                        l.uv0.push_back(Vector2(v[0], v[1]));
+                        l.uv0.push_back(Vector2(static_cast<areal>(v[0]),
+                                                static_cast<areal>(v[1])));
                     }
 
                     if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+                        int32_t i = 0;
+                        Vector4 weights, bones;
                         for(uint32_t b = 0; b < boneCluster.size(); b++) {
                             int *controllIndices = boneCluster[b]->GetControlPointIndices();
                             double *w = boneCluster[b]->GetControlPointWeights();
 
-                            Vector4 weights, bones;
+                            float weight = 0.0f;
                             for(int index = 0; index < boneCluster[b]->GetControlPointIndicesCount(); index++) {
                                 if(controllIndices[index] == data.vIndex) {
-                                    bones[index] = b;
-                                    weights[index] = w[index];
+                                    weight = static_cast<areal>(w[index]);
+                                    break;
                                 }
                             }
-                            l.bones.push_back(bones);
-                            l.weights.push_back(weights);
+
+                            if(weight > 0.0f && i < 4) {
+                                bones[i] = b;
+                                weights[i] = weight;
+                                i++;
+                            }
                         }
+
+                        l.bones.push_back(bones);
+                        l.weights.push_back(weights);
                     }
                 }
             }
@@ -542,104 +574,12 @@ MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
     return mesh;
 }
 
-void FBXConverter::importAnimation(FbxScene *scene, Mesh &mesh) {
-    scene->GetCurrentAnimationStack();
-/*
-    FbxTime gPeriod, gStart, gStop, gCurrent;
-    gPeriod.SetTime(0, 0, 0, 1, 0, scene->GetGlobalSettings().GetTimeMode());
-
-    FbxTimeSpan lTimeLineTimeSpan;
-    scene->GetGlobalSettings().GetTimelineDefaultTimeSpan(lTimeLineTimeSpan);
-    gStart = lTimeLineTimeSpan.GetStart();
-    gStop = lTimeLineTimeSpan.GetStop();
-
-    pMesh->aAnim.fCount = static_cast<int>((gStop - gStart).GetSecondDouble() / gPeriod.GetSecondDouble());
-    pMesh->aAnim.frames	= new ASFrame * [pMesh->jCount];
-
-    int joint;
-    for(joint = 0; joint < pMesh->jCount; joint++) {
-        KFbxNode *bone = pMesh->bones[joint]->GetLink();
-        pMesh->aAnim.frames[joint] = new ASFrame[pMesh->aAnim.fCount + 1];
-
-        int cur_frame	= 0;
-        for(gCurrent = gStart; gCurrent < gStop; gCurrent += gPeriod) {
-            KFbxXMatrix mTransform	= bone->EvaluateGlobalTransform(gCurrent);
-
-            Matrix3 transform;
-            transform.mat[0] = mTransform.mData[0].mData[0];
-            transform.mat[1] = mTransform.mData[0].mData[1];
-            transform.mat[2] = mTransform.mData[0].mData[2];
-
-            transform.mat[3] = mTransform.mData[1].mData[0];
-            transform.mat[4] = mTransform.mData[1].mData[1];
-            transform.mat[5] = mTransform.mData[1].mData[2];
-
-            transform.mat[6] = mTransform.mData[2].mData[0];
-            transform.mat[7] = mTransform.mData[2].mData[1];
-            transform.mat[8] = mTransform.mData[2].mData[2];
-
-            Matrix3 m;
-            Vector3 vec;
-            Quaternion quat;
-
-            KFbxVector4	p = mTransform.GetT();
-            vec = invert * Vector3(p.GetAt(0), p.GetAt(1), p.GetAt(2));
-            pMesh->aAnim.frames[joint][cur_frame].vector = vec;
-
-            m = transform;
-            m.orthonormalize();
-
-            m = invert * m;
-            m = m.inverse();
-
-            quat = Quaternion (m);
-            pMesh->aAnim.frames[joint][cur_frame].quaternion = quat;
-
-            cur_frame++;
-        }
+void FBXConverter::importAnimation(FbxNode *node, FbxScene *scene) {
+    FbxAnimStack *stack = scene->GetCurrentAnimationStack();
+    for(int i = 0; i < stack->GetMemberCount(); i++) {
+        //FbxAnimLayer *layer = stack->GetMember<FbxAnimLayer>(i);
+        //FbxAnimCurve *xPos = node->LclTranslation.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
+        //FbxAnimCurve *xRot = node->LclRotation.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
+        //FbxAnimCurve *xScl = node->LclScaling.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
     }
-
-    for(joint = 0; joint < pMesh->jCount; joint++) {
-        for(int frame = 0; frame < pMesh->aAnim.fCount; frame++) {
-            int iparent	= pMesh->jArray[joint].iparent;
-            Vector3 parent(0, 0, 0);
-
-            if(iparent != -1) {
-                parent = pMesh->aAnim.frames[iparent][frame].vector;
-            }
-            pMesh->aAnim.frames[joint][frame].relative = pMesh->aAnim.frames[joint][frame].vector - parent;
-        }
-    }
-*/
-}
-
-void FBXConverter::saveAnimation(const string &dst) {
-/*
-    FILE *fp	= fopen(filename, "wb");
-    if(fp) {
-        fprintf(fp, AB_SIGNATURE);
-
-        fwrite(&pMesh->aAnim.fCount,	sizeof(short), 1, fp);
-        // Save joint animation priority
-        fwrite(pMesh->aAnim.priority,	sizeof(char) * pMesh->jCount,	1, fp);
-        // Save count of joint animation keys
-//		fwrite(pMesh->aAnim.kCount,		sizeof(short) * pMesh->jCount,	1, fp);
-
-        for(int b = 0; b < pMesh->jCount; b++) {
-            // Save name of bone
-            fwrite(pMesh->jArray[b].name, 32, 1, fp);
-            for (int cur_frame = 0; cur_frame < pMesh->aAnim.fCount; cur_frame++) { // pMesh->aAnim.kCount[b]
-//				fwrite(&pMesh->aAnim.frames[b][cur_frame].fPos,			sizeof(short),			1, fp);
-                fwrite(&pMesh->aAnim.frames[b][cur_frame].quaternion,	sizeof(Quaternion ),	1, fp);
-
-                if(ABSOLUTE_POS) {
-                    fwrite(&pMesh->aAnim.frames[b][cur_frame].vector,	sizeof(Vector3),		1, fp);
-                } else {
-                    fwrite(&pMesh->aAnim.frames[b][cur_frame].relative,	sizeof(Vector3),		1, fp);
-                }
-            }
-        }
-        fclose(fp);
-    }
-*/
 }

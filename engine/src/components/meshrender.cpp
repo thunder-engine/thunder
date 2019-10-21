@@ -74,8 +74,8 @@ void MeshRender::setMesh(Mesh *mesh) {
     p_ptr->m_pMesh = mesh;
     if(p_ptr->m_pMesh) {
         delete p_ptr->m_pMaterial;
-         Material *m = mesh->material(0);
-         p_ptr->m_pMaterial = (m) ? m->createInstance() : nullptr;
+        Material *m = mesh->material(0);
+        p_ptr->m_pMaterial = (m) ? m->createInstance() : nullptr;
     }
 }
 /*!
