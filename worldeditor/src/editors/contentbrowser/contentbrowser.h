@@ -57,6 +57,7 @@ public:
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();
+    void                    createContextMenus      ();
 
     ContentItemDeligate    *m_pContentDeligate;
 

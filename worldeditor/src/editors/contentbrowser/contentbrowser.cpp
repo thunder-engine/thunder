@@ -129,31 +129,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     connect(m_pFilterMenu, SIGNAL(triggered(QAction*)), this, SLOT(onFilterMenuTriggered(QAction*)));
 
     readSettings();
-
-    QString showIn(tr("Show in Explorer"));
-    {
-        QLabel *label = new QLabel(tr("Create Asset"), this);
-        QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
-        a->setDefaultWidget(label);
-
-        m_CreationMenu.addAction(tr("New Folder"))->setData(true);
-        m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
-        m_CreationMenu.addSeparator();
-        m_CreationMenu.addAction(a);
-        m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
-        m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
-        m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
-        m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
-    }
-
-    createAction(showIn, SLOT(showInGraphicalShell()));
-    createAction(tr("Duplicate"), SLOT(onItemDuplicate()));
-    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2));
-    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete));
-    m_ContentMenu.addSeparator();
-    createAction(tr("Reimport"), SLOT(onItemReimport()));
-
-    connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
+    createContextMenus();
 }
 
 ContentBrowser::~ContentBrowser() {
@@ -173,6 +149,31 @@ void ContentBrowser::readSettings() {
 void ContentBrowser::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("content.geometry", ui->splitter->saveState());
+}
+
+void ContentBrowser::createContextMenus() {
+    QString showIn(tr("Show in Explorer"));
+    QLabel *label = new QLabel(tr("Create Asset"), this);
+    QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
+    a->setDefaultWidget(label);
+
+    m_CreationMenu.addAction(tr("New Folder"))->setData(true);
+    m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_CreationMenu.addSeparator();
+    m_CreationMenu.addAction(a);
+    m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
+    m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
+    m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
+    m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
+
+    createAction(showIn, SLOT(showInGraphicalShell()));
+    createAction(tr("Duplicate"), SLOT(onItemDuplicate()));
+    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2));
+    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete));
+    m_ContentMenu.addSeparator();
+    createAction(tr("Reimport"), SLOT(onItemReimport()));
+
+    connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
 }
 
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
