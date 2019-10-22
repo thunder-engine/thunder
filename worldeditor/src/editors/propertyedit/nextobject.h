@@ -5,7 +5,6 @@
 
 #include <object.h>
 
-class ObjectCtrl;
 class QMenu;
 
 class NextObject : public QObject {
@@ -14,7 +13,7 @@ class NextObject : public QObject {
     Q_PROPERTY(QString Name READ name WRITE setName DESIGNABLE true USER true)
 
 public:
-    explicit                    NextObject              (Object *data, ObjectCtrl *ctrl, QObject *parent = nullptr);
+    explicit                    NextObject              (Object *data, QObject *parent = nullptr);
 
     QString                     name                    ();
     void                        setName                 (const QString &name);
@@ -25,13 +24,11 @@ public:
 
     Object                     *findChild               (QStringList &path);
 
-    void                        setChanged              (Object *object, const QString &property);
-
 public slots:
     void                        onUpdated               ();
 
 signals:
-    void                        changed                 ();
+    void                        aboutToBeChanged        (Object *object, const QString &property, const Variant &value);
     void                        changed                 (Object *object, const QString &property);
 
     void                        updated                 ();
@@ -50,7 +47,6 @@ protected:
 
     Object                     *m_pObject;
 
-    ObjectCtrl                 *m_pController;
 };
 
 #endif // NEXTOBJECT_H

@@ -70,7 +70,7 @@ signals:
 
     void                    focused                     (Object *object);
 
-    void                    parented                    (Object::ObjectList objects, Object::ObjectList parents);
+    void                    parented                    (Object::ObjectList objects, Object *parent);
 
     void                    updated                     ();
 

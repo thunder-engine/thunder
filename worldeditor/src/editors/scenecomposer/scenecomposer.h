@@ -92,8 +92,6 @@ private slots:
     void                    onUpdated                                   ();
     void                    onOpen                                      (const QString &arg = QString());
 
-    void                    onUndoRedoUpdated                           ();
-
     void                    onImportFinished                            ();
 
     void                    readOutput                                  ();
