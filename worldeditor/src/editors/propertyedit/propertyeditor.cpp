@@ -315,7 +315,6 @@ void PropertyEditor::onInsertKeyframe() {
     NextObject *next    = action->property("object").value<NextObject *>();
     if(next) {
         QStringList list    = action->property("property").toString().split('/');
-        Object *object  = next->findChild(list);
-        next->setChanged(object, list.front());
+        emit next->changed(next->findChild(list), list.front());
     }
 }

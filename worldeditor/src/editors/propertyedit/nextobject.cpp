@@ -13,8 +13,6 @@
 #include "custom/FilePathProperty.h"
 #include "custom/AssetProperty.h"
 
-#include "managers/undomanager/undomanager.h"
-
 #include <engine.h>
 #include <components/component.h>
 #include <components/actor.h>
@@ -25,6 +23,8 @@
 #include <resources/font.h>
 
 #include "assetmanager.h"
+
+#include "controllers/objectctrl.h"
 
 #include <QMap>
 #include <QMenu>
@@ -144,10 +144,9 @@ Variant aVariant(QVariant &v, uint32_t type, const QString &editor) {
     return Variant();
 }
 
-NextObject::NextObject(Object *data, ObjectCtrl *ctrl, QObject *parent) :
+NextObject::NextObject(Object *data, QObject *parent) :
         QObject(parent),
-        m_pObject(data),
-        m_pController(ctrl) {
+        m_pObject(data) {
 
     onUpdated();
 }
@@ -253,15 +252,11 @@ bool NextObject::event(QEvent *e) {
                 Variant target = aVariant(value, current.userType(), editor(property));
 
                 if(target.isValid() && current != target) {
-                    if(m_pController) {
-                        UndoManager::instance()->push(new UndoManager::PropertyObjects({m_pObject}, m_pController));
-                    }
+                    emit aboutToBeChanged(o, list.front(), target);
 
-                    o->setProperty(qPrintable(list.front()), target);
                     onUpdated();
 
-                    emit changed();
-                    setChanged(o, list.front());
+                    emit changed(o, list.front());
                 }
             }
         }
@@ -295,8 +290,4 @@ Object *NextObject::findChild(QStringList &path) {
         }
     }
     return parent;
-}
-
-void NextObject::setChanged(Object *object, const QString &property) {
-    emit changed(object, property);
 }

@@ -9,10 +9,14 @@
 
 #include <amath.h>
 #include <object.h>
+#include <json.h>
+
+#include <components/component.h>
 
 #include "graph/viewport.h"
 
 #include "cameractrl.h"
+
 #include "managers/undomanager/undomanager.h"
 
 class Engine;
@@ -21,6 +25,91 @@ class Scene;
 class Texture;
 
 class ObjectCtrlPipeline;
+
+class UndoObject : public QUndoCommand {
+public:
+    UndoObject (ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent = nullptr) :
+            QUndoCommand(name, parent) {
+        m_pController = ctrl;
+    }
+protected:
+    ObjectCtrl *m_pController;
+};
+
+class SelectObjects : public UndoObject {
+public:
+    SelectObjects (const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+};
+
+class CreateComponent : public UndoObject {
+public:
+    CreateComponent (const QString &type, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Component"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+    QString m_Type;
+};
+
+class CloneObjects : public UndoObject {
+public:
+    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Clone Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+    list<uint32_t> m_Selected;
+    VariantList m_Dump;
+};
+
+class CreateObject : public UndoObject {
+public:
+    CreateObject (Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Dump;
+    list<uint32_t> m_Parents;
+    list<uint32_t> m_Objects;
+};
+
+class DestroyObjects : public UndoObject {
+public:
+    DestroyObjects (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Destroy Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Dump;
+    list<uint32_t> m_Parents;
+    list<uint32_t> m_Objects;
+};
+
+class ParentingObjects : public UndoObject {
+public:
+    ParentingObjects (const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    typedef QPair<uint32_t, uint32_t> ParentPair;
+    QList<ParentPair> m_Dump;
+    uint32_t m_Parent;
+    list<uint32_t> m_Objects;
+};
+
+class PropertyObjects : public UndoObject {
+public:
+    PropertyObjects (const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Values;
+    QString m_Property;
+    list<uint32_t> m_Objects;
+};
 
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
@@ -50,13 +139,12 @@ public:
 
     void                clear                       (bool signal = true);
 
-    void                deleteSelected              (bool force = false);
-
-    void                selectActor                 (const list<uint32_t> &list, bool undo = true, bool additive = false);
+    void                selectActors                (const list<uint32_t> &list);
 
     Object::ObjectList  selected                    ();
 
     void                setMap                      (Object *map)   { m_pMap = map; }
+    Object             *map                         () const { return m_pMap; }
 
     void                setMoveGrid                 (float value)   { mMoveGrid = value; }
     void                setAngleGrid                (float value)   { mAngleGrid = value; }
@@ -68,7 +156,7 @@ public:
 public slots:
     void                onInputEvent                (QInputEvent *);
 
-    void                onCreateSelected            (const QString &name);
+    void                onCreateComponent           (const QString &name);
     void                onDeleteComponent           (const QString &name);
     void                onUpdateSelected            ();
 
@@ -77,9 +165,12 @@ public slots:
     void                onDragMove                  (QDragMoveEvent *);
     void                onDragLeave                 (QDragLeaveEvent *);
 
-    void                onSelectActor               (Object::ObjectList list, bool undo = true, bool additive = false);
-    void                onRemoveActor               (Object::ObjectList, bool undo = true);
-    void                onParentActor               (Object::ObjectList objects, Object::ObjectList parents, bool undo = true);
+    void                onSelectActor               (const list<uint32_t> &list, bool additive = false);
+    void                onSelectActor               (Object::ObjectList list, bool additive = false);
+    void                onRemoveActor               (Object::ObjectList list);
+    void                onParentActor               (Object::ObjectList objects, Object *parent);
+
+    void                onPropertyChanged           (Object *object, const QString &property, const Variant &value);
 
     void                onFocusActor                (Object *object);
 
@@ -113,7 +204,7 @@ private slots:
     void                onApplySettings             ();
 
 protected:
-    typedef map<uint32_t, Select>   SelectMap;
+    typedef std::map<uint32_t, Select> SelectMap;
     SelectMap           m_Selected;
 
     bool                mDrag;
@@ -146,8 +237,6 @@ protected:
     Vector3             mPosition;
 
     Vector3             mMouseWorld;
-
-    UndoManager::PropertyObjects   *m_pPropertyState;
 
     list<uint32_t>      m_ObjectsList;
 };
