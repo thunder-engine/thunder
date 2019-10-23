@@ -22,6 +22,8 @@ const char *ResourceSystem::name() const {
 }
 
 void ResourceSystem::update(Scene *) {
+    PROFILER_MARKER;
+
     for(auto it = s_ResourceCache.begin(); it != s_ResourceCache.end();) {
         Resource *resource = dynamic_cast<Resource *>(it->second);
         if(resource && resource->state() == Resource::ToBeDeleted) {
@@ -42,6 +44,13 @@ void ResourceSystem::setResource(Object *object, const string &uuid) {
 
     s_ResourceCache[uuid] = object;
     s_ReferenceCache[object] = uuid;
+}
+
+bool ResourceSystem::isResourceExist(const string &path) {
+    PROFILER_MARKER;
+
+    auto it = s_IndexMap.find(path);
+    return (it != s_IndexMap.end());
 }
 
 Object *ResourceSystem::loadResource(const string &path) {
@@ -117,6 +126,8 @@ void ResourceSystem::unloadResource(const string &path, bool force) {
 }
 
 void ResourceSystem::unloadResource(Resource *resource, bool force) {
+    PROFILER_MARKER;
+
     resource->setState(Resource::Suspend);
     if(force) {
         update(nullptr);

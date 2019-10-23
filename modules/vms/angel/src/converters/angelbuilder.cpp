@@ -96,13 +96,21 @@ bool AngelBuilder::buildProject() {
 uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
     QFileInfo info(settings->absoluteDestination());
 
-    m_Destination = info.absolutePath() + "/{00000000-0101-0000-0000-000000000000}";
+    m_Destination = info.absolutePath() + "/" + persistentUUID();
 
     return IBuilder::convertFile(settings);
 }
 
 QString AngelBuilder::builderVersion() {
     return "1.0";
+}
+
+const QString AngelBuilder::persistentAsset() const {
+    return "AngelBinary";
+}
+
+const QString AngelBuilder::persistentUUID () const {
+    return "{00000000-0101-0000-0000-000000000000}";
 }
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
