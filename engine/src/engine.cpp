@@ -420,6 +420,12 @@ void Engine::unloadResource(const string &path, bool force) {
     EnginePrivate::m_pResourceSystem->unloadResource(path, force);
 }
 /*!
+    Returns true if resource with \a path exists; otherwise returns false.
+*/
+bool Engine::isResourceExist(const string &path) {
+    return EnginePrivate::m_pResourceSystem->isResourceExist(path);
+}
+/*!
     Register resource \a object by \a uuid path.
 
     \sa setResource()

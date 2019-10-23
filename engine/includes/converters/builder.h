@@ -20,9 +20,13 @@ public:
     virtual uint32_t type () const;
     virtual uint8_t convertFile (IConverterSettings *);
 
+    virtual const QString persistentAsset() const { return ""; }
+    virtual const QString persistentUUID () const { return ""; }
+
     QString project () const { return m_Project; }
 
     void rescanSources (const QString &path);
+    bool isEmpty () const;
 
     bool isOutdated () const { return m_Outdated; }
 

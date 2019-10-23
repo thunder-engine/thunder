@@ -28,7 +28,7 @@
 
 #include "bindings/angelbindings.h"
 
-#define TEMPALTE "{00000000-0101-0000-0000-000000000000}"
+#define TEMPALTE "AngelBinary"
 
 class AngelStream : public asIBinaryStream {
 public:
@@ -145,6 +145,10 @@ void AngelSystem::reload() {
     }
 
     m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
+
+    if(!Engine::isResourceExist(TEMPALTE)) {
+        return;
+    }
 
     AngelScript *script = Engine::loadResource<AngelScript>(TEMPALTE);
     if(script) {
