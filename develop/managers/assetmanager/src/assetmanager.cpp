@@ -345,19 +345,61 @@ void AssetManager::renameResource(const QFileInfo &oldName, const QFileInfo &new
     }
 }
 
+namespace
+{
+// Copied from: https://forum.qt.io/topic/59245/is-there-any-api-to-recursively-copy-a-directory-and-all-it-s-sub-dirs-and-files/3
+bool copyRecursively(QString sourceFolder, QString destFolder)
+{
+    bool success = false;
+    QDir sourceDir(sourceFolder);
+
+    if(!sourceDir.exists())
+        return false;
+
+    QDir destDir(destFolder);
+    if(!destDir.exists())
+        destDir.mkdir(destFolder);
+
+    QStringList files = sourceDir.entryList(QDir::Files);
+    for(int i = 0; i< files.count(); i++) {
+        QString srcName = sourceFolder + QDir::separator() + files[i];
+        QString destName = destFolder + QDir::separator() + files[i];
+        success = QFile::copy(srcName, destName);
+        if(!success)
+            return false;
+    }
+
+    files.clear();
+    files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+    for(int i = 0; i< files.count(); i++)
+    {
+        QString srcName = sourceFolder + QDir::separator() + files[i];
+        QString destName = destFolder + QDir::separator() + files[i];
+        success = copyRecursively(srcName, destName);
+        if(!success)
+            return false;
+    }
+
+    return true;
+}
+}
+
 void AssetManager::duplicateResource(const QFileInfo &source) {
     QDir dir(m_pProjectManager->contentPath());
     QFileInfo src(m_pProjectManager->contentPath() + "/" + source.filePath());
 
     QString name = src.baseName();
     QString path = src.absolutePath() + "/";
-    QString suff = "." + src.suffix();
+    QString suff = !src.suffix().isEmpty() ? "." + src.suffix() : "";
     findFreeName(name, path, suff);
-
-    QFileInfo target(src.absoluteFilePath(), path + name + suff);
-    // Source and meta
-    QFile::copy(src.absoluteFilePath(), target.filePath());
-    QFile::copy(src.absoluteFilePath() + gMetaExt, target.filePath() + gMetaExt);
+    QFileInfo target (src.absoluteFilePath(), path + name + suff);
+    if (src.isDir()) {
+        copyRecursively(src.absoluteFilePath(), target.absoluteFilePath());
+    } else {
+        // Source and meta
+        QFile::copy(src.absoluteFilePath(), target.filePath());
+        QFile::copy(src.absoluteFilePath() + gMetaExt, target.filePath() + gMetaExt);
+    }
 
     IConverterSettings *settings    = createSettings(target);
     QString guid    = settings->destination();
