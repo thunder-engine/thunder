@@ -77,9 +77,14 @@ private slots:
     void                    onItemDelete                    ();
     void                    onItemReimport                  ();
 
+    void                    onTreeItemDuplicate             ();
+    void                    onTreeItemRename                ();
+    void                    onTreeItemDelete                ();
+
     void                    on_contentTree_clicked          (const QModelIndex &index);
     void                    on_contentList_doubleClicked    (const QModelIndex &index);
 
+    void                    on_contentTree_customContextMenuRequested   (const QPoint &pos);
     void                    on_contentList_customContextMenuRequested   (const QPoint &pos);
     void                    on_findContent_textChanged                  (const QString &arg1);
 
@@ -94,6 +99,8 @@ private:
     QMenu                   m_ContentMenu;
 
     QMenu                   m_CreationMenu;
+
+    QMenu                   m_contentTreeMenu;
 
 };
 

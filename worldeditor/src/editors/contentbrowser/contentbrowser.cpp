@@ -173,7 +173,15 @@ void ContentBrowser::createContextMenus() {
     m_ContentMenu.addSeparator();
     createAction(tr("Reimport"), SLOT(onItemReimport()));
 
+    m_contentTreeMenu.addAction(tr("New Folder"))->setData(true);
+    m_contentTreeMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_contentTreeMenu.addSeparator();
+    m_contentTreeMenu.addAction(tr("Duplicate"), this, SLOT(onTreeItemDuplicate()));
+    m_contentTreeMenu.addAction(tr("Rename"), this, SLOT(onTreeItemRename()));
+    m_contentTreeMenu.addAction(tr("Delete"), this, SLOT(onTreeItemDelete()));
+
     connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
+    connect(&m_contentTreeMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
 }
 
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
@@ -239,6 +247,15 @@ void ContentBrowser::onItemDelete() {
     }
 }
 
+void ContentBrowser::onTreeItemRename() {
+}
+
+void ContentBrowser::onTreeItemDuplicate() {
+}
+
+void ContentBrowser::onTreeItemDelete() {
+}
+
 void ContentBrowser::rescan() {
     on_contentTree_clicked(QModelIndex());
 }
@@ -282,6 +299,14 @@ void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos
         m_CreationMenu.exec(w->mapToGlobal(pos));
     } else {
         m_ContentMenu.exec(w->mapToGlobal(pos));
+    }
+}
+
+void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos) {
+    QWidget* w  = static_cast<QWidget*>(QObject::sender());
+    if (!ui->contentTree->selectionModel()->selectedIndexes().empty())
+    {
+        m_contentTreeMenu.exec(w->mapToGlobal(pos));
     }
 }
 
