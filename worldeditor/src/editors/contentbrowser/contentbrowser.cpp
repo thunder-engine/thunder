@@ -248,12 +248,21 @@ void ContentBrowser::onItemDelete() {
 }
 
 void ContentBrowser::onTreeItemRename() {
+    ui->contentTree->edit(ui->contentTree->currentIndex());
 }
 
 void ContentBrowser::onTreeItemDuplicate() {
+    QModelIndex index = m_pTreeProxy->mapToSource(ui->contentTree->currentIndex());
+    QString path = ContentTree::instance()->path(index);
+    QFileInfo fullName(path);
+    AssetManager::instance()->duplicateResource(QFileInfo(fullName.fileName()));
 }
 
 void ContentBrowser::onTreeItemDelete() {
+    QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
+    if (msgBox.exec() == QMessageBox::Yes) {
+        ContentTree::instance()->removeResource(m_pTreeProxy->mapToSource(ui->contentTree->currentIndex()));
+    }
 }
 
 void ContentBrowser::rescan() {

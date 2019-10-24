@@ -174,8 +174,27 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
+bool ContentTree::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    Q_UNUSED(role)
+    switch(index.column()) {
+        case 0: {
+            QDir dir(ProjectManager::instance()->contentPath());
+            QObject *item   = static_cast<QObject *>(index.internalPointer());
+            QFileInfo info(item->objectName());
+            QString path    = (info.path() != ".") ? (info.path() + QDir::separator()) : "";
+            QString suff    = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
+            QFileInfo dest(path + value.toString() + suff);
+            AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()),
+                                            dir.relativeFilePath(dest.filePath()));
+        } break;
+        default: break;
+    }
+    return true;
+}
+
 Qt::ItemFlags ContentTree::flags(const QModelIndex &index) const {
-    return BaseObjectModel::flags(index) | Qt::ItemIsSelectable;
+    return BaseObjectModel::flags(index) | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
 QString ContentTree::path(const QModelIndex &index) const {
@@ -202,6 +221,21 @@ void ContentTree::onRendered(const QString &uuid) {
         emit layoutAboutToBeChanged();
         emit layoutChanged();
     }
+}
+
+void ContentTree::removeResource(const QModelIndex &index) {
+    if(index.isValid()) {
+        QObject *item   = static_cast<QObject *>(index.internalPointer());
+        if(item) {
+            QFileInfo fullName(item->objectName());
+            AssetManager::instance()->removeResource(QFileInfo(fullName.fileName()));
+            item->setParent(nullptr);
+            delete item;
+        }
+    }
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 void ContentTree::update(const QString &path) {

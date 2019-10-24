@@ -46,9 +46,13 @@ public:
 
     QVariant                    data                        (const QModelIndex &index, int role) const;
 
+    bool                        setData                     (const QModelIndex &index, const QVariant &value, int role);
+
     Qt::ItemFlags               flags                       (const QModelIndex &index) const;
 
     QString                     path                        (const QModelIndex &index) const;
+
+    void                        removeResource              (const QModelIndex &index);
 
 public slots:
     void                        onRendered                  (const QString &uuid);
