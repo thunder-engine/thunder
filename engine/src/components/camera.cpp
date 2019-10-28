@@ -338,6 +338,6 @@ bool Camera::drawHandles(bool selected) {
 
     Handles::drawLines(Matrix4(), points, indices);
     Handles::s_Color = Handles::s_Normal;
-    return Handles::drawBillboard(actor()->transform()->position(), Vector2(0.1f), Engine::loadResource<Texture>(".embedded/camera.png"));
+    return Handles::drawBillboard(actor()->transform()->position(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/camera.png"));
 }
 #endif

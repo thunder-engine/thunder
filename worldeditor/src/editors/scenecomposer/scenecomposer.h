@@ -83,6 +83,9 @@ private:
 
     ProjectModel           *m_pProjectModel;
 
+    QAction                *m_Undo;
+    QAction                *m_Redo;
+
 private slots:
     void                    onNewProject                                ();
     void                    onImportProject                             ();

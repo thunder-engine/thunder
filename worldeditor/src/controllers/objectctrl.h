@@ -146,8 +146,8 @@ public:
     void                setMap                      (Object *map)   { m_pMap = map; }
     Object             *map                         () const { return m_pMap; }
 
-    void                setMoveGrid                 (float value)   { mMoveGrid = value; }
-    void                setAngleGrid                (float value)   { mAngleGrid = value; }
+    void                setMoveGrid                 (float value)   { m_MoveGrid = value; }
+    void                setAngleGrid                (float value)   { m_AngleGrid = value; }
 
     Object             *findObject                  (uint32_t id, Object *parent = nullptr);
 
@@ -196,7 +196,7 @@ protected:
 
     Vector3             objectPosition              ();
 
-    bool                isDrag                      ()  { return mDrag; }
+    bool                isDrag                      ()  { return m_Drag; }
 
     void                setDrag                     (bool drag);
 
@@ -207,16 +207,19 @@ protected:
     typedef std::map<uint32_t, Select> SelectMap;
     SelectMap           m_Selected;
 
-    bool                mDrag;
+    bool                m_Drag;
+    bool                m_Canceled;
 
     /// Current mode (see AController::ModeTypes)
-    uint8_t             mMode;
+    uint8_t             m_Mode;
 
-    uint8_t             mAxes;
+    uint8_t             m_Axes;
 
-    Vector3             mMoveGrid;
-    float               mAngleGrid;
-    float               mScaleGrid;
+    Vector3             m_MoveGrid;
+    float               m_AngleGrid;
+    float               m_ScaleGrid;
+
+    float               m_Angle;
 
     Object             *m_pMap;
 
@@ -229,14 +232,14 @@ protected:
 
     QString             m_DragMap;
 
-    Vector2             mMousePosition;
+    Vector2             m_MousePosition;
     Vector2             m_Screen;
 
-    Vector3             mWorld;
-    Vector3             mSavedWorld;
-    Vector3             mPosition;
+    Vector3             m_World;
+    Vector3             m_SavedWorld;
+    Vector3             m_Position;
 
-    Vector3             mMouseWorld;
+    Vector3             m_MouseWorld;
 
     list<uint32_t>      m_ObjectsList;
 };

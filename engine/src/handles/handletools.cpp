@@ -5,7 +5,7 @@
 
 #include <float.h>
 
-#define SIDES 36
+#define SIDES 180
 
 Matrix4 HandleTools::s_View;
 Matrix4 HandleTools::s_Projection;
@@ -33,15 +33,19 @@ HandleTools::HandleTools() {
 
 }
 
-Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, float start, float angle) {
+Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, float start, float angle, bool center) {
     Vector3Vector result;
-    int sides       = SIDES / 360.0f * angle;
+    int sides       = abs(SIDES / 360.0f * angle);
     float theta     = angle / float(sides - 1) * DEG2RAD;
     float tfactor   = tanf(theta);
     float rfactor   = cosf(theta);
 
     float x = size * cosf(start * DEG2RAD);
     float y = size * sinf(start * DEG2RAD);
+
+    if(center) {
+        result.push_back(Vector3());
+    }
 
     for(int i = 0; i < sides; i++) {
         result.push_back(rotation * Vector3(x, 0, y));

@@ -187,7 +187,7 @@ bool SpotLight::drawHandles(bool selected) {
     Vector3 pos = actor()->transform()->position();
 
     Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(pos, Vector2(0.1), Engine::loadResource<Texture>(".embedded/spotlight.png"));
+    bool result = Handles::drawBillboard(pos, Vector2(0.5f), Engine::loadResource<Texture>(".embedded/spotlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

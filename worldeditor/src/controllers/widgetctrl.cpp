@@ -119,7 +119,7 @@ void WidgetCtrl::callback_transform_draw(ARender *pRender, int mode, bool simple
 }
 */
 void WidgetCtrl::update() {
-    if(mDrag) {
+    if(m_Drag) {
         Vector3 delta;//     = world - old;
 /*
         if(mAxis == Transform::AXIS_Z) {

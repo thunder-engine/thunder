@@ -305,19 +305,20 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
 
-    mDrag  = false;
-    mMode  = ObjectCtrl::MODE_SCALE;
-    mWorld = Vector3();
+    m_Drag  = false;
+    m_Canceled = false;
+    m_Mode  = ObjectCtrl::MODE_SCALE;
+    m_World = Vector3();
 
-    mAxes = 0;
+    m_Axes = 0;
 
-    mMoveGrid   = Vector3();
-    mAngleGrid  = 0;
-    mScaleGrid  = 0;
+    m_MoveGrid   = Vector3();
+    m_AngleGrid  = 0;
+    m_ScaleGrid  = 0;
 
     m_pMap = nullptr;
 
-    mMousePosition  = Vector2();
+    m_MousePosition  = Vector2();
 
     m_pSelect = Engine::objectCreate<Texture>();
     m_pSelect->setFormat(Texture::RGBA8);
@@ -358,23 +359,23 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
     Handles::m_sMouse = Vector2(screen.x, screen.y);
     Handles::m_sScreen = m_Screen;
 
-    if(!mDrag) {
-        Handles::s_Axes = mAxes;
+    if(!m_Drag) {
+        Handles::s_Axes = m_Axes;
     }
 
     m_ObjectsList.clear();
     drawHelpers(*m_pMap);
 
     if(!m_Selected.empty()) {
-        switch(mMode) {
+        switch(m_Mode) {
             case MODE_TRANSLATE: {
-                mWorld  = Handles::moveTool(objectPosition(), mDrag);
+                m_World  = Handles::moveTool(objectPosition(), Quaternion(), m_Drag);
 
-                if(mDrag) {
-                    Vector3 delta = mWorld - mSavedWorld;
-                    if(mMoveGrid > 0.0f) {
+                if(m_Drag) {
+                    Vector3 delta = m_World - m_SavedWorld;
+                    if(m_MoveGrid > 0.0f) {
                         for(int32_t i = 0; i < 3; i++) {
-                            delta[i] = mMoveGrid[i] * int(delta[i] / mMoveGrid[i]);
+                            delta[i] = m_MoveGrid[i] * int(delta[i] / m_MoveGrid[i]);
                         }
                     }
                     for(const auto &it : m_Selected) {
@@ -393,40 +394,41 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
                 }
             } break;
             case MODE_ROTATE: {
-                mWorld  = Handles::rotationTool(objectPosition(), mDrag);
+                Vector3 delta = m_World - m_SavedWorld;
+                float angle   = (delta.x + delta.y + delta.z);
+                if(m_AngleGrid > 0) {
+                    angle = m_AngleGrid * int(angle / m_AngleGrid);
+                }
 
-                if(mDrag) {
-                    Vector3 delta = mWorld - mSavedWorld;
-                    float angle   = (delta.x + delta.y + delta.z) * 0.5f;
-                    if(mAngleGrid > 0) {
-                        angle   = mAngleGrid * int(angle / mAngleGrid);
-                    }
+                m_World = Handles::rotationTool(objectPosition(), Quaternion(), m_Drag, angle);
+
+                if(m_Drag) {
                     for(const auto &it : m_Selected) {
                         Transform *tr  = it.second.object->transform();
-                        Vector3 t      = Vector3(mPosition - it.second.position);
-                        Quaternion q   = tr->rotation();
+                        Vector3 t      = Vector3(m_Position - it.second.position);
+                        Quaternion q;
                         Vector3 euler  = it.second.euler;
                         switch(Handles::s_Axes) {
                             case Handles::AXIS_X: {
-                                q      = q * Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
+                                q = Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
                                 euler += Vector3(angle, 0.0f, 0.0f);
                             } break;
                             case Handles::AXIS_Y: {
-                                q      = q * Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
+                                q = Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
                                 euler += Vector3(0.0f, angle, 0.0f);
                             } break;
                             case Handles::AXIS_Z: {
-                                q      = q * Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
+                                q = Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
                                 euler += Vector3(0.0f, 0.0f, angle);
                             } break;
                             default: {
-                                Vector3 axis  = m_pActiveCamera->actor()->transform()->position() - mPosition;
+                                Vector3 axis  = m_pActiveCamera->actor()->transform()->position() - m_Position;
                                 axis.normalize();
-                                q      = q * Quaternion(axis, angle);
-                                euler += axis * angle;
+                                q = Quaternion(axis, angle);
+                                euler = q.euler();
                             } break;
                         }
-                        tr->setPosition(mPosition - q * t);
+                        tr->setPosition(m_Position - q * t);
                         tr->setEuler(euler);
                     }
                     emit objectsUpdated();
@@ -434,21 +436,21 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
                 }
             } break;
             case MODE_SCALE: {
-                if(!mDrag) {
+                if(!m_Drag) {
                     Handles::s_Axes = Handles::AXIS_X | Handles::AXIS_Y | Handles::AXIS_Z;
                 }
 
-                mWorld  = Handles::scaleTool(objectPosition(), mDrag);
+                m_World = Handles::scaleTool(objectPosition(), Quaternion(), m_Drag);
 
-                if(mDrag) {
-                    Vector3 delta = (mWorld - mSavedWorld);
+                if(m_Drag) {
+                    Vector3 delta = (m_World - m_SavedWorld);
                     float scale = (delta.x + delta.y + delta.z) * 0.01f;
-                    if(mScaleGrid > 0) {
-                        scale = mScaleGrid * int(scale / mScaleGrid);
+                    if(m_ScaleGrid > 0) {
+                        scale = m_ScaleGrid * int(scale / m_ScaleGrid);
                     }
                     for(const auto &it : m_Selected) {
                         Transform *tr = it.second.object->transform();
-                        Vector3 t = Vector3(mPosition - it.second.position);
+                        Vector3 t = Vector3(m_Position - it.second.position);
                         Vector3 s;
                         if(Handles::s_Axes & Handles::AXIS_X) {
                             s   += Vector3(scale, 0, 0);
@@ -460,7 +462,7 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
                             s   += Vector3(0, 0, scale);
                         }
                         Vector3 v = it.second.scale + s;
-                        tr->setPosition(mPosition - t * v);
+                        tr->setPosition(m_Position - t * v);
                         tr->setScale(v);
                     }
                     emit objectsUpdated();
@@ -531,7 +533,7 @@ void ObjectCtrl::drawHelpers(Object &object) {
 }
 
 void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
-    pos = Vector2(mMousePosition.x, mMousePosition.y);
+    pos = Vector2(m_MousePosition.x, m_MousePosition.y);
     size = Vector2(1, 1);
 }
 
@@ -555,10 +557,11 @@ void ObjectCtrl::setDrag(bool drag) {
             it.second.scale     = t->scale();
             it.second.euler     = t->euler();
         }
-        mSavedWorld = mWorld;
-        mPosition   = objectPosition();
+        m_SavedWorld = m_World;
+        m_Position = objectPosition();
+        m_Angle = 0.0f;
     }
-    mDrag = drag;
+    m_Drag = drag;
 }
 
 void ObjectCtrl::onApplySettings() {
@@ -623,15 +626,15 @@ void ObjectCtrl::onFocusActor(Object *object) {
 }
 
 void ObjectCtrl::onMoveActor() {
-    mMode = MODE_TRANSLATE;
+    m_Mode = MODE_TRANSLATE;
 }
 
 void ObjectCtrl::onRotateActor() {
-    mMode = MODE_ROTATE;
+    m_Mode = MODE_ROTATE;
 }
 
 void ObjectCtrl::onScaleActor() {
-    mMode = MODE_SCALE;
+    m_Mode = MODE_SCALE;
 }
 
 void ObjectCtrl::onCreateComponent(const QString &name) {
@@ -675,7 +678,7 @@ void ObjectCtrl::onUpdateSelected() {
 
 void ObjectCtrl::onDrop() {
     if(!m_DragObjects.empty()) {
-        mDrag   = false;
+        m_Drag = false;
         UndoManager::instance()->push(new CreateObject(m_DragObjects, this));
     }
 
@@ -747,11 +750,11 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     }
     for(Object *o : m_DragObjects) {
         Actor *a = static_cast<Actor *>(o);
-        a->transform()->setPosition(mMouseWorld);
+        a->transform()->setPosition(m_MouseWorld);
         a->setParent(m_pMap);
     }
     if(!m_DragObjects.empty() || !m_DragMap.isEmpty()) {
-        mDrag   = true;
+        m_Drag = true;
         return;
     }
 
@@ -759,11 +762,11 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
-    mMousePosition  = Vector2(e->pos().x(), e->pos().y());
+    m_MousePosition  = Vector2(e->pos().x(), e->pos().y());
 
     for(Object *o : m_DragObjects) {
         Actor *a    = static_cast<Actor *>(o);
-        a->transform()->setPosition(mMouseWorld);
+        a->transform()->setPosition(m_MouseWorld);
     }
 }
 
@@ -787,12 +790,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
             }
         } break;
         case QEvent::MouseButtonPress: {
-            QMouseEvent *e  = static_cast<QMouseEvent *>(pe);
+            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->buttons() & Qt::LeftButton) {
                 if(Handles::s_Axes) {
-                    mAxes   = Handles::s_Axes;
+                    m_Axes = Handles::s_Axes;
                 }
-                if(mDrag) {
+                if(m_Drag) {
                     for(auto it : m_Selected) {
                         Transform *t = it.second.object->transform();
                         t->setPosition(it.second.position);
@@ -800,14 +803,15 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         t->setScale(it.second.scale);
                     }
                     setDrag(false);
+                    m_Canceled = true;
                 }
             }
         } break;
         case QEvent::MouseButtonRelease: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->button() == Qt::LeftButton) {
-                if(mDrag) {
-                    switch(mMode) {
+                if(m_Drag) {
+                    switch(m_Mode) {
                     case MODE_TRANSLATE: {
                         VariantList values;
                         Object::ObjectList objects;
@@ -856,16 +860,20 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                     default: break;
                     }
                 } else {
-                    onSelectActor(m_ObjectsList, e->modifiers() & Qt::ControlModifier);
+                    if(!m_Canceled) {
+                        onSelectActor(m_ObjectsList, e->modifiers() & Qt::ControlModifier);
+                    } else {
+                        m_Canceled = false;
+                    }
                 }
                 setDrag(false);
             }
         } break;
         case QEvent::MouseMove: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            mMousePosition = Vector2(e->pos().x(), e->pos().y());
+            m_MousePosition = Vector2(e->pos().x(), e->pos().y());
             if(e->buttons() & Qt::LeftButton) {
-                if(!mDrag) {
+                if(!m_Drag) {
                     if(e->modifiers() & Qt::ShiftModifier) {
                         UndoManager::instance()->push(new CloneObjects(this));
                     }

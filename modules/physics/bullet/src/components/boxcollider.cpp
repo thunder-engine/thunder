@@ -37,7 +37,7 @@ bool BoxCollider::drawHandles(bool selected) {
     if(selected) {
         Transform *t = actor()->transform();
 
-        Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale() * m_Size);
+        Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale() * m_Size * 2.0f);
     }
     return false;
 }

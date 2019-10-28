@@ -118,13 +118,13 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     Input::init(ui->preview);
 
-    QAction *undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
-    undo->setShortcut(QKeySequence("Ctrl+Z"));
-    ui->menuEdit->insertAction(ui->actionNew_Object, undo);
+    m_Undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
+    m_Undo->setShortcut(QKeySequence("Ctrl+Z"));
+    ui->menuEdit->insertAction(ui->actionNew_Object, m_Undo);
 
-    QAction *redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
-    redo->setShortcut(QKeySequence("Ctrl+Y"));
-    ui->menuEdit->insertAction(ui->actionNew_Object, redo);
+    m_Redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
+    m_Redo->setShortcut(QKeySequence("Ctrl+Y"));
+    ui->menuEdit->insertAction(ui->actionNew_Object, m_Redo);
 
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
@@ -466,6 +466,9 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
         ctrl->setMap(m_pMap);
     }
 
+    m_Undo->setEnabled(true);
+    m_Redo->setEnabled(true);
+
     Engine::setGameMode(false);
 }
 
@@ -476,6 +479,9 @@ void SceneComposer::on_actionGame_Mode_triggered() {
     }
     ui->actionGame_Mode->setChecked(true);
     ui->actionEditor_Mode->setChecked(false);
+
+    m_Undo->setEnabled(false);
+    m_Redo->setEnabled(false);
 
     Engine::setGameMode(true);
 }

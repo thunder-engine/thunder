@@ -13,7 +13,7 @@ class NEXT_LIBRARY_EXPORT HandleTools {
 public:
     HandleTools             ();
 
-    static Vector3Vector    pointsArc           (const Quaternion &rotation, float size, float start, float angle);
+    static Vector3Vector    pointsArc           (const Quaternion &rotation, float size, float start, float angle, bool center = false);
 
     static float            distanceToPoint     (const Matrix4 &matrix, const Vector3 &position);
 

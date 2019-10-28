@@ -154,7 +154,7 @@ void Handles::init() {
 
     if(s_Arc == nullptr) {
         Mesh::Lod lod;
-        lod.vertices    = HandleTools::pointsArc(Quaternion(), 5.0, 0, 180);
+        lod.vertices    = HandleTools::pointsArc(Quaternion(), 1.0, 0, 180);
         lod.indices.clear();
 
         s_Arc = Engine::objectCreate<Mesh>("Arc");
@@ -260,6 +260,24 @@ void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const V
     }
 }
 
+void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float start, float angle) {
+    if(ICommandBuffer::isInited()) {
+        Mesh::Lod lod;
+        lod.vertices = HandleTools::pointsArc(rotation, radius, start, angle, true);
+        {
+            s_Lines->setMode(Mesh::MODE_TRIANGLE_FAN);
+            s_Lines->setLod(0, lod);
+        }
+        if(s_Buffer) {
+            Matrix4 transform;
+            transform.translate(center);
+
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+        }
+    }
+}
+
 void Handles::drawCircle(const Vector3 &center, const Quaternion &rotation, float radius) {
     if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
@@ -293,14 +311,14 @@ void Handles::drawCapsule(const Vector3 &center, const Quaternion &rotation, flo
         {
             Vector3 cap(0, half, 0);
             s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(), Vector3(radius)), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90, 90, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3(-90, 90, 0)), Vector3(radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
         {
             Vector3 cap(0,-half, 0);
             s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(), Vector3(radius)), s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90,  0, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90, 90, 0)), Vector3(0.2 * radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90,  0, 0)), Vector3(radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->drawMesh(transform * Matrix4(cap, Quaternion(Vector3( 90, 90, 0)), Vector3(radius)), s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
 
         Vector3Vector points = { Vector3( radius, half, 0),
@@ -337,7 +355,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
     return result;
 }
 
-Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
+Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
     Vector3 result = position;
     if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
@@ -350,7 +368,7 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
                 scale = camera->orthoHeight();
             }
             scale *= (CONTROL_SIZE / m_sScreen.y);
-            Matrix4 model(position, Quaternion(), scale);
+            Matrix4 model(position, rotation, scale);
 
             Matrix4 x   = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
             Matrix4 y   = model * Matrix4(Vector3(0, conesize, 0), Quaternion(), conesize);
@@ -423,17 +441,18 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             Plane plane;
             plane.point     = position;
             plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
-            if(s_Axes == AXIS_X || s_Axes == AXIS_Z) {
-                plane.normal    = Vector3(0.0f, plane.normal.y, plane.normal.z);
-            }  else if(s_Axes == (AXIS_X | AXIS_Z)) {
-                plane.normal    = Vector3(0.0f, 1.0f, 0.0f);
+            if(s_Axes == AXIS_X) {
+                plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
+            } else if(s_Axes == AXIS_Z) {
+                plane.normal = Vector3(plane.normal.x, plane.normal.y, 0.0f);
+            } else if(s_Axes == (AXIS_X | AXIS_Z)) {
+                plane.normal = Vector3(0.0f, 1.0f, 0.0f);
             } else if(s_Axes == (AXIS_X | AXIS_Y)) {
-                plane.normal    = Vector3(0.0f, 0.0f, 1.0f);
+                plane.normal = Vector3(0.0f, 0.0f, 1.0f);
             } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
-                plane.normal    = Vector3(1.0f, 0.0f, 0.0f);
+                plane.normal = Vector3(1.0f, 0.0f, 0.0f);
             } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-                plane.normal    = camera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
-                plane.normal    = Vector3(plane.normal.x, 0.0f, plane.normal.z);
+                plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
             }
             plane.d = plane.normal.dot(plane.point);
 
@@ -449,13 +468,12 @@ Vector3 Handles::moveTool(const Vector3 &position, bool locked) {
             if(s_Axes & AXIS_Z) {
                 result.z = point.z;
             }
-
         }
     }
     return result;
 }
 
-Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
+Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked, float angle) {
     if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
         if(camera) {
@@ -470,10 +488,9 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             scale *= (CONTROL_SIZE / m_sScreen.y);
             normal.normalize();
 
-            Matrix4 model(position, Quaternion(), scale);
+            Matrix4 model(position, rotation, scale * 5.0f);
 
-            Matrix4 q1  = model * Matrix4(Vector3(), t->rotation() * Quaternion(Vector3( 90, 0, 0)), Vector3(conesize));
-            Matrix4 q2  = q1 * Matrix4(Quaternion(Vector3( 0, 1, 0), 180).toMatrix());
+            Matrix4 q1  = model * Matrix4(Vector3(), t->rotation() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
             Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 90)) *
                                                      Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
@@ -485,8 +502,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
             m.scale(1.2f);
 
             if(!locked) {
-                if((HandleTools::distanceToMesh(q1 * m, s_Arc) <= sense) ||
-                   (HandleTools::distanceToMesh(q2 * m, s_Arc) <= sense)) {
+                if(HandleTools::distanceToMesh(q1 * m, s_Circle) <= sense) {
                     s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
                 } else if(HandleTools::distanceToMesh(x, s_Arc) <= sense) {
                     s_Axes  = AXIS_X;
@@ -497,34 +513,56 @@ Vector3 Handles::rotationTool(const Vector3 &position, bool locked) {
                 }
             }
 
-            s_Buffer->setColor((s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f);
-            s_Buffer->drawMesh(q1 * m, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2 * m, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->setColor(grey);
-            s_Buffer->drawMesh(q1, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->drawMesh(q2, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            float start = 0.0f;
 
-            if(!locked || s_Axes == AXIS_X) {
-                s_Buffer->setColor((s_Axes == AXIS_X) ? s_Selected : s_xColor);
+            if(locked) {
+                s_Color = s_Selected;
+                s_Color.w = ALPHA;
+                if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
+                    drawDisk(position, Quaternion(Vector3(90, 0, 0)), scale, start, -angle);
+                    s_Buffer->setColor(s_Selected);
+                    s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                } else if(s_Axes == AXIS_X) {
+                    drawDisk(position, Quaternion(Vector3(0, 0, 1), 90), scale, start, angle);
+                    s_Buffer->setColor(s_Selected);
+                    s_Buffer->drawMesh(x, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                } else if(s_Axes == AXIS_Y) {
+                    drawDisk(position, Quaternion(), scale, start, -angle);
+                    s_Buffer->setColor(s_Selected);
+                    s_Buffer->drawMesh(y, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                } else if(s_Axes == AXIS_Z) {
+                    drawDisk(position, Quaternion(Vector3(1, 0, 0), 90), scale, start, -angle);
+                    s_Buffer->setColor(s_Selected);
+                    s_Buffer->drawMesh(z, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                }
+            } else {
+                s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor;
+                s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(x, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            }
 
-            if(!locked || s_Axes == AXIS_Y) {
-                s_Buffer->setColor((s_Axes == AXIS_Y) ? s_Selected : s_yColor);
+                s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor;
+                s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(y, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            }
 
-            if(!locked || s_Axes == AXIS_Z) {
-                s_Buffer->setColor((s_Axes == AXIS_Z) ? s_Selected : s_zColor);
+                s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
+                s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(z, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
-            s_Buffer->setColor(s_Normal);
+
+            s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f;
+            s_Buffer->setColor(s_Color);
+            s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+            s_Buffer->setColor(grey);
+            s_Buffer->drawMesh(q1, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+
+            s_Color = s_Normal;
+            s_Buffer->setColor(s_Color);
         }
     }
-    return Vector3(m_sMouse, 1.0) * 100;
+    return Vector3(m_sMouse, 1.0) * 500;
 }
 
-Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
+Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
     if(ICommandBuffer::isInited()) {
         Camera *camera  = Camera::current();
         if(camera) {
@@ -540,7 +578,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
                           ((normal.y < 0) ? 1 : -1) * size,
                           ((normal.z < 0) ? 1 : -1) * size);
 
-            Matrix4 model(position, Quaternion(), scale);
+            Matrix4 model(position, rotation, scale);
             Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), Vector3(conesize));
             Matrix4 y   = model * Matrix4(Vector3(), Quaternion(), Vector3(conesize));
             Matrix4 z   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), Vector3(conesize));
@@ -643,7 +681,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, bool locked) {
             s_Color = s_Normal;
         }
     }
-    return Vector3(m_sMouse, 1.0) * 100;
+    return Vector3(m_sMouse, 1.0) * 500;
 }
 
 
