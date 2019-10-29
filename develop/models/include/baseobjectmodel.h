@@ -19,6 +19,10 @@ public:
 
     Qt::ItemFlags               flags                       (const QModelIndex &index) const;
 
+    virtual bool                removeResource              (const QModelIndex &index) { return false; }
+
+    virtual QString             path                        (const QModelIndex &index) const { Q_UNUSED(index); return QString(); }
+
 protected:
     QObject                    *m_rootItem;
 

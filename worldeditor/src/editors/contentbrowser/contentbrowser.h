@@ -11,10 +11,10 @@
 
 #include "converters/converter.h"
 
-class QSortFilterProxyModel;
 class ContentItemDeligate;
 class ContentListFilter;
 class ContentTreeFilter;
+class BaseObjectModel;
 
 namespace Ui {
     class ContentBrowser;
@@ -57,6 +57,7 @@ public:
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();
+    void                    createContextMenus      ();
 
     ContentItemDeligate    *m_pContentDeligate;
 
@@ -79,13 +80,14 @@ private slots:
     void                    on_contentTree_clicked          (const QModelIndex &index);
     void                    on_contentList_doubleClicked    (const QModelIndex &index);
 
+    void                    on_contentTree_customContextMenuRequested   (const QPoint &pos);
     void                    on_contentList_customContextMenuRequested   (const QPoint &pos);
     void                    on_findContent_textChanged                  (const QString &arg1);
 
     void                    showInGraphicalShell            ();
 
 private:
-    void                    createAction                    (const QString &name, const char *member, const QKeySequence &shortcut = 0);
+    QAction*                createAction                    (const QString &name, const char *member, const QKeySequence &shortcut = 0);
 
 private:
     Ui::ContentBrowser     *ui;
@@ -93,6 +95,8 @@ private:
     QMenu                   m_ContentMenu;
 
     QMenu                   m_CreationMenu;
+
+    QMenu                   m_contentTreeMenu;
 
 };
 

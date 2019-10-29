@@ -129,31 +129,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     connect(m_pFilterMenu, SIGNAL(triggered(QAction*)), this, SLOT(onFilterMenuTriggered(QAction*)));
 
     readSettings();
-
-    QString showIn(tr("Show in Explorer"));
-    {
-        QLabel *label = new QLabel(tr("Create Asset"), this);
-        QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
-        a->setDefaultWidget(label);
-
-        m_CreationMenu.addAction(tr("New Folder"))->setData(true);
-        m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
-        m_CreationMenu.addSeparator();
-        m_CreationMenu.addAction(a);
-        m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
-        m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
-        m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
-        m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
-    }
-
-    createAction(showIn, SLOT(showInGraphicalShell()));
-    createAction(tr("Duplicate"), SLOT(onItemDuplicate()));
-    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2));
-    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete));
-    m_ContentMenu.addSeparator();
-    createAction(tr("Reimport"), SLOT(onItemReimport()));
-
-    connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
+    createContextMenus();
 }
 
 ContentBrowser::~ContentBrowser() {
@@ -173,6 +149,40 @@ void ContentBrowser::readSettings() {
 void ContentBrowser::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("content.geometry", ui->splitter->saveState());
+}
+
+void ContentBrowser::createContextMenus() {
+    QString showIn(tr("Show in Explorer"));
+    QLabel *label = new QLabel(tr("Create Asset"), this);
+    QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
+    a->setDefaultWidget(label);
+
+    m_CreationMenu.addAction(tr("New Folder"))->setData(true);
+    m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_CreationMenu.addSeparator();
+    m_CreationMenu.addAction(a);
+    m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
+    m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
+    m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
+    m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
+
+    createAction(showIn, SLOT(showInGraphicalShell()));
+    createAction(tr("Duplicate"), SLOT(onItemDuplicate()))->setData(QVariant::fromValue(ui->contentList));
+    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2))->setData(QVariant::fromValue(ui->contentList));
+    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete))->setData(QVariant::fromValue(ui->contentList));
+    m_ContentMenu.addSeparator();
+    createAction(tr("Reimport"), SLOT(onItemReimport()));
+
+    m_contentTreeMenu.addAction(tr("New Folder"))->setData(true);
+    m_contentTreeMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_contentTreeMenu.addSeparator();
+
+    m_contentTreeMenu.addAction(tr("Duplicate"), this, SLOT(onItemDuplicate()))->setData(QVariant::fromValue(ui->contentTree));
+    m_contentTreeMenu.addAction(tr("Rename"), this, SLOT(onItemRename()))->setData(QVariant::fromValue(ui->contentTree));
+    m_contentTreeMenu.addAction(tr("Delete"), this, SLOT(onItemDelete()))->setData(QVariant::fromValue(ui->contentTree));
+
+    connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
+    connect(&m_contentTreeMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
 }
 
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
@@ -217,13 +227,27 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 }
 
 void ContentBrowser::onItemRename() {
-    ui->contentList->edit(ui->contentList->currentIndex());
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
+        view->edit(view->currentIndex());
+    }
 }
 
 void ContentBrowser::onItemDuplicate() {
-    QModelIndex index   = m_pContentProxy->mapToSource(ui->contentList->currentIndex());
-    QString path    = ContentList::instance()->path(index);
-    AssetManager::instance()->duplicateResource(QFileInfo(path));
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
+        QSortFilterProxyModel* filter = static_cast<QSortFilterProxyModel*>(view->model());
+        BaseObjectModel* model = static_cast<BaseObjectModel*>(filter->sourceModel());
+
+        QModelIndex index = filter->mapToSource(view->currentIndex());
+        QString path = model->path(index);
+        QFileInfo info = dynamic_cast<QTreeView*>(view) != nullptr ? QFileInfo(path).fileName() : QFileInfo(path);
+        AssetManager::instance()->duplicateResource(info);
+    }
 }
 
 void ContentBrowser::onItemReimport() {
@@ -232,9 +256,17 @@ void ContentBrowser::onItemReimport() {
 }
 
 void ContentBrowser::onItemDelete() {
-    QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
-    if(msgBox.exec() == QMessageBox::Yes) {
-        ContentList::instance()->removeResource(m_pContentProxy->mapToSource(ui->contentList->currentIndex()));
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
+        QSortFilterProxyModel* filter = static_cast<QSortFilterProxyModel*>(view->model());
+        BaseObjectModel* model = static_cast<BaseObjectModel*>(filter->sourceModel());
+
+        QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
+        if (msgBox.exec() == QMessageBox::Yes) {
+            model->removeResource(filter->mapToSource(view->currentIndex()));
+        }
     }
 }
 
@@ -266,13 +298,14 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
     }
 }
 
-void ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
+QAction* ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
     QAction *a  = new QAction(name, this);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
     connect(a, SIGNAL(triggered(bool)), this, member);
     ui->contentList->addAction(a);
     m_ContentMenu.addAction(a);
+    return a;
 }
 
 void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos) {
@@ -281,6 +314,14 @@ void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos
         m_CreationMenu.exec(w->mapToGlobal(pos));
     } else {
         m_ContentMenu.exec(w->mapToGlobal(pos));
+    }
+}
+
+void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos) {
+    QWidget* w  = static_cast<QWidget*>(QObject::sender());
+    if (!ui->contentTree->selectionModel()->selectedIndexes().empty())
+    {
+        m_contentTreeMenu.exec(w->mapToGlobal(pos));
     }
 }
 
