@@ -227,10 +227,10 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 }
 
 void ContentBrowser::onItemRename() {
-    QAction* action = qobject_cast<QAction*>(sender());
+    QAction *action = qobject_cast<QAction*>(sender());
     if (action)
     {
-        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
+        QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
         view->edit(view->currentIndex());
     }
 }
@@ -239,9 +239,9 @@ void ContentBrowser::onItemDuplicate() {
     QAction* action = qobject_cast<QAction*>(sender());
     if (action)
     {
-        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
-        QSortFilterProxyModel* filter = static_cast<QSortFilterProxyModel*>(view->model());
-        BaseObjectModel* model = static_cast<BaseObjectModel*>(filter->sourceModel());
+        QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
+        QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
+        BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
 
         QModelIndex index = filter->mapToSource(view->currentIndex());
         QString path = model->path(index);
@@ -256,12 +256,12 @@ void ContentBrowser::onItemReimport() {
 }
 
 void ContentBrowser::onItemDelete() {
-    QAction* action = qobject_cast<QAction*>(sender());
+    QAction *action = qobject_cast<QAction*>(sender());
     if (action)
     {
-        QAbstractItemView* view = qvariant_cast<QAbstractItemView*>(action->data());
-        QSortFilterProxyModel* filter = static_cast<QSortFilterProxyModel*>(view->model());
-        BaseObjectModel* model = static_cast<BaseObjectModel*>(filter->sourceModel());
+        QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
+        QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
+        BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
 
         QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
         if (msgBox.exec() == QMessageBox::Yes) {
