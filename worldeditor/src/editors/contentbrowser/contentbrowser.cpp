@@ -359,9 +359,11 @@ ModelView::isTree() const {
 }
 
 QVariant ContentBrowser::makeTreeModelView() {
-    return QVariant::fromValue(ModelView {ui->contentTree, ContentTree::instance(), m_pTreeProxy});
+    ModelView tree = {ui->contentTree, ContentTree::instance(), m_pTreeProxy};
+    return QVariant::fromValue(tree);
 }
 
 QVariant ContentBrowser::makeListModelView() {
-    return QVariant::fromValue(ModelView {ui->contentList, ContentList::instance(), m_pContentProxy});
+    ModelView list = {ui->contentList, ContentList::instance(), m_pContentProxy};
+    return QVariant::fromValue(list);
 }
