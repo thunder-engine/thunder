@@ -11,7 +11,6 @@
 
 #include "converters/converter.h"
 
-class QSortFilterProxyModel;
 class ContentItemDeligate;
 class ContentListFilter;
 class ContentTreeFilter;
@@ -20,16 +19,6 @@ class BaseObjectModel;
 namespace Ui {
     class ContentBrowser;
 }
-
-struct ModelView
-{
-    QAbstractItemView* view {nullptr};
-    BaseObjectModel*   model {nullptr};
-    QSortFilterProxyModel * filter {nullptr};
-    bool isTree() const;
-};
-
-Q_DECLARE_METATYPE(ModelView);
 
 class ContentBrowser : public QWidget {
     Q_OBJECT
@@ -99,10 +88,6 @@ private slots:
 
 private:
     QAction*                createAction                    (const QString &name, const char *member, const QKeySequence &shortcut = 0);
-
-    QVariant                makeTreeModelView               ();
-
-    QVariant                makeListModelView               ();
 
 private:
     Ui::ContentBrowser     *ui;
