@@ -50,6 +50,8 @@ public:
         return dynamic_cast<T *>(loadResource(path));
     }
 
+    static bool                 isResourceExist             (const string &path);
+
     static string               reference                   (Object *object);
 
     static void                 reloadBundle                ();

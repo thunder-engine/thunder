@@ -25,14 +25,17 @@ class AngelBuilder : public IBuilder {
 public:
     AngelBuilder (AngelSystem *system);
 
-    bool buildProject ();
+    bool buildProject () override;
 
-    QString builderVersion ();
+    QString builderVersion () override;
 
-    QStringList suffixes () const { return {"as"}; }
-    uint32_t type () const { return MetaType::type<AngelScript *>(); }
+    QStringList suffixes () const override { return {"as"}; }
+    uint32_t type () const override { return MetaType::type<AngelScript *>(); }
 
-    uint8_t convertFile(IConverterSettings *settings);
+    uint8_t convertFile (IConverterSettings *settings) override;
+
+    const QString persistentAsset () const override;
+    const QString persistentUUID () const override;
 
 protected:
     static void messageCallback (const asSMessageInfo *msg, void *param);

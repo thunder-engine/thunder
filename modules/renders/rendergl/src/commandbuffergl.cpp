@@ -146,10 +146,16 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
 
             m->bindVao(this, lod);
 
-            Mesh::Modes mode    = mesh->mode();
+            Mesh::Modes mode = mesh->mode();
             if(mode > Mesh::MODE_LINES) {
-                uint32_t vert   = mesh->vertexCount(lod);
-                glDrawArrays((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert);
+                uint32_t vert = mesh->vertexCount(lod);
+                int32_t glMode = GL_TRIANGLE_STRIP;
+                switch(mode) {
+                case Mesh::MODE_LINE_STRIP:     glMode = GL_LINE_STRIP; break;
+                case Mesh::MODE_TRIANGLE_FAN:   glMode = GL_TRIANGLE_FAN; break;
+                default: break;
+                }
+                glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
                 uint32_t index  = mesh->indexCount(lod);

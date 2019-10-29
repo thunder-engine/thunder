@@ -36,17 +36,19 @@ public:
 
     static void             drawBox             (const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
+    static void             drawDisk            (const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
+
     static void             drawCircle          (const Vector3 &center, const Quaternion &rotation, float radius);
     static void             drawSphere          (const Vector3 &center, const Quaternion &rotation, float radius);
     static void             drawCapsule         (const Vector3 &center, const Quaternion &rotation, float radius, float height);
 
     static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);
 
-    static Vector3          moveTool            (const Vector3 &position, bool locked);
+    static Vector3          moveTool            (const Vector3 &position, const Quaternion &rotation, bool locked);
 
-    static Vector3          rotationTool        (const Vector3 &position, bool locked);
+    static Vector3          rotationTool        (const Vector3 &position, const Quaternion &rotation, bool locked, float angle);
 
-    static Vector3          scaleTool           (const Vector3 &position, bool locked);
+    static Vector3          scaleTool           (const Vector3 &position, const Quaternion &rotation, bool locked);
 
 public:
     static Vector4          s_Color;

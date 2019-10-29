@@ -67,9 +67,9 @@ void AMeshGL::updateVao(uint32_t lod) {
         glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(flag & Mesh::ATTRIBUTE_COLOR) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_colors[lod]);
-        glEnableVertexAttribArray(COLOR_ATRIB);
-        glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        //glBindBuffer(GL_ARRAY_BUFFER, m_colors[lod]);
+        //glEnableVertexAttribArray(COLOR_ATRIB);
+        //glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);

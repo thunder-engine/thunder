@@ -96,6 +96,7 @@ Component *Actor::component(const string type) {
 }
 
 Component *componentInChildHelper(const string &type, Object *parent) {
+    PROFILE_FUNCTION();
     for(auto it : parent->getChildren()) {
         const MetaObject *meta = it->metaObject();
         if(meta->canCastTo(type.c_str())) {
@@ -111,6 +112,7 @@ Component *componentInChildHelper(const string &type, Object *parent) {
 }
 
 Component *Actor::componentInChild(const string type) {
+    PROFILE_FUNCTION();
     for(auto it : getChildren()) {
         Component *result = componentInChildHelper(type, it);
         if(result) {

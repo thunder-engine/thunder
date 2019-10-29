@@ -112,7 +112,11 @@ void IBuilder::rescanSources(const QString &path) {
     }
     m_Sources.removeDuplicates();
 
-    m_Values[gFilesList]      = formatList(m_Sources);
+    m_Values[gFilesList] = formatList(m_Sources);
+}
+
+bool IBuilder::isEmpty() const {
+    return m_Sources.empty();
 }
 
 QString IBuilder::formatList(const QStringList &list) {

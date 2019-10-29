@@ -174,29 +174,28 @@ void HierarchyBrowser::onDragMove(QDragMoveEvent *e) {
 }
 
 void HierarchyBrowser::onDrop(QDropEvent *e) {
+    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
+
     Object::ObjectList objects;
-    Object::ObjectList parents;
+    Object *parent = model->root();
     if(e->mimeData()->hasFormat(gMimeObject)) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id = it.left(it.indexOf(':'));
-            ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
             Object *item = model->findObject(id.toUInt());
             QModelIndex index = m_pFilter->mapToSource(ui->treeView->indexAt(e->pos()));
             if(item) {
                 objects.push_back(item);
                 if(index.isValid()) {
                     if(item != index.internalPointer()) {
-                        parents.push_back(static_cast<Object *>(index.internalPointer()));
+                        parent = static_cast<Object *>(index.internalPointer());
                     }
-                } else {
-                    parents.push_back(model->root());
                 }
             }
         }
     }
-    if(!objects.empty() && objects.size() == parents.size()) {
-        emit parented(objects, parents);
+    if(!objects.empty()) {
+        emit parented(objects, parent);
     }
     m_pRect->hide();
 }

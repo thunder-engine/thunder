@@ -234,7 +234,7 @@ bool DirectLight::drawHandles(bool selected) {
     Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
     Handles::s_Color = Handles::s_Second = color();
     Handles::drawArrow(Matrix4(pos, actor()->transform()->rotation(), Vector3(0.5f)) * z);
-    bool result = Handles::drawBillboard(pos, Vector2(0.1f), Engine::loadResource<Texture>(".embedded/directlight.png"));
+    bool result = Handles::drawBillboard(pos, Vector2(0.5f), Engine::loadResource<Texture>(".embedded/directlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

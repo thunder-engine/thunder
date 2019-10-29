@@ -401,8 +401,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
     <addaction name="actionNew_Object"/>
     <addaction name="actionEdit_Object"/>
     <addaction name="actionDelete_Object"/>
@@ -649,7 +647,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QtQuickWidgets/QQuickWidget</header>
+   <header>QtQuickWidgets/QQuickWidget</header>
   </customwidget>
   <customwidget>
    <class>PropertyEditor</class>

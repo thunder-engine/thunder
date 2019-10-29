@@ -25,7 +25,8 @@ public:
         MODE_TRIANGLES          = 0,
         MODE_LINES,
         MODE_TRIANGLE_STRIP,
-        MODE_LINE_STRIP
+        MODE_LINE_STRIP,
+        MODE_TRIANGLE_FAN
     };
 
     typedef vector<uint32_t>    IndexVector;

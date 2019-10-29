@@ -114,8 +114,6 @@ void AssetManager::init(Engine *engine) {
 
     m_Formats["map"]    = IConverter::ContentMap;
 
-    m_Paths["{00000000-0101-0000-0000-000000000000}"] = "Scripts";
-
     m_ContentTypes[MetaType::type<Mesh *>()] = IConverter::ContentMesh;
 }
 
@@ -154,7 +152,6 @@ void AssetManager::rescan() {
     emit directoryChanged(m_pProjectManager->contentPath());
 
     reimport();
-    cleanupBundle();
 }
 
 void AssetManager::addEditor(uint8_t type, IAssetEditor *editor) {
@@ -210,12 +207,8 @@ bool AssetManager::pushToImport(IConverterSettings *settings) {
 }
 
 void AssetManager::reimport() {
-    if(!m_ImportQueue.isEmpty()) {
-        emit importStarted(m_ImportQueue.size(), tr("Importing resources"));
-        m_pTimer->start(10);
-    } else {
-        emit importFinished();
-    }
+    emit importStarted(m_ImportQueue.size(), tr("Importing resources"));
+    m_pTimer->start(10);
 }
 
 bool AssetManager::isOutdated(IConverterSettings *settings) {
@@ -674,12 +667,22 @@ void AssetManager::onPerform() {
             saveSettings(settings);
         }
     } else {
-        dumpBundle();
+        foreach(IBuilder *it, m_pBuilders) {
+            it->rescanSources(ProjectManager::instance()->contentPath());
+            if(!it->isEmpty()) {
+                QString uuid = it->persistentUUID();
+                QString asset = it->persistentAsset();
+                m_Paths[uuid.toStdString()] = asset.toStdString();
+            }
+        }
+
+        cleanupBundle();
 
         if(isOutdated()) {
             foreach(IBuilder *it, m_pBuilders) {
-                it->rescanSources(ProjectManager::instance()->contentPath());
-                it->buildProject();
+                if(!it->isEmpty()) {
+                    it->buildProject();
+                }
             }
             return;
         }

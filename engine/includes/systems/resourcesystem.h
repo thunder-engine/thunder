@@ -19,6 +19,8 @@ public:
 
     void setResource(Object *object, const string &uuid);
 
+    bool isResourceExist(const string &path);
+
     Object *loadResource(const string &path);
 
     void unloadResource(const string &path, bool force = false);

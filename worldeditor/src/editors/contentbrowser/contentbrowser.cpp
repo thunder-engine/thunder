@@ -236,9 +236,8 @@ void ContentBrowser::onItemRename() {
 }
 
 void ContentBrowser::onItemDuplicate() {
-    QAction* action = qobject_cast<QAction*>(sender());
-    if (action)
-    {
+    QAction *action = qobject_cast<QAction*>(sender());
+    if(action) {
         QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
         QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
         BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
@@ -257,8 +256,7 @@ void ContentBrowser::onItemReimport() {
 
 void ContentBrowser::onItemDelete() {
     QAction *action = qobject_cast<QAction*>(sender());
-    if (action)
-    {
+    if(action) {
         QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
         QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
         BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());

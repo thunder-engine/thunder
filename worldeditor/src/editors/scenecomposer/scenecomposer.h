@@ -83,6 +83,9 @@ private:
 
     ProjectModel           *m_pProjectModel;
 
+    QAction                *m_Undo;
+    QAction                *m_Redo;
+
 private slots:
     void                    onNewProject                                ();
     void                    onImportProject                             ();
@@ -91,8 +94,6 @@ private slots:
 
     void                    onUpdated                                   ();
     void                    onOpen                                      (const QString &arg = QString());
-
-    void                    onUndoRedoUpdated                           ();
 
     void                    onImportFinished                            ();
 

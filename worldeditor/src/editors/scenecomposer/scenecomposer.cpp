@@ -118,6 +118,14 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     Input::init(ui->preview);
 
+    m_Undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
+    m_Undo->setShortcut(QKeySequence("Ctrl+Z"));
+    ui->menuEdit->insertAction(ui->actionNew_Object, m_Undo);
+
+    m_Redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
+    m_Redo->setShortcut(QKeySequence("Ctrl+Y"));
+    ui->menuEdit->insertAction(ui->actionNew_Object, m_Redo);
+
     ui->viewportWidget->setWindowTitle("Viewport");
     ui->propertyWidget->setWindowTitle("Properties");
     ui->projectWidget->setWindowTitle("Project Settings");
@@ -150,7 +158,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     action->setDefaultWidget(comp);
     menu->addAction(action);
     ui->componentButton->setMenu(menu);
-    connect(comp, SIGNAL(componentSelected(QString)), ctl, SLOT(onCreateSelected(QString)));
+    connect(comp, SIGNAL(componentSelected(QString)), ctl, SLOT(onCreateComponent(QString)));
     connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
 
     comp->setGroups(QStringList("Components"));
@@ -207,21 +215,19 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onUpdated()));
     connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onUpdated()));
     connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(onOpen(QString)));
-    connect(ui->hierarchy, SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(parented(Object::ObjectList, Object::ObjectList)), ctl, SLOT(onParentActor(Object::ObjectList,Object::ObjectList)));
-    connect(ui->hierarchy, SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
-    connect(ui->orthoButton,SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
-    connect(ui->moveButton,     SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
-    connect(ui->rotateButton,   SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
-    connect(ui->scaleButton,    SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
+    connect(ui->hierarchy,   SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
+    connect(ui->hierarchy,   SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
+    connect(ui->hierarchy,   SIGNAL(parented(Object::ObjectList,Object*)), ctl, SLOT(onParentActor(Object::ObjectList,Object*)));
+    connect(ui->hierarchy,   SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
+    connect(ui->orthoButton, SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
+    connect(ui->moveButton,  SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
+    connect(ui->rotateButton,SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
+    connect(ui->scaleButton, SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
     connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 
     ui->scaleButton->click();
-
-    connect(UndoManager::instance(), SIGNAL(updated()), this, SLOT(onUndoRedoUpdated()));
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
     connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
@@ -265,13 +271,14 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         ui->viewport->makeCurrent();
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
-        m_pProperties   = new NextObject(*objects.begin(), ctl, this);
+        m_pProperties   = new NextObject(*objects.begin(), this);
         connect(ctl, SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
         connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
 
         connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
-        connect(m_pProperties, SIGNAL(changed()), this, SLOT(onUpdated()));
+        connect(m_pProperties, SIGNAL(aboutToBeChanged(Object *, QString, Variant)), ctl, SLOT(onPropertyChanged(Object *, QString, Variant)), Qt::DirectConnection);
+        connect(m_pProperties, SIGNAL(changed(Object *, QString)), this, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
 
         connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
@@ -356,7 +363,6 @@ void SceneComposer::on_actionNew_triggered() {
     ctrl->setMap(m_pMap);
 
     UndoManager::instance()->clear();
-    onUndoRedoUpdated();
 
     m_Path.clear();
     updateTitle();
@@ -399,7 +405,6 @@ void SceneComposer::onOpen(const QString &arg) {
             ctrl->setMap(m_pMap);
 
             UndoManager::instance()->clear();
-            onUndoRedoUpdated();
 
             ui->toolWidget->activateToolWindow(ui->viewport);
         }
@@ -461,6 +466,9 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
         ctrl->setMap(m_pMap);
     }
 
+    m_Undo->setEnabled(true);
+    m_Redo->setEnabled(true);
+
     Engine::setGameMode(false);
 }
 
@@ -472,24 +480,15 @@ void SceneComposer::on_actionGame_Mode_triggered() {
     ui->actionGame_Mode->setChecked(true);
     ui->actionEditor_Mode->setChecked(false);
 
+    m_Undo->setEnabled(false);
+    m_Redo->setEnabled(false);
+
     Engine::setGameMode(true);
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {
     QImage result   = ui->viewport->grabFramebuffer();
     result.save("SceneComposer-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
-}
-
-void SceneComposer::onUndoRedoUpdated() {
-    UndoManager *mgr    = UndoManager::instance();
-    QString Undo    = mgr->undoTop();
-    QString Redo    = mgr->redoTop();
-
-    ui->actionUndo->setDisabled( Undo.isEmpty() );
-    ui->actionRedo->setDisabled( Redo.isEmpty() );
-
-    ui->actionUndo->setText(tr("Undo ") + Undo);
-    ui->actionRedo->setText(tr("Redo ") + Redo);
 }
 
 void SceneComposer::onOpenProject(const QString &path) {
@@ -502,6 +501,8 @@ void SceneComposer::onOpenProject(const QString &path) {
     m_pEngine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
     ui->viewport->makeCurrent();
+
+    Engine::reloadBundle();
 
     PluginModel::instance()->rescan();
     AssetManager::instance()->rescan();
