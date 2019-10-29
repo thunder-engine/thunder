@@ -52,7 +52,7 @@ public:
 
     QString                     path                        (const QModelIndex &index) const;
 
-    void                        removeResource              (const QModelIndex &index);
+    bool                        removeResource              (const QModelIndex &index);
 
 public slots:
     void                        onRendered                  (const QString &uuid);

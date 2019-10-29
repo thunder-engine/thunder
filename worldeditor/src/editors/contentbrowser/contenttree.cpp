@@ -223,7 +223,7 @@ void ContentTree::onRendered(const QString &uuid) {
     }
 }
 
-void ContentTree::removeResource(const QModelIndex &index) {
+bool ContentTree::removeResource(const QModelIndex &index) {
     if(index.isValid()) {
         QObject *item   = static_cast<QObject *>(index.internalPointer());
         if(item) {
@@ -236,6 +236,7 @@ void ContentTree::removeResource(const QModelIndex &index) {
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
+    return true;
 }
 
 void ContentTree::update(const QString &path) {

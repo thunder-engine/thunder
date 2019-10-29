@@ -167,18 +167,19 @@ void ContentBrowser::createContextMenus() {
     m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
 
     createAction(showIn, SLOT(showInGraphicalShell()));
-    createAction(tr("Duplicate"), SLOT(onItemDuplicate()));
-    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2));
-    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete));
+    createAction(tr("Duplicate"), SLOT(onItemDuplicate()))->setData(makeListModelView());
+    createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2))->setData(makeListModelView());
+    createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete))->setData(makeListModelView());
     m_ContentMenu.addSeparator();
     createAction(tr("Reimport"), SLOT(onItemReimport()));
 
     m_contentTreeMenu.addAction(tr("New Folder"))->setData(true);
     m_contentTreeMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
     m_contentTreeMenu.addSeparator();
-    m_contentTreeMenu.addAction(tr("Duplicate"), this, SLOT(onTreeItemDuplicate()));
-    m_contentTreeMenu.addAction(tr("Rename"), this, SLOT(onTreeItemRename()));
-    m_contentTreeMenu.addAction(tr("Delete"), this, SLOT(onTreeItemDelete()));
+
+    m_contentTreeMenu.addAction(tr("Duplicate"), this, SLOT(onItemDuplicate()))->setData(makeTreeModelView());
+    m_contentTreeMenu.addAction(tr("Rename"), this, SLOT(onItemRename()))->setData(makeTreeModelView());
+    m_contentTreeMenu.addAction(tr("Delete"), this, SLOT(onItemDelete()))->setData(makeTreeModelView());
 
     connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
     connect(&m_contentTreeMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
@@ -226,13 +227,24 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 }
 
 void ContentBrowser::onItemRename() {
-    ui->contentList->edit(ui->contentList->currentIndex());
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        ModelView access = qvariant_cast<ModelView>(action->data());
+        access.view->edit(access.view->currentIndex());
+    }
 }
 
 void ContentBrowser::onItemDuplicate() {
-    QModelIndex index   = m_pContentProxy->mapToSource(ui->contentList->currentIndex());
-    QString path    = ContentList::instance()->path(index);
-    AssetManager::instance()->duplicateResource(QFileInfo(path));
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        ModelView access = qvariant_cast<ModelView>(action->data());
+        QModelIndex index = access.filter->mapToSource(access.view->currentIndex());
+        QString path = access.model->path(index);
+        QFileInfo info = access.isTree() ? QFileInfo(path).fileName() : QFileInfo(path);
+        AssetManager::instance()->duplicateResource(info);
+    }
 }
 
 void ContentBrowser::onItemReimport() {
@@ -241,27 +253,14 @@ void ContentBrowser::onItemReimport() {
 }
 
 void ContentBrowser::onItemDelete() {
-    QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
-    if(msgBox.exec() == QMessageBox::Yes) {
-        ContentList::instance()->removeResource(m_pContentProxy->mapToSource(ui->contentList->currentIndex()));
-    }
-}
-
-void ContentBrowser::onTreeItemRename() {
-    ui->contentTree->edit(ui->contentTree->currentIndex());
-}
-
-void ContentBrowser::onTreeItemDuplicate() {
-    QModelIndex index = m_pTreeProxy->mapToSource(ui->contentTree->currentIndex());
-    QString path = ContentTree::instance()->path(index);
-    QFileInfo fullName(path);
-    AssetManager::instance()->duplicateResource(QFileInfo(fullName.fileName()));
-}
-
-void ContentBrowser::onTreeItemDelete() {
-    QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
-    if (msgBox.exec() == QMessageBox::Yes) {
-        ContentTree::instance()->removeResource(m_pTreeProxy->mapToSource(ui->contentTree->currentIndex()));
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action)
+    {
+        ModelView access = qvariant_cast<ModelView>(action->data());
+        QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
+        if (msgBox.exec() == QMessageBox::Yes) {
+            access.model->removeResource(access.filter->mapToSource(access.view->currentIndex()));
+        }
     }
 }
 
@@ -293,13 +292,14 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
     }
 }
 
-void ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
+QAction* ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
     QAction *a  = new QAction(name, this);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
     connect(a, SIGNAL(triggered(bool)), this, member);
     ui->contentList->addAction(a);
     m_ContentMenu.addAction(a);
+    return a;
 }
 
 void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos) {
@@ -351,4 +351,17 @@ void ContentBrowser::showInGraphicalShell() {
     scriptArgs << fileInfo.absoluteFilePath();
     QProcess::execute(QLatin1String("xdg-open"), scriptArgs);
 #endif
+}
+
+bool
+ModelView::isTree() const {
+    return dynamic_cast<QTreeView*>(view) != nullptr;
+}
+
+QVariant ContentBrowser::makeTreeModelView() {
+    return QVariant::fromValue(ModelView {ui->contentTree, ContentTree::instance(), m_pTreeProxy});
+}
+
+QVariant ContentBrowser::makeListModelView() {
+    return QVariant::fromValue(ModelView {ui->contentList, ContentList::instance(), m_pContentProxy});
 }
