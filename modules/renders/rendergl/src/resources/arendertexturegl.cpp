@@ -66,14 +66,17 @@ void ARenderTextureGL::updateTexture() {
             type        = GL_UNSIGNED_INT_2_10_10_10_REV;
 #endif
         } break;
+        case RGB16Float: {
+            internal    = GL_RGB16F;
+            glformat    = GL_RGB;
+            type        = GL_FLOAT;
+        } break;
         case R11G11B10Float: {
             internal    = GL_R11F_G11F_B10F;
             glformat    = GL_RGB;
             type        = GL_FLOAT;
         } break;
         default: break;
-      //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-      //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
     }
 
     uint8_t depthBits = depth();

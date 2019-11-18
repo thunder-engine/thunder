@@ -1,7 +1,7 @@
 const float PI = 3.14159265358979323846;
 
 float F_Schlick (float VdotH, float f0) {
-    float Fc    = exp2( (-5.55473 * VdotH - 6.98316) * VdotH );
+    float Fc = exp2( (-5.55473 * VdotH - 6.98316) * VdotH );
     return f0 + ( clamp( 50.0 * f0, 0.0, 1.0 ) - f0 ) * Fc;
 }
 
@@ -78,12 +78,6 @@ float getFresnel (float VdotH, float s) {
     return F_Schlick(VdotH, s);
 }
 
-/*
-  n     - normal
-  d     - light direction
-  a     - ambient light
-  b     - light brightness
-*/
 float getLambert (float NdotL, float b) {
     return max(NdotL * b, 0.0);
 }

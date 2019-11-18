@@ -40,8 +40,6 @@ protected:
 private:
     void                    findCamera          ();
 
-    ICommandBuffer         *m_pCommandBuffer;
-
 };
 
 #endif // VIEWPORT_H

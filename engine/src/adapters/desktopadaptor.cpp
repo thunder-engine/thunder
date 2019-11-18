@@ -309,7 +309,7 @@ void DesktopAdaptor::buttonCallback(GLFWwindow *,int button, int action, int) {
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
-    A_UNUSED(yoffset)
+    A_UNUSED(yoffset);
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {

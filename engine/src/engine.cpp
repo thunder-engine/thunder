@@ -33,6 +33,8 @@
 
 #include "components/animationcontroller.h"
 
+#include "components/postprocesssettings.h"
+
 #include "analytics/profiler.h"
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
@@ -222,6 +224,8 @@ Engine::Engine(IFile *file, const char *path) :
     ICommandBuffer::registerClassFactory(this);
 
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
+
+    PostProcessSettings::registerClassFactory(this);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }

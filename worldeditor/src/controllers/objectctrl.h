@@ -135,7 +135,7 @@ public:
 
     void                init                        (Scene *scene);
 
-    void                drawHandles                 (ICommandBuffer *buffer);
+    void                drawHandles                 ();
 
     void                clear                       (bool signal = true);
 
@@ -151,7 +151,7 @@ public:
 
     Object             *findObject                  (uint32_t id, Object *parent = nullptr);
 
-    void                resize                      (uint32_t width, uint32_t height);
+    void                resize                      (int32_t width, int32_t height);
 
 public slots:
     void                onInputEvent                (QInputEvent *);

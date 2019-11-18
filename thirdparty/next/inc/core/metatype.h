@@ -125,7 +125,6 @@ struct TypeFuncs {
         new (dest) T();
     }
     static void destruct(void *x) {
-        A_UNUSED(x)
         (reinterpret_cast<T *>(x))->~T();
     }
     static void clone(const void **src, void **dest) {

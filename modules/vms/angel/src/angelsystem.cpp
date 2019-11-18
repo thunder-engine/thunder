@@ -23,6 +23,7 @@
 #include <components/angelbehaviour.h>
 
 #include <cstring>
+#include <algorithm>
 
 #include "resources/angelscript.h"
 
@@ -324,9 +325,10 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                 }
 
                 string ref  = (ptr) ? "" : " &";
-
-                string get  = name + ref +"get_" + property.name() + "()";
-                string set  = string("void set_") + property.name() + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
+                string propertyName = property.name();
+                replace(propertyName.begin(), propertyName.end(), '/', '_');
+                string get  = name + ref +"get_" + propertyName + "()";
+                string set  = string("void set_") + propertyName + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
 
                 asSFuncPtr ptr1(3);
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
@@ -353,6 +355,6 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
 void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
     PROFILER_MARKER;
 
-    A_UNUSED(param)
+    A_UNUSED(param);
     Log((Log::LogTypes)msg->type) << msg->section << "(" << msg->row << msg->col << "):" << msg->message;
 }

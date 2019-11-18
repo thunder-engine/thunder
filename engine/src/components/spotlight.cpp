@@ -90,7 +90,7 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
-    A_UNUSED(camera)
+    A_UNUSED(camera);
 
     if(!castShadows()) {
         p_ptr->m_pTarget = nullptr;

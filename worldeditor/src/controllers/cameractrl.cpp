@@ -75,10 +75,6 @@ void CameraCtrl::update() {
     }
 }
 
-void CameraCtrl::drawHandles(ICommandBuffer *) {
-
-}
-
 void CameraCtrl::onOrthographic(bool flag) {
     if(m_pActiveCamera->orthographic() != flag) {
         Transform *t    = m_pCamera->transform();

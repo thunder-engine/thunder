@@ -50,7 +50,6 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_pFBO = new QOpenGLFramebufferObject(128, 128);
 
     m_pScene = Engine::objectCreate<Scene>();
-    m_pScene->setAmbient(0.3f);
     m_pActor = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_pCamera = static_cast<Camera *>(m_pActor->addComponent("Camera"));

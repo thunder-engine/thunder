@@ -4,9 +4,9 @@
 #include "components/transform.h"
 #include "components/scene.h"
 #include "components/camera.h"
+#include "components/renderable.h"
 #include "components/directlight.h"
-#include "components/meshrender.h"
-#include "components/particlerender.h"
+#include "components/postprocesssettings.h"
 
 #include "resources/mesh.h"
 #include "resources/material.h"
@@ -34,6 +34,8 @@
 
 #define DEPTH_MAP   "depthMap"
 
+#define SSAO_MAP    "ssaoMap"
+
 #define OVERRIDE "uni.texture0"
 
 int32_t Pipeline::m_ShadowPageWidth = 1024;
@@ -43,15 +45,17 @@ Pipeline::Pipeline() :
         m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
         m_pSprite(nullptr),
-        m_Target(0) {
+        m_Target(0),
+        m_pFinal(nullptr) {
 
     m_Buffer = Engine::objectCreate<ICommandBuffer>();
 
-    Material *mtl   = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
-        m_pSprite   = mtl->createInstance();
+        m_pSprite = mtl->createInstance();
     }
-    m_pPlane    = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+
+    m_pPlane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
     m_Buffer->setGlobalValue("light.map", Vector4(1.0f / m_ShadowPageWidth, 1.0f / m_ShadowPageHeight, m_ShadowPageWidth, m_ShadowPageHeight));
 
@@ -80,23 +84,18 @@ Pipeline::Pipeline() :
     m_Targets[G_EMISSIVE]   = emissive;
     m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
 
-  //m_OpaqEffects(new AmbientOcclusion());
+    m_OpaqEffects.push_back(new AmbientOcclusion());
 
-  //m_PostEffects.push_back(new AntiAliasing());
-  //m_PostEffects.push_back(new Bloom());
+    m_PostEffects.push_back(new AntiAliasing());
+    //m_PostEffects.push_back(new Bloom());
 }
 
 Pipeline::~Pipeline() {
     m_Targets.clear();
 }
 
-void Pipeline::draw(Scene *scene, Camera &camera) {
-    ObjectList filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(camera));
-    sortByDistance(filter, camera.actor()->transform()->position());
-
-    m_Buffer->setGlobalValue("light.ambient", scene->ambient());
-
-    updateShadows(camera, filter);
+void Pipeline::draw(Camera &camera) {
+    updateShadows(camera, m_Filter);
 
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
@@ -105,26 +104,31 @@ void Pipeline::draw(Scene *scene, Camera &camera) {
     m_Buffer->clearRenderTarget(true, camera.color());
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::DEFAULT, filter);
+    drawComponents(ICommandBuffer::DEFAULT, m_Filter);
 
-    /// \todo Screen Space Ambient Occlusion effect should be defined here
+    // Screen Space Ambient Occlusion
+    m_Buffer->setScreenProjection();
+    m_Targets[SSAO_MAP] = m_OpaqEffects.front()->draw(m_Targets[G_EMISSIVE], *m_Buffer);
+    m_Buffer->resetViewProjection();
 
     // Step2 - Light pass
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    drawComponents(ICommandBuffer::LIGHT, filter);
+    drawComponents(ICommandBuffer::LIGHT, m_Filter);
 
     // Step3 - Draw Transparent pass
-    cameraReset(camera);
-    drawComponents(ICommandBuffer::TRANSLUCENT, filter);
+    drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
     // Step4 - Post Processing passes
     m_Buffer->setScreenProjection();
-    RenderTexture *post = postProcess(m_Targets[G_EMISSIVE]);
+    m_pFinal = postProcess(m_Targets[G_EMISSIVE]);
+}
 
+void Pipeline::finish() {
+    m_Buffer->setScreenProjection();
     m_Buffer->setRenderTarget(m_Target);
     m_Buffer->clearRenderTarget();
 
-    m_pSprite->setTexture(OVERRIDE, post);
+    m_pSprite->setTexture(OVERRIDE, m_pFinal);
     m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
 }
 
@@ -136,6 +140,7 @@ void Pipeline::cameraReset(Camera &camera) {
     m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera.farPlane()));
 
     m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
+    m_Buffer->setGlobalValue("camera.proj", p);
     m_Buffer->setViewProjection(v, p);
 }
 
@@ -156,13 +161,13 @@ void Pipeline::resize(int32_t width, int32_t height) {
     for(auto &it : m_PostEffects) {
         it->resize(width, height);
     }
+    for(auto &it : m_OpaqEffects) {
+        it->resize(width, height);
+    }
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
 }
 
-void Pipeline::combineComponents(Object *object, bool first) {
-    if(first) {
-        m_Components.clear();
-    }
+void Pipeline::combineComponents(Object *object) {
     for(auto &it : object->getChildren()) {
         Object *child = it;
         Renderable *comp = dynamic_cast<Renderable *>(child);
@@ -171,13 +176,41 @@ void Pipeline::combineComponents(Object *object, bool first) {
                 m_Components.push_back(comp);
             }
         } else {
-            Actor *actor = dynamic_cast<Actor *>(child);
-            if(actor) {
-                if(!actor->isEnabled()) {
+            PostProcessSettings *settings = dynamic_cast<PostProcessSettings *>(child);
+            if(settings) {
+                m_PostProcessSettings.push_back(settings);
+            } else {
+                Actor *actor = dynamic_cast<Actor *>(child);
+                if(actor && !actor->isEnabled()) {
                     continue;
                 }
+                combineComponents(child);
             }
-            combineComponents(child);
+        }
+    }
+}
+
+void Pipeline::analizeScene(Scene *scene) {
+    m_Components.clear();
+    m_Filter.clear();
+    m_PostProcessSettings.clear();
+
+    combineComponents(scene);
+
+    Camera *camera = Camera::current();
+    m_Filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(*camera));
+    sortByDistance(m_Filter, camera->actor()->transform()->position());
+
+    if(!m_PostProcessSettings.empty()) {
+        PostProcessSettings *settings = m_PostProcessSettings.front();
+
+        m_Buffer->setGlobalValue("light.ambient", settings->ambientLightIntensity());
+
+        for(auto &it : m_PostEffects) {
+            it->setSettings(*settings);
+        }
+        for(auto &it : m_OpaqEffects) {
+            it->setSettings(*settings);
         }
     }
 }
@@ -314,10 +347,22 @@ void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
 }
 
 RenderTexture *Pipeline::postProcess(RenderTexture *source) {
+    m_Buffer->setScreenProjection();
     RenderTexture *result  = source;
     for(auto it : m_PostEffects) {
         result = it->draw(result, *m_Buffer);
     }
+    m_Buffer->resetViewProjection();
+    return result;
+}
+
+RenderTexture *Pipeline::opacProcess(RenderTexture *source) {
+    m_Buffer->setScreenProjection();
+    RenderTexture *result  = source;
+    for(auto it : m_OpaqEffects) {
+        result = it->draw(result, *m_Buffer);
+    }
+    m_Buffer->resetViewProjection();
     return result;
 }
 

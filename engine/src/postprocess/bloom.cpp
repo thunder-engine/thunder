@@ -63,21 +63,11 @@ void Bloom::resize(int32_t width, int32_t height) {
         float radius = size * (m_BloomPasses[i].m_BlurSize.x * 1.0f) * 2 * 0.01f;
 
         m_BloomPasses[i].m_pDownTexture->resize(size, height / div);
-        m_BloomPasses[i].m_BlurSteps = CLAMP((int)radius, 0, MAX_SAMPLES);
+        m_BloomPasses[i].m_BlurSteps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
 
         memset(m_BloomPasses[i].m_BlurPoints, 0, sizeof(float) * MAX_SAMPLES);
 
-        float total = 0.0f;
-        for(uint8_t p = 0; p < m_BloomPasses[i].m_BlurSteps; p++) {
-            float weight = std::exp(-(float)(p * p) / (2.0f * radius));
-            m_BloomPasses[i].m_BlurPoints[p] = weight;
-
-            total += weight;
-        }
-
-        for(uint8_t p = 0; p < m_BloomPasses[i].m_BlurSteps; p++) {
-            m_BloomPasses[i].m_BlurPoints[p] *= 1.0f / total * 0.5f;// 1.0 / (sqrt(2.0 * PI) * sigma;
-        }
+        Blur::generateKernel(radius, m_BloomPasses[i].m_BlurSteps, m_BloomPasses[i].m_BlurPoints);
 
         div *= 2;
     }

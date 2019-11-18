@@ -11,7 +11,9 @@ class ObjectCtrlPipeline : public Pipeline {
 public:
     ObjectCtrlPipeline();
 
-    void draw(Scene *scene, Camera &camera);
+    void draw(Camera &camera) override;
+
+    void resize(int32_t width, int32_t height) override;
 
     void loadSettings();
 

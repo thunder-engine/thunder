@@ -1,19 +1,39 @@
-#ifndef AAMBIENTOCCLUSIONGL_H
-#define AAMBIENTOCCLUSIONGL_H
+#ifndef AMBIENTOCCLUSION_H
+#define AMBIENTOCCLUSION_H
 
 #include "postprocessor.h"
 
 #include <amath.h>
 
+#define KERNEL_SIZE 16
+
+class Texture;
+
 class AmbientOcclusion : public PostProcessor {
 public:
     AmbientOcclusion ();
 
-    ~AmbientOcclusion ();
+    ~AmbientOcclusion () override;
+
+    RenderTexture *draw(RenderTexture *source, ICommandBuffer &buffer) override;
+
+    void resize(int32_t width, int32_t height) override;
+
+    void setSettings(const PostProcessSettings &settings) override;
 
 protected:
-    Vector3 *m_pSamplesKernel;
+    Vector3 m_SamplesKernel[KERNEL_SIZE];
+    float m_BlurSamplesKernel[4];
 
+    float m_Radius;
+    float m_Bias;
+    float m_Power;
+
+    Texture *m_pNoise;
+    RenderTexture *m_pSSAO;
+    RenderTexture *m_pBlour;
+
+    MaterialInstance *m_pOcclusion;
 };
 
-#endif // AAMBIENTOCCLUSIONGL_H
+#endif // AMBIENTOCCLUSION_H

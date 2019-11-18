@@ -217,7 +217,7 @@ void Handles::beginDraw(ICommandBuffer *buffer) {
 }
 
 void Handles::endDraw() {
-    if(ICommandBuffer::isInited()) {
+    if(ICommandBuffer::isInited() && s_Buffer) {
         s_Buffer->setColor(s_Normal);
     }
 }

@@ -17,7 +17,7 @@ class Bloom : public PostProcessor {
 
         float m_BlurPoints[MAX_SAMPLES];
 
-        uint32_t m_BlurSteps;
+        int32_t m_BlurSteps;
 
         Vector3 m_BlurSize;
     };

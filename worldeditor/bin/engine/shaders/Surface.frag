@@ -37,23 +37,23 @@ void passMode(Params params) {
     vec3 albd   = getDiffuse ( params ) * t_color.xyz;
     vec3 emit   = getEmissive( params ) * t_color.xyz;
     float alpha = getOpacity ( params ) * t_color.w;
+    float spec  = 1.0;
 #ifdef BLEND_OPAQUE
     if(_clip >= alpha) {
         discard;
     }
     vec3 norm   = vec3(1.0);
     vec3 matv   = vec3(0.0, 0.0, getMetallic( params ));
-    float rough = 0.0;
     float model = 0.0;
     #ifdef MODEL_LIT
     model       = 0.34;
-    norm        = 0.5 * params.normal + vec3( 0.5 );
-    rough       = max(0.08, getRoughness( params ));
+    norm        = params.normal * 0.5 + 0.5;
     emit        = emit + albd * light.ambient;
+    matv.x      = max(0.01, getRoughness( params ))
     #endif
     gbuffer1    = vec4( norm, model );
-    gbuffer2    = vec4( albd, rough );
-    gbuffer3    = vec4( matv, 1.0   );
+    gbuffer2    = vec4( albd, 0.0   );
+    gbuffer3    = vec4( matv, spec  );
     gbuffer4    = vec4( emit, 0.0   );
 #else
     gbuffer1    = vec4( emit, alpha );
@@ -72,7 +72,7 @@ void main(void) {
 #else
     params.reflect  = vec3(0.0);
     params.normal   = _n;
-    params.normal   = 2.0 * getNormal( params ) - vec3( 1.0 );
+    params.normal   = getNormal( params ) * 2.0 - 1.0;
     params.normal   = normalize( params.normal.x * _t + params.normal.y * _b + params.normal.z * _n );
     params.reflect  = reflect( _view, params.normal );
 

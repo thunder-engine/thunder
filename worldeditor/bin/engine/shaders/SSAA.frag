@@ -33,6 +33,6 @@ void main (void) {
         vec4 t2 = texture( rgbMap, _uv0 + n) * 0.75;
         vec4 t3 = texture( rgbMap, _uv0 - n) * 0.75;
 	 
-        rgb = (o + t0 + t1 + t2 + t3) / 4.3;
+	rgb = (o + t0 + t1 + t2 + t3) / 4.3;
     }
 }

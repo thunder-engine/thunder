@@ -11,10 +11,8 @@
 static Blur *s_pBlur = nullptr;
 
 PostProcessor::PostProcessor() :
+        m_pResultTexture(nullptr),
         m_pMaterial(nullptr) {
-
-    m_pResultTexture = Engine::objectCreate<RenderTexture>();
-    m_pResultTexture->setTarget(Texture::R11G11B10Float);
 
     m_pMesh = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 }
@@ -24,7 +22,7 @@ PostProcessor::~PostProcessor() {
 }
 
 RenderTexture *PostProcessor::draw(RenderTexture *source, ICommandBuffer &buffer) {
-    if(m_pMaterial) {
+    if(m_pMaterial && m_pResultTexture) {
         m_pMaterial->setTexture("rgbMap", source);
 
         buffer.setRenderTarget({m_pResultTexture});
@@ -36,7 +34,13 @@ RenderTexture *PostProcessor::draw(RenderTexture *source, ICommandBuffer &buffer
 }
 
 void PostProcessor::resize(int32_t width, int32_t height) {
-    m_pResultTexture->resize(width, height);
+    if(m_pResultTexture) {
+        m_pResultTexture->resize(width, height);
+    }
+}
+
+void PostProcessor::setSettings(const PostProcessSettings &) {
+
 }
 
 Blur *PostProcessor::blur() {

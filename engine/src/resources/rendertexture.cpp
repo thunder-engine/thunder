@@ -50,5 +50,5 @@ void RenderTexture::resize(int32_t width, int32_t height) {
 }
 
 void RenderTexture::makeCurrent(uint32_t index) const {
-    A_UNUSED(index)
+    A_UNUSED(index);
 }

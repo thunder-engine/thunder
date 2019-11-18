@@ -19,6 +19,8 @@ public:
 
     void setParameters(const Vector2 &size, int32_t steps, float *points);
 
+    static void generateKernel(float radius, int32_t steps, float *points);
+
 protected:
     MaterialInstance *m_pBlurMaterial;
 

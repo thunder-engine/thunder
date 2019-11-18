@@ -127,9 +127,8 @@ void main(void) {
 #else
     mat4 model  = t_model;
 #endif
-    mat3 rot    = mat3( model[0].xyz,
-                        model[1].xyz,
-                        model[2].xyz );
+    mat4 mv     = t_view * model;
+    mat3 rot    = mat3( mv );
 
 #ifdef TYPE_STATIC
     Vertex vert = staticMesh( vertex.xyz, tangent, normal, rot );
@@ -140,7 +139,7 @@ void main(void) {
 #endif
 
 #ifdef TYPE_BILLBOARD
-    Vertex vert = billboard( vertex.xyz, tangent, normal, particlePosRot, particleSizeDist);
+    Vertex vert = billboard( vertex.xyz, tangent, normal, particlePosRot, particleSizeDist );
 #endif
 
 #ifdef TYPE_AXISALIGNED
@@ -148,20 +147,18 @@ void main(void) {
 #endif
     vec3 camera = vec3( t_view[0].w,
                         t_view[1].w,
-                        t_view[2].w);
+                        t_view[2].w );
 
-    mat4 modelView  = t_view * model;
+    _vertex     = t_projection * (mv * vec4(vert.v, 1.0));
+    gl_Position = _vertex;
 
-    gl_Position = t_projection * (modelView * vec4(vert.v, 1.0));
-
-    _vertex     = gl_Position;
-    _n          = vert.n;
-    _t          = vert.t;
-    _b          = cross ( _t, _n );
-    _color      = color;
-    _uv0        = uv0;
+    _n     = vert.n;
+    _t     = vert.t;
+    _b     = cross ( _t, _n );
+    _color = color;
+    _uv0   = uv0;
 #ifndef INSTANCING
-    //_uv1        = uv1;
+    //_uv1 = uv1;
 #endif
-    _view       = ( model * vec4(vert.v, 1.0) ).xyz - camera;
+    _view  = ( model * vec4(vert.v, 1.0) ).xyz - camera;
 }

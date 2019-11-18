@@ -144,7 +144,6 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
 
 void MeshEdit::onGLInit() {
     Scene *scene = glWidget->scene();
-    scene->setAmbient(0.5f);
 
     m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
     m_pLight->transform()->setRotation(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
@@ -152,7 +151,7 @@ void MeshEdit::onGLInit() {
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
-    Actor *prefab = Engine::loadResource<Actor>( ".embedded/cube.fbx" );
+    Actor *prefab = Engine::loadResource<Actor>(".embedded/cube.fbx");
     if(prefab) {
         m_pGround = static_cast<Actor *>(prefab->clone());
         m_pGround->setPrefab(prefab);

@@ -729,20 +729,20 @@ void Object::processEvents() {
 */
 bool Object::event(Event *event) {
     PROFILE_FUNCTION();
-    A_UNUSED(event)
+    A_UNUSED(event);
     return false;
 }
 /*!
     This method allows to DESERIALIZE \a data of object like properties, connections and user data.
 */
 void Object::loadData(const VariantList &data) {
-    A_UNUSED(data)
+    A_UNUSED(data);
 }
 /*!
     This method allows to DESERIALIZE \a data which not present as A_PROPERTY() in object.
 */
 void Object::loadUserData(const VariantMap &data) {
-    A_UNUSED(data)
+    A_UNUSED(data);
 }
 /*!
     This method allows to SERIALIZE all object data like properties connections and user data.

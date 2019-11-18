@@ -41,12 +41,12 @@ public:
     virtual ~ParticleModificator() {}
 
     virtual void spawnParticle(ParticleEffect::ParticleData &data) {
-        A_UNUSED(data)
+        A_UNUSED(data);
     }
 
     virtual void updateParticle(ParticleEffect::ParticleData &data, float dt) {
-        A_UNUSED(data)
-        A_UNUSED(dt)
+        A_UNUSED(data);
+        A_UNUSED(dt);
     }
 
     void loadData(const VariantList &list) {

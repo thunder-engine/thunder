@@ -347,11 +347,7 @@ void ObjectCtrl::init(Scene *scene) {
     Handles::init();
 }
 
-void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
-    CameraCtrl::drawHandles(buffer);
-
-    Handles::beginDraw(buffer);
-
+void ObjectCtrl::drawHandles() {
     Vector2 position, size;
     selectGeometry(position, size);
 
@@ -507,8 +503,6 @@ void ObjectCtrl::drawHandles(ICommandBuffer *buffer) {
             m_ObjectsList = { result };
         }
     }
-
-    Handles::endDraw();
 }
 
 void ObjectCtrl::clear(bool signal) {
@@ -915,6 +909,6 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     return nullptr;
 }
 
-void ObjectCtrl::resize(uint32_t width, uint32_t height) {
+void ObjectCtrl::resize(int32_t width, int32_t height) {
     m_Screen = Vector2(width, height);
 }

@@ -1,11 +1,12 @@
 layout(location = 6) uniform struct Camera {
+    mat4    proj;
     mat4    mvpi;
     vec4    position;
     vec4    target;
     vec4    screen;
 } camera;
 
-layout(location = 10) uniform struct Light {
+layout(location = 11) uniform struct Light {
     mat4    matrix[6];
     vec4    tiles[6];
     vec4    color;
@@ -34,7 +35,7 @@ float getLinearDepth (float value, float n, float f) {
 }
 
 vec4 getWorld(mat4 mvpi, vec2 uv, float depth) {
-    return mvpi * vec4( 2.0 * uv - 1.0, 2.0 * depth - 1.0, 1.0 );
+    return mvpi * vec4( uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0 );
 }
 
 float getAttenuation(float d, float r) {
@@ -50,7 +51,7 @@ float luminanceApprox( vec3 rgb ) {
 }
 
 float linstep(float l, float h, float v) {
-    return clamp((v-l)/(h-l), 0.0, 1.0);
+    return clamp((v - l) / (h - l), 0.0, 1.0);
 }
 
 float getShadowSample(sampler2D map, vec2 coord, float t) {

@@ -243,10 +243,11 @@ bool NextObject::event(QEvent *e) {
             QStringList list = name.split('/');
             if(m_pObject) {
                 Object *o = findChild(list);
-                Variant current = o->property(qPrintable(list.front()));
+                QString propertyName = list.join('/');
+                Variant current = o->property(qPrintable(propertyName));
 
                 const MetaObject *meta  = o->metaObject();
-                int index = meta->indexOfProperty(qPrintable(list.front()));
+                int index = meta->indexOfProperty(qPrintable(propertyName));
                 MetaProperty property = meta->property(index);
 
                 Variant target = aVariant(value, current.userType(), editor(property));

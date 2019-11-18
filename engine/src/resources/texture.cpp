@@ -129,10 +129,10 @@ void *Texture::nativeHandle() {
 }
 
 void Texture::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
-    A_UNUSED(x)
-    A_UNUSED(y)
-    A_UNUSED(width)
-    A_UNUSED(height)
+    A_UNUSED(x);
+    A_UNUSED(y);
+    A_UNUSED(width);
+    A_UNUSED(height);
 }
 
 uint32_t Texture::getPixel(int32_t x, int32_t y) const {

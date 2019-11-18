@@ -17,20 +17,13 @@
 
 #include "objectctrl.h"
 
+#include <handles/handletools.h>
+
 #include <QVariant>
 #include <QColor>
 
 #define SELECT_MAP  "selectMap"
-
-#define G_NORMALS   "normalsMap"
-#define G_DIFFUSE   "diffuseMap"
-#define G_PARAMS    "paramsMap"
-#define G_EMISSIVE  "emissiveMap"
-
 #define DEPTH_MAP   "depthMap"
-#define SHADOW_MAP  "shadowMap"
-
-#define OVERRIDE "uni.texture0"
 
 ObjectCtrlPipeline::ObjectCtrlPipeline() :
         Pipeline() {
@@ -81,10 +74,7 @@ void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
     m_pController = ctrl;
 }
 
-void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
-    ObjectList filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(camera));
-    sortByDistance(filter, camera.actor()->transform()->position());
-
+void ObjectCtrlPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget(true, Vector4(0.0));
@@ -92,44 +82,23 @@ void ObjectCtrlPipeline::draw(Scene *scene, Camera &camera) {
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::RAYCAST, filter);
+    drawComponents(ICommandBuffer::RAYCAST, m_Filter);
 
-    // Light prepass
-    m_Buffer->setGlobalValue("light.ambient", scene->ambient());
-
-    updateShadows(camera, filter);
-
-    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
+    Pipeline::draw(camera);
 
     cameraReset(camera);
-
-    // Step1 - Fill G buffer pass
-    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, camera.color());
-
-    // Draw Opaque pass
-    drawComponents(ICommandBuffer::DEFAULT, filter);
-
-    /// \todo Screen Space Ambient Occlusion effect should be defined here
-    m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-
-    // Step2 - Light pass
-    drawComponents(ICommandBuffer::LIGHT, filter);
-
-    cameraReset(camera);
-    // Step3 - Draw Transparent pass
-    drawComponents(ICommandBuffer::TRANSLUCENT, filter);
+    m_Buffer->setRenderTarget({m_pFinal}, m_Targets[DEPTH_MAP]);
 
     drawGrid(camera);
 
-    m_Buffer->setScreenProjection();
-    RenderTexture *post = postProcess(m_Targets[G_EMISSIVE]);
+    Handles::beginDraw(m_Buffer);
+    m_pController->drawHandles();
+    Handles::endDraw();
+}
 
-    m_Buffer->setRenderTarget(m_Target);
-    m_Buffer->clearRenderTarget(true, camera.color(), false);
-
-    m_pSprite->setTexture(OVERRIDE, post);
-    m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
+void ObjectCtrlPipeline::resize(int32_t width, int32_t height) {
+    Pipeline::resize(width, height);
+    m_pController->resize(width, height);
 }
 
 void ObjectCtrlPipeline::drawGrid(Camera &camera) {

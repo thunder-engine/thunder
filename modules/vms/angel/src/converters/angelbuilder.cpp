@@ -30,8 +30,8 @@ public:
         return static_cast<int>(size);
     }
     int Read(void *ptr, asUINT size) {
-        A_UNUSED(ptr)
-        A_UNUSED(size)
+        A_UNUSED(ptr);
+        A_UNUSED(size);
         return 0;
     }
 protected:
@@ -114,6 +114,6 @@ const QString AngelBuilder::persistentUUID () const {
 }
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
-    A_UNUSED(param)
+    A_UNUSED(param);
     Log(static_cast<Log::LogTypes>(msg->type)) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
 }

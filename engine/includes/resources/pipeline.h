@@ -18,6 +18,8 @@ class MaterialInstance;
 class RenderTexture;
 class PostProcessor;
 
+class PostProcessSettings;
+
 class PackNode;
 
 class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
@@ -27,19 +29,21 @@ public:
     Pipeline ();
     ~Pipeline ();
 
-    virtual void draw (Scene *scene, Camera &camera);
+    virtual void draw (Camera &camera);
 
     virtual void resize (int32_t width, int32_t height);
+
+    virtual void finish ();
 
     void cameraReset (Camera &camera);
 
     RenderTexture *target (const string &target) const;
 
-    void combineComponents (Object *object, bool first = false);
+    void analizeScene (Scene *scene);
 
     void setTarget (uint32_t resource);
 
-    RenderTexture *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    RenderTexture *requestShadowTiles (uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
     ICommandBuffer *buffer () const;
 
@@ -51,7 +55,10 @@ protected:
 
     void updateShadows (Camera &camera, ObjectList &list);
 
+    void combineComponents (Object *object);
+
     RenderTexture *postProcess (RenderTexture *source);
+    RenderTexture *opacProcess (RenderTexture *source);
 
     void sortByDistance (ObjectList &in, const Vector3 &origin);
 
@@ -64,6 +71,7 @@ protected:
     ICommandBuffer *m_Buffer;
 
     ObjectList m_Components;
+    ObjectList m_Filter;
 
     TargetMap m_Targets;
 
@@ -71,6 +79,8 @@ protected:
 
     list<PostProcessor *> m_OpaqEffects;
     list<PostProcessor *> m_PostEffects;
+
+    list<PostProcessSettings *> m_PostProcessSettings;
 
     Mesh *m_pPlane;
     MaterialInstance *m_pSprite;
@@ -82,6 +92,8 @@ protected:
 
     unordered_map<uint32_t, pair<RenderTexture *, vector<PackNode *>>> m_Tiles;
     unordered_map<RenderTexture *, PackNode *> m_ShadowPages;
+
+    RenderTexture *m_pFinal;
 };
 
 #endif // PIPELINE

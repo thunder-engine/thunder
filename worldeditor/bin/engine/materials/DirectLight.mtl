@@ -48,14 +48,6 @@
         {
             "Type": "RenderTargetSample",
             "Values": {
-                "Target_Name": "diffuseMap"
-            },
-            "X": -1098,
-            "Y": 350
-        },
-        {
-            "Type": "RenderTargetSample",
-            "Values": {
                 "Target_Name": "shadowMap"
             },
             "X": -1095,

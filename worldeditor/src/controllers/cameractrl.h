@@ -34,8 +34,6 @@ public:
 
     void                                update                      ();
 
-    virtual void                        drawHandles                 (ICommandBuffer *);
-
     void                                setFocusOn                  (Actor *actor, float &bottom);
 
     void                                setFree                     (bool flag) { mCameraFree   = flag; }
@@ -43,8 +41,6 @@ public:
     void                                blockMovement               (bool flag) { mBlockMove    = flag; }
 
     void                                blockRotations              (bool flag) { mBlockRot     = flag; }
-
-    virtual void                        resize                      (uint32_t, uint32_t) {}
 
     Camera                             *camera                      () const { return m_pActiveCamera; }
 

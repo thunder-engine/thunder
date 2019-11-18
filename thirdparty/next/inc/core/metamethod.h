@@ -549,7 +549,7 @@ struct Invoker<void(Class::*)()const> {
 
     template<Fun fun>
     static void invoke(Object *obj, int argc, const Variant *args, Variant &ret) {
-        A_UNUSED(ret)
+        A_UNUSED(ret);
         if(argc != 0) {
             throw std::runtime_error("Bad argument count");
         }

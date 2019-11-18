@@ -127,7 +127,7 @@ int IFile::_fclose(_FILE *stream) {
     \sa _ftell()
  */
 _size_t IFile::_fseek(_FILE *stream, uint64_t origin) {
-    A_UNUSED(origin)
+    A_UNUSED(origin);
     return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), origin));
 }
 /*!

@@ -117,8 +117,9 @@ void RenderGLSystem::update(Scene *scene) {
 
         Pipeline *pipe  = camera->pipeline();
         pipe->setTarget(target);
-        pipe->combineComponents(scene, true);
-        pipe->draw(scene, *camera);
+        pipe->analizeScene(scene);
+        pipe->draw(*camera);
+        pipe->finish();
     }
 }
 

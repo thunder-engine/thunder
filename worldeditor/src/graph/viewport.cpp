@@ -20,8 +20,7 @@
 #define OVERRIDE "uni.texture0"
 
 Viewport::Viewport(QWidget *parent) :
-        SceneView(parent),
-        m_pCommandBuffer(nullptr)  {
+        SceneView(parent) {
 
     setAcceptDrops(true);
     //setContextMenuPolicy(Qt::CustomContextMenu);
@@ -30,7 +29,6 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::initializeGL() {
     SceneView::initializeGL();
-    m_pCommandBuffer = Engine::objectCreate<ICommandBuffer>();
 }
 
 void Viewport::paintGL() {
@@ -42,10 +40,6 @@ void Viewport::paintGL() {
 
         PluginModel::instance()->updateRender(m_pScene);
     }
-
-    if(m_pController) {
-        m_pController->drawHandles(m_pCommandBuffer);
-    }
 }
 
 void Viewport::resizeGL(int width, int height) {
@@ -53,7 +47,6 @@ void Viewport::resizeGL(int width, int height) {
 
     if(m_pController) {
         Camera::setCurrent(m_pController->camera());
-        m_pController->resize(width, height);
     }
 }
 
