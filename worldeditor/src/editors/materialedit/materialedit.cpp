@@ -76,7 +76,7 @@ MaterialEdit::MaterialEdit(Engine *engine) :
         action->setChecked(true);
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
-    ui->components->setModel(m_pBuilder->components());
+    ui->components->setModel(static_cast<AbstractSchemeModel *>(m_pBuilder)->components());
 
     connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
@@ -88,16 +88,24 @@ MaterialEdit::MaterialEdit(Engine *engine) :
     //ui->schemeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QQuickItem *item = ui->schemeWidget->rootObject();
-    connect(item, SIGNAL(nodeSelected(int)), this, SLOT(onNodeSelected(int)));
+    connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
 
     m_pBrowser  = new ComponentBrowser(this);
-    m_pBrowser->setModel(m_pBuilder->components());
+    m_pBrowser->setModel(static_cast<AbstractSchemeModel *>(m_pBuilder)->components());
     connect(m_pBrowser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
 
     m_pCreateMenu = new QMenu(this);
     m_pAction = new QWidgetAction(m_pCreateMenu);
     m_pAction->setDefaultWidget(m_pBrowser);
     m_pCreateMenu->addAction(m_pAction);
+
+    m_pUndo = UndoManager::instance()->createUndoAction(ui->menuEdit);
+    m_pUndo->setShortcut(QKeySequence("Ctrl+Z"));
+    ui->menuEdit->insertAction(ui->actionPlane, m_pUndo);
+
+    m_pRedo = UndoManager::instance()->createRedoAction(ui->menuEdit);
+    m_pRedo->setShortcut(QKeySequence("Ctrl+Y"));
+    ui->menuEdit->insertAction(ui->actionPlane, m_pRedo);
 
     readSettings();
 }
@@ -161,10 +169,10 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         if(mesh) {
             mesh->setMaterial(m_pMaterial);
         }
-        m_pBuilder->load(m_Path);
+        static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_Path);
 
         setModified(false);
-        onNodeSelected(0);
+        onNodesSelected(QVariantList({0}));
     }
 }
 
@@ -174,7 +182,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
         glWidget->makeCurrent();
         MeshRender *mesh    = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
         if(mesh) {
-            VariantMap map  = m_pBuilder->data().toMap();
+            VariantMap map  = m_pBuilder->data(true).toMap();
             mesh->material()->loadUserData(map);
         }
         setModified(update);
@@ -218,18 +226,17 @@ void MaterialEdit::onComponentSelected(const QString &path) {
 
     QQuickItem *ptr = ui->schemeWidget->rootObject()->findChild<QQuickItem *>("Canvas");
     if(ptr) {
-        AbstractSchemeModel::Node *node = m_pBuilder->createNode(path);
-        if(node) {
-            node->pos = QPoint(ptr->property("mouseX").toInt(), ptr->property("mouseY").toInt());
-            m_pBuilder->schemeUpdated();
-        }
+        m_pBuilder->createNode(path, ptr->property("mouseX").toInt(), ptr->property("mouseY").toInt());
     }
 }
 
-void MaterialEdit::onNodeSelected(int index) {
-    const AbstractSchemeModel::Node *node = m_pBuilder->node(index);
-    if(node) {
-        ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+void MaterialEdit::onNodesSelected(const QVariant &indices) {
+    QVariantList list = indices.toList();
+    if(!list.isEmpty()) {
+        const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
+        if(node) {
+            ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+        }
     }
 }
 
@@ -247,7 +254,7 @@ void MaterialEdit::on_actionSphere_triggered() {
 
 void MaterialEdit::on_actionSave_triggered() {
     if(!m_Path.isEmpty()) {
-        m_pBuilder->save(m_Path);
+        static_cast<AbstractSchemeModel *>(m_pBuilder)->save(m_Path);
         setModified(false);
     }
 }

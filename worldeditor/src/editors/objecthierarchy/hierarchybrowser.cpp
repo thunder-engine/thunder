@@ -15,7 +15,6 @@
 #include "config.h"
 
 #include "objecthierarchymodel.h"
-#include "managers/undomanager/undomanager.h"
 
 class ObjectsFilter : public QSortFilterProxyModel {
 public:

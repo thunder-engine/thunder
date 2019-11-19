@@ -65,6 +65,9 @@ private:
 
     ComponentBrowser    *m_pBrowser;
 
+    QAction             *m_pUndo;
+    QAction             *m_pRedo;
+
 private slots:
     void onGLInit();
 
@@ -73,7 +76,7 @@ private slots:
     void onKeyPress(QKeyEvent *pe);
     void onKeyRelease(QKeyEvent *pe);
 
-    void onNodeSelected(int);
+    void onNodesSelected(const QVariant &);
     void onUpdateTemplate(bool update = true);
 
     void onToolWindowActionToggled(bool checked);

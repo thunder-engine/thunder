@@ -165,14 +165,10 @@ void SchemeEditor::on_customContextMenuRequested(const QPoint &) {
 
 void SchemeEditor::onComponentSelected(const QString &path) {
     m_pCreateMenu->hide();
-    AbstractSchemeModel::Node *node  = m_pModel->createNode(path);
-    if(node) {
-        QSize s     = rect().size() / 2;
-        node->pos   = QPoint((x - mTranslate.x() - s.width()) / mZoom,
-                             (y - mTranslate.y() - s.height()) / mZoom);
+    QSize s = rect().size() / 2;
+    m_pModel->createNode(path, (x - mTranslate.x() - s.width()) / mZoom, (y - mTranslate.y() - s.height()) / mZoom);
 
-        repaint();
-    }
+    repaint();
 }
 
 void SchemeEditor::resizeEvent(QResizeEvent *pe) {
@@ -240,14 +236,14 @@ void SchemeEditor::mouseReleaseEvent(QMouseEvent *pe) {
         if(m_pNode) {
             if(m_bLinkRemove) {
                 if(m_pFocusItem) {
-                    m_pModel->deleteLink(m_pFocusItem);
+                    m_pModel->linkDelete(m_pFocusItem);
                 }
             } else {
                 if(m_pItem && m_pFocusItem) {
                     if(m_pItem->out && !m_pFocusItem->out) {
-                        m_pModel->createLink(m_pNode, m_pItem, m_pFocusNode, m_pFocusItem);
+                        m_pModel->linkCreate(m_pNode, m_pItem, m_pFocusNode, m_pFocusItem);
                     } else if(!m_pItem->out && m_pFocusItem->out) {
-                        m_pModel->createLink(m_pFocusNode, m_pFocusItem, m_pNode, m_pItem);
+                        m_pModel->linkCreate(m_pFocusNode, m_pFocusItem, m_pNode, m_pItem);
                     }
                 }
             }
@@ -278,7 +274,7 @@ void SchemeEditor::keyPressEvent(QKeyEvent *pe) {
     switch (pe->key()) {
         case Qt::Key_Delete: {
             if(m_pNode && !m_pNode->root) {
-                m_pModel->deleteNode(m_pNode);
+                //m_pModel->nodeDelete(m_pNode);
                 emit nodeSelected(m_pModel);
             }
         } break;

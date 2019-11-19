@@ -143,14 +143,14 @@ void Atlas::pack(uint8_t padding) {
 
     p_ptr->m_Elements.clear();
     for(auto it : p_ptr->m_Sources) {
-        int32_t width  = (it->width() + padding);
-        int32_t height = (it->height() + padding);
+        int32_t width  = (it->width() + padding * 2);
+        int32_t height = (it->height() + padding * 2);
 
         PackNode *n = p_ptr->m_pRoot->insert(width, height);
         if(n) {
             n->fill = true;
-            int32_t w = n->w - padding;
-            int32_t h = n->h - padding;
+            int32_t w = n->w - padding * 2;
+            int32_t h = n->h - padding * 2;
 
             Vector4 res;
             res.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
@@ -160,7 +160,7 @@ void Atlas::pack(uint8_t padding) {
 
             uint8_t *src = it->surface(0)[0];
             uint8_t *dst = p_ptr->m_pTexture->surface(0)[0];
-            for(int32_t y = 0; y < h; y++) {
+            for(int32_t y = padding; y < h; y++) {
                 memcpy(&dst[(y + n->y) * p_ptr->m_pRoot->w + n->x], &src[y * w], w);
             }
 

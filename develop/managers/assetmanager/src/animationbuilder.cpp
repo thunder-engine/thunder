@@ -52,7 +52,7 @@ void AnimationBuilder::load(const QString &path) {
 
     m_pEntry = m_Nodes.at(m_Data[ENTRY].toInt());
     if(m_pEntry) {
-        createLink(m_pRootNode, nullptr, m_pEntry, nullptr);
+        linkCreate(m_pRootNode, nullptr, m_pEntry, nullptr);
     }
 }
 
@@ -62,7 +62,7 @@ void AnimationBuilder::save(const QString &path) {
     AbstractSchemeModel::save(path);
 }
 
-AbstractSchemeModel::Node *AnimationBuilder::createNode(const QString &path) {
+AbstractSchemeModel::Node *AnimationBuilder::nodeCreate(const QString &path, int &index) {
     Node *node = new Node;
     node->root = false;
     node->name = path;
@@ -71,12 +71,17 @@ AbstractSchemeModel::Node *AnimationBuilder::createNode(const QString &path) {
     connect(data, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
     node->ptr = data;
 
-    m_Nodes.push_back(node);
+    if(index == -1) {
+        index = m_Nodes.size();
+        m_Nodes.push_back(node);
+    } else {
+        m_Nodes.insert(index, node);
+    }
 
     return node;
 }
 
-void AnimationBuilder::createLink(Node *sender, Item *oport, Node *receiver, Item *iport) {
+void AnimationBuilder::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
     if(receiver == m_pRootNode) {
         return;
     }
@@ -92,7 +97,7 @@ void AnimationBuilder::createLink(Node *sender, Item *oport, Node *receiver, Ite
             }
         }
     }
-    AbstractSchemeModel::createLink(sender, oport, receiver, iport);
+    AbstractSchemeModel::linkCreate(sender, oport, receiver, iport);
 }
 
 void AnimationBuilder::loadUserValues(AbstractSchemeModel::Node *node, const QVariantMap &values) {

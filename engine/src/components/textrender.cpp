@@ -441,8 +441,10 @@ AABBox TextRender::bound() const {
 
 bool TextRender::drawHandles(bool selected) {
     A_UNUSED(selected);
-    AABBox box = bound();
-    Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
+    if(selected) {
+        AABBox box = bound();
+        Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
+    }
     return false;
 }
 #endif

@@ -163,7 +163,7 @@ uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-AbstractSchemeModel::Node *ShaderBuilder::createNode(const QString &path) {
+AbstractSchemeModel::Node *ShaderBuilder::nodeCreate(const QString &path, int &index) {
     const QByteArray className = qPrintable(path + "*");
     const int type = QMetaType::type( className );
     const QMetaObject *meta = QMetaType::metaObjectForType(type);
@@ -175,8 +175,12 @@ AbstractSchemeModel::Node *ShaderBuilder::createNode(const QString &path) {
             Node *result    = function->createNode(this, path);
             result->type    = path;
 
-            m_Nodes.push_back(result);
-
+            if(index == -1) {
+                index = m_Nodes.size();
+                m_Nodes.push_back(result);
+            } else {
+                m_Nodes.insert(index, result);
+            }
             return result;
         }
     }
@@ -351,7 +355,7 @@ Variant ShaderBuilder::object() const {
     return result;
 }
 
-Variant ShaderBuilder::data() const {
+Variant ShaderBuilder::data(bool editor) const {
     VariantMap user;
     VariantList properties;
     properties.push_back(materialType());
@@ -425,12 +429,16 @@ Variant ShaderBuilder::data() const {
     QString fragment = (!m_RawPath.filePath().isEmpty()) ? m_RawPath.filePath() : "Surface.frag";
     {
         QString buff = loadIncludes(fragment, define);
-        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
-        if(!spv.empty()) {
-            user["Shader"] = SpirVConverter::spvToGlsl(spv);
+        if(editor) {
+            user["Shader"] = buff.toStdString();
+        } else {
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
+            if(!spv.empty()) {
+                user["Shader"] = SpirVConverter::spvToGlsl(spv);
+            }
         }
     }
-    if(m_MaterialType == Surface) {
+    if(m_MaterialType == Surface && !editor) {
         define += "\n#define SIMPLE 1";
         QString buff = loadIncludes(fragment, define);
         vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangFragment);
@@ -443,12 +451,16 @@ Variant ShaderBuilder::data() const {
     define = "#define TYPE_STATIC 1";
     {
         QString buff = loadIncludes(vertex, define);
-        vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
-        if(!spv.empty()) {
-            user["Static"] = SpirVConverter::spvToGlsl(spv);
+        if(editor) {
+            user["Static"] = buff.toStdString();
+        } else {
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+            if(!spv.empty()) {
+                user["Static"] = SpirVConverter::spvToGlsl(spv);
+            }
         }
     }
-    if(m_MaterialType == Surface) {
+    if(m_MaterialType == Surface && !editor) {
         {
             define += "\n#define INSTANCING 1";
             QString buff = loadIncludes(vertex, define);

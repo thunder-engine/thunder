@@ -17,7 +17,7 @@
 
 #include "cameractrl.h"
 
-#include "managers/undomanager/undomanager.h"
+#include "undomanager.h"
 
 class Engine;
 class Actor;

@@ -49,13 +49,16 @@ Rectangle {
     signal nodeSelected(int index)
     signal linkSelected(int index)
 
+    signal nodesSelected(variant indices)
+    signal linksSelected(variant indices)
+
     FontMetrics {
         id: fontMetrics
-        font.pointSize: 8
+        font.pointSize: 12
     }
 
     function nodeWidth(node) {
-        return Math.max(fontMetrics.advanceWidth(node.name) + 80, 100)
+        return Math.max(Math.round((fontMetrics.advanceWidth(node.name) + 80) / cell) * cell, 10 * cell)
     }
 
     function nodeHeight(node) {
@@ -72,23 +75,27 @@ Rectangle {
     }
 
     function moveNodes(id, x, y) {
+        var data = nodes
         var dx = x - nodes[id].pos.x
         var dy = y - nodes[id].pos.y
-        schemeModel.moveNode(id, nodes[id].pos.x + dx, nodes[id].pos.y + dy)
+        data[id].pos.x += dx
+        data[id].pos.y += dy
 
         for(var i = 0; i < selection.length; i++) {
             var index = selection[i]
             if(index === 0 || index === id) {
                 continue
             }
-            schemeModel.moveNode(index, nodes[index].pos.x + dx, nodes[index].pos.y + dy)
+            data[index].pos.x += dx
+            data[index].pos.y += dy
         }
+        nodes = data
     }
 
     function nodeSelect(id) {
         selectNode = id
-        nodeSelected(selectNode)
         selection = [id]
+        nodesSelected(selection)
         selectPort = -1
         createMode = false
     }
@@ -113,13 +120,13 @@ Rectangle {
             canvas.mouseX = mouse.x - canvas.translateX
             canvas.mouseY = mouse.y - canvas.translateY
 
-            canvas.requestPaint()
-
             if(mouse.buttons & Qt.RightButton) {
                 canvas.translateX += mouse.x - oldX
                 canvas.translateY += mouse.y - oldY
-                canvas.requestPaint()
             }
+
+            canvas.requestPaint()
+
             oldX = mouse.x
             oldY = mouse.y
 
@@ -143,7 +150,7 @@ Rectangle {
 
         onClicked: {
             if(selection.length === 0) {
-                nodeSelect(0)
+                nodesSelected([])
             }
             selectPort = -1
             createMode = false
@@ -173,6 +180,7 @@ Rectangle {
                     }
                 }
                 selection = array
+                nodesSelected(selection)
             }
         }
     }
@@ -368,6 +376,7 @@ Rectangle {
     Repeater {
         id: nodeRepeater
         model: (nodes !== undefined) ? nodes.length : 0
+
         SchemePort {
             id: nodeObject
             x: nodes[index].pos.x + canvas.translateX
@@ -387,14 +396,7 @@ Rectangle {
                 }
                 return result
             }
-            property bool isSelected: false
-
-            Connections {
-                target: rect
-                onSelectionChanged: {
-                    isSelected = (selection.indexOf(index) !== -1)
-                }
-            }
+            property bool isSelected: (selection.indexOf(index) !== -1)
 
             function isCollide(x1, y1, width1, height1, x2, y2, width2, height2) {
                 return !(x1 > x2 + width2 || x1 + width1 < x2 ||
@@ -418,6 +420,20 @@ Rectangle {
                     drag.target: (index != 0) ? nodeObject : undefined
                     drag.threshold: 0
 
+                    drag.onActiveChanged: {
+                        if(!drag.active) {
+                            schemeModel.moveNode(selection, nodes)
+                        } else {
+                            if(selection.indexOf(nodeObject.node) === -1) {
+                                var array = selection
+                                array.push(nodeObject.node)
+
+                                selection = array
+                                nodesSelected(selection)
+                            }
+                        }
+                    }
+
                     onPositionChanged: {
                         if(drag.active) {
                             moveNodes(node,
@@ -428,10 +444,14 @@ Rectangle {
                         canvas.mouseY = nodeObject.y + mouse.y - canvas.translateY
                         canvas.requestPaint()
                     }
+
                     onClicked: {
                         if((selection.length > 0) && ((mouse.modifiers & Qt.ControlModifier) || (mouse.modifiers & Qt.ShiftModifier))) {
-                            selection.push(nodeObject.node)
-                            nodeObject.isSelected = true
+                            var array = selection
+                            array.push(nodeObject.node)
+
+                            selection = array
+                            nodesSelected(selection)
                         } else {
                             nodeSelect(nodeObject.node)
                         }
@@ -443,7 +463,7 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: parent.top
                     text: nodes[nodeObject.node].name
-                    font.pointSize: 12
+                    font.pointSize: fontMetrics.font.pointSize
                 }
 
                 Repeater {
@@ -460,7 +480,7 @@ Rectangle {
                         node: nodeObject.node
                         port: index
 
-                        property variant portObject: nodes[nodeObject.node].ports[index]
+                        portObject: nodes[nodeObject.node].ports[index]
 
                         Text {
                             anchors.leftMargin: 8
@@ -469,7 +489,7 @@ Rectangle {
                             anchors.left: (!portObject.out) ? parent.right : undefined
                             anchors.right: (portObject.out) ? parent.left : undefined
                             text: portObject.name
-                            font.pointSize: 12
+                            font.pointSize: fontMetrics.font.pointSize
                         }
                     }
                 }
@@ -517,7 +537,6 @@ Rectangle {
             var result = schemeModel.pasteNodes(canvas.mouseX, canvas.mouseY)
             selection = []
             for(var i = 0; i < result.length; i++) {
-                nodeRepeater.itemAt(result[i]).isSelected = true
                 selection.push(result[i])
             }
         }

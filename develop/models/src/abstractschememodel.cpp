@@ -31,16 +31,15 @@ AbstractSchemeModel::AbstractSchemeModel() :
     m_Nodes.push_back(m_pRootNode);
 }
 
-void AbstractSchemeModel::deleteNode(Node *node) {
+void AbstractSchemeModel::nodeDelete(Node *node) {
     if(node == m_pRootNode) {
         return;
     }
-    bool result = false;
     auto it = m_Nodes.begin();
     while(it != m_Nodes.end()) {
         if(*it == node) {
             for(Item *item : node->list) {
-                deleteLink(item, true);
+                linkDelete(item, true);
                 delete item;
             }
 
@@ -53,18 +52,14 @@ void AbstractSchemeModel::deleteNode(Node *node) {
 
             it  = m_Nodes.erase(it);
             delete node;
-            result  = true;
             break;
         } else {
             ++it;
         }
     }
-    if(result) {
-        emit schemeUpdated();
-    }
 }
 
-void AbstractSchemeModel::createLink(Node *sender, Item *oport, Node *receiver, Item *iport) {
+void AbstractSchemeModel::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
     bool result = true;
     for(auto it : m_Links) {
         if(it->sender == sender && it->receiver == receiver &&
@@ -76,7 +71,7 @@ void AbstractSchemeModel::createLink(Node *sender, Item *oport, Node *receiver, 
     if(result) {
         for(auto it : m_Links) {
             if(it->iport == iport && iport != nullptr) {
-                deleteLink(iport);
+                linkDelete(iport);
             }
         }
 
@@ -92,7 +87,7 @@ void AbstractSchemeModel::createLink(Node *sender, Item *oport, Node *receiver, 
     }
 }
 
-void AbstractSchemeModel::deleteLink(Item *item, bool silent) {
+void AbstractSchemeModel::linkDelete(Item *item, bool silent) {
     bool result = false;
     auto it = m_Links.begin();
     while(it != m_Links.end()) {
@@ -110,10 +105,18 @@ void AbstractSchemeModel::deleteLink(Item *item, bool silent) {
     }
 }
 
+const AbstractSchemeModel::LinkList AbstractSchemeModel::findLinks(const Node *node) const {
+    LinkList result;
+    for(const auto it : m_Links) {
+        if(it->receiver == node || it->sender == node) {
+            result.push_back(it);
+        }
+    }
+    return result;
+}
+
 const AbstractSchemeModel::Link *AbstractSchemeModel::findLink(const Node *node, const char *item) const {
     for(const auto it : m_Links) {
-        QString str;
-        str.compare(item);
         if(it->receiver == node && it->iport->name.compare(item) == 0) {
             return it;
         }
@@ -121,11 +124,11 @@ const AbstractSchemeModel::Link *AbstractSchemeModel::findLink(const Node *node,
     return nullptr;
 }
 
-const AbstractSchemeModel::Node *AbstractSchemeModel::node(int index) {
+AbstractSchemeModel::Node *AbstractSchemeModel::node(int index) {
     return m_Nodes.at(index);
 }
 
-const AbstractSchemeModel::Link *AbstractSchemeModel::link(int index) {
+AbstractSchemeModel::Link *AbstractSchemeModel::link(int index) {
     return m_Links.at(index);
 }
 
@@ -153,7 +156,8 @@ void AbstractSchemeModel::load(const QString &path) {
     QVariantList nodes = m_Data[NODES].toList();
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
-        Node *node = createNode(n[TYPE].toString());
+        int32_t index = -1;
+        Node *node = nodeCreate(n[TYPE].toString(), index);
         node->pos = QPoint(n[X].toInt(), n[Y].toInt());
         loadUserValues(node, n[VALUES].toMap());
     }
@@ -207,11 +211,7 @@ QVariant AbstractSchemeModel::saveNode(Node *node) {
 }
 
 void AbstractSchemeModel::createNode(const QString &path, int x, int y) {
-    Node *node = createNode(path);
-    if(node) {
-        node->pos = QPoint(x, y);
-    }
-    emit schemeUpdated();
+    UndoManager::instance()->push(new CreateNode(path, x, y, this));
 }
 
 QVariant AbstractSchemeModel::nodes() const {
@@ -261,7 +261,7 @@ void AbstractSchemeModel::createLink(int sender, int oport, int receiver, int ip
         Item *op = (oport > -1) ? snd->list.at(oport) : nullptr;
         Item *ip = (iport > -1) ? rcv->list.at(iport) : nullptr;
 
-        createLink(snd, op, rcv, ip);
+        linkCreate(snd, op, rcv, ip);
     }
 }
 
@@ -291,24 +291,17 @@ void AbstractSchemeModel::deleteLinksByNode(int index, int port) {
             }
             emit schemeUpdated();
         } else {
-            deleteLink(node->list.at(port));
+            linkDelete(node->list.at(port));
         }
     }
 }
 
-void AbstractSchemeModel::moveNode(int index, int x, int y) {
-    m_Nodes[index]->pos = QPoint(x, y);
-    emit nodeMoved();
+void AbstractSchemeModel::moveNode(const QVariant selection, const QVariant nodes) {
+    UndoManager::instance()->push(new MoveNode(selection, nodes, this));
 }
 
 void AbstractSchemeModel::deleteNodes(QVariant list) {
-    NodeList toDelete;
-    for(QVariant it : list.toList()) {
-        toDelete.push_back(m_Nodes.at(it.toInt()));
-    }
-    for(Node *it : toDelete) {
-        deleteNode(it);
-    }
+    UndoManager::instance()->push(new DeleteNodes(list, this));
 }
 
 void AbstractSchemeModel::copyNodes(QVariant list) {
@@ -323,28 +316,150 @@ void AbstractSchemeModel::copyNodes(QVariant list) {
 }
 
 QVariant AbstractSchemeModel::pasteNodes(int x, int y) {
-    QJsonDocument doc = QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toLocal8Bit());
+    PasteNodes *paste = new PasteNodes(QGuiApplication::clipboard()->text(), x, y, this);
+    UndoManager::instance()->push(paste);
+    return paste->list();
+}
 
+CreateNode::CreateNode(const QString &path, int x, int y, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
+        UndoScheme(model, name, parent),
+        m_pNode(nullptr),
+        m_Path(path),
+        m_Index(-1),
+        m_Point(x, y) {
+
+}
+void CreateNode::undo() {
+    m_pModel->nodeDelete(m_pNode);
+    m_pModel->schemeUpdated();
+}
+void CreateNode::redo() {
+    m_pNode = m_pModel->nodeCreate(m_Path, m_Index);
+    if(m_pNode) {
+        m_pNode->pos = m_Point;
+    }
+    m_pModel->schemeUpdated();
+}
+
+MoveNode::MoveNode(const QVariant &selection, const QVariant &nodes, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
+        UndoScheme(model, name, parent) {
+
+    QVariantList list = nodes.toList();
+    for(auto it : selection.toList()) {
+        m_Indices.push_back(it.toInt());
+
+        QVariantMap map = list.at(it.toInt()).toMap();
+        m_Points.push_back(map["pos"].toPoint());
+    }
+}
+void MoveNode::undo() {
+    redo();
+}
+void MoveNode::redo() {
+    QList<QPoint> positions;
+    for(int i = 0; i < m_Indices.size(); i++) {
+        AbstractSchemeModel::Node *node = m_pModel->node(m_Indices.at(i));
+        positions.push_back(node->pos);
+        node->pos = m_Points.at(i);
+    }
+    m_Points = positions;
+    m_pModel->nodeMoved();
+}
+
+DeleteNodes::DeleteNodes(const QVariant &selection, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
+        UndoScheme(model, name, parent) {
+
+    for(QVariant it : selection.toList()) {
+        m_Indices.push_back(it.toInt());
+    }
+}
+void DeleteNodes::undo() {
+    QVariantMap data = m_Document.toVariant().toMap();
+
+    QVariantList nodes = data[NODES].toList();
+    for(int i = 0; i < nodes.size(); ++i) {
+        QVariantMap n = nodes[i].toMap();
+        int32_t index = m_Indices.at(i);
+        AbstractSchemeModel::Node *node = m_pModel->nodeCreate(n[TYPE].toString(), index);
+        node->pos = QPoint(n[X].toInt(), n[Y].toInt());
+        m_pModel->loadUserValues(node, n[VALUES].toMap());
+    }
+
+    QVariantList links = data[LINKS].toList();
+    for(int i = 0; i < links.size(); ++i) {
+        QVariantMap l = links[i].toMap();
+        m_pModel->createLink(l[SENDER].toInt(), l[OPORT].toInt(), l[RECEIVER].toInt(), l[IPORT].toInt());
+    }
+
+    m_pModel->schemeUpdated();
+}
+void DeleteNodes::redo() {
+    QVariantList links;
+
+    AbstractSchemeModel::NodeList list;
+    for(auto it : m_Indices) {
+        AbstractSchemeModel::Node *node = m_pModel->node(it);
+        list.push_back(node);
+        for(auto l : m_pModel->findLinks(node)) {
+            QVariantMap link;
+            link[SENDER] = m_pModel->m_Nodes.indexOf(l->sender);
+            link[OPORT] = (l->oport != nullptr) ? l->sender->list.indexOf(l->oport) : -1;
+            link[RECEIVER] = m_pModel->m_Nodes.indexOf(l->receiver);
+            link[IPORT] = (l->iport != nullptr) ? l->receiver->list.indexOf(l->iport) : -1;
+
+            links.push_back(link);
+        }
+    }
+
+    QVariantList nodes;
+    for(auto it : list) {
+        nodes.push_back(m_pModel->saveNode(it));
+        m_pModel->nodeDelete(it);
+    }
+
+    QVariantMap data;
+    data[NODES] = nodes;
+    data[LINKS] = links;
+
+    m_Document =  QJsonDocument::fromVariant(data);
+
+    m_pModel->schemeUpdated();
+}
+
+PasteNodes::PasteNodes(const QString &data, int x, int y, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
+        UndoScheme(model, name, parent),
+        m_Document(QJsonDocument::fromJson(data.toLocal8Bit())),
+        m_X(x),
+        m_Y(y) {
+
+}
+void PasteNodes::undo() {
+    for(auto it : m_List) {
+        m_pModel->nodeDelete(m_pModel->node(it.toInt()));
+    }
+    m_pModel->schemeUpdated();
+}
+void PasteNodes::redo () {
     int maxX = INT_MIN;
     int maxY = INT_MIN;
-    for(QJsonValue it : doc.array()) {
+    for(QJsonValue it : m_Document.array()) {
         QVariantMap n = it.toVariant().toMap();
         maxX = MAX(maxX, n[X].toInt());
         maxY = MAX(maxY, n[Y].toInt());
     }
 
-    QVariantList list;
-    for(QJsonValue it : doc.array()) {
+    m_List.clear();
+    for(QJsonValue it : m_Document.array()) {
         QVariantMap n = it.toVariant().toMap();
 
-        Node *node = createNode(n[TYPE].toString());
+        int index = -1;
+        AbstractSchemeModel::Node *node = m_pModel->nodeCreate(n[TYPE].toString(), index);
         int deltaX = maxX - n[X].toInt();
         int deltaY = maxY - n[Y].toInt();
-        node->pos = QPoint(x + deltaX, y + deltaY);
-        loadUserValues(node, n[VALUES].toMap());
+        node->pos = QPoint(m_X + deltaX, m_Y + deltaY);
+        m_pModel->loadUserValues(node, n[VALUES].toMap());
 
-        list.push_back(m_Nodes.indexOf(node));
+        m_List.push_back(index);
     }
-    emit schemeUpdated();
-    return list;
+    m_pModel->schemeUpdated();
 }

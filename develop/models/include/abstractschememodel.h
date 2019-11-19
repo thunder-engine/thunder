@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <QVariant>
+#include <QJsonDocument>
 
 #include <string>
 #include <stdint.h>
@@ -12,9 +13,13 @@
 
 #include "converters/converter.h"
 
+#include "undomanager.h"
+
 using namespace std;
 
 class QAbstractItemModel;
+
+class AbstractSchemeModel;
 
 class AbstractSchemeModel : public IConverter {
     Q_OBJECT
@@ -70,16 +75,17 @@ public:
 
     AbstractSchemeModel(const AbstractSchemeModel &) { assert(false && "DONT EVER USE THIS"); }
 
-    virtual Node *createNode(const QString &path) = 0;
-    virtual void deleteNode(Node *node);
+    virtual Node *nodeCreate(const QString &path, int &index) = 0;
+    virtual void nodeDelete(Node *node);
 
-    virtual void createLink(Node *sender, Item *oport, Node *receiver, Item *iport);
-    virtual void deleteLink(Item *item, bool silent = false);
+    virtual void linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport);
+    virtual void linkDelete(Item *item, bool silent = false);
 
+    const LinkList findLinks(const Node *node) const;
     const Link *findLink(const Node *node, const char *item) const;
 
-    const Node *node(int index);
-    const Link *link(int index);
+    Node *node(int index);
+    Link *link(int index);
 
     virtual void load(const QString &path);
     virtual void save(const QString &path);
@@ -94,12 +100,11 @@ public:
         return m_Links;
     }
 
-    Q_INVOKABLE void createNode(const QString &path, int x, int y);
-
     Q_INVOKABLE QVariant nodes() const;
     Q_INVOKABLE QVariant links() const;
 
-    Q_INVOKABLE void moveNode(int index, int x, int y);
+    Q_INVOKABLE void createNode(const QString &path, int x, int y);
+    Q_INVOKABLE void moveNode(const QVariant selection, const QVariant nodes);
     Q_INVOKABLE void deleteNodes(QVariant list);
     Q_INVOKABLE void copyNodes(QVariant list);
     Q_INVOKABLE QVariant pasteNodes(int x, int y);
@@ -120,6 +125,9 @@ protected:
 
     QVariant saveNode(Node *node);
 
+    friend class PasteNodes;
+    friend class DeleteNodes;
+
 protected:
     NodeList m_Nodes;
     LinkList m_Links;
@@ -127,6 +135,67 @@ protected:
     AbstractSchemeModel::Node *m_pRootNode;
 
     QVariantMap m_Data;
+};
+
+class UndoScheme : public QUndoCommand {
+public:
+    UndoScheme (AbstractSchemeModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+            QUndoCommand(name, parent) {
+        m_pModel = model;
+    }
+protected:
+    AbstractSchemeModel *m_pModel;
+};
+
+class CreateNode : public UndoScheme {
+public:
+    CreateNode (const QString &path, int x, int y, AbstractSchemeModel *model, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+private:
+    AbstractSchemeModel::Node *m_pNode;
+    QString m_Path;
+    int m_Index;
+    QPoint m_Point;
+};
+
+class MoveNode : public UndoScheme {
+public:
+    MoveNode (const QVariant &selection, const QVariant &nodes, AbstractSchemeModel *model, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+private:
+    QList<int> m_Indices;
+    QList<QPoint> m_Points;
+};
+
+class DeleteNodes : public UndoScheme {
+public:
+    DeleteNodes (const QVariant &selection, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+private:
+    QList<int> m_Indices;
+    QJsonDocument m_Document;
+};
+
+class PasteNodes : public UndoScheme {
+public:
+    PasteNodes (const QString &data, int x, int y, AbstractSchemeModel *model, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+
+    QVariant list() const {return m_List; }
+
+private:
+    QJsonDocument m_Document;
+    int32_t m_X;
+    int32_t m_Y;
+    QVariantList m_List;
 };
 
 #endif // ABSTRACTSCHEMEMODEL_H

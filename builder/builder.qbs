@@ -20,6 +20,7 @@ Project {
         "../develop/managers/assetmanager/include",
         "../develop/managers/pluginmanager/include",
         "../develop/managers/settingsmanager",
+        "../develop/managers/undomanager",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
         "../thirdparty/next/inc",
@@ -47,7 +48,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
-        Depends { name: "Qt"; submodules: ["core", "gui"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
         bundle.isBundle: false
 

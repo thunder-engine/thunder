@@ -156,13 +156,6 @@ public:
     ShaderBuilder               ();
     ~ShaderBuilder              () Q_DECL_OVERRIDE;
 
-    Node                       *createNode                  (const QString &path) Q_DECL_OVERRIDE;
-
-    QAbstractItemModel         *components                  () const Q_DECL_OVERRIDE;
-
-    void                        load                        (const QString &path) Q_DECL_OVERRIDE;
-    void                        save                        (const QString &path) Q_DECL_OVERRIDE;
-
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl"}; }
     uint32_t contentType() const Q_DECL_OVERRIDE { return ContentMaterial; }
     uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<Material *>(); }
@@ -173,7 +166,7 @@ public:
 
     Variant                     object                      () const;
 
-    Variant                     data                        () const;
+    Variant                     data                        (bool editor = false) const;
 
     bool                        build                       ();
 
@@ -207,6 +200,13 @@ public:
     void                        setRawPath                  (const FilePath &path) { m_RawPath = path; }
 
 private:
+    Node                       *nodeCreate                  (const QString &path, int &index) Q_DECL_OVERRIDE;
+
+    QAbstractItemModel         *components                  () const Q_DECL_OVERRIDE;
+
+    void                        load                        (const QString &path) Q_DECL_OVERRIDE;
+    void                        save                        (const QString &path) Q_DECL_OVERRIDE;
+
     bool                        build                       (QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
 
     void                        addParam                    (const QString &param);

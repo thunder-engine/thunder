@@ -1,7 +1,5 @@
 #include "undomanager.h"
 
-#include "controllers/objectctrl.h"
-
 UndoManager *UndoManager::m_pInstance   = nullptr;
 
 UndoManager *UndoManager::instance() {

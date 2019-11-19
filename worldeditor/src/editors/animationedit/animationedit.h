@@ -5,7 +5,7 @@
 
 #include "assetmanager.h"
 
-class AnimationBuilder;
+class AbstractSchemeModel;
 class AnimationStateMachine;
 
 namespace Ui {
@@ -43,7 +43,7 @@ private:
 
     Ui::AnimationEdit *ui;
 
-    AnimationBuilder *m_pBuilder;
+    AbstractSchemeModel *m_pBuilder;
 
     AnimationStateMachine *m_pMachine;
 

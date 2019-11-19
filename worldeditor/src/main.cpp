@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "managers/undomanager/undomanager.h"
+#include "undomanager.h"
 
 #include "editors/scenecomposer/scenecomposer.h"
 

@@ -69,6 +69,7 @@ class AnimationBuilder : public AbstractSchemeModel {
 public:
     AnimationBuilder();
 
+private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
     uint32_t contentType() const Q_DECL_OVERRIDE { return ContentAnimationStateMachine; }
     uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<AnimationStateMachine *>(); }
@@ -78,8 +79,8 @@ public:
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
 
-    Node *createNode(const QString &path) Q_DECL_OVERRIDE;
-    void createLink(Node *sender, Item *oport, Node *receiver, Item *iport) Q_DECL_OVERRIDE;
+    Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
+    void linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) Q_DECL_OVERRIDE;
 
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;

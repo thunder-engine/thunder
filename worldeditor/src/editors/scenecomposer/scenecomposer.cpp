@@ -34,7 +34,6 @@
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
-#include "managers/undomanager/undomanager.h"
 #include "managers/pluginmanager/plugindialog.h"
 #include "managers/asseteditormanager/importqueue.h"
 
@@ -42,6 +41,7 @@
 #include <projectmanager.h>
 #include <pluginmodel.h>
 #include <settingsmanager.h>
+#include <undomanager.h>
 
 #include "aboutdialog.h"
 
