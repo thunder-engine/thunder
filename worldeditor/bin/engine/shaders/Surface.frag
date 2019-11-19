@@ -49,7 +49,7 @@ void passMode(Params params) {
     model       = 0.34;
     norm        = params.normal * 0.5 + 0.5;
     emit        = emit + albd * light.ambient;
-    matv.x      = max(0.01, getRoughness( params ))
+    matv.x      = max(0.01, getRoughness( params ));
     #endif
     gbuffer1    = vec4( norm, model );
     gbuffer2    = vec4( albd, 0.0   );

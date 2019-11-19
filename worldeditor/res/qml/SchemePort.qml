@@ -50,8 +50,6 @@ Rectangle {
         }
         onReleased: {
             if(createMode && selectNode != focusNode) {
-                console.log("selectNode " + selectNode + " selectPort " + selectPort)
-                console.log("focusNode " + focusNode + " focusPort " + focusPort)
                 if(portObject !== undefined && portObject.out) {
                     schemeModel.createLink(selectNode, selectPort, focusNode, focusPort)
                 } else {
