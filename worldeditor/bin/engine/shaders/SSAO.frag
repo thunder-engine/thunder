@@ -4,12 +4,9 @@
 
 #include "Common.vert"
 
-layout(location = 2) uniform mat4 t_projection;
-
 layout(location = 32) uniform sampler2D depthMap;
-layout(location = 33) uniform sampler2D noiseMap;
-layout(location = 34) uniform sampler2D normalsMap;
-layout(location = 35) uniform sampler2D diffuseMap;
+layout(location = 33) uniform sampler2D normalsMap;
+layout(location = 34) uniform sampler2D noiseMap;
 
 layout(location = 36) uniform float radius;
 layout(location = 37) uniform float bias;

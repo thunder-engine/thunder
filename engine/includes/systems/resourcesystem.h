@@ -9,11 +9,11 @@ class Resource;
 
 class NEXT_LIBRARY_EXPORT ResourceSystem : public ISystem {
 public:
-    bool init () override;
+    bool init() override;
 
-    const char *name () const override;
+    const char *name() const override;
 
-    void update (Scene *) override;
+    void update(Scene *) override;
 
     bool isThreadSafe() const override;
 

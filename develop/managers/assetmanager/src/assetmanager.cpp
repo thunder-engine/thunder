@@ -17,12 +17,13 @@
 #include "config.h"
 
 #include <json.h>
+#include <bson.h>
 
 #include "converters/converter.h"
 #include "converters/builder.h"
 
-#include "components/scene.h"
-#include "components/actor.h"
+#include <components/scene.h>
+#include <components/actor.h>
 
 #include "animconverter.h"
 #include "textconverter.h"
@@ -777,6 +778,9 @@ bool AssetManager::convert(IConverterSettings *settings) {
             m_Guids[source] = guid;
             m_Paths[guid] = source;
             m_Types[guid.c_str()] = type;
+
+            reloadResource(m_pEngine->loadResource(guid), guid);
+
             for(QString it : settings->subKeys()) {
                 string value = settings->subItem(it).toStdString();
                 int32_t type = settings->subType(it);
@@ -796,6 +800,30 @@ bool AssetManager::convert(IConverterSettings *settings) {
     }
 
     return false;
+}
+
+void AssetManager::reloadResource(Object *object, const string &path) {
+    if(!path.empty()) {
+        IFile *file = Engine::file();
+        _FILE *fp   = file->_fopen(path.c_str(), "r");
+        if(fp) {
+            ByteArray data;
+            data.resize(file->_fsize(fp));
+            file->_fread(&data[0], data.size(), 1, fp);
+            file->_fclose(fp);
+
+            Variant var = Bson::load(data);
+            if(!var.isValid()) {
+                var = Json::load(string(data.begin(), data.end()));
+            }
+            if(var.isValid()) {
+                VariantList objects = var.value<VariantList>();
+                VariantList obj = objects.front().value<VariantList>();
+
+                object->loadUserData(obj.back().value<VariantMap>());
+            }
+        }
+    }
 }
 
 void AssetManager::saveSettings(IConverterSettings *settings) {

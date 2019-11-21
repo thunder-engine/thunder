@@ -113,7 +113,7 @@ void ResourceSystem::unloadResource(const string &path, bool force) {
         {
             auto it = s_ResourceCache.find(uuid);
             if(it != s_ResourceCache.end() && it->second) {
-                Resource *resource = dynamic_cast<Resource *>(it->second);
+                Resource *resource = static_cast<Resource *>(it->second);
                 if(resource) {
                     unloadResource(resource, force);
                 } else {
@@ -127,10 +127,11 @@ void ResourceSystem::unloadResource(const string &path, bool force) {
 
 void ResourceSystem::unloadResource(Resource *resource, bool force) {
     PROFILER_MARKER;
-
-    resource->setState(Resource::Suspend);
-    if(force) {
-        update(nullptr);
+    if(resource) {
+        resource->setState(Resource::Suspend);
+        if(force) {
+            update(nullptr);
+        }
     }
 }
 

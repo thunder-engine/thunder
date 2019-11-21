@@ -129,6 +129,8 @@ private:
     AssetManager            ();
     ~AssetManager           ();
 
+    void reloadResource     (Object *object, const string &path);
+
     static AssetManager    *m_pInstance;
 
 protected:
