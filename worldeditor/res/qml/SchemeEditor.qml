@@ -101,7 +101,7 @@ Rectangle {
     }
 
     function deleteSelected() {
-        if(selection.length > -1) {
+        if(selection.length > 0) {
             schemeModel.deleteNodes(selection)
             nodeSelect(0)
         }
@@ -267,6 +267,7 @@ Rectangle {
                         context.stroke()
                     }
                 } else {
+                    context.strokeStyle = "red"
                     x0 += (width + border) / 2
                     y0 += (nodeHeight(nodes[selectNode]) + border) / 2
                     context.beginPath()
@@ -364,6 +365,7 @@ Rectangle {
                 ShapePath {
                     strokeWidth: 0
                     fillColor: linkObject.color
+                    strokeColor: linkObject.color
                     startX: 0; startY: 0
                     PathLine { x: 6; y:12 }
                     PathLine { x:12; y: 0 }

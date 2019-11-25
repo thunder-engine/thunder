@@ -45,6 +45,14 @@ AnimationEdit::AnimationEdit(Engine *engine) :
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(nodeSelected(int)), this, SLOT(onNodeSelected(int)));
 
+    m_pUndo = UndoManager::instance()->createUndoAction(ui->menuEdit);
+    m_pUndo->setShortcut(QKeySequence("Ctrl+Z"));
+    ui->menuEdit->addAction(m_pUndo);
+
+    m_pRedo = UndoManager::instance()->createRedoAction(ui->menuEdit);
+    m_pRedo->setShortcut(QKeySequence("Ctrl+Y"));
+    ui->menuEdit->addAction(m_pRedo);
+
     readSettings();
 }
 

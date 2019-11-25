@@ -78,27 +78,25 @@ public:
     virtual Node *nodeCreate(const QString &path, int &index) = 0;
     virtual void nodeDelete(Node *node);
 
-    virtual void linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport);
-    virtual void linkDelete(Item *item, bool silent = false);
+    virtual Link *linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport);
+    virtual void linkDelete(Item *item);
+    virtual void linkDelete(Node *node);
+    virtual void linkDelete(Link *link);
 
     const LinkList findLinks(const Node *node) const;
+    const LinkList findLinks(const Item *node) const;
     const Link *findLink(const Node *node, const char *item) const;
 
     Node *node(int index);
     Link *link(int index);
 
+    int node(Node *node) const;
+    int link(Link *link) const;
+
     virtual void load(const QString &path);
     virtual void save(const QString &path);
 
     virtual QAbstractItemModel *components () const = 0;
-
-    NodeList &getNodes() {
-        return m_Nodes;
-    }
-
-    const LinkList &getLinks() {
-        return m_Links;
-    }
 
     Q_INVOKABLE QVariant nodes() const;
     Q_INVOKABLE QVariant links() const;
@@ -112,7 +110,7 @@ public:
     Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
     Q_INVOKABLE void deleteLink(int index);
 
-    Q_INVOKABLE void deleteLinksByNode(int index, int port);
+    Q_INVOKABLE void deleteLinksByPort(int node, int port);
 
 signals:
     void schemeUpdated();
@@ -196,6 +194,52 @@ private:
     int32_t m_X;
     int32_t m_Y;
     QVariantList m_List;
+};
+
+class CreateLink : public UndoScheme {
+public:
+    CreateLink (int sender, int oport, int receiver, int iport, AbstractSchemeModel *model, const QString &name = QObject::tr("Create Link"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+
+private:
+    int m_Sender;
+    int m_OPort;
+    int m_Receiver;
+    int m_IPort;
+
+    int m_Index;
+};
+
+class DeleteLink : public UndoScheme {
+public:
+    DeleteLink (int index, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Link"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+
+private:
+    int m_Sender;
+    int m_OPort;
+    int m_Receiver;
+    int m_IPort;
+
+    int m_Index;
+};
+
+class DeleteLinksByPort : public UndoScheme {
+public:
+    DeleteLinksByPort (int node, int port, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Links"), QUndoCommand *parent = nullptr);
+
+    void undo () override;
+    void redo () override;
+
+private:
+    int m_Node;
+    int m_Port;
+
+    QVariantList m_Links;
 };
 
 #endif // ABSTRACTSCHEMEMODEL_H

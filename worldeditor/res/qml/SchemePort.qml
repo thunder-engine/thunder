@@ -12,8 +12,8 @@ Rectangle {
     property variant portObject: undefined
 
     property bool isFocus: {
-        var result = (createMode && ((nodeObject.x + x - canvas.translateX) < canvas.mouseX && (nodeObject.x + x + width - canvas.translateX) > canvas.mouseX &&
-                                     (nodeObject.y + y - canvas.translateY) < canvas.mouseY && (nodeObject.y + y + height - canvas.translateY) > canvas.mouseY) )
+        var result = (createMode && ((nodeObject.x + ((port > -1) ? x : 0) - canvas.translateX) < canvas.mouseX && (nodeObject.x + ((port > -1) ? x : 0) + width - canvas.translateX) > canvas.mouseX &&
+                                     (nodeObject.y + ((port > -1) ? y : 0) - canvas.translateY) < canvas.mouseY && (nodeObject.y + ((port > -1) ? y : 0) + height - canvas.translateY) > canvas.mouseY) )
         if(result === true) {
             color = theme.blueHover
 
@@ -32,14 +32,14 @@ Rectangle {
         hoverEnabled: true
 
         onPositionChanged: {
-            canvas.mouseX = (nodeObject.x + parent.x) + mouse.x - canvas.translateX
-            canvas.mouseY = (nodeObject.y + parent.y) + mouse.y - canvas.translateY
+            canvas.mouseX = (nodeObject.x + ((port > -1) ? parent.x : 0)) + mouse.x - canvas.translateX
+            canvas.mouseY = (nodeObject.y + ((port > -1) ? parent.y : 0)) + mouse.y - canvas.translateY
             canvas.requestPaint()
         }
 
         onClicked: {
             if(mouse.modifiers & Qt.AltModifier) {
-                schemeModel.deleteLinksByNode(node, port)
+                schemeModel.deleteLinksByPort(node, port)
             }
         }
         onPressed: {
@@ -50,7 +50,7 @@ Rectangle {
         }
         onReleased: {
             if(createMode && selectNode != focusNode) {
-                if(portObject !== undefined && portObject.out) {
+                if((portObject !== undefined && portObject.out) || stateMachine) {
                     schemeModel.createLink(selectNode, selectPort, focusNode, focusPort)
                 } else {
                     schemeModel.createLink(focusNode, focusPort, selectNode, selectPort)

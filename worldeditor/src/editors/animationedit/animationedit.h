@@ -48,6 +48,9 @@ private:
     AnimationStateMachine *m_pMachine;
 
     QString m_Path;
+
+    QAction *m_pUndo;
+    QAction *m_pRedo;
 };
 
 #endif // ANIMATIONEDIT_H

@@ -81,9 +81,9 @@ AbstractSchemeModel::Node *AnimationBuilder::nodeCreate(const QString &path, int
     return node;
 }
 
-void AnimationBuilder::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
+AbstractSchemeModel::Link *AnimationBuilder::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
     if(receiver == m_pRootNode) {
-        return;
+        return nullptr;
     }
     if(sender == m_pRootNode) {
         auto it = m_Links.begin();
@@ -97,7 +97,7 @@ void AnimationBuilder::linkCreate(Node *sender, Item *oport, Node *receiver, Ite
             }
         }
     }
-    AbstractSchemeModel::linkCreate(sender, oport, receiver, iport);
+    return AbstractSchemeModel::linkCreate(sender, oport, receiver, iport);
 }
 
 void AnimationBuilder::loadUserValues(AbstractSchemeModel::Node *node, const QVariantMap &values) {
