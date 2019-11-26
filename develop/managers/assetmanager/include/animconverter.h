@@ -5,12 +5,12 @@
 #include "resources/animationclip.h"
 
 class AnimConverter : public IConverter {
-public:
-    QStringList                 suffixes                    () const { return {"anim"}; }
-    uint32_t                    contentType                 () const { return ContentAnimation; }
-    uint32_t                    type                        () const { return MetaType::type<AnimationClip *>(); }
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"anim"}; }
+    uint32_t contentType() const Q_DECL_OVERRIDE { return ContentAnimation; }
+    uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<AnimationClip *>(); }
 
-    uint8_t                     convertFile                 (IConverterSettings *s);
+    uint8_t convertFile(IConverterSettings *s) Q_DECL_OVERRIDE;
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }
 };
 
 #endif // ANIMCONVERTER_H

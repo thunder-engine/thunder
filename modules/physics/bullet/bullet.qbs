@@ -68,7 +68,9 @@ Project {
 
     StaticLibrary {
         name: "bullet"
-        files: bullet.srcFiles
+        files: [
+            "src/converters/templates.qrc",
+        ].concat(bullet.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         bundle.isBundle: false

@@ -2,4 +2,7 @@
     <qresource prefix="/">
         <file>Behaviour.txt</file>
     </qresource>
+    <qresource prefix="/Templates">
+        <file>Angel_Behaviour.as</file>
+    </qresource>
 </RCC>

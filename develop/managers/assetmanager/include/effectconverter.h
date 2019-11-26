@@ -248,11 +248,6 @@ public:
     void load(const QString &path);
     void save(const QString &path);
 
-    QStringList suffixes() const { return {"efx"}; }
-    uint32_t contentType() const { return ContentEffect; }
-    uint32_t type() const { return MetaType::type<ParticleEffect *>(); }
-    uint8_t convertFile(IConverterSettings *);
-
     EffectEmitter *createEmitter();
     void deleteEmitter(QString name);
 
@@ -263,6 +258,14 @@ public:
 
     Variant data() const;
     Variant object() const;
+
+protected:
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"efx"}; }
+    uint32_t contentType() const Q_DECL_OVERRIDE { return ContentEffect; }
+    uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<ParticleEffect *>(); }
+    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Particle_Effect.efx"; }
 
 signals:
     void effectUpdated();

@@ -71,3 +71,7 @@ void IConverterSettings::setSubItem(const QString &name, const QString &uuid, in
 IConverterSettings *IConverter::createSettings() const {
     return new IConverterSettings();
 }
+
+QString IConverter::templatePath() const {
+    return QString();
+}

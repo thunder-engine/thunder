@@ -207,6 +207,8 @@ private:
     void                        load                        (const QString &path) Q_DECL_OVERRIDE;
     void                        save                        (const QString &path) Q_DECL_OVERRIDE;
 
+    QString                     templatePath                () const Q_DECL_OVERRIDE { return ":/Templates/Material.mtl"; }
+
     bool                        build                       (QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
 
     void                        addParam                    (const QString &param);

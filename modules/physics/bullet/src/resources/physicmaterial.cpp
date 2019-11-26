@@ -6,7 +6,8 @@
 
 PhysicMaterial::PhysicMaterial() :
         m_Friction(0.5f),
-        m_Bounciness(0.0f) {
+        m_Restitution(0.0f),
+        m_Density(1.0f) {
 
 }
 
@@ -17,7 +18,9 @@ void PhysicMaterial::loadUserData(const VariantMap &data) {
         auto it = list.begin();
         m_Friction = it->toFloat();
         it++;
-        m_Bounciness = it->toFloat();
+        m_Restitution = it->toFloat();
+        it++;
+        m_Density = it->toFloat();
     }
 }
 
@@ -29,10 +32,18 @@ void PhysicMaterial::setFriction(float friction) {
     m_Friction = friction;
 }
 
-float PhysicMaterial::bounciness() const {
-    return m_Bounciness;
+float PhysicMaterial::restitution() const {
+    return m_Restitution;
 }
 
-void PhysicMaterial::setBounciness(float bounciness) {
-    m_Bounciness = bounciness;
+void PhysicMaterial::setRestitution(float restitution) {
+    m_Restitution = restitution;
+}
+
+float PhysicMaterial::density() const {
+    return m_Density;
+}
+
+void PhysicMaterial::setDensity(float density) {
+    m_Density = density;
 }

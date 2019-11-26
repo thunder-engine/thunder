@@ -5,6 +5,10 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
+#include <resources/physicmaterial.h>
+
+#define MATERAIL "PhysicMaterial"
+
 VolumeCollider::VolumeCollider() :
         m_Center(0.0f),
         m_pMaterial(nullptr) {
@@ -105,4 +109,29 @@ void VolumeCollider::createCollider() {
             m_pWorld->addCollisionObject(m_pCollisionObject, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
         }
     }
+}
+
+/*!
+    \internal
+*/
+void VolumeCollider::loadUserData(const VariantMap &data) {
+    Collider::loadUserData(data);
+
+    auto it = data.find(MATERAIL);
+    if(it != data.end()) {
+        setMaterial(Engine::loadResource<PhysicMaterial>((*it).second.toString()));
+    }
+}
+/*!
+    \internal
+*/
+VariantMap VolumeCollider::saveUserData() const {
+    VariantMap result = Collider::saveUserData();
+
+    string ref = Engine::reference(material());
+    if(!ref.empty()) {
+        result[MATERAIL] = ref;
+    }
+
+    return result;
 }

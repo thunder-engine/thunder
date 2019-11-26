@@ -161,10 +161,20 @@ void ContentBrowser::createContextMenus() {
     m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
     m_CreationMenu.addSeparator();
     m_CreationMenu.addAction(a);
-    m_CreationMenu.addAction(tr("NativeBehaviour"))->setData(".cpp");
-    m_CreationMenu.addAction(tr("AngelBehaviour"))->setData(".as");
-    m_CreationMenu.addAction(tr("ParticleEffect"))->setData(".efx");
-    m_CreationMenu.addAction(tr("Material"))->setData(".mtl");
+
+    QStringList paths;
+    for(auto it : AssetManager::instance()->converters()) {
+        QString path = it->templatePath();
+        if(!path.isEmpty()) {
+            paths.push_back(path);
+        }
+    }
+    paths.removeDuplicates();
+
+    for(auto it : paths) {
+        QFileInfo info(it);
+        m_CreationMenu.addAction(info.baseName().replace("_", " "))->setData(it);
+    }
 
     createAction(showIn, SLOT(showInGraphicalShell()));
     createAction(tr("Duplicate"), SLOT(onItemDuplicate()))->setData(QVariant::fromValue(ui->contentList));
@@ -189,16 +199,16 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     QDir dir(m_pContentProxy->rootPath());
     switch(action->data().type()) {
         case QVariant::Bool: {
-            QString name    = "NewFolder";
+            QString name = "NewFolder";
             AssetManager::findFreeName(name, dir.path());
             dir.mkdir(name);
         } break;
         case QVariant::String: {
-            QString name    = QString("New") + action->text();
-            QString suff    = action->data().toString();
+            QString name = QString("New ") + action->text();
+            QString suff = QString(".%1").arg(QFileInfo(action->data().toString()).suffix());
             AssetManager::findFreeName(name, dir.path(), suff);
 
-            QFile file(ProjectManager::instance()->templatePath() + "/" + suff + ".tpl");
+            QFile file(action->data().toString());
             if(file.open(QFile::ReadOnly | QFile::Text)) {
                 QByteArray data(file.readAll());
                 file.close();

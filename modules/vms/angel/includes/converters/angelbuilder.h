@@ -25,19 +25,21 @@ class AngelBuilder : public IBuilder {
 public:
     AngelBuilder (AngelSystem *system);
 
-    bool buildProject () override;
-
-    QString builderVersion () override;
-
-    QStringList suffixes () const override { return {"as"}; }
-    uint32_t type () const override { return MetaType::type<AngelScript *>(); }
-
-    uint8_t convertFile (IConverterSettings *settings) override;
-
-    const QString persistentAsset () const override;
-    const QString persistentUUID () const override;
-
 protected:
+    bool buildProject () Q_DECL_OVERRIDE;
+
+    QString builderVersion () Q_DECL_OVERRIDE;
+
+    QStringList suffixes () const Q_DECL_OVERRIDE { return {"as"}; }
+    uint32_t type () const Q_DECL_OVERRIDE { return MetaType::type<AngelScript *>(); }
+
+    uint8_t convertFile (IConverterSettings *settings) Q_DECL_OVERRIDE;
+
+    const QString persistentAsset () const Q_DECL_OVERRIDE;
+    const QString persistentUUID () const Q_DECL_OVERRIDE;
+
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Angel_Behaviour.as"; }
+
     static void messageCallback (const asSMessageInfo *msg, void *param);
 
     AngelSystem *m_pSystem;

@@ -26,23 +26,27 @@ public:
 
     void update() override;
 
-    bool trigger () const;
-    void setTrigger (bool trigger);
+    bool trigger() const;
+    void setTrigger(bool trigger);
 
-    PhysicMaterial *material () const;
-    void setMaterial (PhysicMaterial *material);
+    PhysicMaterial *material() const;
+    void setMaterial(PhysicMaterial *material);
 
-    Vector3 center () const;
-    void setCenter (const Vector3 &center);
+    Vector3 center() const;
+    void setCenter(const Vector3 &center);
 
-    void retrieveContact (const Collider *other) const;
+    void retrieveContact(const Collider *other) const;
 
-    void entered ();
-    void stay ();
-    void exited ();
+    void entered();
+    void stay();
+    void exited();
 
 protected:
-    void createCollider () override;
+    void createCollider() override;
+
+private:
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 protected:
     bool m_Trigger;

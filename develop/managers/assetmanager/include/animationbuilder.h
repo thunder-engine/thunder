@@ -86,6 +86,7 @@ private:
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
     QAbstractItemModel *components() const Q_DECL_OVERRIDE;
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation_Controller.actl"; }
 
 protected:
     Variant object() const;

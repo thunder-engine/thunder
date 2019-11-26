@@ -88,6 +88,8 @@ public:
     virtual uint8_t                 convertFile     (IConverterSettings *) = 0;
 
     virtual IConverterSettings     *createSettings  () const;
+
+    virtual QString                 templatePath    () const;
 };
 
 #endif // BASECONVERTERSETTINGS_H

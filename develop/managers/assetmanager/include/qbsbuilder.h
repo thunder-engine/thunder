@@ -11,48 +11,50 @@ class QProcess;
 class QbsBuilder : public IBuilder {
     Q_OBJECT
 public:
-    QbsBuilder                      ();
-
-    bool                            buildProject        ();
-
-    QString                         builderVersion      ();
-
-    QStringList                     suffixes            () const { return {"cpp", "h"}; }
+    QbsBuilder ();
 
 public slots:
-    void                            builderInit         ();
+    void builderInit ();
 
 protected slots:
-    void                            readOutput          ();
+    void readOutput ();
 
-    void                            readError           ();
+    void readError ();
 
-    void                            onBuildFinished     (int exitCode);
+    void onBuildFinished (int exitCode);
 
 protected:
-    void                            setEnvironment      (const QStringList &incp, const QStringList &libp, const QStringList &libs);
+    bool buildProject () Q_DECL_OVERRIDE;
 
-    void                            generateProject     ();
+    QString builderVersion () Q_DECL_OVERRIDE;
 
-    void                            parseLogs           (const QString &log);
+    QStringList suffixes () const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
 
-    bool                            checkProfiles       ();
+    QString templatePath () const Q_DECL_OVERRIDE { return ":/Templates/Native_Behaviour.cpp"; }
 
-    QString                         m_Artifact;
+    void setEnvironment (const QStringList &incp, const QStringList &libp, const QStringList &libs);
 
-    QStringList                     m_IncludePath;
-    QStringList                     m_LibPath;
-    QStringList                     m_Libs;
+    void generateProject ();
 
-    QProcess                       *m_pProcess;
+    void parseLogs (const QString &log);
 
-    QStringList                     m_Settings;
+    bool checkProfiles ();
 
-    ProjectManager                 *m_pMgr;
+    QString m_Artifact;
 
-    bool                            m_Progress;
+    QStringList m_IncludePath;
+    QStringList m_LibPath;
+    QStringList m_Libs;
 
-    QFileInfo                       m_QBSPath;
+    QProcess *m_pProcess;
+
+    QStringList m_Settings;
+
+    ProjectManager *m_pMgr;
+
+    bool m_Progress;
+
+    QFileInfo m_QBSPath;
 };
 
 #endif // QBSBUILDER_H

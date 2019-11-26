@@ -60,6 +60,9 @@ protected:
 class AssetManager : public QObject {
     Q_OBJECT
 public:
+    typedef QMap<QString, IConverter *> ConverterMap;
+
+public:
     static AssetManager    *instance            ();
 
     static void             destroy             ();
@@ -105,6 +108,8 @@ public:
     QString                 artifact            () const;
     void                    setArtifact         (const QString &value);
 
+    ConverterMap            converters          () const;
+
 public slots:
     void                    reimport            ();
 
@@ -143,7 +148,6 @@ protected:
     typedef QMap<int32_t, int32_t>          ContentTypeMap;
     ContentTypeMap          m_ContentTypes;
 
-    typedef QMap<QString, IConverter *>     ConverterMap;
     ConverterMap            m_Converters;
 
     VariantMap              m_Guids;

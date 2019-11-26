@@ -7,20 +7,24 @@ class PhysicMaterial : public Resource {
     A_REGISTER(PhysicMaterial, Resource, Resources)
 
 public:
-    PhysicMaterial ();
+    PhysicMaterial();
 
-    float friction () const;
-    void setFriction (float);
+    float friction() const;
+    void setFriction(float);
 
-    float bounciness () const;
-    void setBounciness (float);
+    float restitution() const;
+    void setRestitution(float);
+
+    float density() const;
+    void setDensity(float);
 
 private:
-    void loadUserData (const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
 
 private:
     float m_Friction;
-    float m_Bounciness;
+    float m_Restitution;
+    float m_Density;
 
 };
 

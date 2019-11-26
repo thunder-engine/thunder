@@ -124,14 +124,15 @@ void RigidBody::createCollider() {
                                      (m_LockRotation & AXIS_Y) ? 0.0 : 1.0,
                                      (m_LockRotation & AXIS_Z) ? 0.0 : 1.0));
 
-    if(mat) {
-        body->setFriction(mat->friction());
-        body->setRestitution(mat->bounciness());
-    }
-
     m_pCollisionObject = body;
 
-    setMass(m_Mass);
+    float mass = m_Mass;
+    if(mat) {
+        body->setFriction(mat->friction());
+        body->setRestitution(mat->restitution());
+        mass *= mat->density();
+    }
+    setMass(mass);
 
     if(m_pCollisionObject) {
         m_pWorld->addRigidBody(static_cast<btRigidBody *>(m_pCollisionObject));

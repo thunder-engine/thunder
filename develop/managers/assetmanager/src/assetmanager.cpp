@@ -877,3 +877,7 @@ QString AssetManager::artifact() const {
 void AssetManager::setArtifact(const QString &value) {
     m_Artifact = value;
 }
+
+AssetManager::ConverterMap AssetManager::converters() const {
+    return m_Converters;
+}
