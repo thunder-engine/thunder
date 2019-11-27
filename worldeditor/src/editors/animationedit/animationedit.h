@@ -30,7 +30,7 @@ signals:
 private slots:
     void on_actionSave_triggered();
 
-    void onNodeSelected(int);
+    void onNodesSelected(const QVariant &);
 
     void onUpdateTemplate(bool update = true);
 

@@ -43,7 +43,7 @@ AnimationEdit::AnimationEdit(Engine *engine) :
     ui->quickWidget->setWindowTitle("Scheme");
 
     QQuickItem *item = ui->quickWidget->rootObject();
-    connect(item, SIGNAL(nodeSelected(int)), this, SLOT(onNodeSelected(int)));
+    connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
 
     m_pUndo = UndoManager::instance()->createUndoAction(ui->menuEdit);
     m_pUndo->setShortcut(QKeySequence("Ctrl+Z"));
@@ -94,10 +94,13 @@ void AnimationEdit::closeEvent(QCloseEvent *event) {
     }
 }
 
-void AnimationEdit::onNodeSelected(int index) {
-    const AbstractSchemeModel::Node *node = m_pBuilder->node(index);
-    if(node) {
-        ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+void AnimationEdit::onNodesSelected(const QVariant &indices) {
+    QVariantList list = indices.toList();
+    if(!list.isEmpty()) {
+        const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
+        if(node) {
+            ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+        }
     }
 }
 
@@ -110,7 +113,7 @@ void AnimationEdit::loadAsset(IConverterSettings *settings) {
         m_pBuilder->load(m_Path);
 
         onUpdateTemplate(false);
-        onNodeSelected(0);
+        onNodesSelected(QVariantList({0}));
     }
 }
 
