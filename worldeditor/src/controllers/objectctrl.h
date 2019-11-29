@@ -26,91 +26,6 @@ class Texture;
 
 class ObjectCtrlPipeline;
 
-class UndoObject : public QUndoCommand {
-public:
-    UndoObject (ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent = nullptr) :
-            QUndoCommand(name, parent) {
-        m_pController = ctrl;
-    }
-protected:
-    ObjectCtrl *m_pController;
-};
-
-class SelectObjects : public UndoObject {
-public:
-    SelectObjects (const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    list<uint32_t> m_Objects;
-};
-
-class CreateComponent : public UndoObject {
-public:
-    CreateComponent (const QString &type, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Component"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    list<uint32_t> m_Objects;
-    QString m_Type;
-};
-
-class CloneObjects : public UndoObject {
-public:
-    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Clone Objects"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    list<uint32_t> m_Objects;
-    list<uint32_t> m_Selected;
-    VariantList m_Dump;
-};
-
-class CreateObject : public UndoObject {
-public:
-    CreateObject (Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    VariantList m_Dump;
-    list<uint32_t> m_Parents;
-    list<uint32_t> m_Objects;
-};
-
-class DestroyObjects : public UndoObject {
-public:
-    DestroyObjects (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Destroy Objects"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    VariantList m_Dump;
-    list<uint32_t> m_Parents;
-    list<uint32_t> m_Objects;
-};
-
-class ParentingObjects : public UndoObject {
-public:
-    ParentingObjects (const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    typedef QPair<uint32_t, uint32_t> ParentPair;
-    QList<ParentPair> m_Dump;
-    uint32_t m_Parent;
-    list<uint32_t> m_Objects;
-};
-
-class PropertyObjects : public UndoObject {
-public:
-    PropertyObjects (const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *parent = nullptr);
-    void undo () override;
-    void redo () override;
-protected:
-    VariantList m_Values;
-    QString m_Property;
-    list<uint32_t> m_Objects;
-};
-
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
@@ -242,6 +157,91 @@ protected:
     Vector3             m_MouseWorld;
 
     list<uint32_t>      m_ObjectsList;
+};
+
+class UndoObject : public QUndoCommand {
+public:
+    UndoObject (ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent = nullptr) :
+            QUndoCommand(name, parent) {
+        m_pController = ctrl;
+    }
+protected:
+    ObjectCtrl *m_pController;
+};
+
+class SelectObjects : public UndoObject {
+public:
+    SelectObjects (const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Selection Change"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+};
+
+class CreateComponent : public UndoObject {
+public:
+    CreateComponent (const QString &type, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Component"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+    QString m_Type;
+};
+
+class CloneObjects : public UndoObject {
+public:
+    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Clone Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    list<uint32_t> m_Objects;
+    list<uint32_t> m_Selected;
+    VariantList m_Dump;
+};
+
+class CreateObject : public UndoObject {
+public:
+    CreateObject (Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name = QObject::tr("Create Object"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Dump;
+    list<uint32_t> m_Parents;
+    list<uint32_t> m_Objects;
+};
+
+class DestroyObjects : public UndoObject {
+public:
+    DestroyObjects (const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Destroy Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Dump;
+    list<uint32_t> m_Parents;
+    list<uint32_t> m_Objects;
+};
+
+class ParentingObjects : public UndoObject {
+public:
+    ParentingObjects (const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    typedef QPair<uint32_t, uint32_t> ParentPair;
+    QList<ParentPair> m_Dump;
+    uint32_t m_Parent;
+    list<uint32_t> m_Objects;
+};
+
+class PropertyObjects : public UndoObject {
+public:
+    PropertyObjects (const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *parent = nullptr);
+    void undo () override;
+    void redo () override;
+protected:
+    VariantList m_Values;
+    QString m_Property;
+    list<uint32_t> m_Objects;
 };
 
 #endif // OBJECTCTRL_H

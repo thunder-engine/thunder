@@ -248,7 +248,7 @@ void PropertyModel::updateItem(QObject *propertyObject) {
     emit layoutAboutToBeChanged();
     emit layoutChanged();
 }
-
+#include <QDebug>
 void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyObject ) {
     // Get dynamic property names
     QList<QByteArray> dynamicProperties = propertyObject->dynamicPropertyNames();
@@ -281,19 +281,20 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
     Property *it    = parent;
     // Add properties left in the list
     foreach(QByteArray dynProp, dynamicProperties) {
-        QList<QByteArray> list  = dynProp.split('/');
+        QByteArrayList list  = dynProp.split('/');
 
         Property *s = it;
-        it          = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : it;
+        it = (list.size() > 1) ? dynamic_cast<Property *>(m_rootItem) : it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = nullptr;
 
             if(it && i < list.size() - 1) {
-                Property *child = it->findChild<Property *>(list[i]);
+                QString path = list.mid(0, i + 1).join('/');
+                Property *child = it->findChild<Property *>(path);
                 if(child) {
                     it  = child;
                 } else {
-                    p   = new Property(list[i], propertyObject, it, true);
+                    p   = new Property(path, propertyObject, it, true);
                     it  = p;
                 }
             } else if(!list[i].isEmpty()) {

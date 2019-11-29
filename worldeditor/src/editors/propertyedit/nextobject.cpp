@@ -165,9 +165,8 @@ void NextObject::setName(const QString &name) {
     }
 }
 
-QMenu *NextObject::menu(const QString &name) {
+QMenu *NextObject::menu(Object *obj) {
     QMenu *result = nullptr;
-    Object *obj = component(name);
     if(obj == nullptr || dynamic_cast<Transform *>(obj) || dynamic_cast<Actor *>(obj)) {
         return result;
     }
@@ -183,11 +182,9 @@ QMenu *NextObject::menu(const QString &name) {
 }
 
 Object *NextObject::component(const QString &name) {
-    if(name == "Actor") {
-        return m_pObject;
-    }
-    QStringList path(name.split(' ').first());
-    return findChild(path);
+    QStringList path(name.split('/'));
+    QStringList dir(path.mid(0, path.size()));
+    return findChild(dir);
 }
 
 void NextObject::onUpdated() {
@@ -212,7 +209,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         QString name(property.name());
-        if(name != "Enabled") {
+        if(name.indexOf("Enabled") == -1) {
             name = (path.isEmpty() ? "" : path + "/") + name;
             Variant data = property.read(object);
 
@@ -253,11 +250,11 @@ bool NextObject::event(QEvent *e) {
                 Variant target = aVariant(value, current.userType(), editor(property));
 
                 if(target.isValid() && current != target) {
-                    emit aboutToBeChanged(o, list.front(), target);
+                    emit aboutToBeChanged(o, propertyName, target);
 
                     onUpdated();
 
-                    emit changed(o, list.front());
+                    emit changed(o, propertyName);
                 }
             }
         }
@@ -288,6 +285,8 @@ Object *NextObject::findChild(QStringList &path) {
                 path.pop_front();
                 break;
             }
+
+            const MetaObject *meta = it->metaClass();
         }
     }
     return parent;

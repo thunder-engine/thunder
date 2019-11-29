@@ -210,7 +210,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     }
 }
 
-void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture *depth) {
+void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture *depth, uint32_t level) {
     PROFILER_MARKER;
 
     uint32_t colors[8];
@@ -224,7 +224,7 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture 
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer);
             }
             colors[i]   = GL_COLOR_ATTACHMENT0 + i;
-            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, (uint32_t)(size_t)c->nativeHandle(), 0 );
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, (uint32_t)(size_t)c->nativeHandle(), level );
         }
     }
 

@@ -18,7 +18,7 @@ public:
     QString                     name                    ();
     void                        setName                 (const QString &name);
 
-    QMenu                      *menu                    (const QString &name);
+    QMenu                      *menu                    (Object *obj);
 
     Object                     *component               (const QString &name);
 

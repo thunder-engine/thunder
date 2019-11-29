@@ -28,7 +28,7 @@ public:
 
     void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false) override;
 
-    void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr) override;
+    void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr, uint32_t level = 0) override;
 
     void                        setRenderTarget             (uint32_t target) override;
 

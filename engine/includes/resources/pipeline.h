@@ -2,7 +2,7 @@
 #define PIPELINE
 
 #include <cstdint>
-#include <stack>
+#include <unordered_map>
 
 #include <amath.h>
 
@@ -57,8 +57,7 @@ protected:
 
     void combineComponents (Object *object);
 
-    RenderTexture *postProcess (RenderTexture *source);
-    RenderTexture *opacProcess (RenderTexture *source);
+    RenderTexture *postProcess (RenderTexture *source, const StringList &list);
 
     void sortByDistance (ObjectList &in, const Vector3 &origin);
 
@@ -77,8 +76,7 @@ protected:
 
     Vector2 m_Screen;
 
-    list<PostProcessor *> m_OpaqEffects;
-    list<PostProcessor *> m_PostEffects;
+    unordered_map<string, PostProcessor *> m_PostEffects;
 
     list<PostProcessSettings *> m_PostProcessSettings;
 

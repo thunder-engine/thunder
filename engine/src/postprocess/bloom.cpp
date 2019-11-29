@@ -8,11 +8,15 @@
 
 #include "commandbuffer.h"
 
+#include "components/postprocesssettings.h"
+
 #include <cmath>
 #include <cstring>
 
 Bloom::Bloom() :
-        m_Threshold(1.0f) {
+        m_Threshold(1.0f),
+        m_Width(0),
+        m_Height(0) {
     Material *material = Engine::loadResource<Material>(".embedded/Downsample.mtl");
     if(material) {
         m_pMaterial = material->createInstance();
@@ -34,11 +38,11 @@ Bloom::Bloom() :
 }
 
 RenderTexture *Bloom::draw(RenderTexture *source, ICommandBuffer &buffer) {
-    if(m_pMaterial) {
+    if(m_Enabled && m_pMaterial) {
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             m_pMaterial->setTexture("rgbMap", (i == 0) ? source : m_BloomPasses[i - 1].m_pDownTexture);
             buffer.setViewport(0, 0, m_BloomPasses[i].m_pDownTexture->width(), m_BloomPasses[i].m_pDownTexture->height());
-            buffer.setRenderTarget({m_BloomPasses[i].m_pDownTexture});
+            buffer.setRenderTarget({m_BloomPasses[i].m_pDownTexture}, nullptr, 0);
             buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
         }
         buffer.setViewport(0, 0, source->width(), source->height());
@@ -57,18 +61,29 @@ RenderTexture *Bloom::draw(RenderTexture *source, ICommandBuffer &buffer) {
 void Bloom::resize(int32_t width, int32_t height) {
     PostProcessor::resize(width, height);
 
-    uint8_t div = 2;
-    for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        int32_t size = width / div;
-        float radius = size * (m_BloomPasses[i].m_BlurSize.x * 1.0f) * 2 * 0.01f;
+    if(m_Width != width || m_Height != height) {
+        m_Width = width;
+        m_Height = height;
 
-        m_BloomPasses[i].m_pDownTexture->resize(size, height / div);
-        m_BloomPasses[i].m_BlurSteps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
+        uint8_t div = 2;
+        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
+            int32_t size = width / div;
+            float radius = size * (m_BloomPasses[i].m_BlurSize.x * 1.0f) * 2 * 0.01f;
 
-        memset(m_BloomPasses[i].m_BlurPoints, 0, sizeof(float) * MAX_SAMPLES);
+            m_BloomPasses[i].m_pDownTexture->resize(size, height / div);
+            m_BloomPasses[i].m_BlurSteps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
 
-        Blur::generateKernel(radius, m_BloomPasses[i].m_BlurSteps, m_BloomPasses[i].m_BlurPoints);
+            memset(m_BloomPasses[i].m_BlurPoints, 0, sizeof(float) * MAX_SAMPLES);
 
-        div *= 2;
+            Blur::generateKernel(radius, m_BloomPasses[i].m_BlurSteps, m_BloomPasses[i].m_BlurPoints);
+
+            div *= 2;
+        }
     }
+}
+
+void Bloom::setSettings(const PostProcessSettings &settings) {
+    m_Enabled = settings.bloomEnabled();
+    m_Threshold = settings.bloomThreshold();
+
 }

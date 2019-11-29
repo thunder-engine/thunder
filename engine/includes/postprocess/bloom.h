@@ -23,14 +23,20 @@ class Bloom : public PostProcessor {
     };
 
 public:
-    Bloom ();
+    Bloom();
 
-    RenderTexture *draw (RenderTexture *source, ICommandBuffer &buffer);
+private:
+    RenderTexture *draw(RenderTexture *source, ICommandBuffer &buffer) override;
 
-    void resize (int32_t width, int32_t height);
+    void resize(int32_t width, int32_t height) override;
+
+    void setSettings(const PostProcessSettings &settings) override;
 
 private:
     float m_Threshold;
+
+    int32_t m_Width;
+    int32_t m_Height;
 
     BloomPass m_BloomPasses[BLOOM_PASSES];
 

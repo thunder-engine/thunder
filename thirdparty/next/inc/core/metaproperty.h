@@ -24,7 +24,7 @@ public:
     };
 
 public:
-    MetaProperty            (const Table *table);
+    explicit MetaProperty   (const Table *table);
 
     const char             *name                        () const;
     bool                    isValid                     () const;

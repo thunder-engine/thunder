@@ -51,252 +51,6 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-    m_Objects = objects;
-}
-void SelectObjects::undo() {
-    SelectObjects::redo();
-}
-void SelectObjects::redo() {
-    Object::ObjectList objects = m_pController->selected();
-
-    m_pController->clear(false);
-    m_pController->selectActors(m_Objects);
-
-    m_Objects.clear();
-    for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
-    }
-}
-
-CreateComponent::CreateComponent(const QString &type, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-    m_Type = type;
-}
-void CreateComponent::undo() {
-    for(auto uuid : m_Objects) {
-        Object *object = m_pController->findObject(uuid);
-        if(object) {
-            delete object;
-        }
-    }
-    emit m_pController->objectsUpdated();
-    emit m_pController->objectsSelected(m_pController->selected());
-}
-void CreateComponent::redo() {
-    for(auto it : m_pController->selected()) {
-        Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
-        m_Objects.push_back(object->uuid());
-    }
-    emit m_pController->objectsUpdated();
-    emit m_pController->objectsSelected(m_pController->selected());
-}
-
-CloneObjects::CloneObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-}
-void CloneObjects::undo() {
-    m_Dump.clear();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            m_Dump.push_back(ObjectSystem::toVariant(object));
-            delete object;
-        }
-    }
-    m_Objects.clear();
-    emit m_pController->mapUpdated();
-
-    m_pController->clear(false);
-    m_pController->selectActors(m_Selected);
-}
-void CloneObjects::redo() {
-    if(m_Dump.empty()) {
-        for(auto it : m_pController->selected()) {
-            m_Selected.push_back(it->uuid());
-
-            Actor *actor = dynamic_cast<Actor *>(it->clone());
-            if(actor) {
-                actor->setName(findFreeObjectName(it->name(), it->parent()));
-                actor->setParent(it->parent());
-                m_Objects.push_back(actor->uuid());
-            }
-        }
-    } else {
-        for(auto it : m_Dump) {
-            Object *obj = ObjectSystem::toObject(it, m_pController->map());
-            m_Objects.push_back(obj->uuid());
-        }
-    }
-    emit m_pController->mapUpdated();
-
-    m_pController->clear(false);
-    m_pController->selectActors(m_Objects);
-}
-
-CreateObject::CreateObject(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-    for(auto it : list) {
-        m_Dump.push_back(ObjectSystem::toVariant(it));
-        m_Parents.push_back(it->parent()->uuid());
-        delete it;
-    }
-}
-void CreateObject::undo() {
-    for(auto it : m_pController->selected()) {
-        delete it;
-    }
-    m_pController->clear(false);
-    m_pController->selectActors(m_Objects);
-}
-void CreateObject::redo() {
-    m_Objects.clear();
-    for(auto it : m_pController->selected()) {
-        m_Objects.push_back(it->uuid());
-    }
-    auto it = m_Parents.begin();
-
-    list<uint32_t> objects;
-    for(auto ref : m_Dump) {
-        Object *object = Engine::toObject(ref);
-        object->setParent(m_pController->findObject(*it));
-        objects.push_back(object->uuid());
-        ++it;
-    }
-    emit m_pController->mapUpdated();
-
-    m_pController->clear(false);
-    m_pController->selectActors(objects);
-}
-
-DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-    for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
-    }
-}
-void DestroyObjects::undo() {
-    auto it = m_Parents.begin();
-    for(auto ref : m_Dump) {
-        Object *object = Engine::toObject(ref);
-        if(object) {
-            object->setParent(m_pController->findObject(*it));
-            m_Objects.push_back(object->uuid());
-        }
-        ++it;
-    }
-    emit m_pController->mapUpdated();
-    if(!m_Objects.empty()) {
-        auto it = m_Objects.begin();
-        while(it != m_Objects.end()) {
-            Component *comp = dynamic_cast<Component *>(m_pController->findObject(*it));
-            if(comp) {
-                *it = comp->parent()->uuid();
-            }
-            ++it;
-        }
-        m_pController->clear(false);
-        m_pController->selectActors(m_Objects);
-    }
-}
-void DestroyObjects::redo() {
-    m_Parents.clear();
-    m_Dump.clear();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            m_Dump.push_back(Engine::toVariant(object));
-            m_Parents.push_back(object->parent()->uuid());
-        }
-    }
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            delete object;
-        }
-    }
-    m_Objects.clear();
-    emit m_pController->mapUpdated();
-}
-
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-    for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
-    }
-    m_Parent = origin->uuid();
-}
-void ParentingObjects::undo() {
-    auto ref = m_Dump.begin();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            if(object->uuid() == ref->first) {
-                object->setParent(m_pController->findObject(ref->second));
-            }
-        }
-        ++ref;
-    }
-    emit m_pController->objectsUpdated();
-    emit m_pController->mapUpdated();
-}
-void ParentingObjects::redo() {
-    m_Dump.clear();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            ParentPair pair;
-            pair.first =  object->uuid();
-            pair.second = object->parent()->uuid();
-            m_Dump.push_back(pair);
-
-            object->setParent(m_pController->findObject(m_Parent));
-        }
-    }
-    emit m_pController->objectsUpdated();
-    emit m_pController->mapUpdated();
-}
-
-PropertyObjects::PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
-
-    m_Values = values;
-    m_Property = property;
-    for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
-    }
-}
-void PropertyObjects::undo() {
-    PropertyObjects::redo();
-}
-void PropertyObjects::redo() {
-    VariantList values = m_Values;
-    auto value = values.begin();
-
-    m_Values.clear();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            const MetaObject *meta = object->metaObject();
-            int index = meta->indexOfProperty(qPrintable(m_Property));
-            if(index > -1) {
-                MetaProperty property = meta->property(index);
-                m_Values.push_back(property.read(object));
-
-                property.write(object, *value);
-            }
-        }
-        ++value;
-    }
-    emit m_pController->objectsUpdated();
-}
-
 ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
         CameraCtrl(view) {
 
@@ -911,4 +665,250 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
 
 void ObjectCtrl::resize(int32_t width, int32_t height) {
     m_Screen = Vector2(width, height);
+}
+
+SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+    m_Objects = objects;
+}
+void SelectObjects::undo() {
+    SelectObjects::redo();
+}
+void SelectObjects::redo() {
+    Object::ObjectList objects = m_pController->selected();
+
+    m_pController->clear(false);
+    m_pController->selectActors(m_Objects);
+
+    m_Objects.clear();
+    for(auto it : objects) {
+        m_Objects.push_back(it->uuid());
+    }
+}
+
+CreateComponent::CreateComponent(const QString &type, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+    m_Type = type;
+}
+void CreateComponent::undo() {
+    for(auto uuid : m_Objects) {
+        Object *object = m_pController->findObject(uuid);
+        if(object) {
+            delete object;
+        }
+    }
+    emit m_pController->objectsUpdated();
+    emit m_pController->objectsSelected(m_pController->selected());
+}
+void CreateComponent::redo() {
+    for(auto it : m_pController->selected()) {
+        Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
+        m_Objects.push_back(object->uuid());
+    }
+    emit m_pController->objectsUpdated();
+    emit m_pController->objectsSelected(m_pController->selected());
+}
+
+CloneObjects::CloneObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+}
+void CloneObjects::undo() {
+    m_Dump.clear();
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            m_Dump.push_back(ObjectSystem::toVariant(object));
+            delete object;
+        }
+    }
+    m_Objects.clear();
+    emit m_pController->mapUpdated();
+
+    m_pController->clear(false);
+    m_pController->selectActors(m_Selected);
+}
+void CloneObjects::redo() {
+    if(m_Dump.empty()) {
+        for(auto it : m_pController->selected()) {
+            m_Selected.push_back(it->uuid());
+
+            Actor *actor = dynamic_cast<Actor *>(it->clone());
+            if(actor) {
+                actor->setName(findFreeObjectName(it->name(), it->parent()));
+                actor->setParent(it->parent());
+                m_Objects.push_back(actor->uuid());
+            }
+        }
+    } else {
+        for(auto it : m_Dump) {
+            Object *obj = ObjectSystem::toObject(it, m_pController->map());
+            m_Objects.push_back(obj->uuid());
+        }
+    }
+    emit m_pController->mapUpdated();
+
+    m_pController->clear(false);
+    m_pController->selectActors(m_Objects);
+}
+
+CreateObject::CreateObject(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+    for(auto it : list) {
+        m_Dump.push_back(ObjectSystem::toVariant(it));
+        m_Parents.push_back(it->parent()->uuid());
+        delete it;
+    }
+}
+void CreateObject::undo() {
+    for(auto it : m_pController->selected()) {
+        delete it;
+    }
+    m_pController->clear(false);
+    m_pController->selectActors(m_Objects);
+}
+void CreateObject::redo() {
+    m_Objects.clear();
+    for(auto it : m_pController->selected()) {
+        m_Objects.push_back(it->uuid());
+    }
+    auto it = m_Parents.begin();
+
+    list<uint32_t> objects;
+    for(auto ref : m_Dump) {
+        Object *object = Engine::toObject(ref);
+        object->setParent(m_pController->findObject(*it));
+        objects.push_back(object->uuid());
+        ++it;
+    }
+    emit m_pController->mapUpdated();
+
+    m_pController->clear(false);
+    m_pController->selectActors(objects);
+}
+
+DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+    for(auto it : objects) {
+        m_Objects.push_back(it->uuid());
+    }
+}
+void DestroyObjects::undo() {
+    auto it = m_Parents.begin();
+    for(auto ref : m_Dump) {
+        Object *object = Engine::toObject(ref);
+        if(object) {
+            object->setParent(m_pController->findObject(*it));
+            m_Objects.push_back(object->uuid());
+        }
+        ++it;
+    }
+    emit m_pController->mapUpdated();
+    if(!m_Objects.empty()) {
+        auto it = m_Objects.begin();
+        while(it != m_Objects.end()) {
+            Component *comp = dynamic_cast<Component *>(m_pController->findObject(*it));
+            if(comp) {
+                *it = comp->parent()->uuid();
+            }
+            ++it;
+        }
+        m_pController->clear(false);
+        m_pController->selectActors(m_Objects);
+    }
+}
+void DestroyObjects::redo() {
+    m_Parents.clear();
+    m_Dump.clear();
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            m_Dump.push_back(Engine::toVariant(object));
+            m_Parents.push_back(object->parent()->uuid());
+        }
+    }
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            delete object;
+        }
+    }
+    m_Objects.clear();
+    emit m_pController->mapUpdated();
+}
+
+ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+    for(auto it : objects) {
+        m_Objects.push_back(it->uuid());
+    }
+    m_Parent = origin->uuid();
+}
+void ParentingObjects::undo() {
+    auto ref = m_Dump.begin();
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            if(object->uuid() == ref->first) {
+                object->setParent(m_pController->findObject(ref->second));
+            }
+        }
+        ++ref;
+    }
+    emit m_pController->objectsUpdated();
+    emit m_pController->mapUpdated();
+}
+void ParentingObjects::redo() {
+    m_Dump.clear();
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            ParentPair pair;
+            pair.first =  object->uuid();
+            pair.second = object->parent()->uuid();
+            m_Dump.push_back(pair);
+
+            object->setParent(m_pController->findObject(m_Parent));
+        }
+    }
+    emit m_pController->objectsUpdated();
+    emit m_pController->mapUpdated();
+}
+
+PropertyObjects::PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+        UndoObject(ctrl, name, parent) {
+
+    m_Values = values;
+    m_Property = property;
+    for(auto it : objects) {
+        m_Objects.push_back(it->uuid());
+    }
+}
+void PropertyObjects::undo() {
+    PropertyObjects::redo();
+}
+void PropertyObjects::redo() {
+    VariantList values = m_Values;
+    auto value = values.begin();
+
+    m_Values.clear();
+    for(auto it : m_Objects) {
+        Object *object = m_pController->findObject(it);
+        if(object) {
+            const MetaObject *meta = object->metaObject();
+            int index = meta->indexOfProperty(qPrintable(m_Property));
+            if(index > -1) {
+                MetaProperty property = meta->property(index);
+                m_Values.push_back(property.read(object));
+
+                property.write(object, *value);
+            }
+        }
+        ++value;
+    }
+    emit m_pController->objectsUpdated();
 }

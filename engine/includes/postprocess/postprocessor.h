@@ -24,9 +24,13 @@ public:
 
     virtual void setSettings(const PostProcessSettings &settings);
 
+    void setEnabled(bool value);
+
     static Blur *blur ();
 
 protected:
+    bool m_Enabled;
+
     RenderTexture *m_pResultTexture;
 
     MaterialInstance *m_pMaterial;

@@ -25,9 +25,10 @@ void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Me
     A_UNUSED(particle);
 }
 
-void ICommandBuffer::setRenderTarget(const TargetBuffer &target, RenderTexture *depth) {
+void ICommandBuffer::setRenderTarget(const TargetBuffer &target, RenderTexture *depth, uint32_t level) {
     A_UNUSED(target);
     A_UNUSED(depth);
+    A_UNUSED(level);
 }
 
 void ICommandBuffer::setRenderTarget(uint32_t target) {

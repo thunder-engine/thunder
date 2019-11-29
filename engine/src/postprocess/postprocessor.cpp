@@ -11,6 +11,7 @@
 static Blur *s_pBlur = nullptr;
 
 PostProcessor::PostProcessor() :
+        m_Enabled(false),
         m_pResultTexture(nullptr),
         m_pMaterial(nullptr) {
 
@@ -22,7 +23,7 @@ PostProcessor::~PostProcessor() {
 }
 
 RenderTexture *PostProcessor::draw(RenderTexture *source, ICommandBuffer &buffer) {
-    if(m_pMaterial && m_pResultTexture) {
+    if(m_Enabled && m_pMaterial && m_pResultTexture) {
         m_pMaterial->setTexture("rgbMap", source);
 
         buffer.setRenderTarget({m_pResultTexture});
@@ -41,6 +42,10 @@ void PostProcessor::resize(int32_t width, int32_t height) {
 
 void PostProcessor::setSettings(const PostProcessSettings &) {
 
+}
+
+void PostProcessor::setEnabled(bool value) {
+    m_Enabled = value;
 }
 
 Blur *PostProcessor::blur() {

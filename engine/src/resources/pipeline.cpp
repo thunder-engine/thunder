@@ -84,10 +84,9 @@ Pipeline::Pipeline() :
     m_Targets[G_EMISSIVE]   = emissive;
     m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
 
-    m_OpaqEffects.push_back(new AmbientOcclusion());
-
-    m_PostEffects.push_back(new AntiAliasing());
-    //m_PostEffects.push_back(new Bloom());
+    m_PostEffects["AmbientOcclusion"] = new AmbientOcclusion();
+    m_PostEffects["AntiAliasing"] = new AntiAliasing();
+    m_PostEffects["Bloom"] = new Bloom();
 }
 
 Pipeline::~Pipeline() {
@@ -106,21 +105,21 @@ void Pipeline::draw(Camera &camera) {
     cameraReset(camera);
     drawComponents(ICommandBuffer::DEFAULT, m_Filter);
 
-    // Screen Space Ambient Occlusion
-    m_Buffer->setScreenProjection();
-    m_Targets[SSAO_MAP] = m_OpaqEffects.front()->draw(m_Targets[G_EMISSIVE], *m_Buffer);
-    m_Buffer->resetViewProjection();
+    // Step2.1 - Screen Space Ambient Occlusion
+    m_Targets[SSAO_MAP] = postProcess(m_Targets[G_EMISSIVE], {"AmbientOcclusion"});
 
-    // Step2 - Light pass
+    // Step2.2 - Light pass
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     drawComponents(ICommandBuffer::LIGHT, m_Filter);
+
+    // Step2.3 - Screen Space Local Reflections
 
     // Step3 - Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
     // Step4 - Post Processing passes
     m_Buffer->setScreenProjection();
-    m_pFinal = postProcess(m_Targets[G_EMISSIVE]);
+    m_pFinal = postProcess(m_Targets[G_EMISSIVE], {"AntiAliasing", "Bloom"});
 }
 
 void Pipeline::finish() {
@@ -159,10 +158,7 @@ void Pipeline::resize(int32_t width, int32_t height) {
         it.second->resize(width, height);
     }
     for(auto &it : m_PostEffects) {
-        it->resize(width, height);
-    }
-    for(auto &it : m_OpaqEffects) {
-        it->resize(width, height);
+        it.second->resize(width, height);
     }
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
 }
@@ -207,10 +203,7 @@ void Pipeline::analizeScene(Scene *scene) {
         m_Buffer->setGlobalValue("light.ambient", settings->ambientLightIntensity());
 
         for(auto &it : m_PostEffects) {
-            it->setSettings(*settings);
-        }
-        for(auto &it : m_OpaqEffects) {
-            it->setSettings(*settings);
+            it.second->setSettings(*settings);
         }
     }
 }
@@ -346,21 +339,11 @@ void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
     }
 }
 
-RenderTexture *Pipeline::postProcess(RenderTexture *source) {
+RenderTexture *Pipeline::postProcess(RenderTexture *source, const StringList &list) {
     m_Buffer->setScreenProjection();
-    RenderTexture *result  = source;
-    for(auto it : m_PostEffects) {
-        result = it->draw(result, *m_Buffer);
-    }
-    m_Buffer->resetViewProjection();
-    return result;
-}
-
-RenderTexture *Pipeline::opacProcess(RenderTexture *source) {
-    m_Buffer->setScreenProjection();
-    RenderTexture *result  = source;
-    for(auto it : m_OpaqEffects) {
-        result = it->draw(result, *m_Buffer);
+    RenderTexture *result = source;
+    for(auto it : list) {
+        result = m_PostEffects[it]->draw(result, *m_Buffer);
     }
     m_Buffer->resetViewProjection();
     return result;

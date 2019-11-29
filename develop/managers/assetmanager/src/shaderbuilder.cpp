@@ -371,7 +371,9 @@ Variant ShaderBuilder::data(bool editor) const {
     VariantMap textures;
     uint16_t i  = 0;
     for(auto it : m_Textures) {
-        textures[string("uni.") + ((it.second & Target) ? it.first : QString("texture%1").arg(i)).toStdString()]  = it.first.toStdString();
+        bool target = (it.second & Target);
+        QString name = QString("uni.%1").arg((target) ? it.first : QString("texture%1").arg(i));
+        textures[name.toStdString()] = ((target) ? "" : it.first.toStdString());
         i++;
     }
     user["Textures"] = textures;

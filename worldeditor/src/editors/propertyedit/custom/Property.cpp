@@ -53,12 +53,14 @@ bool Property::isReadOnly() const {
 }
 
 QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
-    NextObject *next    = dynamic_cast<NextObject *>(m_propertyObject);
+    NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
     if(m_Root && next) {
-        Actions *act    = new Actions(parent);
-        act->setMenu(next->menu(m_name));
-        act->setObject(next->component(m_name));
-        m_Editor        = act;
+        Actions *act = new Actions(m_name, parent);
+        Object *object = next->component(objectName());
+        act->setObject(object);
+        act->setMenu(next->menu(object));
+
+        m_Editor = act;
     }
     return m_Editor;
 }
@@ -76,12 +78,14 @@ QVariant Property::editorData(QWidget *) {
 }
 
 Property *Property::findPropertyObject(QObject *propertyObject) {
-    if (m_propertyObject == propertyObject)
+    if(m_propertyObject == propertyObject) {
         return this;
-    for (int i = 0; i < children().size(); ++i) {
+    }
+    for(int i = 0; i < children().size(); ++i) {
         Property *child  = static_cast<Property *>(children()[i])->findPropertyObject(propertyObject);
-        if (child)
+        if(child) {
             return child;
+        }
     }
     return nullptr;
 }

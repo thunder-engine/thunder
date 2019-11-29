@@ -3,10 +3,10 @@
 
 #include <QWidget>
 
+#include "metaproperty.h"
+
 class QMenu;
 class Object;
-class Component;
-class Actor;
 
 namespace Ui {
     class Actions;
@@ -16,7 +16,7 @@ class Actions : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Actions (QWidget *parent = nullptr);
+    explicit Actions (const QString &name, QWidget *parent = nullptr);
     ~Actions ();
 
     void setMenu (QMenu *menu);
@@ -27,8 +27,11 @@ private slots:
 
 private:
     Ui::Actions *ui;
-    Component *m_pComponent;
-    Actor *m_pActor;
+
+    bool m_Menu;
+    QString m_Name;
+    Object *m_pObject;
+    MetaProperty m_Property;
 };
 
 #endif // ACTIONS_H

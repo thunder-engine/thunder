@@ -13,8 +13,6 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaMethod {
 public:
-
-
     enum MethodType {
         Method                  = 0,
         Signal,
@@ -34,7 +32,7 @@ public:
     };
 
 public:
-    MetaMethod                  (const Table *table);
+    explicit MetaMethod         (const Table *table);
 
     bool                        isValid                     () const;
 

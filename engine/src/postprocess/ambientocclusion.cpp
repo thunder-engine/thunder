@@ -86,30 +86,33 @@ AmbientOcclusion::~AmbientOcclusion() {
 }
 
 RenderTexture *AmbientOcclusion::draw(RenderTexture *source, ICommandBuffer &buffer) {
-    if(m_pMaterial) {
-        buffer.setViewport(0, 0, m_pSSAO->width(), m_pSSAO->height());
-        buffer.setGlobalValue("camera.screen", Vector4(1.0f / m_pSSAO->width(), 1.0f / m_pSSAO->height(),
-                                                       m_pSSAO->width(), m_pSSAO->height()));
-        buffer.setRenderTarget({m_pSSAO});
-        buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+    if(m_Enabled) {
+        if(m_pMaterial) {
+            buffer.setViewport(0, 0, m_pSSAO->width(), m_pSSAO->height());
+            buffer.setGlobalValue("camera.screen", Vector4(1.0f / m_pSSAO->width(), 1.0f / m_pSSAO->height(),
+                                                           m_pSSAO->width(), m_pSSAO->height()));
+            buffer.setRenderTarget({m_pSSAO});
+            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
 
-        buffer.setGlobalTexture(SSAO_MAP, m_pSSAO);
+            buffer.setGlobalTexture(SSAO_MAP, m_pSSAO);
 
-        buffer.setViewport(0, 0, source->width(), source->height());
-        buffer.setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
-                                                       source->width(), source->height()));
+            buffer.setViewport(0, 0, source->width(), source->height());
+            buffer.setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
+                                                           source->width(), source->height()));
 
-        //Blur *blur = PostProcessor::blur();
-        //blur->setParameters(Vector2(1.0f / m_pResultTexture->width(), 1.0f / m_pResultTexture->height()), BLUR_STEPS, m_BlurSamplesKernel);
-        //blur->draw(buffer, m_pSSAO, m_pResultTexture);
+            //Blur *blur = PostProcessor::blur();
+            //blur->setParameters(Vector2(1.0f / m_pResultTexture->width(), 1.0f / m_pResultTexture->height()), BLUR_STEPS, m_BlurSamplesKernel);
+            //blur->draw(buffer, m_pSSAO, m_pResultTexture);
+        }
+
+        if(m_pOcclusion) {
+            buffer.setRenderTarget({source});
+            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pOcclusion);
+        }
+
+        return m_pSSAO;
     }
-
-    if(m_pOcclusion) {
-        buffer.setRenderTarget({source});
-        buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pOcclusion);
-    }
-
-    return m_pSSAO;
+    return source;
 }
 
 void AmbientOcclusion::resize(int32_t width, int32_t height) {
@@ -122,6 +125,7 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
+    m_Enabled = settings.ambientOcclusionEnabled();
     m_Radius = settings.ambientOcclusionRadius();
     m_Bias = settings.ambientOcclusionBias();
     m_Power = settings.ambientOcclusionPower();

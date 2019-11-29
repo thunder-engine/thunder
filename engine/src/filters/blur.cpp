@@ -46,7 +46,7 @@ void Blur::draw(ICommandBuffer &buffer, RenderTexture *source, RenderTexture *ta
         m_pBlurMaterial->setTexture("rgbMap", m_Temp);
 
         buffer.setRenderTarget({target});
-        buffer.clearRenderTarget(true, Vector4());
+        //buffer.clearRenderTarget(true, Vector4());
         buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlurMaterial);
     }
 }

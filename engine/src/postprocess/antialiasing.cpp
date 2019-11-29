@@ -15,4 +15,6 @@ AntiAliasing::AntiAliasing() {
 
     m_pResultTexture = Engine::objectCreate<RenderTexture>();
     m_pResultTexture->setTarget(Texture::R11G11B10Float);
+
+    setEnabled(true);
 }
