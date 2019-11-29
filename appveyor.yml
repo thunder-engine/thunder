@@ -1,5 +1,5 @@
 clone_depth: 200
-version: '2019.3.{build}'
+version: '2019.4.{build}'
 
 environment:
   matrix:
@@ -8,7 +8,7 @@ environment:
 configuration: Release
 
 install:
-  - choco install -y qbs --version 1.11.0
+  - choco install -y qbs --version 1.13.1
   - nuget install secure-file -ExcludeVersion
   - set PATH=%PATH%;%QTDIR%\bin
 

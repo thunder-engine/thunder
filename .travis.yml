@@ -107,6 +107,7 @@ matrix:
 
     - language: cpp
       os: osx
+      osx_image: xcode10.3
       addons:
         homebrew:
           packages:
@@ -116,7 +117,6 @@ matrix:
         - QT_INSTALL_DIR=~/Qt
         - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
         - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
-      osx_image: xcode10.3
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
@@ -145,9 +145,7 @@ matrix:
           update: true
       env:
         - QT_INSTALL_DIR=~/Qt
-        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
-        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
-      osx_image: xcode10.3
+        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - qbs --version
@@ -162,7 +160,7 @@ matrix:
           script: curl -F "file=@ThunderEngine-ios-arm64.tar.gz" https://file.io
           on:
             tags: true
-    
+
     - language: cpp
       os: osx
       osx_image: xcode10.3
@@ -173,9 +171,7 @@ matrix:
           update: true
       env:
         - QT_INSTALL_DIR=~/Qt
-        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
-        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
-      osx_image: xcode10.3
+        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - qbs --version
@@ -188,5 +184,27 @@ matrix:
         - provider: script
           skip_cleanup: true
           script: curl -F "file=@ThunderEngine-tvos-arm64.tar.gz" https://file.io
+          on:
+            tags: true
+
+    - language: cpp
+      os: windows
+      env:
+        - QT_INSTALL_DIR=~/Qt
+        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/msvc2015_64/bin
+        - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
+      before_install:
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
+        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+        - qbs --version
+        - qbs setup-toolchains --detect
+      script:
+        - qbs config --list
+        - qbs install --all-products config:release profile:MSVC2015-amd64
+        - 7z a -t7z ThunderEngine-windows-x64.7z release/install-root/
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -F "file=@ThunderEngine-windows-x64.7z" https://file.io
           on:
             tags: true

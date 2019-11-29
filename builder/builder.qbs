@@ -59,9 +59,13 @@ Project {
             return result
         }
         cpp.includePaths: builder.incPaths
-        cpp.libraryPaths: [
-            "../thirdparty/fbx/lib"
-        ]
+        cpp.libraryPaths: {
+            var arch = "/x86"
+            if(qbs.architecture !== "x86") {
+                arch = "/x64"
+            }
+            return "../thirdparty/fbx/lib/" + qbs.targetOS[0] + arch
+        }
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.dynamicLibraries: [

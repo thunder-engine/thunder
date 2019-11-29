@@ -14,11 +14,11 @@ Product {
 
     property string suffix: {
         if(qbs.targetOS.contains("windows")) {
-            return ".dll";
+            return ".dll"
         } else if(qbs.targetOS.contains("darwin")) {
-            return ".dylib";
+            return ".dylib"
         }
-        return ".so";
+        return ".so"
     }
 
     property string QTPLUGINS_PATH: install.PLATFORM_PATH + "/" + install.bundle + "/plugins"
@@ -28,16 +28,16 @@ Product {
         var files = []
         if(qbs.targetOS.contains("windows")) {
             if(qbs.debugInformation) {
-                files.push("**/*d.dll");
+                files.push("**/*d.dll")
             } else {
-                files.push("**/*.dll");
+                files.push("**/*.dll")
             }
         } else if(qbs.targetOS.contains("linux")) {
-            files.push("**/*.so");
+            files.push("**/*.so")
         } else {
-            files.push("*");
+            files.push("*")
         }
-        return files;
+        return files
     }
 
     property var pluginExcludeFiles: {
@@ -79,22 +79,22 @@ Product {
                     }
                 }
             } else {
-                list.push("**/QtCore.framework/**");
-                list.push("**/QtGui.framework/**");
-                list.push("**/QtWidgets.framework/**");
-                list.push("**/QtScript.framework/**");
-                list.push("**/QtXml.framework/**");
-                list.push("**/Qt5XmlPatterns.framework/**");
-                list.push("**/QtNetwork.framework/**");
+                list.push("**/QtCore.framework/**")
+                list.push("**/QtGui.framework/**")
+                list.push("**/QtWidgets.framework/**")
+                list.push("**/QtScript.framework/**")
+                list.push("**/QtXml.framework/**")
+                list.push("**/Qt5XmlPatterns.framework/**")
+                list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**"),
-                list.push("**/QtQml.framework/**");
-                list.push("**/QtQuick.framework/**");
-                list.push("**/Qt5QuickTemplates2.framework/**");
-                list.push("**/Qt5QuickControls2.framework/**");
-                list.push("**/QtQuickWidgets.framework/**");
-                list.push("**/Qt5Svg.framework/**");
-                list.push("**/QtPrintSupport.framework/**");
-                list.push("**/QtDBus.framework/**");
+                list.push("**/QtQml.framework/**")
+                list.push("**/QtQuick.framework/**")
+                list.push("**/Qt5QuickTemplates2.framework/**")
+                list.push("**/Qt5QuickControls2.framework/**")
+                list.push("**/QtQuickWidgets.framework/**")
+                list.push("**/Qt5Svg.framework/**")
+                list.push("**/QtPrintSupport.framework/**")
+                list.push("**/QtDBus.framework/**")
             }
             return list
         }
@@ -187,13 +187,17 @@ Product {
         condition: qbs.targetOS.contains("windows")
 
         property string vspath: {
-            var result  = Environment.getEnv("VS140COMNTOOLS") + "../../VC/redist";
-            var type    = "";
+            var result  = Environment.getEnv("VS140COMNTOOLS") + "../../VC/redist"
+            var type    = ""
             if(qbs.debugInformation) {
-                result += "/Debug_NonRedist";
-                type    = "Debug";
+                result += "/Debug_NonRedist"
+                type    = "Debug"
             }
-            result += "/" + qbs.architecture + "/Microsoft.VC140." + type + "CRT";
+            var arch = "x86"
+            if(qbs.architecture !== "x86") {
+                arch = "x64"
+            }
+            result += "/" + arch + "/Microsoft.VC140." + type + "CRT"
 
             return result;
         }
@@ -208,9 +212,13 @@ Product {
 
     Group {
         name: "FBX Binary"
-        files: [
-            "../thirdparty/fbx/lib/libfbxsdk" + suffix
-        ]
+        files: {
+            var arch = "/x86"
+            if(qbs.architecture !== "x86") {
+                arch = "/x64"
+            }
+            return "../thirdparty/fbx/lib/" + qbs.targetOS[0] + arch +"/libfbxsdk" + suffix
+        }
         qbs.install: true
         Properties {
             condition: qbs.targetOS.contains("linux")
