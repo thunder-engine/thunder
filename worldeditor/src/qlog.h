@@ -8,7 +8,7 @@
 #include <QFile>
 #include <QDebug>
 
-class QLog : public QObject, public ILogHandler {
+class QLog : public QObject, public LogHandler {
     Q_OBJECT
 
 public:

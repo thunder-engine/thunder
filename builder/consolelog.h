@@ -6,7 +6,7 @@
 
 #include <log.h>
 
-class ConsoleLog : public QObject, public ILogHandler {
+class ConsoleLog : public QObject, public LogHandler {
     Q_OBJECT
 
 public:

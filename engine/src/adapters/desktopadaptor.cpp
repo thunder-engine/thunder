@@ -44,7 +44,7 @@ static string gAppConfig;
 static unordered_map<int32_t, int32_t> s_Keys;
 static unordered_map<int32_t, int32_t> s_MouseButtons;
 
-class DesktopHandler : public ILogHandler {
+class DesktopHandler : public LogHandler {
 protected:
     void            setRecord       (Log::LogTypes, const char *record) {
         unique_lock<mutex> locker(m_Mutex);

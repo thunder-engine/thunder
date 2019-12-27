@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-static ILogHandler *s_handler    = nullptr;
-static Log::LogTypes s_logLevel  = Log::ERR;
+static LogHandler *s_handler    = nullptr;
+static Log::LogTypes s_logLevel = Log::ERR;
 
 class LogPrivate {
 public:
@@ -54,15 +54,15 @@ Log::~Log() {
     This method can be used in case if a developer would need to move logging stream to someplace.
     For example to the console.
 */
-void Log::overrideHandler(ILogHandler *handler) {
+void Log::overrideHandler(LogHandler *handler) {
     if(handler) {
         s_handler   = handler;
     }
 }
 /*!
-    Returns ILogHandler object if present; otherwise returns nullptr.
+    Returns LogHandler object if present; otherwise returns nullptr.
 */
-ILogHandler *Log::handler() {
+LogHandler *Log::handler() {
     return s_handler;
 }
 /*!

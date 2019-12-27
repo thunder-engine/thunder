@@ -5,7 +5,7 @@
 
 #include <engine.h>
 
-class ILogHandler;
+class LogHandler;
 
 class LogPrivate;
 
@@ -23,9 +23,9 @@ public:
 
     ~Log                ();
 
-    static void         overrideHandler             (ILogHandler *handler);
+    static void         overrideHandler             (LogHandler *handler);
 
-    static ILogHandler *handler                     ();
+    static LogHandler  *handler                     ();
 
     static void         setLogLevel                 (LogTypes level);
 
@@ -53,7 +53,7 @@ private:
 
 };
 
-class ILogHandler {
+class LogHandler {
 public:
     virtual void setRecord (Log::LogTypes type, const char *record) = 0;
 

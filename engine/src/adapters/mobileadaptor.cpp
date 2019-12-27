@@ -12,7 +12,7 @@
 #include "androidfile.h"
 #include <android/log.h>
 
-class AndroidHandler : public ILogHandler {
+class AndroidHandler : public LogHandler {
 protected:
     void setRecord (Log::LogTypes type, const char *record) {
         int32_t lvl;
@@ -31,7 +31,7 @@ protected:
 const char *configLocation();
 const char *assetsLocation();
 
-class AppleHandler : public ILogHandler {
+class AppleHandler : public LogHandler {
 protected:
     void setRecord (Log::LogTypes type, const char *record) {
         const char *lvl;
@@ -70,14 +70,14 @@ void onFrame(GLFMDisplay *, const double) {
 void onCreate(GLFMDisplay *, int width, int height) {
     MobileAdaptor::s_Screen = Vector2(width, height);
 
-    IFile *file = nullptr;
+    File *file = nullptr;
     const char *path = "";
 #ifdef GLFM_PLATFORM_ANDROID
     Log::overrideHandler(new AndroidHandler());
     file = new AndroidFile();
 #else
     Log::overrideHandler(new AppleHandler());
-    file = new IFile();
+    file = new File();
     file->finit(path);
     file->fsearchPathAdd(assetsLocation());
 #endif
