@@ -5,7 +5,7 @@
 
 class BulletSystem;
 
-class Bullet : public IModule {
+class Bullet : public Module {
 public:
     Bullet                      (Engine *engine);
 
@@ -17,7 +17,7 @@ public:
 
     uint8_t                     types                   () const;
 
-    ISystem                    *system                  ();
+    System                    *system                  ();
 
     IConverter                 *converter               ();
 
@@ -28,7 +28,7 @@ protected:
 };
 
 extern "C" {
-    MODULE_EXPORT IModule *moduleCreate(Engine *engine);
+    MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
 #endif // BULLET_H

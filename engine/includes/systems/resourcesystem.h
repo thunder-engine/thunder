@@ -7,7 +7,7 @@ typedef unordered_map<string, string> StringMap;
 
 class Resource;
 
-class NEXT_LIBRARY_EXPORT ResourceSystem : public ISystem {
+class NEXT_LIBRARY_EXPORT ResourceSystem : public System {
 public:
     bool init() override;
 

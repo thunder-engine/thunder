@@ -5,7 +5,7 @@
 
 #include <AL/alc.h>
 
-class MediaSystem : public ISystem {
+class MediaSystem : public System {
 public:
     MediaSystem                 ();
     ~MediaSystem                ();

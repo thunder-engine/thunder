@@ -14,7 +14,7 @@
 #include "config.h"
 
 class Engine;
-class ISystem;
+class System;
 class ICommandBuffer;
 
 class CameraCtrl;

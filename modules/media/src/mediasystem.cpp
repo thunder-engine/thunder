@@ -13,7 +13,7 @@
 #include "resources/audioclip.h"
 
 MediaSystem::MediaSystem() :
-        ISystem(),
+        System(),
         m_pDevice(nullptr),
         m_pContext(nullptr),
         m_Inited(false) {

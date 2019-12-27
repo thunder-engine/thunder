@@ -51,6 +51,13 @@ public:
     ParticleEffect *m_pEffect;
     EmitterArray m_Emitters;
 };
+/*!
+    \class ParticleRender
+    \brief Draws a particle effect on the scene.
+    \inmodule Engine
+
+    The ParticleRender component allows you to display Particle Effects such as fire and explosions.
+*/
 
 ParticleRender::ParticleRender() :
         p_ptr(new ParticleRenderPrivate) {
@@ -162,11 +169,15 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
         buffer.setColor(Vector4(1.0f));
     }
 }
-
+/*!
+    Returns a ParticleEffect assigned to the this component.
+*/
 ParticleEffect *ParticleRender::effect() const {
     return p_ptr->m_pEffect;
 }
-
+/*!
+    Assgines a particle \a effect to the this component.
+*/
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
         p_ptr->m_pEffect   = effect;
@@ -175,7 +186,7 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
     }
 }
 /*!
-    Returns a bound box of assigned Effect.
+    \internal
 */
 AABBox ParticleRender::bound() const {
     if(p_ptr->m_pEffect) {

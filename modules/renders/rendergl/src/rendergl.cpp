@@ -2,7 +2,7 @@
 
 #include "renderglsystem.h"
 
-IModule *moduleCreate(Engine *engine) {
+Module *moduleCreate(Engine *engine) {
     return new RenderGL(engine);
 }
 
@@ -27,6 +27,6 @@ uint8_t RenderGL::types() const {
     return SYSTEM;
 }
 
-ISystem *RenderGL::system() {
+System *RenderGL::system() {
     return m_pSystem;
 }

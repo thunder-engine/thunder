@@ -55,7 +55,7 @@ protected:
 };
 
 AngelSystem::AngelSystem(Engine *engine) :
-        ISystem(),
+        System(),
         m_pScriptEngine(nullptr),
         m_pScriptModule(nullptr),
         m_pContext(nullptr),
@@ -234,8 +234,8 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
         }
     }
 
-    for(auto &it: ISystem::factories()) {
-        auto factory = ISystem::metaFactory(it.first);
+    for(auto &it: System::factories()) {
+        auto factory = System::metaFactory(it.first);
         if(factory) {
             registerMetaType(engine, it.first, factory->first);
         }

@@ -11,8 +11,8 @@
 class QLibrary;
 
 class Engine;
-class IModule;
-class ISystem;
+class Module;
+class System;
 
 class Object;
 class Scene;
@@ -65,9 +65,9 @@ private:
 protected:
     void                        rescanPath                  (const QString &path);
 
-    void                        registerSystem              (IModule *plugin);
+    void                        registerSystem              (Module *plugin);
 
-    void                        registerExtensionPlugin     (const QString &path, IModule *plugin);
+    void                        registerExtensionPlugin     (const QString &path, Module *plugin);
 
     void                        serializeComponents         (const StringList &list, ComponentMap &map);
 
@@ -76,7 +76,7 @@ protected:
 private:
     void                        clear                       ();
 
-    typedef QMap<QString, IModule *>    PluginsMap;
+    typedef QMap<QString, Module *>    PluginsMap;
 
     typedef QMap<QString, QLibrary *>   LibrariesMap;
 
@@ -84,7 +84,7 @@ private:
 
     QStringList                 m_Suffixes;
 
-    QMap<QString, ISystem *>    m_Systems;
+    QMap<QString, System *>    m_Systems;
 
     PluginsMap                  m_Extensions;
 
@@ -92,7 +92,7 @@ private:
 
     QList<Scene *>              m_Scenes;
 
-    ISystem *                   m_pRender;
+    System *                   m_pRender;
 };
 
 #endif // PLUGINMODEL_H

@@ -1891,9 +1891,9 @@
 			<item>MidiDevice.Info</item>
 			<item>MidiDeviceProvider</item>
 			<item>MidiEvent</item>
-			<item>MidiFileFormat</item>
-			<item>MidiFileReader</item>
-			<item>MidiFileWriter</item>
+			<item>MidFileFormat</item>
+			<item>MidFileReader</item>
+			<item>MidFileWriter</item>
 			<item>MidiMessage</item>
 			<item>MidiSystem</item>
 			<item>MidiUnavailableException</item>
@@ -1938,7 +1938,7 @@
 			<item>MultiDoc</item>
 			<item>MultiDocPrintJob</item>
 			<item>MultiDocPrintService</item>
-			<item>MultiFileChooserUI</item>
+			<item>MultFileChooserUI</item>
 			<item>MultiInternalFrameUI</item>
 			<item>MultiLabelUI</item>
 			<item>MultiListUI</item>

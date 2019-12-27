@@ -14,7 +14,7 @@ struct asSMessageInfo;
 class MetaObject;
 class Engine;
 
-class AngelSystem : public ISystem {
+class AngelSystem : public System {
 public:
     AngelSystem (Engine *engine);
     ~AngelSystem ();

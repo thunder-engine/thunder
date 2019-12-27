@@ -3,7 +3,7 @@
 
 #include <module.h>
 
-class Media : public IModule {
+class Media : public Module {
 public:
     Media                       (Engine *engine);
 
@@ -15,18 +15,18 @@ public:
 
     uint8_t                     types                   () const;
 
-    ISystem                    *system                  ();
+    System                    *system                  ();
 
     IConverter                 *converter               ();
 
 protected:
     Engine                     *m_pEngine;
 
-    ISystem                    *m_pSystem;
+    System                    *m_pSystem;
 };
 
 extern "C" {
-    MODULE_EXPORT IModule *moduleCreate(Engine *engine);
+    MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
 #endif // MEDIA_H

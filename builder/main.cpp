@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
     Log::overrideHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
-    IFile *file = new IFile();
+    File *file = new File();
     file->finit(qPrintable(QCoreApplication::arguments().at(0)));
 
     Log(Log::INF) << "Starting builder...";

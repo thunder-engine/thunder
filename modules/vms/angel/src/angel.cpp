@@ -6,7 +6,7 @@
     #include "converters/angelbuilder.h"
 #endif
 
-IModule *moduleCreate(Engine *engine) {
+Module *moduleCreate(Engine *engine) {
     return new Angel(engine);
 }
 
@@ -35,7 +35,7 @@ uint8_t Angel::types() const {
     return result;
 }
 
-ISystem *Angel::system() {
+System *Angel::system() {
     return m_pSystem;
 }
 

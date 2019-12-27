@@ -5,7 +5,7 @@
 
 class AngelSystem;
 
-class Angel : public IModule {
+class Angel : public Module {
 public:
     Angel                       (Engine *engine);
 
@@ -17,7 +17,7 @@ public:
 
     uint8_t                     types                   () const;
 
-    ISystem                    *system                  ();
+    System                    *system                  ();
 
     IConverter                 *converter               ();
 
@@ -28,7 +28,7 @@ protected:
 };
 
 extern "C" {
-    MODULE_EXPORT IModule *moduleCreate(Engine *engine);
+    MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
 #endif // ANGEL_H

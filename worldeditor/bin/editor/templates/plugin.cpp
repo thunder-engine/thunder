@@ -5,7 +5,7 @@
 
 ${Includes}
 
-class ${Project_Name} : public IModule {
+class ${Project_Name} : public Module {
 public:
     ${Project_Name}             (Engine *engine) :
             m_pEngine(engine) {
@@ -38,7 +38,7 @@ public:
 };
 #ifdef NEXT_SHARED
 extern "C" {
-    MODULE_EXPORT IModule *moduleCreate(Engine *engine) {
+    MODULE_EXPORT Module *moduleCreate(Engine *engine) {
         return new ${Project_Name}(engine);
     }
 }

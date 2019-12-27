@@ -56,6 +56,15 @@ public:
     uint32_t m_LastTime;
 };
 
+/*!
+    \class BlenderAnimation
+    \brief The BlenderAnimation class provides mechanism for blending of an animation tracks.
+    \since Next 1.0
+    \inmodule Animation
+
+    The BlenderAnimation helps to developers to mix animation tracks with various mixing parameters.
+*/
+
 BlenderAnimation::BlenderAnimation() :
         p_ptr(new BlenderAnimationPrivate()) {
 
@@ -65,10 +74,16 @@ BlenderAnimation::~BlenderAnimation() {
     delete p_ptr;
 }
 
+/*!
+    Returns the default value for the animated curve. This value will be used if no animation data is available at the current time frame.
+*/
 Variant BlenderAnimation::defaultValue() {
     return p_ptr->m_Default;
 }
 
+/*!
+    Sets the default \a value for the animated curve. This value will be used if no animation data is available at the current time frame.
+*/
 void BlenderAnimation::setDefaultValue(const Variant &value) {
     p_ptr->m_Default = value;
     p_ptr->m_CurrentValue = value;

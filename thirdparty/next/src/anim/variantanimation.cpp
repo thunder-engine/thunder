@@ -10,7 +10,7 @@ public:
     \class VariantAnimation
     \brief The VariantAnimation is a base class for all animation tracks.
     \since Next 1.0
-    \inmodule Anim
+    \inmodule Animation
 
     This class allows to change values in time. VariantAnimation uses key-frame animation mechanism.
     Developers should specify sequence of key values wich pair of point in time and key value.

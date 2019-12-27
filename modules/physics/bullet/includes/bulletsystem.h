@@ -11,7 +11,7 @@ class btBroadphaseInterface;
 class btSequentialImpulseConstraintSolver;
 class btDynamicsWorld;
 
-class BulletSystem : public ISystem {
+class BulletSystem : public System {
 public:
     BulletSystem (Engine *engine);
     ~BulletSystem () override;

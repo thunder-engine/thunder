@@ -16,8 +16,6 @@ public:
     DirectLight ();
     ~DirectLight ();
 
-    Vector4 &normalizedDistance ();
-
     Vector4 *tiles ();
 
     Matrix4 *matrix ();

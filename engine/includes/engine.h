@@ -9,16 +9,16 @@
 
 #include "file.h"
 
-class IModule;
+class Module;
 
 class EnginePrivate;
 
 class Scene;
-class ISystem;
+class System;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
-    Engine                      (IFile *file, const char *path);
+    Engine                      (File *file, const char *path);
     ~Engine                     ();
 /*
     Main system
@@ -56,7 +56,7 @@ public:
 
     static void                 reloadBundle                ();
 
-    ISystem                    *resourceSystem              () const;
+    System                     *resourceSystem              () const;
 
 /*
     Misc
@@ -65,11 +65,11 @@ public:
 
     static void                 setGameMode                 (bool flag);
 
-    void                        addModule                   (IModule *module);
+    void                        addModule                   (Module *module);
 
     Scene                      *scene                       ();
 
-    static IFile               *file                        ();
+    static File                *file                        ();
 
     static string               locationAppDir              ();
 

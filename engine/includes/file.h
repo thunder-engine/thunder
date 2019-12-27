@@ -32,7 +32,7 @@ typedef void            _FILE;
 typedef	uint64_t        _size_t;
 typedef list<string>    StringList;
 
-class NEXT_LIBRARY_EXPORT IFile {
+class NEXT_LIBRARY_EXPORT File {
 public:
     void                finit           (const char *argv0);
     void                fsearchPathAdd  (const char *path, bool isFirst = false);

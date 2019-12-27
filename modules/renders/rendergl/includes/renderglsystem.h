@@ -7,7 +7,7 @@
 
 class Engine;
 
-class RenderGLSystem : public ISystem {
+class RenderGLSystem : public System {
 public:
     RenderGLSystem              (Engine *engine);
     ~RenderGLSystem             ();

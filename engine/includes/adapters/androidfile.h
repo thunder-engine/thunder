@@ -5,7 +5,7 @@
 
 #include <glfm.h>
 
-class AndroidFile : public IFile {
+class AndroidFile : public File {
 public:
     StringList  _flist          (const char *path) {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);

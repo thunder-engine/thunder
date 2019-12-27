@@ -4,6 +4,14 @@
 #include <mutex>
 
 /*!
+    \module Core
+
+    \title Next Core Module
+
+    \brief Contains base classes for interobject collaboration and introspection.
+*/
+
+/*!
     \typedef Object::ObjectList
 
     Synonym for list<Object *>.
@@ -491,20 +499,18 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 
     disconnect() can be used in three ways:
 
-    \list 1
-    \li Disconnect everything from a specific sender:
-        \code
-            Object::disconnect(&obj1, 0, 0, 0);
-        \endcode
-    \li Disconnect everything connected to a specific signal:
-        \code
-            Object::disconnect(&obj1, _SIGNAL(signal(bool)), 0, 0);
-        \endcode
-    \li Disconnect all connections from the receiver:
-        \code
-            Object::disconnect(&obj1, 0, &obj3, 0);
-        \endcode
-    \endlist
+    Disconnect everything from a specific sender...
+    \code
+        Object::disconnect(&obj1, 0, 0, 0);
+    \endcode
+    Disconnect everything connected to a specific signal...
+    \code
+        Object::disconnect(&obj1, _SIGNAL(signal(bool)), 0, 0);
+    \endcode
+    Disconnect all connections from the receiver...
+    \code
+        Object::disconnect(&obj1, 0, &obj3, 0);
+    \endcode
 
     \sa connect()
 */

@@ -50,7 +50,7 @@ void Component::setEnabled(bool enabled) {
 }
 /*!
     Returns true if the component is flagged as started; otherwise returns false.
-    \note This function is used for internal purposes and shouldn't be called manually.
+    \note This method is used for internal purposes and shouldn't be called manually.
 
     \internal
 */
@@ -59,7 +59,7 @@ bool Component::isStarted() const {
 }
 /*!
     Marks component as \a started.
-    \note This function is used for internal purposes and shouldn't be called manually.
+    \note This method is used for internal purposes and shouldn't be called manually.
 
     \internal
 */
@@ -72,7 +72,9 @@ void Component::setStarted(bool started) {
 string Component::tr(const string &source) {
     return Engine::translate(source);
 }
-
+/*!
+    \internal
+*/
 bool Component::isSerializable() const {
     return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
 }

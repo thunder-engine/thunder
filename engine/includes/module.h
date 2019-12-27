@@ -1,10 +1,10 @@
-#ifndef IMODULE_H
-#define IMODULE_H
+#ifndef Module_H
+#define Module_H
 
 #include <engine.h>
 #include <file.h>
 
-class ISystem;
+class System;
 class IConverter;
 
 #if defined(NEXT_SHARED) && defined(_WIN32)
@@ -14,7 +14,7 @@ class IConverter;
 #endif
 
 
-class NEXT_LIBRARY_EXPORT IModule {
+class NEXT_LIBRARY_EXPORT Module {
 public:
     enum PluginTypes {
         SYSTEM                      = (1<<0),
@@ -23,19 +23,18 @@ public:
     };
 
 public:
-    IModule                         () {}
-
-    virtual ~IModule                () {}
+    Module                          () {}
+    virtual ~Module                 () {}
 
     virtual const char             *description             () const = 0;
     virtual const char             *version                 () const = 0;
     virtual uint8_t                 types                   () const = 0;
 
-    virtual ISystem                *system                  () { return nullptr; }
+    virtual System                 *system                  () { return nullptr; }
 
     virtual IConverter             *converter               () { return nullptr; }
 
     virtual StringList              components              () const { return StringList(); }
 };
 
-#endif // IMODULE_H
+#endif // Module_H

@@ -36,7 +36,7 @@ enum {
 #define PLUGINS "/plugins"
 #endif
 
-typedef IModule *(*moduleHandler)  (Engine *engine);
+typedef Module *(*moduleHandler)  (Engine *engine);
 
 PluginModel *PluginModel::m_pInstance   = nullptr;
 
@@ -130,7 +130,7 @@ void PluginModel::rescan() {
         if(!it.key().contains(system)) {
             PluginsMap::Iterator ext    = m_Extensions.find(it.key());
             if(ext != m_Extensions.end()) {
-                IModule *plugin = ext.value();
+                Module *plugin = ext.value();
                 delete plugin;
             }
             if(it.value()->unload()) {
@@ -148,19 +148,19 @@ bool PluginModel::loadPlugin(const QString &path, bool reload) {
     if(lib->load()) {
         moduleHandler moduleCreate = reinterpret_cast<moduleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
-            IModule *plugin = moduleCreate(m_pEngine);
+            Module *plugin = moduleCreate(m_pEngine);
             if(plugin) {
                 m_Libraries[path]   = lib;
 
                 uint8_t types   = plugin->types();
-                if(types & IModule::SYSTEM) {
+                if(types & Module::SYSTEM) {
                     registerExtensionPlugin(path, plugin);
                     registerSystem(plugin);
                 }
-                if(types & IModule::EXTENSION) {
+                if(types & Module::EXTENSION) {
                     registerExtensionPlugin(path, plugin);
                 }
-                if(types & IModule::CONVERTER) {
+                if(types & Module::CONVERTER) {
                      AssetManager::instance()->registerConverter(plugin->converter());
                 }
                 if(!reload) {
@@ -209,7 +209,7 @@ void PluginModel::reloadPlugin(const QString &path) {
     LibrariesMap::Iterator lib  = m_Libraries.find(dest.absoluteFilePath());
 
     if(ext != m_Extensions.end() && lib != m_Libraries.end()) { // Reload plugin
-        IModule *plugin = ext.value();
+        Module *plugin = ext.value();
         ComponentMap result;
         serializeComponents(plugin->components(), result);
         // Unload plugin
@@ -266,8 +266,8 @@ void PluginModel::rescanPath(const QString &path) {
     }
 }
 
-void PluginModel::registerSystem(IModule *plugin) {
-    ISystem *system = plugin->system();
+void PluginModel::registerSystem(Module *plugin) {
+    System *system = plugin->system();
     m_Systems[QString::fromStdString(system->name())] = system;
     if(QString(system->name()) == "RenderGL") {
         m_pRender = system;
@@ -298,7 +298,7 @@ void PluginModel::updateRender(Scene *scene) {
     }
 }
 
-void PluginModel::registerExtensionPlugin(const QString &path, IModule *plugin) {
+void PluginModel::registerExtensionPlugin(const QString &path, Module *plugin) {
     m_Extensions[path]  = plugin;
     emit updated();
 }

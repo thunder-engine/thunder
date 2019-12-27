@@ -142,7 +142,9 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
         static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
     }
 }
-
+/*!
+    \internal
+*/
 AABBox SpotLight::bound() const {
     return p_ptr->m_Box * actor()->transform()->worldTransform();
 }

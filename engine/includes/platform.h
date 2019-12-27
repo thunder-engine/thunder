@@ -16,7 +16,7 @@
                     WideCharToMultiByte(CP_ACP, 0, w_argv[i], w_len, argv[argc], len+1, nullptr, nullptr); \
                     ++argc; \
                 } \
-                IFile *file = new IFile; \
+                File *file = new File; \
                 file->finit(argv[0]); \
                 Engine *engine = new Engine(file, argv[0]); \
                 result  = thunderMain(engine); \
@@ -35,7 +35,7 @@
 #else
     #define THUNDER_MAIN() \
     int main(int argc, char **argv) { \
-        IFile *file = new IFile; \
+        File *file = new File; \
         file->finit(argv[0]); \
         Engine *engine = new Engine(file, argv[0]); \
         thunderMain(engine); \

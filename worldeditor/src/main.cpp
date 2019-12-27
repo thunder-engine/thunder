@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
         qss.close();
     }
 
-    IFile *file = new IFile();
+    File *file = new File();
     file->finit(qPrintable(QApplication::arguments().at(0)));
 
     Log::setLogLevel(Log::DBG);

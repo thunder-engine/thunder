@@ -804,7 +804,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
 
 void AssetManager::reloadResource(Object *object, const string &path) {
     if(!path.empty()) {
-        IFile *file = Engine::file();
+        File *file = Engine::file();
         _FILE *fp   = file->_fopen(path.c_str(), "r");
         if(fp) {
             ByteArray data;

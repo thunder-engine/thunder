@@ -30,6 +30,17 @@ public:
 
     Scene *m_pScene;
 };
+/*!
+    \class Actor
+    \brief Base class for all entities in Thunder Engine.
+    \inmodule Engine
+
+    The Actor probably is the most important class in the Thunder Engine.
+    It represents all objects on the scene like 3D meshes, light sources, effects and many more.
+    You should think about Actor as a key chain for the various Components.
+    You can add and remove any components you like at any time except the Transform component.
+    The Transform component must persist constantly and you shoudn't remove it.
+*/
 
 Actor::Actor() :
         p_ptr(new ActorPrivate) {
@@ -39,22 +50,35 @@ Actor::Actor() :
 Actor::~Actor() {
     delete p_ptr;
 }
-
+/*!
+    Returns true in case of Actor is enabled; otherwise returns false.
+    Disabled Actors becomes invisible for the user.
+    By default the property is \b true.
+*/
 bool Actor::isEnabled() const {
     PROFILE_FUNCTION();
     return p_ptr->m_Enable;
 }
-
+/*!
+    Marks this Actor as enabled or disabled.
+    Disabled Actors becomes invisible for the user.
+*/
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
     p_ptr->m_Enable = enabled;
 }
-
+/*!
+    Returns the layers list for the this Actor as a bit mask.
+    The layers used for the various purposes like filtering objects before rendering.
+*/
 uint8_t Actor::layers() const {
     PROFILE_FUNCTION();
     return p_ptr->m_Layers;
 }
-
+/*!
+    Returns the Transform component attached to this Actor.
+    If no Transform component found this method will create a new one.
+*/
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(p_ptr->m_pTransform == nullptr) {
@@ -69,7 +93,9 @@ Transform *Actor::transform() {
     }
     return p_ptr->m_pTransform;
 }
-
+/*!
+    Returns the scene where actor attached to.
+*/
 Scene *Actor::scene() {
     PROFILE_FUNCTION();
     if(p_ptr->m_pScene == nullptr) {
@@ -83,7 +109,9 @@ Scene *Actor::scene() {
     }
     return p_ptr->m_pScene;
 }
-
+/*!
+    Returns the component with \a type if one is attached to this Actor; otherwise returns nullptr.
+*/
 Component *Actor::component(const string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
@@ -110,7 +138,10 @@ Component *componentInChildHelper(const string &type, Object *parent) {
     }
     return nullptr;
 }
-
+/*!
+    Returns the component with \a type in the Actor's children using depth search.
+    A component is returned only if it's found on a current Actor; otherwise returns nullptr.
+*/
 Component *Actor::componentInChild(const string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
@@ -121,17 +152,23 @@ Component *Actor::componentInChild(const string type) {
     }
     return nullptr;
 }
-
+/*!
+    Assigns the list of \a layers for this Actor as a bitmask.
+*/
 void Actor::setLayers(const uint8_t layers) {
     PROFILE_FUNCTION();
     p_ptr->m_Layers = layers;
 }
-
+/*!
+    Returns created component with specified \a type;
+*/
 Component *Actor::addComponent(const string type) {
     PROFILE_FUNCTION();
     return static_cast<Component *>(Engine::objectCreate(type, type, this));
 }
-
+/*!
+    \internal
+*/
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
     Actor *actor   = dynamic_cast<Actor *>(parent());
@@ -140,7 +177,9 @@ bool Actor::isSerializable() const {
     }
     return true;
 }
-
+/*!
+    Makes the actor a child of the \a parent.
+*/
 void Actor::setParent(Object *parent) {
     PROFILE_FUNCTION();
     if(p_ptr->m_pTransform) {
@@ -154,12 +193,19 @@ void Actor::setParent(Object *parent) {
         Object::setParent(parent);
     }
 }
-
+/*!
+    Returns true in case the current object is an instance of the serialized prefab structure; otherwise returns false.
+*/
 bool Actor::isPrefab() const {
     PROFILE_FUNCTION();
     return (p_ptr->m_pPrefab != nullptr);
 }
+/*!
+    Marks this Actor as an instance of the \a prefab structure.
+    \note This method is used for internal purposes and shouldn't be called manually.
 
+    \internal
+*/
 void Actor::setPrefab(Actor *prefab) {
     PROFILE_FUNCTION();
     p_ptr->m_pPrefab = prefab;
@@ -173,7 +219,9 @@ void enumObjects(Object *object, List &list) {
         enumObjects(it, list);
     }
 }
-
+/*!
+    \internal
+*/
 void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     auto it = data.find(PREFAB);
@@ -245,7 +293,9 @@ void enumConstObjects(const Object *object, ConstList &list) {
         enumConstObjects(it, list);
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result   = Object::saveUserData();

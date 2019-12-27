@@ -3,7 +3,7 @@
 
 #include <module.h>
 
-class RenderGL : public IModule {
+class RenderGL : public Module {
 public:
     RenderGL                    (Engine *engine);
 
@@ -15,16 +15,16 @@ public:
 
     uint8_t                     types                   () const;
 
-    ISystem                    *system                  ();
+    System                    *system                  ();
 
 protected:
     Engine                     *m_pEngine;
 
-    ISystem                    *m_pSystem;
+    System                    *m_pSystem;
 };
 
 extern "C" {
-    MODULE_EXPORT IModule *moduleCreate(Engine *engine);
+    MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
 #endif // RENDERGL_H

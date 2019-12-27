@@ -14,7 +14,7 @@ public:
     \class PropertyAnimation
     \brief The PropertyAnimation class animates one particular Object property.
     \since Next 1.0
-    \inmodule Anim
+    \inmodule Animation
 
     PropertyAnimation interpolates animated property between key-frames.
 
@@ -30,9 +30,7 @@ public:
         anim.start();
     \endcode
 */
-/*!
-    Constructs PropertyAnimation object.
-*/
+
 PropertyAnimation::PropertyAnimation() :
     p_ptr(new PropertyAnimationPrivate()) {
 
@@ -89,7 +87,10 @@ void PropertyAnimation::setCurrentValue(const Variant &value) {
         p_ptr->m_Property.write(p_ptr->m_pObject, value);
     }
 }
-
+/*!
+    \overload
+    Sets the \a valid state of animation. The invalid animations will not affect anything.
+*/
 void PropertyAnimation::setValid(bool valid) {
     if(!valid && p_ptr->m_Property.isValid()) {
         p_ptr->m_Property.write(p_ptr->m_pObject, defaultValue());

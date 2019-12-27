@@ -11,7 +11,7 @@ class Actor;
 class Camera;
 
 class IController;
-class ISystem;
+class System;
 
 class QOffscreenSurface;
 class QOpenGLContext;

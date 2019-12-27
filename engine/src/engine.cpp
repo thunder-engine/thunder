@@ -89,10 +89,10 @@ public:
 
     static Engine              *m_pInstance;
 
-    static list<ISystem *>      m_Pool;
-    static list<ISystem *>      m_Serial;
+    static list<System *>      m_Pool;
+    static list<System *>      m_Serial;
 
-    static IFile               *m_pFile;
+    static File               *m_pFile;
 
     string                      m_EntryLevel;
 
@@ -117,7 +117,7 @@ public:
     static Translator          *m_pTranslator;
 };
 
-IFile *EnginePrivate::m_pFile   = nullptr;
+File *EnginePrivate::m_pFile   = nullptr;
 
 bool              EnginePrivate::m_Game = false;
 VariantMap        EnginePrivate::m_Values;
@@ -130,8 +130,8 @@ ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
 Translator       *EnginePrivate::m_pTranslator = nullptr;
 Engine           *EnginePrivate::m_pInstance = nullptr;
 
-list<ISystem *>   EnginePrivate::m_Pool;
-list<ISystem *>   EnginePrivate::m_Serial;
+list<System *>   EnginePrivate::m_Pool;
+list<System *>   EnginePrivate::m_Serial;
 
 typedef Vector4 Color;
 
@@ -139,6 +139,8 @@ typedef Vector4 Color;
     \module Engine
 
     \title Thunder Engine Software Developer Kit
+
+    \brief Contains base game management classes.
 */
 
 /*!
@@ -163,7 +165,7 @@ typedef Vector4 Color;
     Constructs Engine.
     Using \a file and \a path parameters creates necessary platform adapters, register basic component types and resource types.
 */
-Engine::Engine(IFile *file, const char *path) :
+Engine::Engine(File *file, const char *path) :
         p_ptr(new EnginePrivate()) {
     PROFILER_MARKER;
 
@@ -253,7 +255,7 @@ bool Engine::init() {
     return result;
 }
 /*!
-    Starts the main game cicle.
+    Starts the main game cycle.
     Also this method loads the first level of your game.
     Returns true if successful; otherwise returns false.
 */
@@ -458,7 +460,7 @@ void Engine::reloadBundle() {
     StringMap &indices = EnginePrivate::m_pResourceSystem->indices();
     indices.clear();
 
-    IFile *file = Engine::file();
+    File *file = Engine::file();
     _FILE *fp   = file->_fopen(gIndex, "r");
     if(fp) {
         ByteArray data;
@@ -486,7 +488,7 @@ void Engine::reloadBundle() {
 /*!
     Returns the resource management system which can be used in external modules.
 */
-ISystem *Engine::resourceSystem() const {
+System *Engine::resourceSystem() const {
     return EnginePrivate::m_pResourceSystem;
 }
 /*!
@@ -514,10 +516,10 @@ void Engine::setGameMode(bool flag) {
     }
     \endcode
 */
-void Engine::addModule(IModule *module) {
+void Engine::addModule(Module *module) {
     PROFILER_MARKER;
-    if(module->types() & IModule::SYSTEM) {
-        ISystem *system = module->system();
+    if(module->types() & Module::SYSTEM) {
+        System *system = module->system();
         if(system->isThreadSafe()) {
             EnginePrivate::m_Pool.push_back(system);
         } else {
@@ -537,7 +539,7 @@ Scene *Engine::scene() {
 /*!
     Returns file system module.
 */
-IFile *Engine::file() {
+File *Engine::file() {
     PROFILER_MARKER;
 
     return EnginePrivate::m_pFile;

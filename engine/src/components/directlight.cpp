@@ -204,12 +204,6 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
 /*!
     \internal
 */
-Vector4 &DirectLight::normalizedDistance() {
-    return p_ptr->m_NormalizedDistance;
-}
-/*!
-    \internal
-*/
 Vector4 *DirectLight::tiles() {
     return p_ptr->m_pTiles;
 }
@@ -219,7 +213,9 @@ Vector4 *DirectLight::tiles() {
 Matrix4 *DirectLight::matrix() {
     return p_ptr->m_pMatrix;
 }
-
+/*!
+    \internal
+*/
 AABBox DirectLight::bound() const {
     return AABBox(0.0f, -1.0f);
 }

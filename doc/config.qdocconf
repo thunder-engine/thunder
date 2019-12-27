@@ -1,0 +1,28 @@
+project = Thunder Engine
+description = Thunder Engine Reference Documentation
+
+navigation.homepage  = "Thunder Engine"
+
+navigation.cppclassespage = "Engine"
+
+outputdir = html
+outputformats = HTML
+
+headerdirs  = ../
+sourcedirs += \
+    ../engine/src \
+    ../thirdparty/next/src
+
+excludedirs += \
+    ../engine/src/adapters \
+    ../engine/src/analytics \
+    ../engine/src/converters \
+    ../engine/src/filters \
+    ../engine/src/postprocess
+
+sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+
+exampledirs = .
+
+imagedirs   = ./images

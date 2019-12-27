@@ -5,7 +5,7 @@
 #ifdef NEXT_SHARED
     #include "converters/physicmaterialconverter.h"
 #endif
-IModule *moduleCreate(Engine *engine) {
+Module *moduleCreate(Engine *engine) {
     return new Bullet(engine);
 }
 
@@ -34,7 +34,7 @@ uint8_t Bullet::types() const {
     return result;
 }
 
-ISystem *Bullet::system() {
+System *Bullet::system() {
     return m_pSystem;
 }
 

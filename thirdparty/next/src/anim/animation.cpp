@@ -1,5 +1,13 @@
 #include "anim/animation.h"
 
+/*!
+    \module Animation
+
+    \title Next Animation Module
+
+    \brief Contains classes to work with animation.
+*/
+
 class AnimationPrivate {
 public:
     AnimationPrivate() :
@@ -23,7 +31,7 @@ public:
     \class Animation
     \brief The Animation class provides base class interface for animations.
     \since Next 1.0
-    \inmodule Anim
+    \inmodule Animation
 
     The Animation class contain basic state machine to control animation processing.
 */
@@ -36,9 +44,7 @@ public:
     \value RUNNING \c Animation is playing.
     \value PAUSED \c Animation paused if resume() is triggered the animation will continue from place before pause().
 */
-/*!
-    Constructs Animation object.
-*/
+
 Animation::Animation() :
         p_ptr(new AnimationPrivate()) {
 

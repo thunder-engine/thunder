@@ -8,9 +8,9 @@
 
 class Scene;
 
-class NEXT_LIBRARY_EXPORT ISystem : public ObjectSystem {
+class NEXT_LIBRARY_EXPORT System : public ObjectSystem {
 public:
-    ISystem();
+    System();
 
     virtual bool init () = 0;
 

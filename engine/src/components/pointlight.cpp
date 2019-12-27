@@ -160,7 +160,9 @@ void PointLight::setRadius(float radius) {
 
     p_ptr->m_Box = AABBox(Vector3(), Vector3(radius * 2));
 }
-
+/*!
+    \internal
+*/
 AABBox PointLight::bound() const {
     return p_ptr->m_Box * actor()->transform()->worldTransform();
 }

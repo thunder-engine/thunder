@@ -4,7 +4,7 @@
 #ifdef NEXT_SHARED
     #include "converters/audioconverter.h"
 #endif
-IModule *moduleCreate(Engine *engine) {
+Module *moduleCreate(Engine *engine) {
     return new Media(engine);
 }
 
@@ -33,7 +33,7 @@ uint8_t Media::types() const {
     return result;
 }
 
-ISystem *Media::system() {
+System *Media::system() {
     return m_pSystem;
 }
 

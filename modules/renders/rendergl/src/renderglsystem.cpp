@@ -37,11 +37,11 @@ void _CheckGLError(const char* file, int line) {
 }
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
-        ISystem(),
+        System(),
         m_pEngine(engine) {
     PROFILER_MARKER;
 
-    ISystem *system = m_pEngine->resourceSystem();
+    System *system = m_pEngine->resourceSystem();
 
     ATextureGL::registerClassFactory(system);
     ARenderTextureGL::registerClassFactory(system);
@@ -54,7 +54,7 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 RenderGLSystem::~RenderGLSystem() {
     PROFILER_MARKER;
 
-    ISystem *system = m_pEngine->resourceSystem();
+    System *system = m_pEngine->resourceSystem();
 
     ATextureGL::unregisterClassFactory(system);
     ARenderTextureGL::unregisterClassFactory(system);

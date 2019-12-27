@@ -24,7 +24,7 @@
 #include "resources/physicmaterial.h"
 
 BulletSystem::BulletSystem(Engine *engine) :
-        ISystem(),
+        System(),
         m_Inited(false),
         m_pCollisionConfiguration(nullptr),
         m_pDispatcher(nullptr),

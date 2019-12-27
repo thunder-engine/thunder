@@ -1,19 +1,19 @@
 #include "system.h"
 
-ISystem::ISystem() :
+System::System() :
     m_pScene(nullptr) {
 
 }
 
-void ISystem::syncSettings() const {
+void System::syncSettings() const {
 
 }
 
-void ISystem::setActiveScene(Scene *scene) {
+void System::setActiveScene(Scene *scene) {
     m_pScene = scene;
 }
 
-void ISystem::processEvents() {
+void System::processEvents() {
     ObjectSystem::processEvents();
 
     update(m_pScene);

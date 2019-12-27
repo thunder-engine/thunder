@@ -53,7 +53,7 @@ void MeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     }
 }
 /*!
-    Returns a bound box of assigned Mesh.
+    \internal
 */
 AABBox MeshRender::bound() const {
     if(p_ptr->m_pMesh) {
@@ -62,7 +62,7 @@ AABBox MeshRender::bound() const {
     return Renderable::bound();
 }
 /*!
-    Returns a Mesh assigned to MeshRender.
+    Returns a Mesh assigned to this component.
 */
 Mesh *MeshRender::mesh() const {
     return p_ptr->m_pMesh;

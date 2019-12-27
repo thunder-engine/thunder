@@ -37,7 +37,7 @@ int32_t DesktopAdaptor::s_Height    = 0;
 bool DesktopAdaptor::s_Windowed     = false;
 
 static Engine *g_pEngine = nullptr;
-static IFile *g_pFile = nullptr;
+static File *g_pFile = nullptr;
 
 static string gAppConfig;
 

@@ -69,7 +69,7 @@ Object *ResourceSystem::loadResource(const string &path) {
             if(it != s_ResourceCache.end() && it->second) {
                 return it->second;
             } else {
-                IFile *file = Engine::file();
+                File *file = Engine::file();
                 _FILE *fp   = file->_fopen(uuid.c_str(), "r");
                 if(fp) {
                     ByteArray data;
