@@ -50,10 +50,12 @@ Rectangle {
         }
         onReleased: {
             if(createMode && selectNode != focusNode) {
-                if((portObject !== undefined && portObject.out) || stateMachine) {
-                    schemeModel.createLink(selectNode, selectPort, focusNode, focusPort)
-                } else {
-                    schemeModel.createLink(focusNode, focusPort, selectNode, selectPort)
+                if(stateMachine || focusPort !== -1) {
+                    if((portObject !== undefined && portObject.out) || stateMachine) {
+                        schemeModel.createLink(selectNode, selectPort, focusNode, focusPort)
+                    } else {
+                        schemeModel.createLink(focusNode, focusPort, selectNode, selectPort)
+                    }
                 }
 
                 selectNode = -1
