@@ -23,7 +23,11 @@
 AmbientOcclusion::AmbientOcclusion() :
         m_Radius(0.2f),
         m_Bias(0.025f),
-        m_Power(2.0f) {
+        m_Power(2.0f),
+        m_pNoise(nullptr),
+        m_pSSAO(nullptr),
+        m_pBlur(nullptr),
+        m_pOcclusion(nullptr) {
 
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
         m_SamplesKernel[i].x = RANGE( 0.0f, 1.0f) * 2.0f - 1.0f;
@@ -54,12 +58,19 @@ AmbientOcclusion::AmbientOcclusion() :
 
         ptr[i].normalize();
     }
-    {
-        Material *material = Engine::loadResource<Material>(".embedded/AmbientOcclusion.mtl");
-        if(material) {
-            material->setTexture("noiseMap", m_pNoise);
 
-            m_pMaterial = material->createInstance();
+    m_pSSAO = Engine::objectCreate<RenderTexture>();
+    m_pSSAO->setTarget(Texture::R8);
+
+    m_pResultTexture = Engine::objectCreate<RenderTexture>();
+    m_pResultTexture->setTarget(Texture::R8);
+
+    {
+        Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.mtl");
+        if(mtl) {
+            mtl->setTexture("noiseMap", m_pNoise);
+
+            m_pMaterial = mtl->createInstance();
             m_pMaterial->setVector3("samplesKernel", m_SamplesKernel, KERNEL_SIZE);
 
             m_pMaterial->setFloat("radius", &m_Radius);
@@ -68,17 +79,19 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
+        Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.mtl");
+        if(mtl) {
+            mtl->setTexture("ssaoSample", m_pSSAO);
+
+            m_pBlur = mtl->createInstance();
+        }
+    }
+    {
         Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
         if(mtl) {
             m_pOcclusion = mtl->createInstance();
         }
     }
-
-    m_pSSAO = Engine::objectCreate<RenderTexture>();
-    m_pSSAO->setTarget(Texture::R8);
-
-    m_pResultTexture = Engine::objectCreate<RenderTexture>();
-    m_pResultTexture->setTarget(Texture::R8);
 }
 
 AmbientOcclusion::~AmbientOcclusion() {
@@ -93,31 +106,31 @@ RenderTexture *AmbientOcclusion::draw(RenderTexture *source, ICommandBuffer &buf
                                                            m_pSSAO->width(), m_pSSAO->height()));
             buffer.setRenderTarget({m_pSSAO});
             buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+        }
 
-            buffer.setGlobalTexture(SSAO_MAP, m_pSSAO);
+        if(m_pBlur) {
+            buffer.setRenderTarget({m_pResultTexture});
+            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlur);
 
             buffer.setViewport(0, 0, source->width(), source->height());
             buffer.setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
                                                            source->width(), source->height()));
 
-            //Blur *blur = PostProcessor::blur();
-            //blur->setParameters(Vector2(1.0f / m_pResultTexture->width(), 1.0f / m_pResultTexture->height()), BLUR_STEPS, m_BlurSamplesKernel);
-            //blur->draw(buffer, m_pSSAO, m_pResultTexture);
+            buffer.setGlobalTexture(SSAO_MAP, m_pResultTexture);
         }
 
         if(m_pOcclusion) {
             buffer.setRenderTarget({source});
             buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pOcclusion);
         }
-
-        return m_pSSAO;
+        return m_pResultTexture;
     }
     return source;
 }
 
 void AmbientOcclusion::resize(int32_t width, int32_t height) {
     m_pSSAO->resize(width / 2, height / 2);
-    m_pResultTexture->resize(width, height);
+    m_pResultTexture->resize(width / 2, height / 2);
 
     float radius = width * 0.01f;
     memset(m_BlurSamplesKernel, 0, sizeof(float) * BLUR_STEPS);

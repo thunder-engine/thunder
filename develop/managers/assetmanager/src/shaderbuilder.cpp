@@ -50,7 +50,7 @@
 #define RAW         "Raw"
 #define VIEW        "View"
 
-#define UNIFORM     32
+#define UNIFORM     40
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");

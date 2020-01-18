@@ -2,7 +2,7 @@
 
 #include "Common.vert"
 
-layout(location = 32) uniform sampler2D rgbMap;
+layout(location = 40) uniform sampler2D rgbMap;
 
 layout(location = 1) in vec2 _uv0;
 

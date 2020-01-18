@@ -56,7 +56,7 @@ public:
 
     virtual Matrix4             projection                  () const;
 
-    virtual Matrix4             modelView                   () const;
+    virtual Matrix4             view                        () const;
 
     virtual Texture            *texture                     (const char *name) const;
 

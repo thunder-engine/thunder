@@ -51,11 +51,11 @@ SpotLight::SpotLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector3("light.position",   &p_ptr->m_Position);
-        instance->setVector3("light.direction",  &p_ptr->m_Direction);
+        instance->setVector3("light.position",  &p_ptr->m_Position);
+        instance->setVector3("light.direction", &p_ptr->m_Direction);
 
-        instance->setMatrix4("light.matrix",     &p_ptr->m_Matrix);
-        instance->setVector4("light.tiles",      &p_ptr->m_Tiles);
+        instance->setMatrix4("light.matrix", &p_ptr->m_Matrix);
+        instance->setVector4("light.tiles",  &p_ptr->m_Tiles);
 
         setMaterial(instance);
     }
@@ -72,8 +72,8 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     MaterialInstance *instance = material();
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
-        p_ptr->m_Position = actor()->transform()->worldPosition();
 
+        p_ptr->m_Position = actor()->transform()->worldPosition();
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
         Vector4 p = params();
@@ -96,11 +96,12 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
         p_ptr->m_pTarget = nullptr;
         return;
     }
+    ICommandBuffer *buffer = pipeline->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
-    Quaternion rot = t->worldRotation();
-    Matrix4 view = t->worldTransform().inverse();
+    Quaternion q = t->worldRotation();
+    Matrix4 rot = t->worldTransform().inverse();
 
     Matrix4 scale;
     scale[0]  = 0.5f;
@@ -120,23 +121,22 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     int32_t pageWidth, pageHeight;
     Pipeline::shadowPageSize(pageWidth, pageHeight);
 
-    p_ptr->m_Matrix = scale * crop * view;
+    p_ptr->m_Matrix = scale * crop * rot;
     p_ptr->m_Tiles = Vector4(static_cast<float>(x) / pageWidth,
                              static_cast<float>(y) / pageHeight,
                              static_cast<float>(w) / pageWidth,
                              static_cast<float>(h) / pageHeight);
 
-    ICommandBuffer *buffer = pipeline->buffer();
     buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
     buffer->enableScissor(x, y, w, h);
     buffer->clearRenderTarget();
     buffer->disableScissor();
 
-    buffer->setViewProjection(view, crop);
+    buffer->setViewProjection(rot, crop);
     buffer->setViewport(x, y, w, h);
 
     ObjectList filter = Camera::frustumCulling(components,
-                                               Camera::frustumCorners(false, p_ptr->m_Angle * 2.0f, 1.0f, pos, rot, p_ptr->m_Near, zFar));
+                                               Camera::frustumCorners(false, p_ptr->m_Angle * 2.0f, 1.0f, pos, q, p_ptr->m_Near, zFar));
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
         static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);

@@ -16,6 +16,7 @@ public:
     bool clean ();
 
     bool fill;
+    bool dirty;
 
     int32_t x;
     int32_t y;

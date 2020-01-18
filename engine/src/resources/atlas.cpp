@@ -9,6 +9,7 @@ typedef deque<Texture *>  Textures;
 
 PackNode::PackNode() :
         fill(false),
+        dirty(false),
         x(0),
         y(0),
         w(1),
@@ -19,6 +20,13 @@ PackNode::PackNode() :
 }
 
 PackNode::~PackNode() {
+    if(parent) {
+        if(parent->child[0] == this) {
+            parent->child[0] = nullptr;
+        } else {
+            parent->child[1] = nullptr;
+        }
+    }
     delete child[0];
     delete child[1];
 }

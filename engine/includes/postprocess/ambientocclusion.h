@@ -31,8 +31,8 @@ protected:
 
     Texture *m_pNoise;
     RenderTexture *m_pSSAO;
-    RenderTexture *m_pBlour;
 
+    MaterialInstance *m_pBlur;
     MaterialInstance *m_pOcclusion;
 };
 

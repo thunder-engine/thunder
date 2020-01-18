@@ -44,11 +44,11 @@ DirectLight::DirectLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector4("light.lod",        &p_ptr->m_NormalizedDistance);
-        instance->setVector3("light.direction",  &p_ptr->m_Direction);
+        instance->setVector4("light.lod",       &p_ptr->m_NormalizedDistance);
+        instance->setVector3("light.direction", &p_ptr->m_Direction);
 
-        instance->setMatrix4("light.matrix",     p_ptr->m_pMatrix, MAX_LODS);
-        instance->setVector4("light.tiles",      p_ptr->m_pTiles,  MAX_LODS);
+        instance->setMatrix4("light.matrix", p_ptr->m_pMatrix, MAX_LODS);
+        instance->setVector4("light.tiles",  p_ptr->m_pTiles,  MAX_LODS);
 
         setMaterial(instance);
     }
@@ -88,25 +88,27 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
 
     float nearPlane = camera.nearPlane();
 
-    Matrix4 p = camera.projectionMatrix();
+    ICommandBuffer *buffer = pipeline->buffer();
+    Matrix4 p = buffer->projection();
+
     {
-        float split     = SPLIT_WEIGHT;
-        float farPlane  = camera.farPlane();
+        float split    = SPLIT_WEIGHT;
+        float farPlane = camera.farPlane();
         float ratio = farPlane / nearPlane;
 
         for(int i = 0; i < MAX_LODS; i++) {
             float f = (i + 1) / static_cast<float>(MAX_LODS);
             float l = nearPlane * powf(ratio, f);
             float u = nearPlane + (farPlane - nearPlane) * f;
-            float v = MIX(u, l, split);
-            distance[i] = v;
-            Vector4 depth = p * Vector4(0.0f, 0.0f, -v * 2.0f - 1.0f, 1.0f);
+            float val = MIX(u, l, split);
+            distance[i] = val;
+            Vector4 depth = p * Vector4(0.0f, 0.0f, -val * 2.0f - 1.0f, 1.0f);
             p_ptr->m_NormalizedDistance[i] = depth.z / depth.w;
         }
     }
 
-    Quaternion rot = actor()->transform()->rotation();
-    Matrix4 view = Matrix4(rot.toMatrix()).inverse();
+    Quaternion q = actor()->transform()->worldRotation();
+    Matrix4 rot = Matrix4(q.toMatrix()).inverse();
 
     Matrix4 scale;
     scale[0]  = 0.5f;
@@ -131,7 +133,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
     Pipeline::shadowPageSize(pageWidth, pageHeight);
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
-        float dist  = distance[lod];
+        float dist = distance[lod];
         const array<Vector3, 8> &points = Camera::frustumCorners(orthographic, sigma, ratio, wPosition, wRotation, nearPlane, dist);
         nearPlane = dist;
 
@@ -142,15 +144,15 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
         box.box(min, max);
 
         Vector3 rotPoints[8]  = {
-            view * Vector3(min.x, min.y, min.z),
-            view * Vector3(min.x, min.y, max.z),
-            view * Vector3(max.x, min.y, max.z),
-            view * Vector3(max.x, min.y, min.z),
+            rot * Vector3(min.x, min.y, min.z),
+            rot * Vector3(min.x, min.y, max.z),
+            rot * Vector3(max.x, min.y, max.z),
+            rot * Vector3(max.x, min.y, min.z),
 
-            view * Vector3(min.x, max.y, min.z),
-            view * Vector3(min.x, max.y, max.z),
-            view * Vector3(max.x, max.y, max.z),
-            view * Vector3(max.x, max.y, min.z)
+            rot * Vector3(min.x, max.y, min.z),
+            rot * Vector3(min.x, max.y, max.z),
+            rot * Vector3(max.x, max.y, max.z),
+            rot * Vector3(max.x, max.y, min.z)
         };
 
         min.x = FLT_MAX;
@@ -172,28 +174,26 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
 
         Matrix4 crop = Matrix4::ortho(min.x, max.x, min.y, max.y, min.z, max.z);
 
-        p_ptr->m_pMatrix[lod] = scale * crop * view;
+        p_ptr->m_pMatrix[lod] = scale * crop * rot;
 
         p_ptr->m_pTiles[lod] = Vector4(static_cast<float>(x[lod]) / pageWidth,
                                        static_cast<float>(y[lod]) / pageHeight,
                                        static_cast<float>(w[lod]) / pageWidth,
                                        static_cast<float>(h[lod]) / pageHeight);
 
-        ICommandBuffer *buffer = pipeline->buffer();
-
         buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
         buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);
         buffer->clearRenderTarget();
         buffer->disableScissor();
 
-        buffer->setViewProjection(view, crop);
+        buffer->setViewProjection(rot, crop);
         buffer->setViewport(x[lod], y[lod], w[lod], h[lod]);
 
         Vector3 size = max - min;
         Vector3 pos(min + size * 0.5f);
 
         ObjectList filter = Camera::frustumCulling(components,
-                                                   Camera::frustumCorners(true, max.y - min.y, 1.0f, pos, rot, min.z, max.z));
+                                                   Camera::frustumCorners(true, max.y - min.y, 1.0f, pos, q, min.z, max.z));
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {

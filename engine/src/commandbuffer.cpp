@@ -84,7 +84,7 @@ Matrix4 ICommandBuffer::projection() const {
     return Matrix4();
 }
 
-Matrix4 ICommandBuffer::modelView() const {
+Matrix4 ICommandBuffer::view() const {
     return Matrix4();
 }
 

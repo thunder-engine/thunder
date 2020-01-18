@@ -50,7 +50,7 @@ public:
 
     Matrix4                     projection                  () const override { return m_Projection; }
 
-    Matrix4                     view                        () const { return m_View; }
+    Matrix4                     view                        () const override { return m_View; }
 
     Texture                    *texture                     (const char *name) const override;
 

@@ -128,7 +128,7 @@ void main(void) {
     mat4 model  = t_model;
 #endif
     mat4 mv     = t_view * model;
-    mat3 rot    = mat3( mv );
+    mat3 rot    = mat3( model );
 
 #ifdef TYPE_STATIC
     Vertex vert = staticMesh( vertex.xyz, tangent, normal, rot );

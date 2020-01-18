@@ -138,8 +138,13 @@ void Pipeline::cameraReset(Camera &camera) {
     m_Buffer->setGlobalValue("camera.position", Vector4(camera.actor()->transform()->worldPosition(), camera.nearPlane()));
     m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera.farPlane()));
 
-    m_Buffer->setGlobalValue("camera.mvpi", (p * v).inverse());
-    m_Buffer->setGlobalValue("camera.proj", p);
+    Matrix4 vp = p * v;
+
+    m_Buffer->setGlobalValue("camera.view", v);
+    m_Buffer->setGlobalValue("camera.projectionInv", p.inverse());
+    m_Buffer->setGlobalValue("camera.projection", p);
+    m_Buffer->setGlobalValue("camera.screenToWorld", vp.inverse());
+    m_Buffer->setGlobalValue("camera.worldToScreen", vp);
     m_Buffer->setViewProjection(v, p);
 }
 
@@ -222,7 +227,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
                 y[i] = node->y;
                 w[i] = node->w;
                 h[i] = node->h;
-                node->fill = true;
+                node->dirty = false;
             }
         }
         return tile->second.first;
@@ -305,7 +310,7 @@ void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
     {
         for(auto &tile : m_Tiles) {
             for(auto &it : tile.second.second) {
-                it->fill = false;
+                it->dirty = true;
             }
         }
     }
@@ -321,12 +326,15 @@ void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
         for(auto tiles = m_Tiles.begin(); tiles != m_Tiles.end(); ) {
             bool outdate = false;
             for(auto &it : tiles->second.second) {
-                if(it->fill == false) {
+                if(it->dirty == true) {
                     outdate = true;
                     break;
                 }
             }
             if(outdate) {
+                for(auto &it : tiles->second.second) {
+                    delete it;
+                }
                 tiles = m_Tiles.erase(tiles);
             } else {
                 ++tiles;

@@ -53,10 +53,10 @@ PointLight::PointLight() :
     Material *material = Engine::loadResource<Material>(".embedded/PointLight.mtl");
     MaterialInstance *instance = material->createInstance();
 
-    instance->setVector3("light.position",   &p_ptr->m_Position);
+    instance->setVector3("light.position", &p_ptr->m_Position);
 
-    instance->setMatrix4("light.matrix",     p_ptr->m_Matrix, 6);
-    instance->setVector4("light.tiles",      p_ptr->m_Tiles, 6);
+    instance->setMatrix4("light.matrix", p_ptr->m_Matrix, 6);
+    instance->setVector4("light.tiles",  p_ptr->m_Tiles, 6);
 
     setMaterial(instance);
 }
@@ -77,7 +77,7 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         Vector4 p = params();
 
-        Matrix4 t(Vector3(p_ptr->m_Position),
+        Matrix4 t(p_ptr->m_Position,
                   Quaternion(),
                   Vector3(p.y * 2.0f, p.y * 2.0f, p.y * 2.0f));
 
@@ -96,6 +96,8 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
         p_ptr->m_pTarget = nullptr;
         return;
     }
+
+    ICommandBuffer *buffer = pipeline->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
@@ -119,21 +121,20 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_Near, zFar);
 
     for(int32_t i = 0; i < 6; i++) {
-        Matrix4 view = (t->worldTransform() * Matrix4(rot[i].toMatrix())).inverse();
+        Matrix4 mat = (t->worldTransform() * Matrix4(rot[i].toMatrix())).inverse();
+        p_ptr->m_Matrix[i] = scale * crop * mat;
 
-        p_ptr->m_Matrix[i] = scale * crop * view;
         p_ptr->m_Tiles[i] = Vector4(static_cast<float>(x[i]) / pageWidth,
                                     static_cast<float>(y[i]) / pageHeight,
                                     static_cast<float>(w[i]) / pageWidth,
                                     static_cast<float>(h[i]) / pageHeight);
 
-        ICommandBuffer *buffer = pipeline->buffer();
         buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
         buffer->enableScissor(x[i], y[i], w[i], h[i]);
         buffer->clearRenderTarget();
         buffer->disableScissor();
 
-        buffer->setViewProjection(view, crop);
+        buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
         ObjectList filter = Camera::frustumCulling(components,
