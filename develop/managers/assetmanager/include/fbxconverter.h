@@ -9,13 +9,11 @@ class MeshSerial;
 
 class Actor;
 
-namespace fbxsdk {
-    class FbxNode;
-    class FbxMesh;
-    class FbxScene;
-};
-
-using namespace fbxsdk;
+namespace ofbx {
+    class IScene;
+    class Object;
+    class Mesh;
+}
 
 class FbxImportSettings : public IConverterSettings {
     Q_OBJECT
@@ -67,12 +65,9 @@ public:
     IConverterSettings *createSettings() const;
 
 protected:
-    Actor *importNode(FbxNode *node, FbxScene *scene, FbxImportSettings *settings, QStringList &list);
+    Actor *importObject(const ofbx::Object *element, FbxImportSettings *settings, QStringList &list);
 
-    MeshSerial *importMesh(FbxMesh *m, float scale);
-
-    void importAnimation(FbxNode *node, FbxScene *scene);
-
+    MeshSerial *importMesh(const ofbx::Mesh *m, float scale);
 };
 
 #endif // FBXCONVERTER_H

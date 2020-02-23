@@ -169,19 +169,6 @@ Product {
         qbs.installSourceBase: prefix
     }
 
-    //Group {
-    //    name: "Qt config"
-    //    condition: qbs.targetOS.contains("windows")
-    //    files: [
-    //        install.RESOURCE_ROOT + "/qt.conf"
-    //    ]
-    //    excludeFiles: pluginExcludeFiles
-    //    qbs.install: true
-    //    qbs.installDir: install.BIN_PATH + "/" + install.bundle
-    //    qbs.installPrefix: install.PREFIX
-    //    qbs.installSourceBase: prefix
-    //}
-
     Group {
         name: "Runtime DLLs"
         condition: qbs.targetOS.contains("windows")
@@ -206,24 +193,6 @@ Product {
             vspath + "/msvcp140" + ((qbs.debugInformation) ? "d" : "") + ".dll"
         ]
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "FBX Binary"
-        files: {
-            var arch = "/x86"
-            if(qbs.architecture !== "x86") {
-                arch = "/x64"
-            }
-            return "../thirdparty/fbx/lib/" + qbs.targetOS[0] + arch +"/libfbxsdk" + suffix
-        }
-        qbs.install: true
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            qbs.installDir: install.LIB_PATH + "/" + install.bundle
-        }
         qbs.installDir: install.BIN_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }

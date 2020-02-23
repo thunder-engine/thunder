@@ -7,6 +7,7 @@ Project {
 		"angelscript/angelscript.qbs",
         "bullet/bullet3.qbs",
         "next/next.qbs",
+        "ofbx/ofbx.qbs",
         "zlib/zlib.qbs",
         "physfs/physfs.qbs",
         "glfw/glfw.qbs",

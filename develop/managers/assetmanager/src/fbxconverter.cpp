@@ -14,7 +14,7 @@
 #include <QUuid>
 #include <QDebug>
 
-#include <fbxsdk.h>
+#include <ofbx.h>
 
 #include "converters/converter.h"
 #include "projectmanager.h"
@@ -29,17 +29,6 @@
 #define DATA    "Data"
 
 static Matrix3 gInvert;
-
-struct index_data {
-    int32_t vIndex;
-    int32_t uIndex;
-    int32_t xIndex;
-
-    bool operator== (const index_data &right) {
-        return (vIndex == right.vIndex) && (uIndex == right.uIndex);
-    }
-};
-typedef vector<index_data>  indexVector;
 
 FbxImportSettings::FbxImportSettings() :
         m_UseScale(false),
@@ -226,105 +215,88 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
 
     FbxImportSettings *s = static_cast<FbxImportSettings *>(settings);
 
-    FbxManager *lSdkManager = FbxManager::Create();
-    // Create an IOSettings object.
-    FbxIOSettings *ios = FbxIOSettings::Create( lSdkManager, IOSROOT );
-    lSdkManager->SetIOSettings(ios);
+    QFile fp(s->source());
+    if(fp.open(QIODevice::ReadOnly)) {
+        QByteArray data = fp.readAll();
+        fp.close();
 
-    FbxImporter *lImporter = FbxImporter::Create( lSdkManager, "" );
-    // Initialize the importer.
-    if(lImporter->Initialize(settings->source(), -1, lSdkManager->GetIOSettings()) == false) {
-        Log(Log::ERR) << "Call to KFbxImporter::Initialize() failed." ;
-        return 1;
-    }
-    // Create a new scene so it can be populated by the imported file.
-    FbxScene *lScene = FbxScene::Create(lSdkManager, "Scene");
-    // Import the contents of the file into the scene.
-    lImporter->Import(lScene);
+        ofbx::IScene *scene = ofbx::load(reinterpret_cast<const uint8_t *>(data.constData()),
+                                         data.size(),
+                                         uint64_t(ofbx::LoadFlags::TRIANGULATE));
 
-    // File format version numbers to be populated.
-    int lFileMajor, lFileMinor, lFileRevision;
-    // Populate the FBX file format version numbers with the import file.
-    lImporter->GetFileVersion(lFileMajor, lFileMinor, lFileRevision);
-
-    FbxNode *lRootNode = lScene->GetRootNode();
-
-    if(!s->useScale()) {
-        FbxGlobalSettings &global = lScene->GetGlobalSettings();
-        s->setCustomScale(static_cast<float>(global.GetSystemUnit().GetScaleFactor()) * 0.01f);
-    }
-    QStringList resources;
-
-    list<Actor *> actors;
-    for(int n = 0; n < lRootNode->GetChildCount(); n++) {
-        Actor *a = importNode(lRootNode->GetChild(n), lScene, s, resources);
-        if(a) {
-            actors.push_back(a);
+        if(!s->useScale()) {
+            const ofbx::GlobalSettings *global = scene->getGlobalSettings();
+            s->setCustomScale(static_cast<float>(global->UnitScaleFactor) * 0.01f);
         }
-    }
+        QStringList resources;
 
-    Actor *root;
-    if(actors.size() == 1) {
-        root = actors.front();
-    } else {
-        root = Engine::objectCreate<Actor>();
-        for(auto it : actors) {
-            it->setParent(root);
+        list<Actor *> actors;
+        int meshCount = scene->getMeshCount();
+        for(int i = 0; i < meshCount; ++i) {
+            const ofbx::Mesh *m = scene->getMesh(i);
+            Actor *actor = importObject(m, s, resources);
+            if(actor) {
+                actors.push_back(actor);
+            }
         }
-        Engine::replaceUUID(root, qHash(settings->destination()));
-        Engine::replaceUUID(root->transform(), qHash(QString(settings->destination()) + ".Transform"));
+
+        Actor *root;
+        if(actors.size() == 1) {
+            root = actors.front();
+        } else {
+            root = Engine::objectCreate<Actor>();
+            for(auto it : actors) {
+                it->setParent(root);
+            }
+            Engine::replaceUUID(root, qHash(settings->destination()));
+            Engine::replaceUUID(root->transform(), qHash(QString(settings->destination()) + ".Transform"));
+        }
+
+        QFile file(settings->absoluteDestination());
+        if(file.open(QIODevice::WriteOnly)) {
+            ByteArray data = Bson::save(Engine::toVariant(root));
+            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+            file.close();
+        }
+
+        for(auto it : resources) {
+            Engine::unloadResource(it.toStdString(), true);
+        }
+        Log(Log::INF) << "Mesh imported in:" << t.elapsed() << "msec";
+
+        return 0;
     }
-
-    QFile file(settings->absoluteDestination());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save(Engine::toVariant(root));
-        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
-        file.close();
-    }
-
-    lScene->Destroy(true);
-    lImporter->Destroy();
-    ios->Destroy();
-    lSdkManager->Destroy();
-
-    for(auto it : resources) {
-        Engine::unloadResource(it.toStdString(), true);
-    }
-
-    Log(Log::INF) << "Mesh imported in:" << t.elapsed() << "msec";
-
-    return 0;
+    return 1;
 }
 
-Actor *FBXConverter::importNode(FbxNode *node, FbxScene *scene, FbxImportSettings *settings, QStringList &list) {
-    FbxNodeAttribute *attrib = node->GetNodeAttribute();
-
+Actor *FBXConverter::importObject(const ofbx::Object *object, FbxImportSettings *settings, QStringList &list) {
     Actor *actor = Engine::objectCreate<Actor>();
 
-    FbxDouble3 p = node->LclTranslation.Get();
-    actor->transform()->setPosition(gInvert * (Vector3(static_cast<areal>(p[0]),
-                                                       static_cast<areal>(p[1]),
-                                                       static_cast<areal>(p[2])) * settings->customScale()));
+    ofbx::Vec3 p = object->getLocalTranslation();
+    Vector3 pos = gInvert * (Vector3(static_cast<areal>(p.x),
+                                     static_cast<areal>(p.y),
+                                     static_cast<areal>(p.z)) * settings->customScale());
+    actor->transform()->setPosition(pos);
 
-    FbxDouble3 r = node->LclRotation.Get();
-    actor->transform()->setEuler(gInvert * Vector3(static_cast<areal>(r[0]),
-                                                   static_cast<areal>(r[1]),
-                                                   static_cast<areal>(r[2])));
+    ofbx::Vec3 r = object->getLocalRotation();
+    Vector3 rot = gInvert * Vector3(static_cast<areal>(r.x),
+                                    static_cast<areal>(r.y),
+                                    static_cast<areal>(r.z));
+    actor->transform()->setEuler(rot);
 
-    FbxDouble3 s = node->LclScaling.Get();
-    actor->transform()->setScale(Vector3(static_cast<areal>(s[0]),
-                                         static_cast<areal>(s[1]),
-                                         static_cast<areal>(s[2])));
+    ofbx::Vec3 s = object->getLocalScaling();
+    Vector3 scl = Vector3(static_cast<areal>(s.x),
+                          static_cast<areal>(s.y),
+                          static_cast<areal>(s.z));
+    actor->transform()->setScale(scl);
 
-    QString path(node->GetNameOnly());
-
+    QString path(object->name);
     actor->setName(qPrintable(path));
 
-    if(attrib && attrib->GetAttributeType() == FbxNodeAttribute::eMesh) {
-        MeshSerial *mesh = importMesh(static_cast<FbxMesh *>(attrib), settings->customScale());
-
+    MeshSerial *mesh = importMesh(static_cast<const ofbx::Mesh *>(object), settings->customScale());
+    if(mesh) {
         if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
-            importAnimation(node, scene);
+            //importAnimation(node, scene);
         }
 
         QString uuid = settings->subItem(path);
@@ -355,225 +327,185 @@ Actor *FBXConverter::importNode(FbxNode *node, FbxScene *scene, FbxImportSetting
     delete actor;
 
     return nullptr;
-/*
-    if(pMesh->type == MESH_ANIMATED) {
-        pMesh->jCount = bones.size();
-        pMesh->aAnim->priority = new char[pMesh->jCount];
-
-        pMesh->jArray = new joint_data[pMesh->jCount];
-        for(int s = 0; s < pMesh->jCount; s++) {
-            KFbxNode *bone = bones[s]->GetLink();
-            KFbxNode *parent = bone->GetParent();
-            int j;
-            for(j = 0; j < pMesh->jCount; j++)
-                if(bones[j]->GetLink() == parent) break;
-
-            // Getting Joint priority (Using with animation blending)
-            int prop = 100;
-            pMesh->aAnim->priority[s] = prop;
-
-            if(j == bones.size()) {
-                pMesh->jArray[s].parent = 0; // Root Joint
-                pMesh->jArray[s].iparent = ROOT;
-            } else {
-                pMesh->jArray[s].parent = &pMesh->jArray[j];
-                pMesh->jArray[s].iparent = j;
-            }
-
-            memset(pMesh->jArray[s].name, 0, 32);
-            strncpy(pMesh->jArray[s].name, bone->GetName(), 31);
-
-            int proxy = 0;
-            pMesh->jArray[s].proxy = proxy;
-
-            int emitter	= 0;
-            pMesh->jArray[s].emitter = emitter;
-        }
-    }
-*/
 }
 
-MeshSerial *FBXConverter::importMesh(FbxMesh *m, float scale) {
+MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
     MeshSerial *mesh = new MeshSerial;
     mesh->setMode(Mesh::MODE_TRIANGLES);
 
-    vector<FbxCluster *> boneCluster;
-
-    for(int d = 0; d < m->GetDeformerCount(); d++) {
-        FbxDeformer *deformer = m->GetDeformer(d);
-        if(deformer->GetDeformerType() == FbxDeformer::eSkin) {
-            mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
-
-            FbxSkin *skin = static_cast<FbxSkin *>(deformer);
-            for(int s = 0; s < skin->GetClusterCount(); s++) {
-                FbxCluster *bone = skin->GetCluster(s);
-                uint32_t j;
-                for(j = 0; j < boneCluster.size(); j++) {
-                    if(boneCluster[j] == bone) break;
-                }
-                if(j != boneCluster.size()) {
-                    continue;
-                }
-                boneCluster.push_back(bone);
-            }
-            break;
-        }
-    }
+    const ofbx::Geometry *geom = m->getGeometry();
 
     Mesh::Lod l;
-    l.material = Engine::loadResource<Material>("{00000000-0402-0000-0000-000000000000}");
-
+    l.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
     // Export
-    FbxVector4 *verts = m->GetControlPoints();
+    uint32_t vertexCount = static_cast<uint32_t>(geom->getVertexCount());
+    l.vertices.resize(uint32_t(vertexCount));
+    vector<uint32_t> hashes(vertexCount);
 
-    FbxGeometryElementVertexColor *colors = m->GetElementVertexColor();
-    if(colors) {
-        colors->IncRefCount();
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_COLOR);
+    const ofbx::Skin *skin = geom->getSkin();
+    if(skin) {
+        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
+        l.bones.resize(vertexCount);
+        l.weights.resize(vertexCount);
     }
 
-    FbxGeometryElementUV *uv = m->GetElementUV();
-    if(uv) {
-        uv->IncRefCount();
+    const ofbx::Vec4 *colors = geom->getColors();
+    if(colors) {
+        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_COLOR);
+        l.colors.resize(uint32_t(vertexCount));
+    }
+
+    const ofbx::Vec2 *uvs = geom->getUVs();
+    if(uvs) {
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_UV0);
+        l.uv0.resize(uint32_t(vertexCount));
     } else {
         Log(Log::WRN) << "No uv exist";
     }
 
-    FbxGeometryElementNormal *normals = m->GetElementNormal();
+    const ofbx::Vec3 *normals = geom->getNormals();
     if(normals) {
-        normals->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_NORMALS);
+        l.normals.resize(uint32_t(vertexCount));
     } else {
         Log(Log::WRN) << "No normals exist";
     }
 
-    FbxGeometryElementTangent *tangents = m->GetElementTangent();
+    const ofbx::Vec3 *tangents = geom->getTangents();
     if(tangents) {
-        tangents->IncRefCount();
         mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_TANGENTS);
+        l.tangents.resize(uint32_t(vertexCount));
     } else {
         Log(Log::WRN) << "No tangents exist";
     }
 
-    indexVector indices;
+    const ofbx::Vec3 *vertices = geom->getVertices();
 
-    int tCount  = m->GetPolygonCount();
-    for(int triangle = 0; triangle < tCount; triangle++) {
-        int size = m->GetPolygonSize(triangle);
-        for(int h = 0; h < ((size == 4) ? 2 : 1); h++) {
-            for(int k = 0; k < 3; k++) {
-                index_data data;
-                data.vIndex = m->GetPolygonVertex(triangle, (k == 0) ? k : k + h);
-                data.uIndex	= m->GetTextureUVIndex(triangle, (k == 0) ? k : k + h);
-                data.xIndex = m->GetPolygonVertexIndex(triangle) + ((k == 0) ? k : k + h);
+    uint32_t indexCount = static_cast<uint32_t>(geom->getIndexCount());
+    l.indices.resize(indexCount);
 
-                uint32_t count = indices.size();
+    uint32_t count = 0;
 
-                bool create	= true;
-                for(uint32_t i = 0; i < count; i++) {
-                    if(indices[i] == data) {
-                        // Vertex already exist. Just add it into indices list
-                        l.indices.push_back(i);
-                        create	= false;
-                        break;
-                    }
-                }
+    const int *faceIndices = geom->getFaceIndices();
+    for(uint32_t i = 0; i < indexCount; ++i) {
+        int index = (i % 3 == 2) ? (-faceIndices[i] - 1) : faceIndices[i];
 
-                // Add vertex to arrays
-                if(create) {
-                    indices.push_back(data);
+        ofbx::Vec3 v = vertices[index];
+        Vector3 vertex = gInvert * (Vector3(static_cast<areal>(v.x),
+                                            static_cast<areal>(v.y),
+                                            static_cast<areal>(v.z)) * scale);
 
-                    FbxVector4 v = verts[data.vIndex];
-                    l.vertices.push_back(gInvert * (Vector3(static_cast<areal>(v[0]),
-                                                            static_cast<areal>(v[1]),
-                                                            static_cast<areal>(v[2])) * scale));
-                    l.indices.push_back(count);
+        uint32_t hash = 0;
 
-                    if(colors) {
-                        FbxColor c = colors->GetDirectArray().GetAt(data.vIndex);
-                        l.colors.push_back(Vector4(static_cast<areal>(c.mRed),
-                                                   static_cast<areal>(c.mGreen),
-                                                   static_cast<areal>(c.mBlue),
-                                                   static_cast<areal>(c.mAlpha)));
-                    }
+        Vector2 uv;
+        if(uvs) {
+            ofbx::Vec2 u = uvs[index];
+            uv = Vector2(static_cast<areal>(u.x),
+                         static_cast<areal>(u.y));
 
-                    if(normals) {
-                        switch (normals->GetReferenceMode()) {
-                            case FbxLayerElement::eDirect: {
-                                v = normals->GetDirectArray().GetAt(data.xIndex);
-                            } break;
-                            case FbxLayerElement::eIndexToDirect: {
-                                int index = normals->GetIndexArray().GetAt(data.xIndex);
-                                v = normals->GetDirectArray().GetAt(index);
-                            } break;
-                            default: {
-                                Log(Log::ERR) << "Invalid normals reference mode";
-                            } break;
-                        }
-                        l.normals.push_back(gInvert * Vector3(static_cast<areal>(v[0]),
-                                                              static_cast<areal>(v[1]),
-                                                              static_cast<areal>(v[2])));
-                    }
+            hash ^= (qHash(u.x) >> 9) ^ qHash(u.y);
+        }
 
-                    if(tangents) {
-                        switch (tangents->GetReferenceMode()) {
-                            case FbxLayerElement::eDirect: {
-                                v  = tangents->GetDirectArray().GetAt(data.xIndex);
-                            } break;
-                            case FbxLayerElement::eIndexToDirect: {
-                                int index = tangents->GetIndexArray().GetAt(data.xIndex);
-                                v  = tangents->GetDirectArray().GetAt(index);
-                            } break;
-                            default: {
-                                Log(Log::ERR) << "Invalid tangents reference mode";
-                            } break;
-                        }
-                        l.tangents.push_back(gInvert * Vector3(static_cast<areal>(v[0]),
-                                                               static_cast<areal>(v[1]),
-                                                               static_cast<areal>(v[2])));
-                    }
+        Vector3 normal;
+        if(normals) {
+            ofbx::Vec3 n = normals[index];
+            normal = gInvert * (Vector3(static_cast<areal>(n.x),
+                                        static_cast<areal>(n.y),
+                                        static_cast<areal>(n.z)));
 
-                    if(uv) {
-                        v = uv->GetDirectArray().GetAt(data.uIndex);
-                        l.uv0.push_back(Vector2(static_cast<areal>(v[0]),
-                                                static_cast<areal>(v[1])));
-                    }
+            hash ^= (qHash(n.x) >> 13) ^ qHash(n.y) ^ (qHash(n.z) >> 7);
+        }
 
-                    if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
-                        int32_t i = 0;
-                        Vector4 weights, bones;
-                        for(uint32_t b = 0; b < boneCluster.size(); b++) {
-                            int *controllIndices = boneCluster[b]->GetControlPointIndices();
-                            double *w = boneCluster[b]->GetControlPointWeights();
-
-                            float weight = 0.0f;
-                            for(int index = 0; index < boneCluster[b]->GetControlPointIndicesCount(); index++) {
-                                if(controllIndices[index] == data.vIndex) {
-                                    weight = static_cast<areal>(w[index]);
-                                    break;
-                                }
-                            }
-
-                            if(weight > 0.0f && i < 4) {
-                                bones[i] = b;
-                                weights[i] = weight;
-                                i++;
-                            }
-                        }
-
-                        l.bones.push_back(bones);
-                        l.weights.push_back(weights);
-                    }
-                }
+        bool create = true;
+        for(uint32_t x = 0; x < indexCount; ++x) {
+            if(hashes[x] == hash && l.vertices[x] == vertex) {
+                l.indices[i] = x;
+                create = false;
+                break;
             }
         }
+
+        if(create) {
+            l.indices[i] = count;
+            l.vertices[count] = vertex;
+
+            if(uvs) {
+                l.uv0[count] = uv;
+            }
+            if(normals) {
+                l.normals[count] = normal;
+            }
+            if(tangents) {
+                ofbx::Vec3 t = tangents[index];
+                l.tangents[count] = gInvert * (Vector3(static_cast<areal>(t.x),
+                                                       static_cast<areal>(t.y),
+                                                       static_cast<areal>(t.z)));
+            }
+            if(colors) {
+                ofbx::Vec4 c = colors[index];
+                l.colors[count] = Vector4(static_cast<areal>(c.x),
+                                          static_cast<areal>(c.y),
+                                          static_cast<areal>(c.z),
+                                          static_cast<areal>(c.w));
+            }
+
+            if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+                int32_t it = 0;
+                Vector4 weights, bones;
+                for(int32_t b = 0; b < skin->getClusterCount(); b++) {
+                    const ofbx::Cluster *cluster = skin->getCluster(b);
+
+                    const int32_t *controllIndices = cluster->getIndices();
+                    const double *w = cluster->getWeights();
+
+                    float weight = 0.0f;
+                    for(int index = 0; index < cluster->getIndicesCount(); index++) {
+                        if(controllIndices[index] == i) {
+                            weight = static_cast<areal>(w[index]);
+                            break;
+                        }
+                    }
+
+                    if(weight > 0.0f && i < 4) {
+                        bones[it] = b;
+                        weights[it] = weight;
+                        it++;
+                    }
+                }
+
+                l.bones[count] = bones;
+                l.weights[count] = weights;
+            }
+
+            hashes[count] = hash;
+            ++count;
+        }
+    }
+
+    l.vertices.resize(count);
+
+    if(uvs) {
+        l.uv0.resize(count);
+    }
+    if(normals) {
+        l.normals.resize(count);
+    }
+    if(tangents) {
+        l.tangents.resize(count);
+    }
+    if(colors) {
+        l.colors.resize(count);
+    }
+
+    if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+        l.bones.resize(count);
+        l.weights.resize(count);
     }
     mesh->addLod(l);
 
     return mesh;
 }
-
+/*
 void FBXConverter::importAnimation(FbxNode *node, FbxScene *scene) {
     FbxAnimStack *stack = scene->GetCurrentAnimationStack();
     for(int i = 0; i < stack->GetMemberCount(); i++) {
@@ -583,3 +515,39 @@ void FBXConverter::importAnimation(FbxNode *node, FbxScene *scene) {
         //FbxAnimCurve *xScl = node->LclScaling.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
     }
 }
+
+if(pMesh->type == MESH_ANIMATED) {
+    pMesh->jCount = bones.size();
+    pMesh->aAnim->priority = new char[pMesh->jCount];
+
+    pMesh->jArray = new joint_data[pMesh->jCount];
+    for(int s = 0; s < pMesh->jCount; s++) {
+        KFbxNode *bone = bones[s]->GetLink();
+        KFbxNode *parent = bone->GetParent();
+        int j;
+        for(j = 0; j < pMesh->jCount; j++)
+            if(bones[j]->GetLink() == parent) break;
+
+        // Getting Joint priority (Using with animation blending)
+        int prop = 100;
+        pMesh->aAnim->priority[s] = prop;
+
+        if(j == bones.size()) {
+            pMesh->jArray[s].parent = 0; // Root Joint
+            pMesh->jArray[s].iparent = ROOT;
+        } else {
+            pMesh->jArray[s].parent = &pMesh->jArray[j];
+            pMesh->jArray[s].iparent = j;
+        }
+
+        memset(pMesh->jArray[s].name, 0, 32);
+        strncpy(pMesh->jArray[s].name, bone->GetName(), 31);
+
+        int proxy = 0;
+        pMesh->jArray[s].proxy = proxy;
+
+        int emitter	= 0;
+        pMesh->jArray[s].emitter = emitter;
+    }
+}
+*/

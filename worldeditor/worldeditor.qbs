@@ -35,13 +35,13 @@ Project {
         "../thirdparty/next/inc/anim",
         "../thirdparty/physfs/inc",
         "../thirdparty/glfw/inc",
-        "../thirdparty/fbx/inc",
         "../thirdparty/zlib/src",
         "../thirdparty/libogg/src",
         "../thirdparty/libvorbis/src",
         "../thirdparty/glsl",
         "../thirdparty/spirvcross/src",
-        "../thirdparty/syntaxhighlighting/src"
+        "../thirdparty/syntaxhighlighting/src",
+        "../thirdparty/ofbx/src"
     ]
 
     QtGuiApplication {
@@ -59,6 +59,7 @@ Project {
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
         Depends { name: "syntaxhighlighting" }
+        Depends { name: "ofbx" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
@@ -75,17 +76,7 @@ Project {
         }
 
         cpp.includePaths: worldEditor.incPaths
-        cpp.libraryPaths: {
-            var arch = "/x86"
-            if(qbs.architecture !== "x86") {
-                arch = "/x64"
-            }
-            return "../thirdparty/fbx/lib/" + qbs.targetOS[0] + arch
-        }
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
-        cpp.dynamicLibraries: [
-            prefix + "fbxsdk"
-        ]
         cpp.cxxLanguageVersion: "c++14"
 
         Properties {

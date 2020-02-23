@@ -29,11 +29,11 @@ Project {
         "../thirdparty/next/inc/anim",
         "../thirdparty/physfs/inc",
         "../thirdparty/glfw/inc",
-        "../thirdparty/fbx/inc",
         "../thirdparty/zlib/src",
         "../thirdparty/quazip/src",
         "../thirdparty/glsl",
-        "../thirdparty/spirvcross/src"
+        "../thirdparty/spirvcross/src",
+        "../thirdparty/ofbx/src"
     ]
 
     QtApplication {
@@ -48,6 +48,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
+        Depends { name: "ofbx" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
         bundle.isBundle: false
@@ -59,18 +60,9 @@ Project {
             return result
         }
         cpp.includePaths: builder.incPaths
-        cpp.libraryPaths: {
-            var arch = "/x86"
-            if(qbs.architecture !== "x86") {
-                arch = "/x64"
-            }
-            return "../thirdparty/fbx/lib/" + qbs.targetOS[0] + arch
-        }
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
-        cpp.dynamicLibraries: [
-            prefix + "fbxsdk"
-        ]
+        cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
 
         Properties {
