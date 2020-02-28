@@ -58,6 +58,14 @@ void ResourceSystem::update(Scene *) {
 
                             VariantList objects = var.toList();
                             VariantList fields = objects.front().toList();
+                            auto it = std::next(fields.begin(), 4);
+                            VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
+                            for(const auto &prop : properties) {
+                                Variant v  = prop.second;
+                                if(v.type() < MetaType::USERTYPE) {
+                                    resource->setProperty(prop.first.c_str(), v);
+                                }
+                            }
                             resource->loadUserData(fields.back().toMap());
                         }
                     }

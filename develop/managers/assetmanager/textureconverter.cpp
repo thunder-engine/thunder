@@ -247,7 +247,7 @@ void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *
     texture->setWrap(Texture::WrapType(settings->wrap()));
 
     QList<QImage> sides;
-    if(texture->isCubemap()) {
+    if(settings->textureType() == TextureImportSettings::TextureType::Cubemap) {
         QList<QPoint> positions;
         float ratio = (float)img.width() / (float)img.height();
         texture->setWidth(img.width());
