@@ -131,6 +131,17 @@ void ProjectManager::loadSettings() {
                     }
                 }
             }
+            {
+                QJsonObject::iterator it = object.find(gModules);
+                if(it != doc.object().end()) {
+                    foreach(auto module, it.value().toArray()) {
+                        m_Modules << module.toString();
+                    }
+                }
+                if(m_Modules.indexOf("RenderGL") == -1) {
+                    m_Modules.append("RenderGL");
+                }
+            }
         }
     }
 }
@@ -158,6 +169,10 @@ void ProjectManager::saveSettings() {
         object[gPlatforms] = QJsonArray::fromStringList(m_Platforms);
     }
 
+    if(!m_Modules.isEmpty()) {
+        object[gModules] = QJsonArray::fromStringList(m_Modules);
+    }
+
     doc.setObject(object);
 
     QFile file(m_ProjectPath.absoluteFilePath());
@@ -165,6 +180,10 @@ void ProjectManager::saveSettings() {
         file.write(doc.toJson());
         file.close();
     }
+}
+
+QStringList ProjectManager::modules() const {
+    return m_Modules;
 }
 
 QStringList ProjectManager::platforms() const {

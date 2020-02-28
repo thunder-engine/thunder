@@ -15,6 +15,7 @@ const QString gIcon("icon");
 const QString gSubItems("subitems");
 const QString gSettings("settings");
 const QString gPlatforms("platforms");
+const QString gModules("modules");
 
 const QString gProjectExt(".forge");
 const QString gMetaExt(".set");

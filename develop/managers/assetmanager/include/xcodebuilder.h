@@ -4,6 +4,7 @@
 #include <converters/builder.h>
 
 class QProcess;
+class ProjectManager;
 
 class XcodeBuilder : public IBuilder {
 public:

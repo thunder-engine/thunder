@@ -7,6 +7,7 @@
 #include <QFileInfo>
 
 class QProcess;
+class ProjectManager;
 
 class QbsBuilder : public IBuilder {
     Q_OBJECT

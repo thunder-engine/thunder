@@ -6,13 +6,17 @@
 
 #include <rendergl.h>
 
+//+{ModuleIncludes}
+//-{ModuleIncludes}
+
 #include "plugin.cpp"
 
 int thunderMain(Engine *engine) {
     Log::setLogLevel(Log::DBG);
 
     if(engine->init()) {
-        engine->addModule(new RenderGL(engine));
+        //+{RegisterModules}
+        //-{RegisterModules}
         engine->addModule(new ${Project_Name}(engine));
 
         engine->start();

@@ -57,6 +57,8 @@ public:
 
     QString                     myProjectsPath              () const { return m_MyProjectsPath.absoluteFilePath(); }
 
+    QStringList                 modules                     () const;
+
     QStringList                 platforms                   () const;
     IPlatform                  *supportedPlatform           (const QString &platform);
     void                        setSupportedPlatform        (IPlatform *platform);
@@ -86,6 +88,7 @@ private:
     QString                     m_FirstMap;
 
     QStringList                 m_Platforms;
+    QStringList                 m_Modules;
     IPlatform                  *m_pCurrentPlatform;
 
     QMap<QString, IPlatform *>  m_SupportedPlatforms;

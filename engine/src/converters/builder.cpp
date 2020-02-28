@@ -7,13 +7,17 @@
 #include <QMetaProperty>
 #include <QDir>
 #include <QDirIterator>
+#include <QDebug>
 
-const QString gFilesList("${filesList}");
+const QString gFilesList("{FilesList}");
 
-const QString gRegisterComponents("${RegisterComponents}");
-const QString gUnregisterComponents("${UnregisterComponents}");
-const QString gComponentNames("${ComponentNames}");
-const QString gIncludes("${Includes}");
+const QString gRegisterModules("{RegisterModules}");
+const QString gModuleIncludes("{ModuleIncludes}");
+
+const QString gRegisterComponents("{RegisterComponents}");
+const QString gUnregisterComponents("{UnregisterComponents}");
+const QString gComponentNames("{ComponentNames}");
+const QString gIncludes("{Includes}");
 
 const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
 
@@ -32,28 +36,66 @@ uint8_t IBuilder::convertFile(IConverterSettings *) {
     return 1;
 }
 
-void IBuilder::copyTemplate(const QString &src, const QString &dst, QStringMap &values) {
-    QFile file(src);
+void IBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap &values) {
+    QFile file(dst);
+    if(!file.exists()) {
+        file.setFileName(src);
+    }
+
     if(file.open(QFile::ReadOnly | QFile::Text)) {
-        QByteArray data(file.readAll());
+        QByteArray data = file.readLine();
+
+        QByteArray out;
+
+        int begin = -1;
+        int row = 0;
+        while(!data.isNull()) {
+            int index = -1;
+            if(begin > -1) {
+                index = data.indexOf(QString("//-"));
+                if(index != -1) {
+                    begin = -1;
+                    out += data;
+                }
+            } else {
+                QMapIterator<QString, QString> it(values);
+                while(it.hasNext()) {
+                    it.next();
+                    if(it.key().at(0) == '$') {
+                        data.replace(it.key(), qPrintable(it.value()));
+                    }
+                }
+
+                out += data;
+            }
+
+            index = data.indexOf(QString("//+"));
+            if(index != -1) {
+                begin = row;
+
+                QString value = values.value(data.mid(index + 3).trimmed());
+                if(!value.isEmpty()) {
+                    out += value;
+                }
+            }
+
+            data = file.readLine();
+            row++;
+        }
         file.close();
 
-        QMapIterator<QString, QString> it(values);
-        while(it.hasNext()) {
-            it.next();
-            data.replace(it.key(), qPrintable(it.value()));
-        }
         QDir dir;
         dir.mkpath(QFileInfo(dst).absolutePath());
-        QFile gen(dst);
-        if(gen.open(QFile::ReadWrite | QFile::Text | QFile::Truncate)) {
-            gen.write(data);
-            gen.close();
+
+        file.setFileName(dst);
+        if(file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+            file.write(out);
+            file.close();
         }
     }
 }
 
-void IBuilder::generateLoader(const QString &dst) {
+void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     QStringMap classes;
     // Generate plugin loader
     foreach(QString it, m_Sources) {
@@ -61,7 +103,7 @@ void IBuilder::generateLoader(const QString &dst) {
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QByteArray data = file.readLine();
             bool valid      = true;
-            while(!data.isEmpty()) {
+            while(!data.isNull()) {
                 if(!valid && data.indexOf("*/") != -1) {
                     valid = true;
                 }
@@ -84,21 +126,29 @@ void IBuilder::generateLoader(const QString &dst) {
     m_Values[gRegisterComponents].clear();
     m_Values[gUnregisterComponents].clear();
     m_Values[gComponentNames].clear();
-
-    QStringList includes;
-    QMapIterator<QString, QString> it(classes);
-    while(it.hasNext()) {
-        it.next();
-        includes << "#include \"" + it.value() + "\"\n";
-        m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_pEngine);\n\t\t");
-        m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_pEngine);\n\t\t");
-        m_Values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n\t\t");
+    m_Values[gRegisterModules].clear();
+    {
+        QStringList includes;
+        QMapIterator<QString, QString> it(classes);
+        while(it.hasNext()) {
+            it.next();
+            includes << "#include \"" + it.value() + "\"\n";
+            m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_pEngine);\n");
+            m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_pEngine);\n");
+            m_Values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n");
+        }
+        includes.removeDuplicates();
+        m_Values[gIncludes] = includes.join("");
     }
-    includes.removeDuplicates();
-    m_Values[gIncludes] = includes.join("");
+    {
+        for(QString it : modules) {
+            m_Values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
+            m_Values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
+        }
+    }
 
-    copyTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_Values);
-    copyTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
+    updateTemplate(dst + "/plugin.cpp", project() + "plugin.cpp", m_Values);
+    updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
 }
 
 void IBuilder::rescanSources(const QString &path) {
@@ -122,8 +172,8 @@ bool IBuilder::isEmpty() const {
 QString IBuilder::formatList(const QStringList &list) {
     bool first  = true;
     QString result;
-    foreach(QString it, list) {
-        result += QString("%2\n\t\t\t\"%1\"").arg(it).arg((!first) ? "," : "");
+    for(int i = 0; i < list.size(); ++i) {
+        result += QString("\t\t\t\"%1\"\n%2").arg(list.at(i)).arg((i < (list.size() - 1)) ? "," : "");
         first   = false;
     }
     return result;

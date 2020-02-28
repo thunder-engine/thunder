@@ -5,8 +5,6 @@
 
 #include <QMap>
 
-class ProjectManager;
-
 class NEXT_LIBRARY_EXPORT IBuilder : public IConverter {
     Q_OBJECT
 public:
@@ -31,8 +29,9 @@ public:
     bool isOutdated () const { return m_Outdated; }
 
 protected:
-    void copyTemplate (const QString &src, const QString &dst, QStringMap &values);
-    void generateLoader (const QString &dst);
+    void updateTemplate (const QString &src, const QString &dst, QStringMap &values);
+
+    void generateLoader (const QString &dst, const QStringList &modules);
 
     QString formatList(const QStringList &list);
 

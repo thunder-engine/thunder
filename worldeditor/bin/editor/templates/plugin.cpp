@@ -3,17 +3,20 @@
 
 #include <module.h>
 
-${Includes}
+//+{Includes}
+//-{Includes}
 
 class ${Project_Name} : public Module {
 public:
     ${Project_Name}             (Engine *engine) :
             m_pEngine(engine) {
-        ${RegisterComponents}
+        //+{RegisterComponents}
+        //-{RegisterComponents}
     }
 
     ~${Project_Name}            () {
-        ${UnregisterComponents}
+        //+{UnregisterComponents}
+        //-{UnregisterComponents}
     }
 
     const char                 *description             () const {
@@ -30,7 +33,8 @@ public:
 
     StringList                  components              () const {
         StringList result;
-        ${ComponentNames}
+        //+{ComponentNames}
+        //-{ComponentNames}
         return result;
     }
 

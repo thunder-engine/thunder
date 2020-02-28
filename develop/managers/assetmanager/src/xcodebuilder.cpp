@@ -56,11 +56,11 @@ bool XcodeBuilder::buildProject() {
             m_Values[gLaunchImage] = "";
         }
 
-        generateLoader(m_pMgr->templatePath());
+        generateLoader(m_pMgr->templatePath(), m_pMgr->modules());
 
-        copyTemplate(m_pMgr->templatePath() + "/project.pbxproj", m_Project + m_pMgr->projectName() + ".xcodeproj/project.pbxproj", m_Values);
-        copyTemplate(m_pMgr->templatePath() + "/LaunchScreen.storyboard", m_Project + "LaunchScreen.storyboard", m_Values);
-        copyTemplate(m_pMgr->templatePath() + "/Info.plist", m_Project + "Info.plist", m_Values);
+        updateTemplate(m_pMgr->templatePath() + "/project.pbxproj", m_Project + m_pMgr->projectName() + ".xcodeproj/project.pbxproj", m_Values);
+        updateTemplate(m_pMgr->templatePath() + "/LaunchScreen.storyboard", m_Project + "LaunchScreen.storyboard", m_Values);
+        updateTemplate(m_pMgr->templatePath() + "/Info.plist", m_Project + "Info.plist", m_Values);
 
         m_Outdated = false;
     }

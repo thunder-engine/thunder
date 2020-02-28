@@ -116,7 +116,7 @@ void QbsBuilder::generateProject() {
         m_Values[QString("${%1}").arg(property.name())] = property.read(m_pMgr).toString();
     }
 
-    generateLoader(m_pMgr->templatePath());
+    generateLoader(m_pMgr->templatePath(), m_pMgr->modules());
 
     m_Values[gIncludePaths]   = formatList(m_IncludePath);
     m_Values[gLibraryPaths]   = formatList(m_LibPath);
@@ -127,7 +127,7 @@ void QbsBuilder::generateProject() {
     m_Values[gResourceDir]    = info.absolutePath() + "/res";
     m_Values[gAssetsPaths]    = ProjectManager::instance()->importPath();
 
-    copyTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", m_Values);
+    updateTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", m_Values);
 }
 
 bool QbsBuilder::buildProject() {
@@ -209,36 +209,39 @@ QString QbsBuilder::builderVersion() {
 }
 
 void QbsBuilder::builderInit() {
-    {
-        QProcess qbs(this);
-        qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
-        if(qbs.waitForStarted()) {
-            qbs.waitForFinished();
+    if(!checkProfiles()) {
+        {
+            QProcess qbs(this);
+            qbs.setWorkingDirectory(m_Project);
+            qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "setup-toolchains" << "--detect" << m_Settings);
+            if(qbs.waitForStarted()) {
+                qbs.waitForFinished();
+            }
+        }
+        {
+            SettingsManager *settings = SettingsManager::instance();
+
+            QString sdk = settings->property(qPrintable(gAndroidSdk)).value<FilePath>().filePath();
+            if(!sdk.isEmpty()) {
+                QStringList args;
+                args << "setup-android" << m_Settings;
+                args << "--sdk-dir" << sdk;
+                args << "--ndk-dir" << settings->property(qPrintable(gAndroidNdk)).value<FilePath>().filePath();
+                args << "android";
+
+                QProcess qbs(this);
+                QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+                env.insert("JAVA_HOME", settings->property(qPrintable(gAndroidJava)).value<FilePath>().path());
+                qbs.setProcessEnvironment(env);
+                qbs.setWorkingDirectory(m_Project);
+                qbs.start(m_QBSPath.absoluteFilePath(), args);
+                if(qbs.waitForStarted()) {
+                    qbs.waitForFinished();
+                    qDebug() << qbs.readAllStandardError().toStdString().c_str();
+                }
+            }
         }
     }
-    {
-        SettingsManager *settings = SettingsManager::instance();
-
-        QStringList args;
-        args << "setup-android" << m_Settings;
-        args << "--sdk-dir" << settings->property(qPrintable(gAndroidSdk)).value<FilePath>().filePath();
-        args << "--ndk-dir" << settings->property(qPrintable(gAndroidNdk)).value<FilePath>().filePath();
-        args << "android";
-
-        QProcess qbs(this);
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert("JAVA_HOME", settings->property(qPrintable(gAndroidJava)).value<FilePath>().path());
-        qbs.setProcessEnvironment(env);
-        qbs.setWorkingDirectory(m_Project);
-        qbs.start(m_QBSPath.absoluteFilePath(), args);
-        if(qbs.waitForStarted()) {
-            qbs.waitForFinished();
-            qDebug() << qbs.readAllStandardError().toStdString().c_str();
-        }
-    }
-
-    checkProfiles();
 }
 
 void QbsBuilder::readOutput() {

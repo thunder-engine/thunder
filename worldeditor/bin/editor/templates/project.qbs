@@ -27,8 +27,11 @@ Project {
     DynamicLibrary {
         condition: desktop
         name: "${Project_Name}-Editor"
-        files: [ ${filesList},
-            "plugin.cpp" ]
+        files: [
+            "plugin.cpp",
+            //+{FilesList}
+            //-{FilesList}
+        ]
         Depends { name: "cpp" }
         cpp.cxxLanguageVersion: "c++14"
         cpp.defines: ["NEXT_SHARED"]
@@ -52,9 +55,12 @@ Project {
         name: "${Project_Name}"
         consoleApplication: false
 
-        files: [ ${filesList},
+        files: [
             "application.cpp",
-            "plugin.cpp" ]
+            "plugin.cpp",
+            //+{FilesList}
+            //-{FilesList}
+        ]
         Depends { name: "cpp" }
         Depends { name: "bundle" }
 
