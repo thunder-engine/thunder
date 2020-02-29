@@ -81,15 +81,17 @@ AmbientOcclusion::AmbientOcclusion() :
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.mtl");
         if(mtl) {
-            mtl->setTexture("ssaoSample", m_pSSAO);
-
+            mtl->setTexture("ssaoSample", nullptr);
             m_pBlur = mtl->createInstance();
+            m_pBlur->setTexture("ssaoSample", m_pSSAO);
         }
     }
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
         if(mtl) {
+            mtl->setTexture(SSAO_MAP, nullptr);
             m_pOcclusion = mtl->createInstance();
+            m_pOcclusion->setTexture(SSAO_MAP, m_pResultTexture);
         }
     }
 }
@@ -115,8 +117,6 @@ RenderTexture *AmbientOcclusion::draw(RenderTexture *source, ICommandBuffer &buf
             buffer.setViewport(0, 0, source->width(), source->height());
             buffer.setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
                                                            source->width(), source->height()));
-
-            buffer.setGlobalTexture(SSAO_MAP, m_pResultTexture);
         }
 
         if(m_pOcclusion) {
