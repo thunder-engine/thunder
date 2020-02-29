@@ -141,6 +141,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     for(auto it : filter) {
         static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
     }
+    buffer->resetViewProjection();
 }
 /*!
     \internal

@@ -143,6 +143,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
         }
+        buffer->resetViewProjection();
     }
 }
 /*!
