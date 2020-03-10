@@ -74,23 +74,8 @@ Timeline::Timeline(QWidget *parent) :
     connect(ui->treeView, SIGNAL(collapsed(const QModelIndex)), m_pModel, SLOT(onCollapsed(const QModelIndex)));
 
     m_ContentMenu.addAction(tr("Remove Properties"), this, SLOT(onRemoveProperty()));
-/*
-    ui->record->hide();
-    ui->begin->hide();
-    ui->previous->hide();
-    ui->play->hide();
-    ui->pause->hide();
-    ui->next->hide();
-    ui->end->hide();
 
-    ui->curve->hide();
-    ui->flatKey->hide();
-    ui->breakKey->hide();
-
-    ui->clipBox->hide();
-
-    ui->clipBox->hide();
-*/
+    ui->toolBar->hide();
 }
 
 Timeline::~Timeline() {
@@ -219,6 +204,10 @@ void Timeline::onChanged(Object::ObjectList objects, const QString &property) {
     for(auto it : objects) {
         onUpdated(it, property);
     }
+}
+
+void Timeline::showBar() {
+    ui->toolBar->show();
 }
 
 void Timeline::onUpdated(Object *object, const QString &property) {

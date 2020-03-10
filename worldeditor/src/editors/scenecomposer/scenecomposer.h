@@ -59,6 +59,8 @@ private:
     void                    saveWorkspace                               ();
     void                    resetWorkspace                              ();
 
+    void                    findWorkspaces                              (const QString &dir);
+
     Ui::SceneComposer      *ui;
 
     Engine                 *m_pEngine;

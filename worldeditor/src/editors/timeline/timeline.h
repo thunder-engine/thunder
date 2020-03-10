@@ -34,6 +34,8 @@ public slots:
 
     void                    onChanged               (Object::ObjectList objects, const QString &property);
 
+    void                    showBar                 ();
+
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();

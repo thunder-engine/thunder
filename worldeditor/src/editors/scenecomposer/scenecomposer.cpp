@@ -184,15 +184,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
 
-    QDirIterator it(":/Workspaces", QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QFileInfo info(it.next());
-        QAction *action = new QAction(info.baseName(), ui->menuWorkspace);
-        action->setCheckable(true);
-        action->setData(info.filePath());
-        ui->menuWorkspace->insertAction(ui->actionReset_Workspace, action);
-        connect(action, SIGNAL(triggered()), this, SLOT(onWorkspaceActionClicked()));
-    }
+    findWorkspaces(":/Workspaces");
+    findWorkspaces("workspaces");
     ui->menuWorkspace->insertSeparator(ui->actionReset_Workspace);
 
     ui->actionAbout->setText(tr("About %1...").arg(EDITOR_NAME));
@@ -518,6 +511,8 @@ void SceneComposer::onOpenProject(const QString &path) {
         action->setProperty(qPrintable(gPlatforms), it);
         connect(action, &QAction::triggered, this, &SceneComposer::onBuildProject);
     }
+
+    ui->timeline->showBar();
 }
 
 void SceneComposer::onNewProject() {
@@ -756,4 +751,18 @@ void SceneComposer::on_actionAbout_triggered() {
 void SceneComposer::on_actionNew_Object_triggered() {
     Actor *actor = Engine::objectCreate<Actor>("NewActor", m_pMap);
     actor->transform()->setPosition(0.0f);
+}
+
+void SceneComposer::findWorkspaces(const QString &dir) {
+    QDirIterator it(dir, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QFileInfo info(it.next());
+        if(!info.baseName().isEmpty()) {
+            QAction *action = new QAction(info.baseName(), ui->menuWorkspace);
+            action->setCheckable(true);
+            action->setData(info.filePath());
+            ui->menuWorkspace->insertAction(ui->actionReset_Workspace, action);
+            connect(action, SIGNAL(triggered()), this, SLOT(onWorkspaceActionClicked()));
+        }
+    }
 }

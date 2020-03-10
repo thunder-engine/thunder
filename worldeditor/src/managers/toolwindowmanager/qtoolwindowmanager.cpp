@@ -655,6 +655,7 @@ void QToolWindowManager::restoreState(const QVariant &data)
         return;
     }
     moveToolWindows(d->m_toolWindows, NoArea);
+    d->simplifyLayout();
     QToolWindowManagerWrapper *mainWrapper = findChild<QToolWindowManagerWrapper*>();
     if (!mainWrapper) {
         qWarning("can't find main wrapper");
@@ -806,7 +807,9 @@ QAbstractToolWindowManagerArea *QToolWindowManagerPrivate::restoreAreaState(cons
 QVariantMap QToolWindowManagerPrivate::saveSplitterState(QSplitter *splitter)
 {
     QVariantMap result;
-    result[QLatin1String("state")] = splitter->saveState();
+    QByteArray state = splitter->saveState();
+    result[QLatin1String("state")] = state;
+
     result[QLatin1String("type")] = QLatin1String("splitter");
     QVariantList items;
     for (int i = 0; i < splitter->count(); i++) {
@@ -828,25 +831,41 @@ QVariantMap QToolWindowManagerPrivate::saveSplitterState(QSplitter *splitter)
     return result;
 }
 
-QSplitter *QToolWindowManagerPrivate::restoreSplitterState(const QVariantMap &data)
+QWidget *QToolWindowManagerPrivate::restoreSplitterState(const QVariantMap &data)
 {
-    //Q_Q(QToolWindowManager);
-    if (data[QLatin1String("items")].toList().count() < 2)
-        qWarning("invalid splitter encountered");
+    auto items = data[QLatin1String("items")].toList();
+    if (items.count() < 2) {
+        qWarning() << "invalid splitter encountered" << items.count();
+        if(items.count() == 0) {
+            return nullptr;
+        }
+    }
 
     QSplitter *splitter = createAndSetupSplitter();
-    foreach (QVariant itemData, data[QLatin1String("items")].toList()) {
+    foreach(QVariant itemData, items) {
         QVariantMap itemValue = itemData.toMap();
         QString itemType = itemValue[QLatin1String("type")].toString();
         if (itemType == QLatin1String("splitter")) {
-            splitter->addWidget(restoreSplitterState(itemValue));
+            QWidget *widget = restoreSplitterState(itemValue);
+            if(widget) {
+                splitter->addWidget(widget);
+            }
         } else if (itemType == QLatin1String("area")) {
             splitter->addWidget(restoreAreaState(itemValue));
         } else {
             qWarning("unknown item type");
         }
     }
-    splitter->restoreState(data[QLatin1String("state")].toByteArray());
+
+    if(splitter->count() == 1) {
+        splitter->setParent(nullptr);
+        splitter->deleteLater();
+        return splitter->widget(0);
+    }
+
+    QByteArray state = data[QLatin1String("state")].toByteArray();
+    splitter->restoreState(state);
+
     return splitter;
 }
 

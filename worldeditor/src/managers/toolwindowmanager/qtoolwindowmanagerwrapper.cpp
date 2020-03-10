@@ -127,10 +127,16 @@ void QToolWindowManagerWrapper::restoreState(const QVariantMap &data)
 {
     restoreGeometry(data[QLatin1String("geometry")].toByteArray());
     if (layout()->count() > 0) {
-        qWarning("wrapper is not empty");
-        return;
+        for(int i = 0; i < layout()->count(); i++) {
+            QSplitter *invalidSplitter = qobject_cast<QSplitter *>(layout()->itemAt(i)->widget());
+            if(invalidSplitter) {
+                invalidSplitter->hide();
+                invalidSplitter->setParent(nullptr);
+                invalidSplitter->deleteLater();
+            }
+        }
     }
-    QToolWindowManagerPrivate * const manager_d = m_manager->d_func();
+    QToolWindowManagerPrivate *const manager_d = m_manager->d_func();
     if (data.contains(QLatin1String("splitter"))) {
         layout()->addWidget(manager_d->restoreSplitterState(data[QLatin1String("splitter")].toMap()));
     } else if (data.contains(QLatin1String("area"))) {

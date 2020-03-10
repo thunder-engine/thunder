@@ -146,7 +146,7 @@ public:
     QAbstractToolWindowManagerArea *restoreAreaState(const QVariantMap& data);
 
     QVariantMap saveSplitterState(QSplitter *splitter);
-    QSplitter *restoreSplitterState(const QVariantMap& data);
+    QWidget *restoreSplitterState(const QVariantMap& data);
     void findSuggestions(QToolWindowManagerWrapper *wrapper);
     QRect sideSensitiveArea(QWidget *widget, QToolWindowManager::ReferenceType side);
     QRect sidePlaceHolderRect(QWidget *widget, QToolWindowManager::ReferenceType side);
