@@ -219,6 +219,17 @@ public:
     }
 };
 
+class FWidth : public MathFunction {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE FWidth() { m_Params << x; }
+
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+        return compile(m_pNode, "fwidth", value, link, depth, size);
+    }
+};
+
 
 class Abs : public MathFunction {
     Q_OBJECT

@@ -200,7 +200,7 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
     //m_pModel->blockSignals(false);
 }
 
-void Timeline::onChanged(Object::ObjectList objects, const QString &property) {
+void Timeline::onChanged(Object::ObjectList objects, const QString property) {
     for(auto it : objects) {
         onUpdated(it, property);
     }
@@ -210,11 +210,7 @@ void Timeline::showBar() {
     ui->toolBar->show();
 }
 
-void Timeline::onUpdated(Object *object, const QString &property) {
-    m_pModel->setController(m_pController);
-    ui->clipBox->clear();
-    ui->clipBox->addItems(m_pModel->clips());
-
+void Timeline::onUpdated(Object *object, const QString property) {
     if(object && !property.isEmpty() && ui->record->isChecked()) {
         AnimationController *controller = findController(object);
         if(controller) {
@@ -295,11 +291,7 @@ void Timeline::onUpdated(Object *object, const QString &property) {
                         clip->m_Tracks.sort(compare);
                     }
                 }
-
-                m_pModel->setController(m_pController);
                 m_pModel->updateController();
-                ui->clipBox->clear();
-                ui->clipBox->addItems(m_pModel->clips());
                 onModified();
             }
         }

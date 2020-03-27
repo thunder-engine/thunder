@@ -30,9 +30,9 @@ signals:
 public slots:
     void                    onObjectSelected        (Object::ObjectList objects);
 
-    void                    onUpdated               (Object *object, const QString &property);
+    void                    onUpdated               (Object *object, const QString property);
 
-    void                    onChanged               (Object::ObjectList objects, const QString &property);
+    void                    onChanged               (Object::ObjectList objects, const QString property);
 
     void                    showBar                 ();
 

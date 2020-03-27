@@ -4,7 +4,7 @@ import QtQuick.Controls 2.3
 Rectangle {
     id: curveEditor
 
-    color: "#f0808080"
+    color: "#80808080"
     clip: true
 
     focus: true
@@ -56,10 +56,7 @@ Rectangle {
         target: clipModel
         onLayoutChanged: {
             curve = undefined
-            var count = clipModel.rowCount()
-            if(count >= row) {
-                curve = clipModel.trackData(row)
-            }
+            curve = clipModel.trackData(row)
             canvas.requestPaint()
         }
 
@@ -139,6 +136,7 @@ Rectangle {
                     }
 
                     context.strokeStyle = theme.colors[i]
+                    context.fillStyle = Qt.rgba(1,0.5,0)
                     context.beginPath()
 
                     var keysNumber = curve[i].length - 1
@@ -178,40 +176,45 @@ Rectangle {
                         key1 = curve[selectCol][selectInd + 1]
                         px1 = toScreenSpaceX(key1[0])
                         py1 = -toScreenSpaceY(key1[offset])
-
+                        // Right tangent
                         d = 0
                         if((selectInd + 1) < (curve[selectCol].length - 1)) {
                             key0 = curve[selectCol][selectInd + 2]
                             d = (px1 - toScreenSpaceX(key0[0])) * 0.5
+
+                            tx1 = -d
+                            ty1 = -toScreenSpaceY(key1[rightOffset]) - py1
+
+                            var l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
+                            tx1 = l * tx1 * dist
+                            ty1 = l * ty1 * dist
+
+                            context.beginPath()
+                            context.moveTo(px1, py1)
+                            context.lineTo(tx1 + px1, ty1 + py1)
+                            context.stroke()
+                            context.fillRect(tx1 + px1 - 2, ty1 + py1 - 2, 4, 4);
                         }
-                        tx1 = -d
-                        ty1 = -toScreenSpaceY(key1[rightOffset]) - py1
 
-                        var l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
-                        tx1 = l * tx1 * dist
-                        ty1 = l * ty1 * dist
-
-                        context.beginPath()
-                        context.moveTo(px1, py1)
-                        context.lineTo(tx1 + px1, ty1 + py1)
-                        context.stroke()
-
+                        // Left tangent
                         d = 0
                         if((selectInd - 1) >= 0) {
                             key0 = curve[selectCol][selectInd]
                             d = (px1 - toScreenSpaceX(key0[0])) * 0.5
+
+                            tx1 = -d
+                            ty1 = -toScreenSpaceY(key1[leftOffset]) - py1
+
+                            l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
+                            tx1 = l * tx1 * dist
+                            ty1 = l * ty1 * dist
+
+                            context.beginPath()
+                            context.moveTo(px1, py1)
+                            context.lineTo(tx1 + px1, ty1 + py1)
+                            context.stroke()
+                            context.fillRect(tx1 + px1 - 2, ty1 + py1 - 2, 4, 4);
                         }
-                        tx1 = -d
-                        ty1 = -toScreenSpaceY(key1[leftOffset]) - py1
-
-                        l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
-                        tx1 = l * tx1 * dist
-                        ty1 = l * ty1 * dist
-
-                        context.beginPath()
-                        context.moveTo(px1, py1)
-                        context.lineTo(tx1 + px1, ty1 + py1)
-                        context.stroke()
                     }
                 }
                 context.setTransform(1, 0, 0, 1, 0, 0)
@@ -221,18 +224,16 @@ Rectangle {
 
     Repeater {
         model: Math.ceil(curveEditor.height / valueStep)
-        Rectangle {
+        Item {
             anchors.left: curveEditor.left
-            height: 1
-            width: 50
-            color: theme.hoverColor
+            anchors.right: curveEditor.right
             y: index * valueStep + (posY % valueStep)
 
             property int shift: posY / valueStep
             Label {
                 anchors.bottom: parent.top
-                anchors.right: parent.right
-                color: theme.hoverColor
+                anchors.left: parent.left
+                color: theme.textColor
                 text: {
                     var value = -(index - parent.shift) * valueScale
                     return value.toLocaleString(Qt.locale("en_EN"), 'f', 2)
@@ -337,13 +338,11 @@ Rectangle {
                     }
                 }
 
-                Rectangle {
+                Item {
                     id: leftTangent
                     visible: (selectInd == index) && (selectCol == points.col) && (index > 0)
-                    color: "#a0606060"
-                    border.color: theme.textColor
-                    height: 7
-                    width: 7
+                    height: 16
+                    width: 16
 
                     property real d: {
                         var result = 0
@@ -357,8 +356,8 @@ Rectangle {
                         var ty1 = -toScreenSpaceY(item.key[canvas.leftOffset]) - py1
 
                         var l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
-                        x = l * tx1 * canvas.dist
-                        y = l * ty1 * canvas.dist
+                        x = l * tx1 * canvas.dist - width * 0.5
+                        y = l * ty1 * canvas.dist - height * 0.5
 
                         return result
                     }
@@ -377,7 +376,6 @@ Rectangle {
                         drag.onActiveChanged: {
                             if(!drag.active) {
                                 clipModel.setTrackData(row, curve)
-                                selectKey(row, selectCol, selectInd)
                             }
                         }
 
@@ -394,13 +392,11 @@ Rectangle {
                     }
                 }
 
-                Rectangle {
+                Item {
                     id: rightTangent
                     visible: (selectInd == index) && (selectCol == points.col) && ((index + 1) < (curve[points.col].length - 1))
-                    color: "#a0606060"
-                    border.color: theme.textColor
-                    height: 7
-                    width: 7
+                    height: 16
+                    width: 16
 
                     property real d: {
                         var result = 0
@@ -414,8 +410,8 @@ Rectangle {
                         var ty1 = -toScreenSpaceY(item.key[canvas.rightOffset]) - py1
 
                         var l = (1.0 / Math.sqrt(tx1 * tx1 + ty1 * ty1))
-                        x = l * tx1 * canvas.dist
-                        y = l * ty1 * canvas.dist
+                        x = l * tx1 * canvas.dist - width * 0.5
+                        y = l * ty1 * canvas.dist - height * 0.5
 
                         return result
                     }
@@ -434,7 +430,6 @@ Rectangle {
                         drag.onActiveChanged: {
                             if(!drag.active) {
                                 clipModel.setTrackData(row, curve)
-                                selectKey(row, selectCol, selectInd)
                             }
                         }
 
@@ -472,7 +467,7 @@ Rectangle {
                     var key = curve[selectCol][selectInd + 1]
                     if(key !== undefined) {
                         var value = key[0] / 1000.0
-                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2).replace('.', ':')
+                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 3)
                     }
                 }
                 return ""
@@ -499,7 +494,7 @@ Rectangle {
                     var key = curve[selectCol][selectInd + 1]
                     if(key !== undefined) {
                         var value = key[canvas.offset]
-                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2) * 1
+                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 3) * 1
                     }
                 }
                 return ""

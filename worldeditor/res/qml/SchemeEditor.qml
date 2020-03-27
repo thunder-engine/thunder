@@ -206,6 +206,7 @@ Rectangle {
         property int translateX: rect.width / 2
         property int translateY: rect.height / 2
         property string linkColor: "white"
+        property string hoverLinkColor: "red"
 
         property int mouseX: 0
         property int mouseY: 0
@@ -267,7 +268,7 @@ Rectangle {
                         context.stroke()
                     }
                 } else {
-                    context.strokeStyle = "red"
+                    context.strokeStyle = hoverLinkColor
                     x0 += (width + border) / 2
                     y0 += (nodeHeight(nodes[selectNode]) + border) / 2
                     context.beginPath()

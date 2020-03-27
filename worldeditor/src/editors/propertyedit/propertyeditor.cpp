@@ -311,10 +311,10 @@ void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
 }
 
 void PropertyEditor::onInsertKeyframe() {
-    QAction *action     = static_cast<QAction *>(sender());
-    NextObject *next    = action->property("object").value<NextObject *>();
+    QAction *action = static_cast<QAction *>(sender());
+    NextObject *next = action->property("object").value<NextObject *>();
     if(next) {
-        QStringList list    = action->property("property").toString().split('/');
-        emit next->changed(next->findChild(list), list.front());
+        QStringList list = action->property("property").toString().split('/');
+        emit next->changed(next->findChild(list), list.back());
     }
 }

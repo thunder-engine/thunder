@@ -28,12 +28,12 @@ public slots:
     void                        onUpdated               ();
 
 signals:
-    void                        aboutToBeChanged        (Object *object, const QString &property, const Variant &value);
-    void                        changed                 (Object *object, const QString &property);
+    void                        aboutToBeChanged        (Object *object, const QString property, const Variant &value);
+    void                        changed                 (Object *object, const QString property);
 
     void                        updated                 ();
 
-    void                        deleteComponent         (const QString &name);
+    void                        deleteComponent         (const QString name);
 
 protected slots:
     void                        onDeleteComponent       ();

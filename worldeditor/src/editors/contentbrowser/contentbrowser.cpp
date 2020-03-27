@@ -302,7 +302,9 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
         m_pContentProxy->setRootPath( info.absoluteFilePath() );
     } else {
         QObject *sender = AssetManager::instance()->openEditor(inst->path(origin));
-        connect(sender, SIGNAL(templateUpdate()), ui->contentList, SLOT(update()));
+        if(sender) {
+            connect(sender, SIGNAL(templateUpdate()), ui->contentList, SLOT(update()));
+        }
     }
 }
 

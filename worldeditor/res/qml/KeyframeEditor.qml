@@ -4,7 +4,7 @@ import QtQuick.Controls 2.3
 Rectangle {
     id: keyframeEditor
 
-    color: "#f0808080"
+    color: "#80808080"
     clip: true
 
     focus: true
@@ -80,7 +80,7 @@ Rectangle {
                     if(mouse.button === Qt.RightButton) {
                         menu.x = mouseX
                         menu.y = mouseY
-                        menu.open()
+                        //menu.open()
                     }
                 }
 

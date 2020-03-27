@@ -51,5 +51,6 @@ void VectorEdit::setComponents(uint8_t value) {
 }
 
 void VectorEdit::onValueChanged() {
-    emit dataChanged(QVariant::fromValue(data()));
+    Vector3 value = data();
+    emit dataChanged(QVariant::fromValue(value));
 }

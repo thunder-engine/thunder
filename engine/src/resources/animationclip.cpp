@@ -9,6 +9,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
     {
         auto section = data.find(TRACKS);
         if(section != data.end()) {
+            m_Tracks.clear();
             for(auto it : (*section).second.value<VariantList>()) {
                 VariantList trackList = it.toList();
                 auto i = trackList.begin();

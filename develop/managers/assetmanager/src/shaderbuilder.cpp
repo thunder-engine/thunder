@@ -92,7 +92,8 @@ ShaderBuilder::ShaderBuilder() :
     qRegisterMetaType<SquareRoot*>("SquareRoot");
     qRegisterMetaType<Logarithm*>("Logarithm");
     qRegisterMetaType<Logarithm2*>("Logarithm2");
-    m_Functions << "DotProduct" << "CrossProduct" << "Mix" << "Smoothstep" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2";
+    qRegisterMetaType<FWidth*>("FWidth");
+    m_Functions << "DotProduct" << "CrossProduct" << "Mix" << "Smoothstep" << "Mod" << "Power" << "SquareRoot" << "Logarithm" << "Logarithm2" << "FWidth";
 
     qRegisterMetaType<Clamp*>("Clamp");
     qRegisterMetaType<Min*>("Min");
@@ -329,7 +330,7 @@ bool ShaderBuilder::build() {
     }
     m_Shader.append(str);
 
-    addPragma("version", "#version 430 core");
+    addPragma("version", "#version 450 core");
     addPragma("material", m_Shader.toStdString());
 
     return true;

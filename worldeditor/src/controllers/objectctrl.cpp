@@ -432,6 +432,7 @@ void ObjectCtrl::onDrop() {
 
     if(!m_DragMap.isEmpty()) {
         emit loadMap(ProjectManager::instance()->contentPath() + "/" + m_DragMap);
+        m_DragMap.clear();
     }
 }
 

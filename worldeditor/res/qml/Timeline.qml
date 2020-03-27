@@ -10,9 +10,10 @@ Rectangle {
     antialiasing: false
     color: theme.backColor
 
-    property int posX: (width / hbar.size * hbar.position)
+    property int posX: width / hbar.size * hbar.position
+    property int posY: height / vbar.size * vbar.position
 
-    property int rowHeight: 15
+    property int rowHeight: 17
 
     property int selectInd: -1
     property int selectRow: -1
@@ -47,7 +48,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
 
-        acceptedButtons: Qt.LeftButton | Qt.MidButton
+        acceptedButtons: Qt.RightButton
         hoverEnabled: true
 
         property int oldX: 0
@@ -56,11 +57,10 @@ Rectangle {
         onClicked: {
             selectInd = -1
             selectRow = -1
-            clipModel.position = Math.max(Math.round((mouseX + posX) / timeStep), 0) * timeScale
         }
 
         onPressed: {
-            if(mouse.buttons === Qt.MiddleButton) {
+            if(mouse.buttons === Qt.RightButton) {
                 oldX = mouse.x
                 oldY = mouse.y
             }
@@ -75,48 +75,51 @@ Rectangle {
                         timeScale /= 5
                     }
                 }
-                hbar.position += (mouseX / curve.toScreenSpaceX(maxPos)) * (1 / timeStep)
 
                 curve.valueStep += 1
                 if(curve.valueStep > curve.maxValue) {
                     curve.valueStep = curve.minValue
-                    curve.valueScale /= 5.0;
+                    curve.valueScale /= 5.0
                 }
-                vbar.position += (mouseY / curve.toScreenSpaceY(Math.abs(curve.maximum - curve.minimum))) * (1 / curve.valueStep)
-
             } else {
                 timeStep -= 1
                 if(timeStep < minStep) {
                     timeStep = maxStep
                     timeScale *= 5.0
                 }
-                hbar.position -= (mouseX / curve.toScreenSpaceX(maxPos)) * (1 / timeStep)
 
                 curve.valueStep -= 1
                 if(curve.valueStep < curve.minValue) {
                     curve.valueStep = curve.maxValue
                     curve.valueScale *= 5.0;
                 }
-                vbar.position -= (mouseY / curve.toScreenSpaceY(Math.abs(curve.maximum - curve.minimum))) * (1 / curve.valueStep)
-
             }
-            hbar.position = Math.max(hbar.position, 0.0)
         }
 
         onPositionChanged: {
-            if(selectInd == -1 && pressedButtons === Qt.LeftButton) {
-                clipModel.position = Math.max(Math.round((mouseX - posX) / timeStep), 0) * timeScale
-            }
-
-            if(mouse.buttons === Qt.MiddleButton) {
-                hbar.position += curve.toLocalSpaceX(oldX - mouse.x) * 0.5
+            if(mouse.buttons === Qt.RightButton) {
+                hbar.position += curve.toLocalSpaceX(oldX - mouse.x)
                 hbar.position = Math.max(hbar.position, 0.0)
-                vbar.position += curve.toLocalSpaceY(oldY - mouse.y) / curve.valueScale
+                vbar.position -= curve.toLocalSpaceY(oldY - mouse.y)
                 oldX = mouse.x
                 oldY = mouse.y
             }
-
         }
+    }
+
+    Grid {
+        id: grid
+        anchors.fill: parent
+        anchors.topMargin: 19
+
+        translateX: -(parent.posX % (timeStep * 5)) + minStep
+        translateY: curve.valueStep + (curve.posY % curve.valueStep)
+
+        drawHorizontal: curve.visible
+        subItemsX: 5
+        subItemsY: 2
+        cellX: timeStep
+        cellY: curve.valueStep
     }
 
     Item {
@@ -125,13 +128,28 @@ Rectangle {
         width: parent.width
         height: parent.height
 
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onPressed: {
+                if(mouse.buttons === Qt.LeftButton) {
+                    clipModel.position = Math.max(Math.round((mouseX + posX - minStep) / timeStep), 0) * timeScale
+                }
+            }
+
+            onPositionChanged: {
+                if(selectInd == -1 && pressedButtons === Qt.LeftButton) {
+                    clipModel.position = Math.max(Math.round((mouseX + posX - minStep) / timeStep), 0) * timeScale
+                }
+            }
+        }
+
         Repeater {
             model: Math.ceil(ruler.width / (timeStep * 5))
-            Rectangle {
+            Item {
                 anchors.bottom: ruler.bottom
                 height: ruler.height - 12
-                width: 1
-                color: theme.textColor
                 x: (index * 5) * timeStep - (posX % (timeStep * 5)) + minStep
                 Label {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -139,23 +157,11 @@ Rectangle {
                     color: theme.textColor
                     text: {
                         var value = ((index + Math.floor(posX / (timeStep * 5))) * 5) * timeScale
-                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2).replace('.', ':')
+                        return value.toLocaleString(Qt.locale("en_EN"), 'f', 2)
                     }
                     font.pointSize: 8
-
                     renderType: Text.NativeRendering
                 }
-            }
-        }
-
-        Repeater {
-            model: ruler.width / timeStep
-            Rectangle {
-                anchors.bottom: ruler.bottom
-                height: ruler.height - 15
-                width: 1
-                x: index * timeStep - (posX % timeStep) + minStep
-                color: theme.textColor
             }
         }
     }
@@ -168,8 +174,8 @@ Rectangle {
         anchors.topMargin: 19
         visible: false
 
-        posX: (width / hbar.size * hbar.position)
-        posY: (toScreenSpaceY(maximum + Math.abs(maximum - minimum) * 0.5)) - (parent.height / vbar.size * vbar.position)
+        posX: parent.posX
+        posY: parent.posY
 
         timeStep: parent.timeStep
         timeScale: parent.timeScale
@@ -179,14 +185,13 @@ Rectangle {
 
         onRowChanged: {
             if(visible) {
-                vbar.position = 0.5 - vbar.size * 0.5
+                vbar.position = vbar.size * 0.5
             }
         }
 
         onVisibleChanged: {
             if(visible) {
-                vbar.size = (parent.height - 19) / (toScreenSpaceY(Math.abs(maximum - minimum)))
-                vbar.position = 0.5 - vbar.size * 0.5
+                vbar.position = vbar.size * 0.5
             }
         }
     }
@@ -198,7 +203,7 @@ Rectangle {
         anchors.fill: parent
         anchors.topMargin: 19
 
-        posX: (width / hbar.size * hbar.position)
+        posX: parent.posX
 
         timeStep: parent.timeStep
         timeScale: parent.timeScale
@@ -206,7 +211,7 @@ Rectangle {
 
     Rectangle {
         id: position
-        x: (clipModel.position / timeScale) * timeStep - posX + minStep - 1
+        x: (clipModel.position / timeScale) * timeStep - parent.posX + minStep
         width: 2
         height: parent.height
         color: theme.red
@@ -229,10 +234,13 @@ Rectangle {
         hoverEnabled: true
         active: hovered || pressed
         orientation: Qt.Vertical
-        size: (parent.height - 19) / (curve.toScreenSpaceY(Math.abs(curve.maximum - curve.minimum)))
+        size: {
+            var value = curve.toScreenSpaceY(Math.abs(curve.maximum - curve.minimum))
+            return height / ((value === 0) ? 1 : value)
+        }
 
-        anchors.top: parent.top
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        height: parent.height - 19
     }
 }

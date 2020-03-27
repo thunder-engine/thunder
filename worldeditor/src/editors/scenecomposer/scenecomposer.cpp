@@ -370,12 +370,12 @@ void SceneComposer::onOpen(const QString &arg) {
                                               dir + "/maps",
                                               tr("Maps (*.map)") );
     } else {
-        m_Path   = arg;
+        m_Path = arg;
     }
 
-    if( !m_Path.isEmpty() ) {
+    if(!m_Path.isEmpty()) {
         QFile loadFile(m_Path);
-        if (!loadFile.open(QIODevice::ReadOnly)) {
+        if(!loadFile.open(QIODevice::ReadOnly)) {
             qWarning("Couldn't open file.");
             return;
         }
@@ -389,7 +389,7 @@ void SceneComposer::onOpen(const QString &arg) {
         if(map) {
             updateTitle();
 
-            m_pMap->deleteLater();
+            delete m_pMap;
             m_pMap  = map;
             ui->hierarchy->setObject(m_pMap);
 

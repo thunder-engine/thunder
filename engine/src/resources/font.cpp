@@ -133,8 +133,10 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
     for(int32_t y = 1; y <= h; y++) {
         put(grid[0], 0, y, pointInside);
         put(grid[1], 0, y, pointEmpty);
+
         for(int32_t x = 1; x <= w; x++) {
             uint32_t index = (y - 1) * w + (x - 1);
+
             if(img.buffer[index] > 128) {
                 put(grid[0], x, y, pointEmpty);
                 put(grid[1], x, y, pointInside);
@@ -153,13 +155,13 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
     generateSDF(grid[0]);
     generateSDF(grid[1]);
 
-    for(int32_t y = 0; y < dh - 0; y++) {
-        for(int32_t x = 0; x < dw - 0; x++) {
+    for(int32_t y = 0; y < dh; y++) {
+        for(int32_t x = 0; x < dw; x++) {
             double dist1 = sqrt((double)(get(grid[0], x * w / dw, y * h / dh).f + 1));
             double dist2 = sqrt((double)(get(grid[1], x * w / dw, y * h / dh).f + 1));
             double dist = dist1 - dist2;
-            uint32_t index = (y - 0) * dw + (x - 0);
-            dst[index] = CLAMP(dist * 64 + 128, 0, 255);
+            uint32_t index = y * dw + x;
+            dst[index] = CLAMP(dist * 64 / 2.0f + 128, 0, 255);
         }
     }
     free(grid[0].grid);
@@ -194,10 +196,10 @@ void Font::requestCharacters(const u32string &characters) {
             FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, it ), FT_LOAD_DEFAULT );
             if(!error) {
                 FT_Glyph glyph;
-                error   = FT_Get_Glyph( p_ptr->m_pFace->glyph, &glyph );
+                error = FT_Get_Glyph(p_ptr->m_pFace->glyph, &glyph);
                 if(!error) {
-                    FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, nullptr, 1 );
-                    FT_Bitmap &bitmap   = reinterpret_cast<FT_BitmapGlyph>(glyph)->bitmap;
+                    FT_Glyph_To_Bitmap(&glyph, ft_render_mode_normal, nullptr, true);
+                    FT_Bitmap &bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph)->bitmap;
 
                     uint32_t w = bitmap.width / DF_DEFAULT_SCALE;
                     uint32_t h = bitmap.rows / DF_DEFAULT_SCALE;

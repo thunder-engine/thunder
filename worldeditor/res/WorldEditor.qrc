@@ -61,6 +61,7 @@
         <file>qml/Blog.qml</file>
         <file>qml/BlogTile.qml</file>
         <file>qml/Keyframe.qml</file>
+        <file>qml/Grid.qml</file>
     </qresource>
     <qresource prefix="/Workspaces">
         <file alias="Default.ws">workspaces/Default.ws</file>
