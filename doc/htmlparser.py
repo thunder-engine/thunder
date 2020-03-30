@@ -105,7 +105,7 @@ def parseFile(file):
 
     descr = root.find(".//*[@class='descr']")
     if descr is not None:
-        print file
+        print(file)
         title = root.find(".//*[@class='title']")
         classDef = ClassDef(title.text.replace(" Class", ""))
 
@@ -134,7 +134,7 @@ def parseModule(file, files):
     tree = ET.parse(file)
     root = tree.getroot()
 
-    print "parseModule " + file
+    print ("parseModule " + file)
 
     result = list()
     for td in root.findall(".//*[@class='tblName']"):
