@@ -118,7 +118,7 @@ public:
 Atlas::Atlas() :
         p_ptr(new AtlasPrivate) {
 
-    p_ptr->m_pTexture  = Engine::objectCreate<Texture>("", this);
+    p_ptr->m_pTexture = Engine::objectCreate<Texture>("", this);
     p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
     resize(1024, 1024);
 }
@@ -181,7 +181,9 @@ void Atlas::pack(uint8_t padding) {
 
     p_ptr->m_pTexture->setDirty();
 }
-
+/*!
+    Changes current size of the atlas and sets resorce state to ResourceState::ToBeUpdated.
+*/
 void Atlas::resize(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
 

@@ -23,8 +23,6 @@ public:
 public:
     uint32_t duration() const;
 
-    static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second);
-
     void loadUserData(const VariantMap &data) override;
 
 public:

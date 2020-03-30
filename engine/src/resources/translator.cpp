@@ -8,6 +8,12 @@ public:
     TranslationTable m_Table;
 };
 
+/*!
+    \class Translator
+    \brief Translator resource provides a translation table.
+    \inmodule Resource
+*/
+
 Translator::Translator() :
         p_ptr(new TranslatorPrivate()) {
 
@@ -16,7 +22,9 @@ Translator::Translator() :
 Translator::~Translator() {
     delete p_ptr;
 }
-
+/*!
+    Returns the translated \a source string.
+*/
 string Translator::translate(const string &source) const {
     auto it = p_ptr->m_Table.find(source);
     if(it != p_ptr->m_Table.end()) {
@@ -24,7 +32,9 @@ string Translator::translate(const string &source) const {
     }
     return source;
 }
-
+/*!
+    \internal
+*/
 void Translator::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {

@@ -11,6 +11,7 @@
 
 #include <QColor>
 
+
 AnimationClipModel::AnimationClipModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_pController(nullptr),
@@ -353,7 +354,7 @@ void AnimationClipModel::onAddKey(int row, int col, int pos) {
             key.m_RightTangent  = key.m_Value;
 
             curve.m_Keys.push_back(key);
-            std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), AnimationClip::compare);
+            std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), compare);
 
             updateController();
         }

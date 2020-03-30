@@ -417,7 +417,9 @@ VariantMap TextRender::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+*/
 bool TextRender::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
         p_ptr->composeMesh();
@@ -425,7 +427,6 @@ bool TextRender::event(Event *ev) {
 
     return true;
 }
-
 /*!
     \internal
 */

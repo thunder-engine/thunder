@@ -365,7 +365,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             if(!camera->orthographic()) {
                 scale = normal.length();
             } else {
-                scale = camera->orthoHeight();
+                scale = camera->orthoSize();
             }
             scale *= (CONTROL_SIZE / m_sScreen.y);
             Matrix4 model(position, rotation, scale);
@@ -483,7 +483,7 @@ Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotatio
             if(!camera->orthographic()) {
                 scale = normal.length();
             } else {
-                scale = camera->orthoHeight();
+                scale = camera->orthoSize();
             }
             scale *= (CONTROL_SIZE / m_sScreen.y);
             normal.normalize();
@@ -571,7 +571,7 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             if(!camera->orthographic()) {
                 size = normal.length();
             } else {
-                size = camera->orthoHeight();
+                size = camera->orthoSize();
             }
             size *= (CONTROL_SIZE / m_sScreen.y);
             Vector3 scale(((normal.x < 0) ? 1 : -1) * size,

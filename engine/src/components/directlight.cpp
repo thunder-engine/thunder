@@ -121,7 +121,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
 
     Transform *t = camera.actor()->transform();
     bool orthographic = camera.orthographic();
-    float sigma = (camera.orthographic()) ? camera.orthoHeight() : camera.fov();
+    float sigma = (camera.orthographic()) ? camera.orthoSize() : camera.fov();
     float ratio = camera.ratio();
     Vector3 wPosition = t->worldPosition();
     Quaternion wRotation = t->worldRotation();

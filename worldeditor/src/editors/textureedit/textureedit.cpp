@@ -105,14 +105,14 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     setModified(false);
 
     if(m_pSprite) {
-        m_pTexture  = Engine::loadResource<Texture>(settings->destination());
+        m_pTexture = Engine::loadResource<Texture>(settings->destination());
         m_pSprite->setTexture(m_pTexture);
     }
 
     Camera *camera = ui->Preview->controller()->camera();
     if(camera) {
         camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
-        camera->setOrthoHeight(SCALE);
+        camera->setOrthoSize(SCALE);
         camera->setFocal(SCALE);
     }
 

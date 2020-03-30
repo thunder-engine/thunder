@@ -37,7 +37,9 @@ AnimationStateMachine::AnimationStateMachine() :
          p_ptr(new AnimationStateMachinePrivate) {
 
 }
-
+/*!
+    \internal
+*/
 void AnimationStateMachine::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
@@ -108,7 +110,9 @@ AnimationStateMachine::State *AnimationStateMachine::initialState() const {
 
     return p_ptr->m_pInitialState;
 }
-
+/*!
+    Return list of all states for the state machine.
+*/
 AnimationStateMachine::StateVector &AnimationStateMachine::states() const {
     PROFILE_FUNCTION();
 

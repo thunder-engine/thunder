@@ -307,7 +307,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
             params.push_back(t->euler());
             params.push_back(ui->orthoButton->isChecked());
             params.push_back(camera->focal());
-            params.push_back(camera->orthoHeight());
+            params.push_back(camera->orthoSize());
         }
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
@@ -564,7 +564,7 @@ void SceneComposer::onImportFinished() {
             it++;
             camera->setFocal(it->toFloat());
             it++;
-            camera->setOrthoHeight(it->toFloat());
+            camera->setOrthoSize(it->toFloat());
             it++;
         }
     }

@@ -4,6 +4,19 @@
 
 static hash<string> hash_str;
 
+/*!
+    \class AnimationClip
+    \brief AnimationClip resource contains keyframe based animation data.
+
+    An AnimationClip resource contains keyframe based animation data.
+    The animation data split to a number of tracks that must be connected with the properties of Components.
+    Each track can contain multiple curves or channels like X, Y and Z
+    Which allows them to animate elements independently.
+*/
+
+/*!
+    \internal
+*/
 void AnimationClip::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     {
@@ -56,7 +69,9 @@ void AnimationClip::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    Returns duration of the animation clip in milliseconds.
+*/
 uint32_t AnimationClip::duration() const {
     PROFILE_FUNCTION();
 
@@ -67,10 +82,4 @@ uint32_t AnimationClip::duration() const {
         }
     }
     return result;
-}
-
-bool AnimationClip::compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second) {
-    PROFILE_FUNCTION();
-
-    return ( first.m_Position < second.m_Position );
 }

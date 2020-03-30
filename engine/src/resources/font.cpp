@@ -168,6 +168,16 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
     free(grid[1].grid);
 }
 
+/*!
+    \class Font
+    \brief The Font resource provides support for vector fonts.
+    \inmodule Resource
+
+    The basic element of a font is a glyph.
+    All required glyphs are contained in a special texture - Atlas.
+    If at the moment of accessing the font the glyph is not present in the atlas, the glyph will be loaded there dynamically.
+*/
+
 Font::Font() :
         p_ptr(new FontPrivate()) {
 
@@ -179,7 +189,9 @@ Font::Font() :
 Font::~Font() {
      clear();
 }
-
+/*!
+    Returns the index of the \a glyph in the atlas.
+*/
 uint32_t Font::atlasIndex(uint32_t glyph) const {
     auto it = p_ptr->m_GlyphMap.find(glyph);
     if(it != p_ptr->m_GlyphMap.end()) {
@@ -187,7 +199,9 @@ uint32_t Font::atlasIndex(uint32_t glyph) const {
     }
     return 0;
 }
-
+/*!
+    Requests \a characters to be added to the font atlas.
+*/
 void Font::requestCharacters(const u32string &characters) {
     bool isNew = false;
     for(auto it : characters) {
@@ -238,7 +252,10 @@ void Font::requestCharacters(const u32string &characters) {
         pack(1);
     }
 }
-
+/*!
+    Returns the kerning offset between a glyph and previous glyph.
+    \note In case of font doesn't support kerning this method will return 0.
+*/
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
     if(p_ptr->m_UseKerning && previous)  {
         FT_Vector delta;
@@ -247,11 +264,15 @@ int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
     }
     return 0;
 }
-
+/*!
+    Returns the number of \a characters in the string.
+*/
 uint32_t Font::length(const u32string &characters) const {
     return characters.length();
 }
-
+/*!
+    Returns visual width of space character for the font in world units.
+*/
 float Font::spaceWidth() const {
     FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, ' ' ), FT_LOAD_DEFAULT );
     if(!error) {
@@ -259,7 +280,9 @@ float Font::spaceWidth() const {
     }
     return 0;
 }
-
+/*!
+    Returns visual height for the font in world units.
+*/
 float Font::lineHeight() const {
     FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, '\n' ), FT_LOAD_DEFAULT );
     if(!error) {
@@ -267,7 +290,9 @@ float Font::lineHeight() const {
     }
     return 0;
 }
-
+/*!
+    \internal
+*/
 void Font::loadUserData(const VariantMap &data) {
     clear();
     {
@@ -303,7 +328,9 @@ void Font::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    Cleans up all font data.
+*/
 void Font::clear() {
     FT_Done_Face(p_ptr->m_pFace);
 }

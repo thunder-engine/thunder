@@ -13,6 +13,12 @@ public:
     bool m_Fixed;
 };
 
+/*!
+    \class RenderTexture
+    \brief Render textures are textures that can be rendered to.
+    \inmodule Resource
+*/
+
 RenderTexture::RenderTexture() :
         p_ptr(new RenderTexturePrivate) {
 
@@ -21,25 +27,36 @@ RenderTexture::RenderTexture() :
 RenderTexture::~RenderTexture() {
     delete p_ptr;
 }
-
+/*!
+    Sets format \a type of texture and sets resource state to ResourceState::ToBeUpdated.
+    For more details please see the Texture::FormatType enum.
+*/
 void RenderTexture::setTarget(FormatType format) {
     setFormat(format);
     setState(ToBeUpdated);
 }
-
-uint8_t RenderTexture::depth () const {
+/*!
+    Returns the precision of the render texture's depth buffer in bits.
+*/
+uint8_t RenderTexture::depth() const {
     return p_ptr->m_DepthBits;
 }
-
+/*!
+    Sets the precision of the render texture's depth buffer in \a bits.
+*/
 void RenderTexture::setDepth(uint8_t bits) {
     p_ptr->m_DepthBits = bits;
     setState(ToBeUpdated);
 }
-
+/*!
+    Sets the \a fixed flag for the render texture. If true the resize() method will not take effect.
+*/
 void RenderTexture::setFixed(bool fixed) {
     p_ptr->m_Fixed = fixed;
 }
-
+/*!
+    Changes current size of the render texture with new \a width, \a height and sets resource state to ResourceState::ToBeUpdated.
+*/
 void RenderTexture::resize(int32_t width, int32_t height) {
     if(!p_ptr->m_Fixed && (Texture::width() != width || Texture::height() != height)) {
         setWidth(width);
@@ -48,7 +65,9 @@ void RenderTexture::resize(int32_t width, int32_t height) {
         setState(ToBeUpdated);
     }
 }
-
+/*!
+    \internal
+*/
 void RenderTexture::makeCurrent(uint32_t index) const {
     A_UNUSED(index);
 }

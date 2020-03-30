@@ -271,7 +271,7 @@ void Timeline::onUpdated(Object *object, const QString property) {
                             }
                             if(!update) {
                                 curve.m_Keys.push_back(key);
-                                std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), AnimationClip::compare);
+                                std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), AnimationClipModel::compare);
                             }
                             create  = false;
                             break;

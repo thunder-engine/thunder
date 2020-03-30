@@ -109,7 +109,7 @@ void ObjectCtrlPipeline::drawGrid(Camera &camera) {
 
     if(camera.orthographic()) {
         pos = Vector3(cam.x, cam.y, 0.0);
-        length = camera.orthoHeight();
+        length = camera.orthoSize();
     } else {
         pos = Vector3(cam.x, 0.0f, cam.z);
         length = (pos - cam).length();

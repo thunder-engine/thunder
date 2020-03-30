@@ -35,6 +35,17 @@ public:
     uint32_t m_Time;
 };
 
+/*!
+    \class AnimationController
+    \brief Manages all animations in the engine.
+    \inmodule Engine
+
+    The animation controller allows to control different animation states from AnimationStateMachine assets.
+    To use any animations in the Thunder Engine the AnimationController must be attached to a root Actor in the hierarchy.
+    The animation controller processes an AnimationStateMachine resource type.
+    The animation controller can use parametric values to decide when transition between states must happen.
+*/
+
 AnimationController::AnimationController() :
         p_ptr(new AnimationControllerPrivate()) {
 
@@ -43,7 +54,9 @@ AnimationController::AnimationController() :
 AnimationController::~AnimationController() {
     delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void AnimationController::start() {
     PROFILE_FUNCTION();
 
@@ -53,7 +66,9 @@ void AnimationController::start() {
 
     setPosition(0);
 }
-
+/*!
+    \internal
+*/
 void AnimationController::update() {
     PROFILE_FUNCTION();
     // Check conditions
@@ -80,14 +95,19 @@ void AnimationController::update() {
         setPosition(p_ptr->m_Time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
     }
 }
-
+/*!
+    Returns AnimationStateMachine resource attached to this AnimationController.
+*/
 AnimationStateMachine *AnimationController::stateMachine() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pStateMachine;
 }
-
-void AnimationController::setStateMachine(AnimationStateMachine *machine) {
+/*!
+    Sets AnimationStateMachine \a resource which will be attached to this AnimationController.
+    \note The state machine will move to the initial state automatically during the call of this function.
+*/
+void AnimationController::setStateMachine(AnimationStateMachine *resource) {
     PROFILE_FUNCTION();
 
     for(auto it : p_ptr->m_Properties) {
@@ -95,35 +115,43 @@ void AnimationController::setStateMachine(AnimationStateMachine *machine) {
     }
     p_ptr->m_Properties.clear();
 
-    p_ptr->m_pStateMachine = machine;
+    p_ptr->m_pStateMachine = resource;
     p_ptr->m_pCurrentState = nullptr;
     if(p_ptr->m_pStateMachine) {
         p_ptr->m_CurrentVariables = p_ptr->m_pStateMachine->variables();
         setState(p_ptr->m_pStateMachine->initialState()->m_Hash);
     }
 }
-
+/*!
+    Returns the position (in milliseconds) of animation for the current state.
+*/
 uint32_t AnimationController::position() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_Time;
 }
-
-void AnimationController::setPosition(uint32_t ms) {
+/*!
+    Sets the \a position (in milliseconds) of animation for the current state.
+*/
+void AnimationController::setPosition(uint32_t position) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_Time = ms;
+    p_ptr->m_Time = position;
     for(auto it : p_ptr->m_Properties) {
         it.second->setCurrentTime(p_ptr->m_Time);
     }
 }
-
+/*!
+    Changes the current \a state of state machine immediately.
+*/
 void AnimationController::setState(const char *state) {
     PROFILE_FUNCTION();
 
     setState(hash_str(state));
 }
-
+/*!
+    Changes the current state (using the \a hash of state) of state machine immediately.
+*/
 void AnimationController::setState(size_t hash) {
     PROFILE_FUNCTION();
 
@@ -139,13 +167,17 @@ void AnimationController::setState(size_t hash) {
         }
     }
 }
-
+/*!
+    Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
+*/
 void AnimationController::crossFade(const char *state, float duration) {
     PROFILE_FUNCTION();
 
     crossFade(hash_str(state), duration);
 }
-
+/*!
+    Smoothly changes current state using crossfade interpolation from the previous state to the new state (using the \a hash of state) with \a duration (in milliseconds).
+*/
 void AnimationController::crossFade(size_t hash, float duration) {
     PROFILE_FUNCTION();
 
@@ -160,13 +192,17 @@ void AnimationController::crossFade(size_t hash, float duration) {
         }
     }
 }
-
+/*!
+    Returns AnimationClip for the current state.
+*/
 AnimationClip *AnimationController::clip() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pCurrentState->m_pClip;
 }
-
+/*!
+    Forcefully sets animation \a clip over any state.
+*/
 void AnimationController::setClip(AnimationClip *clip) {
     PROFILE_FUNCTION();
 
@@ -180,7 +216,9 @@ void AnimationController::setClip(AnimationClip *clip) {
 
     setClips(clip, nullptr);
 }
-
+/*!
+    \internal
+*/
 void AnimationController::setClips(AnimationClip *start, AnimationClip *end, float duration, float time) {
     PROFILE_FUNCTION();
 
@@ -232,13 +270,17 @@ void AnimationController::setClips(AnimationClip *start, AnimationClip *end, flo
         }
     }
 }
-
+/*!
+    Sets the new boolean \a value for the parameter with the \a name.
+*/
 void AnimationController::setBool(const char *name, bool value) {
     PROFILE_FUNCTION();
 
     setBool(hash_str(name), value);
 }
-
+/*!
+    Sets the new boolean \a value for the parameter using the \a hash of state as the name.
+*/
 void AnimationController::setBool(size_t hash, bool value) {
     PROFILE_FUNCTION();
 
@@ -247,13 +289,17 @@ void AnimationController::setBool(size_t hash, bool value) {
         variable->second = value;
     }
 }
-
+/*!
+    Sets the new floating-point \a value for the parameter with the \a name.
+*/
 void AnimationController::setFloat(const char *name, float value) {
     PROFILE_FUNCTION();
 
     setFloat(hash_str(name), value);
 }
-
+/*!
+    Sets the new floating-point \a value for the parameter using the \a hash of state as the name.
+*/
 void AnimationController::setFloat(size_t hash, float value) {
     PROFILE_FUNCTION();
 
@@ -262,13 +308,17 @@ void AnimationController::setFloat(size_t hash, float value) {
         variable->second = value;
     }
 }
-
+/*!
+    Sets the new integer \a value for the parameter with the \a name.
+*/
 void AnimationController::setInteger(const char *name, int32_t value) {
     PROFILE_FUNCTION();
 
     setInteger(hash_str(name), value);
 }
-
+/*!
+    Sets the new integer \a value for the parameter using the \a hash of state as the name.
+*/
 void AnimationController::setInteger(size_t hash, int32_t value) {
     PROFILE_FUNCTION();
 
@@ -277,13 +327,17 @@ void AnimationController::setInteger(size_t hash, int32_t value) {
         variable->second = value;
     }
 }
-
+/*!
+    Returns duration of the animation clip for the current state.
+*/
 uint32_t AnimationController::duration() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pCurrentState->m_pClip->duration();
 }
-
+/*!
+    \internal
+*/
 void AnimationController::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
@@ -295,7 +349,9 @@ void AnimationController::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap AnimationController::saveUserData() const {
     PROFILE_FUNCTION();
 
@@ -308,7 +364,9 @@ VariantMap AnimationController::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+*/
 Object *AnimationController::findTarget(Object *src, const string &path) {
     PROFILE_FUNCTION();
 

@@ -33,7 +33,7 @@ void CameraCtrl::init(Scene *scene) {
     m_pCamera   = Engine::objectCreate<Actor>("Camera");
     m_pActiveCamera = static_cast<Camera *>(m_pCamera->addComponent("Camera"));
     m_pActiveCamera->setFocal(10.0f);
-    m_pActiveCamera->setOrthoHeight(10.0f);
+    m_pActiveCamera->setOrthoSize(10.0f);
 
     m_pActiveCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
@@ -107,7 +107,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         bottom = min.y;
 
         m_pActiveCamera->setFocal(radius);
-        m_pActiveCamera->setOrthoHeight(radius);
+        m_pActiveCamera->setOrthoSize(radius);
         Transform *camera   = m_pCamera->transform();
         camera->setPosition(t->worldPosition() + bb.center + camera->rotation() * Vector3(0.0, 0.0, radius));
     }
@@ -212,8 +212,8 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 void CameraCtrl::cameraZoom(float delta) {
     if(m_pActiveCamera && m_pCamera) {
         if(m_pActiveCamera->orthographic()) {
-            float scale = m_pActiveCamera->orthoHeight() * 0.001f;
-            m_pActiveCamera->setOrthoHeight(MAX(0.0f, m_pActiveCamera->orthoHeight() - delta * scale));
+            float scale = m_pActiveCamera->orthoSize() * 0.001f;
+            m_pActiveCamera->setOrthoSize(MAX(0.0f, m_pActiveCamera->orthoSize() - delta * scale));
         } else {
             float scale = delta * 0.01f;
             float focal = m_pActiveCamera->focal() - scale;
@@ -228,9 +228,9 @@ void CameraCtrl::cameraZoom(float delta) {
 }
 
 void CameraCtrl::cameraRotate(const Vector3 &delta) {
-    Transform *t    = m_pCamera->transform();
-    Vector3 euler   = t->euler() - delta;
-    mRotation       = Quaternion(euler);
+    Transform *t  = m_pCamera->transform();
+    Vector3 euler = t->euler() - delta;
+    mRotation     = Quaternion(euler);
 
     Vector3 target  = t->position() - t->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
@@ -240,6 +240,6 @@ void CameraCtrl::cameraRotate(const Vector3 &delta) {
 }
 
 void CameraCtrl::cameraMove(const Vector3 &delta) {
-    Transform *t    = m_pCamera->transform();
-    t->setPosition(t->position() - delta * ((m_pActiveCamera->orthographic()) ? m_pActiveCamera->orthoHeight() : m_pActiveCamera->focal()));
+    Transform *t = m_pCamera->transform();
+    t->setPosition(t->position() - delta * ((m_pActiveCamera->orthographic()) ? m_pActiveCamera->orthoSize() : m_pActiveCamera->focal()));
 }

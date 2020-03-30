@@ -20,10 +20,10 @@ public:
     ~AnimationController ();
 
     AnimationStateMachine *stateMachine () const;
-    void setStateMachine (AnimationStateMachine *machine);
+    void setStateMachine (AnimationStateMachine *resource);
 
     uint32_t position () const;
-    void setPosition (uint32_t ms);
+    void setPosition (uint32_t position);
 
     void setState (const char *state);
     void setState (size_t hash);

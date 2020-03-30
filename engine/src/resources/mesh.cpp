@@ -41,7 +41,9 @@ Mesh::~Mesh() {
 
     delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void Mesh::clear() {
     p_ptr->m_Lods.clear();
 }
@@ -237,7 +239,9 @@ void Mesh::setLod(uint32_t index, const Lod &lod) {
         addLod(lod);
     }
 }
-
+/*!
+    \internal
+*/
 Mesh::Lod *Mesh::getLod(uint32_t lod) const {
     if(lod < lodsCount()) {
         return &p_ptr->m_Lods[lod];

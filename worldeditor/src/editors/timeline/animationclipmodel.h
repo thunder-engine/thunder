@@ -64,6 +64,10 @@ public:
 
     QStringList                 clips                       () const { return m_Clips.keys(); }
 
+    static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second) {
+        return ( first.m_Position < second.m_Position );
+    }
+
 public slots:
     void                        onAddKey                    (int row, int col, int pos);
     void                        onRemoveKey                 (int row, int col, int index);
@@ -100,5 +104,7 @@ protected:
     QList<int>                  m_Expands;
 
 };
+
+
 
 #endif // ANIMATIONCLIPMODEL_H
