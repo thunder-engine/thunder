@@ -14,9 +14,17 @@ public:
 };
 
 /*!
+    \module Resource
+
+    \title Thunder Engine Software Developer Kit
+
+    \brief Contains base asset classes.
+*/
+
+/*!
     \class Resource
     \brief Base class for every resource in Thunder Engine.
-    \inmodule Engine
+    \inmodule Resource
 
     \note This class must be a superclass only and shouldn't be created manually.
 */

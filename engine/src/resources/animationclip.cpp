@@ -7,6 +7,7 @@ static hash<string> hash_str;
 /*!
     \class AnimationClip
     \brief AnimationClip resource contains keyframe based animation data.
+    \inmodule Resource
 
     An AnimationClip resource contains keyframe based animation data.
     The animation data split to a number of tracks that must be connected with the properties of Components.
