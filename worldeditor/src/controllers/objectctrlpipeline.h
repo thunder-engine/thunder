@@ -13,6 +13,8 @@ public:
 
     void draw(Camera &camera) override;
 
+    void post(Camera &camera) override;
+
     void resize(int32_t width, int32_t height) override;
 
     void loadSettings();
@@ -30,7 +32,6 @@ protected:
     MaterialInstance *m_pGizmo;
 
     ObjectCtrl *m_pController;
-
 };
 
 #endif // OBJECTCONTROLLERPIPELINE_H

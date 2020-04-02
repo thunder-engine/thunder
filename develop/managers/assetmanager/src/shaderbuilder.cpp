@@ -577,8 +577,9 @@ QString ShaderBuilder::loadIncludes(const QString &path, const string &define) c
     QString output;
 
     QStringList paths;
-    paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
     paths << ProjectManager::instance()->contentPath() + "/";
+    paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
+    paths << ProjectManager::instance()->resourcePath() + "/editor/shaders/";
 
     foreach(QString it, paths) {
         QFile file(it + path);

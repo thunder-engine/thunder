@@ -323,16 +323,21 @@ void ObjectCtrl::onApplySettings() {
 Object::ObjectList ObjectCtrl::selected() {
     Object::ObjectList result;
     for(auto it : m_Selected) {
-        result.push_back(it.second.object);
+        if(it.second.object) {
+            result.push_back(it.second.object);
+        }
     }
     return result;
 }
 
 void ObjectCtrl::selectActors(const list<uint32_t> &list) {
     for(auto it : list) {
-        Select data;
-        data.object = static_cast<Actor *>(findObject(it));
-        m_Selected[it] = data;
+        Actor *actor = static_cast<Actor *>(findObject(it));
+        if(actor) {
+            Select data;
+            data.object = actor;
+            m_Selected[it] = data;
+        }
     }
     emit objectsSelected(selected());
 }

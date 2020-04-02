@@ -72,6 +72,8 @@ int main(int argc, char *argv[]) {
 
     SettingsManager::instance()->setProperty("General/Colors/Background_Color", QColor(51, 51, 51, 0));
     SettingsManager::instance()->setProperty("General/Colors/Grid_Color", QColor(102, 102, 102, 102));
+    SettingsManager::instance()->setProperty("General/Colors/Outline_Width", 1.0f);
+    SettingsManager::instance()->setProperty("General/Colors/Outline_Color", QColor(255, 128, 0, 255));
 
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);

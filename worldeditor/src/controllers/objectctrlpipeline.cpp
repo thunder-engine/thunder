@@ -13,6 +13,8 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 
+#include "postprocess/postprocessor.h"
+
 #include "settingsmanager.h"
 
 #include "objectctrl.h"
@@ -24,15 +26,55 @@
 
 #define SELECT_MAP  "selectMap"
 #define DEPTH_MAP   "depthMap"
+#define OUTLINE_MAP "outlineMap"
+#define OUTDEPTH_MAP "outdepthMap"
+
+#define G_EMISSIVE  "emissiveMap"
+
+#define OUTLINE     "Outline"
+
+class Outline : public PostProcessor {
+public:
+    Outline() :
+        m_Width(1.0f) {
+        Material *material = Engine::loadResource<Material>(".embedded/outline.mtl");
+        if(material) {
+            m_pMaterial = material->createInstance();
+            m_pMaterial->setFloat("width", &m_Width);
+            m_pMaterial->setVector4("color", &m_Color);
+        }
+
+        m_pResultTexture = Engine::objectCreate<RenderTexture>();
+        m_pResultTexture->setTarget(Texture::RGBA8);
+
+        setEnabled(true);
+    }
+
+    float m_Width;
+    Vector4 m_Color;
+};
 
 ObjectCtrlPipeline::ObjectCtrlPipeline() :
         Pipeline() {
-    RenderTexture *select   = Engine::objectCreate<RenderTexture>();
+
+    RenderTexture *select = Engine::objectCreate<RenderTexture>();
     select->setTarget(Texture::RGBA8);
-    m_Targets[SELECT_MAP]   = select;
-    m_Buffer->setGlobalTexture(SELECT_MAP,  select);
+    m_Targets[SELECT_MAP] = select;
+    m_Buffer->setGlobalTexture(SELECT_MAP, select);
+
+    RenderTexture *depth = Engine::objectCreate<RenderTexture>();
+    depth->setDepth(24);
+    m_Targets[OUTDEPTH_MAP] = depth;
+    m_Buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
+
+    RenderTexture *outline = Engine::objectCreate<RenderTexture>();
+    outline->setTarget(Texture::RGBA8);
+    m_Targets[OUTLINE_MAP] = outline;
+    m_Buffer->setGlobalTexture(OUTLINE_MAP, outline);
 
     m_pGrid  = Engine::objectCreate<Mesh>("Grid");
+
+    m_PostEffects[OUTLINE] = new Outline();
 
     Mesh::Lod lod;
     lod.vertices.resize(404);
@@ -68,6 +110,11 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
 void ObjectCtrlPipeline::loadSettings() {
     QColor color = SettingsManager::instance()->property("General/Colors/Grid_Color").value<QColor>();
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+
+    color = SettingsManager::instance()->property("General/Colors/Outline_Color").value<QColor>();
+    Outline *outline = static_cast<Outline *>(m_PostEffects[OUTLINE]);
+    outline->m_Color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    outline->m_Width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
 }
 
 void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
@@ -77,7 +124,7 @@ void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
 void ObjectCtrlPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
-    m_Buffer->clearRenderTarget(true, Vector4(0.0));
+    m_Buffer->clearRenderTarget();
 
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
@@ -86,14 +133,35 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
 
     Pipeline::draw(camera);
 
+    // Draw handles
     cameraReset(camera);
     m_Buffer->setRenderTarget({m_pFinal}, m_Targets[DEPTH_MAP]);
-
     drawGrid(camera);
 
     Handles::beginDraw(m_Buffer);
     m_pController->drawHandles();
     Handles::endDraw();
+}
+
+void ObjectCtrlPipeline::post(Camera &camera) {
+    cameraReset(camera);
+    // Selection outline
+    m_Buffer->setRenderTarget({m_Targets[OUTLINE_MAP]}, m_Targets[OUTDEPTH_MAP]);
+    m_Buffer->clearRenderTarget();
+    ObjectList filter;
+    for(auto actor : m_pController->selected()) {
+        for(auto it : m_Filter) {
+            Component *component = dynamic_cast<Component *>(it);
+            if(component && component->actor() == actor) {
+                filter.push_back(component);
+            }
+        }
+    }
+    drawComponents(ICommandBuffer::RAYCAST, filter);
+
+    // Step4 - Post Processing passes
+    m_Buffer->setScreenProjection();
+    m_pFinal = postProcess(m_Targets[G_EMISSIVE], {OUTLINE, "AntiAliasing", "Bloom"});
 }
 
 void ObjectCtrlPipeline::resize(int32_t width, int32_t height) {

@@ -117,6 +117,12 @@ void Pipeline::draw(Camera &camera) {
     // Step3 - Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
+    post(camera);
+}
+
+void Pipeline::post(Camera &camera) {
+    A_UNUSED(camera);
+
     // Step4 - Post Processing passes
     m_Buffer->setScreenProjection();
     m_pFinal = postProcess(m_Targets[G_EMISSIVE], {"AntiAliasing", "Bloom"});

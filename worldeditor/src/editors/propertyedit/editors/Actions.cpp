@@ -40,7 +40,10 @@ void Actions::setMenu(QMenu *menu) {
 
 void Actions::setObject(Object *object) {
     m_pObject = object;
-    const MetaObject *meta = object->metaObject();
+    if(m_pObject == nullptr) {
+        return;
+    }
+    const MetaObject *meta = m_pObject->metaObject();
 
     m_Menu = false;
     int32_t index = meta->indexOfProperty(qPrintable(m_Name + "/Enabled"));

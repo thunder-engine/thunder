@@ -278,6 +278,9 @@ QString NextObject::editor(MetaProperty &property) {
 
 Object *NextObject::findChild(QStringList &path) {
     Object *parent  = m_pObject;
+    if(parent == nullptr) {
+        return nullptr;
+    }
     foreach(QString str, path) {
         for(Object *it : parent->getChildren()) {
             if(it->typeName() == str.toStdString()) {

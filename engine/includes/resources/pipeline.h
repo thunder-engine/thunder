@@ -31,6 +31,8 @@ public:
 
     virtual void draw (Camera &camera);
 
+    virtual void post (Camera &camera);
+
     virtual void resize (int32_t width, int32_t height);
 
     virtual void finish ();

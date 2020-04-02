@@ -231,6 +231,15 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
+        name: "Shaders Editor"
+        files: [
+            install.RESOURCE_ROOT + "/editor/shaders/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/editor/shaders"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
         name: "Materials Engine"
         files: [
             install.RESOURCE_ROOT + "/engine/materials/*"

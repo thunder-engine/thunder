@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <global.h>
+
 class RenderTexture;
 class MaterialInstance;
 class Mesh;
@@ -13,7 +15,7 @@ class ICommandBuffer;
 
 class PostProcessSettings;
 
-class PostProcessor {
+class NEXT_LIBRARY_EXPORT PostProcessor {
 public:
     PostProcessor ();
     virtual ~PostProcessor ();
