@@ -225,12 +225,12 @@ AABBox DirectLight::bound() const {
 
 bool DirectLight::drawHandles(bool selected) {
     A_UNUSED(selected);
-    Vector3 pos = actor()->transform()->position();
+    Transform *t = actor()->transform();
 
     Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
     Handles::s_Color = Handles::s_Second = color();
-    Handles::drawArrow(Matrix4(pos, actor()->transform()->rotation(), Vector3(0.5f)) * z);
-    bool result = Handles::drawBillboard(pos, Vector2(0.5f), Engine::loadResource<Texture>(".embedded/directlight.png"));
+    Handles::drawArrow(Matrix4(t->worldPosition(), t->worldRotation(), Vector3(0.25f)) * z);
+    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/directlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

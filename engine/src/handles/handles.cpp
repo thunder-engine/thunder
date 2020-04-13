@@ -53,6 +53,7 @@ Mesh *Handles::s_Move       = nullptr;
 Mesh *Handles::s_MoveXY     = nullptr;
 Mesh *Handles::s_Arc        = nullptr;
 Mesh *Handles::s_Circle     = nullptr;
+Mesh *Handles::s_Rectangle  = nullptr;
 Mesh *Handles::s_Box        = nullptr;
 
 enum {
@@ -164,12 +165,32 @@ void Handles::init() {
 
     if(s_Circle == nullptr) {
         Mesh::Lod lod;
-        lod.vertices    = HandleTools::pointsArc(Quaternion(), 1.0, 0, 360);
+        lod.vertices = HandleTools::pointsArc(Quaternion(), 1.0, 0, 360);
         lod.indices.clear();
 
         s_Circle = Engine::objectCreate<Mesh>("Circle");
         s_Circle->setMode(Mesh::MODE_LINE_STRIP);
         s_Circle->addLod(lod);
+    }
+
+    if(s_Rectangle == nullptr) {
+        Mesh::Lod lod;
+
+        Vector3 min(-0.5);
+        Vector3 max( 0.5);
+
+        lod.vertices = {
+            Vector3(min.x, min.y, 0.0f),
+            Vector3(max.x, min.y, 0.0f),
+            Vector3(max.x, max.y, 0.0f),
+            Vector3(min.x, max.y, 0.0f),
+            Vector3(min.x, min.y, 0.0f)
+        };
+        lod.indices.clear();
+
+        s_Rectangle = Engine::objectCreate<Mesh>("Rectangle");
+        s_Rectangle->setMode(Mesh::MODE_LINE_STRIP);
+        s_Rectangle->addLod(lod);
     }
 
     if(s_Box == nullptr) {
@@ -189,9 +210,9 @@ void Handles::init() {
             Vector3(max.x, max.y, max.z),
             Vector3(min.x, max.y, max.z)
         };
-        lod.indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                         4, 5, 5, 6, 6, 7, 7, 4,
-                         0, 4, 1, 5, 2, 6, 3, 7};
+        lod.indices = {0, 1, 1, 2, 2, 3, 3, 0,
+                       4, 5, 5, 6, 6, 7, 7, 4,
+                       0, 4, 1, 5, 2, 6, 3, 7};
 
         s_Box = Engine::objectCreate<Mesh>("Box");
         s_Box->setMode(Mesh::MODE_LINES);
@@ -207,18 +228,23 @@ void Handles::beginDraw(ICommandBuffer *buffer) {
             cam->matrices(v, p);
         }
 
-        s_Buffer    = buffer;
+        s_Buffer = buffer;
 
         HandleTools::setViewProjection(v, p);
         s_Buffer->setColor(s_Normal);
         s_Buffer->setViewProjection(v, p);
-        s_Buffer->clearRenderTarget(false, Vector4(), true, 1.0f);
     }
 }
 
 void Handles::endDraw() {
     if(ICommandBuffer::isInited() && s_Buffer) {
         s_Buffer->setColor(s_Normal);
+    }
+}
+
+void Handles::cleanDepth() {
+    if(ICommandBuffer::isInited() && s_Buffer) {
+        s_Buffer->clearRenderTarget(false, Vector4(), true, 1.0f);
     }
 }
 
@@ -237,8 +263,8 @@ void Handles::drawArrow(const Matrix4 &transform) {
 void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices) {
     if(ICommandBuffer::isInited()) {
         Mesh::Lod lod;
-        lod.vertices    = points;
-        lod.indices     = indices;
+        lod.vertices = points;
+        lod.indices  = indices;
         {
             s_Lines->setMode(Mesh::MODE_LINES);
             s_Lines->setLod(0, lod);
@@ -275,6 +301,16 @@ void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float 
             s_Buffer->setColor(s_Color);
             s_Buffer->drawMesh(transform, s_Lines, ICommandBuffer::TRANSLUCENT, s_Gizmo);
         }
+    }
+}
+
+void Handles::drawRectangle(const Vector3 &center, const Quaternion &rotation, float width, float height) {
+    if(ICommandBuffer::isInited()) {
+        s_Buffer->setColor(s_Color);
+
+        Matrix4 transform(center, rotation, Vector3(width, height, 0.0f));
+
+        s_Buffer->drawMesh(transform, s_Rectangle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
     }
 }
 
@@ -671,12 +707,12 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
 
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(x,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(x * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(y,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(y * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(z,       s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-                s_Buffer->drawMesh(z * r,   s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x,     s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x * r, s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y,     s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y * r, s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z,     s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z * r, s_ScaleXYZ, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             s_Color = s_Normal;
         }

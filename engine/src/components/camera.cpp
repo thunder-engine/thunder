@@ -195,7 +195,7 @@ Ray Camera::castRay(float x, float y) {
                     p.y - (y - 0.5f) * p_ptr->m_OrthoSize, p.z);
     } else {
         float tang    = tan(p_ptr->m_FOV * DEG2RAD);
-        Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f)); /// \todo: Temp
+        Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
         Vector3 up    = right.cross(dir);
         view = Vector3( (x - 0.5f) * tang * p_ptr->m_Ratio) * right +
                Vector3(-(y - 0.5f) * tang) * up + p + dir;

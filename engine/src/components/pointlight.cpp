@@ -27,6 +27,8 @@ public:
 
     Vector3 m_Position;
 
+    Vector3 m_Direction;
+
     Vector4 m_Tiles[6];
 
     Matrix4 m_Matrix[6];
@@ -54,11 +56,16 @@ PointLight::PointLight() :
     MaterialInstance *instance = material->createInstance();
 
     instance->setVector3("light.position", &p_ptr->m_Position);
+    instance->setVector3("light.direction", &p_ptr->m_Direction);
 
     instance->setMatrix4("light.matrix", p_ptr->m_Matrix, 6);
     instance->setVector4("light.tiles",  p_ptr->m_Tiles, 6);
 
     setMaterial(instance);
+
+    Vector4 p = params();
+    p.y = 0.1f;
+    setParams(p);
 }
 
 PointLight::~PointLight() {
@@ -75,11 +82,13 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         Matrix4 m = actor()->transform()->worldTransform();
         p_ptr->m_Position = Vector3(m[12], m[13], m[14]);
 
-        Vector4 p = params();
+        float r = radius();
 
         Matrix4 t(p_ptr->m_Position,
                   Quaternion(),
-                  Vector3(p.y * 2.0f, p.y * 2.0f, p.y * 2.0f));
+                  Vector3(r * 2.0f, r * 2.0f, r * 2.0f));
+
+        p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
 
         buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
 
@@ -117,11 +126,16 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
     int32_t pageWidth, pageHeight;
     Pipeline::shadowPageSize(pageWidth, pageHeight);
 
-    float zFar = params().y;
+    float zFar = radius();
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_Near, zFar);
 
+    Matrix4 wt = t->worldTransform();
+
+    Matrix4 wp;
+    wp.translate(Vector3(wt[12], wt[13], wt[14]));
+
     for(int32_t i = 0; i < 6; i++) {
-        Matrix4 mat = (t->worldTransform() * Matrix4(rot[i].toMatrix())).inverse();
+        Matrix4 mat = (wp * Matrix4(rot[i].toMatrix())).inverse();
         p_ptr->m_Matrix[i] = scale * crop * mat;
 
         p_ptr->m_Tiles[i] = Vector4(static_cast<float>(x[i]) / pageWidth,
@@ -150,18 +164,47 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
     Returns the attenuation radius of the light.
 */
 float PointLight::radius() const {
-    return params().y;
+    return params().w;
 }
 /*!
     Changes the attenuation \a radius of the light.
 */
 void PointLight::setRadius(float radius) {
     Vector4 p = params();
-    p.y = radius;
+    p.w = radius;
     setParams(p);
 
     p_ptr->m_Box = AABBox(Vector3(), Vector3(radius * 2));
 }
+/*!
+    Returns the source radius of the light.
+*/
+float PointLight::sourceRadius() const {
+    return params().y;
+}
+/*!
+    Changes the source \a radius of the light.
+*/
+void PointLight::setSourceRadius(float radius) {
+    Vector4 p = params();
+    p.y = radius;
+    setParams(p);
+}
+/*!
+    Returns the source length of the light.
+*/
+float PointLight::sourceLength() const {
+    return params().z;
+}
+/*!
+    Changes the source \a length of the light.
+*/
+void PointLight::setSourceLength(float length) {
+    Vector4 p = params();
+    p.z = length;
+    setParams(p);
+}
+
 /*!
     \internal
 */
@@ -174,10 +217,18 @@ AABBox PointLight::bound() const {
 
 bool PointLight::drawHandles(bool selected) {
     A_UNUSED(selected);
-    Vector3 pos = actor()->transform()->position();
+    Transform *t = actor()->transform();
 
+    if(selected) {
+        Vector4 p = params();
+        Handles::s_Color = Vector4(0.5f, 1.0f, 1.0f, 1.0f);
+        Handles::drawSphere(t->worldPosition(), t->worldRotation(), p.w);
+
+        Handles::s_Color = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
+        Handles::drawCapsule(t->worldPosition(), t->worldRotation(), p.y, p.z + p.y * 2.0f);
+    }
     Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(pos, Vector2(0.5f), Engine::loadResource<Texture>(".embedded/pointlight.png"));
+    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/pointlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

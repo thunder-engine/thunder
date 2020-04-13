@@ -29,6 +29,7 @@ public:
 
     static void             beginDraw           (ICommandBuffer *buffer);
     static void             endDraw             ();
+    static void             cleanDepth          ();
 
     static void             drawArrow           (const Matrix4 &transform);
 
@@ -38,6 +39,7 @@ public:
 
     static void             drawDisk            (const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
 
+    static void             drawRectangle       (const Vector3 &center, const Quaternion &rotation, float width, float height);
     static void             drawCircle          (const Vector3 &center, const Quaternion &rotation, float radius);
     static void             drawSphere          (const Vector3 &center, const Quaternion &rotation, float radius);
     static void             drawCapsule         (const Vector3 &center, const Quaternion &rotation, float radius, float height);
@@ -81,6 +83,7 @@ protected:
     static Mesh *s_MoveXY;
     static Mesh *s_Arc;
     static Mesh *s_Circle;
+    static Mesh *s_Rectangle;
     static Mesh *s_Box;
 
     static MaterialInstance*s_Gizmo;

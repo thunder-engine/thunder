@@ -76,10 +76,10 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         p_ptr->m_Position = actor()->transform()->worldPosition();
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
-        Vector4 p = params();
+        float d = distance();
 
-        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * p.y * 0.5f,
-                  q, Vector3(p.y * 1.5f, p.y * 1.5f, p.y)); // (1.0f - p.z)
+        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * d * 0.5f,
+                  q, Vector3(d * 1.5f, d * 1.5f, d)); // (1.0f - p.z)
 
         buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
 
@@ -112,7 +112,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     scale[13] = 0.5f;
     scale[14] = 0.5f;
 
-    float zFar = params().y;
+    float zFar = distance();
     Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle * 2.0f, 1.0f, p_ptr->m_Near, zFar);
 
     int32_t x, y, w, h;
@@ -178,7 +178,7 @@ float SpotLight::angle() const {
 void SpotLight::setAngle(float angle) {
     p_ptr->m_Angle = angle;
     Vector4 p = params();
-    p.z = cos(DEG2RAD * p_ptr->m_Angle);
+    p.w = cos(DEG2RAD * p_ptr->m_Angle);
     setParams(p);
 }
 
@@ -187,10 +187,12 @@ void SpotLight::setAngle(float angle) {
 
 bool SpotLight::drawHandles(bool selected) {
     A_UNUSED(selected);
-    Vector3 pos = actor()->transform()->position();
+    Transform *t = actor()->transform();
 
+    Matrix4 z(Vector3(), Quaternion(Vector3(1, 0, 0),-90), Vector3(1.0));
     Handles::s_Color = Handles::s_Second = color();
-    bool result = Handles::drawBillboard(pos, Vector2(0.5f), Engine::loadResource<Texture>(".embedded/spotlight.png"));
+    Handles::drawArrow(Matrix4(t->worldPosition(), t->worldRotation(), Vector3(0.25f)) * z);
+    bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/spotlight.png"));
     Handles::s_Color = Handles::s_Second = Handles::s_Normal;
 
     return result;

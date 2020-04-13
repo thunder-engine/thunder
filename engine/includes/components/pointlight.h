@@ -9,15 +9,23 @@ class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
     A_REGISTER(PointLight, BaseLight, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Attenuation_Radius,   PointLight::radius, PointLight::setRadius)
+        A_PROPERTY(float, Attenuation_Radius, PointLight::radius, PointLight::setRadius),
+        A_PROPERTY(float, Source_Radius,      PointLight::sourceRadius, PointLight::setSourceRadius),
+        A_PROPERTY(float, Source_Length,      PointLight::sourceLength, PointLight::setSourceLength)
     )
 
 public:
     PointLight ();
-    ~PointLight ();
+    ~PointLight () override;
 
     float radius () const;
     void setRadius (float radius);
+
+    float sourceRadius () const;
+    void setSourceRadius (float radius);
+
+    float sourceLength () const;
+    void setSourceLength (float length);
 
 private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;

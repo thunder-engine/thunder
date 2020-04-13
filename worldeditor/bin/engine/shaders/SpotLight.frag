@@ -31,8 +31,8 @@ void main (void) {
 
         float spot  = dot(normDir, light.direction);
         float fall = 0.0;
-        if(spot > light.params.z) {
-            fall  = 1.0 - (1.0 - spot) / (1.0 - light.params.z);
+        if(spot > light.params.w) {
+            fall  = 1.0 - (1.0 - spot) / (1.0 - light.params.w);
             fall  = getAttenuation( dist, light.params.y ) * light.params.x * fall;
         }
 

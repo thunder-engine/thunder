@@ -28,7 +28,7 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
 
 public:
     BaseLight ();
-    ~BaseLight ();
+    ~BaseLight () override;
 
     virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components);
 

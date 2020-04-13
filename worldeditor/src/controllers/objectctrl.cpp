@@ -116,6 +116,8 @@ void ObjectCtrl::drawHandles() {
     m_ObjectsList.clear();
     drawHelpers(*m_pMap);
 
+    Handles::cleanDepth();
+
     if(!m_Selected.empty()) {
         switch(m_Mode) {
             case MODE_TRANSLATE: {
