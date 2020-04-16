@@ -115,7 +115,7 @@ void main (void) {
                 l = normalize(closestPoint);
                 cosTheta = clamp(dot(l, n), 0.0, 1.0);
             } else {
-                factor *= cosTheta * getAttenuation(dist, cutoff);
+                factor *= PI * cosTheta * getAttenuation(dist, cutoff);
             }
             // Combine step
             vec3 h = normalize(l + v);

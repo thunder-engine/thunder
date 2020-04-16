@@ -30,6 +30,7 @@
 #include "components/directlight.h"
 #include "components/pointlight.h"
 #include "components/spotlight.h"
+#include "components/arealight.h"
 
 #include "components/animationcontroller.h"
 
@@ -210,6 +211,7 @@ Engine::Engine(File *file, const char *path) :
     DirectLight::registerClassFactory(this);
     PointLight::registerClassFactory(this);
     SpotLight::registerClassFactory(this);
+    AreaLight::registerClassFactory(this);
 
     ParticleRender::registerClassFactory(this);
     ParticleEffect::registerClassFactory(p_ptr->m_pResourceSystem);

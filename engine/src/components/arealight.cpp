@@ -1,4 +1,4 @@
-#include "components/pointlight.h"
+#include "components/arealight.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
@@ -18,9 +18,9 @@ static Quaternion rot[6] = {Quaternion(Vector3(0, 1, 0),-90),
                             Quaternion(Vector3(0, 1, 0),180),
                             Quaternion()};
 
-class PointLightPrivate {
+class AreaLightPrivate {
 public:
-    PointLightPrivate() :
+    AreaLightPrivate() :
             m_Near(0.1f) {
 
     }
@@ -28,6 +28,8 @@ public:
     Vector3 m_Position;
 
     Vector3 m_Direction;
+    Vector3 m_Right;
+    Vector3 m_Up;
 
     Vector4 m_Tiles[6];
 
@@ -41,22 +43,24 @@ public:
 };
 
 /*!
-    \class PointLight
+    \class AreaLight
     \brief Point Lights works much like a real-world light bulb, emitting light in all directions.
     \inmodule Engine
 
-    To determine the emiter position PointLight uses Transform component of the own Actor.
+    To determine the emiter position AreaLight uses Transform component of the own Actor.
 */
 
-PointLight::PointLight() :
-        p_ptr(new PointLightPrivate) {
+AreaLight::AreaLight() :
+        p_ptr(new AreaLightPrivate) {
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
-    Material *material = Engine::loadResource<Material>(".embedded/PointLight.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/AreaLight.mtl");
     MaterialInstance *instance = material->createInstance();
 
     instance->setVector3("light.position", &p_ptr->m_Position);
     instance->setVector3("light.direction", &p_ptr->m_Direction);
+    instance->setVector3("lightRight", &p_ptr->m_Right);
+    instance->setVector3("lightUp", &p_ptr->m_Up);
 
     instance->setMatrix4("light.matrix", p_ptr->m_Matrix, 6);
     instance->setVector4("light.tiles",  p_ptr->m_Tiles, 6);
@@ -68,13 +72,13 @@ PointLight::PointLight() :
     setParams(p);
 }
 
-PointLight::~PointLight() {
+AreaLight::~AreaLight() {
     delete p_ptr;
 }
 /*!
     \internal
 */
-void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
+void AreaLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
@@ -88,7 +92,9 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
                   Quaternion(),
                   Vector3(r * 2.0f, r * 2.0f, r * 2.0f));
 
-        p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
+        p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 0.0f, 1.0f);
+        p_ptr->m_Right = m.rotation() * Vector3(1.0f, 0.0f, 0.0f);
+        p_ptr->m_Up = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
 
         buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
 
@@ -98,7 +104,7 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
     A_UNUSED(camera);
 
     if(!castShadows()) {
@@ -163,13 +169,13 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
 /*!
     Returns the attenuation radius of the light.
 */
-float PointLight::radius() const {
+float AreaLight::radius() const {
     return params().w;
 }
 /*!
     Changes the attenuation \a radius of the light.
 */
-void PointLight::setRadius(float radius) {
+void AreaLight::setRadius(float radius) {
     Vector4 p = params();
     p.w = radius;
     setParams(p);
@@ -177,38 +183,38 @@ void PointLight::setRadius(float radius) {
     p_ptr->m_Box = AABBox(Vector3(), Vector3(radius * 2));
 }
 /*!
-    Returns the source radius of the light.
+    Returns the source width of the light.
 */
-float PointLight::sourceRadius() const {
+float AreaLight::sourceWidth() const {
     return params().y;
 }
 /*!
-    Changes the source \a radius of the light.
+    Changes the source \a width of the light.
 */
-void PointLight::setSourceRadius(float radius) {
+void AreaLight::setSourceWidth(float width) {
     Vector4 p = params();
-    p.y = radius;
+    p.y = width;
     setParams(p);
 }
 /*!
-    Returns the source length of the light.
+    Returns the source height of the light.
 */
-float PointLight::sourceLength() const {
+float AreaLight::sourceHeight() const {
     return params().z;
 }
 /*!
-    Changes the source \a length of the light.
+    Changes the source \a height of the light.
 */
-void PointLight::setSourceLength(float length) {
+void AreaLight::setSourceHeight(float height) {
     Vector4 p = params();
-    p.z = length;
+    p.z = height;
     setParams(p);
 }
 
 /*!
     \internal
 */
-AABBox PointLight::bound() const {
+AABBox AreaLight::bound() const {
     AABBox result = p_ptr->m_Box;
     result.center += actor()->transform()->worldPosition();
     return result;
@@ -217,7 +223,7 @@ AABBox PointLight::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool PointLight::drawHandles(bool selected) {
+bool AreaLight::drawHandles(bool selected) {
     A_UNUSED(selected);
     Transform *t = actor()->transform();
 
@@ -227,7 +233,7 @@ bool PointLight::drawHandles(bool selected) {
         Handles::drawSphere(t->worldPosition(), t->worldRotation(), p.w);
 
         Handles::s_Color = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-        Handles::drawCapsule(t->worldPosition(), t->worldRotation(), p.y, p.z + p.y * 2.0f);
+        Handles::drawRectangle(t->worldPosition(), t->worldRotation(), p.y, p.z);
     }
     Handles::s_Color = Handles::s_Second = color();
     bool result = Handles::drawBillboard(t->worldPosition(), Vector2(0.5f), Engine::loadResource<Texture>(".embedded/pointlight.png"));

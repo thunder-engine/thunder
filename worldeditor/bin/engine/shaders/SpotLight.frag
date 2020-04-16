@@ -26,10 +26,10 @@ void main (void) {
         vec3 n = normalize( slice0.xyz * 2.0 - 1.0 );
 
         vec3 dir = light.position - world;
-        vec3 normDir = normalize(dir);
+        vec3 l = normalize(dir);
         float dist  = length(dir);
 
-        float spot  = dot(normDir, light.direction);
+        float spot  = dot(l, light.direction);
         float fall = 0.0;
         if(spot > light.params.w) {
             fall  = 1.0 - (1.0 - spot) / (1.0 - light.params.w);
@@ -45,9 +45,9 @@ void main (void) {
         vec3 albedo = slice2.xyz;
 
         vec3 v = normalize( camera.position.xyz - world );
-        vec3 h = normalize( normDir + v );
+        vec3 h = normalize( l + v );
 
-        float ln = dot(normDir, n);
+        float cosTheta = clamp(dot(l, n), 0.0, 1.0);
 
         float shadow = 1.0;
         if(light.shadows == 1.0) {
@@ -57,9 +57,9 @@ void main (void) {
             shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
         }
 
-        vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, ln, rough);
+        vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);
         vec3 result = albedo * (1.0 - metal) + refl;
-        float diff = max(getLambert(ln, light.params.x) * fall * shadow, 0.0);
+        float diff = max(PI * getLambert(cosTheta, light.params.x) * fall * shadow, 0.0);
 
         rgb = vec4(light.color.xyz * result * diff, 1.0);
     } else {

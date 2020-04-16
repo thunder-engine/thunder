@@ -1,0 +1,22 @@
+{
+    "Blend": 1,
+    "Depth": false,
+    "Links": [
+
+    ],
+    "Model": 0,
+    "Nodes": [
+        {
+            "Type": "ConstFloat",
+            "Values": {
+                "Value": 1
+            },
+            "X": -200,
+            "Y": 0
+        }
+    ],
+    "Raw": "AreaLight.frag",
+    "Side": false,
+    "Type": 2,
+    "View": true
+}
