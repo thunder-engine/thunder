@@ -54,8 +54,9 @@ matrix:
       script:
         - qbs config defaultProfile
         - qbs config --list
+        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release
-        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/sdk/${VERSION}/linux
+        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/
       deploy:
         - provider: script
           skip_cleanup: true
@@ -125,9 +126,10 @@ matrix:
         - qbs setup-qt ${QT_BIN}/qmake qt-brew
       script:
         - qbs config --list
+        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:qt-brew project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release profile:qt-brew
         - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/sdk/${VERSION}/macos
+        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/
       deploy:
         - provider: script
           skip_cleanup: true
@@ -200,6 +202,7 @@ matrix:
         - qbs setup-toolchains --detect
       script:
         - qbs config --list
+        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:MSVC2015-amd64 project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release profile:MSVC2015-amd64
         - 7z a -t7z ThunderEngine-windows-x64.7z release/install-root/
       deploy:

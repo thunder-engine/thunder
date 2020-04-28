@@ -150,6 +150,15 @@ Product {
     }
 
     Group {
+        name: "Qt Config"
+        condition: qbs.targetOS.contains("windows")
+        files: install.RESOURCE_ROOT + "/qt.conf"
+        qbs.install: true
+        qbs.installDir: install.BIN_PATH + "/" + install.bundle
+        qbs.installPrefix: install.PREFIX
+    }
+
+    Group {
         name: "QML Plugins"
         prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/../qml/")
         files: [
