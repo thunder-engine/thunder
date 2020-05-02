@@ -3,7 +3,6 @@ import qbs
 Project {
     id: project
     property string platform: {
-        //qbs.architectures = ["arm64"]
         var arch = qbs.architecture;
         if(qbs.targetOS[0] === "macos" || qbs.targetOS[0] === "linux") {
             arch = "x86_64"
@@ -69,7 +68,7 @@ Project {
         cpp.cxxStandardLibrary: "libc++"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            project.sdkPath + project.platform + "/static"
         ]
 
         cpp.staticLibraries: [

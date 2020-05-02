@@ -72,7 +72,7 @@ QbsBuilder::QbsBuilder() :
     if(platform) {
         QString profile;
     #if defined(Q_OS_WIN)
-        profile = "MSVC2015-x86";
+        profile = "MSVC2015-amd64";
     #elif defined(Q_OS_MAC)
         profile = "xcode-macosx-x86_64";
     #elif defined(Q_OS_UNIX)
@@ -81,7 +81,7 @@ QbsBuilder::QbsBuilder() :
         platform->setProperty(qPrintable(gProfile), profile);
         QStringList architectures;
 #if defined(Q_OS_WIN)
-        architectures << "x86";
+        architectures << "x86_64";
 #elif defined(Q_OS_MAC)
         architectures << "x86_64";
 #elif defined(Q_OS_UNIX)
