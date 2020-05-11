@@ -26,7 +26,7 @@ Rectangle {
     property real timeScale: 0.01
     property int timeStep: minStep
 
-    signal addKey   (int row, int col, int position)
+    signal insertKey(int row, int col, int position)
     signal removeKey(int row, int col, int index)
     signal selectKey(int row, int col, int index)
 
@@ -45,6 +45,16 @@ Rectangle {
         }
     }
 
+    Keys.onPressed: {
+        if(event.key === Qt.Key_Delete) {
+            if(curve.visible) {
+                curve.deleteKey()
+            } else {
+                keys.deleteKey()
+            }
+        }
+    }
+
     MouseArea {
         anchors.fill: parent
 
@@ -53,11 +63,6 @@ Rectangle {
 
         property int oldX: 0
         property int oldY: 0
-
-        onClicked: {
-            selectInd = -1
-            selectRow = -1
-        }
 
         onPressed: {
             if(mouse.buttons === Qt.RightButton) {
@@ -98,16 +103,20 @@ Rectangle {
 
         onPositionChanged: {
             if(mouse.buttons === Qt.RightButton) {
-                hbar.position += curve.toLocalSpaceX(oldX - mouse.x)
+                var deltaX = (oldX - mouse.x) * hbar.size
+                hbar.position += deltaX / width
                 hbar.position = Math.max(hbar.position, 0.0)
-                vbar.position -= curve.toLocalSpaceY(oldY - mouse.y)
+
+                var deltaY = (oldY - mouse.y) * vbar.size
+                vbar.position -= deltaY / height
+
                 oldX = mouse.x
                 oldY = mouse.y
             }
         }
     }
 
-    Grid {
+    GridLines {
         id: grid
         anchors.fill: parent
         anchors.topMargin: 19
@@ -139,7 +148,7 @@ Rectangle {
             }
 
             onPositionChanged: {
-                if(selectInd == -1 && pressedButtons === Qt.LeftButton) {
+                if(pressedButtons === Qt.LeftButton) {
                     clipModel.position = Math.max(Math.round((mouseX + posX - minStep) / timeStep), 0) * timeScale
                 }
             }
@@ -217,22 +226,27 @@ Rectangle {
         color: theme.red
     }
 
-    ScrollBar {
+    ResizableScrollBar {
         id: hbar
-        hoverEnabled: true
-        active: hovered || pressed
         orientation: Qt.Horizontal
-        size: parent.width / (curve.toScreenSpaceX(maxPos) + maxStep * 2)
+        size: parent.width / (curve.toScreenSpaceX(maxPos) + maxStep)
 
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+
+        onHeadPositionChanged: {
+            hbar.position -= value - hbar.size
+            hbar.size = value
+        }
+
+        onTailPositionChanged: {
+            size = value
+        }
     }
 
-    ScrollBar {
+    ResizableScrollBar {
         id: vbar
-        hoverEnabled: true
-        active: hovered || pressed
         orientation: Qt.Vertical
         size: {
             var value = curve.toScreenSpaceY(Math.abs(curve.maximum - curve.minimum))
@@ -242,5 +256,14 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: parent.height - 19
+
+        onHeadPositionChanged: {
+            vbar.position -= value - vbar.size
+            vbar.size = value
+        }
+
+        onTailPositionChanged: {
+            vbar.size = value
+        }
     }
 }

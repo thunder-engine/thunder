@@ -61,7 +61,8 @@
         <file>qml/Blog.qml</file>
         <file>qml/BlogTile.qml</file>
         <file>qml/Keyframe.qml</file>
-        <file>qml/Grid.qml</file>
+        <file>qml/GridLines.qml</file>
+        <file>qml/ResizableScrollBar.qml</file>
     </qresource>
     <qresource prefix="/Workspaces">
         <file alias="Default.ws">workspaces/Default.ws</file>

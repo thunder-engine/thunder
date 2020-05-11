@@ -19,24 +19,41 @@ Rectangle {
     property int timeStep: minStep
     property real timeScale: 0.01
 
+    property variant keys: undefined
+
     function toScreenSpaceX(pos) {
         return ((pos / 1000.0) / timeScale) * timeStep + minStep
     }
 
-    Keys.onPressed: {
-        if(event.key === Qt.Key_Delete) {
-            removeKey(selectRow, selectCol, selectInd)
-            selectInd = -1
-            selectRow = -1
-            selectCol = -1
-        }
+    function deleteKey() {
+        removeKey(selectRow, selectCol, selectInd)
+        selectInd = -1
+        selectRow = -1
+        selectCol = -1
     }
 
     Connections {
         target: clipModel
         onLayoutChanged: {
+            keys = {}
+            var rows = clipModel.rowCount()
+            for(var r = 0; r < rows; r++) {
+                var track = clipModel.trackData(r)
+                for(var c = 0; c < track.length; c++) {
+                    var curve = track[c]
+                    for(var k = 1; k < curve.length; k++) {
+                        var position = curve[k][0]
+
+                        if(keys[position] === undefined) {
+                            keys[position] = []
+                        }
+                        keys[position].push(c)
+                    }
+                }
+            }
+
             points.model = 0 // to update repeater
-            points.model = clipModel.rowCount()
+            points.model = rows
         }
     }
 
@@ -68,44 +85,13 @@ Rectangle {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onDoubleClicked: {
-                    addKey(row, -1, Math.max(Math.round((mouseX + posX) / timeStep), 0) * timeScale * 1000)
+                    insertKey(row, -1, Math.max(Math.round((mouseX + posX - minStep) / timeStep), 0) * timeScale * 1000)
                 }
                 onClicked: {
                     if(mouse.button === Qt.LeftButton) {
                         selectInd = -1
                         selectRow = -1
                         selectCol = -1
-                    }
-
-                    if(mouse.button === Qt.RightButton) {
-                        menu.x = mouseX
-                        menu.y = mouseY
-                        //menu.open()
-                    }
-                }
-
-                Menu {
-                    id: menu
-                    y: parent.height
-
-                    MenuItem {
-                        text: qsTr("Add Key")
-                        onTriggered: addKey(row, Math.max(Math.round((menu.x + posX) / timeStep), 0) * timeScale * 1000)
-                    }
-                    MenuItem {
-                        text: qsTr("Delete Key")
-                        visible: (selectRow >= 0 && selectInd >= 0)
-                        onTriggered: {
-                            var k = selectInd
-                            var r = selectRow
-                            var c = selectCol
-
-                            selectInd = -1
-                            selectRow = -1
-                            selectCol = -1
-
-                            removeKey(r, c, k)
-                        }
                     }
                 }
             }
@@ -119,10 +105,14 @@ Rectangle {
             }
 
             Repeater {
+                id: components
+
                 model: keys.componentsNumber
 
+                property bool expanded: clipModel.isExpanded(row)
+
                 Repeater {
-                    id: comp
+                    id: component
                     model: keys.curve[col].length - 1
 
                     property int col: index
@@ -131,16 +121,19 @@ Rectangle {
                     Item {
                         Keyframe {
                             x: toScreenSpaceX(key[0]) - posX - points.pointCenter
+                            key: keys.curve[component.col][index + 1]
                         }
 
                         Keyframe {
                             x: toScreenSpaceX(key[0]) - posX - points.pointCenter
-                            y: (comp.col + 1) * rowHeight + 2
-                            visible: clipModel.isExpanded(row)
+                            y: (component.col + 1) * rowHeight + 2
+                            visible: components.expanded
+                            key: keys.curve[component.col][index + 1]
                         }
                     }
                 }
             }
+
         }
     }
 }

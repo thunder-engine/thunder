@@ -35,7 +35,6 @@ Timeline::Timeline(QWidget *parent) :
         m_TimerId(0),
         m_ContentMenu(this),
         m_Modified(false),
-        m_pKey(nullptr),
         m_Row(-1),
         m_Col(-1),
         m_Ind(-1) {
@@ -58,7 +57,7 @@ Timeline::Timeline(QWidget *parent) :
     ui->curve->setProperty("checkgreen", true);
 
     QQuickItem *item = ui->quickTimeline->rootObject();
-    connect(item, SIGNAL(addKey(int,int,int)), m_pModel, SLOT(onAddKey(int,int,int)));
+    connect(item, SIGNAL(insertKey(int,int,int)), m_pModel, SLOT(onInsertKey(int,int,int)));
     connect(item, SIGNAL(removeKey(int,int,int)), m_pModel, SLOT(onRemoveKey(int,int,int)));
     connect(item, SIGNAL(selectKey(int,int,int)), this, SLOT(onSelectKey(int,int,int)));
 
@@ -73,7 +72,7 @@ Timeline::Timeline(QWidget *parent) :
     connect(ui->treeView, SIGNAL(expanded(const QModelIndex)), m_pModel, SLOT(onExpanded(const QModelIndex)));
     connect(ui->treeView, SIGNAL(collapsed(const QModelIndex)), m_pModel, SLOT(onCollapsed(const QModelIndex)));
 
-    m_ContentMenu.addAction(tr("Remove Properties"), this, SLOT(onRemoveProperty()));
+    m_ContentMenu.addAction(tr("Remove Properties"), this, SLOT(onRemoveProperties()));
 
     ui->toolBar->hide();
 }
@@ -214,18 +213,18 @@ void Timeline::onUpdated(Object *object, const QString property) {
     if(object && !property.isEmpty() && ui->record->isChecked()) {
         AnimationController *controller = findController(object);
         if(controller) {
-            AnimationClip *clip = m_pModel->clip();
-            if(clip == nullptr) {
+            AnimationClip *c = m_pModel->clip();
+            if(c == nullptr) {
                 return;
             }
 
-            QString path    = pathTo(static_cast<Object *>(controller->actor()), object);
+            QString path = pathTo(static_cast<Object *>(controller->actor()), object);
 
-            const MetaObject *meta  = object->metaObject();
-            int32_t index   = meta->indexOfProperty(qPrintable(property));
+            const MetaObject *meta = object->metaObject();
+            int32_t index = meta->indexOfProperty(qPrintable(property));
             if(index >= 0) {
-                MetaProperty p  = meta->property(index);
-                Variant value   = p.read(object);
+                MetaProperty p = meta->property(index);
+                Variant value = p.read(object);
 
                 vector<float> data;
                 switch(value.type()) {
@@ -246,16 +245,18 @@ void Timeline::onUpdated(Object *object, const QString property) {
                     } break;
                 }
 
+                AnimationClip::TrackList tracks = c->m_Tracks;
+
                 for(uint32_t component = 0; component < data.size(); component++) {
                     bool create = true;
 
                     AnimationCurve::KeyFrame key;
                     key.m_Position = controller->position();
                     key.m_Value = data[component];
-                    key.m_LeftTangent  = key.m_Value;
-                    key.m_RightTangent  = key.m_Value;
+                    key.m_LeftTangent = key.m_Value;
+                    key.m_RightTangent = key.m_Value;
 
-                    for(auto &it : clip->m_Tracks) {
+                    for(auto &it : tracks) {
                         if(it.path == path.toStdString() && it.property == property.toStdString()) {
                             bool update = false;
 
@@ -287,12 +288,11 @@ void Timeline::onUpdated(Object *object, const QString property) {
 
                         track.curves[component] = curve;
 
-                        clip->m_Tracks.push_back(track);
-                        clip->m_Tracks.sort(compare);
+                        tracks.push_back(track);
+                        tracks.sort(compare);
                     }
                 }
-                m_pModel->updateController();
-                onModified();
+                UndoManager::instance()->push(new UndoUpdateItems(tracks, m_pModel, "Update Properties"));
             }
         }
     }
@@ -302,14 +302,9 @@ void Timeline::onModified() {
     m_Modified  = true;
 }
 
-void Timeline::onRemoveProperty() {
+void Timeline::onRemoveProperties() {
     QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
-    foreach(const QModelIndex &index, list) {
-        m_pModel->removeItem(index);
-    }
-    m_pModel->updateController();
-
-    onModified();
+    m_pModel->removeItems(list);
 }
 
 void Timeline::onSelectKey(int row, int col, int index) {
@@ -317,25 +312,20 @@ void Timeline::onSelectKey(int row, int col, int index) {
     m_Col = col;
     m_Ind = index;
 
-    m_pKey = m_pModel->key(row, col, index);
-    if(m_pKey) {
-        ui->timeEdit->setText(QString::number(m_pKey->m_Position));
-        ui->valueEdit->setText(QString::number(m_pKey->m_Value));
+    AnimationCurve::KeyFrame *key = m_pModel->key(row, col, index);
+    if(key) {
+        ui->timeEdit->setText(QString::number(key->m_Position));
+        ui->valueEdit->setText(QString::number(key->m_Value));
     }
-    ui->deleteKey->setEnabled((m_pKey != nullptr));
+    ui->deleteKey->setEnabled((key != nullptr));
 }
 
 void Timeline::onKeyChanged() {
-    if(m_pKey) {
-        m_pKey->m_Position = ui->timeEdit->text().toUInt();
+    AnimationCurve::KeyFrame *key = m_pModel->key(m_Row, m_Col, m_Ind);
+    if(key) {
+        float delta = ui->valueEdit->text().toFloat() - key->m_Value;
 
-        float delta = ui->valueEdit->text().toFloat() - m_pKey->m_Value;
-
-        m_pKey->m_Value += delta;
-        m_pKey->m_LeftTangent += delta;
-        m_pKey->m_RightTangent += delta;
-
-        m_pModel->updateController();
+        m_pModel->onUpdateKey(m_Row, m_Col, m_Ind, key->m_Value + delta, key->m_Value + delta, key->m_Value + delta, ui->timeEdit->text().toUInt());
     }
 }
 
@@ -448,21 +438,14 @@ void Timeline::on_curve_toggled(bool checked) {
 }
 
 void Timeline::on_flatKey_clicked() {
-    if(m_pKey) {
-        m_pKey->m_LeftTangent = m_pKey->m_Value;
-        m_pKey->m_RightTangent = m_pKey->m_Value;
-
-        m_pModel->updateController();
+    AnimationCurve::KeyFrame *key = m_pModel->key(m_Row, m_Col, m_Ind);
+    if(key) {
+        m_pModel->onUpdateKey(m_Row, m_Col, m_Ind, key->m_Value, key->m_Value, key->m_Value, key->m_Position);
     }
 }
 
 void Timeline::on_breakKey_clicked() {
-    if(m_pKey) {
-        m_pKey->m_LeftTangent = m_pKey->m_Value;
-        m_pKey->m_RightTangent = m_pKey->m_Value;
 
-        m_pModel->changed();
-    }
 }
 
 void Timeline::on_deleteKey_clicked() {

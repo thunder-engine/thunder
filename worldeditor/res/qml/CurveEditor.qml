@@ -52,6 +52,12 @@ Rectangle {
         return (pos / valueStep) * valueScale
     }
 
+    function deleteKey() {
+        removeKey(row, selectCol, selectInd)
+        selectInd = -1
+        selectCol = -1
+    }
+
     Connections {
         target: clipModel
         onLayoutChanged: {
@@ -65,7 +71,7 @@ Rectangle {
             curve = clipModel.trackData(r)
 
             minimum = Number.MAX_VALUE
-            maximum = Number.MIN_VALUE
+            maximum =-Number.MAX_VALUE
             for(var i = 0; i < canvas.componentsNumber; i++) {
                 var keysNumber = curve[i].length - 1
                 for(var k = 0; k < keysNumber; k++) {
@@ -86,7 +92,7 @@ Rectangle {
                 value = v
             }
             valueScale = value
-            valueStep = maxValue
+            valueStep = minValue
 
             canvas.requestPaint()
 
@@ -100,15 +106,6 @@ Rectangle {
             canvas.requestPaint()
         }
     }
-
-    Keys.onPressed: {
-        if(event.key === Qt.Key_Delete) {
-            removeKey(row, selectCol, selectInd)
-            selectInd = -1
-            selectCol = -1
-        }
-    }
-
 
     Canvas {
         id: canvas
@@ -131,7 +128,7 @@ Rectangle {
                 context.translate(-posX, posY)
 
                 for(var i = 0; i < componentsNumber; i++) {
-                    if(col > -1 && i != col) {
+                    if(col > -1 && i !== col) {
                         continue
                     }
 
@@ -170,7 +167,7 @@ Rectangle {
                     }
                     context.stroke()
 
-                    if(selectInd >= 0 && selectCol == i) {
+                    if(selectInd >= 0 && selectCol === i) {
                         context.strokeStyle = Qt.rgba(0.3, 0.3, 0.3)
 
                         key1 = curve[selectCol][selectInd + 1]
@@ -375,7 +372,7 @@ Rectangle {
 
                         drag.onActiveChanged: {
                             if(!drag.active) {
-                                clipModel.setTrackData(row, curve)
+                                clipModel.setTrackData(curveEditor.row, curve)
                             }
                         }
 
@@ -429,7 +426,7 @@ Rectangle {
 
                         drag.onActiveChanged: {
                             if(!drag.active) {
-                                clipModel.setTrackData(row, curve)
+                                clipModel.setTrackData(curveEditor.row, curve)
                             }
                         }
 

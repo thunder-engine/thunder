@@ -11,11 +11,11 @@ Rectangle {
     y: 2
     rotation: 45
 
-    property variant key: keys.curve[comp.col][index + 1]
+    property variant key: undefined
 
     function commitKey() {
         var data = keys.curve
-        data[comp.col][index + 1] = key
+        data[component.col][index + 1] = key
         keys.curve = data
     }
 

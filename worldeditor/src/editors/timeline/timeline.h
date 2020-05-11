@@ -51,7 +51,7 @@ protected:
 private slots:
     void                    onModified              ();
 
-    void                    onRemoveProperty        ();
+    void                    onRemoveProperties      ();
 
     void                    onSelectKey             (int, int, int);
 
@@ -93,8 +93,6 @@ private:
     bool                    m_Modified;
 
     AnimationClipModel     *m_pModel;
-
-    AnimationCurve::KeyFrame *m_pKey;
 
     int32_t                 m_Row;
     int32_t                 m_Col;
