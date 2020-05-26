@@ -15,7 +15,7 @@ TemplateProperty::TemplateProperty(const QString &name, QObject *propertyObject,
 }
 
 QVariant TemplateProperty::value(int role) const {
-    QVariant data   = Property::value(role);
+    QVariant data = Property::value(role);
     if(role == Qt::EditRole) {
         return data.value<Template>().path;
     }

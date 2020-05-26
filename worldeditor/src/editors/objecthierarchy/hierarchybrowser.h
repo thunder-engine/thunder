@@ -63,6 +63,10 @@ public:
 
     void                    setObject                   (Object *object);
 
+    void                    setSimplified               (bool enable);
+
+    void                    setComponentsFilter         (const QStringList &list);
+
 signals:
     void                    selected                    (Object::ObjectList objects);
 

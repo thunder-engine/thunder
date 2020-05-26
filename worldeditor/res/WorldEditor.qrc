@@ -47,6 +47,7 @@
         <file>styles/dark/images/actl.png</file>
         <file>styles/dark/images/effect.png</file>
         <file>styles/dark/images/l10n.png</file>
+        <file>styles/dark/icons/target.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>

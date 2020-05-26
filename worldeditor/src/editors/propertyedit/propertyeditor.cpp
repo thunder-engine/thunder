@@ -17,6 +17,7 @@
 #include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
 #include "custom/FilePathProperty.h"
+#include "custom/ComponentProperty.h"
 
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
@@ -56,6 +57,9 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::type("Template"))
         return new TemplateProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("SceneComponent"))
+        return new ComponentProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Alignment"))
         return new AlignmentProperty(name, propertyObject, parent);

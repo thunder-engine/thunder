@@ -24,6 +24,8 @@
 
 #include "assetmanager.h"
 
+#include "editors/componentselect/componentselect.h"
+
 #include "controllers/objectctrl.h"
 
 #include <QMap>
@@ -43,106 +45,9 @@ Q_DECLARE_METATYPE(Axises)
 #define AXISES      "Axises"
 #define ALIGNMENT   "Alignment"
 #define COMPONENT   "Component"
+#define TEMPLATE    "Template"
 
 const QString EditorTag("editor=");
-
-QVariant qVariant(Variant &v, const QString &editor) {
-    switch(v.userType()) {
-        case MetaType::BOOLEAN: {
-            return QVariant(v.toBool());
-        }
-        case MetaType::INTEGER: {
-            int32_t value = v.toInt();
-            if(editor == AXISES) {
-                return QVariant::fromValue(static_cast<Axises>(value));
-            } else if(editor == ALIGNMENT) {
-                return QVariant::fromValue(static_cast<Alignment>(value));
-            }
-            return QVariant(v.toInt());
-        }
-        case MetaType::FLOAT: {
-            return QVariant(v.toFloat());
-        }
-        case MetaType::STRING: {
-            return QVariant(v.toString().c_str());
-        }
-        case MetaType::VECTOR2: {
-            return QVariant::fromValue(v.toVector2());
-        }
-        case MetaType::VECTOR3: {
-            return QVariant::fromValue(v.toVector3());
-        }
-        case MetaType::VECTOR4: {
-            Vector4 value = v.toVector4();
-            if(editor == COLOR) {
-                QColor r;
-                r.setRgbF(value.x, value.y, value.z, value.w);
-                return QVariant(r);
-            }
-            return QVariant::fromValue(value);
-        }
-        default: break;
-    }
-
-    if(v.data() == nullptr) {
-        return QVariant();
-    }
-    Object *o   = *(reinterpret_cast<Object **>(v.data()));
-    return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
-}
-
-Variant aVariant(QVariant &v, uint32_t type, const QString &editor) {
-    if(type == MetaType::type<Alignment>()) {
-        Alignment value = v.value<Alignment>();
-        return Variant::fromValue(value);
-    }
-
-    switch(type) {
-        case MetaType::BOOLEAN: {
-            return Variant(v.toBool());
-        }
-        case MetaType::INTEGER: {
-            if(editor == AXISES) {
-
-            }
-            return Variant(v.toInt());
-        }
-        case MetaType::FLOAT: {
-            return Variant(v.toFloat());
-        }
-        case MetaType::STRING: {
-            if(v.canConvert<QFileInfo>()) {
-                QFileInfo p = v.value<QFileInfo>();
-                return Variant(qUtf8Printable(p.absoluteFilePath()));
-            } else if(v.canConvert<Template>()) {
-                Template p = v.value<Template>();
-                return Variant(qUtf8Printable(p.path));
-            }
-            return Variant(qUtf8Printable(v.toString()));
-        }
-        case MetaType::VECTOR2: {
-            return Variant(v.value<Vector2>());
-        }
-        case MetaType::VECTOR3: {
-            return Variant(v.value<Vector3>());
-        }
-        case MetaType::VECTOR4: {
-            if(editor == COLOR) {
-                QColor c = v.value<QColor>();
-                return Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
-            }
-            return Variant(v.value<Vector4>());
-        }
-        default: {
-            Template p  = v.value<Template>();
-            if(!p.path.isEmpty()) {
-                Object *m = Engine::loadResource<Object>(qPrintable(p.path));
-                return Variant(type, &m);
-            }
-        } break;
-    }
-    return Variant();
-}
 
 NextObject::NextObject(Object *data, QObject *parent) :
         QObject(parent),
@@ -214,7 +119,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
             Variant data = property.read(object);
 
             blockSignals(true);
-            setProperty(qPrintable(name), qVariant(data, editor(property)));
+            setProperty(qPrintable(name), qVariant(data, property));
             blockSignals(false);
         }
     }
@@ -262,7 +167,7 @@ bool NextObject::event(QEvent *e) {
     return false;
 }
 
-QString NextObject::editor(MetaProperty &property) {
+QString NextObject::editor(const MetaProperty &property) {
     if(property.table() && property.table()->annotation) {
         QString annotation(property.table()->annotation);
         QStringList list = annotation.split(',');
@@ -288,9 +193,125 @@ Object *NextObject::findChild(QStringList &path) {
                 path.pop_front();
                 break;
             }
-
-            const MetaObject *meta = it->metaClass();
         }
     }
     return parent;
+}
+
+QVariant NextObject::qVariant(Variant &v, const MetaProperty &property) {
+    QString editor = NextObject::editor(property);
+
+    switch(v.userType()) {
+        case MetaType::BOOLEAN: {
+            return QVariant(v.toBool());
+        }
+        case MetaType::INTEGER: {
+            int32_t value = v.toInt();
+            if(editor == AXISES) {
+                return QVariant::fromValue(static_cast<Axises>(value));
+            } else if(editor == ALIGNMENT) {
+                return QVariant::fromValue(static_cast<Alignment>(value));
+            }
+            return QVariant(v.toInt());
+        }
+        case MetaType::FLOAT: {
+            return QVariant(v.toFloat());
+        }
+        case MetaType::STRING: {
+            return QVariant(v.toString().c_str());
+        }
+        case MetaType::VECTOR2: {
+            return QVariant::fromValue(v.toVector2());
+        }
+        case MetaType::VECTOR3: {
+            return QVariant::fromValue(v.toVector3());
+        }
+        case MetaType::VECTOR4: {
+            Vector4 value = v.toVector4();
+            if(editor == COLOR) {
+                QColor r;
+                r.setRgbF(value.x, value.y, value.z, value.w);
+                return QVariant(r);
+            }
+            return QVariant::fromValue(value);
+        }
+        default: break;
+    }
+
+    if(v.data() == nullptr) {
+        return QVariant();
+    }
+    Object *o = *(reinterpret_cast<Object **>(v.data()));
+    if(editor == COMPONENT) {
+        Actor *actor = static_cast<Actor *>(m_pObject);
+        SceneComponent cmp;
+        cmp.type = QString(property.type().name()).replace(" *", "");
+        cmp.component = static_cast<Component *>(o);
+        cmp.scene = actor->scene();
+        return QVariant::fromValue(cmp);
+    }
+    if(editor == TEMPLATE) {
+        return QVariant::fromValue(Template(Engine::reference(o).c_str(), v.userType()));
+    }
+    return QVariant();
+}
+
+Variant NextObject::aVariant(QVariant &v, uint32_t type, const QString &editor) {
+    if(type == MetaType::type<Alignment>()) {
+        Alignment value = v.value<Alignment>();
+        return Variant::fromValue(value);
+    }
+
+    switch(type) {
+        case MetaType::BOOLEAN: {
+            return Variant(v.toBool());
+        }
+        case MetaType::INTEGER: {
+            if(editor == AXISES) {
+
+            }
+            return Variant(v.toInt());
+        }
+        case MetaType::FLOAT: {
+            return Variant(v.toFloat());
+        }
+        case MetaType::STRING: {
+            if(v.canConvert<QFileInfo>()) {
+                QFileInfo p = v.value<QFileInfo>();
+                return Variant(qUtf8Printable(p.absoluteFilePath()));
+            } else if(v.canConvert<Template>()) {
+                Template p = v.value<Template>();
+                return Variant(qUtf8Printable(p.path));
+            }
+            return Variant(qUtf8Printable(v.toString()));
+        }
+        case MetaType::VECTOR2: {
+            return Variant(v.value<Vector2>());
+        }
+        case MetaType::VECTOR3: {
+            return Variant(v.value<Vector3>());
+        }
+        case MetaType::VECTOR4: {
+            if(editor == COLOR) {
+                QColor c = v.value<QColor>();
+                return Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
+            }
+            return Variant(v.value<Vector4>());
+        }
+        default: break;
+    }
+
+    if(editor == COMPONENT) {
+        SceneComponent c = v.value<SceneComponent>();
+        return Variant(type, &c.component);
+    }
+    if(editor == TEMPLATE) {
+        Template p  = v.value<Template>();
+        if(!p.path.isEmpty()) {
+            Object *m = Engine::loadResource<Object>(qPrintable(p.path));
+            return Variant(type, &m);
+        }
+    }
+
+    return Variant();
 }

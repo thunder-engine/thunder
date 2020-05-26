@@ -20,16 +20,16 @@ class ObjectsFilter : public QSortFilterProxyModel {
 public:
     explicit ObjectsFilter(QObject *parent) :
             QSortFilterProxyModel(parent) {
-        m_HideComponents    = false;
+        m_HideComponents = false;
     }
 
     void setClassTypes(const QStringList &list) {
-        m_List      = list;
+        m_List = list;
         invalidate();
     }
 
     void setHideComponents(bool hide) {
-        m_HideComponents    = hide;
+        m_HideComponents = hide;
         invalidate();
     }
 
@@ -40,13 +40,15 @@ protected:
 
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
-        if(m_HideComponents) {
-            Object *object  = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
-            result &= (dynamic_cast<Component*>(object) == nullptr);
-            result &= (dynamic_cast<Invalid*>(object) == nullptr);
-        }
+
+        Object *object = static_cast<Object *>(sourceModel()->index(sourceRow, 1, sourceParent).internalPointer());
+
         if(!m_List.isEmpty()) {
             result &= checkClassTypeFilter(sourceRow, sourceParent);
+        }
+        if(m_HideComponents) {
+            result &= (dynamic_cast<Component*>(object) == nullptr);
+            result &= (dynamic_cast<Invalid*>(object) == nullptr);
         }
         result     &= checkNameFilter(sourceRow, sourceParent);
 
@@ -54,19 +56,23 @@ protected:
     }
 
     bool checkClassTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 1, sourceParent);
-        foreach (QString it, m_List) {
-            QString type    = sourceModel()->data(index).toString();
-            if(it == type) {
-                return true;
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 1, sourceParent);
+        QString type = sourceModel()->data(index).toString();
+        if(!m_List.contains(type)) {
+            for(int i = 0; i < model->rowCount(index); i++) {
+                if(checkClassTypeFilter(i, index)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
+        return true;
     }
 
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QAbstractItemModel *model   = sourceModel();
-        QModelIndex index           = model->index(sourceRow, 0, sourceParent);
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 0, sourceParent);
         if(!filterRegExp().isEmpty() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
@@ -76,11 +82,11 @@ protected:
             QString key = model->data(index, filterRole()).toString();
             return key.contains(filterRegExp());
         }
-        return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+        return true;
     }
 
-    QStringList     m_List;
-    bool            m_HideComponents;
+    QStringList m_List;
+    bool m_HideComponents;
 };
 
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
@@ -122,6 +128,19 @@ HierarchyBrowser::~HierarchyBrowser() {
 void HierarchyBrowser::setObject(Object *object) {
     static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel())->setRoot(object);
     onHierarchyUpdated();
+}
+
+void HierarchyBrowser::setSimplified(bool enable) {
+    if(enable) {
+        ui->treeView->header()->hideSection(2);
+    } else {
+        ui->treeView->header()->showSection(2);
+    }
+    ui->treeView->setDragEnabled(!enable);
+}
+
+void HierarchyBrowser::setComponentsFilter(const QStringList &list) {
+    m_pFilter->setClassTypes(list);
 }
 
 void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
