@@ -1,3 +1,5 @@
 /*.user
 /worldeditor/*.user
 *.DS_Store
+/qt
+/Tools
