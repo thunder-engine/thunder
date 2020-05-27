@@ -141,7 +141,7 @@ public:
         shader.setResourceSetBinding(base);
 
         shader.setUniformLocationBase(0);
-        shader.setFlattenUniformArrays(false);
+        //shader.setFlattenUniformArrays(false);
         shader.setNoStorageFormat(false);
 
         const int defaultVersion = 110;
@@ -150,6 +150,9 @@ public:
 
             if(program.link(messages)) {
                 if(program.getIntermediate(stage)) {
+                    //if(program.buildReflection()) {
+                    //    program.getUniformName(0);
+                    //}
 
                     glslang::SpvOptions spvOptions;
                     spvOptions.generateDebugInfo = false;
