@@ -18,6 +18,7 @@ Project {
     ]
 
     property stringList incPaths: [
+        "./",
         "OGLCompilersDLL"
     ]
 

@@ -59,8 +59,8 @@
 //    m4 -P
 //
 
-
-
+m4_define(`GLSLANG_WEB_EXCLUDE_ON', `m4_ifdef(`GLSLANG_WEB', `m4_divert(`-1')')')
+m4_define(`GLSLANG_WEB_EXCLUDE_OFF', `m4_ifdef(`GLSLANG_WEB', `m4_divert')')
 
 /**
  * This is bison grammar and productions for parsing all versions of the
@@ -174,7 +174,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> ITEXTURE2D ITEXTURE3D ITEXTURECUBE ITEXTURE2DARRAY
 %token <lex> UTEXTURE2D UTEXTURE3D UTEXTURECUBE UTEXTURE2DARRAY
 
-
+GLSLANG_WEB_EXCLUDE_ON
 
 %token <lex> ATTRIBUTE VARYING
 %token <lex> FLOAT16_T FLOAT32_T DOUBLE FLOAT64_T
@@ -259,7 +259,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> SUBPASSINPUT SUBPASSINPUTMS ISUBPASSINPUT ISUBPASSINPUTMS USUBPASSINPUT USUBPASSINPUTMS
 %token <lex> F16SUBPASSINPUT F16SUBPASSINPUTMS
 
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 %token <lex> LEFT_OP RIGHT_OP
 %token <lex> INC_OP DEC_OP LE_OP GE_OP EQ_OP NE_OP
@@ -284,7 +284,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> UNIFORM SHARED BUFFER
 %token <lex> FLAT SMOOTH LAYOUT
 
-
+GLSLANG_WEB_EXCLUDE_ON
 %token <lex> DOUBLECONSTANT INT16CONSTANT UINT16CONSTANT FLOAT16CONSTANT INT32CONSTANT UINT32CONSTANT
 %token <lex> INT64CONSTANT UINT64CONSTANT
 %token <lex> SUBROUTINE DEMOTE
@@ -295,7 +295,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> SUBGROUPCOHERENT NONPRIVATE SHADERCALLCOHERENT
 %token <lex> NOPERSPECTIVE EXPLICITINTERPAMD PERVERTEXNV PERPRIMITIVENV PERVIEWNV PERTASKNV
 %token <lex> PRECISE
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 %type <interm> assignment_operator unary_operator
 %type <interm.intermTypedNode> variable_identifier primary_expression postfix_expression
@@ -342,13 +342,13 @@ extern int yylex(YYSTYPE*, TParseContext&);
 
 %type <interm.identifierList> identifier_list
 
-
+GLSLANG_WEB_EXCLUDE_ON
 %type <interm.type> precise_qualifier non_uniform_qualifier
 %type <interm.typeList> type_name_list
 %type <interm.attributes> attribute attribute_list single_attribute
 %type <interm.intermNode> demote_statement
 %type <interm.intermTypedNode> initializer_list
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 %start translation_unit
 %%
@@ -381,7 +381,7 @@ primary_expression
     | BOOLCONSTANT {
         $$ = parseContext.intermediate.addConstantUnion($1.b, $1.loc, true);
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | STRING_LITERAL {
         $$ = parseContext.intermediate.addConstantUnion($1.string, $1.loc, true);
     }
@@ -419,7 +419,7 @@ primary_expression
         parseContext.float16Check($1.loc, "half float literal");
         $$ = parseContext.intermediate.addConstantUnion($1.d, EbtFloat16, $1.loc, true);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
 postfix_expression
@@ -545,13 +545,13 @@ function_identifier
             $$.function = new TFunction(empty, TType(EbtVoid), EOpNull);
         }
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | non_uniform_qualifier {
         // Constructor
         $$.intermNode = 0;
         $$.function = parseContext.handleConstructorCall($1.loc, $1);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
 unary_expression
@@ -1111,9 +1111,9 @@ single_declaration
     : fully_specified_type {
         $$.type = $1;
         $$.intermNode = 0;
-
+GLSLANG_WEB_EXCLUDE_ON
         parseContext.declareTypeDefaults($$.loc, $$.type);
-
+GLSLANG_WEB_EXCLUDE_OFF
     }
     | fully_specified_type IDENTIFIER {
         $$.type = $1;
@@ -1199,7 +1199,7 @@ interpolation_qualifier
         $$.init($1.loc);
         $$.qualifier.flat = true;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | NOPERSPECTIVE {
         parseContext.globalCheck($1.loc, "noperspective");
         parseContext.profileRequires($1.loc, EEsProfile, 0, E_GL_NV_shader_noperspective_interpolation, "noperspective");
@@ -1246,7 +1246,7 @@ interpolation_qualifier
         $$.init($1.loc);
         $$.qualifier.perTaskNV = true;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
 layout_qualifier
@@ -1281,7 +1281,7 @@ layout_qualifier_id
     }
     ;
 
-
+GLSLANG_WEB_EXCLUDE_ON
 precise_qualifier
     : PRECISE {
         parseContext.profileRequires($$.loc, ECoreProfile | ECompatibilityProfile, 400, E_GL_ARB_gpu_shader5, "precise");
@@ -1290,7 +1290,7 @@ precise_qualifier
         $$.qualifier.noContraction = true;
     }
     ;
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 type_qualifier
     : single_type_qualifier {
@@ -1325,7 +1325,7 @@ single_type_qualifier
         // allow inheritance of storage qualifier from block declaration
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | precise_qualifier {
         // allow inheritance of storage qualifier from block declaration
         $$ = $1;
@@ -1333,7 +1333,7 @@ single_type_qualifier
     | non_uniform_qualifier {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
 storage_qualifier
@@ -1383,7 +1383,7 @@ storage_qualifier
         $$.init($1.loc);
         $$.qualifier.storage = EvqBuffer;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | ATTRIBUTE {
         parseContext.requireStage($1.loc, EShLangVertex, "attribute");
         parseContext.checkDeprecated($1.loc, ECoreProfile, 130, "attribute");
@@ -1561,10 +1561,10 @@ storage_qualifier
         parseContext.unimplemented($1.loc, "subroutine");
         $$.init($1.loc);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
-
+GLSLANG_WEB_EXCLUDE_ON
 non_uniform_qualifier
     : NONUNIFORM {
         $$.init($1.loc);
@@ -1582,7 +1582,7 @@ type_name_list
         // 2) save all of the identifiers for future comparison with the declared function
     }
     ;
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 type_specifier
     : type_specifier_nonarray type_parameter_specifier_opt {
@@ -1803,7 +1803,7 @@ type_specifier_nonarray
         $$.basicType = EbtFloat;
         $$.setMatrix(4, 4);
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | DOUBLE {
         parseContext.requireProfile($1.loc, ECoreProfile | ECompatibilityProfile, "double");
         if (! parseContext.symbolTable.atBuiltInLevel())
@@ -2422,7 +2422,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtFloat, Esd1D);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     | SAMPLER2D {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2458,7 +2458,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtFloat, Esd2D, true, true);
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | SAMPLER1DSHADOW {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2567,7 +2567,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtInt, Esd1D);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     | ISAMPLER2D {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2603,7 +2603,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtUint, EsdCube);
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | ISAMPLER1DARRAY {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2644,7 +2644,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.setTexture(EbtUint, EsdCube, true);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     | USAMPLER2DARRAY {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2720,7 +2720,7 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.setPureSampler(true);
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | SAMPLER2DRECT {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -3283,7 +3283,7 @@ type_specifier_nonarray
         $$.basicType = EbtUint;
         $$.coopmat = true;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     | struct_specifier {
         $$ = $1;
         $$.qualifier.storage = parseContext.symbolTable.atGlobalLevel() ? EvqGlobal : EvqTemporary;
@@ -3438,7 +3438,7 @@ initializer
     : assignment_expression {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | LEFT_BRACE initializer_list RIGHT_BRACE {
         const char* initFeature = "{ } style initializers";
         parseContext.requireProfile($1.loc, ~EEsProfile, initFeature);
@@ -3451,10 +3451,10 @@ initializer
         parseContext.profileRequires($1.loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, initFeature);
         $$ = $2;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
-
+GLSLANG_WEB_EXCLUDE_ON
 initializer_list
     : initializer {
         $$ = parseContext.intermediate.growAggregate(0, $1, $1->getLoc());
@@ -3463,7 +3463,7 @@ initializer_list
         $$ = parseContext.intermediate.growAggregate($1, $3);
     }
     ;
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 declaration_statement
     : declaration { $$ = $1; }
@@ -3484,12 +3484,12 @@ simple_statement
     | case_label            { $$ = $1; }
     | iteration_statement   { $$ = $1; }
     | jump_statement        { $$ = $1; }
-
+GLSLANG_WEB_EXCLUDE_ON
     | demote_statement      { $$ = $1; }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
-
+GLSLANG_WEB_EXCLUDE_ON
 demote_statement
     : DEMOTE SEMICOLON {
         parseContext.requireStage($1.loc, EShLangFragment, "demote");
@@ -3497,7 +3497,7 @@ demote_statement
         $$ = parseContext.intermediate.addBranch(EOpDemote, $1.loc);
     }
     ;
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 compound_statement
     : LEFT_BRACE RIGHT_BRACE { $$ = 0; }
@@ -3581,12 +3581,12 @@ selection_statement
     : selection_statement_nonattributed {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | attribute selection_statement_nonattributed {
         parseContext.handleSelectionAttributes(*$1, $2);
         $$ = $2;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 selection_statement_nonattributed
     : IF LEFT_PAREN expression RIGHT_PAREN selection_rest_statement {
@@ -3628,12 +3628,12 @@ switch_statement
     : switch_statement_nonattributed {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | attribute switch_statement_nonattributed {
         parseContext.handleSwitchAttributes(*$1, $2);
         $$ = $2;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 switch_statement_nonattributed
     : SWITCH LEFT_PAREN expression RIGHT_PAREN {
@@ -3692,12 +3692,12 @@ iteration_statement
     : iteration_statement_nonattributed {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | attribute iteration_statement_nonattributed {
         parseContext.handleLoopAttributes(*$1, $2);
         $$ = $2;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 iteration_statement_nonattributed
     : WHILE LEFT_PAREN {
@@ -3829,13 +3829,13 @@ external_declaration
     | declaration {
         $$ = $1;
     }
-
+GLSLANG_WEB_EXCLUDE_ON
     | SEMICOLON {
         parseContext.requireProfile($1.loc, ~EEsProfile, "extraneous semicolon");
         parseContext.profileRequires($1.loc, ~EEsProfile, 460, nullptr, "extraneous semicolon");
         $$ = nullptr;
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
     ;
 
 function_definition
@@ -3860,7 +3860,7 @@ function_definition
     }
     ;
 
-
+GLSLANG_WEB_EXCLUDE_ON
 attribute
     : LEFT_BRACKET LEFT_BRACKET attribute_list RIGHT_BRACKET RIGHT_BRACKET {
         $$ = $3;
@@ -3882,7 +3882,6 @@ single_attribute
     | IDENTIFIER LEFT_PAREN constant_expression RIGHT_PAREN {
         $$ = parseContext.makeAttributes(*$1.string, $3);
     }
-
+GLSLANG_WEB_EXCLUDE_OFF
 
 %%
-
