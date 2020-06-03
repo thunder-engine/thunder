@@ -171,9 +171,12 @@ Component *Actor::addComponent(const string type) {
 */
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
-    Actor *actor   = dynamic_cast<Actor *>(parent());
+    Actor *actor = dynamic_cast<Actor *>(parent());
     if(actor) {
-        return !actor->isPrefab();
+        if(actor->isPrefab()) {
+            return false;
+        }
+        return actor->isSerializable();
     }
     return true;
 }

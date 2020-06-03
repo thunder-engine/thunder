@@ -237,46 +237,6 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             if(object) {
                 object->setUUID(uuid);
                 array[uuid] = object;
-
-                // Load base properties
-                for(const auto &it : (*i).toMap()) {
-                    Variant v  = it.second;
-                    if(v.type() < MetaType::USERTYPE) {
-                        object->setProperty(it.first.c_str(), v);
-                    }
-                }
-                i++;
-                // Restore connections
-                for(const auto &link : (*i).value<VariantList>()) {
-                    VariantList list = link.value<VariantList>();
-                    Object *sender = nullptr;
-                    Object *receiver = nullptr;
-                    if(list.size() == 4) {
-                        auto l  = list.begin();
-                        auto s  = array.find(static_cast<uint32_t>((*l).toInt()));
-                        if(s != array.end()) {
-                            sender  = (*s).second;
-                        }
-                        l++;
-
-                        string signal = (*l).toString();
-                        l++;
-
-                        s = array.find(static_cast<uint32_t>((*l).toInt()));
-                        if(s != array.end()) {
-                            receiver  = (*s).second;
-                        }
-                        l++;
-
-                        string method = (*l).toString();
-                        l++;
-
-                        connect(sender, signal.c_str(), receiver, method.c_str());
-                    }
-                }
-                i++;
-                // Load user data
-                object->loadUserData((*i).value<VariantMap>());
             } else {
                 // Create a dummy object to keep all fields
                 Invalid *invalid = new Invalid();
@@ -293,6 +253,66 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             if(object->parent() == root) {
                 result  = object;
             }
+        }
+    }
+
+    for(auto it : objects) {
+        VariantList o  = it.value<VariantList>();
+        if(o.size() >= 5) {
+            auto i = o.begin();
+            i++;
+            uint32_t uuid = static_cast<uint32_t>((*i).toInt());
+            i++;
+            i++;
+            i++;
+
+            Object *object = nullptr;
+            auto ot  = array.find(uuid);
+            if(ot != array.end()) {
+                object = (*ot).second;
+            } else {
+                return nullptr;
+            }
+
+            // Load base properties
+            for(const auto &it : (*i).toMap()) {
+                Variant v  = it.second;
+                if(v.type() < MetaType::USERTYPE) {
+                    object->setProperty(it.first.c_str(), v);
+                }
+            }
+            i++;
+            // Restore connections
+            for(const auto &link : (*i).value<VariantList>()) {
+                VariantList list = link.value<VariantList>();
+                Object *sender = nullptr;
+                Object *receiver = nullptr;
+                if(list.size() == 4) {
+                    auto l  = list.begin();
+                    auto s  = array.find(static_cast<uint32_t>((*l).toInt()));
+                    if(s != array.end()) {
+                        sender  = (*s).second;
+                    }
+                    l++;
+
+                    string signal = (*l).toString();
+                    l++;
+
+                    s = array.find(static_cast<uint32_t>((*l).toInt()));
+                    if(s != array.end()) {
+                        receiver  = (*s).second;
+                    }
+                    l++;
+
+                    string method = (*l).toString();
+                    l++;
+
+                    connect(sender, signal.c_str(), receiver, method.c_str());
+                }
+            }
+            i++;
+            // Load user data
+            object->loadUserData((*i).value<VariantMap>());
         }
     }
 
@@ -313,6 +333,38 @@ void ObjectSystem::replaceUUID(Object *object, uint32_t uuid) {
     if(object) {
         object->setUUID(uuid);
     }
+}
+/*!
+    Returns root \a object in the hierarchy.
+*/
+Object *ObjectSystem::findRoot(Object *object) {
+    Object *root = object;
+    while(true) {
+        Object *parent = root->parent();
+        if(parent) {
+            root = parent;
+        } else {
+            break;
+        }
+    }
+    return root;
+}
+/*!
+    Returns object with \a uuid or wich was clonned from this.
+    This algorithm recursively going down from the \a root object
+    If the object doesn't exist in the hierarchy this method returns nullptr.
+*/
+Object *ObjectSystem::findObject(uint32_t uuid, Object *root) {
+    if(root->clonedFrom() == uuid || root->uuid() == uuid) {
+        return root;
+    }
+    for(auto &it : root->getChildren()) {
+        Object *result = findObject(uuid, it);
+        if(result) {
+            return result;
+        }
+    }
+    return nullptr;
 }
 
 void ObjectSystem::addObject(Object *object) {

@@ -53,6 +53,10 @@ public:
 
     static void                         replaceUUID             (Object *object, uint32_t uuid);
 
+    static Object                      *findRoot                (Object *object);
+
+    static Object                      *findObject              (uint32_t uuid, Object *root);
+
 protected:
     void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
 
