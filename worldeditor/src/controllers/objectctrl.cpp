@@ -131,13 +131,10 @@ void ObjectCtrl::drawHandles() {
                         }
                     }
                     for(const auto &it : m_Selected) {
-                        Vector3 dt  = delta;
-                        Actor *a    = dynamic_cast<Actor *>(it.second.object->parent());
+                        Vector3 dt = delta;
+                        Actor *a = dynamic_cast<Actor *>(it.second.object->parent());
                         if(a) {
-                            Vector3 scale   = a->transform()->worldScale();
-                            dt.x   /= scale.x;
-                            dt.y   /= scale.y;
-                            dt.z   /= scale.z;
+                            dt = a->transform()->worldTransform().rotation().inverse() * delta;
                         }
                         it.second.object->transform()->setPosition(it.second.position + dt);
                     }
@@ -156,10 +153,14 @@ void ObjectCtrl::drawHandles() {
 
                 if(m_Drag) {
                     for(const auto &it : m_Selected) {
-                        Transform *tr  = it.second.object->transform();
-                        Vector3 t      = Vector3(m_Position - it.second.position);
+                        Transform *tr = it.second.object->transform();
+                        Matrix4 parent;
+                        if(tr->parentTransform()) {
+                            parent = tr->parentTransform()->worldTransform();
+                        }
+                        Vector3 p = Vector3((parent * it.second.position) - m_Position);
                         Quaternion q;
-                        Vector3 euler  = it.second.euler;
+                        Vector3 euler = it.second.euler;
                         switch(Handles::s_Axes) {
                             case Handles::AXIS_X: {
                                 q = Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
@@ -180,7 +181,7 @@ void ObjectCtrl::drawHandles() {
                                 euler = q.euler();
                             } break;
                         }
-                        tr->setPosition(m_Position - q * t);
+                        tr->setPosition(parent.inverse() * (m_Position + q * p));
                         tr->setEuler(euler);
                     }
                     emit objectsUpdated();
@@ -202,7 +203,11 @@ void ObjectCtrl::drawHandles() {
                     }
                     for(const auto &it : m_Selected) {
                         Transform *tr = it.second.object->transform();
-                        Vector3 t = Vector3(m_Position - it.second.position);
+                        Matrix4 parent;
+                        if(tr->parentTransform()) {
+                            parent = tr->parentTransform()->worldTransform();
+                        }
+                        Vector3 p = Vector3((parent * it.second.position) - m_Position);
                         Vector3 s;
                         if(Handles::s_Axes & Handles::AXIS_X) {
                             s   += Vector3(scale, 0, 0);
@@ -214,7 +219,7 @@ void ObjectCtrl::drawHandles() {
                             s   += Vector3(0, 0, scale);
                         }
                         Vector3 v = it.second.scale + s;
-                        tr->setPosition(m_Position - t * v);
+                        tr->setPosition(parent.inverse() * (m_Position + v * p));
                         tr->setScale(v);
                     }
                     emit objectsUpdated();
@@ -302,13 +307,13 @@ void ObjectCtrl::setDrag(bool drag) {
     if(drag) {
         // Save params
         for(auto &it : m_Selected) {
-            Transform *t    = it.second.object->transform();
-            it.second.position  = t->position();
-            it.second.scale     = t->scale();
-            it.second.euler     = t->euler();
+            Transform *t = it.second.object->transform();
+            it.second.position = t->position();
+            it.second.scale    = t->scale();
+            it.second.euler    = t->euler();
         }
-        m_SavedWorld = m_World;
         m_Position = objectPosition();
+        m_SavedWorld = m_World;
         m_Angle = 0.0f;
     }
     m_Drag = drag;
@@ -560,6 +565,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                     }
                     setDrag(false);
                     m_Canceled = true;
+                    emit objectsUpdated();
                 }
             }
         } break;
@@ -742,7 +748,6 @@ void CloneObjects::redo() {
     if(m_Dump.empty()) {
         for(auto it : m_pController->selected()) {
             m_Selected.push_back(it->uuid());
-
             Actor *actor = dynamic_cast<Actor *>(it->clone());
             if(actor) {
                 actor->setName(findFreeObjectName(it->name(), it->parent()));

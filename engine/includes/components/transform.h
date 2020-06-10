@@ -34,6 +34,7 @@ public:
     Transform *parentTransform () const;
     void setParentTransform (Transform *parent, bool force = false);
 
+    Matrix4 &localTransform ();
     Matrix4 &worldTransform ();
 
     Vector3 worldPosition () const;
@@ -43,6 +44,7 @@ public:
 
 private:
     void setDirty ();
+    void cleanDirty ();
 
 private:
     TransformPrivate *p_ptr;

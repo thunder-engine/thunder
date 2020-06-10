@@ -13,7 +13,8 @@ public:
             m_Rotation(Quaternion()),
             m_Scale(Vector3(1.0f)),
             m_pParent(nullptr),
-            m_Transform(Matrix4()) {
+            m_Transform(Matrix4()),
+            m_WorldTransform(Matrix4()) {
 
     }
 
@@ -27,6 +28,7 @@ public:
     Transform *m_pParent;
 
     Matrix4 m_Transform;
+    Matrix4 m_WorldTransform;
 
     list<Transform *> m_Children;
 };
@@ -133,22 +135,28 @@ void Transform::setParentTransform(Transform *parent, bool force) {
             p_ptr->m_Position = p_ptr->m_pParent->worldRotation().inverse() * ((p - p_ptr->m_pParent->worldPosition()) * scale);
             p_ptr->m_Scale = s * scale;
             setEuler(e - p_ptr->m_pParent->worldEuler());
+        } else {
+            setDirty();
         }
     }
+}
+/*!
+    Returns current transform matrix in local space.
+*/
+Matrix4 &Transform::localTransform() {
+    if(p_ptr->m_Dirty) {
+        cleanDirty();
+    }
+    return p_ptr->m_Transform;
 }
 /*!
     Returns current transform matrix in world space.
 */
 Matrix4 &Transform::worldTransform() {
     if(p_ptr->m_Dirty) {
-        p_ptr->m_Transform = Matrix4(p_ptr->m_Position, p_ptr->m_Rotation, p_ptr->m_Scale);
-        Transform *cur = p_ptr->m_pParent;
-        if(cur) {
-            p_ptr->m_Transform = cur->worldTransform() * p_ptr->m_Transform;
-        }
-        p_ptr->m_Dirty = false;
+        cleanDirty();
     }
-    return p_ptr->m_Transform;
+    return p_ptr->m_WorldTransform;
 }
 /*!
     Returns current position of the transform in world space.
@@ -208,4 +216,14 @@ void Transform::setDirty() {
     for(auto it : p_ptr->m_Children) {
         it->setDirty();
     }
+}
+
+void Transform::cleanDirty() {
+    p_ptr->m_Transform = Matrix4(p_ptr->m_Position, p_ptr->m_Rotation, p_ptr->m_Scale);
+    p_ptr->m_WorldTransform = p_ptr->m_Transform;
+    Transform *cur = p_ptr->m_pParent;
+    if(cur) {
+        p_ptr->m_WorldTransform = cur->worldTransform() * p_ptr->m_WorldTransform;
+    }
+    p_ptr->m_Dirty = false;
 }
