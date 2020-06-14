@@ -21,7 +21,7 @@ public:
 
 private:
 #ifdef NEXT_SHARED
-    bool drawHandles(bool selected) override;
+    bool drawHandles(ObjectList &selected) override;
 #endif
 
 protected:

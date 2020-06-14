@@ -119,7 +119,7 @@ private slots:
     void                onApplySettings             ();
 
 protected:
-    typedef std::map<uint32_t, Select> SelectMap;
+    typedef QMap<uint32_t, Select> SelectMap;
     SelectMap           m_Selected;
 
     bool                m_Drag;

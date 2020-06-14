@@ -33,10 +33,9 @@ btCollisionShape *BoxCollider::shape() {
 #ifdef NEXT_SHARED
 #include <handles/handles.h>
 
-bool BoxCollider::drawHandles(bool selected) {
-    if(selected) {
+bool BoxCollider::drawHandles(ObjectList &selected) {
+    if(isSelected(selected)) {
         Transform *t = actor()->transform();
-
         Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale() * m_Size * 2.0f);
     }
     return false;

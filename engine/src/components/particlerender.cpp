@@ -153,7 +153,7 @@ void ParticleRender::update() {
     \internal
 */
 void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
-    Actor *a    = actor();
+    Actor *a = actor();
     if(layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
@@ -162,7 +162,7 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
         for(auto &it : p_ptr->m_Emitters) {
             if(it.m_Count > 0) {
                 ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
-                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, emitter.m_pMaterial, true);
+                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, emitter.m_pMaterial);
             }
             index++;
         }
@@ -210,9 +210,9 @@ void ParticleRender::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap ParticleRender::saveUserData() const {
-    VariantMap result   = Component::saveUserData();
+    VariantMap result = Component::saveUserData();
     {
-        string ref  = Engine::reference(p_ptr->m_pEffect);
+        string ref = Engine::reference(p_ptr->m_pEffect);
         if(!ref.empty()) {
             result[EFFECT] = ref;
         }

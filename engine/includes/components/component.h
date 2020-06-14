@@ -32,7 +32,8 @@ public:
     string tr (const string &source);
 
 #ifdef NEXT_SHARED
-    virtual bool drawHandles(bool selected);
+    virtual bool drawHandles(ObjectList &selected);
+    bool isSelected(ObjectList &selected);
 #endif
 
 private:

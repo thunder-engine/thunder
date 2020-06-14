@@ -185,7 +185,7 @@ void SpotLight::setAngle(float angle) {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool SpotLight::drawHandles(bool selected) {
+bool SpotLight::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);
     Transform *t = actor()->transform();
 

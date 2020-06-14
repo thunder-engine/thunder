@@ -223,7 +223,7 @@ AABBox DirectLight::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool DirectLight::drawHandles(bool selected) {
+bool DirectLight::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);
     Transform *t = actor()->transform();
 

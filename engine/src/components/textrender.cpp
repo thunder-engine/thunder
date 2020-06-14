@@ -440,9 +440,8 @@ AABBox TextRender::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool TextRender::drawHandles(bool selected) {
-    A_UNUSED(selected);
-    if(selected) {
+bool TextRender::drawHandles(ObjectList &selected) {
+    if(isSelected(selected)) {
         AABBox box = bound();
         Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
     }

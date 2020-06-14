@@ -67,7 +67,7 @@ private:
     AABBox bound () const override;
 
 #ifdef NEXT_SHARED
-    bool drawHandles (bool selected) override;
+    bool drawHandles (ObjectList &selected) override;
 #endif
 
     void loadData (const VariantList &data) override;

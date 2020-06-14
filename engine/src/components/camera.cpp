@@ -391,11 +391,9 @@ Object::ObjectList Camera::frustumCulling(ObjectList &list, const array<Vector3,
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool Camera::drawHandles(bool selected) {
-    A_UNUSED(selected);
-
+bool Camera::drawHandles(ObjectList &selected) {
     Transform *t = actor()->transform();
-    if(selected) {
+    if(isSelected(selected)) {
         array<Vector3, 8> a = frustumCorners(p_ptr->m_Ortho, (p_ptr->m_Ortho) ? p_ptr->m_OrthoSize : p_ptr->m_FOV,
                                              p_ptr->m_Ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
 

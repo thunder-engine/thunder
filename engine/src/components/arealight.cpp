@@ -223,11 +223,9 @@ AABBox AreaLight::bound() const {
 #ifdef NEXT_SHARED
 #include "handles.h"
 
-bool AreaLight::drawHandles(bool selected) {
-    A_UNUSED(selected);
+bool AreaLight::drawHandles(ObjectList &selected) {
     Transform *t = actor()->transform();
-
-    if(selected) {
+    if(isSelected(selected)) {
         Vector4 p = params();
         Handles::s_Color = Vector4(0.5f, 1.0f, 1.0f, 1.0f);
         Handles::drawSphere(t->worldPosition(), t->worldRotation(), p.w);

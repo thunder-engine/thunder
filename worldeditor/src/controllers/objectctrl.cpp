@@ -132,11 +132,11 @@ void ObjectCtrl::drawHandles() {
                     }
                     for(const auto &it : m_Selected) {
                         Vector3 dt = delta;
-                        Actor *a = dynamic_cast<Actor *>(it.second.object->parent());
+                        Actor *a = dynamic_cast<Actor *>(it.object->parent());
                         if(a) {
                             dt = a->transform()->worldTransform().rotation().inverse() * delta;
                         }
-                        it.second.object->transform()->setPosition(it.second.position + dt);
+                        it.object->transform()->setPosition(it.position + dt);
                     }
                     emit objectsUpdated();
                     emit objectsChanged(selected(), "Position");
@@ -153,14 +153,14 @@ void ObjectCtrl::drawHandles() {
 
                 if(m_Drag) {
                     for(const auto &it : m_Selected) {
-                        Transform *tr = it.second.object->transform();
+                        Transform *tr = it.object->transform();
                         Matrix4 parent;
                         if(tr->parentTransform()) {
                             parent = tr->parentTransform()->worldTransform();
                         }
-                        Vector3 p = Vector3((parent * it.second.position) - m_Position);
+                        Vector3 p = Vector3((parent * it.position) - m_Position);
                         Quaternion q;
-                        Vector3 euler = it.second.euler;
+                        Vector3 euler = it.euler;
                         switch(Handles::s_Axes) {
                             case Handles::AXIS_X: {
                                 q = Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
@@ -202,12 +202,12 @@ void ObjectCtrl::drawHandles() {
                         scale = m_ScaleGrid * int(scale / m_ScaleGrid);
                     }
                     for(const auto &it : m_Selected) {
-                        Transform *tr = it.second.object->transform();
+                        Transform *tr = it.object->transform();
                         Matrix4 parent;
                         if(tr->parentTransform()) {
                             parent = tr->parentTransform()->worldTransform();
                         }
-                        Vector3 p = Vector3((parent * it.second.position) - m_Position);
+                        Vector3 p = Vector3((parent * it.position) - m_Position);
                         Vector3 s;
                         if(Handles::s_Axes & Handles::AXIS_X) {
                             s   += Vector3(scale, 0, 0);
@@ -218,7 +218,7 @@ void ObjectCtrl::drawHandles() {
                         if(Handles::s_Axes & Handles::AXIS_Z) {
                             s   += Vector3(0, 0, scale);
                         }
-                        Vector3 v = it.second.scale + s;
+                        Vector3 v = it.scale + s;
                         tr->setPosition(parent.inverse() * (m_Position + v * p));
                         tr->setScale(v);
                     }
@@ -274,11 +274,15 @@ void ObjectCtrl::clear(bool signal) {
 }
 
 void ObjectCtrl::drawHelpers(Object &object) {
+    Object::ObjectList list;
+    for(auto value : m_Selected.values()) {
+        list.push_back(value.object);
+    }
+
     for(auto &it : object.getChildren()) {
         Component *component = dynamic_cast<Component *>(it);
         if(component) {
-            bool isSelected = (m_Selected.find(object.uuid()) != m_Selected.end());
-            if(component->drawHandles(isSelected)) {
+            if(component->drawHandles(list)) {
                 m_ObjectsList = {object.uuid()};
             }
         } else {
@@ -296,7 +300,7 @@ Vector3 ObjectCtrl::objectPosition() {
     Vector3 result;
     if(!m_Selected.empty()) {
         for(auto &it : m_Selected) {
-            result += it.second.object->transform()->worldPosition();
+            result += it.object->transform()->worldPosition();
         }
         result = result / m_Selected.size();
     }
@@ -307,10 +311,10 @@ void ObjectCtrl::setDrag(bool drag) {
     if(drag) {
         // Save params
         for(auto &it : m_Selected) {
-            Transform *t = it.second.object->transform();
-            it.second.position = t->position();
-            it.second.scale    = t->scale();
-            it.second.euler    = t->euler();
+            Transform *t = it.object->transform();
+            it.position = t->position();
+            it.scale    = t->scale();
+            it.euler    = t->euler();
         }
         m_Position = objectPosition();
         m_SavedWorld = m_World;
@@ -330,8 +334,8 @@ void ObjectCtrl::onApplySettings() {
 Object::ObjectList ObjectCtrl::selected() {
     Object::ObjectList result;
     for(auto it : m_Selected) {
-        if(it.second.object) {
-            result.push_back(it.second.object);
+        if(it.object) {
+            result.push_back(it.object);
         }
     }
     return result;
@@ -352,8 +356,8 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
 void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
     std::list<uint32_t> local = list;
     if(additive) {
-        for(auto it : m_Selected) {
-            local.push_back(it.first);
+        for(auto it : m_Selected.keys()) {
+            local.push_back(it);
         }
     }
     UndoManager::instance()->push(new SelectObjects(local, this));
@@ -399,7 +403,7 @@ void ObjectCtrl::onScaleActor() {
 
 void ObjectCtrl::onCreateComponent(const QString &name) {
     if(m_Selected.size() == 1) {
-        Actor *actor = m_Selected.begin()->second.object;
+        Actor *actor = m_Selected.begin()->object;
         if(actor) {
             if(actor->component(qPrintable(name)) == nullptr) {
                 UndoManager::instance()->push(new CreateComponent(name, this, tr("Create Component ") + name));
@@ -419,7 +423,7 @@ void ObjectCtrl::onCreateComponent(const QString &name) {
 
 void ObjectCtrl::onDeleteComponent(const QString &name) {
     if(!name.isEmpty()) {
-        Actor *actor = m_Selected.begin()->second.object;
+        Actor *actor = m_Selected.begin()->object;
         if(actor) {
             Object *obj = actor->component(name.toStdString());
             if(obj) {
@@ -558,10 +562,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 }
                 if(m_Drag) {
                     for(auto it : m_Selected) {
-                        Transform *t = it.second.object->transform();
-                        t->setPosition(it.second.position);
-                        t->setEuler(it.second.euler);
-                        t->setScale(it.second.scale);
+                        Transform *t = it.object->transform();
+                        t->setPosition(it.position);
+                        t->setEuler(it.euler);
+                        t->setScale(it.scale);
                     }
                     setDrag(false);
                     m_Canceled = true;
@@ -578,10 +582,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         VariantList values;
                         Object::ObjectList objects;
                         for(auto it : m_Selected) {
-                            Transform *t = it.second.object->transform();
+                            Transform *t = it.object->transform();
                             values.push_back(t->position());
                             objects.push_back(t);
-                            t->setPosition(it.second.position);
+                            t->setPosition(it.position);
                         }
                         UndoManager::instance()->push(new PropertyObjects(objects, "Position", values, this, "Move"));
                     } break;
@@ -590,12 +594,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         VariantList rot;
                         Object::ObjectList objects;
                         for(auto it : m_Selected) {
-                            Transform *t = it.second.object->transform();
+                            Transform *t = it.object->transform();
                             pos.push_back(t->position());
                             rot.push_back(t->euler());
                             objects.push_back(t);
-                            t->setPosition(it.second.position);
-                            t->setEuler(it.second.euler);
+                            t->setPosition(it.position);
+                            t->setEuler(it.euler);
                         }
                         QUndoCommand *group = new QUndoCommand("Rotate");
                         new PropertyObjects(objects, "Position", pos, this, "", group);
@@ -607,12 +611,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         VariantList scl;
                         Object::ObjectList objects;
                         for(auto it : m_Selected) {
-                            Transform *t = it.second.object->transform();
+                            Transform *t = it.object->transform();
                             pos.push_back(t->position());
                             scl.push_back(t->scale());
                             objects.push_back(t);
-                            t->setPosition(it.second.position);
-                            t->setScale(it.second.scale);
+                            t->setPosition(it.position);
+                            t->setScale(it.scale);
                         }
                         QUndoCommand *group = new QUndoCommand("Scale");
                         new PropertyObjects(objects, "Position", pos, this, "", group);

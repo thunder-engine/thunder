@@ -33,10 +33,9 @@ btCollisionShape *SphereCollider::shape() {
 #ifdef NEXT_SHARED
 #include <handles/handles.h>
 
-bool SphereCollider::drawHandles(bool selected) {
-    if(selected) {
+bool SphereCollider::drawHandles(ObjectList &selected) {
+    if(isSelected(selected)) {
         Transform *t = actor()->transform();
-
         Handles::drawSphere(t->worldPosition(), t->worldRotation(), m_Radius);
     }
     return false;
