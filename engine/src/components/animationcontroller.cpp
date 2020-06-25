@@ -257,7 +257,7 @@ void AnimationController::setClips(AnimationClip *start, AnimationClip *end, flo
             property = target->second;
         } else {
             property = new PropertyAnimation();
-            property->setTarget(findTarget(actor(), it.path), it.property.c_str());
+            property->setTarget(actor()->find(it.path), it.property.c_str());
 
             p_ptr->m_Properties[it.hash] = property;
         }

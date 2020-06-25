@@ -54,21 +54,6 @@ AssetManager *AssetManager::m_pInstance   = nullptr;
 
 Q_DECLARE_METATYPE(IConverterSettings *)
 
-Object *findObject(const uint32_t uuid, Object *parent) {
-    Object *result = nullptr;
-    for(Object *it : parent->getChildren()) {
-        if(it->uuid() == uuid) {
-            return it;
-        } else {
-            result = findObject(uuid, it);
-            if(result != nullptr) {
-                return result;
-            }
-        }
-    }
-    return result;
-}
-
 AssetManager::AssetManager() :
         m_pEngine(nullptr) {
     m_pProjectManager   = ProjectManager::instance();
@@ -116,6 +101,7 @@ void AssetManager::init(Engine *engine) {
     m_Formats["map"]    = IConverter::ContentMap;
 
     m_ContentTypes[MetaType::type<Mesh *>()] = IConverter::ContentMesh;
+    m_ContentTypes[MetaType::type<Pose *>()] = IConverter::ContentPose;
 }
 
 void AssetManager::rescan() {
@@ -425,7 +411,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     int index = source.indexOf(':');
     QString id = source.left(index);
     QString name = source.mid(index + 1);
-    Actor *actor = dynamic_cast<Actor *>(findObject(id.toUInt(), m_pEngine->scene()));
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), m_pEngine->scene()));
     if(actor) {
         Actor *prefab = static_cast<Actor *>(actor->clone());
         QString path = target.absoluteFilePath() + "/" + name + ".fab";
@@ -558,8 +544,16 @@ string AssetManager::pathToGuid(const string &path) {
 
 QImage AssetManager::icon(const QString &path) {
     QImage icon;
-    if(!icon.load(m_pProjectManager->iconPath() + "/" + pathToGuid(path.toStdString()).c_str() + ".png", "PNG")) {
-        switch(resourceType(path)) {
+
+    QString guid = pathToGuid(path.toStdString()).c_str();
+
+    if(!icon.load(m_pProjectManager->iconPath() + "/" + guid + ".png", "PNG")) {
+        int32_t type = assetType(guid);
+        if(type == IConverter::ContentInvalid) {
+            type = resourceType(path);
+        }
+
+        switch(type) {
             case IConverter::ContentText:
             case IConverter::ContentTexture:
             case IConverter::ContentMaterial:
@@ -590,8 +584,14 @@ QImage AssetManager::icon(const QString &path) {
             case IConverter::ContentAnimationStateMachine: {
                 icon.load(":/Style/styles/dark/images/actl.png", "PNG");
             } break;
+            case IConverter::ContentPhysicMaterial: {
+                icon.load(":/Style/styles/dark/images/fixture.png", "PNG");
+            } break;
             case IConverter::ContentLocalization: {
                 icon.load(":/Style/styles/dark/images/l10n.png", "PNG");
+            } break;
+            case IConverter::ContentPose: {
+                icon.load(":/Style/styles/dark/images/pose.png", "PNG");
             } break;
             default: break;
         }
@@ -805,7 +805,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
 void AssetManager::reloadResource(Object *object, const string &path) {
     if(!path.empty()) {
         File *file = Engine::file();
-        _FILE *fp   = file->_fopen(path.c_str(), "r");
+        _FILE *fp = file->_fopen(path.c_str(), "r");
         if(fp) {
             ByteArray data;
             data.resize(file->_fsize(fp));

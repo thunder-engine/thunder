@@ -663,22 +663,7 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     if(!parent) {
         parent = m_pMap;
     }
-    if(id && parent) {
-        if(parent->uuid() == id) {
-            return parent;
-        }
-        for(const auto &it : parent->getChildren()) {
-            Object *object = it;
-            if(object->uuid() != id) {
-                object = findObject(id, object);
-                if(!object) {
-                    continue;
-                }
-            }
-            return object;
-        }
-    }
-    return nullptr;
+    return Engine::findObject(id, parent);
 }
 
 void ObjectCtrl::resize(int32_t width, int32_t height) {

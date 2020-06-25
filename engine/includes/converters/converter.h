@@ -79,6 +79,7 @@ public:
         ContentAnimationStateMachine,
         ContentPhysicMaterial,
         ContentLocalization,
+        ContentPose,
         ContentLast
     };
 public:

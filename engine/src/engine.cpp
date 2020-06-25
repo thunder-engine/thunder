@@ -31,6 +31,8 @@
 #include "components/pointlight.h"
 #include "components/spotlight.h"
 #include "components/arealight.h"
+#include "components/armature.h"
+#include "components/skinnedmeshrender.h"
 
 #include "components/animationcontroller.h"
 
@@ -54,6 +56,8 @@
 #include "resources/translator.h"
 
 #include "resources/particleeffect.h"
+
+#include "resources/pose.h"
 
 #include "systems/resourcesystem.h"
 
@@ -86,36 +90,36 @@ public:
         delete m_pPlatform;
     }
 
-    Scene                      *m_pScene;
+    Scene                   *m_pScene;
 
-    static Engine              *m_pInstance;
+    static Engine           *m_pInstance;
 
-    static list<System *>      m_Pool;
-    static list<System *>      m_Serial;
+    static list<System *>    m_Pool;
+    static list<System *>    m_Serial;
 
-    static File               *m_pFile;
+    static File             *m_pFile;
 
-    string                      m_EntryLevel;
+    string                   m_EntryLevel;
 
-    static bool                 m_Game;
+    static bool              m_Game;
 
-    static string               m_ApplicationPath;
+    static string            m_ApplicationPath;
 
-    static string               m_ApplicationDir;
+    static string            m_ApplicationDir;
 
-    static string               m_Organization;
+    static string            m_Organization;
 
-    static string               m_Application;
+    static string            m_Application;
 
-    static IPlatformAdaptor    *m_pPlatform;
+    static IPlatformAdaptor *m_pPlatform;
 
-    static VariantMap           m_Values;
+    static VariantMap        m_Values;
 
-    ThreadPool                  m_ThreadPool;
+    ThreadPool               m_ThreadPool;
 
-    static ResourceSystem      *m_pResourceSystem;
+    static ResourceSystem   *m_pResourceSystem;
 
-    static Translator          *m_pTranslator;
+    static Translator       *m_pTranslator;
 };
 
 File *EnginePrivate::m_pFile   = nullptr;
@@ -197,6 +201,11 @@ Engine::Engine(File *file, const char *path) :
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
     RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
+    ParticleEffect::registerClassFactory(p_ptr->m_pResourceSystem);
+    AnimationStateMachine::registerClassFactory(p_ptr->m_pResourceSystem);
+    Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
+    Translator::registerClassFactory(p_ptr->m_pResourceSystem);
+    Pose::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
@@ -214,12 +223,8 @@ Engine::Engine(File *file, const char *path) :
     AreaLight::registerClassFactory(this);
 
     ParticleRender::registerClassFactory(this);
-    ParticleEffect::registerClassFactory(p_ptr->m_pResourceSystem);
 
-    AnimationStateMachine::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationController::registerClassFactory(this);
-
-    Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
 
     NativeBehaviour::registerClassFactory(this);
     Renderable::registerClassFactory(this);
@@ -227,9 +232,11 @@ Engine::Engine(File *file, const char *path) :
 
     ICommandBuffer::registerClassFactory(this);
 
-    Translator::registerClassFactory(p_ptr->m_pResourceSystem);
-
     PostProcessSettings::registerClassFactory(this);
+
+    Armature::registerClassFactory(this);
+    SkinnedMeshRender::registerClassFactory(this);
+
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }

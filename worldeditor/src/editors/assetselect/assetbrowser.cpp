@@ -13,6 +13,8 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+#include <QDebug>
+
 class AssetFilter : public QSortFilterProxyModel {
 public:
     typedef QList<int32_t> TypeList;
@@ -41,7 +43,7 @@ protected:
     }
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 2, sourceParent);
+        QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
         if(m_Type == sourceModel()->data(index).toInt()) {
             return true;
         }
@@ -125,8 +127,7 @@ AssetBrowser::AssetBrowser(QWidget* parent) :
     ui->assetList->setItemDelegate(m_pContentDeligate);
     ui->assetList->setModel(m_pContentProxy);
 
-    connect(AssetList::instance(), &AssetList::layoutChanged, m_pContentProxy, &AssetFilter::invalidate);
-
+    connect(AssetList::instance(), &AssetList::layoutChanged, this, &AssetBrowser::onModelUpdated);
 }
 
 AssetBrowser::~AssetBrowser() {
@@ -135,16 +136,22 @@ AssetBrowser::~AssetBrowser() {
     delete m_pSelected;
 }
 
+void AssetBrowser::onModelUpdated() {
+    setSelected(m_Resource);
+    m_pContentProxy->invalidate();
+}
+
 void AssetBrowser::filterByType(const int32_t type) {
     m_pContentProxy->setContentType( AssetManager::instance()->toContentType(type));
 }
 
 void AssetBrowser::setSelected(const QString &resource) {
-    ui->assetList->setCurrentIndex( m_pContentProxy->mapFromSource(AssetList::instance()->findResource(resource)) );
+    m_Resource = resource;
+    ui->assetList->setCurrentIndex( m_pContentProxy->mapFromSource(AssetList::instance()->findResource(m_Resource)) );
 }
 
 QImage AssetBrowser::icon(const QString &resource) const {
-    return AssetList::instance()->icon(AssetList::instance()->findResource(resource));
+    return AssetList::instance()->icon( AssetList::instance()->findResource(resource) );
 }
 
 void AssetBrowser::on_findContent_textChanged(const QString &arg1) {
@@ -152,7 +159,7 @@ void AssetBrowser::on_findContent_textChanged(const QString &arg1) {
 }
 
 void AssetBrowser::on_assetList_clicked(const QModelIndex &index) {
-    QModelIndex origin   = m_pContentProxy->mapToSource(index);
+    QModelIndex origin = m_pContentProxy->mapToSource(index);
 
     QString source = AssetList::instance()->path(origin);
     QFileInfo path(source);

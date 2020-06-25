@@ -13,4 +13,13 @@ class AnimConverter : public IConverter {
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }
 };
 
+class AnimationClipSerial : public AnimationClip {
+public:
+    VariantMap saveUserData() const;
+
+protected:
+    friend class AnimConverter;
+
+};
+
 #endif // ANIMCONVERTER_H

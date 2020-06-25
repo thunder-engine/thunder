@@ -221,9 +221,8 @@ void Transform::setDirty() {
 void Transform::cleanDirty() {
     p_ptr->m_Transform = Matrix4(p_ptr->m_Position, p_ptr->m_Rotation, p_ptr->m_Scale);
     p_ptr->m_WorldTransform = p_ptr->m_Transform;
-    Transform *cur = p_ptr->m_pParent;
-    if(cur) {
-        p_ptr->m_WorldTransform = cur->worldTransform() * p_ptr->m_WorldTransform;
+    if(p_ptr->m_pParent) {
+        p_ptr->m_WorldTransform = p_ptr->m_pParent->worldTransform() * p_ptr->m_WorldTransform;
     }
     p_ptr->m_Dirty = false;
 }

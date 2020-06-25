@@ -18,7 +18,7 @@ public:
         ATTRIBUTE_UV1      = (1<<2),
         ATTRIBUTE_NORMALS  = (1<<3),
         ATTRIBUTE_TANGENTS = (1<<4),
-        ATTRIBUTE_ANIMATED = (1<<5),
+        ATTRIBUTE_SKINNED  = (1<<5),
     };
 
     enum Modes {
@@ -62,7 +62,9 @@ public:
 
     Material *material (uint32_t lod) const;
 
-    Vector3Vector vertices (uint32_t lod) const;
+    Vector3Vector vertices(uint32_t lod) const;
+    void setVertices (uint32_t lod, const Vector3Vector &vertices);
+
     IndexVector indices (uint32_t lod) const;
 
     uint32_t lodsCount () const;

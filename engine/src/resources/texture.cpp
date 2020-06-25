@@ -57,6 +57,7 @@ public:
     \value RGBA8 \c Color texture format with alpha channel. 8-bit integer per channel. 32-bits in total.
     \value RGB10A2 \c 10 bits each for RGB, 2 for Alpha.
     \value RGB16Float \c Color texture with floating-point values. It uses 16-bit floating-point values per channel.
+    \value RGBA32Float \c Color texture and alpha with floating-point values. It uses 32-bit floating-point values per channel.
     \value R11G11B10Float \c This uses special 11 and 10-bit floating-point values. This is very economical for floating-point values (using only 32-bits per value).
     \value Depth \c Depth buffer texture format. Number bits per pixel depend on graphical settings and hardware. Can be 16, 24 or 32-bit per pixel.
 */
@@ -246,7 +247,9 @@ inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
     \internal
 */
 inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
-    return width * height * components() * ((p_ptr->m_Format == RGB16Float) ? 4 : 1);
+    int32_t s = ((p_ptr->m_Format == RGB16Float ||
+                  p_ptr->m_Format == RGBA32Float) ? 4 : 1);
+    return width * height * components() * s;
 }
 /*!
     Returns the bounding shape for the texture.

@@ -141,8 +141,11 @@ void Pipeline::cameraReset(Camera &camera) {
     Matrix4 v, p;
     camera.matrices(v, p);
     camera.setRatio(m_Screen.x / m_Screen.y);
-    m_Buffer->setGlobalValue("camera.position", Vector4(camera.actor()->transform()->worldPosition(), camera.nearPlane()));
-    m_Buffer->setGlobalValue("camera.target", Vector4(Vector3(), camera.farPlane()));
+
+    Transform *c = camera.actor()->transform();
+
+    m_Buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), camera.nearPlane()));
+    m_Buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), camera.farPlane()));
 
     Matrix4 vp = p * v;
 
@@ -180,6 +183,7 @@ void Pipeline::combineComponents(Object *object) {
         Renderable *comp = dynamic_cast<Renderable *>(child);
         if(comp) {
             if(comp->isEnabled()) {
+                comp->move();
                 m_Components.push_back(comp);
             }
         } else {

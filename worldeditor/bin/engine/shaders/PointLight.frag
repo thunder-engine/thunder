@@ -6,11 +6,11 @@
 layout(location = 0) uniform mat4 t_model;
 layout(location = 1) uniform mat4 t_view;
 
-layout(location = 40) uniform sampler2D normalsMap;
-layout(location = 41) uniform sampler2D diffuseMap;
-layout(location = 42) uniform sampler2D paramsMap;
-layout(location = 43) uniform sampler2D depthMap;
-layout(location = 44) uniform sampler2D shadowMap;
+layout(location = 50) uniform sampler2D normalsMap;
+layout(location = 51) uniform sampler2D diffuseMap;
+layout(location = 52) uniform sampler2D paramsMap;
+layout(location = 53) uniform sampler2D depthMap;
+layout(location = 54) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
 

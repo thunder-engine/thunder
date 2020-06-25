@@ -6,7 +6,8 @@
 #define UNIFORMS    "Uniforms"
 
 MaterialInstance::MaterialInstance(Material *material) :
-        m_pMaterial(material) {
+        m_pMaterial(material),
+        m_SurfaceType(0) {
 
 }
 
@@ -87,6 +88,14 @@ void MaterialInstance::setTexture(const char *name, Texture *value, int32_t coun
     info.type       = 0;
 
     m_Info[name]    = info;
+}
+
+uint16_t MaterialInstance::surfaceType() const {
+    return m_SurfaceType;
+}
+
+void MaterialInstance::setSurfaceType(uint16_t type) {
+    m_SurfaceType = type;
 }
 
 Material::Material() :
@@ -187,7 +196,8 @@ int32_t Material::surfaces() const {
     return m_Surfaces;
 }
 
-MaterialInstance *Material::createInstance() {
+MaterialInstance *Material::createInstance(SurfaceType type) {
+    A_UNUSED(type);
     MaterialInstance *result = new MaterialInstance(this);
     for(auto &it : m_Uniforms) {
         MaterialInstance::Info info;

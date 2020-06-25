@@ -50,7 +50,7 @@
 #define RAW         "Raw"
 #define VIEW        "View"
 
-#define UNIFORM     40
+#define UNIFORM     50
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
@@ -70,9 +70,12 @@ ShaderBuilder::ShaderBuilder() :
     m_Functions << "ConstFloat" << "ConstVector2" << "ConstVector3" << "ConstVector4";
 
     qRegisterMetaType<TexCoord*>("TexCoord");
+    qRegisterMetaType<NormalVectorWS*>("NormalVectorWS");
+    qRegisterMetaType<CameraPosition*>("CameraPosition");
+    qRegisterMetaType<CameraDirection*>("CameraDirection");
     qRegisterMetaType<ProjectionCoord*>("ProjectionCoord");
     qRegisterMetaType<CoordPanner*>("CoordPanner");
-    m_Functions << "TexCoord" << "ProjectionCoord" << "CoordPanner";
+    m_Functions << "TexCoord" << "NormalVectorWS" << "CameraPosition" << "CameraDirection" << "ProjectionCoord" << "CoordPanner";
 
     qRegisterMetaType<ParamFloat*>("ParamFloat");
     qRegisterMetaType<ParamVector*>("ParamVector");
@@ -477,6 +480,13 @@ Variant ShaderBuilder::data(bool editor) const {
             vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
             if(!spv.empty()) {
                 user["Particle"] = SpirVConverter::spvToGlsl(spv);
+            }
+        }
+        {
+            QString buff = loadIncludes(vertex, "#define TYPE_SKINNED 1");
+            vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), EShLanguage::EShLangVertex);
+            if(!spv.empty()) {
+                user["Skinned"] = SpirVConverter::spvToGlsl(spv);
             }
         }
     }

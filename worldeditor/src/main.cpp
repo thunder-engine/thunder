@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
     UndoManager::instance()->init();
     ComponentModel::instance()->init(&engine);
     ContentList::instance()->init(&engine);
+    AssetList::instance()->init(&engine);
 
     int result  = a.exec();
 

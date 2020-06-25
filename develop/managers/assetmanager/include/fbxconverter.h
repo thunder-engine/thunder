@@ -4,6 +4,7 @@
 #include "converters/converter.h"
 
 #include "resources/mesh.h"
+#include "resources/pose.h"
 
 class MeshSerial;
 
@@ -14,6 +15,8 @@ namespace ofbx {
     class Object;
     class Mesh;
 }
+
+typedef list<const ofbx::Object *> FBXObjectsList;
 
 class FbxImportSettings : public IConverterSettings {
     Q_OBJECT
@@ -65,7 +68,11 @@ public:
     IConverterSettings *createSettings() const;
 
 protected:
-    Actor *importObject(const ofbx::Object *element, FbxImportSettings *settings, QStringList &list);
+    Actor *importObject(const ofbx::Object *element, Actor *parent, FbxImportSettings *settings);
+
+    void importAnimation(const QMap<const ofbx::Object *, Actor *> &bones, ofbx::IScene *scene, FbxImportSettings *settings);
+
+    QString saveData(const ByteArray &data, const QString &path, int32_t type, FbxImportSettings *settings);
 
     MeshSerial *importMesh(const ofbx::Mesh *m, float scale);
 };

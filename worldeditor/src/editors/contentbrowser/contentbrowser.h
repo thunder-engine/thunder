@@ -38,7 +38,8 @@ public:
         Map                   = IConverter::ContentMap,
         Pipeline              = IConverter::ContentPipeline,
         Prefab                = IConverter::ContentPrefab,
-        AnimationStateMachine = IConverter::ContentAnimationStateMachine
+        AnimationStateMachine = IConverter::ContentAnimationStateMachine,
+        Pose                  = IConverter::ContentPose
     };
 
     enum FileTypes {

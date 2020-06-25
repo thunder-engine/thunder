@@ -6,6 +6,7 @@
 #include <log.h>
 
 #include <cstring>
+#include <cfloat>
 
 #define HEADER      "Header"
 #define DATA        "Data"
@@ -69,7 +70,8 @@ void Mesh::loadUserData(const VariantMap &data) {
 
     auto mesh = data.find(DATA);
     if(mesh != data.end()) {
-        Vector3 bb[2];
+        Vector3 min( FLT_MAX);
+        Vector3 max(-FLT_MAX);
 
         VariantList surface = (*mesh).second.value<VariantList>();
         auto x  = surface.begin();
@@ -94,70 +96,70 @@ void Mesh::loadUserData(const VariantMap &data) {
             { // Required field
                 data    = (*y).toByteArray();
                 y++;
-                l.vertices  = vector<Vector3>(vCount);
+                l.vertices.resize(vCount);
                 memcpy(&l.vertices[0],  &data[0], sizeof(Vector3) * vCount);
                 for(uint32_t i = 0; i < vCount; i++) {
-                    bb[0].x = MIN(bb[0].x, l.vertices[i].x);
-                    bb[0].y = MIN(bb[0].y, l.vertices[i].y);
-                    bb[0].z = MIN(bb[0].z, l.vertices[i].z);
+                    min.x = MIN(min.x, l.vertices[i].x);
+                    min.y = MIN(min.y, l.vertices[i].y);
+                    min.z = MIN(min.z, l.vertices[i].z);
 
-                    bb[1].x = MAX(bb[1].x, l.vertices[i].x);
-                    bb[1].y = MAX(bb[1].y, l.vertices[i].y);
-                    bb[1].z = MAX(bb[1].z, l.vertices[i].z);
+                    max.x = MAX(max.x, l.vertices[i].x);
+                    max.y = MAX(max.y, l.vertices[i].y);
+                    max.z = MAX(max.z, l.vertices[i].z);
                 }
             }
             { // Required field
                 data    = (*y).toByteArray();
                 y++;
-                l.indices = IndexVector(tCount * 3);
+                l.indices.resize(tCount * 3);
                 memcpy(&l.indices[0], &data[0],  sizeof(uint32_t) * tCount * 3);
             }
             if(p_ptr->m_Flags & ATTRIBUTE_COLOR) { // Optional field
                 data    = (*y).toByteArray();
                 y++;
-                l.colors    = vector<Vector4>(vCount);
-                memcpy(&l.colors[0],    &data[0],  sizeof(Vector4) * vCount);
+                l.colors.resize(vCount);
+                memcpy(&l.colors[0], &data[0],  sizeof(Vector4) * vCount);
             }
             if(p_ptr->m_Flags & ATTRIBUTE_UV0) { // Optional field
                 data    = (*y).toByteArray();
                 y++;
-                l.uv0   = vector<Vector2>(vCount);
-                memcpy(&l.uv0[0],       &data[0],  sizeof(Vector2) * vCount);
+                l.uv0.resize(vCount);
+                memcpy(&l.uv0[0], &data[0],  sizeof(Vector2) * vCount);
             }
             if(p_ptr->m_Flags & ATTRIBUTE_UV1) { // Optional field
                 data    = (*y).toByteArray();
                 y++;
-                l.uv1   = vector<Vector2>(vCount);
-                memcpy(&l.uv1[0],       &data[0],  sizeof(Vector2) * vCount);
+                l.uv1.resize(vCount);
+                memcpy(&l.uv1[0], &data[0],  sizeof(Vector2) * vCount);
             }
             if(p_ptr->m_Flags & ATTRIBUTE_NORMALS) { // Optional field
                 data    = (*y).toByteArray();
                 y++;
-                l.normals   = vector<Vector3>(vCount);
-                memcpy(&l.normals[0],   &data[0],  sizeof(Vector3) * vCount);
+                l.normals.resize(vCount);
+                memcpy(&l.normals[0], &data[0],  sizeof(Vector3) * vCount);
             }
             if(p_ptr->m_Flags & ATTRIBUTE_TANGENTS) { // Optional field
-                data    = (*y).toByteArray();
+                data = (*y).toByteArray();
                 y++;
-                l.tangents  = vector<Vector3>(vCount);
-                memcpy(&l.tangents[0],  &data[0],  sizeof(Vector3) * vCount);
+                l.tangents.resize(vCount);
+                memcpy(&l.tangents[0], &data[0],  sizeof(Vector3) * vCount);
             }
-            if(p_ptr->m_Flags & ATTRIBUTE_ANIMATED) { // Optional field
-                data    = (*y).toByteArray();
+            if(p_ptr->m_Flags & ATTRIBUTE_SKINNED) { // Optional field
+                data = (*y).toByteArray();
                 y++;
-                l.weights   = vector<Vector4>(vCount);
-                memcpy(&l.weights[0],   &data[0],  sizeof(Vector4) * vCount);
+                l.weights.resize(vCount);
+                memcpy(&l.weights[0], &data[0],  sizeof(Vector4) * vCount);
 
-                data    = (*y).toByteArray();
+                data = (*y).toByteArray();
                 y++;
-                l.bones = vector<Vector4>(vCount);
-                memcpy(&l.bones[0],   &data[0],  sizeof(Vector4) * vCount);
+                l.bones.resize(vCount);
+                memcpy(&l.bones[0], &data[0],  sizeof(Vector4) * vCount);
             }
             p_ptr->m_Lods.push_back(l);
 
             x++;
         }
-        p_ptr->m_Box.setBox(bb[0], bb[1]);
+        p_ptr->m_Box.setBox(min, max);
     }
     setState(ToBeUpdated);
 }
@@ -174,6 +176,12 @@ Vector3Vector Mesh::vertices(uint32_t lod) const {
         return p_ptr->m_Lods[lod].vertices;
     }
     return Vector3Vector();
+}
+
+void Mesh::setVertices(uint32_t lod, const Vector3Vector &vertices) {
+    if(lod < lodsCount()) {
+        p_ptr->m_Lods[lod].vertices = vertices;
+    }
 }
 
 Mesh::IndexVector Mesh::indices(uint32_t lod) const {

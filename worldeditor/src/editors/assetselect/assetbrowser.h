@@ -32,7 +32,8 @@ public:
         Effect      = IConverter::ContentEffect,
         Sound       = IConverter::ContentSound,
         Code        = IConverter::ContentCode,
-        Map         = IConverter::ContentMap
+        Map         = IConverter::ContentMap,
+        Pose        = IConverter::ContentPose
     };
 
     enum FileTypes {
@@ -65,10 +66,14 @@ private slots:
 
     void                    on_findContent_textChanged  (const QString &arg1);
 
+    void                    onModelUpdated              ();
+
 private:
     Ui::AssetBrowser       *ui;
 
     IConverterSettings     *m_pSelected;
+
+    QString                 m_Resource;
 
 };
 

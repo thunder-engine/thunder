@@ -536,9 +536,6 @@ void SceneComposer::onImportProject() {
 void SceneComposer::onImportFinished() {
     ui->viewport->makeCurrent();
 
-    ContentList::instance()->update();
-    AssetList::instance()->update();
-
     ui->preview->controller()->init(ui->preview->scene());
 
     CameraCtrl *ctrl = ui->viewport->controller();

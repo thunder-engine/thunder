@@ -1,11 +1,11 @@
 #pragma version
 
-layout(location = 40) uniform sampler2D   rgbMap;
+layout(location = 50) uniform sampler2D   rgbMap;
 
-layout(location = 41) uniform vec2 direction;
-layout(location = 42) uniform vec2 size;
-layout(location = 43) uniform int steps;
-layout(location = 44) uniform float curve[32];
+layout(location = 51) uniform vec2 direction;
+layout(location = 52) uniform vec2 size;
+layout(location = 53) uniform int steps;
+layout(location = 54) uniform float curve[32];
 
 layout(location = 1) in vec2 _uv0;
 

@@ -40,21 +40,24 @@ static float conesize  = length / 5.0f;
 
 Mesh *Handles::s_Cone   = nullptr;
 Mesh *Handles::s_Quad   = nullptr;
+Mesh *Handles::s_Sphere = nullptr;
 Mesh *Handles::s_Lines  = nullptr;
 
 MaterialInstance *Handles::s_Gizmo  = nullptr;
+MaterialInstance *Handles::s_Solid  = nullptr;
 MaterialInstance *Handles::s_Sprite = nullptr;
 
-Mesh *Handles::s_Axis       = nullptr;
-Mesh *Handles::s_Scale      = nullptr;
-Mesh *Handles::s_ScaleXY    = nullptr;
-Mesh *Handles::s_ScaleXYZ   = nullptr;
-Mesh *Handles::s_Move       = nullptr;
-Mesh *Handles::s_MoveXY     = nullptr;
-Mesh *Handles::s_Arc        = nullptr;
-Mesh *Handles::s_Circle     = nullptr;
-Mesh *Handles::s_Rectangle  = nullptr;
-Mesh *Handles::s_Box        = nullptr;
+Mesh *Handles::s_Axis      = nullptr;
+Mesh *Handles::s_Scale     = nullptr;
+Mesh *Handles::s_ScaleXY   = nullptr;
+Mesh *Handles::s_ScaleXYZ  = nullptr;
+Mesh *Handles::s_Move      = nullptr;
+Mesh *Handles::s_MoveXY    = nullptr;
+Mesh *Handles::s_Arc       = nullptr;
+Mesh *Handles::s_Circle    = nullptr;
+Mesh *Handles::s_Rectangle = nullptr;
+Mesh *Handles::s_Box       = nullptr;
+Mesh *Handles::s_Bone      = nullptr;
 
 enum {
     AXIS,
@@ -70,6 +73,16 @@ void Handles::init() {
     if(s_Quad == nullptr) {
         s_Quad = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
     }
+    if(s_Cone == nullptr) {
+        s_Cone = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
+    }
+    if(s_Sphere == nullptr) {
+        s_Sphere = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
+    }
+    if(s_Bone == nullptr) {
+        s_Bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Cube");
+    }
+
     if(s_Sprite == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
         if(m) {
@@ -77,14 +90,16 @@ void Handles::init() {
             s_Sprite = inst;
         }
     }
-
-    if(s_Cone == nullptr) {
-        s_Cone = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
-    }
     if(s_Gizmo == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
         if(m) {
             s_Gizmo = m->createInstance();
+        }
+    }
+    if(s_Solid == nullptr) {
+        Material *m = Engine::loadResource<Material>(".embedded/solid.mtl");
+        if(m) {
+            s_Solid = m->createInstance();
         }
     }
 
@@ -283,6 +298,24 @@ void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const V
         Matrix4 transform(center, rotation, size);
 
         s_Buffer->drawMesh(transform, s_Box, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+    }
+}
+
+void Handles::drawBone(const Matrix4 &begin, const Matrix4 &end) {
+    if(ICommandBuffer::isInited()) {
+        s_Buffer->setColor(s_Color);
+
+        Vector3 delta((begin[12] - end[12]),
+                      (begin[13] - end[13]),
+                      (begin[14] - end[14]));
+
+        Matrix4 scale;
+        scale.scale(Vector3(delta.length() * 0.001f));
+        Matrix4 b = begin * scale;
+
+        s_Buffer->drawMesh(b, s_Sphere, ICommandBuffer::TRANSLUCENT, s_Solid);
+        s_Buffer->drawMesh(b, s_Bone, ICommandBuffer::TRANSLUCENT, s_Solid);
+        //s_Buffer->drawMesh(end * scale, s_Sphere, ICommandBuffer::TRANSLUCENT, s_Solid);
     }
 }
 

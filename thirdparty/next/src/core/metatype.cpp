@@ -26,7 +26,8 @@
         TypeFuncs<TYPE>::clone, \
         TypeFuncs<TYPE>::compare, \
         TypeFuncs<TYPE>::index, \
-        #TYPE \
+        #TYPE, \
+        false \
     }
 
 typedef map<string, uint32_t>           NameMap;
@@ -473,6 +474,12 @@ bool MetaType::compare(const void *left, const void *right) const {
 bool MetaType::isValid() const {
     PROFILE_FUNCTION();
     return (m_pTable != nullptr);
+}
+/*!
+    Returns flags for the type.
+*/
+int MetaType::flags() const {
+    return m_pTable->flags;
 }
 /*!
     Registers type by type MetaType::Table \a table. Use registerMetaType() instead this function.

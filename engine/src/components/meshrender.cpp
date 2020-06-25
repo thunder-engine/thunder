@@ -4,12 +4,13 @@
 #include "components/transform.h"
 #include "commandbuffer.h"
 
-
 #include "mesh.h"
 #include "material.h"
 
-#define MESH "Mesh"
-#define MATERAIL "Material"
+namespace {
+const char *MESH = "Mesh";
+const char *MATERIAL = "Material";
+}
 
 class MeshRenderPrivate {
 public:
@@ -73,9 +74,7 @@ Mesh *MeshRender::mesh() const {
 void MeshRender::setMesh(Mesh *mesh) {
     p_ptr->m_pMesh = mesh;
     if(p_ptr->m_pMesh) {
-        delete p_ptr->m_pMaterial;
-        Material *m = mesh->material(0);
-        p_ptr->m_pMaterial = (m) ? m->createInstance() : nullptr;
+        setMaterial(mesh->material(0));
     }
 }
 /*!
@@ -110,7 +109,7 @@ void MeshRender::loadUserData(const VariantMap &data) {
         }
     }
     if(p_ptr->m_pMesh) {
-        auto it = data.find(MATERAIL);
+        auto it = data.find(MATERIAL);
         if(it != data.end()) {
             setMaterial(Engine::loadResource<Material>((*it).second.toString()));
         }
@@ -130,7 +129,7 @@ VariantMap MeshRender::saveUserData() const {
     {
         string ref = Engine::reference(material());
         if(!ref.empty()) {
-            result[MATERAIL] = ref;
+            result[MATERIAL] = ref;
         }
     }
     return result;

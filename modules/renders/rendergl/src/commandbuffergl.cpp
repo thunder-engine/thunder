@@ -133,7 +133,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
         uint32_t lod    = 0;
 
         AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
-        uint32_t program = mat->bind(layer, AMaterialGL::Static);
+        uint32_t program = mat->bind(layer, material->surfaceType());
         if(program) {
             glUseProgram(program);
 
@@ -169,15 +169,15 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
     }
 }
 
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material, bool particle) {
+void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
     PROFILER_MARKER;
 
     if(mesh && material) {
-        AMeshGL *m      = static_cast<AMeshGL *>(mesh);
-        uint32_t lod    = 0;
+        AMeshGL *m   = static_cast<AMeshGL *>(mesh);
+        uint32_t lod = 0;
 
         AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
-        uint32_t program = mat->bind(layer, (particle) ? AMaterialGL::Particle : AMaterialGL::Instanced);
+        uint32_t program = mat->bind(layer, material->surfaceType());
 
         if(program) {
             glUseProgram(program);

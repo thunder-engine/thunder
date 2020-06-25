@@ -14,7 +14,8 @@ const QString gUuid("uuid");
 AssetList *AssetList::m_pInstance   = nullptr;
 
 AssetList::AssetList() :
-        BaseObjectModel(nullptr) {
+        BaseObjectModel(nullptr),
+        m_pEngine(nullptr) {
 
     m_DefaultIcon = QRect(0, 0, 64, 64);
 }
@@ -111,7 +112,7 @@ void AssetList::update() {
 
     AssetManager *inst = AssetManager::instance();
     for(auto it : static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->indices()) {
-        QObject *item   = new QObject(m_rootItem);
+        QObject *item = new QObject(m_rootItem);
         QFileInfo info(it.first.c_str());
 
         item->setObjectName(info.filePath());

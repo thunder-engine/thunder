@@ -19,6 +19,12 @@ void Renderable::draw(ICommandBuffer &buffer, uint32_t layer) {
     A_UNUSED(layer);
 }
 /*!
+    \internal
+*/
+void Renderable::move() {
+
+}
+/*!
     Returns a bound box of the renderable object.
 */
 AABBox Renderable::bound() const {

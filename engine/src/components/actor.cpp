@@ -20,6 +20,15 @@ public:
 
     }
 
+    static bool isPointer(const char *name) {
+        for(uint32_t i = 0; i < strlen(name); i++) {
+            if(name[i] == '*') {
+                return true;
+            }
+        }
+        return false;
+    }
+
     uint8_t m_Layers;
 
     bool m_Enable;
@@ -171,14 +180,18 @@ Component *Actor::addComponent(const string type) {
 */
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
-    Actor *actor = dynamic_cast<Actor *>(parent());
-    if(actor) {
-        if(actor->isPrefab()) {
-            return false;
+
+    bool result = (clonedFrom() == 0 || isPrefab());
+    /* To be used in future
+    if(!result) {
+        for(auto it : getChildren()) {
+            if(it->clonedFrom() == 0) {
+                return true;
+            }
         }
-        return actor->isSerializable();
     }
-    return true;
+    */
+    return result;
 }
 /*!
     Makes the actor a child of the \a parent.
@@ -240,20 +253,20 @@ void Actor::loadUserData(const VariantMap &data) {
             delete actor;
         }
 
-        it  = data.find(DATA);
+        it = data.find(DATA);
         if(it != data.end()) {
             List objects;
             enumObjects(this, objects);
 
             typedef unordered_map<uint32_t, Object *> ObjectMap;
             ObjectMap cache;
-            for(auto &it : objects) {
-                cache[it->clonedFrom()] = it;
+            for(auto &object : objects) {
+                cache[object->clonedFrom()] = object;
             }
 
             const VariantList &list = (*it).second.toList();
-            for(auto &it : list) {
-                const VariantList &fields   = it.toList();
+            for(auto &item : list) {
+                const VariantList &fields = item.toList();
 
                 uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
                 auto object = cache.find(cloned);
@@ -263,20 +276,23 @@ void Actor::loadUserData(const VariantMap &data) {
                         int32_t index = meta->indexOfProperty(property.first.c_str());
                         if(index > -1) {
                             MetaProperty prop = meta->property(index);
-                            bool ptr = false;
-
-                            const char *name = prop.type().name();
-                            for(uint32_t i = 0; i < strlen(name); i++) {
-                                if(name[i] == '*') {
-                                    ptr = true;
-                                    break;
-                                }
-                            }
                             Variant var = property.second;
-                            if(ptr && var.type() == MetaType::STRING) {
-                                Object *res = Engine::loadResource(var.toString());
-                                if(res) {
-                                    var = Variant(prop.read((*object).second).userType(), &res);
+                            if(prop.type().flags() & MetaType::BASE_OBJECT) {
+                                if(var.type() == MetaType::STRING) { // Asset
+                                    Object *res = Engine::loadResource(var.toString());
+                                    if(res) {
+                                        var = Variant(prop.read((*object).second).userType(), &res);
+                                    }
+                                } else if(var.type() == MetaType::VARIANTLIST) { // Component
+                                    VariantList array = var.toList();
+                                    uint32_t uuid = static_cast<uint32_t>(array.front().toInt());
+                                    if(uuid == 0) {
+                                        uuid = static_cast<uint32_t>(array.back().toInt());
+                                    }
+                                    Object *obj = Engine::findObject(uuid, Engine::findRoot(this));
+                                    if(obj) {
+                                        var = Variant(prop.read((*object).second).userType(), &obj);
+                                    }
                                 }
                             }
                             prop.write((*object).second, var);
@@ -301,11 +317,11 @@ void enumConstObjects(const Object *object, ConstList &list) {
 */
 VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
-    VariantMap result   = Object::saveUserData();
+    VariantMap result = Object::saveUserData();
     if(p_ptr->m_pPrefab) {
-        string ref      = Engine::reference(p_ptr->m_pPrefab);
+        string ref = Engine::reference(p_ptr->m_pPrefab);
         if(!ref.empty()) {
-            result[PREFAB]  = ref;
+            result[PREFAB] = ref;
 
             ConstList prefabs;
             enumConstObjects(p_ptr->m_pPrefab, prefabs);
@@ -319,6 +335,7 @@ VariantMap Actor::saveUserData() const {
 
             ConstList objects;
             enumConstObjects(this, objects);
+
             for(auto it : objects) {
                 uint32_t cloned = it->clonedFrom();
                 if(cloned) {
@@ -331,22 +348,28 @@ VariantMap Actor::saveUserData() const {
                         for(int i = 0; i < count; i++) {
                             MetaProperty lp = (*fab).second->metaObject()->property(i);
                             MetaProperty rp = meta->property(i);
-                            Variant lv  = lp.read((*fab).second);
-                            Variant rv  = rp.read(it);
+                            Variant lv = lp.read((*fab).second);
+                            Variant rv = rp.read(it);
                             if(lv != rv) {
-                                const char *name = rp.type().name();
-                                for(uint32_t i = 0; i < strlen(name); i++) {
-                                    if(name[i] == '*') {
-                                        Object *o = *(reinterpret_cast<Object **>(rv.data()));
-                                        string ref = Engine::reference(o);
-                                        if(!ref.empty()) {
-                                            rv = ref;
+                                 if(lp.type().flags() & MetaType::BASE_OBJECT) {
+                                    Object *lo = *(reinterpret_cast<Object **>(lv.data()));
+                                    Object *ro = *(reinterpret_cast<Object **>(rv.data()));
+
+                                    string lref = Engine::reference(lo);
+                                    string rref = Engine::reference(ro);
+                                    if(lref != rref) {
+                                        prop[rp.name()] = rv;
+                                    }
+
+                                    if(rref.empty() && lref.empty()) {
+                                        if((lo == nullptr && ro) || (ro && lo->uuid() != ro->uuid())) {
+                                            VariantList array;
+                                            array.push_back(static_cast<int32_t>(ro->clonedFrom()));
+                                            array.push_back(static_cast<int32_t>(ro->uuid()));
+                                            prop[rp.name()] = array;
                                         }
-                                        break;
                                     }
                                 }
-
-                                prop[rp.name()] = rv;
                             }
                         }
 
@@ -356,6 +379,7 @@ VariantMap Actor::saveUserData() const {
                             array.push_back(prop);
                             list.push_back(array);
                         }
+
                     }
                 }
             }
@@ -365,5 +389,6 @@ VariantMap Actor::saveUserData() const {
             }
         }
     }
+
     return result;
 }

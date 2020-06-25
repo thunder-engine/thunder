@@ -99,7 +99,7 @@ public:
     static const MetaObject        *metaClass                   ();
     virtual const MetaObject       *metaObject                  () const;
 
-    Object                         *clone                       ();
+    Object                         *clone                       (Object *parent = nullptr);
 
     Object                         *parent                      () const;
 
@@ -120,7 +120,7 @@ public:
     T                               findChild                   (bool recursive = true) {
         for(auto it : getChildren()) {
             Object *object = it;
-            T result    = dynamic_cast<T>(object);
+            T result = dynamic_cast<T>(object);
             if(result) {
                 return result;
             } else if(recursive) {
@@ -138,13 +138,13 @@ public:
         list<T> result;
         for(auto it : getChildren()) {
             Object *component = it;
-            T object    = dynamic_cast<T>(component);
+            T object = dynamic_cast<T>(component);
             if(object) {
                 result.push_back(object);
             }
 
             if(recursive) {
-                list<T> childs   = component->findChildren<T>(recursive);
+                list<T> childs = component->findChildren<T>(recursive);
                 result.insert(result.end(), childs.begin(), childs.end());
             }
         }

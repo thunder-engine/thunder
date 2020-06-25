@@ -324,7 +324,7 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
                 it++;
                 Material *mat = Engine::loadResource<Material>((*it).toString());
                 if(mat) {
-                    emitter.m_pMaterial = mat->createInstance();
+                    emitter.m_pMaterial = mat->createInstance(Material::Billboard);
                 }
                 it++;
 

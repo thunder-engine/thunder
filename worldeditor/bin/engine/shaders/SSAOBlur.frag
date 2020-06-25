@@ -4,7 +4,7 @@
 
 #include "Common.vert"
 
-layout(location = 40) uniform sampler2D ssaoSample;
+layout(location = 50) uniform sampler2D ssaoSample;
 
 layout(location = 1) in vec2 _uv0;
 

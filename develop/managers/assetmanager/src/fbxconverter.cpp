@@ -5,6 +5,8 @@
 #include "log.h"
 
 #include <bson.h>
+#include <json.h>
+#include <variantanimation.h>
 
 #include <cstring>
 
@@ -17,13 +19,16 @@
 #include <ofbx.h>
 
 #include "converters/converter.h"
+#include "animconverter.h"
 #include "projectmanager.h"
 
 #include "resources/material.h"
 
 #include "components/actor.h"
 #include "components/transform.h"
+#include "components/armature.h"
 #include "components/meshrender.h"
+#include "components/skinnedmeshrender.h"
 
 #define HEADER  "Header"
 #define DATA    "Data"
@@ -88,6 +93,28 @@ void FbxImportSettings::setCustomScale(float value) {
         emit updated();
     }
 }
+
+class PoseSerial : public Pose {
+    VariantMap saveUserData() const {
+        VariantMap result;
+
+        VariantList data;
+        for(uint32_t i = 0; i < size(); i++) {
+            VariantList attribs;
+
+            const Bone *b = bone(i);
+
+            attribs.push_back(b->position);
+            attribs.push_back(b->rotation);
+            attribs.push_back(b->scale);
+
+            data.push_back(attribs);
+        }
+        result[DATA] = data;
+
+        return result;
+    }
+};
 
 class MeshSerial : public Mesh {
 public:
@@ -157,7 +184,7 @@ public:
                 memcpy(&buffer[0], &l->tangents[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
-            if(flag & ATTRIBUTE_ANIMATED) { // Optional field
+            if(flag & ATTRIBUTE_SKINNED) { // Optional field
                 {
                     ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
@@ -210,12 +237,12 @@ IConverterSettings *FBXConverter::createSettings() const {
 }
 
 uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
-    QTime t;
-    t.start();
+    QTime time;
+    time.start();
 
-    FbxImportSettings *s = static_cast<FbxImportSettings *>(settings);
+    FbxImportSettings *fbxSettings = static_cast<FbxImportSettings *>(settings);
 
-    QFile fp(s->source());
+    QFile fp(fbxSettings->source());
     if(fp.open(QIODevice::ReadOnly)) {
         QByteArray data = fp.readAll();
         fp.close();
@@ -224,21 +251,63 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
                                          data.size(),
                                          uint64_t(ofbx::LoadFlags::TRIANGULATE));
 
-        if(!s->useScale()) {
+        if(!fbxSettings->useScale()) {
             const ofbx::GlobalSettings *global = scene->getGlobalSettings();
-            s->setCustomScale(static_cast<float>(global->UnitScaleFactor) * 0.01f);
+            fbxSettings->setCustomScale(static_cast<float>(global->UnitScaleFactor) * 0.01f);
         }
         QStringList resources;
 
         list<Actor *> actors;
+        std::list<FBXObjectsList> skins;
         int meshCount = scene->getMeshCount();
         for(int i = 0; i < meshCount; ++i) {
             const ofbx::Mesh *m = scene->getMesh(i);
-            Actor *actor = importObject(m, s, resources);
+
+            Actor *actor = importObject(m, nullptr, fbxSettings);
             if(actor) {
                 actors.push_back(actor);
             }
+
+            MeshSerial *mesh = importMesh(m, fbxSettings->customScale());
+            if(mesh) {
+                if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
+                    Vector3Vector vertices = mesh->vertices(0);
+                    for(uint32_t v = 0; v < vertices.size(); v++) {
+                        //vertices[v] = actor->transform()->worldTransform() * vertices[v] * fbxSettings->customScale();
+                    }
+                    mesh->setVertices(0, vertices);
+                }
+
+                QString uuid = saveData(Bson::save(Engine::toVariant(mesh)), actor->name().c_str(), IConverter::ContentMesh, fbxSettings);
+                Engine::replaceUUID(actor, qHash(uuid));
+                Engine::replaceUUID(actor->transform(), qHash(uuid + ".Transform"));
+                Engine::setResource(mesh, uuid.toStdString());
+
+                if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
+                    SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
+                    render->setMesh(mesh);
+                    Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
+
+                    FBXObjectsList bones;
+
+                    const ofbx::Skin *skin = m->getGeometry()->getSkin();
+                    int clusterCount = skin->getClusterCount();
+                    for(int i = 0; i < clusterCount; i++) {
+                        const ofbx::Cluster *cluster = skin->getCluster(i);
+                        if(cluster) {
+                            bones.push_back(cluster->getLink());
+                        }
+                    }
+                    skins.push_back(bones);
+                } else {
+                    MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
+                    render->setMesh(mesh);
+                    Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
+                }
+                resources.push_back(uuid);
+            }
         }
+        skins.unique();
 
         Actor *root;
         if(actors.size() == 1) {
@@ -250,6 +319,56 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
             }
             Engine::replaceUUID(root, qHash(settings->destination()));
             Engine::replaceUUID(root->transform(), qHash(QString(settings->destination()) + ".Transform"));
+
+            if(!skins.empty()) {
+                PoseSerial *pose = new PoseSerial;
+                pose->setName("Pose");
+
+                QMap<const ofbx::Object *, Actor *> boneMap;
+                Armature *armature = nullptr;
+                for(auto it : skins.front()) {
+                    Actor *parent = root;
+                    bool isRootBone = false;
+                    auto bone = boneMap.find(it->getParent());
+                    if(bone != boneMap.end()) {
+                        parent = bone.value();
+                    } else {
+                        const ofbx::Object *obj = it->getParent();
+                        if(obj != scene->getRoot()) {
+                            parent = importObject(obj, root, fbxSettings);
+                        }
+                        isRootBone = true;
+                    }
+
+                    Actor *item = importObject(it, parent, fbxSettings);
+                    if(isRootBone) {
+                        armature = dynamic_cast<Armature *>(item->addComponent("Armature"));
+                        armature->setBindPose(pose);
+                    }
+                    boneMap[it] = item;
+
+                    Transform *t = item->transform();
+                    Pose::Bone b;
+                    b.position = t->position();
+                    b.rotation = t->euler();
+                    b.scale = t->scale();
+
+                    pose->addBone(b);
+                }
+
+                QString uuid = saveData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), IConverter::ContentPose, fbxSettings);
+
+                Engine::setResource(pose, uuid.toStdString());
+                resources.push_back(uuid);
+
+                for(auto it : actors) {
+                    SkinnedMeshRender *skinned = dynamic_cast<SkinnedMeshRender *>(it->component("SkinnedMeshRender"));
+                    if(skinned) {
+                        skinned->setArmature(armature);
+                    }
+                }
+                importAnimation(boneMap, scene, fbxSettings);
+            }
         }
 
         QFile file(settings->absoluteDestination());
@@ -262,20 +381,23 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
         for(auto it : resources) {
             Engine::unloadResource(it.toStdString(), true);
         }
-        Log(Log::INF) << "Mesh imported in:" << t.elapsed() << "msec";
+        Log(Log::INF) << "Mesh imported in:" << time.elapsed() << "msec";
 
         return 0;
     }
     return 1;
 }
 
-Actor *FBXConverter::importObject(const ofbx::Object *object, FbxImportSettings *settings, QStringList &list) {
+Actor *FBXConverter::importObject(const ofbx::Object *object, Actor *parent, FbxImportSettings *settings) {
     Actor *actor = Engine::objectCreate<Actor>();
 
+    actor->setParent(parent);
+    actor->setName(object->name);
+
     ofbx::Vec3 p = object->getLocalTranslation();
-    Vector3 pos = gInvert * (Vector3(static_cast<areal>(p.x),
-                                     static_cast<areal>(p.y),
-                                     static_cast<areal>(p.z)) * settings->customScale());
+    Vector3 pos = (Vector3(static_cast<areal>(p.x),
+                           static_cast<areal>(p.y),
+                           static_cast<areal>(p.z)) * settings->customScale());
     actor->transform()->setPosition(pos);
 
     ofbx::Vec3 r = object->getLocalRotation();
@@ -290,43 +412,7 @@ Actor *FBXConverter::importObject(const ofbx::Object *object, FbxImportSettings 
                           static_cast<areal>(s.z));
     actor->transform()->setScale(scl);
 
-    QString path(object->name);
-    actor->setName(qPrintable(path));
-
-    MeshSerial *mesh = importMesh(static_cast<const ofbx::Mesh *>(object), settings->customScale());
-    if(mesh) {
-        if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
-            //importAnimation(node, scene);
-        }
-
-        QString uuid = settings->subItem(path);
-        if(uuid.isEmpty()) {
-            uuid = QUuid::createUuid().toString();
-        }
-        Engine::replaceUUID(actor, qHash(uuid));
-        Engine::replaceUUID(actor->transform(), qHash(uuid + ".Transform"));
-        settings->setSubItem(path, uuid, IConverter::ContentMesh);
-        QFileInfo dst(settings->absoluteDestination());
-
-        QFile file(dst.absolutePath() + "/" + uuid);
-        if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(Engine::toVariant(mesh));
-            file.write(reinterpret_cast<const char *>(&data[0]), data.size());
-            file.close();
-        }
-        Engine::setResource(mesh, uuid.toStdString());
-
-        MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
-        render->setMesh(mesh);
-        Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
-
-        list.push_back(uuid);
-
-        return actor;
-    }
-    delete actor;
-
-    return nullptr;
+    return actor;
 }
 
 MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
@@ -344,7 +430,7 @@ MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
 
     const ofbx::Skin *skin = geom->getSkin();
     if(skin) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_ANIMATED);
+        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_SKINNED);
         l.bones.resize(vertexCount);
         l.weights.resize(vertexCount);
     }
@@ -449,27 +535,30 @@ MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
                                           static_cast<areal>(c.w));
             }
 
-            if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+            if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
                 int32_t it = 0;
-                Vector4 weights, bones;
+                Vector4 weights(0.0f), bones(0.0f);
                 for(int32_t b = 0; b < skin->getClusterCount(); b++) {
                     const ofbx::Cluster *cluster = skin->getCluster(b);
+                    if(cluster->getIndicesCount() > 0) {
+                        const int32_t *controllIndices = cluster->getIndices();
+                        const double *w = cluster->getWeights();
 
-                    const int32_t *controllIndices = cluster->getIndices();
-                    const double *w = cluster->getWeights();
-
-                    float weight = 0.0f;
-                    for(int index = 0; index < cluster->getIndicesCount(); index++) {
-                        if(controllIndices[index] == i) {
-                            weight = static_cast<areal>(w[index]);
-                            break;
+                        float weight = 0.0f;
+                        int indicesCount = cluster->getIndicesCount();
+                        for(int boneIndex = 0; boneIndex < indicesCount; boneIndex++) {
+                            int controll = controllIndices[boneIndex];
+                            if(controll == i) {
+                                weight = static_cast<areal>(w[boneIndex]);
+                                break;
+                            }
                         }
-                    }
 
-                    if(weight > 0.0f && i < 4) {
-                        bones[it] = b;
-                        weights[it] = weight;
-                        it++;
+                        if(weight > 0.0f && it < 4) {
+                            bones[it] = b;
+                            weights[it] = weight;
+                            it++;
+                        }
                     }
                 }
 
@@ -497,7 +586,7 @@ MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
         l.colors.resize(count);
     }
 
-    if(mesh->flags() & Mesh::ATTRIBUTE_ANIMATED) {
+    if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
         l.bones.resize(count);
         l.weights.resize(count);
     }
@@ -505,49 +594,104 @@ MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
 
     return mesh;
 }
-/*
-void FBXConverter::importAnimation(FbxNode *node, FbxScene *scene) {
-    FbxAnimStack *stack = scene->GetCurrentAnimationStack();
-    for(int i = 0; i < stack->GetMemberCount(); i++) {
-        //FbxAnimLayer *layer = stack->GetMember<FbxAnimLayer>(i);
-        //FbxAnimCurve *xPos = node->LclTranslation.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
-        //FbxAnimCurve *xRot = node->LclRotation.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
-        //FbxAnimCurve *xScl = node->LclScaling.GetCurve(layer, FBXSDK_CURVENODE_COMPONENT_X);
+
+static AnimationCurve importCurve(const ofbx::AnimationCurve *curve, float scale) {
+    uint32_t count = uint32_t(curve->getKeyCount());
+    const ofbx::i64 *keys = curve->getKeyTime();
+    const float *values = curve->getKeyValue();
+
+    AnimationCurve result;
+    result.m_Keys.resize(count);
+    for(uint32_t i = 0; i < count; i++) {
+        AnimationCurve::KeyFrame key;
+        key.m_Type = AnimationCurve::KeyFrame::Linear;
+        key.m_Value = values[i] * scale;
+        double position = ofbx::fbxTimeToSeconds(keys[i]);
+        key.m_Position = uint32_t(position * 1000.0);
+
+        result.m_Keys[i] = key;
     }
+    return result;
 }
 
-if(pMesh->type == MESH_ANIMATED) {
-    pMesh->jCount = bones.size();
-    pMesh->aAnim->priority = new char[pMesh->jCount];
+static AnimationClip::Track importTrack(const ofbx::AnimationCurveNode *node, const string &path, const char *property, Vector3 factor) {
+    AnimationClip::Track track;
 
-    pMesh->jArray = new joint_data[pMesh->jCount];
-    for(int s = 0; s < pMesh->jCount; s++) {
-        KFbxNode *bone = bones[s]->GetLink();
-        KFbxNode *parent = bone->GetParent();
-        int j;
-        for(j = 0; j < pMesh->jCount; j++)
-            if(bones[j]->GetLink() == parent) break;
+    track.path = path;
+    track.property = property;
 
-        // Getting Joint priority (Using with animation blending)
-        int prop = 100;
-        pMesh->aAnim->priority[s] = prop;
+    const ofbx::AnimationCurve *x = node->getCurve(0);
+    const ofbx::AnimationCurve *y = node->getCurve(1);
+    const ofbx::AnimationCurve *z = node->getCurve(2);
 
-        if(j == bones.size()) {
-            pMesh->jArray[s].parent = 0; // Root Joint
-            pMesh->jArray[s].iparent = ROOT;
-        } else {
-            pMesh->jArray[s].parent = &pMesh->jArray[j];
-            pMesh->jArray[s].iparent = j;
+    if(x) track.curves[0] = importCurve(x, factor.x);
+    if(y) track.curves[1] = importCurve(y, factor.y);
+    if(z) track.curves[2] = importCurve(z, factor.z);
+
+    return track;
+}
+
+static string pathTo(Object *src, Object *dst) {
+    string result;
+    if(src != dst) {
+        string parent = pathTo(src, dst->parent());
+        if(!parent.empty()) {
+            result += parent + "/";
         }
+        result += dst->name();
+    }
+    return result;
+}
 
-        memset(pMesh->jArray[s].name, 0, 32);
-        strncpy(pMesh->jArray[s].name, bone->GetName(), 31);
+static bool compare(const AnimationClip::Track &left, const AnimationClip::Track &right) {
+    return left.path > right.path;
+}
 
-        int proxy = 0;
-        pMesh->jArray[s].proxy = proxy;
+void FBXConverter::importAnimation(const QMap<const ofbx::Object *, Actor *> &bones, ofbx::IScene *scene, FbxImportSettings *settings) {
+    const ofbx::AnimationStack *stack = scene->getAnimationStack(0);
+    const ofbx::AnimationLayer *layer = stack->getLayer(0);
 
-        int emitter	= 0;
-        pMesh->jArray[s].emitter = emitter;
+    if(layer) {
+        AnimationClipSerial clip;
+        clip.setName("AnimationClip");
+
+        for(auto it : bones.keys()) {
+            const ofbx::AnimationCurveNode *t = layer->getCurveNode(*it, "Lcl Translation");
+            const ofbx::AnimationCurveNode *r = layer->getCurveNode(*it, "Lcl Rotation");
+            const ofbx::AnimationCurveNode *s = layer->getCurveNode(*it, "Lcl Scaling");
+
+            string path = pathTo(nullptr, bones.value(it)->transform());
+            if(t) {
+                const float scale = (settings) ? settings->customScale() : 1.0f;
+                clip.m_Tracks.push_back(importTrack(t, path, "Position", Vector3(scale)));
+            }
+
+            if(r) {
+                clip.m_Tracks.push_back(importTrack(r, path, "Rotation", gInvert * Vector3(1.0f)));
+            }
+
+            if(s) {
+                clip.m_Tracks.push_back(importTrack(s, path, "Scale", Vector3(1.0f)));
+            }
+        }
+        clip.m_Tracks.sort(compare);
+
+        saveData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), IConverter::ContentAnimation, settings);
     }
 }
-*/
+
+QString FBXConverter::saveData(const ByteArray &data, const QString &path, int32_t type, FbxImportSettings *settings) {
+    QString uuid = settings->subItem(path);
+    if(uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toString();
+    }
+    settings->setSubItem(path, uuid, type);
+    QFileInfo dst(settings->absoluteDestination());
+
+    QFile file(dst.absolutePath() + "/" + uuid);
+    if(file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<const char *>(&data[0]), data.size());
+        file.close();
+    }
+    return uuid;
+}

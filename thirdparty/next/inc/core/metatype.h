@@ -7,7 +7,7 @@
 #include <typeindex>
 #include <stdint.h>
 
-#include <global.h>
+#include "global.h"
 
 using namespace std;
 
@@ -22,6 +22,8 @@ using namespace std;
     UNREGISTER_META_TYPE_IMPL(Class *);
 
 #define UNREGISTER_META_TYPE_IMPL(Class) unregisterMetaType<Class>(#Class)
+
+class Object;
 
 class NEXT_LIBRARY_EXPORT MetaType {
 public:
@@ -48,6 +50,12 @@ public:
         USERTYPE                = 40
     };
 
+    /*! \enum Flags */
+    enum Flags {
+        POINTER     = (1<<0),
+        BASE_OBJECT = (1<<1)
+    };
+
     struct Table {
         int                 (*get_size)                 ();
         void               *(*static_new)               ();
@@ -58,6 +66,7 @@ public:
         bool                (*compare)                  (const void **, const void **);
         type_index const    (*index)                    ();
         const char         *name;
+        int                 flags;
     };
 
     typedef bool            (*converterCallback)        (void *to, const void *from, const uint32_t fromType);
@@ -75,6 +84,7 @@ public:
     void                    destruct                    (void *data) const;
     bool                    compare                     (const void *left, const void *right) const;
     bool                    isValid                     () const;
+    int                     flags                       () const;
 
     static uint32_t         registerType                (Table &table);
     static void             unregisterType              (Table &table);
@@ -173,7 +183,7 @@ struct Table {
     typedef Bool<std::is_pointer<T>::value>         is_pointer;
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
-    static MetaType::Table *get(const char *typeName) {
+    static MetaType::Table *get(const char *typeName, int flags = 0) {
         static MetaType::Table staticTable = {
             TypeFuncs<T_no_cv>::size,
             TypeFuncs<T_no_cv>::static_new,
@@ -183,7 +193,8 @@ struct Table {
             TypeFuncs<T_no_cv>::clone,
             TypeFuncs<T_no_cv>::compare,
             TypeFuncs<T_no_cv>::index,
-            typeName
+            typeName,
+            flags
         };
         return &staticTable;
     }
@@ -192,12 +203,22 @@ struct Table {
 //Function to unpack args properly
 template<typename T>
 inline static MetaType::Table *getTable(const char *typeName = "") {
-    uint32_t type   = MetaType::type<T>();
-    MetaType::Table *result   = MetaType::table(type);
+    uint32_t type = MetaType::type<T>();
+    MetaType::Table *result = MetaType::table(type);
     if(result) {
         return result;
     }
-    return Table<T>::get(typeName);
+
+    int flags = 0;
+    if(std::is_pointer<T>::value) {
+        flags |= MetaType::POINTER;
+
+        if(std::is_base_of<Object, typename std::remove_pointer<T>::type>::value) {
+            flags |= MetaType::BASE_OBJECT;
+        }
+    }
+
+    return Table<T>::get(typeName, flags);
 }
 
 template<typename T>

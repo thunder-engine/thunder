@@ -52,6 +52,15 @@ public:
         }
         return false;
     }
+
+    static void enumObjects(Object *object, Object::ObjectList &list) {
+        PROFILE_FUNCTION();
+        list.push_back(object);
+        for(const auto &it : object->getChildren()) {
+            enumObjects(it, list);
+        }
+    }
+
     Object                         *m_pParent;
 
     string                          m_sName;
@@ -343,45 +352,77 @@ const MetaObject *Object::metaObject() const {
     Returns pointer to clone object.
 
     When you clone the Object or subclasses of it, all child objects also will be cloned.
-    By default the parent for the new object will be nullptr. This clone will not have the name so you will need to set it manualy if required.
+    By default the \a parent for the new object will be nullptr.
+    This clone will not have the unique name so you will need to set it manualy if required.
 
     Connections will be recreated with the same objects as original.
 
     \sa connect()
 */
-Object *Object::clone() {
+Object *Object::clone(Object *parent) {
     PROFILE_FUNCTION();
 
-    const MetaObject *meta  = metaObject();
-    Object *result = meta->createInstance();
-    result->setParent(nullptr);
-    result->setSystem(p_ptr->m_pSystem);
-    int count  = meta->propertyCount();
-    for(int i = 0; i < count; i++) {
-        MetaProperty lp = result->metaObject()->property(i);
-        MetaProperty rp = meta->property(i);
-        lp.write(result, rp.read(this));
+    ObjectList list;
+    ObjectPrivate::enumObjects(this, list);
+
+    std::list<pair<Object *, Object *>> array;
+
+    for(auto it : list) {
+        const MetaObject *meta = it->metaObject();
+        Object *result = meta->createInstance();
+        result->p_ptr->m_UUID = ObjectSystem::generateUUID();
+        result->p_ptr->m_Cloned = it->p_ptr->m_UUID;
+
+        Object *p = parent;
+        for(auto item : array) {
+            if(item.second->clonedFrom() == it->parent()->uuid()) {
+                p = item.second;
+                break;
+            }
+        }
+        result->setParent(p);
+        result->setSystem(it->p_ptr->m_pSystem);
+        result->setName(it->name());
+
+        array.push_back(pair<Object *, Object *>(it, result));
     }
-    for(auto it : getChildren()) {
-        Object *clone  = it->clone();
-        clone->setParent(result);
-        clone->setName(it->name());
+
+    for(auto it : array) {
+        const MetaObject *meta = it.first->metaObject();
+
+        for(int i = 0; i < meta->propertyCount(); i++) {
+            MetaProperty rp = meta->property(i);
+            MetaProperty lp = it.second->metaObject()->property(i);
+            Variant data = rp.read(it.first);
+            if(rp.type().flags() & MetaType::BASE_OBJECT) {
+                Object *ro = *(reinterpret_cast<Object **>(data.data()));
+
+                for(auto item : array) {
+                    if(item.first == ro) {
+                        ro = item.second;
+                        break;
+                    }
+                }
+
+                data = Variant(data.userType(), &ro);
+            }
+            lp.write(it.second, data);
+        }
+        for(auto item : p_ptr->m_lSenders) {
+            MetaMethod signal = item.sender->metaObject()->method(item.signal);
+            MetaMethod method = it.second->metaObject()->method(item.method);
+            connect(item.sender, (to_string(1) + signal.signature()).c_str(),
+                    it.second, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+        }
+        for(auto item : getReceivers()) {
+            MetaMethod signal = it.second->metaObject()->method(item.signal);
+            MetaMethod method = item.receiver->metaObject()->method(item.method);
+            connect(it.second, (to_string(1) + signal.signature()).c_str(),
+                    item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+        }
     }
-    for(auto it : p_ptr->m_lSenders) {
-        MetaMethod signal  = it.sender->metaObject()->method(it.signal);
-        MetaMethod method  = result->metaObject()->method(it.method);
-        connect(it.sender, (to_string(1) + signal.signature()).c_str(),
-                result, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
-    }
-    for(auto it : getReceivers()) {
-        MetaMethod signal  = result->metaObject()->method(it.signal);
-        MetaMethod method  = it.receiver->metaObject()->method(it.method);
-        connect(result, (to_string(1) + signal.signature()).c_str(),
-                it.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
-    }
-    result->p_ptr->m_Cloned = p_ptr->m_UUID;
-    result->p_ptr->m_UUID   = ObjectSystem::generateUUID();
-    return result;
+
+    return array.front().second;
 }
 /*!
     Returns the UUID of cloned object.
@@ -595,18 +636,22 @@ Object *Object::find(const string &path) {
 
     unsigned int start  = 0;
     if(path[0] == '/') {
-        start   = 1;
+        start = 1;
     }
-    int index  = path.find('/', 1);
-    if(index > -1) {
-        for(const auto &it : p_ptr->m_mChildren) {
-            Object *o  = it->find(path.substr(index + 1));
-            if(o) {
-                return o;
+    int index = path.find('/', start);
+    string first = path.substr(start, index);
+
+    for(const auto &it : p_ptr->m_mChildren) {
+        if(it->p_ptr->m_sName == first) {
+            if(index > -1) {
+                Object *o  = it->find(path.substr(index + 1));
+                if(o) {
+                    return o;
+                }
+            } else {
+                return it;
             }
         }
-    } else if(path.substr(start, index) == p_ptr->m_sName) {
-        return this;
     }
 
     return nullptr;
@@ -660,7 +705,6 @@ void Object::removeChild(Object *child) {
         it++;
     }
 }
-
 /*!
     Send specific \a signal with \a args for all connected receivers.
 

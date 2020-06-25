@@ -37,6 +37,8 @@ public:
 
     static void             drawBox             (const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
+    static void             drawBone            (const Matrix4 &begin, const Matrix4 &end);
+
     static void             drawDisk            (const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
 
     static void             drawRectangle       (const Vector3 &center, const Quaternion &rotation, float width, float height);
@@ -73,6 +75,7 @@ public:
 protected:
     static Mesh *s_Cone;
     static Mesh *s_Quad;
+    static Mesh *s_Sphere;
     static Mesh *s_Lines;
 
     static Mesh *s_Axis;
@@ -85,10 +88,11 @@ protected:
     static Mesh *s_Circle;
     static Mesh *s_Rectangle;
     static Mesh *s_Box;
+    static Mesh *s_Bone;
 
-    static MaterialInstance*s_Gizmo;
-
-    static MaterialInstance*s_Sprite;
+    static MaterialInstance *s_Gizmo;
+    static MaterialInstance *s_Solid;
+    static MaterialInstance *s_Sprite;
 
 };
 

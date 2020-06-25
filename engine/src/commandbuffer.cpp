@@ -16,13 +16,12 @@ void ICommandBuffer::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer, 
     A_UNUSED(material);
 }
 
-void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material, bool particle) {
+void ICommandBuffer::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
     A_UNUSED(models);
     A_UNUSED(count);
     A_UNUSED(mesh);
     A_UNUSED(layer);
     A_UNUSED(material);
-    A_UNUSED(particle);
 }
 
 void ICommandBuffer::setRenderTarget(const TargetBuffer &target, RenderTexture *depth, uint32_t level) {

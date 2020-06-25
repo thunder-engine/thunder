@@ -23,7 +23,8 @@ public:
         RGB10A2,
         RGB16Float,
         R11G11B10Float,
-        Depth
+        Depth,
+        RGBA32Float
     };
 
     enum CompressionType {
@@ -45,8 +46,8 @@ public:
         Mirrored
     };
 
-    typedef deque<uint8_t *>    Surface;
-    typedef deque<Surface>      Sides;
+    typedef deque<uint8_t *> Surface;
+    typedef deque<Surface>   Sides;
 
 public:
     Texture ();

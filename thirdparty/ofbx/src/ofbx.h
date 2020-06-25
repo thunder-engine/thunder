@@ -353,6 +353,8 @@ struct AnimationCurve : Object
 	virtual int getKeyCount() const = 0;
 	virtual const i64* getKeyTime() const = 0;
 	virtual const float* getKeyValue() const = 0;
+	virtual const int* getKeyFlags() const = 0;
+	virtual const float* getKeyData() const = 0;
 };
 
 

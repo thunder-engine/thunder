@@ -11,8 +11,11 @@
 #define TANGENT_ATRIB   2
 #define COLOR_ATRIB     3
 #define UV0_ATRIB       4
+#define UV1_ATRIB       5
+#define BONES_ATRIB     6
+#define WEIGHTS_ATRIB   7
 
-#define INSTANCE_ATRIB  5
+#define INSTANCE_ATRIB  8
 
 class CommandBufferGL : public ICommandBuffer {
     A_OVERRIDE(CommandBufferGL, ICommandBuffer, System)
@@ -26,7 +29,7 @@ public:
 
     void                        drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
-    void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr, bool particle = false) override;
+    void                        drawMeshInstanced           (const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
     void                        setRenderTarget             (const TargetBuffer &target, RenderTexture *depth = nullptr, uint32_t level = 0) override;
 

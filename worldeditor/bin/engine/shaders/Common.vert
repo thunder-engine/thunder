@@ -1,4 +1,4 @@
-layout(location = 6) uniform struct Camera {
+layout(location = 10) uniform struct Camera {
     mat4    view;
     mat4    projection;
     mat4    projectionInv;
@@ -9,10 +9,10 @@ layout(location = 6) uniform struct Camera {
     vec4    screen;
 } camera;
 
-layout(location = 16) uniform struct Light {
-    mat4    matrix[6]; // 16
-    vec4    tiles[6]; // 22
-    vec4    color; // 28
+layout(location = 20) uniform struct Light {
+    mat4    matrix[6];
+    vec4    tiles[6];
+    vec4    color;
     vec4    lod;
     vec4    map;
     vec4    params; // x - brightness, y - radius/width, z - length/height, w - cutoff

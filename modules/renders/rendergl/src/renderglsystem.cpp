@@ -30,7 +30,7 @@ void _CheckGLError(const char* file, int line) {
             case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY";          break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION";  break;
         }
-        Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;;
+        Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;
         err = glGetError();
     }
     return;

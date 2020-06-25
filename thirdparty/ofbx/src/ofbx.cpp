@@ -1278,9 +1278,13 @@ struct AnimationCurveImpl : AnimationCurve
 	int getKeyCount() const override { return (int)times.size(); }
 	const i64* getKeyTime() const override { return &times[0]; }
 	const float* getKeyValue() const override { return &values[0]; }
+    const int* getKeyFlags() const override { return &flags[0]; }
+    const float* getKeyData() const override { return &data[0]; }
 
 	std::vector<i64> times;
 	std::vector<float> values;
+    std::vector<int> flags;
+    std::vector<float> data;
 	Type getType() const override { return Type::ANIMATION_CURVE; }
 };
 
@@ -2090,7 +2094,9 @@ static OptionalError<Object*> parseAnimationCurve(const Scene& scene, const Elem
 	std::unique_ptr<AnimationCurveImpl> curve(new AnimationCurveImpl(scene, element));
 
 	const Element* times = findChild(element, "KeyTime");
-	const Element* values = findChild(element, "KeyValueFloat");
+    const Element* values = findChild(element, "KeyValueFloat");
+    const Element* flags = findChild(element, "KeyAttrFlags");
+    const Element* data = findChild(element, "KeyAttrDataFloat");
 
 	if (times && times->first_property)
 	{
@@ -2109,6 +2115,24 @@ static OptionalError<Object*> parseAnimationCurve(const Scene& scene, const Elem
 			return Error("Invalid animation curve");
 		}
 	}
+
+    if (flags && flags->first_property)
+    {
+        curve->flags.resize(flags->first_property->getCount());
+        if (!flags->first_property->getValues(&curve->flags[0], (int)curve->flags.size() * sizeof(curve->flags[0])))
+        {
+            return Error("Invalid animation curve");
+        }
+    }
+
+    if (data && data->first_property)
+    {
+        curve->data.resize(data->first_property->getCount());
+        if (!flags->first_property->getValues(&curve->data[0], (int)curve->data.size() * sizeof(curve->data[0])))
+        {
+            return Error("Invalid animation curve");
+        }
+    }
 
 	if (curve->times.size() != curve->values.size()) return Error("Invalid animation curve");
 

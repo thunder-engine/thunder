@@ -9,6 +9,9 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+#include "editors/contentbrowser/contentlist.h"
+#include "editors/assetselect/assetlist.h"
+
 #include "iconrender.h"
 
 ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
@@ -61,6 +64,9 @@ void ImportQueue::onImportFinished() {
         ++i;
     }
     m_UpdateQueue.clear();
+
+    ContentList::instance()->update();
+    AssetList::instance()->update();
 
     hide();
     emit finished();

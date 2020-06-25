@@ -88,10 +88,14 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 advance(it, index.row());
                 if(it != m_pClip->m_Tracks.end()) {
                     QStringList lst = QString::fromStdString(it->path).split('/');
-                    QString name = lst.last();
+                    QString component = lst.last();
+                    lst.pop_back();
+                    QString actor = lst.last();
+
                     int32_t size = lst.size();
-                    if(name.isEmpty()) {
-                        name = QString::fromStdString(m_pController->actor()->name());
+
+                    if(component.isEmpty()) {
+                        component = QString::fromStdString(m_pController->actor()->name());
                         size = 0;
                     }
 
@@ -99,7 +103,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                     for(int32_t i = 0; i < size; i++) {
                         spaces  += "    ";
                     }
-                    return QString("%1%2 : %3").arg(spaces).arg(name).arg(it->property.c_str());
+                    return QString("%1%2 : %3").arg(spaces).arg(actor).arg(it->property.c_str());
                 }
             } else {
                 advance(it, index.parent().row());
@@ -311,7 +315,9 @@ AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, in
     if(track >= 0) {
         if(m_pClip->m_Tracks.size() > size_t(track)) {
             AnimationClip::Track &t = *std::next(m_pClip->m_Tracks.begin(), track);
-            return &t.curves[col].m_Keys[index];
+            if(t.curves.size() > col && t.curves[col].m_Keys.size() > index) {
+                return &t.curves[col].m_Keys[index];
+            }
         }
     }
     return nullptr;

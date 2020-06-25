@@ -59,6 +59,10 @@ void ATextureGL::updateTexture() {
             internal    = GL_RGB16F;
             glformat    = GL_RGB;
         } break;
+        case RGBA32Float: {
+            internal    = GL_RGBA32F;
+            glformat    = GL_RGBA;
+        } break;
         default: break;
       //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
       //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
@@ -90,7 +94,7 @@ void ATextureGL::updateTexture() {
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
 
     int32_t glwrap;
-    switch (wrap()) {
+    switch(wrap()) {
         case Repeat: glwrap   = GL_REPEAT; break;
         case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
         default: glwrap       = GL_CLAMP_TO_EDGE; break;
@@ -138,13 +142,13 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
             CheckGLError();
         }
 
-        bool isFloat = (Texture::format() == RGB16Float);
+        bool isFloat = (Texture::format() == RGB16Float || Texture::format() == RGBA32Float);
 
         // load all mipmaps
         int32_t w  = width();
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
-            uint8_t *data   = image[i];
+            uint8_t *data = image[i];
             glTexImage2D(target, i, internal, w, h, 0, format, (isFloat) ? GL_FLOAT : GL_UNSIGNED_BYTE, data);
             CheckGLError();
 

@@ -4,15 +4,15 @@
 
 #include "Common.vert"
 
-layout(location = 40) uniform sampler2D depthMap;
-layout(location = 41) uniform sampler2D normalsMap;
-layout(location = 42) uniform sampler2D noiseMap;
+layout(location = 50) uniform sampler2D depthMap;
+layout(location = 51) uniform sampler2D normalsMap;
+layout(location = 52) uniform sampler2D noiseMap;
 
-layout(location = 43) uniform float radius;
-layout(location = 44) uniform float bias;
-layout(location = 45) uniform float power;
+layout(location = 53) uniform float radius;
+layout(location = 54) uniform float bias;
+layout(location = 55) uniform float power;
 
-layout(location = 46) uniform vec3 samplesKernel[MAX_SAMPLE_COUNT];
+layout(location = 56) uniform vec3 samplesKernel[MAX_SAMPLE_COUNT];
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;

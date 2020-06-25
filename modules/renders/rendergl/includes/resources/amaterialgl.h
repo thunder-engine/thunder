@@ -29,25 +29,27 @@ class AMaterialGL : public Material {
     typedef unordered_map<uint32_t, uint32_t> ObjectMap;
 
 public:
-    void                        loadUserData    (const VariantMap &data) override;
+    void loadUserData (const VariantMap &data) override;
 
-    uint32_t                    bind            (uint32_t layer, uint16_t vertex);
+    uint32_t bind (uint32_t layer, uint16_t vertex);
 
-    uint32_t                    getProgram      (uint16_t type);
+    uint32_t getProgram (uint16_t type);
 
-    TextureMap                  textures        () const { return m_Textures; }
+    TextureMap textures () const { return m_Textures; }
 
 protected:
-    uint32_t                    buildShader     (uint16_t type, const string &src = string());
+    uint32_t buildShader (uint16_t type, const string &src = string());
 
-    uint32_t                    buildProgram    (uint32_t vertex, uint32_t fragment);
+    uint32_t buildProgram (uint32_t vertex, uint32_t fragment);
 
-    bool                        checkShader     (uint32_t shader, const string &path, bool link = false);
+    bool checkShader (uint32_t shader, const string &path, bool link = false);
+
+    MaterialInstance *createInstance (SurfaceType type = SurfaceType::Static) override;
 
 private:
-    ObjectMap                   m_Programs;
+    ObjectMap m_Programs;
 
-    map<uint16_t, string>       m_ShaderSources;
+    map<uint16_t, string> m_ShaderSources;
 
 };
 

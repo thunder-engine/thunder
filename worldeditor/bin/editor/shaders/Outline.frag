@@ -2,10 +2,10 @@
 
 #include "Common.vert"
 
-layout(location = 40) uniform sampler2D rgbMap;
-layout(location = 41) uniform sampler2D outlineMap;
-layout(location = 42) uniform vec4 color;
-layout(location = 43) uniform float width;
+layout(location = 50) uniform sampler2D rgbMap;
+layout(location = 51) uniform sampler2D outlineMap;
+layout(location = 52) uniform vec4 color;
+layout(location = 53) uniform float width;
 
 layout(location = 1) in vec2 _uv0;
 

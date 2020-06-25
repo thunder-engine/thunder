@@ -2,8 +2,8 @@
 
 #include "Common.vert"
 
-layout(location = 40) uniform sampler2D rgbMap;
-layout(location = 41) uniform float threshold;
+layout(location = 50) uniform sampler2D rgbMap;
+layout(location = 51) uniform float threshold;
 
 layout(location = 1) in vec2 _uv0;
 

@@ -38,7 +38,7 @@ public:
     IndexVector m_vertices;
     IndexVector m_colors;
     IndexVector m_weights;
-    IndexVector m_indices;
+    IndexVector m_bones;
 
     uint32_t m_InstanceBuffer;
 

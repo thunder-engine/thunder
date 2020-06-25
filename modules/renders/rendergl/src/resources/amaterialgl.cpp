@@ -15,20 +15,20 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
     switch(m_MaterialType) {
         case PostProcess: {
             /// \todo should be removed
-            setTexture("rgbMap",        nullptr);
-            setTexture("depthMap",      nullptr);
-            setTexture("normalsMap",    nullptr);
-            setTexture("diffuseMap",    nullptr);
-            setTexture("outlineMap",    nullptr);
+            setTexture("rgbMap",     nullptr);
+            setTexture("depthMap",   nullptr);
+            setTexture("normalsMap", nullptr);
+            setTexture("diffuseMap", nullptr);
+            setTexture("outlineMap", nullptr);
         } break;
         case LightFunction: {
             /// \todo should be removed
-            setTexture("normalsMap",    nullptr);
-            setTexture("diffuseMap",    nullptr);
-            setTexture("paramsMap",     nullptr);
-            setTexture("emissiveMap",   nullptr);
-            setTexture("depthMap",      nullptr);
-            setTexture("shadowMap",     nullptr);
+            setTexture("normalsMap",  nullptr);
+            setTexture("diffuseMap",  nullptr);
+            setTexture("paramsMap",   nullptr);
+            setTexture("emissiveMap", nullptr);
+            setTexture("depthMap",    nullptr);
+            setTexture("shadowMap",   nullptr);
         } break;
         default: { // Surface type
             {
@@ -47,6 +47,13 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
                 auto it = data.find("Particle");
                 if(it != data.end()) {
                     m_ShaderSources[Particle] = (*it).second.toString();
+                }
+            }
+            {
+                auto it = data.find("Skinned");
+                if(it != data.end()) {
+                    m_ShaderSources[Skinned] = (*it).second.toString();
+                    setTexture("skinMatrices", nullptr);
                 }
             }
         } break;
@@ -122,11 +129,11 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
         return 0;
     }
 
-    uint16_t type   = AMaterialGL::Default;
+    uint16_t type = AMaterialGL::Default;
     switch(layer) {
         case ICommandBuffer::RAYCAST:
         case ICommandBuffer::SHADOWCAST: {
-            type    = AMaterialGL::Simple;
+            type = AMaterialGL::Simple;
         } break;
         default: break;
     }
@@ -169,7 +176,7 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
 }
 
 uint32_t AMaterialGL::buildShader(uint16_t type, const string &src) {
-    const char *data    = src.c_str();
+    const char *data = src.c_str();
 
     uint32_t t;
     switch(type) {
@@ -261,4 +268,20 @@ bool AMaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
         return false;
     }
     return true;
+}
+
+MaterialInstance *AMaterialGL::createInstance(SurfaceType type) {
+    MaterialInstance *result = Material::createInstance(type);
+    if(result) {
+        uint16_t t = Instanced;
+        switch(type) {
+            case SurfaceType::Static: t = Static; break;
+            case SurfaceType::Skinned: t = Skinned; break;
+            case SurfaceType::Billboard: t = Particle; break;
+            default: break;
+        }
+
+        result->setSurfaceType(t);
+    }
+    return result;
 }

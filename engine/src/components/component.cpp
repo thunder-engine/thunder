@@ -76,7 +76,8 @@ string Component::tr(const string &source) {
     \internal
 */
 bool Component::isSerializable() const {
-    return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
+    return (clonedFrom() == 0); // To be used in future
+    //return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
 }
 
 #ifdef NEXT_SHARED
