@@ -103,7 +103,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
         } break;
         case IConverter::ContentMaterial: {
             MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
-            Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere002");
+            Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
             if(m) {
                 mesh->setMesh(m);
                 Material *mat   = Engine::loadResource<Material>(resource.toStdString());

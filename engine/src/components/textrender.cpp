@@ -283,8 +283,10 @@ void TextRender::setMaterial(Material *material) {
 
         if(material) {
             p_ptr->m_pMaterial = material->createInstance();
-            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
             p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
+            if(p_ptr->m_pFont) {
+                p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+            }
         }
     }
 }
