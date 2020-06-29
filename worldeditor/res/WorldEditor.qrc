@@ -50,6 +50,13 @@
         <file>styles/dark/icons/target.png</file>
         <file>styles/dark/images/fixture.png</file>
         <file>styles/dark/images/pose.png</file>
+        <file>styles/dark/images/unknown.png</file>
+        <file>styles/dark/images/material.png</file>
+        <file>styles/dark/images/text.png</file>
+        <file>styles/dark/images/atlas.png</file>
+        <file>styles/dark/images/mesh.png</file>
+        <file>styles/dark/images/texture.png</file>
+        <file>styles/dark/images/pipeline.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>

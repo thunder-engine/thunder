@@ -554,11 +554,21 @@ QImage AssetManager::icon(const QString &path) {
         }
 
         switch(type) {
-            case IConverter::ContentText:
-            case IConverter::ContentTexture:
-            case IConverter::ContentMaterial:
-            case IConverter::ContentMesh:
-            case IConverter::ContentAtlas: break;
+            case IConverter::ContentText: {
+                icon.load(":/Style/styles/dark/images/text.png", "PNG");
+            } break;
+            case IConverter::ContentTexture: {
+                icon.load(":/Style/styles/dark/images/texture.png", "PNG");
+            } break;
+            case IConverter::ContentMaterial: {
+                icon.load(":/Style/styles/dark/images/material.png", "PNG");
+            } break;
+            case IConverter::ContentMesh: {
+                icon.load(":/Style/styles/dark/images/mesh.png", "PNG");
+            } break;
+            case IConverter::ContentAtlas: {
+                icon.load(":/Style/styles/dark/images/atlas.png", "PNG");
+            } break;
             case IConverter::ContentFont: {
                 icon.load(":/Style/styles/dark/images/ttf.png", "PNG");
             } break;
@@ -577,7 +587,9 @@ QImage AssetManager::icon(const QString &path) {
             case IConverter::ContentMap: {
                 icon.load(":/Style/styles/dark/images/map.png", "PNG");
             } break;
-            case IConverter::ContentPipeline: break;
+            case IConverter::ContentPipeline: {
+                icon.load(":/Style/styles/dark/images/pipeline.png", "PNG");
+            } break;
             case IConverter::ContentPrefab: {
                 icon.load(":/Style/styles/dark/images/prefab.png", "PNG");
             } break;
@@ -593,7 +605,9 @@ QImage AssetManager::icon(const QString &path) {
             case IConverter::ContentPose: {
                 icon.load(":/Style/styles/dark/images/pose.png", "PNG");
             } break;
-            default: break;
+            default: {
+                icon.load(":/Style/styles/dark/images/unknown.png", "PNG");
+            } break;
         }
     }
     return icon;
