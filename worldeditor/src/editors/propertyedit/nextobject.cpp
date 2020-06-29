@@ -111,24 +111,27 @@ void NextObject::onDeleteComponent() {
 
 void NextObject::buildObject(Object *object, const QString &path) {
     const MetaObject *meta = object->metaObject();
+    blockSignals(true);
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         QString name(property.name());
         if(name.indexOf("Enabled") == -1) {
-            name = (path.isEmpty() ? "" : path + "/") + name;
+            name = path + "/" + name;
             Variant data = property.read(object);
 
-            blockSignals(true);
             setProperty(qPrintable(name), qVariant(data, property));
-            blockSignals(false);
+        } else {
+            setProperty(qPrintable(path + "/"), QVariant(true));
         }
     }
+    blockSignals(false);
+
     for(Object *it : object->getChildren()) {
         Invalid *invalid = dynamic_cast<Invalid *>(it);
         if(invalid) {
             blockSignals(true);
             invalid->setName(tr("%1 (Invalid)").arg(invalid->typeName().c_str()).toStdString());
-            setProperty( qPrintable((path.isEmpty() ? QString() : path + "/") + invalid->name().c_str() + QString("/")), QVariant(true) );
+            setProperty( qPrintable(path + "/" + invalid->name().c_str() + QString("/")), QVariant(true) );
             blockSignals(false);
         } else if(dynamic_cast<Component *>(it)) {
             buildObject(it, (path.isEmpty() ? "" : path + "/") + QString::fromStdString(it->typeName()));
@@ -139,8 +142,8 @@ void NextObject::buildObject(Object *object, const QString &path) {
 bool NextObject::event(QEvent *e) {
     if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
         QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
-        QString name    = ev->propertyName();
-        QVariant value  = property(qPrintable(name));
+        QString name   = ev->propertyName();
+        QVariant value = property(qPrintable(name));
         if(value.isValid()) {
             QStringList list = name.split('/');
             if(m_pObject) {
