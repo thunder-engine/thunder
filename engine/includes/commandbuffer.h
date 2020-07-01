@@ -26,7 +26,7 @@ public:
     };
 
 public:
-    virtual void                clearRenderTarget           (bool clearColor = true, const Vector4 &color = Vector4(), bool clearDepth = true, float depth = 1.0f);
+    virtual void                clearRenderTarget           (bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f);
 
     virtual void                drawMesh                    (const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 

@@ -17,7 +17,6 @@ public:
     Renderable ();
 
     virtual void draw (ICommandBuffer &buffer, uint32_t layer);
-    virtual void move ();
 
     virtual AABBox bound () const;
 

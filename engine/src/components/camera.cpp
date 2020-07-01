@@ -184,9 +184,9 @@ bool Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, con
     Returns ray with origin point in camera position and direction to projection plane with \a x and \a y coordinates.
 */
 Ray Camera::castRay(float x, float y) {
-    Actor *a    = actor();
-    Vector3 p   = a->transform()->position();
-    Vector3 dir = a->transform()->rotation() * Vector3(0.0, 0.0,-1.0);
+    Transform *t = actor()->transform();
+    Vector3 p   = t->position();
+    Vector3 dir = t->rotation() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
     Vector3 view;

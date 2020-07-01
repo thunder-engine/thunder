@@ -74,14 +74,6 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
 
     m_MousePosition  = Vector2();
 
-    m_pSelect = Engine::objectCreate<Texture>();
-    m_pSelect->setFormat(Texture::RGBA8);
-    m_pSelect->resize(1, 1);
-
-    m_pDepth = Engine::objectCreate<Texture>();
-    m_pDepth->setFormat(Texture::Depth);
-    m_pDepth->resize(1, 1);
-
     m_pPipeline = nullptr;
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
@@ -230,39 +222,21 @@ void ObjectCtrl::drawHandles() {
         }
     }
 
-    if(m_pPipeline && m_ObjectsList.empty()) {
+    if(m_pPipeline) {
         uint32_t result = 0;
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
 
-            RenderTexture *rt;
-            rt  = m_pPipeline->target("depthMap");
-            if(rt) {
-                rt->makeCurrent();
-                m_pDepth->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), 1, 1);
-                result  = m_pDepth->getPixel(0, 0);
-            }
-/*
-            if(result > 0) {
-                Camera *camera  = Camera::current();
-                memcpy(&screen.z, &result, sizeof(float));
-                Matrix4 mv, p;
-                camera->matrices(mv, p);
-                screen.y = (1.0f - screen.y);
-                Camera::unproject(screen, mv, p, mMouseWorld);
-            }
-*/
-            rt  = m_pPipeline->target("selectMap");
-            if(rt) {
-                rt->makeCurrent();
-                m_pSelect->readPixels(int32_t(position.x), int32_t(m_Screen.y - position.y), uint32_t(size.x), uint32_t(size.y));
-                result  = m_pSelect->getPixel(0, 0);
-            }
+            m_pPipeline->setMousePosition(int32_t(position.x), int32_t(m_Screen.y - position.y));
+            result = m_pPipeline->objectId();
         }
 
         if(result) {
-            m_ObjectsList = { result };
+            if(m_ObjectsList.empty()) {
+                m_ObjectsList = { result };
+            }
         }
+        m_MouseWorld = m_pPipeline->mouseWorld();
     }
 }
 
@@ -442,7 +416,12 @@ void ObjectCtrl::onUpdateSelected() {
 
 void ObjectCtrl::onDrop() {
     if(!m_DragObjects.empty()) {
-        m_Drag = false;
+        for(auto it : m_DragObjects) {
+            it->setParent(m_pMap);
+        }
+        if(m_pPipeline) {
+            m_pPipeline->setDragObjects({});
+        }
         UndoManager::instance()->push(new CreateObject(m_DragObjects, this));
     }
 
@@ -455,6 +434,7 @@ void ObjectCtrl::onDrop() {
 void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     m_DragObjects.clear();
     m_DragMap.clear();
+
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
@@ -490,7 +470,6 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentTexture: {
                         Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        actor->transform()->setPosition(Vector3(0.0f));
                         SpriteRender *sprite = static_cast<SpriteRender *>(actor->addComponent("SpriteRender"));
                         if(sprite) {
                             sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
@@ -516,10 +495,13 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     for(Object *o : m_DragObjects) {
         Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(m_MouseWorld);
-        a->setParent(m_pMap);
     }
+
+    if(m_pPipeline) {
+        m_pPipeline->setDragObjects(m_DragObjects);
+    }
+
     if(!m_DragObjects.empty() || !m_DragMap.isEmpty()) {
-        m_Drag = true;
         return;
     }
 
@@ -527,10 +509,10 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
-    m_MousePosition  = Vector2(e->pos().x(), e->pos().y());
+    m_MousePosition = Vector2(e->pos().x(), e->pos().y());
 
     for(Object *o : m_DragObjects) {
-        Actor *a    = static_cast<Actor *>(o);
+        Actor *a = static_cast<Actor *>(o);
         a->transform()->setPosition(m_MouseWorld);
     }
 }

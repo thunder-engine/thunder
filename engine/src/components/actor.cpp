@@ -358,7 +358,7 @@ VariantMap Actor::saveUserData() const {
                                     string lref = Engine::reference(lo);
                                     string rref = Engine::reference(ro);
                                     if(lref != rref) {
-                                        prop[rp.name()] = rv;
+                                        prop[rp.name()] = rref;
                                     }
 
                                     if(rref.empty() && lref.empty()) {
@@ -369,6 +369,8 @@ VariantMap Actor::saveUserData() const {
                                             prop[rp.name()] = array;
                                         }
                                     }
+                                } else {
+                                    prop[rp.name()] = rv;
                                 }
                             }
                         }

@@ -138,9 +138,6 @@ protected:
 
     Object             *m_pMap;
 
-    Texture            *m_pDepth;
-    Texture            *m_pSelect;
-
     ObjectCtrlPipeline *m_pPipeline;
 
     Object::ObjectList  m_DragObjects;

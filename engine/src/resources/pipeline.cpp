@@ -183,7 +183,6 @@ void Pipeline::combineComponents(Object *object) {
         Renderable *comp = dynamic_cast<Renderable *>(child);
         if(comp) {
             if(comp->isEnabled()) {
-                comp->move();
                 m_Components.push_back(comp);
             }
         } else {

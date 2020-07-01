@@ -121,7 +121,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
 
             setProperty(qPrintable(name), qVariant(data, property));
         } else {
-            setProperty(qPrintable(path + "/"), QVariant(true));
+            setProperty(qPrintable((path.isEmpty() ? "" : path + "/")), QVariant(true));
         }
     }
     blockSignals(false);
@@ -131,7 +131,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
         if(invalid) {
             blockSignals(true);
             invalid->setName(tr("%1 (Invalid)").arg(invalid->typeName().c_str()).toStdString());
-            setProperty( qPrintable(path + "/" + invalid->name().c_str() + QString("/")), QVariant(true) );
+            setProperty( qPrintable((path.isEmpty() ? "" : path + "/") + invalid->name().c_str() + QString("/")), QVariant(true) );
             blockSignals(false);
         } else if(dynamic_cast<Component *>(it)) {
             buildObject(it, (path.isEmpty() ? "" : path + "/") + QString::fromStdString(it->typeName()));

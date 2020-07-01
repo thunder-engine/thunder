@@ -1,11 +1,14 @@
 #include "armature.h"
 
-#include "systems/resourcesystem.h"
-#include "resources/pose.h"
+#include "components/transform.h"
+#include "components/actor.h"
 
-#include "texture.h"
-#include "transform.h"
-#include "actor.h"
+#include "systems/resourcesystem.h"
+
+#include "resources/pose.h"
+#include "resources/texture.h"
+
+#include "commandbuffer.h"
 
 #include <cstring>
 #include <cfloat>
@@ -85,27 +88,31 @@ Armature::~Armature() {
     delete p_ptr;
 }
 
-void Armature::move() {
-    if(p_ptr->m_BindDirty) {
-        p_ptr->cleanDirty(actor());
-    }
+void Armature::draw(ICommandBuffer &buffer, uint32_t layer) {
+    A_UNUSED(buffer);
 
-    Texture::Surface &surface = p_ptr->m_pCache->surface(0);
-    uint8_t *data = surface[0];
-
-    for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
-        if(i < p_ptr->m_InvertTransform.size()) {
-            Matrix4 world = p_ptr->m_Bones[i]->worldTransform();
-            p_ptr->m_Transform[i] = world * p_ptr->m_InvertTransform[i];
+    if(layer == ICommandBuffer::DEFAULT) {
+        if(p_ptr->m_BindDirty) {
+            p_ptr->cleanDirty(actor());
         }
-        Matrix4 t = p_ptr->m_Transform[i];
-        t[3]  = p_ptr->m_Transform[i].mat[12];
-        t[7]  = p_ptr->m_Transform[i].mat[13];
-        t[11] = p_ptr->m_Transform[i].mat[14];
 
-        memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+        Texture::Surface &surface = p_ptr->m_pCache->surface(0);
+        uint8_t *data = surface[0];
+
+        for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
+            if(i < p_ptr->m_InvertTransform.size()) {
+                Matrix4 world = p_ptr->m_Bones[i]->worldTransform();
+                p_ptr->m_Transform[i] = world * p_ptr->m_InvertTransform[i];
+            }
+            Matrix4 t = p_ptr->m_Transform[i];
+            t[3]  = p_ptr->m_Transform[i].mat[12];
+            t[7]  = p_ptr->m_Transform[i].mat[13];
+            t[11] = p_ptr->m_Transform[i].mat[14];
+
+            memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+        }
+        p_ptr->m_pCache->setDirty();
     }
-    p_ptr->m_pCache->setDirty();
 }
 
 Pose *Armature::bindPose() const {

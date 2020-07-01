@@ -7,6 +7,7 @@
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/scene.h"
+#include "components/renderable.h"
 
 #include "components/renderable.h"
 
@@ -55,7 +56,15 @@ public:
 };
 
 ObjectCtrlPipeline::ObjectCtrlPipeline() :
-        Pipeline() {
+        Pipeline(),
+        m_pGrid(nullptr),
+        m_pGizmo(nullptr),
+        m_pController(nullptr),
+        m_pDepth(nullptr),
+        m_pSelect(nullptr),
+        m_ObjectId(0),
+        m_MouseX(0),
+        m_MouseY(0) {
 
     RenderTexture *select = Engine::objectCreate<RenderTexture>();
     select->setTarget(Texture::RGBA8);
@@ -71,6 +80,14 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
     outline->setTarget(Texture::RGBA8);
     m_Targets[OUTLINE_MAP] = outline;
     m_Buffer->setGlobalTexture(OUTLINE_MAP, outline);
+
+    m_pSelect = Engine::objectCreate<Texture>();
+    m_pSelect->setFormat(Texture::RGBA8);
+    m_pSelect->resize(1, 1);
+
+    m_pDepth = Engine::objectCreate<Texture>();
+    m_pDepth->setFormat(Texture::Depth);
+    m_pDepth->resize(1, 1);
 
     m_pGrid  = Engine::objectCreate<Mesh>("Grid");
 
@@ -121,6 +138,28 @@ void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
     m_pController = ctrl;
 }
 
+uint32_t ObjectCtrlPipeline::objectId() const {
+    return m_ObjectId;
+}
+
+Vector3 ObjectCtrlPipeline::mouseWorld () const {
+    return m_MouseWorld;
+}
+
+void ObjectCtrlPipeline::setMousePosition(int32_t x, int32_t y) {
+    m_MouseX = x;
+    m_MouseY = y;
+}
+
+void ObjectCtrlPipeline::setDragObjects(const ObjectList &list) {
+    m_DragList.clear();
+    for(auto it : list) {
+        auto result = it->findChildren<Renderable *>();
+
+        m_DragList.insert(m_DragList.end(), result.begin(), result.end());
+    }
+}
+
 void ObjectCtrlPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
@@ -130,6 +169,24 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
 
     cameraReset(camera);
     drawComponents(ICommandBuffer::RAYCAST, m_Filter);
+
+    Vector3 screen(float(m_MouseX) / m_Screen.x, float(m_MouseY) / m_Screen.y, 0.0f);
+
+    m_pSelect->readPixels(m_MouseX, m_MouseY, 1, 1);
+    m_ObjectId = m_pSelect->getPixel(0, 0);
+    if(m_ObjectId) {
+        m_pDepth->readPixels(m_MouseX, m_MouseY, 1, 1);
+        uint32_t pixel = m_pDepth->getPixel(0, 0);
+        memcpy(&screen.z, &pixel, sizeof(float));
+
+        Matrix4 v, p;
+        camera.matrices(v, p);
+        Camera::unproject(screen, v, p, m_MouseWorld);
+    } else {
+        Ray ray = camera.castRay(screen.x, 1.0f - screen.y);
+        m_MouseWorld = (ray.dir * 10.0f) + ray.pos;
+    }
+    m_Filter.insert(m_Filter.end(), m_DragList.begin(), m_DragList.end());
 
     Pipeline::draw(camera);
 
