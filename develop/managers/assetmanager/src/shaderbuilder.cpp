@@ -52,6 +52,8 @@
 
 #define UNIFORM     50
 
+#define FORMAT_VERSION 1
+
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
 
@@ -152,6 +154,12 @@ ShaderBuilder::~ShaderBuilder() {
     cleanup();
 }
 
+IConverterSettings *ShaderBuilder::createSettings() const {
+    IConverterSettings *result = AbstractSchemeModel::createSettings();
+    result->setVersion(FORMAT_VERSION);
+    return result;
+}
+
 uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
     load(settings->source());
     if(build()) {
@@ -160,6 +168,7 @@ uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
             ByteArray data  = Bson::save( object() );
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
+            settings->setCurrentVersion(settings->version());
             return 0;
         }
     }

@@ -33,6 +33,12 @@ public:
     uint32_t                crc                     () const;
     void                    setCRC                  (uint32_t crc);
 
+    uint32_t                version                 () const;
+    void                    setVersion              (uint32_t version);
+
+    uint32_t                currentVersion          () const;
+    void                    setCurrentVersion       (uint32_t version);
+
     const QStringList       subKeys                 () const;
     QString                 subItem                 (const QString &key) const;
     int32_t                 subType                 (const QString &key) const;
@@ -43,18 +49,19 @@ signals:
     void                    updated                 ();
 
 protected:
-    bool                    mValid;
+    bool                    m_Valid;
 
-    uint32_t                mType;
+    uint32_t                m_Type;
+    uint32_t                m_Version;
+    uint32_t                m_CurrentVersion;
+    uint32_t                m_CRC;
 
-    uint32_t                mCRC;
+    string                  m_Destination;
+    string                  m_AbsoluteDestination;
+    string                  m_Source;
 
-    string                  mDestination;
-    string                  mAbsoluteDestination;
-    string                  mSource;
-
-    QStringMap              mSubItems;
-    QMap<QString, int32_t>  mSubTypes;
+    QStringMap              m_SubItems;
+    QMap<QString, int32_t>  m_SubTypes;
 };
 
 class NEXT_LIBRARY_EXPORT IConverter : public QObject {

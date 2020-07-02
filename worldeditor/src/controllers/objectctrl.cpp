@@ -518,6 +518,9 @@ void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
 }
 
 void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
+    if(m_pPipeline) {
+        m_pPipeline->setDragObjects({});
+    }
     for(Object *o : m_DragObjects) {
         delete o;
     }

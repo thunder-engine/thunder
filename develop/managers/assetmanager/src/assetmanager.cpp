@@ -44,6 +44,7 @@
 #define BUFF_SIZE 1024
 
 const QString gCRC("crc");
+const QString gVersion("version");
 const QString gGUID("guid");
 
 const QString gEntry(".entry");
@@ -199,6 +200,10 @@ void AssetManager::reimport() {
 }
 
 bool AssetManager::isOutdated(IConverterSettings *settings) {
+    if(settings->version() > settings->currentVersion()) {
+        return true;
+    }
+
     bool result     = true;
     uint32_t crc    = crc32(0L, nullptr, 0);
 
@@ -488,6 +493,7 @@ IConverterSettings *AssetManager::createSettings(const QFileInfo &source) {
         }
         settings->setDestination( qPrintable(object.value(gGUID).toString()) );
         settings->setCRC( uint32_t(object.value(gCRC).toInt()) );
+        settings->setCurrentVersion(uint32_t(object.value(gVersion).toInt()) );
 
         QJsonObject sub  = object.value(gSubItems).toObject();
         foreach(QString it, sub.keys()) {
@@ -720,9 +726,9 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
             pushToImport(settings);
         } else {
             if(settings->type() != IConverter::ContentCode) {
-                string source   = dir.relativeFilePath(info.absoluteFilePath()).toStdString();
+                string source = dir.relativeFilePath(info.absoluteFilePath()).toStdString();
                 if(!info.absoluteFilePath().contains(dir.absolutePath())) {
-                    source      = string(".embedded/") + info.fileName().toStdString();
+                    source = string(".embedded/") + info.fileName().toStdString();
                 }
                 string guid = settings->destination();
                 int32_t type = settings->type();
@@ -854,6 +860,7 @@ void AssetManager::saveSettings(IConverterSettings *settings) {
     }
 
     QJsonObject obj;
+    obj.insert(gVersion, int(settings->currentVersion()));
     obj.insert(gCRC, int(settings->crc()));
     obj.insert(gGUID, settings->destination());
     obj.insert(gSettings, set);

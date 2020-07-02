@@ -33,6 +33,8 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
+#define FORMAT_VERSION 1
+
 static Matrix3 gInvert;
 
 FbxImportSettings::FbxImportSettings() :
@@ -42,6 +44,7 @@ FbxImportSettings::FbxImportSettings() :
         m_Normals(true),
         m_Animation(false) {
 
+    setVersion(FORMAT_VERSION);
 }
 
 bool FbxImportSettings::colors() const {
@@ -272,8 +275,12 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
             if(mesh) {
                 if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
                     Vector3Vector vertices = mesh->vertices(0);
+                    Matrix4 t;
+                    t.translate(actor->transform()->worldPosition() * 0.1f);
                     for(uint32_t v = 0; v < vertices.size(); v++) {
-                        //vertices[v] = actor->transform()->worldTransform() * vertices[v] * fbxSettings->customScale();
+                        //vertices[v] = gInvert * (actor->transform()->worldTransform() * (vertices[v] * fbxSettings->customScale()));
+
+                        vertices[v] = (gInvert * (vertices[v] * fbxSettings->customScale()));
                     }
                     mesh->setVertices(0, vertices);
                 }
@@ -383,6 +390,8 @@ uint8_t FBXConverter::convertFile(IConverterSettings *settings) {
         }
         Log(Log::INF) << "Mesh imported in:" << time.elapsed() << "msec";
 
+        settings->setCurrentVersion(settings->version());
+
         return 0;
     }
     return 1;
@@ -477,9 +486,17 @@ MeshSerial *FBXConverter::importMesh(const ofbx::Mesh *m, float scale) {
         int index = (i % 3 == 2) ? (-faceIndices[i] - 1) : faceIndices[i];
 
         ofbx::Vec3 v = vertices[index];
-        Vector3 vertex = gInvert * (Vector3(static_cast<areal>(v.x),
-                                            static_cast<areal>(v.y),
-                                            static_cast<areal>(v.z)) * scale);
+
+        Vector3 vertex;
+        if(mesh->flags() & Mesh::ATTRIBUTE_SKINNED) {
+            vertex = Vector3(static_cast<areal>(v.x),
+                             static_cast<areal>(v.y),
+                             static_cast<areal>(v.z));
+        } else {
+            vertex = gInvert * (Vector3(static_cast<areal>(v.x),
+                                        static_cast<areal>(v.y),
+                                        static_cast<areal>(v.z)) * scale);
+        }
 
         uint32_t hash = 0;
 

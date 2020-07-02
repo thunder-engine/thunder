@@ -48,9 +48,9 @@ public:
     }
 
     virtual int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
-        Q_UNUSED(value);
-        Q_UNUSED(link);
-        Q_UNUSED(size);
+        Q_UNUSED(value)
+        Q_UNUSED(link)
+        Q_UNUSED(size)
 
         if(m_Position == -1) {
             m_Position  = depth;
@@ -200,6 +200,8 @@ public:
     void                        setRawPath                  (const FilePath &path) { m_RawPath = path; }
 
 private:
+    IConverterSettings         *createSettings              () const override;
+
     Node                       *nodeCreate                  (const QString &path, int &index) Q_DECL_OVERRIDE;
 
     QAbstractItemModel         *components                  () const Q_DECL_OVERRIDE;
