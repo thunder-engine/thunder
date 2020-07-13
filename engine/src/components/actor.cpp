@@ -196,14 +196,14 @@ bool Actor::isSerializable() const {
 /*!
     Makes the actor a child of the \a parent.
 */
-void Actor::setParent(Object *parent) {
+void Actor::setParent(Object *parent, bool force) {
     PROFILE_FUNCTION();
     if(p_ptr->m_pTransform) {
-        Object::setParent(parent);
+        Object::setParent(parent, force);
 
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
-            p_ptr->m_pTransform->setParentTransform(actor->transform());
+            p_ptr->m_pTransform->setParentTransform(actor->transform(), force);
         }
     } else {
         Object::setParent(parent);

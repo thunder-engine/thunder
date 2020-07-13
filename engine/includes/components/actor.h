@@ -43,7 +43,7 @@ public:
     uint8_t layers () const;
     void setLayers (const uint8_t layers);
 
-    void setParent (Object *parent) override;
+    void setParent (Object *parent, bool force = false) override;
 
     bool isPrefab () const;
     void setPrefab (Actor *prefab);
