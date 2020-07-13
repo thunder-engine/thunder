@@ -156,7 +156,7 @@ public:
     virtual const ObjectList       &getChildren                 () const;
     virtual const LinkList         &getReceivers                () const;
 
-    virtual void                    setParent                   (Object *parent);
+    virtual void                    setParent                   (Object *parent, bool force = false);
     virtual string                  typeName                    () const;
     virtual Variant                 property                    (const char *name) const;
     virtual void                    setProperty                 (const char *name, const Variant &value);

@@ -371,11 +371,12 @@ Object *Object::clone(Object *parent) {
         const MetaObject *meta = it->metaObject();
         Object *result = meta->createInstance();
         result->p_ptr->m_UUID = ObjectSystem::generateUUID();
-        result->p_ptr->m_Cloned = it->p_ptr->m_UUID;
+        result->p_ptr->m_Cloned = ((it->p_ptr->m_Cloned != 0) ? it->p_ptr->m_Cloned : it->p_ptr->m_UUID);
 
         Object *p = parent;
         for(auto item : array) {
-            if(item.second->clonedFrom() == it->parent()->uuid()) {
+            uint32_t uuid = (it->parent()->clonedFrom() != 0) ? it->parent()->clonedFrom() : it->parent()->uuid();
+            if(item.second->clonedFrom() == uuid) {
                 p = item.second;
                 break;
             }
@@ -661,8 +662,10 @@ Object *Object::find(const string &path) {
 
     \sa parent()
 */
-void Object::setParent(Object *parent) {
+void Object::setParent(Object *parent, bool force) {
     PROFILE_FUNCTION();
+    A_UNUSED(force);
+
     if(p_ptr->m_pParent) {
         p_ptr->m_pParent->removeChild(this);
     }
