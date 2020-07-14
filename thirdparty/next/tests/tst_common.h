@@ -17,8 +17,8 @@ class TestObject : public Object {
     )
 
     A_PROPERTIES(
-        A_PROPERTY(bool, slot, getSlot, setSlot),
-        A_PROPERTY(Vector2, vec, getVector, setVector),
+        A_PROPERTY(bool, slot, TestObject::getSlot, TestObject::setSlot),
+        A_PROPERTY(Vector2, vec, TestObject::getVector, TestObject::setVector),
         A_PROPERTY(TestObject *, resource, TestObject::getResource, TestObject::setResource)
     )
 
