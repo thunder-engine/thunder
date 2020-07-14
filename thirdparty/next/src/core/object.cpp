@@ -640,7 +640,7 @@ Object *Object::find(const string &path) {
         start = 1;
     }
     int index = path.find('/', start);
-    string first = path.substr(start, index);
+    string first = path.substr(start, index - start);
 
     for(const auto &it : p_ptr->m_mChildren) {
         if(it->p_ptr->m_sName == first) {
