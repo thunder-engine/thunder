@@ -11,9 +11,9 @@ class TestObject : public Object {
     A_REGISTER(TestObject, Object, Test)
 
     A_METHODS(
-        A_SLOT(setSlot),
-        A_SIGNAL(signal),
-        A_METHOD(bool, test)
+        A_SLOT(TestObject::setSlot),
+        A_SIGNAL(TestObject::signal),
+        A_METHOD(bool, TestObject::test)
     )
 
     A_PROPERTIES(
