@@ -2,6 +2,7 @@
 #define TST_COMMON_H
 
 #include <QTest>
+#include <QDebug>
 
 #include "object.h"
 
@@ -160,9 +161,9 @@ public:
     }
 };
 
-#define REGISTER(Name)           \
-static test_ ## Name ## Instance; \
-                                  \
+#define REGISTER(Name)              \
+static test_ ## Name ## Instance;   \
+                                    \
 static ListAdder adder ## Name (TestRunnder::tests(), &test_ ## Name ## Instance);
 
 
