@@ -29,9 +29,8 @@ static bool toList(void *to, const void *from, const uint32_t fromType) {
     if(fromType == MetaType::type<TestObject *>()) {
         const Object *o = *(const Object **)from;
 
-        VariantList *r  = static_cast<VariantList *>(to);
-        ObjectSystem system;
-        *r  = system.toVariant(o).value<VariantList>();
+        VariantList *r = static_cast<VariantList *>(to);
+        *r = ObjectSystem::toVariant(o).value<VariantList>();
 
         return true;
     }
@@ -50,14 +49,14 @@ void Meta_type() {
     QCOMPARE(variant.isValid(), true);
     QCOMPARE((int)variant.userType(), type);
 
-    VariantList list    = variant.toList();
+    VariantList list = variant.toList();
     QCOMPARE((int)list.size(), 1);
 
-    type    = MetaType::type<TestObject>();
-    size_t size     = sizeof(TestObject);
-    void *where     = malloc(size);
+    type = MetaType::type<TestObject>();
+    size_t size = sizeof(TestObject);
+    void *where = malloc(size);
     MetaType::construct(type, where);
-    TestObject *r   = reinterpret_cast<TestObject *>(where);
+    TestObject *r = reinterpret_cast<TestObject *>(where);
     QCOMPARE(r->getVector(), Vector2(1.0f, 0.0f));
     MetaType::destruct(type, where);
 }

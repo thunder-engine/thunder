@@ -24,47 +24,48 @@ class TestObject : public Object {
     )
 
 public:
-    explicit TestObject     () :
+    TestObject() :
             Object() {
         m_bSlot     = false;
         m_Vector2   = Vector2(1.0f, 0.0f);
         m_pResource = nullptr;
 
+        setName("TestObject");
     }
 
-    bool            getSlot         () const {
+    bool getSlot() const {
         return m_bSlot;
     }
 
-    bool            test            () {
+    bool test() {
         return false;
     }
 
-    void            setSlot         (const int value) {
-        m_bSlot     = value;
+    void setSlot(const int value) {
+        m_bSlot = value;
     }
 
-    Vector2         getVector       () const {
+    Vector2 getVector() const {
         return m_Vector2;
     }
 
-    void            setVector       (const Vector2 &value) {
-        m_Vector2   = value;
+    void setVector(const Vector2 &value) {
+        m_Vector2 = value;
     }
 
-    TestObject     *getResource     () const {
+    TestObject *getResource() const {
         return m_pResource;
     }
 
-    void            setResource     (TestObject *resource) {
+    void setResource(TestObject *resource) {
         m_pResource = resource;
     }
 
-    void            signal          (const int);
+    void signal(const int);
 
-    int             m_bSlot;
-    Vector2         m_Vector2;
-    TestObject     *m_pResource;
+    int         m_bSlot;
+    Vector2     m_Vector2;
+    TestObject *m_pResource;
 };
 
 inline bool compare(const Object::Link &left, const Object::Link &right) {

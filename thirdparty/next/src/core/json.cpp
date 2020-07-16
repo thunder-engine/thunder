@@ -7,7 +7,7 @@
 #define J_FALSE "false"
 #define J_NULL  "null"
 
-#define FORMAT (tab > -1) ? "\n" : "";
+#define FORMAT (tab > -1) ? "\n" : ""
 
 typedef stack<Variant>  VariantStack;
 typedef stack<string>   NameStack;
@@ -20,17 +20,17 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
     }
     switch(v.type()) {
         case MetaType::VARIANTLIST: {
-            VariantList list = v.value<VariantList>();
+            VariantList &list = *(reinterpret_cast<VariantList *>(v.data()));
             list.push_back(data);
             s.push(list);
             return;
         }
         case MetaType::VARIANTMAP: {
-            VariantMap map  = v.value<VariantMap>();
+            VariantMap &map  = *(reinterpret_cast<VariantMap *>(v.data()));
             uint32_t type   = MetaType::type(name.c_str());
             if((type >= MetaType::VECTOR2 && type < MetaType::USERTYPE)) {
                 Variant object(type, MetaType::create(type));
-                VariantList list    = data.toList();
+                VariantList &list = *(reinterpret_cast<VariantList *>(data.data()));
                 MetaType::convert(&list, MetaType::VARIANTLIST, object.data(), type);
                 s.push(object);
             } else {
@@ -38,7 +38,7 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
                 s.push(map);
             }
             return;
-        } break;
+        }
         default: break;
     }
     s.push(v);

@@ -75,7 +75,7 @@ private:
 protected:
     Object::ObjectList                  m_ObjectList;
 
-    Object*                             m_SuspendObject;
+    Object                             *m_SuspendObject;
 
 };
 

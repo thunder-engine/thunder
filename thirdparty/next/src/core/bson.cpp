@@ -4,33 +4,35 @@
 
 #include <cstring>
 
-Variant appendProperty(const Variant &container, const Variant &data, const string &name) {
+void appendProperty(Variant &container, const Variant &data, const string &name) {
     switch(container.type()) {
         case MetaType::VARIANTLIST: {
-            VariantList list   = container.value<VariantList>();
+            if(container.data() == nullptr) {
+                container = VariantList();
+            }
+            VariantList &list = *(reinterpret_cast<VariantList *>(container.data()));
             list.push_back(data);
-            return list;
         } break;
         case MetaType::VARIANTMAP: {
-            VariantMap map  = container.value<VariantMap>();
-            map[name]   = data;
-            return map;
+            if(container.data() == nullptr) {
+                container = VariantMap();
+            }
+            VariantMap &map = *(reinterpret_cast<VariantMap *>(container.data()));
+            map[name] = data;
         } break;
         default: break;
     }
-
-    return container;
 }
 
 enum DataTypes {
-    FLOAT                   = 1,
+    FLOAT      = 1,
     STRING,
     OBJECT,
     ARRAY,
     BINARY,
-    BOOL                    = 8,
-    INT32                   = 16,
-    VECTOR2                 = 128,
+    BOOL       = 8,
+    INT32      = 16,
+    VECTOR2    = 128,
     VECTOR3,
     VECTOR4,
     MATRIX3,
@@ -55,7 +57,7 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
     offset  += sizeof(uint32_t);
 
     while(offset < global + size) {
-        uint8_t t   = data[offset];
+        uint8_t t = data[offset];
         offset++;
 
         string name;
@@ -67,15 +69,19 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
             name.push_back(data[offset]);
         }
 
+        if(global == 225) {
+            global = 225;
+        }
+
         switch(t) {
             case BOOL: {
-                uint8_t value   = data[offset];
+                uint8_t value = data[offset];
                 offset++;
 
-                result  = appendProperty(result, (value) ? true : false, name);
+                appendProperty(result, (value) ? true : false, name);
             } break;
             case STRING: {
-                int32_t length;
+                uint32_t length;
                 memcpy(&length, &data[offset], sizeof(uint32_t));
                 offset += sizeof(uint32_t);
 
@@ -83,18 +89,25 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
                 memcpy(value, &data[offset], length);
                 offset += length;
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
                 delete []value;
             } break;
-            case OBJECT:
+            case OBJECT: {
+                int32_t length;
+                memcpy(&length, &data[offset], sizeof(uint32_t));
+
+                Variant container  = parse(data, offset, MetaType::VARIANTMAP, false);
+                appendProperty(result, container, name);
+            } break;
             case ARRAY: {
                 int32_t length;
                 memcpy(&length, &data[offset], sizeof(uint32_t));
-                Variant container  = parse(data, offset, (t == ARRAY) ? MetaType::VARIANTLIST : MetaType::VARIANTMAP, false);
-                result  = appendProperty(result, container, name);
+
+                Variant container  = parse(data, offset, MetaType::VARIANTLIST, false);
+                appendProperty(result, container, name);
             } break;
             case BINARY: {
-                int32_t length;
+                uint32_t length;
                 memcpy(&length, &data[offset],  sizeof(uint32_t));
                 offset += sizeof(uint32_t);
                 uint8_t sub;
@@ -102,7 +115,7 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
                 offset++;
                 ByteArray value(data.begin() + offset, data.begin() + offset + length);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
                 offset += length;
             } break;
             case FLOAT: {
@@ -110,56 +123,56 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
                 memcpy(&value, &data[offset], sizeof(float));
                 offset += sizeof(float);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case INT32: {
                 int32_t value;
                 memcpy(&value, &data[offset], sizeof(uint32_t));
                 offset += sizeof(uint32_t);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case VECTOR2: {
                 Vector2 value;
                 memcpy(&value, &data[offset], sizeof(Vector2));
                 offset += sizeof(Vector2);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case VECTOR3: {
                 Vector3 value;
                 memcpy(&value, &data[offset], sizeof(Vector3));
                 offset += sizeof(Vector3);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case VECTOR4: {
                 Vector4 value;
                 memcpy(&value, &data[offset], sizeof(Vector4));
                 offset += sizeof(Vector4);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case MATRIX3: {
                 Matrix3 value;
                 memcpy(&value, &data[offset], sizeof(Matrix3));
                 offset += sizeof(Matrix3);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case MATRIX4: {
                 Matrix4 value;
                 memcpy(&value, &data[offset], sizeof(Matrix4));
                 offset += sizeof(Matrix4);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             case QUATERNION: {
                 Quaternion value;
                 memcpy(&value, &data[offset], sizeof(Quaternion));
                 offset += sizeof(Quaternion);
 
-                result  = appendProperty(result, value, name);
+                appendProperty(result, value, name);
             } break;
             default: break;
         }
@@ -169,6 +182,11 @@ Variant parse(const ByteArray &data, uint32_t &offset, MetaType::Type type, bool
     if(first && result.type() == MetaType::VARIANTLIST) {
         return result.value<VariantList>();
     }
+
+    if(result.data() == nullptr) {
+        return result;
+    }
+
     return result;
 }
 

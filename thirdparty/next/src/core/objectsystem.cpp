@@ -257,7 +257,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
     }
 
     for(auto it : objects) {
-        VariantList o  = it.value<VariantList>();
+        VariantList &o  = *(reinterpret_cast<VariantList *>(it.data()));
         if(o.size() >= 5) {
             auto i = o.begin();
             i++;
@@ -275,16 +275,18 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             }
 
             // Load base properties
-            for(const auto &it : (*i).toMap()) {
-                Variant v  = it.second;
+            VariantMap &properties = *(reinterpret_cast<VariantMap *>((*i).data()));
+            for(const auto &prop : properties) {
+                Variant v  = prop.second;
                 if(v.type() < MetaType::USERTYPE) {
-                    object->setProperty(it.first.c_str(), v);
+                    object->setProperty(prop.first.c_str(), v);
                 }
             }
             i++;
             // Restore connections
-            for(const auto &link : (*i).value<VariantList>()) {
-                VariantList list = link.value<VariantList>();
+            VariantList &links = *(reinterpret_cast<VariantList *>((*i).data()));
+            for(const auto &link : links) {
+                VariantList &list = *(reinterpret_cast<VariantList *>(link.data()));
                 Object *sender = nullptr;
                 Object *receiver = nullptr;
                 if(list.size() == 4) {
@@ -312,7 +314,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             }
             i++;
             // Load user data
-            object->loadUserData((*i).value<VariantMap>());
+            VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
+            object->loadUserData(user);
         }
     }
 

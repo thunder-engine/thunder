@@ -24,6 +24,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <global.h>
 
@@ -49,11 +50,26 @@ string to_string(auto v) {
 
 class NEXT_LIBRARY_EXPORT Variant {
 public:
-     struct NEXT_LIBRARY_EXPORT Data {
+    class NEXT_LIBRARY_EXPORT SharedPrivate {
+    public:
+        explicit SharedPrivate (void *value);
+
+        void                   *ptr;
+        uint32_t                ref;
+    };
+
+    struct NEXT_LIBRARY_EXPORT Data {
         Data                    ();
 
+        bool                    is_shared;
         uint32_t                type;
-        void                   *so;
+        union {
+            float               f;
+            int                 i;
+            bool                b;
+            void               *ptr;
+            SharedPrivate      *shared;
+        };
     };
 
 public:
@@ -61,6 +77,7 @@ public:
     Variant                     (MetaType::Type type);
     Variant                     (bool value);
     Variant                     (int value);
+    Variant                     (unsigned int value);
     Variant                     (float value);
     Variant                     (const char *value);
     Variant                     (const string &value);
@@ -105,16 +122,34 @@ public:
 
     template<typename T>
     T                           value                       () const {
-        uint32_t type   = MetaType::type<T>();
-        if(mData.so) {
+        uint32_t type = MetaType::type<T>();
+
+        if(mData.type < MetaType::STRING) {
             if(mData.type == type) {
-                return *(reinterpret_cast<const T *>(mData.so));
+                return *reinterpret_cast<const T *>(&mData.ptr);
             } else if(canConvert(type)) {
                 T result;
-
-                MetaType::convert(mData.so, mData.type, &result, type);
-
+                MetaType::convert(&mData.ptr, mData.type, &result, type);
                 return result;
+            }
+        } else {
+            if(mData.ptr) {
+                if(mData.type == type) {
+                    if(mData.is_shared) {
+                        T result = *reinterpret_cast<const T *>(mData.shared->ptr);
+                        return *reinterpret_cast<const T *>(mData.shared->ptr);
+                    } else {
+                        return *reinterpret_cast<const T *>(mData.ptr);
+                    }
+                } else if(canConvert(type)) {
+                    T result;
+                    if(mData.is_shared) {
+                        MetaType::convert(mData.shared->ptr, mData.type, &result, type);
+                    } else {
+                        MetaType::convert(mData.ptr, mData.type, &result, type);
+                    }
+                    return result;
+                }
             }
         }
         return T();
@@ -122,12 +157,18 @@ public:
 
     template<typename T>
     static Variant             fromValue                   (const T &value) {
-        Variant result;
-        result.mData.type   = MetaType::type<T>();
-        if(result.mData.type != MetaType::INVALID) {
-            result.mData.so = MetaType::create(result.mData.type, reinterpret_cast<const void *>(&value));
+        uint32_t type = MetaType::type<T>();
+        if(type != MetaType::INVALID) {
+            if(type < MetaType::STRING) {
+                return Variant(value);
+            }
+
+            Variant result;
+            result.mData.type = type;
+            result.mData.ptr = MetaType::create(result.mData.type, reinterpret_cast<const void *>(&value));
+            return result;
         }
-        return result;
+        return Variant();
     }
 
     // Conversion and getters
@@ -148,7 +189,7 @@ public:
     const Matrix4               toMatrix4                   () const;
 
 protected:
-    Data                        mData;
+    mutable Data                mData;
 
 };
 
