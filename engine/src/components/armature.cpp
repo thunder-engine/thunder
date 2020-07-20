@@ -42,27 +42,22 @@ public:
     void cleanDirty(Actor *actor) {
         if(m_pBindPose) {
             list<Actor *> bones = actor->findChildren<Actor *>();
-            bones.push_front(actor);
-
-            m_Bones.resize(bones.size());
-
-            uint32_t i = 0;
-            for(auto it : bones) {
-                m_Bones[i] = it->transform();
-                i++;
-            }
+            //bones.push_front(actor);
 
             uint32_t count = m_pBindPose->size();
-            m_InvertTransform.resize(m_Bones.size());
-            m_Transform.resize(m_Bones.size());
+            m_Bones.resize(count);
+            m_InvertTransform.resize(count);
+            m_Transform.resize(count);
 
-            Matrix4 p;
-            for(i = 0; i < m_Bones.size(); i++) {
-                if(i < count) {
-                    const Pose::Bone *bone = m_pBindPose->bone(i);
-                    Matrix4 m = (i == 0) ? p : p * Matrix4(bone->position, bone->rotation, bone->scale);
-                    m_InvertTransform[i] = m.inverse();
-                    p = m;
+            for(uint32_t c = 0; c < count; c++) {
+                const Pose::Bone *b = m_pBindPose->bone(c);
+                for(auto it : bones) {
+                    Transform *t = it->transform();
+                    if(t->clonedFrom() == b->index) {
+                        m_Bones[c] = t;
+                        m_InvertTransform[c] = Matrix4(b->position, b->rotation, b->scale);
+                        break;
+                    }
                 }
             }
         } else {
@@ -101,8 +96,7 @@ void Armature::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
             if(i < p_ptr->m_InvertTransform.size()) {
-                Matrix4 world = p_ptr->m_Bones[i]->worldTransform();
-                p_ptr->m_Transform[i] = world * p_ptr->m_InvertTransform[i];
+                p_ptr->m_Transform[i] = p_ptr->m_Bones[i]->worldTransform() * p_ptr->m_InvertTransform[i];
             }
             Matrix4 t = p_ptr->m_Transform[i];
             t[3]  = p_ptr->m_Transform[i].mat[12];
@@ -198,7 +192,7 @@ VariantMap Armature::saveUserData() const {
 bool Armature::drawHandles(ObjectList &selected) {
     if(isBoneSelected(selected)) {
         for(auto it : p_ptr->m_Bones) {
-            Handles::drawBone(it->parentTransform()->worldTransform(), it->worldTransform());
+            Handles::drawBone(it->parentTransform(), it);
         }
     }
     return false;
@@ -206,6 +200,9 @@ bool Armature::drawHandles(ObjectList &selected) {
 
 bool Armature::isBoneSelected(ObjectList &selected) {
     for(auto item : selected) {
+        if(actor() == item) {
+            return true;
+        }
         for(auto bone : p_ptr->m_Bones) {
             if(bone->actor() == item) {
                 return true;

@@ -29,7 +29,7 @@
 #include "textconverter.h"
 #include "textureconverter.h"
 #include "shaderbuilder.h"
-#include "fbxconverter.h"
+#include "assimpconverter.h"
 #include "fontconverter.h"
 #include "prefabconverter.h"
 #include "effectconverter.h"
@@ -42,6 +42,8 @@
 #include "log.h"
 
 #define BUFF_SIZE 1024
+
+#define INDEX_VERSION 1
 
 const QString gCRC("crc");
 const QString gVersion("version");
@@ -93,7 +95,7 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new TextConverter());
     registerConverter(new TextureConverter());
     registerConverter(new ShaderBuilder());
-    registerConverter(new FBXConverter());
+    registerConverter(new AssimpConverter());
     registerConverter(new FontConverter());
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
@@ -105,7 +107,7 @@ void AssetManager::init(Engine *engine) {
     m_ContentTypes[MetaType::type<Pose *>()] = IConverter::ContentPose;
 }
 
-void AssetManager::rescan() {
+void AssetManager::rescan(bool force) {
     QStringList paths = m_pDirWatcher->directories();
     if(!paths.isEmpty()) {
         m_pDirWatcher->removePaths(paths);
@@ -115,7 +117,7 @@ void AssetManager::rescan() {
     QFileInfo info(m_pProjectManager->importPath() + "/" + gIndex);
     m_pEngine->file()->fsearchPathAdd(qPrintable(m_pProjectManager->importPath()), true);
 
-    bool force = !target.isEmpty() || !info.exists();
+    force |= !target.isEmpty() || !info.exists();
 
     if(target.isEmpty()) {
         connect(m_pDirWatcher, SIGNAL(directoryChanged(QString)), this, SIGNAL(directoryChanged(QString)));
@@ -619,6 +621,31 @@ QImage AssetManager::icon(const QString &path) {
     return icon;
 }
 
+QString AssetManager::type(const QString &path) {
+    int32_t t = assetType(path);
+    switch(t) {
+        case IConverter::ContentText: return "Text";
+        case IConverter::ContentTexture: return "Texture";
+        case IConverter::ContentMaterial: return "Material";
+        case IConverter::ContentMesh: return "Mesh";
+        case IConverter::ContentAtlas: return "Atlas";
+        case IConverter::ContentFont: return "Font";
+        case IConverter::ContentAnimation: return "Animation";
+        case IConverter::ContentEffect: return "Effect";
+        case IConverter::ContentSound: return "Sound";
+        case IConverter::ContentCode: return "Code";
+        case IConverter::ContentMap: return "Map";
+        case IConverter::ContentPipeline: return "Pipeline";
+        case IConverter::ContentPrefab: return "Prefab";
+        case IConverter::ContentAnimationStateMachine: return "StateMachine";
+        case IConverter::ContentPhysicMaterial: return "PhysicMaterial";
+        case IConverter::ContentLocalization: return "Localization";
+        case IConverter::ContentPose: return "Pose";
+        default: break;
+    }
+    return QString();
+}
+
 void AssetManager::cleanupBundle() {
     QDirIterator it(m_pProjectManager->importPath(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while(it.hasNext()) {
@@ -635,13 +662,23 @@ void AssetManager::dumpBundle() {
     QFile file(m_pProjectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
         VariantMap root;
-        root[qPrintable(gContent)]  = m_Paths;
+
+        VariantMap paths;
+        for(auto it : m_Paths) {
+            VariantList item;
+            item.push_back(qPrintable(type(it.first.c_str())));
+            item.push_back(it.second);
+            paths[it.first] = item;
+        }
+
+        root[qPrintable(gVersion)] = INDEX_VERSION;
+        root[qPrintable(gContent)] = paths;
 
         VariantMap settings;
 
-        settings[qPrintable(gEntry)]    = qPrintable(m_pProjectManager->firstMap().path);
-        settings[qPrintable(gCompany)]  = qPrintable(m_pProjectManager->projectCompany());
-        settings[qPrintable(gProject)]  = qPrintable(m_pProjectManager->projectName());
+        settings[qPrintable(gEntry)]   = qPrintable(m_pProjectManager->firstMap().path);
+        settings[qPrintable(gCompany)] = qPrintable(m_pProjectManager->projectCompany());
+        settings[qPrintable(gProject)] = qPrintable(m_pProjectManager->projectName());
 
         root[qPrintable(gSettings)] = settings;
         string data = Json::save(root, 0);

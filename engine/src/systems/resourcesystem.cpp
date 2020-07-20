@@ -9,9 +9,23 @@
 
 #include "resources/resource.h"
 
-static StringMap                        s_IndexMap;
-static unordered_map<string, Object*>   s_ResourceCache;
-static unordered_map<Object*, string>   s_ReferenceCache;
+class ResourceSystemPrivate {
+public:
+    ResourceSystem::DictionaryMap  m_IndexMap;
+    unordered_map<string, Object*> m_ResourceCache;
+    unordered_map<Object*, string> m_ReferenceCache;
+
+    Object::ObjectList m_DeleteList;
+};
+
+ResourceSystem::ResourceSystem() :
+    p_ptr(new ResourceSystemPrivate) {
+
+}
+
+ResourceSystem::~ResourceSystem() {
+    delete p_ptr;
+}
 
 bool ResourceSystem::init() {
     return true;
@@ -24,15 +38,48 @@ const char *ResourceSystem::name() const {
 void ResourceSystem::update(Scene *) {
     PROFILER_MARKER;
 
-    for(auto it = s_ResourceCache.begin(); it != s_ResourceCache.end();) {
+    for(auto it = p_ptr->m_ResourceCache.begin(); it != p_ptr->m_ResourceCache.end();) {
         Resource *resource = dynamic_cast<Resource *>(it->second);
-        if(resource && resource->state() == Resource::ToBeDeleted) {
-            delete resource;
-            it = s_ResourceCache.erase(it);
-        } else {
-            ++it;
+        if(resource) {
+            switch(resource->state()) {
+                case Resource::Loading: {
+                    string uuid = reference(resource);
+                    if(!uuid.empty()) {
+                        File *file = Engine::file();
+                        _FILE *fp = file->_fopen(uuid.c_str(), "r");
+                        if(fp) {
+                            ByteArray data;
+                            data.resize(file->_fsize(fp));
+                            file->_fread(&data[0], data.size(), 1, fp);
+                            file->_fclose(fp);
+
+                            Variant var = Bson::load(data);
+                            if(!var.isValid()) {
+                                var = Json::load(string(data.begin(), data.end()));
+                            }
+
+                            VariantList objects = var.toList();
+                            VariantList fields = objects.front().toList();
+                            resource->loadUserData(fields.back().toMap());
+
+                            resource->setState(Resource::ToBeUpdated);
+                        }
+                    }
+                } break;
+                case Resource::ToBeDeleted: {
+                    p_ptr->m_DeleteList.push_back(resource);
+                }
+                default: break;
+            }
         }
+        ++it;
     }
+
+    for(auto it : p_ptr->m_DeleteList) {
+        deleteFromCahe(it);
+        delete it;
+    }
+    p_ptr->m_DeleteList.clear();
 }
 
 bool ResourceSystem::isThreadSafe() const {
@@ -42,15 +89,15 @@ bool ResourceSystem::isThreadSafe() const {
 void ResourceSystem::setResource(Object *object, const string &uuid) {
     PROFILER_MARKER;
 
-    s_ResourceCache[uuid] = object;
-    s_ReferenceCache[object] = uuid;
+    p_ptr->m_ResourceCache[uuid] = object;
+    p_ptr->m_ReferenceCache[object] = uuid;
 }
 
 bool ResourceSystem::isResourceExist(const string &path) {
     PROFILER_MARKER;
 
-    auto it = s_IndexMap.find(path);
-    return (it != s_IndexMap.end());
+    auto it = p_ptr->m_IndexMap.find(path);
+    return (it != p_ptr->m_IndexMap.end());
 }
 
 Object *ResourceSystem::loadResource(const string &path) {
@@ -59,18 +106,18 @@ Object *ResourceSystem::loadResource(const string &path) {
     if(!path.empty()) {
         string uuid = path;
         {
-            auto it = s_IndexMap.find(path);
-            if(it != s_IndexMap.end()) {
-                uuid    = it->second;
+            auto it = p_ptr->m_IndexMap.find(path);
+            if(it != p_ptr->m_IndexMap.end()) {
+                uuid = it->second.second;
             }
         }
         {
-            auto it = s_ResourceCache.find(uuid);
-            if(it != s_ResourceCache.end() && it->second) {
+            auto it = p_ptr->m_ResourceCache.find(uuid);
+            if(it != p_ptr->m_ResourceCache.end() && it->second) {
                 return it->second;
             } else {
                 File *file = Engine::file();
-                _FILE *fp   = file->_fopen(uuid.c_str(), "r");
+                _FILE *fp = file->_fopen(uuid.c_str(), "r");
                 if(fp) {
                     ByteArray data;
                     data.resize(file->_fsize(fp));
@@ -99,52 +146,64 @@ Object *ResourceSystem::loadResource(const string &path) {
     return nullptr;
 }
 
-void ResourceSystem::unloadResource(const string &path, bool force) {
+void ResourceSystem::unloadResource(const string &path) {
     PROFILER_MARKER;
 
     if(!path.empty()) {
         string uuid = path;
         {
-            auto it = s_IndexMap.find(path);
-            if(it != s_IndexMap.end()) {
-                uuid = it->second;
+            auto it = p_ptr->m_IndexMap.find(path);
+            if(it != p_ptr->m_IndexMap.end()) {
+                uuid = it->second.second;
             }
         }
         {
-            auto it = s_ResourceCache.find(uuid);
-            if(it != s_ResourceCache.end() && it->second) {
+            auto it = p_ptr->m_ResourceCache.find(uuid);
+            if(it != p_ptr->m_ResourceCache.end() && it->second) {
                 Resource *resource = dynamic_cast<Resource *>(it->second);
                 if(resource) {
-                    unloadResource(resource, force);
+                    unloadResource(resource);
                 } else {
+                    deleteFromCahe(it->second);
                     delete it->second;
-                    s_ResourceCache.erase(it);
                 }
             }
         }
     }
 }
 
-void ResourceSystem::unloadResource(Resource *resource, bool force) {
+void ResourceSystem::unloadResource(Object *object) {
     PROFILER_MARKER;
+    Resource *resource = dynamic_cast<Resource *>(object);
     if(resource) {
         resource->setState(Resource::Suspend);
-        if(force) {
-            update(nullptr);
-        }
+    } else {
+        deleteFromCahe(object);
+        delete object;
     }
 }
 
 string ResourceSystem::reference(Object *object) {
     PROFILER_MARKER;
 
-    auto it = s_ReferenceCache.find(object);
-    if(it != s_ReferenceCache.end()) {
+    auto it = p_ptr->m_ReferenceCache.find(object);
+    if(it != p_ptr->m_ReferenceCache.end()) {
         return it->second;
     }
     return string();
 }
 
-StringMap &ResourceSystem::indices() const {
-    return s_IndexMap;
+ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
+    return p_ptr->m_IndexMap;
+}
+
+void ResourceSystem::deleteFromCahe(Object *object) {
+    auto ref = p_ptr->m_ReferenceCache.find(object);
+    if(ref != p_ptr->m_ReferenceCache.end()) {
+        auto res = p_ptr->m_ResourceCache.find(ref->second);
+        if(res != p_ptr->m_ResourceCache.end()) {
+            p_ptr->m_ResourceCache.erase(res);
+        }
+        p_ptr->m_ReferenceCache.erase(ref);
+    }
 }

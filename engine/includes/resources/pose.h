@@ -12,6 +12,7 @@ class NEXT_LIBRARY_EXPORT Pose : public Resource {
 
 public:
     struct Bone {
+        uint32_t index;
         Vector3 position;
         Vector3 rotation;
         Vector3 scale;

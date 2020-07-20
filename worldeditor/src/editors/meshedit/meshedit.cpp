@@ -18,7 +18,7 @@
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
-#include "fbxconverter.h"
+#include "assimpconverter.h"
 
 MeshEdit::MeshEdit(Engine *engine) :
         QMainWindow(nullptr),

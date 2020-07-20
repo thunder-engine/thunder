@@ -12,7 +12,6 @@ AnimationCurve::KeyFrame::KeyFrame() :
 float AnimationCurve::value(uint32_t pos) {
     float result = (m_Keys.empty()) ? 0.0f : m_Keys.front().m_Value;
     if(m_Keys.size() >= 2) {
-        uint32_t duration = m_Keys.back().m_Position;
 
         AnimationCurve::KeyFrame a;
         AnimationCurve::KeyFrame b;
@@ -29,6 +28,9 @@ float AnimationCurve::value(uint32_t pos) {
                 break;
             }
         }
+
+        uint32_t duration = m_Keys.back().m_Position;
+
         float f1 = float(a.m_Position) / duration;
         float f2 = float(b.m_Position) / duration;
         float f  = float(pos) / duration;
@@ -47,6 +49,27 @@ float AnimationCurve::value(uint32_t pos) {
         }
     }
     return result;
+}
+
+void AnimationCurve::frames(int32_t &b, int32_t &e, uint32_t pos) {
+    b = -1;
+    e = -1;
+
+    if(m_Keys.size() >= 2) {
+        for(uint32_t i = 0; i < m_Keys.size(); i++) {
+            if(pos == m_Keys[i].m_Position) {
+                b = e = i;
+                return;
+            }
+            if(pos >= m_Keys[i].m_Position) {
+                b = i;
+            }
+            if(pos <= m_Keys[i].m_Position) {
+                e = i;
+                break;
+            }
+        }
+    }
 }
 
 uint32_t AnimationCurve::duration() {

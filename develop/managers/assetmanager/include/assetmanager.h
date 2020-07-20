@@ -69,7 +69,7 @@ public:
 
     void                    init                (Engine *engine);
 
-    void                    rescan              ();
+    void                    rescan              (bool force);
 
     void                    addEditor           (uint8_t type, IAssetEditor *editor);
     QObject                *openEditor          (const QFileInfo &source);
@@ -98,6 +98,7 @@ public:
     string                  pathToGuid          (const string &path);
 
     QImage                  icon                (const QString &path);
+    QString                 type                (const QString &path);
 
     IConverterSettings     *createSettings      (const QFileInfo &source);
 

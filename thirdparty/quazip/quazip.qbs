@@ -13,6 +13,23 @@ Project {
         "../zlib/src"
     ]
 
+    StaticLibrary {
+        name: "quazip"
+        condition: quazip.desktop
+        files: quazip.srcFiles
+
+        Depends { name: "cpp" }
+        Depends { name: "bundle" }
+        Depends { name: "zlib-editor" }
+        Depends { name: "Qt"; submodules: ["core"]; }
+        bundle.isBundle: false
+
+        cpp.defines: ["QUAZIP_BUILD", "NOMINMAX"]
+        cpp.includePaths: quazip.incPaths
+        cpp.libraryPaths: [ ]
+        cpp.dynamicLibraries: [ ]
+    }
+
     DynamicLibrary {
         name: "quazip-editor"
         condition: quazip.desktop
@@ -24,7 +41,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["QUAZIP_BUILD", "QUAZIP_BUILD", "NOMINMAX"]
+        cpp.defines: ["QUAZIP_BUILD", "NOMINMAX"]
         cpp.includePaths: quazip.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]

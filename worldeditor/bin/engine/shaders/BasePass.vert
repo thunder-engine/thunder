@@ -72,6 +72,7 @@ Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 bones, vec4 weights) {
     result.t = vec3( 0.0 );
     result.n = vec3( 0.0 );
 
+    vec4 finalVector = vec4( 0.0 );
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
             float width = 1.0 / 512.0;
@@ -91,8 +92,7 @@ Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 bones, vec4 weights) {
                             m44[1].xyz,
                             m44[2].xyz);
 
-            vec4 tv = m44 * vec4(v, 1.0);
-            result.v += (tv.xyz / tv.w) * weights.x;
+            finalVector += (m44 * vec4(v, 1.0)) * weights.x;
             result.n += m33 * n * weights.x;
             result.t += m33 * t * weights.x;
 
@@ -100,6 +100,7 @@ Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 bones, vec4 weights) {
             weights = weights.yzwx;
         }
     }
+    result.v = finalVector.xyz / finalVector.w;
 
     return result;
 }

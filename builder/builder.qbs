@@ -23,6 +23,7 @@ Project {
         "../develop/managers/undomanager",
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
+        "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -41,6 +42,7 @@ Project {
         condition: builder.desktop
         files: builder.srcFiles
         Depends { name: "cpp" }
+        Depends { name: "assimp" }
         Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         Depends { name: "quazip-editor" }
@@ -48,7 +50,6 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
-        Depends { name: "ofbx" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
         bundle.isBundle: false

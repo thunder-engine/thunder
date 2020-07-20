@@ -30,6 +30,8 @@ public:
 
     float value (uint32_t pos);
 
+    void frames(int32_t &b, int32_t &e, uint32_t pos);
+
     uint32_t duration ();
 
     Keys m_Keys;

@@ -116,8 +116,8 @@ void AssetList::update() {
         QFileInfo info(it.first.c_str());
 
         item->setObjectName(info.filePath());
-        item->setProperty(qPrintable(gUuid), it.second.c_str());
-        int32_t type = inst->assetType(it.second.c_str());
+        item->setProperty(qPrintable(gUuid), it.second.second.c_str());
+        int32_t type = inst->assetType(it.second.second.c_str());
         item->setProperty(qPrintable(gType), type);
 
         QImage img = inst->icon(it.first.c_str());

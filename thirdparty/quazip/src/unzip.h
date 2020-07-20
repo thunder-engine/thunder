@@ -189,14 +189,14 @@ extern unzFile ZEXPORT unzOpen64 OF((voidpf file));
 */
 
 
-extern unzFile ZEXPORT unzOpen2 OF((voidpf file,
+extern unzFile ZEXPORT unzOpen2 OF((voidpc file,
                                     zlib_filefunc_def* pzlib_filefunc_def));
 /*
    Open a Zip file, like unzOpen, but provide a set of file low level API
       for read/write the zip file (see ioapi.h)
 */
 
-extern unzFile ZEXPORT unzOpen2_64 OF((voidpf file,
+extern unzFile ZEXPORT unzOpen2_64 OF((voidpc file,
                                     zlib_filefunc64_def* pzlib_filefunc_def));
 /*
    Open a Zip file, like unz64Open, but provide a set of file low level API
@@ -209,7 +209,7 @@ extern unzFile ZEXPORT unzOpen2_64 OF((voidpf file,
  * function MAY change signature in order to implement even more features.
  * You have been warned!
  * */
-extern unzFile unzOpenInternal (voidpf file,
+extern unzFile unzOpenInternal (voidpc file,
                                zlib_filefunc64_32_def* pzlib_filefunc64_32_def,
                                int is64bitOpenFunction, unsigned flags);
 

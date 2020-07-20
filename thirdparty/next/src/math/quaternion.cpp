@@ -209,27 +209,30 @@ void Quaternion::mix(const Quaternion &q0, const Quaternion &q1, areal t) {
 */
 Matrix3 Quaternion::toMatrix() const {
     Matrix3 ret;
-    areal qxx(x * x);
-    areal qyy(y * y);
-    areal qzz(z * z);
-    areal qxz(x * z);
-    areal qxy(x * y);
-    areal qyz(y * z);
-    areal qwx(w * x);
-    areal qwy(w * y);
-    areal qwz(w * z);
+    areal qx(x * 2.0f);
+    areal qy(y * 2.0f);
+    areal qz(z * 2.0f);
+    areal qxx(x * qx);
+    areal qyy(y * qy);
+    areal qzz(z * qz);
+    areal qxz(x * qz);
+    areal qxy(x * qy);
+    areal qyz(y * qz);
+    areal qwx(w * qx);
+    areal qwy(w * qy);
+    areal qwz(w * qz);
 
-    ret[0] = 1 - 2 * (qyy +  qzz);
-    ret[1] = 2 * (qxy + qwz);
-    ret[2] = 2 * (qxz - qwy);
+    ret[0] = 1 - (qyy + qzz);
+    ret[1] = qxy + qwz;
+    ret[2] = qxz - qwy;
 
-    ret[3] = 2 * (qxy - qwz);
-    ret[4] = 1 - 2 * (qxx +  qzz);
-    ret[5] = 2 * (qyz + qwx);
+    ret[3] = qxy - qwz;
+    ret[4] = 1 - (qxx + qzz);
+    ret[5] = qyz + qwx;
 
-    ret[6] = 2 * (qxz + qwy);
-    ret[7] = 2 * (qyz - qwx);
-    ret[8] = 1 - 2 * (qxx +  qyy);
+    ret[6] = qxz + qwy;
+    ret[7] = qyz - qwx;
+    ret[8] = 1 - (qxx + qyy);
     return ret;
 }
 /*!

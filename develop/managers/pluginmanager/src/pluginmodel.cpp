@@ -292,6 +292,8 @@ void PluginModel::updateSystems(Scene *scene) {
 }
 
 void PluginModel::updateRender(Scene *scene) {
+    m_pEngine->resourceSystem()->processEvents();
+
     if(m_pRender) {
         m_pRender->setActiveScene(scene);
         m_pRender->processEvents();

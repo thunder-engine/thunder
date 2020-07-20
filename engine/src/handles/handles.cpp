@@ -80,7 +80,7 @@ void Handles::init() {
         s_Sphere = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
     }
     if(s_Bone == nullptr) {
-        s_Bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Cube");
+        s_Bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Bone");
     }
 
     if(s_Sprite == nullptr) {
@@ -301,21 +301,18 @@ void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const V
     }
 }
 
-void Handles::drawBone(const Matrix4 &begin, const Matrix4 &end) {
+void Handles::drawBone(const Transform *begin, const Transform *end) {
     if(ICommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);
 
-        Vector3 delta((begin[12] - end[12]),
-                      (begin[13] - end[13]),
-                      (begin[14] - end[14]));
+        Vector3 p0 = begin->worldPosition();
+        Vector3 p1 = end->worldPosition();
 
-        Matrix4 scale;
-        scale.scale(Vector3(delta.length() * 0.001f));
-        Matrix4 b = begin * scale;
+        float size = (p0 - p1).length() * 0.1f;
+        Matrix4 b(p0, begin->worldEuler(), Vector3(size));
 
         s_Buffer->drawMesh(b, s_Sphere, ICommandBuffer::TRANSLUCENT, s_Solid);
         s_Buffer->drawMesh(b, s_Bone, ICommandBuffer::TRANSLUCENT, s_Solid);
-        //s_Buffer->drawMesh(end * scale, s_Sphere, ICommandBuffer::TRANSLUCENT, s_Solid);
     }
 }
 

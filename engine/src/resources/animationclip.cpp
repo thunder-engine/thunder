@@ -24,9 +24,10 @@ void AnimationClip::loadUserData(const VariantMap &data) {
         auto section = data.find(TRACKS);
         if(section != data.end()) {
             m_Tracks.clear();
-            for(auto it : (*section).second.value<VariantList>()) {
-                VariantList trackList = it.toList();
-                auto i = trackList.begin();
+            VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
+            for(auto it : tracks) {
+                VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
+                auto i = trackData.begin();
 
                 Track track;
                 track.path = (*i).toString();
@@ -37,7 +38,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
                 track.hash = hash_str(track.path + "." + track.property);
 
                 for(auto it : (*i).toList()) {
-                    VariantList curveList = it.toList();
+                    VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
                     auto t = curveList.begin();
 
                     int32_t component = (*t).toInt();
@@ -45,7 +46,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 
                     AnimationCurve curve;
                     while(t != curveList.end()) {
-                        VariantList keyList = (*t).toList();
+                        VariantList &keyList = *(reinterpret_cast<VariantList *>((*t).data()));
                         auto k = keyList.begin();
 
                         AnimationCurve::KeyFrame key;

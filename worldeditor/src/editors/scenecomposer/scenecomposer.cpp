@@ -495,10 +495,8 @@ void SceneComposer::onOpenProject(const QString &path) {
 
     ui->viewport->makeCurrent();
 
-    Engine::reloadBundle();
-
+    AssetManager::instance()->rescan(!Engine::reloadBundle());
     PluginModel::instance()->rescan();
-    AssetManager::instance()->rescan();
 
     PluginModel::instance()->initSystems();
 

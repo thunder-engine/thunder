@@ -3,12 +3,18 @@
 
 #include "system.h"
 
-typedef unordered_map<string, string> StringMap;
-
 class Resource;
+
+class ResourceSystemPrivate;
 
 class NEXT_LIBRARY_EXPORT ResourceSystem : public System {
 public:
+    typedef unordered_map<string, pair<string, string>> DictionaryMap;
+
+public:
+    ResourceSystem();
+    ~ResourceSystem() override;
+
     bool init() override;
 
     const char *name() const override;
@@ -23,13 +29,19 @@ public:
 
     Object *loadResource(const string &path);
 
-    void unloadResource(const string &path, bool force = false);
+    void unloadResource(const string &path);
 
-    void unloadResource(Resource *resource, bool force = false);
+    void unloadResource(Object *resource);
 
     string reference(Object *object);
 
-    StringMap &indices() const;
+    DictionaryMap &indices() const;
+
+private:
+    void deleteFromCahe(Object *object);
+
+private:
+    ResourceSystemPrivate *p_ptr;
 };
 
 #endif // RESOURCESYSTEM_H

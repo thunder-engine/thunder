@@ -57,7 +57,7 @@ void ICommandBuffer::setColor(const Vector4 &color) {
 }
 
 void ICommandBuffer::setScreenProjection() {
-    setViewProjection(Matrix4(), Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+    setViewProjection(Matrix4(), Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f,-1.0f, 1.0f));
 }
 
 void ICommandBuffer::resetViewProjection() {

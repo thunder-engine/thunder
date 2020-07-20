@@ -259,11 +259,26 @@ void Matrix3::orthonormalize() {
     mat[1] = x.y; mat[4] = y.y; mat[7] = z.y;
     mat[2] = x.z; mat[5] = y.z; mat[8] = z.z;
 }
+
 /*!
     Returns an Euler angles represented by Vector3(pitch, yaw, roll) in rotation degrees.
 */
 Vector3 Matrix3::euler() {
-    return Vector3(RAD2DEG * atan2(-mat[7], mat[8]),
-                   RAD2DEG * atan2( mat[6], sqrt(mat[7] * mat[7] + mat[8] * mat[8])),
-                   RAD2DEG * atan2(-mat[3], mat[0]));
+    Vector3 v;
+    if(mat[7] < 0.999f) {
+        if(mat[7] > -0.999f) {
+            v.x = asin(-mat[7]);
+            v.y = atan2(mat[6], mat[8]);
+            v.z = atan2(mat[1], mat[4]);
+        } else {
+            v.x = PI * 0.5f;
+            v.y = atan2(mat[3], mat[0]);
+            v.z = 0.0f;
+        }
+    } else {
+        v.x = -PI * 0.5f;
+        v.y = atan2(-mat[3], mat[0]);
+        v.z = 0.0f;
+    }
+    return v * RAD2DEG;
 }

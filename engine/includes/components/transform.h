@@ -11,6 +11,7 @@ class NEXT_LIBRARY_EXPORT Transform : public Component {
     A_PROPERTIES(
         A_PROPERTY(Vector3, Position, Transform::position, Transform::setPosition),
         A_PROPERTY(Vector3, Rotation, Transform::euler, Transform::setEuler),
+        A_PROPERTY(Quaternion, _Rotation, Transform::rotation, Transform::setRotation),
         A_PROPERTY(Vector3, Scale, Transform::scale, Transform::setScale)
     )
     A_NOMETHODS()

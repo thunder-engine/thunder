@@ -67,12 +67,15 @@
 
 static const char *gIndex("index");
 
+static const char *gVersion("version");
 static const char *gContent("content");
 static const char *gSettings("settings");
 
 static const char *gEntry(".entry");
 static const char *gCompany(".company");
 static const char *gProject(".project");
+
+#define INDEX_VERSION 1
 
 class EnginePrivate {
 public:
@@ -424,15 +427,15 @@ Object *Engine::loadResource(const string &path) {
     return EnginePrivate::m_pResourceSystem->loadResource(path);
 }
 /*!
-    Force unloads the resource located along the \a path from memory. In case of flag \a force provided the resource will be deleted immediately.
+    Force unloads the resource located along the \a path from memory.
     \warning After this call, the reference on the resource may become an invalid at any time and must not be used anymore.
 
     \sa loadResource()
 */
-void Engine::unloadResource(const string &path, bool force) {
+void Engine::unloadResource(const string &path) {
     PROFILER_MARKER;
 
-    EnginePrivate::m_pResourceSystem->unloadResource(path, force);
+    EnginePrivate::m_pResourceSystem->unloadResource(path);
 }
 /*!
     Returns true if resource with \a path exists; otherwise returns false.
@@ -463,14 +466,15 @@ string Engine::reference(Object *object) {
 /*!
     This method reads the index file for the resource bundle.
     The index file helps to find required game resources.
+    Returns true in case of success; otherwise returns false.
 */
-void Engine::reloadBundle() {
+bool Engine::reloadBundle() {
     PROFILER_MARKER;
-    StringMap &indices = EnginePrivate::m_pResourceSystem->indices();
+    ResourceSystem::DictionaryMap &indices = EnginePrivate::m_pResourceSystem->indices();
     indices.clear();
 
     File *file = Engine::file();
-    _FILE *fp   = file->_fopen(gIndex, "r");
+    _FILE *fp = file->_fopen(gIndex, "r");
     if(fp) {
         ByteArray data;
         data.resize(file->_fsize(fp));
@@ -479,25 +483,32 @@ void Engine::reloadBundle() {
 
         Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
-            VariantMap root    = var.toMap();
+            VariantMap root = var.toMap();
 
-            for(auto it : root[gContent].toMap()) {
-                indices[it.second.toString()] = it.first;
+            int32_t version = root[gVersion].toInt();
+            if(version == INDEX_VERSION) {
+                for(auto it : root[gContent].toMap()) {
+                    VariantList item = it.second.toList();
+                    indices[item.back().toString()] = pair<string, string>(item.front().toString(), it.first);
+                }
+
+                for(auto it : root[gSettings].toMap()) {
+                    EnginePrivate::m_Values[it.first] = it.second;
+                }
+
+                EnginePrivate::m_Application = value(gProject, "").toString();
+                EnginePrivate::m_Organization = value(gCompany, "").toString();
+
+                return true;
             }
-
-            for(auto it : root[gSettings].toMap()) {
-                EnginePrivate::m_Values[it.first]   = it.second;
-            }
-
-            EnginePrivate::m_Application = value(gProject, "").toString();
-            EnginePrivate::m_Organization = value(gCompany, "").toString();
         }
     }
+    return false;
 }
 /*!
     Returns the resource management system which can be used in external modules.
 */
-System *Engine::resourceSystem() const {
+System *Engine::resourceSystem() {
     return EnginePrivate::m_pResourceSystem;
 }
 /*!
@@ -588,7 +599,7 @@ bool Engine::loadTranslator(const string &name) {
     PROFILER_MARKER;
 
     if(EnginePrivate::m_pTranslator) {
-        EnginePrivate::m_pResourceSystem->unloadResource(EnginePrivate::m_pTranslator, true);
+        EnginePrivate::m_pResourceSystem->unloadResource(EnginePrivate::m_pTranslator);
     }
 
     EnginePrivate::m_pTranslator = Engine::loadResource<Translator>(name);

@@ -29,6 +29,7 @@ Project {
         "../develop/models/include",
         "../modules/renders/rendergl/includes",
         "../modules/media/includes",
+        "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -50,6 +51,7 @@ Project {
         files: worldEditor.srcFiles
 
         Depends { name: "cpp" }
+        Depends { name: "assimp" }
         Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
@@ -59,7 +61,6 @@ Project {
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
         Depends { name: "syntaxhighlighting" }
-        Depends { name: "ofbx" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({

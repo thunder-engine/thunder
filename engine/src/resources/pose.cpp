@@ -38,7 +38,7 @@ void Pose::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         for(auto b : (*it).second.value<VariantList>()) {
             VariantList attribs = b.value<VariantList>();
-            if(attribs.size() == 3) {
+            if(attribs.size() == 4) {
                 Bone bone;
 
                 auto i = attribs.begin();
@@ -47,6 +47,8 @@ void Pose::loadUserData(const VariantMap &data) {
                 bone.rotation = i->toVector3();
                 i++;
                 bone.scale = i->toVector3();
+                i++;
+                bone.index = uint32_t(i->toInt());
 
                 p_ptr->m_Bones.push_back(bone);
             }

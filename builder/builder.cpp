@@ -35,7 +35,7 @@ void Builder::setPlatform(const QString &platform) {
 
         AssetManager *asset = AssetManager::instance();
         asset->registerConverter(project->currentPlatform()->builder());
-        asset->rescan();
+        asset->rescan(true);
     }
 }
 
@@ -92,7 +92,7 @@ void Builder::package(const QString &target) {
         emit packDone();
     } else {
         ProjectManager::instance()->setCurrentPlatform(m_Stack.pop());
-        AssetManager::instance()->rescan();
+        AssetManager::instance()->rescan(false);
     }
 }
 
@@ -154,7 +154,7 @@ void Builder::onImportFinished() {
         } else {
             if(!m_Stack.isEmpty()) {
                 mgr->setCurrentPlatform(m_Stack.pop());
-                AssetManager::instance()->rescan();
+                AssetManager::instance()->rescan(false);
                 return;
             }
         }

@@ -11,6 +11,7 @@ class Texture;
 class MaterialInstance;
 
 class Camera;
+class Transform;
 
 class ICommandBuffer;
 
@@ -37,7 +38,7 @@ public:
 
     static void             drawBox             (const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
-    static void             drawBone            (const Matrix4 &begin, const Matrix4 &end);
+    static void             drawBone            (const Transform *begin, const Transform *end);
 
     static void             drawDisk            (const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
 

@@ -163,40 +163,44 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
 
     saveClip();
 
-    m_pController   = nullptr;
+    AnimationController *result = nullptr;
     for(auto object : objects) {
-        m_pController  = findController(object);
-        if(m_pController) {
+        result  = findController(object);
+        if(result) {
             break;
         }
     }
-    m_pModel->setController(m_pController);
-    ui->clipBox->clear();
-    ui->clipBox->addItems(m_pModel->clips());
+    if(m_pController != result) {
+        m_pController = result;
 
-    bool enable = (m_pController != nullptr);
+        m_pModel->setController(m_pController);
+        ui->clipBox->clear();
+        ui->clipBox->addItems(m_pModel->clips());
 
-    ui->begin->setEnabled(enable);
-    ui->end->setEnabled(enable);
+        bool enable = (m_pController != nullptr);
 
-    ui->record->setEnabled(enable);
-    ui->record->setChecked(false);
+        ui->begin->setEnabled(enable);
+        ui->end->setEnabled(enable);
 
-    ui->play->setEnabled(enable);
-    ui->play->setChecked(false);
+        ui->record->setEnabled(enable);
+        ui->record->setChecked(false);
 
-    ui->next->setEnabled(enable);
-    ui->previous->setEnabled(enable);
+        ui->play->setEnabled(enable);
+        ui->play->setChecked(false);
 
-    ui->treeView->setCurrentIndex(m_pModel->index(0, 0));
+        ui->next->setEnabled(enable);
+        ui->previous->setEnabled(enable);
 
-    onSelectKey(-1, -1, -1);
+        ui->treeView->setCurrentIndex(m_pModel->index(0, 0));
 
-    emit animated(enable);
+        onSelectKey(-1, -1, -1);
 
-    //m_pModel->blockSignals(true);
-    on_begin_clicked();
-    //m_pModel->blockSignals(false);
+        emit animated(enable);
+
+        //m_pModel->blockSignals(true);
+        on_begin_clicked();
+        //m_pModel->blockSignals(false);
+    }
 }
 
 void Timeline::onChanged(Object::ObjectList objects, const QString property) {

@@ -84,7 +84,7 @@ private:
 
     QStringList                 m_Suffixes;
 
-    QMap<QString, System *>    m_Systems;
+    QMap<QString, System *>     m_Systems;
 
     PluginsMap                  m_Extensions;
 
@@ -92,7 +92,7 @@ private:
 
     QList<Scene *>              m_Scenes;
 
-    System *                   m_pRender;
+    System *                    m_pRender;
 };
 
 #endif // PLUGINMODEL_H

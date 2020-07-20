@@ -25,6 +25,73 @@ public:
         return value;
     }
 
+    Quaternion mix(Quaternion &value, uint32_t msecs) {
+        AnimationCurve *begin[4];
+        begin[0] = beginCurve(0);
+        begin[1] = beginCurve(1);
+        begin[2] = beginCurve(2);
+        begin[3] = beginCurve(3);
+
+        if(begin[0] && begin[1] && begin[2] && begin[3]) {
+            value.mix(quaternionValue(begin, msecs), value, m_Factor);
+        }
+
+        AnimationCurve *end[4];
+        end[0] = beginCurve(0);
+        end[1] = beginCurve(1);
+        end[2] = beginCurve(2);
+        end[3] = beginCurve(3);
+        if(end[0] && end[1] && end[2] && end[3]) {
+            uint32_t shift = static_cast<uint32_t>(m_EndDuration * m_Offset);
+            value.mix(value, quaternionValue(end, MAX(msecs - shift, 0)), m_Factor);
+        }
+        return value;
+    }
+
+    Quaternion quaternionValue(AnimationCurve *curves[4], uint32_t msecs) {
+        Quaternion result;
+        if(curves[0]->m_Keys.size() >= 2) {
+            int32_t begin, end;
+            curves[0]->frames(begin, end, msecs);
+
+            if(begin != -1 && end != -1) {
+                Quaternion a;
+                a.x = curves[0]->m_Keys[begin].m_Value;
+                a.y = curves[1]->m_Keys[begin].m_Value;
+                a.z = curves[2]->m_Keys[begin].m_Value;
+                a.w = curves[3]->m_Keys[begin].m_Value;
+
+                if(begin == end) {
+                    return a;
+                }
+
+                Quaternion b;
+                b.x = curves[0]->m_Keys[end].m_Value;
+                b.y = curves[1]->m_Keys[end].m_Value;
+                b.z = curves[2]->m_Keys[end].m_Value;
+                b.w = curves[3]->m_Keys[end].m_Value;
+
+                uint32_t duration = curves[0]->m_Keys.back().m_Position;
+                float f1 = float(curves[0]->m_Keys[begin].m_Position) / duration;
+                float f2 = float(curves[0]->m_Keys[end].m_Position) / duration;
+                float f  = float(msecs) / duration;
+                float factor = (f - f1) / (f2 - f1);
+
+                switch(curves[0]->m_Keys[begin].m_Type) {
+                    case AnimationCurve::KeyFrame::Constant: {
+                        return (factor >= 1.0f) ? b : a;
+                    } break;
+                    default: { // Cubic and Linear
+                        //result = CMIX(a.m_Value, a.m_RightTangent, b.m_LeftTangent, b.m_Value, factor);
+                        result.mix(a, b, factor);
+                    } break;
+                }
+                return result;
+            }
+        }
+        return result;
+    }
+
     AnimationCurve *beginCurve(int32_t component) const {
         auto it = m_BeginFrames.find(component);
         if(it != m_BeginFrames.end()) {
@@ -168,6 +235,11 @@ void BlenderAnimation::setCurrentTime(uint32_t msecs) {
                 v[i] = p_ptr->mix(v[i], i, time);
             }
             data = v;
+        } break;
+        case MetaType::QUATERNION: {
+            Animation::setCurrentTime(msecs);
+            Quaternion v = data.toQuaternion();
+            data = p_ptr->mix(v, loopTime());
         } break;
         default: break;
     }

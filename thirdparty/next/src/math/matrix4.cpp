@@ -380,6 +380,6 @@ Matrix4 Matrix4::lookAt(Vector3 &eye, Vector3 &target, Vector3 &up) {
     Matrix4 m0, m1;
 
     m0.direction(eye - target, up);
-    m1.translate(-eye);
+    m1.translate(eye);
     return m0 * m1;
 }

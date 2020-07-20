@@ -8,6 +8,8 @@
 #include "timer.h"
 #include "anim/propertyanimation.h"
 
+#include "log.h"
+
 #define CLIP "Clip"
 
 static hash<string> hash_str;
@@ -257,7 +259,13 @@ void AnimationController::setClips(AnimationClip *start, AnimationClip *end, flo
             property = target->second;
         } else {
             property = new PropertyAnimation();
-            property->setTarget(actor()->find(it.path), it.property.c_str());
+            Object *object = actor()->find(it.path);
+#ifdef NEXT_SHARED
+            if(object == nullptr) {
+                Log(Log::DBG) << "Can't resolve animation path:" << it.path.c_str();
+            }
+#endif
+            property->setTarget(object, it.property.c_str());
 
             p_ptr->m_Properties[it.hash] = property;
         }

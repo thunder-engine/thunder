@@ -43,7 +43,7 @@ public:
 */
     static Object              *loadResource                (const string &path);
 
-    static void                 unloadResource              (const string &path, bool force = false);
+    static void                 unloadResource              (const string &path);
 
     template<typename T>
     static T                   *loadResource                (const string &path) {
@@ -54,9 +54,9 @@ public:
 
     static string               reference                   (Object *object);
 
-    static void                 reloadBundle                ();
+    static bool                 reloadBundle                ();
 
-    System                     *resourceSystem              () const;
+    static System              *resourceSystem              ();
 
 /*
     Misc

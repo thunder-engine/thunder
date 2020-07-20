@@ -584,7 +584,7 @@ local ZPOS64_T unz64local_SearchCentralDir64(const zlib_filefunc64_32_def* pzlib
      Else, the return value is a unzFile Handle, usable with other function
        of this unzip package.
 */
-extern unzFile unzOpenInternal (voidpf file,
+extern unzFile unzOpenInternal (voidpc file,
                                zlib_filefunc64_32_def* pzlib_filefunc64_32_def,
                                int is64bitOpenFunction, unsigned flags)
 {
@@ -769,7 +769,7 @@ extern unzFile unzOpenInternal (voidpf file,
 }
 
 
-extern unzFile ZEXPORT unzOpen2 (voidpf file,
+extern unzFile ZEXPORT unzOpen2 (voidpc file,
                                         zlib_filefunc_def* pzlib_filefunc32_def)
 {
     if (pzlib_filefunc32_def != NULL)
@@ -782,7 +782,7 @@ extern unzFile ZEXPORT unzOpen2 (voidpf file,
         return unzOpenInternal(file, NULL, 0, UNZ_DEFAULT_FLAGS);
 }
 
-extern unzFile ZEXPORT unzOpen2_64 (voidpf file,
+extern unzFile ZEXPORT unzOpen2_64 (voidpc file,
                                      zlib_filefunc64_def* pzlib_filefunc_def)
 {
     if (pzlib_filefunc_def != NULL)
