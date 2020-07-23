@@ -24,8 +24,8 @@ ContentSelect::ContentSelect(QWidget *parent) :
     //assetMenu->addAction(new QAction(tr("Copy"), assetMenu));
 
     m_pBrowser  = new AssetBrowser(this);
-    connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SLOT(onAssetSelected(IConverterSettings *)));
-    connect(m_pBrowser, SIGNAL(assetSelected(IConverterSettings *)), this, SIGNAL(assetChanged(IConverterSettings *)));
+    connect(m_pBrowser, &AssetBrowser::assetSelected, this, &ContentSelect::onAssetSelected);
+    connect(m_pBrowser, &AssetBrowser::assetSelected, this, &ContentSelect::assetChanged);
 
     QWidgetAction *action = new QWidgetAction(assetMenu);
     action->setDefaultWidget(m_pBrowser);
@@ -66,7 +66,7 @@ void ContentSelect::setType(const int32_t type) {
     m_pBrowser->filterByType(type);
 }
 
-void ContentSelect::onAssetSelected(IConverterSettings *settings) {
-    setData(settings->destination());
+void ContentSelect::onAssetSelected(const QString &uuid) {
+    setData(uuid);
     ui->toolButton->menu()->hide();
 }

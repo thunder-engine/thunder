@@ -159,6 +159,6 @@ void TextureEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visibl
 }
 
 void TextureEdit::on_actionSave_triggered() {
-    AssetManager::saveSettings(m_pSettings);
+    m_pSettings->saveSettings();
     setModified(false);
 }

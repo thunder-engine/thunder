@@ -335,17 +335,34 @@ void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos
     }
 }
 
+void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
+    QModelIndex origin = m_pContentProxy->mapToSource(index);
+
+    QString source = ContentList::instance()->path(origin);
+    QFileInfo path(source);
+    bool embedded = false;
+    if(source.contains(".embedded/")) {
+        embedded = true;
+    } else {
+        path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
+    }
+
+    IConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+
+    emit assetSelected(settings);
+}
+
 void ContentBrowser::showInGraphicalShell() {
     QString path;
-    QModelIndexList list    = ui->contentList->selectionModel()->selectedIndexes();
+    QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();
     if(list.empty()) {
-        path    = m_pContentProxy->rootPath();
+        path = m_pContentProxy->rootPath();
     } else {
-        const QModelIndex origin    = m_pContentProxy->mapToSource(list.first());
-        QObject *item   = static_cast<QObject *>(origin.internalPointer());
+        const QModelIndex origin = m_pContentProxy->mapToSource(list.first());
+        QObject *item = static_cast<QObject *>(origin.internalPointer());
         if(item) {
             QFileInfo info(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
-            path    = info.absoluteFilePath();
+            path = info.absoluteFilePath();
         }
     }
 

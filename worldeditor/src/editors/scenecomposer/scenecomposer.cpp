@@ -141,6 +141,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->rotateButton->setProperty("checkred", true);
     ui->scaleButton->setProperty("checkred", true);
 
+    ui->commitButton->setProperty("green", true);
+
     connect(ui->actionBuild_All, &QAction::triggered, this, &SceneComposer::onBuildProject);
 
     m_pProjectModel = new ProjectModel();
@@ -218,6 +220,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->scaleButton, SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
     connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
+    connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
+
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 
     ui->scaleButton->click();
@@ -276,7 +280,67 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
 
         connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
     }
+
+    IConverterSettings *s = dynamic_cast<IConverterSettings *>(ui->propertyView->object());
+    if(s) {
+        checkImportSettings(s);
+    }
+
+    ui->componentButton->setVisible(true);
+
+    ui->commitButton->setVisible(false);
+    ui->revertButton->setVisible(false);
+
     ui->propertyView->setObject(m_pProperties);
+}
+
+void SceneComposer::onAssetSelected(IConverterSettings *settings) {
+    IConverterSettings *s = dynamic_cast<IConverterSettings *>(ui->propertyView->object());
+    if(s && s != settings) {
+        checkImportSettings(s);
+        disconnect(s, &IConverterSettings::updated, this, &SceneComposer::onSettingsUpdated);
+    }
+
+    connect(settings, &IConverterSettings::updated, this, &SceneComposer::onSettingsUpdated);
+
+    ui->componentButton->setVisible(false);
+
+    ui->commitButton->setVisible(true);
+    ui->revertButton->setVisible(true);
+
+    ui->commitButton->setEnabled(settings->isModified());
+    ui->revertButton->setEnabled(settings->isModified());
+
+    ui->propertyView->setObject(settings);
+}
+
+void SceneComposer::onSettingsUpdated() {
+    ui->commitButton->setEnabled(true);
+    ui->revertButton->setEnabled(true);
+}
+
+void SceneComposer::checkImportSettings(IConverterSettings *settings) {
+    if(settings->isModified()) {
+        QMessageBox msgBox(this);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText("The inport settings has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result  = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            return;
+        }
+        if(result == QMessageBox::Yes) {
+            settings->saveSettings();
+            AssetManager::instance()->pushToImport(settings);
+            AssetManager::instance()->reimport();
+        }
+        if(result == QMessageBox::No) {
+            settings->loadSettings();
+        }
+    }
 }
 
 void SceneComposer::updateTitle() {
@@ -340,6 +404,30 @@ bool SceneComposer::checkSave() {
         }
     }
     return true;
+}
+
+void SceneComposer::on_commitButton_clicked() {
+    IConverterSettings *s = dynamic_cast<IConverterSettings *>(ui->propertyView->object());
+    if(s && s->isModified()) {
+        s->saveSettings();
+        AssetManager::instance()->pushToImport(s);
+        AssetManager::instance()->reimport();
+
+        ui->commitButton->setEnabled(s->isModified());
+        ui->revertButton->setEnabled(s->isModified());
+    }
+}
+
+void SceneComposer::on_revertButton_clicked() {
+    IConverterSettings *s = dynamic_cast<IConverterSettings *>(ui->propertyView->object());
+    if(s && s->isModified()) {
+        s->loadSettings();
+
+        ui->commitButton->setEnabled(s->isModified());
+        ui->revertButton->setEnabled(s->isModified());
+
+        ui->propertyView->onUpdated();
+    }
 }
 
 void SceneComposer::on_actionNew_triggered() {

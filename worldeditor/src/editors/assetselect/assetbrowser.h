@@ -54,7 +54,7 @@ public:
     QImage                  icon                    (const QString &resource) const;
 
 signals:
-    void                    assetSelected           (IConverterSettings *settings);
+    void                    assetSelected           (const QString &uuid);
 
 protected:
     AssetItemDeligate      *m_pContentDeligate;
@@ -70,8 +70,6 @@ private slots:
 
 private:
     Ui::AssetBrowser       *ui;
-
-    IConverterSettings     *m_pSelected;
 
     QString                 m_Resource;
 

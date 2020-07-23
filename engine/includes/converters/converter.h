@@ -45,11 +45,18 @@ public:
 
     void                    setSubItem              (const QString &name, const QString &uuid, int32_t type);
 
+    bool                    loadSettings            ();
+    void                    saveSettings            ();
+
+    bool                    isModified              () const { return m_Modified; }
+    void                    setModified             () { m_Modified = true; }
+
 signals:
     void                    updated                 ();
 
 protected:
     bool                    m_Valid;
+    bool                    m_Modified;
 
     uint32_t                m_Type;
     uint32_t                m_Version;

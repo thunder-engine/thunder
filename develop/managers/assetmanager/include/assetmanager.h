@@ -92,15 +92,13 @@ public:
 
     static void             findFreeName        (QString &name, const QString &path, const QString &suff = QString());
 
-    static void             saveSettings        (IConverterSettings *settings);
-
     string                  guidToPath          (const string &guid);
     string                  pathToGuid          (const string &path);
 
     QImage                  icon                (const QString &path);
     QString                 type                (const QString &path);
 
-    IConverterSettings     *createSettings      (const QFileInfo &source);
+    IConverterSettings     *fetchSettings       (const QFileInfo &source);
 
     IConverter             *getConverter        (IConverterSettings *settings);
 
@@ -110,6 +108,8 @@ public:
     void                    setArtifact         (const QString &value);
 
     ConverterMap            converters          () const;
+
+    bool                    pushToImport        (IConverterSettings *settings);
 
 public slots:
     void                    reimport            ();
@@ -170,13 +170,13 @@ protected:
 
     QString                 m_Artifact;
 
+    QMap<QString, IConverterSettings *> m_ConverterSettings;
+
 protected:
     void                    cleanupBundle       ();
     void                    dumpBundle          ();
 
     bool                    isOutdated          (IConverterSettings *settings);
-
-    bool                    pushToImport        (IConverterSettings *settings);
 
     bool                    convert             (IConverterSettings *settings);
 };

@@ -115,8 +115,7 @@ private:
 
 AssetBrowser::AssetBrowser(QWidget* parent) :
         QWidget(parent),
-        ui(new Ui::AssetBrowser),
-        m_pSelected(nullptr) {
+        ui(new Ui::AssetBrowser) {
 
     ui->setupUi(this);
 
@@ -132,8 +131,6 @@ AssetBrowser::AssetBrowser(QWidget* parent) :
 
 AssetBrowser::~AssetBrowser() {
     delete ui;
-
-    delete m_pSelected;
 }
 
 void AssetBrowser::onModelUpdated() {
@@ -170,12 +167,5 @@ void AssetBrowser::on_assetList_clicked(const QModelIndex &index) {
         path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
     }
 
-    if(m_pSelected) {
-        delete m_pSelected;
-    }
-    m_pSelected = AssetManager::instance()->createSettings(path);
-    string guid = AssetManager::instance()->pathToGuid(source.toStdString());
-    m_pSelected->setDestination(guid.c_str());
-
-    emit assetSelected(m_pSelected);
+    emit assetSelected(AssetManager::instance()->pathToGuid(source.toStdString()).c_str());
 }

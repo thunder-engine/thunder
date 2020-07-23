@@ -22,10 +22,6 @@ public:
 
     virtual ~PropertyEditor ();
 
-    void                    addObject                   (QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
-
-    void                    setObject                   (QObject *propertyObject);
-
     void                    registerCustomPropertyCB    (UserTypeCB callback);
 
     void                    unregisterCustomPropertyCB  (UserTypeCB callback);
@@ -40,8 +36,13 @@ public slots:
 
     void                    clear                       ();
 
+    QObject                *object                      () const;
+    void                    setObject                   (QObject *propertyObject);
+
 protected:
     void                    updatePersistent            (const QModelIndex &index);
+
+    void                    addObject                   (QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
 
 private slots:
     void                    on_lineEdit_textChanged     (const QString &arg1);
@@ -56,6 +57,8 @@ private:
     PropertyFilter         *m_pFilter;
 
     bool                    m_Animated;
+
+    QObject                *m_pPropertyObject;
 };
 
 #endif

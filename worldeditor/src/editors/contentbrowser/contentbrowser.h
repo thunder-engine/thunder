@@ -55,6 +55,9 @@ public:
 
     void                    rescan                  ();
 
+signals:
+    void                    assetSelected           (IConverterSettings *settings);
+
 protected:
     void                    readSettings            ();
     void                    writeSettings           ();
@@ -84,6 +87,8 @@ private slots:
     void                    on_contentTree_customContextMenuRequested   (const QPoint &pos);
     void                    on_contentList_customContextMenuRequested   (const QPoint &pos);
     void                    on_findContent_textChanged                  (const QString &arg1);
+
+    void                    on_contentList_clicked          (const QModelIndex &index);
 
     void                    showInGraphicalShell            ();
 

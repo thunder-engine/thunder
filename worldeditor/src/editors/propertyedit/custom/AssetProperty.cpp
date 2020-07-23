@@ -35,8 +35,8 @@ QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewI
     ContentSelect *editor = new ContentSelect(parent);
     editor->setType( Property::value(Qt::EditRole).value<Template>().type );
 
-    m_Editor    = editor;
-    connect(m_Editor, SIGNAL(assetChanged(IConverterSettings *)), this, SLOT(onAssetChanged(IConverterSettings *)));
+    m_Editor = editor;
+    connect(editor, &ContentSelect::assetChanged, this, &TemplateProperty::onAssetChanged);
     return m_Editor;
 }
 
@@ -63,6 +63,6 @@ QSize TemplateProperty::sizeHint(const QSize& size) const {
     return QSize(size.width(), 74);
 }
 
-void TemplateProperty::onAssetChanged(IConverterSettings *settings) {
-    setValue(settings->destination());
+void TemplateProperty::onAssetChanged(const QString &uuid) {
+    setValue(uuid);
 }

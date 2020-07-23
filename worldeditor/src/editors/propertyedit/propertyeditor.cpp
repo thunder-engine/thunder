@@ -186,7 +186,8 @@ private:
 PropertyEditor::PropertyEditor(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::PropertyEditor),
-        m_Animated(false) {
+        m_Animated(false),
+        m_pPropertyObject(nullptr) {
 
     ui->setupUi(this);
 
@@ -220,9 +221,14 @@ void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QOb
     }
 }
 
+QObject *PropertyEditor::object() const {
+    return m_pPropertyObject;
+}
+
 void PropertyEditor::setObject(QObject *propertyObject) {
     clear();
     addObject(propertyObject);
+    m_pPropertyObject = propertyObject;
 }
 
 void PropertyEditor::onUpdated() {

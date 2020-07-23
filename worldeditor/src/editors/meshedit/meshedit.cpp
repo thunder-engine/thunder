@@ -182,6 +182,6 @@ void MeshEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) 
 }
 
 void MeshEdit::on_actionSave_triggered() {
-    AssetManager::saveSettings(m_pSettings);
+    m_pSettings->saveSettings();
     setModified(false);
 }

@@ -27,10 +27,10 @@ public:
     void                        setData                         (const QString &guid);
 
 signals:
-    void                        assetChanged                    (IConverterSettings *settings);
+    void                        assetChanged                    (const QString &uuid);
 
 private slots:
-    void                        onAssetSelected                 (IConverterSettings *settings);
+    void                        onAssetSelected                 (const QString &uuid);
 
 private:
     Ui::ContentSelect *ui;

@@ -25,6 +25,7 @@ Project {
     ]
 
     property stringList incPaths: [
+        "../",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",

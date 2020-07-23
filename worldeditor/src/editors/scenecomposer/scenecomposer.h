@@ -27,6 +27,8 @@ class ImportQueue;
 
 class ProjectModel;
 
+class IConverterSettings;
+
 namespace Ui {
     class SceneComposer;
 }
@@ -44,6 +46,7 @@ public:
 
 public slots:
     void                    onObjectSelected                            (Object::ObjectList objects);
+    void                    onAssetSelected                             (IConverterSettings *settings);
 
     void                    onOpenProject                               (const QString &path);
 
@@ -60,6 +63,8 @@ private:
     void                    resetWorkspace                              ();
 
     void                    findWorkspaces                              (const QString &dir);
+
+    void                    checkImportSettings                         (IConverterSettings *settings);
 
     Ui::SceneComposer      *ui;
 
@@ -89,6 +94,8 @@ private:
     QAction                *m_Redo;
 
 private slots:
+    void                    onSettingsUpdated                           ();
+
     void                    onNewProject                                ();
     void                    onImportProject                             ();
 
@@ -106,6 +113,9 @@ private slots:
     void                    onFinished                                  (int exitCode, QProcess::ExitStatus);
 
     void                    parseLogs                                   (const QString &log);
+
+    void                    on_commitButton_clicked                     ();
+    void                    on_revertButton_clicked                     ();
 
     void                    on_actionNew_triggered                      ();
     void                    on_actionSave_triggered                     ();

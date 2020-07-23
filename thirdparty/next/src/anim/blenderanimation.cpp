@@ -86,7 +86,6 @@ public:
                         result.mix(a, b, factor);
                     } break;
                 }
-                return result;
             }
         }
         return result;
