@@ -83,7 +83,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
 
 bool ObjectHierarchyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(role)
-    Object *item    = static_cast<Object* >(index.internalPointer());
+    Object *item = static_cast<Object* >(index.internalPointer());
     switch(index.column()) {
         default: {
             item->setName(value.toString().toStdString());
@@ -111,9 +111,9 @@ int ObjectHierarchyModel::columnCount(const QModelIndex &parent) const {
 
 int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
     if(m_rootItem) {
-        Object *parentItem  = m_rootItem;
+        Object *parentItem = m_rootItem;
         if(parent.isValid()) {
-            parentItem      = static_cast<Object *>(parent.internalPointer());
+            parentItem = static_cast<Object *>(parent.internalPointer());
         }
         const Object::ObjectList &children = parentItem->getChildren();
         return children.size();

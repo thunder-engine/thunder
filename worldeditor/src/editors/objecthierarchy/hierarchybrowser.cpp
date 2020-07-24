@@ -159,7 +159,6 @@ void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
 
 void HierarchyBrowser::onHierarchyUpdated() {
     static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel())->reset();
-    ui->treeView->expandAll();
 }
 
 void HierarchyBrowser::onDragEnter(QDragEnterEvent *e) {

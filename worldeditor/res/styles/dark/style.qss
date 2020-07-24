@@ -193,6 +193,10 @@ QTreeView::item:selected {
 QTreeView::item:hover {
     background: #039be5;
 }
+QTreeView::branch {
+    border-image: none 0;
+    background-color: transparent;
+}
 QTreeView::branch:has-siblings:!adjoins-item {
     border-image: none 0;
 }

@@ -1,5 +1,7 @@
 #include "math/amath.h"
 
+#include <float.h>
+
 /*!
     \class Quaternion
     \brief The Quaternion class represents rotations in 3D space.
