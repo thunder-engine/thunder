@@ -61,7 +61,11 @@ AssimpImportSettings::AssimpImportSettings() :
         m_Scale(1.0f),
         m_Colors(true),
         m_Normals(true),
-        m_Animation(false) {
+        m_Animation(false),
+        m_Filter(Keyframe_Reduction),
+        m_PositionError(0.5f),
+        m_RotationError(0.5f),
+        m_ScaleError(0.5f) {
 
     setVersion(FORMAT_VERSION);
 }
@@ -96,6 +100,16 @@ void AssimpImportSettings::setAnimation(bool value) {
     }
 }
 
+AssimpImportSettings::Compression AssimpImportSettings::filter() const {
+    return m_Filter;
+}
+void AssimpImportSettings::setFilter(Compression value) {
+    if(m_Filter != value) {
+        m_Filter = value;
+        emit updated();
+    }
+}
+
 bool AssimpImportSettings::useScale() const {
     return m_UseScale;
 }
@@ -112,6 +126,36 @@ float AssimpImportSettings::customScale() const {
 void AssimpImportSettings::setCustomScale(float value) {
     if(m_Scale != value) {
         m_Scale = value;
+        emit updated();
+    }
+}
+
+float AssimpImportSettings::positionError() const {
+    return m_PositionError;
+}
+void AssimpImportSettings::setPositionError(float value) {
+    if(m_PositionError != value) {
+        m_PositionError = value;
+        emit updated();
+    }
+}
+
+float AssimpImportSettings::rotationError() const {
+    return m_RotationError;
+}
+void AssimpImportSettings::setRotationError(float value) {
+    if(m_RotationError != value) {
+        m_RotationError = value;
+        emit updated();
+    }
+}
+
+float AssimpImportSettings::scaleError() const {
+    return m_ScaleError;
+}
+void AssimpImportSettings::setScaleError(float value) {
+    if(m_ScaleError != value) {
+        m_ScaleError = value;
         emit updated();
     }
 }
@@ -300,7 +344,7 @@ uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
             }
         }
 
-        if(scene->HasAnimations()/* && fbxSettings->animation()*/) {
+        if(scene->HasAnimations() && fbxSettings->animation()) {
             importAnimation(scene, fbxSettings);
         }
 
@@ -530,6 +574,115 @@ static bool compare(const AnimationClip::Track &left, const AnimationClip::Track
     return left.path > right.path;
 }
 
+void optimizeVectorTrack(AnimationClip::Track &track, float threshold) {
+    for(uint32_t i = 1; i < track.curves[0].m_Keys.size() - 1; i++) {
+        Vector3 k0( track.curves[0].m_Keys[i - 1].m_Value,
+                    track.curves[1].m_Keys[i - 1].m_Value,
+                    track.curves[2].m_Keys[i - 1].m_Value);
+
+        Vector3 k1( track.curves[0].m_Keys[i].m_Value,
+                    track.curves[1].m_Keys[i].m_Value,
+                    track.curves[2].m_Keys[i].m_Value);
+
+        Vector3 k2( track.curves[0].m_Keys[i + 1].m_Value,
+                    track.curves[1].m_Keys[i + 1].m_Value,
+                    track.curves[2].m_Keys[i + 1].m_Value);
+
+        Vector3 pd = (k2 - k0);
+        float d0 = pd.dot(k0);
+        float d1 = pd.dot(k1);
+        float d2 = pd.dot(k2);
+        if (d1 < d0 || d1 > d2) {
+            continue;
+        }
+
+        float d = distanceToSegment<Vector3>(k0, k2, k1);
+        if(d > pd.length() * threshold) {
+            continue;
+        }
+
+        AnimationCurve::Keys &curve0 = track.curves[0].m_Keys;
+        curve0.erase(curve0.begin() + i);
+        AnimationCurve::Keys &curve1 = track.curves[1].m_Keys;
+        curve1.erase(curve1.begin() + i);
+        AnimationCurve::Keys &curve2 = track.curves[2].m_Keys;
+        curve2.erase(curve2.begin() + i);
+
+        i--;
+    }
+}
+
+void optimizeQuaternionTrack(AnimationClip::Track &track, float threshold) {
+    for(uint32_t i = 1; i < track.curves[0].m_Keys.size() - 1; i++) {
+        Quaternion k0( track.curves[0].m_Keys[i - 1].m_Value,
+                       track.curves[1].m_Keys[i - 1].m_Value,
+                       track.curves[2].m_Keys[i - 1].m_Value,
+                       track.curves[3].m_Keys[i - 1].m_Value);
+
+        Quaternion k1( track.curves[0].m_Keys[i].m_Value,
+                       track.curves[1].m_Keys[i].m_Value,
+                       track.curves[2].m_Keys[i].m_Value,
+                       track.curves[3].m_Keys[i].m_Value);
+
+        Quaternion k2( track.curves[0].m_Keys[i + 1].m_Value,
+                       track.curves[1].m_Keys[i + 1].m_Value,
+                       track.curves[2].m_Keys[i + 1].m_Value,
+                       track.curves[3].m_Keys[i + 1].m_Value);
+
+        if(k0.equal(k2) && !k0.equal(k1)) {
+            continue;
+        }
+
+        Quaternion r1 = (k0.inverse() * k1);
+        Quaternion r0 = (k0.inverse() * k2);
+
+        r1.normalize();
+        r0.normalize();
+
+        Vector3 v0, v1;
+        float a0, a1;
+
+        r0.axisAngle(v0, a0);
+        r1.axisAngle(v1, a1);
+
+        if(abs(a0) > threshold) {
+            continue;
+        }
+
+        if(v1.dot(v0) < 0) {
+            v0 = -v0;
+            a0 = -a0;
+        }
+
+        v0.normalize();
+        v1.normalize();
+
+        float err01 = acos(v1.dot(v0)) / PI;
+        if (err01 > threshold) { // Not the same axis
+            continue;
+        }
+
+        if(a1 * a0 < 0) { // Not the same direction
+            continue;
+        }
+
+        float tr = a1 / a0;
+        if (tr < 0 || tr > 1) { // Rotating too much or too less
+            continue;
+        }
+
+        AnimationCurve::Keys &curve0 = track.curves[0].m_Keys;
+        curve0.erase(curve0.begin() + i);
+        AnimationCurve::Keys &curve1 = track.curves[1].m_Keys;
+        curve1.erase(curve1.begin() + i);
+        AnimationCurve::Keys &curve2 = track.curves[2].m_Keys;
+        curve2.erase(curve2.begin() + i);
+        AnimationCurve::Keys &curve3 = track.curves[3].m_Keys;
+        curve3.erase(curve3.begin() + i);
+        i--;
+    }
+}
+
 void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings) {
     AnimationClipSerial clip;
     clip.setName("AnimationClip");
@@ -575,6 +728,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.curves[1] = y;
                     track.curves[2] = z;
 
+                    if(fbxSettings->filter()) {
+                        optimizeVectorTrack(track, fbxSettings->positionError());
+                    }
+
                     clip.m_Tracks.push_back(track);
                 }
 
@@ -609,6 +766,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.curves[2] = z;
                     track.curves[3] = w;
 
+                    if(fbxSettings->filter()) {
+                        optimizeQuaternionTrack(track, fbxSettings->rotationError());
+                    }
+
                     clip.m_Tracks.push_back(track);
                 }
 
@@ -639,6 +800,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.curves[0] = x;
                     track.curves[1] = y;
                     track.curves[2] = z;
+
+                    if(fbxSettings->filter()) {
+                        optimizeVectorTrack(track, fbxSettings->scaleError());
+                    }
 
                     clip.m_Tracks.push_back(track);
                 }

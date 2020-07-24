@@ -28,19 +28,34 @@ class Matrix3;
 class NEXT_LIBRARY_EXPORT Quaternion {
 public:
     Quaternion                  ();
-    Quaternion                  (const Vector3 &dir, areal angle);
+    Quaternion                  (areal x, areal y, areal z, areal w);
+    Quaternion                  (const Vector3 &axis, areal angle);
     Quaternion                  (const Vector3 &euler);
     Quaternion                  (const Matrix3 &matrix);
 
     bool                        operator==                  (const Quaternion &quaternion) const;
     bool                        operator!=                  (const Quaternion &quaternion) const;
 
+    Quaternion                  operator*                   (areal factor) const;
     Quaternion                  operator*                   (const Quaternion &quaternion) const;
     Vector3                     operator*                   (const Vector3 &vector) const;
+    Quaternion                  operator/                   (areal divisor) const;
+
+    Quaternion                 &operator*=                  (areal factor);
+    Quaternion                 &operator/=                  (areal divisor);
 
     areal                      &operator[]                  (int i);
     areal                       operator[]                  (int i) const;
 	
+    areal                       length                      () const;
+    areal                       sqrLength                   () const;
+
+    areal                       normalize                   ();
+
+    areal                       dot                         (const Quaternion &quaternion) const;
+
+    bool                        equal                       (const Quaternion &quaternion) const;
+
     Quaternion                  inverse                     () const;
 
     void                        mix                         (const Quaternion &q0, const Quaternion &q1, areal t);
@@ -48,6 +63,8 @@ public:
     Matrix3                     toMatrix                    () const;
     Vector3                     euler                       () const;
 	
+    void                        axisAngle                   (Vector3 &axis, areal &angle);
+
     union {
         struct {
             areal x, y, z, w;

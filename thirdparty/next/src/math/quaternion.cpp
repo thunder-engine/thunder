@@ -22,16 +22,26 @@ Quaternion::Quaternion() :
     w(1) {
 }
 /*!
-    Constructs a quaternion with rotation axis \a dir and \a angle in rotation degrees.
+    Constructs a quaternion with values (\a x, \a y, \a z).
 */
-Quaternion::Quaternion(const Vector3 &dir, areal angle) {
-    areal length = dir.length();
+Quaternion::Quaternion(areal x, areal y, areal z, areal w) :
+    x(x),
+    y(y),
+    z(z),
+    w(w) {
+
+}
+/*!
+    Constructs a quaternion with rotation \a axis and \a angle in rotation degrees.
+*/
+Quaternion::Quaternion(const Vector3 &axis, areal angle) {
+    areal length = axis.length();
     if(length != 0.0f) {
         length = 1.0f / length;
         areal sinangle = sin(angle * DEG2RAD / 2.0f);
-        x = dir[0] * length * sinangle;
-        y = dir[1] * length * sinangle;
-        z = dir[2] * length * sinangle;
+        x = axis[0] * length * sinangle;
+        y = axis[1] * length * sinangle;
+        z = axis[2] * length * sinangle;
         w = cos(angle * DEG2RAD / 2.0f);
     } else {
         x = y = z = 0.0;
@@ -142,6 +152,32 @@ areal Quaternion::operator[](int i) const {
     return q[i];
 }
 /*!
+    Multiplies this quaternion's coordinates by the given \a factor, and
+    returns a reference to this quaternion.
+
+    \sa operator/=()
+*/
+Quaternion &Quaternion::operator*=(areal factor) {
+    return *this = *this * factor;
+}
+/*!
+    Divides this quaternion's coordinates by the given \a divisor, and
+    returns a reference to this quaternion.
+
+    \sa operator*=()
+*/
+Quaternion &Quaternion::operator/=(areal divisor) {
+    return *this = *this / divisor;
+}
+/*!
+    Returns a copy of this quaternion, multiplied by the given \a factor.
+
+    \sa operator*=()
+*/
+Quaternion Quaternion::operator*(areal factor) const {
+    return Quaternion(x * factor, y * factor, z * factor, w * factor);
+}
+/*!
     Multiplies this quaternion and \a quaternion using quaternion multiplication.
     The result corresponds to applying both of the rotations specified by this quaternion and \a quaternion.
 */
@@ -165,6 +201,50 @@ Vector3 Quaternion::operator*(const Vector3 &vector) const {
     return vector + ((uv * w) + uuv) * 2;
 }
 /*!
+    Returns a copy of this quaternion, divided by the given \a divisor.
+
+    \sa operator/=()
+*/
+Quaternion Quaternion::operator/(areal divisor) const {
+    return Quaternion(x / divisor, y / divisor, z / divisor, w / divisor);
+}
+/*!
+    Returns the length of this quaternion.
+
+    \sa sqrLength()
+*/
+areal Quaternion::length() const {
+     return (areal)sqrt(sqrLength());
+}
+/*!
+    Returns the squared length of this quaternion.
+
+    \sa length()
+*/
+areal Quaternion::sqrLength() const {
+    return x * x + y * y + z * z + w * w;
+}
+/*!
+    Normalizes the currect quaternion in place.
+    Returns length of prenormalized quaternion.
+
+    \sa length()
+*/
+areal Quaternion::normalize() {
+    areal len = length();
+    if (len == 0.0f)
+        return 0.0f;
+    (*this) /= len;
+
+    return len;
+}
+/*!
+    Returns the dot-product of this quaternion and given \a quaternion.
+*/
+areal Quaternion::dot(const Quaternion &quaternion) const {
+    return (x * quaternion.x + y * quaternion.y + z * quaternion.z + w * quaternion.w);
+}
+/*!
     Returns the inverse of this quaternion.
 */
 Quaternion Quaternion::inverse() const {
@@ -173,10 +253,19 @@ Quaternion Quaternion::inverse() const {
     return ret;
 }
 /*!
+    Returns true if \a quaternion approximately equal.
+*/
+bool Quaternion::equal(const Quaternion &quaternion) const {
+    return abs(x - quaternion.x) <= FLT_EPSILON &&
+           abs(y - quaternion.y) <= FLT_EPSILON &&
+           abs(z - quaternion.z) <= FLT_EPSILON &&
+           abs(w - quaternion.w) <= FLT_EPSILON;
+}
+/*!
     Linear inerpolation between \a q0 and \a q1 with \a t factor.
 */
 void Quaternion::mix(const Quaternion &q0, const Quaternion &q1, areal t) {
-    areal k0,k1,cosomega = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+    areal k0, k1, cosomega = q0.dot(q1);
     Quaternion q;
     if(cosomega < 0.0f) {
         cosomega = -cosomega;
@@ -240,4 +329,14 @@ Matrix3 Quaternion::toMatrix() const {
 */
 Vector3 Quaternion::euler() const {
     return toMatrix().euler();
+}
+/*!
+    Retrives a quaternion as rotation \a axis and \a angle in rotation degrees.
+*/
+void Quaternion::axisAngle(Vector3 &axis, areal &angle) {
+    angle = 2.0f * acos(w);
+    areal r = (1.0f) / sqrt(1.0f - w * w);
+    axis.x = x * r;
+    axis.y = y * r;
+    axis.z = z * r;
 }

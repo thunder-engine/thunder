@@ -10,25 +10,6 @@
 Matrix4 HandleTools::s_View;
 Matrix4 HandleTools::s_Projection;
 
-template<typename T>
-float distanceToSegment(const T &a, const T &b, const T &p) {
-    T v = b - a;
-    T w = p - a;
-
-    float c1    = w.dot(v);
-    if(c1 <= 0.0f) {
-        return w.sqrLength();
-    }
-
-    float c2    = v.dot(v);
-    if( c2 <= c1 ) {
-        return (p - b).sqrLength();
-    }
-
-    T l = a + v * (c1 / c2);
-    return (p - l).sqrLength();
-}
-
 HandleTools::HandleTools() {
 
 }

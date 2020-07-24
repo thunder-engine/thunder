@@ -27,9 +27,21 @@ class AssimpImportSettings : public IConverterSettings {
     Q_PROPERTY(float Custom_Scale READ customScale WRITE setCustomScale DESIGNABLE true USER true)
     Q_PROPERTY(bool Import_Color READ colors WRITE setColors DESIGNABLE true USER true)
     Q_PROPERTY(bool Import_Normals READ normals WRITE setNormals DESIGNABLE true USER true)
+
     Q_PROPERTY(bool Import_Animation READ animation WRITE setAnimation DESIGNABLE true USER true)
+    Q_PROPERTY(Compression Compress_Animation READ filter WRITE setFilter DESIGNABLE true USER true)
+    Q_PROPERTY(float Position_Error READ positionError WRITE setPositionError DESIGNABLE true USER true)
+    Q_PROPERTY(float Rotation_Error READ rotationError WRITE setRotationError DESIGNABLE true USER true)
+    Q_PROPERTY(float Scale_Error READ scaleError WRITE setScaleError DESIGNABLE true USER true)
 
 public:
+
+    enum Compression {
+        Off = 0,
+        Keyframe_Reduction
+    };
+    Q_ENUM(Compression)
+
     AssimpImportSettings();
 
     bool colors() const;
@@ -41,11 +53,23 @@ public:
     bool animation() const;
     void setAnimation(bool value);
 
+    Compression filter() const;
+    void setFilter(Compression value);
+
     bool useScale() const;
     void setUseScale(bool value);
 
     float customScale() const;
     void setCustomScale(float value);
+
+    float positionError() const;
+    void setPositionError(float value);
+
+    float rotationError() const;
+    void setRotationError(float value);
+
+    float scaleError() const;
+    void setScaleError(float value);
 
     Object::ObjectList m_Renders;
 
@@ -68,6 +92,11 @@ protected:
     bool m_Normals;
 
     bool m_Animation;
+    Compression m_Filter;
+
+    float m_PositionError;
+    float m_RotationError;
+    float m_ScaleError;
 
 };
 
