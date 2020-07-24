@@ -263,6 +263,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     if(m_pProperties) {
         delete m_pProperties;
         m_pProperties   = nullptr;
+        ui->propertyView->setObject(m_pProperties);
     }
     if(!objects.empty()) {
         ui->viewport->makeCurrent();

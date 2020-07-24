@@ -181,8 +181,10 @@ VariantMap SkinnedMeshRender::saveUserData() const {
 #include "handles.h"
 
 bool SkinnedMeshRender::drawHandles(ObjectList &selected) {
-    AABBox aabb = bound();
-    //Handles::drawBox(aabb.center, Quaternion(), aabb.extent * 2.0f);
+    if(isSelected(selected)) {
+        AABBox aabb = bound();
+        Handles::drawBox(aabb.center, Quaternion(), aabb.extent * 2.0f);
+    }
     return false;
 }
 #endif
