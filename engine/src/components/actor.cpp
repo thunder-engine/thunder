@@ -289,7 +289,11 @@ void Actor::loadUserData(const VariantMap &data) {
                                     if(uuid == 0) {
                                         uuid = static_cast<uint32_t>(array.back().toInt());
                                     }
-                                    Object *obj = Engine::findObject(uuid, Engine::findRoot(this));
+
+                                    Object *obj = Engine::findObject(uuid, this);
+                                    if(obj == nullptr) {
+                                        obj = Engine::findObject(uuid, Engine::findRoot(this));
+                                    }
                                     if(obj) {
                                         var = Variant(prop.read((*object).second).userType(), &obj);
                                     }
