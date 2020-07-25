@@ -76,7 +76,7 @@ Rectangle {
                 var keysNumber = curve[i].length - 1
                 for(var k = 0; k < keysNumber; k++) {
                     var key = curve[i][k + 1]
-                    var py = -(key[canvas.offset])
+                    var py = -(key[canvas.valueOffset])
 
                     minimum = Math.min(py, minimum)
                     maximum = Math.max(py, maximum)
@@ -116,8 +116,10 @@ Rectangle {
 
         property int componentsNumber: 0
 
-        property int offset: 2
-        property int leftOffset: offset + 1
+        property int positionOffset: 0
+        property int typeOffset: 1
+        property int valueOffset: 2
+        property int leftOffset: valueOffset + 1
         property int rightOffset: leftOffset + 1
 
         property int dist: 50
@@ -139,31 +141,42 @@ Rectangle {
                     var keysNumber = curve[i].length - 1
 
                     var key = curve[i][1]
-                    context.moveTo(toScreenSpaceX(key[0]), -toScreenSpaceY(key[offset]))
+                    context.moveTo(toScreenSpaceX(key[positionOffset]), -toScreenSpaceY(key[valueOffset]))
 
                     for(var k = 0; k < keysNumber; k++) {
                         var key1 = curve[i][k + 1]
-                        var px1 = toScreenSpaceX(key1[0])
-                        var py1 = -toScreenSpaceY(key1[offset])
+                        var px1 = toScreenSpaceX(key1[positionOffset])
+                        var py1 = -toScreenSpaceY(key1[valueOffset])
 
-                        var tx0 = px1
-                        var ty0 = py1
+                        switch(key1[typeOffset]) {
+                        case 1: // Line
+                            context.lineTo(px1,py1)
+                            break
+                        case 2: // Cubic
+                            var tx0 = px1
+                            var ty0 = py1
 
-                        var d = 0
-                        if((k - 1) >= 0) {
-                            var key0 = curve[i][k]
-                            var px0 = toScreenSpaceX(key0[0])
-                            var py0 = -toScreenSpaceY(key0[offset])
+                            var d = 0
+                            if((k - 1) >= 0) {
+                                var key0 = curve[i][k]
+                                var px0 = toScreenSpaceX(key0[positionOffset])
+                                var py0 = -toScreenSpaceY(key0[valueOffset])
 
-                            d = (px1 - px0) * 0.5
+                                d = (px1 - px0) * 0.5
 
-                            tx0 = px0 + d
-                            ty0 = -toScreenSpaceY(key0[rightOffset])
+                                tx0 = px0 + d
+                                ty0 = -toScreenSpaceY(key0[rightOffset])
+                            }
+                            var tx1 = px1 - d
+                            var ty1 = -toScreenSpaceY(key1[leftOffset])
+
+                            context.bezierCurveTo(tx0,ty0, tx1,ty1, px1,py1)
+
+                            break
+                        default: break
                         }
-                        var tx1 = px1 - d
-                        var ty1 = -toScreenSpaceY(key1[leftOffset])
 
-                        context.bezierCurveTo(tx0,ty0, tx1,ty1, px1,py1)
+
                     }
                     context.stroke()
 
@@ -171,13 +184,13 @@ Rectangle {
                         context.strokeStyle = Qt.rgba(0.3, 0.3, 0.3)
 
                         key1 = curve[selectCol][selectInd + 1]
-                        px1 = toScreenSpaceX(key1[0])
-                        py1 = -toScreenSpaceY(key1[offset])
+                        px1 = toScreenSpaceX(key1[positionOffset])
+                        py1 = -toScreenSpaceY(key1[valueOffset])
                         // Right tangent
                         d = 0
                         if((selectInd + 1) < (curve[selectCol].length - 1)) {
                             key0 = curve[selectCol][selectInd + 2]
-                            d = (px1 - toScreenSpaceX(key0[0])) * 0.5
+                            d = (px1 - toScreenSpaceX(key0[positionOffset])) * 0.5
 
                             tx1 = -d
                             ty1 = -toScreenSpaceY(key1[rightOffset]) - py1
@@ -197,7 +210,7 @@ Rectangle {
                         d = 0
                         if((selectInd - 1) >= 0) {
                             key0 = curve[selectCol][selectInd]
-                            d = (px1 - toScreenSpaceX(key0[0])) * 0.5
+                            d = (px1 - toScreenSpaceX(key0[positionOffset])) * 0.5
 
                             tx1 = -d
                             ty1 = -toScreenSpaceY(key1[leftOffset]) - py1
@@ -258,8 +271,8 @@ Rectangle {
                 property variant key: curve[points.col][index + 1]
                 property bool breaked: false
 
-                x: toScreenSpaceX(key[0]) - posX - points.pointCenter
-                y: -toScreenSpaceY(key[canvas.offset]) + posY - points.pointCenter
+                x: toScreenSpaceX(key[canvas.positionOffset]) - posX - points.pointCenter
+                y: -toScreenSpaceY(key[canvas.valueOffset]) + posY - points.pointCenter
 
                 function commitKey() {
                     var data = curve
@@ -324,8 +337,8 @@ Rectangle {
                                 var x = Math.round(item.x / timeStep) * timeStep - points.pointSize
 
                                 item.key[0] = Math.max(Math.round((x + posX) / timeStep), 0) * timeScale * 1000
-                                var value = (-((item.y - posY + 3) / valueStep) * valueScale) - item.key[canvas.offset]
-                                item.key[canvas.offset] += value
+                                var value = (-((item.y - posY + 3) / valueStep) * valueScale) - item.key[canvas.valueOffset]
+                                item.key[canvas.valueOffset] += value
                                 item.key[canvas.leftOffset]  += value
                                 item.key[canvas.rightOffset] += value
 
@@ -345,10 +358,10 @@ Rectangle {
                         var result = 0
                         if(index > 0) {
                             var key0 = curve[points.col][index]
-                            result = (toScreenSpaceX(item.key[0]) - toScreenSpaceX(key0[0])) * 0.5
+                            result = (toScreenSpaceX(item.key[canvas.positionOffset]) - toScreenSpaceX(key0[canvas.positionOffset])) * 0.5
                         }
 
-                        var py1 = -toScreenSpaceY(item.key[canvas.offset])
+                        var py1 = -toScreenSpaceY(item.key[canvas.valueOffset])
                         var tx1 = -result
                         var ty1 = -toScreenSpaceY(item.key[canvas.leftOffset]) - py1
 
@@ -379,9 +392,9 @@ Rectangle {
                         onPositionChanged: {
                             if(drag.active) {
                                 var value = toLocalSpaceY((parent.y / parent.x) * parent.d)
-                                item.key[canvas.leftOffset] = item.key[canvas.offset] + value
+                                item.key[canvas.leftOffset] = item.key[canvas.valueOffset] + value
                                 if(!item.breaked) {
-                                    item.key[canvas.rightOffset] = item.key[canvas.offset] - value
+                                    item.key[canvas.rightOffset] = item.key[canvas.valueOffset] - value
                                 }
                                 item.commitKey()
                             }
@@ -399,10 +412,10 @@ Rectangle {
                         var result = 0
                         if((index + 1) < (curve[points.col].length - 1)) {
                             var key0 = curve[points.col][index + 2]
-                            result = (toScreenSpaceX(item.key[0]) - toScreenSpaceX(key0[0])) * 0.5
+                            result = (toScreenSpaceX(item.key[canvas.positionOffset]) - toScreenSpaceX(key0[canvas.positionOffset])) * 0.5
                         }
 
-                        var py1 = -toScreenSpaceY(item.key[canvas.offset])
+                        var py1 = -toScreenSpaceY(item.key[canvas.valueOffset])
                         var tx1 = -result
                         var ty1 = -toScreenSpaceY(item.key[canvas.rightOffset]) - py1
 
@@ -433,9 +446,9 @@ Rectangle {
                         onPositionChanged: {
                             if(drag.active) {
                                 var value = toLocalSpaceY((parent.y / parent.x) * parent.d)
-                                item.key[canvas.rightOffset] = item.key[canvas.offset] + value
+                                item.key[canvas.rightOffset] = item.key[canvas.valueOffset] + value
                                 if(!item.breaked) {
-                                    item.key[canvas.leftOffset] = item.key[canvas.offset] - value
+                                    item.key[canvas.leftOffset] = item.key[canvas.valueOffset] - value
                                 }
                                 item.commitKey()
                             }
@@ -490,7 +503,7 @@ Rectangle {
                 if(selectInd >= 0 && selectCol >= 0 && curve !== undefined) {
                     var key = curve[selectCol][selectInd + 1]
                     if(key !== undefined) {
-                        var value = key[canvas.offset]
+                        var value = key[canvas.valueOffset]
                         return value.toLocaleString(Qt.locale("en_EN"), 'f', 3) * 1
                     }
                 }

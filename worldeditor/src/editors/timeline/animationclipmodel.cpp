@@ -103,7 +103,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                     for(int32_t i = 0; i < size; i++) {
                         spaces  += "    ";
                     }
-                    return QString("%1%2 : %3").arg(spaces).arg(actor).arg(it->property.c_str());
+                    return QString("%1%2 : %3").arg(spaces).arg(actor).arg(QString(it->property.c_str()).replace('_', ""));
                 }
             } else {
                 advance(it, index.parent().row());

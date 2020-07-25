@@ -751,7 +751,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
                         frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = time;
-                        frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
+                        frameX.m_Type = frameY.m_Type = frameZ.m_Type = frameW.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         frameX.m_Value = key->mValue.x;
                         frameY.m_Value = key->mValue.y;
