@@ -18,6 +18,8 @@ public:
 
     virtual void draw (ICommandBuffer &buffer, uint32_t layer);
 
+    virtual void update ();
+
     virtual AABBox bound () const;
 
 };

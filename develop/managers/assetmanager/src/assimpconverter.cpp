@@ -848,6 +848,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     if(fbxSettings->m_pRootBone) {
         Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_pRootBone->addComponent("Armature"));
         armature->setBindPose(pose);
+        Engine::replaceUUID(armature, qHash(uuid + ".Armature"));
 
         for(auto r : fbxSettings->m_Renders) {
             SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);

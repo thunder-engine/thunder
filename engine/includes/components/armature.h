@@ -27,7 +27,7 @@ public:
     AABBox recalcBounds (const AABBox &aabb) const;
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void update () override;
 
     void loadUserData (const VariantMap &data);
     VariantMap saveUserData () const;

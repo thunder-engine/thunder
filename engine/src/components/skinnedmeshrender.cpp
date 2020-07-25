@@ -66,10 +66,14 @@ void SkinnedMeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 AABBox SkinnedMeshRender::bound() const {
-    if(p_ptr->m_pMesh && p_ptr->m_pArmature) {
-        return p_ptr->m_pArmature->recalcBounds(p_ptr->m_pMesh->bound());
+    AABBox result;
+    if(p_ptr->m_pMesh) {
+        result = p_ptr->m_pMesh->bound();
     }
-    return Renderable::bound();
+    if(p_ptr->m_pArmature) {
+        result = p_ptr->m_pArmature->recalcBounds(result);
+    }
+    return result;
 }
 /*!
     Returns a Mesh assigned to this component.
@@ -171,7 +175,7 @@ VariantMap SkinnedMeshRender::saveUserData() const {
     }
     {
         if(p_ptr->m_pArmature) {
-            result[ARMATURE] = int32_t(p_ptr->m_pArmature->uuid());
+            result[ARMATURE] = int(p_ptr->m_pArmature->uuid());
         }
     }
     return result;

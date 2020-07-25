@@ -186,7 +186,10 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
         Ray ray = camera.castRay(screen.x, 1.0f - screen.y);
         m_MouseWorld = (ray.dir * 10.0f) + ray.pos;
     }
-    m_Filter.insert(m_Filter.end(), m_DragList.begin(), m_DragList.end());
+    for(auto it : m_DragList) {
+        it->update();
+        m_Filter.push_back(it);
+    }
 
     Pipeline::draw(camera);
 

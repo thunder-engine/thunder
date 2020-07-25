@@ -83,30 +83,26 @@ Armature::~Armature() {
     delete p_ptr;
 }
 
-void Armature::draw(ICommandBuffer &buffer, uint32_t layer) {
-    A_UNUSED(buffer);
-
-    if(layer == ICommandBuffer::DEFAULT) {
-        if(p_ptr->m_BindDirty) {
-            p_ptr->cleanDirty(actor());
-        }
-
-        Texture::Surface &surface = p_ptr->m_pCache->surface(0);
-        uint8_t *data = surface[0];
-
-        for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
-            if(i < p_ptr->m_InvertTransform.size()) {
-                p_ptr->m_Transform[i] = p_ptr->m_Bones[i]->worldTransform() * p_ptr->m_InvertTransform[i];
-            }
-            Matrix4 t = p_ptr->m_Transform[i];
-            t[3]  = p_ptr->m_Transform[i].mat[12];
-            t[7]  = p_ptr->m_Transform[i].mat[13];
-            t[11] = p_ptr->m_Transform[i].mat[14];
-
-            memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
-        }
-        p_ptr->m_pCache->setDirty();
+void Armature::update() {
+    if(p_ptr->m_BindDirty) {
+        p_ptr->cleanDirty(actor());
     }
+
+    Texture::Surface &surface = p_ptr->m_pCache->surface(0);
+    uint8_t *data = surface[0];
+
+    for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
+        if(i < p_ptr->m_InvertTransform.size()) {
+            p_ptr->m_Transform[i] = p_ptr->m_Bones[i]->worldTransform() * p_ptr->m_InvertTransform[i];
+        }
+        Matrix4 t = p_ptr->m_Transform[i];
+        t[3]  = p_ptr->m_Transform[i].mat[12];
+        t[7]  = p_ptr->m_Transform[i].mat[13];
+        t[11] = p_ptr->m_Transform[i].mat[14];
+
+        memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
+    }
+    p_ptr->m_pCache->setDirty();
 }
 
 Pose *Armature::bindPose() const {
@@ -129,33 +125,31 @@ Texture *Armature::texture() const {
     \internal
 */
 AABBox Armature::recalcBounds(const AABBox &aabb) const {
-    Vector3 v[2];
-    aabb.box(v[0], v[1]);
+    Vector3 v0, v1;
+    aabb.box(v0, v1);
 
     Vector3 min( FLT_MAX);
     Vector3 max(-FLT_MAX);
-    // This implementation is not accurate I guess it should take into account weight of the bones
-    for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
-        Vector3 v0 = p_ptr->m_Transform[i] * v[0];
-        Vector3 v1 = p_ptr->m_Transform[i] * v[1];
+    for(uint32_t b = 0; b < p_ptr->m_Bones.size(); b++) {
+        Vector3 t0 = p_ptr->m_Transform[b] * v0;
+        Vector3 t1 = p_ptr->m_Transform[b] * v1;
 
-        min.x = MIN(min.x, v0.x);
-        min.y = MIN(min.y, v0.y);
-        min.z = MIN(min.z, v0.z);
+        min.x = MIN(min.x, t0.x);
+        min.y = MIN(min.y, t0.y);
+        min.z = MIN(min.z, t0.z);
 
-        min.x = MIN(min.x, v1.x);
-        min.y = MIN(min.y, v1.y);
-        min.z = MIN(min.z, v1.z);
+        min.x = MIN(min.x, t1.x);
+        min.y = MIN(min.y, t1.y);
+        min.z = MIN(min.z, t1.z);
 
-        max.x = MAX(max.x, v0.x);
-        max.y = MAX(max.y, v0.y);
-        max.z = MAX(max.z, v0.z);
+        max.x = MAX(max.x, t0.x);
+        max.y = MAX(max.y, t0.y);
+        max.z = MAX(max.z, t0.z);
 
-        max.x = MAX(max.x, v1.x);
-        max.y = MAX(max.y, v1.y);
-        max.z = MAX(max.z, v1.z);
+        max.x = MAX(max.x, t1.x);
+        max.y = MAX(max.y, t1.y);
+        max.z = MAX(max.z, t1.z);
     }
-
     AABBox result;
     result.setBox(min, max);
 

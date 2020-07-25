@@ -7,6 +7,7 @@
 
 class ObjectCtrl;
 class Texture;
+class Renderable;
 
 class ObjectCtrlPipeline : public Pipeline {
 public:
@@ -44,7 +45,7 @@ protected:
 
     ObjectCtrl *m_pController;
 
-    ObjectList m_DragList;
+    list<Renderable *> m_DragList;
 
     Texture *m_pDepth;
     Texture *m_pSelect;
