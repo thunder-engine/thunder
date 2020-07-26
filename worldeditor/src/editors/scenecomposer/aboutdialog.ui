@@ -91,6 +91,9 @@
      <property name="text">
       <string>Thanks</string>
      </property>
+     <property name="textFormat">
+      <enum>Qt::MarkdownText</enum>
+     </property>
     </widget>
    </item>
    <item>

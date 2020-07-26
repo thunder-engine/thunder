@@ -1,6 +1,8 @@
 #include "aboutdialog.h"
 #include "ui_aboutdialog.h"
 
+#include <QFile>
+
 AboutDialog::AboutDialog(QWidget *parent) :
         QDialog(parent),
         ui(new Ui::AboutDialog) {
@@ -15,7 +17,12 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->version->setText(tr("Based on %1 %2").arg(PRODUCT_NAME).arg(SDK_VERSION));
     ui->copyright->setText(tr("Copyright 2007-%1 by %2. All rights reserved.").arg(COPYRIGHT_YEAR).arg(COPYRIGHT_AUTHOR));
     ui->legal->setText(LEGAL);
-    ui->thanks->setText(tr("Special thanks to: %1").arg(SPONSORS));
+
+    QFile file(":/Sponsors/sponsors.md");
+    if(file.open(QIODevice::ReadOnly)) {
+        ui->thanks->setText(file.readAll());
+        file.close();
+    }
 }
 
 AboutDialog::~AboutDialog() {

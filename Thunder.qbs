@@ -33,7 +33,6 @@ Project {
         property string SDK_VERSION
         property string REVISION
         property string LEGAL
-        property string SPONSORS
         property string YEAR
         configure: {
             YEAR = new Date().getFullYear().toString()
@@ -46,7 +45,6 @@ Project {
                 console.error(p.readStdErr())
             }
             LEGAL = new TextFile(thunder.sourceDirectory + "/legal").readAll()
-            SPONSORS = new TextFile(thunder.sourceDirectory + "/sponsors").readAll()
             SDK_VERSION = new TextFile(thunder.sourceDirectory + "/version").readAll()
         }
     }
@@ -76,8 +74,7 @@ Project {
             "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR,
             "COPYRIGHT_AUTHOR=\"" + COPYRIGHT_AUTHOR + "\"",
             "REVISION=\"" + probe.REVISION + "\"",
-            "LEGAL=\"" + probe.LEGAL + "\"",
-            "SPONSORS=\"" + probe.SPONSORS + "\""
+            "LEGAL=\"" + probe.LEGAL + "\""
         ];
         return result;
     }

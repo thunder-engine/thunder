@@ -84,4 +84,7 @@
         <file alias="Animation.anim">templates/Animation.anim</file>
         <file alias="Animation_Controller.actl">templates/Animation_Controller.actl</file>
     </qresource>
+    <qresource prefix="/Sponsors">
+        <file alias="sponsors.md">../../sponsors.md</file>
+    </qresource>
 </RCC>

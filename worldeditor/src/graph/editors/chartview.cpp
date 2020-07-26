@@ -1,6 +1,7 @@
 #include "chartview.h"
 
 #include <QPainter>
+#include <QPainterPath>
 
 ChartView::ChartView(QWidget *parent) :
     GraphWidget(parent) {

@@ -36,7 +36,7 @@ Rectangle {
 
     Connections {
         target: clipModel
-        onLayoutChanged: {
+        function onLayoutChanged() {
             maxPos = 0
             for(var i = 0; i < clipModel.rowCount(); i++) {
                 maxPos = clipModel.maxPosition(i)

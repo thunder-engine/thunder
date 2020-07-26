@@ -309,7 +309,7 @@ void Handles::drawBone(const Transform *begin, const Transform *end) {
         Vector3 p1 = end->worldPosition();
 
         float size = (p0 - p1).length() * 0.1f;
-        Matrix4 b(p0, begin->worldEuler(), Vector3(size));
+        Matrix4 b(p0, begin->worldRotation(), Vector3(size));
 
         s_Buffer->drawMesh(b, s_Sphere, ICommandBuffer::TRANSLUCENT, s_Solid);
         s_Buffer->drawMesh(b, s_Bone, ICommandBuffer::TRANSLUCENT, s_Solid);

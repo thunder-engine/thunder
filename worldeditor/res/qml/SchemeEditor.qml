@@ -16,12 +16,12 @@ Rectangle {
 
     Connections {
         target: schemeModel
-        onSchemeUpdated: {
+        function onSchemeUpdated() {
             nodes = schemeModel.nodes()
             links = schemeModel.links()
             canvas.requestPaint()
         }
-        onNodeMoved: {
+        function onNodeMoved() {
             nodes = schemeModel.nodes()
             links = schemeModel.links()
             canvas.requestPaint()

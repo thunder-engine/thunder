@@ -34,7 +34,7 @@ Rectangle {
 
     Connections {
         target: clipModel
-        onLayoutChanged: {
+        function onLayoutChanged() {
             keys = {}
             var rows = clipModel.rowCount()
             for(var r = 0; r < rows; r++) {
