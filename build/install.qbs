@@ -73,6 +73,10 @@ Product {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor)
                     }
+
+                    list.push("libicudata.so.56", "libicudata.so.56.1");
+                    list.push("libicui18n.so.56", "libicui18n.so.56.1");
+                    list.push("libicuuc.so.56", "libicuuc.so.56.1");
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)
@@ -203,19 +207,6 @@ Product {
         ]
         qbs.install: true
         qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "ICU Binaries"
-        condition: qbs.targetOS.contains("linux")
-        files: [
-            "/usr/lib/libicui18n.so.*",
-            "/usr/lib/libicuuc.so.*",
-            "/usr/lib/libicudata.so.*"
-        ]
-        qbs.install: true
-        qbs.installDir: install.LIB_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 
