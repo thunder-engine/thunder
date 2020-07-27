@@ -46,6 +46,7 @@ public:
     void setParent (Object *parent, bool force = false) override;
 
     bool isPrefab () const;
+    Actor *prefab () const;
     void setPrefab (Actor *prefab);
 
 private:

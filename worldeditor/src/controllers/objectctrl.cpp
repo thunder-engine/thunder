@@ -726,6 +726,7 @@ void CloneObjects::redo() {
             if(actor) {
                 actor->setName(findFreeObjectName(it->name(), it->parent()));
                 actor->setParent(it->parent());
+                actor->setPrefab(static_cast<Actor *>(it)->prefab());
                 m_Objects.push_back(actor->uuid());
             }
         }

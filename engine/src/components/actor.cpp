@@ -217,6 +217,15 @@ bool Actor::isPrefab() const {
     return (p_ptr->m_pPrefab != nullptr);
 }
 /*!
+    Returns prefab object in case the current object is an instance of the serialized prefab structure.
+    \note This method can return nullptr.
+
+    \internal
+*/
+Actor *Actor::prefab() const {
+    return p_ptr->m_pPrefab;
+}
+/*!
     Marks this Actor as an instance of the \a prefab structure.
     \note This method is used for internal purposes and shouldn't be called manually.
 
