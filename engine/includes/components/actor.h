@@ -46,14 +46,16 @@ public:
     void setParent (Object *parent, bool force = false) override;
 
     bool isPrefab () const;
-    Actor *prefab () const;
     void setPrefab (Actor *prefab);
+
+     Object *clone (Object *parent = nullptr) override;
 
 private:
     void loadUserData (const VariantMap &data) override;
     VariantMap saveUserData () const override;
 
     bool isSerializable () const override;
+
 private:
     ActorPrivate *p_ptr;
 

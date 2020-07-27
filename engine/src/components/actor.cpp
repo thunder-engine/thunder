@@ -194,6 +194,14 @@ bool Actor::isSerializable() const {
     return result;
 }
 /*!
+    \internal
+*/
+Object *Actor::clone(Object *parent) {
+    Actor *result = static_cast<Actor *>(Object::clone(parent));
+    result->setPrefab(p_ptr->m_pPrefab);
+    return result;
+}
+/*!
     Makes the actor a child of the \a parent.
 */
 void Actor::setParent(Object *parent, bool force) {
@@ -215,15 +223,6 @@ void Actor::setParent(Object *parent, bool force) {
 bool Actor::isPrefab() const {
     PROFILE_FUNCTION();
     return (p_ptr->m_pPrefab != nullptr);
-}
-/*!
-    Returns prefab object in case the current object is an instance of the serialized prefab structure.
-    \note This method can return nullptr.
-
-    \internal
-*/
-Actor *Actor::prefab() const {
-    return p_ptr->m_pPrefab;
 }
 /*!
     Marks this Actor as an instance of the \a prefab structure.

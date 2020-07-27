@@ -117,9 +117,7 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
         case IConverter::ContentPrefab: {
             Actor *prefab  = Engine::loadResource<Actor>(resource.toStdString());
             if(prefab) {
-                Actor *actor = static_cast<Actor *>(prefab->clone());
-                actor->setPrefab(prefab);
-                actor->setParent(object);
+                Actor *actor = static_cast<Actor *>(prefab->clone(object));
 
                 AABBox bb;
                 for(auto it : actor->findChildren<Renderable *>()) {

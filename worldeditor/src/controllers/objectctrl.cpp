@@ -482,7 +482,6 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                         Actor *prefab = Engine::loadResource<Actor>( qPrintable(str) );
                         if(prefab) {
                             Actor *actor = static_cast<Actor *>(prefab->clone());
-                            actor->setPrefab(prefab);
                             actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                             m_DragObjects.push_back(actor);
                         }
@@ -722,11 +721,9 @@ void CloneObjects::redo() {
     if(m_Dump.empty()) {
         for(auto it : m_pController->selected()) {
             m_Selected.push_back(it->uuid());
-            Actor *actor = dynamic_cast<Actor *>(it->clone());
+            Actor *actor = dynamic_cast<Actor *>(it->clone(it->parent()));
             if(actor) {
                 actor->setName(findFreeObjectName(it->name(), it->parent()));
-                actor->setParent(it->parent());
-                actor->setPrefab(static_cast<Actor *>(it)->prefab());
                 m_Objects.push_back(actor->uuid());
             }
         }

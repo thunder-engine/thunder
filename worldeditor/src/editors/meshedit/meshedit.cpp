@@ -125,9 +125,7 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
 
     Actor *prefab = Engine::loadResource<Actor>( settings->destination() );
     if(prefab) {
-        m_pMesh = static_cast<Actor *>(prefab->clone());
-        m_pMesh->setPrefab(prefab);
-        m_pMesh->setParent(glWidget->scene());
+        m_pMesh = static_cast<Actor *>(prefab->clone(glWidget->scene()));
     }
 
     float bottom;
@@ -153,9 +151,7 @@ void MeshEdit::onGLInit() {
 
     Actor *prefab = Engine::loadResource<Actor>(".embedded/cube.fbx");
     if(prefab) {
-        m_pGround = static_cast<Actor *>(prefab->clone());
-        m_pGround->setPrefab(prefab);
-        m_pGround->setParent(scene);
+        m_pGround = static_cast<Actor *>(prefab->clone(scene));
         m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
     }
 }

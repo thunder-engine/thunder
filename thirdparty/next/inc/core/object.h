@@ -99,7 +99,7 @@ public:
     static const MetaObject        *metaClass                   ();
     virtual const MetaObject       *metaObject                  () const;
 
-    Object                         *clone                       (Object *parent = nullptr);
+    virtual Object                 *clone                       (Object *parent = nullptr);
 
     Object                         *parent                      () const;
 
