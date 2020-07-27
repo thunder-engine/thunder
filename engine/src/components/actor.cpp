@@ -14,6 +14,7 @@ public:
     ActorPrivate() :
         m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
         m_Enable(true),
+        m_Resource(true),
         m_pTransform(nullptr),
         m_pPrefab(nullptr),
         m_pScene(nullptr) {
@@ -32,6 +33,8 @@ public:
     uint8_t m_Layers;
 
     bool m_Enable;
+
+    bool m_Resource;
 
     Transform *m_pTransform;
 
@@ -181,7 +184,7 @@ Component *Actor::addComponent(const string type) {
 bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
 
-    bool result = (clonedFrom() == 0 || isPrefab());
+    bool result = (clonedFrom() == 0 || isInstance());
     /* To be used in future
     if(!result) {
         for(auto it : getChildren()) {
@@ -198,7 +201,11 @@ bool Actor::isSerializable() const {
 */
 Object *Actor::clone(Object *parent) {
     Actor *result = static_cast<Actor *>(Object::clone(parent));
-    result->setPrefab(p_ptr->m_pPrefab);
+    if(p_ptr->m_Resource) {
+        result->setPrefab(this);
+    } else {
+        result->setPrefab(p_ptr->m_pPrefab);
+    }
     return result;
 }
 /*!
@@ -220,7 +227,7 @@ void Actor::setParent(Object *parent, bool force) {
 /*!
     Returns true in case the current object is an instance of the serialized prefab structure; otherwise returns false.
 */
-bool Actor::isPrefab() const {
+bool Actor::isInstance() const {
     PROFILE_FUNCTION();
     return (p_ptr->m_pPrefab != nullptr);
 }
@@ -233,6 +240,8 @@ bool Actor::isPrefab() const {
 void Actor::setPrefab(Actor *prefab) {
     PROFILE_FUNCTION();
     p_ptr->m_pPrefab = prefab;
+    /// \todo Not a good solution this resource flag must be set by the resource system
+    p_ptr->m_Resource = false;
 }
 
 typedef list<Object *> List;

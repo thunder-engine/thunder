@@ -45,10 +45,10 @@ public:
 
     void setParent (Object *parent, bool force = false) override;
 
-    bool isPrefab () const;
+    bool isInstance () const;
     void setPrefab (Actor *prefab);
 
-     Object *clone (Object *parent = nullptr) override;
+    Object *clone (Object *parent = nullptr) override;
 
 private:
     void loadUserData (const VariantMap &data) override;
