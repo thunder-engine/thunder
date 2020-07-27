@@ -65,7 +65,7 @@ Product {
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
                 var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
                             "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
-                            "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2",
+                            "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
                             "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets"]
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -73,6 +73,18 @@ Product {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor)
                     }
+
+                    list.push("libicudata.so.56", "libicudata.so.56.1")
+                    list.push("libicui18n.so.56", "libicui18n.so.56.1")
+                    list.push("libicuuc.so.56", "libicuuc.so.56.1")
+
+                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor)
+
+                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
+                    list.push(libPrefix + "Qt5XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)
@@ -151,7 +163,7 @@ Product {
 
     Group {
         name: "Qt Config"
-        condition: qbs.targetOS.contains("windows")
+        condition: (qbs.targetOS.contains("windows") || qbs.targetOS.contains("linux"))
         files: install.RESOURCE_ROOT + "/qt.conf"
         qbs.install: true
         qbs.installDir: install.BIN_PATH + "/" + install.bundle
@@ -203,19 +215,6 @@ Product {
         ]
         qbs.install: true
         qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "ICU Binaries"
-        condition: qbs.targetOS.contains("linux")
-        files: [
-            "/usr/lib/libicui18n.so.*",
-            "/usr/lib/libicuuc.so.*",
-            "/usr/lib/libicudata.so.*"
-        ]
-        qbs.install: true
-        qbs.installDir: install.LIB_PATH + "/" + install.bundle
         qbs.installPrefix: install.PREFIX
     }
 
