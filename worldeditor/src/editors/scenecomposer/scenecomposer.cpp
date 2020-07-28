@@ -36,6 +36,7 @@
 
 #include "managers/pluginmanager/plugindialog.h"
 #include "managers/asseteditormanager/importqueue.h"
+#include "managers/feedmanager/feedmanager.h"
 
 #include <projectmodel.h>
 #include <projectmanager.h>
@@ -146,8 +147,10 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->actionBuild_All, &QAction::triggered, this, &SceneComposer::onBuildProject);
 
     m_pProjectModel = new ProjectModel();
+    m_pFeedManager = new FeedManager();
 
     ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_pProjectModel);
+    ui->quickWidget->rootContext()->setContextProperty("feedManager", m_pFeedManager);
     ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Startup.qml"));
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(openProject(QString)), this, SLOT(onOpenProject(QString)));

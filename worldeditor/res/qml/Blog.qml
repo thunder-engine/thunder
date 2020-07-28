@@ -96,7 +96,7 @@ Item {
     }
 
     XmlListModel {
-        source: "http://thunderengine.org/feed.xml"
+        xml: feedManager.blogFeed
         query: "/feed/entry"
         namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';declare namespace media='http://search.yahoo.com/mrss/';"
 
@@ -115,27 +115,5 @@ Item {
                 tile14.blogData = get(4)
             }
         }
-        onProgressChanged: {
-            progressBar.value = progress
-        }
-    }
-
-    ProgressBar {
-        id: progressBar
-        height: 4
-        anchors.right: parent.right
-        anchors.left: parent.left
-
-        background: Rectangle {
-            color: "#00000000"
-        }
-        contentItem: Item {
-            Rectangle {
-                width: progressBar.visualPosition * parent.width
-                height: parent.height
-                color: theme.blue
-            }
-        }
-
     }
 }

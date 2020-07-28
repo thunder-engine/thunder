@@ -26,6 +26,7 @@ class SceneView;
 class ImportQueue;
 
 class ProjectModel;
+class FeedManager;
 
 class IConverterSettings;
 
@@ -89,6 +90,7 @@ private:
     bool                    mModified;
 
     ProjectModel           *m_pProjectModel;
+    FeedManager            *m_pFeedManager;
 
     QAction                *m_Undo;
     QAction                *m_Redo;
