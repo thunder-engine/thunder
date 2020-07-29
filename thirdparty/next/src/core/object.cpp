@@ -371,7 +371,11 @@ Object *Object::clone(Object *parent) {
         const MetaObject *meta = it->metaObject();
         Object *result = meta->createInstance();
         result->p_ptr->m_UUID = ObjectSystem::generateUUID();
-        result->p_ptr->m_Cloned = ((it->p_ptr->m_Cloned != 0) ? it->p_ptr->m_Cloned : it->p_ptr->m_UUID);
+
+        result->p_ptr->m_Cloned = it->p_ptr->m_Cloned;
+        if(result->p_ptr->m_Cloned == 0) {
+            result->p_ptr->m_Cloned = it->p_ptr->m_UUID;
+        }
 
         Object *p = parent;
         for(auto item : array) {
@@ -631,16 +635,25 @@ const Object::LinkList &Object::getReceivers() const {
 */
 Object *Object::find(const string &path) {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pParent && path[0] == '/') {
-        return p_ptr->m_pParent->find(path);
+
+    unsigned int start = 0;
+
+    if(path[0] == '/') {
+        if(p_ptr->m_pParent) {
+            return p_ptr->m_pParent->find(path);
+        } else {
+            start = 1;
+        }
     }
 
-    unsigned int start  = 0;
-    if(path[0] == '/') {
-        start = 1;
-    }
     int index = path.find('/', start);
     string first = path.substr(start, index - start);
+
+    if(first == p_ptr->m_sName) {
+        start = index + 1;
+        index = path.find('/', start);
+        first = path.substr(start, index - start);
+    }
 
     for(const auto &it : p_ptr->m_mChildren) {
         if(it->p_ptr->m_sName == first) {

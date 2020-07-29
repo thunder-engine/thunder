@@ -98,22 +98,22 @@ inline bool compare(const Object &left, const Object &right) {
     }
 
     {
-        if(left.getReceivers().size() == right.getReceivers().size()) {
-            for(const auto &li : left.getReceivers()) {
-                result  = false;
-                for(const auto &ri : right.getReceivers()) {
-                    if(compare(li, ri)) {
-                        result  = true;
-                        break;
-                    }
-                }
-                if(!result) {
-                    return result;
-                }
-            }
-        } else {
-            return false;
-        }
+        //if(left.getReceivers().size() == right.getReceivers().size()) {
+        //    for(const auto &li : left.getReceivers()) {
+        //        result  = false;
+        //        for(const auto &ri : right.getReceivers()) {
+        //            if(compare(li, ri)) {
+        //                result  = true;
+        //                break;
+        //            }
+        //        }
+        //        if(!result) {
+        //            return result;
+        //        }
+        //    }
+        //} else {
+        //    return false;
+        //}
     }
 
     {

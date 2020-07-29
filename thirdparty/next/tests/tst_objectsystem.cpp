@@ -5,10 +5,6 @@
 #include "json.h"
 #include "bson.h"
 
-TestObject *resource = nullptr;
-
-static ObjectSystem objectSystem;
-
 class SecondObject : public TestObject {
     A_REGISTER(SecondObject, TestObject, Test)
 
@@ -28,25 +24,20 @@ class ObjectSystemTest : public QObject {
     Q_OBJECT
 private slots:
 
-void initTestCase() {
-    resource   = ObjectSystem::objectCreate<TestObject>();
-    QCOMPARE((resource != nullptr), true);
-    resource->setName("TestResource");
-}
-
-void cleanupTestCase() {
-    delete resource;
-}
-
 void RegisterUnregister_Object() {
-    QCOMPARE((int)objectSystem.factories().size(), 1);
+    ObjectSystem objectSystem;
+
+    QCOMPARE((int)objectSystem.factories().size(), 0);
     SecondObject::registerClassFactory(&objectSystem);
-    QCOMPARE((int)objectSystem.factories().size(), 2);
-    SecondObject::unregisterClassFactory(&objectSystem);
     QCOMPARE((int)objectSystem.factories().size(), 1);
+    SecondObject::unregisterClassFactory(&objectSystem);
+    QCOMPARE((int)objectSystem.factories().size(), 0);
 }
 
 void Object_Instansing() {
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
+
     TestObject obj1;
     Object *result1 = ObjectSystem::objectCreate<TestObject>();
     Object *object  = dynamic_cast<Object*>(&obj1);
@@ -64,6 +55,9 @@ void Object_Instansing() {
 }
 
 void Override_Object() {
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
+
     TestObjectEx::registerClassFactory(&objectSystem);
 
     Object *object  = ObjectSystem::objectCreate<TestObject>();
@@ -88,6 +82,9 @@ void Override_Object() {
 }
 
 void Serialize_Desirialize_Object() {
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
+
     TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
     TestObject *obj2 = ObjectSystem::objectCreate<TestObject>();
     TestObject *obj3 = ObjectSystem::objectCreate<TestObject>();

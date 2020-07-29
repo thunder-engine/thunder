@@ -19,8 +19,6 @@
 
 #include "tst_common.h"
 
-static ObjectSystem objectSystem;
-
 class ObjectTest : public QObject {
     Q_OBJECT
 private slots:
@@ -38,13 +36,17 @@ static bool toList(void *to, const void *from, const uint32_t fromType) {
 }
 
 void Meta_type() {
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
+
     int type    = MetaType::type<TestObject *>();
     bool result = MetaType::registerConverter(type, MetaType::VARIANTLIST, &ObjectTest::toList);
 
+    QCOMPARE((type > 0), true);
     QCOMPARE(result, true);
 
-    TestObject *obj = new TestObject;
-    Variant variant = Variant::fromValue(obj);
+    TestObject obj;
+    Variant variant = Variant::fromValue(&obj);
 
     QCOMPARE(variant.isValid(), true);
     QCOMPARE((int)variant.userType(), type);
@@ -245,7 +247,7 @@ void Find_object() {
     obj2.setParent(&obj1);
     obj3.setParent(&obj1);
     {
-        Object *result  = obj1.find("/MainObject/TestComponent2");
+        Object *result  = obj1.find("TestComponent2");
         QCOMPARE(result, &obj2);
     }
     {
@@ -263,27 +265,30 @@ void Find_object() {
 }
 
 void Clone_object() {
-    TestObject obj1;
-    TestObject obj2;
+    ObjectSystem objectSystem;
+    TestObject::registerClassFactory(&objectSystem);
 
-    obj1.setSystem(&objectSystem);
-    obj2.setSystem(&objectSystem);
+    TestObject *obj1 = ObjectSystem::objectCreate<TestObject>();
+    TestObject *obj2 = ObjectSystem::objectCreate<TestObject>();
 
-    obj1.setName("MainObject");
-    obj2.setName("TestComponent2");
-    obj2.setParent(&obj1);
-    obj1.setVector(Vector2(10.0, 20.0));
-    obj1.setProperty("dynamic1", 100);
-    obj2.setProperty("dynamic2", true);
+    obj1->setName("MainObject");
+    obj2->setName("TestComponent2");
+    obj2->setParent(obj1);
+    obj1->setVector(Vector2(10.0, 20.0));
+    obj1->setProperty("dynamic1", 100);
+    obj2->setProperty("dynamic2", true);
 
-    Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(setSlot(int)));
-    Object::connect(&obj2, _SIGNAL(signal(int)), &obj1, _SLOT(setSlot(int)));
+    Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SLOT(setSlot(int)));
+    Object::connect(obj2, _SIGNAL(signal(int)), obj1, _SLOT(setSlot(int)));
 
-    Object *clone = obj1.clone();
+    Object *clone = obj1->clone();
     QCOMPARE((clone != nullptr), true);
-    QCOMPARE(compare(*clone, obj1), true);
+    QCOMPARE(compare(*clone, *obj1), true);
     QCOMPARE((clone->uuid() != 0), true);
     delete clone;
+
+    delete obj2;
+    delete obj1;
 }
 
 } REGISTER(ObjectTest)

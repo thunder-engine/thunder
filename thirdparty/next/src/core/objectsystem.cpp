@@ -233,7 +233,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             string name = (*i).toString();
             i++;
 
-            Object *object  = objectCreate(type, name, parent);
+            Object *object = objectCreate(type, name, parent);
             if(object) {
                 object->setUUID(uuid);
                 array[uuid] = object;
