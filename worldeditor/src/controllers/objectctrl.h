@@ -187,7 +187,7 @@ protected:
 
 class CloneObjects : public UndoObject {
 public:
-    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Clone Objects"), QUndoCommand *parent = nullptr);
+    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *parent = nullptr);
     void undo () override;
     void redo () override;
 protected:

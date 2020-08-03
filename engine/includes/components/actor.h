@@ -7,6 +7,8 @@ class Scene;
 class Component;
 class Transform;
 
+class ResourceSystem;
+
 class ActorPrivate;
 
 class NEXT_LIBRARY_EXPORT Actor : public Object {
@@ -57,6 +59,8 @@ private:
     bool isSerializable () const override;
 
 private:
+    friend class ActorTest;
+
     ActorPrivate *p_ptr;
 
 };

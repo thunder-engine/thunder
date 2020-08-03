@@ -2,12 +2,15 @@
 #include "components/scene.h"
 #include "components/transform.h"
 
+#include "systems/resourcesystem.h"
+
 #include "commandbuffer.h"
 
 #include <cstring>
 
 #define PREFAB  "Prefab"
 #define DATA    "PrefabData"
+#define STATIC  "Static"
 
 class ActorPrivate {
 public:
@@ -28,6 +31,40 @@ public:
             }
         }
         return false;
+    }
+
+    typedef list<Object *> List;
+    static void enumObjects(Object *object, List &list) {
+        PROFILE_FUNCTION();
+        list.push_back(object);
+        for(const auto &it : object->getChildren()) {
+            enumObjects(it, list);
+        }
+    }
+
+    typedef list<const Object *> ConstList;
+    static void enumConstObjects(const Object *object, ConstList &list) {
+        PROFILE_FUNCTION();
+        list.push_back(object);
+        for(const auto &it : object->getChildren()) {
+            enumConstObjects(it, list);
+        }
+    }
+
+    static Component *componentInChildHelper(const string &type, Object *parent) {
+        PROFILE_FUNCTION();
+        for(auto it : parent->getChildren()) {
+            const MetaObject *meta = it->metaObject();
+            if(meta->canCastTo(type.c_str())) {
+                return static_cast<Component *>(it);
+            } else {
+                Component *result = componentInChildHelper(type, it);
+                if(result) {
+                    return static_cast<Component *>(result);
+                }
+            }
+        }
+        return nullptr;
     }
 
     uint8_t m_Layers;
@@ -88,6 +125,13 @@ uint8_t Actor::layers() const {
     return p_ptr->m_Layers;
 }
 /*!
+    Assigns the list of \a layers for this Actor as a bitmask.
+*/
+void Actor::setLayers(const uint8_t layers) {
+    PROFILE_FUNCTION();
+    p_ptr->m_Layers = layers;
+}
+/*!
     Returns the Transform component attached to this Actor.
     If no Transform component found this method will create a new one.
 */
@@ -134,22 +178,6 @@ Component *Actor::component(const string type) {
     }
     return nullptr;
 }
-
-Component *componentInChildHelper(const string &type, Object *parent) {
-    PROFILE_FUNCTION();
-    for(auto it : parent->getChildren()) {
-        const MetaObject *meta = it->metaObject();
-        if(meta->canCastTo(type.c_str())) {
-            return static_cast<Component *>(it);
-        } else {
-            Component *result = componentInChildHelper(type, it);
-            if(result) {
-                return static_cast<Component *>(result);
-            }
-        }
-    }
-    return nullptr;
-}
 /*!
     Returns the component with \a type in the Actor's children using depth search.
     A component is returned only if it's found on a current Actor; otherwise returns nullptr.
@@ -157,19 +185,12 @@ Component *componentInChildHelper(const string &type, Object *parent) {
 Component *Actor::componentInChild(const string type) {
     PROFILE_FUNCTION();
     for(auto it : getChildren()) {
-        Component *result = componentInChildHelper(type, it);
+        Component *result = ActorPrivate::componentInChildHelper(type, it);
         if(result) {
             return static_cast<Component *>(result);
         }
     }
     return nullptr;
-}
-/*!
-    Assigns the list of \a layers for this Actor as a bitmask.
-*/
-void Actor::setLayers(const uint8_t layers) {
-    PROFILE_FUNCTION();
-    p_ptr->m_Layers = layers;
 }
 /*!
     Returns created component with specified \a type;
@@ -200,6 +221,15 @@ bool Actor::isSerializable() const {
     \internal
 */
 Object *Actor::clone(Object *parent) {
+    ActorPrivate::List objects;
+    ActorPrivate::enumObjects(this, objects);
+    for(auto it : objects) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            actor->transform();
+        }
+    }
+
     Actor *result = static_cast<Actor *>(Object::clone(parent));
     if(p_ptr->m_Resource) {
         result->setPrefab(this);
@@ -243,23 +273,16 @@ void Actor::setPrefab(Actor *prefab) {
     /// \todo Not a good solution this resource flag must be set by the resource system
     p_ptr->m_Resource = false;
 }
-
-typedef list<Object *> List;
-void enumObjects(Object *object, List &list) {
-    PROFILE_FUNCTION();
-    list.push_back(object);
-    for(const auto &it : object->getChildren()) {
-        enumObjects(it, list);
-    }
-}
 /*!
     \internal
 */
 void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
+
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        setPrefab(Engine::loadResource<Actor>((*it).second.toString()));
+        setPrefab(dynamic_cast<Actor *>(system->loadResource((*it).second.toString())));
         if(p_ptr->m_pPrefab) {
             Actor *actor = static_cast<Actor *>(p_ptr->m_pPrefab->clone());
 
@@ -270,15 +293,29 @@ void Actor::loadUserData(const VariantMap &data) {
             delete actor;
         }
 
+        unordered_map<uint32_t, uint32_t> staticMap;
+        it = data.find(STATIC);
+        if(it != data.end()) {
+            for(auto item : (*it).second.toList()) {
+                VariantList array = item.toList();
+                uint32_t clone = static_cast<uint32_t>(array.front().toInt());
+                staticMap[clone] = static_cast<uint32_t>(array.back().toInt());
+            }
+        }
+
         it = data.find(DATA);
         if(it != data.end()) {
-            List objects;
-            enumObjects(this, objects);
+            ActorPrivate::List objects;
+            ActorPrivate::enumObjects(this, objects);
 
-            typedef unordered_map<uint32_t, Object *> ObjectMap;
-            ObjectMap cache;
+            unordered_map<uint32_t, Object *> cacheMap;
             for(auto &object : objects) {
-                cache[object->clonedFrom()] = object;
+                uint32_t clone = object->clonedFrom();
+                cacheMap[clone] = object;
+                auto fix = staticMap.find(clone);
+                if(fix != staticMap.end()) {
+                    ObjectSystem::replaceUUID(object, (*fix).second);
+                }
             }
 
             const VariantList &list = (*it).second.toList();
@@ -286,8 +323,8 @@ void Actor::loadUserData(const VariantMap &data) {
                 const VariantList &fields = item.toList();
 
                 uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
-                auto object = cache.find(cloned);
-                if(object != cache.end()) {
+                auto object = cacheMap.find(cloned);
+                if(object != cacheMap.end()) {
                     const MetaObject *meta = (*object).second->metaObject();
                     for(auto &property : fields.back().toMap()) {
                         int32_t index = meta->indexOfProperty(property.first.c_str());
@@ -296,7 +333,7 @@ void Actor::loadUserData(const VariantMap &data) {
                             Variant var = property.second;
                             if(prop.type().flags() & MetaType::BASE_OBJECT) {
                                 if(var.type() == MetaType::STRING) { // Asset
-                                    Object *res = Engine::loadResource(var.toString());
+                                    Object *res = system->loadResource(var.toString());
                                     if(res) {
                                         var = Variant(prop.read((*object).second).userType(), &res);
                                     }
@@ -324,28 +361,21 @@ void Actor::loadUserData(const VariantMap &data) {
         }
     }
 }
-
-typedef list<const Object *> ConstList;
-void enumConstObjects(const Object *object, ConstList &list) {
-    PROFILE_FUNCTION();
-    list.push_back(object);
-    for(const auto &it : object->getChildren()) {
-        enumConstObjects(it, list);
-    }
-}
 /*!
     \internal
 */
 VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = Object::saveUserData();
+
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
     if(p_ptr->m_pPrefab) {
-        string ref = Engine::reference(p_ptr->m_pPrefab);
+        string ref = system->reference(p_ptr->m_pPrefab);
         if(!ref.empty()) {
             result[PREFAB] = ref;
 
-            ConstList prefabs;
-            enumConstObjects(p_ptr->m_pPrefab, prefabs);
+            ActorPrivate::ConstList prefabs;
+            ActorPrivate::enumConstObjects(p_ptr->m_pPrefab, prefabs);
 
             typedef unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
@@ -354,8 +384,10 @@ VariantMap Actor::saveUserData() const {
             }
             VariantList list;
 
-            ConstList objects;
-            enumConstObjects(this, objects);
+            ActorPrivate::ConstList objects;
+            ActorPrivate::enumConstObjects(this, objects);
+
+            VariantList fixed;
 
             for(auto it : objects) {
                 uint32_t cloned = it->clonedFrom();
@@ -376,8 +408,8 @@ VariantMap Actor::saveUserData() const {
                                     Object *lo = *(reinterpret_cast<Object **>(lv.data()));
                                     Object *ro = *(reinterpret_cast<Object **>(rv.data()));
 
-                                    string lref = Engine::reference(lo);
-                                    string rref = Engine::reference(ro);
+                                    string lref = system->reference(lo);
+                                    string rref = system->reference(ro);
                                     if(lref != rref) {
                                         prop[rp.name()] = rref;
                                     }
@@ -404,11 +436,31 @@ VariantMap Actor::saveUserData() const {
                         }
 
                     }
+                } else {
+                    // Additional object attached need to fix parent
+                    Object *parent = it->parent();
+                    while(parent != nullptr) {
+                        if(parent->clonedFrom() != 0) {
+                            break;
+                        }
+                        parent = parent->parent();
+                    }
+                    if(parent) {
+                        VariantList array;
+                        array.push_back(static_cast<int32_t>(parent->clonedFrom()));
+                        array.push_back(parent->uuid());
+
+                        fixed.push_back(array);
+                    }
                 }
             }
 
             if(!list.empty()) {
                 result[DATA] = list;
+            }
+
+            if(!fixed.empty()) {
+                result[STATIC] = fixed;
             }
         }
     }

@@ -15,6 +15,7 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/anim",
+        "../engine/includes",
     ]
 
     QtApplication {
@@ -28,12 +29,18 @@ Project {
         ]
         Depends { name: "cpp" }
         Depends { name: "bundle" }
-        Depends { name: "next" }
+        Depends { name: "next-editor" }
+        Depends { name: "engine-editor" }
+        Depends { name: "glfw-editor" }
+        Depends { name: "freetype-editor" }
+        Depends { name: "zlib-editor" }
+        Depends { name: "physfs-editor" }
+
         Depends { name: "Qt"; submodules: ["core", "test"] }
 
         bundle.isBundle: false
 
-        cpp.defines: []
+        cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: tests.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
@@ -49,6 +56,19 @@ Project {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@rpath"
             cpp.rpaths: "@executable_path/../Frameworks/"
+        }
+
+        Properties {
+            condition: qbs.targetOS[0] === "windows"
+            cpp.dynamicLibraries: [ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32" ]
+        }
+        Properties {
+            condition: qbs.targetOS[0] === "linux"
+            cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ]
+        }
+        Properties {
+            condition: qbs.targetOS[0] === "macos"
+            cpp.weakFrameworks: [ "OpenGL", "Cocoa", "CoreVideo", "IOKit" ]
         }
 
         Group {

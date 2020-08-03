@@ -224,11 +224,16 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             i++;
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
+
             Object *parent = root;
-            auto a  = array.find(static_cast<uint32_t>((*i).toInt()));
-            if(a != array.end()) {
-                parent  = (*a).second;
+            for(auto item : array) {
+                Object *obj = findObject(static_cast<uint32_t>((*i).toInt()), item.second);
+                if(obj) {
+                    parent = obj;
+                    break;
+                }
             }
+
             i++;
             string name = (*i).toString();
             i++;
@@ -250,8 +255,14 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                 array[uuid] = object;
             }
 
-            if(object->parent() == root) {
-                result  = object;
+            i++;
+            i++;
+            // Load user data
+            VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
+            object->loadUserData(user);
+
+            if(result == nullptr && object->parent() == root) {
+                result = object;
             }
         }
     }
@@ -312,10 +323,6 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                     connect(sender, signal.c_str(), receiver, method.c_str());
                 }
             }
-            i++;
-            // Load user data
-            VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
-            object->loadUserData(user);
         }
     }
 

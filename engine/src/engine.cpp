@@ -89,8 +89,10 @@ public:
 
         m_Values.clear();
 
-        m_pPlatform->destroy();
-        delete m_pPlatform;
+        if(m_pPlatform) {
+            m_pPlatform->destroy();
+            delete m_pPlatform;
+        }
     }
 
     Scene                   *m_pScene;
@@ -188,12 +190,6 @@ Engine::Engine(File *file, const char *path) :
 
     p_ptr->m_pFile  = file;
 
-#ifdef THUNDER_MOBILE
-    p_ptr->m_pPlatform  = new MobileAdaptor(this);
-#else
-    p_ptr->m_pPlatform  = new DesktopAdaptor(this);
-#endif
-
     Resource::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Text::registerClassFactory(p_ptr->m_pResourceSystem);
@@ -257,6 +253,11 @@ Engine::~Engine() {
 bool Engine::init() {
     PROFILER_MARKER;
 
+#ifdef THUNDER_MOBILE
+    p_ptr->m_pPlatform  = new MobileAdaptor(this);
+#else
+    p_ptr->m_pPlatform  = new DesktopAdaptor(this);
+#endif
     bool result = p_ptr->m_pPlatform->init();
 
     Timer::init();
