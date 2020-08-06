@@ -93,6 +93,16 @@ public:
             m_pPlatform->destroy();
             delete m_pPlatform;
         }
+
+        for(auto it : m_Pool) {
+            delete it;
+        }
+        m_Pool.clear();
+
+        for(auto it : m_Serial) {
+            delete it;
+        }
+        m_Serial.clear();
     }
 
     Scene                   *m_pScene;

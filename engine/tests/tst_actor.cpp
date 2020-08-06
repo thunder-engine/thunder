@@ -13,6 +13,31 @@
 
 #include <json.h>
 
+class TestComponent : public Component {
+public:
+    A_REGISTER(TestComponent, Component, Components);
+
+    A_PROPERTIES (
+        A_PROPERTYEX(TestComponent *, reference, TestComponent::reference, TestComponent::setReference, "editor=Component")
+    )
+    A_NOMETHODS()
+
+    TestComponent() {
+        m_Reference = nullptr;
+    }
+
+    TestComponent *reference() const {
+        return m_Reference;
+    }
+
+    void setReference(TestComponent *value) {
+        m_Reference = value;
+    }
+
+    TestComponent *m_Reference;
+
+};
+
 class ActorTest : public QObject {
     Q_OBJECT
 private slots:
@@ -74,7 +99,7 @@ void Add_Remove_Component() {
 void Prefab_serialization() {
     Engine system(nullptr, "");
 
-    Actor *prefab = Engine::objectCreate<Actor>("");
+    Actor *prefab = Engine::objectCreate<Actor>("Prefab");
     QCOMPARE(prefab != nullptr, true);
 
     Transform *t0 = prefab->transform();
@@ -104,7 +129,8 @@ void Prefab_serialization() {
     QCOMPARE(t1 != nullptr, true);
     t1->setPosition(Vector3(3.0f, 2.0f, 1.0f));
 
-    MeshRender *cloneMesh = dynamic_cast<MeshRender *>(cloneCamera->actor()->addComponent("MeshRender"));
+    Actor *level2 = Engine::objectCreate<Actor>("Level2", cloneCamera->actor());
+    MeshRender *cloneMesh = dynamic_cast<MeshRender *>(level2->addComponent("MeshRender"));
     QCOMPARE(cloneMesh != nullptr, true);
 
     Variant data = Engine::toVariant(clone);
@@ -122,7 +148,94 @@ void Prefab_serialization() {
 
     MeshRender *resultMesh = dynamic_cast<MeshRender *>(result->componentInChild("MeshRender"));
     QCOMPARE(resultMesh != nullptr, true);
-    QCOMPARE(resultMesh->actor()->name(), "Level1");
+    QCOMPARE(resultMesh->actor()->name(), "Level2");
+
+    delete result;
+
+    delete clone;
+    delete prefab;
+}
+
+void Cross_reference_prefab() {
+    Engine system(nullptr, "");
+    TestComponent::registerClassFactory(&system);
+
+    Actor *prefab = Engine::objectCreate<Actor>("Prefab");
+    QCOMPARE(prefab != nullptr, true);
+
+    Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
+    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
+    QCOMPARE(prefabTestComponent != nullptr, true);
+
+    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(prefab, "TestPrefab");
+
+    Actor *root = Engine::objectCreate<Actor>("Root");
+
+    Actor *clone1 = dynamic_cast<Actor *>(prefab->clone(root));
+    QCOMPARE(clone1 != nullptr, true);
+
+    TestComponent *cloneTestComponent1 = dynamic_cast<TestComponent *>(clone1->componentInChild("TestComponent"));
+    QCOMPARE(cloneTestComponent1 != nullptr, true);
+
+    Actor *clone2 = dynamic_cast<Actor *>(prefab->clone(root));
+    QCOMPARE(clone2 != nullptr, true);
+
+    TestComponent *cloneTestComponent2 = dynamic_cast<TestComponent *>(clone2->componentInChild("TestComponent"));
+    QCOMPARE(cloneTestComponent2 != nullptr, true);
+
+    cloneTestComponent1->setReference(cloneTestComponent2);
+    cloneTestComponent2->setReference(cloneTestComponent1);
+
+    Variant data = Engine::toVariant(root);
+
+    Object *object = Engine::toObject(data);
+    Actor *result = dynamic_cast<Actor *>(object);
+    QCOMPARE(result != nullptr, true);
+
+    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
+    QCOMPARE(resultTestComponent != nullptr, true);
+    TestComponent *referenceTestComponent = resultTestComponent->reference();
+
+    QCOMPARE(referenceTestComponent != resultTestComponent, true);
+    QCOMPARE(resultTestComponent->reference() == referenceTestComponent, true);
+    QCOMPARE(referenceTestComponent->reference() == resultTestComponent, true);
+
+    delete result;
+
+    delete clone2;
+    delete clone1;
+    delete prefab;
+}
+
+void Remove_component_prefab() {
+    Engine system(nullptr, "");
+    TestComponent::registerClassFactory(&system);
+
+    Actor *prefab = Engine::objectCreate<Actor>("Prefab");
+    QCOMPARE(prefab != nullptr, true);
+
+    Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
+    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
+    QCOMPARE(prefabTestComponent != nullptr, true);
+
+    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(prefab, "TestPrefab");
+
+    Actor *clone = dynamic_cast<Actor *>(prefab->clone());
+    QCOMPARE(clone != nullptr, true);
+
+    TestComponent *cloneTestComponent = dynamic_cast<TestComponent *>(clone->componentInChild("TestComponent"));
+    QCOMPARE(cloneTestComponent != nullptr, true);
+
+    delete cloneTestComponent;
+
+    Variant data = Engine::toVariant(clone);
+
+    Object *object = Engine::toObject(data);
+    Actor *result = dynamic_cast<Actor *>(object);
+    QCOMPARE(result != nullptr, true);
+
+    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
+    QCOMPARE(resultTestComponent == nullptr, true);
 
     delete result;
 
