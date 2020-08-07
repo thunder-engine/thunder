@@ -25,6 +25,8 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
+#include <systems/resourcesystem.h>
+
 #include "animconverter.h"
 #include "textconverter.h"
 #include "textureconverter.h"
@@ -137,7 +139,6 @@ void AssetManager::rescan(bool force) {
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/textures", force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/meshes",   force);
 #endif
-    m_pDirWatcher->addPath(m_pProjectManager->contentPath());
     onDirectoryChanged(m_pProjectManager->contentPath(), force);
     emit directoryChanged(m_pProjectManager->contentPath());
 
@@ -206,8 +207,8 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
         return true;
     }
 
-    bool result     = true;
-    uint32_t crc    = crc32(0L, nullptr, 0);
+    bool result = true;
+    uint32_t crc = crc32(0L, nullptr, 0);
 
     QFile file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
@@ -215,14 +216,13 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
         while(!file.atEnd()) {
             memset(buffer, 0, BUFF_SIZE);
             file.read(buffer, BUFF_SIZE);
-            crc    = crc32(crc, reinterpret_cast<Bytef *>(buffer), BUFF_SIZE);
+            crc = crc32(crc, reinterpret_cast<Bytef *>(buffer), BUFF_SIZE);
         }
         file.close();
 
         if(settings->crc() == crc) {
-            QFileInfo info(settings->absoluteDestination());
-            if(settings->type() == IConverter::ContentCode || info.exists()) {
-                result  = false;
+            if(settings->type() == IConverter::ContentCode || QFileInfo::exists(settings->absoluteDestination())) {
+                result = false;
             }
         }
         settings->setCRC(crc);
@@ -724,6 +724,8 @@ void AssetManager::onPerform() {
         }
         m_pTimer->stop();
 
+        m_pDirWatcher->addPath(m_pProjectManager->contentPath());
+
         emit importFinished();
     }
 }
@@ -811,7 +813,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
             m_Paths[guid] = source;
             m_Types[guid.c_str()] = type;
 
-            reloadResource(m_pEngine->loadResource(guid), guid);
+            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(guid));
 
             for(QString it : settings->subKeys()) {
                 string value = settings->subItem(it).toStdString();
@@ -832,31 +834,6 @@ bool AssetManager::convert(IConverterSettings *settings) {
     }
 
     return false;
-}
-
-/// \todo must be removed
-void AssetManager::reloadResource(Object *object, const string &path) {
-    if(!path.empty()) {
-        File *file = Engine::file();
-        _FILE *fp = file->_fopen(path.c_str(), "r");
-        if(fp) {
-            ByteArray data;
-            data.resize(file->_fsize(fp));
-            file->_fread(&data[0], data.size(), 1, fp);
-            file->_fclose(fp);
-
-            Variant var = Bson::load(data);
-            if(!var.isValid()) {
-                var = Json::load(string(data.begin(), data.end()));
-            }
-            if(var.isValid()) {
-                VariantList objects = var.value<VariantList>();
-                VariantList obj = objects.front().value<VariantList>();
-
-                object->loadUserData(obj.back().value<VariantMap>());
-            }
-        }
-    }
 }
 
 bool AssetManager::isOutdated() const {

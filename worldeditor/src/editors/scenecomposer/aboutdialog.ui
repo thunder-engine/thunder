@@ -92,7 +92,7 @@
       <string>Thanks</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::AutoText</enum>
+      <enum>Qt::MarkdownText</enum>
      </property>
     </widget>
    </item>

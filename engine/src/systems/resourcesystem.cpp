@@ -183,6 +183,16 @@ void ResourceSystem::unloadResource(Object *object) {
     }
 }
 
+void ResourceSystem::reloadResource(Object *object) {
+    PROFILER_MARKER;
+    Resource *resource = dynamic_cast<Resource *>(object);
+    if(resource) {
+        resource->setState(Resource::Loading);
+    } else { /// \todo Prefab related action
+
+    }
+}
+
 string ResourceSystem::reference(Object *object) {
     PROFILER_MARKER;
 

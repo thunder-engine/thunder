@@ -33,6 +33,8 @@ public:
 
     void unloadResource(Object *resource);
 
+    void reloadResource(Object *resource);
+
     string reference(Object *object);
 
     DictionaryMap &indices() const;
