@@ -60,13 +60,13 @@ Rectangle {
 
     Connections {
         target: clipModel
-        function onLayoutChanged() {
+        onLayoutChanged: {
             curve = undefined
             curve = clipModel.trackData(row)
             canvas.requestPaint()
         }
 
-        function onRowChanged() {
+        onRowChanged: {
             var r = clipModel.row
             curve = clipModel.trackData(r)
 
