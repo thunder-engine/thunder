@@ -47,7 +47,7 @@ public:
         return m_pNode;
     }
 
-    virtual int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    virtual int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         Q_UNUSED(value)
         Q_UNUSED(link)
         Q_UNUSED(size)

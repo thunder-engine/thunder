@@ -32,6 +32,7 @@ void ColorProperty::setValue(const QVariant &value) {
 }
 
 QWidget *ColorProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
+    Q_UNUSED(option)
     QWidget *editor = new ColorEdit(parent);
     connect(editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
     return editor;

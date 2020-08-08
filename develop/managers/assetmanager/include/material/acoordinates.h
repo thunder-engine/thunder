@@ -12,9 +12,9 @@ class ProjectionCoord : public ShaderFunction {
 public:
     Q_INVOKABLE ProjectionCoord() { }
 
-    AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) override {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
+    AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
+        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
+        AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
         out->name   = "";
         out->out    = true;
         out->pos    = 0;
@@ -24,7 +24,7 @@ public:
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
             value  += QString("\tvec3 local%1 = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
@@ -44,7 +44,7 @@ public:
             m_Index(0) {
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector2D;
             value  += QString("\tvec2 local%1 = _uv%2;\n").arg(depth).arg(m_Index);
@@ -60,7 +60,7 @@ public:
         m_Index = index;
     }
 protected:
-    uint32_t    m_Index;
+    uint32_t m_Index;
 };
 
 class NormalVectorWS : public ProjectionCoord {
@@ -70,10 +70,10 @@ class NormalVectorWS : public ProjectionCoord {
 public:
     Q_INVOKABLE NormalVectorWS() { }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
-            size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = _n;\n").arg(depth);
+            size   = QMetaType::QVector3D;
+            value += QString("\tvec3 local%1 = _n;\n").arg(depth);
         }
         return ShaderFunction::build(value, link, depth, size);
     }
@@ -86,7 +86,7 @@ class CameraPosition : public ProjectionCoord {
 public:
     Q_INVOKABLE CameraPosition() { }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
             value  += QString("\tvec3 local%1 = camera.position.xyz;\n").arg(depth);
@@ -102,7 +102,7 @@ class CameraDirection : public ProjectionCoord {
 public:
     Q_INVOKABLE CameraDirection() { }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
             value  += QString("\tvec3 local%1 = camera.target.xyz;\n").arg(depth);
@@ -121,7 +121,7 @@ class CoordPanner : public ShaderFunction {
 public:
     Q_INVOKABLE CoordPanner() { m_Speed = Vector2(); }
 
-    virtual AbstractSchemeModel::Node  *createNode  (ShaderBuilder *model, const QString &path) {
+    virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
@@ -143,20 +143,20 @@ public:
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, UV);
             if(l) {
-                ShaderFunction *node   = static_cast<ShaderFunction *>(l->sender->ptr);
+                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
                 if(node) {
                     uint8_t type;
-                    int32_t index  = node->build(value, *l, depth, type);
+                    int32_t index = node->build(value, *l, depth, type);
                     if(index >= 0) {
-                        size    = type;
+                        size = type;
                         QString sub = convert("local" + QString::number(index), type, size);
                         depth++;
-                        value  += QString("\tvec2 local%1 = %2").arg(depth).arg(sub);
-                        value  += QString(" + vec2(%1, %2) * p.time;\n").arg(m_Speed.x).arg(m_Speed.y);
+                        value += QString("\tvec2 local%1 = %2").arg(depth).arg(sub);
+                        value += QString(" + vec2(%1, %2) * p.time;\n").arg(m_Speed.x).arg(m_Speed.y);
                     }
                 }
             }
@@ -164,26 +164,26 @@ public:
         return ShaderFunction::build(value, link, depth, size);
     }
 
-    double      valueX          () const {
+    double valueX () const {
         return m_Speed.x;
     }
 
-    void        setValueX       (const double value) {
-        m_Speed.x   = value;
+    void setValueX (const double value) {
+        m_Speed.x = value;
         emit updated();
     }
 
-    double      valueY          () const {
+    double valueY () const {
         return m_Speed.y;
     }
 
-    void        setValueY       (const double value) {
-        m_Speed.y   = value;
+    void setValueY (const double value) {
+        m_Speed.y = value;
         emit updated();
     }
 
 protected:
-    Vector2   m_Speed;
+    Vector2 m_Speed;
 
 };
 

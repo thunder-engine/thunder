@@ -16,19 +16,19 @@ public:
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
     }
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::Double;
+    virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
+        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
+        AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+        out->name = "";
+        out->out  = true;
+        out->pos  = 0;
+        out->type = QMetaType::Double;
         result->list.push_back(out);
 
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::Double;
             m_pModel->addUniform(objectName(), size, m_defaultValue);
@@ -65,19 +65,19 @@ public:
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
     }
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
+    virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::QVector4D;
+        out->name = "";
+        out->out  = true;
+        out->pos  = 0;
+        out->type = QMetaType::QVector4D;
         result->list.push_back(out);
 
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector4D;
             m_pModel->addUniform(objectName(), size, m_defaultValue);

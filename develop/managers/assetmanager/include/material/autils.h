@@ -27,30 +27,30 @@ public:
 
     }
 
-    AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
+    AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         int i   = 0;
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = IN;
-            out->out    = false;
-            out->pos    = 0;
-            out->type   = QMetaType::Void;
+            out->name = IN;
+            out->out  = false;
+            out->pos  = 0;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
             i++;
         }
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = "";
-            out->out    = true;
-            out->pos    = 0;
-            out->type   = QMetaType::Void;
+            out->name = "";
+            out->out  = true;
+            out->pos  = 0;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
         }
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         size    = 0;
 
         const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, IN);
@@ -136,67 +136,67 @@ public:
 
     }
 
-    AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
+    AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
+        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
         int i   = 0;
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = a;
-            out->out    = false;
-            out->pos    = 0;
-            out->type   = QMetaType::Double;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = a;
+            out->out  = false;
+            out->pos  = 0;
+            out->type = QMetaType::Double;
             result->list.push_back(out);
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = b;
-            out->out    = false;
-            out->pos    = 1;
-            out->type   = QMetaType::Double;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = b;
+            out->out  = false;
+            out->pos  = 1;
+            out->type = QMetaType::Double;
             result->list.push_back(out);
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = AGB;
-            out->out    = false;
-            out->pos    = 2;
-            out->type   = QMetaType::Void;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = AGB;
+            out->out  = false;
+            out->pos  = 2;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = AEB;
-            out->out    = false;
-            out->pos    = 3;
-            out->type   = QMetaType::Void;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = AEB;
+            out->out  = false;
+            out->pos  = 3;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = BGA;
-            out->out    = false;
-            out->pos    = 4;
-            out->type   = QMetaType::Void;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = BGA;
+            out->out  = false;
+            out->pos  = 4;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = "";
-            out->out    = true;
-            out->pos    = 0;
-            out->type   = QMetaType::Void;
+            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            out->name = "";
+            out->out  = true;
+            out->pos  = 0;
+            out->type = QMetaType::Void;
             result->list.push_back(out);
         }
         return result;
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
-        size    = 0;
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+        size = 0;
 
         const AbstractSchemeModel::Link *al  = m_pModel->findLink(m_pNode, a);
         const AbstractSchemeModel::Link *bl  = m_pModel->findLink(m_pNode, b);

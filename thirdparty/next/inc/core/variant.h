@@ -136,7 +136,6 @@ public:
             if(mData.ptr) {
                 if(mData.type == type) {
                     if(mData.is_shared) {
-                        T result = *reinterpret_cast<const T *>(mData.shared->ptr);
                         return *reinterpret_cast<const T *>(mData.shared->ptr);
                     } else {
                         return *reinterpret_cast<const T *>(mData.ptr);

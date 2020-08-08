@@ -10,36 +10,36 @@ class MathOperation : public ShaderFunction {
     Q_CLASSINFO("Group", "Operations")
 
 public:
-    AbstractSchemeModel::Node *createNode(ShaderBuilder *model, const QString &path) {
+    AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = a;
-            out->out    = false;
-            out->pos    = 0;
-            out->type   = QMetaType::QVector2D;
+            out->name = a;
+            out->out  = false;
+            out->pos  = 0;
+            out->type = QMetaType::QVector2D;
             result->list.push_back(out);
         }
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = b;
-            out->out    = false;
-            out->pos    = 1;
-            out->type   = QMetaType::QVector2D;
+            out->name = b;
+            out->out  = false;
+            out->pos  = 1;
+            out->type = QMetaType::QVector2D;
             result->list.push_back(out);
         }
         {
             AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
-            out->name   = "";
-            out->out    = true;
-            out->pos    = 0;
-            out->type   = QMetaType::QVector2D;
+            out->name = "";
+            out->out  = true;
+            out->pos  = 0;
+            out->type = QMetaType::QVector2D;
             result->list.push_back(out);
         }
         return result;
     }
 
-    int32_t compile(AbstractSchemeModel::Node *object, const QString &operation, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t compile (AbstractSchemeModel::Node *object, const QString &operation, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
         if(m_Position == -1) {
             QString args;
 
@@ -85,7 +85,7 @@ class Subtraction : public MathOperation {
 public:
     Q_INVOKABLE Subtraction() {}
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         return compile(m_pNode, " - ", value, link, depth, size);
     }
 };
@@ -96,7 +96,7 @@ class Add : public MathOperation {
 public:
     Q_INVOKABLE Add() {}
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         return compile(m_pNode, " + ", value, link, depth, size);
     }
 };
@@ -107,7 +107,7 @@ class Divide : public MathOperation {
 public:
     Q_INVOKABLE Divide() {}
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         return compile(m_pNode, " / ", value, link, depth, size);
     }
 };
@@ -118,7 +118,7 @@ class Multiply : public MathOperation {
 public:
     Q_INVOKABLE Multiply() {}
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) {
+    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         return compile(m_pNode, " * ", value, link, depth, size);
     }
 };

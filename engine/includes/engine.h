@@ -87,7 +87,7 @@ public:
 
     static void                 setResource                 (Object *object, const string &uuid);
 
-    void                        processEvents               ();
+    void                        processEvents               () override;
 
 private:
     bool                        event                       (Event *event) override;
