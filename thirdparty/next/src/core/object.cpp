@@ -805,6 +805,13 @@ void Object::loadData(const VariantList &data) {
     A_UNUSED(data);
 }
 /*!
+    This method allows to DESERIALIZE \a data.
+    It can be used to DESERIALIZE some specific data like prefabs.
+*/
+void Object::loadObjectData(const VariantMap &data) {
+    A_UNUSED(data);
+}
+/*!
     This method allows to DESERIALIZE \a data which not present as A_PROPERTY() in object.
 */
 void Object::loadUserData(const VariantMap &data) {

@@ -163,12 +163,6 @@ public:
 
     virtual bool                    event                       (Event *event);
 
-    virtual void                    loadData                    (const VariantList &data);
-    virtual void                    loadUserData                (const VariantMap &data);
-
-    virtual VariantList             saveData                    () const;
-    virtual VariantMap              saveUserData                () const;
-
     virtual bool                    isSerializable              () const;
 
     uint32_t                        clonedFrom                  () const;
@@ -177,6 +171,13 @@ public:
     virtual bool                    operator!=                  (const Object &) const final { return false; }
 
 protected:
+    virtual void                    loadData                    (const VariantList &data);
+    virtual void                    loadObjectData              (const VariantMap &data);
+    virtual void                    loadUserData                (const VariantMap &data);
+
+    virtual VariantList             saveData                    () const;
+    virtual VariantMap              saveUserData                () const;
+
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);
 

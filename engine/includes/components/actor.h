@@ -53,6 +53,7 @@ public:
     Object *clone (Object *parent = nullptr) override;
 
 private:
+    void loadObjectData (const VariantMap &data) override;
     void loadUserData (const VariantMap &data) override;
     VariantMap saveUserData () const override;
 

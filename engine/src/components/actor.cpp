@@ -277,21 +277,23 @@ void Actor::setPrefab(Actor *prefab) {
 /*!
     \internal
 */
-void Actor::loadUserData(const VariantMap &data) {
+void Actor::loadObjectData(const VariantMap &data) {
     PROFILE_FUNCTION();
     ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
         setPrefab(dynamic_cast<Actor *>(system->loadResource((*it).second.toString())));
+
         if(p_ptr->m_pPrefab) {
             Actor *actor = static_cast<Actor *>(p_ptr->m_pPrefab->clone());
 
             it = data.find(DELETED);
             if(it != data.end()) {
                 for(auto item : (*it).second.toList()) {
-                    Object *result = ObjectSystem::findObject(static_cast<uint32_t>(item.toInt()), actor);
-                    if(result) {
+                    uint16_t uuid = static_cast<uint32_t>(item.toInt());
+                    Object *result = ObjectSystem::findObject(uuid, actor);
+                    if(result && result != actor) {
                         delete result;
                     }
                 }
@@ -304,67 +306,72 @@ void Actor::loadUserData(const VariantMap &data) {
             delete actor;
 
             unordered_map<uint32_t, uint32_t> staticMap;
-            it = data.find(STATIC);
+            auto it = data.find(STATIC);
             if(it != data.end()) {
                 for(auto item : (*it).second.toList()) {
                     VariantList array = item.toList();
+
                     uint32_t clone = static_cast<uint32_t>(array.front().toInt());
-                    staticMap[clone] = static_cast<uint32_t>(array.back().toInt());
-                }
-            }
-
-            it = data.find(DATA);
-            if(it != data.end()) {
-                ActorPrivate::List objects;
-                ActorPrivate::enumObjects(this, objects);
-
-                unordered_map<uint32_t, Object *> cacheMap;
-                for(auto &object : objects) {
-                    uint32_t clone = object->clonedFrom();
-                    cacheMap[clone] = object;
-                    auto fix = staticMap.find(clone);
-                    if(fix != staticMap.end()) {
-                        ObjectSystem::replaceUUID(object, (*fix).second);
+                    Object *result = ObjectSystem::findObject(clone, this);
+                    if(result) {
+                        ObjectSystem::replaceUUID(result, static_cast<uint32_t>(array.back().toInt()));
                     }
                 }
+            }
+        }
+    }
+}
+/*!
+    \internal
+*/
+void Actor::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
-                const VariantList &list = (*it).second.toList();
-                for(auto &item : list) {
-                    const VariantList &fields = item.toList();
+    if(p_ptr->m_pPrefab) {
+        auto it = data.find(DATA);
+        if(it != data.end()) {
+            ActorPrivate::List objects;
+            ActorPrivate::enumObjects(this, objects);
 
-                    uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
-                    auto object = cacheMap.find(cloned);
-                    if(object != cacheMap.end()) {
-                        const MetaObject *meta = (*object).second->metaObject();
-                        for(auto &property : fields.back().toMap()) {
-                            int32_t index = meta->indexOfProperty(property.first.c_str());
-                            if(index > -1) {
-                                MetaProperty prop = meta->property(index);
-                                Variant var = property.second;
-                                if(prop.type().flags() & MetaType::BASE_OBJECT) {
-                                    if(var.type() == MetaType::STRING) { // Asset
-                                        Object *res = system->loadResource(var.toString());
-                                        if(res) {
-                                            var = Variant(prop.read((*object).second).userType(), &res);
-                                        }
-                                    } else if(var.type() == MetaType::VARIANTLIST) { // Component
-                                        VariantList array = var.toList();
-                                        uint32_t uuid = static_cast<uint32_t>(array.front().toInt());
-                                        if(uuid == 0) {
-                                            uuid = static_cast<uint32_t>(array.back().toInt());
-                                        }
+            unordered_map<uint32_t, Object *> cacheMap;
+            for(auto &object : objects) {
+                uint32_t clone = object->clonedFrom();
+                cacheMap[clone] = object;
+            }
 
-                                        Object *obj = Engine::findObject(uuid, this);
-                                        if(obj == nullptr) {
-                                            obj = Engine::findObject(uuid, Engine::findRoot(this));
-                                        }
-                                        if(obj) {
-                                            var = Variant(prop.read((*object).second).userType(), &obj);
-                                        }
+            const VariantList &list = (*it).second.toList();
+            for(auto &item : list) {
+                const VariantList &fields = item.toList();
+
+                uint32_t cloned = static_cast<uint32_t>(fields.front().toInt());
+                auto object = cacheMap.find(cloned);
+                if(object != cacheMap.end()) {
+                    const MetaObject *meta = (*object).second->metaObject();
+                    for(auto &property : fields.back().toMap()) {
+                        int32_t index = meta->indexOfProperty(property.first.c_str());
+                        if(index > -1) {
+                            MetaProperty prop = meta->property(index);
+                            Variant var = property.second;
+                            if(prop.type().flags() & MetaType::BASE_OBJECT) {
+                                if(var.type() == MetaType::STRING) { // Asset
+                                    Object *res = system->loadResource(var.toString());
+                                    if(res) {
+                                        var = Variant(prop.read((*object).second).userType(), &res);
+                                    }
+                                } else if(var.type() == MetaType::INTEGER) { // Component
+                                    uint32_t uuid = static_cast<uint32_t>(var.toInt());
+
+                                    Object *obj = Engine::findObject(uuid, this);
+                                    if(obj == nullptr) {
+                                        obj = Engine::findObject(uuid, Engine::findRoot(this));
+                                    }
+                                    if(obj) {
+                                        var = Variant(prop.read((*object).second).userType(), &obj);
                                     }
                                 }
-                                prop.write((*object).second, var);
                             }
+                            prop.write((*object).second, var);
                         }
                     }
                 }
@@ -398,12 +405,11 @@ VariantMap Actor::saveUserData() const {
             ActorPrivate::ConstList objects;
             ActorPrivate::enumConstObjects(this, objects);
 
-
             ActorPrivate::ConstList temp = prefabs;
             for(auto obj : objects) {
                 auto it = temp.begin();
                 while(it != temp.end()) {
-                    if((*it)->uuid() == obj->clonedFrom()) {
+                    if((*it)->uuid() == obj->clonedFrom() || (*it)->clonedFrom() == 0) {
                         it = temp.erase(it);
                         break;
                     }
@@ -450,10 +456,7 @@ VariantMap Actor::saveUserData() const {
 
                                     if(rref.empty() && lref.empty()) {
                                         if((lo == nullptr && ro) || (ro && lo->uuid() != ro->uuid())) {
-                                            VariantList array;
-                                            array.push_back(static_cast<int32_t>(ro->clonedFrom()));
-                                            array.push_back(static_cast<int32_t>(ro->uuid()));
-                                            prop[rp.name()] = array;
+                                            prop[rp.name()] = static_cast<int32_t>(ro->uuid());
                                         }
                                     }
                                 } else {
@@ -470,22 +473,12 @@ VariantMap Actor::saveUserData() const {
                         }
 
                     }
-                } else {
-                    // Additional object attached need to fix parent
-                    Object *parent = it->parent();
-                    while(parent != nullptr) {
-                        if(parent->clonedFrom() != 0) {
-                            break;
-                        }
-                        parent = parent->parent();
-                    }
-                    if(parent) {
-                        VariantList array;
-                        array.push_back(static_cast<int32_t>(parent->clonedFrom()));
-                        array.push_back(parent->uuid());
 
-                        fixed.push_back(array);
-                    }
+                    VariantList array;
+                    array.push_back(cloned);
+                    array.push_back(it->uuid());
+
+                    fixed.push_back(array);
                 }
             }
 

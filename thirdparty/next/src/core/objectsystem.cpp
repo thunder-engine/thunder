@@ -259,7 +259,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             i++;
             // Load user data
             VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
-            object->loadUserData(user);
+            object->loadObjectData(user);
 
             if(result == nullptr && object->parent() == root) {
                 result = object;
@@ -323,6 +323,11 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                     connect(sender, signal.c_str(), receiver, method.c_str());
                 }
             }
+
+            i++;
+            // Load user data
+            VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
+            object->loadUserData(user);
         }
     }
 

@@ -196,6 +196,8 @@ void Cross_reference_prefab() {
     QCOMPARE(resultTestComponent != nullptr, true);
     TestComponent *referenceTestComponent = resultTestComponent->reference();
 
+    QCOMPARE(referenceTestComponent != nullptr, true);
+
     QCOMPARE(referenceTestComponent != resultTestComponent, true);
     QCOMPARE(resultTestComponent->reference() == referenceTestComponent, true);
     QCOMPARE(referenceTestComponent->reference() == resultTestComponent, true);
