@@ -19,7 +19,6 @@ Rectangle {
         onSchemeUpdated: {
             nodes = schemeModel.nodes()
             links = schemeModel.links()
-            console.error("onSchemeUpdated", nodes.length)
             canvas.requestPaint()
         }
         onNodeMoved: {

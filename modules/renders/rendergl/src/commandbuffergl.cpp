@@ -49,14 +49,8 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) {
     int32_t location;
 
-    location = glGetUniformLocation(program, "t_view");
-    if(location > -1) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, m_View.mat);
-    }
-    location = glGetUniformLocation(program, "t_projection");
-    if(location > -1) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, m_Projection.mat);
-    }
+    glUniformMatrix4fv(VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
+    glUniformMatrix4fv(PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
 
     location = glGetUniformLocation(program, "_timer");
     if(location > -1) {
@@ -137,10 +131,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
         if(program) {
             glUseProgram(program);
 
-            int location = glGetUniformLocation(program, "t_model");
-            if(location > -1) {
-                glUniformMatrix4fv(location, 1, GL_FALSE, model.mat);
-            }
+            glUniformMatrix4fv(MODEL_UNIFORM, 1, GL_FALSE, model.mat);
 
             putUniforms(program, material);
 
@@ -195,12 +186,10 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             if(mode > Mesh::MODE_LINES) {
                 uint32_t vert   = mesh->vertexCount(lod);
                 glDrawArraysInstanced((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
-
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
                 uint32_t index  = mesh->indexCount(lod);
                 glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
-
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);

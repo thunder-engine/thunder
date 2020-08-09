@@ -18,10 +18,10 @@ layout(location = 4) in vec2 uv0;
     layout(location = 8) in mat4 instanceMatrix;
 #else
     #ifdef TYPE_BILLBOARD
-    layout(location = 5) in vec4 particlePosRot;
-    layout(location = 6) in vec4 particleSizeDist;
-    layout(location = 7) in vec4 particleRes1;
-    layout(location = 8) in vec4 particleRes2;
+    layout(location = 8) in vec4 particlePosRot;
+    layout(location = 9) in vec4 particleSizeDist;
+    layout(location = 10) in vec4 particleRes1;
+    layout(location = 11) in vec4 particleRes2;
     #else
     layout(location = 5) in vec2 uv1;
     #endif
