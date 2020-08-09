@@ -12,10 +12,12 @@
 #include <components/directlight.h>
 #include <components/spriterender.h>
 #include <components/meshrender.h>
+#include <components/particlerender.h>
 
 #include <resources/pipeline.h>
 #include <resources/rendertexture.h>
 #include <resources/material.h>
+#include <resources/particleeffect.h>
 
 #include <handles/handletools.h>
 
@@ -485,6 +487,14 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                             actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                             m_DragObjects.push_back(actor);
                         }
+                    } break;
+                    case IConverter::ContentEffect: {
+                        Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        ParticleRender *effect = static_cast<ParticleRender *>(actor->addComponent("ParticleRender"));
+                        if(effect) {
+                            effect->setEffect(Engine::loadResource<ParticleEffect>( qPrintable(str) ));
+                        }
+                        m_DragObjects.push_back(actor);
                     } break;
                     default: break;
                 }
