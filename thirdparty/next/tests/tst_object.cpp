@@ -98,9 +98,9 @@ void Meta_methods() {
     const MetaObject *meta = obj.metaObject();
     QVERIFY(meta != nullptr);
 
-    QCOMPARE(meta->methodCount(), 3);
+    QCOMPARE(meta->methodCount(), 5);
 
-    int index   = meta->indexOfSlot("setSlot(int)");
+    int index = meta->indexOfSlot("setSlot(int)");
     QCOMPARE(index > -1, true);
 
     MetaMethod method   = meta->method(index);
@@ -111,7 +111,6 @@ void Meta_methods() {
     Variant arg(true);
     QCOMPARE(method.invoke(&obj, value, 1, &arg), true);
     QCOMPARE(obj.getSlot(), true);
-
 
     QCOMPARE(meta->indexOfSignal("setSlot"), -1);
 
@@ -172,19 +171,24 @@ void Disconnect_by_receiver() {
 }
 
 void Child_destructor() {
-    Object *obj1   = new Object;
-    Object *obj2   = new Object();
+    TestObject *obj1 = new TestObject;
+    TestObject *obj2 = new TestObject();
     obj2->setName("TestComponent2");
     obj2->setParent(obj1);
 
-    Object *obj3   = new Object();
+    TestObject *obj3 = new TestObject();
     obj3->setName("TestComponent3");
     obj3->setParent(obj1);
+
+    Object::connect(obj2, _SIGNAL(destroyed()), obj3, _SLOT(onDestroyed()));
 
     QCOMPARE((int)obj1->getChildren().size(), 2);
 
     delete obj2;
     QCOMPARE((int)obj1->getChildren().size(), 1);
+
+    obj3->processEvents();
+    QCOMPARE(obj3->getSlot(), true);
 
     obj3->deleteLater();
     obj3->processEvents();
@@ -194,8 +198,8 @@ void Child_destructor() {
 }
 
 void Reciever_destructor() {
-    TestObject *obj1    = new TestObject;
-    TestObject *obj2    = new TestObject;
+    TestObject *obj1 = new TestObject;
+    TestObject *obj2 = new TestObject;
 
     Object::connect(obj1, _SIGNAL(signal(int)), obj2, _SIGNAL(signal(int)));
     QCOMPARE((int)obj1->getReceivers().size(),  1);

@@ -84,7 +84,10 @@ MetaMethod::MethodType MetaMethod::type() const {
 */
 MetaType MetaMethod::returnType() const {
     PROFILE_FUNCTION();
-    return MetaType(m_pTable->types[0]);
+    if(m_pTable->types) {
+        return MetaType(m_pTable->types[0]);
+    }
+    return MetaType(nullptr);
 }
 /*!
     Returns a parameter count of method.

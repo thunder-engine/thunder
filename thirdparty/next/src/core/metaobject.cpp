@@ -83,11 +83,11 @@ int MetaObject::indexOfMethod(const char *signature) const {
 */
 int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION();
-    const MetaObject *s    = this;
+    const MetaObject *s = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            MetaMethod m(m_pMethods + i);
+            MetaMethod m(s->m_pMethods + i);
             if(m.type() == MetaMethod::Signal && m.signature() == signature) {
                 return i + s->methodOffset();
             }
@@ -102,7 +102,7 @@ int MetaObject::indexOfSignal(const char *signature) const {
 */
 int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION();
-    const MetaObject *s    = this;
+    const MetaObject *s = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
@@ -136,11 +136,11 @@ MetaMethod MetaObject::method(int index) const {
 */
 int MetaObject::methodCount() const {
     PROFILE_FUNCTION();
-    int count           = m_MethodCount;
+    int count = m_MethodCount;
     const MetaObject *s = m_pSuper;
     while(s) {
-        count  += s->m_MethodCount;
-        s       = s->m_pSuper;
+        count += s->m_MethodCount;
+        s = s->m_pSuper;
     }
     return count;
 }

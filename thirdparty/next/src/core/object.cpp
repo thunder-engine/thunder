@@ -284,6 +284,8 @@ Object::Object() :
 Object::~Object() {
     PROFILE_FUNCTION();
 
+    emitSignal(_SIGNAL(destroyed()));
+
     if(p_ptr->m_pSystem) {
         p_ptr->m_pSystem->removeObject(this);
     }
@@ -304,7 +306,7 @@ Object::~Object() {
     for(const auto &it : p_ptr->m_mChildren) {
         Object *c  = it;
         if(c) {
-            c->p_ptr->m_pParent    = nullptr;
+            c->p_ptr->m_pParent = nullptr;
             c->deleteLater();
         }
     }
@@ -334,7 +336,11 @@ Object *Object::construct() {
 */
 const MetaObject *Object::metaClass() {
     PROFILE_FUNCTION();
-    static const MetaObject staticMetaData("Object", nullptr, &construct, nullptr, nullptr);
+    static MetaMethod::Table table;
+    table.type = MetaMethod::Signal;
+    table.name = "destroyed";
+
+    static const MetaObject staticMetaData("Object", nullptr, &construct, &table, nullptr);
     return &staticMetaData;
 }
 /*!
@@ -413,13 +419,13 @@ Object *Object::clone(Object *parent) {
             }
             lp.write(it.second, data);
         }
-        for(auto item : p_ptr->m_lSenders) {
+        for(auto item : it.first->p_ptr->m_lSenders) {
             MetaMethod signal = item.sender->metaObject()->method(item.signal);
             MetaMethod method = it.second->metaObject()->method(item.method);
             connect(item.sender, (to_string(1) + signal.signature()).c_str(),
                     it.second, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
         }
-        for(auto item : getReceivers()) {
+        for(auto item : it.first->p_ptr->m_lRecievers) {
             MetaMethod signal = it.second->metaObject()->method(item.signal);
             MetaMethod method = item.receiver->metaObject()->method(item.method);
             connect(it.second, (to_string(1) + signal.signature()).c_str(),
@@ -508,7 +514,7 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
         int32_t snd = sender->metaObject()->indexOfSignal(&signal[1]);
 
         int32_t rcv;
-        MetaMethod::MethodType right   = MetaMethod::MethodType(method[0] - 0x30);
+        MetaMethod::MethodType right = MetaMethod::MethodType(method[0] - 0x30);
         if(right == MetaMethod::Slot) {
             rcv = receiver->metaObject()->indexOfSlot(&method[1]);
         } else {
@@ -733,11 +739,11 @@ void Object::removeChild(Object *child) {
 */
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
-    int32_t index   = metaObject()->indexOfSignal(&signal[1]);
+    int32_t index = metaObject()->indexOfSignal(&signal[1]);
     for(auto &it : p_ptr->m_lRecievers) {
         Link *link  = &(it);
         if(link->signal == index) {
-            const MetaMethod &method   = link->receiver->metaObject()->method(link->method);
+            const MetaMethod &method = link->receiver->metaObject()->method(link->method);
             if(method.type() == MetaMethod::Signal) {
                 link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
             } else {
@@ -766,10 +772,14 @@ void Object::processEvents() {
 
         switch (e->type()) {
             case Event::MethodCall: {
-                MethodCallEvent *call   = reinterpret_cast<MethodCallEvent *>(e);
+                MethodCallEvent *call = reinterpret_cast<MethodCallEvent *>(e);
                 p_ptr->m_pCurrentSender = call->sender();
                 Variant result;
-                metaObject()->method(call->method()).invoke(this, result, 1, call->args());
+                if(call->args()->isValid()) {
+                    metaObject()->method(call->method()).invoke(this, result, 1, call->args());
+                } else {
+                    metaObject()->method(call->method()).invoke(this, result, 0, nullptr);
+                }
                 p_ptr->m_pCurrentSender = nullptr;
             } break;
             case Event::Destroy: {
@@ -824,7 +834,6 @@ void Object::loadUserData(const VariantMap &data) {
 VariantList Object::saveData() const {
     return serializeData(metaObject());
 }
-
 /*!
     This method allows to SERIALIZE data which not present as A_PROPERTY() in object.
     Returns serialized data as VariantMap.

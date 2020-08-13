@@ -13,6 +13,7 @@ class TestObject : public Object {
 
     A_METHODS(
         A_SLOT(TestObject::setSlot),
+        A_SLOT(TestObject::onDestroyed),
         A_SIGNAL(TestObject::signal),
         A_METHOD(bool, TestObject::test)
     )
@@ -59,6 +60,10 @@ public:
 
     void setResource(TestObject *resource) {
         m_pResource = resource;
+    }
+
+    void onDestroyed() {
+        m_bSlot = true;
     }
 
     void signal(const int);
