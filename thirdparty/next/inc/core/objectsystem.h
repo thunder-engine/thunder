@@ -62,6 +62,8 @@ protected:
 
     void                                factoryRemove           (const string &name, const string &uri);
 
+    void                                deleteAllObjects        ();
+
 private:
     friend class ObjectSystemTest;
     friend class Object;

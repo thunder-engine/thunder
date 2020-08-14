@@ -7,6 +7,8 @@ class Scene;
 class Component;
 class Transform;
 
+class Prefab;
+
 class ResourceSystem;
 
 class ActorPrivate;
@@ -48,7 +50,7 @@ public:
     void setParent (Object *parent, bool force = false) override;
 
     bool isInstance () const;
-    void setPrefab (Actor *prefab);
+    void setPrefab (Prefab *prefab);
 
     Object *clone (Object *parent = nullptr) override;
 
@@ -60,6 +62,7 @@ private:
     bool isSerializable () const override;
 
 private:
+    friend class ActorPrivate;
     friend class ActorTest;
 
     ActorPrivate *p_ptr;

@@ -23,6 +23,7 @@
 
 #include "resources/mesh.h"
 #include "resources/material.h"
+#include "resources/prefab.h"
 
 #include "systems/resourcesystem.h"
 
@@ -352,9 +353,12 @@ uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
 
         aiReleaseImport(scene);
 
+        Prefab *prefab = Engine::objectCreate<Prefab>("");
+        prefab->setActor(root);
+
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(Engine::toVariant(root));
+            ByteArray data = Bson::save(Engine::toVariant(prefab));
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
         }
@@ -419,23 +423,27 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
             MeshSerial *result = AssimpConverter::importMesh(mesh, actor, fbxSettings);
             if(result) {
                 uuid = AssimpConverter::saveData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), IConverter::ContentMesh, fbxSettings);
-                Engine::setResource(result, uuid.toStdString());
+
+                Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
+                if(resource == nullptr) {
+                    Engine::setResource(result, uuid.toStdString());
+                    fbxSettings->m_Resources.push_back(uuid);
+                    resource = result;
+                }
 
                 if(mesh->HasBones()) {
                     SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
                     Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
-                    render->setMesh(result);
+                    render->setMesh(resource);
                     fbxSettings->m_Renders.push_back(render);
                 } else {
                     MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
                     Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 
-                    render->setMesh(result);
+                    render->setMesh(resource);
                     fbxSettings->m_Renders.push_back(render);
                 }
-
-                fbxSettings->m_Resources.push_back(uuid);
             }
         }
         Engine::replaceUUID(actor, qHash(uuid));
@@ -842,12 +850,18 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
 
     QString uuid = saveData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), IConverter::ContentPose, fbxSettings);
 
-    Engine::setResource(pose, uuid.toStdString());
+    Pose *resource = Engine::loadResource<Pose>(qPrintable(uuid));
+    if(resource == nullptr) {
+        Engine::setResource(pose, uuid.toStdString());
+        fbxSettings->m_Resources.push_back(uuid);
+        resource = pose;
+    }
+
     fbxSettings->m_Resources.push_back(uuid);
 
     if(fbxSettings->m_pRootBone) {
         Armature *armature = dynamic_cast<Armature *>(fbxSettings->m_pRootBone->addComponent("Armature"));
-        armature->setBindPose(pose);
+        armature->setBindPose(resource);
         Engine::replaceUUID(armature, qHash(uuid + ".Armature"));
 
         for(auto r : fbxSettings->m_Renders) {

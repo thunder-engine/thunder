@@ -33,6 +33,8 @@ void Text::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         p_ptr->m_Data = (*it).second.toByteArray();
     }
+
+    setState(Ready);
 }
 /*!
     Returns text content as a raw byte array.

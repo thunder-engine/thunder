@@ -6,6 +6,8 @@
 class ResourcePrivate;
 class ResourceSystem;
 
+class Component;
+
 class NEXT_LIBRARY_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
 public:
@@ -18,6 +20,12 @@ public:
         ToBeDeleted
     };
 
+    class NEXT_LIBRARY_EXPORT IObserver {
+    public:
+        virtual ~IObserver() {}
+        virtual void resourceUpdated(const Resource *resource, ResourceState state) = 0;
+    };
+
 public:
     Resource ();
     ~Resource () override;
@@ -26,6 +34,9 @@ public:
 
     void incRef();
     void decRef();
+
+    void subscribe (IObserver *observer);
+    void unsubscribe (IObserver *observer);
 
 protected:
     virtual void setState(ResourceState state);

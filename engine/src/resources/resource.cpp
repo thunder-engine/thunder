@@ -11,6 +11,7 @@ public:
     Resource::ResourceState m_State;
     Resource::ResourceState m_Last;
     uint32_t m_ReferenceCount;
+    list<Resource::IObserver *> m_Observers;
 };
 
 /*!
@@ -51,6 +52,25 @@ Resource::~Resource() {
     delete p_ptr;
 }
 /*!
+    Subscribes \a observer to handle resource status.
+*/
+void Resource::subscribe(IObserver *observer) {
+    p_ptr->m_Observers.push_back(observer);
+}
+/*!
+    Unsubscribes \a observer to stop handle resource status.
+*/
+void Resource::unsubscribe(IObserver *observer) {
+    auto it = p_ptr->m_Observers.begin();
+    while(it != p_ptr->m_Observers.end()) {
+        if((*it) == observer) {
+            it = p_ptr->m_Observers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+/*!
     Returns state for the resource.
     For possible states please see Resource::ResourceState.
 */
@@ -62,6 +82,9 @@ Resource::ResourceState Resource::state() const {
 */
 void Resource::setState(ResourceState state) {
     p_ptr->m_State = state;
+    for(auto it : p_ptr->m_Observers) {
+        it->resourceUpdated(this, state);
+    }
 }
 /*!
     Increases the reference counter for the resource.

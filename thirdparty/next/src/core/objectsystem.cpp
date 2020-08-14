@@ -80,11 +80,7 @@ ObjectSystem::~ObjectSystem() {
         }
     }
     {
-        auto it = m_ObjectList.begin();
-        while(it != m_ObjectList.end()) {
-            delete *it;
-            it = m_ObjectList.begin();
-        }
+        deleteAllObjects();
         m_SuspendObject = nullptr;
     }
 }
@@ -146,6 +142,16 @@ void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     PROFILE_FUNCTION();
     s_Groups.erase(name);
     s_Factories.erase(uri);
+}
+/*!
+    \internal
+*/
+void ObjectSystem::deleteAllObjects() {
+    auto it = m_ObjectList.begin();
+    while(it != m_ObjectList.end()) {
+        delete *it;
+        it = m_ObjectList.begin();
+    }
 }
 /*!
     Returns all registered classes.

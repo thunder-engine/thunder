@@ -12,8 +12,6 @@ public:
     Font ();
     ~Font ();
 
-    void clear ();
-
     uint32_t atlasIndex (uint32_t glyph) const;
 
     void requestCharacters (const u32string &characters);
@@ -25,6 +23,11 @@ public:
     float spaceWidth () const;
 
     float lineHeight () const;
+
+private:
+    void clear ();
+
+    bool requestCharacter(uint32_t character);
 
 protected:
     void loadUserData (const VariantMap &data) override;

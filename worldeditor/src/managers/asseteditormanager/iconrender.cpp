@@ -24,6 +24,7 @@
 #include <resources/mesh.h>
 #include <resources/material.h>
 #include <resources/texture.h>
+#include <resources/prefab.h>
 
 #include "pluginmodel.h"
 #include "assetmanager.h"
@@ -87,8 +88,8 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
     }
 
     m_pCamera->setOrthographic(false);
-    Actor *object   = Engine::objectCreate<Actor>("", m_pScene);
-    float fov       = m_pCamera->fov();
+    Actor *object = Engine::objectCreate<Actor>("", m_pScene);
+    float fov = m_pCamera->fov();
     switch(type) {
         case IConverter::ContentTexture: {
             m_pCamera->setOrthographic(true);
@@ -115,15 +116,21 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
             }
         } break;
         case IConverter::ContentPrefab: {
-            Actor *prefab  = Engine::loadResource<Actor>(resource.toStdString());
+            Prefab *prefab  = Engine::loadResource<Prefab>(resource.toStdString());
             if(prefab) {
-                Actor *actor = static_cast<Actor *>(prefab->clone(object));
+                Actor *actor = static_cast<Actor *>(prefab->actor()->clone(object));
 
                 AABBox bb;
+                bool first = true;
                 for(auto it : actor->findChildren<Renderable *>()) {
-                    bb.encapsulate(it->bound());
+                    if(first) {
+                        bb = it->bound();
+                        first = false;
+                    } else {
+                        bb.encapsulate(it->bound());
+                    }
                 }
-                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, (bb.extent.length() * 2) / sinf(fov * DEG2RAD)) );
+                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, ((bb.extent.length() + m_pCamera->nearPlane()) * 2) / sinf(fov * DEG2RAD)));
             }
         } break;
         case IConverter::ContentMesh: {

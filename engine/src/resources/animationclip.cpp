@@ -20,56 +20,58 @@ static hash<string> hash_str;
 */
 void AnimationClip::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    {
-        auto section = data.find(TRACKS);
-        if(section != data.end()) {
-            m_Tracks.clear();
-            VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
-            for(auto it : tracks) {
-                VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
-                auto i = trackData.begin();
 
-                Track track;
-                track.path = (*i).toString();
-                i++;
-                track.property = (*i).toString();
-                i++;
+    m_Tracks.clear();
 
-                track.hash = hash_str(track.path + "." + track.property);
+    auto section = data.find(TRACKS);
+    if(section != data.end()) {
+        VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
+        for(auto it : tracks) {
+            VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
+            auto i = trackData.begin();
 
-                for(auto it : (*i).toList()) {
-                    VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
-                    auto t = curveList.begin();
+            Track track;
+            track.path = (*i).toString();
+            i++;
+            track.property = (*i).toString();
+            i++;
 
-                    int32_t component = (*t).toInt();
+            track.hash = hash_str(track.path + "." + track.property);
+
+            for(auto it : (*i).toList()) {
+                VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
+                auto t = curveList.begin();
+
+                int32_t component = (*t).toInt();
+                t++;
+
+                AnimationCurve curve;
+                while(t != curveList.end()) {
+                    VariantList &keyList = *(reinterpret_cast<VariantList *>((*t).data()));
+                    auto k = keyList.begin();
+
+                    AnimationCurve::KeyFrame key;
+                    key.m_Position = static_cast<uint32_t>((*k).toInt());
+                    k++;
+                    key.m_Type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
+                    k++;
+                    key.m_Value = (*k).toFloat();
+                    k++;
+                    key.m_LeftTangent = (*k).toFloat();
+                    k++;
+                    key.m_RightTangent = (*k).toFloat();
+
+                    curve.m_Keys.push_back(key);
+
                     t++;
-
-                    AnimationCurve curve;
-                    while(t != curveList.end()) {
-                        VariantList &keyList = *(reinterpret_cast<VariantList *>((*t).data()));
-                        auto k = keyList.begin();
-
-                        AnimationCurve::KeyFrame key;
-                        key.m_Position = static_cast<uint32_t>((*k).toInt());
-                        k++;
-                        key.m_Type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
-                        k++;
-                        key.m_Value = (*k).toFloat();
-                        k++;
-                        key.m_LeftTangent = (*k).toFloat();
-                        k++;
-                        key.m_RightTangent = (*k).toFloat();
-
-                        curve.m_Keys.push_back(key);
-
-                        t++;
-                    }
-                    track.curves[component] = curve;
                 }
-                m_Tracks.push_back(track);
+                track.curves[component] = curve;
             }
+            m_Tracks.push_back(track);
         }
     }
+
+    setState(Ready);
 }
 /*!
     Returns duration of the animation clip in milliseconds.

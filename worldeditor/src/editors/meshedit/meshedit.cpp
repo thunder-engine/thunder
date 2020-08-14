@@ -12,6 +12,8 @@
 #include <components/directlight.h>
 #include <components/camera.h>
 
+#include <resources/prefab.h>
+
 #include <global.h>
 
 #include "editors/propertyedit/nextobject.h"
@@ -123,15 +125,17 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
         delete m_pMesh;
     }
 
-    Actor *prefab = Engine::loadResource<Actor>( settings->destination() );
+    Prefab *prefab = Engine::loadResource<Prefab>( settings->destination() );
     if(prefab) {
-        m_pMesh = static_cast<Actor *>(prefab->clone(glWidget->scene()));
+        m_pMesh = static_cast<Actor *>(prefab->actor()->clone(glWidget->scene()));
     }
 
     float bottom;
     glWidget->controller()->setFocusOn(m_pMesh, bottom);
-    Transform *t = m_pGround->transform();
-    t->setPosition(Vector3(0.0f, bottom - (t->scale().y * 0.5f), 0.0f));
+    if(m_pGround) {
+        Transform *t = m_pGround->transform();
+        t->setPosition(Vector3(0.0f, bottom - (t->scale().y * 0.5f), 0.0f));
+    }
 
     m_pSettings = settings;
     connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
@@ -149,9 +153,9 @@ void MeshEdit::onGLInit() {
     light->setCastShadows(true);
     //light->setColor(Vector4(0.99f, 0.83985f, 0.7326f, 1.0f));
 
-    Actor *prefab = Engine::loadResource<Actor>(".embedded/cube.fbx");
+    Prefab *prefab = Engine::loadResource<Prefab>(".embedded/cube.fbx");
     if(prefab) {
-        m_pGround = static_cast<Actor *>(prefab->clone(scene));
+        m_pGround = static_cast<Actor *>(prefab->actor()->clone(scene));
         m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
     }
 }

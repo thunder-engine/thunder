@@ -41,11 +41,24 @@ struct Emitter {
 };
 typedef deque<Emitter> EmitterArray;
 
-class ParticleRenderPrivate {
+class ParticleRenderPrivate : public Resource::IObserver {
 public:
     ParticleRenderPrivate() :
             m_pEffect(nullptr) {
 
+    }
+
+    ~ParticleRenderPrivate() {
+        if(m_pEffect) {
+            m_pEffect->unsubscribe(this);
+        }
+    }
+
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
+        if(resource == m_pEffect && state == Resource::Ready) {
+            m_Emitters.clear();
+            m_Emitters.resize(m_pEffect->emittersCount());
+        }
     }
 
     ParticleEffect *m_pEffect;
@@ -180,9 +193,13 @@ ParticleEffect *ParticleRender::effect() const {
 */
 void ParticleRender::setEffect(ParticleEffect *effect) {
     if(effect) {
-        p_ptr->m_pEffect   = effect;
+        if(p_ptr->m_pEffect) {
+            p_ptr->m_pEffect->unsubscribe(p_ptr);
+        }
+        p_ptr->m_pEffect = effect;
         p_ptr->m_Emitters.clear();
         p_ptr->m_Emitters.resize(effect->emittersCount());
+        p_ptr->m_pEffect->subscribe(p_ptr);
     }
 }
 /*!

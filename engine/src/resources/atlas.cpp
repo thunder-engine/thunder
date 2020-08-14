@@ -126,14 +126,17 @@ Atlas::Atlas() :
 Atlas::~Atlas() {
     PROFILE_FUNCTION();
 
-    clear();
+    clearAtlas();
 
     delete p_ptr;
 }
 
-void Atlas::clear() {
+void Atlas::clearAtlas() {
     PROFILE_FUNCTION();
 
+    for(auto it : p_ptr->m_Sources) {
+        delete it;
+    }
     p_ptr->m_Sources.clear();
     p_ptr->m_Elements.clear();
 

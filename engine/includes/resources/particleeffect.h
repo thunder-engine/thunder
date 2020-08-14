@@ -88,7 +88,6 @@ public:
     ParticleEffect ();
     ~ParticleEffect ();
 
-    void apply ();
     void clear ();
 
     uint32_t emittersCount () const;

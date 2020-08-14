@@ -54,10 +54,9 @@
 #include "resources/animationstatemachine.h"
 #include "resources/pipeline.h"
 #include "resources/translator.h"
-
 #include "resources/particleeffect.h"
-
 #include "resources/pose.h"
+#include "resources/prefab.h"
 
 #include "systems/resourcesystem.h"
 
@@ -85,8 +84,6 @@ public:
     }
 
     ~EnginePrivate() {
-        m_pScene->deleteLater();
-
         m_Values.clear();
 
         if(m_pPlatform) {
@@ -215,6 +212,7 @@ Engine::Engine(File *file, const char *path) :
     Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
     Pose::registerClassFactory(p_ptr->m_pResourceSystem);
+    Prefab::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
@@ -246,7 +244,6 @@ Engine::Engine(File *file, const char *path) :
     Armature::registerClassFactory(this);
     SkinnedMeshRender::registerClassFactory(this);
 
-
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
 /*!
@@ -254,6 +251,9 @@ Engine::Engine(File *file, const char *path) :
 */
 Engine::~Engine() {
     PROFILER_MARKER;
+
+    deleteAllObjects();
+    p_ptr->m_pScene = nullptr;
 
     delete p_ptr;
 }

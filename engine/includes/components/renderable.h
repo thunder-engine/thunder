@@ -6,6 +6,7 @@
 #include <amath.h>
 
 class RenderablePrivate;
+class ICommandBuffer;
 
 class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)

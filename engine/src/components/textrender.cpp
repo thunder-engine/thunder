@@ -17,17 +17,18 @@
 #define OVERRIDE "uni.texture0"
 #define COLOR "uni.color0"
 
-class TextRenderPrivate {
+class TextRenderPrivate : public Resource::IObserver {
 public:
     TextRenderPrivate   () :
+        m_Color(1.0f),
         m_pFont(nullptr),
+        m_pMaterial(nullptr),
+        m_pMesh(nullptr),
         m_Size(16),
         m_Space(0),
         m_Line(0),
-        m_Color(1.0f),
         m_Alignment(Left),
         m_Kerning(true),
-        m_pMaterial(nullptr),
         m_Wrap(false),
         m_Blocked(false) {
 
@@ -38,6 +39,18 @@ public:
         Material *material  = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
         if(material) {
             m_pMaterial = material->createInstance();
+        }
+    }
+
+    ~TextRenderPrivate() {
+        if(m_pFont) {
+            m_pFont->unsubscribe(this);
+        }
+    }
+
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
+        if(resource == m_pFont && state == Resource::Ready) {
+            composeMesh();
         }
     }
 
@@ -178,7 +191,17 @@ public:
         }
     }
 
+    string m_Text;
+
+    Vector4 m_Color;
+
+    Vector2 m_Boundaries;
+
     Font *m_pFont;
+
+    MaterialInstance *m_pMaterial;
+
+    Mesh *m_pMesh;
 
     int32_t m_Size;
 
@@ -186,19 +209,9 @@ public:
 
     float m_Line;
 
-    string m_Text;
-
-    Vector4 m_Color;
-
     int m_Alignment;
 
     bool m_Kerning;
-
-    MaterialInstance *m_pMaterial;
-
-    Mesh *m_pMesh;
-
-    Vector2 m_Boundaries;
 
     bool m_Wrap;
 
@@ -256,9 +269,15 @@ Font *TextRender::font() const {
     Changes the \a font which will be used to draw a text.
 */
 void TextRender::setFont(Font *font) {
+    if(p_ptr->m_pFont) {
+        p_ptr->m_pFont->unsubscribe(p_ptr);
+    }
     p_ptr->m_pFont = font;
-    if(p_ptr->m_pFont && p_ptr->m_pMaterial) {
-        p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+    if(p_ptr->m_pFont) {
+        p_ptr->m_pFont->subscribe(p_ptr);
+        if(p_ptr->m_pMaterial) {
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+        }
     }
     p_ptr->composeMesh();
 }

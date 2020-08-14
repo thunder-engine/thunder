@@ -42,9 +42,10 @@ public:
 
     Texture *texture () const;
 
-    void clear ();
-
     void pack (uint8_t padding);
+
+protected:
+    void clearAtlas ();
 
 private:
     void resize (int32_t width, int32_t height);

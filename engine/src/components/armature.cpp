@@ -20,12 +20,12 @@ namespace {
 const char *POSE = "Pose";
 }
 
-class ArmaturePrivate {
+class ArmaturePrivate : public Resource::IObserver {
 public:
     ArmaturePrivate() :
-            m_BindDirty(false),
             m_pBindPose(nullptr),
-            m_pCache(nullptr) {
+            m_pCache(nullptr),
+            m_BindDirty(false) {
 
         m_pCache = ResourceSystem::objectCreate<Texture>();
         m_pCache->setFormat(Texture::RGBA32Float);
@@ -39,10 +39,21 @@ public:
         }
     }
 
+    ~ArmaturePrivate() {
+        if(m_pBindPose) {
+            m_pBindPose->unsubscribe(this);
+        }
+    }
+
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) {
+        if(resource == m_pBindPose && state == Resource::Ready) {
+            m_BindDirty = true;
+        }
+    }
+
     void cleanDirty(Actor *actor) {
         if(m_pBindPose) {
             list<Actor *> bones = actor->findChildren<Actor *>();
-            //bones.push_front(actor);
 
             uint32_t count = m_pBindPose->size();
             m_Bones.resize(count);
@@ -66,12 +77,12 @@ public:
         }
         m_BindDirty = false;
     }
-    bool m_BindDirty;
-    Pose *m_pBindPose;
-    Texture *m_pCache;
-    vector<Transform *> m_Bones;
     vector<Matrix4> m_InvertTransform;
     vector<Matrix4> m_Transform;
+    vector<Transform *> m_Bones;
+    Pose *m_pBindPose;
+    Texture *m_pCache;
+    bool m_BindDirty;
 };
 
 Armature::Armature() :
@@ -111,8 +122,12 @@ Pose *Armature::bindPose() const {
 
 void Armature::setBindPose(Pose *pose) {
     if(p_ptr->m_pBindPose != pose) {
+        if(p_ptr->m_pBindPose) {
+            p_ptr->m_pBindPose->unsubscribe(p_ptr);
+        }
         p_ptr->m_pBindPose = pose;
         p_ptr->m_BindDirty = true;
+        p_ptr->m_pBindPose->subscribe(p_ptr);
     }
 }
 /*!

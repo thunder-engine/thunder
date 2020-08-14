@@ -43,6 +43,9 @@ AnimationStateMachine::AnimationStateMachine() :
 void AnimationStateMachine::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
 
+    p_ptr->m_States.clear();
+    p_ptr->m_Variables.clear();
+
     auto section = data.find(MACHINE);
     if(section != data.end()) {
         VariantList machine = (*section).second.value<VariantList>();
@@ -92,6 +95,8 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             p_ptr->m_pInitialState = findState(hash_str((*block).toString()));
         }
     }
+
+    setState(Ready);
 }
 
 AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) const {

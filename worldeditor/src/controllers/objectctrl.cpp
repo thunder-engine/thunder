@@ -18,6 +18,7 @@
 #include <resources/rendertexture.h>
 #include <resources/material.h>
 #include <resources/particleeffect.h>
+#include <resources/prefab.h>
 
 #include <handles/handletools.h>
 
@@ -481,9 +482,9 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                     } break;
                     case IConverter::ContentMesh:
                     case IConverter::ContentPrefab: {
-                        Actor *prefab = Engine::loadResource<Actor>( qPrintable(str) );
+                        Prefab *prefab = Engine::loadResource<Prefab>( qPrintable(str) );
                         if(prefab) {
-                            Actor *actor = static_cast<Actor *>(prefab->clone());
+                            Actor *actor = static_cast<Actor *>(prefab->actor()->clone());
                             actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
                             m_DragObjects.push_back(actor);
                         }

@@ -20,26 +20,22 @@
 class FontPrivate {
 public:
     FontPrivate() :
-        m_Scale(DF_GLYPH_SIZE * DF_DEFAULT_SCALE),
         m_pFace(nullptr),
+        m_Scale(DF_GLYPH_SIZE * DF_DEFAULT_SCALE),
         m_UseKerning(false) {
     }
 
+    typedef unordered_map<uint32_t, uint32_t> GlyphMap;
+    typedef unordered_map<uint32_t, Vector2> SpecialMap;
+
+    GlyphMap m_GlyphMap;
+    ByteArray m_Data;
+
+    FT_FaceRec_ *m_pFace;
+
     int32_t m_Scale;
 
-    string                      m_FontName;
-
-    FT_FaceRec_                *m_pFace;
-
-    typedef unordered_map<uint32_t, uint32_t>   GlyphMap;
-
-    GlyphMap                    m_GlyphMap;
-
-    typedef unordered_map<uint32_t, Vector2>    SpecialMap;
-
-    ByteArray                   m_Data;
-
-    bool                        m_UseKerning;
+    bool m_UseKerning;
 };
 
 struct Point {
@@ -117,6 +113,8 @@ static void generateSDF(Grid &g) {
 }
 
 void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
+    PROFILE_FUNCTION();
+
     Grid grid[2];
 
     int32_t w = img.width;
@@ -181,8 +179,6 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
 Font::Font() :
         p_ptr(new FontPrivate()) {
 
-    clear();
-
     FT_Init_FreeType( &library );
 }
 
@@ -193,6 +189,8 @@ Font::~Font() {
     Returns the index of the \a glyph in the atlas.
 */
 uint32_t Font::atlasIndex(uint32_t glyph) const {
+    PROFILE_FUNCTION();
+
     auto it = p_ptr->m_GlyphMap.find(glyph);
     if(it != p_ptr->m_GlyphMap.end()) {
         return (*it).second;
@@ -203,6 +201,8 @@ uint32_t Font::atlasIndex(uint32_t glyph) const {
     Requests \a characters to be added to the font atlas.
 */
 void Font::requestCharacters(const u32string &characters) {
+    PROFILE_FUNCTION();
+
     bool isNew = false;
     for(auto it : characters) {
         uint32_t ch = it;
@@ -220,7 +220,7 @@ void Font::requestCharacters(const u32string &characters) {
 
                     Texture::Surface s;
                     uint8_t *buffer = new uint8_t[w * h];
-                    calculateDF(bitmap, buffer, w, h);
+                    calculateDF(bitmap, buffer, w, h); /// \todo Must be moved into separate thread
 
                     s.push_back(buffer);
 
@@ -257,6 +257,8 @@ void Font::requestCharacters(const u32string &characters) {
     \note In case of font doesn't support kerning this method will return 0.
 */
 int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
+    PROFILE_FUNCTION();
+
     if(p_ptr->m_UseKerning && previous)  {
         FT_Vector delta;
         FT_Get_Kerning( p_ptr->m_pFace, previous, glyph, FT_KERNING_DEFAULT, &delta );
@@ -274,6 +276,8 @@ uint32_t Font::length(const u32string &characters) const {
     Returns visual width of space character for the font in world units.
 */
 float Font::spaceWidth() const {
+    PROFILE_FUNCTION();
+
     FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, ' ' ), FT_LOAD_DEFAULT );
     if(!error) {
         return static_cast<float>(p_ptr->m_pFace->glyph->advance.x) / p_ptr->m_Scale / 64.0f;
@@ -284,6 +288,8 @@ float Font::spaceWidth() const {
     Returns visual height for the font in world units.
 */
 float Font::lineHeight() const {
+    PROFILE_FUNCTION();
+
     FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, '\n' ), FT_LOAD_DEFAULT );
     if(!error) {
         return static_cast<float>(p_ptr->m_pFace->glyph->metrics.height) / p_ptr->m_Scale / 32.0f;
@@ -294,32 +300,20 @@ float Font::lineHeight() const {
     \internal
 */
 void Font::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
+
+    clearAtlas();
     clear();
-    {
-        auto it = data.find(HEADER);
-        if(it != data.end()) {
-            VariantList header  = (*it).second.value<VariantList>();
-
-            auto i = header.begin();
-            //Reserved
-            i++;
-            //m_Scale = (*i).toInt();
-            i++;
-            //string name = (*i).toString();
-            i++;
-        }
-    }
-
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
-            p_ptr->m_Data  = (*it).second.toByteArray();
+            p_ptr->m_Data = (*it).second.toByteArray();
             FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_Data[0]), p_ptr->m_Data.size(), 0, &p_ptr->m_pFace);
             if(error) {
                 Log(Log::ERR) << "Can't load font. System returned error:" << error;
                 return;
             }
-            error  = FT_Set_Char_Size( p_ptr->m_pFace, p_ptr->m_Scale * 64, 0, 0, 0 );
+            error = FT_Set_Char_Size( p_ptr->m_pFace, p_ptr->m_Scale * 64, 0, 0, 0 );
             if(error) {
                 Log(Log::ERR) << "Can't set default font size. System returned error:" << error;
                 return;
@@ -327,10 +321,15 @@ void Font::loadUserData(const VariantMap &data) {
             p_ptr->m_UseKerning = FT_HAS_KERNING( p_ptr->m_pFace );
         }
     }
+
+    setState(Ready);
 }
 /*!
     Cleans up all font data.
 */
 void Font::clear() {
+    PROFILE_FUNCTION();
+
+    p_ptr->m_GlyphMap.clear();
     FT_Done_Face(p_ptr->m_pFace);
 }

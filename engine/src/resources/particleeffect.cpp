@@ -268,10 +268,6 @@ ParticleEffect::~ParticleEffect() {
     PROFILE_FUNCTION();
 }
 
-void ParticleEffect::apply() {
-
-}
-
 void ParticleEffect::clear() {
     m_Emitters.clear();
 }
@@ -368,5 +364,6 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
             }
         }
     }
-    apply();
+
+    setState(Ready);
 }

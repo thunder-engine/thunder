@@ -61,8 +61,6 @@ void ResourceSystem::update(Scene *) {
                             VariantList objects = var.toList();
                             VariantList fields = objects.front().toList();
                             resource->loadUserData(fields.back().toMap());
-
-                            resource->setState(Resource::ToBeUpdated);
                         }
                     }
                 } break;
@@ -195,7 +193,6 @@ void ResourceSystem::reloadResource(Object *object) {
 
 string ResourceSystem::reference(Object *object) {
     PROFILER_MARKER;
-
     auto it = p_ptr->m_ReferenceCache.find(object);
     if(it != p_ptr->m_ReferenceCache.end()) {
         return it->second;
@@ -208,6 +205,7 @@ ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
 }
 
 void ResourceSystem::deleteFromCahe(Object *object) {
+    PROFILER_MARKER;
     auto ref = p_ptr->m_ReferenceCache.find(object);
     if(ref != p_ptr->m_ReferenceCache.end()) {
         auto res = p_ptr->m_ResourceCache.find(ref->second);

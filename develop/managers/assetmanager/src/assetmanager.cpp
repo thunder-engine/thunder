@@ -419,16 +419,20 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     QString name = source.mid(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), m_pEngine->scene()));
     if(actor) {
-        Actor *prefab = static_cast<Actor *>(actor->clone());
+        Actor *clone = static_cast<Actor *>(actor->clone(actor->parent()));
         QString path = target.absoluteFilePath() + "/" + name + ".fab";
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
-            string str  = Json::save(Engine::toVariant(prefab), 0);
+            string str  = Json::save(Engine::toVariant(actor), 0);
             file.write(static_cast<const char *>(&str[0]), str.size());
             file.close();
 
             IConverterSettings *settings = fetchSettings(path);
             settings->saveSettings();
+
+            Prefab *fab = Engine::objectCreate<Prefab>("");
+            fab->setActor(actor);
+            clone->setPrefab(fab);
 
             if(settings->type() != IConverter::ContentCode) {
                 QDir dir(m_pProjectManager->contentPath());
@@ -439,11 +443,9 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
                 m_Types[uuid] = settings->type();
 
                 string dest = settings->destination();
-                Engine::setResource(prefab, dest);
+                Engine::setResource(fab, dest);
             }
             dumpBundle();
-
-            actor->setPrefab(prefab);
         }
     }
 }
@@ -813,8 +815,6 @@ bool AssetManager::convert(IConverterSettings *settings) {
             m_Paths[guid] = source;
             m_Types[guid.c_str()] = type;
 
-            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(guid));
-
             for(QString it : settings->subKeys()) {
                 string value = settings->subItem(it).toStdString();
                 int32_t type = settings->subType(it);
@@ -823,8 +823,11 @@ bool AssetManager::convert(IConverterSettings *settings) {
                 m_Paths[value] = path;
                 m_Types[value.c_str()] = type;
 
+                static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(value));
                 emit imported(QString::fromStdString(path), type);
             }
+
+            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(guid));
             emit imported(QString::fromStdString(source), type);
 
             settings->saveSettings();

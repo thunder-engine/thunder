@@ -4,7 +4,6 @@
 #include <engine.h>
 
 class Actor;
-class ICommandBuffer;
 class ComponentPrivate;
 
 class NEXT_LIBRARY_EXPORT Component : public Object {

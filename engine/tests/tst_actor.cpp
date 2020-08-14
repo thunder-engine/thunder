@@ -7,6 +7,8 @@
 #include "components/meshrender.h"
 #include "components/skinnedmeshrender.h"
 
+#include "resources/prefab.h"
+
 #include "systems/resourcesystem.h"
 
 #include "commandbuffer.h"
@@ -114,7 +116,10 @@ void Prefab_serialization() {
     QCOMPARE(prefabCamera != nullptr, true);
     prefabCamera->setFocal(10.0f);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(prefab, "TestPrefab");
+    Prefab *fab = Engine::objectCreate<Prefab>("");
+    fab->setActor(prefab);
+
+    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
     QCOMPARE(clone != nullptr, true);
@@ -167,7 +172,10 @@ void Cross_reference_prefab() {
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
     QCOMPARE(prefabTestComponent != nullptr, true);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(prefab, "TestPrefab");
+    Prefab *fab = Engine::objectCreate<Prefab>("");
+    fab->setActor(prefab);
+
+    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
 
     Actor *root = Engine::objectCreate<Actor>("Root");
 
@@ -220,7 +228,10 @@ void Remove_component_prefab() {
     TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
     QCOMPARE(prefabTestComponent != nullptr, true);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(prefab, "TestPrefab");
+    Prefab *fab = Engine::objectCreate<Prefab>("");
+    fab->setActor(prefab);
+
+    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
     QCOMPARE(clone != nullptr, true);
@@ -242,6 +253,44 @@ void Remove_component_prefab() {
     delete result;
 
     delete clone;
+    delete prefab;
+}
+
+void Update_prefab() {
+    Engine system(nullptr, "");
+    TestComponent::registerClassFactory(&system);
+
+    Actor *prefab = Engine::objectCreate<Actor>("Prefab");
+    QCOMPARE(prefab != nullptr, true);
+
+    Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
+    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
+    QCOMPARE(prefabTestComponent != nullptr, true);
+
+    Actor *level2 = Engine::objectCreate<Actor>("Level2", prefab);
+
+    Prefab *fab = Engine::objectCreate<Prefab>("");
+    fab->setActor(prefab);
+
+    Actor *clone = dynamic_cast<Actor *>(prefab->clone());
+    QCOMPARE(clone != nullptr, true);
+
+    delete level1;
+    prefabTestComponent = dynamic_cast<TestComponent *>(prefab->addComponent("TestComponent"));
+
+    level2->transform()->setPosition(Vector3(1.0f, 2.0f, 3.0f));
+
+    fab->setState(Resource::Loading);
+    fab->setState(Resource::Ready);
+
+    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));
+    QCOMPARE(resultTestComponent != nullptr, true);
+    QCOMPARE(QString(resultTestComponent->parent()->name().c_str()), "Prefab");
+
+    Actor *cloneLevel2 = dynamic_cast<Actor *>(Engine::findObject(level2->uuid(), clone));
+    QCOMPARE(cloneLevel2 != nullptr, true);
+    QCOMPARE(cloneLevel2->transform()->position(), Vector3(1.0f, 2.0f, 3.0f));
+
     delete prefab;
 }
 

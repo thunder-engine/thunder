@@ -54,4 +54,6 @@ void Pose::loadUserData(const VariantMap &data) {
             }
         }
     }
+
+    setState(Ready);
 }

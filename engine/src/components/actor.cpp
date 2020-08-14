@@ -2,6 +2,8 @@
 #include "components/scene.h"
 #include "components/transform.h"
 
+#include "resources/prefab.h"
+
 #include "systems/resourcesystem.h"
 
 #include "commandbuffer.h"
@@ -13,16 +15,100 @@
 #define STATIC  "Static"
 #define DELETED "Deleted"
 
-class ActorPrivate {
+class ActorPrivate : public Resource::IObserver {
 public:
-    ActorPrivate() :
-        m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
-        m_Enable(true),
-        m_Resource(true),
+    explicit ActorPrivate(Actor *actor) :
         m_pTransform(nullptr),
         m_pPrefab(nullptr),
-        m_pScene(nullptr) {
+        m_pScene(nullptr),
+        m_pActor(actor),
+        m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
+        m_Enable(true) {
 
+    }
+
+    ~ActorPrivate() {
+        if(m_pPrefab) {
+            m_pPrefab->unsubscribe(this);
+        }
+    }
+
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) {
+        if(resource == m_pPrefab) {
+            switch(state) {
+                case Resource::Loading: {
+                    m_Data = m_pActor->saveUserData();
+                }
+                case Resource::Ready: {
+                    ActorPrivate::ConstList prefabs;
+                    ActorPrivate::enumConstObjects(m_pPrefab->actor(), prefabs);
+
+                    ActorPrivate::List objects;
+                    ActorPrivate::enumObjects(m_pActor, objects);
+
+                    list<pair<const Object *, Object *>> array;
+
+                    ActorPrivate::List deleteObjects = objects;
+                    for(auto obj : prefabs) {
+                        bool create = true;
+                        auto it = deleteObjects.begin();
+                        while(it != deleteObjects.end()) {
+                            Object *o = *it;
+                            if(obj->uuid() == o->clonedFrom() || o->clonedFrom() == 0) {
+                                array.push_back(pair<const Object *, Object *>(obj, o));
+                                it = deleteObjects.erase(it);
+                                create = false;
+                                break;
+                            }
+                            ++it;
+                        }
+                        if(create) {
+                            Object *parent = System::findObject(obj->parent()->uuid(), m_pActor);
+                            Object *result = Engine::objectCreate(obj->typeName(), obj->name(), parent);
+
+                            array.push_back(pair<const Object *, Object *>(obj, result));
+                        }
+                    }
+
+                    for(auto it : array) {
+                        const MetaObject *meta = it.first->metaObject();
+
+                        for(int i = 0; i < meta->propertyCount(); i++) {
+                            MetaProperty rp = meta->property(i);
+                            MetaProperty lp = it.second->metaObject()->property(i);
+                            Variant data = rp.read(it.first);
+                            if(rp.type().flags() & MetaType::BASE_OBJECT) {
+                                Object *ro = *(reinterpret_cast<Object **>(data.data()));
+
+                                for(auto item : array) {
+                                    if(item.first == ro) {
+                                        ro = item.second;
+                                        break;
+                                    }
+                                }
+
+                                data = Variant(data.userType(), &ro);
+                            }
+                            lp.write(it.second, data);
+                        }
+
+                        for(auto item : it.first->getReceivers()) {
+                            MetaMethod signal = it.second->metaObject()->method(item.signal);
+                            MetaMethod method = item.receiver->metaObject()->method(item.method);
+                            Object::connect(it.second, (to_string(1) + signal.signature()).c_str(),
+                                            item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
+                        }
+                    }
+
+                    for(auto it : deleteObjects) {
+                        delete it;
+                    }
+
+                    m_pActor->loadUserData(m_Data.toMap());
+                } break;
+                default: break;
+            }
+        }
     }
 
     static bool isPointer(const char *name) {
@@ -68,17 +154,19 @@ public:
         return nullptr;
     }
 
-    uint8_t m_Layers;
-
-    bool m_Enable;
-
-    bool m_Resource;
+    Variant m_Data;
 
     Transform *m_pTransform;
 
-    Actor *m_pPrefab;
+    Prefab *m_pPrefab;
 
     Scene *m_pScene;
+
+    Actor *m_pActor;
+
+    uint8_t m_Layers;
+
+    bool m_Enable;
 };
 /*!
     \class Actor
@@ -93,7 +181,7 @@ public:
 */
 
 Actor::Actor() :
-        p_ptr(new ActorPrivate) {
+        p_ptr(new ActorPrivate(this)) {
 
 }
 
@@ -232,8 +320,9 @@ Object *Actor::clone(Object *parent) {
     }
 
     Actor *result = static_cast<Actor *>(Object::clone(parent));
-    if(p_ptr->m_Resource) {
-        result->setPrefab(this);
+    Prefab *prefab = dynamic_cast<Prefab *>(Object::parent());
+    if(prefab) {
+        result->setPrefab(prefab);
     } else {
         result->setPrefab(p_ptr->m_pPrefab);
     }
@@ -268,11 +357,15 @@ bool Actor::isInstance() const {
 
     \internal
 */
-void Actor::setPrefab(Actor *prefab) {
+void Actor::setPrefab(Prefab *prefab) {
     PROFILE_FUNCTION();
+    if(p_ptr->m_pPrefab) {
+        p_ptr->m_pPrefab->unsubscribe(p_ptr);
+    }
     p_ptr->m_pPrefab = prefab;
-    /// \todo Not a good solution this resource flag must be set by the resource system
-    p_ptr->m_Resource = false;
+    if(p_ptr->m_pPrefab) {
+        p_ptr->m_pPrefab->subscribe(p_ptr);
+    }
 }
 /*!
     \internal
@@ -283,15 +376,15 @@ void Actor::loadObjectData(const VariantMap &data) {
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        setPrefab(dynamic_cast<Actor *>(system->loadResource((*it).second.toString())));
+        setPrefab(dynamic_cast<Prefab *>(system->loadResource((*it).second.toString())));
 
         if(p_ptr->m_pPrefab) {
-            Actor *actor = static_cast<Actor *>(p_ptr->m_pPrefab->clone());
+            Actor *actor = static_cast<Actor *>(p_ptr->m_pPrefab->actor()->clone());
 
             it = data.find(DELETED);
             if(it != data.end()) {
                 for(auto item : (*it).second.toList()) {
-                    uint16_t uuid = static_cast<uint32_t>(item.toInt());
+                    uint32_t uuid = static_cast<uint32_t>(item.toInt());
                     Object *result = ObjectSystem::findObject(uuid, actor);
                     if(result && result != actor) {
                         delete result;
@@ -393,7 +486,7 @@ VariantMap Actor::saveUserData() const {
             result[PREFAB] = ref;
 
             ActorPrivate::ConstList prefabs;
-            ActorPrivate::enumConstObjects(p_ptr->m_pPrefab, prefabs);
+            ActorPrivate::enumConstObjects(p_ptr->m_pPrefab->actor(), prefabs);
 
             typedef unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
@@ -409,7 +502,8 @@ VariantMap Actor::saveUserData() const {
             for(auto obj : objects) {
                 auto it = temp.begin();
                 while(it != temp.end()) {
-                    if((*it)->uuid() == obj->clonedFrom() || (*it)->clonedFrom() == 0) {
+                    const Object *o = *it;
+                    if(o->uuid() == obj->clonedFrom() || obj->clonedFrom() == 0) {
                         it = temp.erase(it);
                         break;
                     }
