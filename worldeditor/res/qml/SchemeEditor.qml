@@ -215,28 +215,6 @@ Rectangle {
             context.clearRect(0, 0, canvas.width, canvas.height)
             context.strokeStyle = theme.greyLight
             context.translate(translateX, translateY)
-            // Grid
-            var beforeX = Math.round(-translateX / cell)
-            var afterX = Math.round((canvas.width - translateX) / cell)
-            for(var x = beforeX; x < afterX; x++) {
-                context.lineWidth = (x % 9 == 0) ? 2 : 1
-
-                context.beginPath()
-                context.moveTo(x * cell, -translateY)
-                context.lineTo(x * cell, canvas.height - translateY)
-                context.stroke()
-            }
-
-            var beforeY = Math.round(-translateY / cell)
-            var afterY = Math.round((canvas.height - translateY) / cell)
-            for(var y = beforeY; y < afterY; y++) {
-                context.lineWidth = (y % 9 == 0) ? 2 : 1
-
-                context.beginPath()
-                context.moveTo(-translateX, y * cell)
-                context.lineTo(canvas.width - translateX, y * cell)
-                context.stroke()
-            }
             // Creation link
             var border = nodeBorder * 2
             context.strokeStyle = linkColor
@@ -407,14 +385,15 @@ Rectangle {
             }
 
             Rectangle {
+                id: nodeBody
                 x: nodeBorder
                 y: nodeBorder
                 width: parent.width - (nodeBorder * 2)
                 height: parent.height - (nodeBorder * 2)
                 radius: 4
-                color: "#e0e0e0"
+                color: theme.greyDark
 
-                border.color: theme.red
+                border.color: theme.blue
                 border.width: (nodeObject.isFocus || nodeObject.isSelected) ? 2 : 0
 
                 MouseArea {
@@ -467,6 +446,16 @@ Rectangle {
                     anchors.top: parent.top
                     text: nodes[nodeObject.node].name
                     font.pointSize: fontMetrics.font.pointSize
+                    color: theme.textColor
+                }
+
+                Rectangle {
+                    anchors.top: name.bottom
+                    anchors.topMargin: cell / 2
+                    width: parent.width
+                    height: 1
+                    color: theme.blue
+                    visible: !stateMachine
                 }
 
                 Repeater {
@@ -474,26 +463,21 @@ Rectangle {
                     SchemePort {
                         x: {
                             if(portObject.out) {
-                                return nodeObject.width - radius
+                                return nodeObject.width - width
                             }
-                            return -radius
+                            return 0
                         }
-                        y: portObject.pos * (cell * 2) + (cell * 3) - radius
+                        y: portObject.pos * (cell * 2) + (cell * 2)
+
+                        height: (cell * 2)
+                        width: nodeObject.width / 2
 
                         node: nodeObject.node
                         port: index
 
-                        portObject: nodes[nodeObject.node].ports[index]
+                        label: portObject.name
 
-                        Text {
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: (!portObject.out) ? parent.right : undefined
-                            anchors.right: (portObject.out) ? parent.left : undefined
-                            text: portObject.name
-                            font.pointSize: fontMetrics.font.pointSize
-                        }
+                        portObject: nodes[nodeObject.node].ports[index]
                     }
                 }
 
@@ -510,6 +494,7 @@ Rectangle {
         property int sx: 0
         property int sy: 0
     }
+
 
     Shortcut {
         sequence: StandardKey.Delete

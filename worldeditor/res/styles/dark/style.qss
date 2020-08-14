@@ -11,6 +11,13 @@ QToolBar {
     border: 0px;
     padding: 3px;
 }
+QToolBar::handle {
+    image: url(:/Style/styles/dark/icons/handle.png);
+}
+QToolBar::separator {
+    image: url(:/Style/styles/dark/icons/separator.png);
+}
+
 QScrollArea {
     spacing: 3px;
     border: 0px;
@@ -252,7 +259,7 @@ QMenu::separator {
 
 QScrollBar:vertical {
     background: #757575;
-    border-radius: 4px;
+    border-radius: 0px;
     width: 8px;
     margin: 0px;
 }
@@ -285,7 +292,7 @@ QScrollBar:horizontal {
 }
 QScrollBar::handle:horizontal {
    background: #616161;
-   border-radius: 4px;
+   border-radius: 0px;
    min-width: 20px;
    margin: 0px 0px 0px 0px;
 }
