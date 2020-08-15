@@ -31,5 +31,7 @@ Item {
 
     property int frameRadius: 4
 
+    property int textSize: 10
+
     property var colors: [Qt.rgba(1,0,0), Qt.rgba(0,1,0), Qt.rgba(0,0,1), Qt.rgba(1,1,0), Qt.rgba(1,0,1), Qt.rgba(0,1,1)]
 }

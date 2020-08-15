@@ -29,7 +29,7 @@ Rectangle {
         orientation: ListView.Horizontal
         delegate: emitterDelegate
 
-        header: Component {
+        footer: Component {
             Item {
                 width: 64
                 anchors.top: parent.top
@@ -38,7 +38,7 @@ Rectangle {
                 Rectangle {
                     id: addEmitter
                     anchors.fill: parent
-                    anchors.rightMargin: 3
+                    anchors.leftMargin: 3
                     radius: 3
                     color: theme.emitterColor
 
@@ -47,7 +47,7 @@ Rectangle {
                         anchors.fill: parent
                         text: "+"
                         color: theme.textColor
-                        font.pointSize: 32
+                        font.pointSize: theme.textSize * 2
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -70,7 +70,7 @@ Rectangle {
         id: emitterDelegate
         Rectangle {
             id: emitter
-            width: 256
+            width: 200
             height: parent.height
             radius: 3
             color: theme.emitterColor
@@ -90,7 +90,7 @@ Rectangle {
                 anchors.right: parent.right
                 height: 64
                 text: Name
-                font.pointSize: 16
+                font.pointSize: theme.textSize
                 color: theme.textColor
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -167,7 +167,7 @@ Rectangle {
                             anchors.margins: 3
                             text: modelData
                             color: theme.textColor
-                            font.pointSize: 16
+                            font.pointSize: theme.textSize
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -191,7 +191,7 @@ Rectangle {
                         anchors.fill: parent
                         text: "Delete Emitter"
                         color: theme.red
-                        font.pointSize: 16
+                        font.pointSize: theme.textSize
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -233,7 +233,7 @@ Rectangle {
                                 anchors.fill: parent
                                 text: "Add Modifier"
                                 color: theme.textColor
-                                font.pointSize: 16
+                                font.pointSize: theme.textSize
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }

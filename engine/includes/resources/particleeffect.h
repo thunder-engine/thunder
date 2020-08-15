@@ -5,7 +5,7 @@
 
 #include <deque>
 
-class MaterialInstance;
+class Material;
 class Mesh;
 
 class ParticleModificator;
@@ -28,19 +28,21 @@ public:
     };
 
     struct Emitter {
+        Emitter();
+
+        ModifiersDeque m_Modifiers;
+
+        Mesh *m_pMesh;
+
+        Material *m_pMaterial;
+
+        float m_Distibution;
+
         bool m_Gpu;
 
         bool m_Local;
 
         bool m_Continous;
-
-        float m_Distibution;
-
-        Mesh *m_pMesh;
-
-        MaterialInstance *m_pMaterial;
-
-        ModifiersDeque m_Modifiers;
     };
     typedef deque<Emitter>      EmitterDeque;
 

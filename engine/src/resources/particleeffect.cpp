@@ -7,6 +7,16 @@
 
 #define EMITTERS "Emitters"
 
+ParticleEffect::Emitter::Emitter() :
+        m_pMesh(nullptr),
+        m_pMaterial(nullptr),
+        m_Distibution(1.0f),
+        m_Gpu(false),
+        m_Local(false),
+        m_Continous(true) {
+
+}
+
 ParticleEffect::ParticleData::ParticleData() :
         life(1.0),
         frame(0.0),
@@ -318,12 +328,8 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
 
                 emitter.m_pMesh = Engine::loadResource<Mesh>((*it).toString());
                 it++;
-                Material *mat = Engine::loadResource<Material>((*it).toString());
-                if(mat) {
-                    emitter.m_pMaterial = mat->createInstance(Material::Billboard);
-                }
+                emitter.m_pMaterial = Engine::loadResource<Material>((*it).toString());
                 it++;
-
                 emitter.m_Gpu = (*it).toBool();
                 it++;
                 emitter.m_Local = (*it).toBool();

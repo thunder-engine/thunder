@@ -1,7 +1,7 @@
 [
     {
         "Name": "Emitter",
-        "Mesh": "{e394db15-d7a2-481c-8926-eb3bbcf0d21a}",
+        "Mesh": ".embedded/plane.fbx/Plane001",
         "Material": "{00000000-0401-0000-0000-000000000000}",
         "Continuous": true,
         "Local": false,

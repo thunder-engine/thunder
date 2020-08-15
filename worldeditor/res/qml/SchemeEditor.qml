@@ -54,7 +54,7 @@ Rectangle {
 
     FontMetrics {
         id: fontMetrics
-        font.pointSize: 12
+        font.pointSize: theme.textSize
     }
 
     function nodeWidth(node) {
@@ -445,7 +445,7 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: parent.top
                     text: nodes[nodeObject.node].name
-                    font.pointSize: fontMetrics.font.pointSize
+                    font.pointSize: theme.textSize
                     color: theme.textColor
                 }
 

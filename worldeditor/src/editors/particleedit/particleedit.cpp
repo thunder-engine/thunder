@@ -173,9 +173,10 @@ void ParticleEdit::onEmitterDeleted(QString name) {
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Cancel);
 
-    int result  = msgBox.exec();
+    int result = msgBox.exec();
     if(result == QMessageBox::Yes) {
         m_pBuilder->deleteEmitter(name);
+        ui->treeView->setObject(nullptr);
     }
 }
 

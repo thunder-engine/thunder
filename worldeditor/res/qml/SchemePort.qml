@@ -106,7 +106,7 @@ Rectangle {
         anchors.left: (portObject !== undefined && !portObject.out) ? bullet.right : undefined
         anchors.right: (portObject !== undefined && portObject.out) ? bullet.left : undefined
         text: label
-        font.pointSize: fontMetrics.font.pointSize
+        font.pointSize: theme.textSize
         color: theme.textColor
     }
 }
