@@ -26,15 +26,15 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
             return;
         }
         case MetaType::VARIANTMAP: {
-            VariantMap &map  = *(reinterpret_cast<VariantMap *>(v.data()));
-            uint32_t type   = MetaType::type(name.c_str());
+            VariantMap &map = *(reinterpret_cast<VariantMap *>(v.data()));
+            uint32_t type = MetaType::type(name.c_str());
             if((type >= MetaType::VECTOR2 && type < MetaType::USERTYPE)) {
                 Variant object(type, MetaType::create(type));
                 VariantList &list = *(reinterpret_cast<VariantList *>(data.data()));
                 MetaType::convert(&list, MetaType::VARIANTLIST, object.data(), type);
                 s.push(object);
             } else {
-                map[name]    = data;
+                map[name] = data;
                 s.push(map);
             }
             return;

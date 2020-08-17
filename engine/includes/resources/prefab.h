@@ -10,6 +10,10 @@ class Actor;
 class NEXT_LIBRARY_EXPORT Prefab : public Resource {
     A_REGISTER(Prefab, Resource, Resources)
 
+    A_PROPERTIES(
+        A_PROPERTY(Actor *, Actor, Prefab::actor, Prefab::setActor)
+    )
+
 public:
     Prefab();
     ~Prefab();

@@ -197,8 +197,15 @@ Variant::Variant(const Matrix4 &value) {
 Variant::Variant(uint32_t type, void *copy) {
     PROFILE_FUNCTION();
     mData.type = type;
-    if(mData.type != MetaType::INVALID) {
-        mData.ptr = MetaType::create(type, copy);
+
+    if(type == MetaType::INVALID) {
+        return;
+    }
+    switch(type) {
+        case MetaType::BOOLEAN: mData.b = *reinterpret_cast<bool *>(copy); break;
+        case MetaType::INTEGER: mData.i = *reinterpret_cast<int *>(copy); break;
+        case MetaType::FLOAT: mData.f = *reinterpret_cast<float *>(copy); break;
+        default: mData.ptr = MetaType::create(type, copy); break;
     }
 }
 
@@ -211,7 +218,7 @@ Variant::~Variant() {
 */
 Variant::Variant(const Variant &value) {
     PROFILE_FUNCTION();
-    *this   = value;
+    *this = value;
 }
 /*!
     Assigns the \a value of the variant to this variant.
@@ -309,6 +316,9 @@ void *Variant::data() const {
     PROFILE_FUNCTION();
     if(mData.is_shared) {
         return mData.shared->ptr;
+    }
+    if(mData.type < MetaType::STRING) {
+        return &mData.b;
     }
     return mData.ptr;
 }

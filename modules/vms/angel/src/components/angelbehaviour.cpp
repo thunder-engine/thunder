@@ -1,5 +1,7 @@
 #include "components/angelbehaviour.h"
 
+#include "resources/prefab.h"
+
 #include "angelsystem.h"
 
 #include <cstring>
@@ -182,7 +184,7 @@ VariantMap AngelBehaviour::saveUserData() const {
     for(auto it : m_Table) {
         if(it.ptr != nullptr) {
             Variant value = MetaProperty(&it).read(this);
-            if(value.type() == MetaType::USERTYPE && (value.userType() == MetaType::type<Actor *>())) {
+            if(value.type() == MetaType::USERTYPE && (value.userType() == MetaType::type<Prefab *>())) {
                 result[it.name] = Engine::reference(*(reinterpret_cast<Object **>(value.data())));
             } else {
                 result[it.name] = MetaProperty(&it).read(this);
@@ -200,7 +202,7 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
             auto property = data.find(it.name);
             if(property != data.end()) {
                 uint32_t type = MetaType::type(MetaType(it.type).name());
-                if(type == MetaType::type<Actor *>()) {
+                if(type == MetaType::type<Prefab *>()) {
                     Object *actor = Engine::loadResource<Object>(property->second.toString());
                     MetaProperty(&it).write(this, Variant(type, &actor));
                 } else {

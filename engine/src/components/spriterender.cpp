@@ -157,16 +157,16 @@ VariantMap SpriteRender::saveUserData() const {
     VariantMap result   = Component::saveUserData();
     {
         Material *m = material();
-        string ref  = Engine::reference(m);
+        string ref = Engine::reference(m);
         if(!ref.empty()) {
-            result[MATERIAL]    = ref;
+            result[MATERIAL] = ref;
         }
     }
     {
-        Texture *t  = texture();
-        string ref  = Engine::reference(t);
+        Texture *t = texture();
+        string ref = Engine::reference(t);
         if(!ref.empty()) {
-            result[BASEMAP]    = ref;
+            result[BASEMAP] = ref;
         }
     }
     return result;

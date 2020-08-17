@@ -59,8 +59,6 @@ Variant MetaProperty::read(const Object *object) const {
     if(m_pTable->reader) {
         return m_pTable->reader(object);
     } else if(m_pTable->ptr) {
-        int i;
-        memcpy(&i, m_pTable->ptr, 4);
         return Variant(MetaType::type(m_pTable->type->name), m_pTable->ptr);
     }
     return Variant();

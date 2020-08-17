@@ -162,8 +162,9 @@ void ResourceSystem::unloadResource(const string &path) {
                 if(resource) {
                     unloadResource(resource);
                 } else {
-                    deleteFromCahe(it->second);
-                    delete it->second;
+                    Object *object = it->second;
+                    deleteFromCahe(object);
+                    delete object;
                 }
             }
         }
