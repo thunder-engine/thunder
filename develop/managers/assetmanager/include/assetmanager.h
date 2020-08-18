@@ -12,6 +12,8 @@
 
 #include "converters/converter.h"
 
+#include <systems/resourcesystem.h>
+
 class QFileSystemWatcher;
 
 class ProjectManager;
@@ -45,15 +47,15 @@ public:
 
     virtual ~IAssetEditor() {}
 
-    virtual void            loadAsset           (IConverterSettings *settings) = 0;
+    virtual void loadAsset (IConverterSettings *settings) = 0;
 
-    void                    setModified         (bool value) { m_bModified = value; }
-    bool                    isModified          () { return m_bModified; }
+    void setModified (bool value) { m_bModified = value; }
+    bool isModified () { return m_bModified; }
 
 protected:
-    Engine                 *m_pEngine;
+    Engine *m_pEngine;
 
-    bool                    m_bModified;
+    bool m_bModified;
 
 };
 
@@ -63,120 +65,123 @@ public:
     typedef QMap<QString, IConverter *> ConverterMap;
 
 public:
-    static AssetManager    *instance            ();
+    static AssetManager *instance ();
+    static void destroy ();
 
-    static void             destroy             ();
+    void init (Engine *engine);
 
-    void                    init                (Engine *engine);
+    void rescan (bool force);
 
-    void                    rescan              (bool force);
+    void addEditor (uint8_t type, IAssetEditor *editor);
+    QObject *openEditor (const QFileInfo &source);
 
-    void                    addEditor           (uint8_t type, IAssetEditor *editor);
-    QObject                *openEditor          (const QFileInfo &source);
+    int32_t resourceType (const QFileInfo &source);
+    int32_t assetType (const QString &uuid);
 
-    int32_t                 resourceType        (const QFileInfo &source);
-    int32_t                 assetType           (const QString &uuid);
+    int32_t toContentType (int32_t type);
 
-    int32_t                 toContentType       (int32_t type);
+    void removeResource (const QFileInfo &source);
+    void renameResource (const QFileInfo &oldName, const QFileInfo &newName);
+    void duplicateResource (const QFileInfo &source);
 
-    void                    removeResource      (const QFileInfo &source);
-    void                    renameResource      (const QFileInfo &oldName, const QFileInfo &newName);
-    void                    duplicateResource   (const QFileInfo &source);
+    void makePrefab (const QString &source, const QFileInfo &target);
 
-    void                    makePrefab          (const QString &source, const QFileInfo &target);
+    bool pushToImport (const QFileInfo &source);
+    bool import (const QFileInfo &source, const QFileInfo &target);
 
-    bool                    pushToImport        (const QFileInfo &source);
-    bool                    import              (const QFileInfo &source, const QFileInfo &target);
+    void registerConverter (IConverter *converter);
 
-    void                    registerConverter   (IConverter *converter);
+    static void findFreeName (QString &name, const QString &path, const QString &suff = QString());
 
-    static void             findFreeName        (QString &name, const QString &path, const QString &suff = QString());
+    string guidToPath (const string &guid);
+    string pathToGuid (const string &path);
 
-    string                  guidToPath          (const string &guid);
-    string                  pathToGuid          (const string &path);
+    QImage icon (const QString &path);
+    QString type (const QString &path);
 
-    QImage                  icon                (const QString &path);
-    QString                 type                (const QString &path);
+    IConverterSettings *fetchSettings (const QFileInfo &source);
 
-    IConverterSettings     *fetchSettings       (const QFileInfo &source);
+    IConverter *getConverter (IConverterSettings *settings);
 
-    IConverter             *getConverter        (IConverterSettings *settings);
+    bool isOutdated () const;
 
-    bool                    isOutdated          () const;
+    QString artifact () const;
+    void setArtifact (const QString &value);
 
-    QString                 artifact            () const;
-    void                    setArtifact         (const QString &value);
+    ConverterMap converters () const;
 
-    ConverterMap            converters          () const;
-
-    bool                    pushToImport        (IConverterSettings *settings);
+    bool pushToImport (IConverterSettings *settings);
 
 public slots:
-    void                    reimport            ();
+    void reimport ();
 
 signals:
-    void                    ready               ();
+    void ready ();
 
-    void                    directoryChanged    (const QString &path);
-    void                    fileChanged         (const QString &path);
+    void directoryChanged (const QString &path);
+    void fileChanged (const QString &path);
 
-    void                    imported            (const QString &path, uint32_t type);
-    void                    importStarted       (int count, const QString &stage);
-    void                    importFinished      ();
+    void imported (const QString &path, uint32_t type);
+    void importStarted (int count, const QString &stage);
+    void importFinished ();
 
 protected slots:
-    void                    onPerform           ();
+    void onPerform ();
 
-    void                    onFileChanged       (const QString &path, bool force = false);
+    void onFileChanged (const QString &path, bool force = false);
 
-    void                    onDirectoryChanged  (const QString &path, bool force = false);
+    void onDirectoryChanged (const QString &path, bool force = false);
 
 private:
-    AssetManager            ();
-    ~AssetManager           ();
+    AssetManager ();
+    ~AssetManager ();
 
-    static AssetManager    *m_pInstance;
+    static AssetManager *m_pInstance;
 
 protected:
-    typedef QMap<int32_t, IAssetEditor *>   EditorsMap;
-    EditorsMap              m_Editors;
+    typedef QMap<int32_t, IAssetEditor *> EditorsMap;
+    EditorsMap m_Editors;
 
-    typedef QMap<QString, int32_t>          FormatsMap;
-    FormatsMap              m_Formats;
+    typedef QMap<QString, int32_t> FormatsMap;
+    FormatsMap m_Formats;
 
-    typedef QMap<int32_t, int32_t>          ContentTypeMap;
-    ContentTypeMap          m_ContentTypes;
+    typedef QMap<int32_t, int32_t> ContentTypeMap;
+    ContentTypeMap m_ContentTypes;
 
-    ConverterMap            m_Converters;
+    ConverterMap m_Converters;
 
-    VariantMap              m_Guids;
-    VariantMap              m_Paths;
-    FormatsMap              m_Types;
+    ResourceSystem::DictionaryMap &m_Indices;
 
-    QFileSystemWatcher     *m_pDirWatcher;
-    QFileSystemWatcher     *m_pFileWatcher;
+    VariantMap m_Paths;
+    FormatsMap m_Types;
 
-    QList<IConverterSettings *>  m_ImportQueue;
+    QFileSystemWatcher *m_pDirWatcher;
+    QFileSystemWatcher *m_pFileWatcher;
 
-    ProjectManager         *m_pProjectManager;
+    QList<IConverterSettings *> m_ImportQueue;
 
-    QTimer                 *m_pTimer;
+    ProjectManager *m_pProjectManager;
 
-    Engine                 *m_pEngine;
+    QTimer *m_pTimer;
 
-    QList<IBuilder *>       m_pBuilders;
+    Engine *m_pEngine;
 
-    QString                 m_Artifact;
+    QList<IBuilder *> m_pBuilders;
+
+    QString m_Artifact;
 
     QMap<QString, IConverterSettings *> m_ConverterSettings;
 
 protected:
-    void                    cleanupBundle       ();
-    void                    dumpBundle          ();
+    void cleanupBundle ();
+    void dumpBundle ();
 
-    bool                    isOutdated          (IConverterSettings *settings);
+    bool isOutdated (IConverterSettings *settings);
 
-    bool                    convert             (IConverterSettings *settings);
+    bool convert (IConverterSettings *settings);
+
+    void registerAsset(const string &source, const string &guid, int type);
+    string unregisterAsset(const string &source);
 };
 
 #endif // ASSETEDITORSMANAGER_H
