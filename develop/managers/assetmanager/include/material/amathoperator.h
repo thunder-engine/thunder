@@ -48,21 +48,24 @@ public:
             const AbstractSchemeModel::Link *l  = nullptr;
 
             for(uint8_t i = 0; i < 2; i++) {
-                l   = m_pModel->findLink(object, names[i]);
+                l = m_pModel->findLink(object, names[i]);
                 if(l) {
-                    ShaderFunction *node   = static_cast<ShaderFunction *>(l->sender->ptr);
+                    ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
                     if(node) {
                         uint8_t type;
                         int32_t index = node->build(value, *l, depth, type);
                         if(index >= 0) {
                             if(i == 0) {
-                                size    = type;
+                                size = type;
                             }
-                            args    += ((i == 0) ? "" : operation) + convert("local" + QString::number(index), type, size);
+                            args += ((i == 0) ? "" : operation) + convert("local" + QString::number(index), type, size);
                         } else {
                             return -1;
                         }
                     }
+                } else {
+                    m_pModel->reportMessage(m_pNode, QString("Missing argument ") + names[i]);
+                    return -1;
                 }
             }
 

@@ -34,7 +34,7 @@ public:
         return result;
     }
 
-    int32_t compile(AbstractSchemeModel::Node *object, const QString &func, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size, uint8_t expect = 0, uint8_t last = 0) {
+    int32_t compile (AbstractSchemeModel::Node *object, const QString &func, QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size, uint8_t expect = 0, uint8_t last = 0) {
         if(m_Position == -1) {
             QString args;
 
@@ -63,7 +63,7 @@ public:
                         }
                     }
                 } else {
-                    m_pModel->reportError(this, QString("Missing argument ") + it);
+                    m_pModel->reportMessage(m_pNode, QString("Missing argument ") + it);
                     return -1;
                 }
                 i++;

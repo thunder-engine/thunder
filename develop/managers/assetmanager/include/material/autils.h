@@ -105,7 +105,7 @@ public:
                 return -1;
             }
         } else {
-            m_pModel->reportError(this, "Missing argument");
+            m_pModel->reportMessage(m_pNode, "Missing argument");
             return -1;
         }
         return ShaderFunction::build(value, link, depth, size);
@@ -240,7 +240,7 @@ public:
             value.append(QString(" local%1 = %2;\n").arg(depth).arg(args));
 
         } else {
-            m_pModel->reportError(this, "Missing argument");
+            m_pModel->reportMessage(m_pNode, "Missing argument");
             return -1;
         }
 

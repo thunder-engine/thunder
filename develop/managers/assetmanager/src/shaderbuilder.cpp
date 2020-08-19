@@ -42,15 +42,15 @@
 
 #include <bson.h>
 
-#define TYPE        "Type"
-#define BLEND       "Blend"
-#define MODEL       "Model"
-#define SIDE        "Side"
-#define DEPTH       "Depth"
-#define RAW         "Raw"
-#define VIEW        "View"
+#define TYPE  "Type"
+#define BLEND "Blend"
+#define MODEL "Model"
+#define SIDE  "Side"
+#define DEPTH "Depth"
+#define RAW   "Raw"
+#define VIEW  "View"
 
-#define UNIFORM     50
+#define UNIFORM 50
 
 #define FORMAT_VERSION 1
 
@@ -139,12 +139,12 @@ ShaderBuilder::ShaderBuilder() :
 
     int i   = 0;
     foreach(QString it, list) {
-        Item *item  = new Item;
-        item->name  = it;
-        item->out   = false;
-        item->pos   = i;
-        item->type  = (i < 3) ? QMetaType::QVector3D : QMetaType::Double;
-        item->var   = value.at(i);
+        Item *item = new Item;
+        item->name = it;
+        item->out  = false;
+        item->pos  = i;
+        item->type = (i < 3) ? QMetaType::QVector3D : QMetaType::Double;
+        item->var  = value.at(i);
         m_pRootNode->list.push_back(item);
         i++;
     }
@@ -165,7 +165,7 @@ uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
     if(build()) {
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data  = Bson::save( object() );
+            ByteArray data = Bson::save( object() );
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
             settings->setCurrentVersion(settings->version());
@@ -182,11 +182,11 @@ AbstractSchemeModel::Node *ShaderBuilder::nodeCreate(const QString &path, int &i
     const QMetaObject *meta = QMetaType::metaObjectForType(type);
     if(meta) {
         QObject *object = meta->newInstance();
-        ShaderFunction *function   = dynamic_cast<ShaderFunction *>(object);
+        ShaderFunction *function = dynamic_cast<ShaderFunction *>(object);
         if(object && function) {
             connect(function, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
-            Node *result    = function->createNode(this, path);
-            result->type    = path;
+            Node *result = function->createNode(this, path);
+            result->type = path;
 
             if(index == -1) {
                 index = m_Nodes.size();
@@ -263,11 +263,11 @@ void ShaderBuilder::loadUserValues(Node *node, const QVariantMap &values) {
 void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
     QObject *func = static_cast<QObject *>(node->ptr);
     if(func) {
-        const QMetaObject *meta   = func->metaObject();
+        const QMetaObject *meta = func->metaObject();
         for(int i = 0; i < meta->propertyCount(); i++) {
             QMetaProperty property  = meta->property(i);
             if(property.isUser(func)) {
-                QVariant value  = property.read(func);
+                QVariant value = property.read(func);
                 switch(value.type()) {
                     case QVariant::Bool: {
                         values[property.name()] = value.toBool();
@@ -281,7 +281,7 @@ void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
                     case QVariant::Color: {
                         QJsonArray v;
                         v.push_back(static_cast<int32_t>(QVariant::Color));
-                        QColor col      = value.value<QColor>();
+                        QColor col = value.value<QColor>();
                         v.push_back(col.red());
                         v.push_back(col.green());
                         v.push_back(col.blue());
@@ -290,7 +290,7 @@ void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
                     } break;
                     default: {
                         if(value.canConvert<Template>()) {
-                            Template tmp    = value.value<Template>();
+                            Template tmp = value.value<Template>();
                             QJsonArray v;
                             v.push_back(value.typeName());
                             v.push_back(tmp.path);
@@ -325,7 +325,7 @@ bool ShaderBuilder::build() {
     }
     m_Shader.append("\n");
     // Textures
-    uint16_t i  = 0;
+    uint16_t i = 0;
     for(auto it : m_Textures) {
         QString texture;
         if(it.second & Cube) {
@@ -375,14 +375,14 @@ Variant ShaderBuilder::data(bool editor) const {
     properties.push_back(isDoubleSided());
     properties.push_back((materialType() == ShaderBuilder::Surface) ?
                              (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented) :
-                             Material::Static );
+                             Material::Static);
     properties.push_back(blend());
     properties.push_back(lightModel());
     properties.push_back(isDepthTest());
-    user["Properties"]  = properties;
+    user["Properties"] = properties;
 
     VariantMap textures;
-    uint16_t i  = 0;
+    uint16_t i = 0;
     for(auto it : m_Textures) {
         bool target = (it.second & Target);
         QString name = QString("uni.%1").arg((target) ? it.first : QString("texture%1").arg(i));
@@ -410,13 +410,13 @@ Variant ShaderBuilder::data(bool editor) const {
     string define;
     switch(m_BlendMode) {
         case Additive: {
-            define  = "#define BLEND_ADDITIVE 1";
+            define = "#define BLEND_ADDITIVE 1";
         } break;
         case Translucent: {
-            define  = "#define BLEND_TRANSLUCENT 1";
+            define = "#define BLEND_TRANSLUCENT 1";
         } break;
         default: {
-            define  = "#define BLEND_OPAQUE 1";
+            define = "#define BLEND_OPAQUE 1";
         } break;
     }
     switch(m_LightModel) {
@@ -504,11 +504,11 @@ Variant ShaderBuilder::data(bool editor) const {
 }
 
 int ShaderBuilder::setTexture(const QString &path, Vector4 &sub, uint8_t flags) {
-    sub     = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+    sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    int index   = m_Textures.indexOf(TexturePair(path, flags));
+    int index = m_Textures.indexOf(TexturePair(path, flags));
     if(index == -1) {
-        index   = m_Textures.size();
+        index = m_Textures.size();
         m_Textures.push_back(TexturePair(path, flags));
     }
     return index;
@@ -533,10 +533,10 @@ void ShaderBuilder::buildRoot(QString &result) {
 
         Item *item  = it;
         switch(item->type) {
-            case QMetaType::Double:     result += "float get" + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector2D:  result += "vec2 get"  + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector3D:  result += "vec3 get"  + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector4D:  result += "vec4 get"  + item->name + "(Params p) {\n"; break;
+            case QMetaType::Double:    result += "float get" + item->name + "(Params p) {\n"; break;
+            case QMetaType::QVector2D: result += "vec2 get"  + item->name + "(Params p) {\n"; break;
+            case QMetaType::QVector3D: result += "vec3 get"  + item->name + "(Params p) {\n"; break;
+            case QMetaType::QVector4D: result += "vec4 get"  + item->name + "(Params p) {\n"; break;
             default: break;
         }
 
@@ -589,7 +589,7 @@ void ShaderBuilder::cleanup() {
 }
 
 void ShaderBuilder::addPragma(const string &key, const string &value) {
-    m_Pragmas[key]  = m_Pragmas[key].append(value).append("\r\n");
+    m_Pragmas[key] = m_Pragmas[key].append(value).append("\r\n");
 }
 
 QString ShaderBuilder::loadIncludes(const QString &path, const string &define) const {
@@ -622,7 +622,6 @@ QString ShaderBuilder::loadIncludes(const QString &path, const string &define) c
                 } else {
                     output += line + "\n";
                 }
-
             }
             file.close();
 

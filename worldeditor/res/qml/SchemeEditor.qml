@@ -450,8 +450,38 @@ Rectangle {
                 }
 
                 Rectangle {
+                    id: messageBox
+                    visible: false
                     anchors.top: name.bottom
-                    anchors.topMargin: cell / 2
+                    height: cell
+                    width: nodeBody.width
+                    color: theme.red
+
+                    Connections {
+                        target: schemeModel
+                        onMessageReported: {
+                            if(node === nodeObject.node) {
+                                messageBox.visible = true;
+                                label.text = text
+                            }
+                        }
+                        onSchemeUpdated: {
+                            label.text = ""
+                            messageBox.visible = false;
+                        }
+                    }
+
+                    Text {
+                        id: label
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: ""
+                        font.pointSize: theme.textSize
+                        color: theme.textColor
+                    }
+                }
+
+                Rectangle {
+                    anchors.top: messageBox.bottom
                     width: parent.width
                     height: 1
                     color: theme.blue

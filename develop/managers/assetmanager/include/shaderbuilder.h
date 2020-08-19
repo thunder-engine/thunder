@@ -194,8 +194,6 @@ public:
 
     void                        addUniform                  (const QString &name, uint8_t type, const QVariant &value);
 
-    void                        reportError                 (QObject *, const QString &) { }
-
     FilePath                    rawPath                     () const { return m_RawPath; }
     void                        setRawPath                  (const FilePath &path) { m_RawPath = path; }
 

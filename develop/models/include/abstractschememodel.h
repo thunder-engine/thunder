@@ -96,7 +96,7 @@ public:
     virtual void load(const QString &path);
     virtual void save(const QString &path);
 
-    virtual QAbstractItemModel *components () const = 0;
+    virtual QAbstractItemModel *components() const = 0;
 
     Q_INVOKABLE QVariant nodes() const;
     Q_INVOKABLE QVariant links() const;
@@ -112,10 +112,14 @@ public:
 
     Q_INVOKABLE void deleteLinksByPort(int node, int port);
 
+    void reportMessage(Node *node, const QString &text);
+
 signals:
     void schemeUpdated();
 
     void nodeMoved();
+
+    void messageReported(int node, const QString &text);
 
 protected:
     virtual void loadUserValues(Node *node, const QVariantMap &values) = 0;

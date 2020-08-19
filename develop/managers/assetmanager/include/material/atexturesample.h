@@ -128,7 +128,7 @@ public:
         int result  = m_pModel->setTexture(m_Path.path, m_Sub, false);
 
         if(result < 0) {
-            m_pModel->reportError(this, "Missing texture");
+            m_pModel->reportMessage(m_pNode, "Missing texture");
             return false;
         }
         m_Name  = QString("texture%1").arg(result);
@@ -216,7 +216,7 @@ public:
                     value  += QString("\tfloat local%1 = lt%1.%2;\n").arg(depth).arg(channel);
                 }
             } else {
-                m_pModel->reportError(this, "Missing texture");
+                m_pModel->reportMessage(m_pNode, "Missing texture");
                 return -1;
             }
         }

@@ -298,6 +298,10 @@ QVariant AbstractSchemeModel::links() const {
     return result;
 }
 
+void AbstractSchemeModel::reportMessage(Node *node, const QString &text) {
+    emit messageReported(AbstractSchemeModel::node(node), text);
+}
+
 void AbstractSchemeModel::createLink(int sender, int oport, int receiver, int iport) {
     UndoManager::instance()->push(new CreateLink(sender, oport, receiver, iport, this));
 }
