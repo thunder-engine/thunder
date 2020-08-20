@@ -43,8 +43,8 @@ protected:
 
     QString editor (const MetaProperty &property);
 
-    QVariant qVariant (Variant &v, const MetaProperty &property);
-    Variant aVariant (QVariant &v, uint32_t type, const QString &editor);
+    QVariant qVariant (Variant &value, const MetaProperty &property);
+    Variant aVariant (QVariant &value, Variant &current, const MetaProperty &property);
 
     void buildObject (Object *object, const QString &path = QString());
 
