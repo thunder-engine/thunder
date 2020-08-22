@@ -18,61 +18,61 @@ class CameraCtrl : public QObject {
 
 public:
     enum MoveTypes {
-        MOVE_IDLE                       = 0,
-        MOVE_FORWARD                    = (1<<0),
-        MOVE_BACKWARD                   = (1<<1),
-        MOVE_LEFT                       = (1<<2),
-        MOVE_RIGHT                      = (1<<3)
+        MOVE_IDLE     = 0,
+        MOVE_FORWARD  = (1<<0),
+        MOVE_BACKWARD = (1<<1),
+        MOVE_LEFT     = (1<<2),
+        MOVE_RIGHT    = (1<<3)
     };
 
 public:
-    CameraCtrl                          (QOpenGLWidget *view);
+    CameraCtrl (QOpenGLWidget *view);
 
-    virtual void                        init                        (Scene *scene);
+    virtual void init (Scene *scene);
 
-    void                                loadSettings                ();
+    void loadSettings ();
 
-    void                                update                      ();
+    void update ();
 
-    void                                setFocusOn                  (Actor *actor, float &bottom);
+    void setFocusOn (Actor *actor, float &bottom);
 
-    void                                setFree                     (bool flag) { mCameraFree   = flag; }
+    void setFree (bool flag) { mCameraFree = flag; }
 
-    void                                blockMovement               (bool flag) { mBlockMove    = flag; }
+    void blockMovement (bool flag) { mBlockMove = flag; }
 
-    void                                blockRotations              (bool flag) { mBlockRot     = flag; }
+    void blockRotations (bool flag) { mBlockRot = flag; }
 
-    Camera                             *camera                      () const { return m_pActiveCamera; }
+    Camera *camera () const { return m_pActiveCamera; }
 
 public slots:
-    virtual void                        onInputEvent                (QInputEvent *);
+    virtual void onInputEvent (QInputEvent *);
 
-    virtual void                        onOrthographic              (bool flag);
-
-protected:
-    void                                cameraZoom                  (float delta);
-
-    void                                cameraRotate                (const Vector3 &delta);
-
-    void                                cameraMove                  (const Vector3 &delta);
+    virtual void onOrthographic (bool flag);
 
 protected:
-    uint8_t                             mCameraMove;
-    bool                                mCameraFree;
+    void cameraZoom (float delta);
 
-    bool                                mBlockMove;
-    bool                                mBlockRot;
+    void cameraRotate (const Vector3 &delta);
 
-    Vector3                             mCameraSpeed;
-    Quaternion                          mRotation;
+    void cameraMove (const Vector3 &delta);
 
-    QPoint                              mSaved;
+protected:
+    uint8_t mCameraMove;
+    bool mCameraFree;
 
-    Actor                              *m_pCamera;
+    bool mBlockMove;
+    bool mBlockRot;
 
-    QOpenGLWidget                      *m_pView;
+    Vector3 mCameraSpeed;
+    Quaternion mRotation;
 
-    Camera                             *m_pActiveCamera;
+    QPoint mSaved;
+
+    Actor *m_pCamera;
+
+    QOpenGLWidget *m_pView;
+
+    Camera *m_pActiveCamera;
 };
 
 #endif // CAMERACTRL_H

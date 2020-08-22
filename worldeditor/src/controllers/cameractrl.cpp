@@ -60,26 +60,26 @@ void CameraCtrl::update() {
     }
 
     if( m_pActiveCamera && (mCameraSpeed.x != 0.0f || mCameraSpeed.y != 0.0f || mCameraSpeed.z != 0.0f) ) {
-        Transform *t    = m_pCamera->transform();
-        Vector3 pos     = t->position();
-        Vector3 dir     = t->rotation() * Vector3(0.0, 0.0, 1.0);
+        Transform *t = m_pCamera->transform();
+        Vector3 pos = t->position();
+        Vector3 dir = t->rotation() * Vector3(0.0, 0.0, 1.0);
         dir.normalize();
 
         Vector3 delta = (dir * mCameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * mCameraSpeed.x;
         t->setPosition(pos - delta * m_pActiveCamera->focal() * 0.1f);
 
-        mCameraSpeed   -= mCameraSpeed * 10.0f * Timer::deltaTime();
+        mCameraSpeed -= mCameraSpeed * 10.0f * Timer::deltaTime();
         if(mCameraSpeed.length() <= .01f) {
-            mCameraSpeed    = Vector3();
+            mCameraSpeed = Vector3();
         }
     }
 }
 
 void CameraCtrl::onOrthographic(bool flag) {
     if(m_pActiveCamera->orthographic() != flag) {
-        Transform *t    = m_pCamera->transform();
+        Transform *t = m_pCamera->transform();
         if(flag) {
-            mRotation   = t->rotation();
+            mRotation = t->rotation();
             t->setRotation(Quaternion());
         } else {
             t->setRotation(mRotation);
@@ -92,7 +92,6 @@ void CameraCtrl::onOrthographic(bool flag) {
 void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
     bottom  = 0;
     if(actor) {
-
         Transform *t = actor->transform();
 
         /// \todo Encapsulation may go wrong in case of all points on the one side of axis
@@ -116,7 +115,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
 void CameraCtrl::onInputEvent(QInputEvent *pe) {
     switch(pe->type()) {
         case QEvent::KeyPress: {
-            QKeyEvent *e    = static_cast<QKeyEvent *>(pe);
+            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
             switch(e->key()) {
                 case Qt::Key_W:
                 case Qt::Key_Up: {
@@ -142,7 +141,7 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             }
         } break;
         case QEvent::KeyRelease: {
-            QKeyEvent *e    = static_cast<QKeyEvent *>(pe);
+            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
             switch(e->key()) {
                 case Qt::Key_W:
                 case Qt::Key_Up: {
@@ -164,15 +163,15 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             }
         } break;
         case QEvent::MouseButtonPress: {
-            QMouseEvent *e  = static_cast<QMouseEvent *>(pe);
+            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->buttons() & Qt::RightButton) {
-                mSaved  = e->globalPos();
+                mSaved = e->globalPos();
             }
         } break;
         case QEvent::MouseMove: {
-            QMouseEvent *e  = static_cast<QMouseEvent *>(pe);
-            QPoint pos      = e->globalPos();
-            QPoint delta    = pos - mSaved;
+            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
+            QPoint pos = e->globalPos();
+            QPoint delta = pos - mSaved;
 
             if(e->buttons() & Qt::RightButton) {
                 if(m_pActiveCamera->orthographic()) {
@@ -198,9 +197,8 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
                 if(pos.y() <= r.top()) {
                     pos.setY(pos.y() + r.height() - 2);
                 }
-                QCursor::setPos(pos);
             }
-            mSaved  = pos;
+            mSaved = pos;
         } break;
         case QEvent::Wheel: {
             cameraZoom(static_cast<QWheelEvent *>(pe)->delta());
@@ -228,11 +226,11 @@ void CameraCtrl::cameraZoom(float delta) {
 }
 
 void CameraCtrl::cameraRotate(const Vector3 &delta) {
-    Transform *t  = m_pCamera->transform();
+    Transform *t = m_pCamera->transform();
     Vector3 euler = t->euler() - delta;
-    mRotation     = Quaternion(euler);
+    mRotation = Quaternion(euler);
 
-    Vector3 target  = t->position() - t->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
+    Vector3 target = t->position() - t->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
     if(!mCameraFree) {
         t->setPosition(target + mRotation * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }
