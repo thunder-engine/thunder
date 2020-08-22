@@ -387,8 +387,7 @@ void ObjectCtrl::onCreateComponent(const QString &name) {
             } else {
                 QMessageBox msgBox;
                 msgBox.setIcon(QMessageBox::Warning);
-                msgBox.setText("Creation Component Failed");
-                msgBox.setInformativeText("Do you want to save your changes?");
+                msgBox.setText(tr("Creation Component Failed"));
                 msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(name));
                 msgBox.setStandardButtons(QMessageBox::Ok);
 

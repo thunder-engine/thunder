@@ -30,14 +30,15 @@ bool compare(const AnimationClip::Track &first, const AnimationClip::Track &seco
 
 Timeline::Timeline(QWidget *parent) :
         QWidget(parent),
+        m_ContentMenu(this),
         ui(new Ui::Timeline),
         m_pController(nullptr),
         m_TimerId(0),
-        m_ContentMenu(this),
-        m_Modified(false),
         m_Row(-1),
         m_Col(-1),
-        m_Ind(-1) {
+        m_Ind(-1),
+        m_Modified(false) {
+
     ui->setupUi(this);
     ui->pause->setVisible(false);
 
@@ -163,8 +164,10 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
 
     saveClip();
 
+    m_SelectedObjects = objects;
+
     AnimationController *result = nullptr;
-    for(auto object : objects) {
+    for(auto object : m_SelectedObjects) {
         result  = findController(object);
         if(result) {
             break;
@@ -172,10 +175,6 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
     }
     if(m_pController != result) {
         m_pController = result;
-
-        m_pModel->setController(m_pController);
-        ui->clipBox->clear();
-        ui->clipBox->addItems(m_pModel->clips());
 
         bool enable = (m_pController != nullptr);
 
@@ -191,16 +190,24 @@ void Timeline::onObjectSelected(Object::ObjectList objects) {
         ui->next->setEnabled(enable);
         ui->previous->setEnabled(enable);
 
-        ui->treeView->setCurrentIndex(m_pModel->index(0, 0));
-
-        onSelectKey(-1, -1, -1);
-
         emit animated(enable);
 
-        //m_pModel->blockSignals(true);
-        on_begin_clicked();
-        //m_pModel->blockSignals(false);
+        updateClips();
     }
+}
+
+void Timeline::updateClips() {
+    m_pModel->setController(m_pController);
+    ui->clipBox->clear();
+    ui->clipBox->addItems(m_pModel->clips());
+
+    ui->treeView->setCurrentIndex(m_pModel->index(0, 0));
+
+    onSelectKey(-1, -1, -1);
+
+    //m_pModel->blockSignals(true);
+    on_begin_clicked();
+    //m_pModel->blockSignals(false);
 }
 
 void Timeline::onChanged(Object::ObjectList objects, const QString property) {
@@ -214,89 +221,94 @@ void Timeline::showBar() {
 }
 
 void Timeline::onUpdated(Object *object, const QString property) {
-    if(object && !property.isEmpty() && ui->record->isChecked()) {
-        AnimationController *controller = findController(object);
-        if(controller) {
-            AnimationClip *c = m_pModel->clip();
-            if(c == nullptr) {
-                return;
-            }
-
-            QString path = pathTo(static_cast<Object *>(controller->actor()), object);
-
-            const MetaObject *meta = object->metaObject();
-            int32_t index = meta->indexOfProperty(qPrintable(property));
-            if(index >= 0) {
-                MetaProperty p = meta->property(index);
-                Variant value = p.read(object);
-
-                vector<float> data;
-                switch(value.type()) {
-                    case MetaType::VECTOR2: {
-                        Vector2 v = value.toVector2();
-                        data = {v.x, v.y};
-                    } break;
-                    case MetaType::VECTOR3: {
-                        Vector3 v = value.toVector3();
-                        data = {v.x, v.y, v.z};
-                    } break;
-                    case MetaType::VECTOR4: {
-                        Vector4 v = value.toVector4();
-                        data = {v.x, v.y, v.z, v.w};
-                    } break;
-                    default: {
-                        data = {value.toFloat()};
-                    } break;
+    if(object) {
+        if(object == m_pController) {
+            updateClips();
+            return;
+        }
+        if(!property.isEmpty() && ui->record->isChecked()) {
+            if(m_pController) {
+                AnimationClip *c = m_pModel->clip();
+                if(c == nullptr) {
+                    return;
                 }
 
-                AnimationClip::TrackList tracks = c->m_Tracks;
+                QString path = pathTo(static_cast<Object *>(m_pController->actor()), object);
 
-                for(uint32_t component = 0; component < data.size(); component++) {
-                    bool create = true;
+                const MetaObject *meta = object->metaObject();
+                int32_t index = meta->indexOfProperty(qPrintable(property));
+                if(index >= 0) {
+                    MetaProperty p = meta->property(index);
+                    Variant value = p.read(object);
 
-                    AnimationCurve::KeyFrame key;
-                    key.m_Position = controller->position();
-                    key.m_Value = data[component];
-                    key.m_LeftTangent = key.m_Value;
-                    key.m_RightTangent = key.m_Value;
+                    vector<float> data;
+                    switch(value.type()) {
+                        case MetaType::VECTOR2: {
+                            Vector2 v = value.toVector2();
+                            data = {v.x, v.y};
+                        } break;
+                        case MetaType::VECTOR3: {
+                            Vector3 v = value.toVector3();
+                            data = {v.x, v.y, v.z};
+                        } break;
+                        case MetaType::VECTOR4: {
+                            Vector4 v = value.toVector4();
+                            data = {v.x, v.y, v.z, v.w};
+                        } break;
+                        default: {
+                            data = {value.toFloat()};
+                        } break;
+                    }
 
-                    for(auto &it : tracks) {
-                        if(it.path == path.toStdString() && it.property == property.toStdString()) {
-                            bool update = false;
+                    AnimationClip::TrackList tracks = c->m_Tracks;
 
-                            auto &curve = it.curves[component];
-                            for(auto &k : curve.m_Keys) {
+                    for(uint32_t component = 0; component < data.size(); component++) {
+                        bool create = true;
 
-                                if(k.m_Position == key.m_Position) {
-                                    k.m_Value = key.m_Value;
-                                    k.m_LeftTangent = key.m_LeftTangent;
-                                    k.m_RightTangent = key.m_RightTangent;
-                                    update  = true;
+                        AnimationCurve::KeyFrame key;
+                        key.m_Position = m_pController->position();
+                        key.m_Value = data[component];
+                        key.m_LeftTangent = key.m_Value;
+                        key.m_RightTangent = key.m_Value;
+
+                        for(auto &it : tracks) {
+                            if(it.path == path.toStdString() && it.property == property.toStdString()) {
+                                bool update = false;
+
+                                auto &curve = it.curves[component];
+                                for(auto &k : curve.m_Keys) {
+
+                                    if(k.m_Position == key.m_Position) {
+                                        k.m_Value = key.m_Value;
+                                        k.m_LeftTangent = key.m_LeftTangent;
+                                        k.m_RightTangent = key.m_RightTangent;
+                                        update  = true;
+                                    }
                                 }
+                                if(!update) {
+                                    curve.m_Keys.push_back(key);
+                                    std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), AnimationClipModel::compare);
+                                }
+                                create  = false;
+                                break;
                             }
-                            if(!update) {
-                                curve.m_Keys.push_back(key);
-                                std::sort(curve.m_Keys.begin(), curve.m_Keys.end(), AnimationClipModel::compare);
-                            }
-                            create  = false;
-                            break;
+                        }
+                        if(create) {
+                            AnimationClip::Track track;
+                            track.path = path.toStdString();
+                            track.property = property.toStdString();
+
+                            AnimationCurve curve;
+                            curve.m_Keys.push_back(key);
+
+                            track.curves[component] = curve;
+
+                            tracks.push_back(track);
+                            tracks.sort(compare);
                         }
                     }
-                    if(create) {
-                        AnimationClip::Track track;
-                        track.path = path.toStdString();
-                        track.property = property.toStdString();
-
-                        AnimationCurve curve;
-                        curve.m_Keys.push_back(key);
-
-                        track.curves[component] = curve;
-
-                        tracks.push_back(track);
-                        tracks.sort(compare);
-                    }
+                    UndoManager::instance()->push(new UndoUpdateItems(tracks, m_pModel, "Update Properties"));
                 }
-                UndoManager::instance()->push(new UndoUpdateItems(tracks, m_pModel, "Update Properties"));
             }
         }
     }

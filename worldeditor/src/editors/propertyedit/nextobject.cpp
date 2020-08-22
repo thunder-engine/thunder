@@ -238,6 +238,11 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
             }
             return QVariant::fromValue(vectorValue);
         }
+        case MetaType::QUATERNION:
+        case MetaType::MATRIX3:
+        case MetaType::MATRIX4: {
+            return QVariant();
+        }
         default: break;
     }
 
