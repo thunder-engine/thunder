@@ -4,7 +4,6 @@
 
 #include <log.h>
 
-#include <analytics/profiler.h>
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -17,7 +16,7 @@ MediaSystem::MediaSystem() :
         m_pDevice(nullptr),
         m_pContext(nullptr),
         m_Inited(false) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     AudioSource::registerClassFactory(this);
 
@@ -25,14 +24,14 @@ MediaSystem::MediaSystem() :
 }
 
 MediaSystem::~MediaSystem() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     alcDestroyContext(m_pContext);
     alcCloseDevice(m_pDevice);
 }
 
 bool MediaSystem::init() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(!m_Inited) {
         m_pDevice   = alcOpenDevice(nullptr);
         if(m_pDevice) {
@@ -51,7 +50,7 @@ const char *MediaSystem::name() const {
 }
 
 void MediaSystem::update(Scene *) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     Camera *camera  = Camera::current();
     if(camera) {

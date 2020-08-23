@@ -7,7 +7,6 @@
 
 #include <resources/pipeline.h>
 
-#include <analytics/profiler.h>
 
 #include "resources/atexturegl.h"
 #include "resources/arendertexturegl.h"
@@ -39,7 +38,7 @@ void _CheckGLError(const char* file, int line) {
 RenderGLSystem::RenderGLSystem(Engine *engine) :
         System(),
         m_pEngine(engine) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     System *system = m_pEngine->resourceSystem();
 
@@ -52,7 +51,7 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 }
 
 RenderGLSystem::~RenderGLSystem() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     System *system = m_pEngine->resourceSystem();
 
@@ -68,7 +67,7 @@ RenderGLSystem::~RenderGLSystem() {
     Initialization of render.
 */
 bool RenderGLSystem::init() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
 #ifndef THUNDER_MOBILE
     if(!gladLoadGL()) {
@@ -105,7 +104,7 @@ const char *RenderGLSystem::name() const {
     Main drawing procedure.
 */
 void RenderGLSystem::update(Scene *scene) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     PROFILER_RESET(POLYGONS);
     PROFILER_RESET(DRAWCALLS);

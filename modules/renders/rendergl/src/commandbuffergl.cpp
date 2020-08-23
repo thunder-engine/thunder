@@ -1,7 +1,6 @@
 #include "commandbuffergl.h"
 
 #include "agl.h"
-#include "analytics/profiler.h"
 
 #include <resources/amaterialgl.h>
 #include <resources/ameshgl.h>
@@ -10,6 +9,7 @@
 #include "resources/arendertexturegl.h"
 
 #include <log.h>
+#include <timer.h>
 
 #define TRANSFORM_BIND  0
 
@@ -22,7 +22,7 @@
 #define CLIP_BIND   4
 
 CommandBufferGL::CommandBufferGL() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     m_StaticVertex.clear();
 }
@@ -32,7 +32,7 @@ CommandBufferGL::~CommandBufferGL() {
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     uint32_t flags  = 0;
     if(clearColor) {
@@ -120,7 +120,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(mesh && material) {
         AMeshGL *m      = static_cast<AMeshGL *>(mesh);
@@ -161,7 +161,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
 }
 
 void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(mesh && material) {
         AMeshGL *m   = static_cast<AMeshGL *>(mesh);
@@ -200,7 +200,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 }
 
 void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture *depth, uint32_t level) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     uint32_t colors[8];
 

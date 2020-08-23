@@ -7,17 +7,20 @@ Project {
         "src/core/*.cpp",
         "src/math/*.cpp",
         "src/anim/*.cpp",
+        "src/analytics/*.cpp",
         "inc/*.h",
         "inc/core/*.h",
         "inc/math/*.h",
-        "inc/anim/*.h"
+        "inc/anim/*.h",
+        "inc/analytics/*.h"
     ]
 
     property stringList incPaths: [
         "inc",
         "inc/core",
         "inc/math",
-        "inc/anim"
+        "inc/anim",
+        "inc/analytics"
     ]
 
     DynamicLibrary {

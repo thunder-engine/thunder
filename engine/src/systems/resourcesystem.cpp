@@ -5,8 +5,6 @@
 
 #include "engine.h"
 
-#include "analytics/profiler.h"
-
 #include "resources/resource.h"
 
 class ResourceSystemPrivate {
@@ -36,7 +34,7 @@ const char *ResourceSystem::name() const {
 }
 
 void ResourceSystem::update(Scene *) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     for(auto it = p_ptr->m_ResourceCache.begin(); it != p_ptr->m_ResourceCache.end();) {
         Resource *resource = dynamic_cast<Resource *>(it->second);
@@ -85,21 +83,21 @@ bool ResourceSystem::isThreadSafe() const {
 }
 
 void ResourceSystem::setResource(Object *object, const string &uuid) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     p_ptr->m_ResourceCache[uuid] = object;
     p_ptr->m_ReferenceCache[object] = uuid;
 }
 
 bool ResourceSystem::isResourceExist(const string &path) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     auto it = p_ptr->m_IndexMap.find(path);
     return (it != p_ptr->m_IndexMap.end());
 }
 
 Object *ResourceSystem::loadResource(const string &path) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(!path.empty()) {
         string uuid = path;
@@ -145,7 +143,7 @@ Object *ResourceSystem::loadResource(const string &path) {
 }
 
 void ResourceSystem::unloadResource(const string &path) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(!path.empty()) {
         string uuid = path;
@@ -172,7 +170,7 @@ void ResourceSystem::unloadResource(const string &path) {
 }
 
 void ResourceSystem::unloadResource(Object *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     Resource *resource = dynamic_cast<Resource *>(object);
     if(resource) {
         resource->setState(Resource::Suspend);
@@ -183,7 +181,7 @@ void ResourceSystem::unloadResource(Object *object) {
 }
 
 void ResourceSystem::reloadResource(Object *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     Resource *resource = dynamic_cast<Resource *>(object);
     if(resource) {
         resource->setState(Resource::Loading);
@@ -193,7 +191,7 @@ void ResourceSystem::reloadResource(Object *object) {
 }
 
 string ResourceSystem::reference(Object *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     auto it = p_ptr->m_ReferenceCache.find(object);
     if(it != p_ptr->m_ReferenceCache.end()) {
         return it->second;
@@ -206,7 +204,7 @@ ResourceSystem::DictionaryMap &ResourceSystem::indices() const {
 }
 
 void ResourceSystem::deleteFromCahe(Object *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     auto ref = p_ptr->m_ReferenceCache.find(object);
     if(ref != p_ptr->m_ReferenceCache.end()) {
         auto res = p_ptr->m_ResourceCache.find(ref->second);

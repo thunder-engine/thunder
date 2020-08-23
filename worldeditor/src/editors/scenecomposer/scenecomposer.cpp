@@ -28,8 +28,6 @@
 #include <components/meshrender.h>
 #include <components/camera.h>
 
-#include <analytics/profiler.h>
-
 // Misc
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"

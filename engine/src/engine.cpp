@@ -38,7 +38,6 @@
 
 #include "components/postprocesssettings.h"
 
-#include "analytics/profiler.h"
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
 #else
@@ -184,7 +183,7 @@ typedef Vector4 Color;
 */
 Engine::Engine(File *file, const char *path) :
         p_ptr(new EnginePrivate()) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     EnginePrivate::m_pInstance = this;
 
@@ -250,7 +249,7 @@ Engine::Engine(File *file, const char *path) :
     Destructs Engine, related objects, registered object factories and platform adaptor.
 */
 Engine::~Engine() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     deleteAllObjects();
     p_ptr->m_pScene = nullptr;
@@ -261,7 +260,7 @@ Engine::~Engine() {
     Initializes all engine systems. Returns true if successful; otherwise returns false.
 */
 bool Engine::init() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
 #ifdef THUNDER_MOBILE
     p_ptr->m_pPlatform  = new MobileAdaptor(this);
@@ -283,7 +282,7 @@ bool Engine::init() {
     Returns true if successful; otherwise returns false.
 */
 bool Engine::start() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     p_ptr->m_pPlatform->start();
 
@@ -340,7 +339,7 @@ bool Engine::start() {
     \note Usually, this method calls internally and must not be called manually.
 */
 void Engine::resize() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     Camera *component = Camera::current();
     component->pipeline()->resize(p_ptr->m_pPlatform->screenWidth(), p_ptr->m_pPlatform->screenHeight());
@@ -352,7 +351,7 @@ void Engine::resize() {
     \note Usually, this method calls internally and must not be called manually.
 */
 void Engine::update() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     Timer::update();
 
@@ -372,7 +371,7 @@ void Engine::update() {
     \internal
 */
 void Engine::processEvents() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     ObjectSystem::processEvents();
     updateScene(p_ptr->m_pScene);
@@ -395,7 +394,7 @@ bool Engine::event(Event *event) {
     Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue.
 */
 Variant Engine::value(const string &key, const Variant &defaultValue) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     auto it = EnginePrivate::m_Values.find(key);
     if(it != EnginePrivate::m_Values.end()) {
@@ -407,7 +406,7 @@ Variant Engine::value(const string &key, const Variant &defaultValue) {
     Sets the value of setting \a key to \a value. If the \a key already exists, the previous value is overwritten.
 */
 void Engine::setValue(const string &key, const Variant &value) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     EnginePrivate::m_Values[key] = value;
 }
@@ -415,7 +414,7 @@ void Engine::setValue(const string &key, const Variant &value) {
     Applies all unsaved settings.
 */
 void Engine::syncValues() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     for(auto it : EnginePrivate::m_Pool) {
         it->syncSettings();
@@ -433,7 +432,7 @@ void Engine::syncValues() {
     \sa unloadResource()
 */
 Object *Engine::loadResource(const string &path) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_pResourceSystem->loadResource(path);
 }
@@ -444,7 +443,7 @@ Object *Engine::loadResource(const string &path) {
     \sa loadResource()
 */
 void Engine::unloadResource(const string &path) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     EnginePrivate::m_pResourceSystem->unloadResource(path);
 }
@@ -460,7 +459,7 @@ bool Engine::isResourceExist(const string &path) {
     \sa setResource()
 */
 void Engine::setResource(Object *object, const string &uuid) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     EnginePrivate::m_pResourceSystem->setResource(object, uuid);
 }
@@ -470,7 +469,7 @@ void Engine::setResource(Object *object, const string &uuid) {
     \sa setResource()
 */
 string Engine::reference(Object *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_pResourceSystem->reference(object);
 }
@@ -480,7 +479,7 @@ string Engine::reference(Object *object) {
     Returns true in case of success; otherwise returns false.
 */
 bool Engine::reloadBundle() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     ResourceSystem::DictionaryMap &indices = EnginePrivate::m_pResourceSystem->indices();
     indices.clear();
 
@@ -548,7 +547,7 @@ void Engine::setGameMode(bool flag) {
     \endcode
 */
 void Engine::addModule(Module *module) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(module->types() & Module::SYSTEM) {
         System *system = module->system();
         if(system->isThreadSafe()) {
@@ -563,7 +562,7 @@ void Engine::addModule(Module *module) {
     \note The game can have only one scene. Scene is a root object, all map loads on this scene.
 */
 Scene *Engine::scene() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return p_ptr->m_pScene;
 }
@@ -571,7 +570,7 @@ Scene *Engine::scene() {
     Returns file system module.
 */
 File *Engine::file() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_pFile;
 }
@@ -579,7 +578,7 @@ File *Engine::file() {
     Returns path to application binary directory.
 */
 string Engine::locationAppDir() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_ApplicationDir;
 }
@@ -587,7 +586,7 @@ string Engine::locationAppDir() {
     Returns path to application config directory.
 */
 string Engine::locationAppConfig() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     string result = EnginePrivate::m_pPlatform->locationLocalDir();
 #ifndef THUNDER_MOBILE
@@ -607,7 +606,7 @@ string Engine::locationAppConfig() {
     Returns true on success; otherwise returns false.
 */
 bool Engine::loadTranslator(const string &name) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(EnginePrivate::m_pTranslator) {
         EnginePrivate::m_pResourceSystem->unloadResource(EnginePrivate::m_pTranslator);
@@ -624,7 +623,7 @@ bool Engine::loadTranslator(const string &name) {
     Returns the translation text for the \a source string.
 */
 string Engine::translate(const string &source) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(EnginePrivate::m_pTranslator) {
         return EnginePrivate::m_pTranslator->translate(source);
@@ -635,7 +634,7 @@ string Engine::translate(const string &source) {
     Returns application name.
 */
 string Engine::applicationName() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_Application;
 }
@@ -643,7 +642,7 @@ string Engine::applicationName() const {
     Returns organization name.
 */
 string Engine::organizationName() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return EnginePrivate::m_Organization;
 }
@@ -653,7 +652,7 @@ string Engine::organizationName() const {
     \note Usually, this method calls internally and must not be called manually.
 */
 void Engine::updateScene(Scene *scene) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(isGameMode()) {
         for(auto it : m_ObjectList) {

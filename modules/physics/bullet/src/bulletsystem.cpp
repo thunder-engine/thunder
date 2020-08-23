@@ -10,8 +10,6 @@
 #include <log.h>
 #include <timer.h>
 
-#include <analytics/profiler.h>
-
 #include <components/scene.h>
 #include <components/actor.h>
 
@@ -30,7 +28,7 @@ BulletSystem::BulletSystem(Engine *engine) :
         m_pDispatcher(nullptr),
         m_pOverlappingPairCache(nullptr),
         m_pSolver(nullptr) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     Collider::registerClassFactory(this);
 
@@ -45,7 +43,7 @@ BulletSystem::BulletSystem(Engine *engine) :
 }
 
 BulletSystem::~BulletSystem() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     for(auto &it : m_Worlds) {
         delete it.second;
@@ -66,7 +64,7 @@ BulletSystem::~BulletSystem() {
 }
 
 bool BulletSystem::init() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(!m_Inited) {
         m_pCollisionConfiguration = new btDefaultCollisionConfiguration;
         m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
@@ -85,7 +83,7 @@ const char *BulletSystem::name() const {
 }
 
 void BulletSystem::update(Scene *scene) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
         btDynamicsWorld *world = nullptr;

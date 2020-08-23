@@ -10,30 +10,28 @@
 
 #include <angelscript.h>
 
-#include <analytics/profiler.h>
-
 AngelBehaviour::AngelBehaviour() :
         m_pObject(nullptr),
         m_pStart(nullptr),
         m_pUpdate(nullptr),
         m_pMetaObject(nullptr) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 }
 
 AngelBehaviour::~AngelBehaviour() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(m_pObject) {
         m_pObject->Release();
     }
 }
 
 string AngelBehaviour::script() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     return m_Script;
 }
 
 void AngelBehaviour::setScript(const string &value) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(value != m_Script) {
         if(m_pObject) {
             m_pObject->Release();
@@ -71,7 +69,7 @@ asIScriptObject *AngelBehaviour::scriptObject() const {
 }
 
 void AngelBehaviour::setScriptObject(asIScriptObject *object) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     m_pObject   = object;
     if(m_pObject) {
         m_pObject->AddRef();
@@ -151,17 +149,17 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
 }
 
 asIScriptFunction *AngelBehaviour::scriptStart() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     return m_pStart;
 }
 
 asIScriptFunction *AngelBehaviour::scriptUpdate() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     return m_pUpdate;
 }
 
 const MetaObject *AngelBehaviour::metaObject() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(m_pMetaObject) {
         return m_pMetaObject;
     }
@@ -169,17 +167,17 @@ const MetaObject *AngelBehaviour::metaObject() const {
 }
 
 VariantList AngelBehaviour::saveData() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     return serializeData(AngelBehaviour::metaClass());
 }
 
 void AngelBehaviour::loadData(const VariantList &data) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     Object::loadData(data);
 }
 
 VariantMap AngelBehaviour::saveUserData() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     VariantMap result = NativeBehaviour::saveUserData();
     for(auto it : m_Table) {
         if(it.ptr != nullptr) {
@@ -195,7 +193,7 @@ VariantMap AngelBehaviour::saveUserData() const {
 }
 
 void AngelBehaviour::loadUserData(const VariantMap &data) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     Object::loadUserData(data);
     for(auto it : m_Table) {
         if(it.ptr != nullptr) {

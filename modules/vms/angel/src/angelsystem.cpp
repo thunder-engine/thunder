@@ -4,8 +4,6 @@
 
 #include <log.h>
 
-#include <analytics/profiler.h>
-
 #include <angelscript.h>
 
 #include <scriptarray/scriptarray.h>
@@ -60,7 +58,7 @@ AngelSystem::AngelSystem(Engine *engine) :
         m_pScriptModule(nullptr),
         m_pContext(nullptr),
         m_Inited(false) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     AngelBehaviour::registerClassFactory(this);
 
@@ -68,7 +66,7 @@ AngelSystem::AngelSystem(Engine *engine) :
 }
 
 AngelSystem::~AngelSystem() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     auto it = m_ObjectList.begin();
     while(it != m_ObjectList.end()) {
@@ -93,7 +91,7 @@ AngelSystem::~AngelSystem() {
 }
 
 bool AngelSystem::init() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
     if(!m_Inited) {
         m_pScriptEngine = asCreateScriptEngine();
 
@@ -115,7 +113,7 @@ const char *AngelSystem::name() const {
 }
 
 void AngelSystem::update(Scene *scene) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
         for(auto it : m_ObjectList) {
@@ -137,7 +135,7 @@ bool AngelSystem::isThreadSafe() const {
 }
 
 void AngelSystem::reload() {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(m_pScriptModule) {
         m_pScriptModule->Discard();
@@ -173,7 +171,7 @@ void AngelSystem::reload() {
 }
 
 void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     if(func) {
         m_pContext->Prepare(func);
@@ -190,13 +188,13 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
 }
 
 asIScriptModule *AngelSystem::module() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return m_pScriptModule;
 }
 
 asIScriptContext *AngelSystem::context() const {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     return m_pContext;
 }
@@ -206,7 +204,7 @@ void *castTo(void *ptr) {
 }
 
 void AngelSystem::registerClasses(asIScriptEngine *engine) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     RegisterStdString(engine);
     RegisterScriptArray(engine, true);
@@ -353,7 +351,7 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
 }
 
 void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
-    PROFILER_MARKER;
+    PROFILE_FUNCTION();
 
     A_UNUSED(param);
     Log((Log::LogTypes)msg->type) << msg->section << "(" << msg->row << msg->col << "):" << msg->message;

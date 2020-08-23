@@ -1,25 +1,13 @@
 #ifndef PROFILER
 #define PROFILER
 
+#ifdef PROFILING_ENABLED
+
 #include <thread>
 #include <unordered_map>
 
 #include "engine.h"
 #include "timer.h"
-
-#ifdef PROFILING_ENABLED
-    #define PROFILER_MARKER; Profiler MARK(__FUNCTION__);
-
-    #define PROFILER_STAT(x, y) Profiler::statAdd(x, y);
-
-    #define PROFILER_RESET(x) Profiler::statReset(x);
-#else
-    #define PROFILER_MARKER
-
-    #define PROFILER_STAT(x, y)
-
-    #define PROFILER_RESET(x)
-#endif
 
 class NEXT_LIBRARY_EXPORT Profiler {
 public:
@@ -46,6 +34,8 @@ protected:
     Profiler::CallPoint         m_Current;
 
 };
+
+#endif
 
 #endif // PROFILER
 
