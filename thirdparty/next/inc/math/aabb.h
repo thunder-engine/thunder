@@ -36,7 +36,7 @@ public:
     const AABBox                operator*                   (const Vector3 &vector) const;
     const AABBox                operator*                   (const Matrix4 &matrix) const;
 
-    void                        encapsulate                 (const Vector3 &point);
+    void                        encapsulate                 (const Vector3 &position, areal radius = 0.0f);
     void                        encapsulate                 (const AABBox &box);
 
     bool                        intersect                   (const Vector3 &position, areal radius) const;

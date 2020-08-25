@@ -30,19 +30,19 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
         extent(extent) {
 }
 /*!
-    Grows the AABBox to include the \a point.
+    Grow the AABBox to encapsulate a spehere with \a position and \a radius.
 */
-void AABBox::encapsulate(const Vector3 &point) {
+void AABBox::encapsulate(const Vector3 &position, areal radius) {
     Vector3 bb[2];
     box(bb[0], bb[1]);
 
-    bb[0].x = MIN(bb[0].x, point.x);
-    bb[0].y = MIN(bb[0].y, point.y);
-    bb[0].z = MIN(bb[0].z, point.z);
+    bb[0].x = MIN(bb[0].x, position.x - radius);
+    bb[0].y = MIN(bb[0].y, position.y - radius);
+    bb[0].z = MIN(bb[0].z, position.z - radius);
 
-    bb[1].x = MAX(bb[1].x, point.x);
-    bb[1].y = MAX(bb[1].y, point.y);
-    bb[1].z = MAX(bb[1].z, point.z);
+    bb[1].x = MAX(bb[1].x, position.x + radius);
+    bb[1].y = MAX(bb[1].y, position.y + radius);
+    bb[1].z = MAX(bb[1].z, position.z + radius);
 
     setBox(bb[0], bb[1]);
 }

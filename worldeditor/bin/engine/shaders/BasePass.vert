@@ -116,7 +116,11 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
     float x     = cos( angle ) * ( v.x ) + sin( angle ) * ( v.y );
     float y     = sin( angle ) * ( v.x ) - cos( angle ) * ( v.y );
 
-    vec3 normal = normalize( camera.position.xyz - posRot.xyz );
+    vec3 target = camera.target.xyz;
+    if(camera.projection[2].w < 0.0) {
+        target = posRot.xyz;
+    }
+    vec3 normal = normalize( camera.position.xyz - target );
     vec3 right  = normalize( cross( vec3(0.0, 1.0, 0.0), normal ) );
     vec3 up     = normalize( cross( normal, right ) );
 

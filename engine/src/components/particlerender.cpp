@@ -1,6 +1,7 @@
 #include "particlerender.h"
 
 #include <algorithm>
+#include <cfloat>
 
 #include "actor.h"
 #include "transform.h"
@@ -75,8 +76,10 @@ public:
         }
     }
 
-    ParticleEffect *m_pEffect;
+    AABBox m_AABB;
     EmitterArray m_Emitters;
+    ParticleEffect *m_pEffect;
+
 };
 /*!
     \class ParticleRender
@@ -108,6 +111,8 @@ void ParticleRender::update() {
     Vector3 pos = camera->actor()->transform()->worldPosition();
 
     if(p_ptr->m_pEffect) {
+        p_ptr->m_AABB.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
+
         uint32_t index  = 0;
         for(auto &it : p_ptr->m_Emitters) {
             ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
@@ -150,6 +155,10 @@ void ParticleRender::update() {
                 it.m_Buffer[i].mat[14] = particle.color.z;
                 it.m_Buffer[i].mat[15] = particle.color.w;
 
+                if(particle.life > 0.0f) {
+                    p_ptr->m_AABB.encapsulate(particle.transform, particle.size.sqrLength());
+                }
+
                 i++;
             }
 
@@ -187,7 +196,7 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
         }
         uint32_t index = 0;
         for(auto &it : p_ptr->m_Emitters) {
-            if(it.m_Count > 0) {
+            if(it.m_Count > 1) {
                 ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
                 buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, it.m_pInstance);
             }
@@ -219,10 +228,7 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
     \internal
 */
 AABBox ParticleRender::bound() const {
-    if(p_ptr->m_pEffect) {
-        return p_ptr->m_pEffect->bound() * actor()->transform()->worldTransform();
-    }
-    return Renderable::bound();
+    return p_ptr->m_AABB;
 }
 /*!
     \internal
