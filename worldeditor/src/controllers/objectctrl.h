@@ -58,8 +58,8 @@ public:
 
     Object::ObjectList  selected                    ();
 
-    void                setMap                      (Object *map)   { m_pMap = map; }
-    Object             *map                         () const { return m_pMap; }
+    Object             *map                         () const;
+    void                setMap                      (Object *map);
 
     void                setMoveGrid                 (float value)   { m_MoveGrid = value; }
     void                setAngleGrid                (float value)   { m_AngleGrid = value; }
@@ -185,9 +185,9 @@ protected:
     QString m_Type;
 };
 
-class CloneObjects : public UndoObject {
+class DuplicateObjects : public UndoObject {
 public:
-    CloneObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *parent = nullptr);
+    DuplicateObjects (ObjectCtrl *ctrl, const QString &name = QObject::tr("Paste Objects"), QUndoCommand *parent = nullptr);
     void undo () override;
     void redo () override;
 protected:

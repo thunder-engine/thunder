@@ -318,6 +318,15 @@ Object::ObjectList ObjectCtrl::selected() {
     return result;
 }
 
+Object *ObjectCtrl::map() const {
+    return m_pMap;
+}
+
+void ObjectCtrl::setMap(Object *map) {
+    delete m_pMap;
+    m_pMap = map;
+}
+
 void ObjectCtrl::selectActors(const list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = static_cast<Actor *>(findObject(it));
@@ -635,7 +644,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
             if(e->buttons() & Qt::LeftButton) {
                 if(!m_Drag) {
                     if(e->modifiers() & Qt::ShiftModifier) {
-                        UndoManager::instance()->push(new CloneObjects(this));
+                        UndoManager::instance()->push(new DuplicateObjects(this));
                     }
                     setDrag(Handles::s_Axes);
                 }
@@ -708,11 +717,11 @@ void CreateComponent::redo() {
     emit m_pController->objectsSelected(m_pController->selected());
 }
 
-CloneObjects::CloneObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
+DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
         UndoObject(ctrl, name, parent) {
 
 }
-void CloneObjects::undo() {
+void DuplicateObjects::undo() {
     m_Dump.clear();
     for(auto it : m_Objects) {
         Object *object = m_pController->findObject(it);
@@ -727,7 +736,7 @@ void CloneObjects::undo() {
     m_pController->clear(false);
     m_pController->selectActors(m_Selected);
 }
-void CloneObjects::redo() {
+void DuplicateObjects::redo() {
     if(m_Dump.empty()) {
         for(auto it : m_pController->selected()) {
             m_Selected.push_back(it->uuid());

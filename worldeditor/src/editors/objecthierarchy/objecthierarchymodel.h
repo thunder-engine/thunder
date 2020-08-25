@@ -38,10 +38,13 @@ private:
     void                        timerEvent                  (QTimerEvent *);
 
 protected:
-    Object                     *m_rootItem;
+    Object *m_rootItem;
 
-    QPixmap                     m_Visible;
-    QPixmap                     m_Invisible;
+    QPixmap m_Visible;
+    QPixmap m_Invisible;
+
+    QPixmap m_Prefab;
+    QPixmap m_Actor;
 };
 
 #endif // OBJECTHIERARCHYMODEL_H

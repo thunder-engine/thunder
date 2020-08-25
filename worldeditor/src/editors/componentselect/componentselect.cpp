@@ -41,7 +41,7 @@ void ComponentSelect::onSceneDialog() {
         sBrowser->setSimplified(true);
     }
     connect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused, Qt::UniqueConnection);
-    sBrowser->setObject(m_Component.scene);
+    sBrowser->setRootObject(m_Component.scene);
     sBrowser->setComponentsFilter({m_Component.type});
     sBrowser->show();
 }

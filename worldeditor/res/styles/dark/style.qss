@@ -183,8 +183,8 @@ QListView::item:hover {
     background: #039be5;
 }
 
-QTreeView QLineEdit, QTreeView QAbstractButton, QTreeView QCheckBox, QTreeView QComboBox, QTreeView QAbstractSpinBox {
-    margin: 2px 0px;
+QTreeView QLineEdit {
+    margin: 0px 0px;
 }
 QTreeView {
     background: #757575;

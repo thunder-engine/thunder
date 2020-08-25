@@ -74,7 +74,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::SceneComposer),
         m_pProperties(nullptr),
-        m_pMap(nullptr),
         m_CurrentWorkspace(":/Workspaces/Default.ws"),
         m_pQueue(new ImportQueue(engine)) {
 
@@ -114,6 +113,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->preview->setEngine(m_pEngine);
     ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
+
+    ui->hierarchy->setController(ctl);
 
     Input::init(ui->preview);
 
@@ -435,15 +436,10 @@ void SceneComposer::on_revertButton_clicked() {
 void SceneComposer::on_actionNew_triggered() {
     checkSave();
 
-    delete m_pMap;
-
-    m_pMap  = Engine::objectCreate<Actor>("Chunk", m_pEngine->scene());
-    ui->hierarchy->setObject(m_pMap);
-
     ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-
     ctrl->clear();
-    ctrl->setMap(m_pMap);
+    ctrl->setMap(Engine::objectCreate<Actor>("Chunk", m_pEngine->scene()));
+    ui->hierarchy->setRootObject(ctrl->map());
 
     UndoManager::instance()->clear();
 
@@ -479,13 +475,11 @@ void SceneComposer::onOpen(const QString &arg) {
         if(map) {
             updateTitle();
 
-            delete m_pMap;
-            m_pMap  = map;
-            ui->hierarchy->setObject(m_pMap);
-
             ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
             ctrl->clear();
-            ctrl->setMap(m_pMap);
+            ctrl->setMap(map);
+
+            ui->hierarchy->setRootObject(ctrl->map());
 
             UndoManager::instance()->clear();
 
@@ -495,13 +489,15 @@ void SceneComposer::onOpen(const QString &arg) {
 }
 
 void SceneComposer::on_actionSave_triggered() {
-    if(m_pMap && !ui->actionGame_Mode->isChecked()) {
+    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+    Object *map = ctrl->map();
+    if(map && !ui->actionGame_Mode->isChecked()) {
         if( m_Path.length() > 0 ) {
-            QDir dir    = QDir(QDir::currentPath());
+            QDir dir = QDir(QDir::currentPath());
 
             QFile file(dir.relativeFilePath(m_Path));
             if(file.open(QIODevice::WriteOnly)) {
-                string data = Json::save(Engine::toVariant(m_pMap), 0);
+                string data = Json::save(Engine::toVariant(map), 0);
                 file.write(static_cast<const char *>(&data[0]), data.size());
                 file.close();
             }
@@ -516,11 +512,11 @@ void SceneComposer::on_actionSave_triggered() {
 
 void SceneComposer::on_actionSave_As_triggered() {
     QString dir = ProjectManager::instance()->contentPath();
-    m_Path       = QFileDialog::getSaveFileName(this,
-                                               tr("Save Map"),
-                                               dir + "/maps",
-                                               tr("Maps (*.map)") );
-    if( m_Path.length() > 0 ) {
+    m_Path = QFileDialog::getSaveFileName(this,
+                                          tr("Save Map"),
+                                          dir + "/maps",
+                                          tr("Maps (*.map)") );
+    if(m_Path.length() > 0) {
         updateTitle();
 
         on_actionSave_triggered();
@@ -539,14 +535,10 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
 
     Object *map = Engine::toObject(Bson::load(m_Back), ui->viewport->scene());
     if(map) {
-        delete m_pMap;
-        m_pMap  = map;
-
-        ui->hierarchy->setObject(m_pMap);
-
         ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
         ctrl->clear();
-        ctrl->setMap(m_pMap);
+        ctrl->setMap(map);
+        ui->hierarchy->setRootObject(ctrl->map());
     }
 
     m_Undo->setEnabled(true);
@@ -557,7 +549,8 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
 
 void SceneComposer::on_actionGame_Mode_triggered() {
     if(ui->actionEditor_Mode->isChecked()) {
-        m_Back  = Bson::save(Engine::toVariant(m_pMap));
+        ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+        m_Back = Bson::save(Engine::toVariant(ctrl->map()));
         ui->toolWidget->activateToolWindow(ui->preview);
     }
     ui->actionGame_Mode->setChecked(true);
@@ -570,7 +563,7 @@ void SceneComposer::on_actionGame_Mode_triggered() {
 }
 
 void SceneComposer::on_actionTake_Screenshot_triggered() {
-    QImage result   = ui->viewport->grabFramebuffer();
+    QImage result = ui->viewport->grabFramebuffer();
     result.save("SceneComposer-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
 }
 
@@ -763,9 +756,9 @@ void SceneComposer::onBuildProject() {
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
         QString dir = QFileDialog::getExistingDirectory(this, tr("Select Target Directory"),
-                                                     "",
-                                                     QFileDialog::ShowDirsOnly |
-                                                     QFileDialog::DontResolveSymlinks);
+                                                        "",
+                                                        QFileDialog::ShowDirsOnly |
+                                                        QFileDialog::DontResolveSymlinks);
 
         if(!dir.isEmpty()) {
             ProjectManager *mgr = ProjectManager::instance();
@@ -834,7 +827,8 @@ void SceneComposer::on_actionAbout_triggered() {
 }
 
 void SceneComposer::on_actionNew_Object_triggered() {
-    Actor *actor = Engine::objectCreate<Actor>("NewActor", m_pMap);
+    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+    Actor *actor = Engine::objectCreate<Actor>("NewActor", ctrl->map());
     actor->transform()->setPosition(0.0f);
 }
 

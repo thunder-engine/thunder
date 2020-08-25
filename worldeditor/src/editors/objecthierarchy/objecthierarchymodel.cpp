@@ -8,8 +8,10 @@
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr),
-        m_Visible(QPixmap(":/Images/fontawesome/eye.png")),
-        m_Invisible() {
+        m_Visible(":/Images/fontawesome/eye.png"),
+        m_Invisible(),
+        m_Prefab(":/Images/editor/objects/prefab.png"),
+        m_Actor(":/Images/editor/objects/actor.png") {
 
     startTimer(1000);
 }
@@ -64,6 +66,9 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::DecorationRole: {
+            if(index.column() == 0) {
+                return item->isInstance() ? m_Prefab : m_Actor;
+            }
             if(index.column() == 2) {
                 return item->isEnabled() ? m_Visible : m_Invisible;
             }
