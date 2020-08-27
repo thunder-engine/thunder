@@ -1,5 +1,7 @@
 #include "resources/resource.h"
 
+#include <mutex>
+
 class ResourcePrivate {
 public:
     ResourcePrivate() :
@@ -12,6 +14,7 @@ public:
     Resource::ResourceState m_Last;
     uint32_t m_ReferenceCount;
     list<Resource::IObserver *> m_Observers;
+    mutex m_Mutex;
 };
 
 /*!
@@ -55,12 +58,14 @@ Resource::~Resource() {
     Subscribes \a observer to handle resource status.
 */
 void Resource::subscribe(IObserver *observer) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Observers.push_back(observer);
 }
 /*!
     Unsubscribes \a observer to stop handle resource status.
 */
 void Resource::unsubscribe(IObserver *observer) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     auto it = p_ptr->m_Observers.begin();
     while(it != p_ptr->m_Observers.end()) {
         if((*it) == observer) {
@@ -82,6 +87,7 @@ Resource::ResourceState Resource::state() const {
 */
 void Resource::setState(ResourceState state) {
     p_ptr->m_State = state;
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     for(auto it : p_ptr->m_Observers) {
         it->resourceUpdated(this, state);
     }
@@ -91,7 +97,7 @@ void Resource::setState(ResourceState state) {
 */
 void Resource::incRef() {
     if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State == Suspend) {
-        p_ptr->m_State = p_ptr->m_Last;
+        setState(p_ptr->m_Last);
     }
     p_ptr->m_ReferenceCount++;
 }
@@ -103,6 +109,6 @@ void Resource::decRef() {
     p_ptr->m_ReferenceCount--;
     if(p_ptr->m_ReferenceCount <= 0 && p_ptr->m_State != Suspend) {
         p_ptr->m_Last = p_ptr->m_State;
-        p_ptr->m_State = Suspend;
+        setState(Suspend);
     }
 }

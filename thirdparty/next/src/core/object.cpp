@@ -25,10 +25,10 @@
 
 inline bool operator==(const Object::Link &left, const Object::Link &right) {
     bool result = true;
-    result &= (left.sender      == right.sender);
-    result &= (left.receiver    == right.receiver);
-    result &= (left.signal      == right.signal);
-    result &= (left.method      == right.method);
+    result &= (left.sender == right.sender);
+    result &= (left.receiver == right.receiver);
+    result &= (left.signal == right.signal);
+    result &= (left.method == right.method);
     return result;
 }
 
@@ -145,7 +145,7 @@ public:
 
     And then:
     \code
-        MetaObject *meta    = MyObject::metaClass();
+        MetaObject *meta = MyObject::metaClass();
     \endcode
 */
 /*!
@@ -204,7 +204,7 @@ public:
     And then:
     \code
         Object *oject = ObjectSystem::createObject<Object>();
-        MyObject *myObject  = dynamic_cast<MyObject *>(oject);
+        MyObject *myObject = dynamic_cast<MyObject *>(oject);
         if(myObject) {
             ...
         }
@@ -259,9 +259,9 @@ public:
         MyObject obj;
         const MetaObject *meta = obj.metaObject();
 
-        int index   = meta->indexOfMethod("foo");
+        int index = meta->indexOfMethod("foo");
         if(index > -1) {
-            MetaMethod method   = meta->method(index);
+            MetaMethod method = meta->method(index);
             if(method.isValid() {
                 Variant value;
                 method.invoke(&obj, value, 0, nullptr); // Will call MyObject::foo method
@@ -304,7 +304,7 @@ Object::~Object() {
     disconnect(this, nullptr, nullptr, nullptr);
 
     for(const auto &it : p_ptr->m_mChildren) {
-        Object *c  = it;
+        Object *c = it;
         if(c) {
             c->p_ptr->m_pParent = nullptr;
             c->deleteLater();
@@ -524,10 +524,10 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
         if(snd > -1 && rcv > -1) {
             Link link;
 
-            link.sender     = sender;
-            link.signal     = snd;
-            link.receiver   = receiver;
-            link.method     = rcv;
+            link.sender = sender;
+            link.signal = snd;
+            link.receiver = receiver;
+            link.method = rcv;
 
             if(!sender->p_ptr->isLinkExist(link)) {
                 {
@@ -632,7 +632,7 @@ const Object::LinkList &Object::getReceivers() const {
         obj2.setParent(&obj1);
 
         // result will contain pointer to obj2
-        Object *result  = obj1.find("/MainObject/TestComponent2");
+        Object *result = obj1.find("/MainObject/TestComponent2");
     \endcode
 
     Returns nullptr if no such object.
@@ -664,7 +664,7 @@ Object *Object::find(const string &path) {
     for(const auto &it : p_ptr->m_mChildren) {
         if(it->p_ptr->m_sName == first) {
             if(index > -1) {
-                Object *o  = it->find(path.substr(index + 1));
+                Object *o = it->find(path.substr(index + 1));
                 if(o) {
                     return o;
                 }
@@ -691,7 +691,7 @@ void Object::setParent(Object *parent, bool force) {
     if(parent) {
         parent->addChild(this);
     }
-    p_ptr->m_pParent    = parent;
+    p_ptr->m_pParent = parent;
 }
 /*!
     Set object name by provided \a name.
@@ -741,7 +741,7 @@ void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
     for(auto &it : p_ptr->m_lRecievers) {
-        Link *link  = &(it);
+        Link *link = &(it);
         if(link->signal == index) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
             if(method.type() == MetaMethod::Signal) {
@@ -766,7 +766,7 @@ void Object::processEvents() {
     PROFILE_FUNCTION();
     while(!p_ptr->m_EventQueue.empty()) {
         unique_lock<mutex> locker(p_ptr->m_Mutex);
-        Event *e   = p_ptr->m_EventQueue.front();
+        Event *e = p_ptr->m_EventQueue.front();
         p_ptr->m_EventQueue.pop();
         locker.unlock();
 
@@ -857,8 +857,8 @@ bool Object::isSerializable() const {
 */
 Variant Object::property(const char *name) const {
     PROFILE_FUNCTION();
-    const MetaObject *meta  = metaObject();
-    int index   = meta->indexOfProperty(name);
+    const MetaObject *meta = metaObject();
+    int index = meta->indexOfProperty(name);
     if(index > -1) {
         return meta->property(index).read(this);
     }
@@ -875,8 +875,8 @@ Variant Object::property(const char *name) const {
 */
 void Object::setProperty(const char *name, const Variant &value) {
     PROFILE_FUNCTION();
-    const MetaObject *meta  = metaObject();
-    int index   = meta->indexOfProperty(name);
+    const MetaObject *meta = metaObject();
+    int index = meta->indexOfProperty(name);
     if(index > -1) {
         meta->property(index).write(this, value);
     }
@@ -896,10 +896,16 @@ ObjectSystem *Object::system() const {
     PROFILE_FUNCTION()
     return p_ptr->m_pSystem;
 }
+/*!
+    \internal
+*/
+void Object::clearCloneRef() {
+    p_ptr->m_Cloned = 0;
+}
 
 void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION();
-    p_ptr->m_UUID   = id;
+    p_ptr->m_UUID = id;
 }
 
 void Object::setSystem(ObjectSystem *system) {
@@ -926,7 +932,7 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty p = meta->property(i);
         if(p.isValid()) {
-            Variant v  = p.read(this);
+            Variant v = p.read(this);
             if(v.userType() < MetaType::USERTYPE) {
                 properties[p.name()] = v;
             }
@@ -938,14 +944,14 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     for(const auto &l : getReceivers()) {
         VariantList link;
 
-        Object *sender  = l.sender;
+        Object *sender = l.sender;
 
         link.push_back(static_cast<int32_t>(sender->uuid()));
-        MetaMethod method  = sender->metaObject()->method(l.signal);
+        MetaMethod method = sender->metaObject()->method(l.signal);
         link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
         link.push_back(static_cast<int32_t>(uuid()));
-        method      = meta->method(l.method);
+        method = meta->method(l.method);
         link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
         links.push_back(link);

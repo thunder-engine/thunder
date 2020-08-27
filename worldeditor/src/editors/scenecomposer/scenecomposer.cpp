@@ -85,8 +85,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
-    resetModified();
-
     ui->setupUi(this);
 
     m_pBuilder  = new QProcess(this);
@@ -105,6 +103,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     cmToolbars      = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
+
+    ctl->resetModified();
 
     ui->viewport->setController(ctl);
     ui->viewport->setScene(m_pEngine->scene());
@@ -209,11 +209,10 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onObjectSelected(Object::ObjectList)));
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->hierarchy, SLOT(onObjectSelected(Object::ObjectList)));
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), ui->timeline, SLOT(onObjectSelected(Object::ObjectList)));
-    connect(ctl, SIGNAL(mapUpdated()), this, SLOT(onUpdated()));
-    connect(ctl, SIGNAL(objectsUpdated()), this, SLOT(onUpdated()));
     connect(ctl, SIGNAL(loadMap(QString)), this, SLOT(onOpen(QString)));
     connect(ui->hierarchy,   SIGNAL(selected(Object::ObjectList)), ctl, SLOT(onSelectActor(Object::ObjectList)));
     connect(ui->hierarchy,   SIGNAL(removed(Object::ObjectList)), ctl, SLOT(onRemoveActor(Object::ObjectList)));
+    connect(ui->hierarchy,   SIGNAL(updated()), ctl, SLOT(onUpdated()));
     connect(ui->hierarchy,   SIGNAL(parented(Object::ObjectList,Object*)), ctl, SLOT(onParentActor(Object::ObjectList,Object*)));
     connect(ui->hierarchy,   SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
     connect(ui->orthoButton, SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
@@ -229,7 +228,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->scaleButton->click();
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
-    connect(ui->hierarchy, SIGNAL(updated()), this, SLOT(onUpdated()));
 
     resetWorkspace();
     on_actionEditor_Mode_triggered();
@@ -278,7 +276,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
         connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(aboutToBeChanged(Object *, QString, Variant)), ctl, SLOT(onPropertyChanged(Object *, QString, Variant)), Qt::DirectConnection);
-        connect(m_pProperties, SIGNAL(changed(Object *, QString)), this, SLOT(onUpdated()));
+        connect(m_pProperties, SIGNAL(changed(Object *, QString)), ctl, SLOT(onUpdated()));
         connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
 
         connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
@@ -385,7 +383,7 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
 }
 
 bool SceneComposer::checkSave() {
-    if(isModified()) {
+    if(static_cast<ObjectCtrl *>(ui->viewport->controller())->isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setText("The map has been modified.");
@@ -501,7 +499,7 @@ void SceneComposer::on_actionSave_triggered() {
                 file.write(static_cast<const char *>(&data[0]), data.size());
                 file.close();
             }
-            resetModified();
+            static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
         } else {
             on_actionSave_As_triggered();
         }
@@ -746,10 +744,6 @@ void SceneComposer::resetWorkspace() {
             action->blockSignals(false);
         }
     }
-}
-
-void SceneComposer::onUpdated() {
-    mModified   = true;
 }
 
 void SceneComposer::onBuildProject() {

@@ -166,6 +166,7 @@ public:
     virtual bool                    isSerializable              () const;
 
     uint32_t                        clonedFrom                  () const;
+    virtual void                    clearCloneRef               ();
 
     virtual bool                    operator==                  (const Object &) const final { return false; }
     virtual bool                    operator!=                  (const Object &) const final { return false; }

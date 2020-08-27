@@ -100,24 +100,28 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
                 sprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
                 Texture *t  = Engine::loadResource<Texture>(resource.toStdString());
                 sprite->setTexture(t);
+                break;
             }
-        } break;
+            return QImage();
+        }
         case IConverter::ContentMaterial: {
             MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
             Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
             if(m) {
                 mesh->setMesh(m);
-                Material *mat   = Engine::loadResource<Material>(resource.toStdString());
+                Material *mat = Engine::loadResource<Material>(resource.toStdString());
                 if(mat) {
                     mesh->setMaterial(mat);
                 }
-                AABBox bb   = m->bound();
+                AABBox bb = m->bound();
                 m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.extent.length() * 1.1f / sinf(fov * DEG2RAD)) );
+                break;
             }
-        } break;
+            return QImage();
+        }
         case IConverter::ContentPrefab: {
             Prefab *prefab  = Engine::loadResource<Prefab>(resource.toStdString());
-            if(prefab) {
+            if(prefab && prefab->actor()) {
                 Actor *actor = static_cast<Actor *>(prefab->actor()->clone(object));
 
                 AABBox bb;
@@ -131,8 +135,10 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
                     }
                 }
                 m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, ((bb.extent.length() + m_pCamera->nearPlane()) * 2) / sinf(fov * DEG2RAD)));
+                break;
             }
-        } break;
+            return QImage();
+        }
         case IConverter::ContentMesh: {
             MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
             mesh->setMesh(Engine::loadResource<Mesh>(resource.toStdString()));

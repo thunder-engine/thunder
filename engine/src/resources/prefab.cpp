@@ -36,6 +36,7 @@ void Prefab::setActor(Actor *actor) {
 
 void Prefab::loadUserData(const VariantMap &data) {
     delete p_ptr->m_pActor;
+    p_ptr->m_pActor = nullptr;
 
     auto it = data.find(DATA);
     if(it != data.end()) {

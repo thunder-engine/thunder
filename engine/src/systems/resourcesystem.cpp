@@ -65,6 +65,9 @@ void ResourceSystem::update(Scene *) {
                 case Resource::ToBeDeleted: {
                     p_ptr->m_DeleteList.push_back(resource);
                 }
+                case Resource::Suspend: {
+                    resource->setState(Resource::ToBeDeleted);
+                }
                 default: break;
             }
         }
@@ -156,14 +159,7 @@ void ResourceSystem::unloadResource(const string &path) {
         {
             auto it = p_ptr->m_ResourceCache.find(uuid);
             if(it != p_ptr->m_ResourceCache.end() && it->second) {
-                Resource *resource = dynamic_cast<Resource *>(it->second);
-                if(resource) {
-                    unloadResource(resource);
-                } else {
-                    Object *object = it->second;
-                    deleteFromCahe(object);
-                    delete object;
-                }
+                unloadResource(it->second);
             }
         }
     }
@@ -174,9 +170,6 @@ void ResourceSystem::unloadResource(Object *object) {
     Resource *resource = dynamic_cast<Resource *>(object);
     if(resource) {
         resource->setState(Resource::Suspend);
-    } else {
-        deleteFromCahe(object);
-        delete object;
     }
 }
 
@@ -185,8 +178,6 @@ void ResourceSystem::reloadResource(Object *object) {
     Resource *resource = dynamic_cast<Resource *>(object);
     if(resource) {
         resource->setState(Resource::Loading);
-    } else { /// \todo Prefab related action
-
     }
 }
 

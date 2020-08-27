@@ -125,6 +125,8 @@ signals:
     void importStarted (int count, const QString &stage);
     void importFinished ();
 
+    void prefabCreated (uint32_t uuid, uint32_t clone);
+
 protected slots:
     void onPerform ();
 

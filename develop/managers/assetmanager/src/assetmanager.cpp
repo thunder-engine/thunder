@@ -246,7 +246,7 @@ void AssetManager::removeResource(const QFileInfo &source) {
         return;
     } else {
         m_pFileWatcher->removePath(src.absoluteFilePath());
-
+        Engine::unloadResource(source.filePath().toStdString());
         string uuid = unregisterAsset(source.filePath().toStdString());
         QFile::remove(m_pProjectManager->importPath() + "/" + uuid.c_str());
         QFile::remove(m_pProjectManager->iconPath() + "/" + uuid.c_str() + ".png");
@@ -432,6 +432,8 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
                 Engine::setResource(fab, dest);
             }
             dumpBundle();
+
+            emit prefabCreated(id.toUInt(), clone->uuid());
         }
     }
 }

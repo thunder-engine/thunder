@@ -74,6 +74,8 @@ private slots:
     void on_treeView_customContextMenuRequested (const QPoint &pos);
     void on_lineEdit_textChanged (const QString &arg1);
 
+    void onCreateActor ();
+
     void onItemDuplicate ();
     void onItemRename ();
     void onItemDelete ();

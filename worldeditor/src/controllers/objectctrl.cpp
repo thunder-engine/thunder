@@ -62,6 +62,7 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
 
+    m_Modified = false;
     m_Drag  = false;
     m_Canceled = false;
     m_Mode  = ObjectCtrl::MODE_SCALE;
@@ -80,6 +81,9 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     m_pPipeline = nullptr;
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
+    connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
+    connect(this, &ObjectCtrl::mapUpdated, this, &ObjectCtrl::onUpdated);
+    connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
 }
 
 ObjectCtrl::~ObjectCtrl() {
@@ -308,6 +312,24 @@ void ObjectCtrl::onApplySettings() {
     m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }
 
+void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
+    bool swapped = false;
+    for(auto &it : m_Selected) {
+        if(it.object->uuid() == uuid) {
+            Object *object = findObject(clone);
+            if(object) {
+                it.object = static_cast<Actor *>(object);
+                swapped = true;
+                break;
+            }
+        }
+    }
+    if(swapped) {
+        emit objectsSelected(selected());
+        emit mapUpdated();
+    }
+}
+
 Object::ObjectList ObjectCtrl::selected() {
     Object::ObjectList result;
     for(auto it : m_Selected) {
@@ -387,12 +409,16 @@ void ObjectCtrl::onScaleActor() {
     m_Mode = MODE_SCALE;
 }
 
+void ObjectCtrl::onUpdated() {
+    m_Modified = true;
+}
+
 void ObjectCtrl::onCreateComponent(const QString &name) {
     if(m_Selected.size() == 1) {
         Actor *actor = m_Selected.begin()->object;
         if(actor) {
             if(actor->component(qPrintable(name)) == nullptr) {
-                UndoManager::instance()->push(new CreateComponent(name, this, tr("Create Component ") + name));
+                UndoManager::instance()->push(new CreateObject(name, this));
             } else {
                 QMessageBox msgBox;
                 msgBox.setIcon(QMessageBox::Warning);
@@ -433,7 +459,7 @@ void ObjectCtrl::onDrop() {
         if(m_pPipeline) {
             m_pPipeline->setDragObjects({});
         }
-        UndoManager::instance()->push(new CreateObject(m_DragObjects, this));
+        UndoManager::instance()->push(new CreateObjectSerial(m_DragObjects, this));
     }
 
     if(!m_DragMap.isEmpty()) {
@@ -663,7 +689,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
 }
 
 Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
-    if(!parent) {
+    if(parent == nullptr) {
         parent = m_pMap;
     }
     return Engine::findObject(id, parent);
@@ -673,8 +699,8 @@ void ObjectCtrl::resize(int32_t width, int32_t height) {
     m_Screen = Vector2(width, height);
 }
 
-SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
 
     m_Objects = objects;
 }
@@ -693,12 +719,12 @@ void SelectObjects::redo() {
     }
 }
 
-CreateComponent::CreateComponent(const QString &type, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+CreateObject::CreateObject(const QString &type, ObjectCtrl *ctrl, QUndoCommand *group) :
+        UndoObject(ctrl, QObject::tr("Create %1").arg(type), group) {
 
     m_Type = type;
 }
-void CreateComponent::undo() {
+void CreateObject::undo() {
     for(auto uuid : m_Objects) {
         Object *object = m_pController->findObject(uuid);
         if(object) {
@@ -708,17 +734,24 @@ void CreateComponent::undo() {
     emit m_pController->objectsUpdated();
     emit m_pController->objectsSelected(m_pController->selected());
 }
-void CreateComponent::redo() {
-    for(auto it : m_pController->selected()) {
-        Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
-        m_Objects.push_back(object->uuid());
+void CreateObject::redo() {
+    if(m_pController->selected().empty()) {
+        if(m_Type == "Actor") {
+            Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), m_pController->map());
+            m_Objects.push_back(object->uuid());
+        }
+    } else {
+        for(auto it : m_pController->selected()) {
+            Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
+            m_Objects.push_back(object->uuid());
+        }
     }
     emit m_pController->objectsUpdated();
     emit m_pController->objectsSelected(m_pController->selected());
 }
 
-DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
 
 }
 void DuplicateObjects::undo() {
@@ -742,6 +775,7 @@ void DuplicateObjects::redo() {
             m_Selected.push_back(it->uuid());
             Actor *actor = dynamic_cast<Actor *>(it->clone(it->parent()));
             if(actor) {
+                actor->clearCloneRef();
                 actor->setName(findFreeObjectName(it->name(), it->parent()));
                 m_Objects.push_back(actor->uuid());
             }
@@ -752,14 +786,15 @@ void DuplicateObjects::redo() {
             m_Objects.push_back(obj->uuid());
         }
     }
+
     emit m_pController->mapUpdated();
 
     m_pController->clear(false);
     m_pController->selectActors(m_Objects);
 }
 
-CreateObject::CreateObject(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+CreateObjectSerial::CreateObjectSerial(Object::ObjectList &list, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
 
     for(auto it : list) {
         m_Dump.push_back(ObjectSystem::toVariant(it));
@@ -767,14 +802,14 @@ CreateObject::CreateObject(Object::ObjectList &list, ObjectCtrl *ctrl, const QSt
         delete it;
     }
 }
-void CreateObject::undo() {
+void CreateObjectSerial::undo() {
     for(auto it : m_pController->selected()) {
         delete it;
     }
     m_pController->clear(false);
     m_pController->selectActors(m_Objects);
 }
-void CreateObject::redo() {
+void CreateObjectSerial::redo() {
     m_Objects.clear();
     for(auto it : m_pController->selected()) {
         m_Objects.push_back(it->uuid());
@@ -794,8 +829,8 @@ void CreateObject::redo() {
     m_pController->selectActors(objects);
 }
 
-DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
         m_Objects.push_back(it->uuid());
@@ -845,8 +880,8 @@ void DestroyObjects::redo() {
     emit m_pController->mapUpdated();
 }
 
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
     for(auto it : objects) {
         m_Objects.push_back(it->uuid());
     }
@@ -883,8 +918,8 @@ void ParentingObjects::redo() {
     emit m_pController->mapUpdated();
 }
 
-PropertyObjects::PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name, QUndoCommand *parent) :
-        UndoObject(ctrl, name, parent) {
+PropertyObjects::PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group) {
 
     m_Values = values;
     m_Property = property;

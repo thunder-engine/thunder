@@ -41,10 +41,6 @@ public:
     explicit SceneComposer  (Engine *engine, QWidget *parent = nullptr);
     ~SceneComposer          ();
 
-    bool                    isModified                                  () const { return mModified; }
-
-    void                    resetModified                               () { mModified = false; }
-
 public slots:
     void                    onObjectSelected                            (Object::ObjectList objects);
     void                    onAssetSelected                             (IConverterSettings *settings);
@@ -75,8 +71,6 @@ private:
 
     QObject                *m_pProperties;
 
-    Object                 *m_pMap;
-
     QString                 m_Path;
 
     QString                 m_CurrentWorkspace;
@@ -86,8 +80,6 @@ private:
     ImportQueue            *m_pQueue;
 
     ByteArray               m_Back;
-
-    bool                    mModified;
 
     ProjectModel           *m_pProjectModel;
     FeedManager            *m_pFeedManager;
@@ -103,7 +95,6 @@ private slots:
 
     void                    onBuildProject                              ();
 
-    void                    onUpdated                                   ();
     void                    onOpen                                      (const QString &arg = QString());
 
     void                    onImportFinished                            ();

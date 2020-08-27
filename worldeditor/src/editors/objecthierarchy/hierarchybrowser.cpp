@@ -145,10 +145,11 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
 
     m_Prefab.push_back((createAction(tr("Unpack Prefab"), SLOT(onItemUnpack()))));
     m_Prefab.push_back(createAction(tr("Unpack Prefab Completely"), SLOT(onItemUnpackAll())));
-
     for(auto it : m_Prefab) {
         m_ContentMenu.addAction(it);
     }
+    m_ContentMenu.addSeparator();
+    m_ContentMenu.addAction(createAction(tr("Create Actor"), SLOT(onCreateActor())));
 }
 
 HierarchyBrowser::~HierarchyBrowser() {
@@ -287,7 +288,6 @@ void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos) {
-    QWidget *w = static_cast<QWidget*>(QObject::sender());
     QItemSelectionModel *select = ui->treeView->selectionModel();
     if(!select->selectedIndexes().empty()) {
         bool enabled = false;
@@ -302,9 +302,13 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
         for(auto it : m_Prefab) {
             it->setEnabled(enabled);
         }
-
-        m_ContentMenu.exec(w->mapToGlobal(pos));
     }
+    QWidget *w = static_cast<QWidget*>(QObject::sender());
+    m_ContentMenu.exec(w->mapToGlobal(pos));
+}
+
+void HierarchyBrowser::onCreateActor() {
+    UndoManager::instance()->push(new CreateObject("Actor", m_pController));
 }
 
 void HierarchyBrowser::onItemRename() {
@@ -334,6 +338,7 @@ void HierarchyBrowser::onItemUnpack() {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             actor->setPrefab(nullptr);
+            actor->clearCloneRef();
         }
     }
 }
@@ -343,6 +348,7 @@ void unpackHelper(Object *object) {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             actor->setPrefab(nullptr);
+            actor->clearCloneRef();
         }
 
         for(auto it : object->getChildren()) {

@@ -106,6 +106,10 @@ public:
 
                     m_pActor->loadUserData(m_Data.toMap());
                 } break;
+                case Resource::ToBeDeleted: {
+                    m_pPrefab->unsubscribe(this);
+                    m_pPrefab = nullptr;
+                } break;
                 default: break;
             }
         }
@@ -295,21 +299,14 @@ bool Actor::isSerializable() const {
     PROFILE_FUNCTION();
 
     bool result = (clonedFrom() == 0 || isInstance());
-    /* To be used in future
-    if(!result) {
-        for(auto it : getChildren()) {
-            if(it->clonedFrom() == 0) {
-                return true;
-            }
-        }
-    }
-    */
+
     return result;
 }
 /*!
     \internal
 */
 Object *Actor::clone(Object *parent) {
+    PROFILE_FUNCTION();
     ActorPrivate::List objects;
     ActorPrivate::enumObjects(this, objects);
     for(auto it : objects) {
@@ -327,6 +324,19 @@ Object *Actor::clone(Object *parent) {
         result->setPrefab(p_ptr->m_pPrefab);
     }
     return result;
+}
+/*!
+    \internal
+*/
+void Actor::clearCloneRef () {
+    PROFILE_FUNCTION();
+    if(p_ptr->m_pPrefab == nullptr) {
+        Object::clearCloneRef();
+
+        for(auto it : getChildren()) {
+            it->clearCloneRef();
+        }
+    }
 }
 /*!
     Makes the actor a child of the \a parent.
@@ -365,6 +375,8 @@ void Actor::setPrefab(Prefab *prefab) {
     p_ptr->m_pPrefab = prefab;
     if(p_ptr->m_pPrefab) {
         p_ptr->m_pPrefab->subscribe(p_ptr);
+    } else {
+        clearCloneRef();
     }
 }
 /*!
