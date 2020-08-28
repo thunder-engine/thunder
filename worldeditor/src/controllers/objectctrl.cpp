@@ -839,9 +839,8 @@ DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ct
 void DestroyObjects::undo() {
     auto it = m_Parents.begin();
     for(auto ref : m_Dump) {
-        Object *object = Engine::toObject(ref);
+        Object *object = Engine::toObject(ref, m_pController->findObject(*it));
         if(object) {
-            object->setParent(m_pController->findObject(*it));
             m_Objects.push_back(object->uuid());
         }
         ++it;
