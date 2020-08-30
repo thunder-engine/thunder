@@ -38,27 +38,6 @@ Q_DECLARE_METATYPE(Template)
 
 typedef QFileInfo FilePath;
 
-class IAssetEditor {
-public:
-    IAssetEditor            (Engine *engine) :
-            m_bModified(false) {
-        m_pEngine   = engine;
-    }
-
-    virtual ~IAssetEditor() {}
-
-    virtual void loadAsset (IConverterSettings *settings) = 0;
-
-    void setModified (bool value) { m_bModified = value; }
-    bool isModified () { return m_bModified; }
-
-protected:
-    Engine *m_pEngine;
-
-    bool m_bModified;
-
-};
-
 class AssetManager : public QObject {
     Q_OBJECT
 public:
@@ -71,9 +50,6 @@ public:
     void init (Engine *engine);
 
     void rescan (bool force);
-
-    void addEditor (uint8_t type, IAssetEditor *editor);
-    QObject *openEditor (const QFileInfo &source);
 
     int32_t resourceType (const QFileInfo &source);
     int32_t assetType (const QString &uuid);
@@ -141,9 +117,6 @@ private:
     static AssetManager *m_pInstance;
 
 protected:
-    typedef QMap<int32_t, IAssetEditor *> EditorsMap;
-    EditorsMap m_Editors;
-
     typedef QMap<QString, int32_t> FormatsMap;
     FormatsMap m_Formats;
 

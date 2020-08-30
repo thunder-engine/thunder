@@ -119,14 +119,14 @@ public:
                        QAbstractToolWindowManagerArea *area);
     void addToolWindows(const QWidgetList &toolWindows, AreaType area = LastUsedArea);
     void addToolWindows(const QWidgetList &toolWindows, ReferenceType reference,
-                       QAbstractToolWindowManagerArea *area);
+                        QAbstractToolWindowManagerArea *area);
 
     void moveToolWindow(QWidget *toolWindow, AreaType area = LastUsedArea);
     void moveToolWindow(QWidget *toolWindow, ReferenceType reference,
-                       QAbstractToolWindowManagerArea *area);
+                        QAbstractToolWindowManagerArea *area);
     void moveToolWindows(const QWidgetList &toolWindows, AreaType area = LastUsedArea);
     void moveToolWindows(const QWidgetList &toolWindows, ReferenceType reference,
-                       QAbstractToolWindowManagerArea *area);
+                         QAbstractToolWindowManagerArea *area);
 
     QAbstractToolWindowManagerArea *areaFor(QWidget *toolWindow) const;
     void removeToolWindow(QWidget *toolWindow);
@@ -152,7 +152,7 @@ public:
 
     void setTabButton(QWidget *toolWindow, QTabBar::ButtonPosition position, QWidget *widget);
 
-Q_SIGNALS:
+signals:
     void toolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
     void suggestionSwitchIntervalChanged(int suggestionSwitchInterval);
     void borderSensitivityChanged(int borderSensitivity);
@@ -160,15 +160,15 @@ Q_SIGNALS:
     void tabsClosableChanged(bool tabsClosable);
 
 protected:
-    virtual QSplitter * createSplitter();
-    virtual QAbstractToolWindowManagerArea * createArea();
+    virtual QSplitter *createSplitter();
+    virtual QAbstractToolWindowManagerArea *createArea();
     virtual QPixmap generateDragPixmap(const QWidgetList &toolWindows);
     bool event(QEvent *e);
 
 private:
     Q_DISABLE_COPY(QToolWindowManager)
     Q_DECLARE_PRIVATE(QToolWindowManager)
-    QToolWindowManagerPrivate* d_ptr;
+    QToolWindowManagerPrivate *d_ptr;
 
     friend class QToolWindowManagerWrapper;
     friend class QAbstractToolWindowManagerArea;

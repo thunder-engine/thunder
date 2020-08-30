@@ -157,10 +157,16 @@ QAbstractItemView {
     outline: 0px;
 }
 
-QAbstractScrollArea QLineEdit, QAbstractButton, QCheckBox, QComboBox, QAbstractSpinBox {
+QAbstractScrollArea QLineEdit {
     background: #616161;
     margin: 0px 0px;
 }
+
+QAbstractScrollArea QAbstractButton, QCheckBox, QComboBox, QAbstractSpinBox {
+    background: #616161;
+    margin: 3px 0px;
+}
+
 QAbstractScrollArea QToolButton:hover {
     background: #757575;
 }
@@ -257,7 +263,7 @@ QMenu::separator {
     background: #757575;
 }
 
-QScrollBar:vertical {
+QScrollBar {
     background: #757575;
     border-radius: 0px;
     width: 8px;
@@ -284,15 +290,9 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical, QScrollBar::add-pa
     background: none;
 }
 
-QScrollBar:horizontal {
-    background: #757575;
-    border-radius: 4px;
-    height: 8px;
-    margin: 0px;
-}
 QScrollBar::handle:horizontal {
    background: #616161;
-   border-radius: 0px;
+   border-radius: 4px;
    min-width: 20px;
    margin: 0px 0px 0px 0px;
 }
@@ -347,4 +347,25 @@ QCheckBox::indicator:checked {
 
 QCheckBox::indicator:unchecked:hover {
     background-color: #757575;
+}
+
+QPlainTextEdit {
+    background: #525252;
+    border-radius: 3px;
+}
+
+QWidget[pannel="true"] {
+    background-color: #757575;
+}
+
+QWidget[pannel="true"] QLabel, QToolButton {
+    background-color: #757575;
+}
+
+QWidget[pannel="true"] QLineEdit {
+    background: #525252;
+}
+
+QWidget[pannel="true"] QToolButton:hover {
+    background: #9e9e9e;
 }

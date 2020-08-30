@@ -260,7 +260,7 @@ void ContentBrowser::onItemDuplicate() {
 }
 
 void ContentBrowser::onItemReimport() {
-    QModelIndex index   = m_pContentProxy->mapToSource(ui->contentList->currentIndex());
+    QModelIndex index = m_pContentProxy->mapToSource(ui->contentList->currentIndex());
     ContentList::instance()->reimportResource(index);
 }
 
@@ -282,6 +282,10 @@ void ContentBrowser::rescan() {
     on_contentTree_clicked(QModelIndex());
 }
 
+void ContentBrowser::assetUpdated() {
+    ui->contentList->update();
+}
+
 void ContentBrowser::on_findContent_textChanged(const QString &arg1) {
     m_pContentProxy->setFilterFixedString(arg1);
 }
@@ -301,10 +305,7 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
 
         m_pContentProxy->setRootPath( info.absoluteFilePath() );
     } else {
-        QObject *sender = AssetManager::instance()->openEditor(inst->path(origin));
-        if(sender) {
-            connect(sender, SIGNAL(templateUpdate()), ui->contentList, SLOT(update()));
-        }
+        emit openEditor(inst->path(origin));
     }
 }
 

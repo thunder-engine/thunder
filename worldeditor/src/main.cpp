@@ -23,13 +23,6 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-#include "editors/textureedit/textureedit.h"
-#include "editors/materialedit/materialedit.h"
-#include "editors/meshedit/meshedit.h"
-#include "editors/particleedit/particleedit.h"
-#include "editors/animationedit/animationedit.h"
-#include "editors/textedit/textedit.h"
-
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
 #include "editors/assetselect/assetlist.h"
@@ -78,15 +71,6 @@ int main(int argc, char *argv[]) {
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);
     asset->registerConverter(new QbsBuilder());
-    asset->addEditor(IConverter::ContentTexture, new TextureEdit(&engine));
-    asset->addEditor(IConverter::ContentMaterial, new MaterialEdit(&engine));
-    asset->addEditor(IConverter::ContentPrefab, new MeshEdit(&engine));
-    asset->addEditor(IConverter::ContentEffect, new ParticleEdit(&engine));
-    asset->addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(&engine));
-
-    TextEdit *editor = new TextEdit(&engine);
-    //asset->addEditor(IConverter::ContentText, editor);
-    asset->addEditor(IConverter::ContentCode, editor);
 
     SettingsManager::instance()->loadSettings();
 

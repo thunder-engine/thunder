@@ -28,6 +28,10 @@ public:
 
     void decorateWhitespaces(bool value);
 
+    void highlightBlock(const QString &text);
+    bool findString(const QString &string, bool reverse, bool casesens = true, bool words = false);
+    void replaceSelected(const QString &string);
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -82,6 +86,8 @@ private:
 
     bool m_DisplayLineNumbers;
     bool m_DisplayFoldingMarkers;
+
+    bool m_FirstTime;
 };
 
 class CodeEditorSidebar : public QWidget {

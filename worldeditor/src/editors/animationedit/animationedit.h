@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "assetmanager.h"
+#include "editors/scenecomposer/documentmodel.h"
 
 class AbstractSchemeModel;
 class AnimationStateMachine;

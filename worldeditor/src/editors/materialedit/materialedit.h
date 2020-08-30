@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "assetmanager.h"
+#include "editors/scenecomposer/documentmodel.h"
 
 #include <components/meshrender.h>
 

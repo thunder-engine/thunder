@@ -76,10 +76,7 @@ AssetManager::AssetManager() :
 }
 
 AssetManager::~AssetManager() {
-    foreach(auto it, m_Editors) {
-        delete it;
-    }
-    m_Editors.clear();
+
 }
 
 AssetManager *AssetManager::instance() {
@@ -150,20 +147,7 @@ void AssetManager::rescan(bool force) {
     reimport();
 }
 
-void AssetManager::addEditor(uint8_t type, IAssetEditor *editor) {
-    m_Editors[type] = editor;
-}
 
-QObject *AssetManager::openEditor(const QFileInfo &source) {
-    auto it = m_Editors.find(resourceType(source));
-    if(it != m_Editors.end()) {
-        IAssetEditor *editor    = it.value();
-        QDir dir(m_pProjectManager->contentPath());
-        editor->loadAsset(fetchSettings(dir.absoluteFilePath(source.filePath())));
-        return dynamic_cast<QObject *>(editor);
-    }
-    return nullptr;
-}
 
 int32_t AssetManager::resourceType(const QFileInfo &source) {
     QString s = source.completeSuffix().toLower();

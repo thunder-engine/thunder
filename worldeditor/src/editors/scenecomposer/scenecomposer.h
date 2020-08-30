@@ -27,6 +27,7 @@ class ImportQueue;
 
 class ProjectModel;
 class FeedManager;
+class DocumentModel;
 
 class IConverterSettings;
 
@@ -44,6 +45,7 @@ public:
 public slots:
     void                    onObjectSelected                            (Object::ObjectList objects);
     void                    onAssetSelected                             (IConverterSettings *settings);
+    void                    onOpenEditor                                (const QString &path);
 
     void                    onOpenProject                               (const QString &path);
 
@@ -83,6 +85,7 @@ private:
 
     ProjectModel           *m_pProjectModel;
     FeedManager            *m_pFeedManager;
+    DocumentModel          *m_pDocumentModel;
 
     QAction                *m_Undo;
     QAction                *m_Redo;

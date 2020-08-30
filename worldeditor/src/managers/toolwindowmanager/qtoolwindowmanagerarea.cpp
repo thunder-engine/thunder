@@ -95,7 +95,7 @@ QToolWindowManagerArea::QToolWindowManagerArea(QToolWindowManager *manager) :
 
 QToolWindowManagerArea::~QToolWindowManagerArea()
 {
-  delete d_ptr;
+    delete d_ptr;
 }
 
 void QToolWindowManagerArea::mousePressEvent(QMouseEvent *)
@@ -238,7 +238,7 @@ void QToolWindowManagerAreaPrivate::check_mouse_move()
 void QToolWindowManagerAreaPrivate::tabCloseRequested(int index)
 {
     QWidget *toolWindow = m_tabWidget->widget(index);
-    if (toolWindow) {
+    if (toolWindow && toolWindow->close()) {
         m_manager->hideToolWindow(toolWindow);
     }
 }

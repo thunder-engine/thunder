@@ -4,166 +4,122 @@
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QDebug>
+#include <QMessageBox>
 
 #include "codeeditor.h"
 
-#include "documentmodel.h"
-#include "projectmanager.h"
+#include "converters/converter.h"
 
 #include "editors/contentbrowser/contenttree.h"
 
-class ProjectItemDeligate : public QStyledItemDelegate  {
-private:
-    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
-        QStyledItemDelegate::initStyleOption(option, index);
-        QVariant value  = index.data(Qt::DecorationRole);
-        switch(value.type()) {
-            case QVariant::Image: {
-                QImage image    = value.value<QImage>();
-                if(!image.isNull()) {
-                    image  = image.scaled(16, 16, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                    option->icon    = QIcon(QPixmap::fromImage(image));
-                    option->decorationSize = image.size();
-                }
-            } break;
-            default: break;
-        }
-    }
-
-    QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const {
-        return QSize(20, 20);
-    }
-};
-
-class DocumentItemDeligate : public QStyledItemDelegate  {
-private:
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
-        QStyleOptionViewItem opt = option;
-        if(index.column() == 1) {
-            if(!(option.state & QStyle::State_MouseOver)) {
-                // Hide button
-            }
-        }
-        QStyledItemDelegate::paint(painter, opt, index);
-    }
-};
-
 TextEdit::TextEdit(Engine *engine) :
-        QMainWindow(nullptr),
+        QWidget(nullptr),
         IAssetEditor(engine),
         ui(new Ui::TextEdit) {
 
     ui->setupUi(this);
 
-    m_pContentProxy = new ContentTreeFilter(this);
-    m_pContentProxy->setSourceModel(ContentTree::instance());
-    m_pContentProxy->setContentTypes({IConverter::ContentCode});
-    m_pContentProxy->sort(0);
+    ui->findWidget->setProperty("pannel", true);
 
-    ui->treeView->setItemDelegate(new ProjectItemDeligate);
-    ui->treeView->setModel(m_pContentProxy);
+    connect(ui->editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
+    connect(ui->editor, &CodeEditor::textChanged, this, &TextEdit::onTextChanged);
 
-    ui->splitter->setStretchFactor(1, 2);
+    ui->editor->addAction(ui->actionFind);
+    ui->editor->addAction(ui->actionSaveCurrent);
 
-    m_pDocumentModel = new DocumentModel;
-    ui->docView->setModel(m_pDocumentModel);
-    ui->docView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->docView->header()->setSectionResizeMode(1, QHeaderView::Fixed);
-    ui->docView->header()->resizeSection(1, 10);
-    ui->docView->setItemDelegate(new DocumentItemDeligate);
-
-    m_pEditor = ui->label;
+    on_pushClose_clicked();
 }
 
 TextEdit::~TextEdit() {
+    disconnect(ui->editor, &CodeEditor::textChanged, this, &TextEdit::onTextChanged);
+    disconnect(ui->editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
     delete ui;
 }
 
-void TextEdit::readSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    restoreGeometry(settings.value("text.geometry").toByteArray());
-    QVariant value  = settings.value("text.splitter");
-    if(value.isValid()) {
-        ui->splitter->restoreState(value.toByteArray());
+void TextEdit::closeEvent(QCloseEvent *event) {
+    if(!checkSave()) {
+        event->ignore();
     }
-}
-
-void TextEdit::writeSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue("text.geometry", saveGeometry());
-    settings.setValue("text.splitter", ui->splitter->saveState());
 }
 
 void TextEdit::loadAsset(IConverterSettings *settings) {
-    hide();
-    show();
-    CodeEditor *editor = m_pDocumentModel->openFile(settings->source());
-    editor->setParent(ui->verticalLayoutWidget);
-
-    ui->textLayout->insertWidget(1, editor);
-    m_pEditor->hide();
-    m_pEditor = editor;
-    m_pEditor->show();
-    m_pEditor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-
-    ui->treeView->expandAll();
-
-    connect(editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
-}
-
-void TextEdit::onCursorPositionChanged() {
-    QTextCursor cursor = static_cast<CodeEditor *>(sender())->textCursor();
-    ui->lineLabel->setText(QString("Line: %1, Col: %2").arg(cursor.blockNumber() + 1).arg(cursor.positionInBlock() + 1));
-}
-
-void TextEdit::on_actionSaveCurrent_triggered() {
-    CodeEditor *editor = dynamic_cast<CodeEditor *>(m_pEditor);
-    if(editor) {
-        editor->saveFile();
+    if(checkSave()) {
+        ui->editor->openFile(settings->source());
+        m_fileInfo = QFileInfo(settings->source());
+        setWindowTitle(m_fileInfo.fileName());
     }
 }
 
-void TextEdit::on_actionSaveAll_triggered() {
-    m_pDocumentModel->saveAll();
+bool TextEdit::checkSave() {
+    if(ui->editor->document()->isModified()) {
+        QMessageBox msgBox(this);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText("The file has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result  = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            return false;
+        } else if(result == QMessageBox::Yes) {
+            on_actionSaveCurrent_triggered();
+        } else {
+            ui->editor->document()->setModified(false);
+        }
+    }
+    return true;
+}
+
+void TextEdit::onCursorPositionChanged() {
+    QTextCursor cursor = ui->editor->textCursor();
+    ui->lineLabel->setText(QString("Line: %1, Col: %2").arg(cursor.blockNumber() + 1).arg(cursor.positionInBlock() + 1));
+}
+
+void TextEdit::onTextChanged() {
+    QString title = m_fileInfo.fileName();
+    if(ui->editor->document() && ui->editor->document()->isModified()) {
+        title.append('*');
+    }
+    setWindowTitle(title);
+}
+
+void TextEdit::on_actionSaveCurrent_triggered() {
+    ui->editor->saveFile();
 }
 
 void TextEdit::on_actionFind_triggered() {
-
+    ui->findWidget->show();
+    ui->lineFind->setFocus();
 }
 
-void TextEdit::on_treeView_doubleClicked(const QModelIndex &index) {
-    CodeEditor *editor = m_pDocumentModel->openFile(ContentTree::instance()->path(m_pContentProxy->mapToSource(index)));
-    editor->setParent(ui->verticalLayoutWidget);
-
-    ui->textLayout->insertWidget(1, editor);
-    m_pEditor->hide();
-    m_pEditor = editor;
-    m_pEditor->show();
-    m_pEditor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-
-    connect(editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
+void TextEdit::on_pushClose_clicked() {
+    ui->findWidget->hide();
 }
 
-void TextEdit::on_docView_clicked(const QModelIndex &index) {
-    CodeEditor *editor = m_pDocumentModel->openFile(index);
-    if(index.column() == 0) {
-        ui->textLayout->insertWidget(1, editor);
-        m_pEditor->hide();
-        m_pEditor = editor;
-        m_pEditor->show();
-    } else {
-        ui->textLayout->insertWidget(1, ui->label);
-        m_pEditor = ui->label;
+void TextEdit::on_lineFind_textChanged(const QString &arg1) {
+    ui->editor->highlightBlock(arg1);
+}
 
-        m_pDocumentModel->closeFile(index);
+void TextEdit::on_pushPrevious_clicked() {
+    ui->editor->findString(ui->lineFind->text(), true);
+}
 
-        QModelIndex next = m_pDocumentModel->index(index.row(), 0, index.parent());
-        if(next.isValid()) {
-            on_docView_clicked(next);
-        } else if(index.row() > 0) {
-            on_docView_clicked(m_pDocumentModel->index(index.row() - 1, 0, index.parent()));
-        } else {
-            m_pEditor->show();
-        }
+void TextEdit::on_pushNext_clicked() {
+    ui->editor->findString(ui->lineFind->text(), false);
+}
+
+void TextEdit::on_pushReplace_clicked() {
+    ui->editor->replaceSelected(ui->lineReplace->text());
+}
+
+void TextEdit::on_pushReplaceFind_clicked() {
+    on_pushReplace_clicked();
+    on_pushNext_clicked();
+}
+
+void TextEdit::on_pushReplaceAll_clicked() {
+    while(ui->editor->findString(ui->lineFind->text(), false)) {
+        on_pushReplace_clicked();
     }
 }

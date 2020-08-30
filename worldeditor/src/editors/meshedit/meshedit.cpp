@@ -30,8 +30,7 @@ MeshEdit::MeshEdit(Engine *engine) :
         m_pGround(nullptr),
         m_pDome(nullptr),
         m_pLight(nullptr),
-        m_pSettings(nullptr),
-        m_pConverter(nullptr) {
+        m_pSettings(nullptr) {
 
     ui->setupUi(this);
 
@@ -140,8 +139,6 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
     m_pSettings = settings;
     connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
     ui->treeView->setObject(m_pSettings);
-
-    m_pConverter = AssetManager::instance()->getConverter(m_pSettings);
 }
 
 void MeshEdit::onGLInit() {
@@ -162,7 +159,6 @@ void MeshEdit::onGLInit() {
 
 void MeshEdit::onUpdateTemplate() {
     setModified(true);
-    //m_pMesh->loadUserData(m_pConverter->convertResource(m_pSettings));
 }
 
 void MeshEdit::onToolWindowActionToggled(bool state) {

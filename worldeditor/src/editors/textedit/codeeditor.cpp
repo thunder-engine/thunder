@@ -40,7 +40,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
         m_BlockAnchor(0),
         m_ColumnAnchor(0),
         m_DisplayLineNumbers(true),
-        m_DisplayFoldingMarkers(true) {
+        m_DisplayFoldingMarkers(true),
+        m_FirstTime(true) {
 
     setLineWrapMode(QPlainTextEdit::NoWrap);
 
@@ -126,6 +127,80 @@ void CodeEditor::decorateWhitespaces(bool value) {
         option.setFlags(option.flags() & ~QTextOption::ShowTabsAndSpaces);
     }
     document()->setDefaultTextOption(option);
+}
+
+void CodeEditor::highlightBlock(const QString &text) {
+    QList<QTextEdit::ExtraSelection> extraSelections;
+    QColor color(Qt::lightGray);
+
+    QTextCursor cursor(document());
+    cursor = document()->find(text, cursor);
+
+    while(!cursor.isNull()) {
+        QTextEdit::ExtraSelection extra;
+        extra.format.setBackground(QColor(m_pHighlighter->theme().editorColor(KSyntaxHighlighting::Theme::SearchHighlight)));
+        extra.cursor = cursor;
+        extraSelections.append(extra);
+
+        cursor = document()->find(text, cursor);
+    }
+    setExtraSelections(extraSelections);
+}
+
+bool CodeEditor::findString(const QString &string, bool reverse, bool casesens, bool words)  {
+    QTextDocument::FindFlags flag;
+    if(reverse) {
+        flag |= QTextDocument::FindBackward;
+    }
+    if(casesens) {
+        flag |= QTextDocument::FindCaseSensitively;
+    }
+    if(words) {
+        flag |= QTextDocument::FindWholeWords;
+    }
+
+    QTextCursor cursor = textCursor();
+    QTextCursor cursorSaved = cursor;
+
+    if(!find(string, flag)) {
+        cursor.movePosition(reverse ? QTextCursor::End : QTextCursor::Start);
+
+        setTextCursor(cursor);
+
+        if(!find(string, flag)) {
+            setTextCursor(cursorSaved);
+        }
+        return false;
+    }
+    return true;
+}
+
+void CodeEditor::replaceSelected(const QString &string) {
+    QTextCursor cursor = textCursor();
+
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
+
+    if(!cursor.hasSelection()) {
+        return;
+    }
+
+    cursor.setPosition(end, QTextCursor::KeepAnchor);
+    QTextBlock endBlock = cursor.block();
+
+    cursor.setPosition(start, QTextCursor::KeepAnchor);
+    QTextBlock block = cursor.block();
+
+    for(; block.isValid() && !(endBlock < block); block = block.next()) {
+        if (!block.isValid()) {
+            continue;
+        }
+
+        cursor.movePosition(QTextCursor::StartOfLine);
+        cursor.clearSelection();
+        cursor.insertText(string);
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event) {

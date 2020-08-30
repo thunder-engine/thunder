@@ -44,6 +44,8 @@
 
 #include "aboutdialog.h"
 
+#include "documentmodel.h"
+
 // System
 #include <global.h>
 #include "qlog.h"
@@ -86,6 +88,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
     ui->setupUi(this);
+
+    m_pDocumentModel = new DocumentModel(engine);
 
     m_pBuilder  = new QProcess(this);
     connect(m_pBuilder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
@@ -175,19 +179,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->preferencesWidget, &SettingsBrowser::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
     ui->preferencesWidget->setModel(SettingsManager::instance());
 
-    startTimer(16);
-
-    ui->toolWidget->addToolWindow(ui->viewportWidget,    QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->preview,           QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->hierarchy,         QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->propertyWidget,    QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->components,        QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
-
     findWorkspaces(":/Workspaces");
     findWorkspaces("workspaces");
     ui->menuWorkspace->insertSeparator(ui->actionReset_Workspace);
@@ -222,6 +213,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
+    connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &SceneComposer::onOpenEditor);
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 
@@ -229,9 +221,22 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
 
+    ui->toolWidget->addToolWindow(ui->viewportWidget,    QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->preview,           QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->contentBrowser,    QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->hierarchy,         QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->propertyWidget,    QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->components,        QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->consoleOutput,     QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
+
     resetWorkspace();
     on_actionEditor_Mode_triggered();
     on_actionNew_triggered();
+
+    startTimer(16);
 }
 
 SceneComposer::~SceneComposer() {
@@ -315,6 +320,18 @@ void SceneComposer::onAssetSelected(IConverterSettings *settings) {
     ui->propertyView->setObject(settings);
 }
 
+void SceneComposer::onOpenEditor(const QString &path) {
+    QWidget *editor = dynamic_cast<QWidget *>(m_pDocumentModel->openFile(path));
+    if(editor) {
+        connect(editor, SIGNAL(templateUpdate()), ui->contentBrowser, SLOT(assetUpdated()));
+
+        if(dynamic_cast<QMainWindow *>(editor) == nullptr) {
+            editor->setParent(this);
+            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(ui->viewport));
+        }
+    }
+}
+
 void SceneComposer::onSettingsUpdated() {
     ui->commitButton->setEnabled(true);
     ui->revertButton->setEnabled(true);
@@ -324,7 +341,7 @@ void SceneComposer::checkImportSettings(IConverterSettings *settings) {
     if(settings->isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The inport settings has been modified.");
+        msgBox.setText("The import settings has been modified.");
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -446,42 +463,43 @@ void SceneComposer::on_actionNew_triggered() {
 }
 
 void SceneComposer::onOpen(const QString &arg) {
-    checkSave();
-    if(arg.isEmpty()) {
-        QString dir = ProjectManager::instance()->contentPath();
-        m_Path = QFileDialog::getOpenFileName(this,
-                                              tr("Open Map"),
-                                              dir + "/maps",
-                                              tr("Maps (*.map)") );
-    } else {
-        m_Path = arg;
-    }
-
-    if(!m_Path.isEmpty()) {
-        QFile loadFile(m_Path);
-        if(!loadFile.open(QIODevice::ReadOnly)) {
-            qWarning("Couldn't open file.");
-            return;
+    if(checkSave()) {
+        if(arg.isEmpty()) {
+            QString dir = ProjectManager::instance()->contentPath();
+            m_Path = QFileDialog::getOpenFileName(this,
+                                                  tr("Open Map"),
+                                                  dir + "/maps",
+                                                  tr("Maps (*.map)") );
+        } else {
+            m_Path = arg;
         }
 
-        QByteArray array = loadFile.readAll();
-        string data;
-        data.resize(array.size());
-        memcpy(&data[0], array.data(), array.size());
-        Variant var = Json::load(data);
-        Object *map = Engine::toObject(var, ui->viewport->scene());
-        if(map) {
-            updateTitle();
+        if(!m_Path.isEmpty()) {
+            QFile loadFile(m_Path);
+            if(!loadFile.open(QIODevice::ReadOnly)) {
+                qWarning("Couldn't open file.");
+                return;
+            }
 
-            ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-            ctrl->clear();
-            ctrl->setMap(map);
+            QByteArray array = loadFile.readAll();
+            string data;
+            data.resize(array.size());
+            memcpy(&data[0], array.data(), array.size());
+            Variant var = Json::load(data);
+            Object *map = Engine::toObject(var, ui->viewport->scene());
+            if(map) {
+                updateTitle();
 
-            ui->hierarchy->setRootObject(ctrl->map());
+                ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+                ctrl->clear();
+                ctrl->setMap(map);
 
-            UndoManager::instance()->clear();
+                ui->hierarchy->setRootObject(ctrl->map());
 
-            ui->toolWidget->activateToolWindow(ui->viewport);
+                UndoManager::instance()->clear();
+
+                ui->toolWidget->activateToolWindow(ui->viewport);
+            }
         }
     }
 }

@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <stdint.h>
 
-#include "assetmanager.h"
+#include "editors/scenecomposer/documentmodel.h"
 
 class QSettings;
 

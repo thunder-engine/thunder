@@ -1,9 +1,10 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
-#include <QMainWindow>
+#include <QWidget>
+#include <QFileInfo>
 
-#include "assetmanager.h"
+#include "editors/scenecomposer/documentmodel.h"
 
 namespace Ui {
     class TextEdit;
@@ -12,41 +13,48 @@ namespace Ui {
 class ContentTreeFilter;
 class DocumentModel;
 
-class TextEdit : public QMainWindow, public IAssetEditor {
+class TextEdit : public QWidget, public IAssetEditor {
     Q_OBJECT
 
 public:
     explicit TextEdit(Engine *engine);
     ~TextEdit();
 
-    void readSettings();
-    void writeSettings();
-
-    void loadAsset(IConverterSettings *settings);
+    void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
 
 private slots:
     void onCursorPositionChanged();
+    void onTextChanged();
 
     void on_actionSaveCurrent_triggered();
-    void on_actionSaveAll_triggered();
-
-    void on_treeView_doubleClicked(const QModelIndex &index);
 
     void on_actionFind_triggered();
 
-    void on_docView_clicked(const QModelIndex &index);
+    void on_pushClose_clicked();
+
+    void on_lineFind_textChanged(const QString &arg1);
+
+    void on_pushPrevious_clicked();
+
+    void on_pushNext_clicked();
+
+    void on_pushReplace_clicked();
+
+    void on_pushReplaceFind_clicked();
+
+    void on_pushReplaceAll_clicked();
 
 private:
+    void closeEvent(QCloseEvent *event) override;
+
+    bool checkSave();
+
+    QFileInfo m_fileInfo;
+
     Ui::TextEdit *ui;
-
-    ContentTreeFilter *m_pContentProxy;
-
-    DocumentModel *m_pDocumentModel;
-
-    QWidget *m_pEditor;
 };
 
 #endif // TEXTEDIT_H

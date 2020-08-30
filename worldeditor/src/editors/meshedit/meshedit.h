@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "assetmanager.h"
+#include "editors/scenecomposer/documentmodel.h"
 
 class Engine;
 class Actor;
@@ -43,8 +43,6 @@ private:
     Actor                  *m_pLight;
 
     IConverterSettings     *m_pSettings;
-
-    IConverter             *m_pConverter;
 
     Viewport               *glWidget;
 
