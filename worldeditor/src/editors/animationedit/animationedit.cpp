@@ -10,9 +10,9 @@
 #include <components/animationcontroller.h>
 #include <resources/animationstatemachine.h>
 
-AnimationEdit::AnimationEdit(Engine *engine) :
+AnimationEdit::AnimationEdit() :
         QMainWindow(nullptr),
-        IAssetEditor(engine),
+        m_Modified(false),
         ui(new Ui::AnimationEdit),
         m_pBuilder(new AnimationBuilder()),
         m_pMachine(nullptr) {
@@ -94,6 +94,10 @@ void AnimationEdit::closeEvent(QCloseEvent *event) {
     }
 }
 
+bool AnimationEdit::isModified() const {
+    return m_Modified;
+}
+
 void AnimationEdit::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
@@ -119,15 +123,14 @@ void AnimationEdit::loadAsset(IConverterSettings *settings) {
 
 void AnimationEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder) {
-        // Set user data for mesh
-        setModified(update);
+        m_Modified = update;
     }
 }
 
 void AnimationEdit::on_actionSave_triggered() {
     if(!m_Path.isEmpty()) {
         m_pBuilder->save(m_Path);
-        setModified(false);
+        m_Modified = false;
     }
 }
 

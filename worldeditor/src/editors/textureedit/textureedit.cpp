@@ -19,9 +19,9 @@
 
 #define SCALE 100.0f
 
-TextureEdit::TextureEdit(Engine *engine) :
+TextureEdit::TextureEdit() :
         QMainWindow(nullptr),
-        IAssetEditor(engine),
+        m_Modified(false),
         ui(new Ui::TextureEdit) {
 
     ui->setupUi(this);
@@ -99,10 +99,14 @@ void TextureEdit::closeEvent(QCloseEvent *event) {
     }
 }
 
+bool TextureEdit::isModified() const {
+    return m_Modified;
+}
+
 void TextureEdit::loadAsset(IConverterSettings *settings) {
     show();
     raise();
-    setModified(false);
+    m_Modified = false;
 
     if(m_pSprite) {
         m_pTexture = Engine::loadResource<Texture>(settings->destination());
@@ -122,7 +126,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
 }
 
 void TextureEdit::onUpdateTemplate(bool update) {
-    setModified(update);
+    m_Modified = update;
 
     m_pTexture->loadUserData(m_pConverter->convertResource(m_pSettings));
 }
@@ -160,5 +164,5 @@ void TextureEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visibl
 
 void TextureEdit::on_actionSave_triggered() {
     m_pSettings->saveSettings();
-    setModified(false);
+    m_Modified = false;
 }

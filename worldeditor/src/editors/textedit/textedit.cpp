@@ -5,16 +5,17 @@
 #include <QStyledItemDelegate>
 #include <QDebug>
 #include <QMessageBox>
+#include <QDir>
 
 #include "codeeditor.h"
 
 #include "converters/converter.h"
 
 #include "editors/contentbrowser/contenttree.h"
+#include "projectmanager.h"
 
-TextEdit::TextEdit(Engine *engine) :
+TextEdit::TextEdit() :
         QWidget(nullptr),
-        IAssetEditor(engine),
         ui(new Ui::TextEdit) {
 
     ui->setupUi(this);
@@ -39,7 +40,14 @@ TextEdit::~TextEdit() {
 void TextEdit::closeEvent(QCloseEvent *event) {
     if(!checkSave()) {
         event->ignore();
+        return;
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    emit assetClosed(dir.relativeFilePath(m_fileInfo.absoluteFilePath()));
+}
+
+bool TextEdit::isModified() const {
+    return ui->editor->document()->isModified();
 }
 
 void TextEdit::loadAsset(IConverterSettings *settings) {
@@ -116,10 +124,4 @@ void TextEdit::on_pushReplace_clicked() {
 void TextEdit::on_pushReplaceFind_clicked() {
     on_pushReplace_clicked();
     on_pushNext_clicked();
-}
-
-void TextEdit::on_pushReplaceAll_clicked() {
-    while(ui->editor->findString(ui->lineFind->text(), false)) {
-        on_pushReplace_clicked();
-    }
 }

@@ -17,13 +17,15 @@ class TextEdit : public QWidget, public IAssetEditor {
     Q_OBJECT
 
 public:
-    explicit TextEdit(Engine *engine);
+    TextEdit();
     ~TextEdit();
 
     void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
+
+    void assetClosed(const QString path);
 
 private slots:
     void onCursorPositionChanged();
@@ -45,10 +47,9 @@ private slots:
 
     void on_pushReplaceFind_clicked();
 
-    void on_pushReplaceAll_clicked();
-
 private:
     void closeEvent(QCloseEvent *event) override;
+    bool isModified() const override;
 
     bool checkSave();
 

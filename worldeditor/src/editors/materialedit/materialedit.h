@@ -27,46 +27,50 @@ class MaterialEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
     
 public:
-    MaterialEdit(Engine *engine);
+    MaterialEdit();
     ~MaterialEdit();
 
     void readSettings();
     void writeSettings();
 
-    void loadAsset(IConverterSettings *settings);
+    void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
 
 private:
     void changeMesh(const string &path);
-    void closeEvent(QCloseEvent *event);
-    void timerEvent(QTimerEvent *);
+    void closeEvent(QCloseEvent *event) override;
+    void timerEvent(QTimerEvent *) override;
 
-    Ui::MaterialEdit    *ui;
+    bool isModified() const override;
 
-    Actor               *m_pMesh;
-    Actor               *m_pLight;
+    bool m_Modified;
 
-    Material            *m_pMaterial;
+    Ui::MaterialEdit *ui;
 
-    ShaderBuilder       *m_pBuilder;
+    Actor *m_pMesh;
+    Actor *m_pLight;
 
-    QObject             *m_pEditor;
+    Material *m_pMaterial;
 
-    QString              m_Path;
+    ShaderBuilder *m_pBuilder;
 
-    QString              m_CustomMesh;
+    QObject *m_pEditor;
 
-    Viewport            *glWidget;
+    QString m_Path;
 
-    QMenu               *m_pCreateMenu;
-    QWidgetAction       *m_pAction;
+    QString m_CustomMesh;
 
-    ComponentBrowser    *m_pBrowser;
+    Viewport *glWidget;
 
-    QAction             *m_pUndo;
-    QAction             *m_pRedo;
+    QMenu *m_pCreateMenu;
+    QWidgetAction *m_pAction;
+
+    ComponentBrowser *m_pBrowser;
+
+    QAction *m_pUndo;
+    QAction *m_pRedo;
 
 private slots:
     void onGLInit();

@@ -32,9 +32,9 @@
 
 #include "editors/componentbrowser/componentbrowser.h"
 
-MaterialEdit::MaterialEdit(Engine *engine) :
+MaterialEdit::MaterialEdit() :
         QMainWindow(nullptr),
-        IAssetEditor(engine),
+        m_Modified(false),
         ui(new Ui::MaterialEdit),
         m_pMesh(nullptr),
         m_pLight(nullptr),
@@ -126,6 +126,10 @@ void MaterialEdit::timerEvent(QTimerEvent *) {
     glWidget->repaint();
 }
 
+bool MaterialEdit::isModified() const {
+    return m_Modified;
+}
+
 void MaterialEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     restoreGeometry(settings.value("material.geometry").toByteArray());
@@ -171,7 +175,7 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
         }
         static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_Path);
 
-        setModified(false);
+        m_Modified = false;
         onNodesSelected(QVariantList({0}));
     }
 }
@@ -185,7 +189,7 @@ void MaterialEdit::onUpdateTemplate(bool update) {
             VariantMap map  = m_pBuilder->data(true).toMap();
             mesh->material()->loadUserData(map);
         }
-        setModified(update);
+        m_Modified = update;
     }
 }
 
@@ -255,7 +259,7 @@ void MaterialEdit::on_actionSphere_triggered() {
 void MaterialEdit::on_actionSave_triggered() {
     if(!m_Path.isEmpty()) {
         static_cast<AbstractSchemeModel *>(m_pBuilder)->save(m_Path);
-        setModified(false);
+        m_Modified = false;
     }
 }
 

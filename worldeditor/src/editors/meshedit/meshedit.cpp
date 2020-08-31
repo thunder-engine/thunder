@@ -22,9 +22,9 @@
 
 #include "assimpconverter.h"
 
-MeshEdit::MeshEdit(Engine *engine) :
+MeshEdit::MeshEdit() :
         QMainWindow(nullptr),
-        IAssetEditor(engine),
+        m_Modified(false),
         ui(new Ui::MeshEdit),
         m_pMesh(nullptr),
         m_pGround(nullptr),
@@ -34,8 +34,8 @@ MeshEdit::MeshEdit(Engine *engine) :
 
     ui->setupUi(this);
 
-    glWidget    = new Viewport(this);
-    CameraCtrl *ctrl    = new CameraCtrl(glWidget);
+    glWidget = new Viewport(this);
+    CameraCtrl *ctrl = new CameraCtrl(glWidget);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
     ctrl->init(nullptr);
@@ -84,7 +84,6 @@ void MeshEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     restoreGeometry(settings.value("mesh.mesh.geometry").toByteArray());
     ui->centralwidget->restoreState(settings.value("mesh.mesh.windows"));
-
 }
 
 void MeshEdit::writeSettings() {
@@ -115,6 +114,10 @@ void MeshEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+}
+
+bool MeshEdit::isModified() const {
+    return m_Modified;
 }
 
 void MeshEdit::loadAsset(IConverterSettings *settings) {
@@ -158,7 +161,7 @@ void MeshEdit::onGLInit() {
 }
 
 void MeshEdit::onUpdateTemplate() {
-    setModified(true);
+    m_Modified = true;
 }
 
 void MeshEdit::onToolWindowActionToggled(bool state) {
@@ -179,5 +182,5 @@ void MeshEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) 
 
 void MeshEdit::on_actionSave_triggered() {
     m_pSettings->saveSettings();
-    setModified(false);
+    m_Modified = false;
 }

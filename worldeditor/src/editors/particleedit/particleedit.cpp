@@ -19,9 +19,9 @@
 
 #include <QQmlEngine>
 
-ParticleEdit::ParticleEdit(Engine *engine) :
+ParticleEdit::ParticleEdit() :
         QMainWindow(nullptr),
-        IAssetEditor(engine),
+        m_Modified(false),
         ui(new Ui::ParticleEdit),
         m_pEditor(nullptr),
         m_pEffect(nullptr),
@@ -90,6 +90,10 @@ void ParticleEdit::timerEvent(QTimerEvent *) {
         static_cast<NativeBehaviour *>(m_pRender)->update();
     }
     ui->glWidget->repaint();
+}
+
+bool ParticleEdit::isModified() const {
+    return m_Modified;
 }
 
 void ParticleEdit::readSettings() {
@@ -218,7 +222,7 @@ void ParticleEdit::onUpdateTemplate(bool update) {
     QObjectList list = m_pBuilder->children();
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
 
-    setModified(update);
+    m_Modified = update;
 }
 
 void ParticleEdit::onToolWindowActionToggled(bool state) {
@@ -240,6 +244,6 @@ void ParticleEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visib
 void ParticleEdit::on_actionSave_triggered() {
     if(!m_Path.isEmpty()) {
         m_pBuilder->save(m_Path);
-        setModified(false);
+        m_Modified = false;
     }
 }

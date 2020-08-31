@@ -16,13 +16,13 @@ class AnimationEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    explicit AnimationEdit(Engine *engine);
+    AnimationEdit();
     ~AnimationEdit();
 
     void readSettings();
     void writeSettings();
 
-    void loadAsset(IConverterSettings *settings);
+    void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
@@ -39,7 +39,10 @@ private slots:
     void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
 
 private:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    bool isModified() const override;
+
+    bool m_Modified;
 
     Ui::AnimationEdit *ui;
 

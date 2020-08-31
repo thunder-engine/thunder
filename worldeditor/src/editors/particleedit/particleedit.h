@@ -24,13 +24,13 @@ class ParticleEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    ParticleEdit(Engine *engine);
+    ParticleEdit();
     ~ParticleEdit();
 
     void readSettings();
     void writeSettings();
 
-    void loadAsset(IConverterSettings *settings);
+    void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
@@ -58,9 +58,13 @@ private slots:
     void on_actionSave_triggered();
 
 private:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
-    void timerEvent(QTimerEvent *);
+    void timerEvent(QTimerEvent *) override;
+
+    bool isModified() const override;
+
+    bool m_Modified;
 
     Ui::ParticleEdit *ui;
 

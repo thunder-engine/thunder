@@ -90,6 +90,8 @@ private:
     QAction                *m_Undo;
     QAction                *m_Redo;
 
+    QWidget                *m_pMainDocument;
+
 private slots:
     void                    onSettingsUpdated                           ();
 

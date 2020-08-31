@@ -21,42 +21,44 @@ class TextureEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    TextureEdit                 (Engine *engine);
-    ~TextureEdit                ();
+    TextureEdit ();
+    ~TextureEdit ();
 
-    void                        timerEvent          (QTimerEvent *);
+    void readSettings ();
+    void writeSettings ();
 
-    void                        readSettings        ();
-    void                        writeSettings       ();
-
-    void                        loadAsset           (IConverterSettings *settings);
+    void loadAsset (IConverterSettings *settings) override;
 
 signals:
-    void                        templateUpdate      ();
+    void templateUpdate ();
 
 private:
-    void                        closeEvent          (QCloseEvent *event);
+    void timerEvent (QTimerEvent *) override;
+    void closeEvent (QCloseEvent *event) override;
+    bool isModified() const override;
 
-    Ui::TextureEdit            *ui;
+    bool m_Modified;
 
-    Texture                    *m_pTexture;
+    Ui::TextureEdit *ui;
 
-    SpriteRender               *m_pSprite;
+    Texture *m_pTexture;
 
-    IConverterSettings         *m_pSettings;
+    SpriteRender *m_pSprite;
 
-    TextureConverter           *m_pConverter;
+    IConverterSettings *m_pSettings;
+
+    TextureConverter *m_pConverter;
 
 private slots:
-    void                        onUpdateTemplate                (bool update = true);
+    void onUpdateTemplate (bool update = true);
 
-    void                        onGLInit                        ();
+    void onGLInit ();
 
-    void                        onToolWindowActionToggled       (bool checked);
+    void onToolWindowActionToggled (bool checked);
 
-    void                        onToolWindowVisibilityChanged   (QWidget *toolWindow, bool visible);
+    void onToolWindowVisibilityChanged (QWidget *toolWindow, bool visible);
 
-    void                        on_actionSave_triggered         ();
+    void on_actionSave_triggered ();
 
 };
 

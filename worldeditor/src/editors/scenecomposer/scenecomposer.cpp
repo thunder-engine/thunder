@@ -77,7 +77,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         ui(new Ui::SceneComposer),
         m_pProperties(nullptr),
         m_CurrentWorkspace(":/Workspaces/Default.ws"),
-        m_pQueue(new ImportQueue(engine)) {
+        m_pQueue(new ImportQueue(engine)),
+        m_pMainDocument(nullptr) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -89,7 +90,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pDocumentModel = new DocumentModel(engine);
+    m_pDocumentModel = new DocumentModel;
 
     m_pBuilder  = new QProcess(this);
     connect(m_pBuilder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
@@ -119,6 +120,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->preview->setWindowTitle("Preview");
 
     ui->hierarchy->setController(ctl);
+
+    m_pMainDocument = ui->viewport;
 
     Input::init(ui->preview);
 
@@ -326,8 +329,16 @@ void SceneComposer::onOpenEditor(const QString &path) {
         connect(editor, SIGNAL(templateUpdate()), ui->contentBrowser, SLOT(assetUpdated()));
 
         if(dynamic_cast<QMainWindow *>(editor) == nullptr) {
+            QWidget *neighbor = m_pMainDocument;
+            for(auto it : findChildren<QWidget *>()) {
+                if(it->inherits(editor->metaObject()->className())) {
+                    neighbor = it;
+                    break;
+                }
+            }
+
             editor->setParent(this);
-            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(ui->viewport));
+            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(neighbor));
         }
     }
 }

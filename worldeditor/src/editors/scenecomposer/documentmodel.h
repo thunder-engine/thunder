@@ -10,31 +10,20 @@ class QFileInfo;
 
 class IAssetEditor {
 public:
-    IAssetEditor (Engine *engine) :
-            m_bModified(false) {
-        m_pEngine = engine;
-    }
+    IAssetEditor () { }
 
     virtual ~IAssetEditor () {}
 
     virtual void loadAsset (IConverterSettings *settings) = 0;
 
-    virtual bool isModified () { return m_bModified; }
-
-protected:
-    void setModified (bool value) { m_bModified = value; }
-
-    Engine *m_pEngine;
-
-    bool m_bModified;
+    virtual bool isModified () const = 0;
 
 };
 
 class DocumentModel : public QAbstractItemModel {
 public:
-    DocumentModel(Engine *engine);
-
-    ~DocumentModel() override;
+    DocumentModel();
+    ~DocumentModel();
 
     void addEditor(uint8_t type, IAssetEditor *editor);
 

@@ -14,12 +14,12 @@
 #include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
 
-DocumentModel::DocumentModel(Engine *engine) {
-    addEditor(IConverter::ContentTexture, new TextureEdit(engine));
-    addEditor(IConverter::ContentMaterial, new MaterialEdit(engine));
-    addEditor(IConverter::ContentPrefab, new MeshEdit(engine));
-    addEditor(IConverter::ContentEffect, new ParticleEdit(engine));
-    addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(engine));
+DocumentModel::DocumentModel() {
+    addEditor(IConverter::ContentTexture, new TextureEdit());
+    addEditor(IConverter::ContentMaterial, new MaterialEdit());
+    addEditor(IConverter::ContentPrefab, new MeshEdit());
+    addEditor(IConverter::ContentEffect, new ParticleEdit());
+    addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit());
 }
 
 DocumentModel::~DocumentModel() {
@@ -32,7 +32,7 @@ DocumentModel::~DocumentModel() {
 void DocumentModel::addEditor(uint8_t type, IAssetEditor *editor) {
     m_Editors[type] = editor;
 }
-
+#include <QDebug>
 IAssetEditor *DocumentModel::openFile(const QString &path) {
     auto it = m_Documents.find(path);
     if(it != m_Documents.end()) {
@@ -52,12 +52,13 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     } else {
         switch(type) {
             case IConverter::ContentCode: {
-                editor = new TextEdit(nullptr);
+                TextEdit *text = new TextEdit();
+                connect(text, &TextEdit::assetClosed, this, &DocumentModel::closeFile);
+                editor = text;
             } break;
             default: break;
         }
     }
-
     editor->loadAsset(settings);
     m_Documents[path] = editor;
 
@@ -73,7 +74,7 @@ void DocumentModel::closeFile(const QString &path) {
             case IConverter::ContentCode: {
                 TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
                 if(editor) {
-                    delete editor;
+                    editor->deleteLater();
                 }
             } break;
             default: break;

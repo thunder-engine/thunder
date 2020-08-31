@@ -20,42 +20,45 @@ class MeshEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    MeshEdit                (Engine *engine);
-    ~MeshEdit               ();
+    MeshEdit ();
+    ~MeshEdit ();
 
-    void                    readSettings                                ();
-    void                    writeSettings                               ();
-    void                    closeEvent                                  (QCloseEvent *event);
+    void readSettings ();
+    void writeSettings ();
+    void closeEvent (QCloseEvent *event) override;
 
-    void                    loadAsset                                   (IConverterSettings *settings);
+    void loadAsset (IConverterSettings *settings) override;
 
 signals:
-    void                    templateUpdate                              ();
+    void templateUpdate ();
 
 private:
-    void                    timerEvent                                  (QTimerEvent *);
+    void timerEvent (QTimerEvent *) override;
+    bool isModified() const override;
 
-    Ui::MeshEdit           *ui;
+    bool m_Modified;
 
-    Actor                  *m_pMesh;
-    Actor                  *m_pGround;
-    Actor                  *m_pDome;
-    Actor                  *m_pLight;
+    Ui::MeshEdit *ui;
 
-    IConverterSettings     *m_pSettings;
+    Actor *m_pMesh;
+    Actor *m_pGround;
+    Actor *m_pDome;
+    Actor *m_pLight;
 
-    Viewport               *glWidget;
+    IConverterSettings *m_pSettings;
+
+    Viewport *glWidget;
 
 private slots:
-    void                    onGLInit                                    ();
+    void onGLInit ();
 
-    void                    onUpdateTemplate                            ();
+    void onUpdateTemplate ();
 
-    void                    onToolWindowActionToggled                   (bool checked);
+    void onToolWindowActionToggled (bool checked);
 
-    void                    onToolWindowVisibilityChanged               (QWidget *toolWindow, bool visible);
+    void onToolWindowVisibilityChanged (QWidget *toolWindow, bool visible);
 
-    void                    on_actionSave_triggered                     ();
+    void on_actionSave_triggered ();
 
 };
 
