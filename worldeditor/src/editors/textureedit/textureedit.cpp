@@ -17,12 +17,15 @@
 #include "resources/texture.h"
 #include "resources/material.h"
 
+#include "projectmanager.h"
+
 #define SCALE 100.0f
 
-TextureEdit::TextureEdit() :
+TextureEdit::TextureEdit(DocumentModel *document) :
         QMainWindow(nullptr),
-        m_Modified(false),
-        ui(new Ui::TextureEdit) {
+        ui(new Ui::TextureEdit),
+        m_pDocument(document),
+        m_Modified(false) {
 
     ui->setupUi(this);
 
@@ -97,6 +100,8 @@ void TextureEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 bool TextureEdit::isModified() const {
@@ -108,6 +113,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     raise();
     m_Modified = false;
 
+    m_Path = settings->source();
     if(m_pSprite) {
         m_pTexture = Engine::loadResource<Texture>(settings->destination());
         m_pSprite->setTexture(m_pTexture);

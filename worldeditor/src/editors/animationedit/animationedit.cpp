@@ -7,15 +7,18 @@
 
 #include "animationbuilder.h"
 
+#include "projectmanager.h"
+
 #include <components/animationcontroller.h>
 #include <resources/animationstatemachine.h>
 
-AnimationEdit::AnimationEdit() :
+AnimationEdit::AnimationEdit(DocumentModel *document) :
         QMainWindow(nullptr),
         m_Modified(false),
         ui(new Ui::AnimationEdit),
         m_pBuilder(new AnimationBuilder()),
-        m_pMachine(nullptr) {
+        m_pMachine(nullptr),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
@@ -92,6 +95,8 @@ void AnimationEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 bool AnimationEdit::isModified() const {

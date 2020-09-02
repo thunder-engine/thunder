@@ -20,7 +20,7 @@ class MeshEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    MeshEdit ();
+    MeshEdit (DocumentModel *document);
     ~MeshEdit ();
 
     void readSettings ();
@@ -45,9 +45,13 @@ private:
     Actor *m_pDome;
     Actor *m_pLight;
 
+    QString m_Path;
+
     IConverterSettings *m_pSettings;
 
     Viewport *glWidget;
+
+    DocumentModel *m_pDocument;
 
 private slots:
     void onGLInit ();

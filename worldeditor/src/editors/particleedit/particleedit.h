@@ -24,7 +24,7 @@ class ParticleEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    ParticleEdit();
+    ParticleEdit(DocumentModel *document);
     ~ParticleEdit();
 
     void readSettings();
@@ -77,6 +77,8 @@ private:
     EffectConverter *m_pBuilder;
 
     ParticleRender *m_pRender;
+
+    DocumentModel *m_pDocument;
 };
 
 #endif // PARTICLEEDIT_H

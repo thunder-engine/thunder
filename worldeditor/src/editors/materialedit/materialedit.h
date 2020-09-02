@@ -27,7 +27,7 @@ class MaterialEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
     
 public:
-    MaterialEdit();
+    MaterialEdit(DocumentModel *document);
     ~MaterialEdit();
 
     void readSettings();
@@ -71,6 +71,8 @@ private:
 
     QAction *m_pUndo;
     QAction *m_pRedo;
+
+    DocumentModel *m_pDocument;
 
 private slots:
     void onGLInit();

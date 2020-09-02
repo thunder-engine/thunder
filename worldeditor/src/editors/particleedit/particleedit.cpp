@@ -19,14 +19,15 @@
 
 #include <QQmlEngine>
 
-ParticleEdit::ParticleEdit() :
+ParticleEdit::ParticleEdit(DocumentModel *document) :
         QMainWindow(nullptr),
         m_Modified(false),
         ui(new Ui::ParticleEdit),
         m_pEditor(nullptr),
         m_pEffect(nullptr),
         m_pBuilder(new EffectConverter),
-        m_pRender(nullptr) {
+        m_pRender(nullptr),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
@@ -128,20 +129,20 @@ void ParticleEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 void ParticleEdit::loadAsset(IConverterSettings *settings) {
     show();
 
-    if(m_Path != settings->source()) {
-        m_Path = settings->source();
+    m_Path = settings->source();
 
-        m_pRender->setEffect(Engine::loadResource<ParticleEffect>(settings->destination()));
-        m_pBuilder->load(m_Path);
+    m_pRender->setEffect(Engine::loadResource<ParticleEffect>(settings->destination()));
+    m_pBuilder->load(m_Path);
 
-        ui->treeView->setObject(nullptr);
-        onUpdateTemplate(false);
-    }
+    ui->treeView->setObject(nullptr);
+    onUpdateTemplate(false);
 }
 
 void ParticleEdit::onGLInit() {

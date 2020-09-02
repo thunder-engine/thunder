@@ -339,6 +339,8 @@ void SceneComposer::onOpenEditor(const QString &path) {
 
             editor->setParent(this);
             ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(neighbor));
+        } else {
+            editor->show();
         }
     }
 }

@@ -21,8 +21,9 @@
 #include "graph/sceneview.h"
 
 #include "assimpconverter.h"
+#include "projectmanager.h"
 
-MeshEdit::MeshEdit() :
+MeshEdit::MeshEdit(DocumentModel *document) :
         QMainWindow(nullptr),
         m_Modified(false),
         ui(new Ui::MeshEdit),
@@ -30,7 +31,8 @@ MeshEdit::MeshEdit() :
         m_pGround(nullptr),
         m_pDome(nullptr),
         m_pLight(nullptr),
-        m_pSettings(nullptr) {
+        m_pSettings(nullptr),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
@@ -114,6 +116,8 @@ void MeshEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 bool MeshEdit::isModified() const {
@@ -127,6 +131,7 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
         delete m_pMesh;
     }
 
+    m_Path = settings->source();
     Prefab *prefab = Engine::loadResource<Prefab>( settings->destination() );
     if(prefab) {
         m_pMesh = static_cast<Actor *>(prefab->actor()->clone(glWidget->scene()));

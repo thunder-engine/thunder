@@ -30,9 +30,11 @@
 
 #include "functionmodel.h"
 
+#include "projectmanager.h"
+
 #include "editors/componentbrowser/componentbrowser.h"
 
-MaterialEdit::MaterialEdit() :
+MaterialEdit::MaterialEdit(DocumentModel *document) :
         QMainWindow(nullptr),
         m_Modified(false),
         ui(new Ui::MaterialEdit),
@@ -40,7 +42,8 @@ MaterialEdit::MaterialEdit() :
         m_pLight(nullptr),
         m_pMaterial(nullptr),
         m_pBuilder(new ShaderBuilder()),
-        m_pEditor(nullptr) {
+        m_pEditor(nullptr),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
@@ -162,39 +165,40 @@ void MaterialEdit::closeEvent(QCloseEvent *event) {
             on_actionSave_triggered();
         }
     }
+    QDir dir(ProjectManager::instance()->contentPath());
+    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 void MaterialEdit::loadAsset(IConverterSettings *settings) {
     show();
-    if(m_Path != settings->source()) {
-        m_Path      = settings->source();
-        m_pMaterial = Engine::loadResource<Material>(settings->destination());
-        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
-        if(mesh) {
-            mesh->setMaterial(m_pMaterial);
-        }
-        static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_Path);
 
-        m_Modified = false;
-        onNodesSelected(QVariantList({0}));
+    m_Path = settings->source();
+    m_pMaterial = Engine::objectCreate<Material>();
+    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
+    if(mesh) {
+        mesh->setMaterial(m_pMaterial);
     }
+    static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_Path);
+
+    m_Modified = false;
+    onNodesSelected(QVariantList({0}));
 }
 
 void MaterialEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder && m_pBuilder->build()) {
         ui->textEdit->setText(m_pBuilder->shader());
         glWidget->makeCurrent();
-        MeshRender *mesh    = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
+        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
         if(mesh) {
-            VariantMap map  = m_pBuilder->data(true).toMap();
-            mesh->material()->loadUserData(map);
+            VariantMap map = m_pBuilder->data(true).toMap();
+            m_pMaterial->loadUserData(map);
         }
         m_Modified = update;
     }
 }
 
 void MaterialEdit::changeMesh(const string &path) {
-    MeshRender *mesh    = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
+    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
         if(m_pMaterial) {

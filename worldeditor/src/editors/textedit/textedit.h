@@ -17,15 +17,13 @@ class TextEdit : public QWidget, public IAssetEditor {
     Q_OBJECT
 
 public:
-    TextEdit();
+    TextEdit(DocumentModel *document);
     ~TextEdit();
 
     void loadAsset(IConverterSettings *settings) override;
 
 signals:
     void templateUpdate();
-
-    void assetClosed(const QString path);
 
 private slots:
     void onCursorPositionChanged();
@@ -56,6 +54,8 @@ private:
     QFileInfo m_fileInfo;
 
     Ui::TextEdit *ui;
+
+    DocumentModel *m_pDocument;
 };
 
 #endif // TEXTEDIT_H

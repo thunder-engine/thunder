@@ -16,7 +16,7 @@ class AnimationEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    AnimationEdit();
+    AnimationEdit(DocumentModel *document);
     ~AnimationEdit();
 
     void readSettings();
@@ -54,6 +54,8 @@ private:
 
     QAction *m_pUndo;
     QAction *m_pRedo;
+
+    DocumentModel *m_pDocument;
 };
 
 #endif // ANIMATIONEDIT_H

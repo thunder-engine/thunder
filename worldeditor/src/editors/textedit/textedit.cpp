@@ -14,9 +14,10 @@
 #include "editors/contentbrowser/contenttree.h"
 #include "projectmanager.h"
 
-TextEdit::TextEdit() :
+TextEdit::TextEdit(DocumentModel *document) :
         QWidget(nullptr),
-        ui(new Ui::TextEdit) {
+        ui(new Ui::TextEdit),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
@@ -43,7 +44,7 @@ void TextEdit::closeEvent(QCloseEvent *event) {
         return;
     }
     QDir dir(ProjectManager::instance()->contentPath());
-    emit assetClosed(dir.relativeFilePath(m_fileInfo.absoluteFilePath()));
+    m_pDocument->closeFile(dir.relativeFilePath(m_fileInfo.absoluteFilePath()));
 }
 
 bool TextEdit::isModified() const {
@@ -94,6 +95,7 @@ void TextEdit::onTextChanged() {
 
 void TextEdit::on_actionSaveCurrent_triggered() {
     ui->editor->saveFile();
+    onTextChanged();
 }
 
 void TextEdit::on_actionFind_triggered() {

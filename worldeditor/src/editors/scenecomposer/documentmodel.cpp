@@ -15,11 +15,11 @@
 #include "editors/animationedit/animationedit.h"
 
 DocumentModel::DocumentModel() {
-    addEditor(IConverter::ContentTexture, new TextureEdit());
-    addEditor(IConverter::ContentMaterial, new MaterialEdit());
-    addEditor(IConverter::ContentPrefab, new MeshEdit());
-    addEditor(IConverter::ContentEffect, new ParticleEdit());
-    addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit());
+    addEditor(IConverter::ContentTexture, new TextureEdit(this));
+    addEditor(IConverter::ContentMaterial, new MaterialEdit(this));
+    addEditor(IConverter::ContentPrefab, new MeshEdit(this));
+    addEditor(IConverter::ContentEffect, new ParticleEdit(this));
+    addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(this));
 }
 
 DocumentModel::~DocumentModel() {
@@ -32,7 +32,7 @@ DocumentModel::~DocumentModel() {
 void DocumentModel::addEditor(uint8_t type, IAssetEditor *editor) {
     m_Editors[type] = editor;
 }
-#include <QDebug>
+
 IAssetEditor *DocumentModel::openFile(const QString &path) {
     auto it = m_Documents.find(path);
     if(it != m_Documents.end()) {
@@ -52,8 +52,7 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     } else {
         switch(type) {
             case IConverter::ContentCode: {
-                TextEdit *text = new TextEdit();
-                connect(text, &TextEdit::assetClosed, this, &DocumentModel::closeFile);
+                TextEdit *text = new TextEdit(this);
                 editor = text;
             } break;
             default: break;
