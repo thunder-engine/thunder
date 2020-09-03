@@ -91,7 +91,10 @@ void CodeEditor::openFile(const QString &fileName) {
     setPlainText(QString::fromUtf8(fp.readAll()));
 }
 
-void CodeEditor::saveFile() {
+void CodeEditor::saveFile(const QString &path) {
+    if(!path.isEmpty()) {
+        m_FileName = path;
+    }
     QFile fp(m_FileName);
     if (!fp.open(QFile::WriteOnly)) {
         qWarning() << "Failed to open" << m_FileName << ":" << fp.errorString();

@@ -2,6 +2,8 @@
 
 #include <QFileInfo>
 #include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -31,6 +33,10 @@ DocumentModel::~DocumentModel() {
 
 void DocumentModel::addEditor(uint8_t type, IAssetEditor *editor) {
     m_Editors[type] = editor;
+}
+
+QString DocumentModel::fileName(IAssetEditor *editor) const {
+    return m_Documents.key(editor);
 }
 
 IAssetEditor *DocumentModel::openFile(const QString &path) {
@@ -64,6 +70,25 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     return editor;
 }
 
+void DocumentModel::saveFile(IAssetEditor *editor) {
+    if(editor) {
+        editor->saveAsset(ProjectManager::instance()->contentPath() + "/" + m_Documents.key(editor));
+    }
+}
+
+void DocumentModel::saveFileAs(IAssetEditor *editor) {
+    if(editor) {
+        QString dir = ProjectManager::instance()->contentPath();
+        QString path = QFileDialog::getSaveFileName(nullptr,
+                                                    tr("Save Document"),
+                                                    dir,
+                                                    "");
+        if(path.length() > 0) {
+            editor->saveAsset(path);
+        }
+    }
+}
+
 void DocumentModel::closeFile(const QString &path) {
     auto it = m_Documents.find(path);
     if(it != m_Documents.end()) {
@@ -86,9 +111,30 @@ void DocumentModel::closeFile(const QString &path) {
 void DocumentModel::saveAll() {
     foreach(auto it, m_Documents) {
         if(it->isModified()) {
-            //it->saveFile();
+            it->saveAsset();
         }
     }
+}
+
+bool DocumentModel::checkSave(IAssetEditor *editor) {
+    if(editor->isModified()) {
+        QMessageBox msgBox(nullptr);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText("The file has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result  = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            return false;
+        } else if(result == QMessageBox::Yes) {
+            editor->saveAsset();
+        } else {
+            editor->setModified(false);
+        }
+    }
+    return true;
 }
 
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {

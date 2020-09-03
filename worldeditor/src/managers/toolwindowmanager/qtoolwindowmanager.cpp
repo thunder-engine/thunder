@@ -478,7 +478,6 @@ void QToolWindowManagerPrivate::moveToolWindows(const QWidgetList &toolWindows,
     foreach (QWidget *toolWindow, toolWindows)
         emit q->toolWindowVisibilityChanged(toolWindow, toolWindow->parent() != nullptr);
 }
-
 /*!
  * \brief Removes \a toolWindow from the manager. \a toolWindow becomes a hidden
  * top level widget. The ownership of \a toolWindow is returned to the caller.
@@ -1161,6 +1160,16 @@ void QToolWindowManagerPrivateSlots::areaDestroyed(QObject *object)
     if (area == d->m_lastUsedArea)
         d->m_lastUsedArea = 0;
     d->m_areas.removeOne(area);
+}
+
+void QToolWindowManagerPrivateSlots::onCurrentChanged() {
+    QTabWidget *tab = dynamic_cast<QTabWidget *>(sender());
+    if(tab) {
+        QWidget *widget = tab->currentWidget();
+        if(widget) {
+            d->q_ptr->currentToolWindowChanged(widget);
+        }
+    }
 }
 
 void QToolWindowManagerAreaPrivateSlots::tabCloseRequested(int index)

@@ -98,6 +98,8 @@ public Q_SLOTS:
     void showNextDropSuggestion();
     //void tabCloseRequested(int index);
     void areaDestroyed(QObject *object);
+
+    void onCurrentChanged();
 };
 
 

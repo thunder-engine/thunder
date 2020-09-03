@@ -27,7 +27,6 @@ TextEdit::TextEdit(DocumentModel *document) :
     connect(ui->editor, &CodeEditor::textChanged, this, &TextEdit::onTextChanged);
 
     ui->editor->addAction(ui->actionFind);
-    ui->editor->addAction(ui->actionSaveCurrent);
 
     on_pushClose_clicked();
 }
@@ -39,7 +38,7 @@ TextEdit::~TextEdit() {
 }
 
 void TextEdit::closeEvent(QCloseEvent *event) {
-    if(!checkSave()) {
+    if(!m_pDocument->checkSave(this)) {
         event->ignore();
         return;
     }
@@ -51,33 +50,14 @@ bool TextEdit::isModified() const {
     return ui->editor->document()->isModified();
 }
 
-void TextEdit::loadAsset(IConverterSettings *settings) {
-    if(checkSave()) {
-        ui->editor->openFile(settings->source());
-        m_fileInfo = QFileInfo(settings->source());
-        setWindowTitle(m_fileInfo.fileName());
-    }
+void TextEdit::setModified(bool flag) {
+    ui->editor->document()->setModified(flag);
 }
 
-bool TextEdit::checkSave() {
-    if(ui->editor->document()->isModified()) {
-        QMessageBox msgBox(this);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The file has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result  = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            return false;
-        } else if(result == QMessageBox::Yes) {
-            on_actionSaveCurrent_triggered();
-        } else {
-            ui->editor->document()->setModified(false);
-        }
-    }
-    return true;
+void TextEdit::loadAsset(IConverterSettings *settings) {
+    ui->editor->openFile(settings->source());
+    m_fileInfo = QFileInfo(settings->source());
+    setWindowTitle(m_fileInfo.fileName());
 }
 
 void TextEdit::onCursorPositionChanged() {
@@ -93,8 +73,8 @@ void TextEdit::onTextChanged() {
     setWindowTitle(title);
 }
 
-void TextEdit::on_actionSaveCurrent_triggered() {
-    ui->editor->saveFile();
+void TextEdit::saveAsset(const QString &path) {
+    ui->editor->saveFile(path);
     onTextChanged();
 }
 

@@ -2,7 +2,6 @@
 #include "ui_scenecomposer.h"
 
 #include <QSettings>
-#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QTimer>
@@ -197,7 +196,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
 
-    connect(ui->toolWidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
+    connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &SceneComposer::onToolWindowVisibilityChanged);
+    connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &SceneComposer::onCurrentToolWindowChanged);
 
     connect(ctl, SIGNAL(mapUpdated()), ui->hierarchy, SLOT(onHierarchyUpdated()));
     connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onObjectSelected(Object::ObjectList)));
@@ -518,37 +518,45 @@ void SceneComposer::onOpen(const QString &arg) {
 }
 
 void SceneComposer::on_actionSave_triggered() {
-    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    Object *map = ctrl->map();
-    if(map && !ui->actionGame_Mode->isChecked()) {
-        if( m_Path.length() > 0 ) {
-            QDir dir = QDir(QDir::currentPath());
-
-            QFile file(dir.relativeFilePath(m_Path));
-            if(file.open(QIODevice::WriteOnly)) {
-                string data = Json::save(Engine::toVariant(map), 0);
-                file.write(static_cast<const char *>(&data[0]), data.size());
-                file.close();
-            }
-            static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
-        } else {
-            on_actionSave_As_triggered();
-        }
+    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
+        m_pDocumentModel->saveFile(dynamic_cast<IAssetEditor *>(m_pCurrentDocument));
     } else {
-        QApplication::beep();
+        ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+        Object *map = ctrl->map();
+        if(map && !ui->actionGame_Mode->isChecked()) {
+            if( m_Path.length() > 0 ) {
+                QDir dir = QDir(QDir::currentPath());
+
+                QFile file(dir.relativeFilePath(m_Path));
+                if(file.open(QIODevice::WriteOnly)) {
+                    string data = Json::save(Engine::toVariant(map), 0);
+                    file.write(static_cast<const char *>(&data[0]), data.size());
+                    file.close();
+                }
+                static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
+            } else {
+                on_actionSave_As_triggered();
+            }
+        } else {
+            QApplication::beep();
+        }
     }
 }
 
 void SceneComposer::on_actionSave_As_triggered() {
-    QString dir = ProjectManager::instance()->contentPath();
-    m_Path = QFileDialog::getSaveFileName(this,
-                                          tr("Save Map"),
-                                          dir + "/maps",
-                                          tr("Maps (*.map)") );
-    if(m_Path.length() > 0) {
-        updateTitle();
+    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
+        m_pDocumentModel->saveFileAs(dynamic_cast<IAssetEditor *>(m_pCurrentDocument));
+    } else {
+        QString dir = ProjectManager::instance()->contentPath();
+        m_Path = QFileDialog::getSaveFileName(this,
+                                              tr("Save Map"),
+                                              dir + "/maps",
+                                              tr("Maps (*.map)") );
+        if(m_Path.length() > 0) {
+            updateTitle();
 
-        on_actionSave_triggered();
+            on_actionSave_triggered();
+        }
     }
 }
 
@@ -869,4 +877,22 @@ void SceneComposer::findWorkspaces(const QString &dir) {
             connect(action, SIGNAL(triggered()), this, SLOT(onWorkspaceActionClicked()));
         }
     }
+}
+
+void SceneComposer::onCurrentToolWindowChanged(QWidget *toolWindow) {
+    IAssetEditor *editor = dynamic_cast<IAssetEditor *>(toolWindow);
+    if(editor) {
+        m_pCurrentDocument = toolWindow;
+    } else {
+        m_pCurrentDocument = m_pMainDocument;
+    }
+}
+
+void SceneComposer::on_menuFile_aboutToShow() {
+    QString name;
+    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
+        name = QString(" \"%1\"").arg(m_pDocumentModel->fileName(dynamic_cast<IAssetEditor *>(m_pCurrentDocument)));
+    }
+    ui->actionSave->setText(tr("Save%1").arg(name));
+    ui->actionSave_As->setText(tr("Save%1 As...").arg(name));
 }

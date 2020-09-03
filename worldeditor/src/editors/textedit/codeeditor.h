@@ -20,7 +20,7 @@ public:
     ~CodeEditor() override;
 
     void openFile(const QString &fileName);
-    void saveFile();
+    void saveFile(const QString &path = QString());
 
     void setSpaceTabs(bool enable, uint32_t indent);
     void displayLineNumbers(bool visible);

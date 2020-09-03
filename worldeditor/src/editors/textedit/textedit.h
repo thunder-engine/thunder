@@ -29,8 +29,6 @@ private slots:
     void onCursorPositionChanged();
     void onTextChanged();
 
-    void on_actionSaveCurrent_triggered();
-
     void on_actionFind_triggered();
 
     void on_pushClose_clicked();
@@ -48,8 +46,11 @@ private slots:
 private:
     void closeEvent(QCloseEvent *event) override;
     bool isModified() const override;
+    void setModified(bool flag) override;
 
     bool checkSave();
+
+    void saveAsset(const QString &path = QString()) override;
 
     QFileInfo m_fileInfo;
 

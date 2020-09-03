@@ -154,6 +154,7 @@ public:
 
 signals:
     void toolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
+    void currentToolWindowChanged(QWidget *toolWindow);
     void suggestionSwitchIntervalChanged(int suggestionSwitchInterval);
     void borderSensitivityChanged(int borderSensitivity);
     void rubberBandLineWidthChanged(int rubberBandLineWidth);

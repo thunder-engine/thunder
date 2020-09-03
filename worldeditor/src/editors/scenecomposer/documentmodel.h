@@ -14,9 +14,13 @@ public:
 
     virtual ~IAssetEditor () {}
 
-    virtual void loadAsset (IConverterSettings *settings) = 0;
+    virtual void loadAsset(IConverterSettings *settings) = 0;
 
-    virtual bool isModified () const = 0;
+    virtual void saveAsset(const QString &path = QString()) { Q_UNUSED(path) };
+
+    virtual bool isModified() const = 0;
+
+    virtual void setModified(bool flag) { Q_UNUSED(flag) };
 
 };
 
@@ -27,9 +31,16 @@ public:
 
     void addEditor(uint8_t type, IAssetEditor *editor);
 
+    QString fileName(IAssetEditor *editor) const;
+
     IAssetEditor *openFile(const QString &path);
 
+    void saveFile(IAssetEditor *editor);
+    void saveFileAs(IAssetEditor *editor);
+
     void saveAll();
+
+    bool checkSave(IAssetEditor *editor);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
 

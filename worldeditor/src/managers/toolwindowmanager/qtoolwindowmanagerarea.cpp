@@ -80,6 +80,7 @@ QToolWindowManagerArea::QToolWindowManagerArea(QToolWindowManager *manager) :
     d->slots_object.d = d;
     connect(d->m_tabWidget, SIGNAL(tabCloseRequested(int)),
             &(d->slots_object), SLOT(tabCloseRequested(int)));
+    connect(d->m_tabWidget, &QTabWidget::currentChanged, &(d->m_d_manager->slots_object), &QToolWindowManagerPrivateSlots::onCurrentChanged);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(d->m_tabWidget);
