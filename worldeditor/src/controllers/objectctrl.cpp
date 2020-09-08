@@ -55,30 +55,21 @@ string findFreeObjectName(const string &name, Object *parent) {
 }
 
 ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
-        CameraCtrl(view) {
+        CameraCtrl(view),
+        m_Modified(false),
+        m_Drag(false),
+        m_Canceled(false),
+        m_Mode(ModeTypes::MODE_SCALE),
+        m_Axes(0),
+        m_AngleGrid(0.0f),
+        m_ScaleGrid(0.0f),
+        m_pMap(nullptr),
+        m_pPipeline(nullptr) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
     connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
     connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
     connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
-
-    m_Modified = false;
-    m_Drag  = false;
-    m_Canceled = false;
-    m_Mode  = ObjectCtrl::MODE_SCALE;
-    m_World = Vector3();
-
-    m_Axes = 0;
-
-    m_MoveGrid   = Vector3();
-    m_AngleGrid  = 0;
-    m_ScaleGrid  = 0;
-
-    m_pMap = nullptr;
-
-    m_MousePosition  = Vector2();
-
-    m_pPipeline = nullptr;
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
@@ -119,8 +110,8 @@ void ObjectCtrl::drawHandles() {
 
     if(!m_Selected.empty()) {
         switch(m_Mode) {
-            case MODE_TRANSLATE: {
-                m_World  = Handles::moveTool(objectPosition(), Quaternion(), m_Drag);
+            case ModeTypes::MODE_TRANSLATE: {
+                m_World = Handles::moveTool(objectPosition(), Quaternion(), m_Drag);
 
                 if(m_Drag) {
                     Vector3 delta = m_World - m_SavedWorld;
@@ -141,14 +132,11 @@ void ObjectCtrl::drawHandles() {
                     emit objectsChanged(selected(), "Position");
                 }
             } break;
-            case MODE_ROTATE: {
-                Vector3 delta = m_World - m_SavedWorld;
-                float angle   = (delta.x + delta.y + delta.z);
+            case ModeTypes::MODE_ROTATE: {
+                float angle = Handles::rotationTool(objectPosition(), Quaternion(), m_Drag);
                 if(m_AngleGrid > 0) {
                     angle = m_AngleGrid * int(angle / m_AngleGrid);
                 }
-
-                m_World = Handles::rotationTool(objectPosition(), Quaternion(), m_Drag, angle);
 
                 if(m_Drag) {
                     for(const auto &it : m_Selected) {
@@ -174,7 +162,7 @@ void ObjectCtrl::drawHandles() {
                                 euler += Vector3(0.0f, 0.0f, angle);
                             } break;
                             default: {
-                                Vector3 axis  = m_pActiveCamera->actor()->transform()->position() - m_Position;
+                                Vector3 axis = m_pActiveCamera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
                                 axis.normalize();
                                 q = Quaternion(axis, angle);
                                 euler = q.euler();
@@ -187,7 +175,7 @@ void ObjectCtrl::drawHandles() {
                     emit objectsChanged(selected(), "Rotation");
                 }
             } break;
-            case MODE_SCALE: {
+            case ModeTypes::MODE_SCALE: {
                 if(!m_Drag) {
                     Handles::s_Axes = Handles::AXIS_X | Handles::AXIS_Y | Handles::AXIS_Z;
                 }
@@ -299,7 +287,6 @@ void ObjectCtrl::setDrag(bool drag) {
         }
         m_Position = objectPosition();
         m_SavedWorld = m_World;
-        m_Angle = 0.0f;
     }
     m_Drag = drag;
 }
@@ -398,15 +385,15 @@ void ObjectCtrl::onFocusActor(Object *object) {
 }
 
 void ObjectCtrl::onMoveActor() {
-    m_Mode = MODE_TRANSLATE;
+    m_Mode = ModeTypes::MODE_TRANSLATE;
 }
 
 void ObjectCtrl::onRotateActor() {
-    m_Mode = MODE_ROTATE;
+    m_Mode = ModeTypes::MODE_ROTATE;
 }
 
 void ObjectCtrl::onScaleActor() {
-    m_Mode = MODE_SCALE;
+    m_Mode = ModeTypes::MODE_SCALE;
 }
 
 void ObjectCtrl::onUpdated() {
@@ -607,7 +594,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
             if(e->button() == Qt::LeftButton) {
                 if(m_Drag) {
                     switch(m_Mode) {
-                    case MODE_TRANSLATE: {
+                    case ModeTypes::MODE_TRANSLATE: {
                         VariantList values;
                         Object::ObjectList objects;
                         for(auto it : m_Selected) {
@@ -618,7 +605,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         }
                         UndoManager::instance()->push(new PropertyObjects(objects, "Position", values, this, "Move"));
                     } break;
-                    case MODE_ROTATE: {
+                    case ModeTypes::MODE_ROTATE: {
                         VariantList pos;
                         VariantList rot;
                         Object::ObjectList objects;
@@ -635,7 +622,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         new PropertyObjects(objects, "Rotation", rot, this, "", group);
                         UndoManager::instance()->push(group);
                     } break;
-                    case MODE_SCALE: {
+                    case ModeTypes::MODE_SCALE: {
                         VariantList pos;
                         VariantList scl;
                         Object::ObjectList objects;

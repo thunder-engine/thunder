@@ -247,3 +247,26 @@ areal Vector3::dot(const Vector3 &vector) const {
 Vector3 Vector3::abs() const {
     return Vector3(std::abs(x), std::abs(y), std::abs(z));
 }
+/*!
+    Returns an absolute angle between current and provided vector.
+
+    \sa signedAngle()
+*/
+areal Vector3::angle(const Vector3 &vector) const {
+    return std::atan2(cross(vector).length(), dot(vector)) * RAD2DEG;
+}
+/*!
+    Returns an signed angle between current and provided \a vector.
+    The \a up vector around which the current and provided vectors are rotated.
+
+    \sa angle()
+*/
+areal Vector3::signedAngle(const Vector3 &vector, const Vector3 up) const {
+    Vector3 crossProduct = cross(vector);
+    areal result = std::atan2(crossProduct.length(), dot(vector)) * RAD2DEG;
+    if(crossProduct.dot(up) < 0) {
+        result = -result;
+    }
+    return result;
+}
+

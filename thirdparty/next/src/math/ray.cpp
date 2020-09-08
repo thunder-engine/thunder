@@ -53,11 +53,11 @@ bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
 */
 bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
     Vector3 n = plane.normal;
-    areal d     = dir.dot(n);
+    areal d = dir.dot(n);
     if(d >= 0.0f) {
         if(back) {
-            n   = -n;
-            d   = dir.dot(n);
+            n = -n;
+            d = dir.dot(n);
         } else {
             return false;
         }

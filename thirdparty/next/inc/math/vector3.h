@@ -62,6 +62,9 @@ public:
 
     Vector3                     abs                         () const;
 
+    areal                       angle                       (const Vector3 &vector) const;
+    areal                       signedAngle                 (const Vector3 &vector, const Vector3 up) const;
+
     union {
         struct {
             areal x, y, z;

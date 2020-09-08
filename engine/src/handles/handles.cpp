@@ -25,6 +25,8 @@ Vector4 Handles::s_zColor   = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Color    = Handles::s_Normal;
 Vector4 Handles::s_Second   = Handles::s_Normal;
 
+Vector3 Handles::s_World    = Vector3();
+
 Vector2 Handles::m_sMouse   = Vector2();
 Vector2 Handles::m_sScreen  = Vector2();
 
@@ -37,6 +39,9 @@ static ICommandBuffer *s_Buffer = nullptr;
 static float length    = 1.0f;
 static float sense     = 0.02f;
 static float conesize  = length / 5.0f;
+
+static float s_AngleBegin = 0.0f;
+static float s_AngleTotal = 0.0f;
 
 Mesh *Handles::s_Cone   = nullptr;
 Mesh *Handles::s_Quad   = nullptr;
@@ -436,9 +441,9 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             scale *= (CONTROL_SIZE / m_sScreen.y);
             Matrix4 model(position, rotation, scale);
 
-            Matrix4 x   = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
-            Matrix4 y   = model * Matrix4(Vector3(0, conesize, 0), Quaternion(), conesize);
-            Matrix4 z   = model * Matrix4(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), conesize);
+            Matrix4 x = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
+            Matrix4 y = model * Matrix4(Vector3(0, conesize, 0), Quaternion(), conesize);
+            Matrix4 z = model * Matrix4(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), conesize);
 
             Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
@@ -463,24 +468,24 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
                 }
             }
 
-            s_Second    = s_xColor;
-            s_Color     = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
+            s_Second = s_xColor;
+            s_Color  = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
             drawArrow(x);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
             s_Buffer->drawMesh(x, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor);
             s_Buffer->drawMesh(x * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_Second    = s_yColor;
-            s_Color     = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
+            s_Second = s_yColor;
+            s_Color  = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
             drawArrow(y);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
             s_Buffer->drawMesh(y, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor);
             s_Buffer->drawMesh(y * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
-            s_Second    = s_zColor;
-            s_Color     = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
+            s_Second = s_zColor;
+            s_Color  = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
             drawArrow(z);
             s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
             s_Buffer->drawMesh(z, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -501,8 +506,8 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
                 s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(z, s_MoveXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
-            s_Color     = s_Normal;
-            s_Second    = s_Normal;
+            s_Color  = s_Normal;
+            s_Second = s_Normal;
 
             Plane plane;
             plane.point     = position;
@@ -539,9 +544,9 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
     return result;
 }
 
-Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked, float angle) {
+float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
     if(ICommandBuffer::isInited()) {
-        Camera *camera  = Camera::current();
+        Camera *camera = Camera::current();
         if(camera) {
             Transform *t = camera->actor()->transform();
             Vector3 normal = position - t->position();
@@ -556,48 +561,67 @@ Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotatio
 
             Matrix4 model(position, rotation, scale * 5.0f);
 
-            Matrix4 q1  = model * Matrix4(Vector3(), t->rotation() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
+            Matrix4 q1 = model * Matrix4(Vector3(), t->rotation() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
-            Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 90)) *
-                                                     Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
-            Matrix4 y   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
-            Matrix4 z   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
-                                                     Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
+            Matrix4 x  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 90)) *
+                                                    Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
+            Matrix4 y  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
+            Matrix4 z  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
+                                                    Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
             Matrix4 m;
             m.scale(1.2f);
 
             if(!locked) {
                 if(HandleTools::distanceToMesh(q1 * m, s_Circle) <= sense) {
-                    s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
+                    s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
                 } else if(HandleTools::distanceToMesh(x, s_Arc) <= sense) {
-                    s_Axes  = AXIS_X;
+                    s_Axes = AXIS_X;
                 } else if(HandleTools::distanceToMesh(y, s_Arc) <= sense) {
-                    s_Axes  = AXIS_Y;
+                    s_Axes = AXIS_Y;
                 } else if(HandleTools::distanceToMesh(z, s_Arc) <= sense) {
-                    s_Axes  = AXIS_Z;
+                    s_Axes = AXIS_Z;
                 }
             }
 
-            float start = 0.0f;
+            Plane plane;
+            plane.point  = position;
+            plane.normal = t->rotation() * Vector3(0.0f, 0.0f, 1.0f);
+            if(s_Axes == AXIS_X) {
+                plane.normal = Vector3(1.0f, 0.0f, 0.0f);
+            } else if(s_Axes == AXIS_Y) {
+                plane.normal = Vector3(0.0f, 1.0f, 0.0f);
+            } else if(s_Axes == AXIS_Z) {
+                plane.normal = Vector3(0.0f, 0.0f, 1.0f);
+            }
+            plane.d = plane.normal.dot(plane.point);
 
+            Vector3 world;
+            Ray ray = camera->castRay(m_sMouse.x, m_sMouse.y);
+            ray.intersect(plane, &world, true);
+
+            Vector3 dt0 = world - position;
             if(locked) {
+                Vector3 dt1 = s_World - position;
+                float angle = dt1.signedAngle(dt0, plane.normal);
+
+                s_AngleTotal += angle;
                 s_Color = s_Selected;
                 s_Color.w = ALPHA;
                 if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-                    drawDisk(position, Quaternion(Vector3(90, 0, 0)), scale, start, -angle);
+                    drawDisk(position, t->rotation() * Quaternion(Vector3(90, 0, 0)), scale, s_AngleBegin, -s_AngleTotal);
                     s_Buffer->setColor(s_Selected);
                     s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                 } else if(s_Axes == AXIS_X) {
-                    drawDisk(position, Quaternion(Vector3(0, 0, 1), 90), scale, start, angle);
+                    drawDisk(position, Quaternion(Vector3(0, 0, 1), 90), scale, s_AngleBegin, s_AngleTotal);
                     s_Buffer->setColor(s_Selected);
                     s_Buffer->drawMesh(x, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                 } else if(s_Axes == AXIS_Y) {
-                    drawDisk(position, Quaternion(), scale, start, -angle);
+                    drawDisk(position, Quaternion(), scale, s_AngleBegin, -s_AngleTotal);
                     s_Buffer->setColor(s_Selected);
                     s_Buffer->drawMesh(y, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                 } else if(s_Axes == AXIS_Z) {
-                    drawDisk(position, Quaternion(Vector3(1, 0, 0), 90), scale, start, -angle);
+                    drawDisk(position, Quaternion(Vector3(1, 0, 0), 90), scale, s_AngleBegin, -s_AngleTotal);
                     s_Buffer->setColor(s_Selected);
                     s_Buffer->drawMesh(z, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
                 }
@@ -613,6 +637,15 @@ Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotatio
                 s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
                 s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(z, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+
+                if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
+                    s_AngleBegin = dt0.signedAngle(t->rotation() * Vector3(1.0f, 0.0f, 0.0f), plane.normal);
+                } else if(s_Axes == AXIS_X) {
+                    s_AngleBegin =-dt0.signedAngle(Vector3(0.0f, 1.0f, 0.0f), plane.normal);
+                } else {
+                    s_AngleBegin = dt0.signedAngle(Vector3(1.0f, 0.0f, 0.0f), plane.normal);
+                }
+                s_AngleTotal = 0.0f;
             }
 
             s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f;
@@ -623,9 +656,11 @@ Vector3 Handles::rotationTool(const Vector3 &position, const Quaternion &rotatio
 
             s_Color = s_Normal;
             s_Buffer->setColor(s_Color);
+
+            s_World = world;
         }
     }
-    return Vector3(m_sMouse, 1.0) * 500;
+    return s_AngleTotal;
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked) {

@@ -113,6 +113,8 @@ void registerVector3(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Vector3", "Vector3 &cross(const Vector3 &in)", asMETHOD(Vector3, cross), asCALL_THISCALL);
     engine->RegisterObjectMethod("Vector3", "float dot(const Vector3 &in)", asMETHOD(Vector3, dot), asCALL_THISCALL);
 
+    engine->RegisterObjectMethod("Vector3", "float angle(const Vector3 &in)", asMETHOD(Vector3, angle), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Vector3", "float signedAngle(const Vector3 &in, const Vector3 &in)", asMETHOD(Vector3, signedAngle), asCALL_THISCALL);
 }
 
 static void vec4(Vector4 *dest) {

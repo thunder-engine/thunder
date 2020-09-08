@@ -20,58 +20,60 @@ using namespace std;
 class NEXT_LIBRARY_EXPORT Handles {
 public:
     enum Axises {
-        AXIS_X  = (1 << 0),
-        AXIS_Y  = (1 << 1),
-        AXIS_Z  = (1 << 2)
+        AXIS_X  =(1 << 0),
+        AXIS_Y  =(1 << 1),
+        AXIS_Z  =(1 << 2)
     };
 
 public:
-    static void             init                ();
+    static void init();
 
-    static void             beginDraw           (ICommandBuffer *buffer);
-    static void             endDraw             ();
-    static void             cleanDepth          ();
+    static void beginDraw(ICommandBuffer *buffer);
+    static void endDraw();
+    static void cleanDepth();
 
-    static void             drawArrow           (const Matrix4 &transform);
+    static void drawArrow(const Matrix4 &transform);
 
-    static void             drawLines           (const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
+    static void drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
 
-    static void             drawBox             (const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
+    static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
-    static void             drawBone            (const Transform *begin, const Transform *end);
+    static void drawBone(const Transform *begin, const Transform *end);
 
-    static void             drawDisk            (const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
+    static void drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
 
-    static void             drawRectangle       (const Vector3 &center, const Quaternion &rotation, float width, float height);
-    static void             drawCircle          (const Vector3 &center, const Quaternion &rotation, float radius);
-    static void             drawSphere          (const Vector3 &center, const Quaternion &rotation, float radius);
-    static void             drawCapsule         (const Vector3 &center, const Quaternion &rotation, float radius, float height);
+    static void drawRectangle(const Vector3 &center, const Quaternion &rotation, float width, float height);
+    static void drawCircle(const Vector3 &center, const Quaternion &rotation, float radius);
+    static void drawSphere(const Vector3 &center, const Quaternion &rotation, float radius);
+    static void drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height);
 
-    static bool             drawBillboard       (const Vector3 &position, const Vector2 &size, Texture *texture);
+    static bool drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture);
 
-    static Vector3          moveTool            (const Vector3 &position, const Quaternion &rotation, bool locked);
+    static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
 
-    static Vector3          rotationTool        (const Vector3 &position, const Quaternion &rotation, bool locked, float angle);
+    static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
 
-    static Vector3          scaleTool           (const Vector3 &position, const Quaternion &rotation, bool locked);
+    static Vector3 scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked);
 
 public:
-    static Vector4          s_Color;
-    static Vector4          s_Second;
+    static Vector4 s_Color;
+    static Vector4 s_Second;
 
-    static Vector4          s_Normal;
-    static Vector4          s_Selected;
+    static Vector4 s_Normal;
+    static Vector4 s_Selected;
 
-    static Vector4          s_xColor;
-    static Vector4          s_yColor;
-    static Vector4          s_zColor;
+    static Vector4 s_xColor;
+    static Vector4 s_yColor;
+    static Vector4 s_zColor;
 
-    static Vector2          m_sMouse;
-    static Vector2          m_sScreen;
+    static Vector3 s_World;
 
-    static Matrix4          m_Model;
+    static Vector2 m_sMouse;
+    static Vector2 m_sScreen;
 
-    static uint8_t          s_Axes;
+    static Matrix4 m_Model;
+
+    static uint8_t s_Axes;
 
 protected:
     static Mesh *s_Cone;
