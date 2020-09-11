@@ -235,8 +235,32 @@ void ObjectCtrlPipeline::drawGrid(Camera &camera) {
     Vector3 pos;
     float length;
 
-    if(camera.orthographic()) {
-        pos = Vector3(cam.x, cam.y, 0.0);
+    bool ortho = camera.orthographic();
+
+    if(ortho) {
+        float depth = camera.farPlane() - camera.nearPlane();
+        switch(m_pController->viewSide()) {
+            case CameraCtrl::ViewSide::VIEW_FRONT: {
+                pos = Vector3(cam.x, cam.y, cam.z - depth);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_BACK: {
+                pos = Vector3(cam.x, cam.y, cam.z + depth);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_LEFT: {
+                pos = Vector3(cam.x + depth, cam.y, cam.z);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_RIGHT: {
+                pos = Vector3(cam.x - depth, cam.y, cam.z);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_TOP: {
+                pos = Vector3(cam.x, cam.y - depth, cam.z);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_BOTTOM: {
+                pos = Vector3(cam.x, cam.y + depth, cam.z);
+            } break;
+            default: break;
+        }
+
         length = camera.orthoSize();
     } else {
         pos = Vector3(cam.x, 0.0f, cam.z);
@@ -247,10 +271,44 @@ void ObjectCtrlPipeline::drawGrid(Camera &camera) {
     while(scale < length) {
         scale *= 10.0f;
     }
-    m_SecondaryGridColor.w = m_PrimaryGridColor.w * (1.0f - (length / scale));
 
-    Matrix4 transform(Vector3(scale * int32_t(pos.x / scale), 0.0f, scale * int32_t(pos.z / scale)),
-                     (camera.orthographic()) ? Quaternion() : Quaternion(Vector3(1, 0, 0), 90.0f), scale);
+    float factor = 1.0f - (length / scale);
+    m_SecondaryGridColor.w = m_PrimaryGridColor.w * factor;
+
+    if(ortho) {
+        scale *= 0.2f;
+    }
+
+    pos = Vector3(scale * int32_t(pos.x / scale),
+                  (ortho) ? scale * int32_t(pos.y / scale) : 0.0f,
+                  (ortho) ? pos.z : scale * int32_t(pos.z / scale));
+
+    Quaternion rot;
+    if(ortho) {
+        switch(m_pController->viewSide()) {
+            case CameraCtrl::ViewSide::VIEW_FRONT:
+            case CameraCtrl::ViewSide::VIEW_BACK: {
+                rot = Quaternion();
+            } break;
+            case CameraCtrl::ViewSide::VIEW_LEFT:
+            case CameraCtrl::ViewSide::VIEW_RIGHT: {
+                rot = Quaternion(Vector3(0, 1, 0), 90.0f);
+            } break;
+            case CameraCtrl::ViewSide::VIEW_TOP:
+            case CameraCtrl::ViewSide::VIEW_BOTTOM:
+            default: {
+                rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+            } break;
+        }
+    } else {
+        pos = Vector3(scale * int32_t(pos.x / scale),
+                      0.0f,
+                      scale * int32_t(pos.z / scale));
+
+        rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+    }
+
+    Matrix4 transform(pos, rot, scale);
 
     m_Buffer->setColor(m_PrimaryGridColor);
     m_Buffer->drawMesh(transform, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);

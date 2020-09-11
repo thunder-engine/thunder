@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QMouseEvent>
 
+#include <QStack>
+
 #include <amath.h>
 
 class Actor;
@@ -11,6 +13,7 @@ class Scene;
 class Camera;
 
 class QOpenGLWidget;
+class QMenu;
 class ICommandBuffer;
 
 class CameraCtrl : public QObject {
@@ -25,48 +28,85 @@ public:
         MOVE_RIGHT    = (1<<3)
     };
 
+    enum class ViewSide {
+        VIEW_SCENE    = 0,
+        VIEW_FRONT,
+        VIEW_BACK,
+        VIEW_LEFT,
+        VIEW_RIGHT,
+        VIEW_TOP,
+        VIEW_BOTTOM
+    };
+
 public:
-    CameraCtrl (QOpenGLWidget *view);
+    CameraCtrl(QOpenGLWidget *view);
 
-    virtual void init (Scene *scene);
+    virtual void init(Scene *scene);
 
-    void loadSettings ();
+    void loadSettings();
 
-    void update ();
+    void update();
 
-    void setFocusOn (Actor *actor, float &bottom);
+    void setFocusOn(Actor *actor, float &bottom);
 
-    void setFree (bool flag) { mCameraFree = flag; }
+    void setFree(bool flag) { m_CameraFree = flag; }
 
-    void blockMovement (bool flag) { mBlockMove = flag; }
+    void blockMovement(bool flag) { m_BlockMove = flag; }
 
-    void blockRotations (bool flag) { mBlockRot = flag; }
+    void blockRotations(bool flag) { m_BlockRotation = flag; }
 
-    Camera *camera () const { return m_pActiveCamera; }
+    Camera *camera() const { return m_pActiveCamera; }
+
+    void createMenu(QMenu *menu);
+
+    ViewSide viewSide() const { return m_ViewSide; }
 
 public slots:
-    virtual void onInputEvent (QInputEvent *);
+    virtual void onInputEvent(QInputEvent *);
 
-    virtual void onOrthographic (bool flag);
+    virtual void onOrthographic(bool flag);
+
+    void frontSide();
+    void backSide();
+    void leftSide();
+    void rightSide();
+    void topSide();
+    void bottomSide();
 
 protected:
-    void cameraZoom (float delta);
+    void cameraZoom(float delta);
 
-    void cameraRotate (const Vector3 &delta);
+    void cameraRotate(const Vector3 &delta);
 
-    void cameraMove (const Vector3 &delta);
+    void cameraMove(const Vector3 &delta);
+
+private:
+    void doRotation(const Vector3 &vector);
 
 protected:
-    uint8_t mCameraMove;
-    bool mCameraFree;
+    uint8_t m_CameraMove;
+    ViewSide m_ViewSide;
 
-    bool mBlockMove;
-    bool mBlockRot;
+    bool m_BlockMove;
+    bool m_BlockRotation;
 
-    Vector3 mCameraSpeed;
-    Quaternion mRotation;
+    bool m_CameraFree;
+    bool m_CameraFreeSaved;
+    bool m_RotationTransfer;
 
-    QPoint mSaved;
+    Vector3 m_CameraSpeed;
+
+    Vector3 m_Rotation;
+    Vector3 m_Position;
+
+    Vector3 m_RotationTarget;
+    Vector3 m_PositionTarget;
+
+    float m_OrthoWidthTarget;
+    float m_FocalLengthTarget;
+    float m_TransferProgress;
+
+    QPoint m_Saved;
 
     Actor *m_pCamera;
 

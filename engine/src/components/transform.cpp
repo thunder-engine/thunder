@@ -191,7 +191,7 @@ Quaternion Transform::worldRotation() const {
     Quaternion result = p_ptr->m_Rotation;
     Transform *cur = p_ptr->m_pParent;
     while(cur) {
-        result = cur->p_ptr->m_Rotation * result;
+        result = result * cur->p_ptr->m_Rotation;
         cur = cur->parentTransform();
     }
     return result;

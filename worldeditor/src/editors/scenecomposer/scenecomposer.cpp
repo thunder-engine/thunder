@@ -110,6 +110,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ctl->resetModified();
 
+    ui->renderMode->setMenu(new QMenu);
+    ctl->createMenu(ui->renderMode->menu());
+
     ui->viewport->setController(ctl);
     ui->viewport->setScene(m_pEngine->scene());
 
@@ -186,15 +189,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->menuWorkspace->insertSeparator(ui->actionReset_Workspace);
 
     ui->actionAbout->setText(tr("About %1...").arg(EDITOR_NAME));
-    foreach(QWidget *it, ui->toolWidget->toolWindows()) {
-        QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
-        ui->menuWindow->addAction(action);
-        action->setObjectName(it->windowTitle());
-        action->setData(QVariant::fromValue(it));
-        action->setCheckable(true);
-        action->setChecked(true);
-        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
-    }
 
     connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &SceneComposer::onToolWindowVisibilityChanged);
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &SceneComposer::onCurrentToolWindowChanged);
@@ -234,6 +228,16 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
+
+    foreach(QWidget *it, ui->toolWidget->toolWindows()) {
+        QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
+        ui->menuWindow->addAction(action);
+        action->setObjectName(it->windowTitle());
+        action->setData(QVariant::fromValue(it));
+        action->setCheckable(true);
+        action->setChecked(true);
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
+    }
 
     resetWorkspace();
     on_actionEditor_Mode_triggered();
