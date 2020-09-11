@@ -6,6 +6,7 @@
 
 #include <engine.h>
 #include <timer.h>
+#include <float.h>
 
 #include <components/scene.h>
 #include <components/camera.h>
