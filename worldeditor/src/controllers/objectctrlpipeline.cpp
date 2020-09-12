@@ -57,6 +57,7 @@ public:
 
 ObjectCtrlPipeline::ObjectCtrlPipeline() :
         Pipeline(),
+        m_pTarget(nullptr),
         m_pGrid(nullptr),
         m_pGizmo(nullptr),
         m_pController(nullptr),
@@ -160,6 +161,23 @@ void ObjectCtrlPipeline::setDragObjects(const ObjectList &list) {
     }
 }
 
+void ObjectCtrlPipeline::setTarget(const QString &string) {
+    m_pTarget = nullptr;
+    auto it = m_Targets.find(qPrintable(string));
+    if(it != m_Targets.end()) {
+        m_pTarget = it->second;
+    }
+}
+
+QStringList ObjectCtrlPipeline::targets() const {
+    QStringList result;
+    for(auto it : m_Targets) {
+        result.push_back(it.first.c_str());
+    }
+
+    return result;
+}
+
 void ObjectCtrlPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
@@ -221,7 +239,11 @@ void ObjectCtrlPipeline::post(Camera &camera) {
 
     // Step4 - Post Processing passes
     m_Buffer->setScreenProjection();
-    m_pFinal = postProcess(m_Targets[G_EMISSIVE], {OUTLINE, "AntiAliasing", "Bloom"});
+    if(m_pTarget == nullptr) {
+        m_pFinal = postProcess(m_Targets[G_EMISSIVE], {OUTLINE, "AntiAliasing", "Bloom"});
+    } else {
+        m_pFinal = m_pTarget;
+    }
 }
 
 void ObjectCtrlPipeline::resize(int32_t width, int32_t height) {

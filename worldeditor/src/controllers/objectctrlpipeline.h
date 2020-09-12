@@ -31,8 +31,13 @@ public:
 
     void setDragObjects(const ObjectList &list);
 
+    void setTarget(const QString &string = QString());
+    QStringList targets() const;
+
 protected:
     void drawGrid(Camera &camera);
+
+    RenderTexture *m_pTarget;
 
     Vector4 m_PrimaryGridColor;
     Vector4 m_SecondaryGridColor;

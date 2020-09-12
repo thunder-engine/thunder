@@ -64,7 +64,8 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
         m_AngleGrid(0.0f),
         m_ScaleGrid(0.0f),
         m_pMap(nullptr),
-        m_pPipeline(nullptr) {
+        m_pPipeline(nullptr),
+        m_pMenu(nullptr) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
     connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
@@ -88,7 +89,38 @@ void ObjectCtrl::init(Scene *scene) {
     m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);
 
+    if(m_pMenu) {
+        QStringList list = m_pPipeline->targets();
+        list.push_front(tr("Final Buffer"));
+
+        bool first = true;
+        for(auto it : list) {
+            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+
+            QString result = it;
+            result.replace(regExp1, "\\1 \\2");
+            result.replace(regExp2, "\\1 \\2");
+            result.replace(0, 1, result[0].toUpper());
+
+            QAction *action = m_pMenu->addAction(result);
+            action->setData(it);
+            connect(action, &QAction::triggered, this, &ObjectCtrl::onBufferChanged);
+            if(first) {
+                m_pMenu->addSeparator();
+                first = false;
+            }
+        }
+    }
+
     Handles::init();
+}
+
+void ObjectCtrl::onBufferChanged() {
+    QAction *action = qobject_cast<QAction *>(sender());
+    if(action && m_pPipeline) {
+        m_pPipeline->setTarget(action->data().toString());
+    }
 }
 
 void ObjectCtrl::drawHandles() {
@@ -684,6 +716,12 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
 
 void ObjectCtrl::resize(int32_t width, int32_t height) {
     m_Screen = Vector2(width, height);
+}
+
+void ObjectCtrl::createMenu(QMenu *menu) {
+    CameraCtrl::createMenu(menu);
+    menu->addSeparator();
+    m_pMenu = menu->addMenu(tr("Buffer Visualization"));
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

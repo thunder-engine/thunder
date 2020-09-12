@@ -47,7 +47,7 @@ public:
     ObjectCtrl(QOpenGLWidget *view);
     ~ObjectCtrl();
 
-    void init(Scene *scene);
+    void init(Scene *scene) override;
 
     void drawHandles();
 
@@ -67,13 +67,13 @@ public:
 
     void resize(int32_t width, int32_t height);
 
-    void unpackInstance(Actor *actor);
-
     bool isModified() const { return m_Modified; }
     void resetModified() { m_Modified = false; }
 
+    virtual void createMenu(QMenu *menu) override;
+
 public slots:
-    void onInputEvent(QInputEvent *);
+    void onInputEvent(QInputEvent *) override;
 
     void onCreateComponent(const QString &name);
     void onDeleteComponent(const QString &name);
@@ -123,6 +123,8 @@ private slots:
 
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
+    void onBufferChanged();
+
 protected:
     typedef QMap<uint32_t, Select> SelectMap;
     SelectMap m_Selected;
@@ -158,6 +160,8 @@ protected:
     Vector3 m_MouseWorld;
 
     list<uint32_t> m_ObjectsList;
+
+    QMenu *m_pMenu;
 };
 
 class UndoObject : public QUndoCommand {

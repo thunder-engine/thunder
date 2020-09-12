@@ -57,7 +57,7 @@ public:
 
     Camera *camera() const { return m_pActiveCamera; }
 
-    void createMenu(QMenu *menu);
+    virtual void createMenu(QMenu *menu);
 
     ViewSide viewSide() const { return m_ViewSide; }
 
