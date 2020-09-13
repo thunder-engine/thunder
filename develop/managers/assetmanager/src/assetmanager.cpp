@@ -471,7 +471,8 @@ void AssetManager::registerConverter(IConverter *converter) {
 
             IBuilder *builder = dynamic_cast<IBuilder *>(converter);
             if(builder) {
-                m_pBuilders.push_back(builder);
+                m_ClassMaps[format.toLower()] = builder->classMap();
+                m_Builders.push_back(builder);
             }
         }
     }
@@ -652,7 +653,7 @@ void AssetManager::onPerform() {
             QFile::copy(settings->source(), dst);
         }
     } else {
-        foreach(IBuilder *it, m_pBuilders) {
+        foreach(IBuilder *it, m_Builders) {
             it->rescanSources(ProjectManager::instance()->contentPath());
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
@@ -664,7 +665,7 @@ void AssetManager::onPerform() {
         cleanupBundle();
 
         if(isOutdated()) {
-            foreach(IBuilder *it, m_pBuilders) {
+            foreach(IBuilder *it, m_Builders) {
                 if(!it->isEmpty()) {
                     it->buildProject();
                 }
@@ -778,7 +779,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
 }
 
 bool AssetManager::isOutdated() const {
-    foreach(IBuilder *it, m_pBuilders) {
+    foreach(IBuilder *it, m_Builders) {
         if(it->isOutdated()) {
             return true;
         }
@@ -796,6 +797,10 @@ void AssetManager::setArtifact(const QString &value) {
 
 AssetManager::ConverterMap AssetManager::converters() const {
     return m_Converters;
+}
+
+AssetManager::ClassMap AssetManager::classMaps() const {
+    return m_ClassMaps;
 }
 
 void AssetManager::registerAsset(const string &source, const string &guid, int type) {

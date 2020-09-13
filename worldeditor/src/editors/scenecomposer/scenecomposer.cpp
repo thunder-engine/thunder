@@ -135,11 +135,12 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     m_Redo->setShortcut(QKeySequence("Ctrl+Y"));
     ui->menuEdit->insertAction(ui->actionNew_Object, m_Redo);
 
-    ui->viewportWidget->setWindowTitle("Viewport");
-    ui->propertyWidget->setWindowTitle("Properties");
-    ui->projectWidget->setWindowTitle("Project Settings");
-    ui->preferencesWidget->setWindowTitle("Editor Preferences");
-    ui->timeline->setWindowTitle("Timeline");
+    ui->viewportWidget->setWindowTitle(tr("Viewport"));
+    ui->propertyWidget->setWindowTitle(tr("Properties"));
+    ui->projectWidget->setWindowTitle(tr("Project Settings"));
+    ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
+    ui->timeline->setWindowTitle(tr("Timeline"));
+    ui->classMapView->setWindowTitle(tr("Class View"));
 
     ui->componentButton->setProperty("blue", true);
     ui->moveButton->setProperty("blue", true);
@@ -228,6 +229,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(ui->timeline,          QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->projectWidget,     QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(ui->preferencesWidget, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(ui->classMapView,      QToolWindowManager::NoArea);
 
     foreach(QWidget *it, ui->toolWidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
@@ -237,6 +239,11 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         action->setCheckable(true);
         action->setChecked(true);
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
+    }
+
+    AssetManager::ClassMap map = AssetManager::instance()->classMaps();
+    if(!map.isEmpty()) {
+        ui->classMapView->setModel(map.first());
     }
 
     resetWorkspace();

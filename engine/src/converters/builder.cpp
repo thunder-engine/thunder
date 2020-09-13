@@ -169,7 +169,7 @@ bool IBuilder::isEmpty() const {
     return m_Sources.empty();
 }
 
-QString IBuilder::formatList(const QStringList &list) {
+QString IBuilder::formatList(const QStringList &list) const {
     bool first  = true;
     QString result;
     for(int i = 0; i < list.size(); ++i) {
@@ -177,4 +177,9 @@ QString IBuilder::formatList(const QStringList &list) {
         first   = false;
     }
     return result;
+}
+
+
+QAbstractItemModel *IBuilder::classMap() const {
+    return nullptr;
 }

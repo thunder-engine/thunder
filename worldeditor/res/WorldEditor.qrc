@@ -31,6 +31,10 @@
         <file>fontawesome/align/align-right-solid.png</file>
         <file>editor/objects/prefab.png</file>
         <file>editor/objects/actor.png</file>
+        <file>icons/class.png</file>
+        <file>icons/enum.png</file>
+        <file>icons/method.png</file>
+        <file>icons/property.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

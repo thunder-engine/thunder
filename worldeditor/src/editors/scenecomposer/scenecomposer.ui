@@ -52,7 +52,7 @@
       <x>0</x>
       <y>0</y>
       <width>830</width>
-      <height>771</height>
+      <height>891</height>
      </rect>
     </property>
     <widget class="ContentBrowser" name="contentBrowser" native="true">
@@ -441,6 +441,19 @@
        </widget>
       </item>
      </layout>
+    </widget>
+    <widget class="QTreeView" name="classMapView">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>660</y>
+       <width>201</width>
+       <height>211</height>
+      </rect>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
     </widget>
    </widget>
    <zorder>toolWidget</zorder>
