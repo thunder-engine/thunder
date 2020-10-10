@@ -11,11 +11,34 @@
     \sa Vector3, Plane, AABBox
 */
 /*!
+    Constructs an identity ray.
+    pos at [0, 0, 0] and dir to [0, 0, 1]
+*/
+Ray::Ray() :
+    pos(Vector3()),
+    dir(Vector3(0.0f, 0.0f, 1.0f)) {
+
+}
+/*!
     Constructs a ray with \a position and \a direction.
 */
 Ray::Ray(const Vector3 &position, const Vector3 &direction) :
         pos(position),
         dir(direction) {
+}
+/*!
+    Returns true if this ray is equal to given \a ray; otherwise returns false.
+    This operator uses an exact floating-point comparison.
+*/
+bool Ray::operator==(const Ray &ray) const {
+    return (dir == ray.dir) && (pos == ray.pos);
+}
+/*!
+    Returns true if this ray is NOT equal to given \a ray; otherwise returns false.
+    This operator uses an exact floating-point comparison.
+*/
+bool Ray::operator!=(const Ray &ray) const {
+    return (dir != ray.dir) || (pos != ray.pos);
 }
 /*!
     Returns true if this ray intersects the given sphere at \a position and \a radius; otherwise returns false.

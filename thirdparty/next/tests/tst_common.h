@@ -15,11 +15,14 @@ class TestObject : public Object {
         A_SLOT(TestObject::setSlot),
         A_SLOT(TestObject::onDestroyed),
         A_SIGNAL(TestObject::signal),
-        A_METHOD(bool, TestObject::test)
+        A_METHOD(bool, TestObject::test),
+        A_METHOD(int, TestObject::testInt),
+        A_METHOD(string, TestObject::testString)
     )
 
     A_PROPERTIES(
         A_PROPERTY(bool, slot, TestObject::getSlot, TestObject::setSlot),
+        A_PROPERTY(int, IntProperty, TestObject::intProperty, TestObject::setIntProperty),
         A_PROPERTY(Vector2, vec, TestObject::getVector, TestObject::setVector),
         A_PROPERTY(TestObject *, resource, TestObject::getResource, TestObject::setResource)
     )
@@ -27,8 +30,9 @@ class TestObject : public Object {
 public:
     TestObject() :
             Object() {
-        m_bSlot     = false;
-        m_Vector2   = Vector2(1.0f, 0.0f);
+        m_bSlot = false;
+        m_Integer = 0;
+        m_Vector2 = Vector2(1.0f, 0.0f);
         m_pResource = nullptr;
 
         setName("TestObject");
@@ -40,6 +44,22 @@ public:
 
     bool test() {
         return false;
+    }
+
+    int testInt() {
+        return 1;
+    }
+
+    int intProperty() const {
+        return m_Integer;
+    }
+
+    void setIntProperty(int value) {
+        m_Integer = value;
+    }
+
+    string testString(const string &data) const {
+        return data;
     }
 
     void setSlot(const int value) {
@@ -69,14 +89,15 @@ public:
     void signal(const int);
 
     int         m_bSlot;
+    int         m_Integer;
     Vector2     m_Vector2;
     TestObject *m_pResource;
 };
 
 inline bool compare(const Object::Link &left, const Object::Link &right) {
     bool result = true;
-    result &= left.signal   == right.signal;
-    result &= left.method   == right.method;
+    result &= left.signal == right.signal;
+    result &= left.method == right.method;
     return result;
 }
 
@@ -94,8 +115,8 @@ inline bool compare(const Object &left, const Object &right) {
         for(int i = 0; i < left.metaObject()->propertyCount(); i++) {
             MetaProperty lp = left.metaObject()->property(i);
             MetaProperty rp = right.metaObject()->property(i);
-            Variant lv  = lp.read(&left);
-            Variant rv  = rp.read(&right);
+            Variant lv = lp.read(&left);
+            Variant rv = rp.read(&right);
             if(lp.name() != rp.name() || lv != rv) {
                 return false;
             }
@@ -105,10 +126,10 @@ inline bool compare(const Object &left, const Object &right) {
     {
         //if(left.getReceivers().size() == right.getReceivers().size()) {
         //    for(const auto &li : left.getReceivers()) {
-        //        result  = false;
+        //        result = false;
         //        for(const auto &ri : right.getReceivers()) {
         //            if(compare(li, ri)) {
-        //                result  = true;
+        //                result = true;
         //                break;
         //            }
         //        }
@@ -126,8 +147,8 @@ inline bool compare(const Object &left, const Object &right) {
             auto il = left.getChildren().begin();
             auto ir = right.getChildren().begin();
             while(il != left.getChildren().end() && ir != right.getChildren().end()) {
-                Object *l  = *il;
-                Object *r  = *ir;
+                Object *l = *il;
+                Object *r = *ir;
                 if(!compare(*l, *r)) {
                     return false;
                 }

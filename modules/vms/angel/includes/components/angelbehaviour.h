@@ -58,8 +58,9 @@ public:
             "AngelBehaviour",
             NativeBehaviour::metaClass(),
             &AngelBehaviour::construct,
-            expose_method<AngelBehaviour>::exec(),
-            expose_props_method<AngelBehaviour>::exec()
+            reinterpret_cast<const MetaMethod::Table *>(expose_method<AngelBehaviour>::exec()),
+            reinterpret_cast<const MetaProperty::Table *>(expose_props_method<AngelBehaviour>::exec()),
+            reinterpret_cast<const MetaEnum::Table *>(expose_enum<AngelBehaviour>::exec())
         );
         return &staticMetaData;
     }

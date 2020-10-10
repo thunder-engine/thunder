@@ -340,7 +340,7 @@ const MetaObject *Object::metaClass() {
     table.type = MetaMethod::Signal;
     table.name = "destroyed";
 
-    static const MetaObject staticMetaData("Object", nullptr, &construct, &table, nullptr);
+    static const MetaObject staticMetaData("Object", nullptr, &construct, &table, nullptr, nullptr);
     return &staticMetaData;
 }
 /*!

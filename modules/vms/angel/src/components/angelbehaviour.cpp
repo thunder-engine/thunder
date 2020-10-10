@@ -140,10 +140,8 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
             }
 
             m_pMetaObject = new MetaObject(m_Script.c_str(),
-                                           super,
-                                           &AngelBehaviour::construct,
-                                           nullptr,
-                                           &m_Table[0]);
+                                           super, &AngelBehaviour::construct,
+                                           nullptr, &m_Table[0], nullptr);
         }
     }
 }

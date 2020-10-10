@@ -54,7 +54,7 @@ const MetaType MetaProperty::type() const {
 /*!
     Returns the value as Variant which contain current property of provided \a object.
 */
-Variant MetaProperty::read(const Object *object) const {
+Variant MetaProperty::read(const void *object) const {
     PROFILE_FUNCTION();
     if(m_pTable->reader) {
         return m_pTable->reader(object);
@@ -66,7 +66,7 @@ Variant MetaProperty::read(const Object *object) const {
 /*!
     Tries to write a \a value as Variant to provided \a object.
 */
-void MetaProperty::write(Object *object, const Variant &value) const {
+void MetaProperty::write(void *object, const Variant &value) const {
     PROFILE_FUNCTION();
     if(m_pTable->writer) {
         m_pTable->writer(object, value);

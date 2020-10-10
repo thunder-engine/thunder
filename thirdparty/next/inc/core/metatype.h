@@ -8,20 +8,9 @@
 #include <stdint.h>
 
 #include "global.h"
+#include "macros.h"
 
 using namespace std;
-
-#define REGISTER_META_TYPE(Class) \
-    REGISTER_META_TYPE_IMPL(Class); \
-    REGISTER_META_TYPE_IMPL(Class *);
-
-#define REGISTER_META_TYPE_IMPL(Class) registerMetaType<Class>(#Class)
-
-#define UNREGISTER_META_TYPE(Class) \
-    UNREGISTER_META_TYPE_IMPL(Class); \
-    UNREGISTER_META_TYPE_IMPL(Class *);
-
-#define UNREGISTER_META_TYPE_IMPL(Class) unregisterMetaType<Class>(#Class)
 
 class Object;
 
@@ -44,6 +33,7 @@ public:
         QUATERNION,
         MATRIX3,
         MATRIX4,
+        RAY,
 
         OBJECT                  = 30,
 
@@ -57,6 +47,9 @@ public:
     };
 
     struct Table {
+        const void         *properties;
+        const void         *methods;
+        const void         *enums;
         int                 (*get_size)                 ();
         void               *(*static_new)               ();
         void                (*construct)                (void *);
@@ -148,6 +141,83 @@ struct TypeFuncs {
     }
 };
 
+template<typename T>
+struct expose_method {
+private:
+    typedef std::true_type yes;
+    typedef std::false_type no;
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().methods(), yes()) {
+        return yes();
+    }
+    template<typename>
+    static no test(...) {
+        return no();
+    }
+    static const void *exec_impl(std::true_type) {
+        return T::methods();
+    }
+    static const void *exec_impl(...) {
+        return nullptr;
+    }
+public:
+    static const void *exec() {
+        return exec_impl(test<T>(0));
+    }
+    enum { exists = std::is_same<decltype(test<T>(0)), yes>::value };
+};
+
+template<typename T>
+struct expose_enum {
+private:
+    typedef std::true_type yes;
+    typedef std::false_type no;
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().enums(), yes()) {
+        return yes();
+    }
+    template<typename>
+    static no test(...) {
+        return no();
+    }
+    static const void *exec_impl(std::true_type) {
+        return T::enums();
+    }
+    static const void *exec_impl(...) {
+        return nullptr;
+    }
+public:
+    static const void *exec() {
+        return exec_impl(test<T>(0));
+    }
+    enum { exists = std::is_same<decltype(test<T>(0)), yes>::value };
+};
+
+template<typename T>
+struct expose_props_method {
+private:
+    typedef std::true_type yes;
+    typedef std::false_type no;
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().properties(), yes()) {
+        return yes();
+    }
+    template<typename>
+    static no test(...) {
+        return no();
+    }
+    static const void *exec_impl(std::true_type) {
+        return T::properties();
+    }
+    static const void *exec_impl(...) {
+        return nullptr;
+    }
+public:
+    static const void *exec() {
+        return exec_impl(test<T>(0));
+    }
+    enum { exists = std::is_same<decltype(test<T>(0)), yes>::value };
+};
 
 //Bool template type
 template<bool B> struct Bool;
@@ -175,7 +245,8 @@ struct CheckType<T, True> {
 template<typename T>
 struct CheckType<T, False> {
     typedef typename std::remove_cv<
-            typename std::remove_reference<T>::type>::type type;
+            typename std::remove_reference<T>
+            ::type>::type type;
 };
 
 template<typename T>
@@ -185,6 +256,9 @@ struct Table {
 
     static MetaType::Table *get(const char *typeName, int flags = 0) {
         static MetaType::Table staticTable = {
+            expose_props_method<T_no_cv>::exec(),
+            expose_method<T_no_cv>::exec(),
+            expose_enum<T_no_cv>::exec(),
             TypeFuncs<T_no_cv>::size,
             TypeFuncs<T_no_cv>::static_new,
             TypeFuncs<T_no_cv>::construct,
@@ -197,7 +271,7 @@ struct Table {
             flags
         };
         return &staticTable;
-    }
+    };
 };
 
 //Function to unpack args properly

@@ -18,6 +18,9 @@
 */
 #define DECLARE_BUILT_TYPE(TYPE) \
     { \
+        nullptr, \
+        nullptr, \
+        nullptr,\
         TypeFuncs<TYPE>::size, \
         TypeFuncs<TYPE>::static_new, \
         TypeFuncs<TYPE>::construct, \
@@ -272,7 +275,8 @@ static MetaType::TypeMap s_Types = {
     {MetaType::VECTOR4,     DECLARE_BUILT_TYPE(Vector4)},
     {MetaType::QUATERNION,  DECLARE_BUILT_TYPE(Quaternion)},
     {MetaType::MATRIX3,     DECLARE_BUILT_TYPE(Matrix3)},
-    {MetaType::MATRIX4,     DECLARE_BUILT_TYPE(Matrix4)}
+    {MetaType::MATRIX4,     DECLARE_BUILT_TYPE(Matrix4)},
+    {MetaType::RAY,         DECLARE_BUILT_TYPE(Ray)}
 };
 
 static ConverterMap s_Converters= {
