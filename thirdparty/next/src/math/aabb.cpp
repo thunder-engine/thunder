@@ -112,6 +112,20 @@ bool AABBox::intersect(const Plane *planes, areal count) const {
     return true;
 }
 /*!
+    Returns true if this bounding box is equal to given bounding \a box; otherwise returns false.
+    This operator uses an exact floating-point comparison.
+*/
+bool AABBox::operator==(const AABBox &box) const {
+    return (center == box.center) && (extent == box.extent);
+}
+/*!
+    Returns true if this bounding box is NOT equal to given bounding \a box; otherwise returns false.
+    This operator uses an exact floating-point comparison.
+*/
+bool AABBox::operator!=(const AABBox &box) const {
+    return (center != box.center) || (extent != box.extent);
+}
+/*!
     Returns a copy of this box, multiplied by the given \a factor.
 */
 const AABBox AABBox::operator*(areal factor) const {

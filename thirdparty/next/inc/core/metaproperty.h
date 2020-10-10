@@ -8,8 +8,8 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaProperty {
 public:
-    typedef Variant             (*ReadMem)              (const Object *);
-    typedef void                (*WriteMem)             (Object *, const Variant&);
+    typedef Variant             (*ReadMem)              (const void *);
+    typedef void                (*WriteMem)             (void *, const Variant&);
     typedef void                (*AddressMem)           (char *, size_t);
 
     struct Table {
@@ -30,12 +30,12 @@ public:
     bool                    isValid                     () const;
     const MetaType          type                        () const;
 
-    Variant                 read                        (const Object *object) const;
-    void                    write                       (Object *object, const Variant &value) const;
+    Variant                 read                        (const void *object) const;
+    void                    write                       (void *object, const Variant &value) const;
 
     template<typename T>
-    void                    write                       (Object *object, const T &value) const {
-        uint32_t type   = MetaType::type<T>();
+    void                    write                       (void *object, const T &value) const {
+        uint32_t type = MetaType::type<T>();
         Variant arg;
         if(type < MetaType::VARIANTMAP && type >= MetaType::USERTYPE) {
             arg = Variant::fromValue<T>(value);
@@ -67,17 +67,17 @@ struct Reader<T(Class::*)(), ReadFunc> {
         return Table<T>::get(typeName);
     }
 
-    inline static Variant read(const Object *obj) {
-        return Variant::fromValue<T_no_cv>((static_cast<Class *>(obj)->*ReadFunc)());
+    inline static Variant read(const void *obj) {
+        return Variant::fromValue<T_no_cv>((reinterpret_cast<Class *>(obj)->*ReadFunc)());
     }
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 template<typename T, typename Class, T(Class::*ReadFunc)()const>
 struct Reader<T(Class::*)()const, ReadFunc> {
@@ -90,17 +90,17 @@ struct Reader<T(Class::*)()const, ReadFunc> {
         return Table<T>::get(typeName);
     }
 
-    inline static Variant read(const Object *obj) {
-        return Variant::fromValue<T_no_cv>((static_cast<const Class *>(obj)->*ReadFunc)());
+    inline static Variant read(const void *obj) {
+        return Variant::fromValue<T_no_cv>((reinterpret_cast<const Class *>(obj)->*ReadFunc)());
     }
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Property write
@@ -114,15 +114,15 @@ struct Writer<void(Class::*)(T), WriteFunc> {
     typedef Bool<std::is_pointer<T>::value>         is_pointer;
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
-    inline static void write(Object *obj, const Variant &value) {
-        return (static_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
+    inline static void write(void *obj, const Variant &value) {
+        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
     }
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
     }
 };
@@ -133,15 +133,15 @@ struct Writer<void(Class::*)(const T&), WriteFunc> {
     typedef Bool<std::is_pointer<T>::value>         is_pointer;
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
-    inline static void write(Object *obj, const Variant &value) {
-        return (static_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
+    inline static void write(void *obj, const Variant &value) {
+        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
     }
 
     template<Fun fun>
     inline static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
     }
 };

@@ -1,5 +1,3 @@
-//#include "UnitTest++/UnitTest++.h"
-
 #include "tst_common.h"
 
 QObjectList TestRunnder::m_List;

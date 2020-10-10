@@ -34,7 +34,7 @@ MetaMethod::MetaMethod(const Table *table) :
     PROFILE_FUNCTION();
 }
 /*!
-    Returns true if property is valid; otherwise returns false.
+    Returns true if method is valid; otherwise returns false.
 */
 bool MetaMethod::isValid() const {
     PROFILE_FUNCTION();

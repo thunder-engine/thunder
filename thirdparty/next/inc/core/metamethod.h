@@ -2,6 +2,7 @@
 #define METAMETHOD_H
 
 #include <string>
+#include <type_traits>
 
 #include "variant.h"
 #include "metatype.h"
@@ -14,14 +15,14 @@ class Object;
 class NEXT_LIBRARY_EXPORT MetaMethod {
 public:
     enum MethodType {
-        Method                  = 0,
+        Method  = 0,
         Signal,
         Slot
     };
 
     struct Table {
-        typedef void            (*InvokeMem)                (Object *, int argc, const Variant *, Variant &);
-        typedef void            (*AddressMem)               (char *ptr, size_t size);
+        typedef void            (*InvokeMem)   (Object *, int argc, const Variant *, Variant &);
+        typedef void            (*AddressMem)  (char *ptr, size_t size);
 
         MethodType              type;
         const char             *name;
@@ -32,43 +33,43 @@ public:
     };
 
 public:
-    explicit MetaMethod         (const Table *table);
+    explicit MetaMethod  (const Table *table);
 
-    bool                        isValid                     () const;
+    bool                 isValid        () const;
 
-    const char                 *name                        () const;
-    string                      signature                   () const;
+    const char          *name           () const;
+    string               signature      () const;
 
-    MethodType                  type                        () const;
-    MetaType                    returnType                  () const;
-    int                         parameterCount              () const;
-    MetaType                    parameterType               (int index) const;
+    MethodType           type           () const;
+    MetaType             returnType     () const;
+    int                  parameterCount () const;
+    MetaType             parameterType  (int index) const;
 
-    bool                        invoke                      (Object *object, Variant &returnValue, int argc, const Variant *args) const;
+    bool                 invoke         (Object *object, Variant &returnValue, int argc, const Variant *args) const;
 
-    const Table                *table                       () const;
+    const Table         *table          () const;
 
 private:
-    const Table                *m_pTable;
+    const Table         *m_pTable;
 
 };
 
 class MethodCallEvent : public Event {
 public:
-    MethodCallEvent             (int32_t method, Object *senderm, const Variant &args);
+    MethodCallEvent  (int32_t method, Object *senderm, const Variant &args);
 
-    Object                     *sender                      () const;
+    Object          *sender     () const;
 
-    int32_t                     method                      () const;
+    int32_t          method     () const;
 
-    const Variant              *args                        () const;
+    const Variant   *args       () const;
 
 protected:
-    Object                     *m_pSender;
+    Object          *m_pSender;
 
-    int32_t                     m_Method;
+    int32_t          m_Method;
 
-    Variant                     m_Args;
+    Variant          m_Args;
 };
 
 namespace unpack {
@@ -105,7 +106,7 @@ struct Invoker<Return(*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *, F f, const Variant *args, unpack::indices<Is...>) {
-        return f(args[Is]...); //any_cast<Args>(args[Is])...
+        return f(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); //any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
@@ -118,11 +119,11 @@ struct Invoker<Return(*)(Args...)> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Free function with no parameters
@@ -156,11 +157,11 @@ struct Invoker<Return(*)()> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void free function
@@ -183,7 +184,7 @@ struct Invoker<void(*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *, F f, const Variant *args, unpack::indices<Is...>) {
-        f(args[Is]...); // any_cast<Args>(args[Is])...
+        f(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -197,11 +198,11 @@ struct Invoker<void(*)(Args...)> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void free function with no arguments
@@ -237,11 +238,11 @@ struct Invoker<void(*)()> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Base method template
@@ -263,7 +264,8 @@ struct Invoker<Return(Class::*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        return (static_cast<Class *>(obj)->*f)(args[Is].value<Args>()...);
+        auto value = (static_cast<Class *>(obj)->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...);
+        return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
     template<Fun fun>
@@ -276,11 +278,11 @@ struct Invoker<Return(Class::*)(Args...)> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Method with no parameters
@@ -314,11 +316,11 @@ struct Invoker<Return(Class::*)()> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void method
@@ -341,7 +343,7 @@ struct Invoker<void(Class::*)(Args...)> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        (static_cast<Class *>(obj)->*f)(args[Is].value<Args>()...);
+        (static_cast<Class *>(obj)->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...);
         return Variant();
     }
 
@@ -355,11 +357,11 @@ struct Invoker<void(Class::*)(Args...)> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void method with no parameters
@@ -397,11 +399,11 @@ struct Invoker<void(Class::*)()> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Base const method template
@@ -423,7 +425,8 @@ struct Invoker<Return(Class::*)(Args...)const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is].value<Args>()...); // any_cast<Args>(args[Is])...
+        return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(
+                    args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
     }
 
     template<Fun fun>
@@ -436,11 +439,11 @@ struct Invoker<Return(Class::*)(Args...)const> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Const method with no parameters
@@ -461,7 +464,8 @@ struct Invoker<Return(Class::*)()const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *, unpack::indices<Is...>) {
-        return (const_cast<const Class *>(static_cast<Class *>(obj))->*f)();
+        auto value = (const_cast<const Class *>(static_cast<Class *>(obj))->*f)();
+        return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
     template<Fun fun>
@@ -474,11 +478,11 @@ struct Invoker<Return(Class::*)()const> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void const method
@@ -501,7 +505,7 @@ struct Invoker<void(Class::*)(Args...)const> {
 
     template<typename F, unsigned... Is>
     inline static Variant invoke(Object *obj, F f, const Variant *args, unpack::indices<Is...>) {
-        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is].value<Args>()...); // any_cast<Args>(args[Is])...
+        (const_cast<const Class *>(static_cast<Class *>(obj))->*f)(args[Is].value<remove_const_t<remove_reference_t<Args>>>()...); // any_cast<Args>(args[Is])...
         return Variant();
     }
 
@@ -515,11 +519,11 @@ struct Invoker<void(Class::*)(Args...)const> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 //Void const method with no parameters
@@ -556,11 +560,11 @@ struct Invoker<void(Class::*)()const> {
 
     template<Fun fun>
     static void address(char *ptr, size_t size) {
-        Fun f   = fun;
+        Fun f = fun;
         for(size_t n = 0; n < size; n++) {
-            ptr[n]  = reinterpret_cast<const char *>(&f)[n];
+            ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    }
+    };
 };
 
 #endif // METAMETHOD_H

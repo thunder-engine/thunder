@@ -20,22 +20,28 @@
     Callback which contain address to method to construct new Object with represented type.
 */
 /*!
-    Constructs MetaObject object for Object with type \a name, inherited from \a super class and provided \a constructor, \a methods and \a props.
+    Constructs MetaObject object for Object with type \a name, inherited from \a super class and provided \a constructor, \a methods, \a props and \a enums.
 */
-MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor, const MetaMethod::Table *methods, const MetaProperty::Table *props) :
+MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor,
+                       const MetaMethod::Table *methods, const MetaProperty::Table *props, const MetaEnum::Table *enums) :
         m_Constructor(constructor),
         m_pName(name),
         m_pSuper(super),
         m_pMethods(methods),
         m_pProperties(props),
+        m_pEnums(enums),
         m_MethodCount(0),
-        m_PropCount(0) {
+        m_PropCount(0),
+        m_EnumCount(0) {
     PROFILE_FUNCTION();
     while(methods && methods[m_MethodCount].name) {
         m_MethodCount++;
     }
     while(props && props[m_PropCount].type) {
         m_PropCount++;
+    }
+    while(enums && enums[m_EnumCount].name) {
+        m_EnumCount++;
     }
 }
 /*!
@@ -65,11 +71,11 @@ Object *MetaObject::createInstance() const {
 */
 int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION();
-    const MetaObject *s    = this;
+    const MetaObject *s = this;
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            if(MetaMethod(m_pMethods + i).signature() == signature) {
+            if(MetaMethod(s->m_pMethods + i).signature() == signature) {
                 return i + s->methodOffset();
             }
         }
@@ -106,7 +112,7 @@ int MetaObject::indexOfSlot(const char *signature) const {
 
     while(s) {
         for(int i = 0; i < s->m_MethodCount; ++i) {
-            MetaMethod m(m_pMethods + i);
+            MetaMethod m(s->m_pMethods + i);
             if(m.type() == MetaMethod::Slot && m.signature() == signature) {
                 return i + s->methodOffset();
             }
@@ -149,11 +155,11 @@ int MetaObject::methodCount() const {
 */
 int MetaObject::methodOffset() const {
     PROFILE_FUNCTION();
-    int offset          = 0;
+    int offset = 0;
     const MetaObject *s = m_pSuper;
     while(s) {
         offset += s->m_MethodCount;
-        s       = s->m_pSuper;
+        s = s->m_pSuper;
     }
     return offset;
 }
@@ -163,7 +169,7 @@ int MetaObject::methodOffset() const {
 */
 int MetaObject::indexOfProperty(const char *name) const {
     PROFILE_FUNCTION();
-    const MetaObject *s    = this;
+    const MetaObject *s = this;
 
     while(s) {
         for(int i = 0; i < s->m_PropCount; ++i) {
@@ -171,7 +177,7 @@ int MetaObject::indexOfProperty(const char *name) const {
                 return i + s->propertyOffset();
             }
         }
-        s   = s->m_pSuper;
+        s = s->m_pSuper;
     }
     return -1;
 }
@@ -195,11 +201,11 @@ MetaProperty MetaObject::property(int index) const {
 */
 int MetaObject::propertyCount() const {
     PROFILE_FUNCTION();
-    int count           = m_PropCount;
+    int count = m_PropCount;
     const MetaObject *s = m_pSuper;
     while(s) {
         count  += s->m_PropCount;
-        s       = s->m_pSuper;
+        s = s->m_pSuper;
     }
     return count;
 }
@@ -208,14 +214,74 @@ int MetaObject::propertyCount() const {
 */
 int MetaObject::propertyOffset() const {
     PROFILE_FUNCTION();
-    int offset          = 0;
+    int offset = 0;
     const MetaObject *s = m_pSuper;
     while(s) {
         offset += s->m_PropCount;
-        s       = s->m_pSuper;
+        s = s->m_pSuper;
     }
     return offset;
 }
+/*!
+    Returns index of class enumerator by provided \a name; otherwise returns -1.
+    \note This method looks through class hierarchy.
+*/
+int MetaObject::indexOfEnumerator(const char *name) const {
+    PROFILE_FUNCTION();
+    const MetaObject *s = this;
+
+    while(s) {
+        for(int i = 0; i < s->m_EnumCount; ++i) {
+            if(strcmp(s->m_pEnums[i].name, name) == 0) {
+                return i + s->enumeratorOffset();
+            }
+        }
+        s = s->m_pSuper;
+    }
+    return -1;
+}
+/*!
+    Returns MetaEnum object by provided \a index of enumerator.
+    \note This method looks through class hierarchy.
+*/
+MetaEnum MetaObject::enumerator(int index) const {
+    PROFILE_FUNCTION();
+    int i = index - enumeratorOffset();
+    if(i < 0 && m_pSuper) {
+        return m_pSuper->enumerator(index);
+    }
+    if(i >= 0 && i < m_EnumCount) {
+        return MetaEnum(m_pEnums + i);
+    }
+    return MetaEnum(nullptr);
+}
+/*!
+    Returns the sum of enumerators for the current class and parent classes.
+*/
+int MetaObject::enumeratorCount() const {
+    PROFILE_FUNCTION();
+    int count = m_EnumCount;
+    const MetaObject *s = m_pSuper;
+    while(s) {
+        count  += s->m_EnumCount;
+        s = s->m_pSuper;
+    }
+    return count;
+}
+/*!
+    Returns the first index of enumerator for current class. The offset is the sum of all enumerator in parent classes.
+*/
+int MetaObject::enumeratorOffset() const {
+    PROFILE_FUNCTION();
+    int offset = 0;
+    const MetaObject *s = m_pSuper;
+    while(s) {
+        offset += s->m_EnumCount;
+        s = s->m_pSuper;
+    }
+    return offset;
+}
+
 /*!
     Checks the abillity to cast the current object to \a type.
     \note This method tries to go through inheritance to find a common parent class.
@@ -224,13 +290,13 @@ int MetaObject::propertyOffset() const {
 */
 bool MetaObject::canCastTo(const char *type) const {
     PROFILE_FUNCTION();
-    const MetaObject *s    = this;
+    const MetaObject *s = this;
 
     while(s) {
         if(strcmp(s->m_pName, type) == 0) {
             return true;
         }
-        s   = s->m_pSuper;
+        s = s->m_pSuper;
     }
     return false;
 }

@@ -27,12 +27,16 @@ class AABBox;
 
 class NEXT_LIBRARY_EXPORT Ray {
 public:
+    Ray                         ();
     Ray                         (const Vector3 &position, const Vector3 &direction);
 
-    bool                       intersect                   (const Vector3 &position, areal radius, Vector3 *pt);
-    bool                       intersect                   (const Plane &plane, Vector3 *pt, bool back = false);
-    bool                       intersect                   (const AABBox &box, Vector3 *pt);
-    bool                       intersect                   (const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vector3 *pt, bool back = false);
+    bool                        operator==                  (const Ray &ray) const;
+    bool                        operator!=                  (const Ray &ray) const;
+
+    bool                        intersect                   (const Vector3 &position, areal radius, Vector3 *pt);
+    bool                        intersect                   (const Plane &plane, Vector3 *pt, bool back = false);
+    bool                        intersect                   (const AABBox &box, Vector3 *pt);
+    bool                        intersect                   (const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vector3 *pt, bool back = false);
 
     Ray                         reflect                     (const Vector3 &normal, const Vector3 &point);
     Ray                         refract                     (const Vector3 &normal, const Vector3 &point, areal ior);

@@ -32,6 +32,9 @@ public:
     AABBox                      ();
     AABBox                      (const Vector3 &center, const Vector3 &extent);
 
+    bool                        operator==                  (const AABBox &box) const;
+    bool                        operator!=                  (const AABBox &box) const;
+
     const AABBox                operator*                   (areal factor) const;
     const AABBox                operator*                   (const Vector3 &vector) const;
     const AABBox                operator*                   (const Matrix4 &matrix) const;
