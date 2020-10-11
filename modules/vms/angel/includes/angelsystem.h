@@ -38,7 +38,8 @@ public:
     asIScriptContext *context() const;
 
 protected:
-    void registerMetaType (asIScriptEngine *engine, const string &name, const MetaObject *meta);
+    void registerMetaType (asIScriptEngine *engine, const MetaType::Table &table);
+    void registerMetaObject (asIScriptEngine *engine, const string &name, const MetaObject *meta);
 
     static void messageCallback (const asSMessageInfo *msg, void *param);
 

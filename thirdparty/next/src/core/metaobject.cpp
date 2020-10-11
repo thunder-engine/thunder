@@ -246,12 +246,8 @@ int MetaObject::indexOfEnumerator(const char *name) const {
 */
 MetaEnum MetaObject::enumerator(int index) const {
     PROFILE_FUNCTION();
-    int i = index - enumeratorOffset();
-    if(i < 0 && m_pSuper) {
-        return m_pSuper->enumerator(index);
-    }
-    if(i >= 0 && i < m_EnumCount) {
-        return MetaEnum(m_pEnums + i);
+    if(index >= 0 && index < m_EnumCount) {
+        return MetaEnum(m_pEnums + index);
     }
     return MetaEnum(nullptr);
 }
@@ -260,26 +256,14 @@ MetaEnum MetaObject::enumerator(int index) const {
 */
 int MetaObject::enumeratorCount() const {
     PROFILE_FUNCTION();
-    int count = m_EnumCount;
-    const MetaObject *s = m_pSuper;
-    while(s) {
-        count  += s->m_EnumCount;
-        s = s->m_pSuper;
-    }
-    return count;
+    return m_EnumCount;
 }
 /*!
     Returns the first index of enumerator for current class. The offset is the sum of all enumerator in parent classes.
 */
 int MetaObject::enumeratorOffset() const {
     PROFILE_FUNCTION();
-    int offset = 0;
-    const MetaObject *s = m_pSuper;
-    while(s) {
-        offset += s->m_EnumCount;
-        s = s->m_pSuper;
-    }
-    return offset;
+    return 0;
 }
 
 /*!
