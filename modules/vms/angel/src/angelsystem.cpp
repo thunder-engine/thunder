@@ -278,8 +278,6 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Tabl
             meta = &metaStruct;
         }
 
-        //Log(Log::DBG) << typeName;
-        //engine->SetDefaultNamespace(typeName);
         for(int32_t e = 0; e < meta->enumeratorCount(); e++) {
             MetaEnum enumerator = meta->enumerator(e);
             if(enumerator.isValid()) {
@@ -290,7 +288,6 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Tabl
                 }
             }
         }
-        //engine->SetDefaultNamespace("");
 
         for(int32_t m = 0; m < meta->methodCount(); m++) {
             MetaMethod method = meta->method(m);

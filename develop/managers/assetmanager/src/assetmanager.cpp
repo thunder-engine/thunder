@@ -109,6 +109,10 @@ void AssetManager::init(Engine *engine) {
 
     m_ContentTypes[MetaType::type<Mesh *>()] = IConverter::ContentMesh;
     m_ContentTypes[MetaType::type<Pose *>()] = IConverter::ContentPose;
+
+    for(auto it : m_Converters) {
+        it->init();
+    }
 }
 
 void AssetManager::rescan(bool force) {
@@ -146,8 +150,6 @@ void AssetManager::rescan(bool force) {
 
     reimport();
 }
-
-
 
 int32_t AssetManager::resourceType(const QFileInfo &source) {
     QString s = source.completeSuffix().toLower();

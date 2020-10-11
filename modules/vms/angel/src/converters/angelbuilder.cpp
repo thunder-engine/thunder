@@ -77,7 +77,9 @@ AngelBuilder::AngelBuilder(AngelSystem *system) :
         m_pClassModel(new AngelClassMapModel(m_pScriptEngine)) {
 
     m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
+}
 
+void AngelBuilder::init() {
     m_pSystem->registerClasses(m_pScriptEngine);
 }
 

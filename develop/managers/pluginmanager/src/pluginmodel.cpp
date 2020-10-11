@@ -38,7 +38,7 @@ enum {
 
 typedef Module *(*moduleHandler)  (Engine *engine);
 
-PluginModel *PluginModel::m_pInstance   = nullptr;
+PluginModel *PluginModel::m_pInstance = nullptr;
 
 PluginModel::PluginModel() :
         BaseObjectModel(),
@@ -87,7 +87,7 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QObject *item   = static_cast<QObject *>(index.internalPointer());
+    QObject *item = static_cast<QObject *>(index.internalPointer());
     switch(role) {
         case Qt::DisplayRole: {
             switch(index.column()) {
@@ -117,7 +117,7 @@ void PluginModel::destroy() {
 }
 
 void PluginModel::init(Engine *engine) {
-    m_pEngine   = engine;
+    m_pEngine = engine;
 
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
@@ -128,7 +128,7 @@ void PluginModel::rescan() {
     QString system(QCoreApplication::applicationDirPath() + PLUGINS);
     for(auto it = m_Libraries.begin(); it != m_Libraries.end(); it++) {
         if(!it.key().contains(system)) {
-            PluginsMap::Iterator ext    = m_Extensions.find(it.key());
+            PluginsMap::Iterator ext = m_Extensions.find(it.key());
             if(ext != m_Extensions.end()) {
                 Module *plugin = ext.value();
                 delete plugin;
@@ -144,15 +144,15 @@ void PluginModel::rescan() {
 }
 
 bool PluginModel::loadPlugin(const QString &path, bool reload) {
-    QLibrary *lib   = new QLibrary(path);
+    QLibrary *lib = new QLibrary(path);
     if(lib->load()) {
         moduleHandler moduleCreate = reinterpret_cast<moduleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
             Module *plugin = moduleCreate(m_pEngine);
             if(plugin) {
-                m_Libraries[path]   = lib;
+                m_Libraries[path] = lib;
 
-                uint8_t types   = plugin->types();
+                uint8_t types = plugin->types();
                 if(types & Module::SYSTEM) {
                     registerExtensionPlugin(path, plugin);
                     registerSystem(plugin);
@@ -169,11 +169,11 @@ bool PluginModel::loadPlugin(const QString &path, bool reload) {
                     deserializeComponents(result);
                 }
 
-                int start   = rowCount();
+                int start = rowCount();
                 beginInsertRows(QModelIndex(), start, start);
                     QFileInfo file(path);
 
-                    QObject *item  = new QObject(m_rootItem);
+                    QObject *item = new QObject(m_rootItem);
                     item->setObjectName(file.fileName());
                     item->setProperty(PATH, file.filePath());
                     item->setProperty(VERSION, plugin->version());
@@ -196,8 +196,8 @@ bool PluginModel::loadPlugin(const QString &path, bool reload) {
 void PluginModel::reloadPlugin(const QString &path) {
     QFileInfo info(path);
 
-    QFileInfo dest  = ProjectManager::instance()->pluginsPath() + QDir::separator() + info.fileName();
-    QFileInfo temp  = dest.absoluteFilePath() + ".tmp";
+    QFileInfo dest = ProjectManager::instance()->pluginsPath() + QDir::separator() + info.fileName();
+    QFileInfo temp = dest.absoluteFilePath() + ".tmp";
 
     // Rename old version of plugin
     if(dest.exists()) {
@@ -205,8 +205,8 @@ void PluginModel::reloadPlugin(const QString &path) {
         QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 
-    PluginsMap::Iterator ext    = m_Extensions.find(dest.absoluteFilePath());
-    LibrariesMap::Iterator lib  = m_Libraries.find(dest.absoluteFilePath());
+    PluginsMap::Iterator ext = m_Extensions.find(dest.absoluteFilePath());
+    LibrariesMap::Iterator lib = m_Libraries.find(dest.absoluteFilePath());
 
     if(ext != m_Extensions.end() && lib != m_Libraries.end()) { // Reload plugin
         Module *plugin = ext.value();
@@ -215,7 +215,7 @@ void PluginModel::reloadPlugin(const QString &path) {
         // Unload plugin
         delete plugin;
 
-        QObject *child  = m_rootItem->findChild<QObject *>(info.fileName());
+        QObject *child = m_rootItem->findChild<QObject *>(info.fileName());
         if(child) {
             child->deleteLater();
         }
@@ -253,7 +253,7 @@ void PluginModel::reloadPlugin(const QString &path) {
 
 void PluginModel::clear() {
     delete m_rootItem;
-    m_rootItem  = createRoot();
+    m_rootItem = createRoot();
 
     beginResetModel();
     endResetModel();
@@ -301,7 +301,7 @@ void PluginModel::updateRender(Scene *scene) {
 }
 
 void PluginModel::registerExtensionPlugin(const QString &path, Module *plugin) {
-    m_Extensions[path]  = plugin;
+    m_Extensions[path] = plugin;
     emit updated();
 }
 
@@ -328,7 +328,7 @@ void PluginModel::serializeComponents(const StringList &list, ComponentMap &map)
             enumComponents(scene, type, array);
 
             for(auto it : array) {
-                Variant v   = Engine::toVariant(it);
+                Variant v = Engine::toVariant(it);
                 map[it->parent()] = Bson::save(v);
                 delete it;
             }
