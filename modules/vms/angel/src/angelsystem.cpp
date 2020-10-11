@@ -219,23 +219,28 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
     for(auto &it : MetaType::types()) {
         if(it.first > MetaType::USERTYPE) {
-            MetaType::Table &table  = it.second;
-            MetaType type(&table);
-            const char *name        = type.name();
-            if(name[strlen(name) - 1] != '*') {
-                engine->RegisterObjectType(name, 0, asOBJ_REF | asOBJ_NOCOUNT);
-                string stream   = string(name) + "@ f()";
-                engine->RegisterObjectBehaviour(name, asBEHAVE_FACTORY, stream.c_str(), asFUNCTION(table.static_new), asCALL_CDECL);
+            MetaType::Table &table = it.second;
+            const char *typeName = table.name;
+            if(typeName[strlen(typeName) - 1] != '*') {
+                engine->RegisterObjectType(table.name, 0, asOBJ_REF | asOBJ_NOCOUNT);
+                string stream = string(table.name) + "@ f()";
+                engine->RegisterObjectBehaviour(table.name, asBEHAVE_FACTORY, stream.c_str(), asFUNCTION(table.static_new), asCALL_CDECL);
                 //engine->RegisterObjectBehaviour(name, asBEHAVE_ADDREF, "void f()", asMETHOD(CRef,AddRef), asCALL_THISCALL);
                 //engine->RegisterObjectBehaviour(name, asBEHAVE_RELEASE, "void f()", asMETHOD(CRef,Release), asCALL_THISCALL);
             }
         }
     }
 
-    for(auto &it: System::factories()) {
+    for(auto &it : MetaType::types()) {
+        if(it.first > MetaType::USERTYPE) {
+            registerMetaType(engine, it.second);
+        }
+    }
+
+    for(auto &it : System::factories()) {
         auto factory = System::metaFactory(it.first);
         if(factory) {
-            registerMetaType(engine, it.first, factory->first);
+            registerMetaObject(engine, it.first, factory->first);
         }
     }
 
@@ -256,26 +261,41 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
 }
 
-void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
-    const char *typeName    = name.c_str();
+void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
+    const char *typeName = table.name;
+    if(typeName[strlen(typeName) - 1] != '*') {
+        const MetaObject *meta;
 
-    const MetaObject *super = meta->super();
-    while(super != nullptr) {
-        const char *superName   = super->name();
+        const MetaObject metaStruct (MetaObject(typeName, nullptr, nullptr,
+                                     reinterpret_cast<const MetaMethod::Table *>(table.methods),
+                                     reinterpret_cast<const MetaProperty::Table *>(table.properties),
+                                     reinterpret_cast<const MetaEnum::Table *>(table.enums)));
 
-        engine->RegisterObjectMethod(superName, (name + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
-        engine->RegisterObjectMethod(typeName, (string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+        auto factory = System::metaFactory(typeName);
+        if(factory) {
+            meta = factory->first;
+        } else {
+            meta = &metaStruct;
+        }
 
-        super = super->super();
-    }
+        //Log(Log::DBG) << typeName;
+        //engine->SetDefaultNamespace(typeName);
+        for(int32_t e = 0; e < meta->enumeratorCount(); e++) {
+            MetaEnum enumerator = meta->enumerator(e);
+            if(enumerator.isValid()) {
+                const char *name = enumerator.name();
+                engine->RegisterEnum(name);
+                for(int32_t index = 0; index < enumerator.keyCount(); index++) {
+                    engine->RegisterEnumValue(name, enumerator.key(index), enumerator.value(index));
+                }
+            }
+        }
+        //engine->SetDefaultNamespace("");
 
-    uint32_t type = MetaType::type(typeName);
-    MetaType::Table *table  = MetaType::table(type);
-    if(table) {
         for(int32_t m = 0; m < meta->methodCount(); m++) {
-            MetaMethod method   = meta->method(m);
+            MetaMethod method = meta->method(m);
             if(method.isValid()) {
-                MetaType ret    = method.returnType();
+                MetaType ret = method.returnType();
                 string retName;
                 if(ret.isValid()) {
                     retName = ret.name();
@@ -291,7 +311,7 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                 asSFuncPtr ptr(3);
                 method.table()->address(ptr.ptr.dummy, sizeof(void *));
 
-                string signature    = retName + method.signature();
+                string signature = retName + method.signature();
                 for(auto &it : signature) {
                     if(it == '*') {
                         it = '@';
@@ -308,11 +328,10 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
         for(int32_t p = 0; p < meta->propertyCount(); p++) {
             MetaProperty property = meta->property(p);
             if(property.isValid()) {
-
                 MetaType type = property.type();
                 string name = type.name();
 
-                bool ptr    = false;
+                bool ptr = false;
                 for(auto &it : name) {
                     if(it == '*') {
                         it = '&';
@@ -322,11 +341,11 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                     }
                 }
 
-                string ref  = (ptr) ? "" : " &";
+                string ref = (ptr) ? "" : " &";
                 string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
-                string get  = name + ref +"get_" + propertyName + "()";
-                string set  = string("void set_") + propertyName + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
+                string get = name + ref +"get_" + propertyName + "()";
+                string set = string("void set_") + propertyName + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
 
                 asSFuncPtr ptr1(3);
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
@@ -343,10 +362,22 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const string &name, 
                                              set.c_str(),
                                              ptr2,
                                              asCALL_THISCALL);
-
             }
         }
+    }
+}
 
+void AngelSystem::registerMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
+    const char *typeName = name.c_str();
+
+    const MetaObject *super = meta->super();
+    while(super != nullptr) {
+        const char *superName = super->name();
+
+        engine->RegisterObjectMethod(superName, (name + "@ opCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+        engine->RegisterObjectMethod(typeName, (string(superName) + "@ opImplCast()").c_str(), asFUNCTION(castTo), asCALL_CDECL_OBJLAST);
+
+        super = super->super();
     }
 }
 
