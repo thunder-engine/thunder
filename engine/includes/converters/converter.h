@@ -76,7 +76,7 @@ class NEXT_LIBRARY_EXPORT IConverter : public QObject {
 
 public:
     enum ContentTypes {
-        ContentInvalid              = MetaType::USERTYPE,
+        ContentInvalid = MetaType::USERTYPE,
         ContentText,
         ContentTexture,
         ContentMaterial,
@@ -97,14 +97,15 @@ public:
         ContentLast
     };
 public:
-    virtual QStringList             suffixes        () const = 0;
-    virtual uint32_t                contentType     () const = 0;
-    virtual uint32_t                type            () const = 0;
-    virtual uint8_t                 convertFile     (IConverterSettings *) = 0;
+    virtual void init();
+    virtual QStringList suffixes() const = 0;
+    virtual uint32_t contentType() const = 0;
+    virtual uint32_t type() const = 0;
+    virtual uint8_t convertFile(IConverterSettings *) = 0;
 
-    virtual IConverterSettings     *createSettings  () const;
+    virtual IConverterSettings *createSettings() const;
 
-    virtual QString                 templatePath    () const;
+    virtual QString templatePath() const;
 };
 
 #endif // BASECONVERTERSETTINGS_H

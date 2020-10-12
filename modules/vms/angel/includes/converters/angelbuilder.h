@@ -79,6 +79,8 @@ public:
     AngelBuilder(AngelSystem *system);
 
 protected:
+    void init() Q_DECL_OVERRIDE;
+
     bool buildProject() Q_DECL_OVERRIDE;
 
     QString builderVersion() Q_DECL_OVERRIDE;

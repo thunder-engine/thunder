@@ -176,6 +176,10 @@ void IConverterSettings::saveSettings() {
     }
 }
 
+void IConverter::init() {
+
+}
+
 IConverterSettings *IConverter::createSettings() const {
     return new IConverterSettings();
 }
