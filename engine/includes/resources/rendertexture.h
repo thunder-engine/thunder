@@ -8,19 +8,28 @@ class RenderTexturePrivate;
 class NEXT_LIBRARY_EXPORT RenderTexture : public Texture {
     A_REGISTER(RenderTexture, Texture, Resources)
 
+    A_PROPERTIES(
+        A_PROPERTY(int, depth, RenderTexture::depth, RenderTexture::setDepth)
+    )
+    A_METHODS(
+        A_METHOD(void, setFixed)
+    )
+    A_NOENUMS()
+
 public:
     RenderTexture ();
     ~RenderTexture ();
 
     void setTarget (FormatType format);
 
-    uint8_t depth () const;
-    void setDepth (uint8_t bits);
+    int depth () const;
+    void setDepth (int bits);
 
     void setFixed (bool fixed);
 
-    void resize (int32_t width, int32_t height);
+    void resize (int width, int height);
 
+protected:
     virtual void makeCurrent (uint32_t index = 0) const;
 
 private:

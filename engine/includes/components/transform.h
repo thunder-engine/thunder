@@ -9,12 +9,21 @@ class NEXT_LIBRARY_EXPORT Transform : public Component {
     A_REGISTER(Transform, Component, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(Vector3, Position, Transform::position, Transform::setPosition),
-        A_PROPERTY(Vector3, Rotation, Transform::euler, Transform::setEuler),
-        A_PROPERTY(Quaternion, _Rotation, Transform::rotation, Transform::setRotation),
-        A_PROPERTY(Vector3, Scale, Transform::scale, Transform::setScale)
+        A_PROPERTY(Vector3, position, Transform::position, Transform::setPosition),
+        A_PROPERTY(Vector3, rotation, Transform::rotation, Transform::setRotation),
+        A_PROPERTY(Quaternion, quaternion, Transform::quaternion, Transform::setQuaternion),
+        A_PROPERTY(Vector3, scale, Transform::scale, Transform::setScale)
     )
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(Transform *, Transform::parentTransform),
+        A_METHOD(void, Transform::setParentTransform),
+        A_METHOD(Matrix4, Transform::localTransform),
+        A_METHOD(Matrix4, Transform::worldTransform),
+        A_METHOD(Vector3, Transform::worldPosition),
+        A_METHOD(Vector3, Transform::worldEuler),
+        A_METHOD(Quaternion, Transform::worldRotation),
+        A_METHOD(Vector3, Transform::worldScale)
+    )
 
 public:
     Transform ();
@@ -23,11 +32,11 @@ public:
     Vector3 position () const;
     void setPosition (const Vector3 &position);
 
-    Vector3 euler () const;
-    void setEuler (const Vector3 &angles);
+    Vector3 rotation () const;
+    void setRotation (const Vector3 &angles);
 
-    virtual Quaternion rotation () const;
-    void setRotation (const Quaternion &rotation);
+    virtual Quaternion quaternion () const;
+    void setQuaternion (const Quaternion &quaternion);
 
     Vector3 scale () const;
     void setScale (const Vector3 &scale);

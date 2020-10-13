@@ -2,10 +2,57 @@
 
 #define DATA "Data"
 
+Bone::Bone() :
+    m_index(0) {
+
+}
+
+bool Bone::operator== (const Bone &bone) const {
+    return (m_index == bone.m_index) &&
+           (m_position == bone.m_position) &&
+           (m_rotation == bone.m_rotation) &&
+           (m_scale == bone.m_scale);
+}
+
+int Bone::index() const {
+    return m_index;
+}
+void Bone::setIndex(int value) {
+    m_index = value;
+}
+
+Vector3 Bone::position() const {
+    return m_position;
+}
+void Bone::setPosition(const Vector3 &value) {
+    m_position = value;
+}
+
+Vector3 Bone::rotation() const {
+    return m_rotation;
+}
+void Bone::setRotation(const Vector3 &value) {
+    m_rotation = value;
+}
+
+Vector3 Bone::scale() const {
+    return m_scale;
+}
+void Bone::setScale(const Vector3 &value) {
+    m_scale = value;
+}
+
+
 class PosePrivate {
 public:
-    deque<Pose::Bone> m_Bones;
+    deque<Bone> m_Bones;
 };
+
+/*!
+    \class Pose
+    \brief Representation of pose of an animated character.
+    \inmodule Resource
+*/
 
 Pose::Pose() :
         p_ptr(new PosePrivate) {
@@ -15,22 +62,31 @@ Pose::Pose() :
 Pose::~Pose() {
     delete p_ptr;
 }
-
-void Pose::addBone(const Pose::Bone &bone) {
+/*!
+    Adds a \a bone to the pose.
+*/
+void Pose::addBone(const Bone &bone) {
     p_ptr->m_Bones.push_back(bone);
 }
-
-const Pose::Bone *Pose::bone(uint32_t index) const {
+/*!
+    Returns a bone with \a index.
+    \note Returns nullptr in case no such bone.
+*/
+const Bone *Pose::bone(int index) const {
     if(index < p_ptr->m_Bones.size()) {
         return &p_ptr->m_Bones[index];
     }
     return nullptr;
 }
-
-uint32_t Pose::size() const {
+/*!
+    Returns the count of bones for the current pose which was affected.
+*/
+int Pose::boneCount() const {
     return p_ptr->m_Bones.size();
 }
-
+/*!
+    \internal
+*/
 void Pose::loadUserData(const VariantMap &data) {
     p_ptr->m_Bones.clear();
 
@@ -42,13 +98,13 @@ void Pose::loadUserData(const VariantMap &data) {
                 Bone bone;
 
                 auto i = attribs.begin();
-                bone.position = i->toVector3();
+                bone.setPosition(i->toVector3());
                 i++;
-                bone.rotation = i->toVector3();
+                bone.setRotation(i->toVector3());
                 i++;
-                bone.scale = i->toVector3();
+                bone.setScale(i->toVector3());
                 i++;
-                bone.index = uint32_t(i->toInt());
+                bone.setIndex(int32_t(i->toInt()));
 
                 p_ptr->m_Bones.push_back(bone);
             }
@@ -56,4 +112,13 @@ void Pose::loadUserData(const VariantMap &data) {
     }
 
     setState(Ready);
+}
+/*!
+    \internal
+
+    \warning Do not call this function manually
+*/
+void Pose::registerSuper(ObjectSystem *system) {
+    Pose::registerClassFactory(system);
+    REGISTER_META_TYPE(Bone);
 }

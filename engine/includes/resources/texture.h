@@ -10,6 +10,46 @@ class TexturePrivate;
 class NEXT_LIBRARY_EXPORT Texture : public Resource {
     A_REGISTER(Texture, Resource, Resources)
 
+    A_PROPERTIES(
+        A_PROPERTY(int, width, Texture::width, Texture::setWidth),
+        A_PROPERTY(int, height, Texture::height, Texture::setHeight),
+        A_PROPERTY(int, format, Texture::format, Texture::setFormat),
+        A_PROPERTY(int, wrap, Texture::wrap, Texture::setWrap),
+        A_PROPERTY(int, filtering, Texture::filtering, Texture::setFiltering)
+    )
+
+    A_METHODS(
+        A_METHOD(void, Texture::readPixels),
+        A_METHOD(void, Texture::getPixel),
+        A_METHOD(bool, Texture::isCompressed),
+        A_METHOD(bool, Texture::isCubemap),
+        A_METHOD(void, Texture::setDirty),
+        A_METHOD(void, Texture::resize)
+    )
+
+    A_ENUMS(
+        A_ENUM(TextureType, A_VALUE(Flat), A_VALUE(Cubemap)),
+
+        A_ENUM(FormatType,
+               A_VALUE(R8),
+               A_VALUE(RGB8),
+               A_VALUE(RGBA8),
+               A_VALUE(RGB16Float),
+               A_VALUE(R11G11B10Float),
+               A_VALUE(Depth),
+               A_VALUE(RGBA32Float)),
+
+        A_ENUM(FilteringType,
+               A_VALUE(None),
+               A_VALUE(Bilinear),
+               A_VALUE(Trilinear)),
+
+        A_ENUM(WrapType,
+               A_VALUE(Clamp),
+               A_VALUE(Repeat),
+               A_VALUE(Mirrored))
+    )
+
 public:
     enum TextureType {
         Flat,
@@ -55,14 +95,14 @@ public:
 
     virtual void *nativeHandle ();
 
-    virtual void readPixels (int32_t x, int32_t y, int32_t width, int32_t height);
-    uint32_t getPixel (int32_t x, int32_t y) const;
+    virtual void readPixels (int x, int y, int width, int height);
+    int getPixel (int x, int y) const;
 
-    int32_t width () const;
-    void setWidth (int32_t width);
+    int width () const;
+    void setWidth (int width);
 
-    int32_t height () const;
-    void setHeight (int32_t height);
+    int height () const;
+    void setHeight (int height);
 
     Vector2Vector shape () const;
     void setShape (const Vector2Vector &shape);
@@ -70,12 +110,12 @@ public:
     bool isCompressed () const;
     bool isCubemap () const;
 
-    Surface &surface (uint32_t face);
+    Surface &surface (int face);
     void addSurface (const Surface &surface);
 
     void setDirty ();
 
-    void resize (int32_t width, int32_t height);
+    void resize (int width, int height);
 
     FormatType format () const;
     void setFormat (FormatType type);

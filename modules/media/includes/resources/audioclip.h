@@ -48,7 +48,7 @@ protected:
 
     string                      m_Path;
 
-    File                      *m_pFile;
+    File                       *m_pFile;
 
     _FILE                      *m_pClip;
 };

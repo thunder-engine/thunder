@@ -7,7 +7,7 @@ class SphereCollider : public VolumeCollider {
     A_REGISTER(SphereCollider, VolumeCollider, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Radius, SphereCollider::radius, SphereCollider::setRadius)
+        A_PROPERTY(float, radius, SphereCollider::radius, SphereCollider::setRadius)
     )
     A_NOMETHODS()
 

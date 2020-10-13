@@ -20,11 +20,12 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Cast_shadows, BaseLight::castShadows, BaseLight::setCastShadows),
-        A_PROPERTY(float, Brightness, BaseLight::brightness, BaseLight::setBrightness),
-        A_PROPERTYEX(Vector4, Color, BaseLight::color, BaseLight::setColor, "editor=Color"),
-        A_PROPERTY(float, Bias, BaseLight::bias, BaseLight::setBias)
+        A_PROPERTY(bool, castShadows, BaseLight::castShadows, BaseLight::setCastShadows),
+        A_PROPERTY(float, brightness, BaseLight::brightness, BaseLight::setBrightness),
+        A_PROPERTYEX(Vector4, color, BaseLight::color, BaseLight::setColor, "editor=Color"),
+        A_PROPERTY(float, bias, BaseLight::bias, BaseLight::setBias)
     )
+    A_NOMETHODS()
 
 public:
     BaseLight ();

@@ -8,7 +8,7 @@ public:
 
     }
 
-    uint8_t m_DepthBits;
+    int m_DepthBits;
 
     bool m_Fixed;
 };
@@ -38,13 +38,13 @@ void RenderTexture::setTarget(FormatType format) {
 /*!
     Returns the precision of the render texture's depth buffer in bits.
 */
-uint8_t RenderTexture::depth() const {
+int RenderTexture::depth() const {
     return p_ptr->m_DepthBits;
 }
 /*!
     Sets the precision of the render texture's depth buffer in \a bits.
 */
-void RenderTexture::setDepth(uint8_t bits) {
+void RenderTexture::setDepth(int bits) {
     p_ptr->m_DepthBits = bits;
     setState(ToBeUpdated);
 }
@@ -57,7 +57,7 @@ void RenderTexture::setFixed(bool fixed) {
 /*!
     Changes current size of the render texture with new \a width, \a height and sets resource state to ResourceState::ToBeUpdated.
 */
-void RenderTexture::resize(int32_t width, int32_t height) {
+void RenderTexture::resize(int width, int height) {
     if(!p_ptr->m_Fixed && (Texture::width() != width || Texture::height() != height)) {
         setWidth(width);
         setHeight(height);

@@ -69,7 +69,7 @@ void CameraCtrl::update() {
         Transform *t = m_pCamera->transform();
         if(m_TransferProgress < 1.0f) {
             if(m_RotationTransfer) {
-                cameraRotate(t->euler() - MIX(t->euler(), m_RotationTarget, m_TransferProgress));
+                cameraRotate(t->rotation() - MIX(t->rotation(), m_RotationTarget, m_TransferProgress));
             } else {
                 t->setPosition(MIX(t->position(), m_PositionTarget, m_TransferProgress));
             }
@@ -91,7 +91,7 @@ void CameraCtrl::update() {
 
         if(m_CameraSpeed.x != 0.0f || m_CameraSpeed.y != 0.0f || m_CameraSpeed.z != 0.0f) {
             Vector3 pos = t->position();
-            Vector3 dir = t->rotation() * Vector3(0.0, 0.0, 1.0);
+            Vector3 dir = t->quaternion() * Vector3(0.0, 0.0, 1.0);
             dir.normalize();
 
             Vector3 delta = (dir * m_CameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_CameraSpeed.x;
@@ -109,7 +109,7 @@ void CameraCtrl::onOrthographic(bool flag) {
     if(m_pActiveCamera->orthographic() != flag) {
         Transform *t = m_pCamera->transform();
         if(flag) {
-            m_Rotation = t->euler();
+            m_Rotation = t->rotation();
             frontSide();
         } else {
             doRotation(m_Rotation);
@@ -139,7 +139,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         m_FocalLengthTarget = radius;
         m_OrthoWidthTarget = radius;
         Transform *camera = m_pCamera->transform();
-        m_PositionTarget = t->worldPosition() + bb.center + camera->rotation() * Vector3(0.0, 0.0, radius);
+        m_PositionTarget = t->worldPosition() + bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
         m_TransferProgress = 0.0f;
         m_RotationTransfer = false;
     }
@@ -288,7 +288,7 @@ void CameraCtrl::cameraZoom(float delta) {
                 m_pActiveCamera->setFocal(focal);
 
                 Transform *t = m_pCamera->transform();
-                t->setPosition(t->position() - t->rotation() * Vector3(0.0, 0.0, scale));
+                t->setPosition(t->position() - t->quaternion() * Vector3(0.0, 0.0, scale));
             }
         }
     }
@@ -296,13 +296,13 @@ void CameraCtrl::cameraZoom(float delta) {
 
 void CameraCtrl::cameraRotate(const Vector3 &delta) {
     Transform *t = m_pCamera->transform();
-    Vector3 euler = t->euler() - delta;
+    Vector3 euler = t->rotation() - delta;
 
     if(!m_CameraFree) {
-        Vector3 dir = t->position() - t->rotation() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
+        Vector3 dir = t->position() - t->quaternion() * Vector3(0.0, 0.0, m_pActiveCamera->focal());
         t->setPosition(dir + Quaternion(euler) * Vector3(0.0, 0.0, m_pActiveCamera->focal()));
     }
-    t->setEuler(euler);
+    t->setRotation(euler);
 }
 
 void CameraCtrl::cameraMove(const Vector3 &delta) {

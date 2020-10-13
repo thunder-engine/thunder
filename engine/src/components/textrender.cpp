@@ -67,7 +67,7 @@ public:
 
             uint32_t length = m_pFont->length(text);
             if(length) {
-                Mesh::Lod lod;
+                Lod lod;
                 lod.vertices.resize(length * 4);
                 lod.indices.resize(length * 6);
                 lod.uv0.resize(length * 4);
@@ -340,13 +340,13 @@ void TextRender::setColor(const Vector4 &color) {
 /*!
     Returns true if word wrap enabled; otherwise returns false.
 */
-bool TextRender::wrap() const {
+bool TextRender::wordWrap() const {
     return p_ptr->m_Wrap;
 }
 /*!
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
-void TextRender::setWrap(bool wrap) {
+void TextRender::setWordWrap(bool wrap) {
     p_ptr->m_Wrap = wrap;
     p_ptr->composeMesh();
 }

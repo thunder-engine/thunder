@@ -194,14 +194,14 @@ void ObjectCtrl::drawHandles() {
                                 euler += Vector3(0.0f, 0.0f, angle);
                             } break;
                             default: {
-                                Vector3 axis = m_pActiveCamera->actor()->transform()->rotation() * Vector3(0.0f, 0.0f, 1.0f);
+                                Vector3 axis = m_pActiveCamera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
                                 axis.normalize();
                                 q = Quaternion(axis, angle);
                                 euler = q.euler();
                             } break;
                         }
                         tr->setPosition(parent.inverse() * (m_Position + q * p));
-                        tr->setEuler(euler);
+                        tr->setRotation(euler);
                     }
                     emit objectsUpdated();
                     emit objectsChanged(selected(), "Rotation");
@@ -315,7 +315,7 @@ void ObjectCtrl::setDrag(bool drag) {
             Transform *t = it.object->transform();
             it.position = t->position();
             it.scale    = t->scale();
-            it.euler    = t->euler();
+            it.euler    = t->rotation();
         }
         m_Position = objectPosition();
         m_SavedWorld = m_World;
@@ -612,7 +612,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                     for(auto it : m_Selected) {
                         Transform *t = it.object->transform();
                         t->setPosition(it.position);
-                        t->setEuler(it.euler);
+                        t->setRotation(it.euler);
                         t->setScale(it.scale);
                     }
                     setDrag(false);
@@ -644,10 +644,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                         for(auto it : m_Selected) {
                             Transform *t = it.object->transform();
                             pos.push_back(t->position());
-                            rot.push_back(t->euler());
+                            rot.push_back(t->rotation());
                             objects.push_back(t);
                             t->setPosition(it.position);
-                            t->setEuler(it.euler);
+                            t->setRotation(it.euler);
                         }
                         QUndoCommand *group = new QUndoCommand("Rotate");
                         new PropertyObjects(objects, "Position", pos, this, "", group);
@@ -800,7 +800,7 @@ void DuplicateObjects::redo() {
             m_Selected.push_back(it->uuid());
             Actor *actor = dynamic_cast<Actor *>(it->clone(it->parent()));
             if(actor) {
-                actor->clearCloneRef();
+                static_cast<Object *>(actor)->clearCloneRef();
                 actor->setName(findFreeObjectName(it->name(), it->parent()));
                 m_Objects.push_back(actor->uuid());
             }

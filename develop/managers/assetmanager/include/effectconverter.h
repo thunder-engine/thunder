@@ -80,7 +80,7 @@ class Lifetime : public EffectFunction {
     Q_PROPERTY(float Max READ maxFloatValue WRITE setFloatMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE Lifetime() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_LIFETIME; }
+    int32_t classType() const { return ParticleModificator::LIFETIME; }
 };
 
 class StartSize : public EffectFunction {
@@ -90,7 +90,7 @@ class StartSize : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartSize() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_STARTSIZE; }
+    int32_t classType() const { return ParticleModificator::STARTSIZE; }
 };
 
 class StartColor : public EffectFunction {
@@ -100,7 +100,7 @@ class StartColor : public EffectFunction {
     Q_PROPERTY(QColor Max READ maxColorValue WRITE setColorMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartColor() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_STARTCOLOR; }
+    int32_t classType() const { return ParticleModificator::STARTCOLOR; }
 };
 
 class StartAngle : public EffectFunction {
@@ -110,7 +110,7 @@ class StartAngle : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartAngle() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_STARTANGLE; }
+    int32_t classType() const { return ParticleModificator::STARTANGLE; }
 };
 
 class StartPosition : public EffectFunction {
@@ -120,7 +120,7 @@ class StartPosition : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE StartPosition() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_STARTPOSITION; }
+    int32_t classType() const { return ParticleModificator::STARTPOSITION; }
 };
 
 class ScaleSize : public EffectFunction {
@@ -130,7 +130,7 @@ class ScaleSize : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleSize() { }
-    int32_t classType() const { return ParticleEffect::MODIFICATOR_SCALESIZE; }
+    int32_t classType() const { return ParticleModificator::SCALESIZE; }
 };
 
 class ScaleColor : public EffectFunction {
@@ -140,7 +140,7 @@ class ScaleColor : public EffectFunction {
     Q_PROPERTY(QColor Max READ maxColorValue WRITE setColorMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleColor() { }
-    virtual int32_t classType() const { return ParticleEffect::MODIFICATOR_SCALECOLOR; }
+    virtual int32_t classType() const { return ParticleModificator::SCALECOLOR; }
 };
 
 class ScaleAngle : public EffectFunction {
@@ -150,7 +150,7 @@ class ScaleAngle : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE ScaleAngle() { }
-    virtual int32_t classType() const { return ParticleEffect::MODIFICATOR_SCALEANGLE; }
+    virtual int32_t classType() const { return ParticleModificator::SCALEANGLE; }
 };
 
 class Velocity : public EffectFunction {
@@ -160,7 +160,7 @@ class Velocity : public EffectFunction {
     Q_PROPERTY(Vector3 Max READ maxValue WRITE setMaxValue DESIGNABLE true USER true)
 public:
     Q_INVOKABLE Velocity() { }
-    virtual int32_t classType() const { return ParticleEffect::MODIFICATOR_VELOCITY; }
+    virtual int32_t classType() const { return ParticleModificator::VELOCITY; }
 };
 
 class EffectEmitter : public QObject {

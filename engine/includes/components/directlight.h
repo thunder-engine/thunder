@@ -11,14 +11,11 @@ class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
     A_REGISTER(DirectLight, BaseLight, Components)
 
     A_NOPROPERTIES()
+    A_NOMETHODS()
 
 public:
     DirectLight ();
     ~DirectLight ();
-
-    Vector4 *tiles ();
-
-    Matrix4 *matrix ();
 
 private:
     void draw (ICommandBuffer &buffer, uint32_t layer) override;

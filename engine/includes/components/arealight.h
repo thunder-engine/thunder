@@ -9,10 +9,11 @@ class NEXT_LIBRARY_EXPORT AreaLight : public BaseLight {
     A_REGISTER(AreaLight, BaseLight, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Attenuation_Radius, AreaLight::radius, AreaLight::setRadius),
-        A_PROPERTY(float, Source_Width,       AreaLight::sourceWidth, AreaLight::setSourceWidth),
-        A_PROPERTY(float, Source_Height,      AreaLight::sourceHeight, AreaLight::setSourceHeight)
+        A_PROPERTY(float, attenuationRadius, AreaLight::radius, AreaLight::setRadius),
+        A_PROPERTY(float, sourceWidth,       AreaLight::sourceWidth, AreaLight::setSourceWidth),
+        A_PROPERTY(float, sourceHeight,      AreaLight::sourceHeight, AreaLight::setSourceHeight)
     )
+    A_NOMETHODS()
 
 public:
     AreaLight ();

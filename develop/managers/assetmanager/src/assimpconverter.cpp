@@ -266,15 +266,15 @@ class PoseSerial : public Pose {
         VariantMap result;
 
         VariantList data;
-        for(uint32_t i = 0; i < size(); i++) {
+        for(int32_t i = 0; i < boneCount(); i++) {
             VariantList attribs;
 
             const Bone *b = bone(i);
 
-            attribs.push_back(b->position);
-            attribs.push_back(b->rotation);
-            attribs.push_back(b->scale);
-            attribs.push_back(int(b->index));
+            attribs.push_back(b->position());
+            attribs.push_back(b->rotation());
+            attribs.push_back(b->scale());
+            attribs.push_back(int(b->index()));
 
             data.push_back(attribs);
         }
@@ -342,7 +342,7 @@ uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
             if(fbxSettings->m_Renders.size() == 1) {
                 root = static_cast<Component *>(fbxSettings->m_Renders.front())->actor();
                 root->transform()->setPosition(Vector3());
-                root->transform()->setEuler(Vector3());
+                root->transform()->setRotation(Vector3());
                 root->transform()->setScale(Vector3(1.0f));
             }
         }
@@ -412,7 +412,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         }
 
         actor->transform()->setPosition(pos);
-        actor->transform()->setEuler(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
+        actor->transform()->setRotation(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
         actor->transform()->setScale(Vector3(scale.x, scale.y, scale.z));
 
         QString uuid = actor->name().c_str();
@@ -468,7 +468,7 @@ MeshSerial *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, Assim
     MeshSerial *mesh = new MeshSerial;
     mesh->setMode(Mesh::MODE_TRIANGLES);
 
-    Mesh::Lod l;
+    Lod l;
     l.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
     // Export
     uint32_t vertexCount = item->mNumVertices;
@@ -834,15 +834,14 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         aiVector3D scl, rot, pos;
         it->mOffsetMatrix.Decompose(scl, rot, pos);
 
-        Pose::Bone b;
-        b.position = Vector3(pos.x, pos.y, pos.z) * fbxSettings->customScale();
-        b.rotation = Vector3(rot.x, rot.y, rot.z) * RAD2DEG;
-        b.scale = Vector3(scl.x, scl.y, scl.z);
-        b.index = 0;
+        Bone b;
+        b.setPosition(Vector3(pos.x, pos.y, pos.z) * fbxSettings->customScale());
+        b.setRotation(Vector3(rot.x, rot.y, rot.z) * RAD2DEG);
+        b.setScale(Vector3(scl.x, scl.y, scl.z));
 
         auto result = fbxSettings->m_Actors.find(it->mName.C_Str());
         if(result != fbxSettings->m_Actors.end()) {
-            b.index = result->second->transform()->uuid();
+            b.setIndex(result->second->transform()->uuid());
         }
 
         pose->addBone(b);

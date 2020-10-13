@@ -68,7 +68,7 @@ void RigidBody::getWorldTransform(btTransform &worldTrans) const {
     Actor *a = actor();
     if(a) {
         Transform *t = a->transform();
-        const Quaternion &q = t->rotation();
+        const Quaternion &q = t->quaternion();
         Vector3 p = t->position();
         worldTrans.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
         worldTrans.setOrigin(btVector3(p.x, p.y, p.z));
@@ -87,7 +87,7 @@ void RigidBody::setWorldTransform(const btTransform &worldTrans) {
         rot.z = q.getZ();
         rot.w = q.getW();
 
-        t->setRotation(rot);
+        t->setQuaternion(rot);
 
         btVector3 p = worldTrans.getOrigin();
         t->setPosition(Vector3(p.x(), p.y(), p.z()));

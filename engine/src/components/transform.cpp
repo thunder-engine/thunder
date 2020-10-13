@@ -65,27 +65,27 @@ void Transform::setPosition(const Vector3 &position) {
 /*!
     Returns current rotation of the Transform in local space as Euler angles in degrees.
 */
-Vector3 Transform::euler() const {
+Vector3 Transform::rotation() const {
     return p_ptr->m_Euler;
 }
 /*!
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
-void Transform::setEuler(const Vector3 &angles) {
+void Transform::setRotation(const Vector3 &angles) {
     p_ptr->m_Euler = angles;
-    setRotation(Quaternion(p_ptr->m_Euler));
+    setQuaternion(Quaternion(p_ptr->m_Euler));
 }
 /*!
     Returns current rotation of the Transform in local space as Quaternion.
 */
-Quaternion Transform::rotation() const {
+Quaternion Transform::quaternion() const {
     return p_ptr->m_Rotation;
 }
 /*!
     Changes the \a rotation of the Transform in local space by provided Quaternion.
 */
-void Transform::setRotation(const Quaternion &rotation) {
-    p_ptr->m_Rotation = rotation;
+void Transform::setQuaternion(const Quaternion &quaternion) {
+    p_ptr->m_Rotation = quaternion;
     setDirty();
 }
 /*!
@@ -134,7 +134,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 
             p_ptr->m_Position = p_ptr->m_pParent->worldRotation().inverse() * ((p - p_ptr->m_pParent->worldPosition()) * scale);
             p_ptr->m_Scale = s * scale;
-            setEuler(e - p_ptr->m_pParent->worldEuler());
+            setRotation(e - p_ptr->m_pParent->worldEuler());
         } else {
             setDirty();
         }

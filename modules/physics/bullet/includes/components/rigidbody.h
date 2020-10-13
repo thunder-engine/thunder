@@ -13,9 +13,9 @@ class RigidBody : public Collider, public btMotionState {
     A_REGISTER(RigidBody, Collider, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Mass, RigidBody::mass, RigidBody::setMass),
-        A_PROPERTYEX(int, Lock_Position, RigidBody::lockPosition, RigidBody::setLockPosition, "editor=Axises"),
-        A_PROPERTYEX(int, Lock_Rotation, RigidBody::lockRotation, RigidBody::setLockRotation, "editor=Axises")
+        A_PROPERTY(float, mass, RigidBody::mass, RigidBody::setMass),
+        A_PROPERTYEX(int, lockPosition, RigidBody::lockPosition, RigidBody::setLockPosition, "editor=Axises"),
+        A_PROPERTYEX(int, lockRotation, RigidBody::lockRotation, RigidBody::setLockRotation, "editor=Axises")
     )
     A_NOMETHODS()
 

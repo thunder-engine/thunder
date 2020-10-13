@@ -12,7 +12,22 @@ class NEXT_LIBRARY_EXPORT AnimationController : public NativeBehaviour {
     A_REGISTER(AnimationController, NativeBehaviour, Components)
 
     A_PROPERTIES (
-        A_PROPERTYEX(AnimationStateMachine*, State_Machine, AnimationController::stateMachine, AnimationController::setStateMachine, "editor=Template")
+        A_PROPERTYEX(AnimationStateMachine *, stateMachine, AnimationController::stateMachine, AnimationController::setStateMachine, "editor=Template"),
+        A_PROPERTY(AnimationClip *, clip, AnimationController::clip, AnimationController::setClip)
+    )
+
+    A_METHODS(
+        A_METHOD(void, AnimationController::setState),
+        A_METHOD(void, AnimationController::setStateHash),
+        A_METHOD(void, AnimationController::crossFade),
+        A_METHOD(void, AnimationController::crossFadeHash),
+        A_METHOD(void, AnimationController::setBool),
+        A_METHOD(void, AnimationController::setBoolHash),
+        A_METHOD(void, AnimationController::setFloat),
+        A_METHOD(void, AnimationController::setFloatHash),
+        A_METHOD(void, AnimationController::setInteger),
+        A_METHOD(void, AnimationController::setIntegerHash),
+        A_METHOD(int, AnimationController::duration)
     )
 
 public:
@@ -25,25 +40,25 @@ public:
     uint32_t position () const;
     void setPosition (uint32_t position);
 
-    void setState (const char *state);
-    void setState (size_t hash);
+    void setState (const string &state);
+    void setStateHash (int hash);
 
-    void crossFade (const char *state, float duration);
-    void crossFade (size_t hash, float duration);
+    void crossFade (string &state, float duration);
+    void crossFadeHash (int hash, float duration);
 
     AnimationClip *clip () const;
     void setClip (AnimationClip *clip);
 
-    void setBool (const char *name, bool value);
-    void setBool (size_t hash, bool value);
+    void setBool (const string &name, bool value);
+    void setBoolHash (int hash, bool value);
 
-    void setFloat (const char *name, float value);
-    void setFloat (size_t hash, float value);
+    void setFloat (const string &name, float value);
+    void setFloatHash (int hash, float value);
 
-    void setInteger (const char *name, int32_t value);
-    void setInteger (size_t hash, int32_t value);
+    void setInteger (const string &name, int32_t value);
+    void setIntegerHash (int hash, int32_t value);
 
-    uint32_t duration () const;
+    int duration () const;
 
 private:
     void start () override;

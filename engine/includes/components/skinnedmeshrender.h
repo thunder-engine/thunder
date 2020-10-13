@@ -12,9 +12,9 @@ class NEXT_LIBRARY_EXPORT SkinnedMeshRender : public Renderable {
     A_REGISTER(SkinnedMeshRender, Renderable, Components);
 
     A_PROPERTIES (
-        A_PROPERTYEX(Armature *, Armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
-        A_PROPERTYEX(Mesh *, Mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Template"),
-        A_PROPERTYEX(Material *, Material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Template")
+        A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),
+        A_PROPERTYEX(Mesh *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Template"),
+        A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Template")
     )
     A_NOMETHODS()
 

@@ -43,7 +43,7 @@ public:
 SpotLight::SpotLight() :
         p_ptr(new SpotLightPrivate) {
 
-    setAngle(45.0f);
+    setOuterAngle(45.0f);
 
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
@@ -76,7 +76,7 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         p_ptr->m_Position = actor()->transform()->worldPosition();
         p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
-        float d = distance();
+        float d = attenuationDistance();
 
         Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * d * 0.5f,
                   q, Vector3(d * 1.5f, d * 1.5f, d)); // (1.0f - p.z)
@@ -112,7 +112,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     scale[13] = 0.5f;
     scale[14] = 0.5f;
 
-    float zFar = distance();
+    float zFar = attenuationDistance();
     Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle * 2.0f, 1.0f, p_ptr->m_Near, zFar);
 
     int32_t x, y, w, h;
@@ -153,13 +153,13 @@ AABBox SpotLight::bound() const {
 /*!
     Returns the attenuation distance of the light cone.
 */
-float SpotLight::distance() const {
+float SpotLight::attenuationDistance() const {
     return params().y;
 }
 /*!
     Changes the attenuation \a distance of the light cone.
 */
-void SpotLight::setDistance(float distance) {
+void SpotLight::setAttenuationDistance(float distance) {
     Vector4 p = params();
     p.y = distance;
     setParams(p);
@@ -169,13 +169,13 @@ void SpotLight::setDistance(float distance) {
 /*!
     Returns the angle of the light cone in degrees.
 */
-float SpotLight::angle() const {
+float SpotLight::outerAngle() const {
     return p_ptr->m_Angle;
 }
 /*!
     Changes the \a angle of the light cone in degrees.
 */
-void SpotLight::setAngle(float angle) {
+void SpotLight::setOuterAngle(float angle) {
     p_ptr->m_Angle = angle;
     Vector4 p = params();
     p.w = cos(DEG2RAD * p_ptr->m_Angle);

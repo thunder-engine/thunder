@@ -94,7 +94,7 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
 
     m_PostEffects[OUTLINE] = new Outline();
 
-    Mesh::Lod lod;
+    Lod lod;
     lod.vertices.resize(404);
     lod.indices.resize(404);
     for(uint8_t x = 0; x <= 100; x++) {
@@ -197,8 +197,8 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
         uint32_t pixel = m_pDepth->getPixel(0, 0);
         memcpy(&screen.z, &pixel, sizeof(float));
 
-        Matrix4 v, p;
-        camera.matrices(v, p);
+        Matrix4 v = camera.viewMatrix();
+        Matrix4 p = camera.projectionMatrix();
         Camera::unproject(screen, v, p, m_MouseWorld);
     } else {
         Ray ray = camera.castRay(screen.x, 1.0f - screen.y);

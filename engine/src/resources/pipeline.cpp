@@ -138,8 +138,8 @@ void Pipeline::finish() {
 }
 
 void Pipeline::cameraReset(Camera &camera) {
-    Matrix4 v, p;
-    camera.matrices(v, p);
+    Matrix4 v = camera.viewMatrix();
+    Matrix4 p = camera.projectionMatrix();
     camera.setRatio(m_Screen.x / m_Screen.y);
 
     Transform *c = camera.actor()->transform();

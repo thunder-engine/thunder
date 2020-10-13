@@ -10,10 +10,12 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
 
     A_PROPERTIES (
-        A_PROPERTY(bool, Enabled, Component::isEnabled, Component::setEnabled)
+        A_PROPERTY(bool, enabled, Component::isEnabled, Component::setEnabled)
     )
     A_METHODS(
-        A_METHOD(Actor *, Component::actor)
+        A_METHOD(Actor *, Component::actor),
+        A_METHOD(string, Component::tr),
+        A_METHOD(void, Component::deleteLater)
     )
 
 public:

@@ -106,15 +106,13 @@ void Camera::setPipeline(Pipeline *pipeline) {
     p_ptr->m_pPipeline = pipeline;
 }
 /*!
-    Returns \a view and \a projection matrices using output parameters.
+    Returns view matrix for the camera.
 */
-void Camera::matrices(Matrix4 &view, Matrix4 &projection) const {
-    projection = projectionMatrix();
-
+Matrix4 Camera::viewMatrix() const {
     Transform *t = actor()->transform();
     Matrix4 m;
     m.translate(-t->position());
-    view = Matrix4(t->rotation().toMatrix()).inverse() * m;
+    return Matrix4(t->quaternion().toMatrix()).inverse() * m;
 }
 /*!
     Returns projection matrix for the camera.
@@ -186,7 +184,7 @@ bool Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, con
 Ray Camera::castRay(float x, float y) {
     Transform *t = actor()->transform();
     Vector3 p   = t->position();
-    Vector3 dir = t->rotation() * Vector3(0.0, 0.0,-1.0);
+    Vector3 dir = t->quaternion() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
     Vector3 view;
@@ -399,9 +397,9 @@ bool Camera::drawHandles(ObjectList &selected) {
 
         Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
         Vector3Vector points(a.begin(), a.end());
-        Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                                       4, 5, 5, 6, 6, 7, 7, 4,
-                                       0, 4, 1, 5, 2, 6, 3, 7};
+        IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                                 4, 5, 5, 6, 6, 7, 7, 4,
+                                 0, 4, 1, 5, 2, 6, 3, 7};
 
         Handles::drawLines(Matrix4(), points, indices);
     }

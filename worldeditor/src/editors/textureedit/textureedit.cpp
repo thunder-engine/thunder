@@ -29,7 +29,7 @@ TextureEdit::TextureEdit(DocumentModel *document) :
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl  = new CameraCtrl(ui->Preview);
+    CameraCtrl *ctrl = new CameraCtrl(ui->Preview);
     ctrl->blockRotations(true);
     ctrl->init(nullptr);
     ui->Preview->setController(ctrl);
@@ -91,7 +91,7 @@ void TextureEdit::closeEvent(QCloseEvent *event) {
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
 
-        int result  = msgBox.exec();
+        int result = msgBox.exec();
         if(result == QMessageBox::Cancel) {
             event->ignore();
             return;
@@ -138,15 +138,15 @@ void TextureEdit::onUpdateTemplate(bool update) {
 }
 
 void TextureEdit::onGLInit() {
-    Scene *scene    = ui->Preview->scene();
-    Camera *camera  = ui->Preview->controller()->camera();
+    Scene *scene = ui->Preview->scene();
+    Camera *camera = ui->Preview->controller()->camera();
     if(camera) {
         camera->setOrthographic(true);
     }
 
-    Actor *object   = Engine::objectCreate<Actor>("Sprite", scene);
+    Actor *object = Engine::objectCreate<Actor>("Sprite", scene);
     object->transform()->setScale(Vector3(SCALE));
-    m_pSprite       = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
+    m_pSprite = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
     if(m_pSprite) {
         m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }

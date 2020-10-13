@@ -6,6 +6,13 @@
 class PhysicMaterial : public Resource {
     A_REGISTER(PhysicMaterial, Resource, Resources)
 
+    A_PROPERTIES(
+        A_PROPERTY(float, friction, PhysicMaterial::friction, PhysicMaterial::setFriction),
+        A_PROPERTY(float, restitution, PhysicMaterial::restitution, PhysicMaterial::setRestitution),
+        A_PROPERTY(float, density, PhysicMaterial::density, PhysicMaterial::setDensity)
+    )
+    A_NOMETHODS()
+
 public:
     PhysicMaterial();
 

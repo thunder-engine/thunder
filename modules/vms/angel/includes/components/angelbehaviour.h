@@ -8,7 +8,7 @@ class asIScriptFunction;
 
 class AngelBehaviour : public NativeBehaviour {
     A_PROPERTIES(
-        A_PROPERTY(string, Script, AngelBehaviour::script, AngelBehaviour::setScript)
+        A_PROPERTY(string, script, AngelBehaviour::script, AngelBehaviour::setScript)
     )
 
     A_NOMETHODS()

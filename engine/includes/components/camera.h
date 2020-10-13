@@ -12,30 +12,35 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Fov,  Camera::fov, Camera::setFov),
-        A_PROPERTY(float, Near, Camera::nearPlane, Camera::setNear),
-        A_PROPERTY(float, Far,  Camera::farPlane, Camera::setFar),
-        A_PROPERTY(float, Size, Camera::orthoSize, Camera::setOrthoSize),
-        A_PROPERTY(float, Focal_Distance, Camera::focal, Camera::setFocal),
-        A_PROPERTYEX(Vector4, Background_Color, Camera::color, Camera::setColor, "editor=Color"),
-        A_PROPERTY(bool, Orthographic, Camera::orthographic, Camera::setOrthographic)
+        A_PROPERTY(float, fov,  Camera::fov, Camera::setFov),
+        A_PROPERTY(float, near, Camera::nearPlane, Camera::setNear),
+        A_PROPERTY(float, far,  Camera::farPlane, Camera::setFar),
+        A_PROPERTY(float, size, Camera::orthoSize, Camera::setOrthoSize),
+        A_PROPERTY(float, focalDistance, Camera::focal, Camera::setFocal),
+        A_PROPERTYEX(Vector4, backgroundColor, Camera::color, Camera::setColor, "editor=Color"),
+        A_PROPERTY(bool, orthographic, Camera::orthographic, Camera::setOrthographic),
+        A_PROPERTY(bool, ratio, Camera::ratio, Camera::setRatio)
     )
-    A_NOMETHODS()
+
+    A_METHODS(
+        A_METHOD(Matrix4, Camera::viewMatrix),
+        A_METHOD(Matrix4, Camera::projectionMatrix),
+        A_METHOD(bool, Camera::project),
+        A_METHOD(bool, Camera::unproject),
+        A_METHOD(Camera *, Camera::current),
+        A_METHOD(void, Camera::setCurrent),
+        A_METHOD(Ray, Camera::castRay)
+    )
 
 public:
     Camera ();
     ~Camera ();
 
     Pipeline *pipeline ();
-
     void setPipeline (Pipeline *pipeline);
 
-    void matrices (Matrix4 &view, Matrix4 &projection) const;
-
+    Matrix4 viewMatrix () const;
     Matrix4 projectionMatrix () const;
-
-    static bool project (const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &screenSpace);
-    static bool unproject (const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &worldSpace);
 
     Ray castRay (float x, float y);
 
@@ -65,6 +70,9 @@ public:
 
     static Camera *current ();
     static void setCurrent (Camera *current);
+
+    static bool project (const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &screenSpace);
+    static bool unproject (const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &worldSpace);
 
     static array<Vector3, 8> frustumCorners (const Camera &camera);
     static array<Vector3, 8> frustumCorners (bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);

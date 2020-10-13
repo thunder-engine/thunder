@@ -11,7 +11,7 @@ class NEXT_LIBRARY_EXPORT Armature : public Renderable {
     A_REGISTER(Armature, NativeBehaviour, Components);
 
     A_PROPERTIES(
-        A_PROPERTYEX(Pose *, Bind_Pose, Armature::bindPose, Armature::setBindPose, "editor=Template")
+        A_PROPERTYEX(Pose *, bindPose, Armature::bindPose, Armature::setBindPose, "editor=Template")
     )
     A_NOMETHODS()
 
@@ -22,15 +22,15 @@ public:
     Pose *bindPose () const;
     void setBindPose (Pose *pose);
 
-    Texture *texture () const;
-
-    AABBox recalcBounds (const AABBox &aabb) const;
-
 private:
     void update () override;
 
     void loadUserData (const VariantMap &data);
     VariantMap saveUserData () const;
+
+    Texture *texture () const;
+
+    AABBox recalcBounds (const AABBox &aabb) const;
 
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;
@@ -39,6 +39,8 @@ private:
 #endif
 
 private:
+    friend class SkinnedMeshRender;
+
     ArmaturePrivate *p_ptr;
 };
 

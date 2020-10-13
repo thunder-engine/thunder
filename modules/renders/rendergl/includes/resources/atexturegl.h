@@ -9,14 +9,17 @@
 
 class ATextureGL : public Texture {
     A_OVERRIDE(ATextureGL, Texture, Resources)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+
 public:
     ATextureGL                  ();
 
-    void                       *nativeHandle                () override;
-
-    void                        readPixels                  (int32_t x, int32_t y, int32_t width, int32_t height) override;
-
 private:
+    void                       *nativeHandle                () override;
+    void                        readPixels                  (int x, int y, int width, int height) override;
+
     void                        updateTexture               ();
     void                        destroyTexture              ();
 

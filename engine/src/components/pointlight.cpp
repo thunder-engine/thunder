@@ -82,7 +82,7 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         Matrix4 m = actor()->transform()->worldTransform();
         p_ptr->m_Position = Vector3(m[12], m[13], m[14]);
 
-        float r = radius();
+        float r = attenuationRadius();
 
         Matrix4 t(p_ptr->m_Position,
                   Quaternion(),
@@ -126,7 +126,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
     int32_t pageWidth, pageHeight;
     Pipeline::shadowPageSize(pageWidth, pageHeight);
 
-    float zFar = radius();
+    float zFar = attenuationRadius();
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_Near, zFar);
 
     Matrix4 wt = t->worldTransform();
@@ -163,13 +163,13 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
 /*!
     Returns the attenuation radius of the light.
 */
-float PointLight::radius() const {
+float PointLight::attenuationRadius() const {
     return params().w;
 }
 /*!
     Changes the attenuation \a radius of the light.
 */
-void PointLight::setRadius(float radius) {
+void PointLight::setAttenuationRadius(float radius) {
     Vector4 p = params();
     p.w = radius;
     setParams(p);

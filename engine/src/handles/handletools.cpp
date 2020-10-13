@@ -74,8 +74,8 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
 }
 
 float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh) {
-    Mesh::IndexVector indices   = mesh->indices(0);
-    Vector3Vector vertices      = mesh->vertices(0);
+    IndexVector indices = mesh->indices(0);
+    Vector3Vector vertices = mesh->vertices(0);
     if(indices.empty()) {
         return distanceToPath(matrix, vertices);
     }

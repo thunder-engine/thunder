@@ -46,10 +46,10 @@ void Actions::setObject(Object *object) {
     const MetaObject *meta = m_pObject->metaObject();
 
     m_Menu = false;
-    int32_t index = meta->indexOfProperty(qPrintable(m_Name + "/Enabled"));
+    int32_t index = meta->indexOfProperty(qPrintable(m_Name + "/enabled"));
     if(index == -1) {
         m_Menu = true;
-        index = meta->indexOfProperty("Enabled");
+        index = meta->indexOfProperty("enabled");
     }
     if(index > -1) {
         m_Property = meta->property(index);

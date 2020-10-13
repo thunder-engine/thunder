@@ -49,6 +49,8 @@ BaseLight::~BaseLight() {
 
 /*!
     Updates the shadowmaps for the particular lightsource.
+
+    \internal
 */
 void BaseLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
     A_UNUSED(camera);
