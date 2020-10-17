@@ -338,7 +338,7 @@ void HierarchyBrowser::onItemUnpack() {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             actor->setPrefab(nullptr);
-            actor->clearCloneRef();
+            object->clearCloneRef();
         }
     }
 }
@@ -348,7 +348,7 @@ void unpackHelper(Object *object) {
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
             actor->setPrefab(nullptr);
-            actor->clearCloneRef();
+            object->clearCloneRef();
         }
 
         for(auto it : object->getChildren()) {

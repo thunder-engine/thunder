@@ -115,82 +115,82 @@ void Handles::init() {
 
     if(s_Axis == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0.0f), Vector3(0, 5, 0)};
-        lod.indices     = {0, 1};
+        lod.setVertices({Vector3(0.0f), Vector3(0, 5, 0)});
+        lod.setIndices({0, 1});
 
         s_Axis = Engine::objectCreate<Mesh>("Axis");
-        s_Axis->setMode(Mesh::MODE_LINES);
-        s_Axis->addLod(lod);
+        s_Axis->setMode(Mesh::Lines);
+        s_Axis->addLod(&lod);
     }
 
     if(s_Scale == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)};
-        lod.indices     = {0, 1, 2, 3};
+        lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
+        lod.setIndices({0, 1, 2, 3});
 
         s_Scale = Engine::objectCreate<Mesh>("Scale");
-        s_Scale->setMode(Mesh::MODE_LINES);
-        s_Scale->addLod(lod);
+        s_Scale->setMode(Mesh::Lines);
+        s_Scale->addLod(&lod);
     }
 
     if(s_ScaleXY == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)};
-        lod.indices     = {0, 1, 2, 1, 3, 2};
+        lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
+        lod.setIndices({0, 1, 2, 1, 3, 2});
 
         s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");
-        s_ScaleXY->setMode(Mesh::MODE_TRIANGLES);
-        s_ScaleXY->addLod(lod);
+        s_ScaleXY->setMode(Mesh::Triangles);
+        s_ScaleXY->addLod(&lod);
     }
 
     if(s_ScaleXYZ == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)};
-        lod.indices     = {0, 1, 2};
+        lod.setVertices({Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)});
+        lod.setIndices({0, 1, 2});
 
         s_ScaleXYZ = Engine::objectCreate<Mesh>("ScaleXYZ");
-        s_ScaleXYZ->setMode(Mesh::MODE_TRIANGLES);
-        s_ScaleXYZ->addLod(lod);
+        s_ScaleXYZ->setMode(Mesh::Triangles);
+        s_ScaleXYZ->addLod(&lod);
     }
 
     if(s_Move == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0, 1, 0), Vector3(2, 1, 0)};
-        lod.indices     = {0, 1};
+        lod.setVertices({Vector3(0, 1, 0), Vector3(2, 1, 0)});
+        lod.setIndices({0, 1});
 
         s_Move = Engine::objectCreate<Mesh>("Move");
-        s_Move->setMode(Mesh::MODE_LINES);
-        s_Move->addLod(lod);
+        s_Move->setMode(Mesh::Lines);
+        s_Move->addLod(&lod);
     }
 
     if(s_MoveXY == nullptr) {
         Lod lod;
-        lod.vertices    = {Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)};
-        lod.indices     = {0, 1, 2, 1, 3, 2};
+        lod.setVertices({Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)});
+        lod.setIndices({0, 1, 2, 1, 3, 2});
 
         s_MoveXY = Engine::objectCreate<Mesh>("MoveXY");
-        s_MoveXY->setMode(Mesh::MODE_TRIANGLES);
-        s_MoveXY->addLod(lod);
+        s_MoveXY->setMode(Mesh::Triangles);
+        s_MoveXY->addLod(&lod);
     }
 
     if(s_Arc == nullptr) {
         Lod lod;
-        lod.vertices    = HandleTools::pointsArc(Quaternion(), 1.0, 0, 180);
-        lod.indices.clear();
+        lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 180));
+        lod.indices().clear();
 
         s_Arc = Engine::objectCreate<Mesh>("Arc");
-        s_Arc->setMode(Mesh::MODE_LINE_STRIP);
-        s_Arc->addLod(lod);
+        s_Arc->setMode(Mesh::LineStrip);
+        s_Arc->addLod(&lod);
     }
 
     if(s_Circle == nullptr) {
         Lod lod;
-        lod.vertices = HandleTools::pointsArc(Quaternion(), 1.0, 0, 360);
-        lod.indices.clear();
+        lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 360));
+        lod.indices().clear();
 
         s_Circle = Engine::objectCreate<Mesh>("Circle");
-        s_Circle->setMode(Mesh::MODE_LINE_STRIP);
-        s_Circle->addLod(lod);
+        s_Circle->setMode(Mesh::LineStrip);
+        s_Circle->addLod(&lod);
     }
 
     if(s_Rectangle == nullptr) {
@@ -199,18 +199,18 @@ void Handles::init() {
         Vector3 min(-0.5);
         Vector3 max( 0.5);
 
-        lod.vertices = {
+        lod.setVertices({
             Vector3(min.x, min.y, 0.0f),
             Vector3(max.x, min.y, 0.0f),
             Vector3(max.x, max.y, 0.0f),
             Vector3(min.x, max.y, 0.0f),
             Vector3(min.x, min.y, 0.0f)
-        };
-        lod.indices.clear();
+        });
+        lod.indices().clear();
 
         s_Rectangle = Engine::objectCreate<Mesh>("Rectangle");
-        s_Rectangle->setMode(Mesh::MODE_LINE_STRIP);
-        s_Rectangle->addLod(lod);
+        s_Rectangle->setMode(Mesh::LineStrip);
+        s_Rectangle->addLod(&lod);
     }
 
     if(s_Box == nullptr) {
@@ -219,7 +219,7 @@ void Handles::init() {
         Vector3 min(-0.5);
         Vector3 max( 0.5);
 
-        lod.vertices = {
+        lod.setVertices({
             Vector3(min.x, min.y, min.z),
             Vector3(max.x, min.y, min.z),
             Vector3(max.x, min.y, max.z),
@@ -229,14 +229,14 @@ void Handles::init() {
             Vector3(max.x, max.y, min.z),
             Vector3(max.x, max.y, max.z),
             Vector3(min.x, max.y, max.z)
-        };
-        lod.indices = {0, 1, 1, 2, 2, 3, 3, 0,
-                       4, 5, 5, 6, 6, 7, 7, 4,
-                       0, 4, 1, 5, 2, 6, 3, 7};
+        });
+        lod.setIndices({0, 1, 1, 2, 2, 3, 3, 0,
+                        4, 5, 5, 6, 6, 7, 7, 4,
+                        0, 4, 1, 5, 2, 6, 3, 7});
 
         s_Box = Engine::objectCreate<Mesh>("Box");
-        s_Box->setMode(Mesh::MODE_LINES);
-        s_Box->addLod(lod);
+        s_Box->setMode(Mesh::Lines);
+        s_Box->addLod(&lod);
     }
 }
 
@@ -284,11 +284,11 @@ void Handles::drawArrow(const Matrix4 &transform) {
 void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const IndexVector &indices) {
     if(ICommandBuffer::isInited()) {
         Lod lod;
-        lod.vertices = points;
-        lod.indices  = indices;
+        lod.setVertices(points);
+        lod.setIndices(indices);
         {
-            s_Lines->setMode(Mesh::MODE_LINES);
-            s_Lines->setLod(0, lod);
+            s_Lines->setMode(Mesh::Lines);
+            s_Lines->setLod(0, &lod);
         }
         if(s_Buffer) {
             s_Buffer->setColor(s_Color);
@@ -325,10 +325,10 @@ void Handles::drawBone(const Transform *begin, const Transform *end) {
 void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float start, float angle) {
     if(ICommandBuffer::isInited()) {
         Lod lod;
-        lod.vertices = HandleTools::pointsArc(rotation, radius, start, angle, true);
+        lod.setVertices(HandleTools::pointsArc(rotation, radius, start, angle, true));
         {
-            s_Lines->setMode(Mesh::MODE_TRIANGLE_FAN);
-            s_Lines->setLod(0, lod);
+            s_Lines->setMode(Mesh::TriangleFan);
+            s_Lines->setLod(0, &lod);
         }
         if(s_Buffer) {
             Matrix4 transform;

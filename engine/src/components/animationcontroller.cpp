@@ -234,19 +234,19 @@ void AnimationController::setClips(AnimationClip *start, AnimationClip *end, flo
 
         for(auto &it : end->m_Tracks) {
             PropertyAnimation *property;
-            auto target = p_ptr->m_Properties.find(it.hash);
+            auto target = p_ptr->m_Properties.find(it.hash());
             if(target != p_ptr->m_Properties.end()) {
                 property = target->second;
             } else {
                 property = new PropertyAnimation();
-                property->setTarget(findTarget(actor(), it.path), it.property.c_str());
+                property->setTarget(findTarget(actor(), it.path()), it.property().c_str());
 
-                p_ptr->m_Properties[it.hash] = property;
+                p_ptr->m_Properties[it.hash()] = property;
             }
 
             property->setValid(true);
 
-            for(auto &i : it.curves) {
+            for(auto &i : it.curves()) {
                 property->setEndCurve(&i.second, i.first);
                 property->setOffset(time);
                 property->setTransitionTime(duration);
@@ -256,25 +256,25 @@ void AnimationController::setClips(AnimationClip *start, AnimationClip *end, flo
 
     for(auto &it : start->m_Tracks) {
         PropertyAnimation *property;
-        auto target = p_ptr->m_Properties.find(it.hash);
+        auto target = p_ptr->m_Properties.find(it.hash());
         if(target != p_ptr->m_Properties.end()) {
             property = target->second;
         } else {
             property = new PropertyAnimation();
-            Object *object = actor()->find(it.path);
+            Object *object = actor()->find(it.path());
 #ifdef NEXT_SHARED
             if(object == nullptr) {
-                Log(Log::DBG) << "Can't resolve animation path:" << it.path.c_str();
+                Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
             }
 #endif
-            property->setTarget(object, it.property.c_str());
+            property->setTarget(object, it.property().c_str());
 
-            p_ptr->m_Properties[it.hash] = property;
+            p_ptr->m_Properties[it.hash()] = property;
         }
 
         property->setValid(true);
 
-        for(auto &i : it.curves) {
+        for(auto &i : it.curves()) {
             property->setBeginCurve(&i.second, i.first);
             property->setTransitionTime(duration);
         }

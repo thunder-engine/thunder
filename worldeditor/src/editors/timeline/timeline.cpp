@@ -21,11 +21,11 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 
-bool compare(const AnimationClip::Track &first, const AnimationClip::Track &second) {
-    if(first.path == second.path) {
-        return first.property < second.property;
+bool compare(const AnimationTrack &first, const AnimationTrack &second) {
+    if(first.path() == second.path()) {
+        return first.property() < second.property();
     }
-    return first.path < second.path;
+    return first.path() < second.path();
 }
 
 Timeline::Timeline(QWidget *parent) :
@@ -108,11 +108,11 @@ void Timeline::saveClip() {
             QVariantList tracks;
             for(auto t : clip->m_Tracks) {
                 QVariantList track;
-                track.push_back(t.path.c_str());
-                track.push_back(t.property.c_str());
+                track.push_back(t.path().c_str());
+                track.push_back(t.property().c_str());
 
                 QVariantList curves;
-                for(auto c : t.curves) {
+                for(auto c : t.curves()) {
                     QVariantList keys;
                     keys.push_back(c.first);
                     for(auto k : c.second.m_Keys) {
@@ -260,7 +260,7 @@ void Timeline::onUpdated(Object *object, const QString property) {
                         } break;
                     }
 
-                    AnimationClip::TrackList tracks = c->m_Tracks;
+                    AnimationTrackList tracks = c->m_Tracks;
 
                     for(uint32_t component = 0; component < data.size(); component++) {
                         bool create = true;
@@ -272,10 +272,10 @@ void Timeline::onUpdated(Object *object, const QString property) {
                         key.m_RightTangent = key.m_Value;
 
                         for(auto &it : tracks) {
-                            if(it.path == path.toStdString() && it.property == property.toStdString()) {
+                            if(it.path() == path.toStdString() && it.property() == property.toStdString()) {
                                 bool update = false;
 
-                                auto &curve = it.curves[component];
+                                auto &curve = it.curves()[component];
                                 for(auto &k : curve.m_Keys) {
 
                                     if(k.m_Position == key.m_Position) {
@@ -294,14 +294,14 @@ void Timeline::onUpdated(Object *object, const QString property) {
                             }
                         }
                         if(create) {
-                            AnimationClip::Track track;
-                            track.path = path.toStdString();
-                            track.property = property.toStdString();
+                            AnimationTrack track;
+                            track.setPath(path.toStdString());
+                            track.setProperty(property.toStdString());
 
                             AnimationCurve curve;
                             curve.m_Keys.push_back(key);
 
-                            track.curves[component] = curve;
+                            track.curves()[component] = curve;
 
                             tracks.push_back(track);
                             tracks.sort(compare);
@@ -390,7 +390,7 @@ uint32_t Timeline::findNear(bool backward) {
             if(backward) {
                 result = 0;
                 for(auto it : clip->m_Tracks) {
-                    for(auto c : it.curves) {
+                    for(auto c : it.curves()) {
                         auto key = c.second.m_Keys.rbegin();
                         while(key != c.second.m_Keys.rend()) {
                             if(key->m_Position < current) {
@@ -404,7 +404,7 @@ uint32_t Timeline::findNear(bool backward) {
             } else {
                 result = UINT_MAX;
                 for(auto it : clip->m_Tracks) {
-                    for(auto c : it.curves) {
+                    for(auto c : it.curves()) {
                         for(auto key : c.second.m_Keys) {
                             if(key.m_Position > current) {
                                 result = min(result, key.m_Position);

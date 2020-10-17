@@ -54,7 +54,7 @@ public:
     Pose();
     ~Pose();
 
-    void addBone (const Bone &bone);
+    void addBone (Bone *bone);
 
     const Bone *bone (int index) const;
 

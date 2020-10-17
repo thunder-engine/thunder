@@ -371,7 +371,7 @@ Object *ObjectSystem::findRoot(Object *object) {
     return root;
 }
 /*!
-    Returns object with \a uuid or wich was clonned from this.
+    Returns object with \a uuid or which was clonned from this.
     This algorithm recursively going down from the \a root object
     If the object doesn't exist in the hierarchy this method returns nullptr.
 */

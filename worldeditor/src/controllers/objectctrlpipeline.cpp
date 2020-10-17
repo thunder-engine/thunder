@@ -95,27 +95,29 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
     m_PostEffects[OUTLINE] = new Outline();
 
     Lod lod;
-    lod.vertices.resize(404);
-    lod.indices.resize(404);
+    Vector3Vector &vertices = lod.vertices();
+    IndexVector &indices = lod.indices();
+    vertices.resize(404);
+    indices.resize(404);
     for(uint8_t x = 0; x <= 100; x++) {
         uint32_t index = x * 2;
-        lod.vertices[index] = Vector3(x - 50, -50, 0);
-        lod.vertices[index + 1] = Vector3(x - 50, 50, 0);
+        vertices[index] = Vector3(x - 50, -50, 0);
+        vertices[index + 1] = Vector3(x - 50, 50, 0);
 
-        lod.indices[index] = index;
-        lod.indices[index + 1] = index + 1;
+        indices[index] = index;
+        indices[index + 1] = index + 1;
     }
     for(uint8_t y = 0; y <= 100; y++) {
         uint32_t index = y * 2 + 202;
-        lod.vertices[index] = Vector3(-50, y - 50, 0);
-        lod.vertices[index + 1] = Vector3(50, y - 50, 0);
+        vertices[index] = Vector3(-50, y - 50, 0);
+        vertices[index + 1] = Vector3(50, y - 50, 0);
 
-        lod.indices[index] = index;
-        lod.indices[index + 1] = index + 1;
+        indices[index] = index;
+        indices[index + 1] = index + 1;
     }
 
-    m_pGrid->setMode(Mesh::MODE_LINES);
-    m_pGrid->addLod(lod);
+    m_pGrid->setMode(Mesh::Lines);
+    m_pGrid->addLod(&lod);
 
     Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
     if(m) {

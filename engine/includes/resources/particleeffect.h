@@ -76,7 +76,7 @@ protected:
 
     VariantAnimation m_Curve;
 };
-typedef std::deque<ParticleModificator> ModifiersDeque;
+typedef std::deque<ParticleModificator *> ModifiersDeque;
 
 class NEXT_LIBRARY_EXPORT ParticleEmitter {
     A_PROPERTIES(
@@ -151,7 +151,7 @@ public:
     int emittersCount() const;
 
     ParticleEmitter *emitter(int index);
-    void addEmitter(const ParticleEmitter &emitter);
+    void addEmitter(ParticleEmitter *emitter);
 
     void loadUserData(const VariantMap &data) override;
 

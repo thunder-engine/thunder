@@ -27,7 +27,7 @@
     Callback which contain address to method for invocation.
 */
 /*!
-    Constructs MetaMethod object wich will contain information provided in a \a table.
+    Constructs MetaMethod object which will contain information provided in a \a table.
 */
 MetaMethod::MetaMethod(const Table *table) :
         m_pTable(table) {
@@ -113,7 +113,7 @@ MetaType MetaMethod::parameterType(int index) const {
     \note Function checks if current method can be invoked.
 
 */
-bool MetaMethod::invoke(Object *object, Variant &returnValue, int argc, const Variant *args) const {
+bool MetaMethod::invoke(void *object, Variant &returnValue, int argc, const Variant *args) const {
     PROFILE_FUNCTION();
     if(m_pTable->type != Signal) {
          m_pTable->invoker(object, argc, args, returnValue);

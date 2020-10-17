@@ -8,29 +8,39 @@ class FontPrivate;
 class NEXT_LIBRARY_EXPORT Font : public Atlas {
     A_REGISTER(Font, Atlas, Resources)
 
+    A_NOPROPERTIES()
+    A_METHODS(
+        A_METHOD(int, Font::atlasIndex),
+        A_METHOD(int, Font::requestKerning),
+        A_METHOD(void, Font::requestCharacters),
+        A_METHOD(int, Font::length),
+        A_METHOD(float, Font::spaceWidth),
+        A_METHOD(float, Font::lineHeight)
+    )
+
 public:
-    Font ();
-    ~Font ();
+    Font();
+    ~Font();
 
-    uint32_t atlasIndex (uint32_t glyph) const;
+    int atlasIndex(int glyph) const;
 
-    void requestCharacters (const u32string &characters);
+    int requestKerning(int glyph, int previous) const;
 
-    int32_t requestKerning (uint32_t glyph, uint32_t previous) const;
+    void requestCharacters(const string &characters);
 
-    uint32_t length (const u32string &characters) const;
+    int length(const string &characters) const;
 
-    float spaceWidth () const;
+    float spaceWidth() const;
 
-    float lineHeight () const;
+    float lineHeight() const;
 
 private:
-    void clear ();
+    void clear();
 
     bool requestCharacter(uint32_t character);
 
 protected:
-    void loadUserData (const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
 
 private:
     FontPrivate *p_ptr;

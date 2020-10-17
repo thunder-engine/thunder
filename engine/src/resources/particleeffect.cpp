@@ -349,8 +349,10 @@ ParticleEmitter *ParticleEffect::emitter(int index) {
 /*!
     Adds an \a emitter to the effect.
 */
-void ParticleEffect::addEmitter(const ParticleEmitter &emitter) {
-    m_Emitters.push_back(emitter);
+void ParticleEffect::addEmitter(ParticleEmitter *emitter) {
+    if(emitter) {
+        m_Emitters.push_back(*emitter);
+    }
 }
 /*!
     \internal
@@ -385,25 +387,24 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
                     auto mod = mods.begin();
                     int32_t type = (*mod).toInt();
 
-                    bool created = true;
-                    ParticleModificator modificator;
+                    ParticleModificator *modificator = nullptr;
                     switch (type) {
-                        case ParticleModificator::LIFETIME:      modificator = Lifetime(); break;
-                        case ParticleModificator::STARTSIZE:     modificator = StartSize(); break;
-                        case ParticleModificator::STARTCOLOR:    modificator = StartColor(); break;
-                        case ParticleModificator::STARTANGLE:    modificator = StartAngle(); break;
-                        case ParticleModificator::STARTPOSITION: modificator = StartPosition(); break;
+                        case ParticleModificator::LIFETIME:      modificator = new Lifetime(); break;
+                        case ParticleModificator::STARTSIZE:     modificator = new StartSize(); break;
+                        case ParticleModificator::STARTCOLOR:    modificator = new StartColor(); break;
+                        case ParticleModificator::STARTANGLE:    modificator = new StartAngle(); break;
+                        case ParticleModificator::STARTPOSITION: modificator = new StartPosition(); break;
 
-                        case ParticleModificator::SCALESIZE:     modificator = ScaleSize(); break;
-                        case ParticleModificator::SCALECOLOR:    modificator = ScaleColor(); break;
-                        case ParticleModificator::SCALEANGLE:    modificator = ScaleAngle(); break;
-                        case ParticleModificator::VELOCITY:      modificator = Velocity(); break;
-                        default: created = false; break;
+                        case ParticleModificator::SCALESIZE:     modificator = new ScaleSize(); break;
+                        case ParticleModificator::SCALECOLOR:    modificator = new ScaleColor(); break;
+                        case ParticleModificator::SCALEANGLE:    modificator = new ScaleAngle(); break;
+                        case ParticleModificator::VELOCITY:      modificator = new Velocity(); break;
+                        default: break;
                     }
 
-                    if(created) {
+                    if(modificator) {
                         mod++;
-                        modificator.loadData((*mod).value<VariantList>());
+                        modificator->loadData((*mod).value<VariantList>());
                         emitter.modifiers().push_back(modificator);
                     }
                 }
@@ -421,6 +422,6 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
     \warning Do not call this function manually
 */
 void ParticleEffect::registerSuper(ObjectSystem *system) {
-    ParticleEffect::registerClassFactory(system);
     REGISTER_META_TYPE(ParticleEmitter);
+    ParticleEffect::registerClassFactory(system);
 }

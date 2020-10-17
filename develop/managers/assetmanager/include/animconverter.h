@@ -11,6 +11,10 @@ class AnimConverter : public IConverter {
 
     uint8_t convertFile(IConverterSettings *s) Q_DECL_OVERRIDE;
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }
+
+private:
+    Variant readJson(const string &data, IConverterSettings *settings);
+    void toVersion1(Variant &variant);
 };
 
 class AnimationClipSerial : public AnimationClip {

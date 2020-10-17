@@ -201,7 +201,7 @@ Engine::Engine(File *file, const char *path) :
     Text::registerClassFactory(p_ptr->m_pResourceSystem);
     Texture::registerClassFactory(p_ptr->m_pResourceSystem);
     Material::registerClassFactory(p_ptr->m_pResourceSystem);
-    Mesh::registerClassFactory(p_ptr->m_pResourceSystem);
+    Mesh::registerSuper(p_ptr->m_pResourceSystem);
     Atlas::registerClassFactory(p_ptr->m_pResourceSystem);
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);

@@ -32,7 +32,7 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -178,70 +178,70 @@ public:
         surface.push_back(mode());
 
         for(uint32_t index = 0; index < lodsCount(); index++) {
-            Lod *l = getLod(index);
+            Lod *l = lod(index);
 
             VariantList lod;
             // Push material
             lod.push_back("{00000000-0402-0000-0000-000000000000}");
-            uint32_t vCount = l->vertices.size();
+            uint32_t vCount = l->vertices().size();
             lod.push_back(static_cast<int32_t>(vCount));
-            lod.push_back(static_cast<int32_t>(l->indices.size() / 3));
+            lod.push_back(static_cast<int32_t>(l->indices().size() / 3));
 
             { // Required field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->vertices[0], sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->vertices()[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
             { // Required field
                 ByteArray buffer;
-                buffer.resize(sizeof(uint32_t) * l->indices.size());
-                memcpy(&buffer[0], &l->indices[0], sizeof(uint32_t) * l->indices.size());
+                buffer.resize(sizeof(uint32_t) * l->indices().size());
+                memcpy(&buffer[0], &l->indices()[0], sizeof(uint32_t) * l->indices().size());
                 lod.push_back(buffer);
             }
 
-            if(flag & ATTRIBUTE_COLOR) { // Optional field
+            if(flag & Color) { // Optional field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector4) * vCount);
-                memcpy(&buffer[0], &l->colors[0], sizeof(Vector4) * vCount);
+                memcpy(&buffer[0], &l->colors()[0], sizeof(Vector4) * vCount);
                 lod.push_back(buffer);
             }
-            if(flag & ATTRIBUTE_UV0) { // Optional field
+            if(flag & Uv0) { // Optional field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector2) * vCount);
-                memcpy(&buffer[0], &l->uv0[0], sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l->uv0()[0], sizeof(Vector2) * vCount);
                 lod.push_back(buffer);
             }
-            if(flag & ATTRIBUTE_UV1) { // Optional field
+            if(flag & Uv1) { // Optional field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector2) * vCount);
-                memcpy(&buffer[0], &l->uv1[0], sizeof(Vector2) * vCount);
+                memcpy(&buffer[0], &l->uv1()[0], sizeof(Vector2) * vCount);
                 lod.push_back(buffer);
             }
 
-            if(flag & ATTRIBUTE_NORMALS) { // Optional field
+            if(flag & Normals) { // Optional field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->normals[0], sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->normals()[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
-            if(flag & ATTRIBUTE_TANGENTS) { // Optional field
+            if(flag & Tangents) { // Optional field
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->tangents[0], sizeof(Vector3) * vCount);
+                memcpy(&buffer[0], &l->tangents()[0], sizeof(Vector3) * vCount);
                 lod.push_back(buffer);
             }
-            if(flag & ATTRIBUTE_SKINNED) { // Optional field
+            if(flag & Skinned) { // Optional field
                 {
                     ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
-                    memcpy(&buffer[0], &l->weights[0], sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l->weights()[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
                 }
                 {
                     ByteArray buffer;
                     buffer.resize(sizeof(Vector4) * vCount);
-                    memcpy(&buffer[0], &l->bones[0], sizeof(Vector4) * vCount);
+                    memcpy(&buffer[0], &l->bones()[0], sizeof(Vector4) * vCount);
                     lod.push_back(buffer);
                 }
             }
@@ -466,13 +466,13 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
 
 MeshSerial *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, AssimpImportSettings *fbxSettings) {
     MeshSerial *mesh = new MeshSerial;
-    mesh->setMode(Mesh::MODE_TRIANGLES);
+    mesh->setMode(Mesh::Triangles);
 
     Lod l;
-    l.material = Engine::loadResource<Material>(".embedded/DefaultMesh.mtl");
+    l.setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
     // Export
     uint32_t vertexCount = item->mNumVertices;
-    l.vertices.resize(vertexCount);
+    l.vertices().resize(vertexCount);
 
     Vector3 m;
     if(item->HasBones()) {
@@ -491,69 +491,77 @@ MeshSerial *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, Assim
         if(fbxSettings->m_Flip) {
             pos = Vector3(-pos.x, pos.z, pos.y);
         }
-        l.vertices[v] = m + pos;
+        l.vertices()[v] = m + pos;
     }
 
     if(item->HasVertexColors(0)) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_COLOR);
-        l.colors.resize(vertexCount);
-        memcpy(&l.colors[0], item->mColors[0], sizeof(Vector4) * vertexCount);
+        mesh->setFlags(mesh->flags() | Mesh::Color);
+        Vector4Vector &colors = l.colors();
+        colors.resize(vertexCount);
+        memcpy(&colors[0], item->mColors[0], sizeof(Vector4) * vertexCount);
     }
 
     if(item->HasTextureCoords(0)) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_UV0);
-        l.uv0.resize(vertexCount);
+        mesh->setFlags(mesh->flags() | Mesh::Uv0);
+        l.uv0().resize(vertexCount);
+        Vector2Vector &uv0 = l.uv0();
         aiVector3D *uv = item->mTextureCoords[0];
         for(uint32_t u = 0; u < vertexCount; u++) {
-            l.uv0[u] = Vector2(uv[u].x, uv[u].y);
+            uv0[u] = Vector2(uv[u].x, uv[u].y);
         }
     } else {
         Log(Log::WRN) << "No uv exist";
     }
 
     if(item->HasNormals()) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_NORMALS);
-        l.normals.resize(vertexCount);
+        mesh->setFlags(mesh->flags() | Mesh::Normals);
+        Vector3Vector &normals = l.normals();
+        normals.resize(vertexCount);
         for(uint32_t n = 0; n < vertexCount; n++) {
-            l.normals[n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
-                                                 Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
+            normals[n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
+                                               Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
         }
     } else {
         Log(Log::WRN) << "No normals exist";
     }
 
     if(item->HasTangentsAndBitangents()) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_TANGENTS);
-        l.tangents.resize(vertexCount);
+        mesh->setFlags(mesh->flags() | Mesh::Tangents);
+        Vector3Vector &tangents = l.tangents();
+        tangents.resize(vertexCount);
         for(uint32_t t = 0; t < vertexCount; t++) {
-            l.tangents[t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
-                                                  Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
+            tangents[t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
+                                                Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
         }
     } else {
         Log(Log::WRN) << "No tangents exist";
     }
 
+    IndexVector &indices = l.indices();
     uint32_t indexCount = static_cast<uint32_t>(item->mNumFaces * 3);
-    l.indices.resize(indexCount);
+    indices.resize(indexCount);
 
     for(uint32_t i = 0; i < item->mNumFaces; i++) {
         aiFace *face = &item->mFaces[i];
 
         uint32_t index = i * 3;
 
-        l.indices[index+0] = face->mIndices[0];
-        l.indices[index+1] = face->mIndices[1];
-        l.indices[index+2] = face->mIndices[2];
+        indices[index+0] = face->mIndices[0];
+        indices[index+1] = face->mIndices[1];
+        indices[index+2] = face->mIndices[2];
     }
 
     if(item->HasBones()) {
-        mesh->setFlags(mesh->flags() | Mesh::ATTRIBUTE_SKINNED);
+        mesh->setFlags(mesh->flags() | Mesh::Skinned);
 
-        l.weights.resize(vertexCount);
-        l.bones.resize(vertexCount);
+        Vector4Vector &weights = l.weights();
+        Vector4Vector &bones = l.bones();
 
-        memset(&l.weights[0], 0, sizeof(Vector4) * vertexCount);
-        memset(&l.bones[0], 0, sizeof(Vector4) * vertexCount);
+        weights.resize(vertexCount);
+        bones.resize(vertexCount);
+
+        memset(&weights[0], 0, sizeof(Vector4) * vertexCount);
+        memset(&bones[0], 0, sizeof(Vector4) * vertexCount);
 
         for(uint32_t b = 0; b < item->mNumBones; b++) {
             aiBone *bone = item->mBones[b];
@@ -563,40 +571,41 @@ MeshSerial *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, Assim
 
                 uint8_t a;
                 for(a = 0; a < 4; a++) {
-                    if(l.weights[weight->mVertexId].v[a] <= 0.0f) {
+                    if(weights[weight->mVertexId].v[a] <= 0.0f) {
                         break;
                     }
                 }
                 if(a < 4) {
-                    l.weights[weight->mVertexId].v[a] = weight->mWeight;
-                    l.bones[weight->mVertexId].v[a] = index;
+                    weights[weight->mVertexId].v[a] = weight->mWeight;
+                    bones[weight->mVertexId].v[a] = index;
                 }
             }
         }
     }
 
-    mesh->addLod(l);
+    mesh->addLod(&l);
 
     return mesh;
 }
 
-static bool compare(const AnimationClip::Track &left, const AnimationClip::Track &right) {
-    return left.path > right.path;
+static bool compare(const AnimationTrack &left, const AnimationTrack &right) {
+    return left.path() > right.path();
 }
 
-void optimizeVectorTrack(AnimationClip::Track &track, float threshold) {
-    for(uint32_t i = 1; i < track.curves[0].m_Keys.size() - 1; i++) {
-        Vector3 k0( track.curves[0].m_Keys[i - 1].m_Value,
-                    track.curves[1].m_Keys[i - 1].m_Value,
-                    track.curves[2].m_Keys[i - 1].m_Value);
+void optimizeVectorTrack(AnimationTrack &track, float threshold) {
+    auto &curves = track.curves();
+    for(uint32_t i = 1; i < curves[0].m_Keys.size() - 1; i++) {
+        Vector3 k0( curves[0].m_Keys[i - 1].m_Value,
+                    curves[1].m_Keys[i - 1].m_Value,
+                    curves[2].m_Keys[i - 1].m_Value);
 
-        Vector3 k1( track.curves[0].m_Keys[i].m_Value,
-                    track.curves[1].m_Keys[i].m_Value,
-                    track.curves[2].m_Keys[i].m_Value);
+        Vector3 k1( curves[0].m_Keys[i].m_Value,
+                    curves[1].m_Keys[i].m_Value,
+                    curves[2].m_Keys[i].m_Value);
 
-        Vector3 k2( track.curves[0].m_Keys[i + 1].m_Value,
-                    track.curves[1].m_Keys[i + 1].m_Value,
-                    track.curves[2].m_Keys[i + 1].m_Value);
+        Vector3 k2( curves[0].m_Keys[i + 1].m_Value,
+                    curves[1].m_Keys[i + 1].m_Value,
+                    curves[2].m_Keys[i + 1].m_Value);
 
         Vector3 pd = (k2 - k0);
         float d0 = pd.dot(k0);
@@ -611,33 +620,34 @@ void optimizeVectorTrack(AnimationClip::Track &track, float threshold) {
             continue;
         }
 
-        AnimationCurve::Keys &curve0 = track.curves[0].m_Keys;
+        AnimationCurve::Keys &curve0 = curves[0].m_Keys;
         curve0.erase(curve0.begin() + i);
-        AnimationCurve::Keys &curve1 = track.curves[1].m_Keys;
+        AnimationCurve::Keys &curve1 = curves[1].m_Keys;
         curve1.erase(curve1.begin() + i);
-        AnimationCurve::Keys &curve2 = track.curves[2].m_Keys;
+        AnimationCurve::Keys &curve2 = curves[2].m_Keys;
         curve2.erase(curve2.begin() + i);
 
         i--;
     }
 }
 
-void optimizeQuaternionTrack(AnimationClip::Track &track, float threshold) {
-    for(uint32_t i = 1; i < track.curves[0].m_Keys.size() - 1; i++) {
-        Quaternion k0( track.curves[0].m_Keys[i - 1].m_Value,
-                       track.curves[1].m_Keys[i - 1].m_Value,
-                       track.curves[2].m_Keys[i - 1].m_Value,
-                       track.curves[3].m_Keys[i - 1].m_Value);
+void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
+    auto &curves = track.curves();
+    for(uint32_t i = 1; i < curves[0].m_Keys.size() - 1; i++) {
+        Quaternion k0( curves[0].m_Keys[i - 1].m_Value,
+                       curves[1].m_Keys[i - 1].m_Value,
+                       curves[2].m_Keys[i - 1].m_Value,
+                       curves[3].m_Keys[i - 1].m_Value);
 
-        Quaternion k1( track.curves[0].m_Keys[i].m_Value,
-                       track.curves[1].m_Keys[i].m_Value,
-                       track.curves[2].m_Keys[i].m_Value,
-                       track.curves[3].m_Keys[i].m_Value);
+        Quaternion k1( curves[0].m_Keys[i].m_Value,
+                       curves[1].m_Keys[i].m_Value,
+                       curves[2].m_Keys[i].m_Value,
+                       curves[3].m_Keys[i].m_Value);
 
-        Quaternion k2( track.curves[0].m_Keys[i + 1].m_Value,
-                       track.curves[1].m_Keys[i + 1].m_Value,
-                       track.curves[2].m_Keys[i + 1].m_Value,
-                       track.curves[3].m_Keys[i + 1].m_Value);
+        Quaternion k2( curves[0].m_Keys[i + 1].m_Value,
+                       curves[1].m_Keys[i + 1].m_Value,
+                       curves[2].m_Keys[i + 1].m_Value,
+                       curves[3].m_Keys[i + 1].m_Value);
 
         if(k0.equal(k2) && !k0.equal(k1)) {
             continue;
@@ -681,13 +691,13 @@ void optimizeQuaternionTrack(AnimationClip::Track &track, float threshold) {
             continue;
         }
 
-        AnimationCurve::Keys &curve0 = track.curves[0].m_Keys;
+        AnimationCurve::Keys &curve0 = curves[0].m_Keys;
         curve0.erase(curve0.begin() + i);
-        AnimationCurve::Keys &curve1 = track.curves[1].m_Keys;
+        AnimationCurve::Keys &curve1 = curves[1].m_Keys;
         curve1.erase(curve1.begin() + i);
-        AnimationCurve::Keys &curve2 = track.curves[2].m_Keys;
+        AnimationCurve::Keys &curve2 = curves[2].m_Keys;
         curve2.erase(curve2.begin() + i);
-        AnimationCurve::Keys &curve3 = track.curves[3].m_Keys;
+        AnimationCurve::Keys &curve3 = curves[3].m_Keys;
         curve3.erase(curve3.begin() + i);
         i--;
     }
@@ -711,10 +721,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                 string path = pathTo(fbxSettings->m_pRootActor, actor->transform());
 
                 if(channel->mNumPositionKeys > 1) {
-                    AnimationClip::Track track;
+                    AnimationTrack track;
 
-                    track.path = path;
-                    track.property = "Position";
+                    track.setPath(path);
+                    track.setProperty("position");
 
                     AnimationCurve x, y, z;
                     for(uint32_t k = 0; k < channel->mNumPositionKeys; k++) {
@@ -734,9 +744,12 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         y.m_Keys.push_back(frameY);
                         z.m_Keys.push_back(frameZ);
                     }
-                    track.curves[0] = x;
-                    track.curves[1] = y;
-                    track.curves[2] = z;
+
+                    auto &curves = track.curves();
+
+                    curves[0] = x;
+                    curves[1] = y;
+                    curves[2] = z;
 
                     if(fbxSettings->filter()) {
                         optimizeVectorTrack(track, fbxSettings->positionError());
@@ -746,10 +759,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                 }
 
                 if(channel->mNumRotationKeys > 1) {
-                    AnimationClip::Track track;
+                    AnimationTrack track;
 
-                    track.path = path;
-                    track.property = "_Rotation";
+                    track.setPath(path);
+                    track.setProperty("quaternion");
 
                     AnimationCurve x, y, z, w;
                     for(uint32_t k = 0; k < channel->mNumRotationKeys; k++) {
@@ -771,10 +784,13 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         z.m_Keys.push_back(frameZ);
                         w.m_Keys.push_back(frameW);
                     }
-                    track.curves[0] = x;
-                    track.curves[1] = y;
-                    track.curves[2] = z;
-                    track.curves[3] = w;
+
+                    auto &curves = track.curves();
+
+                    curves[0] = x;
+                    curves[1] = y;
+                    curves[2] = z;
+                    curves[3] = w;
 
                     if(fbxSettings->filter()) {
                         optimizeQuaternionTrack(track, fbxSettings->rotationError());
@@ -784,10 +800,10 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                 }
 
                 if(channel->mNumScalingKeys > 1) {
-                    AnimationClip::Track track;
+                    AnimationTrack track;
 
-                    track.path = path;
-                    track.property = "Scale";
+                    track.setPath(path);
+                    track.setProperty("scale");
 
                     AnimationCurve x, y, z;
                     for(uint32_t k = 0; k < channel->mNumScalingKeys; k++) {
@@ -807,9 +823,12 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         y.m_Keys.push_back(frameY);
                         z.m_Keys.push_back(frameZ);
                     }
-                    track.curves[0] = x;
-                    track.curves[1] = y;
-                    track.curves[2] = z;
+
+                    auto &curves = track.curves();
+
+                    curves[0] = x;
+                    curves[1] = y;
+                    curves[2] = z;
 
                     if(fbxSettings->filter()) {
                         optimizeVectorTrack(track, fbxSettings->scaleError());
@@ -844,7 +863,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
             b.setIndex(result->second->transform()->uuid());
         }
 
-        pose->addBone(b);
+        pose->addBone(&b);
     }
 
     QString uuid = saveData(Bson::save(Engine::toVariant(pose)), pose->name().c_str(), IConverter::ContentPose, fbxSettings);

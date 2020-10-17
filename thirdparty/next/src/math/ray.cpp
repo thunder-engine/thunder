@@ -197,7 +197,7 @@ bool Ray::intersect(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, Vec
     return false;
 }
 /*!
-    Returns a new Ray object wich result of reflection of current ray.
+    Returns a new Ray object which result of reflection of current ray.
     Reflection calculating by \a normal vector of reflection surface and intersection \a point.
 */
 Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
@@ -210,7 +210,7 @@ Ray Ray::reflect(const Vector3 &normal, const Vector3 &point) {
     return ret;
 }
 /*!
-    Returns a new Ray object wich result of refraction of current ray.
+    Returns a new Ray object which result of refraction of current ray.
     Refraction calculating by \a normal vector of reflection surface and intersection \a point with \a ior (Index of Refraction).
 */
 Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
@@ -226,7 +226,7 @@ Ray Ray::refract(const Vector3 &normal, const Vector3 &point, areal ior) {
     return ret;
 }
 /*!
-    Returns a new Ray object wich result of random directed reflection of current ray.
+    Returns a new Ray object which result of random directed reflection of current ray.
     Diffuse reflection calculating by \a normal vector of reflection surface and intersection \a point. With \a min and \a max constraints.
 */
 Ray Ray::diffuse(const Vector3 &normal, const Vector3 &point, areal min, areal max) {

@@ -210,12 +210,12 @@ public:
 protected:
     AnimationClipModel *m_pModel;
     QList<int> m_Rows;
-    AnimationClip::TrackList m_Tracks;
+    AnimationTrackList m_Tracks;
 };
 
 class UndoUpdateItems : public QUndoCommand {
 public:
-    UndoUpdateItems(AnimationClip::TrackList &tracks, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+    UndoUpdateItems(AnimationTrackList &tracks, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
         QUndoCommand(name, parent),
         m_pModel(model),
         m_Tracks(tracks) {
@@ -225,7 +225,7 @@ public:
     void redo() override;
 protected:
     AnimationClipModel *m_pModel;
-    AnimationClip::TrackList m_Tracks;
+    AnimationTrackList m_Tracks;
 };
 
 #endif // ANIMATIONCLIPMODEL_H

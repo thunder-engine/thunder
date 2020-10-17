@@ -65,8 +65,10 @@ Pose::~Pose() {
 /*!
     Adds a \a bone to the pose.
 */
-void Pose::addBone(const Bone &bone) {
-    p_ptr->m_Bones.push_back(bone);
+void Pose::addBone(Bone *bone) {
+    if(bone) {
+        p_ptr->m_Bones.push_back(*bone);
+    }
 }
 /*!
     Returns a bone with \a index.
@@ -119,6 +121,6 @@ void Pose::loadUserData(const VariantMap &data) {
     \warning Do not call this function manually
 */
 void Pose::registerSuper(ObjectSystem *system) {
-    Pose::registerClassFactory(system);
     REGISTER_META_TYPE(Bone);
+    Pose::registerClassFactory(system);
 }

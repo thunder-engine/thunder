@@ -402,7 +402,7 @@ static NameMap s_Names = {
     This converter must be able to convert \a from value with \a fromType type to \a to value with type represented by this MetaType.
 */
 /*!
-    Constructs MetaType object wich will contain information provided in a \a table.
+    Constructs MetaType object which will contain information provided in a \a table.
 */
 MetaType::MetaType(const Table *table) :
         m_pTable(table) {
@@ -423,7 +423,7 @@ int MetaType::size() const {
     return m_pTable->get_size();
 }
 /*!
-    Constructs a value of the given type, wich represented by current MetaType object in the existing memory addressed by \a where, that is a copy of \a copy, and returns where.
+    Constructs a value of the given type, which represented by current MetaType object in the existing memory addressed by \a where, that is a copy of \a copy, and returns where.
     If \a copy is zero, the value is default constructed.
 */
 void *MetaType::construct(void *where, const void *copy) const {
@@ -436,7 +436,7 @@ void *MetaType::construct(void *where, const void *copy) const {
     return where;
 }
 /*!
-    Returns a copy of \a copy value, with type, wich represented by current MetaType object.
+    Returns a copy of \a copy value, with type, which represented by current MetaType object.
     If \a copy is null, creates a default constructed instance.
 */
 void *MetaType::create(const void *copy) const {
@@ -450,7 +450,7 @@ void *MetaType::create(const void *copy) const {
     return where;
 }
 /*!
-    Destroys the value with type, wich represented by current MetaType object, located at \a data.
+    Destroys the value with type, which represented by current MetaType object, located at \a data.
     This function calls delete operator.
 */
 void MetaType::destroy(void *data) const {
@@ -458,7 +458,7 @@ void MetaType::destroy(void *data) const {
     m_pTable->static_delete(&data);
 }
 /*!
-    Destructs the value with type, wich represented by current MetaType object, located at \a data.
+    Destructs the value with type, which represented by current MetaType object, located at \a data.
     Unlike destroy(), this function only invokes the type's destructor, it doesn't invoke the delete operator.
 */
 void MetaType::destruct(void *data) const {

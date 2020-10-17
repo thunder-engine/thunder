@@ -32,14 +32,14 @@ public:
 
         TransitionArray m_Transitions;
 
-        size_t m_Hash;
+        int m_Hash;
 
         AnimationClip *m_pClip;
 
         bool m_Loop;
     };
 
-    typedef unordered_map<size_t, Variant> VariableMap;
+    typedef unordered_map<int, Variant> VariableMap;
 
     typedef vector<AnimationStateMachine::State *> StateVector;
 

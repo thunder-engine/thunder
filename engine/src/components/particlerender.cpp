@@ -235,7 +235,7 @@ void ParticleRender::spawnParticle(ParticleEmitter &emitter, ParticleData &data)
     data.position.y = 0.0f;
     data.position.z = 0.0f;
     for(auto &it : emitter.modifiers()) {
-        it.spawnParticle(data);
+        it->spawnParticle(data);
     }
 }
 /*!
@@ -244,7 +244,7 @@ void ParticleRender::spawnParticle(ParticleEmitter &emitter, ParticleData &data)
 void ParticleRender::updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt) {
     PROFILE_FUNCTION();
     for(auto &it : emitter.modifiers()) {
-        it.updateParticle(data, dt);
+        it->updateParticle(data, dt);
     }
 }
 /*!

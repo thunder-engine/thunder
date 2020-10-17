@@ -8,6 +8,7 @@
 #include <freetype/ftbitmap.h>
 
 #include "texture.h"
+#include "utils.h"
 
 #include "log.h"
 
@@ -188,7 +189,7 @@ Font::~Font() {
 /*!
     Returns the index of the \a glyph in the atlas.
 */
-uint32_t Font::atlasIndex(uint32_t glyph) const {
+int Font::atlasIndex(int glyph) const {
     PROFILE_FUNCTION();
 
     auto it = p_ptr->m_GlyphMap.find(glyph);
@@ -200,11 +201,13 @@ uint32_t Font::atlasIndex(uint32_t glyph) const {
 /*!
     Requests \a characters to be added to the font atlas.
 */
-void Font::requestCharacters(const u32string &characters) {
+void Font::requestCharacters(const string &characters) {
     PROFILE_FUNCTION();
 
+    u32string u32 = Utils::utf8ToUtf32(characters);
+
     bool isNew = false;
-    for(auto it : characters) {
+    for(auto it : u32) {
         uint32_t ch = it;
         if(p_ptr->m_GlyphMap.find(ch) == p_ptr->m_GlyphMap.end() && p_ptr->m_pFace) {
             FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, it ), FT_LOAD_DEFAULT );
@@ -256,7 +259,7 @@ void Font::requestCharacters(const u32string &characters) {
     Returns the kerning offset between a glyph and previous glyph.
     \note In case of font doesn't support kerning this method will return 0.
 */
-int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
+int Font::requestKerning(int glyph, int previous) const {
     PROFILE_FUNCTION();
 
     if(p_ptr->m_UseKerning && previous)  {
@@ -269,8 +272,9 @@ int32_t Font::requestKerning(uint32_t glyph, uint32_t previous) const {
 /*!
     Returns the number of \a characters in the string.
 */
-uint32_t Font::length(const u32string &characters) const {
-    return characters.length();
+int Font::length(const string &characters) const {
+    u32string u32 = Utils::utf8ToUtf32(characters);
+    return u32.length();
 }
 /*!
     Returns visual width of space character for the font in world units.
