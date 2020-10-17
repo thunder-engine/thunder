@@ -30,7 +30,7 @@ public:
 
     AnimationClip *m_pClip;
 
-    AnimationStateMachine::State *m_pCurrentState;
+    AnimationState *m_pCurrentState;
 
     AnimationStateMachine::VariableMap m_CurrentVariables;
 
@@ -163,7 +163,7 @@ void AnimationController::setStateHash(int hash) {
         return;
     }
     if(p_ptr->m_pCurrentState == nullptr || p_ptr->m_pCurrentState->m_Hash != hash) {
-        AnimationStateMachine::State *newState = p_ptr->m_pStateMachine->findState(hash);
+        AnimationState *newState = p_ptr->m_pStateMachine->findState(hash);
         if(newState) {
             setClip(newState->m_pClip);
             p_ptr->m_pCurrentState = newState;
@@ -189,7 +189,7 @@ void AnimationController::crossFadeHash(int hash, float duration) {
         return;
     }
     if(p_ptr->m_pCurrentState == nullptr || p_ptr->m_pCurrentState->m_Hash != hash) {
-        AnimationStateMachine::State *newState = p_ptr->m_pStateMachine->findState(hash);
+        AnimationState *newState = p_ptr->m_pStateMachine->findState(hash);
         if(newState) {
             setClips(p_ptr->m_pCurrentState->m_pClip, newState->m_pClip, duration);
             p_ptr->m_pCurrentState = newState;

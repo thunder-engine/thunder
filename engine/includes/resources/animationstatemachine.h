@@ -7,50 +7,49 @@
 
 class AnimationStateMachinePrivate;
 
+class NEXT_LIBRARY_EXPORT AnimationState {
+public:
+    enum {
+        Base
+    };
+
+    struct NEXT_LIBRARY_EXPORT Transition {
+        AnimationState *m_pTargetState;
+
+        size_t m_ConditionHash;
+
+        bool checkCondition (const Variant &value);
+    };
+    typedef vector<Transition> TransitionArray;
+
+    AnimationState();
+
+    uint8_t type() const;
+
+    TransitionArray m_Transitions;
+
+    int m_Hash;
+
+    AnimationClip *m_pClip;
+
+    bool m_Loop;
+};
+typedef vector<AnimationState *> AnimationStateVector;
+
 class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
     A_REGISTER(AnimationStateMachine, Resource, Resources)
 
 public:
-    class NEXT_LIBRARY_EXPORT State {
-    public:
-        enum {
-            Base
-        };
-
-        struct NEXT_LIBRARY_EXPORT Transition {
-            State *m_pTargetState;
-
-            size_t m_ConditionHash;
-
-            bool checkCondition (const Variant &value);
-        };
-        typedef vector<Transition> TransitionArray;
-
-        State();
-
-        uint8_t type() const;
-
-        TransitionArray m_Transitions;
-
-        int m_Hash;
-
-        AnimationClip *m_pClip;
-
-        bool m_Loop;
-    };
-
     typedef unordered_map<int, Variant> VariableMap;
-
-    typedef vector<AnimationStateMachine::State *> StateVector;
 
 public:
     AnimationStateMachine();
 
-    State *findState(size_t hash) const;
+    AnimationState *findState(int hash) const;
 
-    State *initialState() const;
+    AnimationState *initialState() const;
 
-    StateVector &states() const;
+    AnimationStateVector &states() const;
 
     VariableMap &variables() const;
 

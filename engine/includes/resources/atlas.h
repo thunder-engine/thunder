@@ -6,25 +6,25 @@
 class Texture;
 class AtlasPrivate;
 
-class PackNode {
+class AtlasNode {
 public:
-    PackNode ();
-    ~PackNode ();
+    AtlasNode ();
+    ~AtlasNode ();
 
-    PackNode *insert (int32_t width, int32_t height);
+    AtlasNode *insert (int width, int height);
 
     bool clean ();
 
     bool fill;
     bool dirty;
 
-    int32_t x;
-    int32_t y;
-    int32_t w;
-    int32_t h;
+    int x;
+    int y;
+    int w;
+    int h;
 
-    PackNode *parent;
-    PackNode *child[2];
+    AtlasNode *parent;
+    AtlasNode *child[2];
 };
 
 class NEXT_LIBRARY_EXPORT Atlas : public Resource {

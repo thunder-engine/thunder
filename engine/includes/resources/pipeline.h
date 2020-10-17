@@ -20,7 +20,7 @@ class PostProcessor;
 
 class PostProcessSettings;
 
-class PackNode;
+class AtlasNode;
 
 class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
     A_REGISTER(Pipeline, Resource, Resources)
@@ -90,8 +90,8 @@ protected:
     static int32_t m_ShadowPageWidth;
     static int32_t m_ShadowPageHeight;
 
-    unordered_map<uint32_t, pair<RenderTexture *, vector<PackNode *>>> m_Tiles;
-    unordered_map<RenderTexture *, PackNode *> m_ShadowPages;
+    unordered_map<uint32_t, pair<RenderTexture *, vector<AtlasNode *>>> m_Tiles;
+    unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;
 
     RenderTexture *m_pFinal;
 };

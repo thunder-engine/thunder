@@ -11,25 +11,25 @@ public:
 
     }
 
-    AnimationStateMachine::StateVector m_States;
+    AnimationStateVector m_States;
 
-    AnimationStateMachine::State *m_pInitialState;
+    AnimationState *m_pInitialState;
 
     AnimationStateMachine::VariableMap m_Variables;
 };
 
-AnimationStateMachine::State::State() :
+AnimationState::AnimationState() :
         m_Hash(0),
         m_pClip(nullptr),
         m_Loop(false) {
 
 }
 
-bool AnimationStateMachine::State::Transition::checkCondition(const Variant &value) {
+bool AnimationState::Transition::checkCondition(const Variant &value) {
     return value.toBool();
 }
 
-uint8_t AnimationStateMachine::State::type() const {
+uint8_t AnimationState::type() const {
     return Base;
 }
 
@@ -56,9 +56,9 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList stateList = it.toList();
                 auto i = stateList.begin();
 
-                State *state = nullptr;
+                AnimationState *state = nullptr;
                 switch((*i).toInt()) {
-                    default: state = new State;
+                    default: state = new AnimationState;
                 }
                 i++;
                 state->m_Hash = hash_str((*i).toString());
@@ -80,12 +80,12 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList valueList = it.toList();
                 auto i = valueList.begin();
 
-                State *source = findState(hash_str((*i).toString()));
+                AnimationState *source = findState(hash_str((*i).toString()));
                 if(source) {
                     i++;
-                    State *target = findState(hash_str((*i).toString()));
+                    AnimationState *target = findState(hash_str((*i).toString()));
                     if(target) {
-                        State::Transition transition;
+                        AnimationState::Transition transition;
                         transition.m_pTargetState = target;
                         source->m_Transitions.push_back(transition);
                     }
@@ -99,7 +99,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
     setState(Ready);
 }
 
-AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) const {
+AnimationState *AnimationStateMachine::findState(int hash) const {
     PROFILE_FUNCTION();
 
     for(auto state : p_ptr->m_States) {
@@ -110,7 +110,7 @@ AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) cons
     return nullptr;
 }
 
-AnimationStateMachine::State *AnimationStateMachine::initialState() const {
+AnimationState *AnimationStateMachine::initialState() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pInitialState;
@@ -118,7 +118,7 @@ AnimationStateMachine::State *AnimationStateMachine::initialState() const {
 /*!
     Return list of all states for the state machine.
 */
-AnimationStateMachine::StateVector &AnimationStateMachine::states() const {
+AnimationStateVector &AnimationStateMachine::states() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_States;
