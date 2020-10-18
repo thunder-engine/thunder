@@ -32,12 +32,7 @@
 <context>
     <name>Actions</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+31"/>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+45"/>
         <source>Commit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -49,14 +44,6 @@
     <message>
         <location line="+7"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AlignmentEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/AlignmentEdit.ui" line="+14"/>
-        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -87,11 +74,6 @@
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+3"/>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>AssetBrowser</name>
@@ -103,47 +85,6 @@
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AssetList</name>
-    <message>
-        <location filename="../worldeditor/src/editors/assetselect/assetlist.cpp" line="+47"/>
-        <source>Uuid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AxisesEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/AxisesEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Z</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -320,12 +261,7 @@
 <context>
     <name>ContentSelect</name>
     <message>
-        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
+        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+68"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -359,14 +295,6 @@
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+100"/>
         <source>Save Document</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>FloatEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/FloatEdit.ui" line="+14"/>
-        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -427,14 +355,6 @@
     </message>
 </context>
 <context>
-    <name>IntegerEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/IntegerEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MaterialEdit</name>
     <message>
         <location filename="../worldeditor/src/editors/materialedit/materialedit.ui" line="+14"/>
@@ -457,12 +377,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>toolBar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+32"/>
         <source>Plane</source>
         <translation type="unfinished"></translation>
     </message>
@@ -501,12 +416,7 @@
     </message>
     <message>
         <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
-        <source>The %1 import settings has been modified.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>mesh</source>
+        <source>The mesh import settings has been modified.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1032,12 +942,7 @@
 <context>
     <name>SettingsBrowser</name>
     <message>
-        <location filename="../worldeditor/src/managers/settingsmanager/settingsbrowser.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+63"/>
+        <location filename="../worldeditor/src/managers/settingsmanager/settingsbrowser.ui" line="+77"/>
         <source>Commit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1072,14 +977,6 @@
     <message>
         <location line="+30"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>StringEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/StringEdit.ui" line="+14"/>
-        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1214,14 +1111,6 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+76"/>
         <source>Remove Properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VectorEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/VectorEdit.ui" line="+14"/>
-        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

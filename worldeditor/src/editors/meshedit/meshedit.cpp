@@ -102,7 +102,7 @@ void MeshEdit::closeEvent(QCloseEvent *event) {
     if(isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The %1 import settings has been modified.").arg(tr("mesh")));
+        msgBox.setText(tr("The mesh import settings has been modified."));
         msgBox.setInformativeText(tr("Do you want to save your changes?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);

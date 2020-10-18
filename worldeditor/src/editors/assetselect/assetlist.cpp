@@ -44,9 +44,9 @@ int AssetList::columnCount(const QModelIndex &parent) const {
 QVariant AssetList::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/ ) const {
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         switch (section) {
-            case 1: return tr("Uuid");
-            case 2: return tr("Type");
-            default: return tr("Name");
+            case 1: return "Uuid";
+            case 2: return "Type";
+            default: return "Name";
         }
     }
     return QVariant();
