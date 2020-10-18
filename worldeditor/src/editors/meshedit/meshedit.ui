@@ -52,7 +52,7 @@
     <string>Save</string>
    </property>
    <property name="shortcut">
-    <string notr="true"/>
+    <string notr="true">Ctrl+S</string>
    </property>
   </action>
  </widget>
