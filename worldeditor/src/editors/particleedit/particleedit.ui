@@ -90,22 +90,34 @@
   </widget>
   <action name="actionDelete_emitter">
    <property name="text">
-    <string>Delete emiter</string>
+    <string>Delete Emitter</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionEmitter">
    <property name="text">
     <string>Create Emitter</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionMesh">
    <property name="text">
     <string>Create Mesh</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionBeam">
    <property name="text">
     <string>Create Beam</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionPause">
@@ -119,6 +131,9 @@
    <property name="text">
     <string>Pause</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionRepeat">
    <property name="checkable">
@@ -131,13 +146,16 @@
    <property name="text">
     <string>Repeat</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string notr="true">Ctrl+S</string>
    </property>
   </action>
  </widget>
@@ -145,7 +163,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header>QtQuickWidgets/QQuickWidget</header>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
   <customwidget>
    <class>PropertyEditor</class>

@@ -56,7 +56,7 @@
      <item>
       <widget class="QLabel" name="lineLabel">
        <property name="text">
-        <string/>
+        <string notr="true"/>
        </property>
       </widget>
      </item>
@@ -113,7 +113,7 @@
           <normaloff>:/Style/styles/dark/icons/close.png</normaloff>:/Style/styles/dark/icons/close.png</iconset>
         </property>
         <property name="shortcut">
-         <string>Esc</string>
+         <string notr="true">Esc</string>
         </property>
         <property name="autoRepeatDelay">
          <number>300</number>
@@ -149,10 +149,18 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineReplace"/>
+       <widget class="QLineEdit" name="lineReplace">
+        <property name="text">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="lineFind"/>
+       <widget class="QLineEdit" name="lineFind">
+        <property name="text">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
       <item row="0" column="2">
        <widget class="QToolButton" name="pushPrevious">
@@ -170,7 +178,7 @@
     <string>Save Current</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string notr="true">Ctrl+S</string>
    </property>
   </action>
   <action name="actionCloseCurrent">
@@ -178,7 +186,7 @@
     <string>Close Current</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+W</string>
+    <string notr="true">Ctrl+W</string>
    </property>
   </action>
   <action name="actionCloseAll">
@@ -186,7 +194,7 @@
     <string>Close All</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+W</string>
+    <string notr="true">Ctrl+Shift+W</string>
    </property>
   </action>
   <action name="actionFind">
@@ -194,7 +202,7 @@
     <string>Find</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+F</string>
+    <string notr="true">Ctrl+F</string>
    </property>
   </action>
  </widget>

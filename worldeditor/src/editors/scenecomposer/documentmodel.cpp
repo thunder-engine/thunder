@@ -25,7 +25,24 @@ DocumentModel::DocumentModel() {
 }
 
 DocumentModel::~DocumentModel() {
-    foreach(auto it, m_Editors) {
+    auto it = m_Documents.begin();
+    while(it != m_Documents.end()) {
+        QFileInfo info(it.key());
+        int32_t type = AssetManager::instance()->resourceType(info);
+        switch(type) {
+            case IConverter::ContentCode: {
+                TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
+                if(editor) {
+                    editor->deleteLater();
+                }
+            } break;
+            default: break;
+        }
+        ++it;
+    }
+    m_Documents.clear();
+
+    for(auto it : m_Editors) {
         delete it;
     }
     m_Editors.clear();

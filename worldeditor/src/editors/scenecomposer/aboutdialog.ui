@@ -47,28 +47,28 @@
           </font>
          </property>
          <property name="text">
-          <string>Name</string>
+          <string notr="true">Name</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="version">
          <property name="text">
-          <string>Version</string>
+          <string notr="true">Version</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="revision">
          <property name="text">
-          <string>Revision</string>
+          <string notr="true">Revision</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="copyright">
          <property name="text">
-          <string>Copyright</string>
+          <string notr="true">Copyright</string>
          </property>
         </widget>
        </item>
@@ -79,7 +79,7 @@
    <item>
     <widget class="QLabel" name="legal">
      <property name="text">
-      <string>Legal</string>
+      <string notr="true">Legal</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -89,7 +89,7 @@
    <item>
     <widget class="QLabel" name="thanks">
      <property name="text">
-      <string>Thanks</string>
+      <string notr="true">Thanks</string>
      </property>
      <property name="textFormat">
       <enum>Qt::AutoText</enum>

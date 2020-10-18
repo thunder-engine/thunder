@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>WorldEditor</string>
+   <string notr="true">World Editor</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -533,7 +533,7 @@
     <string>&amp;New</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string notr="true">Ctrl+N</string>
    </property>
   </action>
   <action name="actionOpen">
@@ -541,7 +541,7 @@
     <string>&amp;Open</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string notr="true">Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
@@ -549,12 +549,15 @@
     <string>&amp;Save</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string notr="true">Ctrl+S</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionContent_Browser">
@@ -565,7 +568,7 @@
     <string>Content Browser</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+B</string>
+    <string notr="true">Ctrl+B</string>
    </property>
   </action>
   <action name="actionObject_properties">
@@ -575,6 +578,9 @@
    <property name="text">
     <string>Object properties</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionApplication_Console">
    <property name="checkable">
@@ -582,6 +588,9 @@
    </property>
    <property name="text">
     <string>Application Console</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionUndo">
@@ -596,7 +605,7 @@
     <string>Undo</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Z</string>
+    <string notr="true">Ctrl+Z</string>
    </property>
   </action>
   <action name="actionRedo">
@@ -611,7 +620,7 @@
     <string>Redo</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Y</string>
+    <string notr="true">Ctrl+Y</string>
    </property>
   </action>
   <action name="actionEditor_Mode">
@@ -622,7 +631,7 @@
     <string>Editor Mode</string>
    </property>
    <property name="shortcut">
-    <string>Esc</string>
+    <string notr="true">Esc</string>
    </property>
   </action>
   <action name="actionGame_Mode">
@@ -633,12 +642,15 @@
     <string>Game Mode</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string notr="true">Ctrl+G</string>
    </property>
   </action>
   <action name="actionSave_As">
    <property name="text">
     <string>Save As...</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionScene_objects">
@@ -648,6 +660,9 @@
    <property name="text">
     <string>Scene objects</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionEdit_Object">
    <property name="enabled">
@@ -655,6 +670,9 @@
    </property>
    <property name="text">
     <string>Edit Object</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionDelete_Object">
@@ -664,10 +682,16 @@
    <property name="text">
     <string>Delete Object</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionNew_Object">
    <property name="text">
     <string>New Object</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionComponents">
@@ -677,13 +701,16 @@
    <property name="text">
     <string>Components</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionTake_Screenshot">
    <property name="text">
     <string>Take Screenshot</string>
    </property>
    <property name="shortcut">
-    <string>F12</string>
+    <string notr="true">F12</string>
    </property>
   </action>
   <action name="actionPlugin_Manager">
@@ -693,6 +720,9 @@
    <property name="toolTip">
     <string>Plugin Manager</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionSave_Workspace">
    <property name="text">
@@ -700,6 +730,9 @@
    </property>
    <property name="toolTip">
     <string>Save Workspace</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionReset_Workspace">
@@ -709,20 +742,32 @@
    <property name="toolTip">
     <string>Reset Workspace</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionOptions">
    <property name="text">
     <string>Options...</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionBuild_All">
    <property name="text">
     <string>Build All</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
  </widget>

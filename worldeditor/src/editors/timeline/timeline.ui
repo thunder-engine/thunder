@@ -63,9 +63,6 @@
         </property>
         <item>
          <widget class="QToolButton" name="record">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/record.png</normaloff>:/Images/fontawesome/record.png</iconset>
@@ -83,9 +80,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="begin">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/fast-backward.png</normaloff>:/Images/fontawesome/fast-backward.png</iconset>
@@ -100,9 +94,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="previous">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/back.png</normaloff>:/Images/fontawesome/back.png</iconset>
@@ -117,9 +108,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="play">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/play.png</normaloff>:/Images/fontawesome/play.png</iconset>
@@ -137,9 +125,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="pause">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/pause.png</normaloff>:/Images/fontawesome/pause.png</iconset>
@@ -154,9 +139,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="next">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/next.png</normaloff>:/Images/fontawesome/next.png</iconset>
@@ -171,9 +153,6 @@
         </item>
         <item>
          <widget class="QToolButton" name="end">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/fast-forward.png</normaloff>:/Images/fontawesome/fast-forward.png</iconset>
@@ -208,9 +187,6 @@
         </property>
         <item>
          <widget class="QToolButton" name="curve">
-          <property name="text">
-           <string/>
-          </property>
           <property name="icon">
            <iconset resource="../../../res/WorldEditor.qrc">
             <normaloff>:/Images/fontawesome/curve.png</normaloff>:/Images/fontawesome/curve.png</iconset>
@@ -362,7 +338,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header>QtQuickWidgets/QQuickWidget</header>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -140,15 +140,24 @@
    <property name="text">
     <string>Plane</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionCube">
    <property name="text">
     <string>Cube</string>
    </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
   </action>
   <action name="actionSphere">
    <property name="text">
     <string>Sphere</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
    </property>
   </action>
   <action name="actionSave">
@@ -156,7 +165,7 @@
     <string>Save</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string notr="true">Ctrl+S</string>
    </property>
   </action>
  </widget>
