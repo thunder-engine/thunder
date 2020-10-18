@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="en">
 <context>
     <name>AboutDialog</name>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.ui" line="+14"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>About…</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+14"/>
         <source>About %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>About %1…</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>From revision %1</source>
-        <translation type="unfinished"></translation>
+        <translation>From revision %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Based on %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Based on %1 %2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
-        <translation type="unfinished"></translation>
+        <translation>AboutDialogCopyright 2007-%1 by %2. All rights reserved.</translation>
     </message>
 </context>
 <context>
