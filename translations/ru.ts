@@ -6,27 +6,27 @@
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.ui" line="+14"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>О программе…</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+14"/>
         <source>About %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>О %1…</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>From revision %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ревизия %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Based on %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Основан на %1 %2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
-        <translation type="unfinished"></translation>
+        <translation>(C) 2007-%1 %2. Все права защищены.</translation>
     </message>
 </context>
 <context>
