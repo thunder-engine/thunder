@@ -12,7 +12,7 @@ class NEXT_LIBRARY_EXPORT RenderTexture : public Texture {
         A_PROPERTY(int, depth, RenderTexture::depth, RenderTexture::setDepth)
     )
     A_METHODS(
-        A_METHOD(void, setFixed)
+        A_METHOD(void, RenderTexture::setFixed)
     )
     A_NOENUMS()
 
