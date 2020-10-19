@@ -21,7 +21,7 @@ void Collider::update() {
     if(m_pCollisionObject) {
         Transform *t = actor()->transform();
 
-        const Quaternion &q = t->rotation();
+        const Quaternion &q = t->quaternion();
         Vector3 p = t->position();
 
         m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w), btVector3(p.x, p.y, p.z)));

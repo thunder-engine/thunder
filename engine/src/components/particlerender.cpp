@@ -16,14 +16,14 @@
 #define EFFECT "Effect"
 
 typedef vector<Matrix4> BufferArray;
-typedef list<ParticleEffect::ParticleData> ParticleList;
+typedef list<ParticleData> ParticleList;
 
 bool comp(const Matrix4 &left, const Matrix4 &right) {
     return left[7] > right[7];
 }
 
-struct Emitter {
-    Emitter() :
+struct EmitterRender {
+    EmitterRender() :
             m_pInstance(nullptr),
             m_Countdown(0.0f),
             m_Counter(0.0f),
@@ -33,7 +33,7 @@ struct Emitter {
         m_Buffer.resize(1);
     }
 
-    ~Emitter() {
+    ~EmitterRender() {
         delete m_pInstance;
     }
 
@@ -47,7 +47,7 @@ struct Emitter {
 
     uint32_t m_Count;
 };
-typedef deque<Emitter> EmitterArray;
+typedef deque<EmitterRender> EmitterArray;
 
 class ParticleRenderPrivate : public Resource::IObserver {
 public:
@@ -68,9 +68,9 @@ public:
             m_Emitters.resize(m_pEffect->emittersCount());
 
             for(uint32_t i = 0; i < m_pEffect->emittersCount(); i++) {
-                ParticleEffect::Emitter &emitter = m_pEffect->emitter(i);
-                if(emitter.m_pMaterial) {
-                    m_Emitters[i].m_pInstance = emitter.m_pMaterial->createInstance(Material::Billboard);
+                ParticleEmitter *emitter = m_pEffect->emitter(i);
+                if(emitter->material()) {
+                    m_Emitters[i].m_pInstance = emitter->material()->createInstance(Material::Billboard);
                 }
             }
         }
@@ -115,22 +115,24 @@ void ParticleRender::update() {
 
         uint32_t index  = 0;
         for(auto &it : p_ptr->m_Emitters) {
-            ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
+            ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
             it.m_Count = 0;
             uint32_t i = 0;
+            bool local = emitter->local();
+            bool continous = emitter->continous();
             for(auto &particle : it.m_Particles) {
                 particle.life -= dt;
                 if(particle.life >= 0.0f) {
-                    p_ptr->m_pEffect->updateParticle(index, particle, dt);
+                    updateParticle(*emitter, particle, dt);
 
-                    particle.transform = (emitter.m_Local) ? m * particle.position : particle.position;
+                    particle.transform = (local) ? m * particle.position : particle.position;
                     particle.distance = (pos - particle.transform).sqrLength();
 
                     it.m_Count++;
                 } else {
                     particle.distance = -1.0f;
-                    if(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
-                        p_ptr->m_pEffect->spawnParticle(index, particle);
+                    if(isEnabled() && (continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
+                        spawnParticle(*emitter, particle);
                         particle.transform  = m * particle.position;
                         it.m_Counter -= 1.0f;
                     }
@@ -162,9 +164,9 @@ void ParticleRender::update() {
                 i++;
             }
 
-            while(isEnabled() && (emitter.m_Continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
-                ParticleEffect::ParticleData particle;
-                p_ptr->m_pEffect->spawnParticle(index, particle);
+            while(isEnabled() && (continous || it.m_Countdown > 0.0f) && it.m_Counter >= 1.0f) {
+                ParticleData particle;
+                spawnParticle(*emitter, particle);
                 particle.transform  = m * particle.position;
                 it.m_Particles.push_back(particle);
                 it.m_Counter -= 1.0f;
@@ -174,8 +176,8 @@ void ParticleRender::update() {
                 it.m_Buffer.resize(it.m_Particles.size());
             }
 
-            it.m_Counter += emitter.m_Distibution * dt;
-            if(!emitter.m_Continous) {
+            it.m_Counter += emitter->distibution() * dt;
+            if(!continous) {
                 it.m_Countdown -= dt;
             }
 
@@ -197,8 +199,8 @@ void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
         uint32_t index = 0;
         for(auto &it : p_ptr->m_Emitters) {
             if(it.m_Count > 1) {
-                ParticleEffect::Emitter &emitter = p_ptr->m_pEffect->emitter(index);
-                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter.m_pMesh, layer, it.m_pInstance);
+                ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
+                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), layer, it.m_pInstance);
             }
             index++;
         }
@@ -222,6 +224,27 @@ void ParticleRender::setEffect(ParticleEffect *effect) {
         p_ptr->m_pEffect = effect;
         p_ptr->resourceUpdated(effect, Resource::Ready);
         p_ptr->m_pEffect->subscribe(p_ptr);
+    }
+}
+/*!
+    \internal
+*/
+void ParticleRender::spawnParticle(ParticleEmitter &emitter, ParticleData &data) {
+    PROFILE_FUNCTION();
+    data.position.x = 0.0f;
+    data.position.y = 0.0f;
+    data.position.z = 0.0f;
+    for(auto &it : emitter.modifiers()) {
+        it->spawnParticle(data);
+    }
+}
+/*!
+    \internal
+*/
+void ParticleRender::updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt) {
+    PROFILE_FUNCTION();
+    for(auto &it : emitter.modifiers()) {
+        it->updateParticle(data, dt);
     }
 }
 /*!

@@ -90,25 +90,25 @@ void Texture::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(HEADER);
         if(it != data.end()) {
-            VariantList header  = (*it).second.value<VariantList>();
+            VariantList header = (*it).second.value<VariantList>();
 
-            auto i      = header.begin();
-            p_ptr->m_Width  = (*i).toInt();
+            auto i = header.begin();
+            p_ptr->m_Width = (*i).toInt();
             i++;
             p_ptr->m_Height = (*i).toInt();
             i++;
             //Reserved
             i++;
 
-            p_ptr->m_Type      = TextureType((*i).toInt());
+            p_ptr->m_Type = TextureType((*i).toInt());
             i++;
-            p_ptr->m_Compress  = CompressionType((*i).toInt());
+            p_ptr->m_Compress = CompressionType((*i).toInt());
             i++;
-            p_ptr->m_Format    = FormatType((*i).toInt());
+            p_ptr->m_Format = FormatType((*i).toInt());
             i++;
             p_ptr->m_Filtering = FilteringType((*i).toInt());
             i++;
-            p_ptr->m_Wrap      = WrapType((*i).toInt());
+            p_ptr->m_Wrap = WrapType((*i).toInt());
             i++;
         }
     }
@@ -118,19 +118,19 @@ void Texture::loadUserData(const VariantMap &data) {
             const VariantList &surfaces = (*it).second.value<VariantList>();
             for(auto s : surfaces) {
                 Surface img;
-                int32_t w  = p_ptr->m_Width;
-                int32_t h  = p_ptr->m_Height;
+                int32_t w = p_ptr->m_Width;
+                int32_t h = p_ptr->m_Height;
                 const VariantList &lods = s.value<VariantList>();
                 for(auto l : lods) {
                     ByteArray bits = l.toByteArray();
-                    uint32_t s  = size(w, h);
+                    uint32_t s = size(w, h);
                     if(s && !bits.empty()) {
                         uint8_t *pixels = new uint8_t[s];
                         memcpy(pixels, &bits[0], s);
                         img.push_back(pixels);
                     }
-                    w   = MAX(w / 2, 1);
-                    h   = MAX(h / 2, 1);
+                    w = MAX(w / 2, 1);
+                    h = MAX(h / 2, 1);
                 }
                 p_ptr->m_Sides.push_back(img);
             }
@@ -144,7 +144,7 @@ void Texture::loadUserData(const VariantMap &data) {
     Each texture must contain at least one surface.
     Commonly used to set surfaces for the cube maps.
 */
-Texture::Surface &Texture::surface(uint32_t face) {
+Texture::Surface &Texture::surface(int face) {
     return p_ptr->m_Sides[face];
 }
 /*!
@@ -166,7 +166,7 @@ void Texture::setDirty() {
     \internal
 */
 void Texture::clear() {
-    p_ptr->m_Width  = 1;
+    p_ptr->m_Width = 1;
     p_ptr->m_Height = 1;
 
     for(auto side : p_ptr->m_Sides) {
@@ -187,7 +187,7 @@ void *Texture::nativeHandle() {
 /*!
     Read pixels from GPU into texture data.
 */
-void Texture::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
+void Texture::readPixels(int x, int y, int width, int height) {
     A_UNUSED(x);
     A_UNUSED(y);
     A_UNUSED(width);
@@ -196,7 +196,7 @@ void Texture::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
 /*!
     Returns pixel color as RGBA integer for example 0x00ff00ff which can be mapped to (0, 255, 0, 255)
 */
-uint32_t Texture::getPixel(int32_t x, int32_t y) const {
+int Texture::getPixel(int x, int y) const {
     uint32_t result = 0;
     if(!p_ptr->m_Sides.empty() && !p_ptr->m_Sides[0].empty()) {
         uint8_t *ptr = p_ptr->m_Sides[0][0] + (y * p_ptr->m_Width + x);
@@ -207,26 +207,26 @@ uint32_t Texture::getPixel(int32_t x, int32_t y) const {
 /*!
     Returns \a width for the texture.
 */
-int32_t Texture::width() const {
+int Texture::width() const {
     return p_ptr->m_Width;
 }
 /*!
     Returns \a height for the texture.
 */
-int32_t Texture::height() const {
+int Texture::height() const {
     return p_ptr->m_Height;
 }
 /*!
     Sets new \a width for the texture.
 */
-void Texture::setWidth(int32_t width) {
+void Texture::setWidth(int width) {
     p_ptr->m_Width = width;
 }
 /*!
     Sets new \a height for the texture.
 */
-void Texture::setHeight(int32_t height) {
-    p_ptr->m_Height  = height;
+void Texture::setHeight(int height) {
+    p_ptr->m_Height = height;
 }
 /*!
     \internal
@@ -266,7 +266,7 @@ void Texture::setShape(const Vector2Vector &shape) {
 /*!
     Sets new \a width and \a height for the texture.
 */
-void Texture::resize(int32_t width, int32_t height) {
+void Texture::resize(int width, int height) {
     clear();
 
     p_ptr->m_Width = width;

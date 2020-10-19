@@ -7,7 +7,7 @@ class CapsuleCollider : public SphereCollider {
     A_REGISTER(CapsuleCollider, SphereCollider, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(float, Height, CapsuleCollider::height, CapsuleCollider::setHeight)
+        A_PROPERTY(float, height, CapsuleCollider::height, CapsuleCollider::setHeight)
     )
     A_NOMETHODS()
 

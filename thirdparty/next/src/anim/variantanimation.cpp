@@ -13,7 +13,7 @@ public:
     \inmodule Animation
 
     This class allows to change values in time. VariantAnimation uses key-frame animation mechanism.
-    Developers should specify sequence of key values wich pair of point in time and key value.
+    Developers should specify sequence of key values which pair of point in time and key value.
     While animation is playing specific interpolation function moves from one key-frame to another and changing controled value.
 
     List of supported Variant types for animation:

@@ -9,37 +9,40 @@ class AudioSource : public NativeBehaviour {
     A_REGISTER(AudioSource, NativeBehaviour, Components)
 
     A_PROPERTIES (
-        A_PROPERTY(AudioClip *, Audio_Clip, AudioSource::clip, AudioSource::setClip),
-        A_PROPERTY(bool, Auto_Play, AudioSource::autoPlay, AudioSource::setAutoPlay),
-        A_PROPERTY(bool, Loop, AudioSource::loop, AudioSource::setLoop)
+        A_PROPERTY(AudioClip *, clip, AudioSource::clip, AudioSource::setClip),
+        A_PROPERTY(bool, autoPlay, AudioSource::autoPlay, AudioSource::setAutoPlay),
+        A_PROPERTY(bool, loop, AudioSource::loop, AudioSource::setLoop)
+    )
+    A_METHODS(
+        A_METHOD(void, AudioSource::play),
+        A_METHOD(void, AudioSource::stop)
     )
 
 public:
     AudioSource                 ();
-
     ~AudioSource                ();
-
-    void                        start                   () override;
-
-    void                        update                  () override;
 
     void                        play                    ();
 
     void                        stop                    ();
 
     AudioClip                  *clip                    () const;
-
     void                        setClip                 (AudioClip *clip);
-
-    void                        loadUserData            (const VariantMap &data) override;
-
-    VariantMap                  saveUserData            () const override;
 
     bool                        autoPlay                () const;
     void                        setAutoPlay             (bool play);
 
     bool                        loop                    () const;
     void                        setLoop                 (bool loop);
+
+private:
+    void                        start                   () override;
+
+    void                        update                  () override;
+
+    void                        loadUserData            (const VariantMap &data) override;
+
+    VariantMap                  saveUserData            () const override;
 
 protected:
     AudioClip                  *m_pClip;

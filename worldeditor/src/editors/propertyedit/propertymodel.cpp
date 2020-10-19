@@ -7,6 +7,19 @@
 #include <QMetaProperty>
 #include <QItemEditorFactory>
 
+QString fromCamelCase(const QString &s) {
+    static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+    static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+
+    QString result = s;
+    result.replace(regExp1, "\\1 \\2");
+    result.replace(regExp2, "\\1 \\2");
+
+    result[0] = result[0].toUpper();
+
+    return result;
+}
+
 struct PropertyPair {
     PropertyPair(const QMetaObject *obj, QMetaProperty property):
         Property(property),
@@ -44,7 +57,7 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole:
         case Qt::EditRole: {
             if(index.column() == 0) {
-                return item->name().replace('_', ' ');
+                return fromCamelCase(item->name().replace('_', ' '));
             }
             if(index.column() == 1) {
                 return item->value(role);

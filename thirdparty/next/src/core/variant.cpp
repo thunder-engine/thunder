@@ -45,7 +45,7 @@ Variant::Data::Data() :
 /*!
     \fn T Variant::value() const
 
-    Returns contained value wich cast or converted to type T.
+    Returns contained value which cast or converted to type T.
 
     Returns default T value if invalid variant or variant can not be converted to type T.
 

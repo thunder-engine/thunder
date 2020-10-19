@@ -7,7 +7,7 @@
 
 typedef deque<Texture *>  Textures;
 
-PackNode::PackNode() :
+AtlasNode::AtlasNode() :
         fill(false),
         dirty(false),
         x(0),
@@ -19,7 +19,7 @@ PackNode::PackNode() :
     child[1] = nullptr;
 }
 
-PackNode::~PackNode() {
+AtlasNode::~AtlasNode() {
     if(parent) {
         if(parent->child[0] == this) {
             parent->child[0] = nullptr;
@@ -31,11 +31,11 @@ PackNode::~PackNode() {
     delete child[1];
 }
 
-PackNode *PackNode::insert(int32_t width, int32_t height) {
+AtlasNode *AtlasNode::insert(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
 
     if(child[0]) {
-        PackNode *node = child[0]->insert(width, height);
+        AtlasNode *node = child[0]->insert(width, height);
         if(node) {
             return node;
         }
@@ -53,9 +53,9 @@ PackNode *PackNode::insert(int32_t width, int32_t height) {
     int32_t sw = w - width;
     int32_t sh = h - height;
 
-    child[0] = new PackNode;
+    child[0] = new AtlasNode;
     child[0]->parent = this;
-    child[1] = new PackNode;
+    child[1] = new AtlasNode;
     child[1]->parent = this;
 
     if(sw > sh) { // Horizontal
@@ -83,7 +83,7 @@ PackNode *PackNode::insert(int32_t width, int32_t height) {
     return child[0]->insert(width, height);
 }
 
-bool PackNode::clean () {
+bool AtlasNode::clean () {
     PROFILE_FUNCTION();
 
     if(child[0] && child[0]->clean()) {
@@ -104,7 +104,7 @@ public:
     AtlasPrivate() {
         m_pTexture = nullptr;
 
-        m_pRoot = new PackNode;
+        m_pRoot = new AtlasNode;
     }
     Vector4Vector m_Elements;
 
@@ -112,7 +112,7 @@ public:
 
     Textures m_Sources;
 
-    PackNode *m_pRoot;
+    AtlasNode *m_pRoot;
 };
 
 Atlas::Atlas() :
@@ -142,14 +142,14 @@ void Atlas::clearAtlas() {
 
 }
 
-uint32_t Atlas::addElement(Texture *texture) {
+int Atlas::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Sources.push_back(texture);
     return (p_ptr->m_Sources.size() - 1);
 }
 
-void Atlas::pack(uint8_t padding) {
+void Atlas::pack(int padding) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Elements.clear();
@@ -157,7 +157,7 @@ void Atlas::pack(uint8_t padding) {
         int32_t width  = (it->width() + padding * 2);
         int32_t height = (it->height() + padding * 2);
 
-        PackNode *n = p_ptr->m_pRoot->insert(width, height);
+        AtlasNode *n = p_ptr->m_pRoot->insert(width, height);
         if(n) {
             n->fill = true;
             int32_t w = n->w - padding * 2;
@@ -192,7 +192,7 @@ void Atlas::resize(int32_t width, int32_t height) {
 
     if(p_ptr->m_pRoot) {
         delete p_ptr->m_pRoot;
-        p_ptr->m_pRoot = new PackNode;
+        p_ptr->m_pRoot = new AtlasNode;
     }
     p_ptr->m_pRoot->w = width;
     p_ptr->m_pRoot->h = height;
@@ -200,7 +200,7 @@ void Atlas::resize(int32_t width, int32_t height) {
     p_ptr->m_pTexture->resize(width, height);
 }
 
-Vector2Vector Atlas::shape(uint32_t index) const {
+Vector2Vector Atlas::shape(int index) const {
     PROFILE_FUNCTION();
 
     if(index < p_ptr->m_Sources.size()) {
@@ -209,7 +209,7 @@ Vector2Vector Atlas::shape(uint32_t index) const {
     return Vector2Vector();
 }
 
-Vector4 Atlas::uv(uint32_t index) const {
+Vector4 Atlas::uv(int index) const {
     PROFILE_FUNCTION();
 
     if(index < p_ptr->m_Elements.size()) {

@@ -55,18 +55,18 @@ public:
         if(m_pBindPose) {
             list<Actor *> bones = actor->findChildren<Actor *>();
 
-            uint32_t count = m_pBindPose->size();
+            uint32_t count = m_pBindPose->boneCount();
             m_Bones.resize(count);
             m_InvertTransform.resize(count);
             m_Transform.resize(count);
 
             for(uint32_t c = 0; c < count; c++) {
-                const Pose::Bone *b = m_pBindPose->bone(c);
+                const Bone *b = m_pBindPose->bone(c);
                 for(auto it : bones) {
                     Transform *t = it->transform();
-                    if(t->clonedFrom() == b->index) {
+                    if(t->clonedFrom() == b->index()) {
                         m_Bones[c] = t;
-                        m_InvertTransform[c] = Matrix4(b->position, b->rotation, b->scale);
+                        m_InvertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
                         break;
                     }
                 }

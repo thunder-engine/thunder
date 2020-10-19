@@ -149,7 +149,7 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
         //glDepthFunc((layer & ICommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
     }
 
-    if(!isDoubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
+    if(!doubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
         glEnable( GL_CULL_FACE );
         if(m_MaterialType == LightFunction) {
             glCullFace  ( GL_FRONT );

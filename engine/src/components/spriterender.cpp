@@ -127,12 +127,6 @@ void SpriteRender::setColor(const Vector4 &color) {
     }
 }
 /*!
-    Returns a sprite mesh which uses to render a sprite.
-*/
-Mesh *SpriteRender::mesh() const {
-    return p_ptr->m_pMesh;
-}
-/*!
     \internal
 */
 void SpriteRender::loadUserData(const VariantMap &data) {

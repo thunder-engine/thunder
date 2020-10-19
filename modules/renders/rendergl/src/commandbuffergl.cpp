@@ -34,7 +34,7 @@ CommandBufferGL::~CommandBufferGL() {
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
     PROFILE_FUNCTION();
 
-    uint32_t flags  = 0;
+    uint32_t flags = 0;
     if(clearColor) {
         flags   |= GL_COLOR_BUFFER_BIT;
         glClearColor(color.x, color.y, color.z, color.w);
@@ -98,7 +98,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
 
     AMaterialGL *mat = static_cast<AMaterialGL *>(instance->material());
 
-    uint8_t i   = 0;
+    uint8_t i = 0;
     for(auto it : mat->textures()) {
         Texture *tex = static_cast<ATextureGL *>(it.second);
         Texture *tmp = instance->texture(it.first.c_str());
@@ -123,8 +123,12 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
     PROFILE_FUNCTION();
 
     if(mesh && material) {
-        AMeshGL *m      = static_cast<AMeshGL *>(mesh);
-        uint32_t lod    = 0;
+        AMeshGL *m = static_cast<AMeshGL *>(mesh);
+        uint32_t lod = 0;
+        Lod *l = mesh->lod(lod);
+        if(l == nullptr) {
+            return;
+        }
 
         AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
         uint32_t program = mat->bind(layer, material->surfaceType());
@@ -137,20 +141,20 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
 
             m->bindVao(this, lod);
 
-            Mesh::Modes mode = mesh->mode();
-            if(mode > Mesh::MODE_LINES) {
-                uint32_t vert = mesh->vertexCount(lod);
+            Mesh::TriangleModes mode = static_cast<Mesh::TriangleModes>(mesh->mode());
+            if(mode > Mesh::Lines) {
+                uint32_t vert = l->vertices().size();
                 int32_t glMode = GL_TRIANGLE_STRIP;
                 switch(mode) {
-                case Mesh::MODE_LINE_STRIP:     glMode = GL_LINE_STRIP; break;
-                case Mesh::MODE_TRIANGLE_FAN:   glMode = GL_TRIANGLE_FAN; break;
+                case Mesh::LineStrip:   glMode = GL_LINE_STRIP; break;
+                case Mesh::TriangleFan: glMode = GL_TRIANGLE_FAN; break;
                 default: break;
                 }
                 glDrawArrays(glMode, 0, vert);
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
-                uint32_t index  = mesh->indexCount(lod);
-                glDrawElements((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
+                uint32_t index = l->indices().size();
+                glDrawElements((mode == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -164,8 +168,12 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     PROFILE_FUNCTION();
 
     if(mesh && material) {
-        AMeshGL *m   = static_cast<AMeshGL *>(mesh);
+        AMeshGL *m = static_cast<AMeshGL *>(mesh);
         uint32_t lod = 0;
+        Lod *l = mesh->lod(lod);
+        if(l == nullptr) {
+            return;
+        }
 
         AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
         uint32_t program = mat->bind(layer, material->surfaceType());
@@ -182,14 +190,14 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
             m->bindVao(this, lod);
 
-            Mesh::Modes mode    = mesh->mode();
-            if(mode > Mesh::MODE_LINES) {
-                uint32_t vert   = mesh->vertexCount(lod);
-                glDrawArraysInstanced((mode == Mesh::MODE_TRIANGLE_STRIP) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
+            Mesh::TriangleModes mode = static_cast<Mesh::TriangleModes>(mesh->mode());
+            if(mode > Mesh::Lines) {
+                uint32_t vert = l->vertices().size();
+                glDrawArraysInstanced((mode == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
-                uint32_t index  = mesh->indexCount(lod);
-                glDrawElementsInstanced((mode == Mesh::MODE_TRIANGLES) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
+                uint32_t index = l->indices().size();
+                glDrawElementsInstanced((mode == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -209,10 +217,10 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture 
         for(uint32_t i = 0; i < target.size(); i++) {
             ARenderTextureGL *c = static_cast<ARenderTextureGL *>(target[i]);
             if(i == 0) {
-                buffer  = c->buffer();
+                buffer = c->buffer();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer);
             }
-            colors[i]   = GL_COLOR_ATTACHMENT0 + i;
+            colors[i] = GL_COLOR_ATTACHMENT0 + i;
             glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, (uint32_t)(size_t)c->nativeHandle(), level );
         }
     }
@@ -247,24 +255,24 @@ void CommandBufferGL::setColor(const Vector4 &color) {
 }
 
 void CommandBufferGL::resetViewProjection() {
-    m_View          = m_SaveView;
-    m_Projection    = m_SaveProjection;
+    m_View = m_SaveView;
+    m_Projection = m_SaveProjection;
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    m_SaveView      = m_View;
+    m_SaveView = m_View;
     m_SaveProjection= m_Projection;
 
-    m_View          = view;
-    m_Projection    = projection;
+    m_View = view;
+    m_Projection = projection;
 }
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
-    m_Uniforms[name]    = value;
+    m_Uniforms[name] = value;
 }
 
 void CommandBufferGL::setGlobalTexture(const char *name, Texture *value) {
-    m_Textures[name]    = value;
+    m_Textures[name] = value;
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {

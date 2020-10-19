@@ -38,6 +38,7 @@
 #include "effectconverter.h"
 #include "animationbuilder.h"
 #include "translatorconverter.h"
+#include "mapconverter.h"
 
 #include "projectmanager.h"
 #include "pluginmodel.h"
@@ -104,8 +105,7 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new PrefabConverter());
     registerConverter(new EffectConverter());
     registerConverter(new TranslatorConverter());
-
-    m_Formats["map"] = IConverter::ContentMap;
+    registerConverter(new MapConverter());
 
     m_ContentTypes[MetaType::type<Mesh *>()] = IConverter::ContentMesh;
     m_ContentTypes[MetaType::type<Pose *>()] = IConverter::ContentPose;

@@ -34,7 +34,7 @@ public:
 
     static void drawArrow(const Matrix4 &transform);
 
-    static void drawLines(const Matrix4 &transform, const Vector3Vector &points, const Mesh::IndexVector &indices);
+    static void drawLines(const Matrix4 &transform, const Vector3Vector &points, const IndexVector &indices);
 
     static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 

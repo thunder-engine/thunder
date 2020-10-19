@@ -168,7 +168,7 @@ public:
 
     Actor *m_pActor;
 
-    uint8_t m_Layers;
+    int32_t m_Layers;
 
     bool m_Enable;
 };
@@ -213,14 +213,14 @@ void Actor::setEnabled(const bool enabled) {
     Returns the layers list for the this Actor as a bit mask.
     The layers used for the various purposes like filtering objects before rendering.
 */
-uint8_t Actor::layers() const {
+int Actor::layers() const {
     PROFILE_FUNCTION();
     return p_ptr->m_Layers;
 }
 /*!
     Assigns the list of \a layers for this Actor as a bitmask.
 */
-void Actor::setLayers(const uint8_t layers) {
+void Actor::setLayers(const int layers) {
     PROFILE_FUNCTION();
     p_ptr->m_Layers = layers;
 }

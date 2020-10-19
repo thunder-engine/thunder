@@ -25,7 +25,7 @@ void *ATextureGL::nativeHandle() {
     return reinterpret_cast<void *>(m_ID);
 }
 
-void ATextureGL::readPixels(int32_t x, int32_t y, int32_t width, int32_t height) {
+void ATextureGL::readPixels(int x, int y, int width, int height) {
     bool depth = (format() == Depth);
 
     Surface &surface = getSides()->at(0);

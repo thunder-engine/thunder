@@ -8,6 +8,10 @@
 class ARenderTextureGL : public RenderTexture {
     A_OVERRIDE(ARenderTextureGL, RenderTexture, Resources)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+    A_NOENUMS()
+
 public:
     ARenderTextureGL            ();
 

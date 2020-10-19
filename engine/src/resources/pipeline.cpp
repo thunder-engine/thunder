@@ -138,8 +138,8 @@ void Pipeline::finish() {
 }
 
 void Pipeline::cameraReset(Camera &camera) {
-    Matrix4 v, p;
-    camera.matrices(v, p);
+    Matrix4 v = camera.viewMatrix();
+    Matrix4 p = camera.projectionMatrix();
     camera.setRatio(m_Screen.x / m_Screen.y);
 
     Transform *c = camera.actor()->transform();
@@ -232,7 +232,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     if(tile != m_Tiles.end()) {
         if(tile->second.second.size() == count) {
             for(uint32_t i = 0; i < count; i++) {
-                PackNode *node = tile->second.second[i];
+                AtlasNode *node = tile->second.second[i];
                 x[i] = node->x;
                 y[i] = node->y;
                 w[i] = node->w;
@@ -250,11 +250,11 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     uint32_t rows = count / columns;
 
     RenderTexture *target = nullptr;
-    PackNode *sub = nullptr;
+    AtlasNode *sub = nullptr;
 
     for(auto page : m_ShadowPages) {
         target = page.first;
-        PackNode *root = page.second;
+        AtlasNode *root = page.second;
 
         sub = root->insert(width * columns, height * rows);
         if(sub) {
@@ -268,7 +268,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         target->resize(m_ShadowPageWidth, m_ShadowPageHeight);
         target->setFixed(true);
 
-        PackNode *root = new PackNode;
+        AtlasNode *root = new AtlasNode;
 
         root->w = m_ShadowPageWidth;
         root->h = m_ShadowPageHeight;
@@ -278,9 +278,9 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         sub = root->insert(width * columns, height * rows);
     }
 
-    vector<PackNode *> tiles;
+    vector<AtlasNode *> tiles;
     for(uint32_t i = 0; i < count; i++) {
-        PackNode *node = sub->insert(width, height);
+        AtlasNode *node = sub->insert(width, height);
         if(node) {
             x[i] = node->x;
             y[i] = node->y;
@@ -291,7 +291,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         }
     }
     if(tiles.size() == count) {
-        m_Tiles[id] = pair<RenderTexture *, vector<PackNode *>>(target, tiles);
+        m_Tiles[id] = pair<RenderTexture *, vector<AtlasNode *>>(target, tiles);
     }
     return target;
 }

@@ -24,7 +24,7 @@
     Callback which contain address to setter method of property.
 */
 /*!
-    Constructs MetaProperty object wich will contain information provided in a \a table.
+    Constructs MetaProperty object which will contain information provided in a \a table.
 */
 MetaProperty::MetaProperty(const Table *table) :
         m_pTable(table) {

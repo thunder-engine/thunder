@@ -12,7 +12,7 @@
 */
 
 /*!
-    Constructs MetaEnum object wich will contain information provided in a \a table.
+    Constructs MetaEnum object which will contain information provided in a \a table.
 */
 MetaEnum::MetaEnum(const Table *table) :
         m_pTable(table),

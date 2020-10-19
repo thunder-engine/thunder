@@ -106,15 +106,13 @@ void Camera::setPipeline(Pipeline *pipeline) {
     p_ptr->m_pPipeline = pipeline;
 }
 /*!
-    Returns \a view and \a projection matrices using output parameters.
+    Returns view matrix for the camera.
 */
-void Camera::matrices(Matrix4 &view, Matrix4 &projection) const {
-    projection = projectionMatrix();
-
+Matrix4 Camera::viewMatrix() const {
     Transform *t = actor()->transform();
     Matrix4 m;
     m.translate(-t->position());
-    view = Matrix4(t->rotation().toMatrix()).inverse() * m;
+    return Matrix4(t->quaternion().toMatrix()).inverse() * m;
 }
 /*!
     Returns projection matrix for the camera.
@@ -127,10 +125,10 @@ Matrix4 Camera::projectionMatrix() const {
     return Matrix4::perspective(p_ptr->m_FOV, p_ptr->m_Ratio, p_ptr->m_Near, p_ptr->m_Far);
 }
 /*!
-    Transforms position from \a worldSpace into \a screenSpace using \a modelView and \a projection matrices.
-    Returns true if success; otherwise returns false.
+    Transforms position from \a worldSpace into screen space using \a modelView and \a projection matrices.
+    Returns result of transformation.
 */
-bool Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &screenSpace) {
+Vector3 Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection) {
     Vector4 in;
     Vector4 out;
 
@@ -139,24 +137,20 @@ bool Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, const 
     in  = projection * out;
 
     if(in.w == 0.0f) {
-        return false;
+        return Vector3(); // false;
     }
     in.w  = 1.0f / in.w;
     in.x *= in.w;
     in.y *= in.w;
     in.z *= in.w;
 
-    screenSpace.x = (in.x * 0.5f + 0.5f);
-    screenSpace.y = (in.y * 0.5f + 0.5f);
-    screenSpace.z = (1.0f + in.z) * 0.5f;
-
-    return true;
+    return Vector3((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f), (1.0f + in.z) * 0.5f);
 }
 /*!
-    Transforms position from \a worldSpace into \a screenSpace using \a modelView and \a projection matrices.
-    Returns true if success; otherwise returns false.
+    Transforms position from world space into \a screenSpace using \a modelView and \a projection matrices.
+    Returns result of transformation.
 */
-bool Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &worldSpace) {
+Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection) {
     Matrix4 final;
     Vector4 in;
     Vector4 out;
@@ -170,15 +164,11 @@ bool Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, con
     out  = final * in;
 
     if(out.w == 0.0f) {
-        return false;
+        return Vector3(); // false
     }
     out.w = 1.0f / out.w;
 
-    worldSpace.x = out.x * out.w;
-    worldSpace.y = out.y * out.w;
-    worldSpace.z = out.z * out.w;
-
-    return true;
+    return Vector3(out.x * out.w, out.y * out.w, out.z * out.w);
 }
 /*!
     Returns ray with origin point in camera position and direction to projection plane with \a x and \a y coordinates.
@@ -186,7 +176,7 @@ bool Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, con
 Ray Camera::castRay(float x, float y) {
     Transform *t = actor()->transform();
     Vector3 p   = t->position();
-    Vector3 dir = t->rotation() * Vector3(0.0, 0.0,-1.0);
+    Vector3 dir = t->quaternion() * Vector3(0.0, 0.0,-1.0);
     dir.normalize();
 
     Vector3 view;
@@ -399,9 +389,9 @@ bool Camera::drawHandles(ObjectList &selected) {
 
         Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
         Vector3Vector points(a.begin(), a.end());
-        Mesh::IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
-                                       4, 5, 5, 6, 6, 7, 7, 4,
-                                       0, 4, 1, 5, 2, 6, 3, 7};
+        IndexVector indices   = {0, 1, 1, 2, 2, 3, 3, 0,
+                                 4, 5, 5, 6, 6, 7, 7, 4,
+                                 0, 4, 1, 5, 2, 6, 3, 7};
 
         Handles::drawLines(Matrix4(), points, indices);
     }

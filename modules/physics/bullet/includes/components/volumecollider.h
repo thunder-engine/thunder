@@ -9,9 +9,9 @@ class VolumeCollider : public Collider {
     A_REGISTER(VolumeCollider, Collider, General)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Trigger, VolumeCollider::trigger, VolumeCollider::setTrigger),
-        A_PROPERTYEX(PhysicMaterial *, Material, VolumeCollider::material, VolumeCollider::setMaterial, "editor=Template"),
-        A_PROPERTY(Vector3, Center, VolumeCollider::center, VolumeCollider::setCenter)
+        A_PROPERTY(bool, trigger, VolumeCollider::trigger, VolumeCollider::setTrigger),
+        A_PROPERTYEX(PhysicMaterial *, material, VolumeCollider::material, VolumeCollider::setMaterial, "editor=Template"),
+        A_PROPERTY(Vector3, center, VolumeCollider::center, VolumeCollider::setCenter)
     )
 
     A_METHODS(
@@ -24,7 +24,7 @@ public:
      VolumeCollider();
     ~VolumeCollider() override;
 
-    void update() override;
+
 
     bool trigger() const;
     void setTrigger(bool trigger);
@@ -43,6 +43,8 @@ public:
 
 protected:
     void createCollider() override;
+
+    void update() override;
 
 private:
     void loadUserData(const VariantMap &data) override;

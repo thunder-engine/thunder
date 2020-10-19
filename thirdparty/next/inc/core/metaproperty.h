@@ -91,7 +91,8 @@ struct Reader<T(Class::*)()const, ReadFunc> {
     }
 
     inline static Variant read(const void *obj) {
-        return Variant::fromValue<T_no_cv>((reinterpret_cast<const Class *>(obj)->*ReadFunc)());
+        auto value = (reinterpret_cast<const Class *>(obj)->*ReadFunc)();
+        return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
     template<Fun fun>

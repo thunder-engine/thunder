@@ -10,6 +10,10 @@ class CommandBufferGL;
 
 class AMeshGL : public Mesh {
     A_OVERRIDE(AMeshGL, Mesh, Resources)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+
 public:
     typedef IndexVector         BufferVector;
 

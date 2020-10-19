@@ -98,7 +98,7 @@ void VolumeCollider::createCollider() {
         Actor *a = actor();
         if(a) {
             Transform *t = a->transform();
-            const Quaternion &q = t->rotation();
+            const Quaternion &q = t->quaternion();
             Vector3 p = t->position();
 
             m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w), btVector3(p.x, p.y, p.z)));

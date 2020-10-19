@@ -201,16 +201,18 @@ Engine::Engine(File *file, const char *path) :
     Text::registerClassFactory(p_ptr->m_pResourceSystem);
     Texture::registerClassFactory(p_ptr->m_pResourceSystem);
     Material::registerClassFactory(p_ptr->m_pResourceSystem);
-    Mesh::registerClassFactory(p_ptr->m_pResourceSystem);
+    Mesh::registerSuper(p_ptr->m_pResourceSystem);
     Atlas::registerClassFactory(p_ptr->m_pResourceSystem);
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
     RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
-    ParticleEffect::registerClassFactory(p_ptr->m_pResourceSystem);
-    AnimationStateMachine::registerClassFactory(p_ptr->m_pResourceSystem);
+    ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
+
+    AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
     Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
-    Pose::registerClassFactory(p_ptr->m_pResourceSystem);
+    Pose::registerSuper(p_ptr->m_pResourceSystem);
+
     Prefab::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);

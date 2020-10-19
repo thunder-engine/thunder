@@ -115,7 +115,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         QString name(property.name());
-        if(name.indexOf("Enabled") == -1) {
+        if(name.indexOf("enabled") == -1) {
             name = path + "/" + name;
             Variant data = property.read(object);
 

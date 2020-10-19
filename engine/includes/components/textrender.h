@@ -18,15 +18,15 @@ class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
     A_REGISTER(TextRender, Renderable, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(string, Text, TextRender::text, TextRender::setText),
-        A_PROPERTYEX(int, Alignment, TextRender::align, TextRender::setAlign, "editor=Alignment"),
-        A_PROPERTYEX(Font *, Font_Name, TextRender::font, TextRender::setFont, "editor=Template"),
-        A_PROPERTYEX(Material *, Material, TextRender::material, TextRender::setMaterial, "editor=Template"),
-        A_PROPERTY(int, Font_Size, TextRender::fontSize, TextRender::setFontSize),
-        A_PROPERTYEX(Vector4, Color, TextRender::color, TextRender::setColor, "editor=Color"),
-        A_PROPERTY(bool, Word_Wrap, TextRender::wrap, TextRender::setWrap),
-        A_PROPERTY(Vector2, Boundaries, TextRender::boundaries, TextRender::setBoundaries),
-        A_PROPERTY(bool, Use_Kerning, TextRender::kerning, TextRender::setKerning)
+        A_PROPERTY(string, text, TextRender::text, TextRender::setText),
+        A_PROPERTYEX(int, alignment, TextRender::align, TextRender::setAlign, "editor=Alignment"),
+        A_PROPERTYEX(Font *, font, TextRender::font, TextRender::setFont, "editor=Template"),
+        A_PROPERTYEX(Material *, material, TextRender::material, TextRender::setMaterial, "editor=Template"),
+        A_PROPERTY(int, fontSize, TextRender::fontSize, TextRender::setFontSize),
+        A_PROPERTYEX(Vector4, color, TextRender::color, TextRender::setColor, "editor=Color"),
+        A_PROPERTY(bool, wordWrap, TextRender::wordWrap, TextRender::setWordWrap),
+        A_PROPERTY(Vector2, boundaries, TextRender::boundaries, TextRender::setBoundaries),
+        A_PROPERTY(bool, kerning, TextRender::kerning, TextRender::setKerning)
     )
     A_NOMETHODS()
 
@@ -49,8 +49,8 @@ public:
     Vector4 color () const;
     void setColor (const Vector4 &color);
 
-    bool wrap () const;
-    void setWrap (bool wrap);
+    bool wordWrap () const;
+    void setWordWrap (bool wrap);
 
     Vector2 boundaries () const;
     void setBoundaries (const Vector2 &boundaries);

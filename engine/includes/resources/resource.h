@@ -10,6 +10,10 @@ class Component;
 
 class NEXT_LIBRARY_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
+
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+
 public:
     enum ResourceState {
         Invalid,

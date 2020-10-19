@@ -14,6 +14,12 @@ public:
     Actor *m_pActor;
 };
 
+/*!
+    \class Prefab
+    \brief A small piece of objects hierarchy which can be placed on the scene.
+    \inmodule Resource
+*/
+
 Prefab::Prefab() :
         p_ptr(new PrefabPrivate) {
 
@@ -22,18 +28,24 @@ Prefab::Prefab() :
 Prefab::~Prefab() {
     delete p_ptr;
 }
-
+/*!
+    Returns prototype Actor which will should be instanced
+*/
 Actor *Prefab::actor() const {
     return p_ptr->m_pActor;
 }
-
+/*!
+    \internal
+*/
 void Prefab::setActor(Actor *actor) {
     p_ptr->m_pActor = actor;
     if(p_ptr->m_pActor) {
         p_ptr->m_pActor->setParent(this);
     }
 }
-
+/*!
+    \internal
+*/
 void Prefab::loadUserData(const VariantMap &data) {
     delete p_ptr->m_pActor;
     p_ptr->m_pActor = nullptr;
@@ -46,7 +58,9 @@ void Prefab::loadUserData(const VariantMap &data) {
 
     setState(Ready);
 }
-
+/*!
+    \internal
+*/
 VariantMap Prefab::saveUserData() const {
     VariantMap result;
     if(p_ptr->m_pActor) {

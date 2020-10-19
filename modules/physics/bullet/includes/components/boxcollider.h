@@ -7,7 +7,7 @@ class BoxCollider : public VolumeCollider {
     A_REGISTER(BoxCollider, VolumeCollider, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Size, BoxCollider::size, BoxCollider::setSize)
+        A_PROPERTY(bool, size, BoxCollider::size, BoxCollider::setSize)
     )
     A_NOMETHODS()
 

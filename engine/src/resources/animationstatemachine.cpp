@@ -11,25 +11,36 @@ public:
 
     }
 
-    AnimationStateMachine::StateVector m_States;
+    AnimationStateVector m_States;
 
-    AnimationStateMachine::State *m_pInitialState;
+    AnimationState *m_pInitialState;
 
     AnimationStateMachine::VariableMap m_Variables;
 };
 
-AnimationStateMachine::State::State() :
+AnimationState::AnimationState() :
         m_Hash(0),
         m_pClip(nullptr),
         m_Loop(false) {
 
 }
 
-bool AnimationStateMachine::State::Transition::checkCondition(const Variant &value) {
-    return value.toBool();
+bool AnimationState::operator== (const AnimationState &right) const {
+    return m_Hash == right.m_Hash;
 }
 
-uint8_t AnimationStateMachine::State::type() const {
+bool AnimationTransition::operator== (const AnimationTransition &right) const {
+    return m_ConditionHash == right.m_ConditionHash;
+}
+
+bool AnimationTransition::checkCondition(const Variant &value) {
+    return value.toBool();
+}
+/*!
+    Returns a type of state.
+    For more details please see the AnimationState::Type enum.
+*/
+int AnimationState::type() const {
     return Base;
 }
 
@@ -56,9 +67,9 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList stateList = it.toList();
                 auto i = stateList.begin();
 
-                State *state = nullptr;
+                AnimationState *state = nullptr;
                 switch((*i).toInt()) {
-                    default: state = new State;
+                    default: state = new AnimationState;
                 }
                 i++;
                 state->m_Hash = hash_str((*i).toString());
@@ -80,12 +91,12 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList valueList = it.toList();
                 auto i = valueList.begin();
 
-                State *source = findState(hash_str((*i).toString()));
+                AnimationState *source = findState(hash_str((*i).toString()));
                 if(source) {
                     i++;
-                    State *target = findState(hash_str((*i).toString()));
+                    AnimationState *target = findState(hash_str((*i).toString()));
                     if(target) {
-                        State::Transition transition;
+                        AnimationTransition transition;
                         transition.m_pTargetState = target;
                         source->m_Transitions.push_back(transition);
                     }
@@ -98,8 +109,10 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
 
     setState(Ready);
 }
-
-AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) const {
+/*!
+    Returns a state for the provided \a hash.
+*/
+AnimationState *AnimationStateMachine::findState(int hash) const {
     PROFILE_FUNCTION();
 
     for(auto state : p_ptr->m_States) {
@@ -109,23 +122,45 @@ AnimationStateMachine::State *AnimationStateMachine::findState(size_t hash) cons
     }
     return nullptr;
 }
-
-AnimationStateMachine::State *AnimationStateMachine::initialState() const {
+/*!
+    Returns an initial state for the state machine.
+*/
+AnimationState *AnimationStateMachine::initialState() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pInitialState;
 }
 /*!
-    Return list of all states for the state machine.
+    \internal
+    Returns an array of all states for the state machine.
 */
-AnimationStateMachine::StateVector &AnimationStateMachine::states() const {
+AnimationStateVector &AnimationStateMachine::states() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_States;
 }
+/*!
+    \internal
+    Sets a new \a value with the given \a name for the state machine.
+    This variable can be used for transition cases between states.
+*/
+void AnimationStateMachine::setVariable(const string &name, const Variant &value) {
+    PROFILE_FUNCTION();
 
+    p_ptr->m_Variables[hash_str(name)] = value;
+}
+/*!
+    \internal
+    Returns a dictionary of all variables for the state machine.
+*/
 AnimationStateMachine::VariableMap &AnimationStateMachine::variables() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_Variables;
+}
+
+void AnimationStateMachine::registerSuper(ObjectSystem *system) {
+    REGISTER_META_TYPE(AnimationState);
+    REGISTER_META_TYPE(AnimationTransition);
+    AnimationStateMachine::registerClassFactory(system);
 }

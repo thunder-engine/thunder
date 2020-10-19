@@ -87,7 +87,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
             if(index.internalPointer() == &m_pClip->m_Tracks) {
                 advance(it, index.row());
                 if(it != m_pClip->m_Tracks.end()) {
-                    QStringList lst = QString::fromStdString(it->path).split('/');
+                    QStringList lst = QString::fromStdString(it->path()).split('/');
                     QString component = lst.last();
                     lst.pop_back();
                     QString actor = lst.last();
@@ -103,13 +103,13 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                     for(int32_t i = 0; i < size; i++) {
                         spaces  += "    ";
                     }
-                    return QString("%1%2 : %3").arg(spaces).arg(actor).arg(QString(it->property.c_str()).replace('_', ""));
+                    return QString("%1%2 : %3").arg(spaces).arg(actor).arg(QString(it->property().c_str()).replace('_', ""));
                 }
             } else {
                 advance(it, index.parent().row());
-                int component = std::next(it->curves.begin(), index.row())->first;
+                int component = std::next(it->curves().begin(), index.row())->first;
                 if(component >= 0) {
-                    return QString("%1.%2").arg(it->property.c_str()).arg(components.at(component));
+                    return QString("%1.%2").arg(it->property().c_str()).arg(components.at(component));
                 }
             }
         } break;
@@ -139,13 +139,13 @@ int AnimationClipModel::columnCount(const QModelIndex &) const {
 
 QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &parent) const {
     if(m_pClip) {
-        AnimationClip::TrackList *list = &m_pClip->m_Tracks;
+        AnimationTrackList *list = &m_pClip->m_Tracks;
         if(!parent.isValid()) {
             return createIndex(row, column, list);
         } else {
             if(parent.internalPointer() == list) {
                 if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                    void *ptr = &(std::next(list->begin(), parent.row())->curves);
+                    void *ptr = &(std::next(list->begin(), parent.row())->curves());
                     return createIndex(row, column, ptr);
                 }
             }
@@ -156,11 +156,11 @@ QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &pa
 
 QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
     if(index.isValid() && m_pClip) {
-        AnimationClip::TrackList *list  = &m_pClip->m_Tracks;
+        AnimationTrackList *list  = &m_pClip->m_Tracks;
         if(index.internalPointer() != list) {
             int row = 0;
             for(auto &it : m_pClip->m_Tracks) {
-                if(index.internalPointer() == &(it.curves)) {
+                if(index.internalPointer() == &(it.curves())) {
                     break;
                 }
                 row++;
@@ -174,14 +174,14 @@ QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
 
 int AnimationClipModel::rowCount(const QModelIndex &parent) const {
     if(m_pClip) {
-        AnimationClip::TrackList *list = &m_pClip->m_Tracks;
+        AnimationTrackList *list = &m_pClip->m_Tracks;
         if(!list->empty()) {
             if(!parent.isValid()) {
                 return static_cast<int32_t>(list->size());
             } else {
                 if(parent.internalPointer() == list) {
                     if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                        int result = static_cast<int32_t>(std::next(list->begin(), parent.row())->curves.size());
+                        int result = static_cast<int32_t>(std::next(list->begin(), parent.row())->curves().size());
                         return (result > 1) ? result : 0;
                     }
                 }
@@ -204,8 +204,8 @@ int AnimationClipModel::expandHeight(int track) const {
                 break;
             }
             result += 1;
-            if(m_Expands.indexOf(i) > -1 && it.curves.size() > 1) {
-                result += it.curves.size();
+            if(m_Expands.indexOf(i) > -1 && it.curves().size() > 1) {
+                result += it.curves().size();
             }
             i++;
         }
@@ -216,7 +216,7 @@ int AnimationClipModel::expandHeight(int track) const {
 QVariant AnimationClipModel::trackData(int track) const {
     if(m_pClip && track >= 0) {
         if(size_t(track) < m_pClip->m_Tracks.size()) {
-            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves();
 
             QVariantList t;
             for(auto &it : curves) {
@@ -244,7 +244,7 @@ void AnimationClipModel::setTrackData(int track, const QVariant &data) {
 int AnimationClipModel::maxPosition(int track) {
     if(m_pClip && track >= 0) {
         if(!m_pClip->m_Tracks.empty()) {
-            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves;
+            auto &curves = (*std::next(m_pClip->m_Tracks.begin(), track)).curves();
 
             int32_t result = 0;
             for(auto &it : curves) {
@@ -314,9 +314,9 @@ void AnimationClipModel::removeItems(const QModelIndexList &list) {
 AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, int32_t index) {
     if(track >= 0) {
         if(m_pClip->m_Tracks.size() > size_t(track)) {
-            AnimationClip::Track &t = *std::next(m_pClip->m_Tracks.begin(), track);
-            if(t.curves.size() > col && t.curves[col].m_Keys.size() > index) {
-                return &t.curves[col].m_Keys[index];
+            AnimationTrack &t = *std::next(m_pClip->m_Tracks.begin(), track);
+            if(t.curves().size() > col && t.curves()[col].m_Keys.size() > index) {
+                return &t.curves()[col].m_Keys[index];
             }
         }
     }
@@ -358,7 +358,7 @@ void AnimationClipModel::updateController() {
 }
 
 void UndoInsertKey::undo() {
-    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves;
+    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves();
 
     int i = (m_Column == -1) ? 0 : m_Column;
     for(auto index : m_Indices) {
@@ -375,7 +375,7 @@ void UndoInsertKey::undo() {
 void UndoInsertKey::redo() {
     m_Indices.clear();
 
-    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves;
+    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves();
 
     if(m_Column > -1) {
         auto &curve = curves[m_Column];
@@ -410,7 +410,7 @@ void UndoInsertKey::insertKey(AnimationCurve &curve) {
 }
 
 void UndoRemoveKey::undo() {
-    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves;
+    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves();
     auto &curve = curves[m_Column];
 
     curve.m_Keys.insert(curve.m_Keys.begin() + m_Index, m_Key);
@@ -419,7 +419,7 @@ void UndoRemoveKey::undo() {
 }
 
 void UndoRemoveKey::redo() {
-    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves;
+    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves();
     auto &curve = curves[m_Column];
     auto it = std::next(curve.m_Keys.begin(), m_Index);
 
@@ -460,7 +460,7 @@ void UndoUpdateKeys::undo() {
 void UndoUpdateKeys::redo() {
     QVariant save = m_pModel->trackData(m_Row);
 
-    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves;
+    auto &curves = (*std::next(m_pModel->clip()->m_Tracks.begin(), m_Row)).curves();
 
     curves.clear();
 
@@ -519,7 +519,7 @@ void UndoUpdateItems::undo() {
 void UndoUpdateItems::redo() {
     AnimationClip *clip = m_pModel->clip();
     if(clip) {
-        AnimationClip::TrackList save = clip->m_Tracks;
+        AnimationTrackList save = clip->m_Tracks;
         clip->m_Tracks = m_Tracks;
         m_Tracks = save;
         m_pModel->updateController();

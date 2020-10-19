@@ -4,6 +4,32 @@
 
 static hash<string> hash_str;
 
+string AnimationTrack::path() const {
+    return m_Path;
+}
+
+void AnimationTrack::setPath(const string &path) {
+    m_Path = path;
+    m_Hash = hash_str(m_Path + "." + m_Property);
+}
+
+string AnimationTrack::property() const {
+    return m_Property;
+}
+
+void AnimationTrack::setProperty(const string &property) {
+    m_Property = property;
+    m_Hash = hash_str(m_Path + "." + m_Property);
+}
+
+int AnimationTrack::hash() const {
+    return m_Hash;
+}
+
+AnimationTrack::CurveMap &AnimationTrack::curves() {
+    return m_Curves;
+}
+
 /*!
     \class AnimationClip
     \brief AnimationClip resource contains keyframe based animation data.
@@ -30,13 +56,11 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
             auto i = trackData.begin();
 
-            Track track;
-            track.path = (*i).toString();
+            AnimationTrack track;
+            track.setPath((*i).toString());
             i++;
-            track.property = (*i).toString();
+            track.setProperty((*i).toString());
             i++;
-
-            track.hash = hash_str(track.path + "." + track.property);
 
             for(auto it : (*i).toList()) {
                 VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
@@ -65,7 +89,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 
                     t++;
                 }
-                track.curves[component] = curve;
+                track.curves()[component] = curve;
             }
             m_Tracks.push_back(track);
         }
@@ -76,12 +100,12 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 /*!
     Returns duration of the animation clip in milliseconds.
 */
-uint32_t AnimationClip::duration() const {
+int AnimationClip::duration() const {
     PROFILE_FUNCTION();
 
     uint32_t result = 0;
     for(auto track : m_Tracks) {
-        for(auto curve : track.curves) {
+        for(auto curve : track.curves()) {
             result = MAX(curve.second.m_Keys.back().m_Position, result);
         }
     }

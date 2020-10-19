@@ -74,7 +74,10 @@ Mesh *MeshRender::mesh() const {
 void MeshRender::setMesh(Mesh *mesh) {
     p_ptr->m_pMesh = mesh;
     if(p_ptr->m_pMesh) {
-        setMaterial(mesh->material(0));
+        Lod *lod = mesh->lod(0);
+        if(lod) {
+            setMaterial(lod->material());
+        }
     }
 }
 /*!

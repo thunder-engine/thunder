@@ -12,7 +12,9 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(AABBox, Renderable::bound)
+    )
 
 public:
     Renderable ();

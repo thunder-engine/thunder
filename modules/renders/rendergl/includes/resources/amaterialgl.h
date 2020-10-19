@@ -14,6 +14,9 @@ class ICommandBuffer;
 class AMaterialGL : public Material {
     A_OVERRIDE(AMaterialGL, Material, Resources)
 
+    A_NOPROPERTIES()
+    A_NOMETHODS()
+
     enum ShaderType {
         Static      = 1,
         Instanced,

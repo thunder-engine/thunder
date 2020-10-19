@@ -7,52 +7,67 @@
 
 class AnimationStateMachinePrivate;
 
+class AnimationState;
+
+class NEXT_LIBRARY_EXPORT AnimationTransition {
+public:
+    bool operator== (const AnimationTransition &right) const;
+
+    bool checkCondition (const Variant &value);
+
+    AnimationState *m_pTargetState;
+
+    int m_ConditionHash;
+};
+typedef vector<AnimationTransition> TransitionVector;
+
+class NEXT_LIBRARY_EXPORT AnimationState {
+public:
+    enum Type {
+        Base
+    };
+
+    AnimationState();
+
+    bool operator== (const AnimationState &right) const;
+
+    int type() const;
+
+    TransitionVector m_Transitions;
+
+    int m_Hash;
+
+    AnimationClip *m_pClip;
+
+    bool m_Loop;
+};
+typedef vector<AnimationState *> AnimationStateVector;
+
 class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
     A_REGISTER(AnimationStateMachine, Resource, Resources)
 
+    A_METHODS(
+        A_METHOD(AnimationState *, AnimationStateMachine::findState),
+        A_METHOD(AnimationState *, AnimationStateMachine::initialState)
+    )
+
 public:
-    class NEXT_LIBRARY_EXPORT State {
-    public:
-        enum {
-            Base
-        };
-
-        struct NEXT_LIBRARY_EXPORT Transition {
-            State *m_pTargetState;
-
-            size_t m_ConditionHash;
-
-            bool checkCondition (const Variant &value);
-        };
-        typedef vector<Transition> TransitionArray;
-
-        State();
-
-        uint8_t type() const;
-
-        TransitionArray m_Transitions;
-
-        size_t m_Hash;
-
-        AnimationClip *m_pClip;
-
-        bool m_Loop;
-    };
-
-    typedef unordered_map<size_t, Variant> VariableMap;
-
-    typedef vector<AnimationStateMachine::State *> StateVector;
+    typedef unordered_map<int, Variant> VariableMap;
 
 public:
     AnimationStateMachine();
 
-    State *findState(size_t hash) const;
+    AnimationState *findState(int hash) const;
 
-    State *initialState() const;
+    AnimationState *initialState() const;
 
-    StateVector &states() const;
+    void setVariable(const string &name, const Variant &value);
+
+    AnimationStateVector &states() const;
 
     VariableMap &variables() const;
+
+    static void registerSuper(ObjectSystem *system);
 
 private:
     void loadUserData(const VariantMap &data) override;
