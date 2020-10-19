@@ -201,7 +201,7 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
 
         Matrix4 v = camera.viewMatrix();
         Matrix4 p = camera.projectionMatrix();
-        Camera::unproject(screen, v, p, m_MouseWorld);
+        m_MouseWorld = Camera::unproject(screen, v, p);
     } else {
         Ray ray = camera.castRay(screen.x, 1.0f - screen.y);
         m_MouseWorld = (ray.dir * 10.0f) + ray.pos;

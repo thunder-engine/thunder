@@ -25,8 +25,8 @@ class NEXT_LIBRARY_EXPORT Camera : public Component {
     A_METHODS(
         A_METHOD(Matrix4, Camera::viewMatrix),
         A_METHOD(Matrix4, Camera::projectionMatrix),
-        A_METHOD(bool, Camera::project),
-        A_METHOD(bool, Camera::unproject),
+        A_METHOD(Vector3, Camera::project),
+        A_METHOD(Vector3, Camera::unproject),
         A_METHOD(Camera *, Camera::current),
         A_METHOD(void, Camera::setCurrent),
         A_METHOD(Ray, Camera::castRay)
@@ -71,8 +71,8 @@ public:
     static Camera *current ();
     static void setCurrent (Camera *current);
 
-    static bool project (const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &screenSpace);
-    static bool unproject (const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection, Vector3 &worldSpace);
+    static Vector3 project (const Vector3 &worldSpace, const Matrix4 &modelView, const Matrix4 &projection);
+    static Vector3 unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection);
 
     static array<Vector3, 8> frustumCorners (const Camera &camera);
     static array<Vector3, 8> frustumCorners (bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
