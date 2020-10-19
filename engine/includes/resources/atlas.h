@@ -1,19 +1,19 @@
 #ifndef ATLAS_H
 #define ATLAS_H
 
-#include "resource.h"
+#include "texture.h"
 
 class Texture;
 class AtlasPrivate;
 
 class AtlasNode {
 public:
-    AtlasNode ();
-    ~AtlasNode ();
+    AtlasNode();
+    ~AtlasNode();
 
-    AtlasNode *insert (int width, int height);
+    AtlasNode *insert(int width, int height);
 
-    bool clean ();
+    bool clean();
 
     bool fill;
     bool dirty;
@@ -30,25 +30,32 @@ public:
 class NEXT_LIBRARY_EXPORT Atlas : public Resource {
     A_REGISTER(Atlas, Resource, Resources)
 
+    A_METHODS(
+        A_METHOD(int, Atlas::addElement),
+        A_METHOD(Vector4, Atlas::uv),
+        A_METHOD(Texture *, Atlas::texture),
+        A_METHOD(void, Atlas::pack)
+    )
+
 public:
-    Atlas ();
-    ~Atlas ();
+    Atlas();
+    ~Atlas();
 
-    uint32_t addElement (Texture *texture);
+    int addElement(Texture *texture);
 
-    Vector2Vector shape (uint32_t index) const;
+    Vector2Vector shape(int index) const;
 
-    Vector4 uv (uint32_t index) const;
+    Vector4 uv(int index) const;
 
-    Texture *texture () const;
+    Texture *texture() const;
 
-    void pack (uint8_t padding);
+    void pack(int padding);
 
 protected:
-    void clearAtlas ();
+    void clearAtlas();
 
 private:
-    void resize (int32_t width, int32_t height);
+    void resize(int32_t width, int32_t height);
 
     AtlasPrivate *p_ptr;
 

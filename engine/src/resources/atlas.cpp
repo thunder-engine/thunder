@@ -142,14 +142,14 @@ void Atlas::clearAtlas() {
 
 }
 
-uint32_t Atlas::addElement(Texture *texture) {
+int Atlas::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Sources.push_back(texture);
     return (p_ptr->m_Sources.size() - 1);
 }
 
-void Atlas::pack(uint8_t padding) {
+void Atlas::pack(int padding) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Elements.clear();
@@ -200,7 +200,7 @@ void Atlas::resize(int32_t width, int32_t height) {
     p_ptr->m_pTexture->resize(width, height);
 }
 
-Vector2Vector Atlas::shape(uint32_t index) const {
+Vector2Vector Atlas::shape(int index) const {
     PROFILE_FUNCTION();
 
     if(index < p_ptr->m_Sources.size()) {
@@ -209,7 +209,7 @@ Vector2Vector Atlas::shape(uint32_t index) const {
     return Vector2Vector();
 }
 
-Vector4 Atlas::uv(uint32_t index) const {
+Vector4 Atlas::uv(int index) const {
     PROFILE_FUNCTION();
 
     if(index < p_ptr->m_Elements.size()) {

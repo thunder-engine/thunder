@@ -208,7 +208,7 @@ Engine::Engine(File *file, const char *path) :
     RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
     ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
 
-    AnimationStateMachine::registerClassFactory(p_ptr->m_pResourceSystem);
+    AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
     Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
     Pose::registerSuper(p_ptr->m_pResourceSystem);

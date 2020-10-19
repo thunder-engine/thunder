@@ -391,7 +391,7 @@ void Mesh::setFlags(int flags) {
     Adds the new \a lod data for the Mesh.
     Retuns index of new lod.
 */
-int Mesh::addLod(const Lod *lod) {
+int Mesh::addLod(Lod *lod) {
     if(lod) {
         p_ptr->m_Lods.push_back(*lod);
 

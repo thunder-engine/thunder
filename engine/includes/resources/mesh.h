@@ -149,7 +149,7 @@ public:
     int flags() const;
     void setFlags(int flags);
 
-    int addLod(const Lod *lod);
+    int addLod(Lod *lod);
 
     Lod *lod(int lod) const;
     void setLod(int lod, Lod *data);

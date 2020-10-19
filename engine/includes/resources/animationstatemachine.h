@@ -7,26 +7,33 @@
 
 class AnimationStateMachinePrivate;
 
+class AnimationState;
+
+class NEXT_LIBRARY_EXPORT AnimationTransition {
+public:
+    bool operator== (const AnimationTransition &right) const;
+
+    bool checkCondition (const Variant &value);
+
+    AnimationState *m_pTargetState;
+
+    int m_ConditionHash;
+};
+typedef vector<AnimationTransition> TransitionVector;
+
 class NEXT_LIBRARY_EXPORT AnimationState {
 public:
-    enum {
+    enum Type {
         Base
     };
 
-    struct NEXT_LIBRARY_EXPORT Transition {
-        AnimationState *m_pTargetState;
-
-        size_t m_ConditionHash;
-
-        bool checkCondition (const Variant &value);
-    };
-    typedef vector<Transition> TransitionArray;
-
     AnimationState();
 
-    uint8_t type() const;
+    bool operator== (const AnimationState &right) const;
 
-    TransitionArray m_Transitions;
+    int type() const;
+
+    TransitionVector m_Transitions;
 
     int m_Hash;
 
@@ -39,6 +46,11 @@ typedef vector<AnimationState *> AnimationStateVector;
 class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
     A_REGISTER(AnimationStateMachine, Resource, Resources)
 
+    A_METHODS(
+        A_METHOD(AnimationState *, AnimationStateMachine::findState),
+        A_METHOD(AnimationState *, AnimationStateMachine::initialState)
+    )
+
 public:
     typedef unordered_map<int, Variant> VariableMap;
 
@@ -49,9 +61,13 @@ public:
 
     AnimationState *initialState() const;
 
+    void setVariable(const string &name, const Variant &value);
+
     AnimationStateVector &states() const;
 
     VariableMap &variables() const;
+
+    static void registerSuper(ObjectSystem *system);
 
 private:
     void loadUserData(const VariantMap &data) override;
