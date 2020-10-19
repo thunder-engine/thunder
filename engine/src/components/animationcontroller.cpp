@@ -174,7 +174,7 @@ void AnimationController::setStateHash(int hash) {
 /*!
     Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
 */
-void AnimationController::crossFade(string &state, float duration) {
+void AnimationController::crossFade(const string &state, float duration) {
     PROFILE_FUNCTION();
 
     crossFadeHash(hash_str(state), duration);
