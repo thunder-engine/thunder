@@ -13,7 +13,7 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_METHOD(AABBox, bound)
+        A_METHOD(AABBox, Renderable::bound)
     )
 
 public:
