@@ -43,7 +43,7 @@ public:
     void setState (const string &state);
     void setStateHash (int hash);
 
-    void crossFade (string &state, float duration);
+    void crossFade (const string &state, float duration);
     void crossFadeHash (int hash, float duration);
 
     AnimationClip *clip () const;
