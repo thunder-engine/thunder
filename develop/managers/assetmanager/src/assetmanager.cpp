@@ -77,7 +77,12 @@ AssetManager::AssetManager() :
 }
 
 AssetManager::~AssetManager() {
+    delete m_pDirWatcher;
+    delete m_pFileWatcher;
 
+    for(IConverter *it : QSet<IConverter *>::fromList(m_Converters.values())) {
+        delete it;
+    }
 }
 
 AssetManager *AssetManager::instance() {

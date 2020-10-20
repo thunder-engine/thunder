@@ -88,10 +88,8 @@ int main(int argc, char *argv[]) {
 
     int result  = a.exec();
 
-    asset->destroy();
-    plugin->destroy();
-
     UndoManager::destroy();
     AssetManager::destroy();
+    PluginModel::destroy();
     return result;
 }

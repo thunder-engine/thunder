@@ -79,6 +79,10 @@ AngelBuilder::AngelBuilder(AngelSystem *system) :
     m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
 }
 
+AngelBuilder::~AngelBuilder() {
+    m_pScriptEngine->ShutDownAndRelease();
+}
+
 void AngelBuilder::init() {
     m_pSystem->registerClasses(m_pScriptEngine);
 }
@@ -92,7 +96,7 @@ bool AngelBuilder::buildProject() {
             mod->AddScriptSection("AngelData", base.readAll());
             base.close();
         }
-        foreach(QString it, m_Sources) {
+        for(QString it : m_Sources) {
             QFile file(it);
             if(file.open( QIODevice::ReadOnly)) {
                 mod->AddScriptSection("AngelData", file.readAll().data());

@@ -77,6 +77,7 @@ class AngelBuilder : public IBuilder {
     Q_OBJECT
 public:
     AngelBuilder(AngelSystem *system);
+    ~AngelBuilder() Q_DECL_OVERRIDE;
 
 protected:
     void init() Q_DECL_OVERRIDE;
