@@ -635,7 +635,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             objects.push_back(t);
                             t->setPosition(it.position);
                         }
-                        UndoManager::instance()->push(new PropertyObjects(objects, "Position", values, this, "Move"));
+                        UndoManager::instance()->push(new PropertyObjects(objects, "position", values, this, "Move"));
                     } break;
                     case ModeTypes::MODE_ROTATE: {
                         VariantList pos;
@@ -650,8 +650,8 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             t->setRotation(it.euler);
                         }
                         QUndoCommand *group = new QUndoCommand("Rotate");
-                        new PropertyObjects(objects, "Position", pos, this, "", group);
-                        new PropertyObjects(objects, "Rotation", rot, this, "", group);
+                        new PropertyObjects(objects, "position", pos, this, "", group);
+                        new PropertyObjects(objects, "rotation", rot, this, "", group);
                         UndoManager::instance()->push(group);
                     } break;
                     case ModeTypes::MODE_SCALE: {
@@ -667,8 +667,8 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                             t->setScale(it.scale);
                         }
                         QUndoCommand *group = new QUndoCommand("Scale");
-                        new PropertyObjects(objects, "Position", pos, this, "", group);
-                        new PropertyObjects(objects, "Scale", scl, this, "", group);
+                        new PropertyObjects(objects, "position", pos, this, "", group);
+                        new PropertyObjects(objects, "scale", scl, this, "", group);
                         UndoManager::instance()->push(group);
                     } break;
                     default: break;

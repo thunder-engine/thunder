@@ -10,10 +10,11 @@
 
 #include <cstring>
 
-#define PREFAB  "Prefab"
-#define DATA    "PrefabData"
-#define STATIC  "Static"
-#define DELETED "Deleted"
+const char *PREFAB  ("Prefab");
+const char *DATA    ("PrefabData");
+const char *STATIC  ("Static");
+const char *DELETED ("Deleted");
+const char *TRANSFORM("Transform");
 
 class ActorPrivate : public Resource::IObserver {
 public:
@@ -231,10 +232,7 @@ void Actor::setLayers(const int layers) {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(p_ptr->m_pTransform == nullptr) {
-        p_ptr->m_pTransform = static_cast<Transform *>(component("Transform"));
-        if(p_ptr->m_pTransform == nullptr) {
-            p_ptr->m_pTransform = static_cast<Transform *>(addComponent("Transform"));
-        }
+        p_ptr->m_pTransform = fetchTransform();
         Actor *p = dynamic_cast<Actor *>(parent());
         if(p) {
             p_ptr->m_pTransform->setParentTransform(p->transform(), true);
@@ -300,6 +298,18 @@ bool Actor::isSerializable() const {
 
     bool result = (clonedFrom() == 0 || isInstance());
 
+    return result;
+}
+/*!
+    \internal
+    Tries to find a Transform in components.
+    In case of failure, it will create a new one.
+*/
+Transform *Actor::fetchTransform() {
+    Transform *result = static_cast<Transform *>(component(TRANSFORM));
+    if(result == nullptr) {
+        result = static_cast<Transform *>(addComponent(TRANSFORM));
+    }
     return result;
 }
 /*!

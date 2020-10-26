@@ -201,8 +201,10 @@ void AnimationController::crossFadeHash(int hash, float duration) {
 */
 AnimationClip *AnimationController::clip() const {
     PROFILE_FUNCTION();
-
-    return p_ptr->m_pCurrentState->m_pClip;
+    if(p_ptr->m_pCurrentState) {
+        return p_ptr->m_pCurrentState->m_pClip;
+    }
+    return nullptr;
 }
 /*!
     Forcefully sets animation \a clip over any state.
