@@ -15,14 +15,14 @@ public:
 
     uint8_t                     types                   () const;
 
-    System                    *system                  ();
+    System                     *system                  ();
 
     IConverter                 *converter               ();
 
 protected:
     Engine                     *m_pEngine;
 
-    System                    *m_pSystem;
+    System                     *m_pSystem;
 };
 
 extern "C" {
