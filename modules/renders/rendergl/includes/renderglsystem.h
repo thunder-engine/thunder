@@ -9,16 +9,16 @@ class Engine;
 
 class RenderGLSystem : public System {
 public:
-    RenderGLSystem              (Engine *engine);
-    ~RenderGLSystem             ();
+    RenderGLSystem(Engine *engine);
+    ~RenderGLSystem();
 
-    bool                        init                        ();
+    bool init();
 
-    const char                 *name                        () const;
+    const char *name() const;
 
-    void                        update                      (Scene *scene);
+    void update(Scene *scene);
 
-    bool                        isThreadSafe                () const;
+    int threadPolicy() const;
 
     Engine *m_pEngine;
 };

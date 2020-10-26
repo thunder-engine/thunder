@@ -81,8 +81,8 @@ void ResourceSystem::update(Scene *) {
     p_ptr->m_DeleteList.clear();
 }
 
-bool ResourceSystem::isThreadSafe() const {
-    return true;
+int ResourceSystem::threadPolicy() const {
+    return Pool;
 }
 
 void ResourceSystem::setResource(Object *object, const string &uuid) {

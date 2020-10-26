@@ -10,6 +10,12 @@ class Scene;
 
 class NEXT_LIBRARY_EXPORT System : public ObjectSystem {
 public:
+    enum ThreadPolicy {
+        Main = 0,
+        Pool
+    };
+
+public:
     System();
 
     virtual bool init () = 0;
@@ -18,7 +24,7 @@ public:
 
     virtual void update (Scene *scene) = 0;
 
-    virtual bool isThreadSafe () const = 0;
+    virtual int threadPolicy () const = 0;
 
     virtual void syncSettings () const;
 

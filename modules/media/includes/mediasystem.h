@@ -7,16 +7,16 @@
 
 class MediaSystem : public System {
 public:
-    MediaSystem                 ();
-    ~MediaSystem                ();
+    MediaSystem();
+    ~MediaSystem();
 
-    bool                        init                        ();
+    bool init();
 
-    const char                 *name                        () const;
+    const char *name() const;
 
-    void                        update                      (Scene *);
+    void update(Scene *);
 
-    bool                        isThreadSafe                () const;
+    int threadPolicy() const;
 
 protected:
     ALCdevice                  *m_pDevice;

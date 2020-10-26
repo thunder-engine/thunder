@@ -108,6 +108,6 @@ void BulletSystem::update(Scene *scene) {
     }
 }
 
-bool BulletSystem::isThreadSafe() const {
-    return true;
+int BulletSystem::threadPolicy() const {
+    return Pool;
 }

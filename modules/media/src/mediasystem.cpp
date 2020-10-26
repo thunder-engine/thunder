@@ -69,6 +69,6 @@ void MediaSystem::update(Scene *) {
     }
 }
 
-bool MediaSystem::isThreadSafe() const {
-    return true;
+int MediaSystem::threadPolicy() const {
+    return Pool;
 }

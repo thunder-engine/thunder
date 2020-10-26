@@ -13,16 +13,16 @@ class btDynamicsWorld;
 
 class BulletSystem : public System {
 public:
-    BulletSystem (Engine *engine);
-    ~BulletSystem () override;
+    BulletSystem(Engine *engine);
+    ~BulletSystem() override;
 
-    bool init () override;
+    bool init() override;
 
-    const char *name () const override;
+    const char *name() const override;
 
-    void update (Scene *) override;
+    void update(Scene *) override;
 
-    bool isThreadSafe () const override;
+    int threadPolicy() const override;
 
 protected:
     bool m_Inited;

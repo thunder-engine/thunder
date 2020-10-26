@@ -552,7 +552,7 @@ void Engine::addModule(Module *module) {
     PROFILE_FUNCTION();
     if(module->types() & Module::SYSTEM) {
         System *system = module->system();
-        if(system->isThreadSafe()) {
+        if(system->threadPolicy() == System::Pool) {
             EnginePrivate::m_Pool.push_back(system);
         } else {
             EnginePrivate::m_Serial.push_back(system);

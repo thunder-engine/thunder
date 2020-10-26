@@ -130,8 +130,8 @@ void AngelSystem::update(Scene *scene) {
     }
 }
 
-bool AngelSystem::isThreadSafe() const {
-    return true;
+int AngelSystem::threadPolicy() const {
+    return Pool;
 }
 
 void AngelSystem::reload() {
