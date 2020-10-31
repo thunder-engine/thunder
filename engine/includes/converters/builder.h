@@ -26,7 +26,7 @@ public:
     QString project() const { return m_Project; }
 
     void rescanSources(const QString &path);
-    bool isEmpty() const;
+    virtual bool isEmpty() const;
 
     bool isOutdated() const { return m_Outdated; }
 

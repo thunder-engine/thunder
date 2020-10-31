@@ -64,8 +64,14 @@ int main(int argc, char *argv[]) {
     Builder builder;
 
     PluginModel::instance()->rescan();
+    PluginModel::instance()->initSystems();
 
     builder.setPlatform(parser.value(platformOption));
 
-    return a.exec();
+    int result  = a.exec();
+
+    AssetManager::destroy();
+    PluginModel::destroy();
+
+    return result;
 }

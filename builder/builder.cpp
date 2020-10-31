@@ -34,7 +34,10 @@ void Builder::setPlatform(const QString &platform) {
         project->setCurrentPlatform(m_Stack.pop());
 
         AssetManager *asset = AssetManager::instance();
-        asset->registerConverter(project->currentPlatform()->builder());
+        IConverter *converter = project->currentPlatform()->builder();
+        converter->convertFile(nullptr);
+        asset->registerConverter(converter);
+
         asset->rescan(true);
     }
 }

@@ -17,7 +17,7 @@ int thunderMain(Engine *engine) {
     if(engine->init()) {
         //+{RegisterModules}
         //-{RegisterModules}
-        engine->addModule(new ${Project_Name}(engine));
+        engine->addModule(new Module${Project_Name}(engine));
 
         engine->start();
     }

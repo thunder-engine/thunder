@@ -303,3 +303,7 @@ void QbsBuilder::setEnvironment(const QStringList &incp, const QStringList &libp
     m_LibPath = libp;
     m_Libs = libs;
 }
+
+bool QbsBuilder::isEmpty() const {
+    return !isOutdated();
+}

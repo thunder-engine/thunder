@@ -41,6 +41,8 @@ protected:
 
     bool checkProfiles ();
 
+    bool isEmpty() const Q_DECL_OVERRIDE;
+
     QString m_Artifact;
 
     QStringList m_IncludePath;
