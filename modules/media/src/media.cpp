@@ -1,12 +1,14 @@
 #include "media.h"
 
 #include "mediasystem.h"
+
 #ifdef NEXT_SHARED
-    #include "converters/audioconverter.h"
-#endif
+#include "converters/audioconverter.h"
+
 Module *moduleCreate(Engine *engine) {
     return new Media(engine);
 }
+#endif
 
 Media::Media(Engine *engine) :
         m_pEngine(engine),

@@ -62,6 +62,11 @@ Project {
         cpp.minimumTvosVersion: "10.0"
 
         Properties {
+            condition: qbs.architecture === "x86_64" && qbs.targetOS.contains("windows")
+            files: outer.concat(["source/as_callfunc_x64_msvc_asm.asm"])
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: "gnustl_static"
             Android.ndk.platform: angelscript.ANDROID

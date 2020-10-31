@@ -3,12 +3,12 @@
 #include "angelsystem.h"
 
 #ifdef NEXT_SHARED
-    #include "converters/angelbuilder.h"
-#endif
+#include "converters/angelbuilder.h"
 
 Module *moduleCreate(Engine *engine) {
     return new Angel(engine);
 }
+#endif
 
 Angel::Angel(Engine *engine) :
         m_pEngine(engine),

@@ -15,6 +15,7 @@ Project {
     property string sdkPath: "${sdkPath}"
     property stringList includePaths: [
         sdkPath + "/include/engine",
+        sdkPath + "/include/modules",
         sdkPath + "/include/next",
         sdkPath + "/include/next/math",
         sdkPath + "/include/next/core"
@@ -76,7 +77,9 @@ Project {
             "next",
             "physfs",
             "freetype",
-            "rendergl"
+            "rendergl",
+            "angel",
+            "angelscript"
         ]
 
         Properties {

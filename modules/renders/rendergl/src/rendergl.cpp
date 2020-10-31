@@ -2,9 +2,11 @@
 
 #include "renderglsystem.h"
 
+#ifdef NEXT_SHARED
 Module *moduleCreate(Engine *engine) {
     return new RenderGL(engine);
 }
+#endif
 
 RenderGL::RenderGL(Engine *engine) :
         m_pEngine(engine),

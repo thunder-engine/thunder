@@ -24,9 +24,9 @@ protected:
 
     System                     *m_pSystem;
 };
-
+#ifdef NEXT_SHARED
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
-
+#endif
 #endif // MEDIA_H

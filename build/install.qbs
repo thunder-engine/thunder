@@ -343,7 +343,37 @@ Product {
             "**/rendergl.h"
         ]
         qbs.install: true
-        qbs.installDir: install.INC_PATH + "/engine"
+        qbs.installDir: install.INC_PATH + "/modules"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Angel includes"
+        prefix: "../modules/vms/angel/includes/"
+        files: [
+            "**/angel.h"
+        ]
+        qbs.install: true
+        qbs.installDir: install.INC_PATH + "/modules"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Media includes"
+        prefix: "../modules/media/includes/"
+        files: [
+            "**/media.h"
+        ]
+        qbs.install: true
+        qbs.installDir: install.INC_PATH + "/modules"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Bullet includes"
+        prefix: "../modules/physics/bullet/includes/"
+        files: [
+            "**/bullet.h"
+        ]
+        qbs.install: true
+        qbs.installDir: install.INC_PATH + "/modules"
         qbs.installPrefix: install.PREFIX
     }
 }

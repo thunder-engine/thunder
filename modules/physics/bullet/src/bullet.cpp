@@ -3,11 +3,12 @@
 #include "bulletsystem.h"
 
 #ifdef NEXT_SHARED
-    #include "converters/physicmaterialconverter.h"
-#endif
+#include "converters/physicmaterialconverter.h"
+
 Module *moduleCreate(Engine *engine) {
     return new Bullet(engine);
 }
+#endif
 
 Bullet::Bullet(Engine *engine) :
         m_pEngine(engine),
