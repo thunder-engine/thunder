@@ -339,8 +339,12 @@ const MetaObject *Object::metaClass() {
     static MetaMethod::Table table;
     table.type = MetaMethod::Signal;
     table.name = "destroyed";
+    table.invoker = nullptr;
+    table.address = nullptr;
+    table.argc = 0;
+    table.types = nullptr;
 
-    static const MetaObject staticMetaData("Object", nullptr, &construct, &table, nullptr, nullptr);
+    static const MetaObject staticMetaData("Object", nullptr, &construct, nullptr, nullptr, nullptr);
     return &staticMetaData;
 }
 /*!

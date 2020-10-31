@@ -50,6 +50,7 @@ class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
         A_METHOD(AnimationState *, AnimationStateMachine::findState),
         A_METHOD(AnimationState *, AnimationStateMachine::initialState)
     )
+    A_NOPROPERTIES()
 
 public:
     typedef unordered_map<int, Variant> VariableMap;
