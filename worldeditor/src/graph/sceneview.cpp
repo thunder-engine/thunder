@@ -17,7 +17,7 @@
 
 #include "controllers/cameractrl.h"
 
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 
 #define NONE 0
 #define RELEASE 1
@@ -47,7 +47,7 @@ void SceneView::setScene(Scene *scene) {
         m_pScene->deleteLater();
     }
     m_pScene    = scene;
-    PluginModel::instance()->addScene(m_pScene);
+    PluginManager::instance()->addScene(m_pScene);
 }
 
 void SceneView::setController(CameraCtrl *ctrl) {
@@ -69,7 +69,7 @@ void SceneView::paintGL() {
             m_pEngine->processEvents();
         }
 
-        PluginModel::instance()->updateSystems(m_pScene);
+        PluginManager::instance()->updateSystems(m_pScene);
 
         if(m_pEngine) {
             for(auto &it : m_Keys) {

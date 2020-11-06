@@ -33,7 +33,8 @@ public:
 
         Matrix4 t;
         Texture::Surface &surface = m_pCache->surface(0);
-        uint8_t *data = surface[0];
+        ByteArray &array = surface[0];
+        int8_t *data = &array[0];
         for(uint32_t i = 0; i < MAX_BONES; i++) {
             memcpy(&data[i * M4X3_SIZE], t.mat, M4X3_SIZE);
         }
@@ -100,7 +101,8 @@ void Armature::update() {
     }
 
     Texture::Surface &surface = p_ptr->m_pCache->surface(0);
-    uint8_t *data = surface[0];
+    ByteArray &array = surface[0];
+    int8_t *data = &array[0];
 
     for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
         if(i < p_ptr->m_InvertTransform.size()) {

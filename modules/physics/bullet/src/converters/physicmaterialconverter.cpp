@@ -7,6 +7,10 @@
 
 #define DATA "Data"
 
+PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
+    setType(MetaType::type<PhysicMaterial *>());
+}
+
 class PhysicMaterialSerial : public PhysicMaterial {
 protected:
     VariantMap saveUserData () const {
@@ -21,6 +25,10 @@ protected:
         return result;
     }
 };
+
+IConverterSettings *PhysicMaterialConverter::createSettings() const {
+    return new PhysicMaterialImportSettings();
+}
 
 uint8_t PhysicMaterialConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());

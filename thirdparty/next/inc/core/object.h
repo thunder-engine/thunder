@@ -51,7 +51,7 @@ public: \
 
 #ifndef Q_QDOC
 #define A_OVERRIDE(Class, Super, Group) \
-    A_OBJECT(Class, Super) \
+    A_OBJECT_OVERRIDE(Class, Super) \
 public: \
     static void registerClassFactory (ObjectSystem *system) { \
         system->factoryAdd<Super>(#Group, Class::metaClass()); \

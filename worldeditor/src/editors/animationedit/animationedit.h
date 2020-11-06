@@ -22,8 +22,6 @@ public:
     void readSettings();
     void writeSettings();
 
-    void loadAsset(IConverterSettings *settings) override;
-
 signals:
     void templateUpdate();
 
@@ -39,8 +37,12 @@ private slots:
     void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
 
 private:
-    void closeEvent(QCloseEvent *event) override;
+    void loadAsset(IConverterSettings *settings) override;
     bool isModified() const override;
+
+    QStringList assetTypes() const override;
+
+    void closeEvent(QCloseEvent *event) override;
 
     bool m_Modified;
 

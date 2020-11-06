@@ -7,9 +7,9 @@
 #include <QMessageBox>
 #include <QDir>
 
-#include "codeeditor.h"
+#include <editor/converter.h>
 
-#include "converters/converter.h"
+#include "codeeditor.h"
 
 #include "editors/contentbrowser/contenttree.h"
 #include "projectmanager.h"
@@ -76,6 +76,10 @@ void TextEdit::onTextChanged() {
 void TextEdit::saveAsset(const QString &path) {
     ui->editor->saveFile(path);
     onTextChanged();
+}
+
+QStringList TextEdit::assetTypes() const {
+    return {"Code", "Text"};
 }
 
 void TextEdit::on_actionFind_triggered() {

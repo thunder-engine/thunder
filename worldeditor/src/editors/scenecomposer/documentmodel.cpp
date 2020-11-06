@@ -16,27 +16,26 @@
 #include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
 
+#define CODE "Code"
+
 DocumentModel::DocumentModel() {
-    addEditor(IConverter::ContentTexture, new TextureEdit(this));
-    addEditor(IConverter::ContentMaterial, new MaterialEdit(this));
-    addEditor(IConverter::ContentPrefab, new MeshEdit(this));
-    addEditor(IConverter::ContentEffect, new ParticleEdit(this));
-    addEditor(IConverter::ContentAnimationStateMachine, new AnimationEdit(this));
+    addEditor(new TextureEdit(this));
+    addEditor(new MaterialEdit(this));
+    addEditor(new MeshEdit(this));
+    addEditor(new ParticleEdit(this));
+    addEditor(new AnimationEdit(this));
 }
 
 DocumentModel::~DocumentModel() {
     auto it = m_Documents.begin();
     while(it != m_Documents.end()) {
         QFileInfo info(it.key());
-        int32_t type = AssetManager::instance()->resourceType(info);
-        switch(type) {
-            case IConverter::ContentCode: {
-                TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
-                if(editor) {
-                    editor->deleteLater();
-                }
-            } break;
-            default: break;
+        QString type = AssetManager::instance()->assetTypeName(info);
+        if(type == CODE) {
+            TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
+            if(editor) {
+                editor->deleteLater();
+            }
         }
         ++it;
     }
@@ -48,8 +47,10 @@ DocumentModel::~DocumentModel() {
     m_Editors.clear();
 }
 
-void DocumentModel::addEditor(uint8_t type, IAssetEditor *editor) {
-    m_Editors[type] = editor;
+void DocumentModel::addEditor(IAssetEditor *editor) {
+    for(auto it : editor->assetTypes()) {
+        m_Editors[it] = editor;
+    }
 }
 
 QString DocumentModel::fileName(IAssetEditor *editor) const {
@@ -63,7 +64,7 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     }
 
     QFileInfo info(path);
-    int32_t type = AssetManager::instance()->resourceType(info);
+    QString type = AssetManager::instance()->assetTypeName(info);
 
     QDir dir(ProjectManager::instance()->contentPath());
     IConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(info.filePath()));
@@ -73,16 +74,15 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     if(e != m_Editors.end()) {
         editor = e.value();
     } else {
-        switch(type) {
-            case IConverter::ContentCode: {
-                TextEdit *text = new TextEdit(this);
-                editor = text;
-            } break;
-            default: break;
+        if(type == CODE) {
+            TextEdit *text = new TextEdit(this);
+            editor = text;
         }
     }
-    editor->loadAsset(settings);
-    m_Documents[path] = editor;
+    if(editor) {
+        editor->loadAsset(settings);
+        m_Documents[path] = editor;
+    }
 
     return editor;
 }
@@ -98,8 +98,7 @@ void DocumentModel::saveFileAs(IAssetEditor *editor) {
         QString dir = ProjectManager::instance()->contentPath();
         QString path = QFileDialog::getSaveFileName(nullptr,
                                                     tr("Save Document"),
-                                                    dir,
-                                                    "");
+                                                    dir, "");
         if(path.length() > 0) {
             editor->saveAsset(path);
         }
@@ -109,18 +108,13 @@ void DocumentModel::saveFileAs(IAssetEditor *editor) {
 void DocumentModel::closeFile(const QString &path) {
     auto it = m_Documents.find(path);
     if(it != m_Documents.end()) {
-        QFileInfo info(path);
-        int32_t type = AssetManager::instance()->resourceType(info);
-        switch(type) {
-            case IConverter::ContentCode: {
-                TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
-                if(editor) {
-                    editor->deleteLater();
-                }
-            } break;
-            default: break;
+        QString type = AssetManager::instance()->assetTypeName(path);
+        if(type == CODE) {
+            TextEdit *editor = dynamic_cast<TextEdit *>(it.value());
+            if(editor) {
+                editor->deleteLater();
+            }
         }
-
         m_Documents.erase(it);
     }
 }

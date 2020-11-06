@@ -22,6 +22,7 @@ AudioImportSettings::AudioImportSettings(QObject *parent) :
 
     Q_UNUSED(parent)
 
+    setType(MetaType::type<AudioClip *>());
 }
 
 bool AudioImportSettings::stream() const {
@@ -142,7 +143,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     }
     QFileInfo dst(settings->absoluteDestination());
 
-    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
+    AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination().toStdString());
     if(clip) {
         clip->unloadAudioData();
     }
@@ -242,7 +243,7 @@ void AudioConverter::onFinished() {
 
 bool AudioConverter::readOgg(IConverterSettings *settings, int32_t &channels) {
     OggVorbis_File vorbisFile;
-    if(ov_fopen(settings->source(), &vorbisFile) < 0) {
+    if(ov_fopen(qPrintable(settings->source()), &vorbisFile) < 0) {
         return false;
     }
 

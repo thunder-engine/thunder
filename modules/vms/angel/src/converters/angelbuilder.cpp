@@ -71,6 +71,10 @@ VariantMap AngelSerial::saveUserData() const {
     return result;
 }
 
+AngelScriptImportSettings::AngelScriptImportSettings() {
+    setType(MetaType::type<AngelScript *>());
+}
+
 AngelBuilder::AngelBuilder(AngelSystem *system) :
         m_pSystem(system),
         m_pScriptEngine(asCreateScriptEngine()),
@@ -137,6 +141,10 @@ uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
     m_Destination = info.absolutePath() + "/" + persistentUUID();
 
     return IBuilder::convertFile(settings);
+}
+
+IConverterSettings *AngelBuilder::createSettings() const {
+    return new AngelScriptImportSettings();
 }
 
 QString AngelBuilder::builderVersion() {

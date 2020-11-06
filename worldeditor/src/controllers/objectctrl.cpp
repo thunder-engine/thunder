@@ -1,9 +1,7 @@
 #include "objectctrl.h"
 
-#include <QApplication>
-#include <QMimeData>
-#include <QDebug>
 #include <QMessageBox>
+#include <QMimeData>
 
 #include <components/actor.h>
 #include <components/transform.h>
@@ -19,15 +17,15 @@
 #include <resources/material.h>
 #include <resources/particleeffect.h>
 #include <resources/prefab.h>
+#include <resources/sprite.h>
 
-#include <handles/handletools.h>
+#include <editor/converter.h>
+#include <editor/handles.h>
 
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
-#include "converters/converter.h"
 #include "projectmanager.h"
 #include "settingsmanager.h"
-
 #include "objectctrlpipeline.h"
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
@@ -491,7 +489,6 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
     m_DragObjects.clear();
     m_DragMap.clear();
 
-
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
         Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
@@ -518,39 +515,17 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         QStringList list = QString(event->mimeData()->data(gMimeContent)).split(";");
         AssetManager *mgr = AssetManager::instance();
         foreach(QString str, list) {
-            if( !str.isEmpty() ) {
+            if(!str.isEmpty()) {
                 QFileInfo info(str);
-                switch(mgr->resourceType(info)) {
-                    case IConverter::ContentMap: {
+                Actor *actor = mgr->createActor(str);
+                if(actor) {
+                    actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                    m_DragObjects.push_back(actor);
+                } else {
+                    QString type = mgr->assetTypeName(info);
+                    if(type == "Map") {
                         m_DragMap = str;
-                    } break;
-                    case IConverter::ContentTexture: {
-                        Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        SpriteRender *sprite = static_cast<SpriteRender *>(actor->addComponent("SpriteRender"));
-                        if(sprite) {
-                            sprite->setMaterial(Engine::loadResource<Material>( DEFAULTSPRITE ));
-                            sprite->setTexture(Engine::loadResource<Texture>( qPrintable(str) ));
-                        }
-                        m_DragObjects.push_back(actor);
-                    } break;
-                    case IConverter::ContentMesh:
-                    case IConverter::ContentPrefab: {
-                        Prefab *prefab = Engine::loadResource<Prefab>( qPrintable(str) );
-                        if(prefab) {
-                            Actor *actor = static_cast<Actor *>(prefab->actor()->clone());
-                            actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                            m_DragObjects.push_back(actor);
-                        }
-                    } break;
-                    case IConverter::ContentEffect: {
-                        Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                        ParticleRender *effect = static_cast<ParticleRender *>(actor->addComponent("ParticleRender"));
-                        if(effect) {
-                            effect->setEffect(Engine::loadResource<ParticleEffect>( qPrintable(str) ));
-                        }
-                        m_DragObjects.push_back(actor);
-                    } break;
-                    default: break;
+                    }
                 }
             }
         }

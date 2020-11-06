@@ -21,8 +21,8 @@ ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
     ui->setupUi(this);
 
     AssetManager *manager = AssetManager::instance();
-    connect(manager, SIGNAL(importStarted(int,QString)), this, SLOT(onStarted(int,QString)));
-    connect(manager, SIGNAL(imported(QString,uint32_t)), this, SLOT(onProcessed(QString,uint32_t)));
+    connect(manager, &AssetManager::importStarted, this, &ImportQueue::onStarted);
+    connect(manager, &AssetManager::imported, this, &ImportQueue::onProcessed);
 
     connect(manager, &AssetManager::importFinished, this, &ImportQueue::onImportFinished);
 
@@ -38,7 +38,7 @@ ImportQueue::~ImportQueue() {
     delete ui;
 }
 
-void ImportQueue::onProcessed(const QString &path, uint32_t type) {
+void ImportQueue::onProcessed(const QString &path, const QString &type) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
     QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()));

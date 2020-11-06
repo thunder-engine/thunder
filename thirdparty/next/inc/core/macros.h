@@ -58,6 +58,26 @@ public: \
         return Class::metaClass(); \
     }
 
+#define A_OBJECT_OVERRIDE(Class, Super) \
+private: \
+    static Object *construct() { return new Class(); } \
+public: \
+    static const MetaObject *metaClass() { \
+        OBJECT_CHECK(Class) \
+        static const MetaObject staticMetaData ( \
+            #Class, \
+            Super::metaClass(), \
+            &Class::construct, \
+            reinterpret_cast<const MetaMethod::Table *>(expose_method<Class>::exec()), \
+            reinterpret_cast<const MetaProperty::Table *>(expose_props_method<Class>::exec()), \
+            reinterpret_cast<const MetaEnum::Table *>(expose_enum<Class>::exec()) \
+        ); \
+        return &staticMetaData; \
+    } \
+    const MetaObject *metaObject() const override { \
+        return Super::metaClass(); \
+    }
+
 // Property declaration
 #define A_PROPERTIES(...) \
 public: \

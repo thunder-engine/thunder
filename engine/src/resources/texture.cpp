@@ -12,17 +12,15 @@ public:
     TexturePrivate() :
             m_Format(Texture::R8),
             m_Compress(Texture::Uncompressed),
-            m_Type(Texture::Flat),
             m_Filtering(Texture::None),
             m_Wrap(Texture::Clamp) {
 
     }
 
-    Texture::FormatType m_Format;
-    Texture::CompressionType m_Compress;
-    Texture::TextureType m_Type;
-    Texture::FilteringType m_Filtering;
-    Texture::WrapType m_Wrap;
+    int32_t m_Format;
+    int32_t m_Compress;
+    int32_t m_Filtering;
+    int32_t m_Wrap;
 
     int32_t m_Width;
     int32_t m_Height;
@@ -80,6 +78,7 @@ Texture::~Texture() {
     clear();
 
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal
@@ -87,31 +86,6 @@ Texture::~Texture() {
 void Texture::loadUserData(const VariantMap &data) {
     clear();
 
-    {
-        auto it = data.find(HEADER);
-        if(it != data.end()) {
-            VariantList header = (*it).second.value<VariantList>();
-
-            auto i = header.begin();
-            p_ptr->m_Width = (*i).toInt();
-            i++;
-            p_ptr->m_Height = (*i).toInt();
-            i++;
-            //Reserved
-            i++;
-
-            p_ptr->m_Type = TextureType((*i).toInt());
-            i++;
-            p_ptr->m_Compress = CompressionType((*i).toInt());
-            i++;
-            p_ptr->m_Format = FormatType((*i).toInt());
-            i++;
-            p_ptr->m_Filtering = FilteringType((*i).toInt());
-            i++;
-            p_ptr->m_Wrap = WrapType((*i).toInt());
-            i++;
-        }
-    }
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
@@ -125,8 +99,9 @@ void Texture::loadUserData(const VariantMap &data) {
                     ByteArray bits = l.toByteArray();
                     uint32_t s = size(w, h);
                     if(s && !bits.empty()) {
-                        uint8_t *pixels = new uint8_t[s];
-                        memcpy(pixels, &bits[0], s);
+                        ByteArray pixels;
+                        pixels.resize(s);
+                        memcpy(&pixels[0], &bits[0], s);
                         img.push_back(pixels);
                     }
                     w = MAX(w / 2, 1);
@@ -139,6 +114,23 @@ void Texture::loadUserData(const VariantMap &data) {
 
     setState(ToBeUpdated);
 }
+
+VariantMap Texture::saveUserData() const {
+    VariantMap result;
+
+    VariantList surfaces;
+    for(auto &side : p_ptr->m_Sides) {
+        VariantList surface;
+        for(auto lod : side) {
+            surface.push_back(lod);
+        }
+        surfaces.push_back(surface);
+    }
+    result[DATA] = surfaces;
+
+    return result;
+}
+
 /*!
     Returns a surface for the provided \a face.
     Each texture must contain at least one surface.
@@ -164,21 +156,6 @@ void Texture::setDirty() {
 }
 /*!
     \internal
-*/
-void Texture::clear() {
-    p_ptr->m_Width = 1;
-    p_ptr->m_Height = 1;
-
-    for(auto side : p_ptr->m_Sides) {
-        for(auto lod : side) {
-            delete []lod;
-        }
-    }
-    p_ptr->m_Sides.clear();
-    p_ptr->m_Shape.clear();
-}
-/*!
-    \internal
     Returns a native (underlying graphics API) pointer to the texture resource.
 */
 void *Texture::nativeHandle() {
@@ -199,7 +176,7 @@ void Texture::readPixels(int x, int y, int width, int height) {
 int Texture::getPixel(int x, int y) const {
     uint32_t result = 0;
     if(!p_ptr->m_Sides.empty() && !p_ptr->m_Sides[0].empty()) {
-        uint8_t *ptr = p_ptr->m_Sides[0][0] + (y * p_ptr->m_Width + x);
+        int8_t *ptr = &(p_ptr->m_Sides[0][0])[0] + (y * p_ptr->m_Width + x);
         memcpy(&result, ptr, sizeof(uint32_t));
     }
     return result;
@@ -273,8 +250,9 @@ void Texture::resize(int width, int height) {
     p_ptr->m_Height = height;
 
     int32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
-    uint8_t *pixels = new uint8_t[length];
-    memset(pixels, 0, length);
+    ByteArray pixels;
+    pixels.resize(length);
+    memset(&pixels[0], 0, length);
     Texture::Surface s;
     s.push_back(pixels);
     addSurface(s);
@@ -285,54 +263,42 @@ void Texture::resize(int width, int height) {
     Returns format type of texture.
     For more details please see the Texture::FormatType enum.
 */
-Texture::FormatType Texture::format() const {
+int Texture::format() const {
     return p_ptr->m_Format;
 }
 /*!
     Sets format \a type of texture.
     For more details please see the Texture::FormatType enum.
 */
-void Texture::setFormat(FormatType type) {
+void Texture::setFormat(int type) {
     p_ptr->m_Format = type;
-}
-/*!
-    \internal
-*/
-Texture::TextureType Texture::type() const {
-    return p_ptr->m_Type;
-}
-/*!
-    \internal
-*/
-void Texture::setType(TextureType type) {
-    p_ptr->m_Type = type;
 }
 /*!
     Returns filtering type of texture.
     For more details please see the Texture::FilteringType enum.
 */
-Texture::FilteringType Texture::filtering() const {
+int Texture::filtering() const {
     return p_ptr->m_Filtering;
 }
 /*!
     Sets filtering \a type of texture.
     For more details please see the Texture::FilteringType enum.
 */
-void Texture::setFiltering(FilteringType type) {
+void Texture::setFiltering(int type) {
     p_ptr->m_Filtering = type;
 }
 /*!
     Returns the type of warp policy.
     For more details please see the Texture::WrapType enum.
 */
-Texture::WrapType Texture::wrap() const {
+int Texture::wrap() const {
     return p_ptr->m_Wrap;
 }
 /*!
     Sets the \a type of warp policy.
     For more details please see the Texture::WrapType enum.
 */
-void Texture::setWrap(WrapType type) {
+void Texture::setWrap(int type) {
     p_ptr->m_Wrap = type;
 }
 /*!
@@ -353,7 +319,7 @@ bool Texture::isCompressed() const {
     Returns true if the texture is a cube map; otherwise returns false.
 */
 bool Texture::isCubemap() const {
-    return (p_ptr->m_Type == Cubemap);
+    return (p_ptr->m_Sides.size() == 6);
 }
 /*!
     \internal
@@ -368,4 +334,11 @@ uint8_t Texture::components() const {
         default: break;
     }
     return 4;
+}
+/*!
+    \internal
+*/
+void Texture::clear() {
+    p_ptr->m_Sides.clear();
+    p_ptr->m_Shape.clear();
 }

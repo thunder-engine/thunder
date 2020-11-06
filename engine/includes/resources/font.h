@@ -1,12 +1,12 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "atlas.h"
+#include "sprite.h"
 
 class FontPrivate;
 
-class NEXT_LIBRARY_EXPORT Font : public Atlas {
-    A_REGISTER(Font, Atlas, Resources)
+class NEXT_LIBRARY_EXPORT Font : public Sprite {
+    A_REGISTER(Font, Sprite, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(

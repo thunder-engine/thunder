@@ -9,7 +9,7 @@
 
 #include <engine.h>
 
-#include "converters/converter.h"
+#include <editor/converter.h>
 
 class QSortFilterProxyModel;
 class AssetItemDeligate;
@@ -23,55 +23,40 @@ class AssetBrowser : public QWidget {
     Q_OBJECT
 
 public:
-    enum ContentTypes {
-        Text        = IConverter::ContentText,
-        Texture     = IConverter::ContentTexture,
-        Material    = IConverter::ContentMaterial,
-        Static      = IConverter::ContentMesh,
-        Animation   = IConverter::ContentAnimation,
-        Effect      = IConverter::ContentEffect,
-        Sound       = IConverter::ContentSound,
-        Code        = IConverter::ContentCode,
-        Map         = IConverter::ContentMap,
-        Pose        = IConverter::ContentPose
-    };
-
     enum FileTypes {
         Dir,
         File
     };
 
-    Q_ENUM(ContentTypes)
 public:
-    AssetBrowser            (QWidget *parent);
+    AssetBrowser(QWidget *parent);
+    ~AssetBrowser();
 
-    ~AssetBrowser           ();
+    void filterByType(const QString &);
 
-    void                    filterByType            (const int32_t);
+    void setSelected(const QString &resource);
 
-    void                    setSelected             (const QString &resource);
-
-    QImage                  icon                    (const QString &resource) const;
+    QImage icon(const QString &resource) const;
 
 signals:
-    void                    assetSelected           (const QString &uuid);
+    void assetSelected(const QString &uuid);
 
 protected:
-    AssetItemDeligate      *m_pContentDeligate;
+    AssetItemDeligate *m_pContentDeligate;
 
-    AssetFilter            *m_pContentProxy;
+    AssetFilter *m_pContentProxy;
 
 private slots:
-    void                    on_assetList_clicked        (const QModelIndex &index);
+    void on_assetList_clicked(const QModelIndex &index);
 
-    void                    on_findContent_textChanged  (const QString &arg1);
+    void on_findContent_textChanged(const QString &arg1);
 
-    void                    onModelUpdated              ();
+    void onModelUpdated();
 
 private:
-    Ui::AssetBrowser       *ui;
+    Ui::AssetBrowser *ui;
 
-    QString                 m_Resource;
+    QString m_Resource;
 
 };
 

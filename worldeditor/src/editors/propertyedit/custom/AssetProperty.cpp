@@ -23,9 +23,11 @@ QVariant TemplateProperty::value(int role) const {
 }
 
 void TemplateProperty::setValue(const QVariant &value) {
-    if (value.type() == QVariant::String) {
-        Template tmp(value.toString(), Property::value(Qt::EditRole).value<Template>().type);
-        Property::setValue(QVariant::fromValue( tmp ));
+    if(value.type() == QVariant::String) {
+        Template tpl;
+        tpl.path = value.toString();
+        tpl.type = Property::value(Qt::EditRole).value<Template>().type;
+        Property::setValue(QVariant::fromValue( tpl ));
     } else {
         Property::setValue(value);
     }
@@ -41,7 +43,7 @@ QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewI
 }
 
 bool TemplateProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ContentSelect *e  = dynamic_cast<ContentSelect *>(editor);
+    ContentSelect *e = dynamic_cast<ContentSelect *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(data.toString());
@@ -52,7 +54,7 @@ bool TemplateProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant TemplateProperty::editorData(QWidget *editor) {
-    ContentSelect *e  = dynamic_cast<ContentSelect *>(editor);
+    ContentSelect *e = dynamic_cast<ContentSelect *>(editor);
     if(e) {
         return e->data();
     }

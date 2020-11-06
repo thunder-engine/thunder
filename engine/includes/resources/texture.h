@@ -28,8 +28,6 @@ class NEXT_LIBRARY_EXPORT Texture : public Resource {
     )
 
     A_ENUMS(
-        A_ENUM(TextureType, A_VALUE(Flat), A_VALUE(Cubemap)),
-
         A_ENUM(FormatType,
                A_VALUE(R8),
                A_VALUE(RGB8),
@@ -51,11 +49,6 @@ class NEXT_LIBRARY_EXPORT Texture : public Resource {
     )
 
 public:
-    enum TextureType {
-        Flat,
-        Cubemap
-    };
-
     enum FormatType {
         R8,
         RGB8,
@@ -86,64 +79,61 @@ public:
         Mirrored
     };
 
-    typedef deque<uint8_t *> Surface;
+    typedef deque<ByteArray> Surface;
     typedef deque<Surface>   Sides;
 
 public:
-    Texture ();
-    ~Texture ();
+    Texture();
+    ~Texture();
 
-    virtual void *nativeHandle ();
+    virtual void *nativeHandle();
 
-    virtual void readPixels (int x, int y, int width, int height);
-    int getPixel (int x, int y) const;
+    virtual void readPixels(int x, int y, int width, int height);
+    int getPixel(int x, int y) const;
 
-    int width () const;
-    void setWidth (int width);
+    int width() const;
+    void setWidth(int width);
 
-    int height () const;
-    void setHeight (int height);
+    int height() const;
+    void setHeight(int height);
 
-    Vector2Vector shape () const;
-    void setShape (const Vector2Vector &shape);
+    Vector2Vector shape() const;
+    void setShape(const Vector2Vector &shape);
 
-    bool isCompressed () const;
-    bool isCubemap () const;
+    bool isCompressed() const;
+    bool isCubemap() const;
 
-    Surface &surface (int face);
-    void addSurface (const Surface &surface);
+    Surface &surface(int face);
+    void addSurface(const Surface &surface);
 
-    void setDirty ();
+    void setDirty();
 
-    void resize (int width, int height);
+    void resize(int width, int height);
 
-    FormatType format () const;
-    void setFormat (FormatType type);
+    int format() const;
+    void setFormat(int type);
 
-    WrapType wrap () const;
-    void setWrap (WrapType type);
+    int wrap() const;
+    void setWrap(int type);
 
-    FilteringType filtering () const;
-    void setFiltering (FilteringType type);
+    int filtering() const;
+    void setFiltering(int type);
 
-    void loadUserData (const VariantMap &data) override;
-
+    void clear();
 private:
     TexturePrivate *p_ptr;
 
 protected:
-    TextureType type () const;
-    void setType (TextureType type);
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
-    void clear ();
+    Sides *getSides();
 
-    Sides *getSides ();
+    int32_t size(int32_t width, int32_t height) const;
+    int32_t sizeDXTc(int32_t width, int32_t height) const;
+    int32_t sizeRGB(int32_t width, int32_t height) const;
 
-    int32_t size (int32_t width, int32_t height) const;
-    int32_t sizeDXTc (int32_t width, int32_t height) const;
-    int32_t sizeRGB (int32_t width, int32_t height) const;
-
-    uint8_t components () const;
+    uint8_t components() const;
 };
 
 #endif // TEXTURE_H

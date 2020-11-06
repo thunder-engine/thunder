@@ -17,7 +17,7 @@ Project {
         "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
-        "../../engine/includes/converters",
+        "../../engine/includes/editor",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",

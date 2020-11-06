@@ -7,7 +7,7 @@
 #include <global.h>
 #include "projectmanager.h"
 #include "assetmanager.h"
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 
 #include "consolelog.h"
 
@@ -58,12 +58,11 @@ int main(int argc, char *argv[]) {
 
     Engine engine(file, argv[0]);
 
-    PluginModel::instance()->init(&engine);
+    PluginManager::instance()->init(&engine);
+    PluginManager::instance()->rescanPath(ProjectManager::instance()->pluginsPath());
     AssetManager::instance()->init(&engine);
 
     Builder builder;
-
-    PluginModel::instance()->rescan();
 
     builder.setPlatform(parser.value(platformOption));
 

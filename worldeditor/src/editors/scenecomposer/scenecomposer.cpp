@@ -35,11 +35,11 @@
 #include "managers/asseteditormanager/importqueue.h"
 #include "managers/feedmanager/feedmanager.h"
 
-#include <projectmodel.h>
-#include <projectmanager.h>
-#include <pluginmodel.h>
-#include <settingsmanager.h>
-#include <undomanager.h>
+#include "projectmodel.h"
+#include "projectmanager.h"
+#include "pluginmanager.h"
+#include "settingsmanager.h"
+#include "undomanager.h"
 
 #include "aboutdialog.h"
 
@@ -101,9 +101,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     QLog *handler = static_cast<QLog *>(Log::handler());
     connect(handler, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
 
-    connect(m_pQueue, SIGNAL(rendered(QString)), ContentList::instance(), SLOT(onRendered(QString)));
-    connect(m_pQueue, SIGNAL(rendered(QString)), ContentTree::instance(), SLOT(onRendered(QString)));
-    connect(m_pQueue, SIGNAL(rendered(QString)), AssetList::instance(), SLOT(onRendered(QString)));
+    connect(m_pQueue, &ImportQueue::rendered, ContentList::instance(), &ContentList::onRendered);
+    connect(m_pQueue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
+    connect(m_pQueue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
 
     cmToolbars      = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
@@ -208,7 +208,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->moveButton,  SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
     connect(ui->rotateButton,SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
     connect(ui->scaleButton, SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
-    connect(PluginModel::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
+    connect(PluginManager::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &SceneComposer::onOpenEditor);
@@ -627,9 +627,9 @@ void SceneComposer::onOpenProject(const QString &path) {
     ui->viewport->makeCurrent();
 
     AssetManager::instance()->rescan(!Engine::reloadBundle());
-    PluginModel::instance()->rescan();
+    PluginManager::instance()->rescan();
 
-    PluginModel::instance()->initSystems();
+    PluginManager::instance()->initSystems();
 
     ui->contentBrowser->rescan();
 

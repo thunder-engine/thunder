@@ -97,6 +97,10 @@ bool ParticleEdit::isModified() const {
     return m_Modified;
 }
 
+QStringList ParticleEdit::assetTypes() const {
+    return {"ParticleEffect"};
+}
+
 void ParticleEdit::readSettings() {
     QSettings settings(COMPANY_NAME, PRODUCT_NAME);
     restoreGeometry(settings.value("particle.geometry").toByteArray());
@@ -138,7 +142,7 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
 
     m_Path = settings->source();
 
-    m_pRender->setEffect(Engine::loadResource<ParticleEffect>(settings->destination()));
+    m_pRender->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
     m_pBuilder->load(m_Path);
 
     ui->treeView->setObject(nullptr);

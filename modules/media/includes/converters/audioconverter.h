@@ -5,7 +5,7 @@
 
 #include "resources/audioclip.h"
 
-#include "converter.h"
+#include <converter.h>
 
 #include <vorbis/vorbisenc.h>
 
@@ -21,28 +21,28 @@ class AudioImportSettings : public IConverterSettings {
     Q_PROPERTY(float Quality READ quality WRITE setQuality DESIGNABLE true USER true)
 
 public:
-    AudioImportSettings         (QObject *parent = nullptr);
+    AudioImportSettings(QObject *parent = nullptr);
 
-    bool                        stream                      () const;
-    void                        setStream                   (bool stream);
+    bool stream() const;
+    void setStream(bool stream);
 
-    bool                        mono                        () const;
-    void                        setMono                     (bool mono);
+    bool mono() const;
+    void setMono(bool mono);
 
-    float                       quality                     () const;
-    void                        setQuality                  (float quality);
+    float quality() const;
+    void setQuality(float quality);
 
 protected:
-    bool                        m_Stream;
+    bool m_Stream;
 
-    bool                        m_Mono;
+    bool m_Mono;
 
-    float                       m_Quality;
+    float m_Quality;
 };
 
 class AudioClipSerial : public AudioClip {
 public:
-    VariantMap                  saveUserData                () const;
+    VariantMap saveUserData() const;
 
 protected:
     friend class AudioConverter;
@@ -52,29 +52,26 @@ protected:
 class AudioConverter : public IConverter {
     Q_OBJECT
 public:
-    AudioConverter              ();
+    AudioConverter();
 
-    QStringList                 suffixes                    () const { return {"mp3", "wav", "ogg"}; }
-    uint32_t                    contentType                 () const { return IConverter::ContentSound; }
-    uint32_t                    type                        () const { return MetaType::type<AudioClip *>(); }
-    uint8_t                     convertFile                 (IConverterSettings *);
-
-    VariantMap                  convertResource             (AudioImportSettings *, int32_t srcChanels);
-
-    IConverterSettings         *createSettings              () const;
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"mp3", "wav", "ogg"}; }
+    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
 public slots:
-    void                        onBufferReady               ();
-    void                        onFinished                  ();
+    void onBufferReady();
+    void onFinished();
 
 protected:
-    bool                        readOgg                     (IConverterSettings *settings, int32_t &channels);
+    VariantMap convertResource(AudioImportSettings *, int32_t srcChanels);
 
-    QAudioDecoder              *m_pDecoder;
+    bool readOgg(IConverterSettings *settings, int32_t &channels);
 
-    QEventLoop                 *m_pLoop;
+    QAudioDecoder *m_pDecoder;
 
-    QByteArray                  m_Buffer;
+    QEventLoop *m_pLoop;
+
+    QByteArray m_Buffer;
 };
 
 #endif // AUDIOCONVERTER_H
