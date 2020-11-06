@@ -125,6 +125,8 @@ uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
 
     delete resource;
 
+    settings->setCurrentVersion(settings->version());
+
     return 0;
 }
 

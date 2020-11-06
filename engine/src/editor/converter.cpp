@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-const QString gCRC("crc");
+const QString gMd5("md5");
 const QString gVersion("version");
 const QString gGUID("guid");
 
@@ -21,8 +21,7 @@ IConverterSettings::IConverterSettings() :
         m_Modified(false),
         m_Type(MetaType::INVALID),
         m_Version(0),
-        m_CurrentVersion(0),
-        m_CRC(0) {
+        m_CurrentVersion(0) {
 
     connect(this, &IConverterSettings::updated, this, &IConverterSettings::setModified);
 }
@@ -50,11 +49,11 @@ QString IConverterSettings::typeName() const {
     return "Invalid";
 }
 
-uint32_t IConverterSettings::crc() const {
-    return m_CRC;
+QString IConverterSettings::hash() const {
+    return m_Md5;
 }
-void IConverterSettings::setCRC(uint32_t crc) {
-    m_CRC = crc;
+void IConverterSettings::setHash(const QString &hash) {
+    m_Md5 = hash;
 }
 
 uint32_t IConverterSettings::version() const {
@@ -138,9 +137,9 @@ bool IConverterSettings::loadSettings() {
                 property.write(obj, v);
             }
         }
-        setDestination( qPrintable(object.value(gGUID).toString()) );
-        setCRC( uint32_t(object.value(gCRC).toInt()) );
-        setCurrentVersion(uint32_t(object.value(gVersion).toInt()) );
+        setDestination(object.value(gGUID).toString());
+        setHash(object.value(gMd5).toString());
+        setCurrentVersion(uint32_t(object.value(gVersion).toInt()));
 
         QJsonObject sub = object.value(gSubItems).toObject();
         foreach(QString it, sub.keys()) {
@@ -169,7 +168,7 @@ void IConverterSettings::saveSettings() {
 
     QJsonObject obj;
     obj.insert(gVersion, int(currentVersion()));
-    obj.insert(gCRC, int(crc()));
+    obj.insert(gMd5, hash());
     obj.insert(gGUID, destination());
     obj.insert(gSettings, set);
     obj.insert(gType, static_cast<int>(type()));

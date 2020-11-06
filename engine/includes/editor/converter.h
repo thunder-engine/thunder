@@ -34,8 +34,8 @@ public:
     virtual QString absoluteDestination() const;
     virtual void setAbsoluteDestination(const QString &destination);
 
-    uint32_t crc() const;
-    void setCRC(uint32_t crc);
+    QString hash() const;
+    void setHash(const QString &hash);
 
     uint32_t version() const;
     void setVersion(uint32_t version);
@@ -66,8 +66,8 @@ protected:
     uint32_t m_Type;
     uint32_t m_Version;
     uint32_t m_CurrentVersion;
-    uint32_t m_CRC;
 
+    QString m_Md5;
     QString m_Destination;
     QString m_AbsoluteDestination;
     QString m_Source;

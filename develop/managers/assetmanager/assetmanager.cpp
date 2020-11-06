@@ -11,8 +11,8 @@
 #include <QMetaProperty>
 #include <QUrl>
 #include <QDebug>
+#include <QCryptographicHash>
 
-#include <zlib.h>
 #include <cstring>
 
 #include "config.h"
@@ -47,7 +47,7 @@
 
 #define BUFF_SIZE 1024
 
-#define INDEX_VERSION 1
+#define INDEX_VERSION 2
 
 #define CODE "Code"
 
@@ -212,26 +212,26 @@ bool AssetManager::isOutdated(IConverterSettings *settings) {
     if(settings->version() > settings->currentVersion()) {
         return true;
     }
-
     bool result = true;
-    uint32_t crc = crc32(0L, nullptr, 0);
 
     QFile file(settings->source());
     if(file.open(QIODevice::ReadOnly)) {
-        char buffer[BUFF_SIZE];
-        while(!file.atEnd()) {
-            memset(buffer, 0, BUFF_SIZE);
-            file.read(buffer, BUFF_SIZE);
-            crc = crc32(crc, reinterpret_cast<Bytef *>(buffer), BUFF_SIZE);
-        }
+        QByteArray md5 = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex();
         file.close();
 
-        if(settings->crc() == crc) {
+        md5 = md5.insert(20, '-');
+        md5 = md5.insert(16, '-');
+        md5 = md5.insert(12, '-');
+        md5 = md5.insert( 8, '-');
+        md5.push_front('{');
+        md5.push_back('}');
+
+        if(settings->hash() == md5) {
             if(settings->typeName() == CODE || QFileInfo::exists(settings->absoluteDestination())) {
                 result = false;
             }
         }
-        settings->setCRC(crc);
+        settings->setHash(md5);
     }
     return result;
 }
@@ -567,8 +567,10 @@ void AssetManager::dumpBundle() {
     VariantMap paths;
     for(auto it : m_Indices) {
         VariantList item;
-        item.push_back(it.second.first);
         item.push_back(it.first);
+        item.push_back(it.second.first);
+        IConverterSettings *settings = fetchSettings(QString(guidToPath(it.second.second).c_str()));
+        item.push_back(settings->hash().toStdString());
         paths[it.second.second] = item;
     }
 

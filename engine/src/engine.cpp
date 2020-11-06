@@ -74,7 +74,7 @@ static const char *gEntry(".entry");
 static const char *gCompany(".company");
 static const char *gProject(".project");
 
-#define INDEX_VERSION 1
+#define INDEX_VERSION 2
 
 class EnginePrivate {
 public:
@@ -506,7 +506,11 @@ bool Engine::reloadBundle() {
             if(version == INDEX_VERSION) {
                 for(auto it : root[gContent].toMap()) {
                     VariantList item = it.second.toList();
-                    indices[item.back().toString()] = pair<string, string>(item.front().toString(), it.first);
+                    auto i = item.begin();
+                    string path = i->toString();
+                    i++;
+                    string type = i->toString();
+                    indices[path] = pair<string, string>(type, it.first);
                 }
 
                 for(auto it : root[gSettings].toMap()) {
