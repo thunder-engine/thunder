@@ -113,13 +113,13 @@ static void generateSDF(Grid &g) {
     }
 }
 
-void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
+void calculateDF(int8_t *dst, const FT_Bitmap &src, int32_t dw, int32_t dh) {
     PROFILE_FUNCTION();
 
     Grid grid[2];
 
-    int32_t w = img.width;
-    int32_t h = img.rows;
+    int32_t w = src.width;
+    int32_t h = src.rows;
     grid[0].w = grid[1].w = w;
     grid[0].h = grid[1].h = h;
     grid[0].grid = static_cast<Point*>(malloc(sizeof(Point) * (w + 2) * (h + 2)));
@@ -136,7 +136,7 @@ void calculateDF(const FT_Bitmap &img, uint8_t *dst, int32_t dw, int32_t dh) {
         for(int32_t x = 1; x <= w; x++) {
             uint32_t index = (y - 1) * w + (x - 1);
 
-            if(img.buffer[index] > 128) {
+            if(src.buffer[index] > 128) {
                 put(grid[0], x, y, pointEmpty);
                 put(grid[1], x, y, pointInside);
             } else {
@@ -220,33 +220,35 @@ void Font::requestCharacters(const string &characters) {
 
                     uint32_t w = bitmap.width / DF_DEFAULT_SCALE;
                     uint32_t h = bitmap.rows / DF_DEFAULT_SCALE;
+                    if(w && h) {
+                        Texture::Surface s;
+                        ByteArray buffer;
+                        buffer.resize(w * h);
+                        calculateDF(&buffer[0], bitmap, w, h); /// \todo Must be moved into separate thread
 
-                    Texture::Surface s;
-                    uint8_t *buffer = new uint8_t[w * h];
-                    calculateDF(bitmap, buffer, w, h); /// \todo Must be moved into separate thread
+                        s.push_back(buffer);
 
-                    s.push_back(buffer);
+                        FT_BBox bbox;
+                        FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
 
-                    FT_BBox bbox;
-                    FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
+                        Texture *t  = Engine::objectCreate<Texture>("", this);
+                        t->setWidth(w);
+                        t->setHeight(h);
 
-                    Texture *t  = Engine::objectCreate<Texture>("", this);
-                    t->setWidth(w);
-                    t->setHeight(h);
+                        Vector2Vector shape;
+                        shape.resize(4);
+                        shape[0] = Vector2(bbox.xMin, bbox.yMax) / p_ptr->m_Scale;
+                        shape[1] = Vector2(bbox.xMax, bbox.yMax) / p_ptr->m_Scale;
+                        shape[2] = Vector2(bbox.xMax, bbox.yMin) / p_ptr->m_Scale;
+                        shape[3] = Vector2(bbox.xMin, bbox.yMin) / p_ptr->m_Scale;
 
-                    Vector2Vector shape;
-                    shape.resize(4);
-                    shape[0] = Vector2(bbox.xMin, bbox.yMax) / p_ptr->m_Scale;
-                    shape[1] = Vector2(bbox.xMax, bbox.yMax) / p_ptr->m_Scale;
-                    shape[2] = Vector2(bbox.xMax, bbox.yMin) / p_ptr->m_Scale;
-                    shape[3] = Vector2(bbox.xMin, bbox.yMin) / p_ptr->m_Scale;
+                        t->setShape(shape);
+                        t->addSurface(s);
 
-                    t->setShape(shape);
-                    t->addSurface(s);
+                        p_ptr->m_GlyphMap[ch] = addElement(t);
 
-                    p_ptr->m_GlyphMap[ch] = addElement(t);
-
-                    isNew = true;
+                        isNew = true;
+                    }
                 }
             }
         }

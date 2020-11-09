@@ -30,7 +30,7 @@ signals:
     void                    rendered            (const QString &uuid);
 
 private slots:
-    void                    onProcessed         (const QString &path, uint32_t type);
+    void                    onProcessed         (const QString &path, const QString &type);
 
     void                    onStarted           (int count, const QString &action);
     void                    onImportFinished    ();
@@ -40,7 +40,7 @@ private:
 
     Ui::ImportQueue        *ui;
 
-    QMap<QString, uint32_t> m_UpdateQueue;
+    QMap<QString, QString> m_UpdateQueue;
 
     Engine                 *m_pEngine;
 

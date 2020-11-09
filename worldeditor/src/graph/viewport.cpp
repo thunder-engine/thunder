@@ -9,13 +9,13 @@
 #include <resources/material.h>
 #include <resources/rendertexture.h>
 
-#include <handles/handles.h>
+#include <editor/handles.h>
 
 #include "controllers/objectctrl.h"
 
 #include "commandbuffer.h"
 
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 
 #define OVERRIDE "uni.texture0"
 
@@ -38,7 +38,7 @@ void Viewport::paintGL() {
     if(m_pScene) {
         findCamera();
 
-        PluginModel::instance()->updateRender(m_pScene);
+        PluginManager::instance()->updateRender(m_pScene);
     }
 }
 

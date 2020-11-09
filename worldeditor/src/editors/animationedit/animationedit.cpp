@@ -103,6 +103,10 @@ bool AnimationEdit::isModified() const {
     return m_Modified;
 }
 
+QStringList AnimationEdit::assetTypes() const {
+    return {"AnimationStateMachine"};
+}
+
 void AnimationEdit::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
@@ -117,7 +121,7 @@ void AnimationEdit::loadAsset(IConverterSettings *settings) {
     show();
     if(m_Path != settings->source()) {
         m_Path = settings->source();
-        m_pMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
+        m_pMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
 
         m_pBuilder->load(m_Path);
 

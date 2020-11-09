@@ -10,11 +10,9 @@ class QFileSystemWatcher;
 
 class ContentTreeFilter : public QSortFilterProxyModel {
 public:
-    typedef QList<int32_t> TypeList;
-
     explicit ContentTreeFilter(QObject *parent);
 
-    void setContentTypes(const TypeList &list);
+    void setContentTypes(const QStringList &list);
 
 protected:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const;
@@ -29,7 +27,7 @@ protected:
 
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const;
 
-    TypeList m_List;
+    QStringList m_List;
 };
 
 class ContentTree : public BaseObjectModel {

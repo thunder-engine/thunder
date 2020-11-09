@@ -133,6 +133,10 @@ bool MaterialEdit::isModified() const {
     return m_Modified;
 }
 
+QStringList MaterialEdit::assetTypes() const {
+    return {"Material"};
+}
+
 void MaterialEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     restoreGeometry(settings.value("material.geometry").toByteArray());

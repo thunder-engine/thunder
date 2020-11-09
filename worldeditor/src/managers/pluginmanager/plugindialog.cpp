@@ -4,7 +4,7 @@
 
 #include "ui_plugindialog.h"
 
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 #include "plugindelegate.h"
 
 PluginDialog::PluginDialog(QWidget *parent) :
@@ -15,7 +15,7 @@ PluginDialog::PluginDialog(QWidget *parent) :
 
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
-    ui->tableView->setModel(PluginModel::instance());
+    ui->tableView->setModel(PluginManager::instance());
     ui->tableView->setItemDelegate(new PluginDelegate(this));
     ui->tableView->horizontalHeader()->setHighlightSections(false);
 }
@@ -35,7 +35,7 @@ void PluginDialog::on_loadButton_clicked() {
                                                     dir.absolutePath(),
                                                     tr("Mods (*.dll *.mod)") );
     if( !path.isEmpty() ) {
-        PluginModel *model  = PluginModel::instance();
+        PluginManager *model  = PluginManager::instance();
         if( model->loadPlugin(dir.relativeFilePath(path)) ) {
             ui->tableView->setModel(model);
         }

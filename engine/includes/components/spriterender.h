@@ -3,6 +3,7 @@
 
 #include "renderable.h"
 
+class Sprite;
 class Texture;
 class Material;
 class Mesh;
@@ -13,31 +14,38 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
 
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),
-        A_PROPERTYEX(Texture *, texture, SpriteRender::texture, SpriteRender::setTexture, "editor=Template"),
-        A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color")
+        A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Template"),
+        A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
+        A_PROPERTY(int, index, SpriteRender::index, SpriteRender::setIndex)
     )
     A_NOMETHODS()
 
 public:
-    SpriteRender ();
-    ~SpriteRender ();
+    SpriteRender();
+    ~SpriteRender();
 
-    Material *material () const;
-    void setMaterial (Material *material);
+    Material *material() const;
+    void setMaterial(Material *material);
 
-    Texture *texture () const;
-    void setTexture (Texture *texture);
+    Sprite *sprite() const;
+    void setSprite(Sprite *sprite);
 
-    Vector4 color () const;
-    void setColor (const Vector4 &color);
+    Texture *texture() const;
+    void setTexture(Texture *texture);
+
+    Vector4 color() const;
+    void setColor(const Vector4 &color);
+
+    int index() const;
+    void setIndex(int index);
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    AABBox bound () const override;
+    AABBox bound() const override;
 
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     SpriteRenderPrivate *p_ptr;

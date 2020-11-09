@@ -20,8 +20,6 @@ public:
     TextEdit(DocumentModel *document);
     ~TextEdit();
 
-    void loadAsset(IConverterSettings *settings) override;
-
 signals:
     void templateUpdate();
 
@@ -44,13 +42,15 @@ private slots:
     void on_pushReplaceFind_clicked();
 
 private:
+    void loadAsset(IConverterSettings *settings) override;
+
     void closeEvent(QCloseEvent *event) override;
     bool isModified() const override;
     void setModified(bool flag) override;
 
-    bool checkSave();
-
     void saveAsset(const QString &path = QString()) override;
+
+    QStringList assetTypes() const override;
 
     QFileInfo m_fileInfo;
 

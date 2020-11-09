@@ -20,7 +20,7 @@ Project {
         "../../../thirdparty/next/inc/core",
         "../../../engine/includes",
         "../../../engine/includes/resources",
-        "../../../engine/includes/converters",
+        "../../../engine/includes/editor",
         "../../../thirdparty/bullet/src"
     ]
 

@@ -45,6 +45,8 @@ private:
 
     bool isModified() const override;
 
+    QStringList assetTypes() const override;
+
     bool m_Modified;
 
     Ui::MaterialEdit *ui;

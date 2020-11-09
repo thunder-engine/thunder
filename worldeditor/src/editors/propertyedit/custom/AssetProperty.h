@@ -5,8 +5,6 @@
 
 #include <engine.h>
 
-#include "converters/converter.h"
-
 class TemplateProperty : public Property {
     Q_OBJECT
 public:

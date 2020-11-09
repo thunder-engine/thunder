@@ -23,30 +23,29 @@
 #include <resources/pipeline.h>
 #include <resources/mesh.h>
 #include <resources/material.h>
-#include <resources/texture.h>
+#include <resources/sprite.h>
 #include <resources/prefab.h>
 
-#include "pluginmodel.h"
+#include <editor/converter.h>
+
+#include "pluginmanager.h"
 #include "assetmanager.h"
-#include "converters/converter.h"
 #include "controllers/cameractrl.h"
 
 IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
         QObject(parent),
         m_Init(false) {
 
-    m_pEngine   = engine;
+    m_pEngine = engine;
 
-    m_Surface   = new QOffscreenSurface();
+    m_Surface = new QOffscreenSurface();
     m_Surface->create();
 
-    m_Context   = new QOpenGLContext();
+    m_Context = new QOpenGLContext();
     m_Context->setShareContext(share);
     m_Context->setFormat(m_Surface->requestedFormat());
     m_Context->create();
     m_Context->makeCurrent(m_Surface);
-
-    //PluginModel::instance()->initSystems();
 
     m_pFBO = new QOpenGLFramebufferObject(128, 128);
 
@@ -61,19 +60,13 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
 }
 
 IconRender::~IconRender() {
-
+    delete m_pScene;
 }
 
-void IconRender::init() {
-
-}
-
-const QImage IconRender::render(const QString &resource, uint32_t type) {
+const QImage IconRender::render(const QString &resource, const QString &) {
     m_Context->makeCurrent(m_Surface);
 
     if(!m_Init) {
-        //PluginModel::instance()->initSystems();
-
         Pipeline *pipe = m_pCamera->pipeline();
         pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
         pipe->setTarget(m_pFBO->handle());
@@ -88,71 +81,31 @@ const QImage IconRender::render(const QString &resource, uint32_t type) {
     }
 
     m_pCamera->setOrthographic(false);
-    Actor *object = Engine::objectCreate<Actor>("", m_pScene);
     float fov = m_pCamera->fov();
-    switch(type) {
-        case IConverter::ContentTexture: {
-            m_pCamera->setOrthographic(true);
-            m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
 
-            SpriteRender *sprite = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
-            if(sprite) {
-                sprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
-                Texture *t  = Engine::loadResource<Texture>(resource.toStdString());
-                sprite->setTexture(t);
-                break;
-            }
-            return QImage();
-        }
-        case IConverter::ContentMaterial: {
-            MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
-            Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
-            if(m) {
-                mesh->setMesh(m);
-                Material *mat = Engine::loadResource<Material>(resource.toStdString());
-                if(mat) {
-                    mesh->setMaterial(mat);
-                }
-                AABBox bb = m->bound();
-                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, bb.extent.length() * 1.1f / sinf(fov * DEG2RAD)) );
-                break;
-            }
-            return QImage();
-        }
-        case IConverter::ContentPrefab: {
-            Prefab *prefab  = Engine::loadResource<Prefab>(resource.toStdString());
-            if(prefab && prefab->actor()) {
-                Actor *actor = static_cast<Actor *>(prefab->actor()->clone(object));
+    Actor *object = AssetManager::instance()->createActor(resource);
+    if(object) {
+        object->setParent(m_pScene);
 
-                AABBox bb;
-                bool first = true;
-                for(auto it : actor->findChildren<Renderable *>()) {
-                    if(first) {
-                        bb = it->bound();
-                        first = false;
-                    } else {
-                        bb.encapsulate(it->bound());
-                    }
-                }
-                m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, ((bb.extent.length() + m_pCamera->nearPlane()) * 2) / sinf(fov * DEG2RAD)));
-                break;
+        AABBox bb;
+        bool first = true;
+        for(auto it : object->findChildren<Renderable *>()) {
+            if(first) {
+                bb = it->bound();
+                first = false;
+            } else {
+                bb.encapsulate(it->bound());
             }
-            return QImage();
         }
-        case IConverter::ContentMesh: {
-            MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
-            mesh->setMesh(Engine::loadResource<Mesh>(resource.toStdString()));
-            mesh->setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
-            AABBox bb = static_cast<Renderable*>(mesh)->bound();
-            m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, (bb.extent.length() * 2) / sinf(fov * DEG2RAD)) );
-        } break;
-        default: return QImage();
+        m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y, ((bb.extent.length() + m_pCamera->nearPlane()) * 1.1f) / sinf(fov * DEG2RAD)));
+    } else {
+        return QImage();
     }
 
     Camera::setCurrent(m_pCamera);
-    PluginModel::instance()->updateRender(m_pScene);
-    PluginModel::instance()->updateRender(m_pScene);
+    PluginManager::instance()->updateRender(m_pScene);
+    //PluginManager::instance()->updateRender(m_pScene);
 
     m_Context->functions()->glFinish();
 

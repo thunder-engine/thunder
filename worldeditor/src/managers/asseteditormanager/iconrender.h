@@ -19,34 +19,32 @@ class QOpenGLFramebufferObject;
 
 class IconRender : public QObject {
 public:
-    IconRender                  (Engine *engine, QOpenGLContext *share, QObject *parent = nullptr);
+    IconRender(Engine *engine, QOpenGLContext *share, QObject *parent = nullptr);
 
-    ~IconRender                 ();
+    ~IconRender();
 
-    const QImage                render              (const QString &resource, uint32_t type);
+    const QImage render(const QString &resource, const QString &);
 
 protected:
-    void                        init                ();
+    QOffscreenSurface        *m_Surface;
 
-    QOffscreenSurface          *m_Surface;
+    QOpenGLContext           *m_Context;
 
-    QOpenGLContext             *m_Context;
+    QOpenGLFramebufferObject *m_pFBO;
 
-    QOpenGLFramebufferObject   *m_pFBO;
+    Engine                   *m_pEngine;
 
-    Engine                     *m_pEngine;
+    Scene                    *m_pScene;
 
-    Scene                      *m_pScene;
+    Actor                    *m_pActor;
 
-    Actor                      *m_pActor;
+    Actor                    *m_pLight;
 
-    Actor                      *m_pLight;
+    IController              *m_pController;
 
-    IController                *m_pController;
+    Camera                   *m_pCamera;
 
-    Camera                     *m_pCamera;
-
-    bool                        m_Init;
+    bool                      m_Init;
 };
 
 #endif // ICONRENDER_H

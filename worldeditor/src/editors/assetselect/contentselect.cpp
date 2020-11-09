@@ -62,7 +62,7 @@ void ContentSelect::setData(const QString &guid) {
     }
 }
 
-void ContentSelect::setType(const int32_t type) {
+void ContentSelect::setType(const QString &type) {
     m_pBrowser->filterByType(type);
 }
 

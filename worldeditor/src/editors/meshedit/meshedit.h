@@ -25,16 +25,18 @@ public:
 
     void readSettings ();
     void writeSettings ();
-    void closeEvent (QCloseEvent *event) override;
-
-    void loadAsset (IConverterSettings *settings) override;
 
 signals:
     void templateUpdate ();
 
 private:
-    void timerEvent (QTimerEvent *) override;
+    void loadAsset (IConverterSettings *settings) override;
     bool isModified() const override;
+
+    QStringList assetTypes() const override;
+
+    void closeEvent (QCloseEvent *event) override;
+    void timerEvent (QTimerEvent *) override;
 
     bool m_Modified;
 

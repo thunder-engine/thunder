@@ -75,6 +75,9 @@
          </property>
          <item>
           <widget class="QToolButton" name="filterButton">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="text">
             <string>Filter</string>
            </property>

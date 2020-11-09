@@ -12,7 +12,7 @@
 
 #include "assetmanager.h"
 #include "projectmanager.h"
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 #include "settingsmanager.h"
 
 #include <engine.h>
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     engine.init();
     Log::overrideHandler(new QLog());
 
-    PluginModel *plugin = PluginModel::instance();
+    PluginManager *plugin = PluginManager::instance();
     plugin->init(&engine);
     QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
 
@@ -90,6 +90,6 @@ int main(int argc, char *argv[]) {
 
     UndoManager::destroy();
     AssetManager::destroy();
-    PluginModel::destroy();
+    PluginManager::destroy();
     return result;
 }

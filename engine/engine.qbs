@@ -6,20 +6,16 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-        "src/handles/*.cpp",
         "src/systems/*.cpp",
         "src/filters/*.cpp",
         "src/postprocess/*.cpp",
-        "src/managers/*.cpp",
         "includes/*.h",
         "includes/adapters/*.h",
         "includes/components/*.h",
         "includes/resources/*.h",
-        "includes/handles/*.h",
         "includes/systems/*.h",
         "includes/filters/*.h",
-        "includes/postprocess/*.h",
-        "includes/managers/*.h"
+        "includes/postprocess/*.h"
     ]
 
     property stringList incPaths: [
@@ -35,7 +31,7 @@ Project {
         "includes/components",
         "includes/resources",
         "includes/adapters",
-        "includes/handles",
+        "includes/editor",
         "includes"
     ]
 
@@ -45,8 +41,8 @@ Project {
         files:
         {
             var sources = srcFiles
-            sources.push("src/converters/*.cpp")
-            sources.push("includes/converters/*.h")
+            sources.push("src/editor/*.cpp")
+            sources.push("includes/editor/*.h")
             return sources
         }
         Depends { name: "cpp" }

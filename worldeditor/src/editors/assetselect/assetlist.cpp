@@ -6,12 +6,13 @@
 #include <systems/resourcesystem.h>
 
 #include "assetmanager.h"
+#include "projectmanager.h"
 
 #include <QUuid>
 
 const QString gUuid("uuid");
 
-AssetList *AssetList::m_pInstance   = nullptr;
+AssetList *AssetList::m_pInstance = nullptr;
 
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
@@ -89,10 +90,10 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
 
 void AssetList::onRendered(const QString &uuid) {
     AssetManager *mgr = AssetManager::instance();
-    QString path    = mgr->guidToPath(uuid.toStdString()).c_str();
-    QObject *item   = m_rootItem->findChild<QObject *>(path);
+    QString path = mgr->guidToPath(uuid.toStdString()).c_str();
+    QObject *item = m_rootItem->findChild<QObject *>(path);
     if(item) {
-        item->setProperty(qPrintable(gType), mgr->resourceType(path));
+        item->setProperty(qPrintable(gType), mgr->assetTypeName(path));
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
@@ -115,12 +116,14 @@ void AssetList::update() {
         QObject *item = new QObject(m_rootItem);
         QFileInfo info(it.first.c_str());
 
-        item->setObjectName(info.filePath());
+        QString path = inst->guidToPath(it.second.second).c_str();
+        item->setObjectName(path/*info.filePath()*/);
         item->setProperty(qPrintable(gUuid), it.second.second.c_str());
-        int32_t type = inst->assetType(it.second.second.c_str());
+
+        QString type = inst->assetTypeName(path);
         item->setProperty(qPrintable(gType), type);
 
-        QImage img = inst->icon(it.first.c_str());
+        QImage img = inst->icon(path);
         if(!img.isNull()) {
             img = (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height());
         }
@@ -132,7 +135,7 @@ void AssetList::update() {
 }
 
 QImage AssetList::icon(const QModelIndex &index) const {
-    QObject *item   = static_cast<QObject *>(index.internalPointer());
+    QObject *item = static_cast<QObject *>(index.internalPointer());
     if(item) {
         return item->property(qPrintable(gIcon)).value<QImage>();
     }
@@ -148,7 +151,7 @@ QString AssetList::path(const QModelIndex &index) const {
 }
 
 QModelIndex AssetList::findResource(const QString &resource) const {
-    QObject *item   = m_rootItem->findChild<QObject *>(resource);
+    QObject *item = m_rootItem->findChild<QObject *>(resource);
     if(item) {
         return createIndex(item->parent()->children().indexOf(item), 0, item);
     }

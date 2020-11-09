@@ -2,6 +2,7 @@
 #define DOCUMENTMODEL_H
 
 #include <QAbstractItemModel>
+#include <QMessageBox>
 
 class Engine;
 class IConverterSettings;
@@ -22,6 +23,7 @@ public:
 
     virtual void setModified(bool flag) { Q_UNUSED(flag) };
 
+    virtual QStringList assetTypes() const = 0;
 };
 
 class DocumentModel : public QAbstractItemModel {
@@ -29,7 +31,7 @@ public:
     DocumentModel();
     ~DocumentModel();
 
-    void addEditor(uint8_t type, IAssetEditor *editor);
+    void addEditor(IAssetEditor *editor);
 
     QString fileName(IAssetEditor *editor) const;
 
@@ -61,7 +63,7 @@ private:
 protected:
     QMap<QString, IAssetEditor *> m_Documents;
 
-    typedef QMap<int32_t, IAssetEditor *> EditorsMap;
+    typedef QMap<QString, IAssetEditor *> EditorsMap;
     EditorsMap m_Editors;
 
 };

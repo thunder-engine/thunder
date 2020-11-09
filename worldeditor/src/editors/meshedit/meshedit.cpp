@@ -124,6 +124,10 @@ bool MeshEdit::isModified() const {
     return m_Modified;
 }
 
+QStringList MeshEdit::assetTypes() const {
+    return {"Prefab"};
+}
+
 void MeshEdit::loadAsset(IConverterSettings *settings) {
     show();
 
@@ -132,7 +136,7 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
     }
 
     m_Path = settings->source();
-    Prefab *prefab = Engine::loadResource<Prefab>( settings->destination() );
+    Prefab *prefab = Engine::loadResource<Prefab>(qPrintable(settings->destination()));
     if(prefab) {
         m_pMesh = static_cast<Actor *>(prefab->actor()->clone(glWidget->scene()));
     }

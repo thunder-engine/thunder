@@ -86,6 +86,7 @@ Project {
         "modules/physics/bullet/bullet.qbs",
         "modules/renders/rendergl/rendergl.qbs",
         "modules/vms/angel/angel.qbs",
+        //"modules/editor/editor.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
         "build/install.qbs",

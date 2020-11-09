@@ -329,11 +329,21 @@ Product {
         ]
         excludeFiles: [
             "adapters/*.h",
-            "handles/*.h",
+            "editor/*.h",
             "systems/*.h"
         ]
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/engine"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
+        name: "Editor includes"
+        prefix: "../engine/includes/editor"
+        files: [
+            "**/*.h"
+        ]
+        qbs.install: true
+        qbs.installDir: install.INC_PATH + "/editor"
         qbs.installPrefix: install.PREFIX
     }
     Group {

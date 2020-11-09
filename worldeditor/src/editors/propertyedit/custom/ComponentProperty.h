@@ -5,8 +5,6 @@
 
 #include <engine.h>
 
-#include "converters/converter.h"
-
 class SceneComponent;
 
 class ComponentProperty : public Property {

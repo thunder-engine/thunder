@@ -20,13 +20,11 @@ public:
     typedef QList<int32_t> TypeList;
 
     explicit AssetFilter(QObject *parent) :
-            QSortFilterProxyModel(parent),
-            m_Type(0) {
-
+            QSortFilterProxyModel(parent) {
         sort(0);
     }
 
-    void setContentType(int32_t type) {
+    void setContentType(const QString &type) {
         m_Type = type;
         invalidate();
     }
@@ -34,28 +32,29 @@ public:
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
-        if(m_Type) {
-            result  = checkContentTypeFilter(sourceRow, sourceParent);
+        if(!m_Type.isEmpty()) {
+            result = checkContentTypeFilter(sourceRow, sourceParent);
         }
-        result     &= checkNameFilter(sourceRow, sourceParent);
+        result &= checkNameFilter(sourceRow, sourceParent);
 
         return result;
     }
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
-        if(m_Type == sourceModel()->data(index).toInt()) {
+        if(m_Type == sourceModel()->data(index).toString()) {
             return true;
         }
         return false;
     }
 
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QModelIndex index   = sourceModel()->index(sourceRow, 2, sourceParent);
-        return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
+        QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
+        return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) &&
+               (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
     }
 
-    int32_t     m_Type;
+    QString m_Type;
 };
 
 class AssetItemDeligate : public QStyledItemDelegate  {
@@ -67,15 +66,15 @@ public:
 private:
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
         QStyledItemDelegate::initStyleOption(option, index);
-        QVariant value  = index.data(Qt::DecorationRole);
+        QVariant value = index.data(Qt::DecorationRole);
         switch(value.type()) {
             case QVariant::Image: {
-                QImage image    = value.value<QImage>();
+                QImage image = value.value<QImage>();
                 if(!image.isNull()) {
-                    QSize origin    = image.size();
-                    image           = image.scaled(origin.width(), origin.height(),
+                    QSize origin = image.size();
+                    image = image.scaled(origin.width(), origin.height(),
                                                    Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                    option->icon    = QIcon(QPixmap::fromImage(image));
+                    option->icon = QIcon(QPixmap::fromImage(image));
                     option->decorationSize = image.size();
                 }
             } break;
@@ -99,7 +98,7 @@ private:
         r.setWidth(option.rect.width());
         editor->setGeometry(r);
 
-        QLineEdit *e    = dynamic_cast<QLineEdit *>(editor);
+        QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
         if(e) {
             e->setAlignment(Qt::AlignHCenter);
             e->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -138,8 +137,8 @@ void AssetBrowser::onModelUpdated() {
     m_pContentProxy->invalidate();
 }
 
-void AssetBrowser::filterByType(const int32_t type) {
-    m_pContentProxy->setContentType( AssetManager::instance()->toContentType(type));
+void AssetBrowser::filterByType(const QString &type) {
+    m_pContentProxy->setContentType(type);
 }
 
 void AssetBrowser::setSelected(const QString &resource) {

@@ -1,7 +1,7 @@
 #include "builder.h"
 
 #include "log.h"
-#include "pluginmodel.h"
+#include "pluginmanager.h"
 #include "projectmanager.h"
 #include "settingsmanager.h"
 

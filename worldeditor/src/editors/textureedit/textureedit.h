@@ -1,13 +1,14 @@
 #ifndef TEXTUREEDIT_H
 #define TEXTUREEDIT_H
 
-#include <QMainWindow>
+#include <QWidget>
 
 #include "editors/scenecomposer/documentmodel.h"
 
 class Viewport;
 class Engine;
 
+class Sprite;
 class Texture;
 class SpriteRender;
 class TextureConverter;
@@ -17,33 +18,28 @@ namespace Ui {
     class TextureEdit;
 }
 
-class TextureEdit : public QMainWindow, public IAssetEditor {
+class TextureEdit : public QWidget, public IAssetEditor {
     Q_OBJECT
 
 public:
     TextureEdit(DocumentModel *document);
     ~TextureEdit();
 
-    void readSettings();
-    void writeSettings();
-
-    void loadAsset(IConverterSettings *settings) override;
-
 signals:
     void templateUpdate();
 
 private:
+    void loadAsset(IConverterSettings *settings) override;
+
+    QStringList assetTypes() const override;
+
     void timerEvent(QTimerEvent *) override;
     void closeEvent(QCloseEvent *event) override;
     bool isModified() const override;
 
-    QString m_Path;
-
     Ui::TextureEdit *ui;
 
-    Texture *m_pTexture;
-
-    SpriteRender *m_pSprite;
+    SpriteRender *m_pRender;
 
     IConverterSettings *m_pSettings;
 
@@ -51,18 +47,12 @@ private:
 
     DocumentModel *m_pDocument;
 
-    bool m_Modified;
+    QString m_Path;
 
 private slots:
-    void onUpdateTemplate(bool update = true);
+    void onUpdateTemplate();
 
     void onGLInit();
-
-    void onToolWindowActionToggled(bool checked);
-
-    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
-
-    void on_actionSave_triggered();
 
 };
 

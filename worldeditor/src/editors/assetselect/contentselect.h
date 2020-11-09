@@ -18,19 +18,19 @@ class ContentSelect : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ContentSelect      (QWidget *parent = nullptr);
-    ~ContentSelect              ();
+    explicit ContentSelect(QWidget *parent = nullptr);
+    ~ContentSelect();
 
-    QString                     data                            () const;
+    QString data() const;
 
-    void                        setType                         (const int32_t type);
-    void                        setData                         (const QString &guid);
+    void setType(const QString &type);
+    void setData(const QString &guid);
 
 signals:
-    void                        assetChanged                    (const QString &uuid);
+    void assetChanged(const QString &uuid);
 
 private slots:
-    void                        onAssetSelected                 (const QString &uuid);
+    void onAssetSelected(const QString &uuid);
 
 private:
     Ui::ContentSelect *ui;

@@ -4,6 +4,7 @@
 
 #include "resources/material.h"
 #include "resources/mesh.h"
+#include "resources/sprite.h"
 
 #include "commandbuffer.h"
 
@@ -13,23 +14,35 @@
 #define OVERRIDE "uni.texture0"
 #define COLOR "uni.color0"
 
-class SpriteRenderPrivate {
+class SpriteRenderPrivate : public Resource::IObserver {
 public:
     SpriteRenderPrivate() :
-            m_Texture(nullptr),
+            m_pSprite(nullptr),
+            m_pTexture(nullptr),
             m_pMaterial(nullptr),
             m_pMesh(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
-            m_Color(1.0f) {
+            m_Color(1.0f),
+            m_Index(0) {
 
     }
 
-    Texture *m_Texture;
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
+        if(resource == m_pSprite && state == Resource::Ready) {
+            m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
+        }
+    }
+
+    Sprite *m_pSprite;
+
+    Texture *m_pTexture;
 
     MaterialInstance *m_pMaterial;
 
     Mesh *m_pMesh;
 
     Vector4 m_Color;
+
+    int m_Index;
 };
 /*!
     \class SpriteRender
@@ -51,7 +64,7 @@ SpriteRender::~SpriteRender() {
     \internal
 */
 void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
-    Actor *a    = actor();
+    Actor *a = actor();
     if(p_ptr->m_pMesh && layer & a->layers()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
@@ -91,24 +104,48 @@ void SpriteRender::setMaterial(Material *material) {
 
         if(material) {
             p_ptr->m_pMaterial = material->createInstance();
-            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_Texture);
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
             p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
         }
     }
 }
 /*!
-    Returns a sprite texture.
+    Returns a sprite.
+*/
+Sprite *SpriteRender::sprite() const {
+    return p_ptr->m_pSprite;
+}
+/*!
+    Replaces current \a sprite with a new one.
+*/
+void SpriteRender::setSprite(Sprite *sprite) {
+    if(p_ptr->m_pSprite) {
+        p_ptr->m_pSprite->unsubscribe(p_ptr);
+    }
+    p_ptr->m_pSprite = sprite;
+    if(p_ptr->m_pSprite) {
+        p_ptr->m_pSprite->subscribe(p_ptr);
+        if(p_ptr->m_pMaterial) {
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
+        }
+    }
+}
+/*!
+    Returns current assigned texture.
 */
 Texture *SpriteRender::texture() const {
-    return p_ptr->m_Texture;
+    if(p_ptr->m_pSprite) {
+        return p_ptr->m_pSprite->texture();
+    }
+    return p_ptr->m_pTexture;
 }
 /*!
     Replaces current \a texture with a new one.
 */
 void SpriteRender::setTexture(Texture *texture) {
-    p_ptr->m_Texture   = texture;
+    p_ptr->m_pTexture = texture;
     if(p_ptr->m_pMaterial) {
-        p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_Texture);
+        p_ptr->m_pMaterial->setTexture(OVERRIDE, SpriteRender::texture());
     }
 }
 /*!
@@ -127,6 +164,18 @@ void SpriteRender::setColor(const Vector4 &color) {
     }
 }
 /*!
+    Returns the current index of sprite from the sprite sheet.
+*/
+int SpriteRender::index() const {
+    return p_ptr->m_Index;
+}
+/*!
+    Sets the current \a index of sprite from the sprite sheet.
+*/
+void SpriteRender::setIndex(int index) {
+    p_ptr->m_Index = index;
+}
+/*!
     \internal
 */
 void SpriteRender::loadUserData(const VariantMap &data) {
@@ -140,7 +189,7 @@ void SpriteRender::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(BASEMAP);
         if(it != data.end()) {
-            setTexture(Engine::loadResource<Texture>((*it).second.toString()));
+            setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
         }
     }
 }
@@ -148,7 +197,7 @@ void SpriteRender::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap SpriteRender::saveUserData() const {
-    VariantMap result   = Component::saveUserData();
+    VariantMap result = Component::saveUserData();
     {
         Material *m = material();
         string ref = Engine::reference(m);
@@ -157,7 +206,7 @@ VariantMap SpriteRender::saveUserData() const {
         }
     }
     {
-        Texture *t = texture();
+        Sprite *t = sprite();
         string ref = Engine::reference(t);
         if(!ref.empty()) {
             result[BASEMAP] = ref;

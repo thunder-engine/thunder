@@ -32,7 +32,7 @@ void ATextureGL::readPixels(int x, int y, int width, int height) {
 
     glReadPixels(x, y, width, height,
                  (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
-                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, surface[0]);
+                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, &(surface[0])[0]);
     CheckGLError();
 }
 
@@ -127,7 +127,7 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
         int32_t w  = width();
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
-            uint8_t *data   = image[i];
+            const int8_t *data = &(image[i])[0];
             glCompressedTexImage2D(target, i, internal, w, h, 0, size(w, h), data);
             CheckGLError();
             w   = MAX(w / 2, 1);
@@ -148,7 +148,7 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
         int32_t w  = width();
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
-            uint8_t *data = image[i];
+            const int8_t *data = &(image[i])[0];
             glTexImage2D(target, i, internal, w, h, 0, format, (isFloat) ? GL_FLOAT : GL_UNSIGNED_BYTE, data);
             CheckGLError();
 

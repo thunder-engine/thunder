@@ -1,8 +1,6 @@
 #include "textureedit.h"
 #include "ui_textureedit.h"
 
-#include <QMessageBox>
-
 #include "textureconverter.h"
 
 #include "editors/propertyedit/nextobject.h"
@@ -22,42 +20,23 @@
 #define SCALE 100.0f
 
 TextureEdit::TextureEdit(DocumentModel *document) :
-        QMainWindow(nullptr),
+        QWidget(nullptr),
         ui(new Ui::TextureEdit),
-        m_pDocument(document),
-        m_Modified(false) {
+        m_pRender(nullptr),
+        m_pSettings(nullptr),
+        m_pConverter(new TextureConverter),
+        m_pDocument(document) {
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl = new CameraCtrl(ui->Preview);
+    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
     ctrl->blockRotations(true);
     ctrl->init(nullptr);
-    ui->Preview->setController(ctrl);
-    ui->Preview->setScene(Engine::objectCreate<Scene>("Scene"));
-    ui->Preview->setWindowTitle("Preview");
+    ui->preview->setController(ctrl);
+    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
-    ui->treeView->setWindowTitle("Properties");
-
-    connect(ui->Preview, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->preview, SIGNAL(inited()), this, SLOT(onGLInit()));
     startTimer(16);
-
-    ui->centralwidget->addToolWindow(ui->Preview, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->Preview));
-
-    foreach(QWidget *it, ui->centralwidget->toolWindows()) {
-        QAction *action = ui->menuWindow->addAction(it->windowTitle());
-        action->setObjectName(it->windowTitle());
-        action->setData(QVariant::fromValue(it));
-        action->setCheckable(true);
-        action->setChecked(true);
-        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
-    }
-
-    connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
-
-    readSettings();
-
-    m_pConverter = new TextureConverter;
 }
 
 TextureEdit::~TextureEdit() {
@@ -65,61 +44,44 @@ TextureEdit::~TextureEdit() {
 }
 
 void TextureEdit::timerEvent(QTimerEvent *) {
-    ui->Preview->repaint();
-}
-
-void TextureEdit::readSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    restoreGeometry(settings.value("texture.geometry").toByteArray());
-    ui->centralwidget->restoreState(settings.value("texture.windows"));
-}
-
-void TextureEdit::writeSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue("texture.geometry", saveGeometry());
-    settings.setValue("texture.windows", ui->centralwidget->saveState());
+    ui->preview->repaint();
 }
 
 void TextureEdit::closeEvent(QCloseEvent *event) {
-    writeSettings();
-
-    if(isModified()) {
-        QMessageBox msgBox(this);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The %1 import settings has been modified.").arg(tr("texture")));
-        msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            event->ignore();
-            return;
-        }
-        if(result == QMessageBox::Yes) {
-            on_actionSave_triggered();
-        }
+    if(!m_pDocument->checkSave(this)) {
+        event->ignore();
+        return;
     }
     QDir dir(ProjectManager::instance()->contentPath());
     m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
 bool TextureEdit::isModified() const {
-    return m_Modified;
+    return m_pSettings->isModified();
 }
 
 void TextureEdit::loadAsset(IConverterSettings *settings) {
     show();
     raise();
-    m_Modified = false;
 
-    m_Path = settings->source();
-    if(m_pSprite) {
-        m_pTexture = Engine::loadResource<Texture>(settings->destination());
-        m_pSprite->setTexture(m_pTexture);
+    if(m_pSettings) {
+        disconnect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
 
-    Camera *camera = ui->Preview->controller()->camera();
+    m_Path = settings->source();
+
+    Resource *resource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
+    Sprite *sprite = dynamic_cast<Sprite *>(resource);
+    if(sprite) {
+        m_pRender->setSprite(sprite);
+    } else {
+        Texture *texture = dynamic_cast<Texture *>(resource);
+        if(texture) {
+            m_pRender->setTexture(texture);
+        }
+    }
+
+    Camera *camera = ui->preview->controller()->camera();
     if(camera) {
         camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         camera->setOrthoSize(SCALE);
@@ -127,48 +89,31 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     }
 
     m_pSettings = settings;
-    connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
-    ui->treeView->setObject(m_pSettings);
+    connect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
 }
 
-void TextureEdit::onUpdateTemplate(bool update) {
-    m_Modified = update;
+QStringList TextureEdit::assetTypes() const {
+    return {"Texture", "Sprite"};
+}
 
-    m_pTexture->loadUserData(m_pConverter->convertResource(m_pSettings));
+void TextureEdit::onUpdateTemplate() {
+    TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(m_pSettings);
+    if(s) {
+        m_pConverter->convertTexture(s, m_pRender->texture());
+    }
 }
 
 void TextureEdit::onGLInit() {
-    Scene *scene = ui->Preview->scene();
-    Camera *camera = ui->Preview->controller()->camera();
+    Scene *scene = ui->preview->scene();
+    Camera *camera = ui->preview->controller()->camera();
     if(camera) {
         camera->setOrthographic(true);
     }
 
     Actor *object = Engine::objectCreate<Actor>("Sprite", scene);
     object->transform()->setScale(Vector3(SCALE));
-    m_pSprite = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
-    if(m_pSprite) {
-        m_pSprite->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+    m_pRender = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
+    if(m_pRender) {
+        m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
-}
-
-void TextureEdit::onToolWindowActionToggled(bool state) {
-    QWidget *toolWindow = static_cast<QAction*>(sender())->data().value<QWidget *>();
-    ui->centralwidget->moveToolWindow(toolWindow, state ?
-                                              QToolWindowManager::NewFloatingArea :
-                                              QToolWindowManager::NoArea);
-}
-
-void TextureEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) {
-    QAction *action = ui->menuWindow->findChild<QAction *>(toolWindow->windowTitle());
-    if(action) {
-        action->blockSignals(true);
-        action->setChecked(visible);
-        action->blockSignals(false);
-    }
-}
-
-void TextureEdit::on_actionSave_triggered() {
-    m_pSettings->saveSettings();
-    m_Modified = false;
 }

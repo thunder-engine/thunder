@@ -39,16 +39,15 @@ public:
 
     void setItemScale(float scale) {
         m_Scale = scale;
-
     }
 
 private:
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
         QStyledItemDelegate::initStyleOption(option, index);
-        QVariant value  = index.data(Qt::DecorationRole);
+        QVariant value = index.data(Qt::DecorationRole);
         switch(value.type()) {
             case QVariant::Image: {
-                QImage image    = value.value<QImage>();
+                QImage image = value.value<QImage>();
                 if(!image.isNull()) {
                     QSize origin = image.size();
                     image = image.scaled(origin.width() * m_Scale, origin.height() * m_Scale,
@@ -77,7 +76,7 @@ private:
         r.setWidth(option.rect.width());
         editor->setGeometry(r);
 
-        QLineEdit *e    = dynamic_cast<QLineEdit *>(editor);
+        QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
         if(e) {
             e->setAlignment(Qt::AlignHCenter);
             e->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -99,8 +98,8 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
 
     ui->setupUi(this);
 
-    m_pContentDeligate  = new ContentItemDeligate();
-    m_pContentProxy     = new ContentListFilter(this);
+    m_pContentDeligate = new ContentItemDeligate();
+    m_pContentProxy = new ContentListFilter(this);
 
     m_pContentProxy->setSourceModel(ContentList::instance());
 
@@ -119,14 +118,12 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ui->contentTree->setModel(m_pTreeProxy);
     ui->contentTree->expandToDepth(1);
 
-    m_pFilterMenu   = new QMenu(this);
-    for(int i = IConverter::ContentText; i < IConverter::ContentLast; i++) {
-        QAction *a  = new QAction(QMetaEnum::fromType<ContentTypes>().valueToKey(i), m_pFilterMenu);
-        a->setCheckable(true);
-        m_pFilterMenu->addAction(a);
-    }
+    m_pFilterMenu = new QMenu(this);
+
+    //ui->filterButton->hide();
     ui->filterButton->setMenu(m_pFilterMenu);
-    connect(m_pFilterMenu, SIGNAL(triggered(QAction*)), this, SLOT(onFilterMenuTriggered(QAction*)));
+    connect(m_pFilterMenu, &QMenu::triggered, this, &ContentBrowser::onFilterMenuTriggered);
+    connect(m_pFilterMenu, &QMenu::aboutToShow, this, &ContentBrowser::onFilterMenuAboutToShow);
 
     readSettings();
     createContextMenus();
@@ -140,7 +137,7 @@ ContentBrowser::~ContentBrowser() {
 
 void ContentBrowser::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant value  = settings.value("content.geometry");
+    QVariant value = settings.value("content.geometry");
     if(value.isValid()) {
         ui->splitter->restoreState(value.toByteArray());
     }
@@ -227,18 +224,32 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
 }
 
 void ContentBrowser::onFilterMenuTriggered(QAction *) {
-    ContentListFilter::TypeList list;
-    foreach (QAction *it, m_pFilterMenu->findChildren<QAction *>()) {
+    QStringList list;
+    foreach(QAction *it, m_pFilterMenu->findChildren<QAction *>()) {
         if(it->isChecked()) {
-            list.append(QMetaEnum::fromType<ContentTypes>().keyToValue(qPrintable(it->text())));
+            list.append(it->text());
         }
     }
     m_pContentProxy->setContentTypes(list);
 }
 
+void ContentBrowser::onFilterMenuAboutToShow() {
+    for(auto it : AssetManager::instance()->labels()) {
+        if(!it.isEmpty()) {
+            QAction *child = m_pFilterMenu->findChild<QAction *>(it);
+            if(child == nullptr) {
+                QAction *a = new QAction(it, m_pFilterMenu);
+                a->setCheckable(true);
+                a->setObjectName(it);
+                m_pFilterMenu->addAction(a);
+            }
+        }
+    }
+}
+
 void ContentBrowser::onItemRename() {
     QAction *action = qobject_cast<QAction*>(sender());
-    if (action)
+    if(action)
     {
         QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
         view->edit(view->currentIndex());
@@ -272,7 +283,7 @@ void ContentBrowser::onItemDelete() {
         BaseObjectModel *model = static_cast<BaseObjectModel*>(filter->sourceModel());
 
         QMessageBox msgBox(QMessageBox::Question, tr("Delete Asset"), tr("This action cannot be reverted. Do you want to delete selected asset?"), QMessageBox::Yes | QMessageBox::No);
-        if (msgBox.exec() == QMessageBox::Yes) {
+        if(msgBox.exec() == QMessageBox::Yes) {
             model->removeResource(filter->mapToSource(view->currentIndex()));
         }
     }
@@ -300,7 +311,7 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
 
     ContentList *inst = ContentList::instance();
     if(inst->isDir(origin)) {
-        QObject *item   = static_cast<QObject *>(origin.internalPointer());
+        QObject *item = static_cast<QObject *>(origin.internalPointer());
         QFileInfo info(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
 
         m_pContentProxy->setRootPath( info.absoluteFilePath() );
@@ -310,7 +321,7 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
 }
 
 QAction* ContentBrowser::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
-    QAction *a  = new QAction(name, this);
+    QAction *a = new QAction(name, this);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
     connect(a, SIGNAL(triggered(bool)), this, member);
@@ -320,7 +331,7 @@ QAction* ContentBrowser::createAction(const QString &name, const char *member, c
 }
 
 void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos) {
-    QWidget *w  = static_cast<QWidget*>(QObject::sender());
+    QWidget *w = static_cast<QWidget*>(QObject::sender());
     if(ui->contentList->selectionModel()->selectedIndexes().empty()) {
         m_CreationMenu.exec(w->mapToGlobal(pos));
     } else {
@@ -329,8 +340,8 @@ void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos
 }
 
 void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos) {
-    QWidget* w  = static_cast<QWidget*>(QObject::sender());
-    if (!ui->contentTree->selectionModel()->selectedIndexes().empty())
+    QWidget* w = static_cast<QWidget*>(QObject::sender());
+    if(!ui->contentTree->selectionModel()->selectedIndexes().empty())
     {
         m_contentTreeMenu.exec(w->mapToGlobal(pos));
     }

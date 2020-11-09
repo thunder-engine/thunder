@@ -56,6 +56,7 @@
 #include "resources/particleeffect.h"
 #include "resources/pose.h"
 #include "resources/prefab.h"
+#include "resources/map.h"
 
 #include "systems/resourcesystem.h"
 
@@ -73,7 +74,7 @@ static const char *gEntry(".entry");
 static const char *gCompany(".company");
 static const char *gProject(".project");
 
-#define INDEX_VERSION 1
+#define INDEX_VERSION 2
 
 class EnginePrivate {
 public:
@@ -202,7 +203,7 @@ Engine::Engine(File *file, const char *path) :
     Texture::registerClassFactory(p_ptr->m_pResourceSystem);
     Material::registerClassFactory(p_ptr->m_pResourceSystem);
     Mesh::registerSuper(p_ptr->m_pResourceSystem);
-    Atlas::registerClassFactory(p_ptr->m_pResourceSystem);
+    Sprite::registerClassFactory(p_ptr->m_pResourceSystem);
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
     RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
@@ -214,6 +215,7 @@ Engine::Engine(File *file, const char *path) :
     Pose::registerSuper(p_ptr->m_pResourceSystem);
 
     Prefab::registerClassFactory(p_ptr->m_pResourceSystem);
+    Map::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);
@@ -490,6 +492,9 @@ bool Engine::reloadBundle() {
     if(fp) {
         ByteArray data;
         data.resize(file->_fsize(fp));
+        if(data.empty()) {
+            return false;
+        }
         file->_fread(&data[0], data.size(), 1, fp);
         file->_fclose(fp);
 
@@ -501,7 +506,11 @@ bool Engine::reloadBundle() {
             if(version == INDEX_VERSION) {
                 for(auto it : root[gContent].toMap()) {
                     VariantList item = it.second.toList();
-                    indices[item.back().toString()] = pair<string, string>(item.front().toString(), it.first);
+                    auto i = item.begin();
+                    string path = i->toString();
+                    i++;
+                    string type = i->toString();
+                    indices[path] = pair<string, string>(type, it.first);
                 }
 
                 for(auto it : root[gSettings].toMap()) {

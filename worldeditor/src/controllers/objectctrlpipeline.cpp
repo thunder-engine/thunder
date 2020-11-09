@@ -1,26 +1,23 @@
 #include "objectctrlpipeline.h"
 
-#include "rendertexture.h"
-#include "commandbuffer.h"
+#include <commandbuffer.h>
 
-#include "components/camera.h"
-#include "components/actor.h"
-#include "components/transform.h"
-#include "components/scene.h"
-#include "components/renderable.h"
+#include <components/camera.h>
+#include <components/actor.h>
+#include <components/transform.h>
+#include <components/renderable.h>
 
-#include "components/renderable.h"
+#include <resources/rendertexture.h>
+#include <resources/material.h>
+#include <resources/mesh.h>
 
-#include "resources/material.h"
-#include "resources/mesh.h"
+#include <postprocess/postprocessor.h>
 
-#include "postprocess/postprocessor.h"
+#include <editor/handles.h>
 
 #include "settingsmanager.h"
 
 #include "objectctrl.h"
-
-#include <handles/handletools.h>
 
 #include <QVariant>
 #include <QColor>

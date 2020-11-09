@@ -11,7 +11,7 @@
 
 #include <variant.h>
 
-#include "converters/converter.h"
+#include <editor/converter.h>
 
 #include "undomanager.h"
 

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QAbstractItemModel>
 
-#include "builder.h"
+#include <builder.h>
 
 #include "resources/angelscript.h"
 
@@ -73,6 +73,11 @@ private:
     AngelClassItem *m_pRootItem;
 };
 
+class AngelScriptImportSettings : public IConverterSettings {
+public:
+    AngelScriptImportSettings();
+};
+
 class AngelBuilder : public IBuilder {
     Q_OBJECT
 public:
@@ -87,11 +92,11 @@ protected:
     QString builderVersion() Q_DECL_OVERRIDE;
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"as"}; }
-    uint32_t type() const Q_DECL_OVERRIDE { return MetaType::type<AngelScript *>(); }
-
     QAbstractItemModel *classMap() const Q_DECL_OVERRIDE;
 
     uint8_t convertFile(IConverterSettings *settings) Q_DECL_OVERRIDE;
+
+    IConverterSettings *createSettings() const;
 
     const QString persistentAsset() const Q_DECL_OVERRIDE;
     const QString persistentUUID() const Q_DECL_OVERRIDE;
