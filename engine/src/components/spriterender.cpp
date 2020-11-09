@@ -28,7 +28,7 @@ public:
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
         if(resource == m_pSprite && state == Resource::Ready) {
-            m_pSprite->texture()->setDirty();
+            m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
         }
     }
 
@@ -70,9 +70,6 @@ void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
 
-        if(p_ptr->m_pMaterial) {
-            p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
-        }
         buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, layer, p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
@@ -107,6 +104,7 @@ void SpriteRender::setMaterial(Material *material) {
 
         if(material) {
             p_ptr->m_pMaterial = material->createInstance();
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
             p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
         }
     }
@@ -121,9 +119,15 @@ Sprite *SpriteRender::sprite() const {
     Replaces current \a sprite with a new one.
 */
 void SpriteRender::setSprite(Sprite *sprite) {
-    p_ptr->m_pSprite = sprite;
     if(p_ptr->m_pSprite) {
         p_ptr->m_pSprite->unsubscribe(p_ptr);
+    }
+    p_ptr->m_pSprite = sprite;
+    if(p_ptr->m_pSprite) {
+        p_ptr->m_pSprite->subscribe(p_ptr);
+        if(p_ptr->m_pMaterial) {
+            p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
+        }
     }
 }
 /*!
@@ -140,6 +144,9 @@ Texture *SpriteRender::texture() const {
 */
 void SpriteRender::setTexture(Texture *texture) {
     p_ptr->m_pTexture = texture;
+    if(p_ptr->m_pMaterial) {
+        p_ptr->m_pMaterial->setTexture(OVERRIDE, SpriteRender::texture());
+    }
 }
 /*!
     Returns the color of the sprite to be drawn.
