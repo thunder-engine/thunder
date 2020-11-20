@@ -46,12 +46,12 @@ void SceneView::setScene(Scene *scene) {
     if(m_pScene) {
         m_pScene->deleteLater();
     }
-    m_pScene    = scene;
+    m_pScene = scene;
     PluginManager::instance()->addScene(m_pScene);
 }
 
 void SceneView::setController(CameraCtrl *ctrl) {
-    m_pController   = ctrl;
+    m_pController = ctrl;
 }
 
 void SceneView::initializeGL() {

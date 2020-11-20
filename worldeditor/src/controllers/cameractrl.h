@@ -7,6 +7,7 @@
 #include <QStack>
 
 #include <amath.h>
+#include <object.h>
 
 class Actor;
 class Scene;
@@ -42,6 +43,12 @@ public:
     CameraCtrl(QOpenGLWidget *view);
 
     virtual void init(Scene *scene);
+
+    virtual void drawHandles();
+
+    virtual void resize(int32_t width, int32_t height);
+
+    virtual Object::ObjectList selected();
 
     void loadSettings();
 

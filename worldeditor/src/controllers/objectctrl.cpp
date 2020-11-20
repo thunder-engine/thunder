@@ -26,7 +26,7 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 #include "settingsmanager.h"
-#include "objectctrlpipeline.h"
+#include "editorpipeline.h"
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
 
@@ -83,7 +83,7 @@ ObjectCtrl::~ObjectCtrl() {
 void ObjectCtrl::init(Scene *scene) {
     CameraCtrl::init(scene);
 
-    m_pPipeline = new ObjectCtrlPipeline;
+    m_pPipeline = new EditorPipeline;
     m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);
 
@@ -110,8 +110,6 @@ void ObjectCtrl::init(Scene *scene) {
             }
         }
     }
-
-    Handles::init();
 }
 
 void ObjectCtrl::onBufferChanged() {
@@ -126,8 +124,8 @@ void ObjectCtrl::drawHandles() {
     selectGeometry(position, size);
 
     Vector3 screen = Vector3(position.x / m_Screen.x, position.y / m_Screen.y, 0.0f);
-    Handles::m_sMouse = Vector2(screen.x, screen.y);
-    Handles::m_sScreen = m_Screen;
+    Handles::s_Mouse = Vector2(screen.x, screen.y);
+    Handles::s_Screen = m_Screen;
 
     if(!m_Drag) {
         Handles::s_Axes = m_Axes;
@@ -322,7 +320,7 @@ void ObjectCtrl::setDrag(bool drag) {
 }
 
 void ObjectCtrl::onApplySettings() {
-    ObjectCtrlPipeline *pipeline = static_cast<ObjectCtrlPipeline *>(m_pActiveCamera->pipeline());
+    EditorPipeline *pipeline = static_cast<EditorPipeline *>(m_pActiveCamera->pipeline());
     pipeline->loadSettings();
 
     QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();

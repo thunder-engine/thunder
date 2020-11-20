@@ -15,53 +15,53 @@
 
 #define OVERRIDE "uni.texture0"
 
-Vector4 Handles::s_Normal   = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+Vector4 Handles::s_Normal = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+Vector4 Handles::s_Grey = Vector4(0.3f, 0.3f, 0.3f, 0.6f);
 Vector4 Handles::s_Selected = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-Vector4 Handles::s_xColor   = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-Vector4 Handles::s_yColor   = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-Vector4 Handles::s_zColor   = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+Vector4 Handles::s_xColor = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+Vector4 Handles::s_yColor = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+Vector4 Handles::s_zColor = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-Vector4 Handles::s_Color    = Handles::s_Normal;
-Vector4 Handles::s_Second   = Handles::s_Normal;
+Vector4 Handles::s_Color = Handles::s_Normal;
+Vector4 Handles::s_Second = Handles::s_Normal;
 
-Vector3 Handles::s_World    = Vector3();
+Vector3 Handles::s_World = Vector3();
 
-Vector2 Handles::m_sMouse   = Vector2();
-Vector2 Handles::m_sScreen  = Vector2();
+Vector2 Handles::s_Mouse = Vector2();
+Vector2 Handles::s_Screen = Vector2();
 
-const Vector4 grey(0.3f, 0.3f, 0.3f, 0.6f);
+uint8_t Handles::s_Axes = 0;
 
-uint8_t Handles::s_Axes     = 0;
+float Handles::s_Sense = 0.02f;
 
 static ICommandBuffer *s_Buffer = nullptr;
 
-static float length    = 1.0f;
-static float sense     = 0.02f;
-static float conesize  = length / 5.0f;
+static float length = 1.0f;
+static float conesize = length / 5.0f;
 
 static float s_AngleBegin = 0.0f;
 static float s_AngleTotal = 0.0f;
 
-Mesh *Handles::s_Cone   = nullptr;
-Mesh *Handles::s_Quad   = nullptr;
+Mesh *Handles::s_Cone = nullptr;
+Mesh *Handles::s_Quad = nullptr;
 Mesh *Handles::s_Sphere = nullptr;
-Mesh *Handles::s_Lines  = nullptr;
+Mesh *Handles::s_Lines = nullptr;
 
-MaterialInstance *Handles::s_Gizmo  = nullptr;
-MaterialInstance *Handles::s_Solid  = nullptr;
+MaterialInstance *Handles::s_Gizmo = nullptr;
+MaterialInstance *Handles::s_Solid = nullptr;
 MaterialInstance *Handles::s_Sprite = nullptr;
 
-Mesh *Handles::s_Axis      = nullptr;
-Mesh *Handles::s_Scale     = nullptr;
-Mesh *Handles::s_ScaleXY   = nullptr;
-Mesh *Handles::s_ScaleXYZ  = nullptr;
-Mesh *Handles::s_Move      = nullptr;
-Mesh *Handles::s_MoveXY    = nullptr;
-Mesh *Handles::s_Arc       = nullptr;
-Mesh *Handles::s_Circle    = nullptr;
+Mesh *Handles::s_Axis = nullptr;
+Mesh *Handles::s_Scale = nullptr;
+Mesh *Handles::s_ScaleXY = nullptr;
+Mesh *Handles::s_ScaleXYZ = nullptr;
+Mesh *Handles::s_Move = nullptr;
+Mesh *Handles::s_MoveXY = nullptr;
+Mesh *Handles::s_Arc = nullptr;
+Mesh *Handles::s_Circle = nullptr;
 Mesh *Handles::s_Rectangle = nullptr;
-Mesh *Handles::s_Box       = nullptr;
-Mesh *Handles::s_Bone      = nullptr;
+Mesh *Handles::s_Box = nullptr;
+Mesh *Handles::s_Bone = nullptr;
 
 enum {
     AXIS,
@@ -90,7 +90,7 @@ void Handles::init() {
     if(s_Sprite == nullptr) {
         Material *m = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
         if(m) {
-            MaterialInstance *inst  = m->createInstance();
+            MaterialInstance *inst = m->createInstance();
             s_Sprite = inst;
         }
     }
@@ -413,7 +413,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
         Matrix4 model(position, Quaternion(), Vector3(size, size.x));
         Matrix4 q = model * Matrix4(Camera::current()->actor()->transform()->quaternion().toMatrix());
 
-        if(HandleTools::distanceToPoint(q, Vector3()) <= sense) {
+        if(HandleTools::distanceToPoint(q, Vector3()) <= s_Sense) {
             result = true;
         }
 
@@ -429,7 +429,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
 Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
     Vector3 result = position;
     if(ICommandBuffer::isInited()) {
-        Camera *camera  = Camera::current();
+        Camera *camera = Camera::current();
         if(camera) {
             Vector3 normal = position - camera->actor()->transform()->position();
             float scale = 1.0f;
@@ -438,7 +438,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             } else {
                 scale = camera->orthoSize();
             }
-            scale *= (CONTROL_SIZE / m_sScreen.y);
+            scale *= (CONTROL_SIZE / s_Screen.y);
             Matrix4 model(position, rotation, scale);
 
             Matrix4 x = model * Matrix4(Vector3(conesize, 0, 0), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), conesize);
@@ -448,28 +448,28 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
             if(!locked) {
-                if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
-                    s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, s_Move) <= sense) ||
-                          (HandleTools::distanceToMesh(z * r, s_Move) <= sense)) {
-                    s_Axes  = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, s_Move) <= sense) ||
-                          (HandleTools::distanceToMesh(x * r, s_Move) <= sense)) {
-                    s_Axes  = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, s_Move) <= sense) ||
-                          (HandleTools::distanceToMesh(y * r, s_Move) <= sense)) {
-                    s_Axes  = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, s_Axis) <= sense) {
-                    s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Axis) <= sense) {
-                    s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Axis) <= sense) {
-                    s_Axes  = AXIS_Z;
+                if(HandleTools::distanceToPoint(model, Vector3()) <= s_Sense) {
+                    s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
+                } else if((HandleTools::distanceToMesh(x, s_Move) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Move) <= s_Sense)) {
+                    s_Axes = AXIS_X | AXIS_Z;
+                } else if((HandleTools::distanceToMesh(y, s_Move) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Move) <= s_Sense)) {
+                    s_Axes = AXIS_Y | AXIS_X;
+                } else if((HandleTools::distanceToMesh(z, s_Move) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Move) <= s_Sense)) {
+                    s_Axes = AXIS_Z | AXIS_Y;
+                } else if(HandleTools::distanceToMesh(x, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_X;
+                } else if(HandleTools::distanceToMesh(y, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_Y;
+                } else if(HandleTools::distanceToMesh(z, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_Z;
                 }
             }
 
             s_Second = s_xColor;
-            s_Color  = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
+            s_Color = (s_Axes & AXIS_X) ? s_Selected : s_xColor;
             drawArrow(x);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor);
             s_Buffer->drawMesh(x, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -477,7 +477,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             s_Buffer->drawMesh(x * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Second = s_yColor;
-            s_Color  = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
+            s_Color = (s_Axes & AXIS_Y) ? s_Selected : s_yColor;
             drawArrow(y);
             s_Buffer->setColor(s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor);
             s_Buffer->drawMesh(y, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -485,7 +485,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             s_Buffer->drawMesh(y * r, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Second = s_zColor;
-            s_Color  = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
+            s_Color = (s_Axes & AXIS_Z) ? s_Selected : s_zColor;
             drawArrow(z);
             s_Buffer->setColor(s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor);
             s_Buffer->drawMesh(z, s_Move, ICommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -506,12 +506,12 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
                 s_Buffer->setColor(s_Color);
                 s_Buffer->drawMesh(z, s_MoveXY, ICommandBuffer::TRANSLUCENT, s_Gizmo);
             }
-            s_Color  = s_Normal;
+            s_Color = s_Normal;
             s_Second = s_Normal;
 
             Plane plane;
-            plane.point     = position;
-            plane.normal    = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+            plane.point = position;
+            plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X) {
                 plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
             } else if(s_Axes == AXIS_Z) {
@@ -527,7 +527,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             }
             plane.d = plane.normal.dot(plane.point);
 
-            Ray ray = camera->castRay(m_sMouse.x, m_sMouse.y);
+            Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
             Vector3 point;
             ray.intersect(plane, &point, true);
             if(s_Axes & AXIS_X) {
@@ -556,36 +556,36 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             } else {
                 scale = camera->orthoSize();
             }
-            scale *= (CONTROL_SIZE / m_sScreen.y);
+            scale *= (CONTROL_SIZE / s_Screen.y);
             normal.normalize();
 
             Matrix4 model(position, rotation, scale * 5.0f);
 
             Matrix4 q1 = model * Matrix4(Vector3(), t->quaternion() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
-            Matrix4 x  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 90)) *
-                                                    Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
-            Matrix4 y  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
-            Matrix4 z  = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
-                                                    Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
+            Matrix4 x = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 90)) *
+                                                   Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
+            Matrix4 y = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.x, normal.z) + 180), Vector3(conesize));
+            Matrix4 z = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 1),-RAD2DEG * atan2(normal.x, normal.y)) *
+                                                   Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
             Matrix4 m;
             m.scale(1.2f);
 
             if(!locked) {
-                if(HandleTools::distanceToMesh(q1 * m, s_Circle) <= sense) {
+                if(HandleTools::distanceToMesh(q1 * m, s_Circle) <= s_Sense) {
                     s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if(HandleTools::distanceToMesh(x, s_Arc) <= sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Arc) <= s_Sense) {
                     s_Axes = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Arc) <= sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Arc) <= s_Sense) {
                     s_Axes = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Arc) <= sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Arc) <= s_Sense) {
                     s_Axes = AXIS_Z;
                 }
             }
 
             Plane plane;
-            plane.point  = position;
+            plane.point = position;
             plane.normal = t->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X) {
                 plane.normal = Vector3(1.0f, 0.0f, 0.0f);
@@ -597,7 +597,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             plane.d = plane.normal.dot(plane.point);
 
             Vector3 world;
-            Ray ray = camera->castRay(m_sMouse.x, m_sMouse.y);
+            Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
             ray.intersect(plane, &world, true);
 
             Vector3 dt0 = world - position;
@@ -648,10 +648,10 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
                 s_AngleTotal = 0.0f;
             }
 
-            s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : grey * 2.0f;
+            s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : s_Grey * 2.0f;
             s_Buffer->setColor(s_Color);
             s_Buffer->drawMesh(q1 * m, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
-            s_Buffer->setColor(grey);
+            s_Buffer->setColor(s_Grey);
             s_Buffer->drawMesh(q1, s_Circle, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
             s_Color = s_Normal;
@@ -665,7 +665,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
 
 Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
     if(ICommandBuffer::isInited()) {
-        Camera *camera  = Camera::current();
+        Camera *camera = Camera::current();
         if(camera) {
             Vector3 normal = position - camera->actor()->transform()->position();
             float size = 1.0f;
@@ -674,41 +674,41 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             } else {
                 size = camera->orthoSize();
             }
-            size *= (CONTROL_SIZE / m_sScreen.y);
+            size *= (CONTROL_SIZE / s_Screen.y);
             Vector3 scale(((normal.x < 0) ? 1 : -1) * size,
                           ((normal.y < 0) ? 1 : -1) * size,
                           ((normal.z < 0) ? 1 : -1) * size);
 
             Matrix4 model(position, rotation, scale);
-            Matrix4 x   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), Vector3(conesize));
-            Matrix4 y   = model * Matrix4(Vector3(), Quaternion(), Vector3(conesize));
-            Matrix4 z   = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), Vector3(conesize));
+            Matrix4 x = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1),-90) * Quaternion(Vector3(0, 1, 0),-90), Vector3(conesize));
+            Matrix4 y = model * Matrix4(Vector3(), Quaternion(), Vector3(conesize));
+            Matrix4 z = model * Matrix4(Vector3(), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), Vector3(conesize));
 
             Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
             if(!locked) {
-                if(HandleTools::distanceToPoint(model, Vector3()) <= sense) {
-                    s_Axes  = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, s_Scale) <= sense) ||
-                          (HandleTools::distanceToMesh(z * r, s_Scale) <= sense)) {
-                    s_Axes  = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, s_Scale) <= sense) ||
-                          (HandleTools::distanceToMesh(x * r, s_Scale) <= sense)) {
-                    s_Axes  = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, s_Scale) <= sense) ||
-                          (HandleTools::distanceToMesh(y * r, s_Scale) <= sense)) {
-                    s_Axes  = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, s_Axis) <= sense) {
-                    s_Axes  = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, s_Axis) <= sense) {
-                    s_Axes  = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, s_Axis) <= sense) {
-                    s_Axes  = AXIS_Z;
+                if(HandleTools::distanceToPoint(model, Vector3()) <= s_Sense) {
+                    s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
+                } else if((HandleTools::distanceToMesh(x, s_Scale) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Scale) <= s_Sense)) {
+                    s_Axes = AXIS_X | AXIS_Z;
+                } else if((HandleTools::distanceToMesh(y, s_Scale) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Scale) <= s_Sense)) {
+                    s_Axes = AXIS_Y | AXIS_X;
+                } else if((HandleTools::distanceToMesh(z, s_Scale) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Scale) <= s_Sense)) {
+                    s_Axes = AXIS_Z | AXIS_Y;
+                } else if(HandleTools::distanceToMesh(x, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_X;
+                } else if(HandleTools::distanceToMesh(y, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_Y;
+                } else if(HandleTools::distanceToMesh(z, s_Axis) <= s_Sense) {
+                    s_Axes = AXIS_Z;
                 }
             }
 
-            s_Color     = s_Selected;
-            s_Color.w   = ALPHA;
+            s_Color = s_Selected;
+            s_Color.w = ALPHA;
             {
                 s_Buffer->setColor(s_xColor);
                 if(s_Axes == (AXIS_X | AXIS_Z)) {
@@ -782,7 +782,5 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             s_Color = s_Normal;
         }
     }
-    return Vector3(m_sMouse, 1.0) * 500;
+    return Vector3(s_Mouse, 1.0) * 500;
 }
-
-

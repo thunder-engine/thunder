@@ -49,7 +49,7 @@ float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &positio
     ssp.y = 1.0f - ssp.y;
 
     Vector2 ss(ssp.x, ssp.y);
-    return (Handles::m_sMouse - ss).length();
+    return (Handles::s_Mouse - ss).length();
 }
 
 float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &points) {
@@ -62,7 +62,7 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
         ssp.y = 1.0f - ssp.y;
         Vector2 ss(ssp.x, ssp.y);
         if(!first) {
-            result = std::min(distanceToSegment(back, ss, Handles::m_sMouse), result);
+            result = std::min(distanceToSegment(back, ss, Handles::s_Mouse), result);
         } else {
             first = false;
         }
@@ -92,7 +92,7 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh) {
             b.y = 1.0f - b.y;
             Vector2 ssa(a.x, a.y);
             Vector2 ssb(b.x, b.y);
-            result = std::min(distanceToSegment(ssa, ssb, Handles::m_sMouse), result);
+            result = std::min(distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
         }
     }
     return sqrtf(result);

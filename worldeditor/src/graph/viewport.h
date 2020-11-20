@@ -14,9 +14,6 @@ protected:
     void                    resizeGL            (int width, int height);
 
 signals:
-    void                    keyPress            (QKeyEvent *);
-    void                    keyRelease          (QKeyEvent *);
-
     void                    drop                (QDropEvent *);
     void                    dragEnter           (QDragEnterEvent *);
     void                    dragMove            (QDragMoveEvent *);

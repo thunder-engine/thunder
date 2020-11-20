@@ -105,7 +105,7 @@ const QImage IconRender::render(const QString &resource, const QString &) {
 
     Camera::setCurrent(m_pCamera);
     PluginManager::instance()->updateRender(m_pScene);
-    //PluginManager::instance()->updateRender(m_pScene);
+    PluginManager::instance()->updateRender(m_pScene);
 
     m_Context->functions()->glFinish();
 

@@ -24,7 +24,7 @@ class Actor;
 class Scene;
 class Texture;
 
-class ObjectCtrlPipeline;
+class EditorPipeline;
 
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
@@ -49,13 +49,13 @@ public:
 
     void init(Scene *scene) override;
 
-    void drawHandles();
-
     void clear(bool signal = true);
 
     void selectActors(const list<uint32_t> &list);
 
-    Object::ObjectList selected();
+    Object::ObjectList selected() override;
+
+    void createMenu(QMenu *menu) override;
 
     Object *map() const;
     void setMap(Object *map);
@@ -65,12 +65,8 @@ public:
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
-    void resize(int32_t width, int32_t height);
-
     bool isModified() const { return m_Modified; }
     void resetModified() { m_Modified = false; }
-
-    virtual void createMenu(QMenu *menu) override;
 
 public slots:
     void onInputEvent(QInputEvent *) override;
@@ -111,6 +107,10 @@ signals:
     void loadMap(const QString &map);
 
 protected:
+    void drawHandles() override;
+
+    void resize(int32_t width, int32_t height) override;
+
     void selectGeometry(Vector2 &, Vector2 &size);
 
     Vector3 objectPosition();
@@ -144,7 +144,7 @@ protected:
 
     Object *m_pMap;
 
-    ObjectCtrlPipeline *m_pPipeline;
+    EditorPipeline *m_pPipeline;
 
     Object::ObjectList m_DragObjects;
 
