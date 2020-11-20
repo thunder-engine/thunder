@@ -1,4 +1,4 @@
-#include "objectctrlpipeline.h"
+#include "editorpipeline.h"
 
 #include <commandbuffer.h>
 
@@ -52,7 +52,7 @@ public:
     Vector4 m_Color;
 };
 
-ObjectCtrlPipeline::ObjectCtrlPipeline() :
+EditorPipeline::EditorPipeline() :
         Pipeline(),
         m_pTarget(nullptr),
         m_pGrid(nullptr),
@@ -121,10 +121,12 @@ ObjectCtrlPipeline::ObjectCtrlPipeline() :
         m_pGizmo = m->createInstance();
     }
 
+    Handles::init();
+
     loadSettings();
 }
 
-void ObjectCtrlPipeline::loadSettings() {
+void EditorPipeline::loadSettings() {
     QColor color = SettingsManager::instance()->property("General/Colors/Grid_Color").value<QColor>();
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
@@ -134,24 +136,24 @@ void ObjectCtrlPipeline::loadSettings() {
     outline->m_Width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
 }
 
-void ObjectCtrlPipeline::setController(ObjectCtrl *ctrl) {
+void EditorPipeline::setController(CameraCtrl *ctrl) {
     m_pController = ctrl;
 }
 
-uint32_t ObjectCtrlPipeline::objectId() const {
+uint32_t EditorPipeline::objectId() const {
     return m_ObjectId;
 }
 
-Vector3 ObjectCtrlPipeline::mouseWorld () const {
+Vector3 EditorPipeline::mouseWorld () const {
     return m_MouseWorld;
 }
 
-void ObjectCtrlPipeline::setMousePosition(int32_t x, int32_t y) {
+void EditorPipeline::setMousePosition(int32_t x, int32_t y) {
     m_MouseX = x;
     m_MouseY = y;
 }
 
-void ObjectCtrlPipeline::setDragObjects(const ObjectList &list) {
+void EditorPipeline::setDragObjects(const ObjectList &list) {
     m_DragList.clear();
     for(auto it : list) {
         auto result = it->findChildren<Renderable *>();
@@ -160,7 +162,7 @@ void ObjectCtrlPipeline::setDragObjects(const ObjectList &list) {
     }
 }
 
-void ObjectCtrlPipeline::setTarget(const QString &string) {
+void EditorPipeline::setTarget(const QString &string) {
     m_pTarget = nullptr;
     auto it = m_Targets.find(qPrintable(string));
     if(it != m_Targets.end()) {
@@ -168,7 +170,7 @@ void ObjectCtrlPipeline::setTarget(const QString &string) {
     }
 }
 
-QStringList ObjectCtrlPipeline::targets() const {
+QStringList EditorPipeline::targets() const {
     QStringList result;
     for(auto it : m_Targets) {
         result.push_back(it.first.c_str());
@@ -177,7 +179,7 @@ QStringList ObjectCtrlPipeline::targets() const {
     return result;
 }
 
-void ObjectCtrlPipeline::draw(Camera &camera) {
+void EditorPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget();
@@ -196,9 +198,7 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
         uint32_t pixel = m_pDepth->getPixel(0, 0);
         memcpy(&screen.z, &pixel, sizeof(float));
 
-        Matrix4 v = camera.viewMatrix();
-        Matrix4 p = camera.projectionMatrix();
-        m_MouseWorld = Camera::unproject(screen, v, p);
+        m_MouseWorld = Camera::unproject(screen, camera.viewMatrix(), camera.projectionMatrix());
     } else {
         Ray ray = camera.castRay(screen.x, 1.0f - screen.y);
         m_MouseWorld = (ray.dir * 10.0f) + ray.pos;
@@ -220,7 +220,7 @@ void ObjectCtrlPipeline::draw(Camera &camera) {
     Handles::endDraw();
 }
 
-void ObjectCtrlPipeline::post(Camera &camera) {
+void EditorPipeline::post(Camera &camera) {
     cameraReset(camera);
     // Selection outline
     m_Buffer->setRenderTarget({m_Targets[OUTLINE_MAP]}, m_Targets[OUTDEPTH_MAP]);
@@ -245,12 +245,12 @@ void ObjectCtrlPipeline::post(Camera &camera) {
     }
 }
 
-void ObjectCtrlPipeline::resize(int32_t width, int32_t height) {
+void EditorPipeline::resize(int32_t width, int32_t height) {
     Pipeline::resize(width, height);
     m_pController->resize(width, height);
 }
 
-void ObjectCtrlPipeline::drawGrid(Camera &camera) {
+void EditorPipeline::drawGrid(Camera &camera) {
     Transform *t = camera.actor()->transform();
     Vector3 cam = t->position();
     Vector3 pos;

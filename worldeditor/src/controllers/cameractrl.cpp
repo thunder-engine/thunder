@@ -1,9 +1,5 @@
 #include "cameractrl.h"
 
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QCursor>
-
 #include <engine.h>
 #include <timer.h>
 #include <float.h>
@@ -44,6 +40,19 @@ void CameraCtrl::init(Scene *scene) {
     m_pActiveCamera->setColor(Vector4(0.2f, 0.2f, 0.2f, 0.0));
 
     m_pCamera->transform()->setPosition(Vector3(0.0, 0.0, 20.0));
+}
+
+void CameraCtrl::drawHandles() {
+
+}
+
+void CameraCtrl::resize(int32_t width, int32_t height) {
+    Q_UNUSED(width)
+    Q_UNUSED(height)
+}
+
+Object::ObjectList CameraCtrl::selected() {
+    return Object::ObjectList();
 }
 
 void CameraCtrl::update() {

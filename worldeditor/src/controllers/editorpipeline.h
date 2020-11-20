@@ -5,13 +5,13 @@
 
 #include <QObject>
 
-class ObjectCtrl;
+class CameraCtrl;
 class Texture;
 class Renderable;
 
-class ObjectCtrlPipeline : public Pipeline {
+class EditorPipeline : public Pipeline {
 public:
-    ObjectCtrlPipeline();
+    EditorPipeline();
 
     void draw(Camera &camera) override;
 
@@ -21,7 +21,7 @@ public:
 
     void loadSettings();
 
-    void setController(ObjectCtrl *ctrl);
+    void setController(CameraCtrl *ctrl);
 
     uint32_t objectId () const;
 
@@ -48,7 +48,7 @@ protected:
 
     MaterialInstance *m_pGizmo;
 
-    ObjectCtrl *m_pController;
+    CameraCtrl *m_pController;
 
     list<Renderable *> m_DragList;
 

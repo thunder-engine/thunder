@@ -15,9 +15,16 @@ class ICommandBuffer;
 class NEXT_LIBRARY_EXPORT Handles {
 public:
     enum Axises {
-        AXIS_X  =(1 << 0),
-        AXIS_Y  =(1 << 1),
-        AXIS_Z  =(1 << 2)
+        AXIS_X = (1 << 0),
+        AXIS_Y = (1 << 1),
+        AXIS_Z = (1 << 2)
+    };
+
+    enum Points {
+        POINT_T = (1 << 0),
+        POINT_B = (1 << 1),
+        POINT_L = (1 << 2),
+        POINT_R = (1 << 3)
     };
 
 public:
@@ -55,6 +62,7 @@ public:
     static Vector4 s_Second;
 
     static Vector4 s_Normal;
+    static Vector4 s_Grey;
     static Vector4 s_Selected;
 
     static Vector4 s_xColor;
@@ -63,12 +71,14 @@ public:
 
     static Vector3 s_World;
 
-    static Vector2 m_sMouse;
-    static Vector2 m_sScreen;
+    static Vector2 s_Mouse;
+    static Vector2 s_Screen;
 
-    static Matrix4 m_Model;
+    static Matrix4 s_Model;
 
     static uint8_t s_Axes;
+
+    static float s_Sense;
 
 protected:
     static Mesh *s_Cone;
