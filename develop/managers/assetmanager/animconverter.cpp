@@ -13,45 +13,10 @@ AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
 }
 
-VariantMap AnimationClipSerial::saveUserData() const {
-    VariantMap result;
-
-    VariantList tracks;
-    for(auto t : m_Tracks) {
-        VariantList track;
-        track.push_back(t.path());
-        track.push_back(t.property());
-
-        VariantList curves;
-        for(auto c : t.curves()) {
-            VariantList curve;
-            curve.push_back(c.first);
-
-            for(auto it : c.second.m_Keys) {
-                VariantList key;
-                key.push_back(int32_t(it.m_Position));
-                key.push_back(it.m_Type);
-                key.push_back(it.m_Value);
-                key.push_back(it.m_LeftTangent);
-                key.push_back(it.m_RightTangent);
-
-                curve.push_back(key);
-            }
-            curves.push_back(curve);
-        }
-        track.push_back(curves);
-
-        tracks.push_back(track);
-    }
-
-    result[TRACKS] = tracks;
-    return result;
-}
-
 uint8_t AnimConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        AnimationClipSerial clip;
+        AnimationClip clip;
         VariantMap map;
         map[TRACKS] = readJson(src.readAll().toStdString(), settings).toList();
         clip.loadUserData(map);

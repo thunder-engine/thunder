@@ -22,13 +22,4 @@ private:
     void toVersion1(Variant &variant);
 };
 
-class AnimationClipSerial : public AnimationClip {
-public:
-    VariantMap saveUserData() const;
-
-protected:
-    friend class AnimConverter;
-
-};
-
 #endif // ANIMCONVERTER_H

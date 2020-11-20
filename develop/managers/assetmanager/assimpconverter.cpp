@@ -593,7 +593,7 @@ void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
 }
 
 void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings) {
-    AnimationClipSerial clip;
+    AnimationClip clip;
     clip.setName("AnimationClip");
 
     for(uint32_t a = 0; a < scene->mNumAnimations; a++) {

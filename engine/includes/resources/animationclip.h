@@ -53,8 +53,9 @@ public:
 public:
     AnimationTrackList m_Tracks;
 
-protected:
     void loadUserData(const VariantMap &data) override;
+protected:
+    VariantMap saveUserData() const override;
 
 };
 
