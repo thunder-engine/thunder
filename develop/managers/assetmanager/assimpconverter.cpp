@@ -24,6 +24,7 @@
 #include "resources/mesh.h"
 #include "resources/material.h"
 #include "resources/prefab.h"
+#include "resources/pose.h"
 
 #include "systems/resourcesystem.h"
 
@@ -163,127 +164,6 @@ void AssimpImportSettings::setScaleError(float value) {
         emit updated();
     }
 }
-
-class MeshSerial : public Mesh {
-public:
-    VariantMap saveUserData() const {
-        VariantMap result;
-
-        int32_t flag = flags();
-
-        VariantList header;
-        header.push_back(flag);
-        result[HEADER]  = header;
-
-        VariantList surface;
-        surface.push_back(mode());
-
-        for(uint32_t index = 0; index < lodsCount(); index++) {
-            Lod *l = lod(index);
-
-            VariantList lod;
-            // Push material
-            lod.push_back("{00000000-0402-0000-0000-000000000000}");
-            uint32_t vCount = l->vertices().size();
-            lod.push_back(static_cast<int32_t>(vCount));
-            lod.push_back(static_cast<int32_t>(l->indices().size() / 3));
-
-            { // Required field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->vertices()[0], sizeof(Vector3) * vCount);
-                lod.push_back(buffer);
-            }
-            { // Required field
-                ByteArray buffer;
-                buffer.resize(sizeof(uint32_t) * l->indices().size());
-                memcpy(&buffer[0], &l->indices()[0], sizeof(uint32_t) * l->indices().size());
-                lod.push_back(buffer);
-            }
-
-            if(flag & Color) { // Optional field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector4) * vCount);
-                memcpy(&buffer[0], &l->colors()[0], sizeof(Vector4) * vCount);
-                lod.push_back(buffer);
-            }
-            if(flag & Uv0) { // Optional field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector2) * vCount);
-                memcpy(&buffer[0], &l->uv0()[0], sizeof(Vector2) * vCount);
-                lod.push_back(buffer);
-            }
-            if(flag & Uv1) { // Optional field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector2) * vCount);
-                memcpy(&buffer[0], &l->uv1()[0], sizeof(Vector2) * vCount);
-                lod.push_back(buffer);
-            }
-
-            if(flag & Normals) { // Optional field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->normals()[0], sizeof(Vector3) * vCount);
-                lod.push_back(buffer);
-            }
-            if(flag & Tangents) { // Optional field
-                ByteArray buffer;
-                buffer.resize(sizeof(Vector3) * vCount);
-                memcpy(&buffer[0], &l->tangents()[0], sizeof(Vector3) * vCount);
-                lod.push_back(buffer);
-            }
-            if(flag & Skinned) { // Optional field
-                {
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector4) * vCount);
-                    memcpy(&buffer[0], &l->weights()[0], sizeof(Vector4) * vCount);
-                    lod.push_back(buffer);
-                }
-                {
-                    ByteArray buffer;
-                    buffer.resize(sizeof(Vector4) * vCount);
-                    memcpy(&buffer[0], &l->bones()[0], sizeof(Vector4) * vCount);
-                    lod.push_back(buffer);
-                }
-            }
-            surface.push_back(lod);
-        }
-        result[DATA] = surface;
-
-        return result;
-    }
-
-    void setState(ResourceState state) {
-        if(state == Suspend) {
-            state = ToBeDeleted;
-        }
-        Resource::setState(state);
-    }
-
-};
-
-class PoseSerial : public Pose {
-    VariantMap saveUserData() const {
-        VariantMap result;
-
-        VariantList data;
-        for(int32_t i = 0; i < boneCount(); i++) {
-            VariantList attribs;
-
-            const Bone *b = bone(i);
-
-            attribs.push_back(b->position());
-            attribs.push_back(b->rotation());
-            attribs.push_back(b->scale());
-            attribs.push_back(int(b->index()));
-
-            data.push_back(attribs);
-        }
-        result[DATA] = data;
-
-        return result;
-    }
-};
 
 AssimpConverter::AssimpConverter() {
 
@@ -429,7 +309,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
             uint32_t index = element->mMeshes[element->mNumMeshes - 1];
             const aiMesh *mesh = scene->mMeshes[index];
 
-            MeshSerial *result = AssimpConverter::importMesh(mesh, actor, fbxSettings);
+            Mesh *result = AssimpConverter::importMesh(mesh, actor, fbxSettings);
             if(result) {
                 uuid = AssimpConverter::saveData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>(), fbxSettings);
 
@@ -473,8 +353,8 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
     return importObjectHelper(scene, element, m, parent, fbxSettings);
 }
 
-MeshSerial *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, AssimpImportSettings *fbxSettings) {
-    MeshSerial *mesh = new MeshSerial;
+Mesh *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, AssimpImportSettings *fbxSettings) {
+    Mesh *mesh = new Mesh;
     mesh->setMode(Mesh::Triangles);
 
     Lod l;
@@ -855,7 +735,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 }
 
 void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
-    PoseSerial *pose = new PoseSerial;
+    Pose *pose = new Pose;
     pose->setName("Pose");
 
     for(auto it : fbxSettings->m_Bones) {

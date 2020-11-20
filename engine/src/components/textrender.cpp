@@ -113,7 +113,15 @@ public:
                                 pos.x += m_pFont->requestKerning(ch, previous);
                             }
                             uint32_t index = m_pFont->atlasIndex(ch);
-                            Vector2Vector shape = m_pFont->shape(index);
+
+                            Mesh *m = m_pFont->mesh(index);
+                            if(m == nullptr) {
+                                continue;
+                            }
+                            Lod *l = m->lod(0);
+
+                            Vector3Vector &shape = l->vertices();
+                            Vector2Vector &uv = l->uv0();
 
                             bb[0].x = MIN(bb[0].x, shape[0].x * m_Size);
                             bb[0].y = MIN(bb[0].y, shape[0].y * m_Size);
@@ -134,16 +142,15 @@ public:
                                 bb[1].y = MAX(bb[1].y, pos.y);
                             }
 
-                            vertices[it * 4 + 0] = pos + Vector3(shape[0], 0.0f) * m_Size;
-                            vertices[it * 4 + 1] = pos + Vector3(shape[1], 0.0f) * m_Size;
-                            vertices[it * 4 + 2] = pos + Vector3(shape[2], 0.0f) * m_Size;
-                            vertices[it * 4 + 3] = pos + Vector3(shape[3], 0.0f) * m_Size;
+                            vertices[it * 4 + 0] = pos + shape[0] * m_Size;
+                            vertices[it * 4 + 1] = pos + shape[1] * m_Size;
+                            vertices[it * 4 + 2] = pos + shape[2] * m_Size;
+                            vertices[it * 4 + 3] = pos + shape[3] * m_Size;
 
-                            Vector4 uv = m_pFont->uv(index);
-                            uv0[it * 4 + 0] = Vector2(uv.x, uv.y);
-                            uv0[it * 4 + 1] = Vector2(uv.z, uv.y);
-                            uv0[it * 4 + 2] = Vector2(uv.z, uv.w);
-                            uv0[it * 4 + 3] = Vector2(uv.x, uv.w);
+                            uv0[it * 4 + 0] = uv[0];
+                            uv0[it * 4 + 1] = uv[1];
+                            uv0[it * 4 + 2] = uv[2];
+                            uv0[it * 4 + 3] = uv[3];
 
                             indices[it * 6 + 0] = it * 4 + 0;
                             indices[it * 6 + 1] = it * 4 + 1;

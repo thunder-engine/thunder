@@ -102,6 +102,11 @@ QString IConverterSettings::subItem(const QString &key) const {
     return m_SubItems.value(key);
 }
 
+QJsonObject IConverterSettings::subItemData(const QString &key) const {
+    Q_UNUSED(key)
+    return QJsonObject();
+}
+
 QString IConverterSettings::subTypeName(const QString &key) const {
     QString result = MetaType::name(subType(key));
     result = result.replace("*", "");
@@ -117,6 +122,11 @@ void IConverterSettings::setSubItem(const QString &name, const QString &uuid, in
         m_SubItems[name] = uuid;
         m_SubTypes[name] = type;
     }
+}
+
+void IConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
+    Q_UNUSED(name)
+    Q_UNUSED(data)
 }
 
 bool IConverterSettings::loadSettings() {
@@ -144,7 +154,16 @@ bool IConverterSettings::loadSettings() {
         QJsonObject sub = object.value(gSubItems).toObject();
         foreach(QString it, sub.keys()) {
             QJsonArray array = sub.value(it).toArray();
-            setSubItem(it, array.first().toString(), array.last().toInt());
+            auto item = array.begin();
+            QString uuid = item->toString();
+            item++;
+            int type = item->toInt();
+            setSubItem(it, uuid, type);
+            item++;
+            if(item != array.end()) {
+                QJsonObject data = item->toObject();
+                setSubItemData(it, data);
+            }
         }
         blockSignals(false);
         m_Modified = false;
@@ -176,8 +195,15 @@ void IConverterSettings::saveSettings() {
     QJsonObject sub;
     for(QString it : subKeys()) {
         QJsonArray array;
-        array.push_back(subItem(it));
+        QString uuid = subItem(it);
+        array.push_back(uuid);
         array.push_back(subType(it));
+
+        QJsonObject data = subItemData(it);
+        if(!data.isEmpty()) {
+            array.push_back(data);
+        }
+
         sub[it] = array;
     }
     obj.insert(gSubItems, sub);

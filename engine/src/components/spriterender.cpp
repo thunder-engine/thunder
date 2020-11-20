@@ -21,14 +21,16 @@ public:
             m_pTexture(nullptr),
             m_pMaterial(nullptr),
             m_pMesh(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
+            m_pCustomMesh(nullptr),
             m_Color(1.0f),
-            m_Index(0) {
+            m_Index(-1) {
 
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
         if(resource == m_pSprite && state == Resource::Ready) {
             m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
+            m_pCustomMesh = m_pSprite->mesh(m_Index);
         }
     }
 
@@ -39,10 +41,11 @@ public:
     MaterialInstance *m_pMaterial;
 
     Mesh *m_pMesh;
+    Mesh *m_pCustomMesh;
 
     Vector4 m_Color;
 
-    int m_Index;
+    int32_t m_Index;
 };
 /*!
     \class SpriteRender
@@ -70,7 +73,9 @@ void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, layer, p_ptr->m_pMaterial);
+        buffer.drawMesh(a->transform()->worldTransform(),
+                        (p_ptr->m_pCustomMesh) ? p_ptr->m_pCustomMesh : p_ptr->m_pMesh,
+                        layer, p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -125,6 +130,7 @@ void SpriteRender::setSprite(Sprite *sprite) {
     p_ptr->m_pSprite = sprite;
     if(p_ptr->m_pSprite) {
         p_ptr->m_pSprite->subscribe(p_ptr);
+        p_ptr->m_pCustomMesh = p_ptr->m_pSprite->mesh(p_ptr->m_Index);
         if(p_ptr->m_pMaterial) {
             p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
         }
@@ -145,6 +151,7 @@ Texture *SpriteRender::texture() const {
 void SpriteRender::setTexture(Texture *texture) {
     p_ptr->m_pTexture = texture;
     if(p_ptr->m_pMaterial) {
+        p_ptr->m_pCustomMesh = nullptr;
         p_ptr->m_pMaterial->setTexture(OVERRIDE, SpriteRender::texture());
     }
 }
@@ -174,6 +181,9 @@ int SpriteRender::index() const {
 */
 void SpriteRender::setIndex(int index) {
     p_ptr->m_Index = index;
+    if(p_ptr->m_pSprite) {
+        p_ptr->m_pCustomMesh = p_ptr->m_pSprite->mesh(index);
+    }
 }
 /*!
     \internal

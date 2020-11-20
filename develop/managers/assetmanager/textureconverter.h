@@ -46,6 +46,8 @@ public:
     Q_ENUM(TextureType)
     Q_ENUM(FormatType)
 
+    typedef QMap<QString, QRect> ElementMap;
+
 public:
     TextureImportSettings();
 
@@ -64,8 +66,17 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
+    ElementMap elements() const;
+    QString setElement(const QRect &rect, const QString &key = QString());
+    void removeElement(const QString &key);
+
 private:
     QString typeName() const Q_DECL_OVERRIDE;
+
+    QJsonObject subItemData(const QString &key) const override;
+    void setSubItemData(const QString &name, const QJsonObject &data) override;
+
+    QString findFreeElementName(const QString &name);
 
 protected:
     TextureType   m_TextureType;
@@ -75,6 +86,8 @@ protected:
     FilteringType m_Filtering;
 
     WrapType      m_Wrap;
+
+    ElementMap    m_Elements;
 
     bool          m_Lod;
 };

@@ -117,6 +117,30 @@ void Pose::loadUserData(const VariantMap &data) {
 }
 /*!
     \internal
+*/
+VariantMap Pose::saveUserData() const {
+    VariantMap result;
+
+    VariantList data;
+    for(int32_t i = 0; i < boneCount(); i++) {
+        VariantList attribs;
+
+        const Bone *b = bone(i);
+
+        attribs.push_back(b->position());
+        attribs.push_back(b->rotation());
+        attribs.push_back(b->scale());
+        attribs.push_back(int(b->index()));
+
+        data.push_back(attribs);
+    }
+    result[DATA] = data;
+
+    return result;
+}
+
+/*!
+    \internal
 
     \warning Do not call this function manually
 */

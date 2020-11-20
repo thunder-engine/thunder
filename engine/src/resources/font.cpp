@@ -234,18 +234,18 @@ void Font::requestCharacters(const string &characters) {
                         Texture *t  = Engine::objectCreate<Texture>("", this);
                         t->setWidth(w);
                         t->setHeight(h);
-
-                        Vector2Vector shape;
-                        shape.resize(4);
-                        shape[0] = Vector2(bbox.xMin, bbox.yMax) / p_ptr->m_Scale;
-                        shape[1] = Vector2(bbox.xMax, bbox.yMax) / p_ptr->m_Scale;
-                        shape[2] = Vector2(bbox.xMax, bbox.yMin) / p_ptr->m_Scale;
-                        shape[3] = Vector2(bbox.xMin, bbox.yMin) / p_ptr->m_Scale;
-
-                        t->setShape(shape);
                         t->addSurface(s);
 
-                        p_ptr->m_GlyphMap[ch] = addElement(t);
+                        int index = addElement(t);
+                        Mesh *m = mesh(index);
+                        Lod *lod = m->lod(0);
+                        if(lod) {
+                            lod->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_Scale,
+                                              Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_Scale,
+                                              Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_Scale,
+                                              Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_Scale});
+                        }
+                        p_ptr->m_GlyphMap[ch] = index;
 
                         isNew = true;
                     }

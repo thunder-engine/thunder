@@ -3,6 +3,9 @@
 #include <QImage>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonObject>
+#include <QUuid>
+#include <QDebug>
 
 #include <cstring>
 
@@ -92,11 +95,76 @@ void TextureImportSettings::setLod(bool lod) {
     }
 }
 
+QString TextureImportSettings::findFreeElementName(const QString &name) {
+    QString newName  = name;
+    if(!newName.isEmpty()) {
+        int32_t i = 0;
+        while(subItem(newName + QString("_%1").arg(i)).isEmpty() == false) {
+            i++;
+        }
+        return (newName + QString("_%1").arg(i));
+    }
+    return "Element";
+}
+
+TextureImportSettings::ElementMap TextureImportSettings::elements() const {
+    return m_Elements;
+}
+
+QString TextureImportSettings::setElement(const QRect &rect, const QString &key) {
+    QFileInfo info(source());
+
+    QString path = key;
+    if(path.isEmpty()) {
+        path = findFreeElementName(info.baseName());
+    }
+
+    QString uuid = subItem(path);
+    if(uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toString();
+    }
+    m_Elements[path] = rect;
+    setSubItem(path, uuid, MetaType::type<Mesh *>());
+
+    emit updated();
+    return path;
+}
+
+void TextureImportSettings::removeElement(const QString &key) {
+    m_Elements.remove(key);
+
+    m_SubItems.remove(key);
+    m_SubTypes.remove(key);
+
+    emit updated();
+}
+
 QString TextureImportSettings::typeName() const {
     if(m_TextureType == TextureType::Sprite) {
         return "Sprite";
     }
     return IConverterSettings::typeName();
+}
+
+QJsonObject TextureImportSettings::subItemData(const QString &key) const {
+    QRect rect = m_Elements.value(key);
+    QJsonObject result;
+    result["x"] = rect.x();
+    result["y"] = rect.y();
+    result["w"] = rect.width();
+    result["h"] = rect.height();
+
+    return result;
+}
+
+void TextureImportSettings::setSubItemData(const QString &name, const QJsonObject &data) {
+    QRect rect;
+    rect.setX(data.value("x").toInt());
+    rect.setY(data.value("y").toInt());
+    rect.setWidth(data.value("w").toInt());
+    rect.setHeight(data.value("h").toInt());
+
+    m_Elements[name] = rect;
 }
 
 uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
@@ -245,6 +313,43 @@ void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *
 
 void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sprite) {
     convertTexture(settings, sprite->texture());
+
+    float width = sprite->texture()->width();
+    float height = sprite->texture()->height();
+
+    uint32_t unitsPerPixel = 100;
+    Vector2 pivot(0.5f, 0.5f);
+
+    int i = 0;
+    for(auto it : settings->elements()) {
+        Mesh *mesh = Engine::objectCreate<Mesh>("", sprite);
+        if(mesh) {
+            Lod lod;
+
+            float w = (float)it.width() / unitsPerPixel;
+            float h = (float)it.height() / unitsPerPixel;
+
+            lod.setIndices({0, 1, 2, 0, 2, 3});
+            lod.setVertices({
+                Vector3(-w * pivot.x,         -h * pivot.y,          0.0f),
+                Vector3(-w * pivot.x,          h * (1.0f - pivot.y), 0.0f),
+                Vector3( w * (1.0f - pivot.x), h * (1.0f - pivot.y), 0.0f),
+                Vector3( w * (1.0f - pivot.x),-h * pivot.y,          0.0f)
+            });
+            mesh->setFlags(mesh->flags() | Mesh::Uv0);
+            lod.setUv0({
+                Vector2((float)it.left()  / width, (float)it.top()    / height),
+                Vector2((float)it.left()  / width, (float)it.bottom() / height),
+                Vector2((float)it.right() / width, (float)it.bottom() / height),
+                Vector2((float)it.right() / width, (float)it.top()    / height)
+            });
+
+            mesh->addLod(&lod);
+
+            sprite->setMesh(i, mesh, true);
+            i++;
+        }
+    }
 }
 
 IConverterSettings *TextureConverter::createSettings() const {

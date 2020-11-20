@@ -64,6 +64,7 @@ public:
 
 private:
     void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     PosePrivate *p_ptr;

@@ -2,6 +2,7 @@
 #define SPRITE_H
 
 #include "texture.h"
+#include "mesh.h"
 
 class Texture;
 class SpritePrivate;
@@ -22,7 +23,8 @@ public:
 
     int addElement(Texture *texture);
 
-    Vector2Vector shape(int index) const;
+    Mesh *mesh(int index) const;
+    void setMesh(int index, Mesh *mesh, bool create = false);
 
     Vector4 uv(int index) const;
 

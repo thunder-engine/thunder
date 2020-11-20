@@ -342,6 +342,97 @@ void Mesh::loadUserData(const VariantMap &data) {
     setState(ToBeUpdated);
 }
 /*!
+    \internal
+*/
+VariantMap Mesh::saveUserData() const {
+    VariantMap result;
+
+    int32_t flag = flags();
+
+    VariantList header;
+    header.push_back(flag);
+    result[HEADER]  = header;
+
+    VariantList surface;
+    surface.push_back(mode());
+
+    for(uint32_t index = 0; index < lodsCount(); index++) {
+        Lod *l = lod(index);
+
+        VariantList lod;
+        // Push material
+        lod.push_back("{00000000-0402-0000-0000-000000000000}");
+
+        uint32_t vCount = l->vertices().size();
+        lod.push_back(static_cast<int32_t>(vCount));
+        lod.push_back(static_cast<int32_t>(l->indices().size() / 3));
+
+        { // Required field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector3) * vCount);
+            memcpy(&buffer[0], &l->vertices()[0], sizeof(Vector3) * vCount);
+            lod.push_back(buffer);
+        }
+        { // Required field
+            ByteArray buffer;
+            buffer.resize(sizeof(uint32_t) * l->indices().size());
+            memcpy(&buffer[0], &l->indices()[0], sizeof(uint32_t) * l->indices().size());
+            lod.push_back(buffer);
+        }
+
+        if(flag & Color) { // Optional field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector4) * vCount);
+            memcpy(&buffer[0], &l->colors()[0], sizeof(Vector4) * vCount);
+            lod.push_back(buffer);
+        }
+        if(flag & Uv0) { // Optional field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector2) * vCount);
+            memcpy(&buffer[0], &l->uv0()[0], sizeof(Vector2) * vCount);
+            lod.push_back(buffer);
+        }
+        if(flag & Uv1) { // Optional field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector2) * vCount);
+            memcpy(&buffer[0], &l->uv1()[0], sizeof(Vector2) * vCount);
+            lod.push_back(buffer);
+        }
+
+        if(flag & Normals) { // Optional field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector3) * vCount);
+            memcpy(&buffer[0], &l->normals()[0], sizeof(Vector3) * vCount);
+            lod.push_back(buffer);
+        }
+        if(flag & Tangents) { // Optional field
+            ByteArray buffer;
+            buffer.resize(sizeof(Vector3) * vCount);
+            memcpy(&buffer[0], &l->tangents()[0], sizeof(Vector3) * vCount);
+            lod.push_back(buffer);
+        }
+        if(flag & Skinned) { // Optional field
+            {
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector4) * vCount);
+                memcpy(&buffer[0], &l->weights()[0], sizeof(Vector4) * vCount);
+                lod.push_back(buffer);
+            }
+            {
+                ByteArray buffer;
+                buffer.resize(sizeof(Vector4) * vCount);
+                memcpy(&buffer[0], &l->bones()[0], sizeof(Vector4) * vCount);
+                lod.push_back(buffer);
+            }
+        }
+        surface.push_back(lod);
+    }
+    result[DATA] = surface;
+
+    return result;
+}
+
+/*!
     Returns the number of Levels Of Details
 */
 int Mesh::lodsCount() const {
@@ -412,6 +503,52 @@ void Mesh::setLod(int lod, Lod *data) {
         }
     } else {
         addLod(data);
+    }
+}
+/*!
+    Merges current with provided \a mesh.
+    In the case of the \a transform, the matrix is not nullptr it will be applied to \a mesh before merging.
+*/
+void Mesh::batchMesh(Mesh *mesh, Matrix4 *transform) {
+    if(mesh) {
+        for(int i = 0; i < mesh->p_ptr->m_Lods.size(); i++) {
+            Lod lod = mesh->p_ptr->m_Lods[i];
+            if(transform) {
+                for(auto &v : lod.vertices()) {
+                    v = *transform * v;
+                }
+
+                Matrix3 rotation = transform->rotation();
+                for(auto &n : lod.normals()) {
+                    n = rotation * n;
+                }
+                for(auto &t : lod.tangents()) {
+                    t = rotation * t;
+                }
+            }
+
+            if(i < p_ptr->m_Lods.size()) {
+                Lod &current = p_ptr->m_Lods[i];
+                // Indices
+                auto &curIndex = current.indices();
+                uint32_t size = current.vertices().size();
+                auto &srcIndex = lod.indices();
+                for(auto &it : srcIndex) {
+                    it += size;
+                }
+                curIndex.insert(curIndex.end(), srcIndex.begin(), srcIndex.end());
+                // Vertex attributes
+                current.vertices().insert(current.vertices().end(), lod.vertices().begin(), lod.vertices().end());
+                current.tangents().insert(current.tangents().end(), lod.tangents().begin(), lod.tangents().end());
+                current.normals().insert(current.normals().end(), lod.normals().begin(), lod.normals().end());
+                current.colors().insert(current.colors().end(), lod.colors().begin(), lod.colors().end());
+                current.uv0().insert(current.uv0().end(), lod.uv0().begin(), lod.uv0().end());
+                current.uv1().insert(current.uv1().end(), lod.uv1().begin(), lod.uv1().end());
+            } else {
+                p_ptr->m_Lods.push_back(lod);
+            }
+        }
+        setState(ToBeUpdated);
     }
 }
 /*!

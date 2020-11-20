@@ -97,9 +97,6 @@ public:
     int height() const;
     void setHeight(int height);
 
-    Vector2Vector shape() const;
-    void setShape(const Vector2Vector &shape);
-
     bool isCompressed() const;
     bool isCubemap() const;
 

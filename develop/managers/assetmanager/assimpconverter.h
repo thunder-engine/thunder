@@ -3,12 +3,8 @@
 
 #include <editor/converter.h>
 
-#include <resources/pose.h>
-#include <resources/prefab.h>
-
 class Actor;
-
-class MeshSerial;
+class Mesh;
 
 class aiScene;
 class aiNode;
@@ -114,7 +110,7 @@ public:
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 
-    static MeshSerial *importMesh(const aiMesh *mesh, Actor *parent, AssimpImportSettings *fbxSettings);
+    static Mesh *importMesh(const aiMesh *mesh, Actor *parent, AssimpImportSettings *fbxSettings);
 
     static void importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings);
 

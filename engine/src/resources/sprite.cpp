@@ -9,8 +9,13 @@
 
 #define HEADER  "Header"
 #define DATA    "Data"
+#define MESHES  "Meshes"
 
 typedef deque<Texture *>  Textures;
+typedef deque<Mesh *>  Meshes;
+
+static Vector3Vector vertEmpty;
+static IndexVector trisEmpty;
 
 class SpritePrivate {
 public:
@@ -20,6 +25,8 @@ public:
 
     }
     Vector4Vector m_Elements;
+
+    Meshes m_Meshes;
 
     Texture *m_pTexture;
 
@@ -48,18 +55,35 @@ Sprite::~Sprite() {
 void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
 
+    for(auto it : p_ptr->m_Meshes) {
+        delete it;
+    }
+    p_ptr->m_Meshes.clear();
+
     for(auto it : p_ptr->m_Sources) {
         delete it;
     }
     p_ptr->m_Sources.clear();
     p_ptr->m_Elements.clear();
-
 }
 
 int Sprite::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Sources.push_back(texture);
+
+    Lod lod;
+    lod.setVertices({Vector3(0.0f, 0.0f, 0.0f),
+                     Vector3(0.0f, 1.0f, 0.0f),
+                     Vector3(1.0f, 1.0f, 0.0f),
+                     Vector3(1.0f, 0.0f, 0.0f) });
+
+    lod.setIndices({0, 1, 2, 0, 2, 3});
+
+    Mesh *mesh = Engine::objectCreate<Mesh>("Mesh");
+    mesh->addLod(&lod);
+    p_ptr->m_Meshes.push_back(mesh);
+
     return (p_ptr->m_Sources.size() - 1);
 }
 
@@ -67,21 +91,26 @@ void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Elements.clear();
-    for(auto it : p_ptr->m_Sources) {
+
+    for(int i = 0; i < p_ptr->m_Sources.size(); i++) {
+        Texture *it = p_ptr->m_Sources[i];
+        Mesh *m = mesh(i);
+        Lod *lod = m->lod(0);
+
         int32_t width  = (it->width() + padding * 2);
         int32_t height = (it->height() + padding * 2);
 
         AtlasNode *n = p_ptr->m_pRoot->insert(width, height);
-        if(n) {
+        if(n && lod) {
             n->fill = true;
             int32_t w = n->w - padding * 2;
             int32_t h = n->h - padding * 2;
 
-            Vector4 res;
-            res.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
-            res.y = n->y / static_cast<float>(p_ptr->m_pRoot->h);
-            res.z = res.x + w / static_cast<float>(p_ptr->m_pRoot->w);
-            res.w = res.y + h / static_cast<float>(p_ptr->m_pRoot->h);
+            Vector4 uv;
+            uv.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
+            uv.y = n->y / static_cast<float>(p_ptr->m_pRoot->h);
+            uv.z = uv.x + w / static_cast<float>(p_ptr->m_pRoot->w);
+            uv.w = uv.y + h / static_cast<float>(p_ptr->m_pRoot->h);
 
             int8_t *src = &(it->surface(0)[0])[0];
             int8_t *dst = &(p_ptr->m_pTexture->surface(0)[0])[0];
@@ -89,7 +118,12 @@ void Sprite::pack(int padding) {
                 memcpy(&dst[(y + n->y) * p_ptr->m_pRoot->w + n->x], &src[y * w], w);
             }
 
-            p_ptr->m_Elements.push_back(res);
+            lod->setUv0({Vector2(uv.x, uv.y),
+                         Vector2(uv.z, uv.y),
+                         Vector2(uv.z, uv.w),
+                         Vector2(uv.x, uv.w)});
+
+            p_ptr->m_Elements.push_back(uv);
         } else {
             resize(p_ptr->m_pRoot->w * 2, p_ptr->m_pRoot->h * 2);
             pack(padding);
@@ -124,7 +158,18 @@ void Sprite::loadUserData(const VariantMap &data) {
                 delete p_ptr->m_pTexture; // May lead to crash in case of m_pTexture had references
                 p_ptr->m_pTexture = texture;
                 p_ptr->m_pTexture->setParent(this);
-
+            }
+        }
+    }
+    {
+        auto it = data.find(MESHES);
+        if(it != data.end()) {
+            for(auto mesh : it->second.toList()) {
+                Object *object = ObjectSystem::toObject(mesh);
+                Mesh *m = dynamic_cast<Mesh *>(object);
+                if(m) {
+                    p_ptr->m_Meshes.push_back(m);
+                }
             }
         }
     }
@@ -140,16 +185,38 @@ VariantMap Sprite::saveUserData() const {
         result[DATA] = data;
     }
 
+    if(!p_ptr->m_Meshes.empty()) {
+        VariantList meshes;
+
+        for(auto it : p_ptr->m_Meshes) {
+            meshes.push_back(ObjectSystem::toVariant(it));
+        }
+        result[MESHES] = meshes;
+    }
+
     return result;
 }
 
-Vector2Vector Sprite::shape(int index) const {
+Mesh *Sprite::mesh(int index) const {
     PROFILE_FUNCTION();
 
-    if(index < p_ptr->m_Sources.size()) {
-        return p_ptr->m_Sources[index]->shape();
+    if(index > -1 && index < p_ptr->m_Meshes.size()) {
+        return p_ptr->m_Meshes[index];
     }
-    return Vector2Vector();
+    return nullptr;
+}
+
+void Sprite::setMesh(int index, Mesh *mesh, bool create) {
+    PROFILE_FUNCTION();
+
+    if(index > -1 && index < p_ptr->m_Meshes.size()) {
+        if(p_ptr->m_Meshes[index]) {
+            delete p_ptr->m_Meshes[index];
+        }
+        p_ptr->m_Meshes[index] = mesh;
+    } else if(create) {
+        p_ptr->m_Meshes.insert(p_ptr->m_Meshes.begin() + index, mesh);
+    }
 }
 
 Vector4 Sprite::uv(int index) const {
@@ -175,5 +242,4 @@ void Sprite::setTexture(Texture *texture) {
     }
     p_ptr->m_pTexture = texture;
     p_ptr->m_pTexture->setParent(this);
-
 }
