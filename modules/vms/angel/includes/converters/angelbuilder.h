@@ -73,7 +73,7 @@ private:
     AngelClassItem *m_pRootItem;
 };
 
-class AngelScriptImportSettings : public IConverterSettings {
+class AngelScriptImportSettings : public BuilderSettings {
 public:
     AngelScriptImportSettings();
 };
@@ -96,7 +96,7 @@ protected:
 
     uint8_t convertFile(IConverterSettings *settings) Q_DECL_OVERRIDE;
 
-    IConverterSettings *createSettings() const;
+    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     const QString persistentAsset() const Q_DECL_OVERRIDE;
     const QString persistentUUID() const Q_DECL_OVERRIDE;
