@@ -97,7 +97,7 @@ matrix:
         - qbs setup-toolchains --detect
       script:
         - qbs config --list
-        - qbs build --all-products config:release profile:android
+        - qbs build --all-products config:release profile:android cpp.validateTargetTriple:false
         - tar -zcvf ThunderEngine-android.tar.gz release/install-root/sdk/${VERSION}/android
       deploy:
         - provider: script
