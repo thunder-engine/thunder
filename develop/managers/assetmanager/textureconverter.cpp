@@ -111,7 +111,7 @@ TextureImportSettings::ElementMap TextureImportSettings::elements() const {
     return m_Elements;
 }
 
-QString TextureImportSettings::setElement(const QRect &rect, const QString &key) {
+QString TextureImportSettings::setElement(const Element &element, const QString &key) {
     QFileInfo info(source());
 
     QString path = key;
@@ -123,7 +123,7 @@ QString TextureImportSettings::setElement(const QRect &rect, const QString &key)
     if(uuid.isEmpty()) {
         uuid = QUuid::createUuid().toString();
     }
-    m_Elements[path] = rect;
+    m_Elements[path] = element;
     setSubItem(path, uuid, MetaType::type<Mesh *>());
 
     emit updated();
@@ -147,12 +147,16 @@ QString TextureImportSettings::typeName() const {
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
-    QRect rect = m_Elements.value(key);
+    QRect rect = m_Elements.value(key).m_Rect;
     QJsonObject result;
     result["x"] = rect.x();
     result["y"] = rect.y();
     result["w"] = rect.width();
     result["h"] = rect.height();
+
+    Vector2 pivot = m_Elements.value(key).m_Pivot;
+    result["pivotX"] = pivot.x;
+    result["pivotY"] = pivot.y;
 
     return result;
 }
@@ -164,7 +168,10 @@ void TextureImportSettings::setSubItemData(const QString &name, const QJsonObjec
     rect.setWidth(data.value("w").toInt());
     rect.setHeight(data.value("h").toInt());
 
-    m_Elements[name] = rect;
+    Vector2 pivot(data.value("pivotX").toDouble(), data.value("pivotY").toDouble());
+
+    m_Elements[name].m_Rect = rect;
+    m_Elements[name].m_Pivot = pivot;
 }
 
 uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
@@ -318,7 +325,6 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
     float height = sprite->texture()->height();
 
     uint32_t unitsPerPixel = 100;
-    Vector2 pivot(0.5f, 0.5f);
 
     int i = 0;
     for(auto it : settings->elements()) {
@@ -326,22 +332,25 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
         if(mesh) {
             Lod lod;
 
-            float w = (float)it.width() / unitsPerPixel;
-            float h = (float)it.height() / unitsPerPixel;
+            QRect r = it.m_Rect;
+            Vector2 p = it.m_Pivot;
+
+            float w = (float)r.width() / unitsPerPixel;
+            float h = (float)r.height() / unitsPerPixel;
 
             lod.setIndices({0, 1, 2, 0, 2, 3});
             lod.setVertices({
-                Vector3(-w * pivot.x,         -h * pivot.y,          0.0f),
-                Vector3(-w * pivot.x,          h * (1.0f - pivot.y), 0.0f),
-                Vector3( w * (1.0f - pivot.x), h * (1.0f - pivot.y), 0.0f),
-                Vector3( w * (1.0f - pivot.x),-h * pivot.y,          0.0f)
+                Vector3(-w * p.x,         -h * p.y,          0.0f),
+                Vector3(-w * p.x,          h * (1.0f - p.y), 0.0f),
+                Vector3( w * (1.0f - p.x), h * (1.0f - p.y), 0.0f),
+                Vector3( w * (1.0f - p.x),-h * p.y,          0.0f)
             });
             mesh->setFlags(mesh->flags() | Mesh::Uv0);
             lod.setUv0({
-                Vector2((float)it.left()  / width, (float)it.top()    / height),
-                Vector2((float)it.left()  / width, (float)it.bottom() / height),
-                Vector2((float)it.right() / width, (float)it.bottom() / height),
-                Vector2((float)it.right() / width, (float)it.top()    / height)
+                Vector2((float)r.left()  / width, (float)r.top()    / height),
+                Vector2((float)r.left()  / width, (float)r.bottom() / height),
+                Vector2((float)r.right() / width, (float)r.bottom() / height),
+                Vector2((float)r.right() / width, (float)r.top()    / height)
             });
 
             mesh->addLod(&lod);

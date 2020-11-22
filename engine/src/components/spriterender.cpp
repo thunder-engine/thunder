@@ -83,10 +83,15 @@ void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 AABBox SpriteRender::bound() const {
-    if(p_ptr->m_pMesh) {
-        return p_ptr->m_pMesh->bound() * actor()->transform()->worldTransform();
+    AABBox result = Renderable::bound();
+    if(p_ptr->m_pCustomMesh) {
+        result = p_ptr->m_pCustomMesh->bound();
+    } else if(p_ptr->m_pMesh) {
+        result = p_ptr->m_pMesh->bound();
     }
-    return Renderable::bound();
+    result = result * actor()->transform()->worldTransform();
+
+    return result;
 }
 /*!
     Returns an instantiated Material assigned to SpriteRender.

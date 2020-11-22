@@ -6,6 +6,8 @@
 
 #include <editor/converter.h>
 
+#include <QRect>
+
 class QImage;
 
 class TextureImportSettings : public IConverterSettings {
@@ -46,7 +48,14 @@ public:
     Q_ENUM(TextureType)
     Q_ENUM(FormatType)
 
-    typedef QMap<QString, QRect> ElementMap;
+    struct Element {
+        Element() {
+            m_Pivot = Vector2(0.5f);
+        }
+        QRect m_Rect;
+        Vector2 m_Pivot;
+    };
+    typedef QMap<QString, Element> ElementMap;
 
 public:
     TextureImportSettings();
@@ -67,7 +76,7 @@ public:
     void setLod(bool lod);
 
     ElementMap elements() const;
-    QString setElement(const QRect &rect, const QString &key = QString());
+    QString setElement(const Element &element, const QString &key = QString());
     void removeElement(const QString &key);
 
 private:

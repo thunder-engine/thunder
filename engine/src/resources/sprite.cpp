@@ -35,6 +35,15 @@ public:
     AtlasNode *m_pRoot;
 };
 
+/*!
+    \class Sprite
+    \brief Represents 2D sprite.
+    \inmodule Resource
+
+    Sprites usually used in games to display environment and characters in 2D games.
+    This class also supports sprite sheets to contain several images in one container to simplify animation or handle tile maps.
+*/
+
 Sprite::Sprite() :
         p_ptr(new SpritePrivate) {
 
@@ -51,7 +60,9 @@ Sprite::~Sprite() {
     delete p_ptr;
     p_ptr = nullptr;
 }
-
+/*!
+    \internal
+*/
 void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
 
@@ -66,7 +77,13 @@ void Sprite::clearAtlas() {
     p_ptr->m_Sources.clear();
     p_ptr->m_Elements.clear();
 }
+/*!
+    Adds new sub \a texture as element to current sprite sheet.
+    All elements will be packed to a single sprite sheet texture using Sprite::pack() method.
+    Returns the id of the new element.
 
+    \sa pack()
+*/
 int Sprite::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
@@ -86,7 +103,12 @@ int Sprite::addElement(Texture *texture) {
 
     return (p_ptr->m_Sources.size() - 1);
 }
+/*!
+    Packs all added elements int to a single sprite sheet.
+    Parameter \a padding can be used to delimit elements.
 
+    \sa addElement()
+*/
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
@@ -133,7 +155,8 @@ void Sprite::pack(int padding) {
     p_ptr->m_pTexture->setDirty();
 }
 /*!
-    Changes current size of the atlas and sets resorce state to ResourceState::ToBeUpdated.
+    \internal
+    Changes current size of the sprite sheet and sets resorce state to ResourceState::ToBeUpdated.
 */
 void Sprite::resize(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
@@ -147,7 +170,9 @@ void Sprite::resize(int32_t width, int32_t height) {
 
     p_ptr->m_pTexture->resize(width, height);
 }
-
+/*!
+    \internal
+*/
 void Sprite::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(DATA);
@@ -176,7 +201,9 @@ void Sprite::loadUserData(const VariantMap &data) {
 
     setState(Ready);
 }
-
+/*!
+    \internal
+*/
 VariantMap Sprite::saveUserData() const {
     VariantMap result;
 
@@ -196,7 +223,9 @@ VariantMap Sprite::saveUserData() const {
 
     return result;
 }
-
+/*!
+    Returns a mesh which represents the sprite with \a index.
+*/
 Mesh *Sprite::mesh(int index) const {
     PROFILE_FUNCTION();
 
@@ -205,7 +234,11 @@ Mesh *Sprite::mesh(int index) const {
     }
     return nullptr;
 }
-
+/*!
+    Sets a new mesh for the sprite with \a index.
+    The old mesh will be deleted and no longer available.
+    \note The in case of \a create flag was set to true the spite will be created in case it doesn't exist yet.
+*/
 void Sprite::setMesh(int index, Mesh *mesh, bool create) {
     PROFILE_FUNCTION();
 
@@ -227,13 +260,17 @@ Vector4 Sprite::uv(int index) const {
     }
     return Vector4();
 }
-
+/*!
+    Returns a sprite sheet texture.
+*/
 Texture *Sprite::texture() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pTexture;
 }
-
+/*!
+    Sets a new sprite sheet \a texture.
+*/
 void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>145</height>
+    <height>163</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,40 +63,44 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QSpinBox" name="wSpinBox">
-     <property name="maximum">
-      <number>65535</number>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QSpinBox" name="hSpinBox">
-     <property name="maximum">
-      <number>65535</number>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QSpinBox" name="ySpinBox">
-     <property name="maximum">
-      <number>65535</number>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QSpinBox" name="xSpinBox">
-     <property name="maximum">
-      <number>65535</number>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="xLabel">
      <property name="text">
       <string>Position X</string>
      </property>
     </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="pivotXEdit"/>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="pivotX">
+     <property name="text">
+      <string>Pivot X</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="pivotYEdit"/>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="pivotY">
+     <property name="text">
+      <string>Y</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLineEdit" name="hEdit"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="wEdit"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="yEdit"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="xEdit"/>
    </item>
   </layout>
  </widget>

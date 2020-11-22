@@ -3,6 +3,8 @@
 
 #include "controllers/cameractrl.h"
 
+#include "textureconverter.h"
+
 #include <undomanager.h>
 
 #define SCALE 100.0f
@@ -62,7 +64,7 @@ private:
     Vector2 m_Screen;
 
     QStringList m_List;
-    QList<QRect> m_RectList;
+    QList<TextureImportSettings::Element> m_ElementList;
 
     bool m_Drag;
 };
@@ -88,11 +90,11 @@ protected:
 
 class CreateSprite : public UndoSprite {
 public:
-    CreateSprite(const QRect &rect, SpriteController *ctrl, QUndoCommand *group = nullptr);
+    CreateSprite(const TextureImportSettings::Element &rect, SpriteController *ctrl, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
-    QRect m_Rect;
+    TextureImportSettings::Element m_Rect;
     QString m_Uuid;
     QStringList m_List;
 };
@@ -105,18 +107,18 @@ public:
 protected:
     QStringList m_List;
     QStringList m_Uuids;
-    QList<QRect> m_Rects;
+    QList<TextureImportSettings::Element> m_Rects;
 };
 
 class UpdateSprites : public UndoSprite {
 public:
-    UpdateSprites(const QStringList &elements, const QList<QRect> &rects, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Elements"), QUndoCommand *group = nullptr);
+    UpdateSprites(const QStringList &elements, const QList<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name = QObject::tr("Update Sprite Elements"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
     QStringList m_List;
     QStringList m_Uuids;
-    QList<QRect> m_Rects;
+    QList<TextureImportSettings::Element> m_Rects;
 };
 
 #endif // SPRITECONTROLLER_H
