@@ -35,27 +35,21 @@ public:
     static void cleanDepth();
 
     static void drawArrow(const Matrix4 &transform);
+    static void drawBone(const Transform *begin, const Transform *end);
+    static void drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
+    static bool drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture);
 
     static void drawLines(const Matrix4 &transform, const Vector3Vector &points, const IndexVector &indices);
-
-    static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
-
-    static void drawBone(const Transform *begin, const Transform *end);
-
-    static void drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float from, float angle);
-
     static void drawRectangle(const Vector3 &center, const Quaternion &rotation, float width, float height);
     static void drawCircle(const Vector3 &center, const Quaternion &rotation, float radius);
     static void drawSphere(const Vector3 &center, const Quaternion &rotation, float radius);
     static void drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height);
-
-    static bool drawBillboard(const Vector3 &position, const Vector2 &size, Texture *texture);
+    static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
     static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
-
     static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
-
     static Vector3 scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked);
+    static void rectTool(const Vector4 &rect, bool locked);
 
 public:
     static Vector4 s_Color;

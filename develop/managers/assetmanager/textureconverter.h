@@ -53,6 +53,7 @@ public:
             m_Pivot = Vector2(0.5f);
         }
         QRect m_Rect;
+        QRect m_Border;
         Vector2 m_Pivot;
     };
     typedef QMap<QString, Element> ElementMap;

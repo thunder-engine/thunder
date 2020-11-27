@@ -149,28 +149,49 @@ QString TextureImportSettings::typeName() const {
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
     QRect rect = m_Elements.value(key).m_Rect;
     QJsonObject result;
-    result["x"] = rect.x();
-    result["y"] = rect.y();
-    result["w"] = rect.width();
-    result["h"] = rect.height();
+    result["type"] = 0;
+
+    QJsonObject r;
+
+    r["x"] = rect.x();
+    r["y"] = rect.y();
+    r["w"] = rect.width();
+    r["h"] = rect.height();
+
+    QRect border = m_Elements.value(key).m_Border;
+    r["l"] = border.left();
+    r["r"] = border.right();
+    r["t"] = border.top();
+    r["b"] = border.bottom();
 
     Vector2 pivot = m_Elements.value(key).m_Pivot;
-    result["pivotX"] = pivot.x;
-    result["pivotY"] = pivot.y;
+    r["pivotX"] = pivot.x;
+    r["pivotY"] = pivot.y;
+
+    result["data"] = r;
 
     return result;
 }
 
 void TextureImportSettings::setSubItemData(const QString &name, const QJsonObject &data) {
-    QRect rect;
-    rect.setX(data.value("x").toInt());
-    rect.setY(data.value("y").toInt());
-    rect.setWidth(data.value("w").toInt());
-    rect.setHeight(data.value("h").toInt());
+    QJsonObject d = data.value("data").toObject();
 
-    Vector2 pivot(data.value("pivotX").toDouble(), data.value("pivotY").toDouble());
+    QRect rect;
+    rect.setX       (d.value("x").toInt());
+    rect.setY       (d.value("y").toInt());
+    rect.setWidth   (d.value("w").toInt());
+    rect.setHeight  (d.value("h").toInt());
+
+    QRect border;
+    border.setLeft  (d.value("l").toInt());
+    border.setRight (d.value("r").toInt());
+    border.setTop   (d.value("t").toInt());
+    border.setBottom(d.value("b").toInt());
+
+    Vector2 pivot(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
 
     m_Elements[name].m_Rect = rect;
+    m_Elements[name].m_Border = border;
     m_Elements[name].m_Pivot = pivot;
 }
 
@@ -183,7 +204,6 @@ uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
             Sprite *sprite = new Sprite;
             convertSprite(s, sprite);
             resource = sprite;
-
         } else {
             Texture *texture = new Texture;
             convertTexture(s, texture);
@@ -332,25 +352,63 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
         if(mesh) {
             Lod lod;
 
-            QRect r = it.m_Rect;
+            QRect rect = it.m_Rect;
+            QRect border = it.m_Border;
             Vector2 p = it.m_Pivot;
 
-            float w = (float)r.width() / unitsPerPixel;
-            float h = (float)r.height() / unitsPerPixel;
+            float w = (float)rect.width()  / unitsPerPixel * 0.5f;
+            float h = (float)rect.height() / unitsPerPixel * 0.5f;
 
-            lod.setIndices({0, 1, 2, 0, 2, 3});
+            float l = (float)border.left()   / unitsPerPixel;
+            float r = (float)border.right()  / unitsPerPixel;
+            float t = (float)border.top()    / unitsPerPixel;
+            float b = (float)border.bottom() / unitsPerPixel;
+
+            lod.setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
+                            4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
+                            8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
             lod.setVertices({
-                Vector3(-w * p.x,         -h * p.y,          0.0f),
-                Vector3(-w * p.x,          h * (1.0f - p.y), 0.0f),
-                Vector3( w * (1.0f - p.x), h * (1.0f - p.y), 0.0f),
-                Vector3( w * (1.0f - p.x),-h * p.y,          0.0f)
+                Vector3( -w * p.x,              -h * p.y, 0.0f),
+                Vector3((-w + l) * p.x,         -h * p.y, 0.0f),
+                Vector3(( w - r) * (1.0f - p.x),-h * p.y, 0.0f),
+                Vector3(  w * (1.0f - p.x),     -h * p.y, 0.0f),
+
+                Vector3( -w * p.x,              (-h + b) * p.y, 0.0f),
+                Vector3((-w + l) * p.x,         (-h + b) * p.y, 0.0f),
+                Vector3(( w - r) * (1.0f - p.x),(-h + b) * p.y, 0.0f),
+                Vector3(  w * (1.0f - p.x),     (-h + b) * p.y, 0.0f),
+
+                Vector3( -w * p.x,              (h - t) * (1.0f - p.y), 0.0f),
+                Vector3((-w + l) * p.x,         (h - t) * (1.0f - p.y), 0.0f),
+                Vector3(( w - r) * (1.0f - p.x),(h - t) * (1.0f - p.y), 0.0f),
+                Vector3(  w * (1.0f - p.x),     (h - t) * (1.0f - p.y), 0.0f),
+
+                Vector3( -w * p.x,               h * (1.0f - p.y), 0.0f),
+                Vector3((-w + l) * p.x,          h * (1.0f - p.y), 0.0f),
+                Vector3(( w - r) * (1.0f - p.x), h * (1.0f - p.y), 0.0f),
+                Vector3(  w * (1.0f - p.x),      h * (1.0f - p.y), 0.0f),
             });
             mesh->setFlags(mesh->flags() | Mesh::Uv0);
             lod.setUv0({
-                Vector2((float)r.left()  / width, (float)r.top()    / height),
-                Vector2((float)r.left()  / width, (float)r.bottom() / height),
-                Vector2((float)r.right() / width, (float)r.bottom() / height),
-                Vector2((float)r.right() / width, (float)r.top()    / height)
+                Vector2((float)rect.left() / width,                     (float)rect.top() / height),
+                Vector2((float)(rect.left() + border.left()) / width,   (float)rect.top() / height),
+                Vector2((float)(rect.right() - border.right()) / width, (float)rect.top() / height),
+                Vector2((float)rect.right() / width,                    (float)rect.top() / height),
+
+                Vector2((float)rect.left() / width,                     (float)(rect.top() + border.bottom()) / height),
+                Vector2((float)(rect.left() + border.left()) / width,   (float)(rect.top() + border.bottom()) / height),
+                Vector2((float)(rect.right() - border.right()) / width, (float)(rect.top() + border.bottom()) / height),
+                Vector2((float)rect.right() / width,                    (float)(rect.top() + border.bottom()) / height),
+
+                Vector2((float)rect.left() / width,                     (float)(rect.bottom() - border.top()) / height),
+                Vector2((float)(rect.left() + border.left()) / width,   (float)(rect.bottom() - border.top()) / height),
+                Vector2((float)(rect.right() - border.right()) / width, (float)(rect.bottom() - border.top()) / height),
+                Vector2((float)rect.right() / width,                    (float)(rect.bottom() - border.top()) / height),
+
+                Vector2((float)rect.left() / width,                     (float)rect.bottom() / height),
+                Vector2((float)(rect.left() + border.left()) / width,   (float)rect.bottom() / height),
+                Vector2((float)(rect.right() - border.right()) / width, (float)rect.bottom() / height),
+                Vector2((float)rect.right() / width,                    (float)rect.bottom() / height),
             });
 
             mesh->addLod(&lod);

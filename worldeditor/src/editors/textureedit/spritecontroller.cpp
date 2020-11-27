@@ -77,18 +77,64 @@ void SpriteController::drawHandles() {
         Handles::cleanDepth();
         for(auto it : m_pSettings->elements().keys()) {
 
-            QRect rect = m_pSettings->elements().value(it).m_Rect;
+            QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
             if(m_List.indexOf(it) > -1) {
+                QRect border = m_pSettings->elements().value(it).m_Border;
+                QRect tmp = m_pSettings->elements().value(it).m_Rect;
+                tmp.setLeft(tmp.left() + border.left());
+                tmp.setRight(tmp.right() - border.right());
+                tmp.setTop(tmp.top() + border.bottom());
+                tmp.setBottom(tmp.bottom() - border.top());
+
+                QRectF b = mapRect(tmp);
+
                 Handles::s_Color = Handles::s_zColor;
-                rectTool(rect, m_Drag);
+                Handles::rectTool(Vector4(r.x(), r.y(), r.width(), r.height()), m_Drag);
+
+                Handles::s_Color = Handles::s_yColor;
+
+                Handles::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Quaternion(), b.width(), b.height());
+
+                Vector3 tr0 = Vector3(r.width() * 0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
+                Vector3 tl0 = Vector3(r.width() *-0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
+                Vector3 br0 = Vector3(r.width() * 0.5f + r.x(), b.height() *-0.5f + b.y(), 0.0f);
+                Vector3 bl0 = Vector3(r.width() *-0.5f + r.x(), b.height() *-0.5f + b.y(), 0.0f);
+                Vector3 tr1 = Vector3(b.width() * 0.5f + b.x(), r.height() * 0.5f + r.y(), 0.0f);
+                Vector3 tl1 = Vector3(b.width() *-0.5f + b.x(), r.height() * 0.5f + r.y(), 0.0f);
+                Vector3 br1 = Vector3(b.width() * 0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
+                Vector3 bl1 = Vector3(b.width() *-0.5f + b.x(), r.height() *-0.5f + r.y(), 0.0f);
+
+                Handles::s_Color = Vector4(Handles::s_yColor.x, Handles::s_yColor.y, Handles::s_yColor.z, 0.5f);
+                Handles::drawLines(Matrix4(), {tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7});
+
+                Qt::CursorShape shape = Qt::ArrowCursor;
+                if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+                    shape = Qt::SizeBDiagCursor;
+                } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
+                    shape = Qt::SizeFDiagCursor;
+                } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_R)) {
+                    shape = Qt::SizeFDiagCursor;
+                } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
+                    shape = Qt::SizeFDiagCursor;
+                } else if(Handles::s_Axes == Handles::POINT_T | Handles::s_Axes == Handles::POINT_B) {
+                    shape = Qt::SizeVerCursor;
+                } else if(Handles::s_Axes == Handles::POINT_L | Handles::s_Axes == Handles::POINT_R) {
+                    shape = Qt::SizeHorCursor;
+                }
+
+                if(shape != Qt::ArrowCursor) {
+                    m_pView->setCursor(QCursor(shape));
+                }
             } else {
                 Handles::s_Color = Handles::s_Grey;
-                drawRect(rect);
+                Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
             }
         }
         if(m_CurrentPoint != m_StartPoint) {
             Handles::s_Color = Handles::s_zColor;
-            drawRect(makeRect(m_StartPoint, m_CurrentPoint));
+
+            QRectF r = mapRect(makeRect(m_StartPoint, m_CurrentPoint));
+            Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
         }
         Handles::s_Color = Handles::s_Normal;
     }
@@ -228,62 +274,6 @@ QPoint SpriteController::mapToScene(const QPoint &pos) {
     return QPoint(world.x, world.y);
 }
 
-void SpriteController::rectTool(const QRectF &rect, bool locked) {
-    QRectF r = mapRect(rect);
-
-    Matrix4 model(Vector3(r.x(), r.y(), 0.0f), Quaternion(), Vector3(1.0));
-
-    Vector3 tr = Vector3(r.width() * 0.5f, r.height() * 0.5f, 0.0f);
-    Vector3 tl = Vector3(r.width() *-0.5f, r.height() * 0.5f, 0.0f);
-    Vector3 br = Vector3(r.width() * 0.5f, r.height() *-0.5f, 0.0f);
-    Vector3 bl = Vector3(r.width() *-0.5f, r.height() *-0.5f, 0.0f);
-
-    if(!locked) {
-        Qt::CursorShape shape = Qt::ArrowCursor;
-
-        float sence = Handles::s_Sense * 0.5f;
-
-        Handles::s_Axes = 0;
-        if(HandleTools::distanceToPoint(model, tr) <= sence) {
-            Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
-            shape = Qt::SizeBDiagCursor;
-        } else if(HandleTools::distanceToPoint(model, tl) <= sence) {
-            Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
-            shape = Qt::SizeFDiagCursor;
-        } else if(HandleTools::distanceToPoint(model, br) <= sence) {
-            Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
-            shape = Qt::SizeFDiagCursor;
-        } else if(HandleTools::distanceToPoint(model, bl) <= sence) {
-            Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
-            shape = Qt::SizeBDiagCursor;
-        } else if(HandleTools::distanceToPath(model, {tr, tl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_T;
-            shape = Qt::SizeVerCursor;
-        } else if(HandleTools::distanceToPath(model, {br, bl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_B;
-            shape = Qt::SizeVerCursor;
-        } else if(HandleTools::distanceToPath(model, {tr, br}) <= sence) {
-            Handles::s_Axes = Handles::POINT_R;
-            shape = Qt::SizeHorCursor;
-        } else if(HandleTools::distanceToPath(model, {tl, bl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_L;
-            shape = Qt::SizeHorCursor;
-        }
-
-        if(shape != Qt::ArrowCursor) {
-            m_pView->setCursor(QCursor(shape));
-        }
-    }
-
-    Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
-}
-
-void SpriteController::drawRect(const QRectF &rect) {
-    QRectF r = mapRect(rect);
-
-    Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
-}
-
 QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
     QRect rect;
     if(p2.x() < p1.x()) {
@@ -310,13 +300,10 @@ QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
             Handles::s_Axes = Handles::POINT_T;
         } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
             Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
-
         } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
             Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
-
         } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
             Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
-
         } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_R)) {
             Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
         }

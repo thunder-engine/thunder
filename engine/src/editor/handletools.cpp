@@ -71,14 +71,7 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
     return sqrtf(result);
 }
 
-float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh) {
-    Lod *lod = mesh->lod(0);
-    if(!lod) {
-        return -1.0f;
-    }
-
-    IndexVector &indices = lod->indices();
-    Vector3Vector &vertices = lod->vertices();
+float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices) {
     if(indices.empty()) {
         return distanceToPath(matrix, vertices);
     }
@@ -87,11 +80,9 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const Mesh *mesh) {
     if((vertices.size() % 2) == 0) {
         for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
             Vector3 a = Camera::project(vertices[indices[i]], mv, s_Projection);
-            a.y = 1.0f - a.y;
             Vector3 b = Camera::project(vertices[indices[i+1]], mv, s_Projection);
-            b.y = 1.0f - b.y;
-            Vector2 ssa(a.x, a.y);
-            Vector2 ssb(b.x, b.y);
+            Vector2 ssa(a.x, 1.0f - a.y);
+            Vector2 ssb(b.x, 1.0f - b.y);
             result = std::min(distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
         }
     }

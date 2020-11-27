@@ -42,10 +42,6 @@ private:
 
     QPoint mapToScene(const QPoint &screen);
 
-    void rectTool(const QRectF &rect, bool locked);
-
-    void drawRect(const QRectF &rect);
-
     QRect makeRect(const QPoint &p1, const QPoint &p2);
     QRectF mapRect(const QRectF &rect);
 
