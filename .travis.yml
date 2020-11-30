@@ -199,8 +199,8 @@ matrix:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
         #- bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - wget https://download.qt.io/official_releases/qtcreator/4.13/${QBS_VERSION}/installer_source/windows_x64/qtcreator.7z
-        - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z >/dev/null 2>&1
-        #- 7z l -ba -slt -y ${DOWNLOAD_DIR}/package.7z | tr '\\' '/' | sed -n -e "s|^Path\ =\ |${INSTALL_DIR}/|p" >> "${HASH_FILEPATH}" 2>/dev/null
+        - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z
+        - 7z l -ba -slt -y qtcreator.7z
         - qbs --version
         - qbs setup-toolchains --detect
       script:
