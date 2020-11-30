@@ -88,7 +88,7 @@ matrix:
         - NDK_VERSION="android-ndk-r17c"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - wget https://download.qt.io/official_releases/qtcreator/4.13/${QBS_VERSION}/installer_source/windows_x64/qtcreator.7z
+        - wget https://download.qt.io/official_releases/qtcreator/4.13/${QBS_VERSION}/installer_source/linux_x64/qtcreator.7z
         - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
         - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
         - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
@@ -207,7 +207,7 @@ matrix:
       script:
         - qbs config --list
         - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:MSVC${MSVC}-amd64 project.withDocumentation:false project.withExamples:false project.withTests:false
-        - qbs install --all-products config:release profile:MSVC${MSVC}-amd64
+        - qbs install --all-products config:release profile:MSVC${MSVC}-x64
         - 7z a -t7z ThunderEngine-windows-x64.7z release/install-root/
       deploy:
         - provider: script
