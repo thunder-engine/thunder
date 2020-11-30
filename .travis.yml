@@ -195,6 +195,7 @@ matrix:
         - QT_INSTALL_DIR=~/Qt
         - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/msvc2015_64/bin
         - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
+        - ChocolateyInstall="C:/ProgramData/chocolatey"
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
         - wget https://download.qt.io/official_releases/qtcreator/4.13/${QBS_VERSION}/installer_source/windows_x64/qtcreator.7z
