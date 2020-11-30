@@ -12,7 +12,6 @@ class NEXT_LIBRARY_EXPORT Sprite : public Resource {
 
     A_METHODS(
         A_METHOD(int, Sprite::addElement),
-        A_METHOD(Vector4, Sprite::uv),
         A_METHOD(Texture *, Sprite::texture),
         A_METHOD(void, Sprite::pack)
     )
@@ -25,8 +24,6 @@ public:
 
     Mesh *mesh(int index) const;
     void setMesh(int index, Mesh *mesh, bool create = false);
-
-    Vector4 uv(int index) const;
 
     Texture *texture() const;
     void setTexture(Texture *texture);

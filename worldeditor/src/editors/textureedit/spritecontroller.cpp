@@ -79,12 +79,11 @@ void SpriteController::drawHandles() {
 
             QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
             if(m_List.indexOf(it) > -1) {
-                QRect border = m_pSettings->elements().value(it).m_Border;
                 QRect tmp = m_pSettings->elements().value(it).m_Rect;
-                tmp.setLeft(tmp.left() + border.left());
-                tmp.setRight(tmp.right() - border.right());
-                tmp.setTop(tmp.top() + border.bottom());
-                tmp.setBottom(tmp.bottom() - border.top());
+                tmp.setLeft(tmp.left()     + m_pSettings->elements().value(it).m_BorderL);
+                tmp.setRight(tmp.right()   - m_pSettings->elements().value(it).m_BorderR);
+                tmp.setTop(tmp.top()       + m_pSettings->elements().value(it).m_BorderB);
+                tmp.setBottom(tmp.bottom() - m_pSettings->elements().value(it).m_BorderT);
 
                 QRectF b = mapRect(tmp);
 
@@ -92,7 +91,6 @@ void SpriteController::drawHandles() {
                 Handles::rectTool(Vector4(r.x(), r.y(), r.width(), r.height()), m_Drag);
 
                 Handles::s_Color = Handles::s_yColor;
-
                 Handles::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Quaternion(), b.width(), b.height());
 
                 Vector3 tr0 = Vector3(r.width() * 0.5f + r.x(), b.height() * 0.5f + b.y(), 0.0f);
@@ -319,8 +317,8 @@ QRectF SpriteController::mapRect(const QRectF &rect) {
     QRectF result;
     float width = (rect.width() / m_Width) * SCALE;
     float height = (rect.height() / m_Height) * SCALE;
-    result.setX(((rect.x() / m_Width) - 0.5f) * SCALE + width * 0.5f);
-    result.setY(((rect.y() / m_Height) - 0.5f) * SCALE + height * 0.5f);
+    result.setX((rect.x() / m_Width - 0.5f) * SCALE + width * 0.5f);
+    result.setY((rect.y() / m_Height - 0.5f) * SCALE + height * 0.5f);
     result.setWidth(width);
     result.setHeight(height);
     return result;

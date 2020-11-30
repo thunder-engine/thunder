@@ -24,8 +24,6 @@ public:
         m_pRoot(new AtlasNode) {
 
     }
-    Vector4Vector m_Elements;
-
     Meshes m_Meshes;
 
     Texture *m_pTexture;
@@ -75,7 +73,6 @@ void Sprite::clearAtlas() {
         delete it;
     }
     p_ptr->m_Sources.clear();
-    p_ptr->m_Elements.clear();
 }
 /*!
     Adds new sub \a texture as element to current sprite sheet.
@@ -112,8 +109,6 @@ int Sprite::addElement(Texture *texture) {
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_Elements.clear();
-
     for(int i = 0; i < p_ptr->m_Sources.size(); i++) {
         Texture *it = p_ptr->m_Sources[i];
         Mesh *m = mesh(i);
@@ -144,8 +139,6 @@ void Sprite::pack(int padding) {
                          Vector2(uv.z, uv.y),
                          Vector2(uv.z, uv.w),
                          Vector2(uv.x, uv.w)});
-
-            p_ptr->m_Elements.push_back(uv);
         } else {
             resize(p_ptr->m_pRoot->w * 2, p_ptr->m_pRoot->h * 2);
             pack(padding);
@@ -174,6 +167,7 @@ void Sprite::resize(int32_t width, int32_t height) {
     \internal
 */
 void Sprite::loadUserData(const VariantMap &data) {
+    clearAtlas();
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
@@ -250,15 +244,6 @@ void Sprite::setMesh(int index, Mesh *mesh, bool create) {
     } else if(create) {
         p_ptr->m_Meshes.insert(p_ptr->m_Meshes.begin() + index, mesh);
     }
-}
-
-Vector4 Sprite::uv(int index) const {
-    PROFILE_FUNCTION();
-
-    if(index < p_ptr->m_Elements.size()) {
-        return p_ptr->m_Elements[index];
-    }
-    return Vector4();
 }
 /*!
     Returns a sprite sheet texture.

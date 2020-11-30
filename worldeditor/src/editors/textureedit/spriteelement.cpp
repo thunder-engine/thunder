@@ -12,18 +12,18 @@ SpriteElement::SpriteElement(QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(ui->xEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->yEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->wEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->hEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
+    connect(ui->xEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->yEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->wEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->hEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
 
-    connect(ui->borderEditL, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->borderEditR, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->borderEditT, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->borderEditB, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
+    connect(ui->borderEditL, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->borderEditR, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->borderEditT, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->borderEditB, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
 
-    connect(ui->pivotXEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
-    connect(ui->pivotYEdit, SIGNAL(textEdited(QString)), this, SLOT(onElementChanged()));
+    connect(ui->pivotXEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+    connect(ui->pivotYEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
 }
 
 SpriteElement::~SpriteElement() {
@@ -59,30 +59,29 @@ void SpriteElement::onElementUpdated() {
         ui->hEdit->setText(QString::number(rect.height()));
         ui->hEdit->blockSignals(false);
 
-        QRect border = m_pSettings->elements().value(m_Key).m_Border;
         ui->borderEditL->blockSignals(true);
-        ui->borderEditL->setText(QString::number(border.left()));
+        ui->borderEditL->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderL));
         ui->borderEditL->blockSignals(false);
 
         ui->borderEditR->blockSignals(true);
-        ui->borderEditR->setText(QString::number(border.right()));
+        ui->borderEditR->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderR));
         ui->borderEditR->blockSignals(false);
 
         ui->borderEditT->blockSignals(true);
-        ui->borderEditT->setText(QString::number(border.top()));
+        ui->borderEditT->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderT));
         ui->borderEditT->blockSignals(false);
 
         ui->borderEditB->blockSignals(true);
-        ui->borderEditB->setText(QString::number(border.bottom()));
+        ui->borderEditB->setText(QString::number(m_pSettings->elements().value(m_Key).m_BorderB));
         ui->borderEditB->blockSignals(false);
 
         Vector2 pivot = m_pSettings->elements().value(m_Key).m_Pivot;
         ui->pivotXEdit->blockSignals(true);
-        ui->pivotXEdit->setText(QString::number(pivot.x));
+        ui->pivotXEdit->setText(QString::number(pivot.x, 'f', 4));
         ui->pivotXEdit->blockSignals(false);
 
         ui->pivotYEdit->blockSignals(true);
-        ui->pivotYEdit->setText(QString::number(pivot.y));
+        ui->pivotYEdit->setText(QString::number(pivot.y, 'f', 4));
         ui->pivotYEdit->blockSignals(false);
     }
 }
@@ -96,10 +95,10 @@ void SpriteElement::onElementChanged() {
         element.m_Rect.setWidth  (ui->wEdit->text().toInt());
         element.m_Rect.setHeight (ui->hEdit->text().toInt());
 
-        element.m_Border.setLeft  (ui->borderEditL->text().toUInt());
-        element.m_Border.setRight (ui->borderEditR->text().toUInt());
-        element.m_Border.setTop   (ui->borderEditT->text().toUInt());
-        element.m_Border.setBottom(ui->borderEditB->text().toUInt());
+        element.m_BorderL = ui->borderEditL->text().toUInt();
+        element.m_BorderR = ui->borderEditR->text().toUInt();
+        element.m_BorderT = ui->borderEditT->text().toUInt();
+        element.m_BorderB = ui->borderEditB->text().toUInt();
 
         element.m_Pivot = Vector2(ui->pivotXEdit->text().toFloat(),
                                   ui->pivotYEdit->text().toFloat());

@@ -16,7 +16,8 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),
         A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Template"),
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
-        A_PROPERTY(int, index, SpriteRender::index, SpriteRender::setIndex)
+        A_PROPERTY(int, index, SpriteRender::index, SpriteRender::setIndex),
+        A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize)
     )
     A_NOMETHODS()
 
@@ -38,6 +39,9 @@ public:
 
     int index() const;
     void setIndex(int index);
+
+    Vector2 size() const;
+    void setSize(Vector2 &size);
 
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;

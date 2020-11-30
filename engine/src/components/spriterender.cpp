@@ -23,6 +23,7 @@ public:
             m_pMesh(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
             m_pCustomMesh(nullptr),
             m_Color(1.0f),
+            m_Size(1.0f),
             m_Index(-1) {
 
     }
@@ -30,7 +31,58 @@ public:
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
         if(resource == m_pSprite && state == Resource::Ready) {
             m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
-            m_pCustomMesh = m_pSprite->mesh(m_Index);
+            composeMesh();
+        }
+    }
+
+    void composeMesh() {
+        if(m_pSprite) {
+
+            Mesh *mesh = m_pSprite->mesh(m_Index);
+            if(mesh) {
+                if(m_pCustomMesh == nullptr) {
+                    m_pCustomMesh = Engine::objectCreate<Mesh>("");
+                }
+
+                Lod *lod = mesh->lod(0);
+                m_pCustomMesh->setLod(0, lod);
+                lod = m_pCustomMesh->lod(0);
+                Vector3Vector &vetrs = lod->vertices();
+                {
+                    float bl = vetrs[0].x;
+                    float br = vetrs[3].x;
+                    vetrs[ 0].x *= m_Size.x; vetrs[ 3].x *= m_Size.x;
+                    vetrs[ 4].x *= m_Size.x; vetrs[ 7].x *= m_Size.x;
+                    vetrs[ 8].x *= m_Size.x; vetrs[11].x *= m_Size.x;
+                    vetrs[12].x *= m_Size.x; vetrs[15].x *= m_Size.x;
+                    float dl = vetrs[0].x - bl;
+                    float dr = vetrs[3].x - br;
+                    vetrs[ 1].x += dl; vetrs[ 2].x += dr;
+                    vetrs[ 5].x += dl; vetrs[ 6].x += dr;
+                    vetrs[ 9].x += dl; vetrs[10].x += dr;
+                    vetrs[13].x += dl; vetrs[14].x += dr;
+                }
+                {
+                    float bl = vetrs[ 0].y;
+                    float br = vetrs[12].y;
+                    vetrs[ 0].y *= m_Size.y; vetrs[12].y *= m_Size.y;
+                    vetrs[ 1].y *= m_Size.y; vetrs[13].y *= m_Size.y;
+                    vetrs[ 2].y *= m_Size.y; vetrs[14].y *= m_Size.y;
+                    vetrs[ 3].y *= m_Size.y; vetrs[15].y *= m_Size.y;
+                    float dl = vetrs[ 0].y - bl;
+                    float dr = vetrs[12].y - br;
+                    vetrs[ 4].y += dl; vetrs[ 8].y += dr;
+                    vetrs[ 5].y += dl; vetrs[ 9].y += dr;
+                    vetrs[ 6].y += dl; vetrs[10].y += dr;
+                    vetrs[ 7].y += dl; vetrs[11].y += dr;
+                }
+
+                m_pCustomMesh->setFlags(mesh->flags());
+                m_pCustomMesh->setMode(mesh->mode());
+            }
+        } else {
+            delete m_pCustomMesh;
+            m_pCustomMesh = nullptr;
         }
     }
 
@@ -44,6 +96,8 @@ public:
     Mesh *m_pCustomMesh;
 
     Vector4 m_Color;
+
+    Vector2 m_Size;
 
     int32_t m_Index;
 };
@@ -135,7 +189,7 @@ void SpriteRender::setSprite(Sprite *sprite) {
     p_ptr->m_pSprite = sprite;
     if(p_ptr->m_pSprite) {
         p_ptr->m_pSprite->subscribe(p_ptr);
-        p_ptr->m_pCustomMesh = p_ptr->m_pSprite->mesh(p_ptr->m_Index);
+        p_ptr->composeMesh();
         if(p_ptr->m_pMaterial) {
             p_ptr->m_pMaterial->setTexture(OVERRIDE, texture());
         }
@@ -156,7 +210,7 @@ Texture *SpriteRender::texture() const {
 void SpriteRender::setTexture(Texture *texture) {
     p_ptr->m_pTexture = texture;
     if(p_ptr->m_pMaterial) {
-        p_ptr->m_pCustomMesh = nullptr;
+        p_ptr->composeMesh();
         p_ptr->m_pMaterial->setTexture(OVERRIDE, SpriteRender::texture());
     }
 }
@@ -186,9 +240,16 @@ int SpriteRender::index() const {
 */
 void SpriteRender::setIndex(int index) {
     p_ptr->m_Index = index;
-    if(p_ptr->m_pSprite) {
-        p_ptr->m_pCustomMesh = p_ptr->m_pSprite->mesh(index);
-    }
+    p_ptr->composeMesh();
+}
+
+Vector2 SpriteRender::size() const {
+    return p_ptr->m_Size;
+}
+
+void SpriteRender::setSize(Vector2 &size) {
+    p_ptr->m_Size = size;
+    p_ptr->composeMesh();
 }
 /*!
     \internal
