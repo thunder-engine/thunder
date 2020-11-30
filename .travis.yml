@@ -23,171 +23,171 @@ addons:
 
 matrix:
   include:
-    - language: cpp
-      os: linux
-      dist: xenial
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - binutils
-          - g++-7
-          - libgl1-mesa-dev
-          - zlib1g-dev
-          - libzstd-dev
-          - p7zip-full
-          - xorg-dev 
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - QT_INSTALL_DIR=~/Qt
-        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
-        - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
-      before_install:
-        - eval "${MATRIX_EVAL}"
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative icu
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
-        - qbs --version
-        - qbs setup-toolchains --detect
-        - qbs setup-qt --detect
-      script:
-        - qbs config defaultProfile
-        - qbs config --list
-        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
-        - qbs install --all-products config:release
-        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-linux-x86_64.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: linux
+    #  dist: xenial
+    #  compiler: gcc
+    #  addons:
+    #    apt:
+    #      sources:
+    #      - ubuntu-toolchain-r-test
+    #      packages:
+    #      - binutils
+    #      - g++-7
+    #      - libgl1-mesa-dev
+    #      - zlib1g-dev
+    #      - libzstd-dev
+    #      - p7zip-full
+    #      - xorg-dev 
+    #  env:
+    #    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    #    - QT_INSTALL_DIR=~/Qt
+    #    - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
+    #    - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
+    #  before_install:
+    #    - eval "${MATRIX_EVAL}"
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative icu
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #    - qbs setup-qt --detect
+    #  script:
+    #    - qbs config defaultProfile
+    #    - qbs config --list
+    #    - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
+    #    - qbs install --all-products config:release
+    #    - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-linux-x86_64.tar.gz" https://file.io
+    #      on:
+    #        tags: true
             
-    - language: cpp
-      os: linux
-      dist: xenial
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - binutils
-          - g++-7
-          - libgl1-mesa-dev
-          - zlib1g-dev
-          - libzstd-dev
-          - p7zip-full
-          - xorg-dev 
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - QT_INSTALL_DIR=~/Qt
-        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
-        - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
-        - NDK_VERSION="android-ndk-r17c"
-      before_install:
-        - eval "${MATRIX_EVAL}"
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
-        - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
-        - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
-        - export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/${NDK_VERSION}
-        - qbs --version
-        - qbs setup-android android
-        - qbs setup-toolchains --detect
-      script:
-        - qbs config --list
-        - qbs build --all-products config:release profile:android cpp.validateTargetTriple:false
-        - tar -zcvf ThunderEngine-android.tar.gz release/install-root/sdk/${VERSION}/android
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-android.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: linux
+    #  dist: xenial
+    #  compiler: gcc
+    #  addons:
+    #    apt:
+    #      sources:
+    #      - ubuntu-toolchain-r-test
+    #      packages:
+    #      - binutils
+    #      - g++-7
+    #      - libgl1-mesa-dev
+    #      - zlib1g-dev
+    #      - libzstd-dev
+    #      - p7zip-full
+    #      - xorg-dev 
+    #  env:
+    #    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    #    - QT_INSTALL_DIR=~/Qt
+    #    - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/gcc_64/bin
+    #    - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
+    #    - NDK_VERSION="android-ndk-r17c"
+    #  before_install:
+    #    - eval "${MATRIX_EVAL}"
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+    #    - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
+    #    - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
+    #    - export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/${NDK_VERSION}
+    #    - qbs --version
+    #    - qbs setup-android android
+    #    - qbs setup-toolchains --detect
+    #  script:
+    #    - qbs config --list
+    #    - qbs build --all-products config:release profile:android cpp.validateTargetTriple:false
+    #    - tar -zcvf ThunderEngine-android.tar.gz release/install-root/sdk/${VERSION}/android
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-android.tar.gz" https://file.io
+    #      on:
+    #        tags: true
 
-    - language: cpp
-      os: osx
-      osx_image: xcode10.3
-      addons:
-        homebrew:
-          packages:
-            - p7zip
-          update: true
-      env:
-        - QT_INSTALL_DIR=~/Qt
-        - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
-        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
-      before_install:
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
-        - qbs --version
-        - qbs setup-toolchains --detect
-        - qbs setup-qt ${QT_BIN}/qmake qt-brew
-      script:
-        - qbs config --list
-        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:qt-brew project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
-        - qbs install --all-products config:release profile:qt-brew
-        - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: osx
+    #  osx_image: xcode10.3
+    #  addons:
+    #    homebrew:
+    #      packages:
+    #        - p7zip
+    #      update: true
+    #  env:
+    #    - QT_INSTALL_DIR=~/Qt
+    #    - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+    #    - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${QT_BIN}:${PATH}"
+    #  before_install:
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #    - qbs setup-qt ${QT_BIN}/qmake qt-brew
+    #  script:
+    #    - qbs config --list
+    #    - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:qt-brew project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
+    #    - qbs install --all-products config:release profile:qt-brew
+    #    - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
+    #    - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
+    #      on:
+    #        tags: true
     
-    - language: cpp
-      os: osx
-      osx_image: xcode10.3
-      addons:
-        homebrew:
-          packages:
-            - p7zip
-          update: true
-      env:
-        - QT_INSTALL_DIR=~/Qt
-        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
-      before_install:
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
-        - qbs --version
-        - qbs setup-toolchains --detect
-      script:
-        - qbs config --list
-        - qbs install --all-products config:release profile:xcode-iphoneos-arm64
-        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-ios-arm64.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: osx
+    #  osx_image: xcode10.3
+    #  addons:
+    #    homebrew:
+    #      packages:
+    #        - p7zip
+    #      update: true
+    #  env:
+    #    - QT_INSTALL_DIR=~/Qt
+    #    - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
+    #  before_install:
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #  script:
+    #    - qbs config --list
+    #    - qbs install --all-products config:release profile:xcode-iphoneos-arm64
+    #    - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-ios-arm64.tar.gz" https://file.io
+    #      on:
+    #        tags: true
 
-    - language: cpp
-      os: osx
-      osx_image: xcode10.3
-      addons:
-        homebrew:
-          packages:
-            - p7zip
-          update: true
-      env:
-        - QT_INSTALL_DIR=~/Qt
-        - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
-      before_install:
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
-        - qbs --version
-        - qbs setup-toolchains --detect
-      script:
-        - qbs config --list
-        - qbs install --all-products config:release profile:xcode-appletvos-arm64
-        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-tvos-arm64.tar.gz" https://file.io
-          on:
-            tags: true
+    #- language: cpp
+    #  os: osx
+    #  osx_image: xcode10.3
+    #  addons:
+    #    homebrew:
+    #      packages:
+    #        - p7zip
+    #      update: true
+    #  env:
+    #    - QT_INSTALL_DIR=~/Qt
+    #    - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
+    #  before_install:
+    #    - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+    #    - qbs --version
+    #    - qbs setup-toolchains --detect
+    #  script:
+    #    - qbs config --list
+    #    - qbs install --all-products config:release profile:xcode-appletvos-arm64
+    #    - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
+    #  deploy:
+    #    - provider: script
+    #      skip_cleanup: true
+    #      script: curl -F "file=@ThunderEngine-tvos-arm64.tar.gz" https://file.io
+    #      on:
+    #        tags: true
 
     - language: cpp
       os: windows
@@ -197,7 +197,7 @@ matrix:
         - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
-        - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
+        #- bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QBS_VERSION} qtcreator
         - wget https://download.qt.io/official_releases/qtcreator/4.13/${QBS_VERSION}/installer_source/windows_x64/qtcreator.7z
         - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z >/dev/null 2>&1
         #- 7z l -ba -slt -y ${DOWNLOAD_DIR}/package.7z | tr '\\' '/' | sed -n -e "s|^Path\ =\ |${INSTALL_DIR}/|p" >> "${HASH_FILEPATH}" 2>/dev/null
