@@ -485,7 +485,7 @@ void Mesh::setFlags(int flags) {
 int Mesh::addLod(Lod *lod) {
     if(lod) {
         p_ptr->m_Lods.push_back(*lod);
-
+        recalcBounds();
         setState(ToBeUpdated);
         return p_ptr->m_Lods.size() - 1;
     }
@@ -499,6 +499,7 @@ void Mesh::setLod(int lod, Lod *data) {
     if(lod < lodsCount()) {
         if(data) {
             p_ptr->m_Lods[lod] = *data;
+            recalcBounds();
             setState(ToBeUpdated);
         }
     } else {
@@ -548,8 +549,30 @@ void Mesh::batchMesh(Mesh *mesh, Matrix4 *transform) {
                 p_ptr->m_Lods.push_back(lod);
             }
         }
+        recalcBounds();
         setState(ToBeUpdated);
     }
+}
+/*!
+    Generates bound box according new geometry.
+*/
+void Mesh::recalcBounds() {
+    Vector3 min( FLT_MAX);
+    Vector3 max(-FLT_MAX);
+
+    for(auto l : p_ptr->m_Lods) {
+        for(uint32_t i = 0; i < l.vertices().size(); i++) {
+            min.x = MIN(min.x, l.m_Vertices[i].x);
+            min.y = MIN(min.y, l.m_Vertices[i].y);
+            min.z = MIN(min.z, l.m_Vertices[i].z);
+
+            max.x = MAX(max.x, l.m_Vertices[i].x);
+            max.y = MAX(max.y, l.m_Vertices[i].y);
+            max.z = MAX(max.z, l.m_Vertices[i].z);
+        }
+    }
+
+    p_ptr->m_Box.setBox(min, max);
 }
 /*!
     Returns Lod data for the \a lod index if exists; othewise returns nullptr.

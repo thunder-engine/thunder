@@ -16,7 +16,9 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
+
+static hash<string> hash_str;
 
 void copyData(int8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
@@ -345,21 +347,23 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
     uint32_t unitsPerPixel = 100;
 
     int i = 0;
-    for(auto it : settings->elements()) {
+    for(auto it : settings->elements().keys()) {
         Mesh *mesh = Engine::objectCreate<Mesh>("", sprite);
         if(mesh) {
             Lod lod;
 
-            QRect rect = it.m_Rect;
-            Vector2 p = it.m_Pivot;
+            auto value = settings->elements().value(it);
+
+            QRect rect = value.m_Rect;
+            Vector2 p = value.m_Pivot;
 
             float w = (float)rect.width()  / unitsPerPixel * 0.5f;
             float h = (float)rect.height() / unitsPerPixel * 0.5f;
 
-            float l = (float)it.m_BorderL / unitsPerPixel * 0.5f;
-            float r = (float)it.m_BorderR / unitsPerPixel * 0.5f;
-            float t = (float)it.m_BorderT / unitsPerPixel * 0.5f;
-            float b = (float)it.m_BorderB / unitsPerPixel * 0.5f;
+            float l = (float)value.m_BorderL / unitsPerPixel * 0.5f;
+            float r = (float)value.m_BorderR / unitsPerPixel * 0.5f;
+            float t = (float)value.m_BorderT / unitsPerPixel * 0.5f;
+            float b = (float)value.m_BorderB / unitsPerPixel * 0.5f;
 
             lod.setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                             4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
@@ -388,13 +392,13 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
                 mesh->setFlags(mesh->flags() | Mesh::Uv0);
 
                 float x0 = (float)rect.left() / width;
-                float x1 = (float)(rect.left() + it.m_BorderL) / width;
-                float x2 = (float)(rect.right() - it.m_BorderR) / width;
+                float x1 = (float)(rect.left() + value.m_BorderL) / width;
+                float x2 = (float)(rect.right() - value.m_BorderR) / width;
                 float x3 = (float)rect.right() / width;
 
                 float y0 = (float)rect.top() / height;
-                float y1 = (float)(rect.top() + it.m_BorderB) / height;
-                float y2 = (float)(rect.bottom() - it.m_BorderT) / height;
+                float y1 = (float)(rect.top() + value.m_BorderB) / height;
+                float y2 = (float)(rect.bottom() - value.m_BorderT) / height;
                 float y3 = (float)rect.bottom() / height;
 
                 lod.setUv0({
@@ -407,7 +411,7 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
             }
             mesh->addLod(&lod);
 
-            sprite->setMesh(i, mesh, true);
+            sprite->setMesh(hash_str(it.toStdString()), mesh);
             i++;
         }
     }

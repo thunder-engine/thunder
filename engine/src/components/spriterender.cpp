@@ -14,6 +14,8 @@
 #define OVERRIDE "uni.texture0"
 #define COLOR "uni.color0"
 
+static hash<string> hash_str;
+
 class SpriteRenderPrivate : public Resource::IObserver {
 public:
     SpriteRenderPrivate() :
@@ -24,7 +26,7 @@ public:
             m_pCustomMesh(nullptr),
             m_Color(1.0f),
             m_Size(1.0f),
-            m_Index(-1) {
+            m_Hash(0) {
 
     }
 
@@ -38,7 +40,7 @@ public:
     void composeMesh() {
         if(m_pSprite) {
 
-            Mesh *mesh = m_pSprite->mesh(m_Index);
+            Mesh *mesh = m_pSprite->mesh(m_Hash);
             if(mesh) {
                 if(m_pCustomMesh == nullptr) {
                     m_pCustomMesh = Engine::objectCreate<Mesh>("");
@@ -79,6 +81,7 @@ public:
 
                 m_pCustomMesh->setFlags(mesh->flags());
                 m_pCustomMesh->setMode(mesh->mode());
+                m_pCustomMesh->recalcBounds();
             }
         } else {
             delete m_pCustomMesh;
@@ -99,7 +102,8 @@ public:
 
     Vector2 m_Size;
 
-    int32_t m_Index;
+    string m_Item;
+    int m_Hash;
 };
 /*!
     \class SpriteRender
@@ -230,23 +234,28 @@ void SpriteRender::setColor(const Vector4 &color) {
     }
 }
 /*!
-    Returns the current index of sprite from the sprite sheet.
+    Returns the current item name of sprite from the sprite sheet.
 */
-int SpriteRender::index() const {
-    return p_ptr->m_Index;
+string SpriteRender::item() const {
+    return p_ptr->m_Item;
 }
 /*!
-    Sets the current \a index of sprite from the sprite sheet.
+    Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void SpriteRender::setIndex(int index) {
-    p_ptr->m_Index = index;
+void SpriteRender::setItem(const string &item) {
+    p_ptr->m_Item = item;
+    p_ptr->m_Hash = hash_str(p_ptr->m_Item);
     p_ptr->composeMesh();
 }
-
+/*!
+    Returns size of sprite.
+*/
 Vector2 SpriteRender::size() const {
     return p_ptr->m_Size;
 }
-
+/*!
+    Sets a new size of sprite.
+*/
 void SpriteRender::setSize(Vector2 &size) {
     p_ptr->m_Size = size;
     p_ptr->composeMesh();

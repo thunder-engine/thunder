@@ -12,6 +12,8 @@ SpriteElement::SpriteElement(QWidget *parent) :
 
     ui->setupUi(this);
 
+    connect(ui->nameEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
+
     connect(ui->xEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
     connect(ui->yEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
     connect(ui->wEdit, SIGNAL(editingFinished()), this, SLOT(onElementChanged()));
@@ -43,6 +45,11 @@ void SpriteElement::onSelectionChanged(const QString &key) {
 void SpriteElement::onElementUpdated() {
     if(m_pSettings) {
         QRect rect = m_pSettings->elements().value(m_Key).m_Rect;
+
+        ui->nameEdit->blockSignals(true);
+        ui->nameEdit->setText(m_Key);
+        ui->nameEdit->blockSignals(false);
+
         ui->xEdit->blockSignals(true);
         ui->xEdit->setText(QString::number(rect.x()));
         ui->xEdit->blockSignals(false);
@@ -103,6 +110,11 @@ void SpriteElement::onElementChanged() {
         element.m_Pivot = Vector2(ui->pivotXEdit->text().toFloat(),
                                   ui->pivotYEdit->text().toFloat());
 
+        QString name = ui->nameEdit->text();
+        if(name != m_Key) {
+            m_pSettings->removeElement(m_Key);
+            m_Key = name;
+        }
         m_pSettings->setElement(element, m_Key);
     }
 }

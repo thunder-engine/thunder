@@ -11,8 +11,8 @@
 #define DATA    "Data"
 #define MESHES  "Meshes"
 
-typedef deque<Texture *>  Textures;
-typedef deque<Mesh *>  Meshes;
+typedef deque<Texture *> Textures;
+typedef unordered_map<int, Mesh *> Meshes;
 
 static Vector3Vector vertEmpty;
 static IndexVector trisEmpty;
@@ -65,7 +65,7 @@ void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
 
     for(auto it : p_ptr->m_Meshes) {
-        delete it;
+        delete it.second;
     }
     p_ptr->m_Meshes.clear();
 
@@ -96,9 +96,11 @@ int Sprite::addElement(Texture *texture) {
 
     Mesh *mesh = Engine::objectCreate<Mesh>("Mesh");
     mesh->addLod(&lod);
-    p_ptr->m_Meshes.push_back(mesh);
 
-    return (p_ptr->m_Sources.size() - 1);
+    int index = (p_ptr->m_Sources.size() - 1);
+    p_ptr->m_Meshes[index] = mesh;
+
+    return index;
 }
 /*!
     Packs all added elements int to a single sprite sheet.
@@ -109,7 +111,7 @@ int Sprite::addElement(Texture *texture) {
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
-    for(int i = 0; i < p_ptr->m_Sources.size(); i++) {
+    for(size_t i = 0; i < p_ptr->m_Sources.size(); i++) {
         Texture *it = p_ptr->m_Sources[i];
         Mesh *m = mesh(i);
         Lod *lod = m->lod(0);
@@ -184,10 +186,12 @@ void Sprite::loadUserData(const VariantMap &data) {
         auto it = data.find(MESHES);
         if(it != data.end()) {
             for(auto mesh : it->second.toList()) {
-                Object *object = ObjectSystem::toObject(mesh);
+                VariantList array = mesh.toList();
+                Object *object = ObjectSystem::toObject(array.back());
                 Mesh *m = dynamic_cast<Mesh *>(object);
                 if(m) {
-                    p_ptr->m_Meshes.push_back(m);
+                    int key = array.front().toInt();
+                    setMesh(key, m);
                 }
             }
         }
@@ -210,7 +214,10 @@ VariantMap Sprite::saveUserData() const {
         VariantList meshes;
 
         for(auto it : p_ptr->m_Meshes) {
-            meshes.push_back(ObjectSystem::toVariant(it));
+            VariantList mesh;
+            mesh.push_back(it.first);
+            mesh.push_back(ObjectSystem::toVariant(it.second));
+            meshes.push_back(mesh);
         }
         result[MESHES] = meshes;
     }
@@ -218,32 +225,28 @@ VariantMap Sprite::saveUserData() const {
     return result;
 }
 /*!
-    Returns a mesh which represents the sprite with \a index.
+    Returns a mesh which represents the sprite with \a key.
 */
-Mesh *Sprite::mesh(int index) const {
+Mesh *Sprite::mesh(int key) const {
     PROFILE_FUNCTION();
 
-    if(index > -1 && index < p_ptr->m_Meshes.size()) {
-        return p_ptr->m_Meshes[index];
+    auto it = p_ptr->m_Meshes.find(key);
+    if(it != p_ptr->m_Meshes.end()) {
+        return it->second;
     }
     return nullptr;
 }
 /*!
-    Sets a new mesh for the sprite with \a index.
+    Sets a new mesh for the sprite with \a key.
     The old mesh will be deleted and no longer available.
-    \note The in case of \a create flag was set to true the spite will be created in case it doesn't exist yet.
 */
-void Sprite::setMesh(int index, Mesh *mesh, bool create) {
+void Sprite::setMesh(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
-    if(index > -1 && index < p_ptr->m_Meshes.size()) {
-        if(p_ptr->m_Meshes[index]) {
-            delete p_ptr->m_Meshes[index];
-        }
-        p_ptr->m_Meshes[index] = mesh;
-    } else if(create) {
-        p_ptr->m_Meshes.insert(p_ptr->m_Meshes.begin() + index, mesh);
+    if(p_ptr->m_Meshes[key]) {
+        delete p_ptr->m_Meshes[key];
     }
+    p_ptr->m_Meshes[key] = mesh;
 }
 /*!
     Returns a sprite sheet texture.

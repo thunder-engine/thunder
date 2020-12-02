@@ -22,8 +22,8 @@ public:
 
     int addElement(Texture *texture);
 
-    Mesh *mesh(int index) const;
-    void setMesh(int index, Mesh *mesh, bool create = false);
+    Mesh *mesh(int key) const;
+    void setMesh(int key, Mesh *mesh);
 
     Texture *texture() const;
     void setTexture(Texture *texture);

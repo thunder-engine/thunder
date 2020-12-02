@@ -156,6 +156,8 @@ public:
 
     void batchMesh(Mesh *mesh, Matrix4 *transform = nullptr);
 
+    void recalcBounds();
+
     static void registerSuper(ObjectSystem *system);
 
 private:
