@@ -88,7 +88,7 @@ matrix:
         - NDK_VERSION="android-ndk-r17c"
       before_install:
         - eval "${MATRIX_EVAL}"
-        - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/linux_x64/qtcreator.7z
+        - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/linux_gcc_64_rhel72/qtcreator.7z
         - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
         - wget -q https://dl.google.com/android/repository/${NDK_VERSION}-linux-x86_64.zip
         - unzip -qq ${NDK_VERSION}-linux-x86_64.zip -d $TRAVIS_BUILD_DIR
@@ -200,7 +200,7 @@ matrix:
         - ChocolateyInstall="C:/ProgramData/chocolatey"
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
-        - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/windows_x64/qtcreator.7z
+        - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/windows_msvc2017_x64/qtcreator.7z
         - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
         - qbs --version
         - qbs setup-toolchains --detect
