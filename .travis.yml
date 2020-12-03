@@ -193,7 +193,7 @@ matrix:
     - language: cpp
       os: windows
       env:
-        - MSVC=2017
+        - MSVC=2015
         - QT_INSTALL_DIR=~/Qt
         - QT_BIN=${QT_INSTALL_DIR}/${QT_VERSION}/msvc${MSVC}_64/bin
         - PATH="${QT_INSTALL_DIR}/Tools/QtCreator/bin:${QT_BIN}:${PATH}"
