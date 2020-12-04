@@ -123,7 +123,7 @@ matrix:
       before_install:
         - bash ./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qtgraphicaleffects qtquickcontrols2 qttools qtxmlpatterns qtdeclarative
         - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/mac_x64/qtcreator.7z
-        - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
+        - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z
         - qbs --version
         - qbs setup-toolchains --detect
         - qbs setup-qt ${QT_BIN}/qmake qt-brew
@@ -153,7 +153,7 @@ matrix:
         - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
       before_install:
         - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/mac_x64/qtcreator.7z
-        - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
+        - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z
         - qbs --version
         - qbs setup-toolchains --detect
       script:
@@ -180,7 +180,7 @@ matrix:
         - PATH="${QT_INSTALL_DIR}/Qt Creator.app/Contents/MacOS:${PATH}"
       before_install:
         - wget https://download.qt.io/official_releases/qtcreator/4.9/${CREATOR_VERSION}/installer_source/mac_x64/qtcreator.7z
-        - 7z x -y -o${QT_INSTALL_DIR}/Tools/QtCreator qtcreator.7z
+        - 7z x -y -o${QT_INSTALL_DIR} qtcreator.7z
         - qbs --version
         - qbs setup-toolchains --detect
       script:
