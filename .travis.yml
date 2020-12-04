@@ -206,7 +206,7 @@ matrix:
         - qbs setup-toolchains --detect
       script:
         - qbs config --list
-        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:MSVC${MSVC}-amd64 project.withDocumentation:false project.withExamples:false project.withTests:false
+        - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:MSVC${MSVC}-amd64 project.withDocumentation:false project.withDocker:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release profile:MSVC${MSVC}-amd64
         - 7z a -t7z ThunderEngine-windows-x64.7z release/install-root/
       deploy:
