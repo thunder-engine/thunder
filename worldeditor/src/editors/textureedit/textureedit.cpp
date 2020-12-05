@@ -17,7 +17,9 @@
 
 #include "projectmanager.h"
 
-#define SCALE 100.0f
+#include "spritecontroller.h"
+
+#include "spriteelement.h"
 
 TextureEdit::TextureEdit(DocumentModel *document) :
         QWidget(nullptr),
@@ -25,17 +27,14 @@ TextureEdit::TextureEdit(DocumentModel *document) :
         m_pRender(nullptr),
         m_pSettings(nullptr),
         m_pConverter(new TextureConverter),
-        m_pDocument(document) {
+        m_pDocument(document),
+        m_Details(new SpriteElement(this)) {
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
-    ctrl->blockRotations(true);
-    ctrl->init(nullptr);
-    ui->preview->setController(ctrl);
     ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
-    connect(ui->preview, SIGNAL(inited()), this, SLOT(onGLInit()));
+    connect(ui->preview, &Viewport::inited, this, &TextureEdit::onGLInit);
     startTimer(16);
 }
 
@@ -67,6 +66,7 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     if(m_pSettings) {
         disconnect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
+    m_pSettings = dynamic_cast<TextureImportSettings *>(settings);
 
     m_Path = settings->source();
 
@@ -81,14 +81,14 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
         }
     }
 
-    Camera *camera = ui->preview->controller()->camera();
-    if(camera) {
-        camera->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
-        camera->setOrthoSize(SCALE);
-        camera->setFocal(SCALE);
-    }
+    SpriteController *ctrl = static_cast<SpriteController *>(ui->preview->controller());
+    ctrl->setImportSettings(dynamic_cast<TextureImportSettings *>(m_pSettings));
+    ctrl->setSize(m_pRender->texture()->width(),
+                  m_pRender->texture()->height());
 
-    m_pSettings = settings;
+    m_Details->setSettings(m_pSettings);
+    m_Details->raise();
+
     connect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
 }
 
@@ -97,14 +97,22 @@ QStringList TextureEdit::assetTypes() const {
 }
 
 void TextureEdit::onUpdateTemplate() {
-    TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(m_pSettings);
-    if(s) {
-        m_pConverter->convertTexture(s, m_pRender->texture());
+    if(m_pSettings) {
+        m_pConverter->convertTexture(m_pSettings, m_pRender->texture());
     }
 }
 
 void TextureEdit::onGLInit() {
     Scene *scene = ui->preview->scene();
+
+    SpriteController *ctrl = new SpriteController(ui->preview);
+    ctrl->blockRotations(true);
+    ctrl->init(scene);
+
+    connect(ctrl, &SpriteController::selectionChanged, m_Details, &SpriteElement::onSelectionChanged);
+
+    ui->preview->setController(ctrl);
+
     Camera *camera = ui->preview->controller()->camera();
     if(camera) {
         camera->setOrthographic(true);
@@ -116,4 +124,13 @@ void TextureEdit::onGLInit() {
     if(m_pRender) {
         m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
+}
+
+void TextureEdit::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+
+    QRect r = m_Details->geometry();
+    r.setX(20);
+    r.setY(10);
+    m_Details->setGeometry(r);
 }

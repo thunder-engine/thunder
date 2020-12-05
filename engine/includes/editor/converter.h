@@ -45,10 +45,12 @@ public:
 
     const QStringList subKeys() const;
     QString subItem(const QString &key) const;
+    virtual QJsonObject subItemData(const QString &key) const;
     QString subTypeName(const QString &key) const;
     int32_t subType(const QString &key) const;
 
     void setSubItem(const QString &name, const QString &uuid, int32_t type);
+    virtual void setSubItemData(const QString &name, const QJsonObject &data);
 
     bool loadSettings();
     void saveSettings();

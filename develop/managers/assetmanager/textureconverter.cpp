@@ -3,6 +3,9 @@
 #include <QImage>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonObject>
+#include <QUuid>
+#include <QDebug>
 
 #include <cstring>
 
@@ -13,7 +16,9 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
+
+static hash<string> hash_str;
 
 void copyData(int8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
     if(channels == 3) {
@@ -92,11 +97,102 @@ void TextureImportSettings::setLod(bool lod) {
     }
 }
 
+QString TextureImportSettings::findFreeElementName(const QString &name) {
+    QString newName  = name;
+    if(!newName.isEmpty()) {
+        int32_t i = 0;
+        while(subItem(newName + QString("_%1").arg(i)).isEmpty() == false) {
+            i++;
+        }
+        return (newName + QString("_%1").arg(i));
+    }
+    return "Element";
+}
+
+TextureImportSettings::ElementMap TextureImportSettings::elements() const {
+    return m_Elements;
+}
+
+QString TextureImportSettings::setElement(const Element &element, const QString &key) {
+    QFileInfo info(source());
+
+    QString path = key;
+    if(path.isEmpty()) {
+        path = findFreeElementName(info.baseName());
+    }
+
+    QString uuid = subItem(path);
+    if(uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toString();
+    }
+    m_Elements[path] = element;
+    setSubItem(path, uuid, MetaType::type<Mesh *>());
+
+    emit updated();
+    return path;
+}
+
+void TextureImportSettings::removeElement(const QString &key) {
+    m_Elements.remove(key);
+
+    m_SubItems.remove(key);
+    m_SubTypes.remove(key);
+
+    emit updated();
+}
+
 QString TextureImportSettings::typeName() const {
     if(m_TextureType == TextureType::Sprite) {
         return "Sprite";
     }
     return IConverterSettings::typeName();
+}
+
+QJsonObject TextureImportSettings::subItemData(const QString &key) const {
+    QRect rect = m_Elements.value(key).m_Rect;
+    QJsonObject result;
+    result["type"] = 0;
+
+    QJsonObject r;
+
+    r["x"] = rect.x();
+    r["y"] = rect.y();
+    r["w"] = rect.width();
+    r["h"] = rect.height();
+
+    r["l"] = m_Elements.value(key).m_BorderL;
+    r["r"] = m_Elements.value(key).m_BorderR;
+    r["t"] = m_Elements.value(key).m_BorderT;
+    r["b"] = m_Elements.value(key).m_BorderB;
+
+    Vector2 pivot = m_Elements.value(key).m_Pivot;
+    r["pivotX"] = pivot.x;
+    r["pivotY"] = pivot.y;
+
+    result["data"] = r;
+
+    return result;
+}
+
+void TextureImportSettings::setSubItemData(const QString &name, const QJsonObject &data) {
+    QJsonObject d = data.value("data").toObject();
+
+    QRect rect;
+    rect.setX       (d.value("x").toInt());
+    rect.setY       (d.value("y").toInt());
+    rect.setWidth   (d.value("w").toInt());
+    rect.setHeight  (d.value("h").toInt());
+
+    QRect border;
+    m_Elements[name].m_BorderL = d.value("l").toInt();
+    m_Elements[name].m_BorderR = d.value("r").toInt();
+    m_Elements[name].m_BorderT = d.value("t").toInt();
+    m_Elements[name].m_BorderB = d.value("b").toInt();
+
+    Vector2 pivot(d.value("pivotX").toDouble(), d.value("pivotY").toDouble());
+
+    m_Elements[name].m_Rect = rect;
+    m_Elements[name].m_Pivot = pivot;
 }
 
 uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
@@ -108,7 +204,6 @@ uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
             Sprite *sprite = new Sprite;
             convertSprite(s, sprite);
             resource = sprite;
-
         } else {
             Texture *texture = new Texture;
             convertTexture(s, texture);
@@ -245,6 +340,81 @@ void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *
 
 void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sprite) {
     convertTexture(settings, sprite->texture());
+
+    float width = sprite->texture()->width();
+    float height = sprite->texture()->height();
+
+    uint32_t unitsPerPixel = 100;
+
+    int i = 0;
+    for(auto it : settings->elements().keys()) {
+        Mesh *mesh = Engine::objectCreate<Mesh>("", sprite);
+        if(mesh) {
+            Lod lod;
+
+            auto value = settings->elements().value(it);
+
+            QRect rect = value.m_Rect;
+            Vector2 p = value.m_Pivot;
+
+            float w = (float)rect.width()  / unitsPerPixel * 0.5f;
+            float h = (float)rect.height() / unitsPerPixel * 0.5f;
+
+            float l = (float)value.m_BorderL / unitsPerPixel * 0.5f;
+            float r = (float)value.m_BorderR / unitsPerPixel * 0.5f;
+            float t = (float)value.m_BorderT / unitsPerPixel * 0.5f;
+            float b = (float)value.m_BorderB / unitsPerPixel * 0.5f;
+
+            lod.setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
+                            4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,
+                            8, 9,13, 8,13,12, 9,10,14, 9,14,13,10,11,15,10,15,14});
+
+            {
+                float x0 = -w * p.x;
+                float x1 = -w * p.x + l;
+                float x2 =  w * (1.0f - p.x) - r;
+                float x3 =  w * (1.0f - p.x);
+
+                float y0 = -h * p.y;
+                float y1 = -h * p.y + b;
+                float y2 =  h * (1.0f - p.y) - t;
+                float y3 =  h * (1.0f - p.y);
+
+                lod.setVertices({
+                    Vector3(x0, y0, 0.0f), Vector3(x1, y0, 0.0f), Vector3(x2, y0, 0.0f), Vector3(x3, y0, 0.0f),
+                    Vector3(x0, y1, 0.0f), Vector3(x1, y1, 0.0f), Vector3(x2, y1, 0.0f), Vector3(x3, y1, 0.0f),
+
+                    Vector3(x0, y2, 0.0f), Vector3(x1, y2, 0.0f), Vector3(x2, y2, 0.0f), Vector3(x3, y2, 0.0f),
+                    Vector3(x0, y3, 0.0f), Vector3(x1, y3, 0.0f), Vector3(x2, y3, 0.0f), Vector3(x3, y3, 0.0f),
+                });
+            }
+            {
+                mesh->setFlags(mesh->flags() | Mesh::Uv0);
+
+                float x0 = (float)rect.left() / width;
+                float x1 = (float)(rect.left() + value.m_BorderL) / width;
+                float x2 = (float)(rect.right() - value.m_BorderR) / width;
+                float x3 = (float)rect.right() / width;
+
+                float y0 = (float)rect.top() / height;
+                float y1 = (float)(rect.top() + value.m_BorderB) / height;
+                float y2 = (float)(rect.bottom() - value.m_BorderT) / height;
+                float y3 = (float)rect.bottom() / height;
+
+                lod.setUv0({
+                    Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
+                    Vector2(x0, y1), Vector2(x1, y1), Vector2(x2, y1), Vector2(x3, y1),
+
+                    Vector2(x0, y2), Vector2(x1, y2), Vector2(x2, y2), Vector2(x3, y2),
+                    Vector2(x0, y3), Vector2(x1, y3), Vector2(x2, y3), Vector2(x3, y3),
+                });
+            }
+            mesh->addLod(&lod);
+
+            sprite->setMesh(hash_str(it.toStdString()), mesh);
+            i++;
+        }
+    }
 }
 
 IConverterSettings *TextureConverter::createSettings() const {

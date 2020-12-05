@@ -6,6 +6,8 @@
 
 #include <editor/converter.h>
 
+#include <QRect>
+
 class QImage;
 
 class TextureImportSettings : public IConverterSettings {
@@ -46,6 +48,23 @@ public:
     Q_ENUM(TextureType)
     Q_ENUM(FormatType)
 
+    struct Element {
+        Element() {
+            m_BorderL = 0;
+            m_BorderR = 0;
+            m_BorderT = 0;
+            m_BorderB = 0;
+            m_Pivot = Vector2(0.5f);
+        }
+        QRect m_Rect;
+        int m_BorderL;
+        int m_BorderR;
+        int m_BorderT;
+        int m_BorderB;
+        Vector2 m_Pivot;
+    };
+    typedef QMap<QString, Element> ElementMap;
+
 public:
     TextureImportSettings();
 
@@ -64,8 +83,17 @@ public:
     bool lod() const;
     void setLod(bool lod);
 
+    ElementMap elements() const;
+    QString setElement(const Element &element, const QString &key = QString());
+    void removeElement(const QString &key);
+
 private:
     QString typeName() const Q_DECL_OVERRIDE;
+
+    QJsonObject subItemData(const QString &key) const override;
+    void setSubItemData(const QString &name, const QJsonObject &data) override;
+
+    QString findFreeElementName(const QString &name);
 
 protected:
     TextureType   m_TextureType;
@@ -75,6 +103,8 @@ protected:
     FilteringType m_Filtering;
 
     WrapType      m_Wrap;
+
+    ElementMap    m_Elements;
 
     bool          m_Lod;
 };

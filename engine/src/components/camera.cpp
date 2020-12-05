@@ -147,7 +147,7 @@ Vector3 Camera::project(const Vector3 &worldSpace, const Matrix4 &modelView, con
     return Vector3((in.x * 0.5f + 0.5f), (in.y * 0.5f + 0.5f), (1.0f + in.z) * 0.5f);
 }
 /*!
-    Transforms position from world space into \a screenSpace using \a modelView and \a projection matrices.
+    Transforms position from \a screenSpace into world space using \a modelView and \a projection matrices.
     Returns result of transformation.
 */
 Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, const Matrix4 &projection) {

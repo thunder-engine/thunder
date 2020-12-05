@@ -154,10 +154,15 @@ public:
     Lod *lod(int lod) const;
     void setLod(int lod, Lod *data);
 
+    void batchMesh(Mesh *mesh, Matrix4 *transform = nullptr);
+
+    void recalcBounds();
+
     static void registerSuper(ObjectSystem *system);
 
 private:
     void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     MeshPrivate *p_ptr;

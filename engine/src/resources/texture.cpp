@@ -71,7 +71,6 @@ public:
 Texture::Texture() :
         p_ptr(new TexturePrivate) {
 
-    setShape({ Vector2(0.0f), Vector2(0.0f, 1.0f), Vector2(1.0f), Vector2(1.0f, 0.0f) });
 }
 
 Texture::~Texture() {
@@ -227,18 +226,6 @@ inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
     int32_t s = ((p_ptr->m_Format == RGB16Float ||
                   p_ptr->m_Format == RGBA32Float) ? 4 : 1);
     return width * height * components() * s;
-}
-/*!
-    Returns the bounding shape for the texture.
-*/
-Vector2Vector Texture::shape() const {
-    return p_ptr->m_Shape;
-}
-/*!
-    Sets the bounding \a shape for the texture.
-*/
-void Texture::setShape(const Vector2Vector &shape) {
-    p_ptr->m_Shape = shape;
 }
 /*!
     Sets new \a width and \a height for the texture.

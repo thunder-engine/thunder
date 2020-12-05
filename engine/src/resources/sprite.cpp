@@ -9,8 +9,13 @@
 
 #define HEADER  "Header"
 #define DATA    "Data"
+#define MESHES  "Meshes"
 
-typedef deque<Texture *>  Textures;
+typedef deque<Texture *> Textures;
+typedef unordered_map<int, Mesh *> Meshes;
+
+static Vector3Vector vertEmpty;
+static IndexVector trisEmpty;
 
 class SpritePrivate {
 public:
@@ -19,7 +24,7 @@ public:
         m_pRoot(new AtlasNode) {
 
     }
-    Vector4Vector m_Elements;
+    Meshes m_Meshes;
 
     Texture *m_pTexture;
 
@@ -27,6 +32,15 @@ public:
 
     AtlasNode *m_pRoot;
 };
+
+/*!
+    \class Sprite
+    \brief Represents 2D sprite.
+    \inmodule Resource
+
+    Sprites usually used in games to display environment and characters in 2D games.
+    This class also supports sprite sheets to contain several images in one container to simplify animation or handle tile maps.
+*/
 
 Sprite::Sprite() :
         p_ptr(new SpritePrivate) {
@@ -44,44 +58,78 @@ Sprite::~Sprite() {
     delete p_ptr;
     p_ptr = nullptr;
 }
-
+/*!
+    \internal
+*/
 void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
+
+    for(auto it : p_ptr->m_Meshes) {
+        delete it.second;
+    }
+    p_ptr->m_Meshes.clear();
 
     for(auto it : p_ptr->m_Sources) {
         delete it;
     }
     p_ptr->m_Sources.clear();
-    p_ptr->m_Elements.clear();
-
 }
+/*!
+    Adds new sub \a texture as element to current sprite sheet.
+    All elements will be packed to a single sprite sheet texture using Sprite::pack() method.
+    Returns the id of the new element.
 
+    \sa pack()
+*/
 int Sprite::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
     p_ptr->m_Sources.push_back(texture);
-    return (p_ptr->m_Sources.size() - 1);
-}
 
+    Lod lod;
+    lod.setVertices({Vector3(0.0f, 0.0f, 0.0f),
+                     Vector3(0.0f, 1.0f, 0.0f),
+                     Vector3(1.0f, 1.0f, 0.0f),
+                     Vector3(1.0f, 0.0f, 0.0f) });
+
+    lod.setIndices({0, 1, 2, 0, 2, 3});
+
+    Mesh *mesh = Engine::objectCreate<Mesh>("Mesh");
+    mesh->addLod(&lod);
+
+    int index = (p_ptr->m_Sources.size() - 1);
+    p_ptr->m_Meshes[index] = mesh;
+
+    return index;
+}
+/*!
+    Packs all added elements int to a single sprite sheet.
+    Parameter \a padding can be used to delimit elements.
+
+    \sa addElement()
+*/
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_Elements.clear();
-    for(auto it : p_ptr->m_Sources) {
+    for(size_t i = 0; i < p_ptr->m_Sources.size(); i++) {
+        Texture *it = p_ptr->m_Sources[i];
+        Mesh *m = mesh(i);
+        Lod *lod = m->lod(0);
+
         int32_t width  = (it->width() + padding * 2);
         int32_t height = (it->height() + padding * 2);
 
         AtlasNode *n = p_ptr->m_pRoot->insert(width, height);
-        if(n) {
+        if(n && lod) {
             n->fill = true;
             int32_t w = n->w - padding * 2;
             int32_t h = n->h - padding * 2;
 
-            Vector4 res;
-            res.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
-            res.y = n->y / static_cast<float>(p_ptr->m_pRoot->h);
-            res.z = res.x + w / static_cast<float>(p_ptr->m_pRoot->w);
-            res.w = res.y + h / static_cast<float>(p_ptr->m_pRoot->h);
+            Vector4 uv;
+            uv.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
+            uv.y = n->y / static_cast<float>(p_ptr->m_pRoot->h);
+            uv.z = uv.x + w / static_cast<float>(p_ptr->m_pRoot->w);
+            uv.w = uv.y + h / static_cast<float>(p_ptr->m_pRoot->h);
 
             int8_t *src = &(it->surface(0)[0])[0];
             int8_t *dst = &(p_ptr->m_pTexture->surface(0)[0])[0];
@@ -89,7 +137,10 @@ void Sprite::pack(int padding) {
                 memcpy(&dst[(y + n->y) * p_ptr->m_pRoot->w + n->x], &src[y * w], w);
             }
 
-            p_ptr->m_Elements.push_back(res);
+            lod->setUv0({Vector2(uv.x, uv.y),
+                         Vector2(uv.z, uv.y),
+                         Vector2(uv.z, uv.w),
+                         Vector2(uv.x, uv.w)});
         } else {
             resize(p_ptr->m_pRoot->w * 2, p_ptr->m_pRoot->h * 2);
             pack(padding);
@@ -99,7 +150,8 @@ void Sprite::pack(int padding) {
     p_ptr->m_pTexture->setDirty();
 }
 /*!
-    Changes current size of the atlas and sets resorce state to ResourceState::ToBeUpdated.
+    \internal
+    Changes current size of the sprite sheet and sets resorce state to ResourceState::ToBeUpdated.
 */
 void Sprite::resize(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
@@ -113,8 +165,11 @@ void Sprite::resize(int32_t width, int32_t height) {
 
     p_ptr->m_pTexture->resize(width, height);
 }
-
+/*!
+    \internal
+*/
 void Sprite::loadUserData(const VariantMap &data) {
+    clearAtlas();
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
@@ -124,14 +179,29 @@ void Sprite::loadUserData(const VariantMap &data) {
                 delete p_ptr->m_pTexture; // May lead to crash in case of m_pTexture had references
                 p_ptr->m_pTexture = texture;
                 p_ptr->m_pTexture->setParent(this);
-
+            }
+        }
+    }
+    {
+        auto it = data.find(MESHES);
+        if(it != data.end()) {
+            for(auto mesh : it->second.toList()) {
+                VariantList array = mesh.toList();
+                Object *object = ObjectSystem::toObject(array.back());
+                Mesh *m = dynamic_cast<Mesh *>(object);
+                if(m) {
+                    int key = array.front().toInt();
+                    setMesh(key, m);
+                }
             }
         }
     }
 
     setState(Ready);
 }
-
+/*!
+    \internal
+*/
 VariantMap Sprite::saveUserData() const {
     VariantMap result;
 
@@ -140,33 +210,55 @@ VariantMap Sprite::saveUserData() const {
         result[DATA] = data;
     }
 
+    if(!p_ptr->m_Meshes.empty()) {
+        VariantList meshes;
+
+        for(auto it : p_ptr->m_Meshes) {
+            VariantList mesh;
+            mesh.push_back(it.first);
+            mesh.push_back(ObjectSystem::toVariant(it.second));
+            meshes.push_back(mesh);
+        }
+        result[MESHES] = meshes;
+    }
+
     return result;
 }
-
-Vector2Vector Sprite::shape(int index) const {
+/*!
+    Returns a mesh which represents the sprite with \a key.
+*/
+Mesh *Sprite::mesh(int key) const {
     PROFILE_FUNCTION();
 
-    if(index < p_ptr->m_Sources.size()) {
-        return p_ptr->m_Sources[index]->shape();
+    auto it = p_ptr->m_Meshes.find(key);
+    if(it != p_ptr->m_Meshes.end()) {
+        return it->second;
     }
-    return Vector2Vector();
+    return nullptr;
 }
-
-Vector4 Sprite::uv(int index) const {
+/*!
+    Sets a new mesh for the sprite with \a key.
+    The old mesh will be deleted and no longer available.
+*/
+void Sprite::setMesh(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
-    if(index < p_ptr->m_Elements.size()) {
-        return p_ptr->m_Elements[index];
+    if(p_ptr->m_Meshes[key]) {
+        delete p_ptr->m_Meshes[key];
     }
-    return Vector4();
+    p_ptr->m_Meshes[key] = mesh;
 }
-
+/*!
+    Returns a sprite sheet texture.
+*/
 Texture *Sprite::texture() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_pTexture;
 }
-
+/*!
+    Sets a new sprite sheet \a texture.
+*/
 void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();
 
@@ -175,5 +267,4 @@ void Sprite::setTexture(Texture *texture) {
     }
     p_ptr->m_pTexture = texture;
     p_ptr->m_pTexture->setParent(this);
-
 }

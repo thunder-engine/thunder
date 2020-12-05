@@ -2,6 +2,7 @@
 #define SPRITE_H
 
 #include "texture.h"
+#include "mesh.h"
 
 class Texture;
 class SpritePrivate;
@@ -11,7 +12,6 @@ class NEXT_LIBRARY_EXPORT Sprite : public Resource {
 
     A_METHODS(
         A_METHOD(int, Sprite::addElement),
-        A_METHOD(Vector4, Sprite::uv),
         A_METHOD(Texture *, Sprite::texture),
         A_METHOD(void, Sprite::pack)
     )
@@ -22,9 +22,8 @@ public:
 
     int addElement(Texture *texture);
 
-    Vector2Vector shape(int index) const;
-
-    Vector4 uv(int index) const;
+    Mesh *mesh(int key) const;
+    void setMesh(int key, Mesh *mesh);
 
     Texture *texture() const;
     void setTexture(Texture *texture);

@@ -529,18 +529,20 @@ QImage AssetManager::icon(const QString &source) {
 }
 
 Actor *AssetManager::createActor(const QString &source) {
-    QString guid;
-    QString path = source;
-    if(source[0] == '{') {
-        guid = source;
-        path = guidToPath(guid.toStdString()).c_str();
-    } else {
-        guid = pathToGuid(source.toStdString()).c_str();
-    }
-    QFileInfo info(path);
-    IConverter *converter = m_Converters.value(info.suffix().toLower(), nullptr);
-    if(converter) {
-        return converter->createActor(guid);
+    if(!source.isEmpty()) {
+        QString guid;
+        QString path = source;
+        if(source[0] == '{') {
+            guid = source;
+            path = guidToPath(guid.toStdString()).c_str();
+        } else {
+            guid = pathToGuid(source.toStdString()).c_str();
+        }
+        QFileInfo info(path);
+        IConverter *converter = m_Converters.value(info.suffix().toLower(), nullptr);
+        if(converter) {
+            return converter->createActor(guid);
+        }
     }
     return nullptr;
 }
@@ -708,8 +710,10 @@ bool AssetManager::convert(IConverterSettings *settings) {
 
                 registerAsset(path, value, settings->subTypeName(it));
 
-                static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(value.toStdString()));
-                emit imported(path, type);
+                if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + value)) {
+                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(value.toStdString()));
+                    emit imported(path, type);
+                }
             }
 
             static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(guid.toStdString()));
@@ -750,11 +754,13 @@ AssetManager::ClassMap AssetManager::classMaps() const {
 }
 
 void AssetManager::registerAsset(const QFileInfo &source, const QString &guid, const QString &type) {
-    QString path = pathToLocal(source);
+    if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + guid)) {
+        QString path = pathToLocal(source);
 
-    m_Indices[path.toStdString()] = pair<string, string>(type.toStdString(), guid.toStdString());
-    m_Paths[guid.toStdString()] = source.absoluteFilePath().toStdString();
-    m_Labels.push_back(type);
+        m_Indices[path.toStdString()] = pair<string, string>(type.toStdString(), guid.toStdString());
+        m_Paths[guid.toStdString()] = source.absoluteFilePath().toStdString();
+        m_Labels.push_back(type);
+    }
 }
 
 string AssetManager::unregisterAsset(const string &source) {

@@ -14,6 +14,8 @@ class SpriteRender;
 class TextureConverter;
 class TextureImportSettings;
 
+class SpriteElement;
+
 namespace Ui {
     class TextureEdit;
 }
@@ -33,19 +35,23 @@ private:
 
     QStringList assetTypes() const override;
 
-    void timerEvent(QTimerEvent *) override;
+    void timerEvent(QTimerEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+
     bool isModified() const override;
 
     Ui::TextureEdit *ui;
 
     SpriteRender *m_pRender;
 
-    IConverterSettings *m_pSettings;
+    TextureImportSettings *m_pSettings;
 
     TextureConverter *m_pConverter;
 
     DocumentModel *m_pDocument;
+
+    SpriteElement *m_Details;
 
     QString m_Path;
 

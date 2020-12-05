@@ -11,9 +11,9 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Texture Edit</string>
+   <string>Sprite Edit</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -30,7 +30,14 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="Viewport" name="preview" native="true"/>
+    <widget class="Viewport" name="preview" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
    </item>
   </layout>
   <action name="actionSave">
