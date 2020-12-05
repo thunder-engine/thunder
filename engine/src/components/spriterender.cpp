@@ -256,7 +256,7 @@ Vector2 SpriteRender::size() const {
 /*!
     Sets a new size of sprite.
 */
-void SpriteRender::setSize(Vector2 &size) {
+void SpriteRender::setSize(const Vector2 &size) {
     p_ptr->m_Size = size;
     p_ptr->composeMesh();
 }
