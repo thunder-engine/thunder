@@ -713,12 +713,7 @@
         <translation>Revert</translation>
     </message>
     <message>
-        <location line="+151"/>
-        <source>2D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+67"/>
+        <location line="+218"/>
         <source>View</source>
         <translation>View</translation>
     </message>
@@ -1012,12 +1007,7 @@
 <context>
     <name>Startup</name>
     <message>
-        <location filename="../worldeditor/res/qml/Startup.qml" line="+50"/>
-        <source>Thunder Engine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
+        <location filename="../worldeditor/res/qml/Startup.qml" line="+78"/>
         <source>Projects</source>
         <translation>Projects</translation>
     </message>

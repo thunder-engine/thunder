@@ -47,7 +47,7 @@ Rectangle {
                 anchors.leftMargin: 50
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignBottom
-                text: qsTr("Thunder Engine")
+                text: "Thunder Engine"
                 font.bold: false
                 font.pixelSize: 18
                 color: theme.textColor

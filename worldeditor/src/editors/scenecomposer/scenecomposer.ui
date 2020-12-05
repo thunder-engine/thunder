@@ -338,7 +338,7 @@
            </font>
           </property>
           <property name="text">
-           <string>2D</string>
+           <string notr="true">2D</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
