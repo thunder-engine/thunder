@@ -41,7 +41,7 @@ public:
     void setItem(const string &item);
 
     Vector2 size() const;
-    void setSize(Vector2 &size);
+    void setSize(const Vector2 &size);
 
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;
