@@ -81,8 +81,10 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
         for(uint32_t i = 0; i < indices.size() - 1; i += 2) {
             Vector3 a = Camera::project(vertices[indices[i]], mv, s_Projection);
             Vector3 b = Camera::project(vertices[indices[i+1]], mv, s_Projection);
+
             Vector2 ssa(a.x, 1.0f - a.y);
             Vector2 ssb(b.x, 1.0f - b.y);
+
             result = std::min(distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
         }
     }

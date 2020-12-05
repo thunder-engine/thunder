@@ -13,7 +13,7 @@ The main ideology of project is to create the modular engine to give developers 
 
 ![Screenshot of Thunder Engine](https://raw.githubusercontent.com/thunder-engine/thunder/master/doc/media/ScreenShot01.png)
 
-[![Discord](https://img.shields.io/discord/572359664528916490.svg?logo=discord)](https://discord.gg/shxfVQ4V)
+[![Discord](https://img.shields.io/discord/466924817359175681.svg?logo=discord)](https://discord.gg/k8qsJxnw4Q)
 [![Gitter chat](https://badges.gitter.im/Thunder-Engine/gitter.png)](https://gitter.im/Thunder-Engine)
 
 #### Features
