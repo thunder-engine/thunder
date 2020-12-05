@@ -53,7 +53,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="xLabel">
        <property name="text">
-        <string> X</string>
+        <string notr="true"> X</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -63,7 +63,7 @@
      <item row="0" column="2">
       <widget class="QLabel" name="yLabel">
        <property name="text">
-        <string>Y</string>
+        <string notr="true">Y</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -76,7 +76,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="wLabel">
        <property name="text">
-        <string>W</string>
+        <string notr="true">W</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -89,7 +89,7 @@
      <item row="1" column="2">
       <widget class="QLabel" name="hLabel">
        <property name="text">
-        <string>H</string>
+        <string notr="true">H</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -128,7 +128,7 @@
      <item row="0" column="2">
       <widget class="QLabel" name="borderT">
        <property name="text">
-        <string>T</string>
+        <string notr="true">T</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -138,7 +138,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="borderL">
        <property name="text">
-        <string> L</string>
+        <string notr="true"> L</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -148,7 +148,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="borderR">
        <property name="text">
-        <string>R</string>
+        <string notr="true">R</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -161,7 +161,7 @@
      <item row="1" column="2">
       <widget class="QLabel" name="borderB">
        <property name="text">
-        <string>B</string>
+        <string notr="true">B</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -188,7 +188,7 @@
      <item>
       <widget class="QLabel" name="pivotX">
        <property name="text">
-        <string>X</string>
+        <string notr="true">X</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -201,7 +201,7 @@
      <item>
       <widget class="QLabel" name="pivotY">
        <property name="text">
-        <string>Y</string>
+        <string notr="true">Y</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

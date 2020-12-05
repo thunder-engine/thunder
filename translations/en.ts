@@ -91,7 +91,7 @@
 <context>
     <name>CameraCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+150"/>
+        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+159"/>
         <source>Front View</source>
         <translation>Front View</translation>
     </message>
@@ -119,6 +119,14 @@
         <location line="+1"/>
         <source>Bottom View</source>
         <translation>Bottom View</translation>
+    </message>
+</context>
+<context>
+    <name>ComboEdit</name>
+    <message>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/ComboEdit.ui" line="+14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -181,7 +189,7 @@
         <translation>Content Browser</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+68"/>
         <source>Filter</source>
         <translation>Filter</translation>
     </message>
@@ -191,7 +199,7 @@
         <translation>Search</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+155"/>
+        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+152"/>
         <source>Show in Explorer</source>
         <translation>Show in Explorer</translation>
     </message>
@@ -230,7 +238,7 @@
         <translation>Reimport</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+104"/>
         <source>Delete Asset</source>
         <translation>Delete Asset</translation>
     </message>
@@ -441,12 +449,12 @@
 <context>
     <name>ObjectCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+94"/>
+        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+92"/>
         <source>Final Buffer</source>
         <translation>Final Buffer</translation>
     </message>
     <message>
-        <location line="+350"/>
+        <location line="+348"/>
         <source>Creation Component Failed</source>
         <translation>Creation Component Failed</translation>
     </message>
@@ -461,7 +469,7 @@
         <translation>Remove Component </translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+241"/>
         <source>Buffer Visualization</source>
         <translation>Buffer Visualization</translation>
     </message>
@@ -552,7 +560,7 @@
     <message>
         <location line="+24"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Actions…</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.cpp" line="+33"/>
@@ -619,7 +627,7 @@
 <context>
     <name>PropertyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+112"/>
+        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+125"/>
         <source>Property</source>
         <translation>Property</translation>
     </message>
@@ -665,6 +673,26 @@
         <location line="+12"/>
         <source>Change Property</source>
         <translation>Change Property</translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
+        <source>Create Sprite Element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
+        <source>Select Sprite Elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Destroy Sprite Elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Update Sprite Elements</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -827,7 +855,7 @@
     <message>
         <location line="+8"/>
         <location line="+3"/>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+734"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+735"/>
         <source>Save Workspace</source>
         <translation>Save Workspace</translation>
     </message>
@@ -853,7 +881,7 @@
         <translation>Build All</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-596"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-597"/>
         <source>Viewport</source>
         <translation>Viewport</translation>
     </message>
@@ -888,7 +916,7 @@
         <translation>About %1…</translation>
     </message>
     <message>
-        <location line="+302"/>
+        <location line="+303"/>
         <source>Open Map</source>
         <translation>Open Map</translation>
     </message>
@@ -950,6 +978,35 @@
         <location line="+19"/>
         <source>Revert</source>
         <translation>Revert</translation>
+    </message>
+</context>
+<context>
+    <name>SpriteElement</name>
+    <message>
+        <location filename="../worldeditor/src/editors/textureedit/spriteelement.ui" line="+14"/>
+        <location line="+24"/>
+        <source>Sprite Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+69"/>
+        <source>Border</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+72"/>
+        <source>Pivot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Name</source>
+        <translation type="unfinished">Name</translation>
     </message>
 </context>
 <context>
@@ -1042,38 +1099,13 @@
     <name>TextureEdit</name>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/textureedit.ui" line="+14"/>
-        <source>Texture Edit</source>
-        <translation>Texture Edit</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>File</source>
-        <translation>File</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Save</source>
-        <translation>Save</translation>
-    </message>
-    <message>
-        <location filename="../worldeditor/src/editors/textureedit/textureedit.cpp" line="+89"/>
-        <source>The %1 import settings has been modified.</source>
-        <translation>The %1 import settings has been modified.</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>texture</source>
+        <source>Sprite Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Do you want to save your changes?</source>
-        <translation>Do you want to save your changes?</translation>
+        <location line="+31"/>
+        <source>Save</source>
+        <translation>Save</translation>
     </message>
 </context>
 <context>
