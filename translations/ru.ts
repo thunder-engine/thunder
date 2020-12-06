@@ -32,12 +32,7 @@
 <context>
     <name>Actions</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+31"/>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+45"/>
         <source>Commit</source>
         <translation>Применить</translation>
     </message>
@@ -50,14 +45,6 @@
         <location line="+7"/>
         <source>...</source>
         <translation>Действия…</translation>
-    </message>
-</context>
-<context>
-    <name>AlignmentEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/AlignmentEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -87,11 +74,6 @@
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
-    <message>
-        <location line="+3"/>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>AssetBrowser</name>
@@ -107,50 +89,9 @@
     </message>
 </context>
 <context>
-    <name>AssetList</name>
-    <message>
-        <location filename="../worldeditor/src/editors/assetselect/assetlist.cpp" line="+47"/>
-        <source>Uuid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AxisesEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/AxisesEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>CameraCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+150"/>
+        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+159"/>
         <source>Front View</source>
         <translation>Вид Спереди</translation>
     </message>
@@ -217,12 +158,7 @@
         <translation>Вывод Консоли</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>INF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+36"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
@@ -240,7 +176,7 @@
         <translation>Контент Браузер</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+68"/>
         <source>Filter</source>
         <translation>Фильтр</translation>
     </message>
@@ -250,7 +186,7 @@
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+155"/>
+        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+152"/>
         <source>Show in Explorer</source>
         <translation>Показать в Explorer</translation>
     </message>
@@ -289,7 +225,7 @@
         <translation>Реймпорт</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+104"/>
         <source>Delete Asset</source>
         <translation>Удалить Ассет</translation>
     </message>
@@ -320,12 +256,7 @@
 <context>
     <name>ContentSelect</name>
     <message>
-        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
+        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+68"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -339,35 +270,11 @@
     </message>
 </context>
 <context>
-    <name>CurveEditAdd</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/ArrayEdit.cpp" line="+10"/>
-        <source>+</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>CurveEditClear</name>
-    <message>
-        <location line="+6"/>
-        <source>{}</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DocumentModel</name>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+100"/>
         <source>Save Document</source>
         <translation>Сохранить Документ</translation>
-    </message>
-</context>
-<context>
-    <name>FloatEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/FloatEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -427,14 +334,6 @@
     </message>
 </context>
 <context>
-    <name>IntegerEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/IntegerEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MaterialEdit</name>
     <message>
         <location filename="../worldeditor/src/editors/materialedit/materialedit.ui" line="+14"/>
@@ -457,12 +356,7 @@
         <translation>Файл</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>toolBar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+32"/>
         <source>Plane</source>
         <translation>Плоскость</translation>
     </message>
@@ -501,13 +395,8 @@
     </message>
     <message>
         <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
-        <source>The %1 import settings has been modified.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>mesh</source>
-        <translation type="unfinished"></translation>
+        <source>The mesh import settings has been modified.</source>
+        <translation type="unfinished">Настройки импорта сетки были изменены.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -531,12 +420,12 @@
 <context>
     <name>ObjectCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+94"/>
+        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+92"/>
         <source>Final Buffer</source>
         <translation>Финальный Буфер</translation>
     </message>
     <message>
-        <location line="+350"/>
+        <location line="+348"/>
         <source>Creation Component Failed</source>
         <translation>Не удалось создать компонент</translation>
     </message>
@@ -551,7 +440,7 @@
         <translation>Удалить Компонент </translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+241"/>
         <source>Buffer Visualization</source>
         <translation>Визуализация Буфера</translation>
     </message>
@@ -635,16 +524,6 @@
 <context>
     <name>PathEdit</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.ui" line="+14"/>
-        <source>PathEdit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.cpp" line="+33"/>
         <source>Open Directory</source>
         <translation>Открыть Каталог</translation>
@@ -709,7 +588,7 @@
 <context>
     <name>PropertyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+112"/>
+        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+125"/>
         <source>Property</source>
         <translation>Свойство</translation>
     </message>
@@ -756,6 +635,26 @@
         <source>Change Property</source>
         <translation>Изменить Свойство</translation>
     </message>
+    <message>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
+        <source>Create Sprite Element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
+        <source>Select Sprite Elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Destroy Sprite Elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Update Sprite Elements</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SceneComposer</name>
@@ -775,12 +674,7 @@
         <translation>Отменить</translation>
     </message>
     <message>
-        <location line="+151"/>
-        <source>2D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+67"/>
+        <location line="+218"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
@@ -917,7 +811,7 @@
     <message>
         <location line="+8"/>
         <location line="+3"/>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+734"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+735"/>
         <source>Save Workspace</source>
         <translation>Сохранить рабочее пространство</translation>
     </message>
@@ -943,7 +837,7 @@
         <translation>Построить все</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-596"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-597"/>
         <source>Viewport</source>
         <translation>Окно</translation>
     </message>
@@ -978,7 +872,7 @@
         <translation>О %1…</translation>
     </message>
     <message>
-        <location line="+302"/>
+        <location line="+303"/>
         <source>Open Map</source>
         <translation>Открыть Карту</translation>
     </message>
@@ -1032,12 +926,7 @@
 <context>
     <name>SettingsBrowser</name>
     <message>
-        <location filename="../worldeditor/src/managers/settingsmanager/settingsbrowser.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+63"/>
+        <location filename="../worldeditor/src/managers/settingsmanager/settingsbrowser.ui" line="+77"/>
         <source>Commit</source>
         <translation>Применить</translation>
     </message>
@@ -1048,14 +937,38 @@
     </message>
 </context>
 <context>
-    <name>Startup</name>
+    <name>SpriteElement</name>
     <message>
-        <location filename="../worldeditor/res/qml/Startup.qml" line="+50"/>
-        <source>Thunder Engine</source>
+        <location filename="../worldeditor/src/editors/textureedit/spriteelement.ui" line="+14"/>
+        <location line="+24"/>
+        <source>Sprite Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+69"/>
+        <source>Border</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+72"/>
+        <source>Pivot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Name</source>
+        <translation type="unfinished">Имя</translation>
+    </message>
+</context>
+<context>
+    <name>Startup</name>
+    <message>
+        <location filename="../worldeditor/res/qml/Startup.qml" line="+78"/>
         <source>Projects</source>
         <translation>Проекты</translation>
     </message>
@@ -1073,14 +986,6 @@
         <location line="+30"/>
         <source>New</source>
         <translation>Новый</translation>
-    </message>
-</context>
-<context>
-    <name>StringEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/StringEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1145,38 +1050,13 @@
     <name>TextureEdit</name>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/textureedit.ui" line="+14"/>
-        <source>Texture Edit</source>
-        <translation>Редактор Текстур</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Window</source>
-        <translation>Окно</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>File</source>
-        <translation>Файл</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Save</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <location filename="../worldeditor/src/editors/textureedit/textureedit.cpp" line="+89"/>
-        <source>The %1 import settings has been modified.</source>
-        <translation>Настройки импорта для %1 были изменены.</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>texture</source>
+        <source>Sprite Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Do you want to save your changes?</source>
-        <translation>Вы хотите сохранить ваши изменения?</translation>
+        <location line="+31"/>
+        <source>Save</source>
+        <translation>Сохранить</translation>
     </message>
 </context>
 <context>
@@ -1215,22 +1095,6 @@
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+76"/>
         <source>Remove Properties</source>
         <translation>Удалить Свойства</translation>
-    </message>
-</context>
-<context>
-    <name>VectorEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/VectorEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name></name>
-    <message>
-        <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
-        <source>The mesh import settings has been modified.</source>
-        <translation>Настройки импорта сетки были изменены.</translation>
     </message>
 </context>
 </TS>
