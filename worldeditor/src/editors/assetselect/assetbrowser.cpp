@@ -168,3 +168,9 @@ void AssetBrowser::on_assetList_clicked(const QModelIndex &index) {
 
     emit assetSelected(AssetManager::instance()->pathToGuid(source.toStdString()).c_str());
 }
+
+void AssetBrowser::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

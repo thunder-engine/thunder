@@ -46,6 +46,13 @@ void TextEdit::closeEvent(QCloseEvent *event) {
     m_pDocument->closeFile(dir.relativeFilePath(m_fileInfo.absoluteFilePath()));
 }
 
+
+void TextEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}
+
 bool TextEdit::isModified() const {
     return ui->editor->document()->isModified();
 }

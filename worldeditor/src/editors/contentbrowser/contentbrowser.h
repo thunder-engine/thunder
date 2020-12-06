@@ -77,6 +77,8 @@ private slots:
 private:
     QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
 
+    void changeEvent(QEvent *event) override;
+
 private:
     Ui::ContentBrowser  *ui;
 

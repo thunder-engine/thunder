@@ -4,16 +4,17 @@
 #include <QDialog>
 
 namespace Ui {
-class AboutDialog;
+    class AboutDialog;
 }
 
-class AboutDialog : public QDialog
-{
+class AboutDialog : public QDialog {
     Q_OBJECT
 
 public:
     explicit AboutDialog(QWidget *parent = 0);
-    ~AboutDialog();
+    ~AboutDialog() Q_DECL_OVERRIDE;
+
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Ui::AboutDialog *ui;

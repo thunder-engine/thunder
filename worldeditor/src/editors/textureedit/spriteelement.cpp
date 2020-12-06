@@ -130,3 +130,9 @@ void SpriteElement::paintEvent(QPaintEvent *pe) {
 
     painter.end();
 }
+
+void SpriteElement::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

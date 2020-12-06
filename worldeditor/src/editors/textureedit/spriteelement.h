@@ -25,6 +25,7 @@ public slots:
 
 private:
     void paintEvent(QPaintEvent *pe) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Ui::SpriteElement *ui;

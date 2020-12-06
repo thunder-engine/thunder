@@ -18,6 +18,7 @@
 #include "custom/Vector3DProperty.h"
 #include "custom/FilePathProperty.h"
 #include "custom/ComponentProperty.h"
+#include "custom/LocaleProperty.h"
 
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
@@ -54,6 +55,9 @@ Property *createCustomProperty(const QString &name, QObject *propertyObject, Pro
 
     if(userType == QMetaType::type("QFileInfo"))
         return new FilePathProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("QLocale"))
+        return new LocaleProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("Template"))
         return new TemplateProperty(name, propertyObject, parent);
@@ -326,5 +330,11 @@ void PropertyEditor::onInsertKeyframe() {
     if(next) {
         QStringList list = action->property("property").toString().split('/');
         emit next->changed(next->findChild(list), list.back());
+    }
+}
+
+void PropertyEditor::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
     }
 }

@@ -54,6 +54,8 @@ private slots:
     void onModelUpdated();
 
 private:
+    void changeEvent(QEvent *event);
+
     Ui::AssetBrowser *ui;
 
     QString m_Resource;

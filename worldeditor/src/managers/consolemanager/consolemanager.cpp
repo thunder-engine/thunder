@@ -50,3 +50,9 @@ void ConsoleManager::onCopy() {
         QApplication::clipboard()->setText(list.join("\n"));
     }
 }
+
+void ConsoleManager::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

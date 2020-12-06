@@ -31,7 +31,7 @@ protected:
 
     bool checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
         QModelIndex index   = sourceModel()->index(sourceRow, 1, sourceParent);
-        foreach (QString it, m_List) {
+        foreach(QString it, m_List) {
             if(sourceModel()->data(index, Qt::DisplayRole).toString().contains(it, filterCaseSensitivity())) {
                 return true;
             }
@@ -107,5 +107,11 @@ void ComponentBrowser::on_componentsTree_clicked(const QModelIndex &index) {
     if(m_pProxyModel->rowCount(index) == 0) {
         QObject *object = static_cast<QObject *>(m_pProxyModel->mapToSource(index).internalPointer());
         emit componentSelected(object->objectName());
+    }
+}
+
+void ComponentBrowser::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
     }
 }

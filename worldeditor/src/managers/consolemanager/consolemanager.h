@@ -14,25 +14,27 @@ class QMenu;
 class ConsoleManager : public QWidget {
     Q_OBJECT
 public:
-    explicit ConsoleManager     (QWidget *parent = 0);
-    ~ConsoleManager             ();
+    explicit ConsoleManager(QWidget *parent = 0);
+    ~ConsoleManager();
 
 public slots:
-    void                        onLogRecord                 (uint8_t type, const QString &str);
+    void onLogRecord(uint8_t type, const QString &str);
 
 private slots:
-    void                        on_clearButton_clicked      ();
+    void on_clearButton_clicked();
 
-    void                        on_consoleOutput_customContextMenuRequested (const QPoint &pos);
+    void on_consoleOutput_customContextMenuRequested(const QPoint &pos);
 
-    void                        onCopy                      ();
+    void onCopy();
 
 private:
-    Ui::ConsoleManager         *ui;
+    void changeEvent(QEvent *event) override;
 
-    LogModel                   *m_pItems;
+    Ui::ConsoleManager *ui;
 
-    QMenu                      *m_pMenu;
+    LogModel           *m_pItems;
+
+    QMenu              *m_pMenu;
 };
 
 #endif // CONSOLEMANAGER_H

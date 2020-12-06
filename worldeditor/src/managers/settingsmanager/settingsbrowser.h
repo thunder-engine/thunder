@@ -23,6 +23,8 @@ signals:
     void reverted();
 
 private:
+    void changeEvent(QEvent *event);
+
     Ui::SettingsBrowser *ui;
 };
 

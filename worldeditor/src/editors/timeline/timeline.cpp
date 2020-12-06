@@ -467,3 +467,9 @@ void Timeline::on_breakKey_clicked() {
 void Timeline::on_deleteKey_clicked() {
     m_pModel->onRemoveKey(m_Row, m_Col, m_Ind);
 }
+
+void Timeline::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

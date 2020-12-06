@@ -797,6 +797,12 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>Viewport</class>
+   <extends>QWidget</extends>
+   <header>graph/viewport.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>ContentBrowser</class>
    <extends>QWidget</extends>
    <header>editors/contentbrowser/contentbrowser.h</header>
@@ -818,12 +824,6 @@
    <class>SceneView</class>
    <extends>QWidget</extends>
    <header>graph/sceneview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Viewport</class>
-   <extends>QWidget</extends>
-   <header>graph/viewport.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

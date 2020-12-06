@@ -18,8 +18,16 @@ void ComboEdit::addItems(const QStringList &items) {
     ui->comboBox->addItems(items);
 }
 
+void ComboEdit::addItem(const QString &text, const QVariant &data) {
+    ui->comboBox->addItem(text, data);
+}
+
 int ComboEdit::findText(const QString &text) {
     return ui->comboBox->findText(text);
+}
+
+int ComboEdit::findData(const QVariant &data) {
+    return ui->comboBox->findData(data);
 }
 
 void ComboEdit::setCurrentIndex(int index) {
@@ -30,4 +38,8 @@ void ComboEdit::setCurrentIndex(int index) {
 
 QString ComboEdit::currentText() const {
     return ui->comboBox->currentText();
+}
+
+QVariant ComboEdit::currentData() const {
+    return ui->comboBox->currentData();
 }

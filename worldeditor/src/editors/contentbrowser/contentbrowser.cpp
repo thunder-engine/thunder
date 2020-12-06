@@ -364,6 +364,12 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     emit assetSelected(settings);
 }
 
+void ContentBrowser::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}
+
 void ContentBrowser::showInGraphicalShell() {
     QString path;
     QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();

@@ -16,42 +16,44 @@ class PropertyEditor : public QWidget {
     Q_OBJECT
 
 public:
-    typedef Property* (*UserTypeCB)(const QString &name, QObject *propertyObject, Property *parent);
+    typedef Property*(*UserTypeCB)(const QString &name, QObject *propertyObject, Property *parent);
 
-    explicit PropertyEditor (QWidget *parent = nullptr);
+    explicit PropertyEditor(QWidget *parent = nullptr);
 
-    virtual ~PropertyEditor ();
+    virtual ~PropertyEditor();
 
-    void                    registerCustomPropertyCB    (UserTypeCB callback);
+    void registerCustomPropertyCB(UserTypeCB callback);
 
-    void                    unregisterCustomPropertyCB  (UserTypeCB callback);
+    void unregisterCustomPropertyCB(UserTypeCB callback);
 
 signals:
-    void                    insertKeyframe              (QString &property);
+    void insertKeyframe(QString &property);
 
 public slots:
-    void                    onUpdated                   ();
+    void onUpdated();
 
-    void                    onAnimated                  (bool flag);
+    void onAnimated(bool flag);
 
-    void                    clear                       ();
+    void clear();
 
-    QObject                *object                      () const;
-    void                    setObject                   (QObject *propertyObject);
+    QObject *object() const;
+    void setObject(QObject *propertyObject);
 
 protected:
-    void                    updatePersistent            (const QModelIndex &index);
+    void updatePersistent(const QModelIndex &index);
 
-    void                    addObject                   (QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
+    void addObject(QObject *propertyObject, const QString &name = QString(), QObject *parent = nullptr);
 
 private slots:
-    void                    on_lineEdit_textChanged     (const QString &arg1);
+    void on_lineEdit_textChanged(const QString &arg1);
 
-    void                    on_treeView_customContextMenuRequested  (const QPoint &pos);
+    void on_treeView_customContextMenuRequested(const QPoint &pos);
 
-    void                    onInsertKeyframe            ();
+    void onInsertKeyframe();
 
 private:
+    void changeEvent(QEvent *event) override;
+
     Ui::PropertyEditor     *ui;
 
     PropertyFilter         *m_pFilter;

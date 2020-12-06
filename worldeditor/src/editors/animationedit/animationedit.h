@@ -43,6 +43,7 @@ private:
     QStringList assetTypes() const override;
 
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event) override;
 
     bool m_Modified;
 

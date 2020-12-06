@@ -18,15 +18,15 @@ class ComponentView : public QTreeView {
     Q_OBJECT
 
 public:
-    ComponentView           (QWidget *parent) :
+    ComponentView(QWidget *parent) :
             QTreeView(parent) {
     }
 
 signals:
-    void                    dragStarted             (Qt::DropActions supportedActions);
+    void dragStarted(Qt::DropActions supportedActions);
 
 protected:
-    void                    startDrag               (Qt::DropActions supportedActions) {
+    void startDrag(Qt::DropActions supportedActions) {
         emit dragStarted(supportedActions);
     }
 };
@@ -34,23 +34,25 @@ protected:
 class ComponentBrowser : public QWidget {
     Q_OBJECT
 public:
-    ComponentBrowser        (QWidget *parent = 0);
+    ComponentBrowser(QWidget *parent = 0);
 
-    void                    setGroups                       (const QStringList &groups = QStringList());
+    void setGroups(const QStringList &groups = QStringList());
 
-    void                    setModel                        (QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model);
 
 signals:
-    void                    componentSelected               (const QString &uri);
+    void componentSelected(const QString &uri);
 
 private slots:
-    void                    onDragStarted                   (Qt::DropActions supportedActions);
+    void onDragStarted(Qt::DropActions supportedActions);
 
-    void                    on_findComponent_textChanged    (const QString &arg1);
+    void on_findComponent_textChanged(const QString &arg1);
 
-    void                    on_componentsTree_clicked       (const QModelIndex &index);
+    void on_componentsTree_clicked(const QModelIndex &index);
 
 private:
+    void changeEvent(QEvent *event) override;
+
     Ui::ComponentBrowser   *ui;
 
     ComponentFilter        *m_pProxyModel;

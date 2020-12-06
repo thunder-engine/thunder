@@ -31,7 +31,7 @@ class SceneComposer : public QMainWindow {
 
 public:
     explicit SceneComposer(Engine *engine, QWidget *parent = nullptr);
-    ~SceneComposer();
+    ~SceneComposer() Q_DECL_OVERRIDE;
 
 public slots:
     void onObjectSelected(Object::ObjectList objects);
@@ -43,9 +43,10 @@ public slots:
 private:
     void updateTitle();
 
-    void closeEvent(QCloseEvent *event);
-    void timerEvent(QTimerEvent *);
-    void resizeEvent(QResizeEvent *);
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
     bool checkSave();
 

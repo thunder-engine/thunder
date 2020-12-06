@@ -15,12 +15,15 @@ public:
     ~ComboEdit();
 
     void addItems(const QStringList &items);
+    void addItem(const QString &text, const QVariant &data);
 
     int findText(const QString &text);
+    int findData(const QVariant &data);
 
     void setCurrentIndex(int index);
 
     QString currentText() const;
+    QVariant currentData() const;
 
 signals:
     void currentIndexChanged(const QString &);

@@ -45,6 +45,8 @@ private:
     void loadAsset(IConverterSettings *settings) override;
 
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event) override;
+
     bool isModified() const override;
     void setModified(bool flag) override;
 

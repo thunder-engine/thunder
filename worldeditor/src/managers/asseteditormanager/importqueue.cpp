@@ -76,3 +76,9 @@ void ImportQueue::keyPressEvent(QKeyEvent *e) {
         e->ignore();
     }
 }
+
+void ImportQueue::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

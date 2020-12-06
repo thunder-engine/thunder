@@ -95,4 +95,9 @@
     <qresource prefix="/Sponsors">
         <file alias="sponsors.md">../../sponsors.md</file>
     </qresource>
+    <qresource prefix="/Translations">
+        <file alias="en.qm">l10n/en.qm</file>
+        <file alias="fr.qm">l10n/fr.qm</file>
+        <file alias="ru.qm">l10n/ru.qm</file>
+    </qresource>
 </RCC>

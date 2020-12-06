@@ -19,24 +19,26 @@ class ImportQueue : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ImportQueue    (Engine *engine, QWidget *parent = nullptr);
-    ~ImportQueue            ();
+    explicit ImportQueue(Engine *engine, QWidget *parent = nullptr);
+    ~ImportQueue();
 
-    void                    init                (IconRender *render);
+    void init(IconRender *render);
 
 signals:
-    void                    finished            ();
+    void finished();
 
-    void                    rendered            (const QString &uuid);
+    void rendered(const QString &uuid);
 
 private slots:
-    void                    onProcessed         (const QString &path, const QString &type);
+    void onProcessed(const QString &path, const QString &type);
 
-    void                    onStarted           (int count, const QString &action);
-    void                    onImportFinished    ();
+    void onStarted(int count, const QString &action);
+    void onImportFinished();
 
 private:
-    void                    keyPressEvent       (QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *e) override;
+    void changeEvent(QEvent *event) override;
+
 
     Ui::ImportQueue        *ui;
 

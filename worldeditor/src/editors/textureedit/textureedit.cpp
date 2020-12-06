@@ -55,6 +55,12 @@ void TextureEdit::closeEvent(QCloseEvent *event) {
     m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
+void TextureEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}
+
 bool TextureEdit::isModified() const {
     return m_pSettings->isModified();
 }

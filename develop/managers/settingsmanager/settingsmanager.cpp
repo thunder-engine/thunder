@@ -4,7 +4,10 @@
 
 #include <QSettings>
 #include <QFileInfo>
+#include <QDebug>
 #include <QColor>
+#include <QCoreApplication>
+#include <QTranslator>
 
 #include <QEvent>
 
@@ -12,7 +15,8 @@
 
 SettingsManager *SettingsManager::m_pInstance = nullptr;
 
-SettingsManager::SettingsManager() {
+SettingsManager::SettingsManager() :
+    m_Translator(new QTranslator()) {
     installEventFilter(this);
 }
 
@@ -50,8 +54,13 @@ void SettingsManager::loadSettings() {
             if(!name.isEmpty()) {
                 setProperty(it, QVariant::fromValue(QColor(name)));
             }
+        } else if(userType == QMetaType::type("QLocale")) {
+            QLocale locale(data[it].toString());
+            setLanguage(locale);
+            setProperty(it, locale);
         }
     }
+
     blockSignals(false);
     emit updated();
 }
@@ -66,6 +75,9 @@ void SettingsManager::saveSettings() {
             data[it] = value.value<QFileInfo>().filePath();
         } else if(userType == QMetaType::type("QColor")) {
             data[it] = value.value<QColor>().name(QColor::HexArgb);
+        } else if(userType == QMetaType::type("QLocale")) {
+            setLanguage(value.value<QLocale>());
+            data[it] = value.value<QLocale>().name();
         }
     }
 
@@ -74,10 +86,19 @@ void SettingsManager::saveSettings() {
 }
 
 bool SettingsManager::eventFilter(QObject *obj, QEvent *event) {
-    if (event->type() == QEvent::DynamicPropertyChange) {
+    if(event->type() == QEvent::DynamicPropertyChange) {
         emit updated();
         return true;
     } else {
         return QObject::eventFilter(obj, event);
+    }
+}
+
+void SettingsManager::setLanguage(const QLocale &locale) {
+    if(m_Translator && m_Locale != locale) {
+        m_Locale = locale;
+        QCoreApplication::removeTranslator(m_Translator);
+        m_Translator->load(locale, QString(), QString(), ":/Translations");
+        QCoreApplication::installTranslator(m_Translator);
     }
 }

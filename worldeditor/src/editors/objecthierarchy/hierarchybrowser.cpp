@@ -372,3 +372,10 @@ QAction *HierarchyBrowser::createAction(const QString &name, const char *member,
     ui->treeView->addAction(a);
     return a;
 }
+
+void HierarchyBrowser::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}
+

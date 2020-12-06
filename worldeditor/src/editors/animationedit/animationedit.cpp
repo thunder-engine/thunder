@@ -158,3 +158,9 @@ void AnimationEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visi
         action->blockSignals(false);
     }
 }
+
+void AnimationEdit::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+}

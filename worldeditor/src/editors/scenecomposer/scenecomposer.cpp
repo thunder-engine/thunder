@@ -105,6 +105,13 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(m_pQueue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
     connect(m_pQueue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
 
+    ui->viewportWidget->setWindowTitle(tr("Viewport"));
+    ui->propertyWidget->setWindowTitle(tr("Properties"));
+    ui->projectWidget->setWindowTitle(tr("Project Settings"));
+    ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
+    ui->timeline->setWindowTitle(tr("Timeline"));
+    ui->classMapView->setWindowTitle(tr("Class View"));
+
     cmToolbars      = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
 
@@ -134,13 +141,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     m_Redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
     m_Redo->setShortcut(QKeySequence("Ctrl+Y"));
     ui->menuEdit->insertAction(ui->actionNew_Object, m_Redo);
-
-    ui->viewportWidget->setWindowTitle(tr("Viewport"));
-    ui->propertyWidget->setWindowTitle(tr("Properties"));
-    ui->projectWidget->setWindowTitle(tr("Project Settings"));
-    ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
-    ui->timeline->setWindowTitle(tr("Timeline"));
-    ui->classMapView->setWindowTitle(tr("Class View"));
 
     ui->componentButton->setProperty("blue", true);
     ui->moveButton->setProperty("blue", true);
@@ -183,7 +183,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->preferencesWidget, &SettingsBrowser::commited, SettingsManager::instance(), &SettingsManager::saveSettings);
     connect(ui->preferencesWidget, &SettingsBrowser::reverted, SettingsManager::instance(), &SettingsManager::loadSettings);
-    ui->preferencesWidget->setModel(SettingsManager::instance());
 
     findWorkspaces(":/Workspaces");
     findWorkspaces("workspaces");
@@ -697,6 +696,7 @@ void SceneComposer::onImportFinished() {
     }
     disconnect(m_pQueue, nullptr, this, nullptr);
 
+    ui->preferencesWidget->setModel(SettingsManager::instance());
     ui->projectWidget->setModel(ProjectManager::instance());
 }
 
@@ -907,4 +907,17 @@ void SceneComposer::on_menuFile_aboutToShow() {
     }
     ui->actionSave->setText(tr("Save%1").arg(name));
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));
+}
+
+void SceneComposer::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+
+        ui->viewportWidget->setWindowTitle(tr("Viewport"));
+        ui->propertyWidget->setWindowTitle(tr("Properties"));
+        ui->projectWidget->setWindowTitle(tr("Project Settings"));
+        ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
+        ui->timeline->setWindowTitle(tr("Timeline"));
+        ui->classMapView->setWindowTitle(tr("Class View"));
+    }
 }

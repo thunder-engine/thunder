@@ -24,6 +24,9 @@ public slots:
 private slots:
     void on_closeButton_clicked();
 
+private:
+    void changeEvent(QEvent *event) override;
+
 protected:
     Ui::PluginDialog *ui;
 };
