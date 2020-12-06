@@ -7,13 +7,13 @@ ArrayEdit::ArrayEdit(QWidget *parent) :
 
     m_pAddBtn = new QToolButton(this);
     m_pAddBtn->setObjectName(QString::fromUtf8("m_pAddBtn"));
-    m_pAddBtn->setText(QApplication::translate("CurveEditAdd", "+", 0));
+    m_pAddBtn->setText("+");
 
     connect(m_pAddBtn, SIGNAL(clicked()), this, SIGNAL(elementAdded()));
 
     m_pClearBtn = new QToolButton(this);
     m_pClearBtn->setObjectName(QString::fromUtf8("m_pClearBtn"));
-    m_pClearBtn->setText(QApplication::translate("CurveEditClear", "{}", 0));
+    m_pClearBtn->setText("{}");
 
     connect(m_pClearBtn, SIGNAL(clicked()), this, SIGNAL(allCleared()));
 
