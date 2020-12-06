@@ -270,22 +270,6 @@
     </message>
 </context>
 <context>
-    <name>CurveEditAdd</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/ArrayEdit.cpp" line="+10"/>
-        <source>+</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>CurveEditClear</name>
-    <message>
-        <location line="+6"/>
-        <source>{}</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DocumentModel</name>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+100"/>
@@ -539,11 +523,6 @@
 </context>
 <context>
     <name>PathEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.ui" line="+38"/>
-        <source>...</source>
-        <translation type="unfinished">Actions…</translation>
-    </message>
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.cpp" line="+33"/>
         <source>Open Directory</source>
