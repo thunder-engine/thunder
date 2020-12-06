@@ -40,7 +40,7 @@
      <item>
       <widget class="QToolButton" name="toolButton">
        <property name="text">
-        <string>INF</string>
+        <string notr="true">INF</string>
        </property>
       </widget>
      </item>

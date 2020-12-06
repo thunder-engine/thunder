@@ -27,6 +27,8 @@ public:
 };
 
 class DocumentModel : public QAbstractItemModel {
+    Q_OBJECT
+
 public:
     DocumentModel();
     ~DocumentModel();

@@ -122,14 +122,6 @@
     </message>
 </context>
 <context>
-    <name>ComboEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/ComboEdit.ui" line="+14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ComponentBrowser</name>
     <message>
         <location filename="../worldeditor/src/editors/componentbrowser/componentbrowser.ui" line="+14"/>
@@ -166,12 +158,7 @@
         <translation>Console Output</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>INF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+36"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
@@ -553,12 +540,7 @@
 <context>
     <name>PathEdit</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.ui" line="+14"/>
-        <source>PathEdit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.ui" line="+38"/>
         <source>...</source>
         <translation type="unfinished">Actions…</translation>
     </message>

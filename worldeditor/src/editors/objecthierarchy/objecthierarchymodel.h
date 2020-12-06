@@ -7,6 +7,8 @@
 class Object;
 
 class ObjectHierarchyModel : public QAbstractItemModel {
+    Q_OBJECT
+
 public:
     ObjectHierarchyModel        (QObject *parent);
 
