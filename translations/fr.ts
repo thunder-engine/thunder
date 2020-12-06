@@ -147,7 +147,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulaire</translation>
     </message>
 </context>
 <context>
@@ -432,7 +432,7 @@
     <message>
         <location line="+1"/>
         <source>Component with type &quot;%1&quot; already defined for this actor.</source>
-        <translation>Un composant du type «&#xa0;%1&#xa0;» a déjà été défini pour cet acteur.</translation>
+        <translation>Un composant du type « %1 » a déjà été défini pour cet acteur.</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -638,22 +638,22 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
         <source>Create Sprite Element</source>
-        <translation type="unfinished">Créer un élément du sprite</translation>
+        <translation>Créer un élément du sprite</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
         <source>Select Sprite Elements</source>
-        <translation type="unfinished">Sélectionner les éléments du sprite</translation>
+        <translation>Sélectionner les éléments du sprite</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Destroy Sprite Elements</source>
-        <translation type="unfinished">Détruire les éléments du sprite</translation>
+        <translation>Détruire les éléments du sprite</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Update Sprite Elements</source>
-        <translation type="unfinished">Mettre à jour les éléments du sprite</translation>
+        <translation>Mettre à jour les éléments du sprite</translation>
     </message>
 </context>
 <context>
@@ -942,27 +942,27 @@
         <location filename="../worldeditor/src/editors/textureedit/spriteelement.ui" line="+14"/>
         <location line="+24"/>
         <source>Sprite Details</source>
-        <translation type="unfinished">Informations sur l&apos;élément du sprite</translation>
+        <translation>Informations sur l&apos;élément du sprite</translation>
     </message>
     <message>
         <location line="+69"/>
         <source>Border</source>
-        <translation type="unfinished">Bordure</translation>
+        <translation>Bordure</translation>
     </message>
     <message>
         <location line="+72"/>
         <source>Pivot</source>
-        <translation type="unfinished">Pivot</translation>
+        <translation>Pivot</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Position</source>
-        <translation type="unfinished">Position</translation>
+        <translation>Position</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
 </context>
 <context>
@@ -1051,7 +1051,7 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/textureedit.ui" line="+14"/>
         <source>Sprite Edit</source>
-        <translation type="unfinished">Modification du sprite</translation>
+        <translation>Modification du sprite</translation>
     </message>
     <message>
         <location line="+31"/>
