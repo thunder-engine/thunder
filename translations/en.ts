@@ -147,7 +147,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Form</translation>
     </message>
 </context>
 <context>
@@ -258,7 +258,7 @@
     <message>
         <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+68"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>None</translation>
     </message>
 </context>
 <context>
@@ -659,22 +659,22 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
         <source>Create Sprite Element</source>
-        <translation type="unfinished"></translation>
+        <translation>Create Sprite Element</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
         <source>Select Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Select Sprite Elements</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Destroy Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Destroy Sprite Elements</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Update Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Update Sprite Elements</translation>
     </message>
 </context>
 <context>
@@ -963,22 +963,22 @@
         <location filename="../worldeditor/src/editors/textureedit/spriteelement.ui" line="+14"/>
         <location line="+24"/>
         <source>Sprite Details</source>
-        <translation type="unfinished"></translation>
+        <translation>ElementSprite Details</translation>
     </message>
     <message>
         <location line="+69"/>
         <source>Border</source>
-        <translation type="unfinished"></translation>
+        <translation>Border</translation>
     </message>
     <message>
         <location line="+72"/>
         <source>Pivot</source>
-        <translation type="unfinished"></translation>
+        <translation>Pivot</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Position</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1072,7 +1072,7 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/textureedit.ui" line="+14"/>
         <source>Sprite Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite Edit</translation>
     </message>
     <message>
         <location line="+31"/>
