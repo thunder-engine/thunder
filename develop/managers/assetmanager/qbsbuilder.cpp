@@ -29,6 +29,10 @@ const QString gEditorSuffix("-Editor");
 const QString gProfile("profile");
 const QString gArchitectures("architectures");
 
+const char *gWinProfile = "_qbs.profile.win";
+const char *gOsxProfile = "_qbs.profile.osx";
+const char *gLinProfile = "_qbs.profile.lin";
+
 // Android specific
 const QString gManifestFile("${manifestFile}");
 const QString gResourceDir("${resourceDir}");
@@ -67,46 +71,6 @@ QbsBuilder::QbsBuilder() :
     connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
-
-    IPlatform *platform = m_pMgr->supportedPlatform("desktop");
-    if(platform) {
-        QString profile;
-    #if defined(Q_OS_WIN)
-        profile = "MSVC2015-amd64";
-    #elif defined(Q_OS_MAC)
-        profile = "xcode-macosx-x86_64";
-    #elif defined(Q_OS_UNIX)
-        profile = "clang";
-    #endif
-        platform->setProperty(qPrintable(gProfile), profile);
-        QStringList architectures;
-#if defined(Q_OS_WIN)
-        architectures << "x86_64";
-#elif defined(Q_OS_MAC)
-        architectures << "x86_64";
-#elif defined(Q_OS_UNIX)
-        architectures << "x86_64";
-#endif
-        platform->setProperty(qPrintable(gArchitectures), architectures);
-    }
-
-    platform = m_pMgr->supportedPlatform("android");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "android");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "x86" << "armv7a");
-    }
-#if defined(Q_OS_MAC)
-    platform = m_pMgr->supportedPlatform("ios");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "xcode-iphoneos-arm64");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
-    }
-    platform = m_pMgr->supportedPlatform("tvos");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "xcode-appletvos-arm64");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
-    }
-#endif
 }
 
 void QbsBuilder::generateProject() {
@@ -209,6 +173,58 @@ QString QbsBuilder::builderVersion() {
 }
 
 void QbsBuilder::builderInit() {
+    IPlatform *platform = m_pMgr->supportedPlatform("desktop");
+    if(platform) {
+        QString profile;
+    #if defined(Q_OS_WIN)
+        profile = m_pMgr->property(gWinProfile).toString();
+        if(profile.isEmpty()) {
+            profile = "MSVC2015-amd64";
+            m_pMgr->setProperty(gWinProfile, profile);
+        }
+    #elif defined(Q_OS_MAC)
+        profile = m_pMgr->property(gOsxProfile).toString();
+        if(profile.isEmpty()) {
+            profile = "xcode-macosx-x86_64";
+            m_pMgr->setProperty(gOsxProfile, profile);
+        }
+    #elif defined(Q_OS_UNIX)
+        profile = m_pMgr->property(gLinProfile).toString();
+        if(profile.isEmpty()) {
+            profile = "clang";
+            m_pMgr->setProperty(gLinProfile, profile);
+        }
+    #endif
+        platform->setProperty(qPrintable(gProfile), profile);
+        QStringList architectures;
+#if defined(Q_OS_WIN)
+        architectures << "x86_64";
+#elif defined(Q_OS_MAC)
+        architectures << "x86_64";
+#elif defined(Q_OS_UNIX)
+        architectures << "x86_64";
+#endif
+        platform->setProperty(qPrintable(gArchitectures), architectures);
+    }
+
+    platform = m_pMgr->supportedPlatform("android");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "android");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "x86" << "armv7a");
+    }
+#if defined(Q_OS_MAC)
+    platform = m_pMgr->supportedPlatform("ios");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-iphoneos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+    platform = m_pMgr->supportedPlatform("tvos");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-appletvos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+#endif
+
     if(!checkProfiles()) {
         {
             QProcess qbs(this);
