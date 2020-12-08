@@ -187,7 +187,7 @@ public:
             int result  = m_pModel->setTexture(m_Path.path, sub, ShaderBuilder::Cube);
 
             if(result > -1) {
-                QString uv  = "p.uv";
+                QString uv  = "_uv0";
                 const AbstractSchemeModel::Link *l  = m_pModel->findLink(m_pNode, UV);
                 if(l) {
                     TextureSample *node = static_cast<TextureSample *>(l->sender->ptr);

@@ -3,13 +3,13 @@
     "Depth": true,
     "Links": [
         {
-            "RItem": "Emissive",
+            "IPort": 0,
+            "OPort": 0,
             "Receiver": 0,
-            "SItem": "",
             "Sender": 1
         }
     ],
-    "Model": 0,
+    "Model": 1,
     "Nodes": [
         {
             "Type": "ConstVector3",
