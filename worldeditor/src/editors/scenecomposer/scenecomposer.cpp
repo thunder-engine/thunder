@@ -698,6 +698,11 @@ void SceneComposer::onImportFinished() {
 
     ui->preferencesWidget->setModel(SettingsManager::instance());
     ui->projectWidget->setModel(ProjectManager::instance());
+
+    ui->actionNew->setEnabled(true);
+    ui->actionSave->setEnabled(true);
+    ui->actionSave_As->setEnabled(true);
+    ui->menuBuild_Project->setEnabled(true);
 }
 
 void SceneComposer::on_actionUndo_triggered() {
