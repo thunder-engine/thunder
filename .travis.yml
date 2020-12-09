@@ -57,11 +57,11 @@ matrix:
         - qbs config --list
         - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release
-        - tar -zcvf ThunderEngine-linux-x86_64.tar.gz release/install-root/
+        - 7z a -t7z ThunderEngine-linux-x86_64.7z release/install-root/
       deploy:
         - provider: script
           skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-linux-x86_64.tar.gz" https://file.io
+          script: curl -F "file=@ThunderEngine-linux-x86_64.7z" https://file.io
           on:
             tags: true
             
@@ -100,11 +100,11 @@ matrix:
       script:
         - qbs config --list
         - qbs build --all-products config:release profile:android
-        - tar -zcvf ThunderEngine-android.tar.gz release/install-root/sdk/${VERSION}/android
+        - 7z a -t7z ThunderEngine-android.7z release/install-root/sdk/${VERSION}/android
       deploy:
         - provider: script
           skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-android.tar.gz" https://file.io
+          script: curl -F "file=@ThunderEngine-android.7z" https://file.io
           on:
             tags: true
 
@@ -132,11 +132,11 @@ matrix:
         - qbs build -d thirdparty/qbs -f thirdparty/qbs/qbs.qbs --all-products config:release profile:qt-brew project.withDocker:false project.withDocumentation:false project.withExamples:false project.withTests:false
         - qbs install --all-products config:release profile:qt-brew
         - /usr/local/opt/qt/bin/macdeployqt release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/ -executable=release/install-root/sdk/${VERSION}/macos/x86_64/bin/WorldEditor.app/Contents/MacOS/Builder
-        - tar -zcvf ThunderEngine-macosx-x86_64.tar.gz release/install-root/
+        - 7z a -t7z ThunderEngine-macosx-x86_64.7z release/install-root/
       deploy:
         - provider: script
           skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-macosx-x86_64.tar.gz" https://file.io
+          script: curl -F "file=@ThunderEngine-macosx-x86_64.7z" https://file.io
           on:
             tags: true
     
@@ -159,11 +159,11 @@ matrix:
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:xcode-iphoneos-arm64
-        - tar -zcvf ThunderEngine-ios-arm64.tar.gz release/install-root/sdk/${VERSION}/ios
+        - 7z a -t7z ThunderEngine-ios-arm64.7z release/install-root/sdk/${VERSION}/ios
       deploy:
         - provider: script
           skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-ios-arm64.tar.gz" https://file.io
+          script: curl -F "file=@ThunderEngine-ios-arm64.7z" https://file.io
           on:
             tags: true
 
@@ -186,11 +186,11 @@ matrix:
       script:
         - qbs config --list
         - qbs install --all-products config:release profile:xcode-appletvos-arm64
-        - tar -zcvf ThunderEngine-tvos-arm64.tar.gz release/install-root/sdk/${VERSION}/tvos
+        - 7z a -t7z ThunderEngine-tvos-arm64.7z release/install-root/sdk/${VERSION}/tvos
       deploy:
         - provider: script
           skip_cleanup: true
-          script: curl -F "file=@ThunderEngine-tvos-arm64.tar.gz" https://file.io
+          script: curl -F "file=@ThunderEngine-tvos-arm64.7z" https://file.io
           on:
             tags: true
 
