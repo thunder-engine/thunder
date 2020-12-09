@@ -58,6 +58,8 @@ void SettingsManager::loadSettings() {
             QLocale locale(data[it].toString());
             setLanguage(locale);
             setProperty(it, locale);
+        } else {
+            setProperty(it, data[it].toString());
         }
     }
 
@@ -78,6 +80,8 @@ void SettingsManager::saveSettings() {
         } else if(userType == QMetaType::type("QLocale")) {
             setLanguage(value.value<QLocale>());
             data[it] = value.value<QLocale>().name();
+        } else {
+            data[it] = value.toString();
         }
     }
 

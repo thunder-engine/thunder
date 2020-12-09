@@ -320,11 +320,13 @@ void ObjectCtrl::setDrag(bool drag) {
 }
 
 void ObjectCtrl::onApplySettings() {
-    EditorPipeline *pipeline = static_cast<EditorPipeline *>(m_pActiveCamera->pipeline());
-    pipeline->loadSettings();
+    if(m_pActiveCamera) {
+        EditorPipeline *pipeline = static_cast<EditorPipeline *>(m_pActiveCamera->pipeline());
+        pipeline->loadSettings();
 
-    QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();
-    m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+        QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();
+        m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+    }
 }
 
 void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {

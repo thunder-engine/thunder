@@ -34,6 +34,10 @@ const QString gManifestFile("${manifestFile}");
 const QString gResourceDir("${resourceDir}");
 const QString gAssetsPaths("${assetsPath}");
 
+const QString gWinProfile = "Platforms/Windows/QbsProfile";
+const QString gOsxProfile = "Platforms/OSX/QbsProfile";
+const QString gLinProfile = "Platforms/Linux/QbsProfile";
+
 const QString gAndroidJava("Platforms/Android/Java_Path");
 const QString gAndroidSdk("Platforms/Android/SDK_Path");
 const QString gAndroidNdk("Platforms/Android/NDK_Path");
@@ -52,7 +56,7 @@ QbsBuilder::QbsBuilder() :
         m_Progress(false) {
 
     m_Values[gSdkPath] = m_pMgr->sdkPath();
-    m_QBSPath   = QFileInfo(m_pMgr->sdkPath() + "/tools/qbs/bin/qbs");
+    m_QBSPath = QFileInfo(m_pMgr->sdkPath() + "/tools/qbs/bin/qbs");
 
     setEnvironment(QStringList(), QStringList(), QStringList());
 
@@ -63,50 +67,18 @@ QbsBuilder::QbsBuilder() :
     settings->setProperty(qPrintable(gAndroidSdk), QVariant::fromValue(FilePath("/")));
     settings->setProperty(qPrintable(gAndroidNdk), QVariant::fromValue(FilePath("/")));
 
+#if defined(Q_OS_WIN)
+    settings->setProperty(qPrintable(gWinProfile), "");
+#elif defined(Q_OS_MAC)
+    settings->setProperty(qPrintable(gOsxProfile), "");
+#elif defined(Q_OS_UNIX)
+    settings->setProperty(qPrintable(gLinProfile), "");
+#endif
+
     connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
     connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
 
     connect( m_pProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int)) );
-
-    IPlatform *platform = m_pMgr->supportedPlatform("desktop");
-    if(platform) {
-        QString profile;
-    #if defined(Q_OS_WIN)
-        profile = "MSVC2015-amd64";
-    #elif defined(Q_OS_MAC)
-        profile = "xcode-macosx-x86_64";
-    #elif defined(Q_OS_UNIX)
-        profile = "clang";
-    #endif
-        platform->setProperty(qPrintable(gProfile), profile);
-        QStringList architectures;
-#if defined(Q_OS_WIN)
-        architectures << "x86_64";
-#elif defined(Q_OS_MAC)
-        architectures << "x86_64";
-#elif defined(Q_OS_UNIX)
-        architectures << "x86_64";
-#endif
-        platform->setProperty(qPrintable(gArchitectures), architectures);
-    }
-
-    platform = m_pMgr->supportedPlatform("android");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "android");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "x86" << "armv7a");
-    }
-#if defined(Q_OS_MAC)
-    platform = m_pMgr->supportedPlatform("ios");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "xcode-iphoneos-arm64");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
-    }
-    platform = m_pMgr->supportedPlatform("tvos");
-    if(platform) {
-        platform->setProperty(qPrintable(gProfile), "xcode-appletvos-arm64");
-        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
-    }
-#endif
 }
 
 void QbsBuilder::generateProject() {
@@ -118,14 +90,14 @@ void QbsBuilder::generateProject() {
 
     generateLoader(m_pMgr->templatePath(), m_pMgr->modules());
 
-    m_Values[gIncludePaths]   = formatList(m_IncludePath);
-    m_Values[gLibraryPaths]   = formatList(m_LibPath);
-    m_Values[gLibraries]      = formatList(m_Libs);
+    m_Values[gIncludePaths] = formatList(m_IncludePath);
+    m_Values[gLibraryPaths] = formatList(m_LibPath);
+    m_Values[gLibraries]    = formatList(m_Libs);
     // Android specific settings
     QFileInfo info(ProjectManager::instance()->manifestFile());
-    m_Values[gManifestFile]   = info.absoluteFilePath();
-    m_Values[gResourceDir]    = info.absolutePath() + "/res";
-    m_Values[gAssetsPaths]    = ProjectManager::instance()->importPath();
+    m_Values[gManifestFile] = info.absoluteFilePath();
+    m_Values[gResourceDir]  = info.absolutePath() + "/res";
+    m_Values[gAssetsPaths]  = ProjectManager::instance()->importPath();
 
     updateTemplate(m_pMgr->templatePath() + "/project.qbs", m_Project + m_pMgr->projectName() + ".qbs", m_Values);
 }
@@ -209,6 +181,60 @@ QString QbsBuilder::builderVersion() {
 }
 
 void QbsBuilder::builderInit() {
+    SettingsManager *settings = SettingsManager::instance();
+
+    IPlatform *platform = m_pMgr->supportedPlatform("desktop");
+    if(platform) {
+        QString profile;
+    #if defined(Q_OS_WIN)
+        profile = settings->property(qPrintable(gWinProfile)).toString();
+        if(profile.isEmpty()) {
+            profile = "MSVC2015-amd64";
+            settings->setProperty(qPrintable(gWinProfile), profile);
+        }
+    #elif defined(Q_OS_MAC)
+        profile = settings->property(qPrintable(gOsxProfile)).toString();
+        if(profile.isEmpty()) {
+            profile = "xcode-macosx-x86_64";
+            settings->setProperty(qPrintable(gOsxProfile), profile);
+        }
+    #elif defined(Q_OS_UNIX)
+        profile = settings->property(qPrintable(gLinProfile)).toString();
+        if(profile.isEmpty()) {
+            profile = "clang";
+            settings->setProperty(qPrintable(gLinProfile), profile);
+        }
+    #endif
+        platform->setProperty(qPrintable(gProfile), profile);
+        QStringList architectures;
+#if defined(Q_OS_WIN)
+        architectures << "x86_64";
+#elif defined(Q_OS_MAC)
+        architectures << "x86_64";
+#elif defined(Q_OS_UNIX)
+        architectures << "x86_64";
+#endif
+        platform->setProperty(qPrintable(gArchitectures), architectures);
+    }
+
+    platform = m_pMgr->supportedPlatform("android");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "android");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "x86" << "armv7a");
+    }
+#if defined(Q_OS_MAC)
+    platform = m_pMgr->supportedPlatform("ios");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-iphoneos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+    platform = m_pMgr->supportedPlatform("tvos");
+    if(platform) {
+        platform->setProperty(qPrintable(gProfile), "xcode-appletvos-arm64");
+        platform->setProperty(qPrintable(gArchitectures), QStringList() << "arm64");
+    }
+#endif
+
     if(!checkProfiles()) {
         {
             QProcess qbs(this);
@@ -219,8 +245,6 @@ void QbsBuilder::builderInit() {
             }
         }
         {
-            SettingsManager *settings = SettingsManager::instance();
-
             QString sdk = settings->property(qPrintable(gAndroidSdk)).value<FilePath>().filePath();
             if(!sdk.isEmpty()) {
                 QStringList args;

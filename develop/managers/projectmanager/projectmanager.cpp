@@ -99,11 +99,11 @@ void ProjectManager::loadSettings() {
             const QMetaObject *meta = metaObject();
             QJsonObject object = doc.object();
             foreach(const QString &it, object.keys()) {
+                QVariant value = object.value(it).toVariant();
+
                 int index = meta->indexOfProperty(qPrintable(it));
                 if(index > -1) {
                     QMetaProperty property = meta->property(index);
-                    QVariant value = object.value(it).toVariant();
-
                     if(property.userType() == qMetaTypeId<Template>()) {
                         value = QVariant::fromValue<Template>(Template(value.toString(), MetaType::type<Actor *>()));
                     }
@@ -164,6 +164,7 @@ void ProjectManager::saveSettings() {
             }
         }
     }
+
     object[gProject] = QJsonValue(m_ProjectId);
     if(!m_Platforms.isEmpty()) {
         object[gPlatforms] = QJsonArray::fromStringList(m_Platforms);
