@@ -58,11 +58,6 @@ QString DocumentModel::fileName(IAssetEditor *editor) const {
 }
 
 IAssetEditor *DocumentModel::openFile(const QString &path) {
-    auto it = m_Documents.find(path);
-    if(it != m_Documents.end()) {
-        return it.value();
-    }
-
     QFileInfo info(path);
     QString type = AssetManager::instance()->assetTypeName(info);
 
@@ -70,6 +65,16 @@ IAssetEditor *DocumentModel::openFile(const QString &path) {
     IConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(info.filePath()));
 
     IAssetEditor *editor = nullptr;
+
+    auto it = m_Documents.find(path);
+    if(it != m_Documents.end()) {
+        IAssetEditor *editor = it.value();
+        if(dynamic_cast<TextEdit *>(editor) == nullptr) {
+            editor->loadAsset(settings);
+        }
+        return editor;
+    }
+
     auto e = m_Editors.find(type);
     if(e != m_Editors.end()) {
         editor = e.value();
