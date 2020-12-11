@@ -56,7 +56,7 @@ public:
 
     void setFocusOn(Actor *actor, float &bottom);
 
-    void setFree(bool flag) { m_CameraFree = flag; }
+    void setFree(bool flag) { m_CameraFree = flag; m_CameraFreeSaved = m_CameraFree; }
 
     void blockMovement(bool flag) { m_BlockMove = flag; }
 

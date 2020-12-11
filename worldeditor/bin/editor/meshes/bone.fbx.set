@@ -1,18 +1,23 @@
 {
-    "crc": -1936960506,
     "guid": "{00000000-0583-0000-0000-000000000000}",
+    "md5": "{58357402-cd2a-3d6e-d117-2110431833c4}",
     "settings": {
+        "Compress_Animation": 1,
         "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
+        "Position_Error": 0.5,
+        "Rotation_Error": 0.5,
+        "Scale_Error": 0.5,
         "Use_Custom_Scale": true
     },
     "subitems": {
         "Bone": [
             "{67e9ed07-9265-4688-8191-d0994ac77d75}",
-            44
+            52
         ]
     },
-    "type": 53
+    "type": 80,
+    "version": 2
 }

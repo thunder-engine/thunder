@@ -1,18 +1,23 @@
 {
-    "crc": 417231686,
     "guid": "{00000000-0502-0000-0000-000000000000}",
+    "md5": "{e7f873d5-4065-48c7-79d9-c8d0ec847e88}",
     "settings": {
+        "Compress_Animation": 1,
         "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
+        "Position_Error": 0.5,
+        "Rotation_Error": 0.5,
+        "Scale_Error": 0.5,
         "Use_Custom_Scale": true
     },
     "subitems": {
         "Box001": [
             "{42376049-06ff-4de3-816d-820d6428e07e}",
-            44
+            52
         ]
     },
-    "type": 53
+    "type": 80,
+    "version": 2
 }

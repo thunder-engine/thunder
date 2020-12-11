@@ -1,18 +1,23 @@
 {
-    "crc": -490652827,
     "guid": "{00000000-0501-0000-0000-000000000000}",
+    "md5": "{d8159e9b-e543-5eae-b033-afcfe12f9d12}",
     "settings": {
+        "Compress_Animation": 1,
         "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
+        "Position_Error": 0.5,
+        "Rotation_Error": 0.5,
+        "Scale_Error": 0.5,
         "Use_Custom_Scale": true
     },
     "subitems": {
         "Plane001": [
             "{e394db15-d7a2-481c-8926-eb3bbcf0d21a}",
-            44
+            52
         ]
     },
-    "type": 53
+    "type": 80,
+    "version": 2
 }

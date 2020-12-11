@@ -1,18 +1,23 @@
 {
-    "crc": 1991879951,
     "guid": "{00000000-0582-0000-0000-000000000000}",
+    "md5": "{1d496618-1871-da84-b58a-b03e6d5fe134}",
     "settings": {
+        "Compress_Animation": 1,
         "Custom_Scale": 1,
         "Import_Animation": false,
         "Import_Color": true,
         "Import_Normals": true,
+        "Position_Error": 0.5,
+        "Rotation_Error": 0.5,
+        "Scale_Error": 0.5,
         "Use_Custom_Scale": true
     },
     "subitems": {
         "Sphere001": [
             "{0ca06588-d34e-4484-8316-961dca7aeb9c}",
-            44
+            52
         ]
     },
-    "type": 53
+    "type": 80,
+    "version": 2
 }
