@@ -95,6 +95,15 @@ void CameraCtrl::update() {
 
             if(m_TransferProgress >= 1.0f) {
                 m_CameraFree = m_CameraFreeSaved;
+
+                if(m_RotationTransfer) {
+                    cameraRotate(m_RotationTarget);
+                } else {
+                    t->setPosition(m_PositionTarget);
+                }
+
+                m_pActiveCamera->setOrthoSize(MAX(m_OrthoWidthTarget, 0.0f));
+                m_pActiveCamera->setFocal(MAX(m_FocalLengthTarget, 0.0f));
             }
         }
 
@@ -266,15 +275,20 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
             QPoint pos = e->globalPos();
             QPoint delta = pos - m_Saved;
 
+            Vector3 p(static_cast<float>(delta.x()) / (static_cast<float>(m_pView->width())),
+                     -static_cast<float>(delta.y()) / (static_cast<float>(m_pView->height()) * m_pActiveCamera->ratio()), 0.0f);
+
             if(e->buttons() & Qt::RightButton) {
                 if(m_pActiveCamera->orthographic()) {
-                    cameraMove(Vector3(static_cast<float>(delta.x()) / (static_cast<float>(m_pView->width())),
-                                      -static_cast<float>(delta.y()) / (static_cast<float>(m_pView->height()) * m_pActiveCamera->ratio()), 0.0f));
+                    cameraMove(p);
                 } else {
                     if(!m_BlockRotation)  {
                         cameraRotate(Vector3(delta.y(), delta.x(), 0.0f) * 0.1f);
                     }
                 }
+            } else if(e->buttons() & Qt::MiddleButton) {
+                Transform *t = m_pCamera->transform();
+                cameraMove((t->quaternion() * p) * m_pActiveCamera->focal() * 0.1f);
             }
             m_Saved = pos;
         } break;
