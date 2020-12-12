@@ -21,33 +21,27 @@ AudioClip::AudioClip() :
 AudioClip::~AudioClip() {
 
 }
-
-void AudioClip::loadUserData(const VariantMap &data) {
-    auto it = data.find(HEADER);
-    if(it != data.end()) {
-        VariantList header  = (*it).second.value<VariantList>();
-        auto i      = header.begin();
-        m_Path      = (*i).toString();
-        i++;
-        m_Stream    = (*i).toBool();
-        i++;
-
-        loadAudioData();
-    }
-}
-
+/*!
+    Returns the number of audio channels.
+*/
 uint32_t AudioClip::channels() const {
     return m_Channels;
 }
-
+/*!
+    Returns the duration of audio clip.
+*/
 uint32_t AudioClip::duration() const {
     return m_Duration;
 }
-
+/*!
+    Returns frequency of audio clip in Hz.
+*/
 uint32_t AudioClip::frequency() const {
     return m_Frequency;
 }
-
+/*!
+    \internal This is an internal function and must not be called manually.
+*/
 uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     if(offset != -1) {
         ov_raw_seek(m_pVorbisFile, offset);
@@ -65,11 +59,15 @@ uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     }
     return result;
 }
-
+/*!
+    Returns true in case of the audio clip is streamed from disk; otherwise returns false.
+*/
 bool AudioClip::isStream() const {
     return m_Stream;
 }
-
+/*!
+    \internal This is an internal function and must not be called manually.
+*/
 bool AudioClip::loadAudioData() {
     m_pClip     = m_pFile->_fopen(m_Path.c_str(), "r");
     if(m_pClip) {
@@ -84,7 +82,7 @@ bool AudioClip::loadAudioData() {
             return false;
         }
 
-        vorbis_info *info   = ov_info(m_pVorbisFile, -1);
+        vorbis_info *info = ov_info(m_pVorbisFile, -1);
 
         m_Frequency = info->rate;
         m_Channels  = info->channels;
@@ -95,7 +93,9 @@ bool AudioClip::loadAudioData() {
     }
     return false;
 }
-
+/*!
+    \internal This is an internal function and must not be called manually.
+*/
 bool AudioClip::unloadAudioData() {
     return (ov_clear(m_pVorbisFile) == 0);
 }
@@ -143,4 +143,34 @@ long AudioClip::tell(void *datasource) {
 
     }
     return 0;
+}
+
+/*!
+    \internal
+*/
+void AudioClip::loadUserData(const VariantMap &data) {
+    auto it = data.find(HEADER);
+    if(it != data.end()) {
+        VariantList header  = (*it).second.value<VariantList>();
+        auto i      = header.begin();
+        m_Path      = (*i).toString();
+        i++;
+        m_Stream    = (*i).toBool();
+        i++;
+
+        loadAudioData();
+    }
+}
+/*!
+    \internal
+*/
+VariantMap AudioClip::saveUserData() const {
+    VariantMap result;
+
+    VariantList header;
+    header.push_back(m_Path);
+    header.push_back(m_Stream);
+    result[HEADER]  = header;
+
+    return result;
 }

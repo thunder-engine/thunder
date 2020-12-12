@@ -8,6 +8,7 @@ class AngelScript : public Object {
 
 public:
     void loadUserData (const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
     ByteArray m_Array;
 

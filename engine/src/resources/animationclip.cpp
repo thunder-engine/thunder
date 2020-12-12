@@ -97,7 +97,9 @@ void AnimationClip::loadUserData(const VariantMap &data) {
 
     setState(Ready);
 }
-
+/*!
+    \internal
+*/
 VariantMap AnimationClip::saveUserData() const {
     VariantMap result;
 

@@ -15,14 +15,6 @@ class asIScriptFunction;
 
 class AngelSystem;
 
-class AngelSerial : public AngelScript {
-public:
-    VariantMap saveUserData() const;
-protected:
-    friend class AngelBuilder;
-
-};
-
 class AngelClassItem {
 public:
     explicit AngelClassItem(const QVector<QVariant> &data, AngelClassItem *parentItem = nullptr);

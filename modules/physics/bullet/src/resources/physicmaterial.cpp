@@ -10,7 +10,9 @@ PhysicMaterial::PhysicMaterial() :
         m_Density(1.0f) {
 
 }
-
+/*!
+    \internal
+*/
 void PhysicMaterial::loadUserData(const VariantMap &data) {
     auto section = data.find(DATA);
     if(section != data.end()) {
@@ -22,6 +24,20 @@ void PhysicMaterial::loadUserData(const VariantMap &data) {
         it++;
         m_Density = it->toFloat();
     }
+}
+/*!
+    \internal
+*/
+VariantMap PhysicMaterial::saveUserData () const {
+    VariantMap result;
+    VariantList data;
+
+    data.push_back(friction());
+    data.push_back(restitution());
+    data.push_back(density());
+
+    result[DATA] = data;
+    return result;
 }
 
 float PhysicMaterial::friction() const {

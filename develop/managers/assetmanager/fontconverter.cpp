@@ -9,41 +9,23 @@
 #include "resources/font.h"
 #include "projectmanager.h"
 
-#define HEADER  "Header"
 #define DATA    "Data"
-
-class FontSerial : public Font {
-public:
-    void                        setData         (const QByteArray &data) {
-        m_Data.resize(data.size());
-        memcpy(&m_Data[0], data.data(), data.size());
-    }
-
-protected:
-    VariantMap                  saveUserData    () const {
-        VariantMap result;
-        {
-            VariantList header;
-            header.push_back(0); // Reserved
-            header.push_back(0);
-            header.push_back("");
-            result[HEADER]  = header;
-        }
-        {
-            result[DATA] = m_Data;
-        }
-        return result;
-    }
-
-    ByteArray m_Data;
-};
 
 uint8_t FontConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        FontSerial font;
-        font.setData(src.readAll());
+        Font font;
+
+        QByteArray data = src.readAll();
         src.close();
+
+        ByteArray m_Data;
+        m_Data.resize(data.size());
+        memcpy(&m_Data[0], data.data(), data.size());
+
+        VariantMap map;
+        map[DATA] = m_Data;
+        font.loadUserData(map);
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {

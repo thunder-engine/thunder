@@ -331,6 +331,24 @@ void Font::loadUserData(const VariantMap &data) {
     setState(Ready);
 }
 /*!
+    \internal
+*/
+VariantMap Font::saveUserData() const {
+    VariantMap result;
+    {
+        VariantList header;
+        header.push_back(0); // Reserved
+        header.push_back(0);
+        header.push_back("");
+        result[HEADER]  = header;
+    }
+    {
+        result[DATA] = p_ptr->m_Data;
+    }
+    return result;
+}
+
+/*!
     Cleans up all font data.
 */
 void Font::clear() {

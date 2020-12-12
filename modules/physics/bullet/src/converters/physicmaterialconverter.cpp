@@ -11,21 +11,6 @@ PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
     setType(MetaType::type<PhysicMaterial *>());
 }
 
-class PhysicMaterialSerial : public PhysicMaterial {
-protected:
-    VariantMap saveUserData () const {
-        VariantMap result;
-        VariantList data;
-
-        data.push_back(friction());
-        data.push_back(restitution());
-        data.push_back(density());
-
-        result[DATA] = data;
-        return result;
-    }
-};
-
 IConverterSettings *PhysicMaterialConverter::createSettings() const {
     return new PhysicMaterialImportSettings();
 }
@@ -33,7 +18,7 @@ IConverterSettings *PhysicMaterialConverter::createSettings() const {
 uint8_t PhysicMaterialConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        PhysicMaterialSerial material;
+        PhysicMaterial material;
         VariantMap map = Json::load(src.readAll().toStdString()).toMap();
         src.close();
 

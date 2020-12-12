@@ -34,13 +34,14 @@ public:
 
     float lineHeight() const;
 
+    void loadUserData(const VariantMap &data) override;
 private:
     void clear();
 
     bool requestCharacter(uint32_t character);
 
 protected:
-    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     FontPrivate *p_ptr;

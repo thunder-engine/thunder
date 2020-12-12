@@ -6,33 +6,15 @@
 #include "resources/text.h"
 #include "projectmanager.h"
 
-class TranslatorSerial : public Translator {
-public:
-    map<string, string> m_Data;
-
-protected:
-    VariantMap saveUserData () const {
-        VariantMap result;
-        VariantMap data;
-
-        for(auto it : m_Data) {
-            data[it.first] = it.second;
-        }
-
-        result["Data"]  = data;
-        return result;
-    }
-};
-
 uint8_t TranslatorConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        TranslatorSerial loc;
+        Translator loc;
 
         while(!src.atEnd()) {
             QByteArray line = src.readLine();
             auto split = line.split(';');
-            loc.m_Data[split.first().constData()] = split.last().constData();
+            loc.setPair(split.first().constData(), split.last().constData());
         }
         src.close();
 

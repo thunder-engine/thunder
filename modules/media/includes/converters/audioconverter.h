@@ -40,15 +40,6 @@ protected:
     float m_Quality;
 };
 
-class AudioClipSerial : public AudioClip {
-public:
-    VariantMap saveUserData() const;
-
-protected:
-    friend class AudioConverter;
-
-};
-
 class AudioConverter : public IConverter {
     Q_OBJECT
 public:

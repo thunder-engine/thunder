@@ -25,10 +25,12 @@ public:
 
     string text ();
 
+    uint8_t *data() const;
+
 protected:
     void loadUserData (const VariantMap &data) override;
 
-    char *data() const;
+    VariantMap saveUserData () const override;
 
 private:
     TextPrivate *p_ptr;

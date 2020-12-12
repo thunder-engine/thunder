@@ -33,6 +33,12 @@ string Translator::translate(const string &source) const {
     return source;
 }
 /*!
+    Sets new \a translation for the \a source string.
+*/
+void Translator::setPair(const string &source, const string &translation) {
+    p_ptr->m_Table[source] = translation;
+}
+/*!
     \internal
 */
 void Translator::loadUserData(const VariantMap &data) {
@@ -45,3 +51,16 @@ void Translator::loadUserData(const VariantMap &data) {
 
     setState(Ready);
 }
+
+VariantMap Translator::saveUserData () const {
+    VariantMap result;
+    VariantMap data;
+
+    for(auto it : p_ptr->m_Table) {
+        data[it.first] = it.second;
+    }
+
+    result[DATA]  = data;
+    return result;
+}
+

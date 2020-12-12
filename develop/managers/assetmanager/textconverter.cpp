@@ -6,29 +6,16 @@
 #include "resources/text.h"
 #include "projectmanager.h"
 
-class TextSerial : public Text {
-public:
-    void setData (const QByteArray &array) {
-        if(!array.isEmpty()) {
-            setSize(array.size());
-            memcpy(data(), array.data(), array.size());
-        }
-    }
-
-protected:
-    VariantMap saveUserData () const {
-        VariantMap result;
-        result["Data"]  = data();
-        return result;
-    }
-};
-
 uint8_t TextConverter::convertFile(IConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
-        TextSerial text;
-        text.setData(src.readAll());
+        Text text;
+        QByteArray array = src.readAll();
         src.close();
+        if(!array.isEmpty()) {
+            text.setSize(array.size());
+            memcpy(text.data(), array.data(), array.size());
+        }
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {

@@ -49,17 +49,6 @@ void AudioImportSettings::setQuality(float quality) {
     m_Quality   = quality;
 }
 
-VariantMap AudioClipSerial::saveUserData() const {
-    VariantMap result;
-
-    VariantList header;
-    header.push_back(m_Path);
-    header.push_back(m_Stream);
-    result[HEADER]  = header;
-
-    return result;
-}
-
 AudioConverter::AudioConverter() :
         m_pDecoder(new QAudioDecoder(this)),
         m_pLoop(new QEventLoop(this)) {
@@ -85,8 +74,8 @@ uint8_t AudioConverter::convertFile(IConverterSettings *settings) {
         channels    = m_pDecoder->audioFormat().channelCount();
     }
 
-    AudioClipSerial clip;
-    VariantMap data    = convertResource(static_cast<AudioImportSettings *>(settings), channels);
+    AudioClip clip;
+    VariantMap data = convertResource(static_cast<AudioImportSettings *>(settings), channels);
     clip.loadUserData(data);
 
     QFile file(settings->absoluteDestination());

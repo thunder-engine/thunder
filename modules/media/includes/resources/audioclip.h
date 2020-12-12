@@ -10,47 +10,49 @@ class AudioClip : public Object {
     A_REGISTER(AudioClip, Object, Resources)
 
 public:
-    AudioClip                   ();
-    virtual ~AudioClip          ();
+    AudioClip();
+    virtual ~AudioClip();
 
-    void                        loadUserData        (const VariantMap &data) override;
+    uint32_t channels() const;
 
-    uint32_t                    channels            () const;
+    uint32_t duration() const;
 
-    uint32_t                    duration            () const;
+    uint32_t frequency() const;
 
-    uint32_t                    frequency           () const;
+    uint32_t readData(uint8_t *out, uint32_t size, int32_t offset);
 
-    uint32_t                    readData            (uint8_t *out, uint32_t size, int32_t offset);
+    bool isStream() const;
 
-    bool                        isStream            () const;
+    bool loadAudioData();
+    bool unloadAudioData();
 
-    bool                        loadAudioData       ();
-    bool                        unloadAudioData     ();
+    void loadUserData(const VariantMap &data) override;
 
-protected:
-    static size_t               read                (void *ptr, size_t size, size_t nmemb, void *datasource);
-    static int                  seek                (void *datasource, int64_t offset, int whence);
-    static int                  close               (void *datasource);
-    static long                 tell                (void *datasource);
+private:
+    static size_t read(void *ptr, size_t size, size_t nmemb, void *datasource);
+    static int seek(void *datasource, int64_t offset, int whence);
+    static int close(void *datasource);
+    static long tell(void *datasource);
 
-    bool                        m_Stream;
+    VariantMap saveUserData() const override;
 
-    bool                        m_SizeFlag;
+    bool            m_Stream;
 
-    uint32_t                    m_Frequency;
+    bool            m_SizeFlag;
 
-    uint32_t                    m_Channels;
+    uint32_t        m_Frequency;
 
-    uint32_t                    m_Duration;
+    uint32_t        m_Channels;
 
-    OggVorbis_File             *m_pVorbisFile;
+    uint32_t        m_Duration;
 
-    string                      m_Path;
+    OggVorbis_File *m_pVorbisFile;
 
-    File                       *m_pFile;
+    string          m_Path;
 
-    _FILE                      *m_pClip;
+    File           *m_pFile;
+
+    _FILE          *m_pClip;
 };
 
 #endif // AUDIOCLIP_H

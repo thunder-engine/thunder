@@ -63,14 +63,6 @@ protected:
     ByteArray &array;
 };
 
-VariantMap AngelSerial::saveUserData() const {
-    VariantMap result;
-
-    result[DATA]  = m_Array;
-
-    return result;
-}
-
 AngelScriptImportSettings::AngelScriptImportSettings() {
     setType(MetaType::type<AngelScript *>());
 }
@@ -111,7 +103,7 @@ bool AngelBuilder::buildProject() {
         if(mod->Build() >= 0) {
             QFile dst(m_Destination);
             if(dst.open( QIODevice::WriteOnly)) {
-                AngelSerial serial;
+                AngelScript serial;
                 serial.m_Array.clear();
                 CBytecodeStream stream(serial.m_Array);
                 mod->SaveByteCode(&stream);
