@@ -237,7 +237,7 @@ Mesh *Sprite::mesh(int key) const {
     return nullptr;
 }
 /*!
-    Sets a new mesh for the sprite with \a key.
+    Sets a new \a mesh for the sprite with \a key.
     The old mesh will be deleted and no longer available.
 */
 void Sprite::setMesh(int key, Mesh *mesh) {

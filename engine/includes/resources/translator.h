@@ -23,8 +23,8 @@ public:
     void setPair(const string &source, const string &translation);
 
 private:
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     TranslatorPrivate *p_ptr;

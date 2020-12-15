@@ -82,7 +82,7 @@ Quaternion Transform::quaternion() const {
     return p_ptr->m_Rotation;
 }
 /*!
-    Changes the \a rotation of the Transform in local space by provided Quaternion.
+    Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion &quaternion) {
     p_ptr->m_Rotation = quaternion;

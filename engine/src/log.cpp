@@ -83,56 +83,56 @@ Log &Log::operator<<(bool b) {
 /*!
     Writes the unsinged 8 bit integer value, \a c, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(uint8_t c) {
+Log &Log::operator<<(unsigned char c) {
     p_ptr->stream << " "  << c;
     return *this;
 }
 /*!
     Writes the singed 8 bit integer value, \a c, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(int8_t c) {
+Log &Log::operator<<(char c) {
     p_ptr->stream << " " << c;
     return *this;
 }
 /*!
     Writes the unsinged 16 bit integer value, \a s, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(uint16_t s) {
+Log &Log::operator<<(unsigned short s) {
     p_ptr->stream << " " << s;
     return *this;
 }
 /*!
     Writes the singed 16 bit integer value, \a s, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(int16_t s) {
+Log &Log::operator<<(short s) {
     p_ptr->stream << " " << s;
     return *this;
 }
 /*!
     Writes the unsinged 32 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(uint32_t i) {
+Log &Log::operator<<(unsigned int i) {
     p_ptr->stream << " " << i;
     return *this;
 }
 /*!
     Writes the singed 32 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(int32_t i) {
+Log &Log::operator<<(int i) {
     p_ptr->stream << " " << i;
     return *this;
 }
 /*!
     Writes the unsinged 64 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(uint64_t i) {
+Log &Log::operator<<(unsigned long long i) {
     p_ptr->stream << " " << i;
     return *this;
 }
 /*!
     Writes the singed 64 bit integer value, \a i, to the stream and returns a reference to the stream.
 */
-Log &Log::operator<<(int64_t i) {
+Log &Log::operator<<(long long i) {
     p_ptr->stream << " " << i;
     return *this;
 }

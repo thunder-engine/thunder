@@ -48,16 +48,16 @@ public:
     void setRatio (float ratio);
 
     float nearPlane () const;
-    void setNear (const float value);
+    void setNear (const float distance);
 
     float farPlane () const;
-    void  setFar (const float value);
+    void setFar (const float distance);
 
     float focal () const;
     void setFocal (const float focal);
 
     float fov () const;
-    void setFov (const float value);
+    void setFov (const float angle);
 
     Vector4 color () const;
     void setColor (const Vector4 &color);

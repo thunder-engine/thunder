@@ -66,17 +66,17 @@ AnimationCurve *VariantAnimation::curve(int32_t component) const {
     return nullptr;
 }
 /*!
-    Sets the new sequence of the key frames as \a curve for the provided \a conponent.
+    Sets the new sequence of the key frames as \a curve for the provided \a component.
 */
 void VariantAnimation::setCurve(AnimationCurve *curve, int32_t component) {
     p_ptr->m_KeyFrames[component] = curve;
 }
 /*!
     \overload
-    This function interpolates animated Variant value from one KeyFrame to another.
+    This function interpolates animated Variant value from one KeyFrame to another at \a posintion in milliseconds.
 */
-void VariantAnimation::setCurrentTime(uint32_t msecs) {
-    Animation::setCurrentTime(msecs);
+void VariantAnimation::setCurrentTime(uint32_t posintion) {
+    Animation::setCurrentTime(posintion);
     if(!isValid()) {
         return;
     }

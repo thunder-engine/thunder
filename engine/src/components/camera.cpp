@@ -100,7 +100,7 @@ Pipeline *Camera::pipeline() {
     return p_ptr->m_pPipeline;
 }
 /*!
-    Attaches render pipeline to the camera.
+    Attaches render \a pipeline to the camera.
 */
 void Camera::setPipeline(Pipeline *pipeline) {
     p_ptr->m_pPipeline = pipeline;
@@ -202,11 +202,11 @@ float Camera::fov() const {
     return p_ptr->m_FOV;
 }
 /*!
-    Sets field of view angle for the camera in degrees.
+    Sets field of view \a angle for the camera in degrees.
     \note Applicable only for the perspective mode.
 */
-void Camera::setFov(const float value) {
-    p_ptr->m_FOV   = value;
+void Camera::setFov(const float angle) {
+    p_ptr->m_FOV   = angle;
 }
 /*!
     Returns a distance to near cut plane.
@@ -215,10 +215,10 @@ float Camera::nearPlane() const {
     return p_ptr->m_Near;
 }
 /*!
-    Sets a distance to near cut plane.
+    Sets a \a distance to near cut plane.
 */
-void Camera::setNear(float value) {
-    p_ptr->m_Near  = value;
+void Camera::setNear(const float distance) {
+    p_ptr->m_Near = distance;
 }
 /*!
     Returns a distance to far cut plane.
@@ -227,10 +227,10 @@ float Camera::farPlane() const {
     return p_ptr->m_Far;
 }
 /*!
-    Sets a distance to far cut plane.
+    Sets a \a distance to far cut plane.
 */
-void Camera::setFar(const float value) {
-    p_ptr->m_Far   = value;
+void Camera::setFar(const float distance) {
+    p_ptr->m_Far = distance;
 }
 /*!
     Returns the aspect ratio (width divided by height).
@@ -251,7 +251,7 @@ float Camera::focal() const {
     return p_ptr->m_Focal;
 }
 /*!
-    Sets a focal distance for the camera.
+    Sets a \a focal distance for the camera.
 */
 void Camera::setFocal(const float focal) {
     p_ptr->m_Focal = focal;
@@ -299,7 +299,7 @@ Camera *Camera::current() {
     return CameraPrivate::s_pCurrent;
 }
 /*!
-    Sets current active camera.
+    Sets \a current active camera.
 */
 void Camera::setCurrent(Camera *current) {
     CameraPrivate::s_pCurrent = current;
@@ -355,7 +355,7 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
             fc - up * fh - right * fw};
 }
 /*!
-    Filters out an incoming \a list which are not in the frustum.
+    Filters out an incoming \a list which are not in the \a frustum.
     Returns filtered list.
 */
 Object::ObjectList Camera::frustumCulling(ObjectList &list, const array<Vector3, 8> &frustum) {

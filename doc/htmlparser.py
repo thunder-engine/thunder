@@ -29,12 +29,53 @@ class MethodDef:
         self.tags = None
         self.modificators = None
 
+class TypeDef:
+    def __init__(self, name):
+        self.name = name
+        self.description = None # type: Optional[str]
+        self.enumValues = None # ype: Optional[List]
+
 class ClassDef:
     def __init__(self, name):
         self.name = name
-        self.inherits = None  # type: Optional[str]
-        self.description = None  # type: Optional[str]
-        self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
+        self.inherits = None # type: Optional[str]
+        self.description = None # type: Optional[str]
+        self.methods = OrderedDict() # type: OrderedDict[str, List[MethodDef]]
+        self.types = list() # type: List[TypeDef]
+
+def extractTypes(element, classDef):
+    content = list(element)
+    methods = element.findall(".//*[@class='fn']")
+    
+    for fn in methods:
+        result = re.search(r'(.*) (?:(.*))?', "".join(fn.itertext()))
+        if result is not None:
+            #Retrieve name
+            group2 = result.group(2)
+            nameIndex = group2.rfind("::") + 2
+            typedDef = TypeDef(group2[nameIndex:])
+
+            #Retrieve description fields
+            typedDef.description = list()
+            
+            index = content.index(fn) + 1
+            while(len(element) > index and element[index].tag != "h3"): #Extract enums
+                table = element[index].find(".//*[@class='valuelist']")
+                if table is not None:
+                    typedDef.enumValues = list()
+                    for row in table:
+                        rowList = list()
+                        for column in row:
+                            rowList.append("".join(column.itertext()))
+                        typedDef.enumValues.append(rowList)
+                    
+                else:
+                    desc = DescriptionDef("".join(element[index].itertext()))
+                    typedDef.description.append(desc)
+                    
+                index += 1
+                
+            classDef.types.append(typedDef)
 
 def extractMembers(element, classDef):
     content = list(element)
@@ -100,12 +141,22 @@ def extractMembers(element, classDef):
         classDef.methods[methodDef.name].append(methodDef)
 
 def parseFile(file):
-    tree = ET.parse(file)
-    root = tree.getroot()
+    print(file)
+    
+    f = open(file, "r")
+    data = f.read()
+    f.close()
+
+    data = data.replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"/>")
+    data = data.replace("&hellip;", "...")
+
+    root = ET.fromstring(data)
+    
+    #tree = ET.parse(file)
+    #root = tree.getroot()
 
     descr = root.find(".//*[@class='descr']")
     if descr is not None:
-        print(file)
         title = root.find(".//*[@class='title']")
         classDef = ClassDef(title.text.replace(" Class", ""))
 
@@ -113,6 +164,10 @@ def parseFile(file):
         classDef.description = list()
         for p in elements:
             classDef.description.append("".join(p.itertext()))
+
+        types = root.find(".//*[@class='types']")
+        if types is not None:
+            extractTypes(types, classDef)
 
         func = root.find(".//*[@class='func']")
         if func is not None:
@@ -131,10 +186,19 @@ def parseFile(file):
     return None
 
 def parseModule(file, files):
-    tree = ET.parse(file)
-    root = tree.getroot()
+    print ("module " + file)
 
-    print ("parseModule " + file)
+    f = open(file, "r")
+    data = f.read()
+    f.close()
+
+    data = data.replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"/>")
+    data = data.replace("&hellip;", "...")
+    
+    root = ET.fromstring(data)
+
+    #tree = ET.parse(file)
+    #root = tree.getroot()
 
     result = list()
     for td in root.findall(".//*[@class='tblName']"):

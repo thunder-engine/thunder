@@ -66,7 +66,7 @@ Vector4 Input::mouseDelta() {
     return s_pPlatform->mouseDelta();
 }
 /*!
-    Returns the states of mouse buttons.
+    Returns the state of mouse \a button.
     Please refer to Input::MouseButton to see possible buttons.
     Example code:
     \code

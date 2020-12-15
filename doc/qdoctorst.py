@@ -92,6 +92,26 @@ def composeMethods(classDef):
                 result += "----\n\n"
     return result
 
+def composeEnums(classDef):
+    result = ""
+    if len(classDef.types) > 0:
+        result +=  ".. _api_" + classDef.name + "_enums:\nPublic Enums\n--------------\n\n"
+    for type in classDef.types:
+        result += ".. _api_{0}_{1}:\n".format(classDef.name, type.name)
+        result += "**enum {0}::{1}**\n\n".format(classDef.name, type.name)
+        
+        for description in type.description:
+            result += description.text + "\n\n"
+        
+        table = Texttable(512)
+        table.set_cols_align(["r", "l", "l"])
+        
+        if type.enumValues is not None:
+            for row in type.enumValues:
+                table.add_row([row[0], row[1], row[2]])
+            
+            result += table.draw() + "\n\n"
+    return result;
 
 def main():
     try:
@@ -104,7 +124,6 @@ def main():
     f.close()
 
     files = list()
-
 
     fileList = (f for f in os.listdir("html") if f.endswith(".html"))
     for curFile in fileList:
@@ -130,6 +149,7 @@ def main():
                 d["public"] = composeTable(classDef, False)
                 d["static"] = composeTable(classDef, True)
                 d["methods"] = composeMethods(classDef)
+                d["enums"] = composeEnums(classDef)
                 f.write(s.substitute(d))
                 f.close()
 

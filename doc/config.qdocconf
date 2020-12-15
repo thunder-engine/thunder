@@ -14,11 +14,13 @@ sourcedirs += \
     ../thirdparty/next/src
 
 excludedirs += \
-    ../engine/src/adapters \
-    ../engine/src/analytics \
-    ../engine/src/converters \
-    ../engine/src/filters \
-    ../engine/src/postprocess
+    ../engine/includes/adapters \
+    ../engine/includes/analytics \
+    ../engine/includes/converters \
+    ../engine/includes/filters \
+    ../engine/includes/postprocess \
+    ../engine/includes/systems \
+    ../thirdparty/assimp
 
 sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
 headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"

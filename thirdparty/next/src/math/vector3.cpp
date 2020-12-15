@@ -248,7 +248,7 @@ Vector3 Vector3::abs() const {
     return Vector3(std::abs(x), std::abs(y), std::abs(z));
 }
 /*!
-    Returns an absolute angle between current and provided vector.
+    Returns an absolute angle between current and provided \a vector.
 
     \sa signedAngle()
 */

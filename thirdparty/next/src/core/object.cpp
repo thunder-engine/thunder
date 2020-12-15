@@ -682,6 +682,7 @@ Object *Object::find(const string &path) {
 }
 /*!
     Makes the object a child of \a parent.
+    \note Please ignore the \a force flag it will be provided by the default.
 
     \sa parent()
 */

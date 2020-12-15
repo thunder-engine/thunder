@@ -203,7 +203,7 @@ bool Actor::isEnabled() const {
     return p_ptr->m_Enable;
 }
 /*!
-    Marks this Actor as enabled or disabled.
+    Marks this Actor as \a enabled or disabled.
     Disabled Actors becomes invisible for the user.
 */
 void Actor::setEnabled(const bool enabled) {
@@ -350,6 +350,7 @@ void Actor::clearCloneRef () {
 }
 /*!
     Makes the actor a child of the \a parent.
+    \note Please ignore the \a force flag it will be provided by the default.
 */
 void Actor::setParent(Object *parent, bool force) {
     PROFILE_FUNCTION();

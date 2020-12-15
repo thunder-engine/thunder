@@ -31,17 +31,17 @@ public:
 
     Log                &operator<<                  (bool b);
 
-    Log                &operator<<                  (uint8_t c);
-    Log                &operator<<                  (int8_t c);
+    Log                &operator<<                  (unsigned char c);
+    Log                &operator<<                  (char c);
 
-    Log                &operator<<                  (uint16_t s);
-    Log                &operator<<                  (int16_t s);
+    Log                &operator<<                  (unsigned short s);
+    Log                &operator<<                  (short s);
 
-    Log                &operator<<                  (uint32_t i);
-    Log                &operator<<                  (int32_t i);
+    Log                &operator<<                  (unsigned int i);
+    Log                &operator<<                  (int i);
 
-    Log                &operator<<                  (uint64_t i);
-    Log                &operator<<                  (int64_t i);
+    Log                &operator<<                  (unsigned long long i);
+    Log                &operator<<                  (long long i);
 
     Log                &operator<<                  (float f);
     Log                &operator<<                  (double d);

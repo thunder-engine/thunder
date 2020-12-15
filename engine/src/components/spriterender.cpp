@@ -254,7 +254,7 @@ Vector2 SpriteRender::size() const {
     return p_ptr->m_Size;
 }
 /*!
-    Sets a new size of sprite.
+    Sets a new \a size of sprite.
 */
 void SpriteRender::setSize(const Vector2 &size) {
     p_ptr->m_Size = size;

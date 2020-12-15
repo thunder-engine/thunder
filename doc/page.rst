@@ -16,6 +16,8 @@ Public Methods
 
 ${public}
 
+${enums}
+
 .. _api_${className}_static:
 Static Methods
 --------------

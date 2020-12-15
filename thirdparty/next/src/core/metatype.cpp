@@ -671,7 +671,7 @@ bool MetaType::hasConverter(uint32_t from, uint32_t to) {
     return false;
 }
 /*!
-    Returns type information table if type registered; otherwise returns nullptr.
+    Returns \a type information table if type registered; otherwise returns nullptr.
 */
 MetaType::Table *MetaType::table(uint32_t type) {
     PROFILE_FUNCTION();

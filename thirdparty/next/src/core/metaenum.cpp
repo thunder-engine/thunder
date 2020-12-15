@@ -45,7 +45,7 @@ int MetaEnum::keyCount() const {
     return m_EnumCount;
 }
 /*!
-    Returns the key with the given index, or nullptr if no such key exists.
+    Returns the key with the given \a index, or nullptr if no such key exists.
 */
 const char *MetaEnum::key(int index) const {
     PROFILE_FUNCTION();
@@ -55,7 +55,7 @@ const char *MetaEnum::key(int index) const {
     return nullptr;
 }
 /*!
-    Returns the value with the given index; or returns -1 if there is no such value.
+    Returns the value with the given \a index; or returns -1 if there is no such value.
 */
 int MetaEnum::value(int index) const {
     PROFILE_FUNCTION();

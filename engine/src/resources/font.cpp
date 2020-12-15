@@ -258,7 +258,7 @@ void Font::requestCharacters(const string &characters) {
     }
 }
 /*!
-    Returns the kerning offset between a glyph and previous glyph.
+    Returns the kerning offset between a \a glyph and \a previous glyph.
     \note In case of font doesn't support kerning this method will return 0.
 */
 int Font::requestKerning(int glyph, int previous) const {

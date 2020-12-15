@@ -28,7 +28,7 @@ RenderTexture::~RenderTexture() {
     delete p_ptr;
 }
 /*!
-    Sets format \a type of texture and sets resource state to ResourceState::ToBeUpdated.
+    Sets the new \a format type for the texture and sets resource state to ResourceState::ToBeUpdated.
     For more details please see the Texture::FormatType enum.
 */
 void RenderTexture::setTarget(FormatType format) {

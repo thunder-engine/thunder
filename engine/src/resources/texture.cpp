@@ -161,7 +161,7 @@ void *Texture::nativeHandle() {
     return nullptr;
 }
 /*!
-    Read pixels from GPU into texture data.
+    Read pixels from GPU at \a x and \a y position with \a width and \a height dimensions into texture data.
 */
 void Texture::readPixels(int x, int y, int width, int height) {
     A_UNUSED(x);
@@ -170,7 +170,7 @@ void Texture::readPixels(int x, int y, int width, int height) {
     A_UNUSED(height);
 }
 /*!
-    Returns pixel color as RGBA integer for example 0x00ff00ff which can be mapped to (0, 255, 0, 255)
+    Returns pixel color at \a x and \a y position as RGBA integer for example 0x00ff00ff which can be mapped to (0, 255, 0, 255)
 */
 int Texture::getPixel(int x, int y) const {
     uint32_t result = 0;
@@ -181,13 +181,13 @@ int Texture::getPixel(int x, int y) const {
     return result;
 }
 /*!
-    Returns \a width for the texture.
+    Returns width for the texture.
 */
 int Texture::width() const {
     return p_ptr->m_Width;
 }
 /*!
-    Returns \a height for the texture.
+    Returns height for the texture.
 */
 int Texture::height() const {
     return p_ptr->m_Height;

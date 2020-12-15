@@ -17,7 +17,7 @@ public:
 
     int32_t                         loopDuration                () const override;
 
-    void                            setCurrentTime              (uint32_t msecs) override;
+    void                            setCurrentTime              (uint32_t posintion) override;
 
     Variant                         defaultValue                ();
     void                            setDefaultValue             (const Variant &value);

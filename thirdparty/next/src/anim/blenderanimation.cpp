@@ -181,17 +181,17 @@ int32_t BlenderAnimation::loopDuration() const {
 
 /*!
     \overload
-    This function interpolates animated Variant value from one KeyFrame to another.
+    This function interpolates animated Variant value from one KeyFrame to another at \a posintion in milliseconds.
 */
-void BlenderAnimation::setCurrentTime(uint32_t msecs) {
-    Animation::setCurrentTime(msecs);
+void BlenderAnimation::setCurrentTime(uint32_t posintion) {
+    Animation::setCurrentTime(posintion);
     if(!isValid()) {
         return;
     }
 
     uint32_t time = loopTime();
-    float normalized = static_cast<float>(msecs - p_ptr->m_LastTime) / loopDuration();
-    p_ptr->m_LastTime = msecs;
+    float normalized = static_cast<float>(posintion - p_ptr->m_LastTime) / loopDuration();
+    p_ptr->m_LastTime = posintion;
 
     if(p_ptr->m_TransitionTime > 0.0f) {
         if(p_ptr->m_Factor <= 1.0f) {
@@ -236,7 +236,7 @@ void BlenderAnimation::setCurrentTime(uint32_t msecs) {
             data = v;
         } break;
         case MetaType::QUATERNION: {
-            Animation::setCurrentTime(msecs);
+            Animation::setCurrentTime(posintion);
             Quaternion v = data.toQuaternion();
             data = p_ptr->mix(v, loopTime());
         } break;

@@ -2,9 +2,6 @@
 #define JSON_H
 
 #include <string>
-#include <list>
-#include <map>
-#include <stack>
 #include <cstdint>
 
 #include "variant.h"
