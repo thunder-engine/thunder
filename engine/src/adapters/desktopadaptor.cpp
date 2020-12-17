@@ -25,10 +25,10 @@
 #define SCREEN_HEIGHT "screen.height"
 #define SCREEN_WINDOWED "screen.windowed"
 
-#define NONE 0
-#define RELEASE 1
-#define PRESS 2
-#define REPEAT 3
+#define NONE -1
+#define RELEASE 0
+#define PRESS 1
+#define REPEAT 2
 
 Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
 Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
