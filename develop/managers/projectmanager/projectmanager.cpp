@@ -95,6 +95,7 @@ void ProjectManager::loadSettings() {
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         file.close();
 
+        m_ProjectId = QUuid::createUuid().toString();
         if(!doc.isNull()) {
             const QMetaObject *meta = metaObject();
             QJsonObject object = doc.object();
@@ -114,13 +115,6 @@ void ProjectManager::loadSettings() {
                 QJsonObject::iterator it = object.find(gProject);
                 if(it != doc.object().end()) {
                     m_ProjectId = it.value().toString();
-                    if(m_ProjectId.isEmpty()) {
-                        m_ProjectId = QUuid::createUuid().toString();
-                        saveSettings();
-                    }
-                } else {
-                    m_ProjectId = QUuid::createUuid().toString();
-                    saveSettings();
                 }
             }
             {
@@ -138,11 +132,14 @@ void ProjectManager::loadSettings() {
                         m_Modules << module.toString();
                     }
                 }
-                if(m_Modules.indexOf("RenderGL") == -1) {
-                    m_Modules.append("RenderGL");
-                }
             }
         }
+
+        if(m_Modules.indexOf("RenderGL") == -1) {
+            m_Modules.append("RenderGL");
+        }
+
+        saveSettings();
     }
 }
 
