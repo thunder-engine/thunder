@@ -58,8 +58,8 @@ Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
     Vertex result;
 
     result.v = v;
-    result.t = r * t;
-    result.n = r * n;
+    result.t = normalize(r * t);
+    result.n = normalize(r * n);
 
     return result;
 }

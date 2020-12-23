@@ -58,7 +58,7 @@
 
 #define UNIFORM 50
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
