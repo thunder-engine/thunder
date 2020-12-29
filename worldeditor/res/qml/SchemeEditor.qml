@@ -117,12 +117,14 @@ Rectangle {
         property int oldY: 0
 
         onPositionChanged: {
-            canvas.mouseX = mouse.x - canvas.translateX
-            canvas.mouseY = mouse.y - canvas.translateY
+            canvas.mouseX = mouse.x
+            canvas.mouseY = mouse.y
+
+            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
 
             if(mouse.buttons & Qt.RightButton) {
-                canvas.translateX += mouse.x - oldX
-                canvas.translateY += mouse.y - oldY
+                scheme.x += (mouse.x - oldX)
+                scheme.y += (mouse.y - oldY)
             }
 
             canvas.requestPaint()
@@ -183,6 +185,15 @@ Rectangle {
                 nodesSelected(selection)
             }
         }
+
+        onWheel: {
+            if(wheel.angleDelta.y > 0) {
+                scheme.scale = Math.min(scheme.scale + 0.1, 1.0)
+            } else {
+                scheme.scale = Math.max(scheme.scale - 0.1, 0.1)
+            }
+            canvas.requestPaint()
+        }
     }
 
     DropArea {
@@ -190,7 +201,7 @@ Rectangle {
         onDropped: {
             if(drop.keys[0] === "text/component") {
                 schemeModel.createNode(drop.getDataAsArrayBuffer(drop.keys[0]),
-                                       drop.x - canvas.translateX, drop.y - canvas.translateY);
+                                       drop.x - scheme.x, drop.y - scheme.y);
             }
         }
     }
@@ -203,8 +214,6 @@ Rectangle {
 
         objectName: "Canvas"
 
-        property int translateX: rect.width / 2
-        property int translateY: rect.height / 2
         property string linkColor: "white"
         property string hoverLinkColor: "red"
 
@@ -214,14 +223,18 @@ Rectangle {
         onPaint: {
             context.clearRect(0, 0, canvas.width, canvas.height)
             context.strokeStyle = theme.greyLight
-            context.translate(translateX, translateY)
+            context.translate(scheme.x, scheme.y)
             // Creation link
             var border = nodeBorder * 2
             context.strokeStyle = linkColor
-            context.lineWidth = 2
+            context.lineWidth = 2 * scheme.scale
             if(selectNode > -1 && createMode) {
                 var x0 = nodes[selectNode].pos.x
                 var y0 = nodes[selectNode].pos.y
+
+                var x01 = (mouseX - scheme.x) * scheme.scale
+                var y01 = (mouseY - scheme.y) * scheme.scale
+
                 var width = nodeWidth(nodes[selectNode])
                 if(selectPort > -1) {
                     var port = nodes[selectNode].ports[selectPort]
@@ -229,17 +242,20 @@ Rectangle {
                         x0 += (port.out) ? width : 0
                         y0 += port.pos * (cell * 2) + (cell * 3)
 
-                        var length = Math.abs(x0 - mouseX) * 0.5;
+                        x0 *= scheme.scale
+                        y0 *= scheme.scale
+
+                        var length = Math.abs(x0 - x01) * 0.5;
 
                         context.beginPath()
                         if(port.out) {
                             context.moveTo(x0, y0)
                             context.bezierCurveTo(x0 + length, y0,
-                                                  mouseX - length, mouseY,
-                                                  mouseX, mouseY)
+                                                  x01 - length, y01,
+                                                  x01, y01)
                         } else {
-                            context.moveTo(mouseX, mouseY)
-                            context.bezierCurveTo(mouseX + length, mouseY,
+                            context.moveTo(x01, y01)
+                            context.bezierCurveTo(x01 + length, y01,
                                                   x0 - length, y0,
                                                   x0, y0)
                         }
@@ -249,9 +265,13 @@ Rectangle {
                     context.strokeStyle = hoverLinkColor
                     x0 += (width + border) / 2
                     y0 += (nodeHeight(nodes[selectNode]) + border) / 2
+
+                    x0 *= scheme.scale
+                    y0 *= scheme.scale
+
                     context.beginPath()
                     context.moveTo(x0, y0)
-                    context.lineTo(mouseX, mouseY)
+                    context.lineTo(x01, y01)
                     context.stroke()
                 }
             }
@@ -273,6 +293,12 @@ Rectangle {
                         var x2 = nodes[links[i].receiver].pos.x + ((iport.out) ? nodeWidth(nodes[links[i].receiver]) - radius : -radius)
                         var y2 = nodes[links[i].receiver].pos.y + iport.pos * (cell * 2) + (cell * 3) - radius
 
+                        x1 *= scheme.scale
+                        y1 *= scheme.scale
+
+                        x2 *= scheme.scale
+                        y2 *= scheme.scale
+
                         length = Math.abs(x2 - x1) * 0.5;
 
                         context.beginPath()
@@ -288,229 +314,237 @@ Rectangle {
         }
     }
 
-    Repeater {
-        model: (links !== undefined && stateMachine) ? links.length : 0
-        Rectangle {
-            id: linkObject
-            x: nodes[sender].pos.x + (nodeWidth(nodes[sender]) + (nodeBorder * 2)) / 2 + canvas.translateX
-            y: nodes[sender].pos.y + (nodeHeight(nodes[sender]) + (nodeBorder * 2)) / 2 + canvas.translateY
+    Item {
+        id: scheme
 
-            width: 2
-            height: Math.sqrt(dx * dx + dy * dy)
-            rotation: -Math.atan2(dx, dy) * (180.0 / Math.PI)
-            transformOrigin: Item.Top
+        x: rect.width / 2
+        y: rect.height / 2
 
-            color: (focusNode === sender || focusNode === receiver ||
-                    focusLink === index || selectLink === index) ? "red" : "white"
-
-            transform: Translate {
-                x: -offset * Math.cos(rotation * (Math.PI / 180.0))
-                y: -offset * Math.sin(rotation * (Math.PI / 180.0))
-            }
-
-            property int sender: links[index].sender
-            property int receiver: links[index].receiver
-            property int offset: {
-                for(var i = 0; i < links.length; i++) {
-                    if(links[i].sender === receiver && links[i].receiver === sender) {
-                        if(i > index) {
-                            return 16
-                        }
-                        break
-                    }
-                }
-                return 0
-            }
-
-            property int dx: nodes[receiver].pos.x + (nodeWidth(nodes[receiver]) + (nodeBorder * 2)) / 2 + canvas.translateX - x
-            property int dy: nodes[receiver].pos.y + (nodeHeight(nodes[receiver]) + (nodeBorder * 2)) / 2 + canvas.translateY - y
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-
-                onEntered: focusLink = index
-                onExited: focusLink = -1
-                onClicked: {
-                    linkSelected(index)
-                    selectLink = index
-                }
-            }
-
-            Shape {
-                width: 12
-                height: 12
-                anchors.centerIn: parent
-                ShapePath {
-                    strokeWidth: 0
-                    fillColor: linkObject.color
-                    strokeColor: linkObject.color
-                    startX: 0; startY: 0
-                    PathLine { x: 6; y:12 }
-                    PathLine { x:12; y: 0 }
-                }
-            }
-
-        }
-    }
-
-    Repeater {
-        id: nodeRepeater
-        model: (nodes !== undefined) ? nodes.length : 0
-
-        SchemePort {
-            id: nodeObject
-            x: nodes[index].pos.x + canvas.translateX
-            y: nodes[index].pos.y + canvas.translateY
-
-            width: nodeWidth(nodes[index]) + (nodeBorder * 2)
-            height: nodeHeight(nodes[index]) + (nodeBorder * 2)
-
-            node: index
-
-            property bool isFocus: {
-                var result = (rubberBand.visible && isCollide(nodeObject.x, nodeObject.y, nodeObject.width, nodeObject.height,
-                                                              rubberBand.x, rubberBand.y, rubberBand.width, rubberBand.height))
-
-                if(result === true) {
-                    nodes[index].focus = true
-                }
-                return result
-            }
-            property bool isSelected: (selection.indexOf(index) !== -1)
-
-            function isCollide(x1, y1, width1, height1, x2, y2, width2, height2) {
-                return !(x1 > x2 + width2 || x1 + width1 < x2 ||
-                         y1 > y2 + height2 || y1 + height1 < y2)
-            }
-
+        Repeater {
+            model: (links !== undefined && stateMachine) ? links.length : 0
             Rectangle {
-                id: nodeBody
-                x: nodeBorder
-                y: nodeBorder
-                width: parent.width - (nodeBorder * 2)
-                height: parent.height - (nodeBorder * 2)
-                radius: 4
-                color: theme.greyDark
+                id: linkObject
+                x: nodes[sender].pos.x + (nodeWidth(nodes[sender]) + (nodeBorder * 2)) / 2 + scheme.x
+                y: nodes[sender].pos.y + (nodeHeight(nodes[sender]) + (nodeBorder * 2)) / 2 + scheme.y
 
-                border.color: theme.blue
-                border.width: (nodeObject.isFocus || nodeObject.isSelected) ? 2 : 0
+                width: 2
+                height: Math.sqrt(dx * dx + dy * dy)
+                rotation: -Math.atan2(dx, dy) * (180.0 / Math.PI)
+                transformOrigin: Item.Top
+
+                color: (focusNode === sender || focusNode === receiver ||
+                        focusLink === index || selectLink === index) ? "red" : "white"
+
+                transform: Translate {
+                    x: -offset * Math.cos(rotation * (Math.PI / 180.0))
+                    y: -offset * Math.sin(rotation * (Math.PI / 180.0))
+                }
+
+                property int sender: links[index].sender
+                property int receiver: links[index].receiver
+                property int offset: {
+                    for(var i = 0; i < links.length; i++) {
+                        if(links[i].sender === receiver && links[i].receiver === sender) {
+                            if(i > index) {
+                                return 16
+                            }
+                            break
+                        }
+                    }
+                    return 0
+                }
+
+                property int dx: nodes[receiver].pos.x + (nodeWidth(nodes[receiver]) + (nodeBorder * 2)) / 2 + scheme.x - x
+                property int dy: nodes[receiver].pos.y + (nodeHeight(nodes[receiver]) + (nodeBorder * 2)) / 2 + scheme.y - y
 
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    drag.target: (index != 0) ? nodeObject : undefined
-                    drag.threshold: 0
 
-                    drag.onActiveChanged: {
-                        if(!drag.active) {
-                            schemeModel.moveNode(selection, nodes)
-                        } else {
-                            if(selection.indexOf(nodeObject.node) === -1) {
+                    onEntered: focusLink = index
+                    onExited: focusLink = -1
+                    onClicked: {
+                        linkSelected(index)
+                        selectLink = index
+                    }
+                }
+
+                Shape {
+                    width: 12
+                    height: 12
+                    anchors.centerIn: parent
+                    ShapePath {
+                        strokeWidth: 0
+                        fillColor: linkObject.color
+                        strokeColor: linkObject.color
+                        startX: 0; startY: 0
+                        PathLine { x: 6; y:12 }
+                        PathLine { x:12; y: 0 }
+                    }
+                }
+
+            }
+        }
+
+        Repeater {
+        id: nodeRepeater
+        model: (nodes !== undefined) ? nodes.length : 0
+
+            SchemePort {
+                id: nodeObject
+                x: nodes[index].pos.x
+                y: nodes[index].pos.y
+
+                width: nodeWidth(nodes[index]) + (nodeBorder * 2)
+                height: nodeHeight(nodes[index]) + (nodeBorder * 2)
+
+                node: index
+
+                property bool isFocus: {
+                    var result = (rubberBand.visible && isCollide(nodeObject.x, nodeObject.y, nodeObject.width, nodeObject.height,
+                                                                  rubberBand.x, rubberBand.y, rubberBand.width, rubberBand.height))
+
+                    if(result === true) {
+                        nodes[index].focus = true
+                    }
+                    return result
+                }
+                property bool isSelected: (selection.indexOf(index) !== -1)
+
+                function isCollide(x1, y1, width1, height1, x2, y2, width2, height2) {
+                    return !(x1 > x2 + width2 || x1 + width1 < x2 ||
+                             y1 > y2 + height2 || y1 + height1 < y2)
+                }
+
+                Rectangle {
+                    id: nodeBody
+                    x: nodeBorder
+                    y: nodeBorder
+                    width: parent.width - (nodeBorder * 2)
+                    height: parent.height - (nodeBorder * 2)
+                    radius: 4
+                    color: theme.greyDark
+
+                    border.color: theme.blue
+                    border.width: (nodeObject.isFocus || nodeObject.isSelected) ? 2 : 0
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        drag.target: (index != 0) ? nodeObject : undefined
+                        drag.threshold: 0
+
+                        drag.onActiveChanged: {
+                            if(!drag.active) {
+                                schemeModel.moveNode(selection, nodes)
+                            } else {
+                                if(selection.indexOf(nodeObject.node) === -1) {
+                                    var array = selection
+                                    array.push(nodeObject.node)
+
+                                    selection = array
+                                    nodesSelected(selection)
+                                }
+                            }
+                        }
+
+                        onPositionChanged: {
+                            if(drag.active) {
+                                moveNodes(node,
+                                          Math.round(nodeObject.x / cell) * cell,
+                                          Math.round(nodeObject.y / cell) * cell)
+                            }
+                            canvas.mouseX = nodeObject.x + mouse.x + scheme.x
+                            canvas.mouseY = nodeObject.y + mouse.y + scheme.y
+                            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
+                            canvas.requestPaint()
+                        }
+
+                        onClicked: {
+                            if((selection.length > 0) && ((mouse.modifiers & Qt.ControlModifier) || (mouse.modifiers & Qt.ShiftModifier))) {
                                 var array = selection
                                 array.push(nodeObject.node)
 
                                 selection = array
                                 nodesSelected(selection)
+                            } else {
+                                nodeSelect(nodeObject.node)
                             }
-                        }
-                    }
-
-                    onPositionChanged: {
-                        if(drag.active) {
-                            moveNodes(node,
-                                      Math.round((nodeObject.x - canvas.translateX) / cell) * cell,
-                                      Math.round((nodeObject.y - canvas.translateY) / cell) * cell)
-                        }
-                        canvas.mouseX = nodeObject.x + mouse.x - canvas.translateX
-                        canvas.mouseY = nodeObject.y + mouse.y - canvas.translateY
-                        canvas.requestPaint()
-                    }
-
-                    onClicked: {
-                        if((selection.length > 0) && ((mouse.modifiers & Qt.ControlModifier) || (mouse.modifiers & Qt.ShiftModifier))) {
-                            var array = selection
-                            array.push(nodeObject.node)
-
-                            selection = array
-                            nodesSelected(selection)
-                        } else {
-                            nodeSelect(nodeObject.node)
-                        }
-                    }
-                }
-
-                Text {
-                    id: name
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
-                    text: nodes[nodeObject.node].name
-                    font.pointSize: theme.textSize
-                    color: theme.textColor
-                }
-
-                Rectangle {
-                    id: messageBox
-                    visible: false
-                    anchors.top: name.bottom
-                    height: cell
-                    width: nodeBody.width
-                    color: theme.red
-
-                    Connections {
-                        target: schemeModel
-                        onMessageReported: {
-                            if(node === nodeObject.node) {
-                                messageBox.visible = true;
-                                label.text = text
-                            }
-                        }
-                        onSchemeUpdated: {
-                            label.text = ""
-                            messageBox.visible = false;
                         }
                     }
 
                     Text {
-                        id: label
+                        id: name
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: ""
+                        anchors.top: parent.top
+                        text: nodes[nodeObject.node].name
                         font.pointSize: theme.textSize
                         color: theme.textColor
                     }
-                }
 
-                Rectangle {
-                    anchors.top: messageBox.bottom
-                    width: parent.width
-                    height: 1
-                    color: theme.blue
-                    visible: !stateMachine
-                }
+                    Rectangle {
+                        id: messageBox
+                        visible: false
+                        anchors.top: name.bottom
+                        height: cell
+                        width: nodeBody.width
+                        color: theme.red
 
-                Repeater {
-                    model: nodes[nodeObject.node].ports.length
-                    SchemePort {
-                        x: {
-                            if(portObject.out) {
-                                return nodeObject.width - width
+                        Connections {
+                            target: schemeModel
+                            onMessageReported: {
+                                if(node === nodeObject.node) {
+                                    messageBox.visible = true;
+                                    label.text = text
+                                }
                             }
-                            return 0
+                            onSchemeUpdated: {
+                                label.text = ""
+                                messageBox.visible = false;
+                            }
                         }
-                        y: portObject.pos * (cell * 2) + (cell * 2)
 
-                        height: (cell * 2)
-                        width: nodeObject.width / 2
-
-                        node: nodeObject.node
-                        port: index
-
-                        label: portObject.name
-
-                        portObject: nodes[nodeObject.node].ports[index]
+                        Text {
+                            id: label
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: ""
+                            font.pointSize: theme.textSize
+                            color: theme.textColor
+                        }
                     }
-                }
 
+                    Rectangle {
+                        anchors.top: messageBox.bottom
+                        width: parent.width
+                        height: 1
+                        color: theme.blue
+                        visible: !stateMachine
+                    }
+
+                    Repeater {
+                        model: nodes[nodeObject.node].ports.length
+                        SchemePort {
+                            x: {
+                                if(portObject.out) {
+                                    return nodeObject.width - width
+                                }
+                                return 0
+                            }
+                            y: portObject.pos * (cell * 2) + (cell * 2)
+
+                            height: (cell * 2)
+                            width: nodeObject.width / 2
+
+                            node: nodeObject.node
+                            port: index
+
+                            label: portObject.name
+
+                            portObject: nodes[nodeObject.node].ports[index]
+                        }
+                    }
+
+                }
             }
         }
     }

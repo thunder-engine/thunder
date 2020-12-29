@@ -15,8 +15,11 @@ Rectangle {
     property string label: ""
 
     property bool isFocus: {
-        var result = (createMode && ((nodeObject.x + ((port > -1) ? x : 0) - canvas.translateX) < canvas.mouseX && (nodeObject.x + ((port > -1) ? x : 0) + width - canvas.translateX) > canvas.mouseX &&
-                                     (nodeObject.y + ((port > -1) ? y : 0) - canvas.translateY) < canvas.mouseY && (nodeObject.y + ((port > -1) ? y : 0) + height - canvas.translateY) > canvas.mouseY) )
+        var result = (createMode &&
+                      ((nodeObject.x + ((port > -1) ? x : 0) + scheme.x) < canvas.mouseX &&
+                       (nodeObject.x + ((port > -1) ? x : 0) + scheme.x + width) > canvas.mouseX &&
+                       (nodeObject.y + ((port > -1) ? y : 0) + scheme.y) < canvas.mouseY &&
+                       (nodeObject.y + ((port > -1) ? y : 0) + scheme.y + height) > canvas.mouseY) )
         if(result === true) {
             bullet.color = theme.blueHover
 
@@ -35,8 +38,9 @@ Rectangle {
         hoverEnabled: true
 
         onPositionChanged: {
-            canvas.mouseX = (nodeObject.x + ((port > -1) ? parent.x : 0)) + mouse.x - canvas.translateX
-            canvas.mouseY = (nodeObject.y + ((port > -1) ? parent.y : 0)) + mouse.y - canvas.translateY
+            canvas.mouseX = (nodeObject.x + ((port > -1) ? parent.x : 0)) + mouse.x + scheme.x
+            canvas.mouseY = (nodeObject.y + ((port > -1) ? parent.y : 0)) + mouse.y + scheme.y
+            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
             canvas.requestPaint()
         }
 
