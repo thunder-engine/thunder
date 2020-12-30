@@ -39,3 +39,7 @@ void IntegerProperty::onDataChanged() {
         setValue(QVariant(e->value()));
     }
 }
+
+QSize IntegerProperty::sizeHint(const QSize &size) const {
+    return QSize(size.width(), 27);
+}

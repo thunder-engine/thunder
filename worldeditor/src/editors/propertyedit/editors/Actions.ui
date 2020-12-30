@@ -56,7 +56,7 @@
    <item>
     <widget class="QToolButton" name="toolButton">
      <property name="text">
-      <string>...</string>
+      <string notr="true">...</string>
      </property>
      <property name="popupMode">
       <enum>QToolButton::InstantPopup</enum>

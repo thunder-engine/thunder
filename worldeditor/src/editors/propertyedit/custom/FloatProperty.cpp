@@ -39,3 +39,7 @@ void FloatProperty::onDataChanged() {
         setValue(QVariant(e->value()));
     }
 }
+
+QSize FloatProperty::sizeHint(const QSize &size) const {
+    return QSize(size.width(), 27);
+}
