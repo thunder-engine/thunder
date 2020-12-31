@@ -68,6 +68,8 @@ public:
 
     ViewSide viewSide() const { return m_ViewSide; }
 
+    QOpenGLWidget *view() const { return m_pView; }
+
 public slots:
     virtual void onInputEvent(QInputEvent *);
 

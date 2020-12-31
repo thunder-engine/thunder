@@ -97,13 +97,18 @@ void CameraCtrl::update() {
                 m_CameraFree = m_CameraFreeSaved;
 
                 if(m_RotationTransfer) {
-                    cameraRotate(m_RotationTarget);
+                    cameraRotate(t->rotation() - m_RotationTarget);
                 } else {
                     t->setPosition(m_PositionTarget);
                 }
 
-                m_pActiveCamera->setOrthoSize(MAX(m_OrthoWidthTarget, 0.0f));
-                m_pActiveCamera->setFocal(MAX(m_FocalLengthTarget, 0.0f));
+                if(m_OrthoWidthTarget > 0.0f) {
+                    m_pActiveCamera->setOrthoSize(m_OrthoWidthTarget);
+                }
+
+                if(m_FocalLengthTarget > 0.0f) {
+                    m_pActiveCamera->setFocal(m_FocalLengthTarget);
+                }
             }
         }
 
@@ -125,17 +130,15 @@ void CameraCtrl::update() {
 
 void CameraCtrl::onOrthographic(bool flag) {
     if(m_pActiveCamera->orthographic() != flag) {
-        Transform *t = m_pCamera->transform();
+        m_pActiveCamera->setOrthographic(flag);
         if(flag) {
-            m_Rotation = t->rotation();
+            m_Rotation = m_pCamera->transform()->rotation();
             frontSide();
         } else {
             doRotation(m_Rotation);
         }
         m_OrthoWidthTarget = -1.0f;
         m_FocalLengthTarget = -1.0f;
-
-        m_pActiveCamera->setOrthographic(flag);
     }
 }
 
@@ -280,7 +283,8 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
 
             if(e->buttons() & Qt::RightButton) {
                 if(m_pActiveCamera->orthographic()) {
-                    cameraMove(p);
+                    Transform *t = m_pCamera->transform();
+                    cameraMove(t->quaternion() * p);
                 } else {
                     if(!m_BlockRotation)  {
                         cameraRotate(Vector3(delta.y(), delta.x(), 0.0f) * 0.1f);
