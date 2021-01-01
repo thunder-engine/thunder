@@ -253,8 +253,8 @@ void EditorPipeline::resize(int32_t width, int32_t height) {
 void EditorPipeline::drawGrid(Camera &camera) {
     Transform *t = camera.actor()->transform();
     Vector3 cam = t->position();
-    Vector3 pos;
-    float length;
+    Vector3 pos(cam.x, 0.0f, cam.z);
+    float length = (pos - cam).length();
 
     bool ortho = camera.orthographic();
 
@@ -283,9 +283,6 @@ void EditorPipeline::drawGrid(Camera &camera) {
         }
 
         length = camera.orthoSize();
-    } else {
-        pos = Vector3(cam.x, 0.0f, cam.z);
-        length = (pos - cam).length();
     }
 
     float scale = 0.001f;
@@ -301,8 +298,8 @@ void EditorPipeline::drawGrid(Camera &camera) {
     }
 
     pos = Vector3(scale * int32_t(pos.x / scale),
-                  (ortho) ? scale * int32_t(pos.y / scale) : 0.0f,
-                  (ortho) ? pos.z : scale * int32_t(pos.z / scale));
+                  0.0f,
+                  scale * int32_t(pos.z / scale));
 
     Quaternion rot;
     if(ortho) {
@@ -310,15 +307,24 @@ void EditorPipeline::drawGrid(Camera &camera) {
             case CameraCtrl::ViewSide::VIEW_FRONT:
             case CameraCtrl::ViewSide::VIEW_BACK: {
                 rot = Quaternion();
+                pos = Vector3(scale * int32_t(pos.x / scale),
+                              scale * int32_t(pos.y / scale),
+                              pos.z);
             } break;
             case CameraCtrl::ViewSide::VIEW_LEFT:
             case CameraCtrl::ViewSide::VIEW_RIGHT: {
                 rot = Quaternion(Vector3(0, 1, 0), 90.0f);
+                pos = Vector3(pos.x,
+                              scale * int32_t(pos.y / scale),
+                              scale * int32_t(pos.z / scale));
             } break;
             case CameraCtrl::ViewSide::VIEW_TOP:
             case CameraCtrl::ViewSide::VIEW_BOTTOM:
             default: {
                 rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+                pos = Vector3(scale * int32_t(pos.x / scale),
+                              pos.y,
+                              scale * int32_t(pos.z / scale));
             } break;
         }
     } else {
