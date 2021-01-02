@@ -120,8 +120,6 @@ Rectangle {
             canvas.mouseX = mouse.x
             canvas.mouseY = mouse.y
 
-            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
-
             if(mouse.buttons & Qt.RightButton) {
                 scheme.x += (mouse.x - oldX)
                 scheme.y += (mouse.y - oldY)
@@ -456,7 +454,6 @@ Rectangle {
                             }
                             canvas.mouseX = nodeObject.x + mouse.x + scheme.x
                             canvas.mouseY = nodeObject.y + mouse.y + scheme.y
-                            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
                             canvas.requestPaint()
                         }
 

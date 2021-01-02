@@ -52,7 +52,7 @@ void passMode(Params params) {
     matv.x      = max(0.1, getRoughness( params ));
     #endif
     gbuffer1    = vec4( norm, model );
-    gbuffer2    = vec4( albd, 0.0   );
+    gbuffer2    = vec4( albd, 1.0   );
     gbuffer3    = vec4( matv, spec  );
     gbuffer4    = vec4( emit, 0.0   );
 #else

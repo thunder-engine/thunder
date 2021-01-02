@@ -432,10 +432,8 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
         Camera *camera = Camera::current();
         if(camera) {
             Vector3 normal = position - camera->actor()->transform()->position();
-            float scale = 1.0f;
-            if(!camera->orthographic()) {
-                scale = normal.length();
-            } else {
+            float scale = normal.normalize();
+            if(camera->orthographic()) {
                 scale = camera->orthoSize();
             }
             scale *= (CONTROL_SIZE / s_Screen.y);
@@ -527,6 +525,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                 plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
             }
+            plane.normal.normalize();
             plane.d = plane.normal.dot(plane.point);
 
             Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);

@@ -40,7 +40,6 @@ Rectangle {
         onPositionChanged: {
             canvas.mouseX = (nodeObject.x + ((port > -1) ? parent.x : 0)) + mouse.x + scheme.x
             canvas.mouseY = (nodeObject.y + ((port > -1) ? parent.y : 0)) + mouse.y + scheme.y
-            console.error("canvas.mouseX " + canvas.mouseX + " canvas.mouseY " + canvas.mouseY)
             canvas.requestPaint()
         }
 
