@@ -6,12 +6,12 @@
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.ui" line="+14"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>關於…</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+14"/>
         <source>About %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>關於 %1…</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -21,7 +21,7 @@
     <message>
         <location line="+1"/>
         <source>Based on %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>基於 %1 %2</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -44,7 +44,7 @@
     <message>
         <location line="+7"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>動作…</translation>
     </message>
 </context>
 <context>
@@ -52,27 +52,27 @@
     <message>
         <location filename="../worldeditor/src/editors/animationedit/animationedit.ui" line="+14"/>
         <source>Animation Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>動畫編輯器</translation>
     </message>
     <message>
         <location line="+66"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>視窗</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
 </context>
 <context>
@@ -80,12 +80,12 @@
     <message>
         <location filename="../worldeditor/src/editors/assetselect/assetbrowser.ui" line="+14"/>
         <source>Content Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>內容瀏覽器</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋</translation>
     </message>
 </context>
 <context>
@@ -93,32 +93,32 @@
     <message>
         <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+159"/>
         <source>Front View</source>
-        <translation type="unfinished"></translation>
+        <translation>前視</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Back View</source>
-        <translation type="unfinished"></translation>
+        <translation>後視</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Left View</source>
-        <translation type="unfinished"></translation>
+        <translation>左視</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Right View</source>
-        <translation type="unfinished"></translation>
+        <translation>右視</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Top View</source>
-        <translation type="unfinished"></translation>
+        <translation>頂視</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bottom View</source>
-        <translation type="unfinished"></translation>
+        <translation>底視</translation>
     </message>
 </context>
 <context>
@@ -131,7 +131,7 @@
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋</translation>
     </message>
 </context>
 <context>
@@ -139,7 +139,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentbrowser/componentmodel.cpp" line="+41"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名稱</translation>
     </message>
 </context>
 <context>
@@ -147,7 +147,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>形式</translation>
     </message>
 </context>
 <context>
@@ -160,12 +160,12 @@
     <message>
         <location line="+36"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/managers/consolemanager/consolemanager.cpp" line="+23"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>複製</translation>
     </message>
 </context>
 <context>
@@ -173,22 +173,22 @@
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.ui" line="+14"/>
         <source>Content Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>內容瀏覽器</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>過濾器</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+152"/>
         <source>Show in Explorer</source>
-        <translation type="unfinished"></translation>
+        <translation>於瀏覽器中顯示</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -199,30 +199,30 @@
         <location line="+4"/>
         <location line="+26"/>
         <source>New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>新資料夾</translation>
     </message>
     <message>
         <location line="-6"/>
         <location line="+10"/>
         <source>Duplicate</source>
-        <translation type="unfinished"></translation>
+        <translation>複本</translation>
     </message>
     <message>
         <location line="-9"/>
         <location line="+10"/>
         <source>Rename</source>
-        <translation type="unfinished"></translation>
+        <translation>重新命名</translation>
     </message>
     <message>
         <location line="-9"/>
         <location line="+10"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>刪除</translation>
     </message>
     <message>
         <location line="-8"/>
         <source>Reimport</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">重新匯入</translation>
     </message>
     <message>
         <location line="+104"/>
@@ -240,17 +240,17 @@
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contentlist.cpp" line="+190"/>
         <source>Path</source>
-        <translation type="unfinished"></translation>
+        <translation>路徑</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>isFile</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名稱</translation>
     </message>
 </context>
 <context>
@@ -266,7 +266,7 @@
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contenttree.cpp" line="+147"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名稱</translation>
     </message>
 </context>
 <context>
@@ -274,7 +274,7 @@
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+100"/>
         <source>Save Document</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存檔案</translation>
     </message>
 </context>
 <context>
@@ -287,22 +287,22 @@
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/objecthierarchy/hierarchybrowser.cpp" line="+141"/>
         <source>Rename</source>
-        <translation type="unfinished"></translation>
+        <translation>重新命名</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Duplicate</source>
-        <translation type="unfinished"></translation>
+        <translation>複本</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>刪除</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -317,7 +317,7 @@
     <message>
         <location line="+5"/>
         <source>Create Actor</source>
-        <translation type="unfinished"></translation>
+        <translation>建立演員</translation>
     </message>
 </context>
 <context>
@@ -325,12 +325,12 @@
     <message>
         <location filename="../worldeditor/src/managers/asseteditormanager/importqueue.ui" line="+26"/>
         <source>Please Wait...</source>
-        <translation type="unfinished"></translation>
+        <translation>請稍後…</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Progress</source>
-        <translation type="unfinished"></translation>
+        <translation>進度</translation>
     </message>
 </context>
 <context>
@@ -338,22 +338,22 @@
     <message>
         <location filename="../worldeditor/src/editors/materialedit/materialedit.ui" line="+14"/>
         <source>Material Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>材質編輯器</translation>
     </message>
     <message>
         <location line="+82"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>視窗</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -363,17 +363,17 @@
     <message>
         <location line="+8"/>
         <source>Cube</source>
-        <translation type="unfinished"></translation>
+        <translation>立方體</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Sphere</source>
-        <translation type="unfinished"></translation>
+        <translation>球體</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
 </context>
 <context>
@@ -386,12 +386,12 @@
     <message>
         <location line="+31"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>視窗</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
@@ -401,7 +401,7 @@
     <message>
         <location line="+1"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished"></translation>
+        <translation>您想要儲存您的變更嗎？</translation>
     </message>
 </context>
 <context>
@@ -414,7 +414,7 @@
     <message>
         <location line="+53"/>
         <source>%1 (Invalid)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (無效)</translation>
     </message>
 </context>
 <context>
@@ -450,12 +450,12 @@
     <message>
         <location filename="../worldeditor/src/editors/objecthierarchy/objecthierarchymodel.cpp" line="+103"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名稱</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Class</source>
-        <translation type="unfinished"></translation>
+        <translation>類別</translation>
     </message>
 </context>
 <context>
@@ -463,12 +463,12 @@
     <message>
         <location filename="../worldeditor/src/editors/particleedit/particleedit.ui" line="+14"/>
         <source>Particle Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>粒子編輯器</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -478,12 +478,12 @@
     <message>
         <location line="+12"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>視窗</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -503,22 +503,22 @@
     <message>
         <location line="+8"/>
         <source>Create Beam</source>
-        <translation type="unfinished"></translation>
+        <translation>創造光線</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>暫停</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>重複</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
 </context>
 <context>
@@ -526,17 +526,17 @@
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/PathEdit.cpp" line="+33"/>
         <source>Open Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>打開目錄</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇檔案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>All Files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>所有檔案 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -544,17 +544,17 @@
     <message>
         <location filename="../worldeditor/src/managers/pluginmanager/plugindialog.ui" line="+20"/>
         <source>PlugIn Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>插件管理員</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>Load Plugin</source>
-        <translation type="unfinished"></translation>
+        <translation>載入插件</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>關閉</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/managers/pluginmanager/plugindialog.cpp" line="+34"/>
@@ -564,7 +564,7 @@
     <message>
         <location line="+2"/>
         <source>Mods (*.dll *.mod)</source>
-        <translation type="unfinished"></translation>
+        <translation>模組 (*.dll *.mod)</translation>
     </message>
 </context>
 <context>
@@ -572,12 +572,12 @@
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/propertyeditor.ui" line="+14"/>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>屬性</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/propertyeditor.cpp" line="+302"/>
@@ -590,12 +590,12 @@
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+125"/>
         <source>Property</source>
-        <translation type="unfinished"></translation>
+        <translation>屬性</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>值</translation>
     </message>
 </context>
 <context>
@@ -603,27 +603,27 @@
     <message>
         <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+24"/>
         <source>Create %1</source>
-        <translation type="unfinished"></translation>
+        <translation>建立 %1</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/controllers/objectctrl.h" line="+179"/>
         <source>Selection Change</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇變更</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Paste Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>貼上物件</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Create Object</source>
-        <translation type="unfinished"></translation>
+        <translation>建立物件</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Destroy Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>摧毀物件</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -633,7 +633,7 @@
     <message>
         <location line="+12"/>
         <source>Change Property</source>
-        <translation type="unfinished"></translation>
+        <translation>更換屬性</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
@@ -681,32 +681,32 @@
     <message>
         <location line="+65"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Build Project</source>
-        <translation type="unfinished"></translation>
+        <translation>建立專案</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>視窗</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>工作區</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>幫助</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -731,12 +731,12 @@
     <message>
         <location line="+11"/>
         <source>Content Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>內容瀏覽器</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Object properties</source>
-        <translation type="unfinished"></translation>
+        <translation>物件屬性</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -746,27 +746,27 @@
     <message>
         <location line="+15"/>
         <source>Undo</source>
-        <translation type="unfinished"></translation>
+        <translation>復原</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Redo</source>
-        <translation type="unfinished"></translation>
+        <translation>重做</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Editor Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯模式</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Game Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>遊戲模式</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Save As...</source>
-        <translation type="unfinished"></translation>
+        <translation>另存為…</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -776,17 +776,17 @@
     <message>
         <location line="+11"/>
         <source>Edit Object</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯物件</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Delete Object</source>
-        <translation type="unfinished"></translation>
+        <translation>刪除物件</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>New Object</source>
-        <translation type="unfinished"></translation>
+        <translation>新物件</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -796,45 +796,45 @@
     <message>
         <location line="+8"/>
         <source>Take Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>拍攝螢幕截圖</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>About Plugins...</source>
-        <translation type="unfinished"></translation>
+        <translation>關於插件…</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Plugin Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>插件管理員</translation>
     </message>
     <message>
         <location line="+8"/>
         <location line="+3"/>
         <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+735"/>
         <source>Save Workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存工作區</translation>
     </message>
     <message>
         <location line="+8"/>
         <location line="+3"/>
         <source>Reset Workspace</source>
-        <translation type="unfinished"></translation>
+        <translation>重置工作區</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>關於…</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Options...</source>
-        <translation type="unfinished"></translation>
+        <translation>選項…</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Build All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Build All</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-597"/>
@@ -844,22 +844,22 @@
     <message>
         <location line="+1"/>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>屬性</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Project Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>專案設定</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Editor Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>編輯者偏好</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>時間軸</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -869,23 +869,23 @@
     <message>
         <location line="+49"/>
         <source>About %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>關於 %1…</translation>
     </message>
     <message>
         <location line="+303"/>
         <source>Open Map</source>
-        <translation type="unfinished"></translation>
+        <translation>開啟地圖</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+69"/>
         <source>Maps (*.map)</source>
-        <translation type="unfinished"></translation>
+        <translation>地圖 (*.map)</translation>
     </message>
     <message>
         <location line="-2"/>
         <source>Save Map</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存地圖</translation>
     </message>
     <message>
         <location line="+76"/>
@@ -895,17 +895,17 @@
     <message>
         <location line="+9"/>
         <source>Create New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>建立新專案</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Import Existing Project</source>
-        <translation type="unfinished"></translation>
+        <translation>匯入現有專案</translation>
     </message>
     <message>
         <location line="+77"/>
         <source>Workspaces (*.ws)</source>
-        <translation type="unfinished"></translation>
+        <translation>工作區 (*.ws)</translation>
     </message>
     <message>
         <location line="+66"/>
@@ -915,12 +915,12 @@
     <message>
         <location line="+105"/>
         <source>Save%1</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存%1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save%1 As...</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存%1 為…</translation>
     </message>
 </context>
 <context>
@@ -947,7 +947,7 @@
     <message>
         <location line="+69"/>
         <source>Border</source>
-        <translation type="unfinished"></translation>
+        <translation>邊界</translation>
     </message>
     <message>
         <location line="+72"/>
@@ -957,12 +957,12 @@
     <message>
         <location line="+40"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名稱</translation>
     </message>
 </context>
 <context>
@@ -970,17 +970,17 @@
     <message>
         <location filename="../worldeditor/res/qml/Startup.qml" line="+78"/>
         <source>Projects</source>
-        <translation type="unfinished"></translation>
+        <translation>專案</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Blog</source>
-        <translation type="unfinished"></translation>
+        <translation>部落格</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Import</source>
-        <translation type="unfinished"></translation>
+        <translation>匯入</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -993,22 +993,22 @@
     <message>
         <location filename="../worldeditor/src/editors/textedit/textedit.ui" line="+14"/>
         <source>Code Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>程式碼編輯器</translation>
     </message>
     <message>
         <location line="+88"/>
         <source>Find Next</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找下一個</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Replace With:</source>
-        <translation type="unfinished"></translation>
+        <translation>取代為:</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Replace</source>
-        <translation type="unfinished"></translation>
+        <translation>取代</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1018,12 +1018,12 @@
     <message>
         <location line="+7"/>
         <source>Find:</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找:</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Find Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找前一個</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1038,12 +1038,12 @@
     <message>
         <location line="+8"/>
         <source>Close All</source>
-        <translation type="unfinished"></translation>
+        <translation>關閉所有</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Find</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找</translation>
     </message>
 </context>
 <context>
@@ -1079,7 +1079,7 @@
     <message>
         <location line="+10"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>刪除</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -1089,12 +1089,12 @@
     <message>
         <location line="+17"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>值</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+76"/>
         <source>Remove Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>移除屬性</translation>
     </message>
 </context>
 </TS>
