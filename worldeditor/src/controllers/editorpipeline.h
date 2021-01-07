@@ -8,14 +8,13 @@
 class CameraCtrl;
 class Texture;
 class Renderable;
+class Outline;
 
 class EditorPipeline : public Pipeline {
 public:
     EditorPipeline();
 
     void draw(Camera &camera) override;
-
-    void post(Camera &camera) override;
 
     void resize(int32_t width, int32_t height) override;
 
@@ -49,6 +48,8 @@ protected:
     MaterialInstance *m_pGizmo;
 
     CameraCtrl *m_pController;
+
+    Outline *m_pOutline;
 
     list<Renderable *> m_DragList;
 

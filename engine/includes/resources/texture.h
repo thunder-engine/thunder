@@ -99,6 +99,7 @@ public:
 
     bool isCompressed() const;
     bool isCubemap() const;
+    bool isArray() const;
 
     Surface &surface(int face);
     void addSurface(const Surface &surface);

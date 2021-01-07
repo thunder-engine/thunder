@@ -87,7 +87,13 @@ void ObjectCtrl::init(Scene *scene) {
     m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);
 
+    connect(m_pMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onBufferMenu);
+}
+
+void ObjectCtrl::onBufferMenu() {
     if(m_pMenu) {
+        m_pMenu->clear();
+
         QStringList list = m_pPipeline->targets();
         list.push_front(tr("Final Buffer"));
 

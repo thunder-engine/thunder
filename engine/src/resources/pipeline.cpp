@@ -17,6 +17,7 @@
 
 #include "postprocess/ambientocclusion.h"
 #include "postprocess/antialiasing.h"
+#include "postprocess/reflections.h"
 #include "postprocess/bloom.h"
 
 #include "log.h"
@@ -35,6 +36,7 @@
 #define DEPTH_MAP   "depthMap"
 
 #define SSAO_MAP    "ssaoMap"
+#define SSLR_MAP    "sslrMap"
 
 #define OVERRIDE "uni.texture0"
 
@@ -84,9 +86,7 @@ Pipeline::Pipeline() :
     m_Targets[G_EMISSIVE]   = emissive;
     m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
 
-    m_PostEffects["AmbientOcclusion"] = new AmbientOcclusion();
-    m_PostEffects["AntiAliasing"] = new AntiAliasing();
-    m_PostEffects["Bloom"] = new Bloom();
+    m_PostEffects = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
 }
 
 Pipeline::~Pipeline() {
@@ -106,26 +106,24 @@ void Pipeline::draw(Camera &camera) {
     drawComponents(ICommandBuffer::DEFAULT, m_Filter);
 
     // Step2.1 - Screen Space Ambient Occlusion
-    m_Targets[SSAO_MAP] = postProcess(m_Targets[G_EMISSIVE], {"AmbientOcclusion"});
+    m_Targets[SSAO_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::DEFAULT);
 
     // Step2.2 - Light pass
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
     drawComponents(ICommandBuffer::LIGHT, m_Filter);
 
     // Step2.3 - Screen Space Local Reflections
+    m_Targets[SSLR_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::LIGHT);
 
     // Step3 - Draw Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
-    post(camera);
-}
-
-void Pipeline::post(Camera &camera) {
-    A_UNUSED(camera);
-
     // Step4 - Post Processing passes
     m_Buffer->setScreenProjection();
-    m_pFinal = postProcess(m_Targets[G_EMISSIVE], {"AntiAliasing", "Bloom"});
+    m_pFinal = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::TRANSLUCENT);
+
+    // Step5 - Draw UI elements
+    drawComponents(ICommandBuffer::UI, m_Filter);
 }
 
 void Pipeline::finish() {
@@ -154,6 +152,7 @@ void Pipeline::cameraReset(Camera &camera) {
     m_Buffer->setGlobalValue("camera.projection", p);
     m_Buffer->setGlobalValue("camera.screenToWorld", vp.inverse());
     m_Buffer->setGlobalValue("camera.worldToScreen", vp);
+
     m_Buffer->setViewProjection(v, p);
 }
 
@@ -172,8 +171,9 @@ void Pipeline::resize(int32_t width, int32_t height) {
         it.second->resize(width, height);
     }
     for(auto &it : m_PostEffects) {
-        it.second->resize(width, height);
+        it->resize(width, height);
     }
+
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
 }
 
@@ -218,7 +218,7 @@ void Pipeline::analizeScene(Scene *scene) {
         m_Buffer->setGlobalValue("light.ambient", settings->ambientLightIntensity());
 
         for(auto &it : m_PostEffects) {
-            it.second->setSettings(*settings);
+            it->setSettings(*settings);
         }
     }
 }
@@ -357,11 +357,13 @@ void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
     }
 }
 
-RenderTexture *Pipeline::postProcess(RenderTexture *source, const StringList &list) {
+RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
     m_Buffer->setScreenProjection();
     RenderTexture *result = source;
-    for(auto it : list) {
-        result = m_PostEffects[it]->draw(result, *m_Buffer);
+    for(auto it : m_PostEffects) {
+        if(it->layer() == layer) {
+            result = it->draw(result, this);
+        }
     }
     m_Buffer->resetViewProjection();
     return result;

@@ -309,6 +309,13 @@ bool Texture::isCubemap() const {
     return (p_ptr->m_Sides.size() == 6);
 }
 /*!
+    Returns true if texture provides a set of textures; otherwise returns false.
+    \note For now will always return false.
+*/
+bool Texture::isArray() const {
+    return false;
+}
+/*!
     \internal
     Returns the number of the color channels(components)
 */

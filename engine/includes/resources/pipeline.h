@@ -26,45 +26,40 @@ class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
     A_REGISTER(Pipeline, Resource, Resources)
 
 public:
-    Pipeline ();
-    ~Pipeline ();
+    Pipeline();
+    ~Pipeline();
 
-    virtual void draw (Camera &camera);
+    virtual void draw(Camera &camera);
 
-    virtual void post (Camera &camera);
+    virtual void resize(int32_t width, int32_t height);
 
-    virtual void resize (int32_t width, int32_t height);
+    virtual void finish();
 
-    virtual void finish ();
+    void cameraReset(Camera &camera);
 
-    void cameraReset (Camera &camera);
+    RenderTexture *target(const string &target) const;
 
-    RenderTexture *target (const string &target) const;
+    void analizeScene(Scene *scene);
 
-    void analizeScene (Scene *scene);
+    void setTarget(uint32_t resource);
 
-    void setTarget (uint32_t resource);
+    ICommandBuffer *buffer() const;
 
-    RenderTexture *requestShadowTiles (uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    RenderTexture *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
-    ICommandBuffer *buffer () const;
-
-    static void shadowPageSize (int32_t &width, int32_t &height);
-    static void setShadowPageSize (int32_t width, int32_t height);
+    static void shadowPageSize(int32_t &width, int32_t &height);
+    static void setShadowPageSize(int32_t width, int32_t height);
 
 protected:
-    void drawComponents (uint32_t layer, ObjectList &list);
+    void drawComponents(uint32_t layer, ObjectList &list);
 
-    void updateShadows (Camera &camera, ObjectList &list);
+    void updateShadows(Camera &camera, ObjectList &list);
 
-    void combineComponents (Object *object);
+    void combineComponents(Object *object);
 
-    RenderTexture *postProcess (RenderTexture *source, const StringList &list);
+    RenderTexture *postProcess(RenderTexture *source, uint32_t layer);
 
-    void sortByDistance (ObjectList &in, const Vector3 &origin);
-
-private:
-    RenderTexture *createShadowPage();
+    void sortByDistance(ObjectList &in, const Vector3 &origin);
 
 protected:
     typedef map<string, RenderTexture *> TargetMap;
@@ -78,7 +73,7 @@ protected:
 
     Vector2 m_Screen;
 
-    unordered_map<string, PostProcessor *> m_PostEffects;
+    list<PostProcessor *> m_PostEffects;
 
     list<PostProcessSettings *> m_PostProcessSettings;
 

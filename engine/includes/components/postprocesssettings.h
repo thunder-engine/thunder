@@ -7,14 +7,16 @@ class NEXT_LIBRARY_EXPORT PostProcessSettings : public Component {
     A_REGISTER(PostProcessSettings, Component, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(bool,  Ambient_Light/Enabled, PostProcessSettings::ambientLightEnabled, PostProcessSettings::setAmbientLightEnabled),
-        A_PROPERTY(float, Ambient_Light/Intensity, PostProcessSettings::ambientLightIntensity, PostProcessSettings::setAmbientLightIntensity),
-        A_PROPERTY(bool,  Ambient_Occlusion/Enabled, PostProcessSettings::ambientOcclusionEnabled, PostProcessSettings::setAmbientOcclusionEnabled),
-        A_PROPERTY(float, Ambient_Occlusion/Radius, PostProcessSettings::ambientOcclusionRadius, PostProcessSettings::setAmbientOcclusionRadius),
-        A_PROPERTY(float, Ambient_Occlusion/Bias, PostProcessSettings::ambientOcclusionBias, PostProcessSettings::setAmbientOcclusionBias),
-        A_PROPERTY(float, Ambient_Occlusion/Power, PostProcessSettings::ambientOcclusionPower, PostProcessSettings::setAmbientOcclusionPower),
-        A_PROPERTY(bool, Bloom/Enabled, PostProcessSettings::bloomEnabled, PostProcessSettings::setBloomEnabled),
-        A_PROPERTY(float, Bloom/Threshold, PostProcessSettings::bloomThreshold, PostProcessSettings::setBloomThreshold)
+        A_PROPERTY(bool,  ambientLight/Enabled, PostProcessSettings::ambientLightEnabled, PostProcessSettings::setAmbientLightEnabled),
+        A_PROPERTY(float, ambientLight/Intensity, PostProcessSettings::ambientLightIntensity, PostProcessSettings::setAmbientLightIntensity),
+        A_PROPERTY(bool,  ambientOcclusion/Enabled, PostProcessSettings::ambientOcclusionEnabled, PostProcessSettings::setAmbientOcclusionEnabled),
+        A_PROPERTY(float, ambientOcclusion/Radius, PostProcessSettings::ambientOcclusionRadius, PostProcessSettings::setAmbientOcclusionRadius),
+        A_PROPERTY(float, ambientOcclusion/Bias, PostProcessSettings::ambientOcclusionBias, PostProcessSettings::setAmbientOcclusionBias),
+        A_PROPERTY(float, ambientOcclusion/Power, PostProcessSettings::ambientOcclusionPower, PostProcessSettings::setAmbientOcclusionPower),
+        A_PROPERTY(bool, bloom/Enabled, PostProcessSettings::bloomEnabled, PostProcessSettings::setBloomEnabled),
+        A_PROPERTY(float, bloom/Threshold, PostProcessSettings::bloomThreshold, PostProcessSettings::setBloomThreshold),
+        A_PROPERTY(bool, reflections/Enabled, PostProcessSettings::reflectionsEnabled, PostProcessSettings::setReflectionsEnabled),
+        A_PROPERTY(float, reflections/MaxRoughness, PostProcessSettings::reflectionsMaxRoughness, PostProcessSettings::setReflectionsMaxRoughness)
     )
     A_NOMETHODS()
 
@@ -47,6 +49,13 @@ public:
     float bloomThreshold() const;
     void setBloomThreshold(float value);
 
+
+    bool reflectionsEnabled() const;
+    void setReflectionsEnabled(bool value);
+
+    float reflectionsMaxRoughness() const;
+    void setReflectionsMaxRoughness(float value);
+
 private:
     bool m_ambientLightEnabled;
     float m_ambientLightIntensity;
@@ -58,6 +67,9 @@ private:
 
     bool m_bloomEnabled;
     float m_bloomThreshold;
+
+    bool m_reflectionsEnabled;
+    float m_reflectionsMaxRoughness;
 };
 
 #endif // POSTPROCESSSETTINGS_H

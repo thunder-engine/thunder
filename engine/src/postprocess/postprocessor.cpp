@@ -3,6 +3,7 @@
 #include "resources/mesh.h"
 #include "resources/material.h"
 #include "resources/rendertexture.h"
+#include "resources/pipeline.h"
 
 #include "commandbuffer.h"
 
@@ -22,12 +23,14 @@ PostProcessor::~PostProcessor() {
 
 }
 
-RenderTexture *PostProcessor::draw(RenderTexture *source, ICommandBuffer &buffer) {
+RenderTexture *PostProcessor::draw(RenderTexture *source, Pipeline *pipeline) {
     if(m_Enabled && m_pMaterial && m_pResultTexture) {
         m_pMaterial->setTexture("rgbMap", source);
 
-        buffer.setRenderTarget({m_pResultTexture});
-        buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+        ICommandBuffer *buffer = pipeline->buffer();
+
+        buffer->setRenderTarget({m_pResultTexture});
+        buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
 
         return m_pResultTexture;
     }
@@ -42,6 +45,10 @@ void PostProcessor::resize(int32_t width, int32_t height) {
 
 void PostProcessor::setSettings(const PostProcessSettings &) {
 
+}
+
+uint32_t PostProcessor::layer() const {
+    return ICommandBuffer::TRANSLUCENT;
 }
 
 void PostProcessor::setEnabled(bool value) {

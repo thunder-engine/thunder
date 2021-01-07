@@ -11,24 +11,26 @@ class Mesh;
 
 class Blur;
 
-class ICommandBuffer;
+class Pipeline;
 
 class PostProcessSettings;
 
 class NEXT_LIBRARY_EXPORT PostProcessor {
 public:
-    PostProcessor ();
-    virtual ~PostProcessor ();
+    PostProcessor();
+    virtual ~PostProcessor();
 
-    virtual RenderTexture *draw (RenderTexture *source, ICommandBuffer &buffer);
+    virtual RenderTexture *draw(RenderTexture *source, Pipeline *pipeline);
 
-    virtual void resize (int32_t width, int32_t height);
+    virtual void resize(int32_t width, int32_t height);
 
     virtual void setSettings(const PostProcessSettings &settings);
 
+    virtual uint32_t layer() const;
+
     void setEnabled(bool value);
 
-    static Blur *blur ();
+    static Blur *blur();
 
 protected:
     bool m_Enabled;

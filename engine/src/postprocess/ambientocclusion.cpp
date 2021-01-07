@@ -100,28 +100,29 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_pNoise->deleteLater();
 }
 
-RenderTexture *AmbientOcclusion::draw(RenderTexture *source, ICommandBuffer &buffer) {
+RenderTexture *AmbientOcclusion::draw(RenderTexture *source, Pipeline *pipeline) {
     if(m_Enabled) {
+        ICommandBuffer *buffer = pipeline->buffer();
         if(m_pMaterial) {
-            buffer.setViewport(0, 0, m_pSSAO->width(), m_pSSAO->height());
-            buffer.setGlobalValue("camera.screen", Vector4(1.0f / m_pSSAO->width(), 1.0f / m_pSSAO->height(),
+            buffer->setViewport(0, 0, m_pSSAO->width(), m_pSSAO->height());
+            buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_pSSAO->width(), 1.0f / m_pSSAO->height(),
                                                            m_pSSAO->width(), m_pSSAO->height()));
-            buffer.setRenderTarget({m_pSSAO});
-            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+            buffer->setRenderTarget({m_pSSAO});
+            buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
         }
 
         if(m_pBlur) {
-            buffer.setRenderTarget({m_pResultTexture});
-            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlur);
+            buffer->setRenderTarget({m_pResultTexture});
+            buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlur);
 
-            buffer.setViewport(0, 0, source->width(), source->height());
-            buffer.setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
+            buffer->setViewport(0, 0, source->width(), source->height());
+            buffer->setGlobalValue("camera.screen", Vector4(1.0f / source->width(), 1.0f / source->height(),
                                                            source->width(), source->height()));
         }
 
         if(m_pOcclusion) {
-            buffer.setRenderTarget({source});
-            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pOcclusion);
+            buffer->setRenderTarget({source});
+            buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pOcclusion);
         }
         return m_pResultTexture;
     }
@@ -142,4 +143,8 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
     m_Radius = settings.ambientOcclusionRadius();
     m_Bias = settings.ambientOcclusionBias();
     m_Power = settings.ambientOcclusionPower();
+}
+
+uint32_t AmbientOcclusion::layer() const {
+    return ICommandBuffer::DEFAULT;
 }

@@ -37,21 +37,22 @@ Bloom::Bloom() :
     m_BloomPasses[4].m_BlurSize = Vector3(64.0f, 0.0f, 64.0f);
 }
 
-RenderTexture *Bloom::draw(RenderTexture *source, ICommandBuffer &buffer) {
+RenderTexture *Bloom::draw(RenderTexture *source, Pipeline *pipeline) {
     if(m_Enabled && m_pMaterial) {
+        ICommandBuffer *buffer = pipeline->buffer();
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             m_pMaterial->setTexture("rgbMap", (i == 0) ? source : m_BloomPasses[i - 1].m_pDownTexture);
-            buffer.setViewport(0, 0, m_BloomPasses[i].m_pDownTexture->width(), m_BloomPasses[i].m_pDownTexture->height());
-            buffer.setRenderTarget({m_BloomPasses[i].m_pDownTexture}, nullptr, 0);
-            buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+            buffer->setViewport(0, 0, m_BloomPasses[i].m_pDownTexture->width(), m_BloomPasses[i].m_pDownTexture->height());
+            buffer->setRenderTarget({m_BloomPasses[i].m_pDownTexture}, nullptr, 0);
+            buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
         }
-        buffer.setViewport(0, 0, source->width(), source->height());
+        buffer->setViewport(0, 0, source->width(), source->height());
 
         Blur *blur = PostProcessor::blur();
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             blur->setParameters(Vector2(1.0f / m_BloomPasses[i].m_pDownTexture->width(), 1.0f / m_BloomPasses[i].m_pDownTexture->height()),
                                 m_BloomPasses[i].m_BlurSteps, m_BloomPasses[i].m_BlurPoints);
-            blur->draw(buffer, m_BloomPasses[i].m_pDownTexture, source);
+            blur->draw(*buffer, m_BloomPasses[i].m_pDownTexture, source);
         }
     }
 

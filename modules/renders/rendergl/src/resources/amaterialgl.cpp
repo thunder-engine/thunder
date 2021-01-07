@@ -19,7 +19,9 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
             setTexture("depthMap",   nullptr);
             setTexture("normalsMap", nullptr);
             setTexture("diffuseMap", nullptr);
+            setTexture("paramsMap", nullptr);
             setTexture("outlineMap", nullptr);
+            setTexture("environmentMap", nullptr);
         } break;
         case LightFunction: {
             /// \todo should be removed

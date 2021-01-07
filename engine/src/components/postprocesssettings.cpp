@@ -8,7 +8,9 @@ PostProcessSettings::PostProcessSettings() :
         m_ambientOcclusionBias(0.0f),
         m_ambientOcclusionPower(1.0f),
         m_bloomEnabled(false),
-        m_bloomThreshold(1.0f) {
+        m_bloomThreshold(1.0f),
+        m_reflectionsEnabled(false),
+        m_reflectionsMaxRoughness(0.8f) {
 
 }
 
@@ -74,4 +76,20 @@ float PostProcessSettings::bloomThreshold() const {
 
 void PostProcessSettings::setBloomThreshold(float value) {
     m_bloomThreshold = value;
+}
+
+bool PostProcessSettings::reflectionsEnabled() const {
+    return m_reflectionsEnabled;
+}
+
+void PostProcessSettings::setReflectionsEnabled(bool value) {
+    m_reflectionsEnabled = value;
+}
+
+float PostProcessSettings::reflectionsMaxRoughness() const {
+    return m_reflectionsMaxRoughness;
+}
+
+void PostProcessSettings::setReflectionsMaxRoughness(float value) {
+    m_reflectionsMaxRoughness = value;
 }

@@ -42,7 +42,11 @@ void ATextureGL::updateTexture() {
         CheckGLError();
     }
 
-    uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    uint32_t target = GL_TEXTURE_2D;
+    if(isCubemap()) {
+        target = (isArray()) ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_CUBE_MAP;
+    }
+
     uint32_t internal   = GL_RGBA8;
     uint32_t glformat   = GL_RGBA;
 
@@ -72,11 +76,12 @@ void ATextureGL::updateTexture() {
     CheckGLError();
 
     switch(target) {
-        case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(getSides(), internal, glformat);
+        case GL_TEXTURE_CUBE_MAP:
+        case GL_TEXTURE_CUBE_MAP_ARRAY: {
+            uploadTextureCubemap(getSides(), target, internal, glformat);
         } break;
         default: {
-            uploadTexture2D(getSides(), 0, target, internal, glformat);
+            uploadTexture(getSides(), 0, target, internal, glformat);
         } break;
     }
     //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
@@ -119,7 +124,7 @@ void ATextureGL::destroyTexture() {
     }
 }
 
-bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format) {
+bool ATextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t index) {
     const Surface &image = (*sides)[imageIndex];
 
     if(isCompressed()) {
@@ -128,10 +133,8 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
         int32_t h  = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             const int8_t *data = &(image[i])[0];
-            glCompressedTexImage2D(target, i, internal, w, h, 0, size(w, h), data);
+            glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
             CheckGLError();
-            w   = MAX(w / 2, 1);
-            h   = MAX(h / 2, 1);
         }
     } else {
         GLint alignment = -1;
@@ -142,18 +145,21 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
             CheckGLError();
         }
 
-        bool isFloat = (Texture::format() == RGB16Float || Texture::format() == RGBA32Float);
-
+        GLenum type = GL_UNSIGNED_BYTE;
+        if(Texture::format() == RGB16Float || Texture::format() == RGBA32Float) {
+            type = GL_FLOAT;
+        }
         // load all mipmaps
-        int32_t w  = width();
-        int32_t h  = height();
+        int32_t w = width();
+        int32_t h = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             const int8_t *data = &(image[i])[0];
-            glTexImage2D(target, i, internal, w, h, 0, format, (isFloat) ? GL_FLOAT : GL_UNSIGNED_BYTE, data);
+            if(target == GL_TEXTURE_CUBE_MAP_ARRAY) {
+                glTexSubImage3D(target, i, 0, 0, index * 6 + imageIndex, (w >> i), (h >> i), 1, format, type, data);
+            } else {
+                glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
+            }
             CheckGLError();
-
-            w   = MAX(w / 2, 1);
-            h   = MAX(h / 2, 1);
         }
         if(alignment != -1) {
             glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -164,17 +170,22 @@ bool ATextureGL::uploadTexture2D(const Sides *sides, uint32_t imageIndex, uint32
     return true;
 }
 
-bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t internal, uint32_t format) {
-    GLenum target;
+bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format) {
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
-        // specify cubemap face
-        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        if(!uploadTexture2D(sides, n, target, internal, format)) {
+        if(target != GL_TEXTURE_CUBE_MAP_ARRAY) {
+            // specify cubemap face
+            target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
+        } else {
+            const Surface &image = (*sides)[n];
+            int32_t w = width();
+            int32_t h = height();
+            glTexStorage3D(target, image.size(), internal, w, h, 6);
+        }
+        if(!uploadTexture(sides, n, target, internal, format)) {
             return false;
         }
     }
-
     return true;
 }
 

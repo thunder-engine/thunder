@@ -58,6 +58,7 @@ EditorPipeline::EditorPipeline() :
         m_pGrid(nullptr),
         m_pGizmo(nullptr),
         m_pController(nullptr),
+        m_pOutline(new Outline()),
         m_pDepth(nullptr),
         m_pSelect(nullptr),
         m_ObjectId(0),
@@ -89,7 +90,9 @@ EditorPipeline::EditorPipeline() :
 
     m_pGrid  = Engine::objectCreate<Mesh>("Grid");
 
-    m_PostEffects[OUTLINE] = new Outline();
+    auto it  = m_PostEffects.begin();
+    ++it;
+    m_PostEffects.insert(it, m_pOutline);
 
     Lod lod;
     Vector3Vector &vertices = lod.vertices();
@@ -131,9 +134,8 @@ void EditorPipeline::loadSettings() {
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
     color = SettingsManager::instance()->property("General/Colors/Outline_Color").value<QColor>();
-    Outline *outline = static_cast<Outline *>(m_PostEffects[OUTLINE]);
-    outline->m_Color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-    outline->m_Width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
+    m_pOutline->m_Color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    m_pOutline->m_Width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
 }
 
 void EditorPipeline::setController(CameraCtrl *ctrl) {
@@ -208,20 +210,6 @@ void EditorPipeline::draw(Camera &camera) {
         m_Filter.push_back(it);
     }
 
-    Pipeline::draw(camera);
-
-    // Draw handles
-    cameraReset(camera);
-    m_Buffer->setRenderTarget({m_pFinal}, m_Targets[DEPTH_MAP]);
-    drawGrid(camera);
-
-    Handles::beginDraw(m_Buffer);
-    m_pController->drawHandles();
-    Handles::endDraw();
-}
-
-void EditorPipeline::post(Camera &camera) {
-    cameraReset(camera);
     // Selection outline
     m_Buffer->setRenderTarget({m_Targets[OUTLINE_MAP]}, m_Targets[OUTDEPTH_MAP]);
     m_Buffer->clearRenderTarget();
@@ -236,13 +224,20 @@ void EditorPipeline::post(Camera &camera) {
     }
     drawComponents(ICommandBuffer::RAYCAST, filter);
 
-    // Step4 - Post Processing passes
-    m_Buffer->setScreenProjection();
-    if(m_pTarget == nullptr) {
-        m_pFinal = postProcess(m_Targets[G_EMISSIVE], {OUTLINE, "AntiAliasing", "Bloom"});
-    } else {
+    Pipeline::draw(camera);
+
+    if(m_pTarget != nullptr) {
         m_pFinal = m_pTarget;
     }
+
+    // Draw handles
+    cameraReset(camera);
+    m_Buffer->setRenderTarget({m_pFinal}, m_Targets[DEPTH_MAP]);
+    drawGrid(camera);
+
+    Handles::beginDraw(m_Buffer);
+    m_pController->drawHandles();
+    Handles::endDraw();
 }
 
 void EditorPipeline::resize(int32_t width, int32_t height) {
