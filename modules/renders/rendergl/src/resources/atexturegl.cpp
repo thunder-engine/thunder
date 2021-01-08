@@ -44,7 +44,7 @@ void ATextureGL::updateTexture() {
 
     uint32_t target = GL_TEXTURE_2D;
     if(isCubemap()) {
-        target = (isArray()) ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_CUBE_MAP;
+        target = GL_TEXTURE_CUBE_MAP;
     }
 
     uint32_t internal   = GL_RGBA8;
@@ -76,8 +76,7 @@ void ATextureGL::updateTexture() {
     CheckGLError();
 
     switch(target) {
-        case GL_TEXTURE_CUBE_MAP:
-        case GL_TEXTURE_CUBE_MAP_ARRAY: {
+        case GL_TEXTURE_CUBE_MAP: {
             uploadTextureCubemap(getSides(), target, internal, glformat);
         } break;
         default: {
@@ -154,11 +153,7 @@ bool ATextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t
         int32_t h = height();
         for(uint32_t i = 0; i < image.size(); i++) {
             const int8_t *data = &(image[i])[0];
-            if(target == GL_TEXTURE_CUBE_MAP_ARRAY) {
-                glTexSubImage3D(target, i, 0, 0, index * 6 + imageIndex, (w >> i), (h >> i), 1, format, type, data);
-            } else {
-                glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
-            }
+            glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
             CheckGLError();
         }
         if(alignment != -1) {
@@ -173,15 +168,8 @@ bool ATextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t
 bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format) {
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
-        if(target != GL_TEXTURE_CUBE_MAP_ARRAY) {
-            // specify cubemap face
-            target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        } else {
-            const Surface &image = (*sides)[n];
-            int32_t w = width();
-            int32_t h = height();
-            glTexStorage3D(target, image.size(), internal, w, h, 6);
-        }
+        // specify cubemap face
+        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
         if(!uploadTexture(sides, n, target, internal, format)) {
             return false;
         }

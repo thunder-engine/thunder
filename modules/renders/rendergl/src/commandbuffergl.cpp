@@ -115,7 +115,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
             glActiveTexture(GL_TEXTURE0 + i);
             uint32_t target = GL_TEXTURE_2D;
             if(tex->isCubemap()) {
-                target = (tex->isArray()) ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_CUBE_MAP;
+                target = GL_TEXTURE_CUBE_MAP;
             }
             glBindTexture(target, (uint32_t)(size_t)tex->nativeHandle());
         }

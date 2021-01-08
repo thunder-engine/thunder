@@ -6,7 +6,7 @@ layout(location = 50) uniform sampler2D depthMap;
 layout(location = 51) uniform sampler2D normalsMap;
 layout(location = 52) uniform sampler2D paramsMap;
 layout(location = 53) uniform sampler2D rgbMap;
-layout(location = 54) uniform samplerCubeArray environmentMap;
+layout(location = 54) uniform samplerCube environmentMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -33,7 +33,7 @@ void main(void) {
         vec4 params = texture(paramsMap, _uv0);
         float rough = params.x;
 
-        vec3 ibl = textureLod(environmentMap, vec4(refl, 0.0), rough * 10.0).xyz;
+        vec3 ibl = textureLod(environmentMap, refl, rough * 10.0).xyz;
 
         vec4 sslr = texture(rgbMap, _uv0);
         color = mix(ibl, sslr.xyz, sslr.w) * (1.0 - rough);
