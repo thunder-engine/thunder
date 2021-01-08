@@ -7,20 +7,20 @@
 #include <components/transform.h>
 #include <components/scene.h>
 #include <components/camera.h>
-#include <components/directlight.h>
 #include <components/spriterender.h>
-#include <components/meshrender.h>
-#include <components/particlerender.h>
 
 #include <resources/pipeline.h>
-#include <resources/rendertexture.h>
 #include <resources/material.h>
-#include <resources/particleeffect.h>
 #include <resources/prefab.h>
 #include <resources/sprite.h>
 
 #include <editor/converter.h>
 #include <editor/handles.h>
+
+#include "selecttool.h"
+#include "movetool.h"
+#include "rotatetool.h"
+#include "scaletool.h"
 
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
@@ -57,12 +57,10 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
         m_Modified(false),
         m_Drag(false),
         m_Canceled(false),
-        m_Mode(ModeTypes::MODE_SCALE),
         m_Axes(0),
-        m_AngleGrid(0.0f),
-        m_ScaleGrid(0.0f),
         m_pMap(nullptr),
         m_pPipeline(nullptr),
+        m_pActiveTool(nullptr),
         m_pMenu(nullptr) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
@@ -74,6 +72,13 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
     connect(this, &ObjectCtrl::mapUpdated, this, &ObjectCtrl::onUpdated);
     connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
+
+    m_Tools = {
+        new SelectTool(this, m_Selected),
+        new MoveTool(this, m_Selected),
+        new RotateTool(this, m_Selected),
+        new ScaleTool(this, m_Selected),
+    };
 }
 
 ObjectCtrl::~ObjectCtrl() {
@@ -143,111 +148,8 @@ void ObjectCtrl::drawHandles() {
     Handles::cleanDepth();
 
     if(!m_Selected.empty()) {
-        switch(m_Mode) {
-            case ModeTypes::MODE_TRANSLATE: {
-                m_World = Handles::moveTool(objectPosition(), Quaternion(), m_Drag);
-
-                if(m_Drag) {
-                    Vector3 delta = m_World - m_SavedWorld;
-                    if(m_MoveGrid > 0.0f) {
-                        for(int32_t i = 0; i < 3; i++) {
-                            delta[i] = m_MoveGrid[i] * int(delta[i] / m_MoveGrid[i]);
-                        }
-                    }
-                    for(const auto &it : m_Selected) {
-                        Vector3 dt = delta;
-                        Actor *a = dynamic_cast<Actor *>(it.object->parent());
-                        if(a) {
-                            dt = a->transform()->worldTransform().rotation().inverse() * delta;
-                        }
-                        it.object->transform()->setPosition(it.position + dt);
-                    }
-                    emit objectsUpdated();
-                    emit objectsChanged(selected(), "Position");
-                }
-            } break;
-            case ModeTypes::MODE_ROTATE: {
-                float angle = Handles::rotationTool(objectPosition(), Quaternion(), m_Drag);
-                if(m_AngleGrid > 0) {
-                    angle = m_AngleGrid * int(angle / m_AngleGrid);
-                }
-
-                if(m_Drag) {
-                    for(const auto &it : m_Selected) {
-                        Transform *tr = it.object->transform();
-                        Matrix4 parent;
-                        if(tr->parentTransform()) {
-                            parent = tr->parentTransform()->worldTransform();
-                        }
-                        Vector3 p = Vector3((parent * it.position) - m_Position);
-                        Quaternion q;
-                        Vector3 euler = it.euler;
-                        switch(Handles::s_Axes) {
-                            case Handles::AXIS_X: {
-                                q = Quaternion(Vector3(1.0f, 0.0f, 0.0f), angle);
-                                euler += Vector3(angle, 0.0f, 0.0f);
-                            } break;
-                            case Handles::AXIS_Y: {
-                                q = Quaternion(Vector3(0.0f, 1.0f, 0.0f), angle);
-                                euler += Vector3(0.0f, angle, 0.0f);
-                            } break;
-                            case Handles::AXIS_Z: {
-                                q = Quaternion(Vector3(0.0f, 0.0f, 1.0f), angle);
-                                euler += Vector3(0.0f, 0.0f, angle);
-                            } break;
-                            default: {
-                                Vector3 axis = m_pActiveCamera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
-                                axis.normalize();
-                                q = Quaternion(axis, angle);
-                                euler = q.euler();
-                            } break;
-                        }
-                        tr->setPosition(parent.inverse() * (m_Position + q * p));
-                        tr->setRotation(euler);
-                    }
-                    emit objectsUpdated();
-                    emit objectsChanged(selected(), "Rotation");
-                }
-            } break;
-            case ModeTypes::MODE_SCALE: {
-                if(!m_Drag) {
-                    Handles::s_Axes = Handles::AXIS_X | Handles::AXIS_Y | Handles::AXIS_Z;
-                }
-
-                m_World = Handles::scaleTool(objectPosition(), Quaternion(), m_Drag);
-
-                if(m_Drag) {
-                    Vector3 delta = (m_World - m_SavedWorld);
-                    float scale = (delta.x + delta.y + delta.z) * 0.01f;
-                    if(m_ScaleGrid > 0) {
-                        scale = m_ScaleGrid * int(scale / m_ScaleGrid);
-                    }
-                    for(const auto &it : m_Selected) {
-                        Transform *tr = it.object->transform();
-                        Matrix4 parent;
-                        if(tr->parentTransform()) {
-                            parent = tr->parentTransform()->worldTransform();
-                        }
-                        Vector3 p = Vector3((parent * it.position) - m_Position);
-                        Vector3 s;
-                        if(Handles::s_Axes & Handles::AXIS_X) {
-                            s   += Vector3(scale, 0, 0);
-                        }
-                        if(Handles::s_Axes & Handles::AXIS_Y) {
-                            s   += Vector3(0, scale, 0);
-                        }
-                        if(Handles::s_Axes & Handles::AXIS_Z) {
-                            s   += Vector3(0, 0, scale);
-                        }
-                        Vector3 v = it.scale + s;
-                        tr->setPosition(parent.inverse() * (m_Position + v * p));
-                        tr->setScale(v);
-                    }
-                    emit objectsUpdated();
-                    emit objectsChanged(selected(), "Scale");
-                }
-            } break;
-            default: break;
+        if(m_pActiveTool) {
+            m_pActiveTool->update();
         }
     }
 
@@ -278,7 +180,7 @@ void ObjectCtrl::clear(bool signal) {
 
 void ObjectCtrl::drawHelpers(Object &object) {
     Object::ObjectList list;
-    for(auto value : m_Selected.values()) {
+    for(auto value : m_Selected) {
         list.push_back(value.object);
     }
 
@@ -299,28 +201,12 @@ void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
     size = Vector2(1, 1);
 }
 
-Vector3 ObjectCtrl::objectPosition() {
-    Vector3 result;
-    if(!m_Selected.empty()) {
-        for(auto &it : m_Selected) {
-            result += it.object->transform()->worldPosition();
-        }
-        result = result / m_Selected.size();
-    }
-    return result;
-}
-
 void ObjectCtrl::setDrag(bool drag) {
-    if(drag) {
-        // Save params
-        for(auto &it : m_Selected) {
-            Transform *t = it.object->transform();
-            it.position = t->position();
-            it.scale    = t->scale();
-            it.euler    = t->rotation();
+    if(drag && m_pActiveTool) {
+        SelectTool *selectTool = dynamic_cast<SelectTool *>(m_pActiveTool);
+        if(selectTool) {
+            selectTool->startDrag();
         }
-        m_Position = objectPosition();
-        m_SavedWorld = m_World;
     }
     m_Drag = drag;
 }
@@ -376,7 +262,7 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
     for(auto it : list) {
         Actor *actor = static_cast<Actor *>(findObject(it));
         if(actor) {
-            Select data;
+            EditorTool::Select data;
             data.object = actor;
             m_Selected[it] = data;
         }
@@ -420,16 +306,14 @@ void ObjectCtrl::onFocusActor(Object *object) {
     setFocusOn(dynamic_cast<Actor *>(object), bottom);
 }
 
-void ObjectCtrl::onMoveActor() {
-    m_Mode = ModeTypes::MODE_TRANSLATE;
-}
-
-void ObjectCtrl::onRotateActor() {
-    m_Mode = ModeTypes::MODE_ROTATE;
-}
-
-void ObjectCtrl::onScaleActor() {
-    m_Mode = ModeTypes::MODE_SCALE;
+void ObjectCtrl::onChangeTool() {
+    QString name(sender()->objectName());
+    for(auto it : m_Tools) {
+        if(it->name() == name) {
+            m_pActiveTool = it;
+            break;
+        }
+    }
 }
 
 void ObjectCtrl::onUpdated() {
@@ -575,7 +459,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
     CameraCtrl::onInputEvent(pe);
     switch(pe->type()) {
         case QEvent::KeyPress: {
-            QKeyEvent *e    = static_cast<QKeyEvent *>(pe);
+            QKeyEvent *e = static_cast<QKeyEvent *>(pe);
             switch(e->key()) {
                 case Qt::Key_Delete: {
                     onRemoveActor(selected());
@@ -586,6 +470,10 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->buttons() & Qt::LeftButton) {
+                if(m_pActiveTool) {
+                    m_pActiveTool->beginControl();
+                }
+
                 if(Handles::s_Axes) {
                     m_Axes = Handles::s_Axes;
                 }
@@ -605,60 +493,15 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonRelease: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->button() == Qt::LeftButton) {
-                if(m_Drag) {
-                    switch(m_Mode) {
-                    case ModeTypes::MODE_TRANSLATE: {
-                        VariantList values;
-                        Object::ObjectList objects;
-                        for(auto it : m_Selected) {
-                            Transform *t = it.object->transform();
-                            values.push_back(t->position());
-                            objects.push_back(t);
-                            t->setPosition(it.position);
-                        }
-                        UndoManager::instance()->push(new PropertyObjects(objects, "position", values, this, "Move"));
-                    } break;
-                    case ModeTypes::MODE_ROTATE: {
-                        VariantList pos;
-                        VariantList rot;
-                        Object::ObjectList objects;
-                        for(auto it : m_Selected) {
-                            Transform *t = it.object->transform();
-                            pos.push_back(t->position());
-                            rot.push_back(t->rotation());
-                            objects.push_back(t);
-                            t->setPosition(it.position);
-                            t->setRotation(it.euler);
-                        }
-                        QUndoCommand *group = new QUndoCommand("Rotate");
-                        new PropertyObjects(objects, "position", pos, this, "", group);
-                        new PropertyObjects(objects, "rotation", rot, this, "", group);
-                        UndoManager::instance()->push(group);
-                    } break;
-                    case ModeTypes::MODE_SCALE: {
-                        VariantList pos;
-                        VariantList scl;
-                        Object::ObjectList objects;
-                        for(auto it : m_Selected) {
-                            Transform *t = it.object->transform();
-                            pos.push_back(t->position());
-                            scl.push_back(t->scale());
-                            objects.push_back(t);
-                            t->setPosition(it.position);
-                            t->setScale(it.scale);
-                        }
-                        QUndoCommand *group = new QUndoCommand("Scale");
-                        new PropertyObjects(objects, "position", pos, this, "", group);
-                        new PropertyObjects(objects, "scale", scl, this, "", group);
-                        UndoManager::instance()->push(group);
-                    } break;
-                    default: break;
-                    }
-                } else {
+                if(!m_Drag) {
                     if(!m_Canceled) {
                         onSelectActor(m_ObjectsList, e->modifiers() & Qt::ControlModifier);
                     } else {
                         m_Canceled = false;
+                    }
+                } else {
+                    if(m_pActiveTool) {
+                        m_pActiveTool->endControl();
                     }
                 }
                 setDrag(false);
@@ -667,6 +510,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseMove: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             m_MousePosition = Vector2(e->pos().x(), e->pos().y());
+
             if(e->buttons() & Qt::LeftButton) {
                 if(!m_Drag) {
                     if(e->modifiers() & Qt::ShiftModifier) {
@@ -678,7 +522,9 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 setDrag(false);
             }
 
-            if(!m_ObjectsList.empty()) {
+            if(m_pActiveTool->cursor().shape() != Qt::ArrowCursor) {
+                m_pView->setCursor(m_pActiveTool->cursor());
+            } else if(!m_ObjectsList.empty()) {
                 m_pView->setCursor(QCursor(Qt::CrossCursor));
             } else {
                 m_pView->unsetCursor();

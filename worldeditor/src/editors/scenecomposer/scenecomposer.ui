@@ -346,57 +346,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="moveButton">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
-            <normaloff>:/Images/editor/Move.png</normaloff>:/Images/editor/Move.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="autoExclusive">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="rotateButton">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
-            <normaloff>:/Images/editor/Rotate.png</normaloff>:/Images/editor/Rotate.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="autoExclusive">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="scaleButton">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../../../res/WorldEditor.qrc">
-            <normaloff>:/Images/editor/Scale.png</normaloff>:/Images/editor/Scale.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="autoExclusive">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QToolButton" name="renderMode">
           <property name="minimumSize">
            <size>
@@ -854,8 +803,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../../res/WorldEditor.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

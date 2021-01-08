@@ -35,6 +35,8 @@
         <file>icons/enum.png</file>
         <file>icons/method.png</file>
         <file>icons/property.png</file>
+        <file>editor/Select.png</file>
+        <file>editor/Transform.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

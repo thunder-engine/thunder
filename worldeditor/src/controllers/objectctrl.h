@@ -12,6 +12,7 @@
 #include <json.h>
 
 #include <components/component.h>
+#include <editor/editortool.h>
 
 #include "graph/viewport.h"
 
@@ -30,20 +31,6 @@ class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
 public:
-    enum class ModeTypes {
-        MODE_TRANSLATE  = 1,
-        MODE_ROTATE     = 2,
-        MODE_SCALE      = 3
-    };
-
-    struct Select {
-        Actor *object;
-        Vector3 position;
-        Vector3 scale;
-        Vector3 euler;
-    };
-
-public:
     ObjectCtrl(QOpenGLWidget *view);
     ~ObjectCtrl();
 
@@ -60,13 +47,12 @@ public:
     Object *map() const;
     void setMap(Object *map);
 
-    void setMoveGrid(float value) { m_MoveGrid = value; }
-    void setAngleGrid(float value) { m_AngleGrid = value; }
-
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
     bool isModified() const { return m_Modified; }
     void resetModified() { m_Modified = false; }
+
+    QList<EditorTool *> tools() const { return m_Tools; }
 
 public slots:
     void onInputEvent(QInputEvent *) override;
@@ -91,13 +77,14 @@ public slots:
 
     void onFocusActor(Object *object);
 
-    void onMoveActor();
-    void onRotateActor();
-    void onScaleActor();
+    void onChangeTool();
 
     void onUpdated();
 
     void drawHelpers(Object &object);
+
+    bool isDrag() const { return m_Drag; }
+    void setDrag(bool drag);
 
 signals:
     void mapUpdated();
@@ -115,11 +102,6 @@ protected:
 
     void selectGeometry(Vector2 &, Vector2 &size);
 
-    Vector3 objectPosition();
-
-    bool isDrag() { return m_Drag; }
-    void setDrag(bool drag);
-
 private slots:
     void onApplySettings();
 
@@ -128,21 +110,14 @@ private slots:
     void onBufferChanged();
 
 protected:
-    typedef QMap<uint32_t, Select> SelectMap;
-    SelectMap m_Selected;
+    EditorTool::SelectMap m_Selected;
 
     bool m_Modified;
 
     bool m_Drag;
     bool m_Canceled;
 
-    ModeTypes m_Mode;
-
     uint8_t m_Axes;
-
-    Vector3 m_MoveGrid;
-    float m_AngleGrid;
-    float m_ScaleGrid;
 
     Object *m_pMap;
 
@@ -155,13 +130,13 @@ protected:
     Vector2 m_MousePosition;
     Vector2 m_Screen;
 
-    Vector3 m_World;
-    Vector3 m_SavedWorld;
-    Vector3 m_Position;
-
     Vector3 m_MouseWorld;
 
     list<uint32_t> m_ObjectsList;
+
+    QList<EditorTool *> m_Tools;
+
+    EditorTool *m_pActiveTool;
 
     QMenu *m_pMenu;
 };

@@ -791,44 +791,50 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
     return Vector3(s_Mouse, 1.0) * 500;
 }
 
-void Handles::rectTool(const Vector4 &rect, bool locked) {
-    Matrix4 model;
+void Handles::rectTool(const Vector3 &position, const Vector2 &size, const Quaternion &rotation, bool locked) {
+    if(ICommandBuffer::isInited()) {
+        Matrix4 model(position, rotation, Vector3(1.0f));
 
-    Vector3 tr = Vector3(rect.z * 0.5f + rect.x, rect.w * 0.5f + rect.y, 0.0f);
-    Vector3 tl = Vector3(rect.z *-0.5f + rect.x, rect.w * 0.5f + rect.y, 0.0f);
-    Vector3 br = Vector3(rect.z * 0.5f + rect.x, rect.w *-0.5f + rect.y, 0.0f);
-    Vector3 bl = Vector3(rect.z *-0.5f + rect.x, rect.w *-0.5f + rect.y, 0.0f);
+        Vector3 tr(size.x * 0.5f, size.y * 0.5f, 0.0f);
+        Vector3 tl(size.x *-0.5f, size.y * 0.5f, 0.0f);
+        Vector3 br(size.x * 0.5f, size.y *-0.5f, 0.0f);
+        Vector3 bl(size.x *-0.5f, size.y *-0.5f, 0.0f);
 
-    if(!locked) {
-        float sence = Handles::s_Sense * 0.25f;
+        drawRectangle(position, rotation, size.x, size.y);
 
-        Handles::s_Axes = 0;
-        if(HandleTools::distanceToPoint(model, tr) <= sence) {
-            Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
-        } else if(HandleTools::distanceToPoint(model, tl) <= sence) {
-            Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
-        } else if(HandleTools::distanceToPoint(model, br) <= sence) {
-            Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
-        } else if(HandleTools::distanceToPoint(model, bl) <= sence) {
-            Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
-        } else if(HandleTools::distanceToPath(model, {tr, tl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_T;
-        } else if(HandleTools::distanceToPath(model, {br, bl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_B;
-        } else if(HandleTools::distanceToPath(model, {tr, br}) <= sence) {
-            Handles::s_Axes = Handles::POINT_R;
-        } else if(HandleTools::distanceToPath(model, {tl, bl}) <= sence) {
-            Handles::s_Axes = Handles::POINT_L;
-        } else {
-            Camera *camera = Camera::current();
-            Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
-            Vector3 point;
+        float s = 0.05f;
 
-            if(ray.intersect(tr, tl, bl, &point, true) || ray.intersect(bl, br, tr, &point, true)) {
-                Handles::s_Axes = Handles::POINT_B | Handles::POINT_T | Handles::POINT_L | Handles::POINT_R;
+        if(!locked) {
+            float sence = Handles::s_Sense * 0.25f;
+
+            Handles::s_Axes = 0;
+            if(HandleTools::distanceToPoint(model, tr) <= sence) {
+                Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
+            } else if(HandleTools::distanceToPoint(model, tl) <= sence) {
+                Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
+            } else if(HandleTools::distanceToPoint(model, br) <= sence) {
+                Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
+            } else if(HandleTools::distanceToPoint(model, bl) <= sence) {
+                Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
+            } else if(HandleTools::distanceToPath(model, {tr, tl}) <= sence) {
+                Handles::s_Axes = Handles::POINT_T;
+            } else if(HandleTools::distanceToPath(model, {br, bl}) <= sence) {
+                Handles::s_Axes = Handles::POINT_B;
+            } else if(HandleTools::distanceToPath(model, {tr, br}) <= sence) {
+                Handles::s_Axes = Handles::POINT_R;
+            } else if(HandleTools::distanceToPath(model, {tl, bl}) <= sence) {
+                Handles::s_Axes = Handles::POINT_L;
+            } else {
+                Camera *camera = Camera::current();
+                if(camera) {
+                    Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
+                    Vector3 point;
+
+                    if(ray.intersect(tr, tl, bl, &point, true) || ray.intersect(bl, br, tr, &point, true)) {
+                        Handles::s_Axes = Handles::POINT_B | Handles::POINT_T | Handles::POINT_L | Handles::POINT_R;
+                    }
+                }
             }
         }
     }
-
-    drawRectangle(Vector3(rect.x, rect.y, 0.0f), Quaternion(), rect.z, rect.w);
 }

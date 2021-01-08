@@ -72,7 +72,7 @@ bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
 }
 /*!
     Returns true if this ray intersects the given \a plane; otherwise returns false.
-    Output argument \a pt contain a point of intersection. Argument \a back is a flag to use backface culling.
+    Output argument \a pt contain a point of intersection. Argument \a back is a flag to ignore backface culling.
 */
 bool Ray::intersect(const Plane &plane, Vector3 *pt, bool back) {
     Vector3 n = plane.normal;

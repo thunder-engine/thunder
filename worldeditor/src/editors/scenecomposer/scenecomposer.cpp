@@ -143,13 +143,25 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->menuEdit->insertAction(ui->actionNew_Object, m_Redo);
 
     ui->componentButton->setProperty("blue", true);
-    ui->moveButton->setProperty("blue", true);
-    ui->rotateButton->setProperty("blue", true);
-    ui->scaleButton->setProperty("blue", true);
 
-    ui->moveButton->setProperty("checkred", true);
-    ui->rotateButton->setProperty("checkred", true);
-    ui->scaleButton->setProperty("checkred", true);
+    int index = 0;
+    for(auto it : ctl->tools()) {
+        QPushButton *tool = new QPushButton(ui->viewportWidget);
+        tool->setProperty("blue", true);
+        tool->setProperty("checkred", true);
+        tool->setCheckable(true);
+        tool->setAutoExclusive(true);
+        tool->setIcon(QIcon(it->icon()));
+        tool->setObjectName(it->name());
+
+        ui->viewportLayout->insertWidget(index, tool);
+
+        connect(tool, SIGNAL(clicked()), ctl, SLOT(onChangeTool()));
+        if(index == 0) {
+            tool->click();
+        }
+        index++;
+    }
 
     ui->commitButton->setProperty("green", true);
 
@@ -204,17 +216,13 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy,   SIGNAL(parented(Object::ObjectList,Object*)), ctl, SLOT(onParentActor(Object::ObjectList,Object*)));
     connect(ui->hierarchy,   SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
     connect(ui->orthoButton, SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
-    connect(ui->moveButton,  SIGNAL(clicked()), ctl, SLOT(onMoveActor()));
-    connect(ui->rotateButton,SIGNAL(clicked()), ctl, SLOT(onRotateActor()));
-    connect(ui->scaleButton, SIGNAL(clicked()), ctl, SLOT(onScaleActor()));
+
     connect(PluginManager::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &SceneComposer::onOpenEditor);
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
-
-    ui->scaleButton->click();
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
 

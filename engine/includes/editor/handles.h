@@ -49,7 +49,7 @@ public:
     static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static Vector3 scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked);
-    static void rectTool(const Vector4 &rect, bool locked);
+    static void rectTool(const Vector3 &position, const Vector2 &size, const Quaternion &rotation, bool locked);
 
 public:
     static Vector4 s_Color;
