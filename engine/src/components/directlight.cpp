@@ -11,6 +11,8 @@
 #include "resources/pipeline.h"
 #include "resources/rendertexture.h"
 
+#include "systems/rendersystem.h"
+
 #include <float.h>
 
 #define MAX_LODS 4
@@ -130,7 +132,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
     p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
 
     int32_t pageWidth, pageHeight;
-    Pipeline::shadowPageSize(pageWidth, pageHeight);
+    RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];

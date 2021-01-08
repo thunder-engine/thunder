@@ -51,6 +51,7 @@ public:
 
     Vector3                     center;
     Vector3                     extent;
+    float                       radius;
 };
 
 #endif /* AABB_H_HEADER_INCLUDED */

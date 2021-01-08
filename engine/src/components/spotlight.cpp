@@ -1,5 +1,7 @@
 #include "components/spotlight.h"
 
+#include "systems/rendersystem.h"
+
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
@@ -119,7 +121,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
 
     int32_t pageWidth, pageHeight;
-    Pipeline::shadowPageSize(pageWidth, pageHeight);
+    RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
     p_ptr->m_Matrix = scale * crop * rot;
     p_ptr->m_Tiles = Vector4(static_cast<float>(x) / pageWidth,

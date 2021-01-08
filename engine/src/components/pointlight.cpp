@@ -1,5 +1,7 @@
 #include "components/pointlight.h"
 
+#include "systems/rendersystem.h"
+
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
@@ -124,7 +126,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
     p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, 6);
 
     int32_t pageWidth, pageHeight;
-    Pipeline::shadowPageSize(pageWidth, pageHeight);
+    RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
     float zFar = attenuationRadius();
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_Near, zFar);

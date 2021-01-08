@@ -20,14 +20,16 @@
 */
 AABBox::AABBox() :
         center(0.0f),
-        extent(0.5f) {
+        extent(0.5f),
+        radius(extent.length()) {
 }
 /*!
     Constructs a bounding box with \a center and \a extent.
 */
 AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
         center(center),
-        extent(extent) {
+        extent(extent),
+        radius(extent.length()) {
 }
 /*!
     Grow the AABBox to encapsulate a spehere with \a position and \a radius.
@@ -89,11 +91,11 @@ bool AABBox::intersect(const Vector3 &position, areal radius) const {
 
     for(int i = 0; i < 3; i++) {
         if (position[i] < min[i]) {
-            s   = position[i] - min[i];
-            d  += s * s;
+            s  = position[i] - min[i];
+            d += s * s;
         } else if (position[i] > max[i]) {
-            s   = position[i] - max[i];
-            d  += s * s;
+            s  = position[i] - max[i];
+            d += s * s;
         }
     }
     return d <= radius * radius;
@@ -160,6 +162,7 @@ void AABBox::box(Vector3 &min, Vector3 &max) const {
 void AABBox::setBox(const Vector3 &min, const Vector3 &max) {
     extent = (max - min) * 0.5f;
     center = min + extent;
+    radius = extent.length();
 }
 /*!
     Set curent bounding box by provided array of \a points and \a number of them.

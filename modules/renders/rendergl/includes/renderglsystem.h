@@ -3,22 +3,20 @@
 
 #include <cstdint>
 
-#include <system.h>
+#include <systems/rendersystem.h>
 
 class Engine;
 
-class RenderGLSystem : public System {
+class RenderGLSystem : public RenderSystem {
 public:
     RenderGLSystem(Engine *engine);
     ~RenderGLSystem();
 
-    bool init();
+    bool init() override;
 
-    const char *name() const;
+    const char *name() const override;
 
-    void update(Scene *scene);
-
-    int threadPolicy() const;
+    void update(Scene *scene) override;
 
     Engine *m_pEngine;
 };

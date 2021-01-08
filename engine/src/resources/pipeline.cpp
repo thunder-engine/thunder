@@ -1,5 +1,7 @@
 #include "pipeline.h"
 
+#include "systems/rendersystem.h"
+
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/scene.h"
@@ -40,9 +42,6 @@
 
 #define OVERRIDE "uni.texture0"
 
-int32_t Pipeline::m_ShadowPageWidth = 1024;
-int32_t Pipeline::m_ShadowPageHeight = 1024;
-
 Pipeline::Pipeline() :
         m_Buffer(nullptr),
         m_Screen(Vector2(64, 64)),
@@ -59,7 +58,9 @@ Pipeline::Pipeline() :
 
     m_pPlane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
-    m_Buffer->setGlobalValue("light.map", Vector4(1.0f / m_ShadowPageWidth, 1.0f / m_ShadowPageHeight, m_ShadowPageWidth, m_ShadowPageHeight));
+    int32_t pageWidth, pageHeight;
+    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    m_Buffer->setGlobalValue("light.map", Vector4(1.0f / pageWidth, 1.0f / pageHeight, pageWidth, pageHeight));
 
     RenderTexture *depth    = Engine::objectCreate<RenderTexture>();
     depth->setDepth(24);
@@ -177,33 +178,10 @@ void Pipeline::resize(int32_t width, int32_t height) {
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
 }
 
-void Pipeline::combineComponents(Object *object) {
-    for(auto &it : object->getChildren()) {
-        Object *child = it;
-        Renderable *comp = dynamic_cast<Renderable *>(child);
-        if(comp) {
-            if(comp->isEnabled()) {
-                comp->update();
-                m_Components.push_back(comp);
-            }
-        } else {
-            PostProcessSettings *settings = dynamic_cast<PostProcessSettings *>(child);
-            if(settings) {
-                m_PostProcessSettings.push_back(settings);
-            } else {
-                Actor *actor = dynamic_cast<Actor *>(child);
-                if(actor && !actor->isEnabled()) {
-                    continue;
-                }
-                combineComponents(child);
-            }
-        }
-    }
-}
+void Pipeline::analizeScene(Scene *scene, RenderSystem *render) {
+    A_UNUSED(render);
 
-void Pipeline::analizeScene(Scene *scene) {
     m_Components.clear();
-    m_Filter.clear();
     m_PostProcessSettings.clear();
 
     combineComponents(scene);
@@ -243,8 +221,8 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         return tile->second.first;
     }
 
-    int32_t width = SM_RESOLUTION_DEFAULT / (lod + 1);
-    int32_t height = SM_RESOLUTION_DEFAULT / (lod + 1);
+    int32_t width = (SM_RESOLUTION_DEFAULT >> lod);
+    int32_t height = (SM_RESOLUTION_DEFAULT >> lod);
 
     uint32_t columns = MAX(count / 2, 1);
     uint32_t rows = count / columns;
@@ -263,15 +241,18 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     }
 
     if(sub == nullptr) {
+        int32_t pageWidth, pageHeight;
+        RenderSystem::atlasPageSize(pageWidth, pageHeight);
+
         target = Engine::objectCreate<RenderTexture>();
         target->setDepth(24);
-        target->resize(m_ShadowPageWidth, m_ShadowPageHeight);
+        target->resize(pageWidth, pageHeight);
         target->setFixed(true);
 
         AtlasNode *root = new AtlasNode;
 
-        root->w = m_ShadowPageWidth;
-        root->h = m_ShadowPageHeight;
+        root->w = pageWidth;
+        root->h = pageHeight;
 
         m_ShadowPages[target] = root;
 
@@ -300,60 +281,50 @@ ICommandBuffer *Pipeline::buffer() const {
     return m_Buffer;
 }
 
-void Pipeline::shadowPageSize(int32_t &width, int32_t &height) {
-    width = m_ShadowPageWidth;
-    height = m_ShadowPageHeight;
-}
-
-void Pipeline::setShadowPageSize(int32_t width, int32_t height) {
-    m_ShadowPageWidth = width;
-    m_ShadowPageHeight = height;
-}
-
 void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
     for(auto it : list) {
         static_cast<Renderable *>(it)->draw(*m_Buffer, layer);
     }
 }
 
-void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
-    {
-        for(auto &tile : m_Tiles) {
-            for(auto &it : tile.second.second) {
-                it->dirty = true;
+void Pipeline::cleanShadowCache() {
+    for(auto tiles = m_Tiles.begin(); tiles != m_Tiles.end(); ) {
+        bool outdate = false;
+        for(auto &it : tiles->second.second) {
+            if(it->dirty == true) {
+                outdate = true;
+                break;
             }
         }
-    }
-    {
-        for(auto &it : list) {
-            BaseLight *light = dynamic_cast<BaseLight *>(it);
-            if(light) {
-                light->shadowsUpdate(camera, this, m_Components);
-            }
-        }
-    }
-    {
-        for(auto tiles = m_Tiles.begin(); tiles != m_Tiles.end(); ) {
-            bool outdate = false;
+        if(outdate) {
             for(auto &it : tiles->second.second) {
-                if(it->dirty == true) {
-                    outdate = true;
-                    break;
-                }
+                delete it;
             }
-            if(outdate) {
-                for(auto &it : tiles->second.second) {
-                    delete it;
-                }
-                tiles = m_Tiles.erase(tiles);
-            } else {
-                ++tiles;
-            }
+            tiles = m_Tiles.erase(tiles);
+        } else {
+            ++tiles;
         }
-        /// \todo This activity leads to crash
-        //for(auto &it : m_ShadowPages) {
-        //    it.second->clean();
-        //}
+    }
+    /// \todo This activity leads to crash
+    //for(auto &it : m_ShadowPages) {
+    //    it.second->clean();
+    //}
+
+    for(auto &tile : m_Tiles) {
+        for(auto &it : tile.second.second) {
+            it->dirty = true;
+        }
+    }
+}
+
+void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
+    cleanShadowCache();
+
+    for(auto &it : list) {
+        BaseLight *light = dynamic_cast<BaseLight *>(it);
+        if(light) {
+            light->shadowsUpdate(camera, this, m_Components);
+        }
     }
 }
 
@@ -367,6 +338,30 @@ RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
     }
     m_Buffer->resetViewProjection();
     return result;
+}
+
+void Pipeline::combineComponents(Object *object) {
+    for(auto &it : object->getChildren()) {
+        Object *child = it;
+        Renderable *comp = dynamic_cast<Renderable *>(child);
+        if(comp) {
+            if(comp->isEnabled()) {
+                comp->update();
+                m_Components.push_back(comp);
+            }
+        } else {
+            PostProcessSettings *settings = dynamic_cast<PostProcessSettings *>(child);
+            if(settings) {
+                m_PostProcessSettings.push_back(settings);
+            } else {
+                Actor *actor = dynamic_cast<Actor *>(child);
+                if(actor && !actor->isEnabled()) {
+                    continue;
+                }
+                combineComponents(child);
+            }
+        }
+    }
 }
 
 struct ObjectComp {

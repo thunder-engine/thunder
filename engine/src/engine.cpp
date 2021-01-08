@@ -23,20 +23,9 @@
 #include "components/transform.h"
 #include "components/camera.h"
 
-#include "components/meshrender.h"
-#include "components/textrender.h"
-#include "components/spriterender.h"
-#include "components/particlerender.h"
-#include "components/directlight.h"
-#include "components/pointlight.h"
-#include "components/spotlight.h"
-#include "components/arealight.h"
 #include "components/armature.h"
-#include "components/skinnedmeshrender.h"
 
 #include "components/animationcontroller.h"
-
-#include "components/postprocesssettings.h"
 
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
@@ -59,8 +48,6 @@
 #include "resources/map.h"
 
 #include "systems/resourcesystem.h"
-
-#include "commandbuffer.h"
 
 #include "log.h"
 
@@ -223,29 +210,11 @@ Engine::Engine(File *file, const char *path) :
     Transform::registerClassFactory(this);
     Camera::registerClassFactory(this);
 
-    MeshRender::registerClassFactory(this);
-    TextRender::registerClassFactory(this);
-    SpriteRender::registerClassFactory(this);
-
-    DirectLight::registerClassFactory(this);
-    PointLight::registerClassFactory(this);
-    SpotLight::registerClassFactory(this);
-    AreaLight::registerClassFactory(this);
-
-    ParticleRender::registerClassFactory(this);
-
     AnimationController::registerClassFactory(this);
 
     NativeBehaviour::registerClassFactory(this);
-    Renderable::registerClassFactory(this);
-    BaseLight::registerClassFactory(this);
-
-    ICommandBuffer::registerClassFactory(this);
-
-    PostProcessSettings::registerClassFactory(this);
 
     Armature::registerClassFactory(this);
-    SkinnedMeshRender::registerClassFactory(this);
 
     p_ptr->m_pScene = Engine::objectCreate<Scene>("Scene");
 }
@@ -360,7 +329,6 @@ void Engine::update() {
     Timer::update();
 
     processEvents();
-    //p_ptr->m_ThreadPool.start(*this);
 
     for(auto it : EnginePrivate::m_Pool) {
         p_ptr->m_ThreadPool.start(*it);

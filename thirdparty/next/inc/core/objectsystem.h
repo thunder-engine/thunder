@@ -64,13 +64,15 @@ protected:
 
     void                                deleteAllObjects        ();
 
+    virtual Object                     *instantiateObject       (const MetaObject *meta);
+
+    virtual void                        removeObject            (Object *object);
+
 private:
     friend class ObjectSystemTest;
     friend class Object;
 
     void                                addObject               (Object *object);
-
-    void                                removeObject            (Object *object);
 
     void                                suspendObject           (Object *object);
 

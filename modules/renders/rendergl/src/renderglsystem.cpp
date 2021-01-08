@@ -36,7 +36,7 @@ void _CheckGLError(const char* file, int line) {
 }
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
-        System(),
+        RenderSystem(),
         m_pEngine(engine) {
     PROFILE_FUNCTION();
 
@@ -63,6 +63,9 @@ RenderGLSystem::~RenderGLSystem() {
     CommandBufferGL::unregisterClassFactory(m_pEngine);
 }
 
+const char *RenderGLSystem::name() const {
+    return "RenderGL";
+}
 /*!
     Initialization of render.
 */
@@ -75,53 +78,38 @@ bool RenderGLSystem::init() {
         Log(Log::ERR) << "[ Render::RenderGLSystem ] Failed to initialize OpenGL context";
         return false;
     }
-    glEnable        (GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     CheckGLError();
 #endif
 
     int32_t targets;
-    glGetIntegerv	(GL_MAX_DRAW_BUFFERS, &targets);
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &targets);
     CheckGLError();
 
     int32_t texture;
-    glGetIntegerv	(GL_MAX_TEXTURE_SIZE, &texture);
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
     CheckGLError();
 
     texture = MIN(texture, MAX_RESOLUTION);
-
-    Pipeline::setShadowPageSize(texture, texture);
+    setAtlasPageSize(texture, texture);
 
     CommandBufferGL::setInited();
 
     return true;
 }
-
-const char *RenderGLSystem::name() const {
-    return "RenderGL";
-}
-
 /*!
     Main drawing procedure.
 */
 void RenderGLSystem::update(Scene *scene) {
     PROFILE_FUNCTION();
 
-    PROFILER_RESET(POLYGONS);
-    PROFILER_RESET(DRAWCALLS);
-
-    Camera *camera  = Camera::current();
+    Camera *camera = Camera::current();
     if(camera && CommandBufferGL::isInited()) {
         int32_t target;
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
 
-        Pipeline *pipe  = camera->pipeline();
+        Pipeline *pipe = camera->pipeline();
         pipe->setTarget(target);
-        pipe->analizeScene(scene);
-        pipe->draw(*camera);
-        pipe->finish();
+        RenderSystem::update(scene);
     }
-}
-
-int RenderGLSystem::threadPolicy() const {
-    return Main;
 }

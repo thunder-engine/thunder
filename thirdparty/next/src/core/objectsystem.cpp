@@ -114,18 +114,23 @@ void ObjectSystem::processEvents() {
 Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object *parent) {
     PROFILE_FUNCTION();
 
-    Object *object  = nullptr;
-
+    Object *object = nullptr;
     FactoryPair *pair = metaFactory(uri);
     if(pair) {
-        const MetaObject *meta  = pair->first;
-
-        object = meta->createInstance();
+        const MetaObject *meta = pair->first;
+        object = pair->second->instantiateObject(meta);
         object->setName(name);
         object->setParent(parent);
         object->setSystem(pair->second);
     }
     return object;
+}
+/*!
+    The basic method to spawn a new object based on the provided \a meta object.
+    Returns a pointer to spawned object.
+*/
+Object *ObjectSystem::instantiateObject(const MetaObject *meta) {
+    return meta->createInstance();
 }
 /*!
     \internal
@@ -387,26 +392,20 @@ Object *ObjectSystem::findObject(uint32_t uuid, Object *root) {
     }
     return nullptr;
 }
-
+/*!
+    Adds an \a object to main pull of objects in ObjectSystem
+*/
 void ObjectSystem::addObject(Object *object) {
     PROFILE_FUNCTION();
     m_ObjectList.push_back(object);
 }
-
 /*!
     \internal
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
     if(m_SuspendObject == nullptr) {
-        auto it = m_ObjectList.begin();
-        while(it != m_ObjectList.end()) {
-            if(*it == object) {
-                m_ObjectList.erase(it);
-                return;
-            }
-            ++it;
-        }
+        m_ObjectList.remove(object);
     }
 }
 /*!
