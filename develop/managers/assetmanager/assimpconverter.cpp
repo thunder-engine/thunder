@@ -65,7 +65,7 @@ AssimpImportSettings::AssimpImportSettings() :
         m_Scale(1.0f),
         m_Colors(true),
         m_Normals(true),
-        m_Animation(false),
+        m_Animation(true),
         m_Filter(Keyframe_Reduction),
         m_PositionError(0.5f),
         m_RotationError(0.5f),
@@ -593,11 +593,11 @@ void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
 }
 
 void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings) {
-    AnimationClip clip;
-    clip.setName("AnimationClip");
-
     for(uint32_t a = 0; a < scene->mNumAnimations; a++) {
         aiAnimation *animation = scene->mAnimations[a];
+
+        AnimationClip clip;
+        clip.setName(animation->mName.C_Str());
 
         double animRate = (animation->mTicksPerSecond > 0) ? animation->mTicksPerSecond : 1;
 
@@ -727,11 +727,12 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                 }
             }
         }
+
+        clip.m_Tracks.sort(compare);
+
+        int32_t type = MetaType::type<AnimationClip *>();
+        saveData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), type, fbxSettings);
     }
-
-    clip.m_Tracks.sort(compare);
-
-    saveData(Bson::save(Engine::toVariant(&clip)), clip.name().c_str(), MetaType::type<Animation *>(), fbxSettings);
 }
 
 void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
