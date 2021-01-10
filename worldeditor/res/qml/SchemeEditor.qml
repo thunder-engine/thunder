@@ -322,21 +322,6 @@ Rectangle {
             model: (links !== undefined && stateMachine) ? links.length : 0
             Rectangle {
                 id: linkObject
-                x: nodes[sender].pos.x + (nodeWidth(nodes[sender]) + (nodeBorder * 2)) / 2 + scheme.x
-                y: nodes[sender].pos.y + (nodeHeight(nodes[sender]) + (nodeBorder * 2)) / 2 + scheme.y
-
-                width: 2
-                height: Math.sqrt(dx * dx + dy * dy)
-                rotation: -Math.atan2(dx, dy) * (180.0 / Math.PI)
-                transformOrigin: Item.Top
-
-                color: (focusNode === sender || focusNode === receiver ||
-                        focusLink === index || selectLink === index) ? "red" : "white"
-
-                transform: Translate {
-                    x: -offset * Math.cos(rotation * (Math.PI / 180.0))
-                    y: -offset * Math.sin(rotation * (Math.PI / 180.0))
-                }
 
                 property int sender: links[index].sender
                 property int receiver: links[index].receiver
@@ -352,8 +337,24 @@ Rectangle {
                     return 0
                 }
 
-                property int dx: nodes[receiver].pos.x + (nodeWidth(nodes[receiver]) + (nodeBorder * 2)) / 2 + scheme.x - x
-                property int dy: nodes[receiver].pos.y + (nodeHeight(nodes[receiver]) + (nodeBorder * 2)) / 2 + scheme.y - y
+                property int dx: nodes[receiver].pos.x + (nodeWidth(nodes[receiver]) + (nodeBorder * 2)) / 2 - x
+                property int dy: nodes[receiver].pos.y + (nodeHeight(nodes[receiver]) + (nodeBorder * 2)) / 2 - y
+
+                x: nodes[sender].pos.x + (nodeWidth(nodes[sender]) + (nodeBorder * 2)) / 2
+                y: nodes[sender].pos.y + (nodeHeight(nodes[sender]) + (nodeBorder * 2)) / 2
+
+                width: 2
+                height: Math.sqrt(dx * dx + dy * dy)
+                rotation: -Math.atan2(dx, dy) * (180.0 / Math.PI)
+                transformOrigin: Item.Top
+
+                color: (focusNode === sender || focusNode === receiver ||
+                        focusLink === index || selectLink === index) ? "red" : "white"
+
+                transform: Translate {
+                    x: -offset * Math.cos(rotation * (Math.PI / 180.0))
+                    y: -offset * Math.sin(rotation * (Math.PI / 180.0))
+                }
 
                 MouseArea {
                     anchors.fill: parent
