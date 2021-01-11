@@ -35,7 +35,7 @@
                 "Texture": [
                     "Template",
                     ".embedded/invalid.png",
-                    46
+                    "Texture"
                 ]
             },
             "X": -400,
@@ -66,6 +66,9 @@
     ],
     "Raw": "",
     "Side": true,
+    "Textures": {
+        ".embedded/invalid.png": 0
+    },
     "Type": 0,
     "View": true
 }

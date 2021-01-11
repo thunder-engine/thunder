@@ -2,15 +2,17 @@
     "Blend": 0,
     "Depth": false,
     "Links": [
-
-
     ],
     "Model": 0,
     "Nodes": [
-
     ],
     "Raw": "SSAO.frag",
     "Side": true,
+    "Textures": {
+        "depthMap": 2,
+        "normalsMap": 2,
+        "noiseMap": 2
+    },
     "Type": 1,
     "View": true
 }

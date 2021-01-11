@@ -69,6 +69,9 @@
     ],
     "Raw": "",
     "Side": true,
+    "Textures": {
+        "ssaoMap": 2
+    },
     "Type": 2,
     "View": true
 }

@@ -77,7 +77,7 @@
                 "Texture": [
                     "Template",
                     ".embedded/invalid.png",
-                    46
+                    "Texture"
                 ]
             },
             "X": -580,
@@ -123,6 +123,13 @@
         {
             "Type": "ParamVector",
             "Values": {
+                "Default_Value": [
+                    67,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
                 "Parameter_Name": "color0"
             },
             "X": -280,
@@ -145,6 +152,9 @@
     ],
     "Raw": "",
     "Side": true,
+    "Textures": {
+        ".embedded/invalid.png": 0
+    },
     "Type": 0,
     "View": true
 }

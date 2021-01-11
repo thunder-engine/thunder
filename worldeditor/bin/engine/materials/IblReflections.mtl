@@ -2,15 +2,19 @@
     "Blend": 1,
     "Depth": false,
     "Links": [
-
-
     ],
     "Model": 0,
     "Nodes": [
-
     ],
     "Raw": "IBL.frag",
     "Side": true,
+    "Textures": {
+        "depthMap": 2,
+        "normalsMap": 2,
+        "paramsMap": 2,
+        "rgbMap": 2,
+        "environmentMap": 2
+    },
     "Type": 1,
     "View": true
 }

@@ -2,14 +2,16 @@
     "Blend": 0,
     "Depth": false,
     "Links": [
-
     ],
     "Model": 0,
     "Nodes": [
-
     ],
     "Raw": "Outline.frag",
     "Side": true,
+    "Textures": {
+        "rgbMap": 2,
+        "outlineMap": 2
+    },
     "Type": 1,
     "View": true
 }

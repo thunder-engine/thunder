@@ -12,53 +12,32 @@
 void AMaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    switch(m_MaterialType) {
-        case PostProcess: {
-            /// \todo should be removed
-            setTexture("rgbMap",     nullptr);
-            setTexture("depthMap",   nullptr);
-            setTexture("normalsMap", nullptr);
-            setTexture("diffuseMap", nullptr);
-            setTexture("paramsMap", nullptr);
-            setTexture("outlineMap", nullptr);
-            setTexture("environmentMap", nullptr);
-        } break;
-        case LightFunction: {
-            /// \todo should be removed
-            setTexture("normalsMap",  nullptr);
-            setTexture("diffuseMap",  nullptr);
-            setTexture("paramsMap",   nullptr);
-            setTexture("emissiveMap", nullptr);
-            setTexture("depthMap",    nullptr);
-            setTexture("shadowMap",   nullptr);
-        } break;
-        default: { // Surface type
-            {
-                auto it = data.find("Simple");
-                if(it != data.end()) {
-                    m_ShaderSources[Simple] = (*it).second.toString();
-                }
+    if(m_MaterialType == Surface) {
+        {
+            auto it = data.find("Simple");
+            if(it != data.end()) {
+                m_ShaderSources[Simple] = (*it).second.toString();
             }
-            {
-                auto it = data.find("StaticInst");
-                if(it != data.end()) {
-                    m_ShaderSources[Instanced] = (*it).second.toString();
-                }
+        }
+        {
+            auto it = data.find("StaticInst");
+            if(it != data.end()) {
+                m_ShaderSources[Instanced] = (*it).second.toString();
             }
-            {
-                auto it = data.find("Particle");
-                if(it != data.end()) {
-                    m_ShaderSources[Particle] = (*it).second.toString();
-                }
+        }
+        {
+            auto it = data.find("Particle");
+            if(it != data.end()) {
+                m_ShaderSources[Particle] = (*it).second.toString();
             }
-            {
-                auto it = data.find("Skinned");
-                if(it != data.end()) {
-                    m_ShaderSources[Skinned] = (*it).second.toString();
-                    setTexture("skinMatrices", nullptr);
-                }
+        }
+        {
+            auto it = data.find("Skinned");
+            if(it != data.end()) {
+                m_ShaderSources[Skinned] = (*it).second.toString();
+                setTexture("skinMatrices", nullptr);
             }
-        } break;
+        }
     }
 
     {

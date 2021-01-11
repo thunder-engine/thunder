@@ -2,7 +2,6 @@
     "Blend": 1,
     "Depth": false,
     "Links": [
-
     ],
     "Model": 0,
     "Nodes": [
@@ -17,6 +16,13 @@
     ],
     "Raw": "SpotLight.frag",
     "Side": false,
+    "Textures": {
+        "normalsMap": 2,
+        "diffuseMap": 2,
+        "paramsMap": 2,
+        "depthMap": 2,
+        "shadowMap": 2
+    },
     "Type": 2,
     "View": true
 }

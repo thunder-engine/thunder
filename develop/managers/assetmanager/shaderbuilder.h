@@ -196,6 +196,9 @@ private:
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
+    void loadTextures(const QVariantMap &data);
+    QVariantMap saveTextures() const;
+
     IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
