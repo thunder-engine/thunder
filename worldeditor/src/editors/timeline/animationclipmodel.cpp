@@ -51,13 +51,14 @@ void AnimationClipModel::setController(AnimationController *controller) {
 
 void AnimationClipModel::setClip(const QString &clip) {
     m_pClip = m_Clips.value(clip);
+    if(m_pClip) {
+        m_pController->setClip(m_pClip);
 
-    m_pController->setClip(m_pClip);
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
 
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
-
-    setRow(0);
+        setRow((m_pClip->m_Tracks.size() > 0) ? 0 : -1);
+    }
 }
 
 void AnimationClipModel::onExpanded(const QModelIndex &index) {
