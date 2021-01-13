@@ -625,9 +625,14 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         frameX.m_Position = frameY.m_Position = frameZ.m_Position = time;
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 
-                        frameX.m_Value = key->mValue.x;
-                        frameY.m_Value = key->mValue.y;
-                        frameZ.m_Value = key->mValue.z;
+                        Vector3 pos = Vector3(key->mValue.x, key->mValue.y, key->mValue.z) * fbxSettings->customScale();
+                        if(fbxSettings->m_Flip) {
+                            pos = Vector3(-pos.x, pos.z, pos.y);
+                        }
+
+                        frameX.m_Value = pos.x;
+                        frameY.m_Value = pos.y;
+                        frameZ.m_Value = pos.z;
 
                         x.m_Keys.push_back(frameX);
                         y.m_Keys.push_back(frameY);

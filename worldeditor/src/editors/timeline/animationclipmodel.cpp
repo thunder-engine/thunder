@@ -58,6 +58,7 @@ void AnimationClipModel::setClip(const QString &clip) {
         emit layoutChanged();
 
         setRow((m_pClip->m_Tracks.size() > 0) ? 0 : -1);
+        setPosition(0.0f);
     }
 }
 
