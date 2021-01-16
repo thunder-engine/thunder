@@ -109,6 +109,8 @@ void ProjectManager::loadSettings() {
                         value = QVariant::fromValue<Template>(Template(value.toString(), MetaType::type<Actor *>()));
                     }
                     property.write(this, value);
+                } else {
+                    setProperty(qPrintable(it), value); // Dynamic property because some module may store this
                 }
             }
             {

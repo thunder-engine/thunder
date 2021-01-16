@@ -29,6 +29,10 @@ const QString gEditorSuffix("-Editor");
 const QString gProfile("profile");
 const QString gArchitectures("architectures");
 
+const char *gWinProfile = "_qbs.profile.win";
+const char *gOsxProfile = "_qbs.profile.osx";
+const char *gLinProfile = "_qbs.profile.lin";
+
 // Android specific
 const QString gManifestFile("${manifestFile}");
 const QString gResourceDir("${resourceDir}");
