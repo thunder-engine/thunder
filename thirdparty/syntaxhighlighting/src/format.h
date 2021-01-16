@@ -1,24 +1,8 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2020 Jonathan Poelen <jonathan.poelen@gmail.com>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #ifndef KSYNTAXHIGHLIGHTING_FORMAT_H
@@ -28,7 +12,6 @@
 #include "theme.h"
 
 #include <QExplicitlySharedDataPointer>
-#include <QTypeInfo>
 
 QT_BEGIN_NAMESPACE
 class QColor;
@@ -36,9 +19,8 @@ class QString;
 class QXmlStreamReader;
 QT_END_NAMESPACE
 
-namespace KSyntaxHighlighting {
-
-class DefinitionRef;
+namespace KSyntaxHighlighting
+{
 class FormatPrivate;
 
 /** Describes the format to be used for a specific text fragment.
@@ -56,7 +38,7 @@ public:
     Format(const Format &other);
     ~Format();
 
-    Format& operator=(const Format &other);
+    Format &operator=(const Format &other);
 
     /** Returns @c true if this is a valid format, ie. one that
      *  was read from a syntax definition file.
@@ -138,6 +120,70 @@ public:
      * Returns whether characters with this format should be spell checked.
      */
     bool spellCheck() const;
+
+    /** Returns @c true if the syntax definition file sets a value for the bold text
+     *  attribute and, therefore, overrides the theme and the default formatting
+     *  style. If the return is @p true, this value is obtained by isBold().
+     *  @see isBold()
+     *  @since 5.62
+     */
+    bool hasBoldOverride() const;
+
+    /** Returns @c true if the syntax definition file sets a value for the italic text
+     *  attribute and, therefore, overrides the theme and the default formatting style.
+     *  If the return is @p true, this value is obtained by isItalic().
+     *  @see isItalic()
+     *  @since 5.62
+     */
+    bool hasItalicOverride() const;
+
+    /** Returns @c true if the syntax definition file sets a value for the underlined
+     *  text attribute and, therefore, overrides the theme and the default formatting
+     *  style. If the return is @p true, this value is obtained by isUnderline().
+     *  @see isUnderline()
+     *  @since 5.62
+     */
+    bool hasUnderlineOverride() const;
+
+    /** Returns @c true if the syntax definition file specifies a value for the
+     *  struck through text attribute. If the return is @p true, this value
+     *  is obtained by isStrikeThrough().
+     *  @see isStrikeThrough()
+     *  @since 5.62
+     */
+    bool hasStrikeThroughOverride() const;
+
+    /** Returns @c true if the syntax definition file sets a value for the foreground
+     *  text color attribute and, therefore, overrides the theme and the default formatting
+     *  style. If the return is @p true, this value is obtained  by textColor().
+     *  @see textColor(), hasTextColor()
+     *  @since 5.62
+     */
+    bool hasTextColorOverride() const;
+
+    /** Returns @c true if the syntax definition file sets a value for the background
+     *  color attribute and, therefore, overrides the theme and the default formatting
+     *  style. If the return is @p true, this value is obtained by backgroundColor().
+     *  @see backgroundColor(), hasBackgroundColor()
+     *  @since 5.62
+     */
+    bool hasBackgroundColorOverride() const;
+
+    /** Returns @c true if the syntax definition file specifies a value for the
+     *  selected text color attribute. If the return is @p true, this value is
+     *  obtained by selectedTextColor().
+     *  @see selectedTextColor()
+     *  @since 5.62
+     */
+    bool hasSelectedTextColorOverride() const;
+
+    /** Returns @c true if the syntax definition file specifies a value for the
+     *  selected background color attribute. If the return is @p true, this
+     *  value is obtained by selectedBackgroundColor().
+     *  @see selectedBackgroundColor()
+     *  @since 5.62
+     */
+    bool hasSelectedBackgroundColorOverride() const;
 
 private:
     friend class FormatPrivate;

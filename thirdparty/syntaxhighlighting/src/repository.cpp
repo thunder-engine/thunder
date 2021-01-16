@@ -1,40 +1,24 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #include "repository.h"
-#include "repository_p.h"
 #include "definition.h"
 #include "definition_p.h"
+#include "repository_p.h"
 #include "theme.h"
 #include "themedata_p.h"
 #include "wildcardmatcher_p.h"
 
-#include <QDebug>
+#include <QCborMap>
+#include <QCborValue>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
+#include <QPalette>
+#include <QDebug>
 
 #ifndef NO_STANDARD_PATHS
 #include <QStandardPaths>
@@ -52,13 +36,13 @@ static void initResource()
     Q_INIT_RESOURCE(theme_data);
 }
 
-RepositoryPrivate* RepositoryPrivate::get(Repository *repo)
+RepositoryPrivate *RepositoryPrivate::get(Repository *repo)
 {
     return repo->d.get();
 }
 
-Repository::Repository() :
-    d(new RepositoryPrivate)
+Repository::Repository()
+    : d(new RepositoryPrivate)
 {
     initResource();
     d->load(this);
@@ -72,19 +56,17 @@ Repository::~Repository()
         DefinitionData::get(def)->repo = nullptr;
 }
 
-Definition Repository::definitionForName(const QString& defName) const
+Definition Repository::definitionForName(const QString &defName) const
 {
     return d->m_defs.value(defName);
 }
 
 static void sortDefinitions(QVector<Definition> &definitions)
 {
-    std::stable_sort(definitions.begin(), definitions.end(), [](const Definition &lhs, const Definition &rhs) {
-        return lhs.priority() > rhs.priority();
-    });
+    std::stable_sort(definitions.begin(), definitions.end(), [](const Definition &lhs, const Definition &rhs) { return lhs.priority() > rhs.priority(); });
 }
 
-Definition Repository::definitionForFileName(const QString& fileName) const
+Definition Repository::definitionForFileName(const QString &fileName) const
 {
     return definitionsForFileName(fileName).value(0);
 }
@@ -94,8 +76,9 @@ QVector<Definition> Repository::definitionsForFileName(const QString &fileName) 
     QFileInfo fi(fileName);
     const auto name = fi.fileName();
 
+    // use d->m_defs, sorted map by highlighting name, to be deterministic and independent of translations
     QVector<Definition> candidates;
-    for (const Definition &def : qAsConst(d->m_sortedDefs)) {
+    for (const Definition &def : qAsConst(d->m_defs)) {
         for (const auto &pattern : def.extensions()) {
             if (WildcardMatcher::exactMatch(name, pattern)) {
                 candidates.push_back(def);
@@ -108,15 +91,16 @@ QVector<Definition> Repository::definitionsForFileName(const QString &fileName) 
     return candidates;
 }
 
-Definition Repository::definitionForMimeType(const QString& mimeType) const
+Definition Repository::definitionForMimeType(const QString &mimeType) const
 {
     return definitionsForMimeType(mimeType).value(0);
 }
 
 QVector<Definition> Repository::definitionsForMimeType(const QString &mimeType) const
 {
+    // use d->m_defs, sorted map by highlighting name, to be deterministic and independent of translations
     QVector<Definition> candidates;
-    for (const Definition &def : qAsConst(d->m_sortedDefs)) {
+    for (const Definition &def : qAsConst(d->m_defs)) {
         for (const auto &matchType : def.mimeTypes()) {
             if (mimeType == matchType) {
                 candidates.push_back(def);
@@ -154,7 +138,36 @@ Theme Repository::defaultTheme(Repository::DefaultTheme t)
 {
     if (t == DarkTheme)
         return theme(QLatin1String("Breeze Dark"));
-    return theme(QLatin1String("Default"));
+    return theme(QLatin1String("Breeze Light"));
+}
+
+Theme Repository::themeForPalette(const QPalette &palette)
+{
+    const auto base = palette.color(QPalette::Base);
+    const auto themes = d->m_themes;
+
+    // find themes with matching background colors
+    QVector<KSyntaxHighlighting::Theme> matchingThemes;
+    for (const auto &theme : themes) {
+        const auto background = theme.editorColor(KSyntaxHighlighting::Theme::EditorColorRole::BackgroundColor);
+        if (background == base.rgb()) {
+            matchingThemes.append(theme);
+        }
+    }
+    if (!matchingThemes.empty()) {
+        // if there's multiple, search for one with a matching highlight color
+        const auto highlight = palette.color(QPalette::Highlight);
+        for (const auto &theme : qAsConst(matchingThemes)) {
+            auto selection = theme.editorColor(KSyntaxHighlighting::Theme::EditorColorRole::TextSelection);
+            if (selection == highlight.rgb()) {
+                return theme;
+            }
+        }
+        return matchingThemes.first();
+    }
+
+    // fallback to just use the default light or dark theme
+    return defaultTheme((base.lightness() < 128) ? KSyntaxHighlighting::Repository::DarkTheme : KSyntaxHighlighting::Repository::LightTheme);
 }
 
 void RepositoryPrivate::load(Repository *repo)
@@ -226,13 +239,13 @@ bool RepositoryPrivate::loadSyntaxFolderFromIndex(Repository *repo, const QStrin
     if (!indexFile.open(QFile::ReadOnly))
         return false;
 
-    const auto indexDoc(QJsonDocument::fromBinaryData(indexFile.readAll()));
-    const auto index = indexDoc.object();
+    const auto indexDoc(QCborValue::fromCbor(indexFile.readAll()));
+    const auto index = indexDoc.toMap();
     for (auto it = index.begin(); it != index.end(); ++it) {
-        if (!it.value().isObject())
+        if (!it.value().isMap())
             continue;
-        const auto fileName = QString(path + QLatin1Char('/') + it.key());
-        const auto defMap = it.value().toObject();
+        const auto fileName = QString(path + QLatin1Char('/') + it.key().toString());
+        const auto defMap = it.value().toMap();
         Definition def;
         auto defData = DefinitionData::get(def);
         defData->repo = repo;
@@ -273,9 +286,7 @@ static int themeRevision(const Theme &theme)
 
 void RepositoryPrivate::addTheme(const Theme &theme)
 {
-    const auto it = std::lower_bound(m_themes.begin(), m_themes.end(), theme, [](const Theme &lhs, const Theme &rhs) {
-        return lhs.name() < rhs.name();
-    });
+    const auto it = std::lower_bound(m_themes.begin(), m_themes.end(), theme, [](const Theme &lhs, const Theme &rhs) { return lhs.name() < rhs.name(); });
     if (it == m_themes.end() || (*it).name() != theme.name()) {
         m_themes.insert(it, theme);
         return;

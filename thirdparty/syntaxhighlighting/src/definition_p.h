@@ -1,43 +1,28 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2020 Jonathan Poelen <jonathan.poelen@gmail.com>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #ifndef KSYNTAXHIGHLIGHTING_DEFINITION_P_H
 #define KSYNTAXHIGHLIGHTING_DEFINITION_P_H
 
-#include "definitionref_p.h"
 #include "definition.h"
+#include "definitionref_p.h"
+#include "worddelimiters_p.h"
 
 #include <QHash>
 #include <QString>
 #include <QVector>
 
 QT_BEGIN_NAMESPACE
+class QCborMap;
 class QXmlStreamReader;
-class QJsonObject;
 QT_END_NAMESPACE
 
-namespace KSyntaxHighlighting {
-
+namespace KSyntaxHighlighting
+{
 class Repository;
 
 class DefinitionData
@@ -49,11 +34,11 @@ public:
     DefinitionData(const DefinitionData &) = delete;
     DefinitionData &operator=(const DefinitionData &) = delete;
 
-    static DefinitionData* get(const Definition &def);
+    static DefinitionData *get(const Definition &def);
 
     bool isLoaded() const;
     bool loadMetaData(const QString &definitionFileName);
-    bool loadMetaData(const QString &fileName, const QJsonObject &obj);
+    bool loadMetaData(const QString &fileName, const QCborMap &obj);
 
     void clear();
 
@@ -73,10 +58,9 @@ public:
     void resolveIncludeKeywords();
 
     KeywordList *keywordList(const QString &name);
-    bool isWordDelimiter(QChar c) const;
 
-    Context* initialContext() const;
-    Context* contextByName(const QString &name) const;
+    Context *initialContext() const;
+    Context *contextByName(const QString &name) const;
 
     Format formatByName(const QString &name) const;
 
@@ -86,10 +70,10 @@ public:
 
     Repository *repo = nullptr;
     QHash<QString, KeywordList> keywordLists;
-    QVector<Context*> contexts;
+    QVector<Context *> contexts;
     QHash<QString, Format> formats;
-    QString wordDelimiters;
-    QString wordWrapDelimiters;
+    WordDelimiters wordDelimiters;
+    WordDelimiters wordWrapDelimiters;
     bool keywordIsLoaded = false;
     bool hasFoldingRegions = false;
     bool indentationBasedFolding = false;
@@ -101,7 +85,7 @@ public:
     QVector<QPair<QChar, QString>> characterEncodings;
 
     QString fileName;
-    QString name = QStringLiteral(QT_TRANSLATE_NOOP("Syntax highlighting", "None"));
+    QString name = QStringLiteral(QT_TRANSLATE_NOOP("Language", "None"));
     QString section;
     QString style;
     QString indenter;

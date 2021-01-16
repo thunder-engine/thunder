@@ -13,10 +13,12 @@
 #include <QMenu>
 #include <QPainter>
 #include <QPalette>
+#include <QAbstractItemModel>
 
 #include <QTextBlock>
 
 #include "settingsmanager.h"
+#include "assetmanager.h"
 
 const QString gFont("Editors/Text_Editor/Font/Font_Name");
 const QString gZoom("Editors/Text_Editor/Font/Zoom");
@@ -31,6 +33,7 @@ const QString gTabSize("Editors/Text_Editor/Indents/Tab_Size");
 CodeEditor::CodeEditor(QWidget *parent) :
         QPlainTextEdit(parent),
         m_pHighlighter(new KSyntaxHighlighting::SyntaxHighlighter(document())),
+        m_pClassModel(nullptr),
         m_pSideBar(new CodeEditorSidebar(this)),
         m_SpaceTabs(true),
         m_SpaceIndent(4),
@@ -45,7 +48,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
 
     setLineWrapMode(QPlainTextEdit::NoWrap);
 
-    setTheme(m_Repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme));
+    m_Repository.addCustomSearchPath(":/Themes");
+    setTheme(m_Repository.theme("Thunder Dark"));
 
     connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEditor::updateSidebarGeometry);
     connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::updateSidebarArea);
@@ -85,8 +89,15 @@ void CodeEditor::openFile(const QString &fileName) {
     }
     clear();
 
-    const auto def = m_Repository.definitionForFileName(m_FileName);
-    m_pHighlighter->setDefinition(def);
+    m_Definition = m_Repository.definitionForFileName(m_FileName);
+
+    AssetManager::ClassMap map = AssetManager::instance()->classMaps();
+    m_pClassModel = map.value(QFileInfo(m_FileName).suffix());
+    if(m_pClassModel) {
+        connect(m_pClassModel, &QAbstractItemModel::layoutChanged, this, &CodeEditor::onClassModelChanged);
+        onClassModelChanged();
+    }
+    m_pHighlighter->setDefinition(m_Definition);
 
     setPlainText(QString::fromUtf8(fp.readAll()));
 }
@@ -632,4 +643,21 @@ void CodeEditor::onApplySettings() {
     decorateWhitespaces(s->property(qPrintable(gWhitespaces)).toBool());
 
     setSpaceTabs(s->property(qPrintable(gSpaces)).toBool(), s->property(qPrintable(gTabSize)).toInt());
+}
+
+void CodeEditor::onClassModelChanged() {
+    if(m_pClassModel) {
+        QStringList classes;
+        QStringList enums;
+        for(int row = 0; row < m_pClassModel->rowCount(); row++) {
+            auto index = m_pClassModel->index(row, 0);
+            switch(m_pClassModel->data(index, Qt::UserRole).toInt()) {
+                case 4: enums << m_pClassModel->data(index).toString(); break;
+                default: classes << m_pClassModel->data(index).toString(); break;
+            }
+        }
+        m_Definition.setKeywordList("classes", classes);
+        m_Definition.setKeywordList("enums", enums);
+        m_pHighlighter->rehighlight();
+    }
 }

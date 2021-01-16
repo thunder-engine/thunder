@@ -1,31 +1,13 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #include "definitiondownloader.h"
 #include "definition.h"
 #include "repository.h"
 
-#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QNetworkAccessManager>
@@ -34,6 +16,7 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QXmlStreamReader>
+#include <QDebug>
 
 using namespace KSyntaxHighlighting;
 
@@ -56,8 +39,9 @@ public:
 
 void DefinitionDownloaderPrivate::definitionListDownloadFinished(QNetworkReply *reply)
 {
-    if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << reply->error();
+    const auto networkError = reply->error();
+    if (networkError != QNetworkReply::NoError) {
+        qWarning() << networkError;
         emit q->done(); // TODO return error
         return;
     }
@@ -65,12 +49,12 @@ void DefinitionDownloaderPrivate::definitionListDownloadFinished(QNetworkReply *
     QXmlStreamReader parser(reply);
     while (!parser.atEnd()) {
         switch (parser.readNext()) {
-            case QXmlStreamReader::StartElement:
-                if (parser.name() == QLatin1String("Definition"))
-                    updateDefinition(parser);
-                break;
-            default:
-                break;
+        case QXmlStreamReader::StartElement:
+            if (parser.name() == QLatin1String("Definition"))
+                updateDefinition(parser);
+            break;
+        default:
+            break;
         }
     }
 
@@ -99,7 +83,7 @@ void DefinitionDownloaderPrivate::updateDefinition(QXmlStreamReader &parser)
     }
 }
 
-void DefinitionDownloaderPrivate::downloadDefinition(const QUrl& downloadUrl)
+void DefinitionDownloaderPrivate::downloadDefinition(const QUrl &downloadUrl)
 {
     if (!downloadUrl.isValid())
         return;
@@ -109,9 +93,7 @@ void DefinitionDownloaderPrivate::downloadDefinition(const QUrl& downloadUrl)
 
     QNetworkRequest req(url);
     auto reply = nam->get(req);
-    QObject::connect(reply, &QNetworkReply::finished, q, [this, reply]() {
-        downloadDefinitionFinished(reply);
-    });
+    QObject::connect(reply, &QNetworkReply::finished, q, [this, reply]() { downloadDefinitionFinished(reply); });
     ++pendingDownloads;
     needsReload = true;
 }
@@ -119,8 +101,10 @@ void DefinitionDownloaderPrivate::downloadDefinition(const QUrl& downloadUrl)
 void DefinitionDownloaderPrivate::downloadDefinitionFinished(QNetworkReply *reply)
 {
     --pendingDownloads;
-    if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << "Failed to download definition file" << reply->url() << reply->error();
+
+    const auto networkError = reply->error();
+    if (networkError != QNetworkReply::NoError) {
+        qWarning() << "Failed to download definition file" << reply->url() << networkError;
         checkDone();
         return;
     }
@@ -153,7 +137,6 @@ void DefinitionDownloaderPrivate::checkDone()
     }
 }
 
-
 DefinitionDownloader::DefinitionDownloader(Repository *repo, QObject *parent)
     : QObject(parent)
     , d(new DefinitionDownloaderPrivate())
@@ -177,15 +160,9 @@ DefinitionDownloader::~DefinitionDownloader()
 
 void DefinitionDownloader::start()
 {
-    const QString url = QLatin1String("https://www.kate-editor.org/syntax/update-")
-                      + QString::number(SyntaxHighlighting_VERSION_MAJOR)
-                      + QLatin1Char('.')
-                      + QString::number(SyntaxHighlighting_VERSION_MINOR)
-                      + QLatin1String(".xml");
+    const QString url = QLatin1String("https://www.kate-editor.org/syntax/update-") + QString::number(SyntaxHighlighting_VERSION_MAJOR) + QLatin1Char('.') + QString::number(SyntaxHighlighting_VERSION_MINOR) + QLatin1String(".xml");
     auto req = QNetworkRequest(QUrl(url));
     req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
     auto reply = d->nam->get(req);
-    QObject::connect(reply, &QNetworkReply::finished, this, [=]() {
-        d->definitionListDownloadFinished(reply);
-    });
+    QObject::connect(reply, &QNetworkReply::finished, this, [=]() { d->definitionListDownloadFinished(reply); });
 }

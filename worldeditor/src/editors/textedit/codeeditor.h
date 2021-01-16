@@ -5,6 +5,7 @@
 #include <QTextBlock>
 
 #include <repository.h>
+#include <definition.h>
 
 namespace KSyntaxHighlighting {
     class SyntaxHighlighter;
@@ -12,6 +13,7 @@ namespace KSyntaxHighlighting {
 }
 
 class CodeEditorSidebar;
+class QAbstractItemModel;
 
 class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
@@ -42,6 +44,7 @@ protected:
 
 private slots:
     void onApplySettings();
+    void onClassModelChanged();
 
 private:
     friend class CodeEditorSidebar;
@@ -69,8 +72,11 @@ private:
 
     QString m_FileName;
 
+    KSyntaxHighlighting::Definition m_Definition;
     KSyntaxHighlighting::Repository m_Repository;
     KSyntaxHighlighting::SyntaxHighlighter *m_pHighlighter;
+
+    QAbstractItemModel *m_pClassModel;
 
     CodeEditorSidebar *m_pSideBar;
 

@@ -102,4 +102,8 @@
         <file alias="fr.qm">l10n/fr.qm</file>
         <file alias="ru.qm">l10n/ru.qm</file>
     </qresource>
+    <qresource prefix="/Themes">
+        <file>themes/thunder-dark.theme</file>
+        <file>syntax/angelscript.xml</file>
+    </qresource>
 </RCC>

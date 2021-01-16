@@ -1,24 +1,8 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2020 Jonathan Poelen <jonathan.poelen@gmail.com>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #include "context_p.h"
@@ -30,7 +14,6 @@
 
 #include <QString>
 #include <QXmlStreamReader>
-
 #include <QDebug>
 
 using namespace KSyntaxHighlighting;
@@ -53,42 +36,39 @@ bool Context::indentationBasedFoldingEnabled() const
     return m_def.definition().indentationBasedFoldingEnabled();
 }
 
-void Context::load(QXmlStreamReader& reader)
+void Context::load(QXmlStreamReader &reader)
 {
     Q_ASSERT(reader.name() == QLatin1String("context"));
     Q_ASSERT(reader.tokenType() == QXmlStreamReader::StartElement);
 
-    m_name = reader.attributes().value(QStringLiteral("name")).toString();
-    m_attribute = reader.attributes().value(QStringLiteral("attribute")).toString();
-    m_lineEndContext.parse(reader.attributes().value(QStringLiteral("lineEndContext")));
-    m_lineEmptyContext.parse(reader.attributes().value(QStringLiteral("lineEmptyContext")));
-    m_fallthrough = Xml::attrToBool(reader.attributes().value(QStringLiteral("fallthrough")));
-    m_fallthroughContext.parse(reader.attributes().value(QStringLiteral("fallthroughContext")));
-    if (m_fallthroughContext.isStay())
-        m_fallthrough = false;
-    m_noIndentationBasedFolding = Xml::attrToBool(reader.attributes().value(QStringLiteral("noIndentationBasedFolding")));
+    m_name = reader.attributes().value(QLatin1String("name")).toString();
+    m_attribute = reader.attributes().value(QLatin1String("attribute")).toString();
+    m_lineEndContext.parse(reader.attributes().value(QLatin1String("lineEndContext")));
+    m_lineEmptyContext.parse(reader.attributes().value(QLatin1String("lineEmptyContext")));
+    m_fallthroughContext.parse(reader.attributes().value(QLatin1String("fallthroughContext")));
+    m_fallthrough = !m_fallthroughContext.isStay();
+    m_noIndentationBasedFolding = Xml::attrToBool(reader.attributes().value(QLatin1String("noIndentationBasedFolding")));
 
     reader.readNext();
     while (!reader.atEnd()) {
         switch (reader.tokenType()) {
-            case QXmlStreamReader::StartElement:
-            {
-                auto rule = Rule::create(reader.name());
-                if (rule) {
-                    rule->setDefinition(m_def.definition());
-                    if (rule->load(reader))
-                        m_rules.push_back(rule);
-                } else {
-                    reader.skipCurrentElement();
-                }
-                reader.readNext();
-                break;
+        case QXmlStreamReader::StartElement: {
+            auto rule = Rule::create(reader.name());
+            if (rule) {
+                rule->setDefinition(m_def.definition());
+                if (rule->load(reader))
+                    m_rules.push_back(std::move(rule));
+            } else {
+                reader.skipCurrentElement();
             }
-            case QXmlStreamReader::EndElement:
-                return;
-            default:
-                reader.readNext();
-                break;
+            reader.readNext();
+            break;
+        }
+        case QXmlStreamReader::EndElement:
+            return;
+        default:
+            reader.readNext();
+            break;
         }
     }
 }
@@ -136,7 +116,7 @@ void Context::resolveIncludes()
             ++it;
             continue;
         }
-        Context* context = nullptr;
+        Context *context = nullptr;
         auto myDefData = DefinitionData::get(m_def.definition());
         if (inc->definitionName().isEmpty()) { // local include
             context = myDefData->contextByName(inc->contextName());

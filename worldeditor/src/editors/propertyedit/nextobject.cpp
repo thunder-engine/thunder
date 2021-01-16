@@ -246,20 +246,20 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
         default: break;
     }
 
-    if(value.data() == nullptr) {
-        return QVariant();
-    }
-    Object *o = *(reinterpret_cast<Object **>(value.data()));
-    if((dynamic_cast<Component *>(o) != nullptr) || (editor == COMPONENT)) {
-        Actor *actor = static_cast<Actor *>(m_pObject);
-        SceneComponent cmp;
-        cmp.type = QString(property.type().name()).replace(" *", "");
-        cmp.component = static_cast<Component *>(o);
-        cmp.scene = actor->scene();
-        return QVariant::fromValue(cmp);
-    }
-    if((dynamic_cast<Resource *>(o) != nullptr) || (editor == TEMPLATE)) {
-        return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
+    QString typeName(QString(property.type().name()).replace(" *", ""));
+    auto factory = System::metaFactory(qPrintable(typeName));
+    if(factory) {
+        Object *o = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+        if(factory->first->canCastTo("Resource") || (editor == TEMPLATE)) {
+            return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
+        } else {
+            Actor *actor = static_cast<Actor *>(m_pObject);
+            SceneComponent cmp;
+            cmp.type = typeName;
+            cmp.component = static_cast<Component *>(o);
+            cmp.scene = actor->scene();
+            return QVariant::fromValue(cmp);
+        }
     }
 
     return QVariant();

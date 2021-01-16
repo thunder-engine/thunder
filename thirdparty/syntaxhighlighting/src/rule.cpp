@@ -1,31 +1,16 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
-    Copyright (C) 2018 Christoph Cullmann <cullmann@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2018 Christoph Cullmann <cullmann@kde.org>
+    SPDX-FileCopyrightText: 2020 Jonathan Poelen <jonathan.poelen@gmail.com>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
-#include "rule_p.h"
 #include "context_p.h"
 #include "definition_p.h"
+#include "rule_p.h"
 #include "xml_p.h"
+#include "worddelimiters_p.h"
 
 #include <QString>
 #include <QXmlStreamReader>
@@ -33,20 +18,22 @@
 
 using namespace KSyntaxHighlighting;
 
+// QChar::isDigit() match any digit in unicode (romain numeral, etc)
+static bool isDigit(QChar c)
+{
+    return (c <= QLatin1Char('9') && QLatin1Char('0') <= c);
+}
+
 static bool isOctalChar(QChar c)
 {
-    return c.isNumber() && c != QLatin1Char('9') && c != QLatin1Char('8');
+    return (c <= QLatin1Char('7') && QLatin1Char('0') <= c);
 }
 
 static bool isHexChar(QChar c)
 {
-    return c.isNumber()
-        || c == QLatin1Char('a') || c == QLatin1Char('A')
-        || c == QLatin1Char('b') || c == QLatin1Char('B')
-        || c == QLatin1Char('c') || c == QLatin1Char('C')
-        || c == QLatin1Char('d') || c == QLatin1Char('D')
-        || c == QLatin1Char('e') || c == QLatin1Char('E')
-        || c == QLatin1Char('f') || c == QLatin1Char('F');
+    return isDigit(c)
+        || (c <= QLatin1Char('f') && QLatin1Char('a') <= c)
+        || (c <= QLatin1Char('F') && QLatin1Char('A') <= c);
 }
 
 static int matchEscapedChar(const QString &text, int offset)
@@ -55,30 +42,31 @@ static int matchEscapedChar(const QString &text, int offset)
         return offset;
 
     const auto c = text.at(offset + 1);
-    static const auto controlChars = QStringLiteral("abefnrtv\"'?\\");
-    if (controlChars.contains(c))
+    switch (c.unicode()) {
+    // control chars
+    case 'a': case 'b': case 'e': case 'f':
+    case 'n': case 'r': case 't': case 'v':
+    case '"': case '\'': case '?': case '\\':
         return offset + 2;
 
-    if (c == QLatin1Char('x')) { // hex encoded character
-        auto newOffset = offset + 2;
-        for (int i = 0; i < 2 && newOffset + i < text.size(); ++i, ++newOffset) {
-            if (!isHexChar(text.at(newOffset)))
-                break;
+    // hex encoded character
+    case 'x':
+        if (offset + 2 < text.size() && isHexChar(text.at(offset + 2))) {
+            if (offset + 3 < text.size() && isHexChar(text.at(offset + 3)))
+                return offset + 4;
+            return offset + 3;
         }
-        if (newOffset == offset + 2)
-            return offset;
-        return newOffset;
-    }
+        return offset;
 
-    if (isOctalChar(c)) { // octal encoding
-        auto newOffset = offset + 2;
-        for (int i = 0; i < 2 && newOffset + i < text.size(); ++i, ++newOffset) {
-            if (!isOctalChar(text.at(newOffset)))
-                break;
+    // octal encoding, simple \0 is OK, too, unlike simple \x above
+    case '0': case '1': case '2': case '3':
+    case '4': case '5': case '6': case '7':
+        if (offset + 2 < text.size() && isOctalChar(text.at(offset + 2))) {
+            if (offset + 3 < text.size() && isOctalChar(text.at(offset + 3)))
+                return offset + 4;
+            return offset + 3;
         }
-        if (newOffset == offset + 2)
-            return offset;
-        return newOffset;
+        return offset + 2;
     }
 
     return offset;
@@ -93,6 +81,13 @@ static QString replaceCaptures(const QString &pattern, const QStringList &captur
     return result;
 }
 
+Rule::~Rule()
+{
+    if (!m_additionalDeliminator.isEmpty() || !m_weakDeliminator.isEmpty()) {
+        delete m_wordDelimiters;
+    }
+}
+
 Definition Rule::definition() const
 {
     return m_def.definition();
@@ -101,22 +96,19 @@ Definition Rule::definition() const
 void Rule::setDefinition(const Definition &def)
 {
     m_def = def;
-
-    // cache for DefinitionData::wordDelimiters, is accessed VERY often
-    m_wordDelimiter = &DefinitionData::get(m_def.definition())->wordDelimiters;
 }
 
 bool Rule::load(QXmlStreamReader &reader)
 {
     Q_ASSERT(reader.tokenType() == QXmlStreamReader::StartElement);
 
-    m_attribute = reader.attributes().value(QStringLiteral("attribute")).toString();
+    m_attribute = reader.attributes().value(QLatin1String("attribute")).toString();
     if (reader.name() != QLatin1String("IncludeRules")) // IncludeRules uses this with a different semantic
-        m_context.parse(reader.attributes().value(QStringLiteral("context")));
-    m_firstNonSpace = Xml::attrToBool(reader.attributes().value(QStringLiteral("firstNonSpace")));
-    m_lookAhead = Xml::attrToBool(reader.attributes().value(QStringLiteral("lookAhead")));
+        m_context.parse(reader.attributes().value(QLatin1String("context")));
+    m_firstNonSpace = Xml::attrToBool(reader.attributes().value(QLatin1String("firstNonSpace")));
+    m_lookAhead = Xml::attrToBool(reader.attributes().value(QLatin1String("lookAhead")));
     bool colOk = false;
-    m_column = reader.attributes().value(QStringLiteral("column")).toInt(&colOk);
+    m_column = reader.attributes().value(QLatin1String("column")).toInt(&colOk);
     if (!colOk)
         m_column = -1;
 
@@ -139,7 +131,17 @@ bool Rule::load(QXmlStreamReader &reader)
 
 void Rule::resolveContext()
 {
-    m_context.resolve(m_def.definition());
+    auto const& def = m_def.definition();
+
+    m_context.resolve(def);
+
+    // cache for DefinitionData::wordDelimiters, is accessed VERY often
+    m_wordDelimiters = &DefinitionData::get(def)->wordDelimiters;
+    if (!m_additionalDeliminator.isEmpty() || !m_weakDeliminator.isEmpty()) {
+        m_wordDelimiters = new WordDelimiters(*m_wordDelimiters);
+        m_wordDelimiters->append(m_additionalDeliminator);
+        m_wordDelimiters->remove(m_weakDeliminator);
+    }
 }
 
 void Rule::resolveAttributeFormat(Context *lookupContext)
@@ -155,94 +157,95 @@ void Rule::resolveAttributeFormat(Context *lookupContext)
     }
 }
 
-bool Rule::doLoad(QXmlStreamReader& reader)
+bool Rule::doLoad(QXmlStreamReader &reader)
 {
     Q_UNUSED(reader);
     return true;
 }
 
-Rule::Ptr Rule::create(const QStringRef& name)
+void Rule::loadAdditionalWordDelimiters(QXmlStreamReader &reader)
 {
-    Rule *rule = nullptr;
-    if (name == QLatin1String("AnyChar"))
-        rule = new AnyChar;
-    else if (name == QLatin1String("DetectChar"))
-        rule = new DetectChar;
-    else if (name == QLatin1String("Detect2Chars"))
-        rule = new Detect2Char;
-    else if (name == QLatin1String("DetectIdentifier"))
-        rule = new DetectIdentifier;
-    else if (name == QLatin1String("DetectSpaces"))
-        rule = new DetectSpaces;
-    else if (name == QLatin1String("Float"))
-        rule = new Float;
-    else if (name == QLatin1String("Int"))
-        rule = new Int;
-    else if (name == QLatin1String("HlCChar"))
-        rule = new HlCChar;
-    else if (name == QLatin1String("HlCHex"))
-        rule = new HlCHex;
-    else if (name == QLatin1String("HlCOct"))
-        rule = new HlCOct;
-    else if (name == QLatin1String("HlCStringChar"))
-        rule = new HlCStringChar;
-    else if (name == QLatin1String("IncludeRules"))
-        rule = new IncludeRules;
-    else if (name == QLatin1String("keyword"))
-        rule = new KeywordListRule;
-    else if (name == QLatin1String("LineContinue"))
-        rule = new LineContinue;
-    else if (name == QLatin1String("RangeDetect"))
-        rule = new RangeDetect;
-    else if (name == QLatin1String("RegExpr"))
-        rule = new RegExpr;
-    else if (name == QLatin1String("StringDetect"))
-        rule = new StringDetect;
-    else if (name == QLatin1String("WordDetect"))
-        rule = new WordDetect;
-    else
-        qWarning() << "Unknown rule type:" << name;
+    m_additionalDeliminator = reader.attributes().value(QLatin1String("additionalDeliminator")).toString();
+    m_weakDeliminator = reader.attributes().value(QLatin1String("weakDeliminator")).toString();
+}
 
-    return Ptr(rule);
+Rule::Ptr Rule::create(const QStringRef &name)
+{
+    if (name == QLatin1String("AnyChar"))
+        return std::make_shared<AnyChar>();
+    if (name == QLatin1String("DetectChar"))
+        return std::make_shared<DetectChar>();
+    if (name == QLatin1String("Detect2Chars"))
+        return std::make_shared<Detect2Char>();
+    if (name == QLatin1String("DetectIdentifier"))
+        return std::make_shared<DetectIdentifier>();
+    if (name == QLatin1String("DetectSpaces"))
+        return std::make_shared<DetectSpaces>();
+    if (name == QLatin1String("Float"))
+        return std::make_shared<Float>();
+    if (name == QLatin1String("Int"))
+        return std::make_shared<Int>();
+    if (name == QLatin1String("HlCChar"))
+        return std::make_shared<HlCChar>();
+    if (name == QLatin1String("HlCHex"))
+        return std::make_shared<HlCHex>();
+    if (name == QLatin1String("HlCOct"))
+        return std::make_shared<HlCOct>();
+    if (name == QLatin1String("HlCStringChar"))
+        return std::make_shared<HlCStringChar>();
+    if (name == QLatin1String("IncludeRules"))
+        return std::make_shared<IncludeRules>();
+    if (name == QLatin1String("keyword"))
+        return std::make_shared<KeywordListRule>();
+    if (name == QLatin1String("LineContinue"))
+        return std::make_shared<LineContinue>();
+    if (name == QLatin1String("RangeDetect"))
+        return std::make_shared<RangeDetect>();
+    if (name == QLatin1String("RegExpr"))
+        return std::make_shared<RegExpr>();
+    if (name == QLatin1String("StringDetect"))
+        return std::make_shared<StringDetect>();
+    if (name == QLatin1String("WordDetect"))
+        return std::make_shared<WordDetect>();
+
+    qWarning() << "Unknown rule type:" << name;
+    return Ptr(nullptr);
 }
 
 bool Rule::isWordDelimiter(QChar c) const
 {
-    // perf tells contains is MUCH faster than binary search here, very short array
-    return m_wordDelimiter.contains(c);
+    return m_wordDelimiters->contains(c);
 }
 
-
-bool AnyChar::doLoad(QXmlStreamReader& reader)
+bool AnyChar::doLoad(QXmlStreamReader &reader)
 {
-    m_chars = reader.attributes().value(QStringLiteral("String")).toString();
+    m_chars = reader.attributes().value(QLatin1String("String")).toString();
     if (m_chars.size() == 1)
         qDebug() << "AnyChar rule with just one char: use DetectChar instead.";
     return !m_chars.isEmpty();
 }
 
-MatchResult AnyChar::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult AnyChar::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (m_chars.contains(text.at(offset)))
         return offset + 1;
     return offset;
 }
 
-
-bool DetectChar::doLoad(QXmlStreamReader& reader)
+bool DetectChar::doLoad(QXmlStreamReader &reader)
 {
-    const auto s = reader.attributes().value(QStringLiteral("char"));
+    const auto s = reader.attributes().value(QLatin1String("char"));
     if (s.isEmpty())
         return false;
     m_char = s.at(0);
-    m_dynamic = Xml::attrToBool(reader.attributes().value(QStringLiteral("dynamic")));
+    m_dynamic = Xml::attrToBool(reader.attributes().value(QLatin1String("dynamic")));
     if (m_dynamic) {
         m_captureIndex = m_char.digitValue();
     }
     return true;
 }
 
-MatchResult DetectChar::doMatch(const QString& text, int offset, const QStringList &captures) const
+MatchResult DetectChar::doMatch(const QString &text, int offset, const QStringList &captures) const
 {
     if (m_dynamic) {
         if (m_captureIndex == 0 || captures.size() <= m_captureIndex || captures.at(m_captureIndex).isEmpty())
@@ -257,11 +260,10 @@ MatchResult DetectChar::doMatch(const QString& text, int offset, const QStringLi
     return offset;
 }
 
-
-bool Detect2Char::doLoad(QXmlStreamReader& reader)
+bool Detect2Char::doLoad(QXmlStreamReader &reader)
 {
-    const auto s1 = reader.attributes().value(QStringLiteral("char"));
-    const auto s2 = reader.attributes().value(QStringLiteral("char1"));
+    const auto s1 = reader.attributes().value(QLatin1String("char"));
+    const auto s2 = reader.attributes().value(QLatin1String("char1"));
     if (s1.isEmpty() || s2.isEmpty())
         return false;
     m_char1 = s1.at(0);
@@ -269,7 +271,7 @@ bool Detect2Char::doLoad(QXmlStreamReader& reader)
     return true;
 }
 
-MatchResult Detect2Char::doMatch(const QString& text, int offset, const QStringList &) const
+MatchResult Detect2Char::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (text.size() - offset < 2)
         return offset;
@@ -278,8 +280,7 @@ MatchResult Detect2Char::doMatch(const QString& text, int offset, const QStringL
     return offset;
 }
 
-
-MatchResult DetectIdentifier::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult DetectIdentifier::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (!text.at(offset).isLetter() && text.at(offset) != QLatin1Char('_'))
         return offset;
@@ -293,29 +294,33 @@ MatchResult DetectIdentifier::doMatch(const QString& text, int offset, const QSt
     return text.size();
 }
 
-
-MatchResult DetectSpaces::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult DetectSpaces::doMatch(const QString &text, int offset, const QStringList &) const
 {
-    while(offset < text.size() && text.at(offset).isSpace())
+    while (offset < text.size() && text.at(offset).isSpace())
         ++offset;
     return offset;
 }
 
+bool Float::doLoad(QXmlStreamReader &reader)
+{
+    loadAdditionalWordDelimiters(reader);
+    return true;
+}
 
-MatchResult Float::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult Float::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (offset > 0 && !isWordDelimiter(text.at(offset - 1)))
         return offset;
 
     auto newOffset = offset;
-    while (newOffset < text.size() && text.at(newOffset).isDigit())
+    while (newOffset < text.size() && isDigit(text.at(newOffset)))
         ++newOffset;
 
     if (newOffset >= text.size() || text.at(newOffset) != QLatin1Char('.'))
         return offset;
     ++newOffset;
 
-    while (newOffset < text.size() && text.at(newOffset).isDigit())
+    while (newOffset < text.size() && isDigit(text.at(newOffset)))
         ++newOffset;
 
     if (newOffset == offset + 1) // we only found a decimal point
@@ -329,7 +334,7 @@ MatchResult Float::doMatch(const QString& text, int offset, const QStringList&) 
     if (expOffset < text.size() && (text.at(expOffset) == QLatin1Char('+') || text.at(expOffset) == QLatin1Char('-')))
         ++expOffset;
     bool foundExpDigit = false;
-    while (expOffset < text.size() && text.at(expOffset).isDigit()) {
+    while (expOffset < text.size() && isDigit(text.at(expOffset))) {
         ++expOffset;
         foundExpDigit = true;
     }
@@ -339,8 +344,7 @@ MatchResult Float::doMatch(const QString& text, int offset, const QStringList&) 
     return expOffset;
 }
 
-
-MatchResult HlCChar::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult HlCChar::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (text.size() < offset + 3)
         return offset;
@@ -364,8 +368,13 @@ MatchResult HlCChar::doMatch(const QString& text, int offset, const QStringList&
     return offset;
 }
 
+bool HlCHex::doLoad(QXmlStreamReader &reader)
+{
+    loadAdditionalWordDelimiters(reader);
+    return true;
+}
 
-MatchResult HlCHex::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult HlCHex::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (offset > 0 && !isWordDelimiter(text.at(offset - 1)))
         return offset;
@@ -388,8 +397,13 @@ MatchResult HlCHex::doMatch(const QString& text, int offset, const QStringList&)
     return offset;
 }
 
+bool HlCOct::doLoad(QXmlStreamReader &reader)
+{
+    loadAdditionalWordDelimiters(reader);
+    return true;
+}
 
-MatchResult HlCOct::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult HlCOct::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (offset > 0 && !isWordDelimiter(text.at(offset - 1)))
         return offset;
@@ -410,12 +424,10 @@ MatchResult HlCOct::doMatch(const QString& text, int offset, const QStringList&)
     return offset;
 }
 
-
-MatchResult HlCStringChar::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult HlCStringChar::doMatch(const QString &text, int offset, const QStringList &) const
 {
     return matchEscapedChar(text, offset);
 }
-
 
 QString IncludeRules::contextName() const
 {
@@ -432,10 +444,14 @@ bool IncludeRules::includeAttribute() const
     return m_includeAttribute;
 }
 
-bool IncludeRules::doLoad(QXmlStreamReader& reader)
+bool IncludeRules::doLoad(QXmlStreamReader &reader)
 {
     const auto s = reader.attributes().value(QLatin1String("context"));
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
     const auto split = s.split(QLatin1String("##"), QString::KeepEmptyParts);
+#else
+    const auto split = s.split(QLatin1String("##"), Qt::KeepEmptyParts);
+#endif
     if (split.isEmpty())
         return false;
     m_contextName = split.at(0).toString();
@@ -446,26 +462,30 @@ bool IncludeRules::doLoad(QXmlStreamReader& reader)
     return !m_contextName.isEmpty() || !m_defName.isEmpty();
 }
 
-MatchResult IncludeRules::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult IncludeRules::doMatch(const QString &text, int offset, const QStringList &) const
 {
     Q_UNUSED(text);
     qWarning() << "Unresolved include rule for" << m_contextName << "##" << m_defName;
     return offset;
 }
 
+bool Int::doLoad(QXmlStreamReader &reader)
+{
+    loadAdditionalWordDelimiters(reader);
+    return true;
+}
 
-MatchResult Int::doMatch(const QString& text, int offset, const QStringList &) const
+MatchResult Int::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (offset > 0 && !isWordDelimiter(text.at(offset - 1)))
         return offset;
 
-    while(offset < text.size() && text.at(offset).isDigit())
+    while (offset < text.size() && isDigit(text.at(offset)))
         ++offset;
     return offset;
 }
 
-
-bool KeywordListRule::doLoad(QXmlStreamReader& reader)
+bool KeywordListRule::doLoad(QXmlStreamReader &reader)
 {
     /**
      * get our keyword list, if not found => bail out
@@ -482,17 +502,18 @@ bool KeywordListRule::doLoad(QXmlStreamReader& reader)
      */
     if (reader.attributes().hasAttribute(QLatin1String("insensitive"))) {
         m_hasCaseSensitivityOverride = true;
-        m_caseSensitivityOverride = Xml::attrToBool(reader.attributes().value(QLatin1String("insensitive"))) ?
-            Qt::CaseInsensitive : Qt::CaseSensitive;
+        m_caseSensitivityOverride = Xml::attrToBool(reader.attributes().value(QLatin1String("insensitive"))) ? Qt::CaseInsensitive : Qt::CaseSensitive;
         m_keywordList->initLookupForCaseSensitivity(m_caseSensitivityOverride);
     } else {
         m_hasCaseSensitivityOverride = false;
     }
 
+    loadAdditionalWordDelimiters(reader);
+
     return !m_keywordList->isEmpty();
 }
 
-MatchResult KeywordListRule::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult KeywordListRule::doMatch(const QString &text, int offset, const QStringList &) const
 {
     auto newOffset = offset;
     while (text.size() > newOffset && !isWordDelimiter(text.at(newOffset)))
@@ -512,10 +533,9 @@ MatchResult KeywordListRule::doMatch(const QString& text, int offset, const QStr
     return MatchResult(offset, newOffset);
 }
 
-
-bool LineContinue::doLoad(QXmlStreamReader& reader)
+bool LineContinue::doLoad(QXmlStreamReader &reader)
 {
-    const auto s = reader.attributes().value(QStringLiteral("char"));
+    const auto s = reader.attributes().value(QLatin1String("char"));
     if (s.isEmpty())
         m_char = QLatin1Char('\\');
     else
@@ -523,18 +543,17 @@ bool LineContinue::doLoad(QXmlStreamReader& reader)
     return true;
 }
 
-MatchResult LineContinue::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult LineContinue::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (offset == text.size() - 1 && text.at(offset) == m_char)
         return offset + 1;
     return offset;
 }
 
-
-bool RangeDetect::doLoad(QXmlStreamReader& reader)
+bool RangeDetect::doLoad(QXmlStreamReader &reader)
 {
-    const auto s1 = reader.attributes().value(QStringLiteral("char"));
-    const auto s2 = reader.attributes().value(QStringLiteral("char1"));
+    const auto s1 = reader.attributes().value(QLatin1String("char"));
+    const auto s2 = reader.attributes().value(QLatin1String("char1"));
     if (s1.isEmpty() || s2.isEmpty())
         return false;
     m_begin = s1.at(0);
@@ -542,7 +561,7 @@ bool RangeDetect::doLoad(QXmlStreamReader& reader)
     return true;
 }
 
-MatchResult RangeDetect::doMatch(const QString& text, int offset, const QStringList&) const
+MatchResult RangeDetect::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (text.size() - offset < 2)
         return offset;
@@ -558,30 +577,63 @@ MatchResult RangeDetect::doMatch(const QString& text, int offset, const QStringL
     return offset;
 }
 
-bool RegExpr::doLoad(QXmlStreamReader& reader)
+bool RegExpr::doLoad(QXmlStreamReader &reader)
 {
-    m_regexp.setPattern(reader.attributes().value(QStringLiteral("String")).toString());
+    m_regexp.setPattern(reader.attributes().value(QLatin1String("String")).toString());
 
-    const auto isMinimal = Xml::attrToBool(reader.attributes().value(QStringLiteral("minimal")));
-    const auto isCaseInsensitive = Xml::attrToBool(reader.attributes().value(QStringLiteral("insensitive")));
+    const auto isMinimal = Xml::attrToBool(reader.attributes().value(QLatin1String("minimal")));
+    const auto isCaseInsensitive = Xml::attrToBool(reader.attributes().value(QLatin1String("insensitive")));
     m_regexp.setPatternOptions(
-        (isMinimal ? QRegularExpression::InvertedGreedinessOption : QRegularExpression::NoPatternOption) |
-        (isCaseInsensitive ? QRegularExpression::CaseInsensitiveOption : QRegularExpression::NoPatternOption));
+        (isMinimal ? QRegularExpression::InvertedGreedinessOption : QRegularExpression::NoPatternOption)
+      | (isCaseInsensitive ? QRegularExpression::CaseInsensitiveOption : QRegularExpression::NoPatternOption)
+      // DontCaptureOption is removed by doPostResolveContext() when necessary
+      | QRegularExpression::DontCaptureOption);
 
-    // optimize the pattern for the non-dynamic case, we use them OFTEN
-    m_dynamic = Xml::attrToBool(reader.attributes().value(QStringLiteral("dynamic")));
-    if (!m_dynamic) {
-        m_regexp.optimize();
-    }
-
-    // always using m_regexp.isValid() would be better, but parses the regexp and thus is way too expensive for release builds
-    if (!m_regexp.isValid())
-        qDebug() << "Invalid regexp:" << m_regexp.pattern();
+    m_dynamic = Xml::attrToBool(reader.attributes().value(QLatin1String("dynamic")));
 
     return !m_regexp.pattern().isEmpty();
 }
 
-MatchResult RegExpr::doMatch(const QString& text, int offset, const QStringList &captures) const
+void KSyntaxHighlighting::RegExpr::resolvePostProcessing()
+{
+    if (m_isResolved)
+        return;
+
+    m_isResolved = true;
+    bool hasCapture = false;
+
+    // disable DontCaptureOption when reference a context with dynamic rule
+    if (auto *ctx = context().context()) {
+        for (const Rule::Ptr &rule : ctx->rules()) {
+            if (rule->isDynamic()) {
+                hasCapture = true;
+                m_regexp.setPatternOptions(m_regexp.patternOptions() & ~QRegularExpression::DontCaptureOption);
+                break;
+            }
+        }
+    }
+
+    // optimize the pattern for the non-dynamic case, we use them OFTEN
+    if (!m_dynamic) {
+        m_regexp.optimize();
+    }
+
+    bool isValid = m_regexp.isValid();
+    if (!isValid) {
+
+        // DontCaptureOption with back reference capture is an error, remove this option then try again
+        if (!hasCapture) {
+            m_regexp.setPatternOptions(m_regexp.patternOptions() & ~QRegularExpression::DontCaptureOption);
+            isValid = m_regexp.isValid();
+        }
+
+        if (!isValid) {
+            qDebug() << "Invalid regexp:" << m_regexp.pattern();
+        }
+    }
+}
+
+MatchResult RegExpr::doMatch(const QString &text, int offset, const QStringList &captures) const
 {
     /**
      * for dynamic case: create new pattern with right instantiation
@@ -610,20 +662,20 @@ MatchResult RegExpr::doMatch(const QString& text, int offset, const QStringList 
 
     /**
      * no match
+     * we can always compute the skip offset as the highlighter will invalidate the cache for changed captures for dynamic rules!
      */
     return MatchResult(offset, result.capturedStart());
 }
 
-
-bool StringDetect::doLoad(QXmlStreamReader& reader)
+bool StringDetect::doLoad(QXmlStreamReader &reader)
 {
-    m_string = reader.attributes().value(QStringLiteral("String")).toString();
-    m_caseSensitivity = Xml::attrToBool(reader.attributes().value(QStringLiteral("insensitive"))) ? Qt::CaseInsensitive : Qt::CaseSensitive;
-    m_dynamic = Xml::attrToBool(reader.attributes().value(QStringLiteral("dynamic")));
+    m_string = reader.attributes().value(QLatin1String("String")).toString();
+    m_caseSensitivity = Xml::attrToBool(reader.attributes().value(QLatin1String("insensitive"))) ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    m_dynamic = Xml::attrToBool(reader.attributes().value(QLatin1String("dynamic")));
     return !m_string.isEmpty();
 }
 
-MatchResult StringDetect::doMatch(const QString& text, int offset, const QStringList &captures) const
+MatchResult StringDetect::doMatch(const QString &text, int offset, const QStringList &captures) const
 {
     /**
      * for dynamic case: create new pattern with right instantiation
@@ -635,26 +687,30 @@ MatchResult StringDetect::doMatch(const QString& text, int offset, const QString
     return offset;
 }
 
-
-bool WordDetect::doLoad(QXmlStreamReader& reader)
+bool WordDetect::doLoad(QXmlStreamReader &reader)
 {
-    m_word = reader.attributes().value(QStringLiteral("String")).toString();
-    m_caseSensitivity = Xml::attrToBool(reader.attributes().value(QStringLiteral("insensitive"))) ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    m_word = reader.attributes().value(QLatin1String("String")).toString();
+    m_caseSensitivity = Xml::attrToBool(reader.attributes().value(QLatin1String("insensitive"))) ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    loadAdditionalWordDelimiters(reader);
     return !m_word.isEmpty();
 }
 
-MatchResult WordDetect::doMatch(const QString& text, int offset, const QStringList &) const
+MatchResult WordDetect::doMatch(const QString &text, int offset, const QStringList &) const
 {
     if (text.size() - offset < m_word.size())
         return offset;
 
-    if (offset > 0 && !isWordDelimiter(text.at(offset - 1)))
+    /**
+     * detect delimiter characters on the inner and outer boundaries of the string
+     * NOTE: m_word isn't empty
+     */
+    if (offset > 0 && !isWordDelimiter(text.at(offset - 1)) && !isWordDelimiter(text.at(offset)))
         return offset;
 
     if (text.midRef(offset, m_word.size()).compare(m_word, m_caseSensitivity) != 0)
         return offset;
 
-    if (text.size() == offset + m_word.size() || isWordDelimiter(text.at(offset + m_word.size())))
+    if (text.size() == offset + m_word.size() || isWordDelimiter(text.at(offset + m_word.size())) || isWordDelimiter(text.at(offset + m_word.size() - 1)))
         return offset + m_word.size();
 
     return offset;

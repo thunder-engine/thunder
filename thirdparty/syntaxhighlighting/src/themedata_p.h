@@ -1,45 +1,28 @@
 /*
-    Copyright (C) 2016 Volker Krause <vkrause@kde.org>
-    Copyright (C) 2016 Dominik Haumann <dhaumann@kde.org>
+    SPDX-FileCopyrightText: 2016 Volker Krause <vkrause@kde.org>
+    SPDX-FileCopyrightText: 2016 Dominik Haumann <dhaumann@kde.org>
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    SPDX-License-Identifier: MIT
 */
 
 #ifndef KSYNTAXHIGHLIGHTING_THEMEDATA_P_H
 #define KSYNTAXHIGHLIGHTING_THEMEDATA_P_H
 
-#include "theme.h"
 #include "textstyledata_p.h"
+#include "theme.h"
 
 #include <QHash>
 #include <QSharedData>
 
-namespace KSyntaxHighlighting {
-
+namespace KSyntaxHighlighting
+{
 /**
  * Data container for a Theme.
  */
 class ThemeData : public QSharedData
 {
 public:
-    static ThemeData* get(const Theme &theme);
+    static ThemeData *get(const Theme &theme);
 
     /**
      * Default constructor, creating an uninitialized ThemeData instance.
@@ -155,7 +138,7 @@ private:
 
     //! style overrides for individual itemData entries
     //! definition name -> attribute name -> style
-    QHash<QString, QHash<QString, TextStyleData> > m_textStyleOverrides;
+    QHash<QString, QHash<QString, TextStyleData>> m_textStyleOverrides;
 
     //! Editor area colors
     QRgb m_editorColors[Theme::TemplateReadOnlyPlaceholder + 1];
