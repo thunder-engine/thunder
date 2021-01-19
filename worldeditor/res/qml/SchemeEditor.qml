@@ -100,10 +100,22 @@ Rectangle {
         createMode = false
     }
 
+    function linkSelect(id) {
+        selectLink = id
+        linkSelected(id)
+    }
+
     function deleteSelected() {
-        if(selection.length > 0) {
-            schemeModel.deleteNodes(selection)
-            nodeSelect(0)
+        if(selectLink > -1) {
+            schemeModel.deleteLink(selectLink)
+            selectLink = -1
+            linkSelected(selectLink)
+            focusLink = -1
+        } else {
+            if(selection.length > 0) {
+                schemeModel.deleteNodes(selection)
+                nodeSelect(0)
+            }
         }
     }
 
@@ -363,8 +375,7 @@ Rectangle {
                     onEntered: focusLink = index
                     onExited: focusLink = -1
                     onClicked: {
-                        linkSelected(index)
-                        selectLink = index
+                        linkSelect(index)
                     }
                 }
 
@@ -562,13 +573,6 @@ Rectangle {
         sequence: StandardKey.Delete
         onActivated: {
             deleteSelected()
-
-            if(selectLink > -1) {
-                schemeModel.deleteLink(selectLink)
-                selectLink = -1
-                linkSelected(selectLink)
-                focusLink = -1
-            }
         }
     }
 

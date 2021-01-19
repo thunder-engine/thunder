@@ -318,8 +318,12 @@ void AbstractSchemeModel::moveNode(const QVariant selection, const QVariant node
     UndoManager::instance()->push(new MoveNode(selection, nodes, this));
 }
 
-void AbstractSchemeModel::deleteNodes(QVariant list) {
-    UndoManager::instance()->push(new DeleteNodes(list, this));
+void AbstractSchemeModel::deleteNodes(QVariant selection) {
+    QVariantList list = selection.toList();
+    list.removeAll(QVariant(0));
+    if(!list.isEmpty()) {
+        UndoManager::instance()->push(new DeleteNodes(list, this));
+    }
 }
 
 void AbstractSchemeModel::copyNodes(QVariant list) {
@@ -449,7 +453,7 @@ void DeleteNodes::redo() {
     data[NODES] = nodes;
     data[LINKS] = links;
 
-    m_Document =  QJsonDocument::fromVariant(data);
+    m_Document = QJsonDocument::fromVariant(data);
 
     m_pModel->schemeUpdated();
 }
