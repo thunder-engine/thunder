@@ -12,32 +12,25 @@ namespace Ui {
     class AnimationEdit;
 }
 
-class AnimationEdit : public QMainWindow, public IAssetEditor {
+class AnimationEdit : public QWidget, public IAssetEditor {
     Q_OBJECT
 
 public:
     AnimationEdit(DocumentModel *document);
     ~AnimationEdit();
 
-    void readSettings();
-    void writeSettings();
-
 signals:
     void templateUpdate();
 
 private slots:
-    void on_actionSave_triggered();
-
     void onNodesSelected(const QVariant &);
 
     void onUpdateTemplate(bool update = true);
 
-    void onToolWindowActionToggled(bool checked);
-
-    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
-
 private:
     void loadAsset(IConverterSettings *settings) override;
+    void saveAsset(const QString &path = QString()) override;
+
     bool isModified() const override;
 
     QStringList assetTypes() const override;
@@ -54,9 +47,6 @@ private:
     AnimationStateMachine *m_pMachine;
 
     QString m_Path;
-
-    QAction *m_pUndo;
-    QAction *m_pRedo;
 
     DocumentModel *m_pDocument;
 };

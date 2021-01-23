@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>AnimationEdit</class>
- <widget class="QMainWindow" name="AnimationEdit">
+ <widget class="QWidget" name="AnimationEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -10,91 +10,46 @@
     <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Animation Editor</string>
-  </property>
-  <widget class="QToolWindowManager" name="centralwidget">
-   <widget class="QQuickWidget" name="quickWidget">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>9</y>
-      <width>200</width>
-      <height>200</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>200</height>
-     </size>
-    </property>
-    <property name="resizeMode">
-     <enum>QQuickWidget::SizeRootObjectToView</enum>
-    </property>
-   </widget>
-   <widget class="PropertyEditor" name="treeView">
-    <property name="geometry">
-     <rect>
-      <x>223</x>
-      <y>11</y>
-      <width>201</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>200</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="ComponentBrowser" name="components" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>220</y>
-      <width>200</width>
-      <height>200</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>200</height>
-     </size>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>21</height>
-    </rect>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
    </property>
-   <widget class="QMenu" name="menuWindow">
-    <property name="title">
-     <string>Window</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionSave"/>
-   </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuWindow"/>
-  </widget>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="ComponentBrowser" name="components" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>200</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QQuickWidget" name="quickWidget">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="resizeMode">
+       <enum>QQuickWidget::SizeRootObjectToView</enum>
+      </property>
+     </widget>
+    </widget>
+   </item>
+  </layout>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
@@ -111,21 +66,9 @@
    <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
   <customwidget>
-   <class>PropertyEditor</class>
-   <extends>QTreeView</extends>
-   <header>editors/propertyedit/propertyeditor.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ComponentBrowser</class>
    <extends>QWidget</extends>
    <header>editors/componentbrowser/componentbrowser.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QToolWindowManager</class>
-   <extends>QWidget</extends>
-   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

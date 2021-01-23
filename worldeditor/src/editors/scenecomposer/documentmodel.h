@@ -48,6 +48,9 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
 
+signals:
+    void itemSelected(QObject *item);
+
 public slots:
     void closeFile(const QString &path);
 

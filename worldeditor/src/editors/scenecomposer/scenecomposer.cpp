@@ -222,6 +222,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &SceneComposer::onOpenEditor);
 
+    connect(m_pDocumentModel, &DocumentModel::itemSelected, this, &SceneComposer::onItemSelected);
+
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 
     connect(ui->hierarchy, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
@@ -339,6 +341,15 @@ void SceneComposer::onAssetSelected(IConverterSettings *settings) {
     ui->revertButton->setEnabled(settings->isModified());
 
     ui->propertyView->setObject(settings);
+}
+
+void SceneComposer::onItemSelected(QObject *item) {
+    ui->componentButton->setVisible(false);
+
+    ui->commitButton->setVisible(false);
+    ui->revertButton->setVisible(false);
+
+    ui->propertyView->setObject(item);
 }
 
 void SceneComposer::onOpenEditor(const QString &path) {

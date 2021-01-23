@@ -36,6 +36,7 @@ public:
 public slots:
     void onObjectSelected(Object::ObjectList objects);
     void onAssetSelected(IConverterSettings *settings);
+    void onItemSelected(QObject *item);
     void onOpenEditor(const QString &path);
 
     void onOpenProject(const QString &path);
