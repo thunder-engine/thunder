@@ -11,7 +11,7 @@ class AnimationControllerPrivate;
 class NEXT_LIBRARY_EXPORT AnimationController : public NativeBehaviour {
     A_REGISTER(AnimationController, NativeBehaviour, Components)
 
-    A_PROPERTIES (
+    A_PROPERTIES(
         A_PROPERTYEX(AnimationStateMachine *, stateMachine, AnimationController::stateMachine, AnimationController::setStateMachine, "editor=Template"),
         A_PROPERTY(AnimationClip *, clip, AnimationController::clip, AnimationController::setClip)
     )
@@ -31,45 +31,41 @@ class NEXT_LIBRARY_EXPORT AnimationController : public NativeBehaviour {
     )
 
 public:
-    AnimationController ();
-    ~AnimationController ();
+    AnimationController();
+    ~AnimationController();
 
-    AnimationStateMachine *stateMachine () const;
-    void setStateMachine (AnimationStateMachine *resource);
+    AnimationStateMachine *stateMachine() const;
+    void setStateMachine(AnimationStateMachine *resource);
 
-    uint32_t position () const;
-    void setPosition (uint32_t position);
+    uint32_t position() const;
+    void setPosition(uint32_t position);
 
-    void setState (const string &state);
-    void setStateHash (int hash);
+    void setState(const string &state);
+    void setStateHash(int hash);
 
-    void crossFade (const string &state, float duration);
-    void crossFadeHash (int hash, float duration);
+    void crossFade(const string &state, float duration);
+    void crossFadeHash(int hash, float duration);
 
-    AnimationClip *clip () const;
-    void setClip (AnimationClip *clip);
+    AnimationClip *clip() const;
+    void setClip(AnimationClip *clip);
 
-    void setBool (const string &name, bool value);
-    void setBoolHash (int hash, bool value);
+    void setBool(const string &name, bool value);
+    void setBoolHash(int hash, bool value);
 
-    void setFloat (const string &name, float value);
-    void setFloatHash (int hash, float value);
+    void setFloat(const string &name, float value);
+    void setFloatHash(int hash, float value);
 
-    void setInteger (const string &name, int32_t value);
-    void setIntegerHash (int hash, int32_t value);
+    void setInteger(const string &name, int32_t value);
+    void setIntegerHash(int hash, int32_t value);
 
-    int duration () const;
+    int duration() const;
 
 private:
-    void start () override;
-    void update () override;
+    void start() override;
+    void update() override;
 
-    void setClips (AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f);
-
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
-
-    Object *findTarget (Object *src, const string &path);
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     AnimationControllerPrivate *p_ptr;

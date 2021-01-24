@@ -31,7 +31,7 @@ void Property_animation() {
     x2.m_Type = AnimationCurve::KeyFrame::Linear;
     curveX.m_Keys.push_back(x2);
 
-    anim.setBeginCurve(&curveX, 0);
+    anim.setCurve(&curveX, 0);
 
     AnimationCurve curveY;
 
@@ -47,7 +47,7 @@ void Property_animation() {
     y2.m_Type = AnimationCurve::KeyFrame::Linear;
     curveY.m_Keys.push_back(y2);
 
-    anim.setBeginCurve(&curveY, 1);
+    anim.setCurve(&curveY, 1);
 
     anim.setCurrentTime(500);
 

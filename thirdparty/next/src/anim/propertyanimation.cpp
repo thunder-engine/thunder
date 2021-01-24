@@ -7,8 +7,10 @@ public:
             m_Property(nullptr) {
 
     }
-    Object                 *m_pObject;
-    MetaProperty            m_Property;
+
+    Object *m_pObject;
+    MetaProperty m_Property;
+    Variant m_Default;
 };
 /*!
     \class PropertyAnimation
@@ -38,7 +40,7 @@ PropertyAnimation::PropertyAnimation() :
 
 PropertyAnimation::~PropertyAnimation() {
     if(p_ptr->m_Property.isValid()) {
-        p_ptr->m_Property.write(p_ptr->m_pObject, defaultValue());
+        p_ptr->m_Property.write(p_ptr->m_pObject, p_ptr->m_Default);
     }
 
     delete p_ptr;
@@ -47,19 +49,24 @@ PropertyAnimation::~PropertyAnimation() {
     Sets the new animated \a property of the \a object.
 */
 void PropertyAnimation::setTarget(Object *object, const char *property) {
-    if(p_ptr->m_Property.isValid()) {
-        p_ptr->m_Property.write(p_ptr->m_pObject, defaultValue());
-    }
+    setCurrentValue(p_ptr->m_Default);
 
     if(object) {
-        const MetaObject *meta  = object->metaObject();
-        int32_t index   = meta->indexOfProperty(property);
+        const MetaObject *meta = object->metaObject();
+        int32_t index = meta->indexOfProperty(property);
         if(index > -1) {
-            p_ptr->m_pObject    = object;
-            p_ptr->m_Property   = meta->property(index);
-            setDefaultValue(p_ptr->m_Property.read(p_ptr->m_pObject));
+            p_ptr->m_pObject = object;
+            p_ptr->m_Property = meta->property(index);
+            p_ptr->m_Default = p_ptr->m_Property.read(p_ptr->m_pObject);
+            setCurrentValue(p_ptr->m_Default);
         }
     }
+}
+/*!
+    Returns the default value of the animated property.
+*/
+Variant PropertyAnimation::defaultValue() const {
+    return p_ptr->m_Default;
 }
 /*!
     Returns the root object of the animated property.
@@ -81,7 +88,7 @@ const char *PropertyAnimation::targetProperty() const {
     Sets the new current \a value for the animated Variant. And updates animated property of the object.
 */
 void PropertyAnimation::setCurrentValue(const Variant &value) {
-    BlenderAnimation::setCurrentValue(value);
+    VariantAnimation::setCurrentValue(value);
 
     if(p_ptr->m_Property.isValid()) {
         p_ptr->m_Property.write(p_ptr->m_pObject, value);
@@ -93,8 +100,8 @@ void PropertyAnimation::setCurrentValue(const Variant &value) {
 */
 void PropertyAnimation::setValid(bool valid) {
     if(!valid && p_ptr->m_Property.isValid()) {
-        p_ptr->m_Property.write(p_ptr->m_pObject, defaultValue());
+        p_ptr->m_Property.write(p_ptr->m_pObject, p_ptr->m_Default);
     }
 
-    BlenderAnimation::setValid(valid);
+    VariantAnimation::setValid(valid);
 }

@@ -64,22 +64,24 @@ uint32_t Animation::currentTime() const {
     \note If new position placed outside of current loop; Then current loop will be changed to appropriate.
 */
 void Animation::setCurrentTime(uint32_t msecs) {
-    int32_t total   = duration();
-    if(total > -1) {
-        msecs = min(static_cast<uint32_t>(total), msecs);
-    }
-    p_ptr->m_TotalCurrentTime = msecs;
+    if(state() == RUNNING) {
+        int32_t total = duration();
+        if(total > -1) {
+            msecs = min(static_cast<uint32_t>(total), msecs);
+        }
+        p_ptr->m_TotalCurrentTime = msecs;
 
-    int32_t length = loopDuration();
-    p_ptr->m_CurrentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
-    if(p_ptr->m_CurrentLoop == static_cast<uint32_t>(p_ptr->m_LoopCount)) {
-        p_ptr->m_CurrentTime = static_cast<uint32_t>(max(0, length));
-        p_ptr->m_CurrentLoop = static_cast<uint32_t>(max(0, p_ptr->m_LoopCount - 1));
-    } else {
-        p_ptr->m_CurrentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
-    }
-    if(p_ptr->m_TotalCurrentTime == static_cast<uint32_t>(total)) {
-        stop();
+        int32_t length = loopDuration();
+        p_ptr->m_CurrentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
+        if(p_ptr->m_CurrentLoop == static_cast<uint32_t>(p_ptr->m_LoopCount)) {
+            p_ptr->m_CurrentTime = static_cast<uint32_t>(max(0, length));
+            p_ptr->m_CurrentLoop = static_cast<uint32_t>(max(0, p_ptr->m_LoopCount - 1));
+        } else {
+            p_ptr->m_CurrentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
+        }
+        if(p_ptr->m_TotalCurrentTime == static_cast<uint32_t>(total)) {
+            stop();
+        }
     }
 }
 /*!
@@ -89,10 +91,10 @@ int32_t Animation::loopCount() const {
     return p_ptr->m_LoopCount;
 }
 /*!
-    Sets the new number of \a loops of animation.
+    Sets the new number of \a loops of animation; -1 in case of infinite animation.
 */
 void Animation::setLoopCount(int32_t loops) {
-    p_ptr->m_LoopCount  = loops;
+    p_ptr->m_LoopCount = loops;
 }
 /*!
     Returns the number of repetitions of animation which already has played.
@@ -123,11 +125,11 @@ int32_t Animation::loopDuration() const {
     \note Returns -1 in case of infinite animation.
 */
 int32_t Animation::duration() const {
-    int32_t length  = loopDuration();
+    int32_t length = loopDuration();
     if(length <= 0) {
         return length;
     }
-    int32_t count   = loopCount();
+    int32_t count = loopCount();
     if(count < 0) {
         return -1;
     }
@@ -153,7 +155,10 @@ void Animation::start() {
     if(p_ptr->m_State == RUNNING) {
         return;
     }
-    p_ptr->m_State  = RUNNING;
+    p_ptr->m_State = RUNNING;
+    p_ptr->m_CurrentLoop = 0;
+    p_ptr->m_CurrentTime = 0;
+    p_ptr->m_TotalCurrentTime = 0;
     setCurrentTime(0);
 }
 /*!
@@ -161,7 +166,7 @@ void Animation::start() {
     \note Animation can't be continued.
 */
 void Animation::stop() {
-    p_ptr->m_State  = STOPPED;
+    p_ptr->m_State = STOPPED;
 }
 /*!
     Stops the animation.
@@ -171,7 +176,7 @@ void Animation::pause() {
     if(p_ptr->m_State == STOPPED) {
         return;
     }
-    p_ptr->m_State  = PAUSED;
+    p_ptr->m_State = PAUSED;
 }
 /*!
     Continues the animation which was paused earlier.
@@ -180,7 +185,7 @@ void Animation::resume() {
     if(p_ptr->m_State != PAUSED) {
         return;
     }
-    p_ptr->m_State  = RUNNING;
+    p_ptr->m_State = RUNNING;
 }
 
 

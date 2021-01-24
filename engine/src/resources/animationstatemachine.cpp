@@ -72,7 +72,8 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                     default: state = new AnimationState;
                 }
                 i++;
-                state->m_Hash = hash_str((*i).toString());
+                string str = (*i).toString();
+                state->m_Hash = hash_str(str);
                 i++;
                 state->m_pClip = Engine::loadResource<AnimationClip>((*i).toString());
                 i++;

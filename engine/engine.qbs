@@ -4,14 +4,14 @@ Project {
     id: engine
     property stringList srcFiles: [
         "src/*.cpp",
-        "src/components/*.cpp",
+        "src/components/**/*.cpp",
         "src/resources/*.cpp",
         "src/systems/*.cpp",
         "src/filters/*.cpp",
         "src/postprocess/*.cpp",
         "includes/*.h",
         "includes/adapters/*.h",
-        "includes/components/*.h",
+        "includes/components/**/*.h",
         "includes/resources/*.h",
         "includes/systems/*.h",
         "includes/filters/*.h",

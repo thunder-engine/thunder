@@ -17,8 +17,8 @@ public:
 
     int32_t                         loopDuration                () const override;
 
-    Variant                         currentValue                () const;
-    void                            setCurrentValue             (const Variant &value);
+    virtual Variant                 currentValue                () const;
+    virtual void                    setCurrentValue             (const Variant &value);
 
     AnimationCurve                 *curve                       (int32_t component = 0) const;
     void                            setCurve                    (AnimationCurve *curve, int32_t component = 0);

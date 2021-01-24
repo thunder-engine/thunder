@@ -330,7 +330,8 @@ Product {
         excludeFiles: [
             "adapters/*.h",
             "editor/*.h",
-            "systems/*.h"
+            "systems/*.h",
+            "**/private/*.h"
         ]
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/engine"

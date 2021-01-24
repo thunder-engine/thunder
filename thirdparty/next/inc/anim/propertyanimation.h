@@ -1,12 +1,12 @@
 #ifndef PROPERTYANIMATION_H
 #define PROPERTYANIMATION_H
 
-#include "blenderanimation.h"
+#include "variantanimation.h"
 
 class PropertyAnimationPrivate;
 
-class NEXT_LIBRARY_EXPORT PropertyAnimation : public BlenderAnimation {
-    A_REGISTER(PropertyAnimation, BlenderAnimation, Animation)
+class NEXT_LIBRARY_EXPORT PropertyAnimation : public VariantAnimation {
+    A_REGISTER(PropertyAnimation, VariantAnimation, Animation)
 
 public:
     PropertyAnimation               ();
@@ -14,6 +14,8 @@ public:
     ~PropertyAnimation              ();
 
     void                            setTarget                   (Object *object, const char *property);
+
+    Variant                         defaultValue                () const;
 
     const Object                   *target                      () const;
 
