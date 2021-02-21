@@ -20,6 +20,7 @@
 
 #include <QDesktopServices>
 #include <QUrl>
+#include <QSplashScreen>
 
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
@@ -35,11 +36,16 @@ int main(int argc, char *argv[]) {
 
     QApplication::setKeyboardInputInterval(1);
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
     QCoreApplication::setApplicationName(EDITOR_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
+
+    QPixmap pixmap(":/splash.png");
+    QSplashScreen splash(pixmap);
+    splash.show();
+    app.processEvents();
 
     QFile qss(":/Style/styles/dark/style.qss");
     if(qss.open(QIODevice::ReadOnly)) {
@@ -73,11 +79,12 @@ int main(int argc, char *argv[]) {
 
     SettingsManager::instance()->loadSettings();
 
-    SceneComposer w(&engine);
-    w.show();
+    SceneComposer window(&engine);
+    window.show();
+    splash.finish(&window);
 
     if(argc > 1) {
-        w.onOpenProject(QApplication::arguments().at(1));
+        window.onOpenProject(QApplication::arguments().at(1));
     }
 
     UndoManager::instance()->init();
@@ -85,7 +92,7 @@ int main(int argc, char *argv[]) {
     ContentList::instance()->init(&engine);
     AssetList::instance()->init(&engine);
 
-    int result  = a.exec();
+    int result  = app.exec();
 
     UndoManager::destroy();
     AssetManager::destroy();

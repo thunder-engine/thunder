@@ -106,4 +106,7 @@
         <file>themes/thunder-dark.theme</file>
         <file>syntax/angelscript.xml</file>
     </qresource>
+    <qresource prefix="/">
+        <file>splash.png</file>
+    </qresource>
 </RCC>
