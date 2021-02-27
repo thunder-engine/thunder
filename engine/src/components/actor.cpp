@@ -108,7 +108,6 @@ public:
                     m_pActor->loadUserData(m_Data.toMap());
                 } break;
                 case Resource::ToBeDeleted: {
-                    m_pPrefab->unsubscribe(this);
                     m_pPrefab = nullptr;
                 } break;
                 default: break;
