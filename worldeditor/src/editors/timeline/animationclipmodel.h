@@ -14,147 +14,65 @@ class AnimationStateMachine;
 class AnimationClipModel : public QAbstractItemModel {
     Q_OBJECT
 
-    Q_PROPERTY(float position READ position WRITE setPosition NOTIFY positionChanged)
-    Q_PROPERTY(int row READ row WRITE setRow NOTIFY rowChanged)
-    Q_PROPERTY(int col READ col WRITE setCol NOTIFY rowChanged)
-
 public:
-    AnimationClipModel          (QObject *parent);
+    AnimationClipModel(QObject *parent);
 
-    void                        setController               (AnimationController *controller);
+    void setController(AnimationController *controller);
 
-    QVariant                    data                        (const QModelIndex &index, int) const;
+    QVariant data(const QModelIndex &index, int) const override;
 
-    QVariant                    headerData                  (int, Qt::Orientation, int) const;
+    QVariant headerData(int, Qt::Orientation, int) const override;
 
-    int                         columnCount                 (const QModelIndex &) const;
+    int columnCount(const QModelIndex &) const override;
 
-    QModelIndex                 index                       (int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
-    QModelIndex                 parent                      (const QModelIndex &) const;
+    QModelIndex parent(const QModelIndex &) const override;
 
-    int                         rowCount                    (const QModelIndex &) const;
+    int rowCount(const QModelIndex &) const override;
 
-    Q_INVOKABLE bool            isExpanded                  (int track) const;
+    float position() const;
+    void setPosition(float value);
 
-    Q_INVOKABLE int             expandHeight                (int track) const;
+    void removeItems(const QModelIndexList &list);
 
-    Q_INVOKABLE QVariant        trackData                   (int track) const;
+    AnimationCurve::KeyFrame *key(int32_t track, int32_t col, int32_t index);
 
-    Q_INVOKABLE void            setTrackData                (int track, const QVariant &data);
+    AnimationTrack &track(int32_t track);
 
-    Q_INVOKABLE int             maxPosition                 (int track);
+    void updateController();
 
+    AnimationClip *clip() const { return m_pClip; }
 
-    float                       position                    () const;
-    void                        setPosition                 (float value);
+    QStringList clips() const { return m_Clips.keys(); }
 
-    int                         row                         () const;
-    void                        setRow                      (int value);
+    void commitKey(int row, int col, int index, float value, float left, float right, int position);
 
-    int                         col                         () const;
-    void                        setCol                      (int value);
-
-    void                        selectItem                  (const QModelIndex &index);
-
-    void                        removeItems                 (const QModelIndexList &list);
-
-    AnimationCurve::KeyFrame   *key                         (int32_t track, int32_t col, int32_t index);
-
-    void                        updateController            ();
-
-    AnimationClip              *clip                        () const { return m_pClip; }
-
-    QStringList                 clips                       () const { return m_Clips.keys(); }
-
-    static bool compare(const AnimationCurve::KeyFrame &first, const AnimationCurve::KeyFrame &second) {
-        return ( first.m_Position < second.m_Position );
-    }
+    bool isReadOnly() const;
 
 public slots:
-    void                        onInsertKey                 (int row, int col, int pos);
-    void                        onRemoveKey                 (int row, int col, int index);
-    void                        onUpdateKey                 (int row, int col, int index, float value, float left, float right, uint32_t position);
-
-    void                        setClip                     (const QString &clip);
-
-    void                        onExpanded                  (const QModelIndex &index);
-    void                        onCollapsed                 (const QModelIndex &index);
+    void setClip(const QString &clip);
 
 signals:
-    void                        changed                     ();
+    void changed();
 
-    void                        rowChanged                  ();
-    void                        positionChanged             ();
+    void positionChanged(float value);
 
 protected:
-    AnimationController        *m_pController;
+    AnimationController *m_pController;
 
-    AnimationStateMachine      *m_pStateMachine;
+    AnimationStateMachine *m_pStateMachine;
 
-    AnimationClip              *m_pClip;
+    AnimationClip *m_pClip;
 
-    bool                        m_isHighlighted;
-
-    QModelIndex                 m_HoverIndex;
-
-    float                       m_Position;
-
-    int                         m_Row;
-    int                         m_Col;
+    float m_Position;
 
     QMap<QString, AnimationClip *> m_Clips;
-
-    QList<int>                  m_Expands;
-
-};
-
-class UndoInsertKey : public QUndoCommand {
-public:
-    UndoInsertKey(int row, int col, int pos, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
-        m_Row(row),
-        m_Column(col),
-        m_Position(pos) {
-
-    }
-    void undo() override;
-    void redo() override;
-protected:
-    void insertKey(AnimationCurve &curve);
-
-protected:
-    AnimationClipModel *m_pModel;
-    int m_Row;
-    int m_Column;
-    int m_Position;
-    list<int> m_Indices;
-};
-
-class UndoRemoveKey : public QUndoCommand {
-public:
-    UndoRemoveKey(int row, int col, int index, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
-        m_Row(row),
-        m_Column(col),
-        m_Index(index) {
-
-    }
-    void undo() override;
-    void redo() override;
-protected:
-    AnimationClipModel *m_pModel;
-    int m_Row;
-    int m_Column;
-    int m_Index;
-    AnimationCurve::KeyFrame m_Key;
 };
 
 class UndoUpdateKey : public QUndoCommand {
 public:
-    UndoUpdateKey(int row, int col, int index, float value, float left, float right, uint32_t position, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+    UndoUpdateKey(int row, int col, int index, float value, float left, float right, float position, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
         QUndoCommand(name, parent),
         m_pModel(model),
         m_Row(row),
@@ -176,25 +94,8 @@ protected:
     float m_Value;
     float m_Left;
     float m_Right;
-    uint32_t m_Position;
+    float m_Position;
     AnimationCurve::KeyFrame m_Key;
-};
-
-class UndoUpdateKeys : public QUndoCommand {
-public:
-    UndoUpdateKeys(int row, const QVariant &data, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
-        m_Row(row),
-        m_Data(data) {
-
-    }
-    void undo() override;
-    void redo() override;
-protected:
-    AnimationClipModel *m_pModel;
-    int m_Row;
-    QVariant m_Data;
 };
 
 class UndoRemoveItems : public QUndoCommand {

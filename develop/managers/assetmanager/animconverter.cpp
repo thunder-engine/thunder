@@ -7,7 +7,7 @@
 
 #define TRACKS  "Tracks"
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());

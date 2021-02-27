@@ -24,6 +24,9 @@ public:
     string property() const;
     void setProperty(const string &property);
 
+    int duration() const;
+    void setDuration(int duration);
+
     int hash() const;
 
     CurveMap &curves();
@@ -34,6 +37,8 @@ private:
     string m_Property;
 
     int m_Hash;
+
+    int m_Duration;
 
     CurveMap m_Curves;
 };
@@ -54,7 +59,6 @@ public:
     AnimationTrackList m_Tracks;
 
     void loadUserData(const VariantMap &data) override;
-protected:
     VariantMap saveUserData() const override;
 
 };

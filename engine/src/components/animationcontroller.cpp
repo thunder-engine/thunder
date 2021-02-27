@@ -2,13 +2,12 @@
 
 #include "components/actor.h"
 
+#include "private/baseanimationblender.h"
+
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
 
 #include "timer.h"
-#include "anim/propertyanimation.h"
-
-#include "private/baseanimationblender.h"
 
 #include "log.h"
 
@@ -85,23 +84,24 @@ public:
             return;
         }
 
-        setClips(clip, nullptr);
+        setClips(nullptr, clip);
     }
 
     void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f) {
         PROFILE_FUNCTION();
 
         Actor *actor = d_ptr->actor();
-        if(end) {
-            for(auto &it : end->m_Tracks) {
+        if(start) {
+            for(auto &it : start->m_Tracks) {
                 BaseAnimationBlender *property = nullptr;
                 auto target = m_Properties.find(it.hash());
                 if(target != m_Properties.end()) {
                     property = target->second;
                     property->setValid(true);
                     property->setLoopCount(1);
+                    property->setPreviousDuration(it.duration());
                     for(auto &i : it.curves()) {
-                        property->setEndCurve(&i.second, i.first);
+                        property->setPreviousCurve(&i.second, i.first);
                         property->setOffset(time);
                         property->setTransitionTime(duration);
                     }
@@ -113,7 +113,7 @@ public:
             it.second->stop();
         }
 
-        for(auto &it : start->m_Tracks) {
+        for(auto &it : end->m_Tracks) {
             BaseAnimationBlender *property;
             auto target = m_Properties.find(it.hash());
             if(target != m_Properties.end()) {
@@ -136,9 +136,10 @@ public:
             } else {
                 property->setLoopCount(-1);
             }
+            property->setDuration(it.duration());
 
             for(auto &i : it.curves()) {
-                property->setBeginCurve(&i.second, i.first);
+                property->setCurve(&i.second, i.first);
                 property->setTransitionTime(duration);
             }
             property->start();

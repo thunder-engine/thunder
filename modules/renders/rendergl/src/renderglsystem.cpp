@@ -86,6 +86,9 @@ bool RenderGLSystem::init() {
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &targets);
     CheckGLError();
 
+    int32_t attribs;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &attribs);
+
     int32_t texture;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
     CheckGLError();

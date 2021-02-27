@@ -65,17 +65,17 @@ uint32_t Animation::currentTime() const {
 */
 void Animation::setCurrentTime(uint32_t msecs) {
     if(state() == RUNNING) {
-        int32_t total = duration();
+        int32_t total = totalDuration();
         if(total > -1) {
-            msecs = min(static_cast<uint32_t>(total), msecs);
+            msecs = MIN(static_cast<uint32_t>(total), msecs);
         }
         p_ptr->m_TotalCurrentTime = msecs;
 
-        int32_t length = loopDuration();
+        int32_t length = duration();
         p_ptr->m_CurrentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
         if(p_ptr->m_CurrentLoop == static_cast<uint32_t>(p_ptr->m_LoopCount)) {
-            p_ptr->m_CurrentTime = static_cast<uint32_t>(max(0, length));
-            p_ptr->m_CurrentLoop = static_cast<uint32_t>(max(0, p_ptr->m_LoopCount - 1));
+            p_ptr->m_CurrentTime = static_cast<uint32_t>(MAX(0, length));
+            p_ptr->m_CurrentLoop = static_cast<uint32_t>(MAX(0, p_ptr->m_LoopCount - 1));
         } else {
             p_ptr->m_CurrentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
         }
@@ -117,15 +117,15 @@ Animation::State Animation::state() const {
 /*!
     Returns the duration of the animation (in milliseconds).
 */
-int32_t Animation::loopDuration() const {
+int32_t Animation::duration() const {
     return -1;
 }
 /*!
     Returns the duration (in milliseconds) in total as sum of durations for all loops.
     \note Returns -1 in case of infinite animation.
 */
-int32_t Animation::duration() const {
-    int32_t length = loopDuration();
+int32_t Animation::totalDuration() const {
+    int32_t length = duration();
     if(length <= 0) {
         return length;
     }

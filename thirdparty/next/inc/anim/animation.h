@@ -43,9 +43,9 @@ public:
 
     State                           state                       () const;
 
-    virtual int32_t                 loopDuration                () const;
+    virtual int32_t                 duration                    () const;
 
-    int32_t                         duration                    () const;
+    int32_t                         totalDuration               () const;
 
     bool                            isValid                     () const;
     virtual void                    setValid                    (bool valid);

@@ -33,7 +33,7 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define FORMAT_VERSION 2
+#define FORMAT_VERSION 3
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -615,6 +615,9 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.setPath(path);
                     track.setProperty("position");
 
+                    uint32_t duration = uint32_t((channel->mPositionKeys[channel->mNumPositionKeys - 1].mTime / animRate) * 1000);
+                    track.setDuration(duration);
+
                     AnimationCurve x, y, z;
                     for(uint32_t k = 0; k < channel->mNumPositionKeys; k++) {
                         aiVectorKey *key = &channel->mPositionKeys[k];
@@ -622,7 +625,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = time;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration;
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         Vector3 pos = Vector3(key->mValue.x, key->mValue.y, key->mValue.z) * fbxSettings->customScale();
@@ -638,7 +641,6 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         y.m_Keys.push_back(frameY);
                         z.m_Keys.push_back(frameZ);
                     }
-
                     auto &curves = track.curves();
 
                     curves[0] = x;
@@ -658,6 +660,9 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.setPath(path);
                     track.setProperty("quaternion");
 
+                    uint32_t duration = uint32_t((channel->mRotationKeys[channel->mNumRotationKeys - 1].mTime / animRate) * 1000);
+                    track.setDuration(duration);
+
                     AnimationCurve x, y, z, w;
                     for(uint32_t k = 0; k < channel->mNumRotationKeys; k++) {
                         aiQuatKey *key = &channel->mRotationKeys[k];
@@ -665,7 +670,8 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ, frameW;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = time;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = (float)time / (float)duration;
+                        duration = MAX(duration, frameX.m_Position);
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = frameW.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         frameX.m_Value = key->mValue.x;
@@ -678,7 +684,6 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         z.m_Keys.push_back(frameZ);
                         w.m_Keys.push_back(frameW);
                     }
-
                     auto &curves = track.curves();
 
                     curves[0] = x;
@@ -699,6 +704,9 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                     track.setPath(path);
                     track.setProperty("scale");
 
+                    uint32_t duration = uint32_t((channel->mScalingKeys[channel->mNumScalingKeys - 1].mTime / animRate) * 1000);
+                    track.setDuration(duration);
+
                     AnimationCurve x, y, z;
                     for(uint32_t k = 0; k < channel->mNumScalingKeys; k++) {
                         aiVectorKey *key = &channel->mScalingKeys[k];
@@ -706,7 +714,8 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = time;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration;
+                        duration = MAX(duration, frameX.m_Position);
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         frameX.m_Value = key->mValue.x;
@@ -717,7 +726,6 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         y.m_Keys.push_back(frameY);
                         z.m_Keys.push_back(frameZ);
                     }
-
                     auto &curves = track.curves();
 
                     curves[0] = x;

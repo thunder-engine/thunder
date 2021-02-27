@@ -67,6 +67,9 @@
         <file>styles/dark/images/pipeline.png</file>
         <file>styles/dark/icons/handle.png</file>
         <file>styles/dark/icons/separator.png</file>
+        <file>styles/dark/icons/arrow-left.png</file>
+        <file>styles/dark/icons/key-normal.png</file>
+        <file>styles/dark/icons/key-select.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>

@@ -37,14 +37,11 @@ public slots:
     void showBar();
 
 protected:
-    void readSettings();
-    void writeSettings();
-
     void saveClip();
 
     AnimationController *findController(Object *object);
 
-    uint32_t findNear(bool backward = false);
+    float findNear(bool backward = false);
 
     QString pathTo(Object *src, Object *dst);
 
@@ -52,8 +49,6 @@ protected:
 
 private slots:
     void onModified();
-
-    void onRemoveProperties();
 
     void onSelectKey(int, int, int);
 
@@ -69,12 +64,6 @@ private slots:
 
     void on_end_clicked();
 
-    void on_treeView_customContextMenuRequested(const QPoint &pos);
-
-    void on_treeView_clicked(const QModelIndex &index);
-
-    void on_curve_toggled(bool checked);
-
     void on_flatKey_clicked();
 
     void on_breakKey_clicked();
@@ -85,8 +74,6 @@ private:
     void timerEvent(QTimerEvent *) override;
 
     void changeEvent(QEvent *event) override;
-
-    QMenu m_ContentMenu;
 
     Object::ObjectList m_SelectedObjects;
 

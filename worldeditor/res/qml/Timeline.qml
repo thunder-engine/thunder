@@ -21,7 +21,7 @@ Rectangle {
     property int minStep: 8
     property int maxStep: 40
 
-    property int maxPos: 0
+    property int maxDuration: 0
 
     property real timeScale: 0.01
     property int timeStep: minStep
@@ -37,9 +37,9 @@ Rectangle {
     Connections {
         target: clipModel
         onLayoutChanged: {
-            maxPos = 0
+            maxDuration = 0
             for(var i = 0; i < clipModel.rowCount(); i++) {
-                maxPos = clipModel.maxPosition(i)
+                maxDuration = Math.max(clipModel.duration(i), maxDuration)
             }
             curve.row = 0
         }
@@ -229,7 +229,7 @@ Rectangle {
     ResizableScrollBar {
         id: hbar
         orientation: Qt.Horizontal
-        size: parent.width / (curve.toScreenSpaceX(maxPos) + maxStep)
+        size: parent.width / (curve.toScreenSpaceX(maxDuration) + maxStep)
 
         anchors.left: parent.left
         anchors.right: parent.right

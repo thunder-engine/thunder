@@ -15,7 +15,8 @@ public:
 
     ~VariantAnimation               ();
 
-    int32_t                         loopDuration                () const override;
+    int32_t                         duration                    () const override;
+    void                            setDuration                 (int32_t duration);
 
     virtual Variant                 currentValue                () const;
     virtual void                    setCurrentValue             (const Variant &value);
@@ -24,6 +25,9 @@ public:
     void                            setCurve                    (AnimationCurve *curve, int32_t component = 0);
 
     void                            setCurrentTime              (uint32_t posintion) override;
+
+protected:
+    Quaternion                      quaternionValue             (AnimationCurve *curves[4], float posintion);
 
 private:
     VariantAnimationPrivate        *p_ptr;

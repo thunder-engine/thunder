@@ -22,6 +22,14 @@ void AnimationTrack::setProperty(const string &property) {
     m_Hash = hash_str(m_Path + "." + m_Property);
 }
 
+int AnimationTrack::duration() const {
+    return m_Duration;
+}
+
+void AnimationTrack::setDuration(int duration) {
+    m_Duration = duration;
+}
+
 int AnimationTrack::hash() const {
     return m_Hash;
 }
@@ -61,6 +69,8 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             i++;
             track.setProperty((*i).toString());
             i++;
+            track.setDuration((*i).toInt());
+            i++;
 
             for(auto it : (*i).toList()) {
                 VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
@@ -75,7 +85,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
                     auto k = keyList.begin();
 
                     AnimationCurve::KeyFrame key;
-                    key.m_Position = static_cast<uint32_t>((*k).toInt());
+                    key.m_Position = (*k).toFloat();
                     k++;
                     key.m_Type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
                     k++;
@@ -108,6 +118,7 @@ VariantMap AnimationClip::saveUserData() const {
         VariantList track;
         track.push_back(t.path());
         track.push_back(t.property());
+        track.push_back(t.duration());
 
         VariantList curves;
         for(auto c : t.curves()) {
@@ -116,7 +127,7 @@ VariantMap AnimationClip::saveUserData() const {
 
             for(auto it : c.second.m_Keys) {
                 VariantList key;
-                key.push_back(int32_t(it.m_Position));
+                key.push_back(it.m_Position);
                 key.push_back(it.m_Type);
                 key.push_back(it.m_Value);
                 key.push_back(it.m_LeftTangent);
@@ -141,11 +152,9 @@ VariantMap AnimationClip::saveUserData() const {
 int AnimationClip::duration() const {
     PROFILE_FUNCTION();
 
-    uint32_t result = 0;
-    for(auto track : m_Tracks) {
-        for(auto curve : track.curves()) {
-            result = MAX(curve.second.m_Keys.back().m_Position, result);
-        }
+    int32_t result = 0;
+    for(auto &track : m_Tracks) {
+        result = MAX(track.duration(), result);
     }
     return result;
 }

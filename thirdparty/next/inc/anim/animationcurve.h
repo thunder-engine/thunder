@@ -15,11 +15,12 @@ public:
 
         KeyFrame ();
 
-    public:
-        uint32_t m_Position;
+        bool operator ==(const KeyFrame &left);
 
+    public:
         Type m_Type;
 
+        float m_Position;
         float m_Value;
 
         float m_LeftTangent;
@@ -28,11 +29,9 @@ public:
 
     typedef vector<KeyFrame> Keys;
 
-    float value (uint32_t pos);
+    float value(float pos);
 
-    void frames(int32_t &b, int32_t &e, uint32_t pos);
-
-    uint32_t duration ();
+    void frames(int32_t &b, int32_t &e, float pos);
 
     Keys m_Keys;
 };
