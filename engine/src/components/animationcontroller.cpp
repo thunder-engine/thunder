@@ -197,29 +197,31 @@ void AnimationController::start() {
 */
 void AnimationController::update() {
     PROFILE_FUNCTION();
-    // Check conditions
-    for(auto it : p_ptr->m_pCurrentState->m_Transitions) {
-        auto variable = p_ptr->m_CurrentVariables.find(it.m_ConditionHash);
-        if(variable != p_ptr->m_CurrentVariables.end() && it.checkCondition(variable->second)) {
-            crossFadeHash(it.m_pTargetState->m_Hash, 0.75f);
+    if(p_ptr->m_pCurrentState) {
+        // Check conditions
+        for(auto it : p_ptr->m_pCurrentState->m_Transitions) {
+            auto variable = p_ptr->m_CurrentVariables.find(it.m_ConditionHash);
+            if(variable != p_ptr->m_CurrentVariables.end() && it.checkCondition(variable->second)) {
+                crossFadeHash(it.m_pTargetState->m_Hash, 0.75f);
+            }
         }
-    }
 
-    // Update current clip
-    bool nextState = true;
-    for(auto it : p_ptr->m_Properties) {
-        if(it.second->state() == Animation::RUNNING) {
-            string str = it.second->targetProperty();
-            nextState = false;
-            break;
+        // Update current clip
+        bool nextState = true;
+        for(auto it : p_ptr->m_Properties) {
+            if(it.second->state() == Animation::RUNNING) {
+                string str = it.second->targetProperty();
+                nextState = false;
+                break;
+            }
         }
-    }
 
-    if(nextState && !p_ptr->m_pCurrentState->m_Transitions.empty()) {
-        auto next = p_ptr->m_pCurrentState->m_Transitions.begin();
-        setStateHash(next->m_pTargetState->m_Hash);
-    } else {
-        setPosition(p_ptr->m_Time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
+        if(nextState && !p_ptr->m_pCurrentState->m_Transitions.empty()) {
+            auto next = p_ptr->m_pCurrentState->m_Transitions.begin();
+            setStateHash(next->m_pTargetState->m_Hash);
+        } else {
+            setPosition(p_ptr->m_Time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
+        }
     }
 }
 /*!
@@ -391,8 +393,10 @@ void AnimationController::setIntegerHash(int hash, int32_t value) {
 */
 int AnimationController::duration() const {
     PROFILE_FUNCTION();
-
-    return p_ptr->m_pCurrentState->m_pClip->duration();
+    if(p_ptr->m_pCurrentState) {
+        return p_ptr->m_pCurrentState->m_pClip->duration();
+    }
+    return 0;
 }
 /*!
     \internal
