@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QColor>
 #include <QEvent>
+#include <QDebug>
 
 #include <object.h>
 #include <invalid.h>
@@ -30,6 +31,8 @@
 
 #include <QMap>
 #include <QMenu>
+
+#define RESOURCE "Resource"
 
 enum Axises {
     AXIS_X = (1<<0),
@@ -250,7 +253,7 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         Object *o = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-        if(factory->first->canCastTo("Resource") || (editor == TEMPLATE)) {
+        if(factory->first->canCastTo(RESOURCE) || (editor == TEMPLATE)) {
             return QVariant::fromValue(Template(Engine::reference(o).c_str(), value.userType()));
         } else {
             Actor *actor = static_cast<Actor *>(m_pObject);
@@ -312,16 +315,18 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
         default: break;
     }
 
-    Object *o = *(reinterpret_cast<Object **>(current.data()));
-    if((dynamic_cast<Component *>(o) != nullptr) || editor == COMPONENT) {
-        SceneComponent c = value.value<SceneComponent>();
-        return Variant(current.userType(), &c.component);
-    }
-    if((dynamic_cast<Resource *>(o) != nullptr) || editor == TEMPLATE) {
-        Template p  = value.value<Template>();
-        if(!p.path.isEmpty()) {
-            Object *m = Engine::loadResource<Object>(qPrintable(p.path));
-            return Variant(current.userType(), &m);
+    QString typeName(QString(property.type().name()).replace(" *", ""));
+    auto factory = System::metaFactory(qPrintable(typeName));
+    if(factory) {
+        if(factory->first->canCastTo(RESOURCE)) {
+            Template p  = value.value<Template>();
+            if(!p.path.isEmpty()) {
+                Object *m = Engine::loadResource<Object>(qPrintable(p.path));
+                return Variant(current.userType(), &m);
+            }
+        } else {
+            SceneComponent c = value.value<SceneComponent>();
+            return Variant(current.userType(), &c.component);
         }
     }
 

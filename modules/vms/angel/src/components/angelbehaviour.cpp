@@ -10,6 +10,8 @@
 
 #include <angelscript.h>
 
+#define RESOURCE "Resource"
+
 AngelBehaviour::AngelBehaviour() :
         m_pObject(nullptr),
         m_pStart(nullptr),
@@ -180,8 +182,23 @@ VariantMap AngelBehaviour::saveUserData() const {
     for(auto it : m_Table) {
         if(it.ptr != nullptr) {
             Variant value = MetaProperty(&it).read(this);
-            if(value.type() == MetaType::USERTYPE && (value.userType() == MetaType::type<Prefab *>())) {
-                result[it.name] = Engine::reference(*(reinterpret_cast<Object **>(value.data())));
+
+            string typeName = it.type->name;
+            if(typeName.back() == '*') {
+                typeName = typeName.substr(0, typeName.size() - 2);
+            }
+            auto factory = System::metaFactory(typeName);
+            if(factory) {
+                Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+                if(factory->first->canCastTo(RESOURCE)) {
+                    result[it.name] = Engine::reference(object);
+                } else {
+                    uint32_t uuid = 0;
+                    if(object) {
+                        uuid = object->uuid();
+                    }
+                    result[it.name] = uuid;
+                }
             } else {
                 result[it.name] = MetaProperty(&it).read(this);
             }
@@ -192,15 +209,30 @@ VariantMap AngelBehaviour::saveUserData() const {
 
 void AngelBehaviour::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    Object::loadUserData(data);
+    NativeBehaviour::loadUserData(data);
     for(auto it : m_Table) {
         if(it.ptr != nullptr) {
             auto property = data.find(it.name);
             if(property != data.end()) {
-                uint32_t type = MetaType::type(MetaType(it.type).name());
-                if(type == MetaType::type<Prefab *>()) {
-                    Object *actor = Engine::loadResource<Object>(property->second.toString());
-                    MetaProperty(&it).write(this, Variant(type, &actor));
+                string typeName = it.type->name;
+                if(typeName.back() == '*') {
+                    typeName = typeName.substr(0, typeName.size() - 2);
+                }
+                auto factory = System::metaFactory(typeName);
+                if(factory) {
+                    uint32_t type = MetaType::type(MetaType(it.type).name());
+                    Object *object = nullptr;
+                    if(factory->first->canCastTo(RESOURCE)) {
+                        object = Engine::loadResource<Object>(property->second.toString());
+                    } else {
+                        uint32_t uuid = property->second.toInt();
+                        if(uuid) {
+                            object = Engine::findObject(uuid, Engine::findRoot(this));
+                        }
+                    }
+                    if(object) {
+                        MetaProperty(&it).write(this, Variant(type, &object));
+                    }
                 } else {
                     MetaProperty(&it).write(this, property->second);
                 }

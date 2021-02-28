@@ -935,11 +935,11 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     // Save base properties
     VariantMap properties;
     for(int i = 0; i < meta->propertyCount(); i++) {
-        MetaProperty p = meta->property(i);
-        if(p.isValid()) {
-            Variant v = p.read(this);
+        MetaProperty property = meta->property(i);
+        if(property.isValid()) {
+            Variant v = property.read(this);
             if(v.userType() < MetaType::USERTYPE) {
-                properties[p.name()] = v;
+                properties[property.name()] = v;
             }
         }
     }

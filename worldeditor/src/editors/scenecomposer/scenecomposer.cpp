@@ -557,11 +557,13 @@ void SceneComposer::on_actionSave_triggered() {
             if( m_Path.length() > 0 ) {
                 QDir dir = QDir(QDir::currentPath());
 
-                QFile file(dir.relativeFilePath(m_Path));
-                if(file.open(QIODevice::WriteOnly)) {
-                    string data = Json::save(Engine::toVariant(map), 0);
-                    file.write(static_cast<const char *>(&data[0]), data.size());
-                    file.close();
+                string data = Json::save(Engine::toVariant(map), 0);
+                if(!data.empty()) {
+                    QFile file(dir.relativeFilePath(m_Path));
+                    if(file.open(QIODevice::WriteOnly)) {
+                        file.write(static_cast<const char *>(&data[0]), data.size());
+                        file.close();
+                    }
                 }
                 static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
             } else {
