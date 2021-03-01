@@ -1,6 +1,7 @@
 #include "FilePathProperty.h"
 
 #include "../editors/PathEdit.h"
+#include "../nextobject.h"
 
 FilePathProperty::FilePathProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -24,9 +25,13 @@ void FilePathProperty::setValue(const QVariant &value) {
 
 QWidget *FilePathProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    QWidget *editor = new PathEdit(parent);
-    connect(editor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
-    return editor;
+    m_Editor = new PathEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
+    connect(m_Editor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
+    return m_Editor;
 }
 
 bool FilePathProperty::setEditorData(QWidget *editor, const QVariant &data) {

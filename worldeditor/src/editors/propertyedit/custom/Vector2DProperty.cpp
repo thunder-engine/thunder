@@ -2,6 +2,7 @@
 #include "Vector3DProperty.h"
 
 #include "../editors/VectorEdit.h"
+#include "../nextobject.h"
 
 Vector2DProperty::Vector2DProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
         Property(name, propertyObject, parent) {
@@ -24,6 +25,10 @@ QWidget *Vector2DProperty::createEditor(QWidget *parent, const QStyleOptionViewI
     VectorEdit *e  = new VectorEdit(parent);
     e->setComponents(2);
     m_Editor = e;
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(dataChanged(QVariant)), this, SLOT(onDataChanged(QVariant)));
     return m_Editor;
 }

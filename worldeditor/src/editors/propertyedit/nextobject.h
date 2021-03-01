@@ -2,6 +2,7 @@
 #define NEXTOBJECT_H
 
 #include <QObject>
+#include <QHash>
 
 #include <object.h>
 
@@ -13,42 +14,45 @@ class NextObject : public QObject {
     Q_PROPERTY(QString Name READ name WRITE setName DESIGNABLE true USER true)
 
 public:
-    explicit NextObject (Object *data, QObject *parent = nullptr);
+    explicit NextObject(Object *data, QObject *parent = nullptr);
 
-    QString name ();
-    void setName (const QString &name);
+    QString name();
+    void setName(const QString &name);
 
-    QMenu *menu (Object *obj);
+    QMenu *menu(Object *obj);
 
-    Object *component (const QString &name);
+    Object *component(const QString &name);
 
-    Object *findChild (QStringList &path);
+    Object *findChild(QStringList &path);
+
+    bool isReadOnly(const QString &key) const;
 
 public slots:
-    void onUpdated ();
+    void onUpdated();
 
 signals:
-    void aboutToBeChanged (Object *object, const QString property, const Variant &value);
-    void changed (Object *object, const QString property);
+    void aboutToBeChanged(Object *object, const QString property, const Variant &value);
+    void changed(Object *object, const QString property);
 
-    void updated ();
+    void updated();
 
-    void deleteComponent (const QString name);
+    void deleteComponent(const QString name);
 
 protected slots:
-    void onDeleteComponent ();
+    void onDeleteComponent();
 
 protected:
-    bool event (QEvent *e);
+    bool event(QEvent *e);
 
-    QString editor (const MetaProperty &property);
+    QString editor(const MetaProperty &property);
 
-    QVariant qVariant (Variant &value, const MetaProperty &property);
-    Variant aVariant (QVariant &value, Variant &current, const MetaProperty &property);
+    QVariant qVariant(Variant &value, const MetaProperty &property);
+    Variant aVariant(QVariant &value, Variant &current, const MetaProperty &property);
 
-    void buildObject (Object *object, const QString &path = QString());
+    void buildObject(Object *object, const QString &path = QString());
 
     Object *m_pObject;
+    QHash<QString, bool> m_Flags;
 
 };
 

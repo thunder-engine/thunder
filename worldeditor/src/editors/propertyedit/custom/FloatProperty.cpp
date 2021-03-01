@@ -1,6 +1,7 @@
 #include "FloatProperty.h"
 
 #include "../editors/FloatEdit.h"
+#include "../nextobject.h"
 
 FloatProperty::FloatProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -10,6 +11,10 @@ FloatProperty::FloatProperty(const QString &name, QObject *propertyObject, QObje
 QWidget *FloatProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     m_Editor = new FloatEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
     return m_Editor;
 }

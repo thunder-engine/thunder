@@ -5,6 +5,7 @@
 #include "ComponentProperty.h"
 
 #include "editors/componentselect/componentselect.h"
+#include "../nextobject.h"
 
 ComponentProperty::ComponentProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -13,6 +14,11 @@ ComponentProperty::ComponentProperty(const QString &name, QObject *propertyObjec
 
 QWidget *ComponentProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     ComponentSelect *editor = new ComponentSelect(parent);
+    m_Editor = editor;
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(editor, &ComponentSelect::componentChanged, this, &ComponentProperty::onComponentChanged);
     return editor;
 }

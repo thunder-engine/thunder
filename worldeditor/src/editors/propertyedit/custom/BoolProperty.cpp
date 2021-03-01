@@ -2,6 +2,8 @@
 
 #include <QCheckBox>
 
+#include "../nextobject.h"
+
 BoolProperty::BoolProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
 
@@ -10,6 +12,10 @@ BoolProperty::BoolProperty(const QString &name, QObject *propertyObject, QObject
 QWidget *BoolProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     m_Editor = new QCheckBox(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));
     return m_Editor;
 }

@@ -7,6 +7,7 @@
 #include "editors/assetselect/contentselect.h"
 
 #include "assetmanager.h"
+#include "../nextobject.h"
 
 
 TemplateProperty::TemplateProperty(const QString &name, QObject *propertyObject, QObject *parent) :
@@ -36,8 +37,13 @@ void TemplateProperty::setValue(const QVariant &value) {
 QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     ContentSelect *editor = new ContentSelect(parent);
     editor->setType( Property::value(Qt::EditRole).value<Template>().type );
-
     m_Editor = editor;
+
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
+
     connect(editor, &ContentSelect::assetChanged, this, &TemplateProperty::onAssetChanged);
     return m_Editor;
 }

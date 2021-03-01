@@ -1,6 +1,7 @@
 #include "Vector3DProperty.h"
 
 #include "editors/propertyedit/editors/VectorEdit.h"
+#include "../nextobject.h"
 
 Vector3DProperty::Vector3DProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
         Property(name, propertyObject, parent) {
@@ -21,6 +22,10 @@ QVariant Vector3DProperty::value(int role) const {
 
 QWidget *Vector3DProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     m_Editor = new VectorEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(dataChanged(QVariant)), this, SLOT(onDataChanged(QVariant)));
     return m_Editor;
 }

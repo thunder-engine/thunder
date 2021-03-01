@@ -1,6 +1,7 @@
 #include "AlignmentProperty.h"
 
 #include "../editors/AlignmentEdit.h"
+#include "../nextobject.h"
 
 AlignmentProperty::AlignmentProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -10,6 +11,10 @@ AlignmentProperty::AlignmentProperty(const QString &name, QObject *propertyObjec
 QWidget *AlignmentProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     m_Editor = new AlignmentEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(alignmentChanged(int)), this, SLOT(onDataChanged(int)));
     return m_Editor;
 }

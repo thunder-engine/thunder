@@ -5,6 +5,7 @@
 #include <QMetaProperty>
 
 #include "../editors/ComboEdit.h"
+#include "../nextobject.h"
 
 EnumProperty::EnumProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -40,6 +41,11 @@ QWidget *EnumProperty::createEditor(QWidget *parent, const QStyleOptionViewItem 
     editor->addItems(m_enum);
 
     m_Editor = editor;
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
+
     connect(m_Editor, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(valueChanged(const QString &)));
 
     return m_Editor;

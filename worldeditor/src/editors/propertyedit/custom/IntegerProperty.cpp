@@ -1,6 +1,7 @@
 #include "IntegerProperty.h"
 
 #include "../editors/IntegerEdit.h"
+#include "../nextobject.h"
 
 IntegerProperty::IntegerProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -10,6 +11,10 @@ IntegerProperty::IntegerProperty(const QString &name, QObject *propertyObject, Q
 QWidget *IntegerProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     m_Editor = new IntegerEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(m_Editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
     return m_Editor;
 }

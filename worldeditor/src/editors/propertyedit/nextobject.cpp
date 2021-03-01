@@ -51,6 +51,7 @@ Q_DECLARE_METATYPE(Axises)
 #define TEMPLATE    "Template"
 
 const QString EditorTag("editor=");
+const QString ReadOnlyTag("ReadOnly");
 
 NextObject::NextObject(Object *data, QObject *parent) :
         QObject(parent),
@@ -101,6 +102,7 @@ void NextObject::onUpdated() {
     }
 
     if(m_pObject) {
+        m_Flags.clear();
         buildObject(m_pObject);
 
         setObjectName(m_pObject->typeName().c_str());
@@ -123,6 +125,19 @@ void NextObject::buildObject(Object *object, const QString &path) {
             Variant data = property.read(object);
 
             setProperty(qPrintable(name), qVariant(data, property));
+
+            if(property.table() && property.table()->annotation) {
+                QString annotation(property.table()->annotation);
+                QStringList list = annotation.split(',');
+                foreach(QString it, list) {
+                    int index = it.indexOf(ReadOnlyTag);
+                    if(index > -1) {
+                        m_Flags[name] = true;
+                        break;
+                    }
+                }
+            }
+
         } else {
             setProperty(qPrintable((path.isEmpty() ? "" : path + "/")), QVariant(true));
         }
@@ -145,7 +160,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
 bool NextObject::event(QEvent *e) {
     if(e->type() == QEvent::DynamicPropertyChange && !signalsBlocked()) {
         QDynamicPropertyChangeEvent *ev = static_cast<QDynamicPropertyChangeEvent *>(e);
-        QString name   = ev->propertyName();
+        QString name = ev->propertyName();
         QVariant value = property(qPrintable(name));
         if(value.isValid()) {
             QStringList list = name.split('/');
@@ -154,7 +169,7 @@ bool NextObject::event(QEvent *e) {
                 QString propertyName = list.join('/');
                 Variant current = o->property(qPrintable(propertyName));
 
-                const MetaObject *meta  = o->metaObject();
+                const MetaObject *meta = o->metaObject();
                 int index = meta->indexOfProperty(qPrintable(propertyName));
                 MetaProperty property = meta->property(index);
 
@@ -188,20 +203,24 @@ QString NextObject::editor(const MetaProperty &property) {
 }
 
 Object *NextObject::findChild(QStringList &path) {
-    Object *parent  = m_pObject;
+    Object *parent = m_pObject;
     if(parent == nullptr) {
         return nullptr;
     }
     foreach(QString str, path) {
         for(Object *it : parent->getChildren()) {
             if(it->typeName() == str.toStdString()) {
-                parent  = it;
+                parent = it;
                 path.pop_front();
                 break;
             }
         }
     }
     return parent;
+}
+
+bool NextObject::isReadOnly(const QString &key) const {
+    return m_Flags.value(key, false);
 }
 
 QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
@@ -319,7 +338,7 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
         if(factory->first->canCastTo(RESOURCE)) {
-            Template p  = value.value<Template>();
+            Template p = value.value<Template>();
             if(!p.path.isEmpty()) {
                 Object *m = Engine::loadResource<Object>(qPrintable(p.path));
                 return Variant(current.userType(), &m);

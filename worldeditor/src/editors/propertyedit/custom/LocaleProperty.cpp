@@ -4,6 +4,7 @@
 #include <QLocale>
 
 #include "../editors/ComboEdit.h"
+#include "../nextobject.h"
 
 QList<QLocale> LocaleProperty::m_locales = QList<QLocale>();
 
@@ -23,6 +24,11 @@ QWidget *LocaleProperty::createEditor(QWidget *parent, const QStyleOptionViewIte
     Q_UNUSED(option)
     ComboEdit *editor = new ComboEdit(parent);
     m_Editor = editor;
+
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
 
     for(auto it : m_locales) {
         QString name = QLocale(it).nativeLanguageName();

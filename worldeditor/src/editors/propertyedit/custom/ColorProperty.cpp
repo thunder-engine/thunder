@@ -1,6 +1,7 @@
 #include "ColorProperty.h"
 
 #include "editors/propertyedit/editors/ColorEdit.h"
+#include "../nextobject.h"
 
 ColorProperty::ColorProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
         Property(name, propertyObject, parent) {
@@ -34,6 +35,10 @@ void ColorProperty::setValue(const QVariant &value) {
 QWidget *ColorProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     QWidget *editor = new ColorEdit(parent);
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        m_Editor->setDisabled(object->isReadOnly(objectName()));
+    }
     connect(editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
     return editor;
 }
