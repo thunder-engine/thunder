@@ -720,6 +720,8 @@ void SceneComposer::onImportFinished() {
     ui->preferencesWidget->setModel(SettingsManager::instance());
     ui->projectWidget->setModel(ProjectManager::instance());
 
+    ComponentModel::instance()->update();
+
     ui->actionNew->setEnabled(true);
     ui->actionSave->setEnabled(true);
     ui->actionSave_As->setEnabled(true);

@@ -847,6 +847,13 @@ VariantMap Object::saveUserData() const {
     return VariantMap();
 }
 /*!
+    Specify an additional \a type for the object.
+    \note Most of the time this method does nothing.
+*/
+void Object::setType(const string &type) {
+    A_UNUSED(type);
+}
+/*!
     Returns true if the object can be serialized; otherwise returns false.
 */
 bool Object::isSerializable() const {

@@ -179,6 +179,8 @@ protected:
     virtual VariantList             saveData                    () const;
     virtual VariantMap              saveUserData                () const;
 
+    virtual void                    setType                     (const string &type);
+
     void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);
 

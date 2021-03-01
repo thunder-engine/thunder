@@ -9,29 +9,29 @@ class ComponentModel : public BaseObjectModel {
     Q_OBJECT
 
 public:
-    static ComponentModel  *instance        ();
+    static ComponentModel *instance();
 
-    static void             destroy         ();
+    static void destroy();
 
-    void                    init            (Engine *engine);
+    void init(Engine *engine);
 
-    int                     columnCount     (const QModelIndex &) const;
+    int columnCount(const QModelIndex &) const;
 
-    QVariant                headerData      (int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    QVariant                data            (const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-protected slots:
-    void                    update          ();
+public slots:
+    void update();
 
 private:
-    ComponentModel          ();
-    ~ComponentModel         () {}
+    ComponentModel();
+    ~ComponentModel() {}
 
     static ComponentModel  *m_pInstance;
 
 protected:
-    Engine                 *m_pEngine;
+    Engine *m_pEngine;
 
 };
 

@@ -13,31 +13,24 @@ class AngelBehaviour : public NativeBehaviour {
 
     A_NOMETHODS()
 public:
-    AngelBehaviour              ();
+    AngelBehaviour();
+    ~AngelBehaviour();
 
-    virtual ~AngelBehaviour     ();
+    string script() const;
+    void setScript(const string &value);
 
-    string                      script                  () const;
-    void                        setScript               (const string &value);
+    asIScriptObject *scriptObject() const;
+    void setScriptObject(asIScriptObject *object);
 
-    asIScriptObject            *scriptObject            () const;
-    void                        setScriptObject         (asIScriptObject *object);
+    asIScriptFunction *scriptStart() const;
 
-    asIScriptFunction          *scriptStart             () const;
+    asIScriptFunction *scriptUpdate() const;
 
-    asIScriptFunction          *scriptUpdate            () const;
-
-    const MetaObject           *metaObject              () const;
+    const MetaObject *metaObject() const;
 
 public:
-    static void                 registerClassFactory    (ObjectSystem *system) {
-        REGISTER_META_TYPE(AngelBehaviour);
-        system->factoryAdd<AngelBehaviour>("Components", AngelBehaviour::metaClass());
-    }
-    static void                 unregisterClassFactory  (ObjectSystem *system) {
-        UNREGISTER_META_TYPE(AngelBehaviour);
-        system->factoryRemove<AngelBehaviour>("Components");
-    }
+    static void registerClassFactory(ObjectSystem *system);
+    static void unregisterClassFactory(ObjectSystem *system);
 
 private:
     static Object *construct() { return new AngelBehaviour(); }
@@ -51,10 +44,12 @@ private:
     VariantMap saveUserData() const;
     void loadUserData(const VariantMap &data);
 
+    void setType(const string &type);
+
 public:
     static const MetaObject *metaClass() {
         OBJECT_CHECK(AngelBehaviour)
-        static const MetaObject staticMetaData (
+        static const MetaObject staticMetaData(
             "AngelBehaviour",
             NativeBehaviour::metaClass(),
             &AngelBehaviour::construct,

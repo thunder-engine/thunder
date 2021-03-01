@@ -11,6 +11,7 @@
 #include <angelscript.h>
 
 #define RESOURCE "Resource"
+#define GENERAL "General"
 
 AngelBehaviour::AngelBehaviour() :
         m_pObject(nullptr),
@@ -166,6 +167,16 @@ const MetaObject *AngelBehaviour::metaObject() const {
     return AngelBehaviour::metaClass();
 }
 
+void AngelBehaviour::registerClassFactory(ObjectSystem *system) {
+    REGISTER_META_TYPE(AngelBehaviour);
+    system->factoryAdd<AngelBehaviour>(GENERAL, AngelBehaviour::metaClass());
+}
+
+void AngelBehaviour::unregisterClassFactory(ObjectSystem *system) {
+    UNREGISTER_META_TYPE(AngelBehaviour);
+    system->factoryRemove<AngelBehaviour>(GENERAL);
+}
+
 VariantList AngelBehaviour::saveData() const {
     PROFILE_FUNCTION();
     return serializeData(AngelBehaviour::metaClass());
@@ -239,4 +250,9 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
             }
         }
     }
+}
+
+void AngelBehaviour::setType(const string &type) {
+    PROFILE_FUNCTION();
+    setScript(type);
 }

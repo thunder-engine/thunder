@@ -28,6 +28,7 @@
 #include "bindings/angelbindings.h"
 
 #define TEMPALTE "AngelBinary"
+#define URI "thor://Components/"
 
 class AngelStream : public asIBinaryStream {
 public:
@@ -36,20 +37,20 @@ public:
             m_Offset(0) {
 
     }
-    int         Write   (const void *, asUINT) {
+    int Write(const void *, asUINT) {
         return 0;
     }
-    int         Read    (void *ptr, asUINT size) {
+    int Read(void *ptr, asUINT size) {
         if(size > 0) {
             memcpy(ptr, &m_Array[m_Offset], size);
-            m_Offset    += size;
+            m_Offset += size;
         }
         return size;
     }
 protected:
-    ByteArray          &m_Array;
+    ByteArray &m_Array;
 
-    uint32_t            m_Offset;
+    uint32_t m_Offset;
 };
 
 AngelSystem::AngelSystem(Engine *engine) :
@@ -68,12 +69,7 @@ AngelSystem::AngelSystem(Engine *engine) :
 AngelSystem::~AngelSystem() {
     PROFILE_FUNCTION();
 
-    auto it = m_ObjectList.begin();
-    while(it != m_ObjectList.end()) {
-        delete *it;
-        it = m_ObjectList.begin();
-    }
-    m_ObjectList.clear();
+    deleteAllObjects();
 
     if(m_pContext) {
         m_pContext->Release();
@@ -137,9 +133,7 @@ int AngelSystem::threadPolicy() const {
 void AngelSystem::reload() {
     PROFILE_FUNCTION();
 
-    if(m_pScriptModule) {
-        m_pScriptModule->Discard();
-
+    if(unload()) {
         Engine::unloadResource(TEMPALTE);
     }
 
@@ -154,15 +148,10 @@ void AngelSystem::reload() {
         AngelStream stream(script->m_Array);
         m_pScriptModule->LoadByteCode(&stream);
 
-        //const MetaObject *meta = AngelBehaviour::metaClass();
-
         for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
-            if(info) {
-                asITypeInfo *super = info->GetBaseType();
-                if(super && strcmp(super->GetName(), "Behaviour") == 0) {
-                    //registerMetaType(m_pScriptEngine, info->GetName(), meta);
-                }
+            if(info && isBehaviour(info)) {
+                factoryAdd(info->GetName(), string(URI) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
     } else {
@@ -197,6 +186,32 @@ asIScriptContext *AngelSystem::context() const {
     PROFILE_FUNCTION();
 
     return m_pContext;
+}
+
+bool AngelSystem::isBehaviour(asITypeInfo *info) const {
+    asITypeInfo *super = info->GetBaseType();
+    if(super) {
+        if(strcmp(super->GetName(), "Behaviour") == 0) {
+            return true;
+        }
+        return isBehaviour(super);
+    }
+    return false;
+}
+
+bool AngelSystem::unload() {
+    if(m_pScriptModule) {
+        for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
+            if(info && isBehaviour(info)) {
+                factoryRemove(info->GetName(), string(URI) + info->GetName());
+            }
+        }
+
+        m_pScriptModule->Discard();
+        return true;
+    }
+    return false;
 }
 
 void *castTo(void *ptr) {

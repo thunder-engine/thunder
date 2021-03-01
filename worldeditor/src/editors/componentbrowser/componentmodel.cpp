@@ -6,7 +6,7 @@
 
 #define URI "uri"
 
-ComponentModel *ComponentModel::m_pInstance   = nullptr;
+ComponentModel *ComponentModel::m_pInstance = nullptr;
 
 ComponentModel::ComponentModel() :
         BaseObjectModel(nullptr),
@@ -26,7 +26,7 @@ void ComponentModel::destroy() {
 }
 
 void ComponentModel::init(Engine *engine) {
-    m_pEngine   = engine;
+    m_pEngine = engine;
 
     update();
 }
@@ -37,7 +37,7 @@ int ComponentModel::columnCount(const QModelIndex &) const {
 
 QVariant ComponentModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/ ) const {
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch (section) {
+        switch(section) {
             case 0: return tr("Name");
         }
     }
@@ -48,7 +48,7 @@ QVariant ComponentModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    QObject *item   = static_cast<QObject* >(index.internalPointer());
+    QObject *item = static_cast<QObject* >(index.internalPointer());
 
     switch(role) {
         case Qt::ToolTipRole:
@@ -74,20 +74,20 @@ void ComponentModel::update() {
     for(const auto &it : m_pEngine->factories()) {
         QUrl url(it.second.c_str());
 
-        QObject *item       = m_rootItem;
-        QStringList list    = url.path().split("/", QString::SkipEmptyParts);
-        int i   = 0;
-        for(const auto& part : list) {
-            QObject *p  = item;
+        QObject *item = m_rootItem;
+        QStringList list = url.path().split("/", QString::SkipEmptyParts);
+        int i = 0;
+        for(const auto &part : list) {
+            QObject *p = item;
             item = nullptr;
             foreach(QObject *it, p->children()) {
                 if(part == it->objectName()) {
-                    item    = it;
+                    item = it;
                     break;
                 }
             }
             if(!item) {
-                item    = new QObject(p);
+                item = new QObject(p);
                 item->setObjectName(part);
                 item->setProperty(URI, url.host());
             }

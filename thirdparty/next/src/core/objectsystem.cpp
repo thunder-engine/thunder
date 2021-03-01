@@ -119,9 +119,10 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     if(pair) {
         const MetaObject *meta = pair->first;
         object = pair->second->instantiateObject(meta);
+        object->setSystem(pair->second);
+        object->setType(uri);
         object->setName(name);
         object->setParent(parent);
-        object->setSystem(pair->second);
     }
     return object;
 }
