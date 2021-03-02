@@ -692,7 +692,7 @@
     <message>
         <location line="+65"/>
         <source>File</source>
-        <translation type="unfinished">ගොනුව</translation>
+        <translation>ගොනුව</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -702,7 +702,7 @@
     <message>
         <location line="+16"/>
         <source>Edit</source>
-        <translation type="unfinished">සංස්කරණය</translation>
+        <translation>සංස්කරණය</translation>
     </message>
     <message>
         <location line="+13"/>
