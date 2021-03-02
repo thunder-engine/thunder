@@ -962,7 +962,7 @@
     <message>
         <location line="+10"/>
         <source>Name</source>
-        <translation type="unfinished">Name</translation>
+        <translation>Name</translation>
     </message>
 </context>
 <context>
