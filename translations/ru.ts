@@ -47,12 +47,12 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+187"/>
         <source>Remove Properties</source>
-        <translation type="unfinished">Удалить Свойства</translation>
+        <translation>Удалить Свойства</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Update Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить Значения Ключа</translation>
     </message>
 </context>
 <context>
@@ -140,7 +140,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
 </context>
 <context>
@@ -251,7 +251,7 @@
     <message>
         <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+68"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Пусто</translation>
     </message>
 </context>
 <context>
@@ -331,17 +331,17 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+238"/>
         <source>Set Keyframe Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить Время Ключа Анимации</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Insert Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить Ключ Анимации</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Delete Selected Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить Выбранный Ключ Анимации</translation>
     </message>
 </context>
 <context>
@@ -407,7 +407,7 @@
     <message>
         <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
         <source>The mesh import settings has been modified.</source>
-        <translation type="unfinished">Настройки импорта сетки были изменены.</translation>
+        <translation>Настройки импорта сетки были изменены.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -425,7 +425,7 @@
     <message>
         <location line="+67"/>
         <source>%1 (Invalid)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Невалидный)</translation>
     </message>
 </context>
 <context>
@@ -619,7 +619,7 @@
     <message>
         <location filename="../worldeditor/src/controllers/objectctrl.h" line="+156"/>
         <source>Selection Change</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменение Выбора</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -639,7 +639,7 @@
     <message>
         <location line="+11"/>
         <source>Parenting Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Смена Родителя</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -649,22 +649,22 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
         <source>Create Sprite Element</source>
-        <translation type="unfinished"></translation>
+        <translation>Создать Элемент Спрайта</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
         <source>Select Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать Элементы Спрайта</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Destroy Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Уничтожить Элементы Спрайта</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Update Sprite Elements</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить Элементы Спрайта</translation>
     </message>
 </context>
 <context>
@@ -881,7 +881,7 @@
         <location line="-835"/>
         <location line="+836"/>
         <source>Class View</source>
-        <translation type="unfinished"></translation>
+        <translation>Представление Классов</translation>
     </message>
     <message>
         <location line="-746"/>
@@ -922,7 +922,7 @@
     <message>
         <location line="+85"/>
         <source>Workspaces (*.ws)</source>
-        <translation type="unfinished"></translation>
+        <translation>Рабочие области (*.ws)</translation>
     </message>
     <message>
         <location line="+66"/>
@@ -959,27 +959,27 @@
         <location filename="../worldeditor/src/editors/textureedit/spriteelement.ui" line="+14"/>
         <location line="+24"/>
         <source>Sprite Details</source>
-        <translation type="unfinished"></translation>
+        <translation>Детали Спрайта</translation>
     </message>
     <message>
         <location line="+69"/>
         <source>Border</source>
-        <translation type="unfinished"></translation>
+        <translation>Рамка</translation>
     </message>
     <message>
         <location line="+72"/>
         <source>Pivot</source>
-        <translation type="unfinished"></translation>
+        <translation>Пивот</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиция</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
 </context>
 <context>
@@ -1045,7 +1045,7 @@
     <message>
         <location filename="../worldeditor/src/editors/textureedit/textureedit.ui" line="+14"/>
         <source>Sprite Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактор Спрайтов</translation>
     </message>
     <message>
         <location line="+31"/>
@@ -1063,12 +1063,12 @@
     <message>
         <location line="+197"/>
         <source>Flat</source>
-        <translation type="unfinished"></translation>
+        <translation>Ровный</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Breaked</source>
-        <translation type="unfinished"></translation>
+        <translation>Сломанный</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1088,7 +1088,7 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+257"/>
         <source>Update Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновление Свойств</translation>
     </message>
 </context>
 </TS>
