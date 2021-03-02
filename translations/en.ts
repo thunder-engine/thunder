@@ -47,12 +47,12 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+187"/>
         <source>Remove Properties</source>
-        <translation type="unfinished">Remove Properties</translation>
+        <translation>Remove Properties</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Update Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Update Key</translation>
     </message>
 </context>
 <context>
@@ -331,17 +331,17 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+238"/>
         <source>Set Keyframe Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Set Keyframe Time</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Insert Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Insert Key</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Delete Selected Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete Selected Keyframe</translation>
     </message>
 </context>
 <context>
@@ -1088,7 +1088,7 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+257"/>
         <source>Update Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Update Properties</translation>
     </message>
 </context>
 </TS>
