@@ -31,42 +31,43 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     )
 
 public:
-    Actor ();
-    ~Actor ();
+    Actor();
+    ~Actor();
 
-    Transform *transform ();
+    Transform *transform();
 
-    Scene *scene ();
+    Scene *scene();
 
-    Component *component (const string type);
-    Component *componentInChild (const string type);
+    Component *component(const string type);
+    Component *componentInChild(const string type);
 
-    Component *addComponent (const string type);
+    Component *addComponent(const string type);
 
-    bool isEnabled () const;
-    void setEnabled (const bool enabled);
+    bool isEnabled() const;
+    void setEnabled(const bool enabled);
 
-    int layers () const;
-    void setLayers (const int layers);
+    int layers() const;
+    void setLayers(const int layers);
 
-    void setParent (Object *parent, bool force = false) override;
+    void setParent(Object *parent, bool force = false) override;
 
-    bool isInstance () const;
-    void setPrefab (Prefab *prefab);
+    bool isInstance() const;
+    bool isValidInstance() const;
+    void setPrefab(Prefab *prefab);
 
-    Object *clone (Object *parent = nullptr) override;
+    Object *clone(Object *parent = nullptr) override;
 
 protected:
     virtual Transform *fetchTransform();
 
 private:
-    void loadObjectData (const VariantMap &data) override;
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadObjectData(const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
-    bool isSerializable () const override;
+    bool isSerializable() const override;
 
-    void clearCloneRef () override;
+    void clearCloneRef() override;
 
 private:
     friend class ActorPrivate;

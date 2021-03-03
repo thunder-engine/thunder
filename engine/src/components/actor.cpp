@@ -19,33 +19,33 @@ const char *TRANSFORM("Transform");
 class ActorPrivate : public Resource::IObserver {
 public:
     explicit ActorPrivate(Actor *actor) :
-        m_pTransform(nullptr),
-        m_pPrefab(nullptr),
-        m_pScene(nullptr),
-        m_pActor(actor),
-        m_Layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
-        m_Enable(true) {
+        m_transform(nullptr),
+        m_prefab(nullptr),
+        m_scene(nullptr),
+        m_actor(actor),
+        m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
+        m_enable(true) {
 
     }
 
     ~ActorPrivate() {
-        if(m_pPrefab) {
-            m_pPrefab->unsubscribe(this);
+        if(m_prefab) {
+            m_prefab->unsubscribe(this);
         }
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) {
-        if(resource == m_pPrefab) {
+        if(resource == m_prefab) {
             switch(state) {
                 case Resource::Loading: {
-                    m_Data = m_pActor->saveUserData();
+                    m_data = m_actor->saveUserData();
                 }
                 case Resource::Ready: {
                     ActorPrivate::ConstList prefabs;
-                    ActorPrivate::enumConstObjects(m_pPrefab->actor(), prefabs);
+                    ActorPrivate::enumConstObjects(m_prefab->actor(), prefabs);
 
                     ActorPrivate::List objects;
-                    ActorPrivate::enumObjects(m_pActor, objects);
+                    ActorPrivate::enumObjects(m_actor, objects);
 
                     list<pair<const Object *, Object *>> array;
 
@@ -64,7 +64,7 @@ public:
                             ++it;
                         }
                         if(create) {
-                            Object *parent = System::findObject(obj->parent()->uuid(), m_pActor);
+                            Object *parent = System::findObject(obj->parent()->uuid(), m_actor);
                             Object *result = Engine::objectCreate(obj->typeName(), obj->name(), parent);
 
                             array.push_back(pair<const Object *, Object *>(obj, result));
@@ -105,10 +105,17 @@ public:
                         delete it;
                     }
 
-                    m_pActor->loadUserData(m_Data.toMap());
+                    m_actor->loadUserData(m_data);
                 } break;
                 case Resource::ToBeDeleted: {
-                    m_pPrefab = nullptr;
+                    /// \todo Unload prefab related components
+                    for(auto &it : m_actor->getChildren()) {
+                        if(it != m_actor->transform()) {
+                            it->deleteLater();
+                        }
+                    }
+                    m_data = m_actor->saveUserData();
+                    m_prefab = nullptr;
                 } break;
                 default: break;
             }
@@ -158,19 +165,21 @@ public:
         return nullptr;
     }
 
-    Variant m_Data;
+    string m_prefabRef;
 
-    Transform *m_pTransform;
+    VariantMap m_data;
 
-    Prefab *m_pPrefab;
+    Transform *m_transform;
 
-    Scene *m_pScene;
+    Prefab *m_prefab;
 
-    Actor *m_pActor;
+    Scene *m_scene;
 
-    int32_t m_Layers;
+    Actor *m_actor;
 
-    bool m_Enable;
+    int32_t m_layers;
+
+    bool m_enable;
 };
 /*!
     \class Actor
@@ -199,7 +208,7 @@ Actor::~Actor() {
 */
 bool Actor::isEnabled() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_Enable;
+    return p_ptr->m_enable;
 }
 /*!
     Marks this Actor as \a enabled or disabled.
@@ -207,7 +216,7 @@ bool Actor::isEnabled() const {
 */
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
-    p_ptr->m_Enable = enabled;
+    p_ptr->m_enable = enabled;
 }
 /*!
     Returns the layers list for the this Actor as a bit mask.
@@ -215,14 +224,14 @@ void Actor::setEnabled(const bool enabled) {
 */
 int Actor::layers() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_Layers;
+    return p_ptr->m_layers;
 }
 /*!
     Assigns the list of \a layers for this Actor as a bitmask.
 */
 void Actor::setLayers(const int layers) {
     PROFILE_FUNCTION();
-    p_ptr->m_Layers = layers;
+    p_ptr->m_layers = layers;
 }
 /*!
     Returns the Transform component attached to this Actor.
@@ -230,30 +239,30 @@ void Actor::setLayers(const int layers) {
 */
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pTransform == nullptr) {
-        p_ptr->m_pTransform = fetchTransform();
+    if(p_ptr->m_transform == nullptr) {
+        p_ptr->m_transform = fetchTransform();
         Actor *p = dynamic_cast<Actor *>(parent());
         if(p) {
-            p_ptr->m_pTransform->setParentTransform(p->transform(), true);
+            p_ptr->m_transform->setParentTransform(p->transform(), true);
         }
     }
-    return p_ptr->m_pTransform;
+    return p_ptr->m_transform;
 }
 /*!
     Returns the scene where actor attached to.
 */
 Scene *Actor::scene() {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pScene == nullptr) {
+    if(p_ptr->m_scene == nullptr) {
         Object *scene = parent();
         if(scene) {
             while(scene->parent() != nullptr) {
                 scene = scene->parent();
             }
-            p_ptr->m_pScene = dynamic_cast<Scene *>(scene);
+            p_ptr->m_scene = dynamic_cast<Scene *>(scene);
         }
     }
-    return p_ptr->m_pScene;
+    return p_ptr->m_scene;
 }
 /*!
     Returns the component with \a type if one is attached to this Actor; otherwise returns nullptr.
@@ -330,7 +339,7 @@ Object *Actor::clone(Object *parent) {
     if(prefab) {
         result->setPrefab(prefab);
     } else {
-        result->setPrefab(p_ptr->m_pPrefab);
+        result->setPrefab(p_ptr->m_prefab);
     }
     return result;
 }
@@ -339,7 +348,7 @@ Object *Actor::clone(Object *parent) {
 */
 void Actor::clearCloneRef () {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pPrefab == nullptr) {
+    if(p_ptr->m_prefab == nullptr) {
         Object::clearCloneRef();
 
         for(auto it : getChildren()) {
@@ -353,12 +362,12 @@ void Actor::clearCloneRef () {
 */
 void Actor::setParent(Object *parent, bool force) {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pTransform) {
+    if(p_ptr->m_transform) {
         Object::setParent(parent, force);
 
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
-            p_ptr->m_pTransform->setParentTransform(actor->transform(), force);
+            p_ptr->m_transform->setParentTransform(actor->transform(), force);
         }
     } else {
         Object::setParent(parent);
@@ -369,7 +378,14 @@ void Actor::setParent(Object *parent, bool force) {
 */
 bool Actor::isInstance() const {
     PROFILE_FUNCTION();
-    return (p_ptr->m_pPrefab != nullptr);
+    return (p_ptr->m_prefab || !p_ptr->m_prefabRef.empty());
+}
+/*!
+    In case of this Action is an instance of a prefab will validate the the instance and return the result.
+*/
+bool Actor::isValidInstance() const {
+    PROFILE_FUNCTION();
+    return (p_ptr->m_prefab && !p_ptr->m_prefabRef.empty());
 }
 /*!
     Marks this Actor as an instance of the \a prefab structure.
@@ -379,12 +395,12 @@ bool Actor::isInstance() const {
 */
 void Actor::setPrefab(Prefab *prefab) {
     PROFILE_FUNCTION();
-    if(p_ptr->m_pPrefab) {
-        p_ptr->m_pPrefab->unsubscribe(p_ptr);
+    if(p_ptr->m_prefab) {
+        p_ptr->m_prefab->unsubscribe(p_ptr);
     }
-    p_ptr->m_pPrefab = prefab;
-    if(p_ptr->m_pPrefab) {
-        p_ptr->m_pPrefab->subscribe(p_ptr);
+    p_ptr->m_prefab = prefab;
+    if(p_ptr->m_prefab) {
+        p_ptr->m_prefab->subscribe(p_ptr);
     } else {
         clearCloneRef();
     }
@@ -398,10 +414,11 @@ void Actor::loadObjectData(const VariantMap &data) {
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        setPrefab(dynamic_cast<Prefab *>(system->loadResource((*it).second.toString())));
+        p_ptr->m_prefabRef = (*it).second.toString();
+        setPrefab(dynamic_cast<Prefab *>(system->loadResource(p_ptr->m_prefabRef)));
 
-        if(p_ptr->m_pPrefab) {
-            Actor *actor = static_cast<Actor *>(p_ptr->m_pPrefab->actor()->clone());
+        if(p_ptr->m_prefab) {
+            Actor *actor = static_cast<Actor *>(p_ptr->m_prefab->actor()->clone());
 
             it = data.find(DELETED);
             if(it != data.end()) {
@@ -433,6 +450,8 @@ void Actor::loadObjectData(const VariantMap &data) {
                     }
                 }
             }
+        } else {
+            p_ptr->m_data = data;
         }
     }
 }
@@ -443,7 +462,7 @@ void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
-    if(p_ptr->m_pPrefab) {
+    if(p_ptr->m_prefab) {
         auto it = data.find(DATA);
         if(it != data.end()) {
             ActorPrivate::List objects;
@@ -502,13 +521,13 @@ VariantMap Actor::saveUserData() const {
     VariantMap result = Object::saveUserData();
 
     ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
-    if(p_ptr->m_pPrefab) {
-        string ref = system->reference(p_ptr->m_pPrefab);
+    if(isInstance()) {
+        string ref = system->reference(p_ptr->m_prefab);
         if(!ref.empty()) {
             result[PREFAB] = ref;
 
             ActorPrivate::ConstList prefabs;
-            ActorPrivate::enumConstObjects(p_ptr->m_pPrefab->actor(), prefabs);
+            ActorPrivate::enumConstObjects(p_ptr->m_prefab->actor(), prefabs);
 
             typedef unordered_map<uint32_t, const Object *> ObjectMap;
             ObjectMap cache;
@@ -605,6 +624,8 @@ VariantMap Actor::saveUserData() const {
             if(!fixed.empty()) {
                 result[STATIC] = fixed;
             }
+        } else {
+            result = p_ptr->m_data;
         }
     }
 

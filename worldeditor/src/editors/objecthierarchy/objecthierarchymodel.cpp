@@ -22,7 +22,7 @@ void ObjectHierarchyModel::timerEvent(QTimerEvent *) {
 }
 
 void ObjectHierarchyModel::setRoot(Object *scene) {
-    m_rootItem  = scene;
+    m_rootItem = scene;
 }
 
 Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
@@ -71,6 +71,14 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             }
             if(index.column() == 2) {
                 return item->isEnabled() ? m_Visible : m_Invisible;
+            }
+        } break;
+        case Qt::TextColorRole: {
+            if(item->isInstance()) {
+                if(!item->isValidInstance()) {
+                    return QColor(255, 95, 82);
+                }
+                return QColor(88, 165, 240);
             }
         } break;
         case Qt::SizeHintRole: {
@@ -128,7 +136,7 @@ int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {
 
 QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &parent) const {
     if(m_rootItem) {
-        Object *parentItem  = m_rootItem;
+        Object *parentItem = m_rootItem;
         if(parent.isValid()) {
             parentItem = static_cast<Object *>(parent.internalPointer());
         }
@@ -152,14 +160,14 @@ QModelIndex ObjectHierarchyModel::parent(const QModelIndex &index) const {
         return QModelIndex();
     }
 
-    Object *childItem   = static_cast<Object *>(index.internalPointer());
-    Object *parentItem  = static_cast<Object *>(childItem->parent());
+    Object *childItem = static_cast<Object *>(index.internalPointer());
+    Object *parentItem = static_cast<Object *>(childItem->parent());
 
     if(!parentItem || parentItem == m_rootItem) {
         return QModelIndex();
     }
     QList<Object *> list;
-    Object *p   = parentItem->parent();
+    Object *p = parentItem->parent();
     if(p) {
         for(auto it : p->getChildren()) {
             list.push_back(it);
@@ -172,7 +180,7 @@ Qt::ItemFlags ObjectHierarchyModel::flags(const QModelIndex &index) const {
     if(!index.isValid()) {
         return Qt::ItemIsEnabled;
     }
-    Qt::ItemFlags result    = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    Qt::ItemFlags result = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     if(index.column() == 0) {
         result  |= Qt::ItemIsEditable;
     }

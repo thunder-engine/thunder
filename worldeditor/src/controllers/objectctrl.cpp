@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QMimeData>
+#include <QDebug>
 
 #include <components/actor.h>
 #include <components/transform.h>
@@ -671,8 +672,12 @@ void CreateObjectSerial::redo() {
     list<uint32_t> objects;
     for(auto ref : m_Dump) {
         Object *object = Engine::toObject(ref);
-        object->setParent(m_pController->findObject(*it));
-        objects.push_back(object->uuid());
+        if(object) {
+            object->setParent(m_pController->findObject(*it));
+            objects.push_back(object->uuid());
+        } else {
+            qWarning() << "Broken object";
+        }
         ++it;
     }
     emit m_pController->mapUpdated();
