@@ -290,8 +290,7 @@ void ObjectCtrl::onSelectActor(Object::ObjectList list, bool additive) {
 }
 
 void ObjectCtrl::onRemoveActor(Object::ObjectList list) {
-    UndoManager::instance()->push(new DestroyObjects(list, this));
-    clear(true);
+    UndoManager::instance()->push(new DeleteActors(list, this));
 }
 
 void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent) {
@@ -344,12 +343,9 @@ void ObjectCtrl::onDeleteComponent(const QString &name) {
     if(!name.isEmpty()) {
         Actor *actor = m_Selected.begin()->object;
         if(actor) {
-            Object *obj = actor->component(name.toStdString());
+            Component *obj = actor->component(name.toStdString());
             if(obj) {
-                UndoManager::instance()->push(new DestroyObjects({obj}, this, tr("Remove Component ") + name));
-
-                emit objectsUpdated();
-                emit objectsSelected(selected());
+                UndoManager::instance()->push(new RemoveComponent(obj, this));
             }
         }
     }
@@ -686,14 +682,14 @@ void CreateObjectSerial::redo() {
     m_pController->selectActors(objects);
 }
 
-DestroyObjects::DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
         m_Objects.push_back(it->uuid());
     }
 }
-void DestroyObjects::undo() {
+void DeleteActors::undo() {
     auto it = m_Parents.begin();
     for(auto ref : m_Dump) {
         Object *object = Engine::toObject(ref, m_pController->findObject(*it));
@@ -716,10 +712,10 @@ void DestroyObjects::undo() {
         m_pController->selectActors(m_Objects);
     }
 }
-void DestroyObjects::redo() {
+void DeleteActors::redo() {
     m_Parents.clear();
     m_Dump.clear();
-    for(auto it : m_Objects) {
+    for(auto it : m_Objects)  {
         Object *object = m_pController->findObject(it);
         if(object) {
             m_Dump.push_back(Engine::toVariant(object));
@@ -733,6 +729,37 @@ void DestroyObjects::redo() {
         }
     }
     m_Objects.clear();
+
+    m_pController->clear();
+
+    emit m_pController->mapUpdated();
+}
+
+RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name + " " + component->typeName().c_str(), group) {
+
+    m_uuid = component->uuid();
+}
+void RemoveComponent::undo() {
+    Object *object = Engine::toObject(m_dump, m_pController->findObject(m_parent));
+    if(object) {
+        emit m_pController->objectsSelected(m_pController->selected());
+        emit m_pController->objectsUpdated();
+        emit m_pController->mapUpdated();
+    }
+}
+void RemoveComponent::redo() {
+    m_dump = Variant();
+    m_parent = 0;
+    Object *object = m_pController->findObject(m_uuid);
+    if(object) {
+        m_dump = Engine::toVariant(object, true);
+        m_parent = object->parent()->uuid();
+        delete object;
+    }
+
+    emit m_pController->objectsSelected(m_pController->selected());
+    emit m_pController->objectsUpdated();
     emit m_pController->mapUpdated();
 }
 

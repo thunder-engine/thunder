@@ -290,14 +290,14 @@ void SceneComposer::resizeEvent(QResizeEvent *event) {
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     if(m_pProperties) {
         delete m_pProperties;
-        m_pProperties   = nullptr;
+        m_pProperties = nullptr;
         ui->propertyView->setObject(m_pProperties);
     }
     if(!objects.empty()) {
         ui->viewport->makeCurrent();
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
-        m_pProperties   = new NextObject(*objects.begin(), this);
+        m_pProperties = new NextObject(*objects.begin(), this);
         connect(ctl, SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
         connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
 

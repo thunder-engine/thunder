@@ -46,7 +46,7 @@ public:
         factoryRemove(name, string("thor://") + group + "/" + name);
     }
 
-    static Variant                      toVariant               (const Object *object);
+    static Variant                      toVariant               (const Object *object, bool force = false);
     static Object                      *toObject                (const Variant &variant, Object *root = nullptr);
 
     static uint32_t                     generateUUID            ();

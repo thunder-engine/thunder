@@ -192,15 +192,26 @@ protected:
     list<uint32_t> m_Objects;
 };
 
-class DestroyObjects : public UndoObject {
+class DeleteActors : public UndoObject {
 public:
-    DestroyObjects(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Destroy Objects"), QUndoCommand *group = nullptr);
+    DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, const QString &name = QObject::tr("Delete Actors"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
     VariantList m_Dump;
     list<uint32_t> m_Parents;
     list<uint32_t> m_Objects;
+};
+
+class RemoveComponent : public UndoObject {
+public:
+    RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name = QObject::tr("Remove Component"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+protected:
+    Variant m_dump;
+    uint32_t m_parent;
+    uint32_t m_uuid;
 };
 
 class ParentingObjects : public UndoObject {
