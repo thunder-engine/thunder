@@ -34,13 +34,13 @@ void ColorProperty::setValue(const QVariant &value) {
 
 QWidget *ColorProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    QWidget *editor = new ColorEdit(parent);
+    m_Editor = new ColorEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
         m_Editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
-    return editor;
+    connect(m_Editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
+    return m_Editor;
 }
 
 bool ColorProperty::setEditorData(QWidget *editor, const QVariant &data) {

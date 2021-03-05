@@ -110,7 +110,9 @@ bool DesktopAdaptor::start() {
 
     g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
 
-    Engine::reloadBundle();
+    if(Engine::reloadBundle() == false) {
+        Log(Log::ERR) << "Filed to load bundle";
+    }
 
     gAppConfig = g_pEngine->locationAppConfig();
     g_pFile = g_pEngine->file();

@@ -49,7 +49,23 @@ RenderSystem::RenderSystem() :
 }
 
 RenderSystem::~RenderSystem() {
+    Renderable::unregisterClassFactory(this);
+    MeshRender::unregisterClassFactory(this);
+    TextRender::unregisterClassFactory(this);
+    SpriteRender::unregisterClassFactory(this);
+    SkinnedMeshRender::unregisterClassFactory(this);
 
+    BaseLight::unregisterClassFactory(this);
+    DirectLight::unregisterClassFactory(this);
+    PointLight::unregisterClassFactory(this);
+    SpotLight::unregisterClassFactory(this);
+    AreaLight::unregisterClassFactory(this);
+
+    ParticleRender::unregisterClassFactory(this);
+
+    ICommandBuffer::unregisterClassFactory(this);
+
+    PostProcessSettings::unregisterClassFactory(this);
 }
 
 int RenderSystem::threadPolicy() const {
@@ -60,6 +76,9 @@ const char *RenderSystem::name() const {
     return "Render";
 }
 
+bool RenderSystem::init() {
+    return true;
+}
 /*!
     Main drawing procedure.
 */

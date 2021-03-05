@@ -10,6 +10,8 @@ public:
     RenderSystem();
     ~RenderSystem();
 
+    bool init() override;
+
     void update(Scene *scene) override;
 
     int threadPolicy() const override;

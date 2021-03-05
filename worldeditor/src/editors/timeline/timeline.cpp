@@ -102,10 +102,6 @@ AnimationController *Timeline::findController(Object *object) {
 }
 
 void Timeline::onObjectSelected(Object::ObjectList objects) {
-    if(objects.empty()) {
-        return;
-    }
-
     if(m_TimerId) {
         killTimer(m_TimerId);
         m_TimerId   = 0;

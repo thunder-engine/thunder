@@ -122,19 +122,22 @@ void PluginManager::init(Engine *engine) {
 
 void PluginManager::rescan() {
     QString system(QCoreApplication::applicationDirPath() + PLUGINS);
-    for(auto it = m_Libraries.begin(); it != m_Libraries.end(); it++) {
-        if(!it.key().contains(system)) {
-            PluginsMap::Iterator ext = m_Extensions.find(it.key());
+
+    QStringList list = m_Libraries.keys();
+    for(auto it : list) {
+        if(!it.contains(system)) {
+            PluginsMap::Iterator ext = m_Extensions.find(it);
             if(ext != m_Extensions.end()) {
                 Module *plugin = ext.value();
                 delete plugin;
             }
-            if(it.value()->unload()) {
-                delete it.value();
+            QLibrary *value = m_Libraries.value(it, nullptr);
+            if(value && value->unload()) {
+                delete value;
             }
-            m_Libraries.remove(it.key());
+            m_Libraries.remove(it);
 
-            QFileInfo info(it.key());
+            QFileInfo info(it);
             QObject *item = m_rootItem->findChild<QObject *>(info.fileName());
             if(item) {
                 delete item;

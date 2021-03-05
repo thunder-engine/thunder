@@ -4,8 +4,6 @@
 #include <log.h>
 #include <platform.h>
 
-#include <rendergl.h>
-
 //+{ModuleIncludes}
 //-{ModuleIncludes}
 

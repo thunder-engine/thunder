@@ -10,6 +10,7 @@
 #include "resources/prefab.h"
 
 #include "systems/resourcesystem.h"
+#include "systems/rendersystem.h"
 
 #include "commandbuffer.h"
 
@@ -100,6 +101,7 @@ void Add_Remove_Component() {
 
 void Prefab_serialization() {
     Engine system(nullptr, "");
+    RenderSystem render;
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
     QCOMPARE(prefab != nullptr, true);

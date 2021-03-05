@@ -116,12 +116,15 @@ void NextObject::onDeleteComponent() {
 
 void NextObject::buildObject(Object *object, const QString &path) {
     const MetaObject *meta = object->metaObject();
+
+    QString p(path.isEmpty() ? "" : path + "/");
+
     blockSignals(true);
     for(int i = 0; i < meta->propertyCount(); i++) {
         MetaProperty property = meta->property(i);
         QString name(property.name());
         if(name.indexOf("enabled") == -1) {
-            name = path + "/" + name;
+            name = p + name;
             Variant data = property.read(object);
 
             setProperty(qPrintable(name), qVariant(data, property));
@@ -139,7 +142,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
             }
 
         } else {
-            setProperty(qPrintable((path.isEmpty() ? "" : path + "/")), QVariant(true));
+            setProperty(qPrintable(p), QVariant(true));
         }
     }
     blockSignals(false);
@@ -149,10 +152,10 @@ void NextObject::buildObject(Object *object, const QString &path) {
         if(invalid) {
             blockSignals(true);
             invalid->setName(tr("%1 (Invalid)").arg(invalid->typeName().c_str()).toStdString());
-            setProperty( qPrintable((path.isEmpty() ? "" : path + "/") + invalid->name().c_str() + QString("/")), QVariant(true) );
+            setProperty( qPrintable(p + invalid->name().c_str() + "/"), QVariant(true) );
             blockSignals(false);
         } else if(dynamic_cast<Component *>(it)) {
-            buildObject(it, (path.isEmpty() ? "" : path + "/") + QString::fromStdString(it->typeName()));
+            buildObject(it, p + QString::fromStdString(it->typeName()));
         }
     }
 }

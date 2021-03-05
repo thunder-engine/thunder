@@ -16,9 +16,9 @@ Property::Property(const QString &name, QObject *propertyObject, QObject *parent
         m_Editor(nullptr),
         m_Root(root) {
 
-    QStringList list    = name.split('/');
+    QStringList list = name.split('/');
 
-    m_name  = list.back();
+    m_name = list.back();
     setObjectName(name);
 }
 
@@ -47,9 +47,8 @@ bool Property::isReadOnly() const {
         return false;
     } else if(m_propertyObject && m_propertyObject->metaObject()->property(m_propertyObject->metaObject()->indexOfProperty(qPrintable(objectName()))).isWritable()) {
         return false;
-    } else {
-        return true;
     }
+    return true;
 }
 
 QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
@@ -82,7 +81,7 @@ Property *Property::findPropertyObject(QObject *propertyObject) {
         return this;
     }
     for(int i = 0; i < children().size(); ++i) {
-        Property *child  = static_cast<Property *>(children()[i])->findPropertyObject(propertyObject);
+        Property *child = static_cast<Property *>(children()[i])->findPropertyObject(propertyObject);
         if(child) {
             return child;
         }

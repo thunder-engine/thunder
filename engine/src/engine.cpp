@@ -284,6 +284,7 @@ bool Engine::start() {
     if(level) {
         level->setParent(p_ptr->m_pScene);
     } else {
+        Log(Log::ERR) << "Unable to load" << path.c_str();
         p_ptr->m_pPlatform->stop();
         return false;
     }
