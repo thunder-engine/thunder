@@ -198,9 +198,10 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    VariantList m_Dump;
-    list<uint32_t> m_Parents;
-    list<uint32_t> m_Objects;
+    VariantList m_dump;
+    list<uint32_t> m_parents;
+    list<uint32_t> m_objects;
+    list<uint32_t> m_indices;
 };
 
 class RemoveComponent : public UndoObject {
@@ -212,6 +213,7 @@ protected:
     Variant m_dump;
     uint32_t m_parent;
     uint32_t m_uuid;
+    int32_t m_index;
 };
 
 class ParentingObjects : public UndoObject {

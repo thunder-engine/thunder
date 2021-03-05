@@ -336,15 +336,7 @@ Object *Object::construct() {
 */
 const MetaObject *Object::metaClass() {
     PROFILE_FUNCTION();
-    static MetaMethod::Table table;
-    table.type = MetaMethod::Signal;
-    table.name = "destroyed";
-    table.invoker = nullptr;
-    table.address = nullptr;
-    table.argc = 0;
-    table.types = nullptr;
-
-    static const MetaObject staticMetaData("Object", nullptr, &construct, nullptr, nullptr, nullptr);
+    static const MetaObject staticMetaData("Object", nullptr, &construct, Object::methods(), nullptr, nullptr);
     return &staticMetaData;
 }
 /*!
@@ -681,12 +673,12 @@ Object *Object::find(const string &path) {
     return nullptr;
 }
 /*!
-    Makes the object a child of \a parent.
+    Makes the object a child of \a parent at given \a position.
     \note Please ignore the \a force flag it will be provided by the default.
 
     \sa parent()
 */
-void Object::setParent(Object *parent, bool force) {
+void Object::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
     A_UNUSED(force);
 
@@ -694,7 +686,7 @@ void Object::setParent(Object *parent, bool force) {
         p_ptr->m_pParent->removeChild(this);
     }
     if(parent) {
-        parent->addChild(this);
+        parent->addChild(this, position);
     }
     p_ptr->m_pParent = parent;
 }
@@ -710,12 +702,16 @@ void Object::setName(const string &name) {
     }
 }
 /*!
-    Pushes a \a child object to the internal list of children.
+    Pushes a \a child object to the internal list of children at given \a position.
 */
-void Object::addChild(Object *child) {
+void Object::addChild(Object *child, int32_t position) {
     PROFILE_FUNCTION();
     if(child) {
-        p_ptr->m_mChildren.push_back(child);
+        if(position == -1) {
+            p_ptr->m_mChildren.push_back(child);
+        } else {
+            p_ptr->m_mChildren.insert(next(p_ptr->m_mChildren.begin(), position), child);
+        }
     }
 }
 /*!

@@ -24,7 +24,8 @@ public:
         m_scene(nullptr),
         m_actor(actor),
         m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
-        m_enable(true) {
+        m_enable(true),
+        m_static(false) {
 
     }
 
@@ -180,6 +181,8 @@ public:
     int32_t m_layers;
 
     bool m_enable;
+
+    bool m_static;
 };
 /*!
     \class Actor
@@ -217,6 +220,19 @@ bool Actor::isEnabled() const {
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
     p_ptr->m_enable = enabled;
+}
+/*!
+    Returns true if this actor will not be moved during the game; otherwise returns false.
+*/
+bool Actor::isStatic() const {
+    return p_ptr->m_static;
+}
+/*!
+    Marks current Actor as static or dynamic (by default).
+    This \a flag can help to optimize rendering.
+*/
+void Actor::setStatic(const bool flag) {
+    p_ptr->m_static = flag;
 }
 /*!
     Returns the layers list for the this Actor as a bit mask.
@@ -357,20 +373,20 @@ void Actor::clearCloneRef () {
     }
 }
 /*!
-    Makes the actor a child of the \a parent.
+    Makes the actor a child of the \a parent at given \a position.
     \note Please ignore the \a force flag it will be provided by the default.
 */
-void Actor::setParent(Object *parent, bool force) {
+void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
     if(p_ptr->m_transform) {
-        Object::setParent(parent, force);
+        Object::setParent(parent, position, force);
 
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
             p_ptr->m_transform->setParentTransform(actor->transform(), force);
         }
     } else {
-        Object::setParent(parent);
+        Object::setParent(parent, position);
     }
 }
 /*!

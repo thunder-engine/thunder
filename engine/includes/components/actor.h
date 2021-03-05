@@ -17,7 +17,8 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     A_REGISTER(Actor, Object, Scene)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, enabled, Actor::isEnabled, Actor::setEnabled)
+        A_PROPERTY(bool, enabled, Actor::isEnabled, Actor::setEnabled),
+        A_PROPERTY(bool, static, Actor::isStatic, Actor::setStatic)
     )
 
     A_METHODS(
@@ -46,10 +47,13 @@ public:
     bool isEnabled() const;
     void setEnabled(const bool enabled);
 
+    bool isStatic() const;
+    void setStatic(const bool flag);
+
     int layers() const;
     void setLayers(const int layers);
 
-    void setParent(Object *parent, bool force = false) override;
+    void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
     bool isInstance() const;
     bool isValidInstance() const;

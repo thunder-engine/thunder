@@ -71,6 +71,10 @@ class ObjectPrivate;
 class ObjectSystem;
 
 class NEXT_LIBRARY_EXPORT Object {
+
+    A_METHODS(
+        A_SIGNAL(Object::destroyed)
+    )
 public:
     struct Link {
         Object                     *sender;
@@ -156,7 +160,7 @@ public:
     virtual const ObjectList       &getChildren                 () const;
     virtual const LinkList         &getReceivers                () const;
 
-    virtual void                    setParent                   (Object *parent, bool force = false);
+    virtual void                    setParent                   (Object *parent, int32_t position = -1, bool force = false);
     virtual string                  typeName                    () const;
     virtual Variant                 property                    (const char *name) const;
     virtual void                    setProperty                 (const char *name, const Variant &value);
@@ -170,6 +174,10 @@ public:
 
     virtual bool                    operator==                  (const Object &) const final { return false; }
     virtual bool                    operator!=                  (const Object &) const final { return false; }
+
+// Signals
+public:
+    void                            destroyed                   ();
 
 protected:
     virtual void                    loadData                    (const VariantList &data);
@@ -186,7 +194,7 @@ protected:
 
     VariantList                     serializeData               (const MetaObject *meta) const;
 
-    virtual void                    addChild                    (Object *child);
+    virtual void                    addChild                    (Object *child, int32_t position = -1);
     void                            removeChild                 (Object *child);
 
     Object                         *sender                      () const;

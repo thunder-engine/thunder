@@ -686,22 +686,26 @@ DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, 
         UndoObject(ctrl, name, group) {
 
     for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
+        m_objects.push_back(it->uuid());
     }
 }
 void DeleteActors::undo() {
-    auto it = m_Parents.begin();
-    for(auto ref : m_Dump) {
-        Object *object = Engine::toObject(ref, m_pController->findObject(*it));
+    auto it = m_parents.begin();
+    auto index = m_indices.begin();
+    for(auto ref : m_dump) {
+        Object *parent = m_pController->findObject(*it);
+        Object *object = Engine::toObject(ref, parent);
         if(object) {
-            m_Objects.push_back(object->uuid());
+            object->setParent(parent, *index);
+            m_objects.push_back(object->uuid());
         }
         ++it;
+        ++index;
     }
     emit m_pController->mapUpdated();
-    if(!m_Objects.empty()) {
-        auto it = m_Objects.begin();
-        while(it != m_Objects.end()) {
+    if(!m_objects.empty()) {
+        auto it = m_objects.begin();
+        while(it != m_objects.end()) {
             Component *comp = dynamic_cast<Component *>(m_pController->findObject(*it));
             if(comp) {
                 *it = comp->parent()->uuid();
@@ -709,26 +713,29 @@ void DeleteActors::undo() {
             ++it;
         }
         m_pController->clear(false);
-        m_pController->selectActors(m_Objects);
+        m_pController->selectActors(m_objects);
     }
 }
 void DeleteActors::redo() {
-    m_Parents.clear();
-    m_Dump.clear();
-    for(auto it : m_Objects)  {
+    m_parents.clear();
+    m_dump.clear();
+    for(auto it : m_objects)  {
         Object *object = m_pController->findObject(it);
         if(object) {
-            m_Dump.push_back(Engine::toVariant(object));
-            m_Parents.push_back(object->parent()->uuid());
+            m_dump.push_back(Engine::toVariant(object));
+            m_parents.push_back(object->parent()->uuid());
+
+            QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
+            m_indices.push_back(children.indexOf(object));
         }
     }
-    for(auto it : m_Objects) {
+    for(auto it : m_objects) {
         Object *object = m_pController->findObject(it);
         if(object) {
             delete object;
         }
     }
-    m_Objects.clear();
+    m_objects.clear();
 
     m_pController->clear();
 
@@ -741,8 +748,11 @@ RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, c
     m_uuid = component->uuid();
 }
 void RemoveComponent::undo() {
-    Object *object = Engine::toObject(m_dump, m_pController->findObject(m_parent));
+    Object *parent = m_pController->findObject(m_parent);
+    Object *object = Engine::toObject(m_dump, parent);
     if(object) {
+        object->setParent(parent, m_index);
+
         emit m_pController->objectsSelected(m_pController->selected());
         emit m_pController->objectsUpdated();
         emit m_pController->mapUpdated();
@@ -755,6 +765,10 @@ void RemoveComponent::redo() {
     if(object) {
         m_dump = Engine::toVariant(object, true);
         m_parent = object->parent()->uuid();
+
+        QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
+        m_index = children.indexOf(object);
+
         delete object;
     }
 
