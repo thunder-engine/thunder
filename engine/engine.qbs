@@ -103,6 +103,8 @@ Project {
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
         cpp.defines: ["NEXT_LIBRARY"]
+        cpp.debugInformation: qbs.buildVariant === "release"
+        cpp.separateDebugInformation: cpp.debugInformation
 
         Properties {
             condition: engine.desktop
@@ -134,6 +136,14 @@ Project {
             fileTagsFilter: product.type
             qbs.install: true
             qbs.installDir: engine.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Debug Symbols"
+            fileTagsFilter: cpp.debugInformation ? ["debuginfo_cl"] : []
+            qbs.install: true
+            qbs.installDir: engine.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/symbols"
             qbs.installPrefix: engine.PREFIX
         }
     }

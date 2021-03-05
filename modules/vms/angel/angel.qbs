@@ -83,6 +83,8 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
+        cpp.debugInformation: qbs.buildVariant === "release"
+        cpp.separateDebugInformation: cpp.debugInformation
 
         Properties {
             condition: !angel.desktop
@@ -109,6 +111,14 @@ Project {
             fileTagsFilter: product.type
             qbs.install: true
             qbs.installDir: angel.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installPrefix: angel.PREFIX
+        }
+
+        Group {
+            name: "Debug Symbols"
+            fileTagsFilter: cpp.debugInformation ? ["debuginfo_cl"] : []
+            qbs.install: true
+            qbs.installDir: angel.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/symbols"
             qbs.installPrefix: angel.PREFIX
         }
     }

@@ -47,6 +47,8 @@ Project {
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
         cpp.cxxStandardLibrary: "libc++"
+        cpp.debugInformation: qbs.buildVariant === "release"
+        cpp.separateDebugInformation: cpp.debugInformation
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -81,6 +83,8 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
+        cpp.debugInformation: qbs.buildVariant === "release"
+        cpp.separateDebugInformation: cpp.debugInformation
 
         Properties {
             condition: !bullet.desktop
@@ -107,6 +111,14 @@ Project {
             fileTagsFilter: product.type
             qbs.install: true
             qbs.installDir:  bullet.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"
+            qbs.installPrefix: bullet.PREFIX
+        }
+
+        Group {
+            name: "Debug Symbols"
+            fileTagsFilter: cpp.debugInformation ? ["debuginfo_cl"] : []
+            qbs.install: true
+            qbs.installDir: bullet.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/symbols"
             qbs.installPrefix: bullet.PREFIX
         }
     }
