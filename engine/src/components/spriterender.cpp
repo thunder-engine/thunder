@@ -30,6 +30,12 @@ public:
 
     }
 
+    ~SpriteRenderPrivate() {
+        if(m_pSprite) {
+            m_pSprite->unsubscribe(this);
+        }
+    }
+
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
         if(resource == m_pSprite && state == Resource::Ready) {
             m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
