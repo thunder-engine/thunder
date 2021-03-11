@@ -48,18 +48,19 @@
 
 #include <bson.h>
 
-#define TYPE     "Type"
-#define BLEND    "Blend"
-#define MODEL    "Model"
-#define SIDE     "Side"
-#define DEPTH    "Depth"
-#define RAW      "Raw"
-#define VIEW     "View"
-#define TEXTURES "Textures"
+#define TYPE        "Type"
+#define BLEND       "Blend"
+#define MODEL       "Model"
+#define SIDE        "Side"
+#define DEPTH       "Depth"
+#define DEPTHWRITE  "DepthWrite"
+#define RAW         "Raw"
+#define VIEW        "View"
+#define TEXTURES    "Textures"
 
 #define UNIFORM 50
 
-#define FORMAT_VERSION 3
+#define FORMAT_VERSION 4
 
 const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
@@ -70,6 +71,7 @@ ShaderBuilder::ShaderBuilder() :
         m_MaterialType(Surface),
         m_DoubleSided(false),
         m_DepthTest(true),
+        m_DepthWrite(true),
         m_ViewSpace(true) {
 
     qRegisterMetaType<ConstFloat*>("ConstFloat");
@@ -244,6 +246,7 @@ void ShaderBuilder::load(const QString &path) {
     setLightModel(static_cast<LightModel>(m_Data[MODEL].toInt()));
     setDoubleSided(m_Data[SIDE].toBool());
     setDepthTest(m_Data.contains(DEPTH) ? m_Data[DEPTH].toBool() : true);
+    setDepthWrite(m_Data.contains(DEPTHWRITE) ? m_Data[DEPTHWRITE].toBool() : true);
     setRawPath(m_Data[RAW].toString());
     loadTextures(m_Data[TEXTURES].toMap());
     blockSignals(false);
@@ -257,6 +260,7 @@ void ShaderBuilder::save(const QString &path) {
     m_Data[MODEL] = lightModel();
     m_Data[SIDE] = isDoubleSided();
     m_Data[DEPTH] = isDepthTest();
+    m_Data[DEPTHWRITE] = isDepthWrite();
     m_Data[VIEW] = isViewSpace();
     m_Data[RAW] = rawPath().filePath();
     m_Data[TEXTURES] = saveTextures();
@@ -427,6 +431,7 @@ Variant ShaderBuilder::data(bool editor) const {
     properties.push_back(blend());
     properties.push_back(lightModel());
     properties.push_back(isDepthTest());
+    properties.push_back(isDepthWrite());
     user["Properties"] = properties;
 
     VariantMap textures;

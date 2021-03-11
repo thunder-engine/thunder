@@ -110,6 +110,7 @@ Material::Material() :
         m_MaterialType(Surface),
         m_DoubleSided(true),
         m_DepthTest(true),
+        m_DepthWrite(true),
         m_Surfaces(1) {
     clear();
 }
@@ -217,6 +218,7 @@ void Material::loadUserData(const VariantMap &data) {
             i++;
             m_DepthTest = (*i).toBool();
             i++;
+            m_DepthWrite = (*i).toBool();
         }
     }
     {

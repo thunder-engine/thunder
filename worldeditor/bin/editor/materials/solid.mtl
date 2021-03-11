@@ -1,6 +1,7 @@
 {
     "Blend": 2,
     "Depth": true,
+    "DepthWrite": true,
     "Links": [
         {
             "IPort": 0,

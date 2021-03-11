@@ -1,6 +1,7 @@
 {
     "Blend": 0,
     "Depth": false,
+    "DepthWrite": true,
     "Links": [
     ],
     "Model": 0,
@@ -10,9 +11,9 @@
     "Side": true,
     "Textures": {
         "depthMap": 2,
+        "diffuseMap": 2,
         "normalsMap": 2,
-        "paramsMap": 2,
-        "diffuseMap": 2
+        "paramsMap": 2
     },
     "Type": 1,
     "View": true

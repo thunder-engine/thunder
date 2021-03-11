@@ -1,6 +1,7 @@
 {
     "Blend": 1,
     "Depth": false,
+    "DepthWrite": true,
     "Links": [
     ],
     "Model": 0,
@@ -17,10 +18,10 @@
     "Raw": "PointLight.frag",
     "Side": false,
     "Textures": {
-        "normalsMap": 2,
-        "diffuseMap": 2,
-        "paramsMap": 2,
         "depthMap": 2,
+        "diffuseMap": 2,
+        "normalsMap": 2,
+        "paramsMap": 2,
         "shadowMap": 2
     },
     "Type": 2,

@@ -170,6 +170,9 @@ public:
     bool isDepthTest() const { return m_DepthTest; }
     void setDepthTest(bool value) { m_DepthTest = value; emit schemeUpdated(); }
 
+    bool isDepthWrite() const { return m_DepthWrite; }
+    void setDepthWrite(bool value) { m_DepthWrite = value; emit schemeUpdated(); }
+
     bool isViewSpace() const { return m_ViewSpace; }
     void setViewSpace(bool value) { m_ViewSpace = value; emit schemeUpdated(); }
 
@@ -251,6 +254,8 @@ private:
     bool                        m_DoubleSided;
 
     bool                        m_DepthTest;
+
+    bool                        m_DepthWrite;
 
     bool                        m_ViewSpace;
 

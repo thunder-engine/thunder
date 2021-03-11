@@ -40,6 +40,7 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
         glClearColor(color.x, color.y, color.z, color.w);
     }
     if(clearDepth) {
+        glDepthMask(GL_TRUE);
         flags   |= GL_DEPTH_BUFFER_BIT;
         glClearDepthf(depth);
     }

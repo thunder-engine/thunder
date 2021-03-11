@@ -112,6 +112,8 @@ protected:
 
     bool m_DepthTest;
 
+    bool m_DepthWrite;
+
     TextureMap m_Textures;
 
     UniformMap m_Uniforms;
