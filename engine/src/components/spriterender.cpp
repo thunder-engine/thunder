@@ -82,10 +82,10 @@ public:
 
                             Vector2 f(1.0f);
                             if(x == width - 1) {
-                                f.x = MIN((m_Size.x * 0.5 - bl.x) / size.x, 1.0f);
+                                f.x = MIN((m_Size.x * 0.5f - bl.x) / size.x, 1.0f);
                             }
                             if(y == height - 1) {
-                                f.x = MIN((m_Size.y * 0.5 - bl.y) / size.y, 1.0f);
+                                f.y = MIN((m_Size.y * 0.5f - bl.y) / size.y, 1.0f);
                             }
 
                             vetrs[index] = bl;
