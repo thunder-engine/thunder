@@ -8,6 +8,8 @@
 
 #include "commandbuffer.h"
 
+#include <math.h>
+
 #define MATERIAL    "Material"
 #define BASEMAP     "BaseMap"
 
