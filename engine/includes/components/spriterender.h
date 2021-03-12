@@ -17,9 +17,21 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
         A_PROPERTYEX(Sprite *, sprite, SpriteRender::sprite, SpriteRender::setSprite, "editor=Template"),
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
         A_PROPERTY(string, item, SpriteRender::item, SpriteRender::setItem),
-        A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize)
+        A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize),
+        A_PROPERTY(DrawMode, drawMode, SpriteRender::drawMode, SpriteRender::setDrawMode)
     )
     A_NOMETHODS()
+    A_ENUMS(
+        A_ENUM(DrawMode,
+               A_VALUE(Sliced),
+               A_VALUE(Tiled))
+    )
+
+public:
+    enum DrawMode {
+        Sliced = 0,
+        Tiled
+    };
 
 public:
     SpriteRender();
@@ -42,6 +54,9 @@ public:
 
     Vector2 size() const;
     void setSize(const Vector2 &size);
+
+    int drawMode() const;
+    void setDrawMode(int mode);
 
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;
