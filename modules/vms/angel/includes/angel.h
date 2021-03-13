@@ -17,7 +17,7 @@ public:
 
     uint8_t                     types                   () const;
 
-    System                    *system                  ();
+    System                     *system                  ();
 
     IConverter                 *converter               ();
 

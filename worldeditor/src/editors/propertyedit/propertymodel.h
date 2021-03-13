@@ -46,4 +46,6 @@ private:
 	
 };
 
+QString fromCamelCase(const QString &s);
+
 #endif

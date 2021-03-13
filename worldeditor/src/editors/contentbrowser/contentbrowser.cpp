@@ -23,6 +23,8 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+#include "../propertyedit/propertymodel.h"
+
 const QString gTemplateName("${templateName}");
 
 class ContentItemDeligate : public QStyledItemDelegate  {
@@ -170,7 +172,8 @@ void ContentBrowser::createContextMenus() {
 
     for(auto it : paths) {
         QFileInfo info(it);
-        m_CreationMenu.addAction(info.baseName().replace("_", " "))->setData(it);
+        QString name = fromCamelCase(info.baseName().replace("_", " "));
+        m_CreationMenu.addAction(name.trimmed())->setData(it);
     }
 
     createAction(showIn, SLOT(showInGraphicalShell()));
@@ -201,8 +204,9 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             dir.mkdir(name);
         } break;
         case QVariant::String: {
-            QString name = QString("New ") + action->text();
-            QString suff = QString(".%1").arg(QFileInfo(action->data().toString()).suffix());
+            QFileInfo info(action->data().toString());
+            QString name = QString("New") + info.baseName();
+            QString suff = QString(".%1").arg(info.suffix());
             AssetManager::findFreeName(name, dir.path(), suff);
 
             QFile file(action->data().toString());

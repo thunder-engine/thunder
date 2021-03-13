@@ -3,6 +3,6 @@
         <file>Behaviour.txt</file>
     </qresource>
     <qresource prefix="/Templates">
-        <file>Angel_Behaviour.as</file>
+        <file>AngelBehaviour.as</file>
     </qresource>
 </RCC>

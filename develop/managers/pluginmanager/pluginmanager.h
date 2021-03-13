@@ -17,7 +17,7 @@ class System;
 class Object;
 class Scene;
 
-typedef QMap<Object *, ByteArray> ComponentMap;
+typedef QHash<Object *, ByteArray> ComponentMap;
 
 class PluginManager : public BaseObjectModel {
     Q_OBJECT
