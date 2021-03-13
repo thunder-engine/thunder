@@ -47,7 +47,8 @@ void AngelBehaviour::setScript(const string &value) {
         if(type) {
             int result = ptr->context()->PushState();
             string stream = value + " @+" + value + "()";
-            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, type->GetFactoryByDecl(stream.c_str())));
+            asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
+            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
             if(obj == nullptr) {
                 return;
             }

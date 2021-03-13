@@ -602,11 +602,14 @@ void SceneComposer::on_actionEditor_Mode_triggered() {
     ui->actionEditor_Mode->setChecked(true);
     ui->actionGame_Mode->setChecked(false);
 
-    Object *map = Engine::toObject(Bson::load(m_Back), ui->viewport->scene());
+    Object *map = Engine::toObject(Bson::load(m_Back), nullptr);
     if(map) {
         ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
         ctrl->clear();
         ctrl->setMap(map);
+
+        map->setParent(ui->viewport->scene()); // Set parent after detach previous one
+
         ui->hierarchy->setRootObject(ctrl->map());
     }
 

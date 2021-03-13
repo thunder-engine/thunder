@@ -172,6 +172,8 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
             m_pContext->GetExceptionLineNumber(&column);
             Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_pContext->GetExceptionString() << m_pContext->GetExceptionFunction()->GetName() << "Line:" << column;
         }
+    } else {
+        return nullptr;
     }
     return m_pContext->GetAddressOfReturnValue();
 }
