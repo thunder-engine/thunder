@@ -255,7 +255,6 @@ uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
         for(auto it : fbxSettings->m_Resources) {
             Engine::unloadResource(it.toStdString());
         }
-        Engine::resourceSystem()->update(nullptr);
         Log(Log::INF) << "Mesh imported in:" << time.elapsed() << "msec";
 
         settings->setCurrentVersion(settings->version());

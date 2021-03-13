@@ -165,6 +165,8 @@ bool QbsBuilder::buildProject() {
 void QbsBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0 && m_pMgr->targetPath().isEmpty()) {
         PluginManager::instance()->reloadPlugin(m_Artifact);
+
+        emit buildSuccessful();
     }
     m_Outdated = false;
     m_Progress = false;

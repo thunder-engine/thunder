@@ -37,6 +37,9 @@ public:
 
     uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
 
+signals:
+    void buildSuccessful();
+
 private:
     IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 

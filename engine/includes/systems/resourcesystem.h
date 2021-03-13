@@ -15,6 +15,23 @@ public:
     ResourceSystem();
     ~ResourceSystem() override;
 
+    void setResource(Resource *object, const string &uuid);
+
+    bool isResourceExist(const string &path);
+
+    Resource *loadResource(const string &path);
+
+    void unloadResource(Resource *resource, bool force = false);
+
+    void reloadResource(Resource *resource, bool force = false);
+
+    string reference(Resource *resource);
+
+    Resource *resource(string &path) const;
+
+    DictionaryMap &indices() const;
+
+private:
     bool init() override;
 
     const char *name() const override;
@@ -23,24 +40,9 @@ public:
 
     int threadPolicy() const override;
 
-    void setResource(Object *object, const string &uuid);
+    void deleteFromCahe(Resource *resource);
 
-    bool isResourceExist(const string &path);
-
-    Object *loadResource(const string &path);
-
-    void unloadResource(const string &path);
-
-    void unloadResource(Object *resource);
-
-    void reloadResource(Object *resource);
-
-    string reference(Object *object);
-
-    DictionaryMap &indices() const;
-
-private:
-    void deleteFromCahe(Object *object);
+    void processState(Resource *resource);
 
 private:
     ResourceSystemPrivate *p_ptr;

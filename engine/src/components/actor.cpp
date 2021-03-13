@@ -536,9 +536,8 @@ VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = Object::saveUserData();
 
-    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
     if(isInstance()) {
-        string ref = system->reference(p_ptr->m_prefab);
+        string ref = Engine::reference(p_ptr->m_prefab);
         if(!ref.empty()) {
             result[PREFAB] = ref;
 
@@ -599,8 +598,8 @@ VariantMap Actor::saveUserData() const {
                                     Object *lo = *(reinterpret_cast<Object **>(lv.data()));
                                     Object *ro = *(reinterpret_cast<Object **>(rv.data()));
 
-                                    string lref = system->reference(lo);
-                                    string rref = system->reference(ro);
+                                    string lref = Engine::reference(lo);
+                                    string rref = Engine::reference(ro);
                                     if(lref != rref) {
                                         prop[rp.name()] = rref;
                                     }

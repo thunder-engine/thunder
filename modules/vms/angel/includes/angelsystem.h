@@ -15,6 +15,8 @@ struct asSMessageInfo;
 class MetaObject;
 class Engine;
 
+class AngelScript;
+
 class AngelSystem : public System {
 public:
     AngelSystem(Engine *engine);
@@ -41,7 +43,7 @@ public:
 protected:
     bool isBehaviour(asITypeInfo *info) const;
 
-    bool unload();
+    void unload();
 
     void registerMetaType(asIScriptEngine *engine, const MetaType::Table &table);
     void registerMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta);
@@ -53,6 +55,8 @@ protected:
     asIScriptModule *m_pScriptModule;
 
     asIScriptContext *m_pContext;
+
+    AngelScript *m_pScript;
 
     bool m_Inited;
 };

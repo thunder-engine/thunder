@@ -418,7 +418,25 @@ Object *Engine::loadResource(const string &path) {
 void Engine::unloadResource(const string &path) {
     PROFILE_FUNCTION();
 
-    EnginePrivate::m_pResourceSystem->unloadResource(path);
+    if(!path.empty()) {
+        string uuid = path;
+        Resource *resource = EnginePrivate::m_pResourceSystem->resource(uuid);
+        EnginePrivate::m_pResourceSystem->unloadResource(resource, true);
+    }
+}
+/*!
+    Reloads the resource located along the \a path.
+
+    \sa loadResource()
+*/
+void Engine::reloadResource(const string &path) {
+    PROFILE_FUNCTION();
+
+    if(!path.empty()) {
+        string uuid = path;
+        Resource *resource = EnginePrivate::m_pResourceSystem->resource(uuid);
+        EnginePrivate::m_pResourceSystem->reloadResource(resource, true);
+    }
 }
 /*!
     Returns true if resource with \a path exists; otherwise returns false.
@@ -434,7 +452,7 @@ bool Engine::isResourceExist(const string &path) {
 void Engine::setResource(Object *object, const string &uuid) {
     PROFILE_FUNCTION();
 
-    EnginePrivate::m_pResourceSystem->setResource(object, uuid);
+    EnginePrivate::m_pResourceSystem->setResource(static_cast<Resource *>(object), uuid);
 }
 /*!
     Returns resource path for the provided resource \a object.
@@ -444,7 +462,7 @@ void Engine::setResource(Object *object, const string &uuid) {
 string Engine::reference(Object *object) {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_pResourceSystem->reference(object);
+    return EnginePrivate::m_pResourceSystem->reference(static_cast<Resource *>(object));
 }
 /*!
     This method reads the index file for the resource bundle.

@@ -1,10 +1,10 @@
 #ifndef ANGELMODULE_H
 #define ANGELMODULE_H
 
-#include "engine.h"
+#include <resource.h>
 
-class AngelScript : public Object {
-    A_REGISTER(AngelScript, Object, Resources)
+class AngelScript : public Resource {
+    A_REGISTER(AngelScript, Resource, Resources)
 
 public:
     void loadUserData (const VariantMap &data) override;

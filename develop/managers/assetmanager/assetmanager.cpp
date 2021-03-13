@@ -249,6 +249,11 @@ void AssetManager::removeResource(const QFileInfo &source) {
         QDir().rmdir(src.absoluteFilePath());
         return;
     } else {
+        bool build = false;
+        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(fetchSettings(src));
+        if(settings) {
+            build = true;
+        }
         m_pFileWatcher->removePath(src.absoluteFilePath());
         Engine::unloadResource(source.filePath().toStdString());
         string uuid = unregisterAsset(source.filePath().toStdString());
@@ -257,6 +262,16 @@ void AssetManager::removeResource(const QFileInfo &source) {
 
         QFile::remove(src.absoluteFilePath() + gMetaExt);
         QFile::remove(src.absoluteFilePath());
+
+        if(build) {
+            foreach(IBuilder *it, m_Builders) {
+                it->rescanSources(ProjectManager::instance()->contentPath());
+                if(!it->isEmpty()) {
+                    it->convertFile(nullptr);
+                    it->buildProject();
+                }
+            }
+        }
     }
     dumpBundle();
 }
@@ -480,6 +495,8 @@ void AssetManager::registerConverter(IConverter *converter) {
 
             IBuilder *builder = dynamic_cast<IBuilder *>(converter);
             if(builder) {
+                connect(builder, &IBuilder::buildSuccessful, this, &AssetManager::buildSuccessful);
+
                 m_ClassMaps[format.toLower()] = builder->classMap();
                 m_Builders.push_back(builder);
             }
@@ -711,12 +728,14 @@ bool AssetManager::convert(IConverterSettings *settings) {
                 registerAsset(path, value, settings->subTypeName(it));
 
                 if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + value)) {
-                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(value.toStdString()));
+                    Object *res = Engine::loadResource(value.toStdString());
+                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res));
                     emit imported(path, type);
                 }
             }
 
-            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(m_pEngine->loadResource(guid.toStdString()));
+            Object *res = Engine::loadResource(guid.toStdString());
+            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res));
             emit imported(source, type);
 
             settings->saveSettings();

@@ -108,6 +108,8 @@ signals:
 
     void prefabCreated(uint32_t uuid, uint32_t clone);
 
+    void buildSuccessful();
+
 protected slots:
     void onPerform();
 

@@ -58,6 +58,7 @@ AngelSystem::AngelSystem(Engine *engine) :
         m_pScriptEngine(nullptr),
         m_pScriptModule(nullptr),
         m_pContext(nullptr),
+        m_pScript(nullptr),
         m_Inited(false) {
     PROFILE_FUNCTION();
 
@@ -133,19 +134,17 @@ int AngelSystem::threadPolicy() const {
 void AngelSystem::reload() {
     PROFILE_FUNCTION();
 
-    if(unload()) {
-        Engine::unloadResource(TEMPALTE);
-    }
-
+    unload();
     m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
 
-    if(!Engine::isResourceExist(TEMPALTE)) {
-        return;
+    if(m_pScript) {
+        Engine::reloadResource(TEMPALTE);
+    } else {
+        m_pScript = Engine::loadResource<AngelScript>(TEMPALTE);
     }
 
-    AngelScript *script = Engine::loadResource<AngelScript>(TEMPALTE);
-    if(script) {
-        AngelStream stream(script->m_Array);
+    if(m_pScript) {
+        AngelStream stream(m_pScript->m_Array);
         m_pScriptModule->LoadByteCode(&stream);
 
         for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
@@ -201,7 +200,7 @@ bool AngelSystem::isBehaviour(asITypeInfo *info) const {
     return false;
 }
 
-bool AngelSystem::unload() {
+void AngelSystem::unload() {
     if(m_pScriptModule) {
         for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
@@ -209,11 +208,8 @@ bool AngelSystem::unload() {
                 factoryRemove(info->GetName(), string(URI) + info->GetName());
             }
         }
-
         m_pScriptModule->Discard();
-        return true;
     }
-    return false;
 }
 
 void *castTo(void *ptr) {

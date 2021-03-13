@@ -45,6 +45,8 @@ public:
 
     static void                 unloadResource              (const string &path);
 
+    static void                 reloadResource              (const string &path);
+
     template<typename T>
     static T                   *loadResource                (const string &path) {
         return dynamic_cast<T *>(loadResource(path));

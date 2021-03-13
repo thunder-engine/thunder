@@ -116,6 +116,8 @@ bool AngelBuilder::buildProject() {
             m_pSystem->reload();
 
             m_pClassModel->update();
+
+            emit buildSuccessful();
         }
 
         m_Outdated = false;
@@ -128,9 +130,10 @@ QAbstractItemModel *AngelBuilder::classMap() const {
 }
 
 uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
-    QFileInfo info(settings->absoluteDestination());
-
-    m_Destination = info.absolutePath() + "/" + persistentUUID();
+    if(settings) {
+        QFileInfo info(settings->absoluteDestination());
+        m_Destination = info.absolutePath() + "/" + persistentUUID();
+    }
 
     return IBuilder::convertFile(settings);
 }

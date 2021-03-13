@@ -7,12 +7,13 @@ void AngelScript::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         m_Array = (*it).second.toByteArray();
     }
+    setState(Ready);
 }
 
 VariantMap AngelScript::saveUserData() const {
     VariantMap result;
 
-    result[DATA]  = m_Array;
+    result[DATA] = m_Array;
 
     return result;
 }

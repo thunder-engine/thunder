@@ -172,8 +172,8 @@ void ContentBrowser::createContextMenus() {
 
     for(auto it : paths) {
         QFileInfo info(it);
-        QString name = fromCamelCase(info.baseName().replace("_", " "));
-        m_CreationMenu.addAction(name.trimmed())->setData(it);
+        QString name = fromCamelCase(info.baseName().replace('_', ""));
+        m_CreationMenu.addAction(name)->setData(it);
     }
 
     createAction(showIn, SLOT(showInGraphicalShell()));

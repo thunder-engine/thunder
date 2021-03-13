@@ -255,6 +255,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         ui->classMapView->setModel(map.first());
     }
 
+    connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
+
     resetWorkspace();
     on_actionEditor_Mode_triggered();
     on_actionNew_triggered();
