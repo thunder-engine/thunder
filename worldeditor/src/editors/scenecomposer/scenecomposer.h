@@ -89,6 +89,8 @@ private:
 private slots:
     void onSettingsUpdated();
 
+    void onRepickSelected();
+
     void onNewProject();
     void onImportProject();
 

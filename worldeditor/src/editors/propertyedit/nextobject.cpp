@@ -181,8 +181,6 @@ bool NextObject::event(QEvent *e) {
                 if(target.isValid() && current != target) {
                     emit aboutToBeChanged(o, propertyName, target);
 
-                    onUpdated();
-
                     emit changed(o, propertyName);
                 }
             }

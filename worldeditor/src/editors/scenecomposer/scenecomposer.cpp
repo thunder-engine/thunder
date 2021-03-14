@@ -256,6 +256,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     }
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
+    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
     resetWorkspace();
     on_actionEditor_Mode_triggered();
@@ -297,6 +298,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     }
     if(!objects.empty()) {
         ui->viewport->makeCurrent();
+
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
         m_pProperties = new NextObject(*objects.begin(), this);
@@ -323,6 +325,11 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     ui->revertButton->setVisible(false);
 
     ui->propertyView->setObject(m_pProperties);
+}
+
+void SceneComposer::onRepickSelected() {
+    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
+    onObjectSelected(ctl->selected());
 }
 
 void SceneComposer::onAssetSelected(IConverterSettings *settings) {
@@ -928,7 +935,7 @@ void SceneComposer::onCurrentToolWindowChanged(QWidget *toolWindow) {
     IAssetEditor *editor = dynamic_cast<IAssetEditor *>(toolWindow);
     if(editor) {
         m_pCurrentDocument = toolWindow;
-    } else {
+    } else if(ui->viewportWidget == toolWindow) {
         m_pCurrentDocument = m_pMainDocument;
     }
 }

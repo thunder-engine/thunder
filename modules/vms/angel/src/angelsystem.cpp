@@ -153,6 +153,12 @@ void AngelSystem::reload() {
                 factoryAdd(info->GetName(), string(URI) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
+        for(auto it : m_ObjectList) {
+            AngelBehaviour *behaviour = static_cast<AngelBehaviour *>(it);
+            VariantMap data = behaviour->saveUserData();
+            behaviour->createObject();
+            behaviour->loadUserData(data);
+        }
     } else {
         Log(Log::ERR) << __FUNCTION__ << "Filed to load a script";
     }

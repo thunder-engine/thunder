@@ -23,28 +23,33 @@ public:
     void setScriptObject(asIScriptObject *object);
 
     asIScriptFunction *scriptStart() const;
-
     asIScriptFunction *scriptUpdate() const;
 
-    const MetaObject *metaObject() const;
+    void createObject();
 
 public:
     static void registerClassFactory(ObjectSystem *system);
     static void unregisterClassFactory(ObjectSystem *system);
 
 private:
+    friend class AngelSystem;
+
     static Object *construct() { return new AngelBehaviour(); }
+
+    void updateMeta();
 
     void setScriptStart(asIScriptFunction *function);
     void setScriptUpdate(asIScriptFunction *function);
 
-    VariantList saveData() const;
-    void loadData(const VariantList &data);
+    const MetaObject *metaObject() const override;
 
-    VariantMap saveUserData() const;
-    void loadUserData(const VariantMap &data);
+    VariantList saveData() const override;
+    void loadData(const VariantList &data) override;
 
-    void setType(const string &type);
+    VariantMap saveUserData() const override;
+    void loadUserData(const VariantMap &data) override;
+
+    void setType(const string &type) override;
 
 public:
     static const MetaObject *metaClass() {

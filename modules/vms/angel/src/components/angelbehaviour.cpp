@@ -36,33 +36,38 @@ string AngelBehaviour::script() const {
 void AngelBehaviour::setScript(const string &value) {
     PROFILE_FUNCTION();
     if(value != m_Script) {
-        if(m_pObject) {
-            m_pObject->Release();
-            m_pObject = nullptr;
-        }
         m_Script = value;
 
-        AngelSystem *ptr = static_cast<AngelSystem *>(system());
-        asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(value.c_str());
-        if(type) {
-            int result = ptr->context()->PushState();
-            string stream = value + " @+" + value + "()";
-            asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
-            asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
-            if(obj == nullptr) {
-                return;
-            }
-            asIScriptObject *object = *obj;
+        createObject();
+    }
+}
+
+void AngelBehaviour::createObject() {
+    if(m_pObject) {
+        m_pObject->Release();
+        m_pObject = nullptr;
+    }
+
+    AngelSystem *ptr = static_cast<AngelSystem *>(system());
+    asITypeInfo *type = ptr->module()->GetTypeInfoByDecl(m_Script.c_str());
+    if(type) {
+        int result = ptr->context()->PushState();
+        string stream = m_Script + " @+" + m_Script + "()";
+        asIScriptFunction *func = type->GetFactoryByDecl(stream.c_str());
+        asIScriptObject **obj = static_cast<asIScriptObject **>(ptr->execute(nullptr, func));
+        if(obj == nullptr) {
+            return;
+        }
+        asIScriptObject *object = *obj;
+        if(object) {
+            setScriptObject(object);
+        } else {
+            Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << m_Script.c_str();
+        }
+        if(result == 0) {
+            ptr->context()->PopState();
             if(object) {
-                setScriptObject(object);
-            } else {
-                Log(Log::ERR) << __FUNCTION__ << "Can't create an object" << value.c_str();
-            }
-            if(result == 0) {
-                ptr->context()->PopState();
-                if(object) {
-                    object->AddRef();
-                }
+                object->AddRef();
             }
         }
     }
@@ -74,7 +79,7 @@ asIScriptObject *AngelBehaviour::scriptObject() const {
 
 void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     PROFILE_FUNCTION();
-    m_pObject   = object;
+    m_pObject = object;
     if(m_pObject) {
         m_pObject->AddRef();
         asITypeInfo *info = m_pObject->GetObjectType();
@@ -90,64 +95,68 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
             m_pStart = info->GetMethodByDecl("void start()");
             m_pUpdate = info->GetMethodByDecl("void update()");
 
-            if(m_pMetaObject) {
-                delete m_pMetaObject;
-            }
-            const MetaObject *super = AngelBehaviour::metaClass();
-
-            asIScriptEngine *engine = m_pObject->GetEngine();
-
-            uint32_t count = info->GetPropertyCount();
-            for(uint32_t i = 0; i <= count; i++) {
-                if(i == count) {
-                    m_Table.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
-                } else {
-                    const char *name;
-                    int typeId;
-                    bool isPrivate;
-                    bool isProtected;
-                    info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
-                    if(!isPrivate && !isProtected) {
-                        uint32_t metaType = 0;
-                        if(typeId > asTYPEID_DOUBLE) {
-                            asITypeInfo *type = engine->GetTypeInfoById(typeId);
-                            if(type) {
-                                metaType = MetaType::type(type->GetName());
-                                if(type->GetFlags() & asOBJ_REF) {
-                                    metaType++;
-                                }
-                            }
-                        } else {
-                            switch(typeId) {
-                            case asTYPEID_VOID:     metaType = MetaType::INVALID; break;
-                            case asTYPEID_BOOL:     metaType = MetaType::BOOLEAN; break;
-                            case asTYPEID_INT8:
-                            case asTYPEID_INT16:
-                            case asTYPEID_INT32:
-                            case asTYPEID_INT64:
-                            case asTYPEID_UINT8:
-                            case asTYPEID_UINT16:
-                            case asTYPEID_UINT32:
-                            case asTYPEID_UINT64:   metaType = MetaType::INTEGER; break;
-                            case asTYPEID_FLOAT:
-                            case asTYPEID_DOUBLE:   metaType = MetaType::FLOAT; break;
-                            default: break;
-                            }
-                        }
-                        MetaType::Table *table = MetaType::table(metaType);
-                        if(table) {
-                            void *ptr = object->GetAddressOfProperty(i);
-                            m_Table.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr, ptr});
-                        }
-                    }
-                }
-            }
-
-            m_pMetaObject = new MetaObject(m_Script.c_str(),
-                                           super, &AngelBehaviour::construct,
-                                           nullptr, &m_Table[0], nullptr);
+            updateMeta();
         }
     }
+}
+
+void AngelBehaviour::updateMeta() {
+    delete m_pMetaObject;
+    m_Table.clear();
+
+    const MetaObject *super = AngelBehaviour::metaClass();
+    asIScriptEngine *engine = m_pObject->GetEngine();
+
+    asITypeInfo *info = m_pObject->GetObjectType();
+    uint32_t count = info->GetPropertyCount();
+    for(uint32_t i = 0; i <= count; i++) {
+        if(i == count) {
+            m_Table.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+        } else {
+            const char *name;
+            int typeId;
+            bool isPrivate;
+            bool isProtected;
+            info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
+            if(!isPrivate && !isProtected) {
+                uint32_t metaType = 0;
+                if(typeId > asTYPEID_DOUBLE) {
+                    asITypeInfo *type = engine->GetTypeInfoById(typeId);
+                    if(type) {
+                        metaType = MetaType::type(type->GetName());
+                        if(type->GetFlags() & asOBJ_REF) {
+                            metaType++;
+                        }
+                    }
+                } else {
+                    switch(typeId) {
+                    case asTYPEID_VOID:     metaType = MetaType::INVALID; break;
+                    case asTYPEID_BOOL:     metaType = MetaType::BOOLEAN; break;
+                    case asTYPEID_INT8:
+                    case asTYPEID_INT16:
+                    case asTYPEID_INT32:
+                    case asTYPEID_INT64:
+                    case asTYPEID_UINT8:
+                    case asTYPEID_UINT16:
+                    case asTYPEID_UINT32:
+                    case asTYPEID_UINT64:   metaType = MetaType::INTEGER; break;
+                    case asTYPEID_FLOAT:
+                    case asTYPEID_DOUBLE:   metaType = MetaType::FLOAT; break;
+                    default: break;
+                    }
+                }
+                MetaType::Table *table = MetaType::table(metaType);
+                if(table) {
+                    void *ptr = m_pObject->GetAddressOfProperty(i);
+                    m_Table.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr, ptr});
+                }
+            }
+        }
+    }
+
+    m_pMetaObject = new MetaObject(m_Script.c_str(),
+                                   super, &AngelBehaviour::construct,
+                                   nullptr, &m_Table[0], nullptr);
 }
 
 asIScriptFunction *AngelBehaviour::scriptStart() const {
