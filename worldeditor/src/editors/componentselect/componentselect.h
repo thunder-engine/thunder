@@ -13,12 +13,14 @@ namespace Ui {
 struct SceneComponent {
     SceneComponent() :
             component(nullptr),
+            actor(nullptr),
             scene(nullptr) {
 
     }
 
     QString type;
     Component *component;
+    Actor *actor;
     Object *scene;
 };
 Q_DECLARE_METATYPE(SceneComponent)

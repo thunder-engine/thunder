@@ -281,7 +281,8 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
             Actor *actor = static_cast<Actor *>(m_pObject);
             SceneComponent cmp;
             cmp.type = typeName;
-            cmp.component = static_cast<Component *>(o);
+            cmp.component = dynamic_cast<Component *>(o);
+            cmp.actor = dynamic_cast<Actor *>(o);
             cmp.scene = actor->scene();
             return QVariant::fromValue(cmp);
         }
@@ -348,7 +349,12 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
             }
         } else {
             SceneComponent c = value.value<SceneComponent>();
-            return Variant(current.userType(), &c.component);
+            if(c.component) {
+                return Variant(current.userType(), &c.component);
+            }
+            if(c.actor) {
+                return Variant(current.userType(), &c.actor);
+            }
         }
     }
 

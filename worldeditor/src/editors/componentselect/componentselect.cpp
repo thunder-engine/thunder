@@ -30,7 +30,12 @@ SceneComponent ComponentSelect::data() const {
 void ComponentSelect::setData(const SceneComponent &component) {
     m_Component = component;
 
-    QString name = (m_Component.component) ? m_Component.component->actor()->name().c_str() : "None";
+    QString name("None");
+    if(m_Component.component) {
+        name = m_Component.component->actor()->name().c_str();
+    } else if(m_Component.actor) {
+        name = m_Component.actor->name().c_str();
+    }
     QString str = QString("%1 (%2)").arg(name).arg(m_Component.type);
     ui->lineEdit->setText(str);
 }
@@ -51,7 +56,14 @@ void ComponentSelect::onFocused(Object *object) {
     disconnect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused);
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
-        m_Component.component = actor->component(qPrintable(m_Component.type));
+        const MetaObject *meta = actor->metaObject();
+        if(meta->canCastTo(qPrintable(m_Component.type))) {
+            m_Component.actor = actor;
+            m_Component.component = nullptr;
+        } else {
+            m_Component.actor = nullptr;
+            m_Component.component = actor->component(qPrintable(m_Component.type));
+        }
         setData(m_Component);
         emit componentChanged(m_Component);
     }
