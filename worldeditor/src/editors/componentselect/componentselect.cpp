@@ -48,6 +48,7 @@ void ComponentSelect::onSceneDialog() {
 
 void ComponentSelect::onFocused(Object *object) {
     sBrowser->hide();
+    disconnect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused);
     Actor *actor = dynamic_cast<Actor *>(object);
     if(actor) {
         m_Component.component = actor->component(qPrintable(m_Component.type));
