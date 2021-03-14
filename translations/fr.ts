@@ -47,12 +47,12 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+187"/>
         <source>Remove Properties</source>
-        <translation type="unfinished">Supprimer les propriétés</translation>
+        <translation>Supprimer les propriétés</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Update Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Mettre à jour la clé</translation>
     </message>
 </context>
 <context>
@@ -336,7 +336,7 @@
     <message>
         <location line="+7"/>
         <source>Insert Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Insérer la clé</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -443,7 +443,7 @@
     <message>
         <location line="+1"/>
         <source>Component with type &quot;%1&quot; already defined for this actor.</source>
-        <translation>Un composant du type «&#xa0;%1&#xa0;» a déjà été défini pour cet acteur.</translation>
+        <translation>Un composant du type « %1 » a déjà été défini pour cet acteur.</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -1088,7 +1088,7 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+257"/>
         <source>Update Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Mettre à jour les propriétés</translation>
     </message>
 </context>
 </TS>
