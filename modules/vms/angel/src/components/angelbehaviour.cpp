@@ -74,6 +74,9 @@ void AngelBehaviour::createObject() {
 }
 
 asIScriptObject *AngelBehaviour::scriptObject() const {
+    if(m_pObject) {
+        m_pObject->AddRef();
+    }
     return m_pObject;
 }
 

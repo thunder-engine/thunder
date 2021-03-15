@@ -28,22 +28,22 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
     A_NOMETHODS()
 
 public:
-    BaseLight ();
-    ~BaseLight () override;
+    BaseLight();
+    ~BaseLight() override;
 
     virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components);
 
-    bool castShadows () const;
-    void setCastShadows (const bool shadows);
+    bool castShadows() const;
+    void setCastShadows(const bool shadows);
 
-    float brightness () const;
-    void setBrightness (const float brightness);
+    float brightness() const;
+    void setBrightness(const float brightness);
 
-    Vector4 color () const;
-    void setColor (const Vector4 &color);
+    Vector4 &color() const;
+    void setColor(const Vector4 &color);
 
-    float bias () const;
-    void setBias (const float bias);
+    float bias() const;
+    void setBias(const float bias);
 
 protected:
     MaterialInstance *material() const;

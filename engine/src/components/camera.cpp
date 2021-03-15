@@ -259,7 +259,7 @@ void Camera::setFocal(const float focal) {
 /*!
     Returns the color with which the screen will be cleared.
 */
-Vector4 Camera::color() const {
+Vector4 &Camera::color() const {
     return p_ptr->m_Color;
 }
 /*!

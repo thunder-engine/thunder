@@ -16,24 +16,24 @@ class NEXT_LIBRARY_EXPORT AreaLight : public BaseLight {
     A_NOMETHODS()
 
 public:
-    AreaLight ();
-    ~AreaLight () override;
+    AreaLight();
+    ~AreaLight() override;
 
-    float radius () const;
-    void setRadius (float radius);
+    float radius() const;
+    void setRadius(float radius);
 
-    float sourceWidth () const;
-    void setSourceWidth (float width);
+    float sourceWidth() const;
+    void setSourceWidth(float width);
 
-    float sourceHeight () const;
-    void setSourceHeight (float height);
+    float sourceHeight() const;
+    void setSourceHeight(float height);
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void shadowsUpdate (const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
+    void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
 
-    AABBox bound () const override;
+    AABBox bound() const override;
 
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;

@@ -10,7 +10,7 @@ BoxCollider::BoxCollider() :
 
 }
 
-Vector3 BoxCollider::size() const {
+const Vector3 &BoxCollider::size() const {
     return m_Size;
 }
 

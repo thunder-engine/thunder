@@ -9,7 +9,7 @@ class ComponentPrivate;
 class NEXT_LIBRARY_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
 
-    A_PROPERTIES (
+    A_PROPERTIES(
         A_PROPERTY(bool, enabled, Component::isEnabled, Component::setEnabled)
     )
     A_METHODS(
@@ -22,15 +22,15 @@ public:
     Component();
     ~Component() override;
 
-    Actor *actor () const;
+    Actor *actor() const;
 
-    bool isEnabled () const;
-    void setEnabled (bool enable);
+    bool isEnabled() const;
+    void setEnabled(bool enable);
 
-    bool isStarted () const;
-    void setStarted (bool started);
+    bool isStarted() const;
+    void setStarted(bool started);
 
-    string tr (const string &source);
+    string tr(const string &source);
 
 #ifdef NEXT_SHARED
     virtual bool drawHandles(ObjectList &selected);
@@ -38,7 +38,7 @@ public:
 #endif
 
 private:
-    bool isSerializable () const override;
+    bool isSerializable() const override;
 
 private:
     ComponentPrivate *p_ptr;

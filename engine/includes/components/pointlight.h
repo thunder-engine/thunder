@@ -16,24 +16,24 @@ class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
     A_NOMETHODS()
 
 public:
-    PointLight ();
-    ~PointLight () override;
+    PointLight();
+    ~PointLight() override;
 
-    float attenuationRadius () const;
-    void setAttenuationRadius (float radius);
+    float attenuationRadius() const;
+    void setAttenuationRadius(float radius);
 
-    float sourceRadius () const;
-    void setSourceRadius (float radius);
+    float sourceRadius() const;
+    void setSourceRadius(float radius);
 
-    float sourceLength () const;
-    void setSourceLength (float length);
+    float sourceLength() const;
+    void setSourceLength(float length);
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void shadowsUpdate (const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
+    void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
 
-    AABBox bound () const override;
+    AABBox bound() const override;
 
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;

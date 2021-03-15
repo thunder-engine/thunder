@@ -12,15 +12,15 @@ class Collider : public Component {
     A_NOMETHODS()
 
 public:
-    Collider ();
-    ~Collider () override;
+    Collider();
+    ~Collider() override;
 
-    virtual void update ();
+    virtual void update();
 
-    virtual btCollisionShape *shape ();
+    virtual btCollisionShape *shape();
 
-    btDynamicsWorld *world () const;
-    void setWorld (btDynamicsWorld *world);
+    btDynamicsWorld *world() const;
+    void setWorld(btDynamicsWorld *world);
 
 protected:
     virtual void createCollider();

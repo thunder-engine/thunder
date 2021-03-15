@@ -123,6 +123,7 @@ void AngelSystem::update(Scene *scene) {
                 }
                 execute(object, component->scriptUpdate());
             }
+            object->Release();
         }
     }
 }
@@ -360,13 +361,14 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Tabl
                 string ref = (ptr) ? "" : " &";
                 string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
-                string get = name + ref +"get_" + propertyName + "()";
-                string set = string("void set_") + propertyName + "(" + name + ((MetaType::type(type.name()) < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
+                int metaType = MetaType::type(type.name());
+                string get = name + ((metaType < MetaType::STRING) ? "" : ref) + " get_" + propertyName + "()";
+                string set = string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
 
-                asSFuncPtr ptr1(3);
+                asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
 
-                asSFuncPtr ptr2(3);
+                asSFuncPtr ptr2(3); // 3 Means Method
                 property.table()->writemem(ptr2.ptr.dummy, sizeof(void *));
 
                 engine->RegisterObjectMethod(typeName,

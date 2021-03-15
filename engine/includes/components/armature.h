@@ -16,21 +16,21 @@ class NEXT_LIBRARY_EXPORT Armature : public Renderable {
     A_NOMETHODS()
 
 public:
-    Armature ();
-    ~Armature () override;
+    Armature();
+    ~Armature() override;
 
-    Pose *bindPose () const;
-    void setBindPose (Pose *pose);
+    Pose *bindPose() const;
+    void setBindPose(Pose *pose);
 
 private:
-    void update () override;
+    void update() override;
 
-    void loadUserData (const VariantMap &data);
-    VariantMap saveUserData () const;
+    void loadUserData(const VariantMap &data);
+    VariantMap saveUserData() const;
 
-    Texture *texture () const;
+    Texture *texture() const;
 
-    AABBox recalcBounds (const AABBox &aabb) const;
+    AABBox recalcBounds(const AABBox &aabb) const;
 
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;

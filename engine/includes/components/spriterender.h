@@ -46,13 +46,13 @@ public:
     Texture *texture() const;
     void setTexture(Texture *texture);
 
-    Vector4 color() const;
+    Vector4 &color() const;
     void setColor(const Vector4 &color);
 
     string item() const;
     void setItem(const string &item);
 
-    Vector2 size() const;
+    Vector2 &size() const;
     void setSize(const Vector2 &size);
 
     int drawMode() const;

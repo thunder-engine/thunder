@@ -17,13 +17,13 @@ class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
     )
 
 public:
-    Renderable ();
+    Renderable();
 
-    virtual void draw (ICommandBuffer &buffer, uint32_t layer);
+    virtual void draw(ICommandBuffer &buffer, uint32_t layer);
 
-    virtual void update ();
+    virtual void update();
 
-    virtual AABBox bound () const;
+    virtual AABBox bound() const;
 
 };
 

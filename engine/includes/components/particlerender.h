@@ -20,21 +20,21 @@ public:
     ParticleRender();
     ~ParticleRender() override;
 
-    ParticleEffect *effect () const;
-    void setEffect (ParticleEffect *effect);
+    ParticleEffect *effect() const;
+    void setEffect(ParticleEffect *effect);
 
 private:
     void spawnParticle(ParticleEmitter &emitter, ParticleData &data);
     void updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt);
 
-    AABBox bound () const override;
+    AABBox bound() const override;
 
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void update () override;
+    void update() override;
 
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     ParticleRenderPrivate *p_ptr;

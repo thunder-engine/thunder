@@ -21,21 +21,21 @@ void Bone::setIndex(int value) {
     m_index = value;
 }
 
-Vector3 Bone::position() const {
+const Vector3 &Bone::position() const {
     return m_position;
 }
 void Bone::setPosition(const Vector3 &value) {
     m_position = value;
 }
 
-Vector3 Bone::rotation() const {
+const Vector3 &Bone::rotation() const {
     return m_rotation;
 }
 void Bone::setRotation(const Vector3 &value) {
     m_rotation = value;
 }
 
-Vector3 Bone::scale() const {
+const Vector3 &Bone::scale() const {
     return m_scale;
 }
 void Bone::setScale(const Vector3 &value) {

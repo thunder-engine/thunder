@@ -293,7 +293,7 @@ void SpriteRender::setTexture(Texture *texture) {
 /*!
     Returns the color of the sprite to be drawn.
 */
-Vector4 SpriteRender::color() const {
+Vector4 &SpriteRender::color() const {
     return p_ptr->m_Color;
 }
 /*!
@@ -322,7 +322,7 @@ void SpriteRender::setItem(const string &item) {
 /*!
     Returns size of sprite.
 */
-Vector2 SpriteRender::size() const {
+Vector2 &SpriteRender::size() const {
     return p_ptr->m_Size;
 }
 /*!

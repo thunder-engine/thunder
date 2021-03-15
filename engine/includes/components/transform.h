@@ -26,35 +26,34 @@ class NEXT_LIBRARY_EXPORT Transform : public Component {
     )
 
 public:
-    Transform ();
-    ~Transform ();
+    Transform();
+    ~Transform();
 
-    Vector3 position () const;
-    void setPosition (const Vector3 &position);
+    Vector3 &position() const;
+    void setPosition(const Vector3 &position);
 
-    Vector3 rotation () const;
-    void setRotation (const Vector3 &angles);
+    Vector3 &rotation() const;
+    void setRotation(const Vector3 &angles);
 
-    virtual Quaternion quaternion () const;
-    void setQuaternion (const Quaternion &quaternion);
+    virtual Quaternion &quaternion() const;
+    void setQuaternion(const Quaternion &quaternion);
 
-    Vector3 scale () const;
-    void setScale (const Vector3 &scale);
+    Vector3 &scale() const;
+    void setScale(const Vector3 &scale);
 
-    Transform *parentTransform () const;
-    void setParentTransform (Transform *parent, bool force = false);
+    Transform *parentTransform() const;
+    void setParentTransform(Transform *parent, bool force = false);
 
-    Matrix4 &localTransform ();
-    Matrix4 &worldTransform ();
+    Matrix4 &localTransform() const;
+    Matrix4 &worldTransform() const;
 
-    Vector3 worldPosition () const;
-    Vector3 worldEuler () const;
-    Quaternion worldRotation () const;
-    Vector3 worldScale () const;
+    Vector3 worldPosition() const;
+    Vector3 &worldEuler() const;
+    Quaternion &worldRotation() const;
+    Vector3 &worldScale() const;
 
 private:
-    void setDirty ();
-    void cleanDirty ();
+    void setDirty();
 
 private:
     TransformPrivate *p_ptr;

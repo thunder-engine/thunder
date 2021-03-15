@@ -12,10 +12,10 @@ class SphereCollider : public VolumeCollider {
     A_NOMETHODS()
 
 public:
-    SphereCollider ();
+    SphereCollider();
 
-    float radius () const;
-    void setRadius (float radius);
+    float radius() const;
+    void setRadius(float radius);
 
     btCollisionShape *shape() override;
 

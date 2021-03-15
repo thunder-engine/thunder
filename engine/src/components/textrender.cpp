@@ -337,7 +337,7 @@ void TextRender::setFontSize(int size) {
 /*!
     Returns the color of the text to be drawn.
 */
-Vector4 TextRender::color() const {
+Vector4 &TextRender::color() const {
     return p_ptr->m_Color;
 }
 /*!
@@ -365,13 +365,13 @@ void TextRender::setWordWrap(bool wrap) {
 /*!
     Returns the boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
-Vector2 TextRender::boundaries() const {
+Vector2 &TextRender::size() const {
     return p_ptr->m_Boundaries;
 }
 /*!
-    Changes the \a boundaries of the text area. This parameter is involved in Word Wrap calculations.
+    Changes the \a size of boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
-void TextRender::setBoundaries(const Vector2 &boundaries) {
+void TextRender::setSize(const Vector2 &boundaries) {
     p_ptr->m_Boundaries = boundaries;
     p_ptr->composeMesh();
 }

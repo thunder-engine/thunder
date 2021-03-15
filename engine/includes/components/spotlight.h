@@ -15,17 +15,17 @@ class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
     A_NOMETHODS()
 
 public:
-    SpotLight ();
-    ~SpotLight ();
+    SpotLight();
+    ~SpotLight();
 
-    float attenuationDistance () const;
-    void setAttenuationDistance (float distance);
+    float attenuationDistance() const;
+    void setAttenuationDistance(float distance);
 
-    float outerAngle () const;
-    void setOuterAngle (float value);
+    float outerAngle() const;
+    void setOuterAngle(float value);
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
     void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
 

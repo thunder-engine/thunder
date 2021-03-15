@@ -4,9 +4,9 @@
 #include "collider.h"
 
 enum Axises {
-    AXIS_X = (1<<0),
-    AXIS_Y = (1<<1),
-    AXIS_Z = (1<<2)
+    AXIS_X =(1<<0),
+    AXIS_Y =(1<<1),
+    AXIS_Z =(1<<2)
 };
 
 class RigidBody : public Collider, public btMotionState {
@@ -20,24 +20,24 @@ class RigidBody : public Collider, public btMotionState {
     A_NOMETHODS()
 
 public:
-    RigidBody ();
-    ~RigidBody () override;
+    RigidBody();
+    ~RigidBody() override;
 
-    float mass () const;
-    void setMass (float mass);
+    float mass() const;
+    void setMass(float mass);
 
     void applyForce(const Vector3 &force, const Vector3 &point = Vector3());
     void applyImpulse(const Vector3 &impulse, const Vector3 &point = Vector3());
 
-    int lockPosition () const;
-    void setLockPosition (int flags);
+    int lockPosition() const;
+    void setLockPosition(int flags);
 
-    int lockRotation () const;
-    void setLockRotation (int flags);
+    int lockRotation() const;
+    void setLockRotation(int flags);
 
 protected:
-    void getWorldTransform (btTransform &worldTrans) const override;
-    void setWorldTransform (const btTransform &worldTrans) override;
+    void getWorldTransform(btTransform &worldTrans) const override;
+    void setWorldTransform(const btTransform &worldTrans) override;
 
     void createCollider() override;
 

@@ -85,7 +85,7 @@ void BaseLight::setBrightness(const float brightness) {
 /*!
     Returns a color of emitting light.
 */
-Vector4 BaseLight::color() const {
+Vector4 &BaseLight::color() const {
     return p_ptr->m_Color;
 }
 /*!

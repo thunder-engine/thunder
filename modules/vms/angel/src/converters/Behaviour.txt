@@ -5,14 +5,14 @@ shared abstract class Behaviour : IBehaviour {
     void update() {
     }
 
-    IBehaviour@ getObject(AngelBehaviour @behaviour) {
+    IBehaviour @getObject(AngelBehaviour @behaviour) {
         if(behaviour !is null) {
             return behaviour.scriptObject();
         }
         return null;
     }
 
-    Actor@ actor() {
+    Actor @actor() {
         if(_root is null) {
             Actor @super = cast<Actor>(Engine::objectCreate("Actor"));
             @_root = cast<AngelBehaviour>(super.addComponent("AngelBehaviour"));

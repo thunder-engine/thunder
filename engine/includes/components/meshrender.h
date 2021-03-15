@@ -10,7 +10,7 @@ class MeshRenderPrivate;
 class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components);
 
-    A_PROPERTIES (
+    A_PROPERTIES(
         A_PROPERTYEX(Mesh *, mesh, MeshRender::mesh, MeshRender::setMesh, "editor=Template"),
         A_PROPERTYEX(Material *, material, MeshRender::material, MeshRender::setMaterial, "editor=Template")
     )
@@ -20,19 +20,19 @@ public:
     MeshRender();
     ~MeshRender() override;
 
-    Mesh *mesh () const;
-    void setMesh (Mesh *mesh);
+    Mesh *mesh() const;
+    void setMesh(Mesh *mesh);
 
-    Material *material () const;
-    void setMaterial (Material *material);
+    Material *material() const;
+    void setMaterial(Material *material);
 
 private:
-    AABBox bound () const override;
+    AABBox bound() const override;
 
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     MeshRenderPrivate *p_ptr;

@@ -74,7 +74,7 @@ void VolumeCollider::setMaterial(PhysicMaterial *material) {
     m_pMaterial = material;
 }
 
-Vector3 VolumeCollider::center() const {
+const Vector3 &VolumeCollider::center() const {
     return m_Center;
 }
 

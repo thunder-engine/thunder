@@ -12,10 +12,10 @@ class CapsuleCollider : public SphereCollider {
     A_NOMETHODS()
 
 public:
-    CapsuleCollider ();
+    CapsuleCollider();
 
-    float height () const;
-    void setHeight (float height);
+    float height() const;
+    void setHeight(float height);
 
     btCollisionShape *shape() override;
 

@@ -14,13 +14,13 @@ class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
     A_NOMETHODS()
 
 public:
-    DirectLight ();
-    ~DirectLight ();
+    DirectLight();
+    ~DirectLight();
 
 private:
-    void draw (ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void shadowsUpdate (const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
+    void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
 
     AABBox bound() const override;
 

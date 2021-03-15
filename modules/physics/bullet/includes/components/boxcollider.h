@@ -7,15 +7,15 @@ class BoxCollider : public VolumeCollider {
     A_REGISTER(BoxCollider, VolumeCollider, Components)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, size, BoxCollider::size, BoxCollider::setSize)
+        A_PROPERTY(Vector3, size, BoxCollider::size, BoxCollider::setSize)
     )
     A_NOMETHODS()
 
 public:
-    BoxCollider ();
+    BoxCollider();
 
-    Vector3 size () const;
-    void setSize (const Vector3 &size);
+    const Vector3 &size() const;
+    void setSize(const Vector3 &size);
 
     btCollisionShape *shape() override;
 
