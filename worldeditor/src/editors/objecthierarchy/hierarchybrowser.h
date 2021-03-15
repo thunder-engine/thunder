@@ -12,6 +12,7 @@ namespace Ui {
 }
 
 class ObjectCtrl;
+class ObjectHierarchyModel;
 
 class TreeView : public QTreeView {
     Q_OBJECT
@@ -49,6 +50,8 @@ public:
     void setSimplified(bool enable);
     void setComponentsFilter(const QStringList &list);
     void setController(ObjectCtrl *ctrl);
+
+    Object *findObject(uint32_t id);
 
 signals:
     void selected(Object::ObjectList objects);

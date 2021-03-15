@@ -174,6 +174,11 @@ void HierarchyBrowser::setController(ObjectCtrl *ctrl) {
     m_pController = ctrl;
 }
 
+Object *HierarchyBrowser::findObject(uint32_t id) {
+    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_pFilter->sourceModel());
+    return model->findObject(id);
+}
+
 void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();

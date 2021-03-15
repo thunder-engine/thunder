@@ -44,6 +44,10 @@ private slots:
     void onFocused(Object *object);
 
 private:
+    void dragEnterEvent(QDragEnterEvent *event);
+
+    void dropEvent(QDropEvent *event);
+
     Ui::ComponentSelect *ui;
 
     SceneComponent m_Component;
