@@ -38,7 +38,7 @@ btCollisionShape *CapsuleCollider::shape() {
 bool CapsuleCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawCapsule(t->worldPosition(), t->worldRotation(), m_Radius, m_Height);
+        Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), m_Radius, m_Height);
     }
     return false;
 }

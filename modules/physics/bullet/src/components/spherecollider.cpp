@@ -38,7 +38,7 @@ btCollisionShape *SphereCollider::shape() {
 bool SphereCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawSphere(t->worldPosition(), t->worldRotation(), m_Radius);
+        Handles::drawSphere(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), m_Radius);
     }
     return false;
 }
