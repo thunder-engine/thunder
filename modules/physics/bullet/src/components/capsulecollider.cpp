@@ -26,6 +26,8 @@ btCollisionShape *CapsuleCollider::shape() {
 
         Vector3 p = t->scale();
         m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+
+        m_Dirty = false;
     }
     return m_pCollisionShape;
 }

@@ -24,8 +24,6 @@ public:
      VolumeCollider();
     ~VolumeCollider() override;
 
-
-
     bool trigger() const;
     void setTrigger(bool trigger);
 
@@ -36,6 +34,8 @@ public:
     void setCenter(const Vector3 &center);
 
     void retrieveContact(const Collider *other) const;
+
+    bool isDirty() const;
 
     void entered();
     void stay();
@@ -51,15 +51,17 @@ private:
     VariantMap saveUserData() const override;
 
 protected:
-    bool m_Trigger;
-
-    PhysicMaterial *m_pMaterial;
-
-    Vector3 m_Center;
-
     typedef unordered_map<uint32_t, bool> CollisionMap;
 
     CollisionMap m_Collisions;
+
+    Vector3 m_Center;
+
+    PhysicMaterial *m_pMaterial;
+
+    bool m_Dirty;
+
+    bool m_Trigger;
 
 };
 

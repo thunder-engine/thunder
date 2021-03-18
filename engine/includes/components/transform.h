@@ -20,8 +20,8 @@ class NEXT_LIBRARY_EXPORT Transform : public Component {
         A_METHOD(Matrix4, Transform::localTransform),
         A_METHOD(Matrix4, Transform::worldTransform),
         A_METHOD(Vector3, Transform::worldPosition),
-        A_METHOD(Vector3, Transform::worldEuler),
-        A_METHOD(Quaternion, Transform::worldRotation),
+        A_METHOD(Vector3, Transform::worldRotation),
+        A_METHOD(Quaternion, Transform::worldQuaternion),
         A_METHOD(Vector3, Transform::worldScale)
     )
 
@@ -47,15 +47,17 @@ public:
     Matrix4 &localTransform() const;
     Matrix4 &worldTransform() const;
 
-    Vector3 worldPosition() const;
-    Vector3 &worldEuler() const;
-    Quaternion &worldRotation() const;
+    Vector3 &worldPosition() const;
+    Vector3 &worldRotation() const;
+    Quaternion &worldQuaternion() const;
     Vector3 &worldScale() const;
 
 private:
     void setDirty();
 
 private:
+    friend class TransformPrivate;
+
     TransformPrivate *p_ptr;
 
 };

@@ -7,11 +7,15 @@
 
 #include <resources/physicmaterial.h>
 
+#include <log.h>
+
 #define MATERAIL "PhysicMaterial"
 
 VolumeCollider::VolumeCollider() :
         m_Center(0.0f),
-        m_pMaterial(nullptr) {
+        m_pMaterial(nullptr),
+        m_Dirty(false),
+        m_Trigger(false) {
 
 }
 
@@ -28,7 +32,7 @@ void VolumeCollider::update() {
         }
 
         btPairCachingGhostObject *ghost = static_cast<btPairCachingGhostObject *>(m_pCollisionObject);
-        for(uint32_t i = 0; i < ghost->getOverlappingPairs().size(); i++) {
+        for(int32_t i = 0; i < ghost->getOverlappingPairs().size(); i++) {
             Collider *other = reinterpret_cast<Collider *>(ghost->getOverlappingPairs().at(i)->getUserPointer());
             bool result = true;
             for(auto &it : m_Collisions) {
@@ -80,13 +84,18 @@ const Vector3 &VolumeCollider::center() const {
 
 void VolumeCollider::setCenter(const Vector3 &center) {
     m_Center = center;
+    m_Dirty = true;
 }
 
-void VolumeCollider::retrieveContact (const Collider *other) const {
+void VolumeCollider::retrieveContact(const Collider *other) const {
     auto it = m_Collisions.find(other->uuid());
     if(it != m_Collisions.end()) {
         /// \todo Return necessary contacts data
     }
+}
+
+bool VolumeCollider::isDirty() const {
+    return m_Dirty;
 }
 
 void VolumeCollider::createCollider() {
@@ -101,16 +110,17 @@ void VolumeCollider::createCollider() {
             const Quaternion &q = t->quaternion();
             Vector3 p = t->position();
 
-            m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w), btVector3(p.x, p.y, p.z)));
+            m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                              btVector3(p.x + m_Center.x, p.y + m_Center.y, p.z + m_Center.z)));
         }
         m_pCollisionObject->setCollisionFlags(m_pCollisionObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
         if(m_pCollisionObject) {
-            m_pWorld->addCollisionObject(m_pCollisionObject, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
+            m_pWorld->addCollisionObject(m_pCollisionObject, btBroadphaseProxy::SensorTrigger,
+                                         btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
         }
     }
 }
-
 /*!
     \internal
 */

@@ -6,7 +6,7 @@
 #include <btBulletDynamicsCommon.h>
 
 SphereCollider::SphereCollider() :
-        m_Radius(0.5f) {
+    m_Radius(0.5f) {
 
 }
 
@@ -26,6 +26,8 @@ btCollisionShape *SphereCollider::shape() {
 
         Vector3 p = t->scale();
         m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+
+        m_Dirty = false;
     }
     return m_pCollisionShape;
 }

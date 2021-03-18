@@ -13,19 +13,12 @@ Collider::Collider() :
 }
 
 Collider::~Collider() {
-    delete m_pCollisionShape;
+    destroyShape();
     delete m_pCollisionObject;
 }
 
 void Collider::update() {
-    if(m_pCollisionObject) {
-        Transform *t = actor()->transform();
 
-        const Quaternion &q = t->quaternion();
-        Vector3 p = t->position();
-
-        m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w), btVector3(p.x, p.y, p.z)));
-    }
 }
 
 btCollisionShape *Collider::shape() {
@@ -44,4 +37,9 @@ void Collider::setWorld(btDynamicsWorld *world) {
 
 void Collider::createCollider() {
 
+}
+
+void Collider::destroyShape() {
+    delete m_pCollisionShape;
+    m_pCollisionShape = nullptr;
 }

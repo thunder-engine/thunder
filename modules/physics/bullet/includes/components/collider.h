@@ -22,6 +22,8 @@ public:
     btDynamicsWorld *world() const;
     void setWorld(btDynamicsWorld *world);
 
+    void destroyShape();
+
 protected:
     virtual void createCollider();
 

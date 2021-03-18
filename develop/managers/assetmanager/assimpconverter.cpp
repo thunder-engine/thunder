@@ -366,7 +366,7 @@ Mesh *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, AssimpImpor
     if(item->HasBones()) {
         Transform *t = parent->transform();
         Matrix4 rot;
-        rot.rotate(t->worldEuler());
+        rot.rotate(t->worldRotation());
 
         Vector3 s = t->worldScale();
         Vector3 p = t->worldPosition();

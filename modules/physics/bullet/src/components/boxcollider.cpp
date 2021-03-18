@@ -2,6 +2,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
+#include <log.h>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -16,6 +17,7 @@ const Vector3 &BoxCollider::size() const {
 
 void BoxCollider::setSize(const Vector3 &size) {
     m_Size = size;
+    m_Dirty = true;
 }
 
 btCollisionShape *BoxCollider::shape() {
@@ -26,6 +28,8 @@ btCollisionShape *BoxCollider::shape() {
 
         Vector3 p = t->scale();
         m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+
+        m_Dirty = false;
     }
     return m_pCollisionShape;
 }
@@ -36,7 +40,7 @@ btCollisionShape *BoxCollider::shape() {
 bool BoxCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawBox(t->worldPosition(), t->worldRotation(), t->worldScale() * m_Size * 2.0f);
+        Handles::drawBox(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), t->worldScale() * m_Size * 2.0f);
     }
     return false;
 }

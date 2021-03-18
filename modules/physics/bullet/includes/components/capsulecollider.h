@@ -17,12 +17,12 @@ public:
     float height() const;
     void setHeight(float height);
 
-    btCollisionShape *shape() override;
-
 private:
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;
 #endif
+
+    btCollisionShape *shape() override;
 
 protected:
     float m_Height;

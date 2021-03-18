@@ -17,12 +17,12 @@ public:
     float radius() const;
     void setRadius(float radius);
 
-    btCollisionShape *shape() override;
-
 private:
 #ifdef NEXT_SHARED
     bool drawHandles(ObjectList &selected) override;
 #endif
+
+    btCollisionShape *shape() override;
 
 protected:
     float m_Radius;

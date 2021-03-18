@@ -47,8 +47,6 @@ Project {
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
         cpp.cxxStandardLibrary: "libc++"
-        cpp.debugInformation: qbs.buildVariant === "release"
-        cpp.separateDebugInformation: cpp.debugInformation
 
         Properties {
             condition: qbs.targetOS.contains("windows")
