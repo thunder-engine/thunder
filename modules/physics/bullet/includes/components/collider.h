@@ -10,9 +10,9 @@ class Collider : public Component {
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_SIGNAL(entered),
-        A_SIGNAL(stay),
-        A_SIGNAL(exited)
+        A_SIGNAL(Collider::entered),
+        A_SIGNAL(Collider::stay),
+        A_SIGNAL(Collider::exited)
     )
 
 public:
