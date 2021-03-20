@@ -9,7 +9,11 @@ class Collider : public Component {
     A_REGISTER(Collider, Component, General)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_SIGNAL(entered),
+        A_SIGNAL(stay),
+        A_SIGNAL(exited)
+    )
 
 public:
     Collider();
@@ -24,10 +28,26 @@ public:
 
     void destroyShape();
 
+    void entered();
+    void stay();
+    void exited();
+
 protected:
     virtual void createCollider();
 
+    void dirtyContacts();
+
+    void cleanContacts();
+
+    void setContact(Collider *other);
+
 protected:
+    friend class BulletSystem;
+
+    typedef unordered_map<uint32_t, bool> CollisionMap;
+
+    CollisionMap m_Collisions;
+
     btCollisionShape *m_pCollisionShape;
 
     btCollisionObject *m_pCollisionObject;

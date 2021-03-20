@@ -43,3 +43,38 @@ void Collider::destroyShape() {
     delete m_pCollisionShape;
     m_pCollisionShape = nullptr;
 }
+
+void Collider::dirtyContacts() {
+    for(auto &it : m_Collisions) {
+        it.second = true;
+    }
+}
+
+void Collider::cleanContacts() {
+    auto it = m_Collisions.begin();
+    while(it != m_Collisions.end()) {
+        if(it->second == true) {
+            emitSignal(_SIGNAL(exited()));
+            it = m_Collisions.erase(it);
+            m_pCollisionObject->activate(true);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Collider::setContact(Collider *other) {
+    bool result = true;
+    for(auto &it : m_Collisions) {
+        if(it.first == other->uuid()) {
+            emitSignal(_SIGNAL(stay()));
+            it.second = false;
+            result = false;
+            break;
+        }
+    }
+    if(result) {
+        emitSignal(_SIGNAL(entered()));
+        m_Collisions[other->uuid()] = false;
+    }
+}

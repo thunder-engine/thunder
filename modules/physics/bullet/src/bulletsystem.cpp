@@ -97,11 +97,30 @@ void BulletSystem::update(Scene *scene) {
 
         for(auto &it : m_ObjectList) {
             Collider *body = static_cast<Collider *>(it);
+            body->dirtyContacts();
+        }
+
+        for(int i = 0; i < m_pDispatcher->getNumManifolds(); i++) {
+            btPersistentManifold *contact = m_pDispatcher->getManifoldByIndexInternal(i);
+
+            const btCollisionObject *a = static_cast<const btCollisionObject*>(contact->getBody0());
+            const btCollisionObject *b = static_cast<const btCollisionObject*>(contact->getBody1());
+
+            Collider *colliderA = reinterpret_cast<Collider *>(a->getUserPointer());
+            Collider *colliderB = reinterpret_cast<Collider *>(b->getUserPointer());
+
+            colliderA->setContact(colliderB);
+            colliderB->setContact(colliderA);
+        }
+
+        for(auto &it : m_ObjectList) {
+            Collider *body = static_cast<Collider *>(it);
             if(body->world() == nullptr && body->actor()->scene() == scene) {
                 body->setWorld(world);
             }
 
             body->update();
+            body->cleanContacts();
         }
 
         world->stepSimulation(Timer::deltaTime(), 4);

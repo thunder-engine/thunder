@@ -14,12 +14,6 @@ class VolumeCollider : public Collider {
         A_PROPERTY(Vector3, center, VolumeCollider::center, VolumeCollider::setCenter)
     )
 
-    A_METHODS(
-        A_SIGNAL(VolumeCollider::entered),
-        A_SIGNAL(VolumeCollider::stay),
-        A_SIGNAL(VolumeCollider::exited)
-    )
-
 public:
      VolumeCollider();
     ~VolumeCollider() override;
@@ -36,10 +30,6 @@ public:
     void retrieveContact(const Collider *other) const;
 
     bool isDirty() const;
-
-    void entered();
-    void stay();
-    void exited();
 
 protected:
     void createCollider() override;

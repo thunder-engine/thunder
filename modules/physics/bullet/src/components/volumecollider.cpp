@@ -27,37 +27,9 @@ VolumeCollider::~VolumeCollider() {
 
 void VolumeCollider::update() {
     if(m_pCollisionObject) {
-        for(auto &it : m_Collisions) {
-            it.second = true;
-        }
-
         btPairCachingGhostObject *ghost = static_cast<btPairCachingGhostObject *>(m_pCollisionObject);
         for(int32_t i = 0; i < ghost->getOverlappingPairs().size(); i++) {
-            Collider *other = reinterpret_cast<Collider *>(ghost->getOverlappingPairs().at(i)->getUserPointer());
-            bool result = true;
-            for(auto &it : m_Collisions) {
-                if(it.first == other->uuid()) {
-                    emitSignal(_SIGNAL(stay()));
-                    it.second = false;
-                    result = false;
-                    break;
-                }
-            }
-            if(result) {
-                emitSignal(_SIGNAL(entered()));
-                m_Collisions[other->uuid()] = false;
-            }
-        }
-
-        auto it = m_Collisions.begin();
-        while(it != m_Collisions.end()) {
-            if(it->second == true) {
-                emitSignal(_SIGNAL(exited()));
-                it = m_Collisions.erase(it);
-                m_pCollisionObject->activate(true);
-            } else {
-                ++it;
-            }
+            setContact(reinterpret_cast<Collider *>(ghost->getOverlappingPairs().at(i)->getUserPointer()));
         }
     }
 }
