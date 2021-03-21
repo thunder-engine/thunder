@@ -2,6 +2,7 @@
 
 #include <QInputEvent>
 #include <QOpenGLWidget>
+#include <QDebug>
 
 #include <components/camera.h>
 #include <components/actor.h>
@@ -106,7 +107,9 @@ void SpriteController::drawHandles() {
                 Handles::drawLines(Matrix4(), {tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7});
 
                 Qt::CursorShape shape = Qt::ArrowCursor;
-                if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
+                if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
+                    shape = Qt::SizeAllCursor;
+                } if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
                     shape = Qt::SizeBDiagCursor;
                 } else if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_L)) {
                     shape = Qt::SizeFDiagCursor;
@@ -157,10 +160,11 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
             if(e->buttons() == Qt::LeftButton) {
                 QString key;
                 QPoint world = mapToScene(e->pos());
-                for(auto it : m_pSettings->elements().keys()) {
+                for(auto &it : m_pSettings->elements().keys()) {
                     QRect r = m_pSettings->elements().value(it).m_Rect;
                     if(r.contains(world)) {
                         key = it;
+                        break;
                     }
                 }
 
@@ -211,7 +215,8 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
                     QPoint p = mapToScene(e->pos());
                     int32_t dx = p.x() - m_Save.x();
                     int32_t dy = p.y() - m_Save.y();
-                    QRect rect = m_pSettings->elements().value(m_List.front()).m_Rect;
+                    TextureImportSettings::Element element = m_pSettings->elements().value(m_List.front());
+                    QRect rect = element.m_Rect;
 
                     if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
                         rect.setTop(rect.top() + dy);
@@ -244,7 +249,6 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
                         rect.setRight(v + dx);
                     }
 
-                    TextureImportSettings::Element element;
                     element.m_Rect = makeRect(rect.topLeft(), rect.bottomRight());
                     m_pSettings->setElement(element, m_List.front());
                 }

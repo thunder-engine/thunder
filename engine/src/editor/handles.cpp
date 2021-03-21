@@ -802,8 +802,6 @@ void Handles::rectTool(const Vector3 &position, const Vector2 &size, const Quate
 
         drawRectangle(position, rotation, size.x, size.y);
 
-        float s = 0.05f;
-
         if(!locked) {
             float sence = Handles::s_Sense * 0.25f;
 
@@ -828,9 +826,8 @@ void Handles::rectTool(const Vector3 &position, const Vector2 &size, const Quate
                 Camera *camera = Camera::current();
                 if(camera) {
                     Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
-                    Vector3 point;
-
-                    if(ray.intersect(tr, tl, bl, &point, true) || ray.intersect(bl, br, tr, &point, true)) {
+                    if(ray.intersect(model * tr, model * tl, model * bl, nullptr, true) ||
+                       ray.intersect(model * bl, model * br, model * tr, nullptr, true)) {
                         Handles::s_Axes = Handles::POINT_B | Handles::POINT_T | Handles::POINT_L | Handles::POINT_R;
                     }
                 }
