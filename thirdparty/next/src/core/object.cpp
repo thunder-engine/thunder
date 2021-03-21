@@ -773,15 +773,7 @@ void Object::processEvents() {
 
         switch (e->type()) {
             case Event::MethodCall: {
-                MethodCallEvent *call = reinterpret_cast<MethodCallEvent *>(e);
-                p_ptr->m_pCurrentSender = call->sender();
-                Variant result;
-                if(call->args()->isValid()) {
-                    metaObject()->method(call->method()).invoke(this, result, 1, call->args());
-                } else {
-                    metaObject()->method(call->method()).invoke(this, result, 0, nullptr);
-                }
-                p_ptr->m_pCurrentSender = nullptr;
+                methodCallEvent(reinterpret_cast<MethodCallEvent *>(e));
             } break;
             case Event::Destroy: {
                 if(p_ptr->m_pSystem) {
@@ -903,6 +895,19 @@ Object *Object::sender() const {
 ObjectSystem *Object::system() const {
     PROFILE_FUNCTION()
     return p_ptr->m_pSystem;
+}
+/*!
+    Method call \a event handler. Can be reimplemented to support different logic.
+*/
+void Object::methodCallEvent(MethodCallEvent *event) {
+    p_ptr->m_pCurrentSender = event->sender();
+    Variant result;
+    if(event->args()->isValid()) {
+        metaObject()->method(event->method()).invoke(this, result, 1, event->args());
+    } else {
+        metaObject()->method(event->method()).invoke(this, result, 0, nullptr);
+    }
+    p_ptr->m_pCurrentSender = nullptr;
 }
 /*!
     \internal

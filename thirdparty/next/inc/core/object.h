@@ -155,6 +155,8 @@ public:
         return result;
     }
 
+    void                            emitSignal                  (const char *signal, const Variant &args = Variant());
+
 // Virtual members
 public:
     virtual const ObjectList       &getChildren                 () const;
@@ -189,7 +191,6 @@ protected:
 
     virtual void                    setType                     (const string &type);
 
-    void                            emitSignal                  (const char *signal, const Variant &args = Variant());
     void                            postEvent                   (Event *event);
 
     VariantList                     serializeData               (const MetaObject *meta) const;
@@ -200,6 +201,8 @@ protected:
     Object                         *sender                      () const;
 
     ObjectSystem                   *system                      () const;
+
+    virtual void                    methodCallEvent             (MethodCallEvent *event);
 
 private:
     friend class ObjectTest;

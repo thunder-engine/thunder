@@ -51,6 +51,10 @@ private:
 
     void setType(const string &type) override;
 
+    void scriptSlot();
+
+    void methodCallEvent(MethodCallEvent *event) override;
+
 public:
     static const MetaObject *metaClass() {
         OBJECT_CHECK(AngelBehaviour)
@@ -66,16 +70,17 @@ public:
     }
 
 protected:
-    string                      m_Script;
+    string m_Script;
 
-    asIScriptObject            *m_pObject;
+    asIScriptObject *m_pObject;
 
-    asIScriptFunction          *m_pStart;
-    asIScriptFunction          *m_pUpdate;
+    asIScriptFunction *m_pStart;
+    asIScriptFunction *m_pUpdate;
 
-    vector<MetaProperty::Table> m_Table;
+    vector<MetaProperty::Table> m_PropertyTable;
+    vector<MetaMethod::Table> m_MethodTable;
 
-    MetaObject                 *m_pMetaObject;
+    MetaObject *m_pMetaObject;
 };
 
 #endif // ANGELBEHAVIOUR_H

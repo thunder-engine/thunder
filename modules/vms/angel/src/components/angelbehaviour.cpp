@@ -1,14 +1,15 @@
 #include "components/angelbehaviour.h"
 
-#include "resources/prefab.h"
-
-#include "angelsystem.h"
+#include <resources/prefab.h>
+#include <metamethod.h>
 
 #include <cstring>
 
 #include <log.h>
 
 #include <angelscript.h>
+
+#include "angelsystem.h"
 
 #define RESOURCE "Resource"
 #define GENERAL "General"
@@ -105,7 +106,8 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
 
 void AngelBehaviour::updateMeta() {
     delete m_pMetaObject;
-    m_Table.clear();
+    m_PropertyTable.clear();
+    m_MethodTable.clear();
 
     const MetaObject *super = AngelBehaviour::metaClass();
     asIScriptEngine *engine = m_pObject->GetEngine();
@@ -114,7 +116,7 @@ void AngelBehaviour::updateMeta() {
     uint32_t count = info->GetPropertyCount();
     for(uint32_t i = 0; i <= count; i++) {
         if(i == count) {
-            m_Table.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
+            m_PropertyTable.push_back({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr});
         } else {
             const char *name;
             int typeId;
@@ -151,7 +153,22 @@ void AngelBehaviour::updateMeta() {
                 MetaType::Table *table = MetaType::table(metaType);
                 if(table) {
                     void *ptr = m_pObject->GetAddressOfProperty(i);
-                    m_Table.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr, ptr});
+                    m_PropertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr, ptr});
+                }
+            }
+        }
+    }
+
+    count = info->GetMethodCount();
+    for(uint32_t m = 0; m <= count; m++) {
+        if(m == count) {
+            m_MethodTable.push_back({MetaMethod::Method, nullptr, nullptr, nullptr, 0, nullptr});
+        } else {
+            asIScriptFunction *method = info->GetMethodByIndex(m);
+            if(method) {
+                string name(method->GetName());
+                if(name.size() > 2 && name[0] == 'o' && name[1] == 'n') { // this is a slot
+                    m_MethodTable.push_back(A_SLOTEX(AngelBehaviour::scriptSlot, method->GetName()));
                 }
             }
         }
@@ -159,7 +176,7 @@ void AngelBehaviour::updateMeta() {
 
     m_pMetaObject = new MetaObject(m_Script.c_str(),
                                    super, &AngelBehaviour::construct,
-                                   nullptr, &m_Table[0], nullptr);
+                                   &m_MethodTable[0], &m_PropertyTable[0], nullptr);
 }
 
 asIScriptFunction *AngelBehaviour::scriptStart() const {
@@ -203,7 +220,7 @@ void AngelBehaviour::loadData(const VariantList &data) {
 VariantMap AngelBehaviour::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = NativeBehaviour::saveUserData();
-    for(auto it : m_Table) {
+    for(auto it : m_PropertyTable) {
         if(it.ptr != nullptr) {
             Variant value = MetaProperty(&it).read(this);
 
@@ -234,7 +251,7 @@ VariantMap AngelBehaviour::saveUserData() const {
 void AngelBehaviour::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     NativeBehaviour::loadUserData(data);
-    for(auto it : m_Table) {
+    for(auto it : m_PropertyTable) {
         if(it.ptr != nullptr) {
             auto property = data.find(it.name);
             if(property != data.end()) {
@@ -268,4 +285,26 @@ void AngelBehaviour::loadUserData(const VariantMap &data) {
 void AngelBehaviour::setType(const string &type) {
     PROFILE_FUNCTION();
     setScript(type);
+}
+
+void AngelBehaviour::scriptSlot() {
+    // Method placeholder for the all icoming signals
+}
+
+void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
+    if(event) {
+        MetaMethod method = m_pMetaObject->method(event->method());
+        if(method.isValid()) {
+            asITypeInfo *info = m_pObject->GetObjectType();
+            if(info) {
+                string signature("void ");
+                signature += method.signature();
+                asIScriptFunction *func = info->GetMethodByDecl(signature.c_str());
+                if(func) {
+                    AngelSystem *ptr = static_cast<AngelSystem *>(system());
+                    ptr->execute(m_pObject, func);
+                }
+            }
+        }
+    }
 }

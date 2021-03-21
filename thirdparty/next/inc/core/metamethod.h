@@ -54,7 +54,7 @@ private:
 
 };
 
-class MethodCallEvent : public Event {
+class NEXT_LIBRARY_EXPORT MethodCallEvent : public Event {
 public:
     MethodCallEvent  (int32_t method, Object *sender, const Variant &args);
 

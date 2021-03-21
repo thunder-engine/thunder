@@ -8,8 +8,14 @@
 
 #include "components/actor.h"
 
+bool connect(Object *sender, const string &signal, Object *receiver, const string &slot) {
+    return Object::connect(sender, signal.c_str(), receiver, slot.c_str());
+}
+
 void registerObject(asIScriptEngine *engine) {
     engine->RegisterObjectType("Object", 0, asOBJ_REF | asOBJ_NOCOUNT);
+
+    engine->RegisterGlobalFunction("bool _connect(Object @, const string &in, Object @, const string &in)", asFUNCTION(connect), asCALL_CDECL);
 }
 
 Object *objectCreate1(string &type) {
@@ -38,8 +44,6 @@ void registerEngine(asIScriptEngine *engine) {
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in)", asFUNCTION(objectCreate1), asCALL_CDECL);
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in)", asFUNCTION(objectCreate2), asCALL_CDECL);
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in, Object &in)", asFUNCTION(objectCreate3), asCALL_CDECL);
-
-    //engine->RegisterGlobalFunction("Actor @actorCreate(const string &in, Object &in)", asFUNCTION(actorCreate), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(loadResource), asCALL_CDECL);
 

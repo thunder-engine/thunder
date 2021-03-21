@@ -21,5 +21,29 @@ shared abstract class Behaviour : IBehaviour {
         return _root.actor();
     }
 
+    string _SIGNAL(const string name) {
+        return "1" + name;
+    }
+
+    string _SLOT(const string name) {
+        return "2" + name;
+    }
+
+    bool connect(Object @sender, const string &in signal, Object @receiver, const string &in slot) {
+        return _connect(sender, signal, receiver, slot);
+    }
+
+    bool connect(Object @sender, const string &in signal, Behaviour @receiver, const string &in slot) {
+        return _connect(@sender, signal, cast<Object>(receiver._root), slot);
+    }
+
+    bool connect(Behaviour @sender, const string &in signal, Behaviour @receiver, const string &in slot) {
+        return _connect(cast<Object>(sender._root), signal, cast<Object>(receiver._root), slot);
+    }
+
+    bool connect(Behaviour @sender, const string &in signal, Object @receiver, const string &in slot) {
+        return _connect(cast<Object>(sender._root), signal, receiver, slot);
+    }
+
     private AngelBehaviour @_root;
 };

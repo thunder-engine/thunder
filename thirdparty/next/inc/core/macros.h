@@ -167,6 +167,15 @@ public: \
     Invoker<decltype(&m)>::types("void"), \
 }
 
+#define A_SLOTEX(m, n) { \
+    MetaMethod::Slot, \
+    n, \
+    (MetaMethod::Table::InvokeMem)&Invoker<decltype(&m)>::invoke<&m>, \
+    (MetaMethod::Table::AddressMem)&Invoker<decltype(&m)>::address<&m>, \
+    Invoker<decltype(&m)>::argCount(), \
+    Invoker<decltype(&m)>::types("void"), \
+}
+
 // Enumerator declaration
 #define A_ENUMS(...) \
 public: \

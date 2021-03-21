@@ -434,6 +434,7 @@ AngelClassItem::AngelClassItem(const QVector<QVariant> &data, AngelClassItem *pa
 
 AngelClassItem::~AngelClassItem() {
     qDeleteAll(m_childItems);
+    m_parentItem = nullptr;
 }
 
 void AngelClassItem::appendChild(AngelClassItem *item) {
