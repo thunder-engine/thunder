@@ -256,10 +256,9 @@ void Actor::setLayers(const int layers) {
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(p_ptr->m_transform == nullptr) {
-        p_ptr->m_transform = fetchTransform();
-        Actor *p = dynamic_cast<Actor *>(parent());
-        if(p) {
-            p_ptr->m_transform->setParentTransform(p->transform(), true);
+        p_ptr->m_transform = static_cast<Transform *>(component(TRANSFORM));
+        if(p_ptr->m_transform == nullptr) {
+            p_ptr->m_transform = static_cast<Transform *>(addComponent(TRANSFORM));
         }
     }
     return p_ptr->m_transform;
@@ -322,18 +321,6 @@ bool Actor::isSerializable() const {
 
     bool result = (clonedFrom() == 0 || isInstance());
 
-    return result;
-}
-/*!
-    \internal
-    Tries to find a Transform in components.
-    In case of failure, it will create a new one.
-*/
-Transform *Actor::fetchTransform() {
-    Transform *result = static_cast<Transform *>(component(TRANSFORM));
-    if(result == nullptr) {
-        result = static_cast<Transform *>(addComponent(TRANSFORM));
-    }
     return result;
 }
 /*!

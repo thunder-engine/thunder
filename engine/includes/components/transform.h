@@ -52,6 +52,8 @@ public:
     Quaternion &worldQuaternion() const;
     Vector3 &worldScale() const;
 
+    void setParent(Object *parent, int32_t position = -1, bool force = false) override;
+
 private:
     void setDirty();
 

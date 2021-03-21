@@ -61,9 +61,6 @@ public:
 
     Object *clone(Object *parent = nullptr) override;
 
-protected:
-    virtual Transform *fetchTransform();
-
 private:
     void loadObjectData(const VariantMap &data) override;
     void loadUserData(const VariantMap &data) override;

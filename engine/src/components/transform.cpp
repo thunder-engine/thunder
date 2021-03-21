@@ -221,7 +221,19 @@ Vector3 &Transform::worldScale() const {
     }
     return p_ptr->m_WorldScale;
 }
+/*!
+    Makes the Transform a child of \a parent at given \a position.
+    \note Please ignore the \a force flag it will be provided by the default.
+*/
+void Transform::setParent(Object *parent, int32_t position, bool force) {
+    A_UNUSED(position);
+    Object::setParent(parent, 0, force);
 
+    Actor *p = dynamic_cast<Actor *>(actor()->parent());
+    if(p) {
+        setParentTransform(p->transform(), true);
+    }
+}
 /*!
     \internal
 */
