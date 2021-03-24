@@ -224,7 +224,7 @@ void Material::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(TEXTURES);
         if(it != data.end()) {
-            for(auto t : (*it).second.toMap()) {
+            for(auto &t : (*it).second.toMap()) {
                 string path = t.second.toString();
                 if(!path.empty()) {
                     m_Textures[t.first] = Engine::loadResource<Texture>(path);
@@ -237,7 +237,7 @@ void Material::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(UNIFORMS);
         if(it != data.end()) {
-            for(auto u : (*it).second.toMap()) {
+            for(auto &u : (*it).second.toMap()) {
                 m_Uniforms[u.first] = u.second;
             }
         }

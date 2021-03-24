@@ -16,7 +16,7 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 2
+#define FORMAT_VERSION 3
 
 static hash<string> hash_str;
 
@@ -357,13 +357,13 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
             QRect rect = value.m_Rect;
             Vector2 p = value.m_Pivot;
 
-            float w = (float)rect.width()  / unitsPerPixel * 0.5f;
-            float h = (float)rect.height() / unitsPerPixel * 0.5f;
+            float w = (float)rect.width()  / unitsPerPixel;
+            float h = (float)rect.height() / unitsPerPixel;
 
-            float l = (float)value.m_BorderL / unitsPerPixel * 0.5f;
-            float r = (float)value.m_BorderR / unitsPerPixel * 0.5f;
-            float t = (float)value.m_BorderT / unitsPerPixel * 0.5f;
-            float b = (float)value.m_BorderB / unitsPerPixel * 0.5f;
+            float l = (float)value.m_BorderL / unitsPerPixel;
+            float r = (float)value.m_BorderR / unitsPerPixel;
+            float t = (float)value.m_BorderT / unitsPerPixel;
+            float b = (float)value.m_BorderB / unitsPerPixel;
 
             lod.setIndices({0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6,
                             4, 5, 9, 4, 9, 8, 5, 6,10, 5,10, 9, 6, 7,11, 6,11,10,

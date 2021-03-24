@@ -29,7 +29,8 @@ public:
             m_Color(1.0f),
             m_Size(1.0f),
             m_Hash(0),
-            m_DrawMode(false) {
+            m_DrawMode(0),
+            m_Layer(0) {
 
     }
 
@@ -46,7 +47,7 @@ public:
         }
     }
 
-    void composeMesh() {
+    void composeMesh(bool resetSize = false) {
         if(m_pSprite) {
             Mesh *mesh = m_pSprite->mesh(m_Hash);
             if(mesh) {
@@ -58,6 +59,12 @@ public:
                 m_pCustomMesh->setLod(0, lod);
                 lod = m_pCustomMesh->lod(0);
                 Vector3Vector &vetrs = lod->vertices();
+
+                Vector3 size(vetrs[15] - vetrs[0]);
+                if(resetSize) {
+                    m_Size = Vector2(size.x, size.y);
+                }
+
                 if(m_DrawMode == SpriteRender::Tiled) {
                     Vector2Vector &uvs = lod->uv0();
                     IndexVector &indices = lod->indices();
@@ -65,7 +72,6 @@ public:
                     Vector2 ubl(uvs[0]);
                     Vector2 utr(uvs[15]);
 
-                    Vector3 size(vetrs[15] - vetrs[0]);
                     int width = ceilf(m_Size.x / size.x);
                     int height = ceilf(m_Size.y / size.y);
 
@@ -112,13 +118,14 @@ public:
                         bl.y += size.y;
                     }
                 } else {
+                    Vector2 scale(m_Size.x / size.x, m_Size.y / size.y);
                     {
                         float bl = vetrs[0].x;
                         float br = vetrs[3].x;
-                        vetrs[ 0].x *= m_Size.x; vetrs[ 3].x *= m_Size.x;
-                        vetrs[ 4].x *= m_Size.x; vetrs[ 7].x *= m_Size.x;
-                        vetrs[ 8].x *= m_Size.x; vetrs[11].x *= m_Size.x;
-                        vetrs[12].x *= m_Size.x; vetrs[15].x *= m_Size.x;
+                        vetrs[ 0].x *= scale.x; vetrs[ 3].x *= scale.x;
+                        vetrs[ 4].x *= scale.x; vetrs[ 7].x *= scale.x;
+                        vetrs[ 8].x *= scale.x; vetrs[11].x *= scale.x;
+                        vetrs[12].x *= scale.x; vetrs[15].x *= scale.x;
                         float dl = vetrs[0].x - bl;
                         float dr = vetrs[3].x - br;
                         vetrs[ 1].x += dl; vetrs[ 2].x += dr;
@@ -129,10 +136,10 @@ public:
                     {
                         float bl = vetrs[ 0].y;
                         float br = vetrs[12].y;
-                        vetrs[ 0].y *= m_Size.y; vetrs[12].y *= m_Size.y;
-                        vetrs[ 1].y *= m_Size.y; vetrs[13].y *= m_Size.y;
-                        vetrs[ 2].y *= m_Size.y; vetrs[14].y *= m_Size.y;
-                        vetrs[ 3].y *= m_Size.y; vetrs[15].y *= m_Size.y;
+                        vetrs[ 0].y *= scale.y; vetrs[12].y *= scale.y;
+                        vetrs[ 1].y *= scale.y; vetrs[13].y *= scale.y;
+                        vetrs[ 2].y *= scale.y; vetrs[14].y *= scale.y;
+                        vetrs[ 3].y *= scale.y; vetrs[15].y *= scale.y;
                         float dl = vetrs[ 0].y - bl;
                         float dr = vetrs[12].y - br;
                         vetrs[ 4].y += dl; vetrs[ 8].y += dr;
@@ -169,6 +176,8 @@ public:
     int m_Hash;
 
     int m_DrawMode;
+
+    int m_Layer;
 };
 /*!
     \class SpriteRender
@@ -317,7 +326,7 @@ string SpriteRender::item() const {
 void SpriteRender::setItem(const string &item) {
     p_ptr->m_Item = item;
     p_ptr->m_Hash = hash_str(p_ptr->m_Item);
-    p_ptr->composeMesh();
+    p_ptr->composeMesh(true);
 }
 /*!
     Returns size of sprite.
@@ -346,6 +355,18 @@ int SpriteRender::drawMode() const {
 void SpriteRender::setDrawMode(int mode) {
     p_ptr->m_DrawMode = mode;
     p_ptr->composeMesh();
+}
+/*!
+    Returns the order layer for the sprite.
+*/
+int SpriteRender::layer() const {
+    return p_ptr->m_Layer;
+}
+/*!
+    Sets the order \a layer for the sprite.
+*/
+void SpriteRender::setLayer(int layer) {
+    p_ptr->m_Layer = layer;
 }
 /*!
     \internal
