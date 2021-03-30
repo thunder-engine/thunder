@@ -9,8 +9,6 @@ public:
 
     void update() override;
 
-    void endControl() override;
-
     QString icon() const override;
     QString name() const override;
 

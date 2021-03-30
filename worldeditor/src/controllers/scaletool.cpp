@@ -2,6 +2,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
+#include <components/camera.h>
 
 #include <editor/handles.h>
 
@@ -16,28 +17,41 @@ ScaleTool::ScaleTool(ObjectCtrl *controller, SelectMap &selection) :
 
 void ScaleTool::update() {
     bool isDrag = m_pController->isDrag();
+
     if(!isDrag) {
-        Handles::s_Axes = Handles::AXIS_X | Handles::AXIS_Y | Handles::AXIS_Z;
+        m_Position = objectPosition();
+        Handles::s_Axes = 0;
     }
 
-    m_World = Handles::scaleTool(objectPosition(), Quaternion(), isDrag);
+    m_World = Handles::scaleTool(m_Position, Quaternion(), isDrag);
 
-    if(isDrag) {
+    Camera *camera = Camera::current();
+    if(isDrag && camera) {
+        Vector3 normal = m_Position - camera->actor()->transform()->position();
+
         Vector3 delta(m_World - m_SavedWorld);
-        float scale = (delta.x + delta.y + delta.z) * 0.01f;
-        if(m_ScaleGrid > 0) {
-            scale = m_ScaleGrid * int(scale / m_ScaleGrid);
-        }
 
         Vector3 s;
         if(Handles::s_Axes & Handles::AXIS_X) {
-            s += Vector3(scale, 0, 0);
+            float scale = (normal.x < 0) ? delta.x : -delta.x;
+            if(m_ScaleGrid > 0) {
+                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            }
+            s.x += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Y) {
-            s += Vector3(0, scale, 0);
+            float scale = (normal.y < 0) ? delta.y : -delta.y;
+            if(m_ScaleGrid > 0) {
+                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            }
+            s.y += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Z) {
-            s += Vector3(0, 0, scale);
+            float scale = (normal.z < 0) ? delta.z : -delta.z;
+            if(m_ScaleGrid > 0) {
+                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            }
+            s.z += scale;
         }
 
         for(const auto &it : m_Selected) {
@@ -46,32 +60,16 @@ void ScaleTool::update() {
             if(tr->parentTransform()) {
                 parent = tr->parentTransform()->worldTransform();
             }
-            Vector3 p((parent * it.position) - m_Position);
+
             Vector3 v(it.scale + s);
-            tr->setPosition(parent.inverse() * (m_Position + v * p));
             tr->setScale(v);
+
+            Vector3 p(parent * it.position - m_Position);
+            tr->setPosition(parent.inverse() * (v * p + m_Position));
         }
         m_pController->objectsUpdated();
         m_pController->objectsChanged(m_pController->selected(), "Scale");
     }
-}
-
-void ScaleTool::endControl() {
-    VariantList pos;
-    VariantList scl;
-    Object::ObjectList objects;
-    for(auto it : m_Selected) {
-        Transform *t = it.object->transform();
-        pos.push_back(t->position());
-        scl.push_back(t->scale());
-        objects.push_back(t);
-        t->setPosition(it.position);
-        t->setScale(it.scale);
-    }
-    QUndoCommand *group = new QUndoCommand("Scale");
-    new PropertyObjects(objects, "position", pos, m_pController, "", group);
-    new PropertyObjects(objects, "scale", scl, m_pController, "", group);
-    UndoManager::instance()->push(group);
 }
 
 QString ScaleTool::icon() const {

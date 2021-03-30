@@ -9,7 +9,7 @@ class SelectTool : public EditorTool {
 public:
     explicit SelectTool(ObjectCtrl *controller, EditorTool::SelectMap &selection);
 
-    void startDrag();
+    void beginControl() override;
 
     QString icon() const override;
     QString name() const override;

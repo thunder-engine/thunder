@@ -63,6 +63,8 @@ Mesh *Handles::s_Rectangle = nullptr;
 Mesh *Handles::s_Box = nullptr;
 Mesh *Handles::s_Bone = nullptr;
 
+Texture *Handles::s_Corner = nullptr;
+
 enum {
     AXIS,
     SCALE,
@@ -105,6 +107,10 @@ void Handles::init() {
         if(m) {
             s_Solid = m->createInstance();
         }
+    }
+
+    if(s_Corner == nullptr) {
+        s_Corner = Engine::loadResource<Texture>(".embedded/corner.png");
     }
 
     if(s_Lines == nullptr) {
@@ -667,6 +673,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
 }
 
 Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
+    Vector3 result;
     if(ICommandBuffer::isInited()) {
         Camera *camera = Camera::current();
         if(camera) {
@@ -787,44 +794,121 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             }
             s_Color = s_Normal;
         }
+
+        Plane plane;
+        plane.point = position;
+        plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+        if(s_Axes == AXIS_X) {
+            plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
+        } else if(s_Axes == AXIS_Z) {
+            plane.normal = Vector3(plane.normal.x, plane.normal.y, 0.0f);
+        } else if(s_Axes == (AXIS_X | AXIS_Z)) {
+            plane.normal = Vector3(0.0f, 1.0f, 0.0f);
+        } else if(s_Axes == (AXIS_X | AXIS_Y)) {
+            plane.normal = Vector3(0.0f, 0.0f, 1.0f);
+        } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
+            plane.normal = Vector3(1.0f, 0.0f, 0.0f);
+        } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
+            plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
+        }
+        plane.normal.normalize();
+        plane.d = plane.normal.dot(plane.point);
+
+        Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
+        Vector3 point;
+        ray.intersect(plane, &point, true);
+        if(s_Axes & AXIS_X) {
+            result.x = point.x;
+        }
+        if(s_Axes & AXIS_Y) {
+            result.y = point.y;
+        }
+        if(s_Axes & AXIS_Z) {
+            result.z = point.z;
+        }
     }
-    return Vector3(s_Mouse, 1.0) * 500;
+    return result;
 }
 
-void Handles::rectTool(const Vector3 &position, const Vector2 &size, const Quaternion &rotation, bool locked) {
+Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis, bool locked) {
+    Vector3 result;
     if(ICommandBuffer::isInited()) {
-        Matrix4 model(position, rotation, Vector3(1.0f));
+        Camera *camera = Camera::current();
 
-        Vector3 tr(size.x * 0.5f, size.y * 0.5f, 0.0f);
-        Vector3 tl(size.x *-0.5f, size.y * 0.5f, 0.0f);
-        Vector3 br(size.x * 0.5f, size.y *-0.5f, 0.0f);
-        Vector3 bl(size.x *-0.5f, size.y *-0.5f, 0.0f);
+        if(camera) {
+            axis = Handles::AXIS_Z;
 
-        drawRectangle(position, rotation, size.x, size.y);
+            Plane plane;
+            plane.normal = Vector3(0.0f, 0.0f, 1.0f);
 
-        if(!locked) {
-            float sence = Handles::s_Sense * 0.25f;
+            Vector2 size(box.x, box.y);
 
-            Handles::s_Axes = 0;
-            if(HandleTools::distanceToPoint(model, tr) <= sence) {
-                Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
-            } else if(HandleTools::distanceToPoint(model, tl) <= sence) {
-                Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
-            } else if(HandleTools::distanceToPoint(model, br) <= sence) {
-                Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
-            } else if(HandleTools::distanceToPoint(model, bl) <= sence) {
-                Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
-            } else if(HandleTools::distanceToPath(model, {tr, tl}) <= sence) {
-                Handles::s_Axes = Handles::POINT_T;
-            } else if(HandleTools::distanceToPath(model, {br, bl}) <= sence) {
-                Handles::s_Axes = Handles::POINT_B;
-            } else if(HandleTools::distanceToPath(model, {tr, br}) <= sence) {
-                Handles::s_Axes = Handles::POINT_R;
-            } else if(HandleTools::distanceToPath(model, {tl, bl}) <= sence) {
-                Handles::s_Axes = Handles::POINT_L;
+            Quaternion q;
+
+            Vector3 normal = camera->actor()->transform()->quaternion() * plane.normal;
+            normal.normalize();
+            if(abs(normal.x) > abs(normal.z)) {
+                axis = Handles::AXIS_X;
+                plane.normal = Vector3(1.0f, 0.0f, 0.0f);
+                size = Vector2(box.z, box.y);
+                q = Quaternion(Vector3(0.0f, 90.0f, 0.0f));
+            }
+            if(abs(normal.y) > abs(normal.x) && abs(normal.y) > abs(normal.x)) {
+                axis = Handles::AXIS_Y;
+                plane.normal = Vector3(0.0f, 1.0f, 0.0f);
+                size = Vector2(box.x, box.z);
+                q = Quaternion(Vector3(90.0f, 0.0f, 0.0f));
+            }
+
+            plane.point = position;
+            plane.d = plane.normal.dot(plane.point);
+
+
+            Matrix4 model(position, q, Vector3(1.0f));
+
+            Vector3 tr(size.x * 0.5f, size.y * 0.5f, 0.0f);
+            Vector3 tl(size.x *-0.5f, size.y * 0.5f, 0.0f);
+            Vector3 br(size.x * 0.5f, size.y *-0.5f, 0.0f);
+            Vector3 bl(size.x *-0.5f, size.y *-0.5f, 0.0f);
+
+            drawRectangle(position, q, size.x, size.y);
+
+            Transform *t = camera->actor()->transform();
+            normal = position - t->position();
+            float scale = 1.0f;
+            if(!camera->orthographic()) {
+                scale = normal.length();
             } else {
-                Camera *camera = Camera::current();
-                if(camera) {
+                scale = camera->orthoSize();
+            }
+            scale *= (CONTROL_SIZE / s_Screen.y);
+
+            drawBillboard(model * tr, Vector2(scale * 0.05f), s_Corner);
+            drawBillboard(model * tl, Vector2(scale * 0.05f), s_Corner);
+            drawBillboard(model * br, Vector2(scale * 0.05f), s_Corner);
+            drawBillboard(model * bl, Vector2(scale * 0.05f), s_Corner);
+
+            if(!locked) {
+                float sence = Handles::s_Sense * 0.25f;
+
+                Handles::s_Axes = 0;
+                if(HandleTools::distanceToPoint(model, tr) <= sence) {
+                    Handles::s_Axes = Handles::POINT_T | Handles::POINT_R;
+                } else if(HandleTools::distanceToPoint(model, tl) <= sence) {
+                    Handles::s_Axes = Handles::POINT_T | Handles::POINT_L;
+                } else if(HandleTools::distanceToPoint(model, br) <= sence) {
+                    Handles::s_Axes = Handles::POINT_B | Handles::POINT_R;
+                } else if(HandleTools::distanceToPoint(model, bl) <= sence) {
+                    Handles::s_Axes = Handles::POINT_B | Handles::POINT_L;
+                } else if(HandleTools::distanceToPath(model, {tr, tl}) <= sence) {
+                    Handles::s_Axes = Handles::POINT_T;
+                } else if(HandleTools::distanceToPath(model, {br, bl}) <= sence) {
+                    Handles::s_Axes = Handles::POINT_B;
+                } else if(HandleTools::distanceToPath(model, {tr, br}) <= sence) {
+                    Handles::s_Axes = Handles::POINT_R;
+                } else if(HandleTools::distanceToPath(model, {tl, bl}) <= sence) {
+                    Handles::s_Axes = Handles::POINT_L;
+                } else {
                     Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
                     if(ray.intersect(model * tr, model * tl, model * bl, nullptr, true) ||
                        ray.intersect(model * bl, model * br, model * tr, nullptr, true)) {
@@ -832,6 +916,28 @@ void Handles::rectTool(const Vector3 &position, const Vector2 &size, const Quate
                     }
                 }
             }
+
+            Ray ray = camera->castRay(Handles::s_Mouse.x, Handles::s_Mouse.y);
+            Vector3 point;
+
+            ray.intersect(plane, &point, true);
+            if(Handles::s_Axes & Handles::POINT_L || Handles::s_Axes & Handles::POINT_R) {
+                switch(axis) {
+                    case Handles::AXIS_X: result.z = point.z; break;
+                    case Handles::AXIS_Y: result.x = point.x; break;
+                    case Handles::AXIS_Z: result.x = point.x; break;
+                    default: break;
+                }
+            }
+            if(Handles::s_Axes & Handles::POINT_T || Handles::s_Axes & Handles::POINT_B) {
+                switch(axis) {
+                    case Handles::AXIS_X: result.y = point.y; break;
+                    case Handles::AXIS_Y: result.z = point.z; break;
+                    case Handles::AXIS_Z: result.y = point.y; break;
+                    default: break;
+                }
+            }
         }
     }
+    return result;
 }

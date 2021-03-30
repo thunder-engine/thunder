@@ -49,7 +49,7 @@ public:
     static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static Vector3 scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked);
-    static void rectTool(const Vector3 &position, const Vector2 &size, const Quaternion &rotation, bool locked);
+    static Vector3 rectTool(const Vector3 &position, const Vector3 &box, int &axis, bool locked);
 
 public:
     static Vector4 s_Color;
@@ -95,6 +95,8 @@ protected:
     static MaterialInstance *s_Gizmo;
     static MaterialInstance *s_Solid;
     static MaterialInstance *s_Sprite;
+
+    static Texture *s_Corner;
 
 };
 

@@ -88,8 +88,9 @@ void SpriteController::drawHandles() {
 
                 QRectF b = mapRect(tmp);
 
+                int axis;
                 Handles::s_Color = Handles::s_zColor;
-                Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector2(r.width(), r.height()), Quaternion(), m_Drag);
+                Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector3(r.width(), r.height(), 0), axis, m_Drag);
 
                 Handles::s_Color = Handles::s_yColor;
                 Handles::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Quaternion(), b.width(), b.height());

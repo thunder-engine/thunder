@@ -36,22 +36,10 @@ void MoveTool::update() {
     }
 }
 
-void MoveTool::endControl() {
-    VariantList values;
-    Object::ObjectList objects;
-    for(auto it : m_Selected) {
-        Transform *t = it.object->transform();
-        values.push_back(t->position());
-        objects.push_back(t);
-        t->setPosition(it.position);
-    }
-    UndoManager::instance()->push(new PropertyObjects(objects, "position", values, m_pController, "Move"));
-}
-
 QString MoveTool::icon() const {
     return ":/Images/editor/Move.png";
 }
 
 QString MoveTool::name() const {
-    return "moveTool";
+    return "Move";
 }

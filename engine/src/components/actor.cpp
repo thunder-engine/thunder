@@ -563,7 +563,6 @@ VariantMap Actor::saveUserData() const {
                 }
             }
 
-
             VariantList fixed;
 
             for(auto it : objects) {

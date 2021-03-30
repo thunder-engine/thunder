@@ -14,14 +14,9 @@ SelectTool::SelectTool(ObjectCtrl *controller, SelectMap &selection) :
 
 }
 
-void SelectTool::startDrag() {
-    // Save params
-    for(auto &it : m_Selected) {
-        Transform *t = it.object->transform();
-        it.position = t->position();
-        it.scale    = t->scale();
-        it.euler    = t->rotation();
-    }
+void SelectTool::beginControl() {
+    EditorTool::beginControl();
+
     m_Position = objectPosition();
     m_SavedWorld = m_World;
 }
@@ -31,5 +26,5 @@ QString SelectTool::icon() const {
 }
 
 QString SelectTool::name() const {
-    return "selectTool";
+    return "Select";
 }

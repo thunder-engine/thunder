@@ -228,15 +228,15 @@ protected:
     list<uint32_t> m_Objects;
 };
 
-class PropertyObjects : public UndoObject {
+class PropertyObject : public UndoObject {
 public:
-    PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *group = nullptr);
+    PropertyObject(Object *objects, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name = QObject::tr("Change Property"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
-    VariantList m_Values;
     QString m_Property;
-    list<uint32_t> m_Objects;
+    Variant m_Value;
+    uint32_t m_Object;
 };
 
 #endif // OBJECTCTRL_H

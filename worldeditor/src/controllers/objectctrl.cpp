@@ -22,6 +22,7 @@
 #include "movetool.h"
 #include "rotatetool.h"
 #include "scaletool.h"
+#include "resizetool.h"
 
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"
@@ -79,6 +80,7 @@ ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
         new MoveTool(this, m_Selected),
         new RotateTool(this, m_Selected),
         new ScaleTool(this, m_Selected),
+        new ResizeTool(this, m_Selected),
     };
 }
 
@@ -104,7 +106,7 @@ void ObjectCtrl::onBufferMenu() {
         list.push_front(tr("Final Buffer"));
 
         bool first = true;
-        for(auto it : list) {
+        for(auto &it : list) {
             static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
             static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
@@ -181,8 +183,8 @@ void ObjectCtrl::clear(bool signal) {
 
 void ObjectCtrl::drawHelpers(Object &object) {
     Object::ObjectList list;
-    for(auto value : m_Selected) {
-        list.push_back(value.object);
+    for(auto &it : m_Selected) {
+        list.push_back(it.object);
     }
 
     for(auto &it : object.getChildren()) {
@@ -192,7 +194,9 @@ void ObjectCtrl::drawHelpers(Object &object) {
                 m_ObjectsList = {object.uuid()};
             }
         } else {
-            drawHelpers(*it);
+            if(it) {
+                drawHelpers(*it);
+            }
         }
     }
 }
@@ -204,10 +208,7 @@ void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
 
 void ObjectCtrl::setDrag(bool drag) {
     if(drag && m_pActiveTool) {
-        SelectTool *selectTool = dynamic_cast<SelectTool *>(m_pActiveTool);
-        if(selectTool) {
-            selectTool->startDrag();
-        }
+        m_pActiveTool->beginControl();
     }
     m_Drag = drag;
 }
@@ -242,7 +243,7 @@ void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
 
 Object::ObjectList ObjectCtrl::selected() {
     Object::ObjectList result;
-    for(auto it : m_Selected) {
+    for(auto &it : m_Selected) {
         if(it.object) {
             result.push_back(it.object);
         }
@@ -274,7 +275,7 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
 void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
     std::list<uint32_t> local = list;
     if(additive) {
-        for(auto it : m_Selected.keys()) {
+        for(auto &it : m_Selected.keys()) {
             local.push_back(it);
         }
     }
@@ -298,7 +299,7 @@ void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent) {
 }
 
 void ObjectCtrl::onPropertyChanged(Object *object, const QString &property, const Variant &value) {
-    UndoManager::instance()->push(new PropertyObjects({object}, property, {value}, this));
+    UndoManager::instance()->push(new PropertyObject(object, property, value, this));
 }
 
 void ObjectCtrl::onFocusActor(Object *object) {
@@ -308,7 +309,7 @@ void ObjectCtrl::onFocusActor(Object *object) {
 
 void ObjectCtrl::onChangeTool() {
     QString name(sender()->objectName());
-    for(auto it : m_Tools) {
+    for(auto &it : m_Tools) {
         if(it->name() == name) {
             m_pActiveTool = it;
             break;
@@ -467,20 +468,14 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->buttons() & Qt::LeftButton) {
-                if(m_pActiveTool) {
-                    m_pActiveTool->beginControl();
-                }
-
                 if(Handles::s_Axes) {
                     m_Axes = Handles::s_Axes;
                 }
                 if(m_Drag) {
-                    for(auto it : m_Selected) {
-                        Transform *t = it.object->transform();
-                        t->setPosition(it.position);
-                        t->setRotation(it.euler);
-                        t->setScale(it.scale);
+                    if(m_pActiveTool) {
+                        m_pActiveTool->cancelControl();
                     }
+
                     setDrag(false);
                     m_Canceled = true;
                     emit objectsUpdated();
@@ -499,6 +494,41 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 } else {
                     if(m_pActiveTool) {
                         m_pActiveTool->endControl();
+
+                        QUndoCommand *group = new QUndoCommand(m_pActiveTool->name());
+
+                        bool valid = false;
+                        auto cache = m_pActiveTool->cache().begin();
+                        for(auto &it : m_Selected) {
+                            VariantMap components = (*cache).toMap();
+                            for(auto &child : it.object->getChildren()) {
+                                Component *component = dynamic_cast<Component *>(child);
+                                if(component) {
+                                    VariantMap properties = components[to_string(component->uuid())].toMap();
+                                    const MetaObject *meta = component->metaObject();
+                                    for(int i = 0; i < meta->propertyCount(); i++) {
+                                        MetaProperty property = meta->property(i);
+
+                                        Variant value = property.read(component);
+                                        Variant data = properties[property.name()];
+                                        if(value != data) {
+                                            property.write(component, data);
+
+                                            new PropertyObject(component, property.name(), value, this, "", group);
+                                            valid = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            ++cache;
+                        }
+
+                        if(!valid) {
+                            delete group;
+                        } else {
+                            UndoManager::instance()->push(group);
+                        }
                     }
                 }
                 setDrag(false);
@@ -630,7 +660,7 @@ void DuplicateObjects::redo() {
             }
         }
     } else {
-        for(auto it : m_Dump) {
+        for(auto &it : m_Dump) {
             Object *obj = ObjectSystem::toObject(it, m_pController->map());
             m_Objects.push_back(obj->uuid());
         }
@@ -666,7 +696,7 @@ void CreateObjectSerial::redo() {
     auto it = m_Parents.begin();
 
     list<uint32_t> objects;
-    for(auto ref : m_Dump) {
+    for(auto &ref : m_Dump) {
         Object *object = Engine::toObject(ref);
         if(object) {
             object->setParent(m_pController->findObject(*it));
@@ -692,7 +722,7 @@ DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, 
 void DeleteActors::undo() {
     auto it = m_parents.begin();
     auto index = m_indices.begin();
-    for(auto ref : m_dump) {
+    for(auto &ref : m_dump) {
         Object *parent = m_pController->findObject(*it);
         Object *object = Engine::toObject(ref, parent);
         if(object) {
@@ -815,36 +845,29 @@ void ParentingObjects::redo() {
     emit m_pController->mapUpdated();
 }
 
-PropertyObjects::PropertyObjects(const Object::ObjectList &objects, const QString &property, const VariantList &values, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
 
-    m_Values = values;
+    m_Value = value;
     m_Property = property;
-    for(auto it : objects) {
-        m_Objects.push_back(it->uuid());
-    }
+    m_Object = object->uuid();
 }
-void PropertyObjects::undo() {
-    PropertyObjects::redo();
+void PropertyObject::undo() {
+    PropertyObject::redo();
 }
-void PropertyObjects::redo() {
-    VariantList values = m_Values;
-    auto value = values.begin();
+void PropertyObject::redo() {
+    Variant value = m_Value;
 
-    m_Values.clear();
-    for(auto it : m_Objects) {
-        Object *object = m_pController->findObject(it);
-        if(object) {
-            const MetaObject *meta = object->metaObject();
-            int index = meta->indexOfProperty(qPrintable(m_Property));
-            if(index > -1) {
-                MetaProperty property = meta->property(index);
-                m_Values.push_back(property.read(object));
+    Object *object = m_pController->findObject(m_Object);
+    if(object) {
+        const MetaObject *meta = object->metaObject();
+        int index = meta->indexOfProperty(qPrintable(m_Property));
+        if(index > -1) {
+            MetaProperty property = meta->property(index);
+            m_Value = property.read(object);
 
-                property.write(object, *value);
-            }
+            property.write(object, value);
         }
-        ++value;
     }
     emit m_pController->objectsUpdated();
 }

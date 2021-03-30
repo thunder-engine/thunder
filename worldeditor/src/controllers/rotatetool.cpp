@@ -16,7 +16,10 @@ RotateTool::RotateTool(ObjectCtrl *controller, SelectMap &selection) :
 }
 
 void RotateTool::update() {
-    float angle = Handles::rotationTool(objectPosition(), Quaternion(), m_pController->isDrag());
+    if(!m_pController->isDrag()) {
+        m_Position = objectPosition();
+    }
+    float angle = Handles::rotationTool(m_Position, Quaternion(), m_pController->isDrag());
     if(m_AngleGrid > 0) {
         angle = m_AngleGrid * int(angle / m_AngleGrid);
     }
@@ -59,28 +62,10 @@ void RotateTool::update() {
     }
 }
 
-void RotateTool::endControl() {
-    VariantList pos;
-    VariantList rot;
-    Object::ObjectList objects;
-    for(auto it : m_Selected) {
-        Transform *t = it.object->transform();
-        pos.push_back(t->position());
-        rot.push_back(t->rotation());
-        objects.push_back(t);
-        t->setPosition(it.position);
-        t->setRotation(it.euler);
-    }
-    QUndoCommand *group = new QUndoCommand("Rotate");
-    new PropertyObjects(objects, "position", pos, m_pController, "", group);
-    new PropertyObjects(objects, "rotation", rot, m_pController, "", group);
-    UndoManager::instance()->push(group);
-}
-
 QString RotateTool::icon() const {
     return ":/Images/editor/Rotate.png";
 }
 
 QString RotateTool::name() const {
-    return "rotateTool";
+    return "Rotate";
 }
