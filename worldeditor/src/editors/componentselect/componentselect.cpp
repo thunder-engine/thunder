@@ -20,8 +20,11 @@ ComponentSelect::ComponentSelect(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QAction *action = ui->lineEdit->addAction(QIcon(":/Style/styles/dark/icons/target.png"), QLineEdit::TrailingPosition);
-    connect(action, &QAction::triggered, this, &ComponentSelect::onSceneDialog);
+    m_clearAction = ui->lineEdit->addAction(QIcon(":/Style/styles/dark/icons/close-hover.png"), QLineEdit::TrailingPosition);
+    connect(m_clearAction, &QAction::triggered, this, &ComponentSelect::onClear);
+
+    QAction *setAction = ui->lineEdit->addAction(QIcon(":/Style/styles/dark/icons/target.png"), QLineEdit::TrailingPosition);
+    connect(setAction, &QAction::triggered, this, &ComponentSelect::onSceneDialog);
 
     setAcceptDrops(true);
 
@@ -42,16 +45,17 @@ SceneComponent ComponentSelect::data() const {
 void ComponentSelect::setData(const SceneComponent &component) {
     m_Component = component;
 
-    if(sBrowser) {
-        sBrowser->setRootObject(m_Component.scene);
-        sBrowser->setComponentsFilter({m_Component.type});
-    }
+    sBrowser->setRootObject(m_Component.scene);
+    sBrowser->setComponentsFilter({m_Component.type});
 
     QString name("None");
+    m_clearAction->setVisible(false);
     if(m_Component.component) {
         name = m_Component.component->actor()->name().c_str();
+        m_clearAction->setVisible(true);
     } else if(m_Component.actor) {
         name = m_Component.actor->name().c_str();
+        m_clearAction->setVisible(true);
     }
     QString str = QString("%1 (%2)").arg(name).arg(m_Component.type);
     ui->lineEdit->setText(str);
@@ -60,6 +64,14 @@ void ComponentSelect::setData(const SceneComponent &component) {
 void ComponentSelect::onSceneDialog() {
     connect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused, Qt::UniqueConnection);
     sBrowser->show();
+}
+
+void ComponentSelect::onClear() {
+    m_Component.actor = nullptr;
+    m_Component.component = nullptr;
+
+    setData(m_Component);
+    emit componentChanged(m_Component);
 }
 
 void ComponentSelect::onFocused(Object *object) {

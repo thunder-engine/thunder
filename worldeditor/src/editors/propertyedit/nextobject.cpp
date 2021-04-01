@@ -353,6 +353,7 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
             if(c.actor) {
                 return Variant(current.userType(), &c.actor);
             }
+            return Variant(current.userType(), nullptr);
         }
     }
 

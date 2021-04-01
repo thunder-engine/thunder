@@ -41,6 +41,8 @@ signals:
 private slots:
     void onSceneDialog();
 
+    void onClear();
+
     void onFocused(Object *object);
 
 private:
@@ -51,6 +53,8 @@ private:
     Ui::ComponentSelect *ui;
 
     SceneComponent m_Component;
+
+    QAction *m_clearAction;
 };
 
 #endif // COMPONENTSELECT_H
