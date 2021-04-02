@@ -54,8 +54,10 @@ void SpriteController::selectElements(const QStringList &list) {
     m_List = list;
 
     m_ElementList.clear();
-    for(auto it : m_List) {
-        m_ElementList.push_back(m_pSettings->elements().value(it));
+    if(m_pSettings) {
+        for(auto it : m_List) {
+            m_ElementList.push_back(m_pSettings->elements().value(it));
+        }
     }
 
     if(m_List.isEmpty()) {
@@ -158,7 +160,7 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         } break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->buttons() == Qt::LeftButton) {
+            if(m_pSettings && e->buttons() == Qt::LeftButton) {
                 QString key;
                 QPoint world = mapToScene(e->pos());
                 for(auto &it : m_pSettings->elements().keys()) {
@@ -183,7 +185,7 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonRelease: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->button() == Qt::LeftButton) {
-                if(m_Drag && !m_List.isEmpty()) {
+                if(m_Drag && m_pSettings && !m_List.isEmpty()) {
                     QList<TextureImportSettings::Element> temp;
                     for(int i = 0; i < m_List.size(); i++) {
                         temp.push_back(m_pSettings->elements().value(m_List.at(i)));
@@ -207,7 +209,7 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
             Handles::s_Mouse = Vector2(screen.x, screen.y);
             Handles::s_Screen = m_Screen;
 
-            if(e->buttons() & Qt::LeftButton) {
+            if(m_pSettings && e->buttons() & Qt::LeftButton) {
                 m_Drag = true;
 
                 if(m_List.isEmpty()) {

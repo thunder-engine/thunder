@@ -5,6 +5,8 @@
 
 #include "editors/scenecomposer/documentmodel.h"
 
+#include "resources/resource.h"
+
 class Viewport;
 class Engine;
 
@@ -20,7 +22,7 @@ namespace Ui {
     class TextureEdit;
 }
 
-class TextureEdit : public QWidget, public IAssetEditor {
+class TextureEdit : public QWidget, public IAssetEditor, public Resource::IObserver {
     Q_OBJECT
 
 public:
@@ -42,7 +44,11 @@ private:
 
     bool isModified() const override;
 
+    void resourceUpdated(const Resource *resource, Resource::ResourceState state) override;
+
     Ui::TextureEdit *ui;
+
+    Resource *m_Rresource;
 
     SpriteRender *m_pRender;
 

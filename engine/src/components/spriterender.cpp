@@ -41,9 +41,15 @@ public:
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_pSprite && state == Resource::Ready) {
-            m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
-            composeMesh();
+        if(resource == m_pSprite){
+            if(state == Resource::Ready) {
+                m_pMaterial->setTexture(OVERRIDE, m_pSprite->texture());
+                composeMesh();
+            } else if(state == Resource::ToBeDeleted) {
+                m_pSprite = nullptr;
+                m_pMaterial->setTexture(OVERRIDE, nullptr);
+                composeMesh();
+            }
         }
     }
 
