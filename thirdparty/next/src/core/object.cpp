@@ -707,7 +707,7 @@ void Object::setName(const string &name) {
 void Object::addChild(Object *child, int32_t position) {
     PROFILE_FUNCTION();
     if(child) {
-        if(position == -1) {
+        if(position == -1 || p_ptr->m_mChildren.size() < position) {
             p_ptr->m_mChildren.push_back(child);
         } else {
             p_ptr->m_mChildren.insert(next(p_ptr->m_mChildren.begin(), position), child);
