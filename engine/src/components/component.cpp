@@ -80,6 +80,10 @@ bool Component::isSerializable() const {
     //return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
 }
 
+void Component::onReferenceDestroyed() {
+
+}
+
 #ifdef NEXT_SHARED
 bool Component::drawHandles(ObjectList &selected) { A_UNUSED(selected); return false; }
 

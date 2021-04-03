@@ -128,9 +128,12 @@ Armature *SkinnedMeshRender::armature() const {
 */
 void SkinnedMeshRender::setArmature(Armature *armature) {
     p_ptr->m_pArmature = armature;
-    if(p_ptr->m_pArmature && p_ptr->m_pMaterial) {
-        Texture *t = p_ptr->m_pArmature->texture();
-        p_ptr->m_pMaterial->setTexture(MATRICES, t);
+    if(p_ptr->m_pArmature) {
+        connect(p_ptr->m_pArmature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        if(p_ptr->m_pMaterial) {
+            Texture *t = p_ptr->m_pArmature->texture();
+            p_ptr->m_pMaterial->setTexture(MATRICES, t);
+        }
     }
 }
 /*!
@@ -182,6 +185,12 @@ VariantMap SkinnedMeshRender::saveUserData() const {
         }
     }
     return result;
+}
+
+void SkinnedMeshRender::onReferenceDestroyed() {
+    if(sender() == p_ptr->m_pArmature) {
+        setArmature(nullptr);
+    }
 }
 
 #ifdef NEXT_SHARED

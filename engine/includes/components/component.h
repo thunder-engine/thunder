@@ -15,7 +15,8 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
     A_METHODS(
         A_METHOD(Actor *, Component::actor),
         A_METHOD(string, Component::tr),
-        A_METHOD(void, Component::deleteLater)
+        A_METHOD(void, Component::deleteLater),
+        A_SLOT(onReferenceDestroyed)
     )
 
 public:
@@ -39,6 +40,8 @@ public:
 
 private:
     bool isSerializable() const override;
+
+    virtual void onReferenceDestroyed();
 
 private:
     ComponentPrivate *p_ptr;
