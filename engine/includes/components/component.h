@@ -16,7 +16,7 @@ class NEXT_LIBRARY_EXPORT Component : public Object {
         A_METHOD(Actor *, Component::actor),
         A_METHOD(string, Component::tr),
         A_METHOD(void, Component::deleteLater),
-        A_SLOT(onReferenceDestroyed)
+        A_SLOT(Component::onReferenceDestroyed)
     )
 
 public:
