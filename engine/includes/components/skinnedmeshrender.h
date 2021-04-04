@@ -16,6 +16,7 @@ class NEXT_LIBRARY_EXPORT SkinnedMeshRender : public Renderable {
         A_PROPERTYEX(Mesh *, mesh, SkinnedMeshRender::mesh, SkinnedMeshRender::setMesh, "editor=Template"),
         A_PROPERTYEX(Material *, material, SkinnedMeshRender::material, SkinnedMeshRender::setMaterial, "editor=Template")
     )
+    A_NOMETHODS()
 
 public:
     SkinnedMeshRender();
