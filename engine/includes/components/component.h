@@ -38,6 +38,8 @@ public:
     bool isSelected(ObjectList &selected);
 #endif
 
+    void lazyInitialization();
+
 private:
     bool isSerializable() const override;
 

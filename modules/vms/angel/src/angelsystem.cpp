@@ -151,6 +151,53 @@ void AngelSystem::reload() {
         for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
             asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
+                {
+                    MetaType::Table staticTable = {
+                        expose_props_method<AngelBehaviour>::exec(),
+                        expose_method<AngelBehaviour>::exec(),
+                        expose_enum<AngelBehaviour>::exec(),
+                        TypeFuncs<AngelBehaviour>::size,
+                        TypeFuncs<AngelBehaviour>::static_new,
+                        TypeFuncs<AngelBehaviour>::construct,
+                        TypeFuncs<AngelBehaviour>::static_delete,
+                        TypeFuncs<AngelBehaviour>::destruct,
+                        TypeFuncs<AngelBehaviour>::clone,
+                        TypeFuncs<AngelBehaviour>::compare,
+                        TypeFuncs<AngelBehaviour>::index,
+                        info->GetName(),
+                        MetaType::BASE_OBJECT
+                    };
+
+                    MetaType::registerType(staticTable);
+                }
+
+                {
+                    int length = strlen(info->GetName());
+                    char *type = new char[length + 3];
+                    memcpy(type, info->GetName(), length);
+                    type[length] = ' ';
+                    type[length + 1] = '*';
+                    type[length + 2] = 0;
+
+                    MetaType::Table staticTable = {
+                        expose_props_method<AngelBehaviour *>::exec(),
+                        expose_method<AngelBehaviour *>::exec(),
+                        expose_enum<AngelBehaviour *>::exec(),
+                        TypeFuncs<AngelBehaviour *>::size,
+                        TypeFuncs<AngelBehaviour *>::static_new,
+                        TypeFuncs<AngelBehaviour *>::construct,
+                        TypeFuncs<AngelBehaviour *>::static_delete,
+                        TypeFuncs<AngelBehaviour *>::destruct,
+                        TypeFuncs<AngelBehaviour *>::clone,
+                        TypeFuncs<AngelBehaviour *>::compare,
+                        TypeFuncs<AngelBehaviour *>::index,
+                        type,
+                        MetaType::POINTER | MetaType::BASE_OBJECT
+                    };
+
+                    MetaType::registerType(staticTable);
+                }
+
                 factoryAdd(info->GetName(), string(URI) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
@@ -253,14 +300,14 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
     for(auto &it : MetaType::types()) {
         if(it.first > MetaType::USERTYPE) {
-            registerMetaType(engine, it.second);
+            bindMetaType(engine, it.second);
         }
     }
 
     for(auto &it : System::factories()) {
         auto factory = System::metaFactory(it.first);
         if(factory) {
-            registerMetaObject(engine, it.first, factory->first);
+            bindMetaObject(engine, it.first, factory->first);
         }
     }
 
@@ -281,7 +328,7 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
 }
 
-void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
+void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &table) {
     const char *typeName = table.name;
     if(typeName[strlen(typeName) - 1] != '*') {
         const MetaObject *meta;
@@ -385,7 +432,7 @@ void AngelSystem::registerMetaType(asIScriptEngine *engine, const MetaType::Tabl
     }
 }
 
-void AngelSystem::registerMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
+void AngelSystem::bindMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta) {
     const char *typeName = name.c_str();
 
     const MetaObject *super = meta->super();

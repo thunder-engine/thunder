@@ -11,6 +11,8 @@ public:
     typedef Variant             (*ReadMem)              (const void *);
     typedef void                (*WriteMem)             (void *, const Variant&);
     typedef void                (*AddressMem)           (char *, size_t);
+    typedef Variant             (*ReadProperty)         (const void *, const MetaProperty&);
+    typedef void                (*WriteProperty)        (void *, const MetaProperty&, const Variant&);
 
     struct Table {
         const char             *name;
@@ -20,7 +22,8 @@ public:
         WriteMem                writer;
         AddressMem              readmem;
         AddressMem              writemem;
-        void                   *ptr;
+        ReadProperty            readproperty;
+        WriteProperty           writeproperty;
     };
 
 public:
@@ -104,6 +107,33 @@ struct Reader<T(Class::*)()const, ReadFunc> {
     };
 };
 
+template<typename T, typename Class, T(Class::*ReadFunc)(const MetaProperty &)>
+struct Reader<T(Class::*)(const MetaProperty &), ReadFunc> {
+    typedef Bool<std::is_pointer<T>::value>         is_pointer;
+    typedef typename CheckType<T, is_pointer>::type T_no_cv;
+
+    inline static const MetaType::Table *type(const char *typeName) {
+        return Table<T>::get(typeName);
+    }
+
+    inline static Variant read(const void *obj, const MetaProperty &) {
+        return (reinterpret_cast<Class *>(obj)->*ReadFunc)(property);
+    }
+};
+template<typename T, typename Class, T(Class::*ReadFunc)(const MetaProperty &)const>
+struct Reader<T(Class::*)(const MetaProperty &)const, ReadFunc> {
+    typedef Bool<std::is_pointer<T>::value>         is_pointer;
+    typedef typename CheckType<T, is_pointer>::type T_no_cv;
+
+    inline static const MetaType::Table *type(const char *typeName) {
+        return Table<T>::get(typeName);
+    }
+
+    inline static Variant read(const void *obj, const MetaProperty &property) {
+        return (reinterpret_cast<const Class *>(obj)->*ReadFunc)(property);
+    }
+};
+
 //Property write
 template<typename Signature, Signature S>
 struct Writer;
@@ -144,6 +174,24 @@ struct Writer<void(Class::*)(const T&), WriteFunc> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
+    }
+};
+template<typename T, typename Class, void(Class::*WriteFunc)(const MetaProperty &, T)>
+struct Writer<void(Class::*)(const MetaProperty &, T), WriteFunc> {
+    typedef Bool<std::is_pointer<T>::value>         is_pointer;
+    typedef typename CheckType<T, is_pointer>::type T_no_cv;
+
+    inline static void write(void *obj, const MetaProperty &property, const Variant &value) {
+        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
+    }
+};
+template<typename T, typename Class, void(Class::*WriteFunc)(const MetaProperty &, const T&)>
+struct Writer<void(Class::*)(const MetaProperty &, const T&), WriteFunc> {
+    typedef Bool<std::is_pointer<T>::value>         is_pointer;
+    typedef typename CheckType<T, is_pointer>::type T_no_cv;
+
+    inline static void write(void *obj, const MetaProperty &property, const Variant &value) {
+        (reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
     }
 };
 

@@ -53,7 +53,16 @@ private:
 
     void scriptSlot();
 
+    void onReferenceDestroyed() override;
+
+    Variant readProperty(const MetaProperty &property) const;
+    void writeProperty(const MetaProperty &property, const Variant &value);
+
     void methodCallEvent(MethodCallEvent *event) override;
+
+    void subscribe(AngelBehaviour *observer, void *ptr);
+
+    void notifyObservers();
 
 public:
     static const MetaObject *metaClass() {
@@ -72,13 +81,16 @@ public:
 protected:
     string m_Script;
 
+    list<pair<AngelBehaviour *, void *>> m_Obsevers;
+    vector<MetaProperty::Table> m_PropertyTable;
+    vector<MetaMethod::Table> m_MethodTable;
+
+    unordered_map<const char *, void *> m_PropertyAdresses;
+
     asIScriptObject *m_pObject;
 
     asIScriptFunction *m_pStart;
     asIScriptFunction *m_pUpdate;
-
-    vector<MetaProperty::Table> m_PropertyTable;
-    vector<MetaMethod::Table> m_MethodTable;
 
     MetaObject *m_pMetaObject;
 };

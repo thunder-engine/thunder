@@ -276,6 +276,21 @@ struct Table {
 
 //Function to unpack args properly
 template<typename T>
+inline static MetaType::Table *createTable(const char *typeName = "") {
+    int flags = 0;
+    if(std::is_pointer<T>::value) {
+        flags |= MetaType::POINTER;
+    }
+
+    if(std::is_base_of<Object, typename std::remove_pointer<T>::type>::value) {
+        flags |= MetaType::BASE_OBJECT;
+    }
+
+    return Table<T>::get(typeName, flags);
+}
+
+
+template<typename T>
 inline static MetaType::Table *getTable(const char *typeName = "") {
     uint32_t type = MetaType::type<T>();
     MetaType::Table *result = MetaType::table(type);
@@ -283,21 +298,12 @@ inline static MetaType::Table *getTable(const char *typeName = "") {
         return result;
     }
 
-    int flags = 0;
-    if(std::is_pointer<T>::value) {
-        flags |= MetaType::POINTER;
-
-        if(std::is_base_of<Object, typename std::remove_pointer<T>::type>::value) {
-            flags |= MetaType::BASE_OBJECT;
-        }
-    }
-
-    return Table<T>::get(typeName, flags);
+    return createTable<T>(typeName);
 }
 
 template<typename T>
 static uint32_t registerMetaType(const char *typeName) {
-    return MetaType::registerType(*getTable<T>(typeName));
+    return MetaType::registerType(*createTable<T>(typeName));
 }
 
 template<typename T>

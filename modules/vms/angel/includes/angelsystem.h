@@ -45,8 +45,8 @@ protected:
 
     void unload();
 
-    void registerMetaType(asIScriptEngine *engine, const MetaType::Table &table);
-    void registerMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta);
+    void bindMetaType(asIScriptEngine *engine, const MetaType::Table &table);
+    void bindMetaObject(asIScriptEngine *engine, const string &name, const MetaObject *meta);
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 

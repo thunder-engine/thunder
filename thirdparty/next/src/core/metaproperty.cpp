@@ -63,8 +63,8 @@ Variant MetaProperty::read(const void *object) const {
     PROFILE_FUNCTION();
     if(m_pTable->reader) {
         return m_pTable->reader(object);
-    } else if(m_pTable->ptr) {
-        return Variant(MetaType::type(m_pTable->type->name), m_pTable->ptr);
+    } else if(m_pTable->readproperty) {
+        return m_pTable->readproperty(object, *this);
     }
     return Variant();
 }
@@ -75,8 +75,8 @@ void MetaProperty::write(void *object, const Variant &value) const {
     PROFILE_FUNCTION();
     if(m_pTable->writer) {
         m_pTable->writer(object, value);
-    } else if(m_pTable->ptr) {
-        memcpy(m_pTable->ptr, value.data(), MetaType(m_pTable->type).size());
+    } else if(m_pTable->writeproperty) {
+        m_pTable->writeproperty(object, *this, value);
     }
 }
 /*!

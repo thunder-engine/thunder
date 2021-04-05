@@ -93,7 +93,7 @@ public: \
 public: \
     static const MetaProperty::Table *properties() { \
         static const MetaProperty::Table table[] { \
-            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
+            {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr} \
         }; \
         return table; \
     }
@@ -106,6 +106,7 @@ public: \
    &Writer<decltype(&w), &w>::write, \
    &Reader<decltype(&r), &r>::address<&r>, \
    &Writer<decltype(&w), &w>::address<&w>, \
+    nullptr, \
     nullptr \
 }
 
@@ -117,6 +118,7 @@ public: \
    &Writer<decltype(&w), &w>::write, \
    &Reader<decltype(&r), &r>::address<&r>, \
    &Writer<decltype(&w), &w>::address<&w>, \
+    nullptr, \
     nullptr \
 }
 
