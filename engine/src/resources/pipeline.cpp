@@ -47,7 +47,8 @@ Pipeline::Pipeline() :
         m_Screen(Vector2(64, 64)),
         m_pSprite(nullptr),
         m_Target(0),
-        m_pFinal(nullptr) {
+        m_pFinal(nullptr),
+        m_pSystem(nullptr) {
 
     m_Buffer = Engine::objectCreate<ICommandBuffer>();
 
@@ -95,7 +96,7 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::draw(Camera &camera) {
-    updateShadows(camera, m_Filter);
+    updateShadows(camera);
 
     m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
 
@@ -111,7 +112,7 @@ void Pipeline::draw(Camera &camera) {
 
     // Step2.2 - Light pass
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    drawComponents(ICommandBuffer::LIGHT, m_Filter);
+    drawComponents(ICommandBuffer::LIGHT, m_Lights);
 
     // Step2.3 - Screen Space Local Reflections
     m_Targets[SSLR_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::LIGHT);
@@ -178,17 +179,40 @@ void Pipeline::resize(int32_t width, int32_t height) {
     m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
 }
 
-void Pipeline::analizeScene(Scene *scene, RenderSystem *render) {
-    A_UNUSED(render);
+void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
+    m_pSystem = system;
 
-    m_Components.clear();
     m_PostProcessSettings.clear();
 
-    combineComponents(scene);
+    m_Components.clear();
+    m_Lights.clear();
+
+    for(auto &it : m_pSystem->renderable()) {
+        Actor *actor = it->actor();
+        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
+            it->update();
+            m_Components.push_back(it);
+        }
+    }
+
+    for(auto &it : m_pSystem->lights()) {
+        Actor *actor = it->actor();
+        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
+            it->update();
+            m_Lights.push_back(it);
+        }
+    }
 
     Camera *camera = Camera::current();
     m_Filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(*camera));
     sortByDistance(m_Filter, camera->actor()->transform()->position());
+
+    for(auto &it : m_pSystem->postPcessSettings()) {
+        Actor *actor = it->actor();
+        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
+            m_PostProcessSettings.push_back(it);
+        }
+    }
 
     if(!m_PostProcessSettings.empty()) {
         PostProcessSettings *settings = m_PostProcessSettings.front();
@@ -281,9 +305,9 @@ ICommandBuffer *Pipeline::buffer() const {
     return m_Buffer;
 }
 
-void Pipeline::drawComponents(uint32_t layer, ObjectList &list) {
+void Pipeline::drawComponents(uint32_t layer, list<Renderable *> &list) {
     for(auto it : list) {
-        static_cast<Renderable *>(it)->draw(*m_Buffer, layer);
+        it->draw(*m_Buffer, layer);
     }
 }
 
@@ -317,14 +341,11 @@ void Pipeline::cleanShadowCache() {
     }
 }
 
-void Pipeline::updateShadows(Camera &camera, ObjectList &list) {
+void Pipeline::updateShadows(Camera &camera) {
     cleanShadowCache();
 
-    for(auto &it : list) {
-        BaseLight *light = dynamic_cast<BaseLight *>(it);
-        if(light) {
-            light->shadowsUpdate(camera, this, m_Components);
-        }
+    for(auto &it : m_pSystem->lights()) {
+        static_cast<BaseLight *>(it)->shadowsUpdate(camera, this, m_Components);
     }
 }
 
@@ -340,44 +361,16 @@ RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
     return result;
 }
 
-void Pipeline::combineComponents(Object *object) {
-    for(auto &it : object->getChildren()) {
-        Object *child = it;
-        Renderable *comp = dynamic_cast<Renderable *>(child);
-        if(comp) {
-            if(comp->isEnabled()) {
-                comp->update();
-                m_Components.push_back(comp);
-            }
-        } else {
-            PostProcessSettings *settings = dynamic_cast<PostProcessSettings *>(child);
-            if(settings) {
-                m_PostProcessSettings.push_back(settings);
-            } else {
-                Actor *actor = dynamic_cast<Actor *>(child);
-                if(actor && !actor->isEnabled()) {
-                    continue;
-                }
-                combineComponents(child);
-            }
-        }
-    }
-}
-
 struct ObjectComp {
-    bool operator() (const Object *left, const Object *right) {
-        if(dynamic_cast<const DirectLight *>(left)) {
-            return false;
-        } else {
-            Matrix4 m1 = static_cast<const Component *>(left)->actor()->transform()->worldTransform();
-            Matrix4 m2 = static_cast<const Component *>(right)->actor()->transform()->worldTransform();
-            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
-        }
+    bool operator() (const Renderable *left, const Renderable *right) {
+        Matrix4 m1 = left->actor()->transform()->worldTransform();
+        Matrix4 m2 = right->actor()->transform()->worldTransform();
+        return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
     }
     Vector3 origin;
 };
 
-void Pipeline::sortByDistance(ObjectList &in, const Vector3 &origin) {
+void Pipeline::sortByDistance(list<Renderable *> &in, const Vector3 &origin) {
     ObjectComp comp;
     comp.origin = origin;
 

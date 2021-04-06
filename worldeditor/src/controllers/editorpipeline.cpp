@@ -213,10 +213,10 @@ void EditorPipeline::draw(Camera &camera) {
     // Selection outline
     m_Buffer->setRenderTarget({m_Targets[OUTLINE_MAP]}, m_Targets[OUTDEPTH_MAP]);
     m_Buffer->clearRenderTarget();
-    ObjectList filter;
+    RenderList filter;
     for(auto actor : m_pController->selected()) {
         for(auto it : m_Filter) {
-            Component *component = dynamic_cast<Component *>(it);
+            Renderable *component = dynamic_cast<Renderable *>(it);
             if(component && component->actor() == actor) {
                 filter.push_back(component);
             }

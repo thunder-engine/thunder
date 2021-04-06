@@ -23,6 +23,8 @@ class PostProcessSettings;
 
 class AtlasNode;
 
+class Renderable;
+
 class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
     A_REGISTER(Pipeline, Resource, Resources)
 
@@ -36,7 +38,7 @@ public:
 
     virtual void finish();
 
-    virtual void analizeScene(Scene *scene, RenderSystem *render);
+    virtual void analizeScene(Scene *scene, RenderSystem *system);
 
     RenderTexture *target(const string &target) const;
 
@@ -49,24 +51,23 @@ public:
 protected:
     void cameraReset(Camera &camera);
 
-    void drawComponents(uint32_t layer, ObjectList &list);
-
-    void combineComponents(Object *object);
+    void drawComponents(uint32_t layer, list<Renderable *> &list);
 
     RenderTexture *postProcess(RenderTexture *source, uint32_t layer);
 
-    void sortByDistance(ObjectList &in, const Vector3 &origin);
+    void sortByDistance(list<Renderable *> &in, const Vector3 &origin);
 
     void cleanShadowCache();
-    void updateShadows(Camera &camera, ObjectList &list);
+    void updateShadows(Camera &camera);
 
 protected:
     typedef map<string, RenderTexture *> TargetMap;
 
     ICommandBuffer *m_Buffer;
 
-    ObjectList m_Components;
-    ObjectList m_Filter;
+    list<Renderable *> m_Components;
+    list<Renderable *> m_Lights;
+    list<Renderable *> m_Filter;
 
     TargetMap m_Targets;
 
@@ -85,6 +86,8 @@ protected:
     unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;
 
     RenderTexture *m_pFinal;
+
+    RenderSystem *m_pSystem;
 };
 
 #endif // PIPELINE

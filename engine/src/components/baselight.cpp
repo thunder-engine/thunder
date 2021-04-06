@@ -52,7 +52,7 @@ BaseLight::~BaseLight() {
 
     \internal
 */
-void BaseLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+void BaseLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
     A_UNUSED(camera);
     A_UNUSED(pipeline);
     A_UNUSED(components);

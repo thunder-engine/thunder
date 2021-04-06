@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include "nativebehaviour.h"
+#include "renderable.h"
 
 class Pipeline;
 class CameraPrivate;
@@ -76,7 +76,7 @@ public:
 
     static array<Vector3, 8> frustumCorners(const Camera &camera);
     static array<Vector3, 8> frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane);
-    static Object::ObjectList frustumCulling(ObjectList &list, const array<Vector3, 8> &frustum);
+    static RenderList frustumCulling(RenderList &list, const array<Vector3, 8> &frustum);
 
 private:
 #ifdef NEXT_SHARED

@@ -47,6 +47,8 @@ public:
     bool isEnabled() const;
     void setEnabled(const bool enabled);
 
+    bool isEnabledInHierarchy() const;
+
     bool isStatic() const;
     void setStatic(const bool flag);
 
@@ -69,6 +71,8 @@ private:
     bool isSerializable() const override;
 
     void clearCloneRef() override;
+
+    void setHierarchyEnabled(bool enabled);
 
 private:
     friend class ActorPrivate;

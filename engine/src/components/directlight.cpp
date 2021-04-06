@@ -80,7 +80,7 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
     if(!castShadows()) {
         p_ptr->m_pTarget = nullptr;
         return;
@@ -194,7 +194,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Object
         Vector3 size = max - min;
         Vector3 pos(min + size * 0.5f);
 
-        ObjectList filter = Camera::frustumCulling(components,
+        RenderList filter = Camera::frustumCulling(components,
                                                    Camera::frustumCorners(true, max.y - min.y, 1.0f, pos, q, min.z, max.z));
 
         // Draw in the depth buffer from position of the light source

@@ -31,7 +31,7 @@ public:
     BaseLight();
     ~BaseLight() override;
 
-    virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components);
+    virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components);
 
     bool castShadows() const;
     void setCastShadows(const bool shadows);

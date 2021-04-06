@@ -358,7 +358,7 @@ array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, c
     Filters out an incoming \a list which are not in the \a frustum.
     Returns filtered list.
 */
-Object::ObjectList Camera::frustumCulling(ObjectList &list, const array<Vector3, 8> &frustum) {
+RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &frustum) {
     Plane pl[6];
     pl[0] = Plane(frustum[1], frustum[0], frustum[4]); // top
     pl[1] = Plane(frustum[7], frustum[3], frustum[2]); // bottom
@@ -367,12 +367,11 @@ Object::ObjectList Camera::frustumCulling(ObjectList &list, const array<Vector3,
     pl[4] = Plane(frustum[0], frustum[1], frustum[3]); // near
     pl[5] = Plane(frustum[5], frustum[4], frustum[6]); // far
 
-    Object::ObjectList result;
+    RenderList result;
     for(auto it : list) {
-        Renderable *item = static_cast<Renderable *>(it);
-        AABBox box = item->bound();
+        AABBox box = it->bound();
         if(box.extent.x < 0.0f || box.intersect(pl, 6)) {
-            result.push_back(item);
+            result.push_back(it);
         }
     }
     return result;

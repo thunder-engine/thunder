@@ -100,7 +100,7 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
     A_UNUSED(camera);
 
     if(!castShadows()) {
@@ -153,7 +153,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectL
         buffer->setViewProjection(mat, crop);
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
-        ObjectList filter = Camera::frustumCulling(components,
+        RenderList filter = Camera::frustumCulling(components,
                                                    Camera::frustumCorners(false, 90.0f, 1.0f, pos, rot[i], p_ptr->m_Near, zFar));
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {

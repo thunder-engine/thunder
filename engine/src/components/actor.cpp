@@ -25,6 +25,7 @@ public:
         m_actor(actor),
         m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
         m_enable(true),
+        m_hierarchyEnable(m_enable),
         m_static(false) {
 
     }
@@ -182,6 +183,8 @@ public:
 
     bool m_enable;
 
+    bool m_hierarchyEnable;
+
     bool m_static;
 };
 /*!
@@ -220,6 +223,25 @@ bool Actor::isEnabled() const {
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
     p_ptr->m_enable = enabled;
+    setHierarchyEnabled(enabled);
+}
+/*!
+    Returns false in case of one of Actors in hierarchy was disabled; otherwise returns true.
+*/
+bool Actor::isEnabledInHierarchy() const {
+    return (p_ptr->m_hierarchyEnable && isEnabled());
+}
+/*!
+    \internal
+*/
+void Actor::setHierarchyEnabled(bool enabled) {
+    p_ptr->m_hierarchyEnable = enabled;
+    for(auto it : getChildren()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            actor->setHierarchyEnabled(enabled);
+        }
+    }
 }
 /*!
     Returns true if this actor will not be moved during the game; otherwise returns false.

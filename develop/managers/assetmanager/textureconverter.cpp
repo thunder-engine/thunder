@@ -201,11 +201,11 @@ uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         if(s->textureType() == TextureImportSettings::TextureType::Sprite) {
-            Sprite *sprite = new Sprite;
+            Sprite *sprite = Engine::objectCreate<Sprite>();
             convertSprite(s, sprite);
             resource = sprite;
         } else {
-            Texture *texture = new Texture;
+            Texture *texture = Engine::objectCreate<Texture>();
             convertTexture(s, texture);
             resource = texture;
         }

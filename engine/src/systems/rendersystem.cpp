@@ -22,6 +22,10 @@ class RenderSystemPrivate {
 public:
     static int32_t m_AtlasPageWidth;
     static int32_t m_AtlasPageHeight;
+
+    RenderList m_Lights;
+    RenderList m_Objects;
+    list<PostProcessSettings *> m_Settings;
 };
 
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
@@ -79,6 +83,18 @@ const char *RenderSystem::name() const {
 bool RenderSystem::init() {
     return true;
 }
+
+list<Renderable *> &RenderSystem::renderable() const {
+    return p_ptr->m_Objects;
+}
+
+list<Renderable *> &RenderSystem::lights() const {
+    return p_ptr->m_Lights;
+}
+
+list<PostProcessSettings *> &RenderSystem::postPcessSettings() const {
+    return p_ptr->m_Settings;
+}
 /*!
     Main drawing procedure.
 */
@@ -95,6 +111,28 @@ void RenderSystem::update(Scene *scene) {
         pipe->draw(*camera);
         pipe->finish();
     }
+}
+
+Object *RenderSystem::instantiateObject(const MetaObject *meta) {
+    Object *result = System::instantiateObject(meta);
+    if(dynamic_cast<Renderable *>(result)) {
+        if(dynamic_cast<BaseLight *>(result)) {
+            p_ptr->m_Lights.push_back(static_cast<Renderable *>(result));
+        } else {
+            p_ptr->m_Objects.push_back(static_cast<Renderable *>(result));
+        }
+    } else if(dynamic_cast<PostProcessSettings *>(result)) {
+        p_ptr->m_Settings.push_back(static_cast<PostProcessSettings *>(result));
+    }
+    return result;
+}
+
+void RenderSystem::removeObject(Object *object) {
+    System::removeObject(object);
+
+    p_ptr->m_Lights.remove(static_cast<Renderable *>(object));
+    p_ptr->m_Objects.remove(static_cast<Renderable *>(object));
+    p_ptr->m_Settings.remove(static_cast<PostProcessSettings *>(object));
 }
 
 void RenderSystem::atlasPageSize(int32_t &width, int32_t &height) {

@@ -27,4 +27,6 @@ public:
 
 };
 
+typedef list<Renderable *> RenderList;
+
 #endif // RENDERABLE_H

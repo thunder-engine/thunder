@@ -27,7 +27,7 @@ public:
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;
 
-    void shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) override;
+    void shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) override;
 
     AABBox bound() const override;
 #ifdef NEXT_SHARED

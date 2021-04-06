@@ -54,7 +54,9 @@ void Actions::setObject(Object *object) {
     if(index > -1) {
         m_Property = meta->property(index);
         ui->checkBox->show();
+        ui->checkBox->blockSignals(true);
         ui->checkBox->setChecked(m_Property.read(m_pObject).toBool());
+        ui->checkBox->blockSignals(false);
     }
 }
 

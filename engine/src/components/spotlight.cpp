@@ -91,7 +91,7 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectList &components) {
+void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
     A_UNUSED(camera);
 
     if(!castShadows()) {
@@ -137,11 +137,11 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, ObjectLi
     buffer->setViewProjection(rot, crop);
     buffer->setViewport(x, y, w, h);
 
-    ObjectList filter = Camera::frustumCulling(components,
+    RenderList filter = Camera::frustumCulling(components,
                                                Camera::frustumCorners(false, p_ptr->m_Angle * 2.0f, 1.0f, pos, q, p_ptr->m_Near, zFar));
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
-        static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
+        it->draw(*buffer, ICommandBuffer::SHADOWCAST);
     }
     buffer->resetViewProjection();
 }
