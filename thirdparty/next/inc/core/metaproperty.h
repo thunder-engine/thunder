@@ -116,7 +116,7 @@ struct Reader<T(Class::*)(const MetaProperty &), ReadFunc> {
         return Table<T>::get(typeName);
     }
 
-    inline static Variant read(const void *obj, const MetaProperty &) {
+    inline static Variant read(const void *obj, const MetaProperty &property) {
         return (reinterpret_cast<Class *>(obj)->*ReadFunc)(property);
     }
 };
