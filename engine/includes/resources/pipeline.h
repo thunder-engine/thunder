@@ -60,13 +60,15 @@ protected:
     void cleanShadowCache();
     void updateShadows(Camera &camera);
 
+    void combineComponents(Object *object);
+
 protected:
     typedef map<string, RenderTexture *> TargetMap;
 
     ICommandBuffer *m_Buffer;
 
-    list<Renderable *> m_Components;
-    list<Renderable *> m_Lights;
+    list<Renderable *> m_SceneComponents;
+    list<Renderable *> m_SceneLights;
     list<Renderable *> m_Filter;
 
     TargetMap m_Targets;

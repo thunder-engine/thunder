@@ -32,3 +32,11 @@ void Renderable::update() {
 AABBox Renderable::bound() const {
     return AABBox();
 }
+
+bool Renderable::isLight() const {
+    return false;
+}
+
+bool Renderable::isRenderable() const {
+    return true;
+}

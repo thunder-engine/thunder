@@ -170,6 +170,7 @@ public:
     virtual bool                    event                       (Event *event);
 
     virtual bool                    isSerializable              () const;
+    virtual bool                    isRenderable                () const;
 
     uint32_t                        clonedFrom                  () const;
     virtual void                    clearCloneRef               ();

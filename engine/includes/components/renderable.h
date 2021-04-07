@@ -25,6 +25,11 @@ public:
 
     virtual AABBox bound() const;
 
+    virtual bool isLight() const;
+
+private:
+    bool isRenderable() const;
+
 };
 
 typedef list<Renderable *> RenderList;

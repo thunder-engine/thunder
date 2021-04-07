@@ -56,6 +56,9 @@ protected:
     void setParams(Vector4 &params);
 
 private:
+    bool isLight() const override;
+
+private:
     BaseLightPrivate *p_ptr;
 
 };

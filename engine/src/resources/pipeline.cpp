@@ -112,7 +112,7 @@ void Pipeline::draw(Camera &camera) {
 
     // Step2.2 - Light pass
     m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
-    drawComponents(ICommandBuffer::LIGHT, m_Lights);
+    drawComponents(ICommandBuffer::LIGHT, m_SceneLights);
 
     // Step2.3 - Screen Space Local Reflections
     m_Targets[SSLR_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::LIGHT);
@@ -184,35 +184,14 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
 
     m_PostProcessSettings.clear();
 
-    m_Components.clear();
-    m_Lights.clear();
+    m_SceneComponents.clear();
+    m_SceneLights.clear();
 
-    for(auto &it : m_pSystem->renderable()) {
-        Actor *actor = it->actor();
-        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
-            it->update();
-            m_Components.push_back(it);
-        }
-    }
-
-    for(auto &it : m_pSystem->lights()) {
-        Actor *actor = it->actor();
-        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
-            it->update();
-            m_Lights.push_back(it);
-        }
-    }
+    combineComponents(scene);
 
     Camera *camera = Camera::current();
-    m_Filter = Camera::frustumCulling(m_Components, Camera::frustumCorners(*camera));
+    m_Filter = Camera::frustumCulling(m_SceneComponents, Camera::frustumCorners(*camera));
     sortByDistance(m_Filter, camera->actor()->transform()->position());
-
-    for(auto &it : m_pSystem->postPcessSettings()) {
-        Actor *actor = it->actor();
-        if(actor->scene() == scene && actor->isEnabledInHierarchy()) {
-            m_PostProcessSettings.push_back(it);
-        }
-    }
 
     if(!m_PostProcessSettings.empty()) {
         PostProcessSettings *settings = m_PostProcessSettings.front();
@@ -344,8 +323,8 @@ void Pipeline::cleanShadowCache() {
 void Pipeline::updateShadows(Camera &camera) {
     cleanShadowCache();
 
-    for(auto &it : m_pSystem->lights()) {
-        static_cast<BaseLight *>(it)->shadowsUpdate(camera, this, m_Components);
+    for(auto &it : m_SceneLights) {
+        static_cast<BaseLight *>(it)->shadowsUpdate(camera, this, m_SceneComponents);
     }
 }
 
@@ -359,6 +338,25 @@ RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
     }
     m_Buffer->resetViewProjection();
     return result;
+}
+
+void Pipeline::combineComponents(Object *object) {
+    for(auto &it : object->getChildren()) {
+        Object *child = it;
+        if(child->isRenderable()) {
+            Renderable *comp = static_cast<Renderable *>(child);
+            if(comp->actor()->isEnabledInHierarchy()) {
+                comp->update();
+                if(comp->isLight()) {
+                    m_SceneLights.push_back(comp);
+                } else {
+                    m_SceneComponents.push_back(comp);
+                }
+            }
+        } else {
+            combineComponents(child);
+        }
+    }
 }
 
 struct ObjectComp {

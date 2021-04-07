@@ -148,3 +148,7 @@ Vector4 BaseLight::params() const {
 void BaseLight::setParams(Vector4 &params) {
     p_ptr->m_Params = params;
 }
+
+bool BaseLight::isLight() const {
+    return true;
+}

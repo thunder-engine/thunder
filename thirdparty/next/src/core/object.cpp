@@ -848,6 +848,12 @@ bool Object::isSerializable() const {
     return true;
 }
 /*!
+    Returns true if the object can be rendered; otherwise returns false.
+*/
+bool Object::isRenderable() const {
+    return false;
+}
+/*!
     Returns the value of the object's property by \a name.
 
     If property not found returns invalid Variant.

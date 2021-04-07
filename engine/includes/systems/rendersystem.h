@@ -21,20 +21,10 @@ public:
 
     const char *name() const override;
 
-    list<Renderable *> &renderable() const;
-
-    list<Renderable *> &lights() const;
-
-    list<PostProcessSettings *> &postPcessSettings() const;
-
     static void atlasPageSize(int32_t &width, int32_t &height);
 
 protected:
     static void setAtlasPageSize(int32_t width, int32_t height);
-
-    Object *instantiateObject(const MetaObject *meta) override;
-
-    void removeObject(Object *object) override;
 
 private:
     RenderSystemPrivate *p_ptr;
