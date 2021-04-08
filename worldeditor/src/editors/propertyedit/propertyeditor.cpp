@@ -6,19 +6,10 @@
 #include "nextobject.h"
 #include "custom/Property.h"
 
-#include "custom/AlignmentProperty.h"
-#include "custom/AxisesProperty.h"
-#include "custom/AssetProperty.h"
 #include "custom/BoolProperty.h"
 #include "custom/IntegerProperty.h"
 #include "custom/FloatProperty.h"
-#include "custom/ColorProperty.h"
 #include "custom/StringProperty.h"
-#include "custom/Vector2DProperty.h"
-#include "custom/Vector3DProperty.h"
-#include "custom/FilePathProperty.h"
-#include "custom/ComponentProperty.h"
-#include "custom/LocaleProperty.h"
 
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
@@ -29,47 +20,17 @@
 Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
     int userType = 0;
     if(propertyObject) {
-        userType    = propertyObject->property(qPrintable(name)).userType();
+        userType = propertyObject->property(qPrintable(name)).userType();
     }
 
-    if(userType == QMetaType::Bool)
-        return new BoolProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::Int)
-        return new IntegerProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::Float || userType == QMetaType::Double)
-        return new FloatProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::QString)
-        return new StringProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Vector2"))
-        return new Vector2DProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Vector3"))
-        return new Vector3DProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("QColor"))
-        return new ColorProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("QFileInfo"))
-        return new FilePathProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("QLocale"))
-        return new LocaleProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Template"))
-        return new TemplateProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("SceneComponent"))
-        return new ComponentProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Alignment"))
-        return new AlignmentProperty(name, propertyObject, parent);
-
-    if(userType == QMetaType::type("Axises"))
-        return new AxisesProperty(name, propertyObject, parent);
+    switch(userType) {
+    case QMetaType::Bool: return new BoolProperty(name, propertyObject, parent);
+    case QMetaType::Int: return new IntegerProperty(name, propertyObject, parent);
+    case QMetaType::Float:
+    case QMetaType::Double: return new FloatProperty(name, propertyObject, parent);
+    case QMetaType::QString: return new StringProperty(name, propertyObject, parent);
+    default: break;
+    }
 
     return nullptr;
 }
@@ -106,7 +67,7 @@ public:
     explicit PropertyDelegate(QObject *parent = nullptr) :
         QStyledItemDelegate(parent) {
 
-        m_finishedMapper    = new QSignalMapper(this);
+        m_finishedMapper = new QSignalMapper(this);
         connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(commitData(QWidget*)));
         connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(closeEditor(QWidget*)));
     }
@@ -195,7 +156,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pFilter   = new PropertyFilter(this);
+    m_pFilter = new PropertyFilter(this);
     m_pFilter->setSourceModel(new PropertyModel(this));
 
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -203,6 +164,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
     registerCustomPropertyCB(createCustomProperty);
+    registerCustomPropertyCB(NextObject::createCustomProperty);
 }
 
 PropertyEditor::~PropertyEditor() {

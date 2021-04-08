@@ -22,6 +22,10 @@ void ComboEdit::addItem(const QString &text, const QVariant &data) {
     ui->comboBox->addItem(text, data);
 }
 
+void ComboEdit::clear() {
+    ui->comboBox->clear();
+}
+
 int ComboEdit::findText(const QString &text) {
     return ui->comboBox->findText(text);
 }

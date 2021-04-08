@@ -6,6 +6,8 @@
 
 #include <object.h>
 
+#include "custom/Property.h"
+
 class QMenu;
 
 class NextObject : public QObject {
@@ -27,6 +29,8 @@ public:
 
     bool isReadOnly(const QString &key) const;
 
+    static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent);
+
 public slots:
     void onUpdated();
 
@@ -44,9 +48,10 @@ protected slots:
 protected:
     bool event(QEvent *e);
 
-    QString editor(const MetaProperty &property);
+    QString editorTag(const MetaProperty &property);
+    QString enumTag(const MetaProperty &property);
 
-    QVariant qVariant(Variant &value, const MetaProperty &property);
+    QVariant qVariant(Variant &value, const MetaProperty &property, Object *object);
     Variant aVariant(QVariant &value, Variant &current, const MetaProperty &property);
 
     void buildObject(Object *object, const QString &path = QString());

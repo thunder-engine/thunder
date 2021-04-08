@@ -17,6 +17,8 @@ public:
     void addItems(const QStringList &items);
     void addItem(const QString &text, const QVariant &data);
 
+    void clear();
+
     int findText(const QString &text);
     int findData(const QVariant &data);
 

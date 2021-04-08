@@ -8,11 +8,16 @@
 #include <object.h>
 #include <invalid.h>
 
+#include "custom/AlignmentProperty.h"
+#include "custom/AxisesProperty.h"
+#include "custom/AssetProperty.h"
+#include "custom/ColorProperty.h"
 #include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
-#include "custom/ColorProperty.h"
 #include "custom/FilePathProperty.h"
-#include "custom/AssetProperty.h"
+#include "custom/ComponentProperty.h"
+#include "custom/LocaleProperty.h"
+#include "custom/NextEnumProperty.h"
 
 #include <engine.h>
 #include <components/component.h>
@@ -51,6 +56,7 @@ Q_DECLARE_METATYPE(Axises)
 #define TEMPLATE    "Template"
 
 const QString EditorTag("editor=");
+const QString EnumTag("enum=");
 const QString ReadOnlyTag("ReadOnly");
 
 NextObject::NextObject(Object *data, QObject *parent) :
@@ -127,7 +133,7 @@ void NextObject::buildObject(Object *object, const QString &path) {
             name = p + name;
             Variant data = property.read(object);
 
-            setProperty(qPrintable(name), qVariant(data, property));
+            setProperty(qPrintable(name), qVariant(data, property, object));
 
             if(property.table() && property.table()->annotation) {
                 QString annotation(property.table()->annotation);
@@ -189,7 +195,7 @@ bool NextObject::event(QEvent *e) {
     return false;
 }
 
-QString NextObject::editor(const MetaProperty &property) {
+QString NextObject::editorTag(const MetaProperty &property) {
     if(property.table() && property.table()->annotation) {
         QString annotation(property.table()->annotation);
         QStringList list = annotation.split(',');
@@ -197,6 +203,20 @@ QString NextObject::editor(const MetaProperty &property) {
             int index = it.indexOf(EditorTag);
             if(index > -1) {
                 return it.remove(EditorTag);
+            }
+        }
+    }
+    return QString();
+}
+
+QString NextObject::enumTag(const MetaProperty &property) {
+    if(property.table() && property.table()->annotation) {
+        QString annotation(property.table()->annotation);
+        QStringList list = annotation.split(',');
+        foreach(QString it, list) {
+            int index = it.indexOf(EnumTag);
+            if(index > -1) {
+                return it.remove(EnumTag);
             }
         }
     }
@@ -224,8 +244,9 @@ bool NextObject::isReadOnly(const QString &key) const {
     return m_Flags.value(key, false);
 }
 
-QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
-    QString editor = NextObject::editor(property);
+QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Object *object) {
+    QString editor = editorTag(property);
+    QString enumProperty = enumTag(property);
 
     switch(value.userType()) {
         case MetaType::BOOLEAN: {
@@ -237,6 +258,12 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
                 return QVariant::fromValue(static_cast<Axises>(intValue));
             } else if(editor == ALIGNMENT) {
                 return QVariant::fromValue(static_cast<Alignment>(intValue));
+            } else if(!enumProperty.isEmpty()) {
+                Enum enumValue;
+                enumValue.m_Value = value.toInt();
+                enumValue.m_EnumName = enumProperty;
+                enumValue.m_Object = object;
+                return QVariant::fromValue(enumValue);
             }
             return QVariant(value.toInt());
         }
@@ -290,20 +317,17 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property) {
 }
 
 Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProperty &property) {
-    QString editor = NextObject::editor(property);
-
-    if(static_cast<uint32_t>(current.userType()) == MetaType::type<Alignment>()) {
-        Alignment alignment = value.value<Alignment>();
-        return Variant::fromValue(alignment);
-    }
+    QString editor = NextObject::editorTag(property);
+    QString enumProperty = enumTag(property);
 
     switch(current.userType()) {
         case MetaType::BOOLEAN: {
             return Variant(value.toBool());
         }
         case MetaType::INTEGER: {
-            if(editor == AXISES) {
-
+            if(!enumProperty.isEmpty()) {
+                Enum enumValue = value.value<Enum>();
+                return Variant(enumValue.m_Value);
             }
             return Variant(value.toInt());
         }
@@ -336,6 +360,11 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
         default: break;
     }
 
+    if(static_cast<uint32_t>(current.userType()) == MetaType::type<Alignment>()) {
+        Alignment alignment = value.value<Alignment>();
+        return Variant::fromValue(alignment);
+    }
+
     QString typeName(QString(property.type().name()).replace(" *", ""));
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
@@ -358,4 +387,43 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
     }
 
     return Variant();
+}
+
+Property *NextObject::createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
+    int userType = 0;
+    if(propertyObject) {
+        userType = propertyObject->property(qPrintable(name)).userType();
+    }
+
+    if(userType == QMetaType::type("Vector2"))
+        return new Vector2DProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Vector3"))
+        return new Vector3DProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("QColor"))
+        return new ColorProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("QFileInfo"))
+        return new FilePathProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("QLocale"))
+        return new LocaleProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Template"))
+        return new TemplateProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("SceneComponent"))
+        return new ComponentProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Alignment"))
+        return new AlignmentProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Axises"))
+        return new AxisesProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Enum"))
+        return new NextEnumProperty(name, propertyObject, parent);
+
+    return nullptr;
 }

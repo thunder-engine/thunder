@@ -27,7 +27,7 @@ public:
 
     int                 value           (int index) const;
 
-    const Table        *table          () const;
+    const Table        *table           () const;
 
 private:
     const Table        *m_pTable;

@@ -18,7 +18,7 @@ class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
         A_PROPERTYEX(Vector4, color, SpriteRender::color, SpriteRender::setColor, "editor=Color"),
         A_PROPERTY(string, item, SpriteRender::item, SpriteRender::setItem),
         A_PROPERTY(Vector2, size, SpriteRender::size, SpriteRender::setSize),
-        A_PROPERTY(DrawMode, drawMode, SpriteRender::drawMode, SpriteRender::setDrawMode),
+        A_PROPERTYEX(DrawMode, drawMode, SpriteRender::drawMode, SpriteRender::setDrawMode, "enum=DrawMode"),
         A_PROPERTY(int, layer, SpriteRender::layer, SpriteRender::setLayer)
     )
     A_NOMETHODS()

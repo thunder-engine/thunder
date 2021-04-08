@@ -19,8 +19,10 @@ MetaEnum::MetaEnum(const Table *table) :
         m_EnumCount(0) {
     PROFILE_FUNCTION();
 
-    while(table->table && table->table[m_EnumCount].name) {
-        m_EnumCount++;
+    if(m_pTable) {
+        while(m_pTable->table && m_pTable->table[m_EnumCount].name) {
+            m_EnumCount++;
+        }
     }
 }
 /*!
