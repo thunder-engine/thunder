@@ -279,6 +279,7 @@ void Update_prefab() {
 
     delete level1;
     prefabTestComponent = dynamic_cast<TestComponent *>(prefab->addComponent("TestComponent"));
+    QCOMPARE(prefabTestComponent != nullptr, true);
 
     level2->transform()->setPosition(Vector3(1.0f, 2.0f, 3.0f));
 

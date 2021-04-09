@@ -6,7 +6,9 @@
     #include <CoreFoundation/CoreFoundation.h>
 #endif
 #ifdef __GNUC__
-    #include <dlfcn.h>
+    #ifdef __LINUX__
+        #include <dlfcn.h>
+    #endif
     #include <sys/stat.h>
 #endif
 #include <GLFW/glfw3.h>
@@ -17,7 +19,8 @@
 #include <json.h>
 
 #include <mutex>
-#include <string.h>
+#include <algorithm>
+#include <string>
 
 #define CONFIG_NAME "config.json"
 
@@ -30,11 +33,11 @@
 #define PRESS 1
 #define REPEAT 2
 
-Vector4 DesktopAdaptor::s_MousePosition     = Vector4();
-Vector4 DesktopAdaptor::s_OldMousePosition  = Vector4();
-int32_t DesktopAdaptor::s_Width     = 0;
-int32_t DesktopAdaptor::s_Height    = 0;
-bool DesktopAdaptor::s_Windowed     = false;
+Vector4 DesktopAdaptor::s_MousePosition  = Vector4();
+Vector4 DesktopAdaptor::s_OldMousePosition = Vector4();
+int32_t DesktopAdaptor::s_Width  = 0;
+int32_t DesktopAdaptor::s_Height = 0;
+bool DesktopAdaptor::s_Windowed  = false;
 
 static Engine *g_pEngine = nullptr;
 static File *g_pFile = nullptr;
@@ -46,9 +49,9 @@ static unordered_map<int32_t, int32_t> s_MouseButtons;
 
 class DesktopHandler : public LogHandler {
 protected:
-    void            setRecord       (Log::LogTypes, const char *record) {
+    void setRecord(Log::LogTypes, const char *record) {
         unique_lock<mutex> locker(m_Mutex);
-        FILE *fp   = fopen((gAppConfig + "/log.txt").c_str(), "a");
+        FILE *fp = fopen((gAppConfig + "/log.txt").c_str(), "a");
         if(fp) {
             fwrite(record, strlen(record), 1, fp);
             fwrite("\n", 1, 1, fp);
@@ -62,7 +65,7 @@ protected:
 DesktopAdaptor::DesktopAdaptor(Engine *engine) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr) {
-    g_pEngine   = engine;
+    g_pEngine = engine;
 
 }
 
@@ -73,10 +76,10 @@ bool DesktopAdaptor::init() {
         return false;
     }
 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -157,7 +160,7 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    m_pMonitor  = glfwGetPrimaryMonitor();
+    m_pMonitor = glfwGetPrimaryMonitor();
     if(m_pMonitor) {
         const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
         s_Width = mode->width;
@@ -239,7 +242,7 @@ void DesktopAdaptor::setMousePosition(int32_t x, int32_t y) {
 }
 
 uint32_t DesktopAdaptor::joystickCount() {
-    uint16_t result  = 0;
+    uint16_t result = 0;
     for(uint8_t i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
         if(glfwJoystickPresent(GLFW_JOYSTICK_1 + i)) {
             result++;
@@ -315,7 +318,7 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
 }
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
-    s_OldMousePosition  = s_MousePosition;
+    s_OldMousePosition = s_MousePosition;
     s_MousePosition = Vector4(xpos, ypos, xpos / s_Width, ypos / s_Height);
 }
 
@@ -328,7 +331,7 @@ string DesktopAdaptor::locationLocalDir() {
 #if _WIN32
     wchar_t path[MAX_PATH];
     if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result  = Utils::wstringToUtf8(wstring(path));
+        result = Utils::wstringToUtf8(wstring(path));
         replace(result.begin(), result.end(), '\\', '/');
     }
 #elif __APPLE__

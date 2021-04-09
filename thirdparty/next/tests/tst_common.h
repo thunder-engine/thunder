@@ -166,19 +166,18 @@ inline bool compare(const Object &left, const Object &right) {
 class TestRunnder {
 public:
     static QObjectList &tests() {
-        return TestRunnder::m_List;
+        static QObjectList list;
+        return list;
     }
 
     static int runAllTests(int argc, char **argv) {
         int status = 0;
-        for(auto it : m_List) {
+        for(auto it : tests()) {
             status |= QTest::qExec(it, argc, argv);
         }
         qDebug() << "********* All tests completed *********";
         return status;
     }
-private:
-    static QObjectList m_List;
 };
 
 class ListAdder {

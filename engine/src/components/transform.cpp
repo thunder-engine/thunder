@@ -74,6 +74,13 @@ Transform::Transform() :
 }
 
 Transform::~Transform() {
+    setParentTransform(nullptr, true);
+
+    list<Transform *> temp = p_ptr->m_Children;
+    for(auto it : temp) {
+        it->setParentTransform(nullptr, true);
+    }
+
     delete p_ptr;
 }
 /*!
@@ -139,9 +146,15 @@ Transform *Transform::parentTransform() const {
     In case of \a force flag provided as true, no recalculations of transform happen.
 */
 void Transform::setParentTransform(Transform *parent, bool force) {
-    Vector3 p = worldPosition();
-    Vector3 e = worldRotation();
-    Vector3 s = worldScale();
+    Vector3 p;
+    Vector3 e;
+    Vector3 s;
+
+    if(parent) {
+        p = worldPosition();
+        e = worldRotation();
+        s = worldScale();
+    }
 
     if(p_ptr->m_pParent) {
         auto it = std::find(p_ptr->m_pParent->p_ptr->m_Children.begin(),

@@ -18,6 +18,8 @@ Project {
         "../engine/includes",
     ]
 
+    property bool enableCoverage: qbs.toolchain.contains("gcc")
+
     QtApplication {
         name: "tests"
         condition: tests.desktop
@@ -44,8 +46,9 @@ Project {
         cpp.includePaths: tests.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
-        cpp.dynamicLibraries: [ ]
         cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxFlags: tests.enableCoverage ? ["--coverage"] : undefined
+        cpp.dynamicLibraries: tests.enableCoverage ? ["gcov"] : [ ]
 
         Properties {
             condition: qbs.targetOS.contains("linux")
@@ -60,11 +63,11 @@ Project {
 
         Properties {
             condition: qbs.targetOS[0] === "windows"
-            cpp.dynamicLibraries: [ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32" ]
+            cpp.dynamicLibraries: outer.concat([ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32" ])
         }
         Properties {
             condition: qbs.targetOS[0] === "linux"
-            cpp.dynamicLibraries: [ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ]
+            cpp.dynamicLibraries: outer.concat([ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ])
         }
         Properties {
             condition: qbs.targetOS[0] === "macos"

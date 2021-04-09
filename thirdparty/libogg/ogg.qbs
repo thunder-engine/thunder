@@ -25,7 +25,7 @@ Project {
         cpp.dynamicLibraries: [ ]
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
+            condition: qbs.targetOS.contains("windows") && !qbs.toolchain.contains("gcc")
             cpp.linkerFlags: ["/DEF:" + path + "/src/ogg.def"]
         }
 

@@ -66,7 +66,7 @@ Product {
                 var libs = ["Qt5Core", "Qt5Gui", "Qt5Script", "Qt5Xml",
                             "Qt5XmlPatterns", "Qt5Network", "Qt5Multimedia",
                             "Qt5QuickWidgets", "Qt5Quick", "Qt5QuickTemplates2", "Qt5QuickShapes",
-                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets"]
+                            "Qt5QuickControls2", "Qt5Qml", "Qt5Svg", "Qt5Widgets", "Qt5Test"]
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
