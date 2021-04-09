@@ -4,8 +4,6 @@
 #include <metaenum.h>
 #include <metaproperty.h>
 
-#include <QDebug>
-
 #include "../editors/ComboEdit.h"
 #include "../nextobject.h"
 
@@ -66,8 +64,6 @@ bool NextEnumProperty::setEditorData(QWidget *editor, const QVariant &data) {
                 e->setCurrentIndex(idx);
                 e->blockSignals(false);
             }
-        } else {
-            qDebug() << "Empty data provided";
         }
     } else {
         return false;
@@ -76,7 +72,7 @@ bool NextEnumProperty::setEditorData(QWidget *editor, const QVariant &data) {
     return true;
 }
 
-QVariant NextEnumProperty::editorData(QWidget *editor) {
+QVariant NextEnumProperty::editorData(QWidget *) {
     return QVariant(m_Value.m_Value);
 }
 
@@ -88,6 +84,6 @@ void NextEnumProperty::valueChanged(const QString &item) {
             break;
         }
     }
-    m_Value.m_Value = idx;
+    m_Value.m_Value = m_metaEnum.value(idx);
     setValue(QVariant::fromValue(m_Value));
 }
