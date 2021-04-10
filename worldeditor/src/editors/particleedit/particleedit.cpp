@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QQmlContext>
 #include <QQuickItem>
+#include <QQmlEngine>
 #include <QMessageBox>
 
 #include "effectconverter.h"
@@ -14,10 +15,9 @@
 #include "controllers/objectctrl.h"
 #include "graph/viewport.h"
 
-#include "components/actor.h"
-#include "components/particlerender.h"
-
-#include <QQmlEngine>
+#include <components/scene.h>
+#include <components/actor.h>
+#include <components/particlerender.h>
 
 ParticleEdit::ParticleEdit(DocumentModel *document) :
         QMainWindow(nullptr),

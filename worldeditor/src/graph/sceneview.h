@@ -3,21 +3,12 @@
 
 #include <QOpenGLWidget>
 
-#include <QInputEvent>
-#include <QMenu>
-#include <QPainter>
-
-#include <QStandardPaths>
-
-#include <components/scene.h>
 #include <adapters/iplatformadaptor.h>
-#include "config.h"
 
 class Engine;
 class System;
+class Scene;
 class ICommandBuffer;
-
-class CameraCtrl;
 
 class QOffscreenSurface;
 class QOpenGLFramebufferObject;
@@ -31,10 +22,7 @@ public:
     void                    setEngine           (Engine *engine);
 
     void                    setScene            (Scene *scene);
-    Scene                  *scene               ()              { return m_pScene; }
-
-    void                    setController       (CameraCtrl *ctrl);
-    CameraCtrl             *controller          () const        { return m_pController; }
+    Scene                  *scene               () { return m_pScene; }
 
 public:
     bool                    init                () override { return true; }
@@ -71,31 +59,21 @@ public:
         QCursor::setPos(mapToGlobal(QPoint(x, y)));
     }
 
-    uint32_t                screenWidth         () override { return width(); }
+    uint32_t                screenWidth         () override;
+    uint32_t                screenHeight        () override;
 
-    uint32_t                screenHeight        () override { return height(); }
+    uint32_t                joystickCount       () override;
+    uint32_t                joystickButtons     (uint32_t) override;
+    Vector4                 joystickThumbs      (uint32_t) override;
+    Vector2                 joystickTriggers    (uint32_t) override;
 
-    uint32_t                joystickCount       () override { return 0; }
+    void                   *pluginLoad          (const char *) override;
+    bool                    pluginUnload        (void *) override;
+    void                   *pluginAddress       (void *, const string &) override;
 
-    uint32_t                joystickButtons     (uint32_t) override { return 0; }
-
-    Vector4                 joystickThumbs      (uint32_t) override { return Vector4(); }
-
-    Vector2                 joystickTriggers    (uint32_t) override { return Vector2(); }
-
-    void                   *pluginLoad          (const char *) override { return nullptr; }
-
-    bool                    pluginUnload        (void *) override { return false; }
-
-    void                   *pluginAddress       (void *, const string &) override { return nullptr; }
-
-    string                  locationLocalDir    () override { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
-
-signals:
-    void                    inited              ();
+    string                  locationLocalDir    () override;
 
 protected:
-    void                    initializeGL        () override;
     void                    paintGL             () override;
     void                    resizeGL            (int width, int height) override;
 
@@ -108,13 +86,9 @@ protected:
 protected:
     virtual void            findCamera          ();
 
-    CameraCtrl             *m_pController;
-
     Scene                  *m_pScene;
 
     Engine                 *m_pEngine;
-
-    QMenu                   m_RenderModeMenu;
 
     unordered_map<int32_t, int32_t> m_Keys;
     unordered_map<int32_t, int32_t> m_MouseButtons;

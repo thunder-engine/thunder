@@ -21,6 +21,7 @@
 // Engine
 #include <module.h>
 #include <timer.h>
+#include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spriterender.h>
@@ -48,6 +49,7 @@
 // System
 #include <global.h>
 #include "qlog.h"
+#include "config.h"
 
 // Editors
 #include "editors/propertyedit/nextobject.h"
@@ -123,7 +125,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->viewport->setController(ctl);
     ui->viewport->setScene(m_pEngine->scene());
 
-    ui->preview->setController(new CameraCtrl(ui->preview));
     ui->preview->setEngine(m_pEngine);
     ui->preview->setScene(m_pEngine->scene());
     ui->preview->setWindowTitle("Preview");
@@ -697,8 +698,6 @@ void SceneComposer::onImportProject() {
 
 void SceneComposer::onImportFinished() {
     ui->viewport->makeCurrent();
-
-    ui->preview->controller()->init(ui->preview->scene());
 
     CameraCtrl *ctrl = ui->viewport->controller();
     ctrl->init(ui->viewport->scene());

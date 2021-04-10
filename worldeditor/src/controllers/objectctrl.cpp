@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMenu>
 #include <QDebug>
 
 #include <components/actor.h>
@@ -23,6 +24,8 @@
 #include "rotatetool.h"
 #include "scaletool.h"
 #include "resizetool.h"
+
+#include "config.h"
 
 #include "editors/componentbrowser/componentbrowser.h"
 #include "assetmanager.h"

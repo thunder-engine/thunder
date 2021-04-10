@@ -4,6 +4,7 @@
 #include <commandbuffer.h>
 
 #include <components/camera.h>
+#include <components/scene.h>
 
 #include <resources/pipeline.h>
 #include <resources/material.h>
@@ -20,15 +21,30 @@
 #define OVERRIDE "uni.texture0"
 
 Viewport::Viewport(QWidget *parent) :
-        SceneView(parent) {
+        QOpenGLWidget(parent),
+        m_pController(nullptr) {
 
     setAcceptDrops(true);
     //setContextMenuPolicy(Qt::CustomContextMenu);
     setAutoFillBackground(false);
+
+    setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
+}
+
+void Viewport::setController(CameraCtrl *ctrl) {
+    m_pController = ctrl;
 }
 
 void Viewport::initializeGL() {
-    SceneView::initializeGL();
+    QOpenGLWidget::initializeGL();
+
+    emit inited();
+}
+
+void Viewport::setScene(Scene *scene) {
+    m_pScene = scene;
+    PluginManager::instance()->addScene(m_pScene);
 }
 
 void Viewport::paintGL() {
@@ -43,7 +59,14 @@ void Viewport::paintGL() {
 }
 
 void Viewport::resizeGL(int width, int height) {
-    SceneView::resizeGL(width, height);
+    QOpenGLWidget::resizeGL(width, height);
+
+    Camera *camera = Camera::current();
+    if(camera) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->resize(width, height);
+        pipe->setTarget(defaultFramebufferObject());
+    }
 
     if(m_pController) {
         Camera::setCurrent(m_pController->camera());

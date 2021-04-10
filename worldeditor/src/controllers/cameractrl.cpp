@@ -1,5 +1,7 @@
 #include "cameractrl.h"
 
+#include <QMenu>
+
 #include <engine.h>
 #include <timer.h>
 #include <float.h>
@@ -32,7 +34,7 @@ CameraCtrl::CameraCtrl(QOpenGLWidget *view) :
 
 void CameraCtrl::init(Scene *scene) {
     Q_UNUSED(scene)
-    m_pCamera   = Engine::objectCreate<Actor>("Camera");
+    m_pCamera = Engine::objectCreate<Actor>("Camera");
     m_pActiveCamera = static_cast<Camera *>(m_pCamera->addComponent("Camera"));
     m_pActiveCamera->setFocal(10.0f);
     m_pActiveCamera->setOrthoSize(10.0f);

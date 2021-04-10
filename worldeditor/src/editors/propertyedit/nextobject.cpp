@@ -20,6 +20,7 @@
 #include "custom/NextEnumProperty.h"
 
 #include <engine.h>
+#include <components/scene.h>
 #include <components/component.h>
 #include <components/actor.h>
 #include <components/transform.h>

@@ -1,41 +1,55 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "sceneview.h"
+#include <QOpenGLWidget>
 
-class Viewport : public SceneView {
+class CameraCtrl;
+class Scene;
+
+class Viewport : public QOpenGLWidget {
     Q_OBJECT
 public:
-    Viewport                (QWidget *parent = 0);
+    Viewport(QWidget *parent = 0);
 
-protected:
-    void                    initializeGL        ();
-    void                    paintGL             ();
-    void                    resizeGL            (int width, int height);
+    void setController(CameraCtrl *ctrl);
+    CameraCtrl *controller() const { return m_pController; }
+
+    void setScene(Scene *scene);
+    Scene *scene() { return m_pScene; }
 
 signals:
-    void                    drop                (QDropEvent *);
-    void                    dragEnter           (QDragEnterEvent *);
-    void                    dragMove            (QDragMoveEvent *);
-    void                    dragLeave           (QDragLeaveEvent *);
+    void inited();
+
+    void drop(QDropEvent *);
+    void dragEnter(QDragEnterEvent *);
+    void dragMove(QDragMoveEvent *);
+    void dragLeave(QDragLeaveEvent *);
 
 protected:
-    void                    dragEnterEvent      (QDragEnterEvent *);
-    void                    dragMoveEvent       (QDragMoveEvent *);
-    void                    dragLeaveEvent      (QDragLeaveEvent *);
-    void                    dropEvent           (QDropEvent *);
+    void initializeGL() override;
+    void paintGL() override;
+    void resizeGL(int width, int height) override;
 
-    void                    mouseMoveEvent      (QMouseEvent *);
-    void                    mousePressEvent     (QMouseEvent *);
-    void                    mouseReleaseEvent   (QMouseEvent *);
+    void dragEnterEvent(QDragEnterEvent *) override;
+    void dragMoveEvent(QDragMoveEvent *) override;
+    void dragLeaveEvent(QDragLeaveEvent *) override;
+    void dropEvent(QDropEvent *) override;
 
-    void                    wheelEvent          (QWheelEvent *);
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
 
-    void                    keyPressEvent       (QKeyEvent *);
-    void                    keyReleaseEvent     (QKeyEvent *);
+    void wheelEvent(QWheelEvent *) override;
+
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
 
 private:
-    void                    findCamera          ();
+    void findCamera();
+
+    CameraCtrl *m_pController;
+
+    Scene *m_pScene;
 
 };
 

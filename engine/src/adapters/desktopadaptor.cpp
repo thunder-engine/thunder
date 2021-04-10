@@ -6,9 +6,7 @@
     #include <CoreFoundation/CoreFoundation.h>
 #endif
 #ifdef __GNUC__
-    #ifdef __LINUX__
-        #include <dlfcn.h>
-    #endif
+    #include <dlfcn.h>
     #include <sys/stat.h>
 #endif
 #include <GLFW/glfw3.h>

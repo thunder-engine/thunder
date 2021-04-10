@@ -6,6 +6,7 @@
 
 #include <engine.h>
 
+#include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/meshrender.h>

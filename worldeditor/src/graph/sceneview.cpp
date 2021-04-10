@@ -3,6 +3,7 @@
 #include <QDragEnterEvent>
 
 #include <QPainter>
+#include <QStandardPaths>
 
 #include "sceneview.h"
 
@@ -26,7 +27,6 @@
 
 SceneView::SceneView(QWidget *parent) :
         QOpenGLWidget(parent),
-        m_pController(nullptr),
         m_pScene(nullptr),
         m_pEngine(nullptr) {
 
@@ -50,18 +50,7 @@ void SceneView::setScene(Scene *scene) {
     PluginManager::instance()->addScene(m_pScene);
 }
 
-void SceneView::setController(CameraCtrl *ctrl) {
-    m_pController = ctrl;
-}
-
-void SceneView::initializeGL() {
-    emit inited();
-}
-
 void SceneView::paintGL() {
-    if(m_pController) {
-        m_pController->update();
-    }
     if(m_pScene) {
         findCamera();
 
@@ -94,13 +83,11 @@ void SceneView::paintGL() {
 void SceneView::resizeGL(int width, int height) {
     QOpenGLWidget::resizeGL(width, height);
 
-    if(m_pController) {
-        Camera *camera  = Camera::current();
-        if(camera) {
-            Pipeline *pipe = camera->pipeline();
-            pipe->resize(width, height);
-            pipe->setTarget(defaultFramebufferObject());
-        }
+    Camera *camera = Camera::current();
+    if(camera) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->resize(width, height);
+        pipe->setTarget(defaultFramebufferObject());
     }
 }
 
@@ -301,9 +288,9 @@ void SceneView::keyReleaseEvent(QKeyEvent *ev) {
 }
 
 void SceneView::findCamera() {
-    Actor *chunk    = m_pScene->findChild<Actor *>(false);
+    Actor *chunk = m_pScene->findChild<Actor *>(false);
     if(chunk) {
-        Camera *camera  = chunk->findChild<Camera *>();
+        Camera *camera = chunk->findChild<Camera *>();
         if(camera) {
             Pipeline *pipe = camera->pipeline();
             pipe->resize(width(), height());
@@ -311,4 +298,18 @@ void SceneView::findCamera() {
         }
         Camera::setCurrent(camera);
     }
+}
+
+uint32_t SceneView::screenWidth() { return width(); }
+uint32_t SceneView::screenHeight() { return height(); }
+uint32_t SceneView::joystickCount() { return 0; }
+uint32_t SceneView::joystickButtons(uint32_t) { return 0; }
+Vector4 SceneView::joystickThumbs(uint32_t) { return Vector4(); }
+Vector2 SceneView::joystickTriggers(uint32_t) { return Vector2(); }
+void *SceneView::pluginLoad(const char *) { return nullptr; }
+bool SceneView::pluginUnload(void *) { return false; }
+void *SceneView::pluginAddress(void *, const string &) { return nullptr; }
+
+string SceneView::locationLocalDir() {
+    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString();
 }

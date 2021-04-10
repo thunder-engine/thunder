@@ -1,19 +1,22 @@
 #include "textureedit.h"
 #include "ui_textureedit.h"
 
+#include <QDir>
+
 #include "textureconverter.h"
 
 #include "editors/propertyedit/nextobject.h"
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
-#include "components/spriterender.h"
-#include "components/camera.h"
+#include <components/scene.h>
+#include <components/actor.h>
+#include <components/transform.h>
+#include <components/spriterender.h>
+#include <components/camera.h>
 
-#include "resources/texture.h"
-#include "resources/material.h"
+#include <resources/texture.h>
+#include <resources/material.h>
 
 #include "projectmanager.h"
 
