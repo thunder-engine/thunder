@@ -10,6 +10,7 @@
 
     \sa Vector3, Plane, AABBox
 */
+
 /*!
     Constructs an identity ray.
     pos at [0, 0, 0] and dir to [0, 0, 1]
@@ -23,8 +24,9 @@ Ray::Ray() :
     Constructs a ray with \a position and \a direction.
 */
 Ray::Ray(const Vector3 &position, const Vector3 &direction) :
-        pos(position),
-        dir(direction) {
+    pos(position),
+    dir(direction) {
+
 }
 /*!
     Returns true if this ray is equal to given \a ray; otherwise returns false.
@@ -46,26 +48,26 @@ bool Ray::operator!=(const Ray &ray) const {
 */
 bool Ray::intersect(const Vector3 &position, areal radius, Vector3 *pt) {
     Vector3 l = position - pos;
-    areal tca   = l.dot(dir);
+    areal tca = l.dot(dir);
     if(tca < 0) {
         return false;
     }
 
-    areal d2    = l.dot(l) - tca * tca;
+    areal d2 = l.dot(l) - tca * tca;
     if(d2 > radius * radius) {
         return false;
     }
 
     if(pt) {
-        areal thc   = sqrt(radius * radius - d2);
-        areal t0    = tca - thc;
-        areal t1    = tca + thc;
+        areal thc = sqrt(radius * radius - d2);
+        areal t0  = tca - thc;
+        areal t1  = tca + thc;
 
         if(t0 < 0.001f) {
-            t0      = t1;
+            t0 = t1;
         }
 
-        *pt         = pos + dir * t0;
+        *pt    = pos + dir * t0;
     }
 
     return true;

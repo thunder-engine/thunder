@@ -85,6 +85,7 @@ Project {
         "modules/media/media.qbs",
         "modules/physics/bullet/bullet.qbs",
         "modules/renders/rendergl/rendergl.qbs",
+        "modules/renders/lightbuilder/lightbuilder.qbs",
         "modules/vms/angel/angel.qbs",
         //"modules/gui/gui.qbs",
         //"modules/editor/editor.qbs",

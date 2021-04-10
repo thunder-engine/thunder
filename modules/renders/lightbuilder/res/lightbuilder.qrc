@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/programs">
+        <file>kernel.cl</file>
+        <file>utils.cl</file>
+        <file>ray.cl</file>
+    </qresource>
+</RCC>
