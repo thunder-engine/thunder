@@ -19,6 +19,7 @@
 #include <mutex>
 #include <algorithm>
 #include <string>
+#include <cstring>
 
 #define CONFIG_NAME "config.json"
 
