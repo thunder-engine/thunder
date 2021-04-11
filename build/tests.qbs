@@ -18,7 +18,7 @@ Project {
         "../engine/includes",
     ]
 
-    property bool enableCoverage: qbs.toolchain.contains("gcc")
+    property bool enableCoverage: qbs.toolchain.contains("gcc") && !qbs.targetOS.contains("macos")
 
     QtApplication {
         name: "tests"
