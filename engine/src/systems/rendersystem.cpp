@@ -27,25 +27,32 @@ public:
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
 int32_t RenderSystemPrivate::m_AtlasPageHeight = 1024;
 
+static bool classesRegistered = false;
+
 RenderSystem::RenderSystem() :
         p_ptr(new RenderSystemPrivate()) {
-    Renderable::registerClassFactory(this);
-    MeshRender::registerClassFactory(this);
-    TextRender::registerClassFactory(this);
-    SpriteRender::registerClassFactory(this);
-    SkinnedMeshRender::registerClassFactory(this);
 
-    BaseLight::registerClassFactory(this);
-    DirectLight::registerClassFactory(this);
-    PointLight::registerClassFactory(this);
-    SpotLight::registerClassFactory(this);
-    AreaLight::registerClassFactory(this);
+    if(!classesRegistered) {
+        Renderable::registerClassFactory(this);
+        MeshRender::registerClassFactory(this);
+        TextRender::registerClassFactory(this);
+        SpriteRender::registerClassFactory(this);
+        SkinnedMeshRender::registerClassFactory(this);
 
-    ParticleRender::registerClassFactory(this);
+        BaseLight::registerClassFactory(this);
+        DirectLight::registerClassFactory(this);
+        PointLight::registerClassFactory(this);
+        SpotLight::registerClassFactory(this);
+        AreaLight::registerClassFactory(this);
 
-    ICommandBuffer::registerClassFactory(this);
+        ParticleRender::registerClassFactory(this);
 
-    PostProcessSettings::registerClassFactory(this);
+        ICommandBuffer::registerClassFactory(this);
+
+        PostProcessSettings::registerClassFactory(this);
+
+        classesRegistered = true;
+    }
 }
 
 RenderSystem::~RenderSystem() {
