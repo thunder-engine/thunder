@@ -15,6 +15,7 @@ class EnginePrivate;
 
 class Scene;
 class System;
+class PlatformAdaptor;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {
 public:
@@ -29,7 +30,7 @@ public:
 
     void                        resize                      ();
 
-    void                        update                      ();
+    void                        update                      (Scene *scene);
 /*
     Settings
 */
@@ -85,9 +86,9 @@ public:
 
     string                      organizationName            () const;
 
-    void                        updateScene                 (Scene *scene);
-
     static void                 setResource                 (Object *object, const string &uuid);
+
+    static void                 setPlatformAdaptor          (PlatformAdaptor *platform);
 
     void                        processEvents               () override;
 

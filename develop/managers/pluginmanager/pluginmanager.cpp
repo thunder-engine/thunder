@@ -10,6 +10,7 @@
 #include <module.h>
 #include <system.h>
 #include <components/scene.h>
+#include <systems/rendersystem.h>
 
 #include <bson.h>
 
@@ -265,7 +266,9 @@ void PluginManager::rescanPath(const QString &path) {
 void PluginManager::registerSystem(Module *plugin) {
     System *system = plugin->system();
     m_Systems[QString::fromStdString(system->name())] = system;
-    if(QString(system->name()) == "RenderGL") {
+    m_pEngine->addModule(plugin);
+
+    if(dynamic_cast<RenderSystem *>(system)) {
         m_pRender = system;
     }
 }
@@ -274,15 +277,6 @@ void PluginManager::initSystems() {
     foreach(auto it, m_Systems) {
         if(it) {
             it->init();
-        }
-    }
-}
-
-void PluginManager::updateSystems(Scene *scene) {
-    foreach(auto it, m_Systems) {
-        if(it) {
-            it->setActiveScene(scene);
-            it->processEvents();
         }
     }
 }

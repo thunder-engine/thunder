@@ -1,11 +1,11 @@
 #ifndef DESKTOPAADAPTOR_H
 #define DESKTOPAADAPTOR_H
 
-#include "iplatformadaptor.h"
+#include "platformadaptor.h"
 
 class Log;
 
-class MobileAdaptor : public IPlatformAdaptor {
+class MobileAdaptor : public PlatformAdaptor {
 public:
     MobileAdaptor               (Engine *engine);
 

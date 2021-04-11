@@ -110,7 +110,7 @@ public:
 
     static string            m_Application;
 
-    static IPlatformAdaptor *m_pPlatform;
+    static PlatformAdaptor  *m_pPlatform;
 
     static VariantMap        m_Values;
 
@@ -129,7 +129,7 @@ string            EnginePrivate::m_ApplicationPath;
 string            EnginePrivate::m_ApplicationDir;
 string            EnginePrivate::m_Organization;
 string            EnginePrivate::m_Application;
-IPlatformAdaptor *EnginePrivate::m_pPlatform = nullptr;
+PlatformAdaptor  *EnginePrivate::m_pPlatform = nullptr;
 ResourceSystem   *EnginePrivate::m_pResourceSystem = nullptr;
 Translator       *EnginePrivate::m_pTranslator = nullptr;
 Engine           *EnginePrivate::m_pInstance = nullptr;
@@ -236,14 +236,14 @@ bool Engine::init() {
     PROFILE_FUNCTION();
 
 #ifdef THUNDER_MOBILE
-    p_ptr->m_pPlatform  = new MobileAdaptor(this);
+    EnginePrivate::m_pPlatform = new MobileAdaptor(this);
 #else
-    p_ptr->m_pPlatform  = new DesktopAdaptor(this);
+    EnginePrivate::m_pPlatform = new DesktopAdaptor(this);
 #endif
-    bool result = p_ptr->m_pPlatform->init();
+    bool result = EnginePrivate::m_pPlatform->init();
 
     Timer::init();
-    Input::init(p_ptr->m_pPlatform);
+    Input::init(EnginePrivate::m_pPlatform);
 
     p_ptr->m_ThreadPool.setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
 
@@ -265,7 +265,6 @@ bool Engine::start() {
             p_ptr->m_pPlatform->stop();
             return false;
         }
-        it->setActiveScene(p_ptr->m_pScene);
     }
     for(auto it : EnginePrivate::m_Serial) {
         if(!it->init()) {
@@ -273,7 +272,6 @@ bool Engine::start() {
             p_ptr->m_pPlatform->stop();
             return false;
         }
-        it->setActiveScene(p_ptr->m_pScene);
     }
 
     EnginePrivate::m_Game = true;
@@ -302,7 +300,9 @@ bool Engine::start() {
 
 #ifndef THUNDER_MOBILE
     while(p_ptr->m_pPlatform->isValid()) {
-        update();
+        Timer::update();
+
+        update(p_ptr->m_pScene);
     }
     p_ptr->m_pPlatform->stop();
 #endif
@@ -321,20 +321,20 @@ void Engine::resize() {
 }
 /*!
     This method launches all your game modules responsible for processing all the game logic.
-    It calls on each iteration of the game cycle.
+    It calls on each iteration of the game cycle for the provided \a scene.
     \note Usually, this method calls internally and must not be called manually.
 */
-void Engine::update() {
+void Engine::update(Scene *scene) {
     PROFILE_FUNCTION();
-
-    Timer::update();
 
     processEvents();
 
     for(auto it : EnginePrivate::m_Pool) {
+        it->setActiveScene(scene);
         p_ptr->m_ThreadPool.start(*it);
     }
     for(auto it : EnginePrivate::m_Serial) {
+        it->setActiveScene(scene);
         it->processEvents();
     }
 
@@ -347,7 +347,19 @@ void Engine::processEvents() {
     PROFILE_FUNCTION();
 
     ObjectSystem::processEvents();
-    updateScene(p_ptr->m_pScene);
+
+    if(isGameMode()) {
+        for(auto it : m_ObjectList) {
+            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
+            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() == p_ptr->m_pScene) {
+                if(!comp->isStarted()) {
+                    comp->start();
+                    comp->setStarted(true);
+                }
+                comp->update();
+            }
+        }
+    }
 }
 /*!
     \internal
@@ -453,6 +465,13 @@ void Engine::setResource(Object *object, const string &uuid) {
     PROFILE_FUNCTION();
 
     EnginePrivate::m_pResourceSystem->setResource(static_cast<Resource *>(object), uuid);
+}
+/*!
+    Replaces a current \a platform adaptor with new one;
+    \note The previous one will not be deleted.
+*/
+void Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
+    EnginePrivate::m_pPlatform = platform;
 }
 /*!
     Returns resource path for the provided resource \a object.
@@ -643,25 +662,4 @@ string Engine::organizationName() const {
     PROFILE_FUNCTION();
 
     return EnginePrivate::m_Organization;
-}
-/*!
-    This method launches your game logic for the current \a scene.
-    It calls on each iteration of the game cycle.
-    \note Usually, this method calls internally and must not be called manually.
-*/
-void Engine::updateScene(Scene *scene) {
-    PROFILE_FUNCTION();
-
-    if(isGameMode()) {
-        for(auto it : m_ObjectList) {
-            NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() == scene) {
-                if(!comp->isStarted()) {
-                    comp->start();
-                    comp->setStarted(true);
-                }
-                comp->update();
-            }
-        }
-    }
 }

@@ -1,5 +1,5 @@
-#ifndef AABSTRACTPLATFORMADAPTER_H
-#define AABSTRACTPLATFORMADAPTER_H
+#ifndef PLATFORMADAPTER_H
+#define PLATFORMADAPTER_H
 
 #include <cstdint>
 #include <string>
@@ -10,9 +10,9 @@
 
 extern int thunderMain(Engine *engine);
 
-class IPlatformAdaptor {
+class PlatformAdaptor {
 public:
-    virtual ~IPlatformAdaptor           () {}
+    virtual ~PlatformAdaptor            () {}
 
     virtual bool                        init                        () = 0;
 
@@ -70,4 +70,4 @@ public:
 
 };
 
-#endif // AABSTRACTPLATFORMADAPTER_H
+#endif // PLATFORMADAPTER_H

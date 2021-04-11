@@ -1,8 +1,8 @@
 #include "input.h"
 
-#include "adapters/iplatformadaptor.h"
+#include "adapters/platformadaptor.h"
 
-static IPlatformAdaptor *s_pPlatform = nullptr;
+static PlatformAdaptor *s_pPlatform = nullptr;
 
 /*!
     \class Input
@@ -22,7 +22,7 @@ static IPlatformAdaptor *s_pPlatform = nullptr;
 
     \internal
 */
-void Input::init(IPlatformAdaptor *platform) {
+void Input::init(PlatformAdaptor *platform) {
     s_pPlatform = platform;
 }
 /*!

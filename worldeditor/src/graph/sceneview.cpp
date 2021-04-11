@@ -1,24 +1,15 @@
-#include <QApplication>
-#include <QMimeData>
-#include <QDragEnterEvent>
-
-#include <QPainter>
-#include <QStandardPaths>
-
 #include "sceneview.h"
 
+#include <QStandardPaths>
+#include <QMouseEvent>
+
 #include <engine.h>
-#include <system.h>
 
 #include <components/actor.h>
 #include <components/scene.h>
 #include <components/camera.h>
 
 #include <resources/pipeline.h>
-
-#include "controllers/cameractrl.h"
-
-#include "pluginmanager.h"
 
 #define NONE 0
 #define RELEASE 1
@@ -35,19 +26,16 @@ SceneView::SceneView(QWidget *parent) :
 }
 
 SceneView::~SceneView() {
-
+    m_pEngine->setPlatformAdaptor(nullptr);
 }
 
 void SceneView::setEngine(Engine *engine) {
     m_pEngine = engine;
+    m_pEngine->setPlatformAdaptor(this);
 }
 
 void SceneView::setScene(Scene *scene) {
-    if(m_pScene) {
-        m_pScene->deleteLater();
-    }
     m_pScene = scene;
-    PluginManager::instance()->addScene(m_pScene);
 }
 
 void SceneView::paintGL() {
@@ -55,27 +43,7 @@ void SceneView::paintGL() {
         findCamera();
 
         if(m_pEngine) {
-            m_pEngine->processEvents();
-        }
-
-        PluginManager::instance()->updateSystems(m_pScene);
-
-        if(m_pEngine) {
-            for(auto &it : m_Keys) {
-                switch(it.second) {
-                    case RELEASE: it.second = NONE; break;
-                    case PRESS: it.second = REPEAT; break;
-                    default: break;
-                }
-            }
-
-            for(auto &it : m_MouseButtons) {
-                switch(it.second) {
-                    case RELEASE: it.second = NONE; break;
-                    case PRESS: it.second = REPEAT; break;
-                    default: break;
-                }
-            }
+            m_pEngine->update(m_pScene);
         }
     }
 }
@@ -221,6 +189,24 @@ Input::KeyCode mapToInput(int32_t key) {
     return result;
 }
 
+void SceneView::update() {
+    for(auto &it : m_Keys) {
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
+        }
+    }
+
+    for(auto &it : m_MouseButtons) {
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
+        }
+    }
+}
+
 bool SceneView::key(Input::KeyCode code) {
     return (m_Keys[code] > RELEASE);
 }
@@ -300,6 +286,20 @@ void SceneView::findCamera() {
     }
 }
 
+Vector4 SceneView::mousePosition() {
+    QPoint p = mapFromGlobal(QCursor::pos());
+    return Vector4(p.x(),
+                   p.y(),
+                   static_cast<float>(p.x()) / width(),
+                   static_cast<float>(p.y()) / height());
+}
+
+Vector4 SceneView::mouseDelta() { return Vector4(); }
+
+void SceneView::setMousePosition(int32_t x, int32_t y) {
+    QCursor::setPos(mapToGlobal(QPoint(x, y)));
+}
+
 uint32_t SceneView::screenWidth() { return width(); }
 uint32_t SceneView::screenHeight() { return height(); }
 uint32_t SceneView::joystickCount() { return 0; }
@@ -309,7 +309,4 @@ Vector2 SceneView::joystickTriggers(uint32_t) { return Vector2(); }
 void *SceneView::pluginLoad(const char *) { return nullptr; }
 bool SceneView::pluginUnload(void *) { return false; }
 void *SceneView::pluginAddress(void *, const string &) { return nullptr; }
-
-string SceneView::locationLocalDir() {
-    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString();
-}
+string SceneView::locationLocalDir() { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }

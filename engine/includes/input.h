@@ -5,7 +5,7 @@
 
 #include "engine.h"
 
-class IPlatformAdaptor;
+class PlatformAdaptor;
 
 class NEXT_LIBRARY_EXPORT Input {
 public:
@@ -168,7 +168,7 @@ public:
     };
 
 public:
-    static void                 init                        (IPlatformAdaptor *platform);
+    static void                 init                        (PlatformAdaptor *platform);
 
     static bool                 isKey                       (KeyCode code);
     static bool                 isKeyDown                   (KeyCode code);

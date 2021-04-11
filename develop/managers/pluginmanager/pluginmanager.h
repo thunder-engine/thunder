@@ -41,8 +41,6 @@ public:
 
     void initSystems();
 
-    void updateSystems(Scene *scene);
-
     void updateRender(Scene *scene);
 
     void addScene(Scene *scene);

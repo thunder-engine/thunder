@@ -1,12 +1,12 @@
 #ifndef DESKTOPADAPTOR_H
 #define DESKTOPADAPTOR_H
 
-#include "iplatformadaptor.h"
+#include "platformadaptor.h"
 
 struct GLFWwindow;
 struct GLFWmonitor;
 
-class DesktopAdaptor : public IPlatformAdaptor {
+class DesktopAdaptor : public PlatformAdaptor {
 public:
     DesktopAdaptor              (Engine *engine);
 
