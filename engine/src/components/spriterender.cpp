@@ -55,114 +55,17 @@ public:
 
     void composeMesh(bool resetSize = false) {
         if(m_pSprite) {
-            Mesh *mesh = m_pSprite->mesh(m_Hash);
-            if(mesh) {
-                if(m_pCustomMesh == nullptr) {
-                    m_pCustomMesh = Engine::objectCreate<Mesh>("");
-                }
-
-                Lod *lod = mesh->lod(0);
-                m_pCustomMesh->setLod(0, lod);
-                lod = m_pCustomMesh->lod(0);
-                Vector3Vector &vetrs = lod->vertices();
-
-                Vector3 size(vetrs[15] - vetrs[0]);
-                if(resetSize) {
-                    m_Size = Vector2(size.x, size.y);
-                }
-
-                if(m_DrawMode == SpriteRender::Tiled) {
-                    Vector2Vector &uvs = lod->uv0();
-                    IndexVector &indices = lod->indices();
-
-                    Vector2 ubl(uvs[0]);
-                    Vector2 utr(uvs[15]);
-
-                    int width = ceilf(m_Size.x / size.x);
-                    int height = ceilf(m_Size.y / size.y);
-
-                    vetrs.resize(width * height * 4);
-                    uvs.resize(width * height * 4);
-                    indices.resize(width * height * 6);
-
-                    Vector3 bl(Vector3(m_Size, 0.0f) * -0.5f);
-
-                    int i = 0;
-                    for(int y = 0; y < height; y++) {
-                        for(int x = 0; x < width; x++) {
-                            int index = (y * width + x) * 4;
-
-                            Vector2 f(1.0f);
-                            if(x == width - 1) {
-                                f.x = MIN((m_Size.x * 0.5f - bl.x) / size.x, 1.0f);
-                            }
-                            if(y == height - 1) {
-                                f.y = MIN((m_Size.y * 0.5f - bl.y) / size.y, 1.0f);
-                            }
-
-                            vetrs[index] = bl;
-                            vetrs[index + 1] = bl + Vector3(size.x * f.x, 0.0f, 0.0f);
-                            vetrs[index + 2] = bl + Vector3(size.x * f.x, size.y * f.y, 0.0f);
-                            vetrs[index + 3] = bl + Vector3(0.0f, size.y * f.y, 0.0f);
-
-                            uvs[index] = ubl;
-                            uvs[index + 1] = ubl + Vector2((utr.x - ubl.x) * f.x, 0.0f);
-                            uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
-                            uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
-
-                            indices[i]     = index;
-                            indices[i + 1] = index + 1;
-                            indices[i + 2] = index + 2;
-                            indices[i + 3] = index;
-                            indices[i + 4] = index + 2;
-                            indices[i + 5] = index + 3;
-
-                            bl.x += size.x;
-
-                            i += 6;
-                        }
-                        bl.y += size.y;
-                    }
-                } else {
-                    Vector2 scale(m_Size.x / size.x, m_Size.y / size.y);
-                    {
-                        float bl = vetrs[0].x;
-                        float br = vetrs[3].x;
-                        vetrs[ 0].x *= scale.x; vetrs[ 3].x *= scale.x;
-                        vetrs[ 4].x *= scale.x; vetrs[ 7].x *= scale.x;
-                        vetrs[ 8].x *= scale.x; vetrs[11].x *= scale.x;
-                        vetrs[12].x *= scale.x; vetrs[15].x *= scale.x;
-                        float dl = vetrs[0].x - bl;
-                        float dr = vetrs[3].x - br;
-                        vetrs[ 1].x += dl; vetrs[ 2].x += dr;
-                        vetrs[ 5].x += dl; vetrs[ 6].x += dr;
-                        vetrs[ 9].x += dl; vetrs[10].x += dr;
-                        vetrs[13].x += dl; vetrs[14].x += dr;
-                    }
-                    {
-                        float bl = vetrs[ 0].y;
-                        float br = vetrs[12].y;
-                        vetrs[ 0].y *= scale.y; vetrs[12].y *= scale.y;
-                        vetrs[ 1].y *= scale.y; vetrs[13].y *= scale.y;
-                        vetrs[ 2].y *= scale.y; vetrs[14].y *= scale.y;
-                        vetrs[ 3].y *= scale.y; vetrs[15].y *= scale.y;
-                        float dl = vetrs[ 0].y - bl;
-                        float dr = vetrs[12].y - br;
-                        vetrs[ 4].y += dl; vetrs[ 8].y += dr;
-                        vetrs[ 5].y += dl; vetrs[ 9].y += dr;
-                        vetrs[ 6].y += dl; vetrs[10].y += dr;
-                        vetrs[ 7].y += dl; vetrs[11].y += dr;
-                    }
-                }
-
-                m_pCustomMesh->setFlags(mesh->flags());
-                m_pCustomMesh->setMode(mesh->mode());
-                m_pCustomMesh->recalcBounds();
+            if(m_pCustomMesh == nullptr) {
+                m_pCustomMesh = Engine::objectCreate<Mesh>("");
             }
-        } else {
-            delete m_pCustomMesh;
-            m_pCustomMesh = nullptr;
+
+            bool result = m_pSprite->composeMesh(m_Hash, m_pCustomMesh, m_Size, (m_DrawMode == SpriteRender::Tiled), resetSize);
+            if(result) {
+                return;
+            }
         }
+        delete m_pCustomMesh;
+        m_pCustomMesh = nullptr;
     }
 
     Sprite *m_pSprite;

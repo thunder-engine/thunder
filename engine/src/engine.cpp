@@ -78,14 +78,14 @@ public:
             delete m_pPlatform;
         }
 
-        for(auto it : m_Pool) {
-            delete it;
-        }
+        //for(auto it : m_Pool) {
+        //    delete it;
+        //}
         m_Pool.clear();
 
-        for(auto it : m_Serial) {
-            delete it;
-        }
+        //for(auto it : m_Serial) {
+        //    delete it;
+        //}
         m_Serial.clear();
     }
 

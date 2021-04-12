@@ -149,6 +149,112 @@ void Sprite::pack(int padding) {
 
     p_ptr->m_pTexture->setDirty();
 }
+
+bool Sprite::composeMesh(int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize) {
+    Mesh *m = mesh(key);
+    if(m) {
+        Lod *lod = m->lod(0);
+        spriteMesh->setLod(0, lod);
+        lod = spriteMesh->lod(0);
+        Vector3Vector &vetrs = lod->vertices();
+
+        Vector3 delta(vetrs[15] - vetrs[0]);
+        if(resetSize) {
+            size = Vector2(delta.x, delta.y);
+        }
+
+        if(tiled) {
+            Vector2Vector &uvs = lod->uv0();
+            IndexVector &indices = lod->indices();
+
+            Vector2 ubl(uvs[0]);
+            Vector2 utr(uvs[15]);
+
+            int width = ceilf(size.x / delta.x);
+            int height = ceilf(size.y / delta.y);
+
+            vetrs.resize(width * height * 4);
+            uvs.resize(width * height * 4);
+            indices.resize(width * height * 6);
+
+            Vector3 bl(Vector3(size, 0.0f) * -0.5f);
+
+            int i = 0;
+            for(int y = 0; y < height; y++) {
+                for(int x = 0; x < width; x++) {
+                    int index = (y * width + x) * 4;
+
+                    Vector2 f(1.0f);
+                    if(x == width - 1) {
+                        f.x = MIN((size.x * 0.5f - bl.x) / delta.x, 1.0f);
+                    }
+                    if(y == height - 1) {
+                        f.y = MIN((size.y * 0.5f - bl.y) / delta.y, 1.0f);
+                    }
+
+                    vetrs[index] = bl;
+                    vetrs[index + 1] = bl + Vector3(delta.x * f.x, 0.0f, 0.0f);
+                    vetrs[index + 2] = bl + Vector3(delta.x * f.x, delta.y * f.y, 0.0f);
+                    vetrs[index + 3] = bl + Vector3(0.0f, delta.y * f.y, 0.0f);
+
+                    uvs[index] = ubl;
+                    uvs[index + 1] = ubl + Vector2((utr.x - ubl.x) * f.x, 0.0f);
+                    uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
+                    uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
+
+                    indices[i]     = index;
+                    indices[i + 1] = index + 1;
+                    indices[i + 2] = index + 2;
+                    indices[i + 3] = index;
+                    indices[i + 4] = index + 2;
+                    indices[i + 5] = index + 3;
+
+                    bl.x += delta.x;
+
+                    i += 6;
+                }
+                bl.y += delta.y;
+            }
+        } else {
+            Vector2 scale(size.x / delta.x, size.y / delta.y);
+            {
+                float bl = vetrs[0].x;
+                float br = vetrs[3].x;
+                vetrs[ 0].x *= scale.x; vetrs[ 3].x *= scale.x;
+                vetrs[ 4].x *= scale.x; vetrs[ 7].x *= scale.x;
+                vetrs[ 8].x *= scale.x; vetrs[11].x *= scale.x;
+                vetrs[12].x *= scale.x; vetrs[15].x *= scale.x;
+                float dl = vetrs[0].x - bl;
+                float dr = vetrs[3].x - br;
+                vetrs[ 1].x += dl; vetrs[ 2].x += dr;
+                vetrs[ 5].x += dl; vetrs[ 6].x += dr;
+                vetrs[ 9].x += dl; vetrs[10].x += dr;
+                vetrs[13].x += dl; vetrs[14].x += dr;
+            }
+            {
+                float bl = vetrs[ 0].y;
+                float br = vetrs[12].y;
+                vetrs[ 0].y *= scale.y; vetrs[12].y *= scale.y;
+                vetrs[ 1].y *= scale.y; vetrs[13].y *= scale.y;
+                vetrs[ 2].y *= scale.y; vetrs[14].y *= scale.y;
+                vetrs[ 3].y *= scale.y; vetrs[15].y *= scale.y;
+                float dl = vetrs[ 0].y - bl;
+                float dr = vetrs[12].y - br;
+                vetrs[ 4].y += dl; vetrs[ 8].y += dr;
+                vetrs[ 5].y += dl; vetrs[ 9].y += dr;
+                vetrs[ 6].y += dl; vetrs[10].y += dr;
+                vetrs[ 7].y += dl; vetrs[11].y += dr;
+            }
+        }
+
+        spriteMesh->setFlags(m->flags());
+        spriteMesh->setMode(m->mode());
+        spriteMesh->recalcBounds();
+        return true;
+    }
+    return false;
+}
+
 /*!
     \internal
     Changes current size of the sprite sheet and sets resorce state to ResourceState::ToBeUpdated.

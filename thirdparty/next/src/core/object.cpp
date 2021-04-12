@@ -745,11 +745,13 @@ void Object::emitSignal(const char *signal, const Variant &args) {
         Link *link = &(it);
         if(link->signal == index) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
-            if(method.type() == MetaMethod::Signal) {
-                link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
-            } else {
-                // Queued Connection
-                link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
+            if(method.isValid()) {
+                if(method.type() == MetaMethod::Signal) {
+                    link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
+                } else {
+                    // Queued Connection
+                    link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
+                }
             }
         }
     }
