@@ -62,7 +62,7 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
-    static void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
+    static void composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;

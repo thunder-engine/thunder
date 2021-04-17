@@ -19,7 +19,7 @@
 
 class TextRenderPrivate : public Resource::IObserver {
 public:
-    TextRenderPrivate   () :
+    TextRenderPrivate() :
         m_Color(1.0f),
         m_pFont(nullptr),
         m_pMaterial(nullptr),
@@ -29,8 +29,7 @@ public:
         m_Line(0),
         m_Alignment(Left),
         m_Kerning(true),
-        m_Wrap(false),
-        m_Blocked(false) {
+        m_Wrap(false) {
 
         m_pMesh = Engine::objectCreate<Mesh>();
         m_pMesh->makeDynamic();
@@ -55,152 +54,7 @@ public:
     }
 
     void composeMesh() {
-        if(m_Blocked) {
-            return;
-        }
-        if(m_pFont) {
-            m_Space = m_pFont->spaceWidth() * m_Size;
-            m_Line = m_pFont->lineHeight() * m_Size;
-
-            string text = Engine::translate(m_Text);
-            m_pFont->requestCharacters(text);
-
-            uint32_t length = m_pFont->length(text);
-            if(length) {
-                Lod lod;
-
-                IndexVector &indices = lod.indices();
-                Vector3Vector &vertices = lod.vertices();
-                Vector2Vector &uv0 = lod.uv0();
-
-                vertices.resize(length * 4);
-                indices.resize(length * 6);
-                uv0.resize(length * 4);
-
-                list<float> width;
-                list<uint32_t> position;
-
-                Vector3 pos(0.0, -m_Size, 0.0f);
-                uint32_t previous = 0;
-                uint32_t it = 0;
-                uint32_t space = 0;
-
-                Vector3 bb[2];
-                bb[1].y = -m_Line;
-                for(uint32_t i = 0; i < length; i++) {
-                    uint32_t ch = text[i];
-                    switch(ch) {
-                        case ' ': {
-                            pos += Vector3(m_Space, 0.0f, 0.0f);
-                            space = it;
-                        } break;
-                        case '\t': {
-                            pos += Vector3(m_Space * 4, 0.0f, 0.0f);
-                            space = it;
-                        } break;
-                        case '\r': break;
-                        case '\n': {
-                            width.push_back(pos.x);
-                            bb[1].x = MAX(bb[1].x, pos.x);
-                            position.push_back(it);
-                            pos = Vector3(0.0f, pos.y - m_Line, 0.0f);
-                            bb[1].y = MAX(bb[1].y, pos.y);
-
-                            space = 0;
-                        } break;
-                        default: {
-                            if(m_Kerning) {
-                                pos.x += m_pFont->requestKerning(ch, previous);
-                            }
-                            uint32_t index = m_pFont->atlasIndex(ch);
-
-                            Mesh *m = m_pFont->mesh(index);
-                            if(m == nullptr) {
-                                continue;
-                            }
-                            Lod *l = m->lod(0);
-
-                            Vector3Vector &shape = l->vertices();
-                            Vector2Vector &uv = l->uv0();
-
-                            bb[0].x = MIN(bb[0].x, shape[0].x * m_Size);
-                            bb[0].y = MIN(bb[0].y, shape[0].y * m_Size);
-
-                            float x = pos.x + shape[0].x * m_Size;
-                            if(m_Wrap && m_Boundaries.x < x && m_Boundaries.x > 0.0f) {
-                                float shift = vertices[space * 4 + 0].x;
-                                for(uint32_t s = space; s < it; s++) {
-                                    vertices[s * 4 + 0] -= Vector3(shift, m_Line, 0.0f);
-                                    vertices[s * 4 + 1] -= Vector3(shift, m_Line, 0.0f);
-                                    vertices[s * 4 + 2] -= Vector3(shift, m_Line, 0.0f);
-                                    vertices[s * 4 + 3] -= Vector3(shift, m_Line, 0.0f);
-                                }
-                                width.push_back(shift - m_Space);
-                                bb[1].x = MAX(bb[1].x, shift - m_Space);
-                                position.push_back(space);
-                                pos = Vector3(vertices[(it - 1) * 4 + 2].x, pos.y - m_Line, 0.0f);
-                                bb[1].y = MAX(bb[1].y, pos.y);
-                            }
-
-                            vertices[it * 4 + 0] = pos + shape[0] * m_Size;
-                            vertices[it * 4 + 1] = pos + shape[1] * m_Size;
-                            vertices[it * 4 + 2] = pos + shape[2] * m_Size;
-                            vertices[it * 4 + 3] = pos + shape[3] * m_Size;
-
-                            uv0[it * 4 + 0] = uv[0];
-                            uv0[it * 4 + 1] = uv[1];
-                            uv0[it * 4 + 2] = uv[2];
-                            uv0[it * 4 + 3] = uv[3];
-
-                            indices[it * 6 + 0] = it * 4 + 0;
-                            indices[it * 6 + 1] = it * 4 + 1;
-                            indices[it * 6 + 2] = it * 4 + 2;
-
-                            indices[it * 6 + 3] = it * 4 + 0;
-                            indices[it * 6 + 4] = it * 4 + 2;
-                            indices[it * 6 + 5] = it * 4 + 3;
-
-                            pos += Vector3(shape[2].x * m_Size, 0.0f, 0.0f);
-                            it++;
-                        } break;
-                    }
-                    previous = ch;
-                }
-                if(m_Wrap) {
-                    bb[1].x = m_Boundaries.x;
-                    bb[1].y = -m_Boundaries.y;
-                } else {
-                    bb[1].x = MAX(bb[1].x, pos.x);
-                    bb[1].y = MAX(bb[1].y, pos.y);
-                }
-
-                width.push_back(pos.x);
-                position.push_back(it);
-
-                vertices.resize(it * 4);
-                indices.resize(it * 6);
-                uv0.resize(it * 4);
-
-                if(m_Alignment > Left) {
-                    auto w = width.begin();
-                    auto p = position.begin();
-                    float shift = (bb[1].x - (*w)) / ((m_Alignment == Center) ? 2 : 1);
-                    for(uint32_t i = 0; i < vertices.size(); i++) {
-                        if(uint32_t(i / 4) >= *p) {
-                            w++;
-                            p++;
-                            shift = (bb[1].x - (*w)) / ((m_Alignment == Center) ? 2 : 1);
-                        }
-                        vertices[i].x += shift;
-                    }
-                }
-                AABBox box;
-                box.setBox(bb[0], bb[1]);
-                m_pMesh->setBound(box);
-                m_pMesh->setMode(Mesh::Triangles);
-                m_pMesh->setLod(0, &lod);
-            }
-        }
+        TextRender::composeMesh(m_pFont, m_pMesh, m_Size, m_Text, m_Alignment, m_Kerning, m_Wrap, m_Boundaries);
     }
 
     string m_Text;
@@ -226,8 +80,6 @@ public:
     bool m_Kerning;
 
     bool m_Wrap;
-
-    bool m_Blocked;
 };
 /*!
     \class TextRender
@@ -406,9 +258,7 @@ void TextRender::setKerning(const bool kerning) {
     \internal
 */
 void TextRender::loadData(const VariantList &data) {
-    p_ptr->m_Blocked = true;
     Component::loadData(data);
-    p_ptr->m_Blocked = false;
     p_ptr->composeMesh();
 }
 /*!
