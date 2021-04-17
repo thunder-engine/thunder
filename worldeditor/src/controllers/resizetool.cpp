@@ -25,7 +25,7 @@ void ResizeTool::beginControl() {
             it.box = it.renderable->bound();
 
             Vector3 p = it.object->transform()->worldPosition();
-            it.pivot = p - it.box.center;
+            it.pivot = it.box.center - p;
         }
     }
 }
@@ -103,15 +103,19 @@ void ResizeTool::update() {
 
                     property.write(it.renderable, size);
 
-                    tr->setPosition(parent.inverse() * (p + m_Position + delta * mask));
+                    Vector3 d(it.pivot.x / ((it.box.extent.x == 0.0f) ? 1.0f : it.box.extent.x),
+                              it.pivot.y / ((it.box.extent.y == 0.0f) ? 1.0f : it.box.extent.y),
+                              it.pivot.z / ((it.box.extent.z == 0.0f) ? 1.0f : it.box.extent.z));
+
+                    tr->setPosition(parent.inverse() * (p + m_Position + delta * (mask - d)));
                 }
             }
 
             if(!skipScale) {
                 AABBox aabb(m_SavedBox.center + delta, m_SavedBox.extent + delta);
-                Vector3 v(it.scale * Vector3((m_SavedBox.extent.x == 0.0f) ? 1.0f : aabb.extent.x / m_SavedBox.extent.x,
-                                             (m_SavedBox.extent.y == 0.0f) ? 1.0f : aabb.extent.y / m_SavedBox.extent.y,
-                                             (m_SavedBox.extent.z == 0.0f) ? 1.0f : aabb.extent.z / m_SavedBox.extent.z));
+                Vector3 v(it.scale * Vector3((m_SavedBox.extent.x == 0.0f) ? 1.0f : (aabb.extent.x / m_SavedBox.extent.x),
+                                             (m_SavedBox.extent.y == 0.0f) ? 1.0f : (aabb.extent.y / m_SavedBox.extent.y),
+                                             (m_SavedBox.extent.z == 0.0f) ? 1.0f : (aabb.extent.z / m_SavedBox.extent.z)));
 
                 tr->setScale(v);
                 tr->setPosition(parent.inverse() * (v * p + m_Position + delta * mask));
