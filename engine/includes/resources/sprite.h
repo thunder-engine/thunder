@@ -30,8 +30,6 @@ public:
 
     void pack(int padding);
 
-    bool composeMesh(int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize);
-
 protected:
     void clearAtlas();
 

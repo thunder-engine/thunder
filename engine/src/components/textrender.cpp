@@ -469,6 +469,154 @@ AABBox TextRender::bound() const {
     }
     return Renderable::bound();
 }
+/*!
+    \internal
+*/
+void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
+    if(font) {
+        float spaceWidth = font->spaceWidth() * size;
+        float spaceLine = font->lineHeight() * size;
+
+        string data = Engine::translate(text);
+        font->requestCharacters(data);
+
+        uint32_t length = font->length(data);
+        if(length) {
+            Lod lod;
+
+            IndexVector &indices = lod.indices();
+            Vector3Vector &vertices = lod.vertices();
+            Vector2Vector &uv0 = lod.uv0();
+
+            vertices.resize(length * 4);
+            indices.resize(length * 6);
+            uv0.resize(length * 4);
+
+            list<float> width;
+            list<uint32_t> position;
+
+            Vector3 pos(0.0, boundaries.y - size, 0.0f);
+            uint32_t previous = 0;
+            uint32_t it = 0;
+            uint32_t space = 0;
+
+            Vector3 bb[2];
+            bb[1].y = -spaceLine;
+            for(uint32_t i = 0; i < length; i++) {
+                uint32_t ch = data[i];
+                switch(ch) {
+                    case ' ': {
+                        pos += Vector3(spaceWidth, 0.0f, 0.0f);
+                        space = it;
+                    } break;
+                    case '\t': {
+                        pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
+                        space = it;
+                    } break;
+                    case '\r': break;
+                    case '\n': {
+                        width.push_back(pos.x);
+                        bb[1].x = MAX(bb[1].x, pos.x);
+                        position.push_back(it);
+                        pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
+                        bb[1].y = MAX(bb[1].y, pos.y);
+
+                        space = 0;
+                    } break;
+                    default: {
+                        if(kerning) {
+                            pos.x += font->requestKerning(ch, previous);
+                        }
+                        uint32_t index = font->atlasIndex(ch);
+
+                        Mesh *m = font->mesh(index);
+                        if(m == nullptr) {
+                            continue;
+                        }
+                        Lod *l = m->lod(0);
+
+                        Vector3Vector &shape = l->vertices();
+                        Vector2Vector &uv = l->uv0();
+
+                        bb[0].x = MIN(bb[0].x, shape[0].x * size);
+                        bb[0].y = MIN(bb[0].y, shape[0].y * size);
+
+                        float x = pos.x + shape[0].x * size;
+                        if(wrap && boundaries.x < x && boundaries.x > 0.0f) {
+                            float shift = vertices[space * 4 + 0].x;
+                            for(uint32_t s = space; s < it; s++) {
+                                vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
+                                vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
+                            }
+                            width.push_back(shift - spaceWidth);
+                            bb[1].x = MAX(bb[1].x, shift - spaceWidth);
+                            position.push_back(space);
+                            pos = Vector3(vertices[(it - 1) * 4 + 2].x, pos.y - spaceLine, 0.0f);
+                            bb[1].y = MAX(bb[1].y, pos.y);
+                        }
+
+                        vertices[it * 4 + 0] = pos + shape[0] * size;
+                        vertices[it * 4 + 1] = pos + shape[1] * size;
+                        vertices[it * 4 + 2] = pos + shape[2] * size;
+                        vertices[it * 4 + 3] = pos + shape[3] * size;
+
+                        uv0[it * 4 + 0] = uv[0];
+                        uv0[it * 4 + 1] = uv[1];
+                        uv0[it * 4 + 2] = uv[2];
+                        uv0[it * 4 + 3] = uv[3];
+
+                        indices[it * 6 + 0] = it * 4 + 0;
+                        indices[it * 6 + 1] = it * 4 + 1;
+                        indices[it * 6 + 2] = it * 4 + 2;
+
+                        indices[it * 6 + 3] = it * 4 + 0;
+                        indices[it * 6 + 4] = it * 4 + 2;
+                        indices[it * 6 + 5] = it * 4 + 3;
+
+                        pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
+                        it++;
+                    } break;
+                }
+                previous = ch;
+            }
+            if(wrap) {
+                bb[1].x = boundaries.x;
+                bb[1].y = -boundaries.y;
+            } else {
+                bb[1].x = MAX(bb[1].x, pos.x);
+                bb[1].y = MAX(bb[1].y, pos.y);
+            }
+
+            width.push_back(pos.x);
+            position.push_back(it);
+
+            vertices.resize(it * 4);
+            indices.resize(it * 6);
+            uv0.resize(it * 4);
+
+            if(alignment > Left) {
+                auto w = width.begin();
+                auto p = position.begin();
+                float shift = (bb[1].x - (*w)) / ((alignment == Center) ? 2 : 1);
+                for(uint32_t i = 0; i < vertices.size(); i++) {
+                    if(uint32_t(i / 4) >= *p) {
+                        w++;
+                        p++;
+                        shift = (bb[1].x - (*w)) / ((alignment == Center) ? 2 : 1);
+                    }
+                    vertices[i].x += shift;
+                }
+            }
+            AABBox box;
+            box.setBox(bb[0], bb[1]);
+            mesh->setBound(box);
+            mesh->setMode(Mesh::Triangles);
+            mesh->setLod(0, &lod);
+        }
+    }
+}
 
 #ifdef NEXT_SHARED
 #include "handles.h"

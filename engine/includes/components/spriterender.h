@@ -62,6 +62,8 @@ public:
     int layer() const;
     void setLayer(int layer);
 
+    static bool composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize);
+
 private:
     void draw(ICommandBuffer &buffer, uint32_t layer) override;
 

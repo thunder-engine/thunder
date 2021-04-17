@@ -156,8 +156,10 @@ void calculateDF(int8_t *dst, const FT_Bitmap &src, int32_t dw, int32_t dh) {
 
     for(int32_t y = 0; y < dh; y++) {
         for(int32_t x = 0; x < dw; x++) {
-            double dist1 = sqrt((double)(get(grid[0], x * w / dw, y * h / dh).f + 1));
-            double dist2 = sqrt((double)(get(grid[1], x * w / dw, y * h / dh).f + 1));
+            int gx = x * w / (dw - 1);
+            int gy = y * h / (dh - 1);
+            double dist1 = sqrt((double)(get(grid[0], gx, gy).f + 1));
+            double dist2 = sqrt((double)(get(grid[1], gx, gy).f + 1));
             double dist = dist1 - dist2;
             uint32_t index = y * dw + x;
             dst[index] = CLAMP(dist * 64 / 2.0f + 128, 0, 255);
