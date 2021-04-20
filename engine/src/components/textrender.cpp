@@ -391,20 +391,23 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
                         bb[0].x = MIN(bb[0].x, shape[0].x * size);
                         bb[0].y = MIN(bb[0].y, shape[0].y * size);
 
-                        float x = pos.x + shape[0].x * size;
-                        if(wrap && boundaries.x < x && boundaries.x > 0.0f) {
-                            float shift = vertices[space * 4 + 0].x;
-                            for(uint32_t s = space; s < it; s++) {
-                                vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
-                                vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
+                        float x = pos.x + shape[2].x * size;
+                        if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
+                            float shift = vertices[space * 4].x;
+                            if((shift - spaceWidth) > 0.0f) {
+                                for(uint32_t s = space; s < it; s++) {
+                                    vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
+                                    vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
+                                    vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
+                                    vertices[s * 4 + 3] -= Vector3(shift, spaceLine, 0.0f);
+                                }
+                                width.push_back(shift - spaceWidth);
+                                position.push_back(space);
+                                pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
+
+                                bb[1].x = MAX(bb[1].x, shift - spaceWidth);
+                                bb[1].y = MAX(bb[1].y, pos.y);
                             }
-                            width.push_back(shift - spaceWidth);
-                            bb[1].x = MAX(bb[1].x, shift - spaceWidth);
-                            position.push_back(space);
-                            pos = Vector3(vertices[(it - 1) * 4 + 2].x, pos.y - spaceLine, 0.0f);
-                            bb[1].y = MAX(bb[1].y, pos.y);
                         }
 
                         vertices[it * 4 + 0] = pos + shape[0] * size;
