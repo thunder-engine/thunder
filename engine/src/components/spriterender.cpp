@@ -319,7 +319,7 @@ VariantMap SpriteRender::saveUserData() const {
 /*!
     \internal
 */
-bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize) {
+bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize, float scale) {
     Mesh *m = sprite->mesh(key);
     if(m) {
         Lod *lod = m->lod(0);
@@ -327,7 +327,7 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         lod = spriteMesh->lod(0);
         Vector3Vector &vetrs = lod->vertices();
 
-        Vector3 delta(vetrs[15] - vetrs[0]);
+        Vector3 delta(vetrs[15] * scale - vetrs[0] * scale);
         if(resetSize) {
             size = Vector2(delta.x, delta.y);
         }
@@ -341,6 +341,10 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
 
             int width = ceilf(size.x / delta.x);
             int height = ceilf(size.y / delta.y);
+
+            if(width == 0 || height == 0) {
+                return false;
+            }
 
             vetrs.resize(width * height * 4);
             uvs.resize(width * height * 4);
@@ -382,37 +386,58 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
 
                     i += 6;
                 }
+                bl.x = size.x * -0.5f;
                 bl.y += delta.y;
             }
         } else {
-            Vector2 scale(size.x / delta.x, size.y / delta.y);
+            if(scale != 1.0f) {
+                for(int i = 0; i < 16; i++) {
+                    vetrs[i] *= scale;
+                }
+            }
+
+            Vector2 scl(size.x / delta.x, size.y / delta.y);
             {
-                float bl = vetrs[0].x;
-                float br = vetrs[3].x;
-                vetrs[ 0].x *= scale.x; vetrs[ 3].x *= scale.x;
-                vetrs[ 4].x *= scale.x; vetrs[ 7].x *= scale.x;
-                vetrs[ 8].x *= scale.x; vetrs[11].x *= scale.x;
-                vetrs[12].x *= scale.x; vetrs[15].x *= scale.x;
-                float dl = vetrs[0].x - bl;
-                float dr = vetrs[3].x - br;
-                vetrs[ 1].x += dl; vetrs[ 2].x += dr;
-                vetrs[ 5].x += dl; vetrs[ 6].x += dr;
-                vetrs[ 9].x += dl; vetrs[10].x += dr;
-                vetrs[13].x += dl; vetrs[14].x += dr;
+                float wl = (vetrs[1].x - vetrs[0].x);
+                float wr = (vetrs[3].x - vetrs[2].x);
+                float borders = wl + wr;
+
+                float vl = vetrs[0].x * scl.x;
+                float vr = vetrs[3].x * scl.x;
+
+                vetrs[ 0].x = vl; vetrs[ 3].x = vr;
+                vetrs[ 4].x = vl; vetrs[ 7].x = vr;
+                vetrs[ 8].x = vl; vetrs[11].x = vr;
+                vetrs[12].x = vl; vetrs[15].x = vr;
+
+                float dl = vetrs[0].x + MIN(size.x * (wl / borders), wl);
+                float dr = vetrs[3].x - MIN(size.x * (wr / borders), wr);
+
+                vetrs[ 1].x = dl; vetrs[ 2].x = dr;
+                vetrs[ 5].x = dl; vetrs[ 6].x = dr;
+                vetrs[ 9].x = dl; vetrs[10].x = dr;
+                vetrs[13].x = dl; vetrs[14].x = dr;
             }
             {
-                float bl = vetrs[ 0].y;
-                float br = vetrs[12].y;
-                vetrs[ 0].y *= scale.y; vetrs[12].y *= scale.y;
-                vetrs[ 1].y *= scale.y; vetrs[13].y *= scale.y;
-                vetrs[ 2].y *= scale.y; vetrs[14].y *= scale.y;
-                vetrs[ 3].y *= scale.y; vetrs[15].y *= scale.y;
-                float dl = vetrs[ 0].y - bl;
-                float dr = vetrs[12].y - br;
-                vetrs[ 4].y += dl; vetrs[ 8].y += dr;
-                vetrs[ 5].y += dl; vetrs[ 9].y += dr;
-                vetrs[ 6].y += dl; vetrs[10].y += dr;
-                vetrs[ 7].y += dl; vetrs[11].y += dr;
+                float hb = (vetrs[ 4].y - vetrs[0].y);
+                float ht = (vetrs[12].y - vetrs[8].y);
+                float borders = hb + ht;
+
+                float vb = vetrs[ 0].y * scl.y;
+                float vt = vetrs[12].y * scl.y;
+
+                vetrs[ 0].y = vb; vetrs[12].y = vt;
+                vetrs[ 1].y = vb; vetrs[13].y = vt;
+                vetrs[ 2].y = vb; vetrs[14].y = vt;
+                vetrs[ 3].y = vb; vetrs[15].y = vt;
+
+                float db = vetrs[ 0].y + MIN(size.y * (hb / borders), hb);
+                float dt = vetrs[12].y - MIN(size.y * (ht / borders), ht);
+
+                vetrs[ 4].y = db; vetrs[ 8].y = dt;
+                vetrs[ 5].y = db; vetrs[ 9].y = dt;
+                vetrs[ 6].y = db; vetrs[10].y = dt;
+                vetrs[ 7].y = db; vetrs[11].y = dt;
             }
         }
 
