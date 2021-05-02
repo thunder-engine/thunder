@@ -449,19 +449,20 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             indices.resize(it * 6);
             uv0.resize(it * 4);
 
-            if(alignment > Left) {
-                auto w = width.begin();
-                auto p = position.begin();
-                float shift = (bb[1].x - (*w)) / ((alignment == Center) ? 2 : 1);
-                for(uint32_t i = 0; i < vertices.size(); i++) {
-                    if(uint32_t(i / 4) >= *p) {
-                        w++;
-                        p++;
-                        shift = (bb[1].x - (*w)) / ((alignment == Center) ? 2 : 1);
-                    }
-                    vertices[i].x += shift;
+            auto w = width.begin();
+            auto p = position.begin();
+            float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+            float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
+            for(uint32_t i = 0; i < vertices.size(); i++) {
+                if(uint32_t(i / 4) >= *p) {
+                    w++;
+                    p++;
+                    shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
                 }
+                vertices[i].x += shiftX;
+                vertices[i].y -= shiftY;
             }
+
             AABBox box;
             box.setBox(bb[0], bb[1]);
             mesh->setBound(box);

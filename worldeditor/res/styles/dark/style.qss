@@ -57,7 +57,7 @@ QLineEdit {
 
 QAbstractButton {
     margin: 0px 0px;
-    padding: 2px 16px;
+    padding: 2px 8px;
     background: #616161;
     border-radius: 3px;
 }

@@ -12,17 +12,21 @@ class AlignmentEdit : public QWidget {
 
 public:
     enum Alignment {
-        Left = 0,
-        Center,
-        Right
+        Left    = (1<<0),
+        Center  = (1<<1),
+        Right   = (1<<2),
+
+        Top     = (1<<4),
+        Middle  = (1<<5),
+        Bottom  = (1<<6)
     };
 
 public:
     explicit AlignmentEdit (QWidget *parent = nullptr);
     ~AlignmentEdit ();
 
-    Alignment alignment () const;
-    void setAlignment (Alignment value);
+    int alignment () const;
+    void setAlignment (int value);
 
 signals:
     void alignmentChanged (int value);

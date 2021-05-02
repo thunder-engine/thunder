@@ -37,6 +37,9 @@
         <file>icons/property.png</file>
         <file>editor/Select.png</file>
         <file>editor/Transform.png</file>
+        <file>fontawesome/align/align-bottom-solid.png</file>
+        <file>fontawesome/align/align-middle-solid.png</file>
+        <file>fontawesome/align/align-top-solid.png</file>
     </qresource>
     <qresource prefix="/Style">
         <file>styles/dark/style.qss</file>

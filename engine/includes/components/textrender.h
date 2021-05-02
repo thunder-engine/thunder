@@ -10,9 +10,13 @@ class Mesh;
 class TextRenderPrivate;
 
 enum Alignment {
-    Left,
-    Center,
-    Right
+    Left    = (1<<0),
+    Center  = (1<<1),
+    Right   = (1<<2),
+
+    Top     = (1<<4),
+    Middle  = (1<<5),
+    Bottom  = (1<<6)
 };
 
 class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
