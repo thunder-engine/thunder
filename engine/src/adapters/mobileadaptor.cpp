@@ -104,7 +104,7 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
     if(phase < GLFMTouchPhaseEnded) {
         Touch t;
         t.phase = phase;
-        t.pos = Vector4(x, y, x / MobileAdaptor::s_Screen.x, y / MobileAdaptor::s_Screen.y);
+        t.pos = Vector4(x, MobileAdaptor::s_Screen.y - y, x / MobileAdaptor::s_Screen.x, (MobileAdaptor::s_Screen.y - y) / MobileAdaptor::s_Screen.y);
         s_Touches[touch] = t;
     } else {
         auto it = s_Touches.find(touch);

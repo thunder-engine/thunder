@@ -318,7 +318,7 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
 
 void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
     s_OldMousePosition = s_MousePosition;
-    s_MousePosition = Vector4(xpos, ypos, xpos / s_Width, ypos / s_Height);
+    s_MousePosition = Vector4(xpos, s_Height - ypos, xpos / s_Width, (s_Height - ypos) / s_Height);
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {

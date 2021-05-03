@@ -289,9 +289,9 @@ void SceneView::findCamera() {
 Vector4 SceneView::mousePosition() {
     QPoint p = mapFromGlobal(QCursor::pos());
     return Vector4(p.x(),
-                   p.y(),
+                   height() - p.y(),
                    static_cast<float>(p.x()) / width(),
-                   static_cast<float>(p.y()) / height());
+                   static_cast<float>(height() - p.y()) / height());
 }
 
 Vector4 SceneView::mouseDelta() { return Vector4(); }

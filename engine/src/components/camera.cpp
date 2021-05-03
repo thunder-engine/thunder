@@ -181,14 +181,14 @@ Ray Camera::castRay(float x, float y) {
 
     Vector3 view;
     if(p_ptr->m_Ortho) {
-        p += t->quaternion() * Vector3( (x - 0.5f) * p_ptr->m_OrthoSize * p_ptr->m_Ratio,
-                                       -(y - 0.5f) * p_ptr->m_OrthoSize, 0.0f);
+        p += t->quaternion() * Vector3((x - 0.5f) * p_ptr->m_OrthoSize * p_ptr->m_Ratio,
+                                       (y - 0.5f) * p_ptr->m_OrthoSize, 0.0f);
     } else {
         float tang    = tan(p_ptr->m_FOV * DEG2RAD);
         Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
         Vector3 up    = right.cross(dir);
-        view = Vector3( (x - 0.5f) * tang * p_ptr->m_Ratio) * right +
-               Vector3(-(y - 0.5f) * tang) * up + p + dir;
+        view = Vector3((x - 0.5f) * tang * p_ptr->m_Ratio) * right +
+               Vector3((y - 0.5f) * tang) * up + p + dir;
 
         dir = (view - p);
         dir.normalize();

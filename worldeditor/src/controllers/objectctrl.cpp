@@ -424,7 +424,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
-    m_MousePosition = Vector2(e->pos().x(), e->pos().y());
+    m_MousePosition = Vector2(e->pos().x(), m_Screen.y - e->pos().y());
 
     for(Object *o : m_DragObjects) {
         Actor *a = static_cast<Actor *>(o);
@@ -525,7 +525,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
         } break;
         case QEvent::MouseMove: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            m_MousePosition = Vector2(e->pos().x(), e->pos().y());
+            m_MousePosition = Vector2(e->pos().x(), m_Screen.y - e->pos().y());
 
             if(e->buttons() & Qt::LeftButton) {
                 if(!m_Drag) {

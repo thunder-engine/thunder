@@ -94,14 +94,19 @@ void ResizeTool::update() {
             if(it.renderable) {
                 const MetaObject *meta = it.renderable->metaObject();
                 int index = meta->indexOfProperty("size");
+                void *object = it.renderable;
+                if(index == -1) {
+                    meta = tr->metaObject();
+                    index = meta->indexOfProperty("size");
+                    object = tr;
+                }
                 if(index > -1) {
                     skipScale = true;
                     MetaProperty property = meta->property(index);
-
                     Vector2 size((it.box.extent.x + delta.x) * 2.0f / it.scale.x,
                                  (it.box.extent.y + delta.y) * 2.0f / it.scale.y);
 
-                    property.write(it.renderable, size);
+                    property.write(object, size);
 
                     Vector3 d(it.pivot.x / ((it.box.extent.x == 0.0f) ? 1.0f : it.box.extent.x),
                               it.pivot.y / ((it.box.extent.y == 0.0f) ? 1.0f : it.box.extent.y),
@@ -141,7 +146,6 @@ void ResizeTool::update() {
         shape = Qt::SizeHorCursor;
     }
     m_Cursor = QCursor(shape);
-
 }
 
 QString ResizeTool::icon() const {

@@ -31,8 +31,8 @@ Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, flo
     for(int i = 0; i < sides; i++) {
         result.push_back(rotation * Vector3(x, 0, y));
 
-        float tx = -y;
-        float ty =  x;
+        float tx = x;
+        float ty = y;
 
         x += tx * tfactor;
         y += ty * tfactor;
@@ -46,7 +46,6 @@ Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, flo
 float HandleTools::distanceToPoint(const Matrix4 &matrix, const Vector3 &position) {
     Matrix4 mv = s_View * matrix;
     Vector3 ssp = Camera::project(position, mv, s_Projection);
-    ssp.y = 1.0f - ssp.y;
 
     Vector2 ss(ssp.x, ssp.y);
     return (Handles::s_Mouse - ss).length();
@@ -59,7 +58,6 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
     Vector2 back;
     for(auto it : points) {
         Vector3 ssp = Camera::project(it, mv, s_Projection);
-        ssp.y = 1.0f - ssp.y;
         Vector2 ss(ssp.x, ssp.y);
         if(!first) {
             result = std::min(distanceToSegment(back, ss, Handles::s_Mouse), result);
@@ -82,8 +80,8 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
             Vector3 a = Camera::project(vertices[indices[i]], mv, s_Projection);
             Vector3 b = Camera::project(vertices[indices[i+1]], mv, s_Projection);
 
-            Vector2 ssa(a.x, 1.0f - a.y);
-            Vector2 ssb(b.x, 1.0f - b.y);
+            Vector2 ssa(a.x, a.y);
+            Vector2 ssb(b.x, b.y);
 
             result = std::min(distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
         }
