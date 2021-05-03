@@ -13,6 +13,7 @@ class Module;
 
 class EnginePrivate;
 
+class Actor;
 class Scene;
 class System;
 class PlatformAdaptor;
@@ -90,10 +91,12 @@ public:
 
     static void                 setPlatformAdaptor          (PlatformAdaptor *platform);
 
-    void                        processEvents               () override;
+    static Actor               *composeActor                (const string &component, const string &name, Object *parent = nullptr);
 
 private:
     bool                        event                       (Event *event) override;
+
+    void                        processEvents               () override;
 
 private:
     EnginePrivate              *p_ptr;

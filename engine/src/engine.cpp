@@ -663,3 +663,29 @@ string Engine::organizationName() const {
 
     return EnginePrivate::m_Organization;
 }
+/*!
+    Creates an Actor with \a name and attached \a component.
+    Created Actor will be added to the hierarchy of \a parent.
+    This method helps to create all dependencies for the \a component.
+    \warning This method should be used only in Editor mode.
+*/
+Actor *Engine::composeActor(const string &component, const string &name, Object *parent) {
+    Actor *actor = Engine::objectCreate<Actor>(name, parent);
+    if(actor) {
+        Object *object = Engine::objectCreate(component, component, actor);
+        Component *comp = dynamic_cast<Component *>(object);
+        if(comp) {
+            FactoryPair *pair = metaFactory(component);
+            if(pair) {
+                System *system = dynamic_cast<System *>(pair->second);
+                if(system) {
+                    system->composeComponent(comp);
+                }
+            }
+        } else {
+            delete actor;
+            actor = nullptr;
+        }
+    }
+    return actor;
+}

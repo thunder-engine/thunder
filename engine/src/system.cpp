@@ -1,5 +1,7 @@
 #include "system.h"
 
+#include <components/component.h>
+
 System::System() :
     m_pScene(nullptr) {
 
@@ -7,6 +9,10 @@ System::System() :
 
 void System::syncSettings() const {
 
+}
+
+void System::composeComponent(Component *component) const {
+    A_UNUSED(component);
 }
 
 void System::setActiveScene(Scene *scene) {

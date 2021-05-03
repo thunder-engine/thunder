@@ -33,8 +33,6 @@
 #include "settingsmanager.h"
 #include "editorpipeline.h"
 
-#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
-
 string findFreeObjectName(const string &name, Object *parent) {
     string newName  = name;
     if(!newName.empty()) {
@@ -382,21 +380,9 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor = Engine::objectCreate<Actor>(findFreeObjectName(name, m_pMap));
+        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_pMap));
         if(actor) {
             actor->transform()->setPosition(Vector3(0.0f));
-            Object *object  = Engine::objectCreate(name, findFreeObjectName(name, actor));
-            Component *comp = dynamic_cast<Component *>(object);
-            if(comp) {
-                comp->setParent(actor);
-                actor->setName(findFreeObjectName(comp->typeName(), m_pMap));
-                SpriteRender *sprite = dynamic_cast<SpriteRender *>(comp);
-                if(sprite) {
-                    sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
-                }
-            } else {
-                delete object;
-            }
             m_DragObjects.push_back(actor);
         }
         event->acceptProposedAction();

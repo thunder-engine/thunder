@@ -15,8 +15,11 @@
 #include "components/camera.h"
 
 #include "resources/pipeline.h"
+#include "resources/material.h"
 
 #include "commandbuffer.h"
+
+#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
 
 class RenderSystemPrivate {
 public:
@@ -105,4 +108,11 @@ void RenderSystem::atlasPageSize(int32_t &width, int32_t &height) {
 void RenderSystem::setAtlasPageSize(int32_t width, int32_t height) {
     RenderSystemPrivate::m_AtlasPageWidth = width;
     RenderSystemPrivate::m_AtlasPageHeight = height;
+}
+
+void RenderSystem::composeComponent(Component *component) const {
+    SpriteRender *sprite = dynamic_cast<SpriteRender *>(component);
+    if(sprite) {
+        sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
+    }
 }

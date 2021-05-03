@@ -21,6 +21,8 @@ public:
 
     const char *name() const override;
 
+    void composeComponent(Component *component) const override;
+
     static void atlasPageSize(int32_t &width, int32_t &height);
 
 protected:

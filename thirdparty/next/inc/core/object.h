@@ -192,6 +192,8 @@ protected:
 
     virtual void                    setType                     (const string &type);
 
+    virtual void                    processEvents               ();
+
     void                            postEvent                   (Event *event);
 
     VariantList                     serializeData               (const MetaObject *meta) const;
@@ -211,8 +213,6 @@ private:
     friend class ObjectSystem;
 
 private:
-    virtual void                    processEvents               ();
-
     void                            setUUID                     (uint32_t id);
 
     void                            setSystem                   (ObjectSystem *system);

@@ -7,6 +7,7 @@
 #include <objectsystem.h>
 
 class Scene;
+class Component;
 
 class NEXT_LIBRARY_EXPORT System : public ObjectSystem {
 public:
@@ -18,19 +19,21 @@ public:
 public:
     System();
 
-    virtual bool init () = 0;
+    virtual bool init() = 0;
 
-    virtual const char *name () const = 0;
+    virtual const char *name() const = 0;
 
-    virtual void update (Scene *scene) = 0;
+    virtual void update(Scene *scene) = 0;
 
-    virtual int threadPolicy () const = 0;
+    virtual int threadPolicy() const = 0;
 
-    virtual void syncSettings () const;
+    virtual void syncSettings() const;
 
-    void setActiveScene (Scene *scene);
+    virtual void composeComponent(Component *component) const;
 
-    void processEvents () override;
+    void setActiveScene(Scene *scene);
+
+    void processEvents() override;
 
 private:
     Scene *m_pScene;
