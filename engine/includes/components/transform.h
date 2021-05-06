@@ -54,6 +54,9 @@ public:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
+protected:
+    list<Transform *> &children() const;
+
 private:
     void setDirty();
 

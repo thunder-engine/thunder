@@ -186,12 +186,12 @@ void EditorPipeline::draw(Camera &camera) {
     m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
     m_Buffer->clearRenderTarget();
 
-    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
+    m_Buffer->setViewport(0, 0, m_Width, m_Height);
 
     cameraReset(camera);
     drawComponents(ICommandBuffer::RAYCAST, m_Filter);
 
-    Vector3 screen(float(m_MouseX) / m_Screen.x, float(m_MouseY) / m_Screen.y, 0.0f);
+    Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
 
     m_pSelect->readPixels(m_MouseX, m_MouseY, 1, 1);
     m_ObjectId = m_pSelect->getPixel(0, 0);
@@ -202,7 +202,7 @@ void EditorPipeline::draw(Camera &camera) {
 
         m_MouseWorld = Camera::unproject(screen, camera.viewMatrix(), camera.projectionMatrix());
     } else {
-        Ray ray = camera.castRay(screen.x, 1.0f - screen.y);
+        Ray ray = camera.castRay(screen.x, screen.y);
         m_MouseWorld = (ray.dir * 10.0f) + ray.pos;
     }
     for(auto it : m_DragList) {

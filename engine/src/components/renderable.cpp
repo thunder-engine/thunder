@@ -20,13 +20,6 @@ void Renderable::draw(ICommandBuffer &buffer, uint32_t layer) {
 }
 
 /*!
-    \internal
-*/
-void Renderable::update() {
-
-}
-
-/*!
     Returns a bound box of the renderable object.
 */
 AABBox Renderable::bound() const {

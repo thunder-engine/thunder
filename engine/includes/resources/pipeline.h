@@ -48,6 +48,10 @@ public:
 
     RenderTexture *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
+    int screenWidth() const;
+
+    int screenHeight() const;
+
 protected:
     void cameraReset(Camera &camera);
 
@@ -73,8 +77,6 @@ protected:
 
     TargetMap m_Targets;
 
-    Vector2 m_Screen;
-
     list<PostProcessor *> m_PostEffects;
 
     list<PostProcessSettings *> m_PostProcessSettings;
@@ -83,6 +85,9 @@ protected:
     MaterialInstance *m_pSprite;
 
     uint32_t m_Target;
+
+    int32_t m_Width;
+    int32_t m_Height;
 
     unordered_map<uint32_t, pair<RenderTexture *, vector<AtlasNode *>>> m_Tiles;
     unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;

@@ -44,9 +44,10 @@
 
 Pipeline::Pipeline() :
         m_Buffer(nullptr),
-        m_Screen(Vector2(64, 64)),
         m_pSprite(nullptr),
         m_Target(0),
+        m_Width(64),
+        m_Height(64),
         m_pFinal(nullptr),
         m_pSystem(nullptr) {
 
@@ -98,7 +99,7 @@ Pipeline::~Pipeline() {
 void Pipeline::draw(Camera &camera) {
     updateShadows(camera);
 
-    m_Buffer->setViewport(0, 0, static_cast<int32_t>(m_Screen.x), static_cast<int32_t>(m_Screen.y));
+    m_Buffer->setViewport(0, 0, m_Width, m_Height);
 
     // Step1 - Fill G buffer pass draw opaque geometry
     m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
@@ -140,7 +141,7 @@ void Pipeline::finish() {
 void Pipeline::cameraReset(Camera &camera) {
     Matrix4 v = camera.viewMatrix();
     Matrix4 p = camera.projectionMatrix();
-    camera.setRatio(m_Screen.x / m_Screen.y);
+    camera.setRatio((float)m_Width / (float)m_Height);
 
     Transform *c = camera.actor()->transform();
 
@@ -167,16 +168,27 @@ RenderTexture *Pipeline::target(const string &target) const {
 }
 
 void Pipeline::resize(int32_t width, int32_t height) {
-    m_Screen = Vector2(width, height);
+    if(m_Width != width || m_Height != height) {
+        m_Width = width;
+        m_Height = height;
 
-    for(auto &it : m_Targets) {
-        it.second->resize(width, height);
-    }
-    for(auto &it : m_PostEffects) {
-        it->resize(width, height);
-    }
+        for(auto &it : m_Targets) {
+            it.second->resize(width, height);
+        }
+        for(auto &it : m_PostEffects) {
+            it->resize(width, height);
+        }
 
-    m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / m_Screen.x, 1.0f / m_Screen.y, m_Screen.x, m_Screen.y));
+        m_Buffer->setGlobalValue("camera.screen", Vector4(1.0f / (float)m_Width, 1.0f / (float)m_Height, m_Width, m_Height));
+    }
+}
+
+int Pipeline::screenWidth() const {
+    return m_Width;
+}
+
+int Pipeline::screenHeight() const {
+    return m_Height;
 }
 
 void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {

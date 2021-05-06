@@ -250,6 +250,12 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
 /*!
     \internal
 */
+list<Transform *> &Transform::children() const {
+    return p_ptr->m_Children;
+}
+/*!
+    \internal
+*/
 void Transform::setDirty() {
     p_ptr->m_Dirty = true;
     for(auto it : p_ptr->m_Children) {
