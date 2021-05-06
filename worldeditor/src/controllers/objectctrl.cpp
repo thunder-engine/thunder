@@ -162,7 +162,7 @@ void ObjectCtrl::drawHandles() {
         if(position.x >= 0.0f && position.y >= 0.0f &&
            position.x < m_Screen.x && position.y < m_Screen.y) {
 
-            m_pPipeline->setMousePosition(int32_t(position.x), int32_t(m_Screen.y - position.y));
+            m_pPipeline->setMousePosition(int32_t(position.x), int32_t(position.y));
             result = m_pPipeline->objectId();
         }
 
