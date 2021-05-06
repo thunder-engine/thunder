@@ -8,6 +8,12 @@
 
 class CommandBufferGL;
 
+struct VaoStruct {
+    bool dirty;
+    CommandBufferGL *buffer;
+    uint32_t vao;
+};
+
 class AMeshGL : public Mesh {
     A_OVERRIDE(AMeshGL, Mesh, Resources)
 
@@ -26,9 +32,9 @@ public:
 
 protected:
     void                        updateVao           (uint32_t lod);
-    void                        updateVbo           ();
+    void                        updateVbo           (CommandBufferGL *buffer);
 
-    void                        destroyVao          ();
+    void                        destroyVao          (CommandBufferGL *buffer);
     void                        destroyVbo          ();
 
 public:
@@ -46,9 +52,7 @@ public:
 
     uint32_t m_InstanceBuffer;
 
-    typedef map<CommandBufferGL *, uint32_t>  VaoMap;
-
-    typedef vector<VaoMap> VaoVector;
+    typedef vector<list<VaoStruct *>> VaoVector;
 
     VaoVector m_Vao;
 };

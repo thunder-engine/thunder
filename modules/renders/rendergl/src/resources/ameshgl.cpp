@@ -11,14 +11,14 @@ AMeshGL::AMeshGL() :
 void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     switch(state()) {
         case ToBeUpdated: {
-            updateVbo();
+            updateVbo(buffer);
 
             setState(Ready);
         } break;
         case Ready: break;
         case Suspend: {
             destroyVbo();
-            destroyVao();
+            destroyVao(buffer);
 
             setState(ToBeDeleted);
             return;
@@ -26,19 +26,31 @@ void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
         default: return;
     }
 
-    VaoMap *map = &(m_Vao[lod]);
-    auto it = map->find(buffer);
-    if(it != map->end() && glIsVertexArray(it->second)) {
-        glBindVertexArray(it->second);
-        return;
+    uint32_t *id = nullptr;
+    for(auto &it : m_Vao[lod]) {
+        if(it->buffer == buffer) {
+            if(it->dirty) {
+                id = &(it->vao);
+                glDeleteVertexArrays(1, id);
+                break;
+            } else if(glIsVertexArray(it->vao)) {
+                glBindVertexArray(it->vao);
+                return;
+            }
+        }
     }
-    uint32_t id;
-    glGenVertexArrays(1, &id);
-    glBindVertexArray(id);
+    if(id == nullptr) {
+        VaoStruct *vao = new VaoStruct;
+        vao->buffer = buffer;
+        vao->dirty = false;
+        id = &(vao->vao);
+        m_Vao[lod].push_back(vao);
+    }
+
+    glGenVertexArrays(1, id);
+    glBindVertexArray(*id);
 
     updateVao(lod);
-
-    (*map)[buffer] = id;
 }
 
 void AMeshGL::updateVao(uint32_t lod) {
@@ -89,7 +101,7 @@ void AMeshGL::updateVao(uint32_t lod) {
     }
 }
 
-void AMeshGL::updateVbo() {
+void AMeshGL::updateVbo(CommandBufferGL *buffer) {
     if(!m_InstanceBuffer) {
         glGenBuffers(1, &m_InstanceBuffer);
     }
@@ -159,13 +171,14 @@ void AMeshGL::updateVbo() {
             glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, &l->bones()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
         }
         if(m_Vao.size() <= i) {
-            m_Vao.push_back(VaoMap());
+            m_Vao.push_back(list<VaoStruct *>());
         }
         if(dynamic) {
-            for(auto it : m_Vao[i]) {
-                glDeleteVertexArrays(1, &(it.second));
+            for(auto &it : m_Vao[i]) {
+                if(it->buffer == buffer) {
+                    it->dirty = true;
+                }
             }
-            m_Vao[i].clear();
         }
     }
 
@@ -173,13 +186,14 @@ void AMeshGL::updateVbo() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void AMeshGL::destroyVao() {
+void AMeshGL::destroyVao(CommandBufferGL *buffer) {
     for(int32_t l = 0; l < lodsCount(); l++) {
-        for(auto it : m_Vao[l]) {
-            glDeleteVertexArrays(1, &(it.second));
+        for(auto &it : m_Vao[l]) {
+            if(it->buffer == buffer) {
+                glDeleteVertexArrays(1, &(it->vao));
+            }
         }
     }
-    m_Vao.clear();
 }
 
 void AMeshGL::destroyVbo() {
