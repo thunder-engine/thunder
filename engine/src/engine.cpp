@@ -61,6 +61,8 @@ static const char *gEntry(".entry");
 static const char *gCompany(".company");
 static const char *gProject(".project");
 
+static const char *TRANSFORM("Transform");
+
 #define INDEX_VERSION 2
 
 class EnginePrivate {
@@ -291,6 +293,7 @@ bool Engine::start() {
     if(component == nullptr) {
         Log(Log::DBG) << "Camera not found creating new one.";
         Actor *camera = Engine::objectCreate<Actor>("ActiveCamera", p_ptr->m_pScene);
+        camera->addComponent("Transform");
         camera->transform()->setPosition(Vector3(0.0f));
         component = static_cast<Camera *>(camera->addComponent("Camera"));
     }
@@ -681,6 +684,10 @@ Actor *Engine::composeActor(const string &component, const string &name, Object 
                 if(system) {
                     system->composeComponent(comp);
                 }
+            }
+
+            if(actor->transform() == nullptr) {
+                actor->addComponent(TRANSFORM);
             }
         } else {
             delete actor;

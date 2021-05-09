@@ -50,9 +50,9 @@ IconRender::IconRender(Engine *engine, QOpenGLContext *share, QObject *parent) :
     m_pFBO = new QOpenGLFramebufferObject(128, 128);
 
     m_pScene = Engine::objectCreate<Scene>();
-    m_pActor = Engine::objectCreate<Actor>("ActiveCamera", m_pScene);
+    m_pActor = Engine::composeActor("Camera", "ActiveCamera", m_pScene);
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
-    m_pCamera = static_cast<Camera *>(m_pActor->addComponent("Camera"));
+    m_pCamera = static_cast<Camera *>(m_pActor->component("Camera"));
 
     m_pLight = nullptr;
 
@@ -71,11 +71,10 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         pipe->resize(m_pFBO->size().width(), m_pFBO->size().height());
         pipe->setTarget(m_pFBO->handle());
 
-        m_pLight = Engine::objectCreate<Actor>("LightSource", m_pScene);
+        m_pLight = Engine::composeActor("DirectLight", "LightSource", m_pScene);
         Matrix3 rot;
         rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
         m_pLight->transform()->setQuaternion(rot);
-        m_pLight->addComponent("DirectLight");
 
         m_Init = true;
     }

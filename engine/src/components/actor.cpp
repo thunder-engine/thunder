@@ -273,15 +273,11 @@ void Actor::setLayers(const int layers) {
 }
 /*!
     Returns the Transform component attached to this Actor.
-    If no Transform component found this method will create a new one.
 */
 Transform *Actor::transform() {
     PROFILE_FUNCTION();
     if(p_ptr->m_transform == nullptr) {
         p_ptr->m_transform = static_cast<Transform *>(component(TRANSFORM));
-        if(p_ptr->m_transform == nullptr) {
-            p_ptr->m_transform = static_cast<Transform *>(addComponent(TRANSFORM));
-        }
     }
     return p_ptr->m_transform;
 }

@@ -150,8 +150,8 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
 }
 
 void ParticleEdit::onGLInit() {
-    m_pEffect = Engine::objectCreate<Actor>("ParticleEffect", ui->glWidget->scene());
-    m_pRender = static_cast<ParticleRender *>(m_pEffect->addComponent("ParticleRender"));
+    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->glWidget->scene());
+    m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
 }
 
 void ParticleEdit::onNodeSelected(void *node) {

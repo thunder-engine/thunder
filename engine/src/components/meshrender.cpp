@@ -44,7 +44,7 @@ MeshRender::~MeshRender() {
 */
 void MeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pMesh && layer & a->layers()) {
+    if(p_ptr->m_pMesh && layer & a->layers() && a->transform()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
@@ -57,8 +57,9 @@ void MeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     \internal
 */
 AABBox MeshRender::bound() const {
-    if(p_ptr->m_pMesh) {
-        return p_ptr->m_pMesh->bound() * actor()->transform()->worldTransform();
+    Transform *t = actor()->transform();
+    if(p_ptr->m_pMesh && t) {
+        return p_ptr->m_pMesh->bound() * t->worldTransform();
     }
     return Renderable::bound();
 }

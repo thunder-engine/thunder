@@ -157,10 +157,12 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
 void MeshEdit::onGLInit() {
     Scene *scene = glWidget->scene();
 
-    m_pLight = Engine::objectCreate<Actor>("LightSource", scene);
+    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
     m_pLight->transform()->setQuaternion(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
-    DirectLight *light  = static_cast<DirectLight *>(m_pLight->addComponent("DirectLight"));
-    light->setCastShadows(true);
+    DirectLight *light = static_cast<DirectLight *>(m_pLight->component("DirectLight"));
+    if(light) {
+        light->setCastShadows(true);
+    }
 
     Prefab *prefab = Engine::loadResource<Prefab>(".embedded/cube.fbx");
     if(prefab) {

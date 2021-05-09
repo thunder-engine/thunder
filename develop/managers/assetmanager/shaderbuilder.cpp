@@ -171,17 +171,19 @@ IConverterSettings *ShaderBuilder::createSettings() const {
 }
 
 Actor *ShaderBuilder::createActor(const QString &guid) const {
-    Actor *object = Engine::objectCreate<Actor>("");
+    Actor *object = Engine::composeActor("MeshRender", "");
 
-    MeshRender *mesh = static_cast<MeshRender *>(object->addComponent("MeshRender"));
-    Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
-    if(m) {
-        mesh->setMesh(m);
-        Material *mat = Engine::loadResource<Material>(guid.toStdString());
-        if(mat) {
-            mesh->setMaterial(mat);
+    MeshRender *mesh = static_cast<MeshRender *>(object->component("MeshRender"));
+    if(mesh) {
+        Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
+        if(m) {
+            mesh->setMesh(m);
+            Material *mat = Engine::loadResource<Material>(guid.toStdString());
+            if(mat) {
+                mesh->setMaterial(mat);
+            }
         }
-    }
+}
 
     return object;
 }

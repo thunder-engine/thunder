@@ -273,6 +273,7 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         }
     } else {
         Actor *actor = Engine::objectCreate<Actor>(name, parent);
+        actor->addComponent("Transform");
 
         if(fbxSettings->m_pRootActor == nullptr) {
             fbxSettings->m_pRootActor = actor;

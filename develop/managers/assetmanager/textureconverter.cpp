@@ -422,9 +422,9 @@ IConverterSettings *TextureConverter::createSettings() const {
 }
 
 Actor *TextureConverter::createActor(const QString &guid) const {
-    Actor *object = Engine::objectCreate<Actor>("");
+    Actor *object = Engine::composeActor("SpriteRender", "");
 
-    SpriteRender *render = static_cast<SpriteRender *>(object->addComponent("SpriteRender"));
+    SpriteRender *render = static_cast<SpriteRender *>(object->component("SpriteRender"));
     if(render) {
         render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
         Resource *res = Engine::loadResource<Resource>(guid.toStdString());

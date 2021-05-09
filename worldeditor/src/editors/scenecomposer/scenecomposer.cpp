@@ -913,6 +913,7 @@ void SceneComposer::on_actionAbout_triggered() {
 void SceneComposer::on_actionNew_Object_triggered() {
     ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
     Actor *actor = Engine::objectCreate<Actor>("NewActor", ctrl->map());
+    actor->addComponent("Transform");
     actor->transform()->setPosition(0.0f);
 }
 

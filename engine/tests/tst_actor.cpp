@@ -104,6 +104,7 @@ void Prefab_serialization() {
     RenderSystem render;
 
     Actor *prefab = Engine::objectCreate<Actor>("Prefab");
+    prefab->addComponent("Transform");
     QCOMPARE(prefab != nullptr, true);
 
     Transform *t0 = prefab->transform();

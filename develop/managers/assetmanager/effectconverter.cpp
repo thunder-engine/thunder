@@ -68,8 +68,8 @@ IConverterSettings *EffectConverter::createSettings() const {
 }
 
 Actor *EffectConverter::createActor(const QString &guid) const {
-    Actor *actor = Engine::objectCreate<Actor>("");
-    ParticleRender *effect = static_cast<ParticleRender *>(actor->addComponent("ParticleRender"));
+    Actor *actor = Engine::composeActor("ParticleRender", "");
+    ParticleRender *effect = static_cast<ParticleRender *>(actor->component("ParticleRender"));
     if(effect) {
         effect->setEffect(Engine::loadResource<ParticleEffect>(guid.toStdString()));
     }
