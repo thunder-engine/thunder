@@ -4,12 +4,6 @@
     "DepthWrite": false,
     "Links": [
         {
-            "IPort": 5,
-            "OPort": 5,
-            "Receiver": 0,
-            "Sender": 1
-        },
-        {
             "IPort": 0,
             "OPort": 0,
             "Receiver": 3,
@@ -26,6 +20,30 @@
             "OPort": 1,
             "Receiver": 3,
             "Sender": 1
+        },
+        {
+            "IPort": 0,
+            "OPort": 0,
+            "Receiver": 4,
+            "Sender": 2
+        },
+        {
+            "IPort": 5,
+            "OPort": 2,
+            "Receiver": 0,
+            "Sender": 5
+        },
+        {
+            "IPort": 0,
+            "OPort": 1,
+            "Receiver": 5,
+            "Sender": 4
+        },
+        {
+            "IPort": 1,
+            "OPort": 5,
+            "Receiver": 5,
+            "Sender": 1
         }
     ],
     "Model": 0,
@@ -39,8 +57,8 @@
                     "Texture"
                 ]
             },
-            "X": -400,
-            "Y": 80
+            "X": -624,
+            "Y": 112
         },
         {
             "Type": "ParamVector",
@@ -54,15 +72,33 @@
                 ],
                 "Parameter_Name": "color0"
             },
-            "X": -400,
-            "Y": -20
+            "X": -624,
+            "Y": -16
         },
         {
             "Type": "Multiply",
             "Values": {
             },
-            "X": -180,
-            "Y": 40
+            "X": -192,
+            "Y": 32
+        },
+        {
+            "Type": "Mask",
+            "Values": {
+                "A": true,
+                "B": false,
+                "G": false,
+                "R": false
+            },
+            "X": -400,
+            "Y": 160
+        },
+        {
+            "Type": "Multiply",
+            "Values": {
+            },
+            "X": -192,
+            "Y": 160
         }
     ],
     "Raw": "",

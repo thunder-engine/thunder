@@ -342,14 +342,14 @@ void ShaderBuilder::saveUserValues(Node *node, QVariantMap &values) {
 
 void ShaderBuilder::loadTextures(const QVariantMap &data) {
     m_Textures.clear();
-    for(auto it : data.keys()) {
+    for(auto &it : data.keys()) {
         m_Textures.push_back(TexturePair(it, data.value(it).toInt()));
     }
 }
 
 QVariantMap ShaderBuilder::saveTextures() const {
     QVariantMap result;
-    for(auto it : m_Textures) {
+    for(auto &it : m_Textures) {
         result[it.first] = it.second;
     }
     return result;
@@ -379,7 +379,7 @@ bool ShaderBuilder::build() {
 
         // Textures
         uint16_t i = 0;
-        for(auto it : m_Textures) {
+        for(auto &it : m_Textures) {
             QString texture;
             if(it.second & Cube) {
                 texture += "\tsamplerCube ";
@@ -438,7 +438,7 @@ Variant ShaderBuilder::data(bool editor) const {
 
     VariantMap textures;
     uint16_t i = 0;
-    for(auto it : m_Textures) {
+    for(auto &it : m_Textures) {
         bool target = (it.second & Target);
         QString name;
         if(m_RawPath.absoluteFilePath().isEmpty()) {
@@ -452,7 +452,7 @@ Variant ShaderBuilder::data(bool editor) const {
     user["Textures"] = textures;
 
     VariantMap uniforms;
-    for(auto it : m_Uniforms) {
+    for(auto &it : m_Uniforms) {
         Variant value;
         switch(it.second.first) {
             case QMetaType::QVector4D: {
