@@ -26,6 +26,8 @@ public:
     static void atlasPageSize(int32_t &width, int32_t &height);
 
 protected:
+    void processEvents() override;
+
     static void setAtlasPageSize(int32_t width, int32_t height);
 
 private:

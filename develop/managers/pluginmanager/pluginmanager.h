@@ -13,6 +13,7 @@ class QLibrary;
 class Engine;
 class Module;
 class System;
+class RenderSystem;
 
 class Object;
 class Scene;
@@ -87,7 +88,7 @@ private:
 
     QList<Scene *> m_Scenes;
 
-    System *m_pRender;
+    RenderSystem *m_pRender;
 };
 
 #endif // PLUGINMANAGER_H

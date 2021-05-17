@@ -1,5 +1,6 @@
 #include "systems/rendersystem.h"
 
+#include "components/scene.h"
 #include "components/meshrender.h"
 #include "components/textrender.h"
 #include "components/spriterender.h"
@@ -23,8 +24,14 @@
 
 class RenderSystemPrivate {
 public:
+    RenderSystemPrivate() :
+        m_Update(true) {
+
+    }
     static int32_t m_AtlasPageWidth;
     static int32_t m_AtlasPageHeight;
+
+    bool m_Update;
 };
 
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
@@ -98,6 +105,12 @@ void RenderSystem::update(Scene *scene) {
         pipe->draw(*camera);
         pipe->finish();
     }
+}
+
+void RenderSystem::processEvents() {
+    m_pScene->setToBeUpdated(true);
+    System::processEvents();
+    m_pScene->setToBeUpdated(false);
 }
 
 void RenderSystem::atlasPageSize(int32_t &width, int32_t &height) {

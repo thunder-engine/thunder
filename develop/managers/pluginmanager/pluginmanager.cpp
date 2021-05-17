@@ -268,8 +268,9 @@ void PluginManager::registerSystem(Module *plugin) {
     m_Systems[QString::fromStdString(system->name())] = system;
     m_pEngine->addModule(plugin);
 
-    if(dynamic_cast<RenderSystem *>(system)) {
-        m_pRender = system;
+    RenderSystem *render = dynamic_cast<RenderSystem *>(system);
+    if(render) {
+        m_pRender = render;
     }
 }
 
@@ -285,8 +286,7 @@ void PluginManager::updateRender(Scene *scene) {
     m_pEngine->resourceSystem()->processEvents();
 
     if(m_pRender) {
-        m_pRender->setActiveScene(scene);
-        m_pRender->processEvents();
+        m_pRender->update(scene);
     }
 }
 

@@ -35,7 +35,7 @@ public:
 
     void processEvents() override;
 
-private:
+protected:
     Scene *m_pScene;
 
 };

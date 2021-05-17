@@ -199,7 +199,7 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
     m_SceneComponents.clear();
     m_SceneLights.clear();
 
-    combineComponents(scene);
+    combineComponents(scene, scene->isToBeUpdated());
 
     Camera *camera = Camera::current();
     m_Filter = Camera::frustumCulling(m_SceneComponents, Camera::frustumCorners(*camera));
@@ -352,13 +352,15 @@ RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
     return result;
 }
 
-void Pipeline::combineComponents(Object *object) {
+void Pipeline::combineComponents(Object *object, bool update) {
     for(auto &it : object->getChildren()) {
         Object *child = it;
         if(child->isRenderable()) {
             Renderable *comp = static_cast<Renderable *>(child);
             if(comp->actor()->isEnabledInHierarchy()) {
-                comp->update();
+                if(update) {
+                    comp->update();
+                }
                 if(comp->isLight()) {
                     m_SceneLights.push_back(comp);
                 } else {
@@ -366,7 +368,7 @@ void Pipeline::combineComponents(Object *object) {
                 }
             }
         } else {
-            combineComponents(child);
+            combineComponents(child, update);
         }
     }
 }

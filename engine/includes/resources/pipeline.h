@@ -64,7 +64,7 @@ protected:
     void cleanShadowCache();
     void updateShadows(Camera &camera);
 
-    void combineComponents(Object *object);
+    void combineComponents(Object *object, bool update);
 
 protected:
     typedef map<string, RenderTexture *> TargetMap;
