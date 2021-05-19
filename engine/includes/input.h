@@ -174,6 +174,9 @@ public:
     static bool                 isKeyDown                   (KeyCode code);
     static bool                 isKeyUp                     (KeyCode code);
 
+    static string               inputString                 ();
+    static void                 setKeyboardVisible          (bool visible);
+
     static bool                 isMouseButton               (MouseButton button);
     static bool                 isMouseButtonDown           (MouseButton button);
     static bool                 isMouseButtonUp             (MouseButton button);
@@ -183,17 +186,12 @@ public:
     static void                 setMousePosition            (int32_t x, int32_t y);
 
     static uint32_t             joystickCount               ();
-
     static uint32_t             joystickButtons             (uint32_t index);
-
     static Vector4              joystickThumbs              (uint32_t index);
-
     static Vector2              joystickTriggers            (uint32_t index);
 
     static uint32_t             touchCount                  ();
-
     static uint32_t             touchState                  (uint32_t index);
-
     static Vector4              touchPosition               (uint32_t index);
 };
 

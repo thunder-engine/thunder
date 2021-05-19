@@ -28,26 +28,22 @@ public:
     bool                        keyPressed                  (Input::KeyCode code);
     bool                        keyReleased                 (Input::KeyCode code);
 
+    string                      inputString                 ();
+
     Vector4                     mousePosition               ();
-
     Vector4                     mouseDelta                  ();
-
     bool                        mouseButton                 (Input::MouseButton button);
     bool                        mousePressed                (Input::MouseButton button);
     bool                        mouseReleased               (Input::MouseButton button);
 
-    uint32_t                    screenWidth                 ();
-
-    uint32_t                    screenHeight                ();
-
     void                        setMousePosition            (int32_t x, int32_t y);
 
+    uint32_t                    screenWidth                 ();
+    uint32_t                    screenHeight                ();
+
     uint32_t                    joystickCount               ();
-
     uint32_t                    joystickButtons             (uint32_t index);
-
     Vector4                     joystickThumbs              (uint32_t index);
-
     Vector2                     joystickTriggers            (uint32_t index);
 
     void                       *pluginLoad                  (const char *name);
@@ -62,6 +58,8 @@ public:
 
 protected:
     static void                 keyCallback                 (GLFWwindow *, int, int, int, int);
+
+    static void                 charCallback                (GLFWwindow *, unsigned int);
 
     static void                 buttonCallback              (GLFWwindow*,int, int, int);
 

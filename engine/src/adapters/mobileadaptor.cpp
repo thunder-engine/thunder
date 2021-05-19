@@ -54,6 +54,8 @@ uint32_t MobileAdaptor::s_Buttons = 0;
 Vector4 MobileAdaptor::s_Thumbs = Vector4();
 Vector2 MobileAdaptor::s_Screen = Vector2();
 
+static string s_inputString;
+
 struct Touch {
     uint32_t    phase;
     Vector4     pos;
@@ -142,6 +144,10 @@ bool onKey(GLFMDisplay *, GLFMKey keyCode, GLFMKeyAction, int) {
     return false;
 }
 
+void onChar(GLFMDisplay *, const char *utf8, int) {
+    s_inputString += utf8;
+}
+
 void glfmMain(GLFMDisplay *display) {
     gDisplay = display;
 
@@ -158,6 +164,7 @@ void glfmMain(GLFMDisplay *display) {
 
     glfmSetTouchFunc(gDisplay, onTouch);
     glfmSetKeyFunc(gDisplay, onKey);
+    glfmSetCharFunc(gDisplay, onChar);
 }
 
 MobileAdaptor::MobileAdaptor(Engine *engine) {
@@ -169,7 +176,7 @@ bool MobileAdaptor::init() {
 }
 
 void MobileAdaptor::update() {
-
+    s_inputString.clear();
 }
 
 bool MobileAdaptor::start() {
@@ -204,6 +211,14 @@ uint32_t MobileAdaptor::screenWidth() {
 
 uint32_t MobileAdaptor::screenHeight() {
     return s_Screen.y;
+}
+
+string MobileAdaptor::inputString() {
+    return s_inputString;
+}
+
+void MobileAdaptor::setKeyboardVisible(bool visible) {
+    glfmSetKeyboardVisible(gDisplay, visible);
 }
 
 uint32_t MobileAdaptor::touchCount() {

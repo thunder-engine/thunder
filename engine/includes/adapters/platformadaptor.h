@@ -34,6 +34,9 @@ public:
     virtual bool                        keyPressed                  (Input::KeyCode code) { A_UNUSED(code); return false; }
     virtual bool                        keyReleased                 (Input::KeyCode code) { A_UNUSED(code); return false; }
 
+    virtual string                      inputString                 () = 0;
+    virtual void                        setKeyboardVisible          (bool visible) { A_UNUSED(visible); }
+
     virtual Vector4                     mousePosition               () { return Vector4(); }
 
     virtual Vector4                     mouseDelta                  () { return Vector4(); }
@@ -41,21 +44,15 @@ public:
     virtual bool                        mouseButton                 (Input::MouseButton code) { A_UNUSED(code); return false; }
     virtual bool                        mousePressed                (Input::MouseButton code) { A_UNUSED(code); return false; }
     virtual bool                        mouseReleased               (Input::MouseButton code) { A_UNUSED(code); return false; }
-
     virtual void                        setMousePosition            (int32_t x, int32_t y) { A_UNUSED(x); A_UNUSED(y); }
 
     virtual uint32_t                    joystickCount               () { return 0; }
-
     virtual uint32_t                    joystickButtons             (uint32_t index) { A_UNUSED(index); return 0; }
-
     virtual Vector4                     joystickThumbs              (uint32_t index) { A_UNUSED(index); return Vector4(); }
-
     virtual Vector2                     joystickTriggers            (uint32_t index) { A_UNUSED(index); return Vector2(); }
 
     virtual uint32_t                    touchCount                  () { return 0; }
-
     virtual uint32_t                    touchState                  (uint32_t index) { A_UNUSED(index); return 0; }
-
     virtual Vector4                     touchPosition               (uint32_t index) { A_UNUSED(index); return 0; }
 
     virtual void                       *pluginLoad                  (const char *name) { A_UNUSED(name); return nullptr; }

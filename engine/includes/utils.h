@@ -11,6 +11,8 @@ public:
 
     static u32string    utf8ToUtf32             (const string &in);
 
+    static string       wc32ToUtf8              (uint32_t wc32);
+
 };
 
 #endif // UTILS_H

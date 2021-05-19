@@ -1,6 +1,6 @@
 #include "utils.h"
 
-string wc32ToUtf8(uint32_t wc32) {
+string Utils::wc32ToUtf8(uint32_t wc32) {
     string result;
     if(wc32 < 0x007F) {
         result  += (char)wc32;

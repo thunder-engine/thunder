@@ -46,6 +46,8 @@ static string gAppConfig;
 static unordered_map<int32_t, int32_t> s_Keys;
 static unordered_map<int32_t, int32_t> s_MouseButtons;
 
+static string s_inputString;
+
 class DesktopHandler : public LogHandler {
 protected:
     void setRecord(Log::LogTypes, const char *record) {
@@ -87,6 +89,8 @@ bool DesktopAdaptor::init() {
 
 void DesktopAdaptor::update() {
     glfwSwapBuffers(m_pWindow);
+
+    s_inputString.clear();
 
     for(auto &it : s_Keys) {
         switch(it.second) {
@@ -174,6 +178,7 @@ bool DesktopAdaptor::start() {
         stop();
         return false;
     }
+    glfwSetCharCallback(m_pWindow, charCallback);
     glfwSetKeyCallback(m_pWindow, keyCallback);
     glfwSetMouseButtonCallback(m_pWindow, buttonCallback);
     glfwSetScrollCallback(m_pWindow, scrollCallback);
@@ -206,6 +211,10 @@ bool DesktopAdaptor::keyPressed(Input::KeyCode code) {
 
 bool DesktopAdaptor::keyReleased(Input::KeyCode code) {
     return (s_Keys[code] == RELEASE);
+}
+
+string DesktopAdaptor::inputString() {
+    return s_inputString;
 }
 
 Vector4 DesktopAdaptor::mousePosition() {
@@ -308,7 +317,11 @@ void DesktopAdaptor::keyCallback(GLFWwindow *, int code, int, int action, int) {
     s_Keys[static_cast<Input::KeyCode>(code)] = action;
 }
 
-void DesktopAdaptor::buttonCallback(GLFWwindow *,int button, int action, int) {
+void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
+    s_inputString += Utils::wc32ToUtf8(codepoint);
+}
+
+void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
     s_MouseButtons[static_cast<Input::MouseButton>(button)] = action;
 }
 

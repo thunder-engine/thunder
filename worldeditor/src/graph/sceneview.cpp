@@ -190,6 +190,8 @@ Input::KeyCode mapToInput(int32_t key) {
 }
 
 void SceneView::update() {
+    m_inputString.clear();
+
     for(auto &it : m_Keys) {
         switch(it.second) {
             case RELEASE: it.second = NONE; break;
@@ -217,6 +219,10 @@ bool SceneView::keyPressed(Input::KeyCode code) {
 
 bool SceneView::keyReleased(Input::KeyCode code) {
     return (m_Keys[code] == RELEASE);
+}
+
+string SceneView::inputString() {
+    return m_inputString;
 }
 
 bool SceneView::mouseButton(Input::MouseButton button) {
@@ -266,6 +272,7 @@ void SceneView::mouseReleaseEvent(QMouseEvent *ev) {
 void SceneView::keyPressEvent(QKeyEvent *ev) {
     QOpenGLWidget::keyPressEvent(ev);
     m_Keys[mapToInput(ev->key())] = ev->isAutoRepeat() ? REPEAT : PRESS;
+    m_inputString += ev->text().toStdString();
 }
 
 void SceneView::keyReleaseEvent(QKeyEvent *ev) {

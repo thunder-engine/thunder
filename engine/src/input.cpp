@@ -47,6 +47,19 @@ bool Input::isKeyUp(KeyCode code) {
     return s_pPlatform->keyReleased(code);
 }
 /*!
+    Returns characters entered since the last frame.
+*/
+string Input::inputString() {
+    return s_pPlatform->inputString();
+}
+/*!
+    Shows and hide a virtual keyboard.
+    \note Does nothing for the desktop platforms.
+*/
+void Input::setKeyboardVisible(bool visible) {
+    s_pPlatform->setKeyboardVisible(visible);
+}
+/*!
     Returns the mouse position.
     The absolute position will be stored in x and y components.
     The normalized position will be stored in z and w components.

@@ -40,6 +40,8 @@ protected:
     bool keyPressed(Input::KeyCode) override;
     bool keyReleased(Input::KeyCode) override;
 
+    string inputString() override;
+
     bool mouseButton(Input::MouseButton) override;
     bool mousePressed(Input::MouseButton) override;
     bool mouseReleased(Input::MouseButton) override;
@@ -81,6 +83,8 @@ protected:
 
     unordered_map<int32_t, int32_t> m_Keys;
     unordered_map<int32_t, int32_t> m_MouseButtons;
+
+    string m_inputString;
 
 };
 
