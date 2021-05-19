@@ -257,6 +257,15 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
+        name: "Fonts Engine"
+        files: [
+            install.RESOURCE_ROOT + "/engine/fonts/*"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources/engine/fonts"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
         name: "Materials Editor"
         files: [
             install.RESOURCE_ROOT + "/editor/materials/*"

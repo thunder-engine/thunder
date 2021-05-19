@@ -135,7 +135,7 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new TranslatorConverter());
     registerConverter(new MapConverter());
 
-    for(auto it : m_Converters) {
+    for(auto &it : m_Converters) {
         it->init();
     }
 }
@@ -165,6 +165,7 @@ void AssetManager::rescan(bool force) {
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/materials",force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/textures", force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/meshes",   force);
+    onDirectoryChanged(m_pProjectManager->resourcePath() + "/engine/fonts",   force);
 #ifndef BUILDER
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/materials",force);
     onDirectoryChanged(m_pProjectManager->resourcePath() + "/editor/textures", force);
@@ -378,7 +379,6 @@ bool copyRecursively(QString sourceFolder, QString destFolder)
 }
 
 void AssetManager::duplicateResource(const QFileInfo &source) {
-    QDir dir(m_pProjectManager->contentPath());
     QFileInfo src(m_pProjectManager->contentPath() + "/" + source.filePath());
 
     QString name = src.baseName();
@@ -463,7 +463,6 @@ bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
 
 IConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     QDir dir(m_pProjectManager->contentPath());
-    QString name = source.fileName();
     QString path = dir.relativeFilePath(source.absoluteFilePath());
     IConverterSettings *settings = m_ConverterSettings.value(path, nullptr);
     if(settings) {
@@ -490,7 +489,7 @@ IConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
 
 void AssetManager::registerConverter(IConverter *converter) {
     if(converter) {
-        for(QString format : converter->suffixes()) {
+        for(QString &format : converter->suffixes()) {
             m_Converters[format.toLower()] = converter;
 
             IBuilder *builder = dynamic_cast<IBuilder *>(converter);
@@ -507,7 +506,7 @@ void AssetManager::registerConverter(IConverter *converter) {
 void AssetManager::findFreeName(QString &name, const QString &path, const QString &suff) {
    QString base = name;
    uint32_t it = 1;
-   while(QFileInfo(path + QDir::separator() + name + suff).exists()) {
+   while(QFileInfo::exists(path + QDir::separator() + name + suff)) {
        name = base + QString::number(it);
        it++;
    }
@@ -584,7 +583,7 @@ void AssetManager::dumpBundle() {
     VariantMap root;
 
     VariantMap paths;
-    for(auto it : m_Indices) {
+    for(auto &it : m_Indices) {
         VariantList item;
         item.push_back(it.first);
         item.push_back(it.second.first);
@@ -654,7 +653,6 @@ void AssetManager::onPerform() {
 }
 
 void AssetManager::onFileChanged(const QString &path, bool force) {
-    QDir dir(m_pProjectManager->contentPath());
     QFileInfo info(path);
     if(info.exists() && (QString(".") + info.suffix()) != gMetaExt) {
         IConverterSettings *settings = fetchSettings(info);
@@ -665,7 +663,7 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
             if(settings->typeName() != CODE) {
                 QString guid = settings->destination();
                 registerAsset(info, guid, settings->typeName());
-                for(QString it : settings->subKeys()) {
+                for(const QString &it : settings->subKeys()) {
                     QString value = settings->subItem(it);
                     QString path = info.absoluteFilePath() + "/" + it;
                     registerAsset(path, value, settings->subTypeName(it));
@@ -694,7 +692,6 @@ void AssetManager::onDirectoryChanged(const QString &path, bool force) {
 
 IConverter *AssetManager::getConverter(IConverterSettings *settings) {
     QFileInfo info(settings->source());
-    QDir dir(m_pProjectManager->contentPath());
     QString format = info.completeSuffix().toLower();
 
     auto it = m_Converters.find(format);
@@ -707,7 +704,6 @@ IConverter *AssetManager::getConverter(IConverterSettings *settings) {
 
 bool AssetManager::convert(IConverterSettings *settings) {
     QFileInfo info(settings->source());
-    QDir dir(m_pProjectManager->contentPath());
     QString format = info.completeSuffix().toLower();
 
     auto it = m_Converters.find(format);
@@ -720,7 +716,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
             QString source = settings->source();
             registerAsset(source, guid, type);
 
-            for(QString it : settings->subKeys()) {
+            for(const QString &it : settings->subKeys()) {
                 QString value = settings->subItem(it);
                 QString type = settings->subTypeName(it);
                 QString path = source + "/" + it;
