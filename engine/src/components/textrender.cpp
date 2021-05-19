@@ -102,7 +102,7 @@ TextRender::~TextRender() {
 */
 void TextRender::draw(ICommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pMesh && layer & a->layers()) {
+    if(p_ptr->m_pMesh && layer & a->layers() && !p_ptr->m_Text.empty()) {
         if(layer & ICommandBuffer::RAYCAST) {
             buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
         }
@@ -332,6 +332,8 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
 
         uint32_t length = font->length(data);
         if(length) {
+            u32string u32 = Utils::utf8ToUtf32(data);
+
             Lod lod;
 
             IndexVector &indices = lod.indices();
@@ -353,7 +355,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             Vector3 bb[2];
             bb[1].y = -spaceLine;
             for(uint32_t i = 0; i < length; i++) {
-                uint32_t ch = data[i];
+                uint32_t ch = u32[i];
                 switch(ch) {
                     case ' ': {
                         pos += Vector3(spaceWidth, 0.0f, 0.0f);
