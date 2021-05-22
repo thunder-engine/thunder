@@ -8,7 +8,7 @@ class DirectLightPrivate;
 class Camera;
 
 class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
-    A_REGISTER(DirectLight, BaseLight, Components)
+    A_REGISTER(DirectLight, BaseLight, Components/Lights)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

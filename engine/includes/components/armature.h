@@ -8,7 +8,7 @@ class Pose;
 class ArmaturePrivate;
 
 class NEXT_LIBRARY_EXPORT Armature : public Renderable {
-    A_REGISTER(Armature, NativeBehaviour, Components);
+    A_REGISTER(Armature, NativeBehaviour, Components/Animation);
 
     A_PROPERTIES(
         A_PROPERTYEX(Pose *, bindPose, Armature::bindPose, Armature::setBindPose, "editor=Template")

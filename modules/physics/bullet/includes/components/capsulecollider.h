@@ -4,7 +4,7 @@
 #include "components/spherecollider.h"
 
 class CapsuleCollider : public SphereCollider {
-    A_REGISTER(CapsuleCollider, SphereCollider, Components)
+    A_REGISTER(CapsuleCollider, SphereCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, height, CapsuleCollider::height, CapsuleCollider::setHeight)

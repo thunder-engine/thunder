@@ -4,7 +4,7 @@
 #include "components/volumecollider.h"
 
 class BoxCollider : public VolumeCollider {
-    A_REGISTER(BoxCollider, VolumeCollider, Components)
+    A_REGISTER(BoxCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, size, BoxCollider::size, BoxCollider::setSize)

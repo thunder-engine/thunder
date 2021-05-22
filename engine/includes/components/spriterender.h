@@ -10,7 +10,7 @@ class Mesh;
 class SpriteRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
-    A_REGISTER(SpriteRender, Renderable, Components)
+    A_REGISTER(SpriteRender, Renderable, Components/2D)
 
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, SpriteRender::material, SpriteRender::setMaterial, "editor=Template"),

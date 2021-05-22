@@ -4,7 +4,7 @@
 #include "components/volumecollider.h"
 
 class SphereCollider : public VolumeCollider {
-    A_REGISTER(SphereCollider, VolumeCollider, Components)
+    A_REGISTER(SphereCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, radius, SphereCollider::radius, SphereCollider::setRadius)

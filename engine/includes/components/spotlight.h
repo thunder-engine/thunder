@@ -6,7 +6,7 @@
 class SpotLightPrivate;
 
 class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
-    A_REGISTER(SpotLight, BaseLight, Components)
+    A_REGISTER(SpotLight, BaseLight, Components/Lights)
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationDistance, SpotLight::attenuationDistance, SpotLight::setAttenuationDistance),

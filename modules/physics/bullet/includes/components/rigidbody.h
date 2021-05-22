@@ -12,7 +12,7 @@ enum Axises {
 class VolumeCollider;
 
 class RigidBody : public Collider, public btMotionState {
-    A_REGISTER(RigidBody, Collider, Components)
+    A_REGISTER(RigidBody, Collider, Components/Physics)
 
     A_PROPERTIES(
         A_PROPERTY(float, mass, RigidBody::mass, RigidBody::setMass),

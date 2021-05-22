@@ -9,7 +9,7 @@ class Mesh;
 class SkinnedMeshRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT SkinnedMeshRender : public Renderable {
-    A_REGISTER(SkinnedMeshRender, Renderable, Components);
+    A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(
         A_PROPERTYEX(Armature *, armature, SkinnedMeshRender::armature, SkinnedMeshRender::setArmature, "editor=Component"),

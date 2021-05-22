@@ -6,7 +6,7 @@
 #include "resources/audioclip.h"
 
 class AudioSource : public NativeBehaviour {
-    A_REGISTER(AudioSource, NativeBehaviour, Components)
+    A_REGISTER(AudioSource, NativeBehaviour, Components/Audio)
 
     A_PROPERTIES (
         A_PROPERTY(AudioClip *, clip, AudioSource::clip, AudioSource::setClip),

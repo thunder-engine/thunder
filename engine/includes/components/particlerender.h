@@ -9,7 +9,7 @@ class ParticleEffect;
 class ParticleRenderPrivate;
 
 class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
-    A_REGISTER(ParticleRender, Renderable, Components)
+    A_REGISTER(ParticleRender, Renderable, Components/Effects)
 
     A_PROPERTIES(
         A_PROPERTYEX(ParticleEffect *, effect, ParticleRender::effect, ParticleRender::setEffect, "editor=Template")
