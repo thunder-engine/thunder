@@ -30,8 +30,8 @@ Object *objectCreate3(string &type, string &name, Object *parent) {
     return Engine::objectCreate(type, name, parent);
 }
 
-Actor *actorCreate(string &name, Object *parent) {
-    return Engine::objectCreate<Actor>(name, parent);
+Actor *composeActor(string &name, string &component, Object *parent) {
+    return Engine::composeActor(name, component, parent);
 }
 
 Object *loadResource(string &name) {
@@ -44,6 +44,8 @@ void registerEngine(asIScriptEngine *engine) {
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in)", asFUNCTION(objectCreate1), asCALL_CDECL);
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in)", asFUNCTION(objectCreate2), asCALL_CDECL);
     engine->RegisterGlobalFunction("Object @objectCreate(const string &in, const string &in, Object &in)", asFUNCTION(objectCreate3), asCALL_CDECL);
+
+    engine->RegisterGlobalFunction("Actor @composeActor(const string &in, const string &in, Object &in)", asFUNCTION(composeActor), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(loadResource), asCALL_CDECL);
 
@@ -58,6 +60,4 @@ void registerCore(asIScriptEngine *engine) {
     engine->RegisterGlobalFunction("void log(const string &in)", asFUNCTION(logFunction), asCALL_CDECL);
 
     registerObject(engine);
-
-    registerEngine(engine);
 }

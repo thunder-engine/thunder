@@ -326,6 +326,8 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
 
     engine->RegisterObjectMethod("Actor", "string &get_Name()", asMETHOD(Object, name), asCALL_THISCALL);
     engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
+
+    registerEngine(engine);
 }
 
 void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &table) {

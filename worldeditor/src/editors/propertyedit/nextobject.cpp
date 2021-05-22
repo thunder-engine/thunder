@@ -361,11 +361,6 @@ Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProper
         default: break;
     }
 
-    if(static_cast<uint32_t>(current.userType()) == MetaType::type<Alignment>()) {
-        Alignment alignment = value.value<Alignment>();
-        return Variant::fromValue(alignment);
-    }
-
     QString typeName(QString(property.type().name()).replace(" *", ""));
     auto factory = System::metaFactory(qPrintable(typeName));
     if(factory) {
