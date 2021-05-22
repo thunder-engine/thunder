@@ -5,6 +5,8 @@ class asIScriptEngine;
 
 void registerCore(asIScriptEngine *engine);
 
+void registerEngine(asIScriptEngine *engine);
+
 void registerMath(asIScriptEngine *engine);
 
 void registerInput(asIScriptEngine *engine);
