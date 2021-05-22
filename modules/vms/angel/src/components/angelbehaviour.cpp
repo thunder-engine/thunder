@@ -317,13 +317,12 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
         const char *annotation = property.table()->annotation;
         if(annotation && property.table()->annotation[0] == '@') {
             if(it->second) {
+                AngelBehaviour *behaviour = nullptr;
                 asIScriptObject *object = *(reinterpret_cast<asIScriptObject **>(it->second));
                 if(object) {
-                    AngelBehaviour *behaviour = reinterpret_cast<AngelBehaviour *>(object->GetUserData());
-                    if(behaviour) {
-                        return Variant(MetaType::type(property.table()->type->name), &behaviour);
-                    }
+                    behaviour = reinterpret_cast<AngelBehaviour *>(object->GetUserData());
                 }
+                return Variant(MetaType::type(property.table()->type->name), &behaviour);
             }
         } else {
             return Variant(MetaType::type(property.table()->type->name), it->second);
@@ -337,7 +336,7 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
     auto it = m_PropertyAdresses.find(property.name());
     if(it != m_PropertyAdresses.end()) {
         const char *annotation = property.table()->annotation;
-        if(annotation && property.table()->annotation[0] == '@') {
+        if(annotation && annotation[0] == '@') {
             AngelBehaviour *behaviour = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(value.data()));
             if(behaviour) {
                 asIScriptObject *script = *(reinterpret_cast<asIScriptObject **>(it->second));
@@ -349,10 +348,10 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
                     behaviour->subscribe(this, it->second);
                 }
                 memcpy(it->second, &script, sizeof(script));
+                return;
             }
-        } else {
-            memcpy(it->second, value.data(), MetaType(property.table()->type).size());
         }
+        memcpy(it->second, value.data(), MetaType(property.table()->type).size());
     }
 }
 
