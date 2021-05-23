@@ -26,8 +26,9 @@ AngelBehaviour::~AngelBehaviour() {
     PROFILE_FUNCTION();
     if(m_pObject) {
         m_pObject->Release();
+        m_pObject = nullptr;
     }
-    /// \todo Need to release references for the properties
+    notifyObservers();
 }
 
 string AngelBehaviour::script() const {
@@ -132,7 +133,11 @@ void AngelBehaviour::updateMeta() {
             info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
             if(!isPrivate && !isProtected) {
                 uint32_t metaType = 0;
-                bool isScriptType = false;
+                PropertyFields propertyFields;
+                propertyFields.isScript = false;
+                propertyFields.isObject = false;
+                propertyFields.object = nullptr;
+                propertyFields.address = nullptr;
                 if(typeId > asTYPEID_DOUBLE) {
                     asITypeInfo *type = engine->GetTypeInfoById(typeId);
                     if(type) {
@@ -141,8 +146,13 @@ void AngelBehaviour::updateMeta() {
                             metaType++;
                         }
 
+                        auto factory = System::metaFactory(type->GetName());
+                        if(factory) {
+                            propertyFields.isObject = true;
+                        }
+
                         if(type->GetFlags() & asOBJ_SCRIPT_OBJECT) {
-                            isScriptType = true;
+                            propertyFields.isScript = true;
                         }
                     }
                 } else {
@@ -164,9 +174,9 @@ void AngelBehaviour::updateMeta() {
                 }
                 MetaType::Table *table = MetaType::table(metaType);
                 if(table) {
-                    const char *annotation = (isScriptType) ? "@" : nullptr;
-                    m_PropertyAdresses[name] = m_pObject->GetAddressOfProperty(i);
-                    m_PropertyTable.push_back({name, table, annotation, nullptr, nullptr, nullptr, nullptr,
+                    propertyFields.address = m_pObject->GetAddressOfProperty(i);
+                    m_PropertyAdresses[name] = propertyFields;
+                    m_PropertyTable.push_back({name, table, nullptr, nullptr, nullptr, nullptr, nullptr,
                                                &Reader<decltype(&AngelBehaviour::readProperty), &AngelBehaviour::readProperty>::read,
                                                &Writer<decltype(&AngelBehaviour::writeProperty), &AngelBehaviour::writeProperty>::write});
                 }
@@ -307,25 +317,30 @@ void AngelBehaviour::scriptSlot() {
 }
 
 void AngelBehaviour::onReferenceDestroyed() {
-
+    Object *object = sender();
+    for(auto &it : m_PropertyAdresses) {
+        if(it.second.object == object) {
+            void *null = nullptr;
+            memcpy(it.second.address, &null, sizeof(null));
+        }
+    }
 }
 
 Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
     PROFILE_FUNCTION();
     auto it = m_PropertyAdresses.find(property.name());
     if(it != m_PropertyAdresses.end()) {
-        const char *annotation = property.table()->annotation;
-        if(annotation && property.table()->annotation[0] == '@') {
-            if(it->second) {
+        if(it->second.isScript) {
+            if(it->second.address) {
                 AngelBehaviour *behaviour = nullptr;
-                asIScriptObject *object = *(reinterpret_cast<asIScriptObject **>(it->second));
+                asIScriptObject *object = *(reinterpret_cast<asIScriptObject **>(it->second.address));
                 if(object) {
                     behaviour = reinterpret_cast<AngelBehaviour *>(object->GetUserData());
                 }
                 return Variant(MetaType::type(property.table()->type->name), &behaviour);
             }
         } else {
-            return Variant(MetaType::type(property.table()->type->name), it->second);
+            return Variant(MetaType::type(property.table()->type->name), it->second.address);
         }
     }
     return Variant();
@@ -335,23 +350,26 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
     PROFILE_FUNCTION();
     auto it = m_PropertyAdresses.find(property.name());
     if(it != m_PropertyAdresses.end()) {
-        const char *annotation = property.table()->annotation;
-        if(annotation && annotation[0] == '@') {
+        if(it->second.isScript) {
             AngelBehaviour *behaviour = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<AngelBehaviour **>(value.data()));
+            it->second.object = behaviour;
             if(behaviour) {
-                asIScriptObject *script = *(reinterpret_cast<asIScriptObject **>(it->second));
+                asIScriptObject *script = *(reinterpret_cast<asIScriptObject **>(it->second.address));
                 if(script) {
                     script->Release();
                 }
                 script = behaviour->scriptObject();
-                if(script == nullptr) {
-                    behaviour->subscribe(this, it->second);
-                }
-                memcpy(it->second, &script, sizeof(script));
+                behaviour->subscribe(this, it->second.address);
+                memcpy(it->second.address, &script, sizeof(script));
                 return;
             }
         }
-        memcpy(it->second, value.data(), MetaType(property.table()->type).size());
+        if(it->second.isObject) {
+            it->second.object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+            connect(it->second.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+
+        memcpy(it->second.address, value.data(), MetaType(property.table()->type).size());
     }
 }
 
@@ -368,9 +386,11 @@ void AngelBehaviour::methodCallEvent(MethodCallEvent *event) {
                 if(func) {
                     AngelSystem *ptr = static_cast<AngelSystem *>(system());
                     ptr->execute(m_pObject, func);
+                    return;
                 }
             }
         }
+        Object::methodCallEvent(event);
     }
 }
 
@@ -380,7 +400,9 @@ void AngelBehaviour::subscribe(AngelBehaviour *observer, void *ptr) {
 
 void AngelBehaviour::notifyObservers() {
     for(auto &it : m_Obsevers) {
-        m_pObject->AddRef();
+        if(m_pObject) {
+            m_pObject->AddRef();
+        }
         memcpy(it.second, &m_pObject, sizeof(m_pObject));
     }
     m_Obsevers.clear();

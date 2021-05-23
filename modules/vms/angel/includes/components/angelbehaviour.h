@@ -85,7 +85,14 @@ protected:
     vector<MetaProperty::Table> m_PropertyTable;
     vector<MetaMethod::Table> m_MethodTable;
 
-    unordered_map<const char *, void *> m_PropertyAdresses;
+    struct PropertyFields {
+        Object *object;
+        void *address;
+        bool isObject;
+        bool isScript;
+    };
+
+    unordered_map<const char *, PropertyFields> m_PropertyAdresses;
 
     asIScriptObject *m_pObject;
 
