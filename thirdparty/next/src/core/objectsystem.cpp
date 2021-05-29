@@ -229,7 +229,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
 
     // Create all declared objects
     VariantList objects = variant.value<VariantList>();
-    for(auto it : objects) {
+    for(auto &it : objects) {
         VariantList o  = it.value<VariantList>();
         if(o.size() >= 5) {
             auto i = o.begin();
@@ -280,7 +280,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
         }
     }
 
-    for(auto it : objects) {
+    for(auto &it : objects) {
         VariantList &o  = *(reinterpret_cast<VariantList *>(it.data()));
         if(o.size() >= 5) {
             auto i = o.begin();

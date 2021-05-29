@@ -3,6 +3,7 @@
 #include "components/actor.h"
 
 #include <algorithm>
+#include <mutex>
 
 class TransformPrivate {
 public:
@@ -23,6 +24,7 @@ public:
     }
 
     void cleanDirty() {
+        unique_lock<mutex> locker(m_Mutex);
         m_Transform = Matrix4(m_Position, m_Quaternion, m_Scale);
         m_WorldTransform = m_Transform;
         m_WorldRotation = m_Rotation;
@@ -56,6 +58,8 @@ public:
     list<Transform *> m_Children;
 
     Transform *m_pParent;
+
+    mutex m_Mutex;
 
     bool m_Dirty;
 };
@@ -93,6 +97,7 @@ Vector3 &Transform::position() const {
     Changes \a position of the Transform in local space.
 */
 void Transform::setPosition(const Vector3 &position) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Position = position;
     setDirty();
 }
@@ -119,6 +124,7 @@ Quaternion &Transform::quaternion() const {
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion &quaternion) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Quaternion = quaternion;
     setDirty();
 }
@@ -132,6 +138,7 @@ Vector3 &Transform::scale() const {
     Changes the \a scale of the Transform in local space.
 */
 void Transform::setScale(const Vector3 &scale) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Scale = scale;
     setDirty();
 }

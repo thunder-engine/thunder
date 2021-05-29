@@ -340,6 +340,7 @@ void Engine::update(Scene *scene) {
         it->setActiveScene(scene);
         it->processEvents();
     }
+    p_ptr->m_ThreadPool.waitForDone();
 
     p_ptr->m_pPlatform->update();
 }

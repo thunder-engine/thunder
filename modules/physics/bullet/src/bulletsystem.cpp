@@ -128,5 +128,5 @@ void BulletSystem::update(Scene *scene) {
 }
 
 int BulletSystem::threadPolicy() const {
-    return Main;
+    return Pool;
 }

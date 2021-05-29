@@ -77,6 +77,8 @@ class NEXT_LIBRARY_EXPORT Object {
     )
 public:
     struct Link {
+        Link();
+
         Object                     *sender;
 
         int32_t                     signal;

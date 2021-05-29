@@ -129,7 +129,7 @@ void AngelSystem::update(Scene *scene) {
 }
 
 int AngelSystem::threadPolicy() const {
-    return Main;
+    return Pool;
 }
 
 void AngelSystem::reload() {

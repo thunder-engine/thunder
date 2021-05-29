@@ -365,8 +365,12 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
             }
         }
         if(it->second.isObject) {
-            it->second.object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
-            connect(it->second.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+            if(it->second.object != object) {
+                disconnect(it->second.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+                it->second.object = object;
+                connect(it->second.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            }
         }
 
         memcpy(it->second.address, value.data(), MetaType(property.table()->type).size());
