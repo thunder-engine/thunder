@@ -88,9 +88,9 @@ EditorPipeline::EditorPipeline() :
     m_pDepth->setFormat(Texture::Depth);
     m_pDepth->resize(1, 1);
 
-    m_pGrid  = Engine::objectCreate<Mesh>("Grid");
+    m_pGrid = Engine::objectCreate<Mesh>("Grid");
 
-    auto it  = m_PostEffects.begin();
+    auto it = m_PostEffects.begin();
     ++it;
     m_PostEffects.insert(it, m_pOutline);
 
@@ -190,6 +190,7 @@ void EditorPipeline::draw(Camera &camera) {
 
     cameraReset(camera);
     drawComponents(ICommandBuffer::RAYCAST, m_Filter);
+    drawComponents(ICommandBuffer::RAYCAST, m_UiComponents);
 
     Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
 
@@ -238,6 +239,11 @@ void EditorPipeline::draw(Camera &camera) {
     Handles::beginDraw(m_Buffer);
     m_pController->drawHandles();
     Handles::endDraw();
+}
+
+void EditorPipeline::drawUi(Camera &camera) {
+    cameraReset(camera);
+    drawComponents(ICommandBuffer::UI | ICommandBuffer::TRANSLUCENT, m_UiComponents);
 }
 
 void EditorPipeline::resize(int32_t width, int32_t height) {

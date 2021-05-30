@@ -118,20 +118,21 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     FactoryPair *pair = metaFactory(uri);
     if(pair) {
         const MetaObject *meta = pair->first;
-        object = pair->second->instantiateObject(meta);
-        object->setSystem(pair->second);
+        object = pair->second->instantiateObject(meta, parent);
         object->setType(uri);
         object->setName(name);
-        object->setParent(parent);
     }
     return object;
 }
 /*!
-    The basic method to spawn a new object based on the provided \a meta object.
+    The basic method to spawn a new object based on the provided \a meta object and \a parent object.
     Returns a pointer to spawned object.
 */
-Object *ObjectSystem::instantiateObject(const MetaObject *meta) {
-    return meta->createInstance();
+Object *ObjectSystem::instantiateObject(const MetaObject *meta, Object *parent) {
+    Object *object = meta->createInstance();
+    object->setSystem(this);
+    object->setParent(parent);
+    return object;
 }
 /*!
     \internal

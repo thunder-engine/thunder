@@ -9,16 +9,19 @@
 
 class CameraPrivate {
 public:
-    CameraPrivate() {
-        m_FOV       = 45.0; // 2*arctan(height/(2*distance))
-        m_Near      = 0.1f;
-        m_Far       = 1000.0;
-        m_Ratio     = 1.0;
-        m_Focal     = 1.0;
-        m_OrthoSize = 1.0;
-        m_Ortho     = false;
-        m_Color     = Vector4();
-        m_pPipeline = nullptr;
+    CameraPrivate() :
+        m_Ortho(false),
+        m_FOV(45.0), // 2*arctan(height/(2*distance))
+        m_Near(0.1f),
+        m_Far(1000.0f),
+        m_Ratio(1.0f),
+        m_Focal(1.0f),
+        m_OrthoSize(1.0f),
+        m_Width(0),
+        m_Height(0),
+        m_Color(Vector4()),
+        m_pPipeline(nullptr) {
+
     }
 
     static inline bool intersect(Plane pl[6], Vector3 points[8]) {
@@ -65,6 +68,10 @@ public:
     float m_Focal;
 
     float m_OrthoSize;
+
+    int m_Width;
+
+    int m_Height;
 
     Vector4 m_Color;
 

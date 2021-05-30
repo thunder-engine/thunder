@@ -125,8 +125,14 @@ void Pipeline::draw(Camera &camera) {
     m_Buffer->setScreenProjection();
     m_pFinal = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::TRANSLUCENT);
 
-    // Step5 - Draw UI elements
-    drawComponents(ICommandBuffer::UI, m_Filter);
+    drawUi(camera);
+}
+
+void Pipeline::drawUi(Camera &camera) {
+    A_UNUSED(camera);
+
+    m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_Width, 0, m_Height, -500.0f, 500.0f));
+    drawComponents(ICommandBuffer::UI, m_UiComponents);
 }
 
 void Pipeline::finish() {
@@ -194,10 +200,9 @@ int Pipeline::screenHeight() const {
 void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
     m_pSystem = system;
 
-    m_PostProcessSettings.clear();
-
     m_SceneComponents.clear();
     m_SceneLights.clear();
+    m_UiComponents.clear();
 
     combineComponents(scene, scene->isToBeUpdated());
 
@@ -364,7 +369,11 @@ void Pipeline::combineComponents(Object *object, bool update) {
                 if(comp->isLight()) {
                     m_SceneLights.push_back(comp);
                 } else {
-                    m_SceneComponents.push_back(comp);
+                    if(comp->actor()->layers() & ICommandBuffer::UI) {
+                        m_UiComponents.push_back(comp);
+                    } else {
+                        m_SceneComponents.push_back(comp);
+                    }
                 }
             }
         } else {

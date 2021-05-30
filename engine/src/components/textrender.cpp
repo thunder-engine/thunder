@@ -23,15 +23,12 @@ public:
         m_Color(1.0f),
         m_pFont(nullptr),
         m_pMaterial(nullptr),
-        m_pMesh(nullptr),
+        m_pMesh(Engine::objectCreate<Mesh>()),
         m_Size(16),
-        m_Space(0),
-        m_Line(0),
         m_Alignment(Left),
         m_Kerning(true),
         m_Wrap(false) {
 
-        m_pMesh = Engine::objectCreate<Mesh>();
         m_pMesh->makeDynamic();
         m_pMesh->setFlags(Mesh::Uv0);
 
@@ -70,10 +67,6 @@ public:
     Mesh *m_pMesh;
 
     int32_t m_Size;
-
-    float m_Space;
-
-    float m_Line;
 
     int m_Alignment;
 

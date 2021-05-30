@@ -64,7 +64,7 @@ protected:
 
     void                                deleteAllObjects        ();
 
-    virtual Object                     *instantiateObject       (const MetaObject *meta);
+    virtual Object                     *instantiateObject       (const MetaObject *meta, Object *parent);
 
     virtual void                        removeObject            (Object *object);
 

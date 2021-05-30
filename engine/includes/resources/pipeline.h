@@ -34,11 +34,13 @@ public:
 
     virtual void draw(Camera &camera);
 
-    virtual void resize(int32_t width, int32_t height);
+    virtual void drawUi(Camera &camera);
 
     virtual void finish();
 
-    virtual void analizeScene(Scene *scene, RenderSystem *system);
+    virtual void resize(int32_t width, int32_t height);
+
+    virtual void analizeScene(Scene *scene, RenderSystem *render);
 
     RenderTexture *target(const string &target) const;
 
@@ -73,6 +75,7 @@ protected:
 
     list<Renderable *> m_SceneComponents;
     list<Renderable *> m_SceneLights;
+    list<Renderable *> m_UiComponents;
     list<Renderable *> m_Filter;
 
     TargetMap m_Targets;
@@ -81,6 +84,9 @@ protected:
 
     list<PostProcessSettings *> m_PostProcessSettings;
 
+    unordered_map<uint32_t, pair<RenderTexture *, vector<AtlasNode *>>> m_Tiles;
+    unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;
+
     Mesh *m_pPlane;
     MaterialInstance *m_pSprite;
 
@@ -88,9 +94,6 @@ protected:
 
     int32_t m_Width;
     int32_t m_Height;
-
-    unordered_map<uint32_t, pair<RenderTexture *, vector<AtlasNode *>>> m_Tiles;
-    unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;
 
     RenderTexture *m_pFinal;
 

@@ -73,11 +73,17 @@ string Component::tr(const string &source) {
     return Engine::translate(source);
 }
 /*!
+    This method will be triggered in case of Actor will change its own parent.
+    \internal
+*/
+void Component::actorParentChanged() {
+
+}
+/*!
     \internal
 */
 bool Component::isSerializable() const {
-    return (clonedFrom() == 0); // To be used in future
-    //return ((!actor()->isPrefab() || clonedFrom() == 0) && static_cast<Object*>(actor())->isSerializable());
+    return (clonedFrom() == 0);
 }
 
 void Component::onReferenceDestroyed() {

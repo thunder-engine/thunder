@@ -6,7 +6,7 @@
 class TransformPrivate;
 
 class NEXT_LIBRARY_EXPORT Transform : public Component {
-    A_REGISTER(Transform, Component, Components)
+    A_REGISTER(Transform, Component, General)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, position, Transform::position, Transform::setPosition),

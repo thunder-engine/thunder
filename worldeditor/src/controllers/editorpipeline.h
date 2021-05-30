@@ -14,10 +14,6 @@ class EditorPipeline : public Pipeline {
 public:
     EditorPipeline();
 
-    void draw(Camera &camera) override;
-
-    void resize(int32_t width, int32_t height) override;
-
     void loadSettings();
 
     void setController(CameraCtrl *ctrl);
@@ -35,6 +31,12 @@ public:
 
 protected:
     void drawGrid(Camera &camera);
+
+    void draw(Camera &camera) override;
+
+    void resize(int32_t width, int32_t height) override;
+
+    void drawUi(Camera &camera) override;
 
     RenderTexture *m_pTarget;
 

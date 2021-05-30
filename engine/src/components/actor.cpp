@@ -23,7 +23,7 @@ public:
         m_prefab(nullptr),
         m_scene(nullptr),
         m_actor(actor),
-        m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT),
+        m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST | ICommandBuffer::TRANSLUCENT),
         m_enable(true),
         m_hierarchyEnable(m_enable),
         m_static(false) {
@@ -367,7 +367,7 @@ Object *Actor::clone(Object *parent) {
 /*!
     \internal
 */
-void Actor::clearCloneRef () {
+void Actor::clearCloneRef() {
     PROFILE_FUNCTION();
     if(p_ptr->m_prefab == nullptr) {
         Object::clearCloneRef();
@@ -392,6 +392,13 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         }
     } else {
         Object::setParent(parent, position);
+    }
+
+    for(auto it : getChildren()) {
+        Component *component = dynamic_cast<Component *>(it);
+        if(component) {
+            component->actorParentChanged();
+        }
     }
 }
 /*!

@@ -38,7 +38,7 @@ public:
     bool isSelected(ObjectList &selected);
 #endif
 
-    void lazyInitialization();
+    virtual void actorParentChanged();
 
 private:
     bool isSerializable() const override;
