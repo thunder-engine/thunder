@@ -18,15 +18,12 @@ public:
     Scene *scene() { return m_pScene; }
 
 signals:
-    void inited();
-
     void drop(QDropEvent *);
     void dragEnter(QDragEnterEvent *);
     void dragMove(QDragMoveEvent *);
     void dragLeave(QDragLeaveEvent *);
 
 protected:
-    void initializeGL() override;
     void paintGL() override;
     void resizeGL(int width, int height) override;
 

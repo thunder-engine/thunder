@@ -91,8 +91,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pDocumentModel = new DocumentModel;
-
     m_pBuilder  = new QProcess(this);
     connect(m_pBuilder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
     connect(m_pBuilder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
@@ -222,8 +220,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &SceneComposer::onAssetSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &SceneComposer::onOpenEditor);
-
-    connect(m_pDocumentModel, &DocumentModel::itemSelected, this, &SceneComposer::onItemSelected);
 
     connect(ui->timeline, SIGNAL(animated(bool)), ui->propertyView, SLOT(onAnimated(bool)));
 
@@ -697,7 +693,8 @@ void SceneComposer::onImportProject() {
 }
 
 void SceneComposer::onImportFinished() {
-    ui->viewport->makeCurrent();
+    m_pDocumentModel = new DocumentModel;
+    connect(m_pDocumentModel, &DocumentModel::itemSelected, this, &SceneComposer::onItemSelected);
 
     CameraCtrl *ctrl = ui->viewport->controller();
     ctrl->init(ui->viewport->scene());

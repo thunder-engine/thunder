@@ -36,12 +36,6 @@ void Viewport::setController(CameraCtrl *ctrl) {
     m_pController = ctrl;
 }
 
-void Viewport::initializeGL() {
-    QOpenGLWidget::initializeGL();
-
-    emit inited();
-}
-
 void Viewport::setScene(Scene *scene) {
     m_pScene = scene;
     PluginManager::instance()->addScene(m_pScene);

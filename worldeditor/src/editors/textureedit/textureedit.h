@@ -65,8 +65,6 @@ private:
 private slots:
     void onUpdateTemplate();
 
-    void onGLInit();
-
 };
 
 #endif // TEXTUREEDIT_H

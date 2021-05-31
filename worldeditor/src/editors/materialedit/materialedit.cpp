@@ -63,7 +63,21 @@ MaterialEdit::MaterialEdit(DocumentModel *document) :
     ui->textEdit->setWindowTitle("Source Code");
     ui->schemeWidget->setWindowTitle("Scheme");
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
+    Scene *scene = glWidget->scene();
+    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
+    Matrix3 rot;
+    rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
+    m_pLight->transform()->setQuaternion(rot);
+
+    Camera *camera = glWidget->controller()->camera();
+    if(camera) {
+        camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
+    }
+
+    m_pMesh = Engine::composeActor("MeshRender", "MeshRender", scene);
+
+    on_actionSphere_triggered();
+
     startTimer(16);
 
     ui->centralwidget->addToolWindow(ui->schemeWidget, QToolWindowManager::EmptySpaceArea);
@@ -213,24 +227,6 @@ void MaterialEdit::changeMesh(const string &path) {
         static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
     }
 }
-
-void MaterialEdit::onGLInit() {
-    Scene *scene = glWidget->scene();
-    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
-    Matrix3 rot;
-    rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_pLight->transform()->setQuaternion(rot);
-
-    Camera *camera = glWidget->controller()->camera();
-    if(camera) {
-        camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
-    }
-
-    m_pMesh = Engine::composeActor("MeshRender", "MeshRender", scene);
-
-    on_actionSphere_triggered();
-}
-
 
 void MaterialEdit::onComponentSelected(const QString &path) {
     m_pCreateMenu->hide();

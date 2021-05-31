@@ -77,8 +77,6 @@ private:
     DocumentModel *m_pDocument;
 
 private slots:
-    void onGLInit();
-
     void onComponentSelected(const QString &path);
 
     void onKeyPress(QKeyEvent *pe);

@@ -49,7 +49,21 @@ MeshEdit::MeshEdit(DocumentModel *document) :
 
     ui->treeView->setWindowTitle("Properties");
 
-    connect(glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
+    Scene *scene = glWidget->scene();
+
+    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
+    m_pLight->transform()->setQuaternion(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
+    DirectLight *light = static_cast<DirectLight *>(m_pLight->component("DirectLight"));
+    if(light) {
+        light->setCastShadows(true);
+    }
+
+    Prefab *prefab = Engine::loadResource<Prefab>(".embedded/cube.fbx");
+    if(prefab) {
+        m_pGround = static_cast<Actor *>(prefab->actor()->clone(scene));
+        m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
+    }
+
     startTimer(16);
 
     ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::EmptySpaceArea);
@@ -152,23 +166,6 @@ void MeshEdit::loadAsset(IConverterSettings *settings) {
     m_pSettings = settings;
     connect(m_pSettings, SIGNAL(updated()), this, SLOT(onUpdateTemplate()));
     ui->treeView->setObject(m_pSettings);
-}
-
-void MeshEdit::onGLInit() {
-    Scene *scene = glWidget->scene();
-
-    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
-    m_pLight->transform()->setQuaternion(Quaternion(Vector3(-30.0f, 45.0f, 0.0f)));
-    DirectLight *light = static_cast<DirectLight *>(m_pLight->component("DirectLight"));
-    if(light) {
-        light->setCastShadows(true);
-    }
-
-    Prefab *prefab = Engine::loadResource<Prefab>(".embedded/cube.fbx");
-    if(prefab) {
-        m_pGround = static_cast<Actor *>(prefab->actor()->clone(scene));
-        m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
-    }
 }
 
 void MeshEdit::onUpdateTemplate() {

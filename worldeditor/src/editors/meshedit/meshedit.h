@@ -20,23 +20,23 @@ class MeshEdit : public QMainWindow, public IAssetEditor {
     Q_OBJECT
 
 public:
-    MeshEdit (DocumentModel *document);
-    ~MeshEdit ();
+    MeshEdit(DocumentModel *document);
+    ~MeshEdit();
 
-    void readSettings ();
-    void writeSettings ();
+    void readSettings();
+    void writeSettings();
 
 signals:
-    void templateUpdate ();
+    void templateUpdate();
 
 private:
-    void loadAsset (IConverterSettings *settings) override;
+    void loadAsset(IConverterSettings *settings) override;
     bool isModified() const override;
 
     QStringList assetTypes() const override;
 
-    void closeEvent (QCloseEvent *event) override;
-    void timerEvent (QTimerEvent *) override;
+    void closeEvent(QCloseEvent *event) override;
+    void timerEvent(QTimerEvent *) override;
 
     bool m_Modified;
 
@@ -56,15 +56,13 @@ private:
     DocumentModel *m_pDocument;
 
 private slots:
-    void onGLInit ();
+    void onUpdateTemplate();
 
-    void onUpdateTemplate ();
+    void onToolWindowActionToggled(bool checked);
 
-    void onToolWindowActionToggled (bool checked);
+    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
 
-    void onToolWindowVisibilityChanged (QWidget *toolWindow, bool visible);
-
-    void on_actionSave_triggered ();
+    void on_actionSave_triggered();
 
 };
 

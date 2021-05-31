@@ -43,7 +43,9 @@ ParticleEdit::ParticleEdit(DocumentModel *document) :
     ui->treeView->setWindowTitle("Properties");
     ui->quickWidget->setWindowTitle("Scheme");
 
-    connect(ui->glWidget, SIGNAL(inited()), this, SLOT(onGLInit()), Qt::DirectConnection);
+    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->glWidget->scene());
+    m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
+
     startTimer(16);
 
     ui->centralwidget->addToolWindow(ui->quickWidget, QToolWindowManager::EmptySpaceArea);
@@ -147,11 +149,6 @@ void ParticleEdit::loadAsset(IConverterSettings *settings) {
 
     ui->treeView->setObject(nullptr);
     onUpdateTemplate(false);
-}
-
-void ParticleEdit::onGLInit() {
-    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->glWidget->scene());
-    m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
 }
 
 void ParticleEdit::onNodeSelected(void *node) {

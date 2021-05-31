@@ -38,7 +38,28 @@ TextureEdit::TextureEdit(DocumentModel *document) :
 
     ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
-    connect(ui->preview, &Viewport::inited, this, &TextureEdit::onGLInit);
+    Scene *scene = ui->preview->scene();
+
+    SpriteController *ctrl = new SpriteController(ui->preview);
+    ctrl->blockRotations(true);
+    ctrl->init(scene);
+
+    connect(ctrl, &SpriteController::selectionChanged, m_Details, &SpriteElement::onSelectionChanged);
+
+    ui->preview->setController(ctrl);
+
+    Camera *camera = ui->preview->controller()->camera();
+    if(camera) {
+        camera->setOrthographic(true);
+    }
+
+    Actor *object = Engine::composeActor("SpriteRender", "Sprite", scene);
+    object->transform()->setScale(Vector3(SCALE));
+    m_pRender = static_cast<SpriteRender *>(object->component("SpriteRender"));
+    if(m_pRender) {
+        m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+    }
+
     startTimer(16);
 }
 
@@ -118,30 +139,6 @@ QStringList TextureEdit::assetTypes() const {
 void TextureEdit::onUpdateTemplate() {
     if(m_pSettings) {
         m_pConverter->convertTexture(m_pSettings, m_pRender->texture());
-    }
-}
-
-void TextureEdit::onGLInit() {
-    Scene *scene = ui->preview->scene();
-
-    SpriteController *ctrl = new SpriteController(ui->preview);
-    ctrl->blockRotations(true);
-    ctrl->init(scene);
-
-    connect(ctrl, &SpriteController::selectionChanged, m_Details, &SpriteElement::onSelectionChanged);
-
-    ui->preview->setController(ctrl);
-
-    Camera *camera = ui->preview->controller()->camera();
-    if(camera) {
-        camera->setOrthographic(true);
-    }
-
-    Actor *object = Engine::composeActor("SpriteRender", "Sprite", scene);
-    object->transform()->setScale(Vector3(SCALE));
-    m_pRender = static_cast<SpriteRender *>(object->component("SpriteRender"));
-    if(m_pRender) {
-        m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
 }
 

@@ -34,8 +34,6 @@ signals:
     void templateUpdate();
 
 private slots:
-    void onGLInit();
-
     void onUpdateTemplate(bool update = true);
 
     void onNodeSelected(void *node);
