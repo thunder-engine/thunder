@@ -5,22 +5,22 @@
 
 class RenderGL : public Module {
 public:
-    RenderGL                    (Engine *engine);
+    RenderGL(Engine *engine);
 
-    ~RenderGL                   ();
+    ~RenderGL();
 
-    const char                 *description             () const;
+    const char *description() const;
 
-    const char                 *version                 () const;
+    const char *version() const;
 
-    uint8_t                     types                   () const;
+    uint8_t types() const;
 
-    System                    *system                  ();
+    System *system();
 
 protected:
-    Engine                     *m_pEngine;
+    Engine *m_pEngine;
 
-    System                    *m_pSystem;
+    System *m_pSystem;
 };
 #ifdef NEXT_SHARED
 extern "C" {

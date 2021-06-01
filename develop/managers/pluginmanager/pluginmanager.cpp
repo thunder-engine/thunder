@@ -338,3 +338,7 @@ void PluginManager::deserializeComponents(const ComponentMap &map) {
     }
     emit pluginReloaded();
 }
+
+RenderSystem *PluginManager::render() const {
+    return m_pRender;
+}

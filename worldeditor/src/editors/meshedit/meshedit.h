@@ -36,7 +36,6 @@ private:
     QStringList assetTypes() const override;
 
     void closeEvent(QCloseEvent *event) override;
-    void timerEvent(QTimerEvent *) override;
 
     bool m_Modified;
 

@@ -7,9 +7,8 @@
 
 #include <resources/pipeline.h>
 
-
-#include "resources/atexturegl.h"
-#include "resources/arendertexturegl.h"
+#include "resources/texturegl.h"
+#include "resources/rendertexturegl.h"
 
 #include "commandbuffergl.h"
 
@@ -42,10 +41,10 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 
     System *system = m_pEngine->resourceSystem();
 
-    ATextureGL::registerClassFactory(system);
-    ARenderTextureGL::registerClassFactory(system);
-    AMaterialGL::registerClassFactory(system);
-    AMeshGL::registerClassFactory(system);
+    TextureGL::registerClassFactory(system);
+    RenderTextureGL::registerClassFactory(system);
+    MaterialGL::registerClassFactory(system);
+    MeshGL::registerClassFactory(system);
 
     CommandBufferGL::registerClassFactory(m_pEngine);
 }
@@ -55,10 +54,10 @@ RenderGLSystem::~RenderGLSystem() {
 
     System *system = m_pEngine->resourceSystem();
 
-    ATextureGL::unregisterClassFactory(system);
-    ARenderTextureGL::unregisterClassFactory(system);
-    AMaterialGL::unregisterClassFactory(system);
-    AMeshGL::unregisterClassFactory(system);
+    TextureGL::unregisterClassFactory(system);
+    RenderTextureGL::unregisterClassFactory(system);
+    MaterialGL::unregisterClassFactory(system);
+    MeshGL::unregisterClassFactory(system);
 
     CommandBufferGL::unregisterClassFactory(m_pEngine);
 }
@@ -116,3 +115,11 @@ void RenderGLSystem::update(Scene *scene) {
         RenderSystem::update(scene);
     }
 }
+
+#if defined(NEXT_SHARED)
+#include "editor/openglwindow.h"
+
+QWindow *RenderGLSystem::createRhiWindow() const {
+    return new OpenGLWindow();
+}
+#endif

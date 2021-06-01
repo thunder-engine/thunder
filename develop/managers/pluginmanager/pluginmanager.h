@@ -47,6 +47,9 @@ public:
     void addScene(Scene *scene);
 
     void rescanPath(const QString &path);
+
+    RenderSystem *render() const;
+
 signals:
     void pluginReloaded();
 

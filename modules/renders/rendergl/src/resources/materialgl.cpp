@@ -1,15 +1,15 @@
-#include "resources/amaterialgl.h"
+#include "resources/materialgl.h"
 
 #include "agl.h"
 #include "commandbuffergl.h"
 
 #include "resources/text.h"
-#include "resources/atexturegl.h"
+#include "resources/texturegl.h"
 
 #include <file.h>
 #include <log.h>
 
-void AMaterialGL::loadUserData(const VariantMap &data) {
+void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
     if(m_MaterialType == Surface) {
@@ -56,7 +56,7 @@ void AMaterialGL::loadUserData(const VariantMap &data) {
     setState(ToBeUpdated);
 }
 
-uint32_t AMaterialGL::getProgram(uint16_t type) {
+uint32_t MaterialGL::getProgram(uint16_t type) {
     switch(state()) {
         case Suspend: {
             for(auto it : m_Programs) {
@@ -99,7 +99,7 @@ uint32_t AMaterialGL::getProgram(uint16_t type) {
     return 0;
 }
 
-uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
+uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
     int32_t b = blendMode();
 
     if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
@@ -110,9 +110,9 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
         return 0;
     }
 
-    uint16_t type = AMaterialGL::Default;
+    uint16_t type = MaterialGL::Default;
     if((layer & ICommandBuffer::RAYCAST) || (layer & ICommandBuffer::SHADOWCAST)) {
-        type = AMaterialGL::Simple;
+        type = MaterialGL::Simple;
     }
     uint32_t program = getProgram(vertex * type);
     if(!program) {
@@ -154,7 +154,7 @@ uint32_t AMaterialGL::bind(uint32_t layer, uint16_t vertex) {
     return program;
 }
 
-uint32_t AMaterialGL::buildShader(uint16_t type, const string &src) {
+uint32_t MaterialGL::buildShader(uint16_t type, const string &src) {
     const char *data = src.c_str();
 
     uint32_t t;
@@ -177,7 +177,7 @@ uint32_t AMaterialGL::buildShader(uint16_t type, const string &src) {
     return shader;
 }
 
-uint32_t AMaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
+uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
     uint32_t result = glCreateProgram();
     if(result) {
         glAttachShader(result, vertex);
@@ -219,7 +219,7 @@ uint32_t AMaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
     return result;
 }
 
-bool AMaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
+bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
     int value   = 0;
 
     if(!link) {
@@ -249,7 +249,7 @@ bool AMaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
     return true;
 }
 
-MaterialInstance *AMaterialGL::createInstance(SurfaceType type) {
+MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     MaterialInstance *result = Material::createInstance(type);
     if(result) {
         uint16_t t = Instanced;

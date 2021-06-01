@@ -6,7 +6,7 @@
 class CameraCtrl;
 class Scene;
 
-class Viewport : public QOpenGLWidget {
+class Viewport : public QWidget {
     Q_OBJECT
 public:
     Viewport(QWidget *parent = 0);
@@ -17,6 +17,8 @@ public:
     void setScene(Scene *scene);
     Scene *scene() { return m_pScene; }
 
+    QImage grabFramebuffer() { return QImage(); }
+
 signals:
     void drop(QDropEvent *);
     void dragEnter(QDragEnterEvent *);
@@ -24,22 +26,10 @@ signals:
     void dragLeave(QDragLeaveEvent *);
 
 protected:
-    void paintGL() override;
-    void resizeGL(int width, int height) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
-    void dragEnterEvent(QDragEnterEvent *) override;
-    void dragMoveEvent(QDragMoveEvent *) override;
-    void dragLeaveEvent(QDragLeaveEvent *) override;
-    void dropEvent(QDropEvent *) override;
-
-    void mouseMoveEvent(QMouseEvent *) override;
-    void mousePressEvent(QMouseEvent *) override;
-    void mouseReleaseEvent(QMouseEvent *) override;
-
-    void wheelEvent(QWheelEvent *) override;
-
-    void keyPressEvent(QKeyEvent *) override;
-    void keyReleaseEvent(QKeyEvent *) override;
+private slots:
+    void onDraw();
 
 private:
     void findCamera();
@@ -47,6 +37,8 @@ private:
     CameraCtrl *m_pController;
 
     Scene *m_pScene;
+
+    QWindow *m_pRHIWindow;
 
 };
 

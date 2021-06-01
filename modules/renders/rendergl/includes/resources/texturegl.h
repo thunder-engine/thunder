@@ -5,16 +5,14 @@
 
 #include <resources/texture.h>
 
-#include "agl.h"
-
-class ATextureGL : public Texture {
-    A_OVERRIDE(ATextureGL, Texture, Resources)
+class TextureGL : public Texture {
+    A_OVERRIDE(TextureGL, Texture, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
 
 public:
-    ATextureGL();
+    TextureGL();
 
 private:
     void *nativeHandle() override;

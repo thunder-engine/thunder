@@ -13,7 +13,7 @@
 
 #include "controllers/editorpipeline.h"
 
-SpriteController::SpriteController(QOpenGLWidget *view) :
+SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(view),
         m_pSettings(nullptr),
         m_Width(0),

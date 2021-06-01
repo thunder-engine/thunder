@@ -2,11 +2,10 @@
 
 #include "agl.h"
 
-#include <resources/amaterialgl.h>
-#include <resources/ameshgl.h>
-#include <resources/atexturegl.h>
-
-#include "resources/arendertexturegl.h"
+#include "resources/materialgl.h"
+#include "resources/meshgl.h"
+#include "resources/texturegl.h"
+#include "resources/rendertexturegl.h"
 
 #include <log.h>
 #include <timer.h>
@@ -97,11 +96,11 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
         }
     }
 
-    AMaterialGL *mat = static_cast<AMaterialGL *>(instance->material());
+    MaterialGL *mat = static_cast<MaterialGL *>(instance->material());
 
     uint8_t i = 0;
     for(auto it : mat->textures()) {
-        Texture *tex = static_cast<ATextureGL *>(it.second);
+        Texture *tex = static_cast<TextureGL *>(it.second);
         Texture *tmp = instance->texture(it.first.c_str());
         if(tmp) {
             tex = tmp;
@@ -128,14 +127,14 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
     PROFILE_FUNCTION();
 
     if(mesh && material) {
-        AMeshGL *m = static_cast<AMeshGL *>(mesh);
+        MeshGL *m = static_cast<MeshGL *>(mesh);
         uint32_t lod = 0;
         Lod *l = mesh->lod(lod);
         if(l == nullptr) {
             return;
         }
 
-        AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
+        MaterialGL *mat = static_cast<MaterialGL *>(material->material());
         uint32_t program = mat->bind(layer, material->surfaceType());
         if(program) {
             glUseProgram(program);
@@ -173,14 +172,14 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     PROFILE_FUNCTION();
 
     if(mesh && material) {
-        AMeshGL *m = static_cast<AMeshGL *>(mesh);
+        MeshGL *m = static_cast<MeshGL *>(mesh);
         uint32_t lod = 0;
         Lod *l = mesh->lod(lod);
         if(l == nullptr) {
             return;
         }
 
-        AMaterialGL *mat = static_cast<AMaterialGL *>(material->material());
+        MaterialGL *mat = static_cast<MaterialGL *>(material->material());
         uint32_t program = mat->bind(layer, material->surfaceType());
 
         if(program) {
@@ -220,7 +219,7 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture 
     uint32_t buffer = 0;
     if(!target.empty()) {
         for(uint32_t i = 0; i < target.size(); i++) {
-            ARenderTextureGL *c = static_cast<ARenderTextureGL *>(target[i]);
+            RenderTextureGL *c = static_cast<RenderTextureGL *>(target[i]);
             if(i == 0) {
                 buffer = c->buffer();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer);
@@ -231,7 +230,7 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture 
     }
 
     if(depth) {
-        ARenderTextureGL *t = static_cast<ARenderTextureGL *>(depth);
+        RenderTextureGL *t = static_cast<RenderTextureGL *>(depth);
         if(!buffer) {
             glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
         }

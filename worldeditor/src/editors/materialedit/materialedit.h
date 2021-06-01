@@ -41,7 +41,6 @@ signals:
 private:
     void changeMesh(const string &path);
     void closeEvent(QCloseEvent *event) override;
-    void timerEvent(QTimerEvent *) override;
 
     bool isModified() const override;
 

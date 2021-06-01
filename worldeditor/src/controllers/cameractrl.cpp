@@ -16,7 +16,7 @@
 
 #include "graph/sceneview.h"
 
-CameraCtrl::CameraCtrl(QOpenGLWidget *view) :
+CameraCtrl::CameraCtrl(QWidget *view) :
         m_CameraMove(MoveTypes::MOVE_IDLE),
         m_ViewSide(ViewSide::VIEW_SCENE),
         m_BlockMove(false),

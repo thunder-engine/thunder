@@ -129,3 +129,8 @@ void RenderSystem::composeComponent(Component *component) const {
         sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
     }
 }
+#if defined(NEXT_SHARED)
+QWindow *RenderSystem::createRhiWindow() const {
+    return nullptr;
+}
+#endif

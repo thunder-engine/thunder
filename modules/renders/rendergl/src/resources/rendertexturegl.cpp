@@ -1,15 +1,15 @@
-#include "resources/arendertexturegl.h"
+#include "resources/rendertexturegl.h"
 
 #include "agl.h"
 
-ARenderTextureGL::ARenderTextureGL() :
+RenderTextureGL::RenderTextureGL() :
         m_Buffer(0),
         m_ID(0) {
     setWidth(1);
     setHeight(1);
 }
 
-void *ARenderTextureGL::nativeHandle() {
+void *RenderTextureGL::nativeHandle() {
     switch(state()) {
         case Suspend: {
             destroyTexture();
@@ -27,7 +27,7 @@ void *ARenderTextureGL::nativeHandle() {
     return reinterpret_cast<void *>(m_ID);
 }
 
-void ARenderTextureGL::updateTexture() {
+void RenderTextureGL::updateTexture() {
     if(!m_Buffer) {
         glGenFramebuffers(1, &m_Buffer);
     }
@@ -104,7 +104,7 @@ void ARenderTextureGL::updateTexture() {
     }
 }
 
-void ARenderTextureGL::destroyTexture() {
+void RenderTextureGL::destroyTexture() {
     if(m_Buffer) {
         glDeleteFramebuffers(1, &m_Buffer);
     }
@@ -116,7 +116,7 @@ void ARenderTextureGL::destroyTexture() {
     m_ID = 0;
 }
 
-void ARenderTextureGL::makeCurrent(uint32_t index) const {
+void RenderTextureGL::makeCurrent(uint32_t index) const {
     if(index == 0) {
         glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
     }

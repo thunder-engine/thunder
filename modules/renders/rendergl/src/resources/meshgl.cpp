@@ -1,14 +1,14 @@
-#include "resources/ameshgl.h"
+#include "resources/meshgl.h"
 
 #include "agl.h"
 
 #include "commandbuffergl.h"
 
-AMeshGL::AMeshGL() :
+MeshGL::MeshGL() :
         m_InstanceBuffer(0) {
 }
 
-void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
+void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     switch(state()) {
         case ToBeUpdated: {
             updateVbo(buffer);
@@ -53,7 +53,7 @@ void AMeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     updateVao(lod);
 }
 
-void AMeshGL::updateVao(uint32_t lod) {
+void MeshGL::updateVao(uint32_t lod) {
     // indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[lod]);
     // vertices
@@ -101,7 +101,7 @@ void AMeshGL::updateVao(uint32_t lod) {
     }
 }
 
-void AMeshGL::updateVbo(CommandBufferGL *buffer) {
+void MeshGL::updateVbo(CommandBufferGL *buffer) {
     if(!m_InstanceBuffer) {
         glGenBuffers(1, &m_InstanceBuffer);
     }
@@ -186,7 +186,7 @@ void AMeshGL::updateVbo(CommandBufferGL *buffer) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void AMeshGL::destroyVao(CommandBufferGL *buffer) {
+void MeshGL::destroyVao(CommandBufferGL *buffer) {
     for(int32_t l = 0; l < lodsCount(); l++) {
         for(auto &it : m_Vao[l]) {
             if(it->buffer == buffer) {
@@ -196,7 +196,7 @@ void AMeshGL::destroyVao(CommandBufferGL *buffer) {
     }
 }
 
-void AMeshGL::destroyVbo() {
+void MeshGL::destroyVbo() {
     if(m_vertices.empty() && m_triangles.empty()) {
         return;
     }
@@ -235,6 +235,6 @@ void AMeshGL::destroyVbo() {
     m_bones.clear();
 }
 
-uint32_t AMeshGL::instance() const {
+uint32_t MeshGL::instance() const {
     return m_InstanceBuffer;
 }

@@ -29,13 +29,20 @@ Project {
     DynamicLibrary {
         name: "rendergl-editor"
         condition: rendergl.desktop
-        files: rendergl.srcFiles
+        files:
+        {
+            var sources = srcFiles
+            sources.push("src/editor/*.cpp")
+            sources.push("includes/editor/*.h")
+            return sources
+        }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "glad" }
+        Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
         cpp.defines: ["NEXT_SHARED"]

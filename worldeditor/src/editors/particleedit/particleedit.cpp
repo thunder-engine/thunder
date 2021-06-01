@@ -92,7 +92,6 @@ void ParticleEdit::timerEvent(QTimerEvent *) {
     if(m_pRender) {
         static_cast<NativeBehaviour *>(m_pRender)->update();
     }
-    ui->glWidget->repaint();
 }
 
 bool ParticleEdit::isModified() const {

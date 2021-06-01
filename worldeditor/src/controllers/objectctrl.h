@@ -31,7 +31,7 @@ class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
 public:
-    ObjectCtrl(QOpenGLWidget *view);
+    ObjectCtrl(QWidget *view);
     ~ObjectCtrl();
 
     void init(Scene *scene) override;

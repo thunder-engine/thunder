@@ -16,7 +16,7 @@ class TextureImportSettings;
 class SpriteController : public CameraCtrl {
     Q_OBJECT
 public:
-    explicit SpriteController(QOpenGLWidget *view);
+    explicit SpriteController(QWidget *view);
     ~SpriteController();
 
     void setImportSettings(TextureImportSettings *settings);

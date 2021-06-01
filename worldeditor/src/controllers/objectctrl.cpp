@@ -55,7 +55,7 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-ObjectCtrl::ObjectCtrl(QOpenGLWidget *view) :
+ObjectCtrl::ObjectCtrl(QWidget *view) :
         CameraCtrl(view),
         m_Modified(false),
         m_Drag(false),

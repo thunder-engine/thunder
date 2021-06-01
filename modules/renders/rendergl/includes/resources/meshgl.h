@@ -14,28 +14,28 @@ struct VaoStruct {
     uint32_t vao;
 };
 
-class AMeshGL : public Mesh {
-    A_OVERRIDE(AMeshGL, Mesh, Resources)
+class MeshGL : public Mesh {
+    A_OVERRIDE(MeshGL, Mesh, Resources)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
 
 public:
-    typedef IndexVector         BufferVector;
+    typedef IndexVector BufferVector;
 
 public:
-    AMeshGL                     ();
+    MeshGL();
 
-    void                        bindVao             (CommandBufferGL *buffer, uint32_t lod);
+    void bindVao(CommandBufferGL *buffer, uint32_t lod);
 
-    uint32_t                    instance            () const;
+    uint32_t instance() const;
 
 protected:
-    void                        updateVao           (uint32_t lod);
-    void                        updateVbo           (CommandBufferGL *buffer);
+    void updateVao(uint32_t lod);
+    void updateVbo(CommandBufferGL *buffer);
 
-    void                        destroyVao          (CommandBufferGL *buffer);
-    void                        destroyVbo          ();
+    void destroyVao(CommandBufferGL *buffer);
+    void destroyVbo();
 
 public:
     IndexVector m_triangles;

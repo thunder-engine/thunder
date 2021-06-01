@@ -19,6 +19,10 @@ public:
     void update(Scene *scene) override;
 
     Engine *m_pEngine;
+
+#ifdef NEXT_SHARED
+    QWindow *createRhiWindow() const override;
+#endif
 };
 
 #endif // RENDERGLSYSTEM_H

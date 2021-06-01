@@ -59,16 +59,10 @@ TextureEdit::TextureEdit(DocumentModel *document) :
     if(m_pRender) {
         m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
-
-    startTimer(16);
 }
 
 TextureEdit::~TextureEdit() {
     delete ui;
-}
-
-void TextureEdit::timerEvent(QTimerEvent *) {
-    ui->preview->repaint();
 }
 
 void TextureEdit::closeEvent(QCloseEvent *event) {

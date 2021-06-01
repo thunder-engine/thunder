@@ -20,7 +20,6 @@
 
 // Engine
 #include <module.h>
-#include <timer.h>
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -144,7 +143,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->componentButton->setProperty("blue", true);
 
     int index = 0;
-    for(auto it : ctl->tools()) {
+    for(auto &it : ctl->tools()) {
         QPushButton *tool = new QPushButton(ui->viewportWidget);
         tool->setProperty("blue", true);
         tool->setProperty("checkred", true);
@@ -255,11 +254,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
-    resetWorkspace();
     on_actionEditor_Mode_triggered();
     on_actionNew_triggered();
-
-    startTimer(16);
+    resetGeometry();
 }
 
 SceneComposer::~SceneComposer() {
@@ -268,13 +265,6 @@ SceneComposer::~SceneComposer() {
     delete cmToolbars;
 
     delete ui;
-}
-
-void SceneComposer::timerEvent(QTimerEvent *) {
-    Timer::update();
-
-    ui->viewport->repaint();
-    ui->preview->repaint();
 }
 
 void SceneComposer::resizeEvent(QResizeEvent *event) {
@@ -294,8 +284,6 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
         ui->propertyView->setObject(m_pProperties);
     }
     if(!objects.empty()) {
-        ui->viewport->makeCurrent();
-
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
         m_pProperties = new NextObject(*objects.begin(), this);
@@ -365,7 +353,7 @@ void SceneComposer::onOpenEditor(const QString &path) {
 
         if(dynamic_cast<QMainWindow *>(editor) == nullptr) {
             QWidget *neighbor = m_pMainDocument;
-            for(auto it : findChildren<QWidget *>()) {
+            for(auto &it : findChildren<QWidget *>()) {
                 if(it->inherits(editor->metaObject()->className())) {
                     neighbor = it;
                     break;
@@ -649,12 +637,11 @@ void SceneComposer::onOpenProject(const QString &path) {
     connect(m_pQueue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
 
     ui->quickWidget->stackUnder(ui->toolWidget);
+    resetWorkspace();
 
     m_pProjectModel->addProject(path);
     ProjectManager::instance()->init(path);
     m_pEngine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
-
-    ui->viewport->makeCurrent();
 
     AssetManager::instance()->rescan(!Engine::reloadBundle());
     PluginManager::instance()->rescan();
@@ -663,7 +650,7 @@ void SceneComposer::onOpenProject(const QString &path) {
 
     ui->contentBrowser->rescan();
 
-    for(QString it : ProjectManager::instance()->platforms()) {
+    for(QString &it : ProjectManager::instance()->platforms()) {
         QString name = it;
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
@@ -814,11 +801,11 @@ void SceneComposer::saveWorkspace() {
     settings.setValue(WORKSPACE, m_CurrentWorkspace);
 }
 
+
 void SceneComposer::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant windows = settings.value(WINDOWS);
     m_CurrentWorkspace = settings.value(WORKSPACE, m_CurrentWorkspace).toString();
-    restoreGeometry(settings.value(GEOMETRY).toByteArray());
     if(!windows.isValid()) {
         on_actionReset_Workspace_triggered();
     } else {
@@ -832,6 +819,12 @@ void SceneComposer::resetWorkspace() {
         }
     }
 }
+
+void SceneComposer::resetGeometry() {
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    restoreGeometry(settings.value(GEOMETRY).toByteArray());
+}
+
 
 void SceneComposer::onBuildProject() {
     QAction *action = dynamic_cast<QAction *>(sender());

@@ -45,7 +45,6 @@ private:
     void updateTitle();
 
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
     void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
@@ -53,6 +52,7 @@ private:
 
     void saveWorkspace();
     void resetWorkspace();
+    void resetGeometry();
 
     void findWorkspaces(const QString &dir);
 

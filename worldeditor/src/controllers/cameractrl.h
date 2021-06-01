@@ -40,7 +40,7 @@ public:
     };
 
 public:
-    CameraCtrl(QOpenGLWidget *view);
+    CameraCtrl(QWidget *view);
 
     virtual void init(Scene *scene);
 
@@ -67,8 +67,6 @@ public:
     virtual void createMenu(QMenu *menu);
 
     ViewSide viewSide() const { return m_ViewSide; }
-
-    QOpenGLWidget *view() const { return m_pView; }
 
 public slots:
     virtual void onInputEvent(QInputEvent *);
@@ -119,7 +117,7 @@ protected:
 
     Actor *m_pCamera;
 
-    QOpenGLWidget *m_pView;
+    QWidget *m_pView;
 
     Camera *m_pActiveCamera;
 };

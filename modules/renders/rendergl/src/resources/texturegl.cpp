@@ -1,15 +1,17 @@
-#include "resources/atexturegl.h"
+#include "resources/texturegl.h"
 
 #include <cstring>
 
+#include "agl.h"
+
 #define DATA    "Data"
 
-ATextureGL::ATextureGL() :
+TextureGL::TextureGL() :
         m_ID(0) {
 
 }
 
-void *ATextureGL::nativeHandle() {
+void *TextureGL::nativeHandle() {
     switch(state()) {
         case Suspend: {
             destroyTexture();
@@ -25,7 +27,7 @@ void *ATextureGL::nativeHandle() {
     return reinterpret_cast<void *>(m_ID);
 }
 
-void ATextureGL::readPixels(int x, int y, int width, int height) {
+void TextureGL::readPixels(int x, int y, int width, int height) {
     bool depth = (format() == Depth);
 
     Surface &surface = getSides()->at(0);
@@ -36,7 +38,7 @@ void ATextureGL::readPixels(int x, int y, int width, int height) {
     CheckGLError();
 }
 
-void ATextureGL::updateTexture() {
+void TextureGL::updateTexture() {
     if(!m_ID) {
         glGenTextures(1, &m_ID);
         CheckGLError();
@@ -115,7 +117,7 @@ void ATextureGL::updateTexture() {
     //glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
 }
 
-void ATextureGL::destroyTexture() {
+void TextureGL::destroyTexture() {
     if(m_ID) {
         glDeleteTextures(1, &m_ID);
         CheckGLError();
@@ -123,7 +125,7 @@ void ATextureGL::destroyTexture() {
     }
 }
 
-bool ATextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t index) {
+bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t index) {
     const Surface &image = (*sides)[imageIndex];
 
     if(isCompressed()) {
@@ -165,7 +167,7 @@ bool ATextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t
     return true;
 }
 
-bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format) {
+bool TextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format) {
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face
@@ -177,13 +179,13 @@ bool ATextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint3
     return true;
 }
 
-bool ATextureGL::isDwordAligned() {
+bool TextureGL::isDwordAligned() {
     int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
     int curLineSize   = width() * components();
 
     return (dwordLineSize == curLineSize);
 }
 
-inline int32_t ATextureGL::dwordAlignedLineSize(int32_t width, int32_t bpp) {
+inline int32_t TextureGL::dwordAlignedLineSize(int32_t width, int32_t bpp) {
     return ((width * bpp + 31) & -32) >> 3;
 }

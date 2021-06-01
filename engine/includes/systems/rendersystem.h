@@ -8,6 +8,8 @@ class RenderSystemPrivate;
 class Renderable;
 class PostProcessSettings;
 
+class QWindow;
+
 class NEXT_LIBRARY_EXPORT RenderSystem : public System {
 public:
     RenderSystem();
@@ -22,6 +24,10 @@ public:
     const char *name() const override;
 
     void composeComponent(Component *component) const override;
+
+#if defined(NEXT_SHARED)
+    virtual QWindow *createRhiWindow() const;
+#endif
 
     static void atlasPageSize(int32_t &width, int32_t &height);
 

@@ -12,7 +12,7 @@ class Scene;
 class QOffscreenSurface;
 class QOpenGLFramebufferObject;
 
-class SceneView : public QOpenGLWidget, public PlatformAdaptor {
+class SceneView : public QWidget, public PlatformAdaptor {
     Q_OBJECT
 public:
     SceneView(QWidget *parent = nullptr);
@@ -65,18 +65,16 @@ protected:
 
     string locationLocalDir() override;
 
-    void paintGL() override;
-    void resizeGL(int width, int height) override;
-
-    void mousePressEvent(QMouseEvent *) override;
-    void mouseReleaseEvent(QMouseEvent *) override;
-
-    void keyPressEvent(QKeyEvent *) override;
-    void keyReleaseEvent(QKeyEvent *) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
     void findCamera();
 
+private slots:
+    void onDraw();
+
 protected:
+    QWindow *m_pRHIWindow;
+
     Scene *m_pScene;
 
     Engine *m_pEngine;

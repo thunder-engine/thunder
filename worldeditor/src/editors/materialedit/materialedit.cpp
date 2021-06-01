@@ -78,8 +78,6 @@ MaterialEdit::MaterialEdit(DocumentModel *document) :
 
     on_actionSphere_triggered();
 
-    startTimer(16);
-
     ui->centralwidget->addToolWindow(ui->schemeWidget, QToolWindowManager::EmptySpaceArea);
     ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->schemeWidget));
     ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(glWidget));
@@ -138,10 +136,6 @@ MaterialEdit::~MaterialEdit() {
 
     delete m_pMesh;
     delete m_pLight;
-}
-
-void MaterialEdit::timerEvent(QTimerEvent *) {
-    glWidget->repaint();
 }
 
 bool MaterialEdit::isModified() const {
@@ -206,7 +200,6 @@ void MaterialEdit::loadAsset(IConverterSettings *settings) {
 void MaterialEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder && m_pBuilder->build()) {
         ui->textEdit->setText(m_pBuilder->shader());
-        glWidget->makeCurrent();
         MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
         if(mesh) {
             VariantMap map = m_pBuilder->data(true).toMap();

@@ -64,8 +64,6 @@ MeshEdit::MeshEdit(DocumentModel *document) :
         m_pGround->transform()->setScale(Vector3(100.0f, 1.0f, 100.0f));
     }
 
-    startTimer(16);
-
     ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::EmptySpaceArea);
     ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(glWidget));
 
@@ -91,10 +89,6 @@ MeshEdit::~MeshEdit() {
     delete m_pMesh;
     delete m_pGround;
     delete m_pLight;
-}
-
-void MeshEdit::timerEvent(QTimerEvent *) {
-    glWidget->repaint();
 }
 
 void MeshEdit::readSettings() {
