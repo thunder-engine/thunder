@@ -117,9 +117,9 @@ void RenderGLSystem::update(Scene *scene) {
 }
 
 #if defined(NEXT_SHARED)
-#include "editor/openglwindow.h"
+#include "editor/rhiwrapper.h"
 
 QWindow *RenderGLSystem::createRhiWindow() const {
-    return new OpenGLWindow();
+    return createWindow();
 }
 #endif
