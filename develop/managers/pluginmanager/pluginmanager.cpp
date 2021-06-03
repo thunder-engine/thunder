@@ -125,7 +125,7 @@ void PluginManager::rescan() {
     QString system(QCoreApplication::applicationDirPath() + PLUGINS);
 
     QStringList list = m_Libraries.keys();
-    for(auto it : list) {
+    for(auto &it : list) {
         if(!it.contains(system)) {
             PluginsMap::Iterator ext = m_Extensions.find(it);
             if(ext != m_Extensions.end()) {
@@ -155,12 +155,17 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
         if(moduleCreate) {
             Module *plugin = moduleCreate(m_pEngine);
             if(plugin) {
-                m_Libraries[path] = lib;
-
                 uint8_t types = plugin->types();
                 if(types & Module::SYSTEM) {
-                    registerExtensionPlugin(path, plugin);
-                    registerSystem(plugin);
+                    if(registerSystem(plugin)) {
+                        registerExtensionPlugin(path, plugin);
+                    } else {
+                        delete plugin;
+
+                        lib->unload();
+                        delete lib;
+                        return true;
+                    }
                 }
                 if(types & Module::EXTENSION) {
                     registerExtensionPlugin(path, plugin);
@@ -173,6 +178,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     serializeComponents(plugin->components(), result);
                     deserializeComponents(result);
                 }
+                m_Libraries[path] = lib;
 
                 int start = rowCount();
                 beginInsertRows(QModelIndex(), start, start);
@@ -263,15 +269,23 @@ void PluginManager::rescanPath(const QString &path) {
     }
 }
 
-void PluginManager::registerSystem(Module *plugin) {
+bool PluginManager::registerSystem(Module *plugin) {
     System *system = plugin->system();
     m_Systems[QString::fromStdString(system->name())] = system;
     m_pEngine->addModule(plugin);
 
     RenderSystem *render = dynamic_cast<RenderSystem *>(system);
     if(render) {
-        m_pRender = render;
+        if(QString(render->name()) == "RenderGL") {
+            m_pRender = render;
+        } else {
+            return false;
+        }
     }
+
+    m_Systems[QString::fromStdString(system->name())] = system;
+    m_pEngine->addModule(plugin);
+    return true;
 }
 
 void PluginManager::initSystems() {
@@ -311,7 +325,7 @@ void enumComponents(const Object *object, const string &type, ObjectArray &list)
 }
 
 void PluginManager::serializeComponents(const StringList &list, ComponentMap &map) {
-    for(auto type : list) {
+    for(auto &type : list) {
         foreach(Scene *scene, m_Scenes) {
             ObjectArray array;
 

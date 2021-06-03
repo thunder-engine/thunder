@@ -66,7 +66,7 @@ private:
     static PluginManager *m_pInstance;
 
 protected:
-    void registerSystem(Module *plugin);
+    bool registerSystem(Module *plugin);
 
     void registerExtensionPlugin(const QString &path, Module *plugin);
 

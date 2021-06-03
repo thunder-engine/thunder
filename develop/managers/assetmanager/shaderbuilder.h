@@ -148,6 +148,13 @@ public:
         Target  =(1<<1)
     };
 
+    enum Rhi {
+        OpenGL = 1,
+        Vulkan,
+        Metal,
+        DirectX
+    };
+
     Q_ENUM(Type)
     Q_ENUM(LightModel)
     Q_ENUM(Blend)
@@ -214,6 +221,8 @@ private:
     void save(const QString &path) Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Material.mtl"; }
+
+    Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
 
     bool build(QString &, const AbstractSchemeModel::Link &, uint32_t &, uint8_t &) {return true;}
 

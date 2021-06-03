@@ -9,6 +9,7 @@
 
 #include <spirv_glsl.hpp>
 #include <spirv_msl.hpp>
+#include <spirv_hlsl.hpp>
 
 static spirv_cross::CompilerGLSL::Options options;
 
@@ -196,7 +197,15 @@ public:
         msl.set_msl_options(options);
 
         return msl.compile();
+    }
 
+    static string spvToHlsl(vector<uint32_t> spv) {
+        spirv_cross::CompilerHLSL hlsl(spv);
+
+        spirv_cross::CompilerHLSL::Options options;
+        hlsl.set_hlsl_options(options);
+
+        return hlsl.compile();
     }
 };
 
