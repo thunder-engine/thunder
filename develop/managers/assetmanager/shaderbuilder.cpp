@@ -556,18 +556,17 @@ Variant ShaderBuilder::compile(int32_t rhi, const QString &source, const string 
     QString buff = loadIncludes(source, define);
     vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), static_cast<EShLanguage>(stage));
     if(!spv.empty()) {
-
         switch(rhi) {
-        case Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
-        case Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
-        case Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
-        default: {
-            ByteArray array;
-            array.resize(spv.size() * sizeof(uint32_t));
-            memcpy(&array[0], &spv[0], array.size());
-            data = array;
-            break;
-        }
+            case Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
+            case Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
+            case Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
+            default: {
+                ByteArray array;
+                array.resize(spv.size() * sizeof(uint32_t));
+                memcpy(&array[0], &spv[0], array.size());
+                data = array;
+                break;
+            }
         }
     }
     return data;

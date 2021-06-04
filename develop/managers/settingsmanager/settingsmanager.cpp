@@ -44,7 +44,7 @@ void SettingsManager::loadSettings() {
     QVariantMap data = settings.value(SETTINGS).toMap();
 
     blockSignals(true);
-    for(QByteArray it : dynamicPropertyNames()) {
+    for(QByteArray &it : dynamicPropertyNames()) {
         QVariant value = property(it);
         int userType = value.userType();
         if(userType == QMetaType::type("QFileInfo")) {
@@ -70,7 +70,7 @@ void SettingsManager::loadSettings() {
 void SettingsManager::saveSettings() {
     QVariantMap data;
 
-    for(QByteArray it : dynamicPropertyNames()) {
+    for(QByteArray &it : dynamicPropertyNames()) {
         QVariant value = property(it);
         int userType = value.userType();
         if(userType == QMetaType::type("QFileInfo")) {
