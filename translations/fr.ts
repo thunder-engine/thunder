@@ -331,7 +331,7 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+238"/>
         <source>Set Keyframe Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Définir l&apos;heure de l&apos;image clé</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -341,7 +341,7 @@
     <message>
         <location line="+7"/>
         <source>Delete Selected Keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer l&apos;image clé sélectionnée</translation>
     </message>
 </context>
 <context>
@@ -443,7 +443,7 @@
     <message>
         <location line="+1"/>
         <source>Component with type &quot;%1&quot; already defined for this actor.</source>
-        <translation>Un composant du type « %1 » a déjà été défini pour cet acteur.</translation>
+        <translation>Un composant du type «&#xa0;%1&#xa0;» a déjà été défini pour cet acteur.</translation>
     </message>
     <message>
         <location line="+15"/>
