@@ -178,14 +178,3 @@ bool TextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32
     }
     return true;
 }
-
-bool TextureGL::isDwordAligned() {
-    int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
-    int curLineSize   = width() * components();
-
-    return (dwordLineSize == curLineSize);
-}
-
-inline int32_t TextureGL::dwordAlignedLineSize(int32_t width, int32_t bpp) {
-    return ((width * bpp + 31) & -32) >> 3;
-}

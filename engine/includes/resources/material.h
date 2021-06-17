@@ -14,6 +14,7 @@ class NEXT_LIBRARY_EXPORT Material : public Resource {
     A_PROPERTIES(
         A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
         A_PROPERTY(bool, depthTest, Material::depthTest, Material::setDepthTest),
+        A_PROPERTY(bool, depthWrite, Material::depthWrite, Material::setDepthWrite),
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),
         A_PROPERTY(int, lightModel, Material::lightModel, Material::setLightModel),
         A_PROPERTY(int, blendMode, Material::blendMode, Material::setBlendMode)
@@ -86,6 +87,9 @@ public:
     bool depthTest() const;
     void setDepthTest(bool test);
 
+    bool depthWrite() const;
+    void setDepthWrite(bool write);
+
     int materialType() const;
     void setMaterialType(int type);
 
@@ -135,7 +139,7 @@ public:
     typedef unordered_map<string, Info> InfoMap;
 
 public:
-    MaterialInstance(Material *material);
+     explicit MaterialInstance(Material *material);
     ~MaterialInstance();
 
     Material *material() const;

@@ -49,6 +49,10 @@ PluginManager::PluginManager() :
 }
 
 PluginManager::~PluginManager() {
+    if(m_pRender) {
+        m_pRender->unregisterClasses();
+    }
+
     m_Scenes.clear();
 
     m_Systems.clear();
@@ -271,15 +275,21 @@ void PluginManager::rescanPath(const QString &path) {
 
 bool PluginManager::registerSystem(Module *plugin) {
     System *system = plugin->system();
-    m_Systems[QString::fromStdString(system->name())] = system;
-    m_pEngine->addModule(plugin);
 
-    RenderSystem *render = dynamic_cast<RenderSystem *>(system);
-    if(render) {
-        if(QString(render->name()) == "RenderGL") {
-            m_pRender = render;
-        } else {
-            return false;
+    if(system) {
+        RenderSystem *render = dynamic_cast<RenderSystem *>(system);
+        if(render) {
+            QString renderName("RenderGL");
+            if(qEnvironmentVariableIsSet("RENDER")) {
+                renderName = qEnvironmentVariable("RENDER");
+            }
+
+            if(QString(render->name()) == renderName) {
+                m_pRender = render;
+                m_pRender->registerClasses();
+            } else {
+                return false;
+            }
         }
     }
 

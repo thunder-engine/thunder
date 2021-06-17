@@ -4,6 +4,7 @@
 #include <QStandardPaths>
 #include <QMouseEvent>
 #include <QVBoxLayout>
+#include <QDebug>
 
 #include <engine.h>
 #include <timer.h>
@@ -31,12 +32,17 @@ SceneView::SceneView(QWidget *parent) :
     l->setContentsMargins(0, 0, 0, 0);
     setLayout(l);
 
-    m_pRHIWindow = PluginManager::instance()->render()->createRhiWindow();
-    m_pRHIWindow->installEventFilter(this);
+    RenderSystem *render = PluginManager::instance()->render();
+    if(render) {
+        m_pRHIWindow = render->createRhiWindow();
+        m_pRHIWindow->installEventFilter(this);
 
-    connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
+        connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-    layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
+        layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
+    } else {
+        qCritical() << "Unable to create rendering surface.";
+    }
 }
 
 SceneView::~SceneView() {

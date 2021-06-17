@@ -191,6 +191,18 @@ void Material::setDepthTest(bool test) {
     m_DepthTest = test;
 }
 /*!
+    Returns true if write opertaion to the depth buffer was enabled; otherwise returns false.
+*/
+bool Material::depthWrite() const {
+    return m_DepthWrite;
+}
+/*!
+    Enables or disables a \a write operation to the depth buffer.
+*/
+void Material::setDepthWrite(bool write) {
+    m_DepthWrite = write;
+}
+/*!
     Sets a \a texture with a given \a name for the material.
 */
 void Material::setTexture(const string &name, Texture *texture) {

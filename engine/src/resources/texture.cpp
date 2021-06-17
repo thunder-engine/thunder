@@ -205,29 +205,6 @@ void Texture::setHeight(int height) {
     p_ptr->m_Height = height;
 }
 /*!
-    \internal
-*/
-int32_t Texture::size(int32_t width, int32_t height) const {
-    int32_t (Texture::*sizefunc)(int32_t, int32_t) const;
-    sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
-
-    return (this->*sizefunc)(width, height);
-}
-/*!
-    \internal
-*/
-inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (p_ptr->m_Compress == DXT1 ? 8 : 16);
-}
-/*!
-    \internal
-*/
-inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
-    int32_t s = ((p_ptr->m_Format == RGB16Float ||
-                  p_ptr->m_Format == RGBA32Float) ? 4 : 1);
-    return width * height * components() * s;
-}
-/*!
     Sets new \a width and \a height for the texture.
 */
 void Texture::resize(int width, int height) {
@@ -335,4 +312,42 @@ uint8_t Texture::components() const {
 void Texture::clear() {
     p_ptr->m_Sides.clear();
     p_ptr->m_Shape.clear();
+}
+/*!
+    \internal
+*/
+int32_t Texture::size(int32_t width, int32_t height) const {
+    int32_t (Texture::*sizefunc)(int32_t, int32_t) const;
+    sizefunc = (isCompressed() ? &Texture::sizeDXTc : &Texture::sizeRGB);
+
+    return (this->*sizefunc)(width, height);
+}
+/*!
+    \internal
+*/
+inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
+    return ((width + 3) / 4) * ((height + 3) / 4) * (p_ptr->m_Compress == DXT1 ? 8 : 16);
+}
+/*!
+    \internal
+*/
+inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
+    int32_t s = ((p_ptr->m_Format == RGB16Float ||
+                  p_ptr->m_Format == RGBA32Float) ? 4 : 1);
+    return width * height * components() * s;
+}
+/*!
+    \internal
+*/
+bool Texture::isDwordAligned() {
+    int dwordLineSize = dwordAlignedLineSize(width(), components() * 8);
+    int curLineSize   = width() * components();
+
+    return (dwordLineSize == curLineSize);
+}
+/*!
+    \internal
+*/
+inline int32_t Texture::dwordAlignedLineSize(int32_t width, int32_t bpp) {
+    return ((width * bpp + 31) & -32) >> 3;
 }
