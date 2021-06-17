@@ -10,20 +10,17 @@
 #include <log.h>
 #include <timer.h>
 
-#define TRANSFORM_BIND  0
-
 #define MODEL_UNIFORM   0
 #define VIEW_UNIFORM    1
 #define PROJ_UNIFORM    2
 
 #define COLOR_BIND  3
-#define TIMER_BIND  5
 #define CLIP_BIND   4
+#define TIMER_BIND  5
 
 CommandBufferGL::CommandBufferGL() {
     PROFILE_FUNCTION();
 
-    m_StaticVertex.clear();
 }
 
 CommandBufferGL::~CommandBufferGL() {
@@ -52,18 +49,9 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     glUniformMatrix4fv(VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
     glUniformMatrix4fv(PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
 
-    location = glGetUniformLocation(program, "_timer");
-    if(location > -1) {
-        glUniform1f   (location, Timer::time());
-    }
-    location = glGetUniformLocation(program, "_clip");
-    if(location > -1) {
-        glUniform1f   (location,  0.99f);
-    }
-    location = glGetUniformLocation(program, "t_color");
-    if(location > -1) {
-        glUniform4fv  (location, 1, m_Color.v);
-    }
+    glUniform1f   (TIMER_BIND, Timer::time());
+    glUniform1f   (CLIP_BIND,  0.99f);
+    glUniform4fv  (COLOR_BIND, 1, m_Color.v);
 
     // Push uniform values to shader
     for(const auto &it : m_Uniforms) {
@@ -99,7 +87,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     MaterialGL *mat = static_cast<MaterialGL *>(instance->material());
 
     uint8_t i = 0;
-    for(auto it : mat->textures()) {
+    for(auto &it : mat->textures()) {
         Texture *tex = static_cast<TextureGL *>(it.second);
         Texture *tmp = instance->texture(it.first.c_str());
         if(tmp) {

@@ -1,7 +1,6 @@
 #include "timeline.h"
 #include "ui_timeline.h"
 
-#include <timer.h>
 #include <json.h>
 
 #include <resources/animationclip.h>
@@ -296,7 +295,7 @@ void Timeline::onKeyChanged() {
 void Timeline::timerEvent(QTimerEvent *) {
     AnimationClip *clip = m_pModel->clip();
     if(m_pController && clip) {
-        int32_t ms = m_pController->position() + static_cast<int32_t>(Timer::deltaTime() * 1000.0f);
+        int32_t ms = m_pController->position() + static_cast<int32_t>(0.0625f * 1000.0f);
         if(ms >= clip->duration()) {
             on_begin_clicked();
         } else {

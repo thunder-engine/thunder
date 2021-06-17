@@ -690,24 +690,26 @@ void SceneComposer::onImportFinished() {
     QVariant map = settings.value(ProjectManager::instance()->projectId());
     if(map.isValid()) {
         VariantList list = Json::load(map.toString().toStdString()).toList();
-        auto it = list.begin();
-        onOpen(it->toString().c_str());
+        if(!list.empty()) {
+            auto it = list.begin();
+            onOpen(it->toString().c_str());
 
-        it++;
-        Camera *camera = ctrl->camera();
-        if(camera) {
-            Actor *actor = camera->actor();
-            Transform *t = actor->transform();
-            t->setPosition(it->toVector3());
             it++;
-            t->setRotation(it->toVector3());
-            it++;
-            ui->orthoButton->setChecked(it->toBool());
-            it++;
-            camera->setFocal(it->toFloat());
-            it++;
-            camera->setOrthoSize(it->toFloat());
-            it++;
+            Camera *camera = ctrl->camera();
+            if(camera) {
+                Actor *actor = camera->actor();
+                Transform *t = actor->transform();
+                t->setPosition(it->toVector3());
+                it++;
+                t->setRotation(it->toVector3());
+                it++;
+                ui->orthoButton->setChecked(it->toBool());
+                it++;
+                camera->setFocal(it->toFloat());
+                it++;
+                camera->setOrthoSize(it->toFloat());
+                it++;
+            }
         }
     }
     disconnect(m_pQueue, nullptr, this, nullptr);

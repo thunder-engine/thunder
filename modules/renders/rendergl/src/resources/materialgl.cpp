@@ -193,7 +193,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
 
         glUseProgram(result);
         uint8_t t = 0;
-        for(auto it : m_Textures) {
+        for(auto &it : m_Textures) {
             int32_t location = glGetUniformLocation(result, it.first.c_str());
             if(location > -1) {
                 glUniform1i(location, t);
@@ -201,7 +201,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
             t++;
         }
 
-        for(auto it : m_Uniforms) {
+        for(auto &it : m_Uniforms) {
             int32_t location = glGetUniformLocation(result, it.first.c_str());
             if(location > -1) {
                 switch(it.second.type()) {

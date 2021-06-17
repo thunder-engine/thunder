@@ -174,7 +174,7 @@ void EditorPipeline::setTarget(const QString &string) {
 
 QStringList EditorPipeline::targets() const {
     QStringList result;
-    for(auto it : m_Targets) {
+    for(auto &it : m_Targets) {
         result.push_back(it.first.c_str());
     }
 

@@ -61,8 +61,6 @@ protected:
     void putUniforms(uint32_t program, MaterialInstance *instance);
 
 protected:
-    MaterialGL m_StaticVertex;
-
     Matrix4 m_View;
 
     Matrix4 m_Projection;

@@ -16,6 +16,8 @@
 
 #include "graph/sceneview.h"
 
+#define DT 0.0625f
+
 CameraCtrl::CameraCtrl(QWidget *view) :
         m_CameraMove(MoveTypes::MOVE_IDLE),
         m_ViewSide(ViewSide::VIEW_SCENE),
@@ -93,7 +95,7 @@ void CameraCtrl::update() {
                 m_pActiveCamera->setFocal(MIX(m_pActiveCamera->focal(), m_FocalLengthTarget, m_TransferProgress));
             }
 
-            m_TransferProgress += 2.0f * Timer::deltaTime();
+            m_TransferProgress += 2.0f * DT;
 
             if(m_TransferProgress >= 1.0f) {
                 m_CameraFree = m_CameraFreeSaved;
@@ -122,7 +124,7 @@ void CameraCtrl::update() {
             Vector3 delta = (dir * m_CameraSpeed.z) + dir.cross(Vector3(0.0f, 1.0f, 0.0f)) * m_CameraSpeed.x;
             t->setPosition(pos - delta * m_pActiveCamera->focal() * 0.1f);
 
-            m_CameraSpeed -= m_CameraSpeed * 10.0f * Timer::deltaTime();
+            m_CameraSpeed -= m_CameraSpeed * 10.0f * DT;
             if(m_CameraSpeed.length() <= .01f) {
                 m_CameraSpeed = Vector3();
             }
