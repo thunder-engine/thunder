@@ -54,16 +54,16 @@ public:
     Pose();
     ~Pose();
 
-    void addBone (Bone *bone);
+    void addBone(Bone *bone);
 
-    const Bone *bone (int index) const;
+    const Bone *bone(int index) const;
 
-    int boneCount () const;
+    int boneCount() const;
 
     static void registerSuper(ObjectSystem *system);
 
 private:
-    void loadUserData (const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:

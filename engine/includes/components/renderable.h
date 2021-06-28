@@ -26,7 +26,7 @@ public:
     virtual bool isLight() const;
 
 private:
-    bool isRenderable() const;
+    bool isRenderable() const override;
 
 };
 

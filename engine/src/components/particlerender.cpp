@@ -67,7 +67,7 @@ public:
             m_Emitters.clear();
             m_Emitters.resize(m_pEffect->emittersCount());
 
-            for(uint32_t i = 0; i < m_pEffect->emittersCount(); i++) {
+            for(int32_t i = 0; i < m_pEffect->emittersCount(); i++) {
                 ParticleEmitter *emitter = m_pEffect->emitter(i);
                 if(emitter->material()) {
                     m_Emitters[i].m_pInstance = emitter->material()->createInstance(Material::Billboard);
