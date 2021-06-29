@@ -25,8 +25,8 @@ public:
 private:
     void update() override;
 
-    void loadUserData(const VariantMap &data);
-    VariantMap saveUserData() const;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
     Texture *texture() const;
 

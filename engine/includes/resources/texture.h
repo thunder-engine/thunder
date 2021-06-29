@@ -131,8 +131,8 @@ protected:
     int32_t sizeDXTc(int32_t width, int32_t height) const;
     int32_t sizeRGB(int32_t width, int32_t height) const;
 
-    inline bool isDwordAligned();
-    inline int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
+    bool isDwordAligned();
+    int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
 
     uint8_t components() const;
 };
