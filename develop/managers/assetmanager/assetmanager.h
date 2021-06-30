@@ -96,6 +96,8 @@ public:
 public slots:
     void reimport();
 
+    void onBuildSuccessful();
+
 signals:
     void ready();
 

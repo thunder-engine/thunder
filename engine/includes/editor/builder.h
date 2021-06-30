@@ -28,6 +28,8 @@ public:
 
     QString project() const { return m_Project; }
 
+    QStringList sources() const;
+
     void rescanSources(const QString &path);
     virtual bool isEmpty() const;
 

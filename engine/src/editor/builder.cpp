@@ -159,6 +159,10 @@ void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
 }
 
+QStringList IBuilder::sources() const {
+    return m_Sources;
+}
+
 void IBuilder::rescanSources(const QString &path) {
     m_Sources.clear();
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);

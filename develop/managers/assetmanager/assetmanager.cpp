@@ -209,6 +209,20 @@ void AssetManager::reimport() {
     m_pTimer->start(10);
 }
 
+void AssetManager::onBuildSuccessful() {
+    IBuilder *builder = dynamic_cast<IBuilder *>(sender());
+    if(builder) {
+        for(auto it : builder->sources()) {
+            IConverterSettings *settings = fetchSettings(it);
+            if(settings) {
+                settings->saveSettings();
+            }
+        }
+    }
+
+    emit buildSuccessful();
+}
+
 bool AssetManager::isOutdated(IConverterSettings *settings) {
     if(settings->version() > settings->currentVersion()) {
         return true;
@@ -494,7 +508,7 @@ void AssetManager::registerConverter(IConverter *converter) {
 
             IBuilder *builder = dynamic_cast<IBuilder *>(converter);
             if(builder) {
-                connect(builder, &IBuilder::buildSuccessful, this, &AssetManager::buildSuccessful);
+                connect(builder, &IBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
 
                 m_ClassMaps[format.toLower()] = builder->classMap();
                 m_Builders.push_back(builder);
@@ -605,7 +619,7 @@ void AssetManager::dumpBundle() {
 
     QFile file(m_pProjectManager->importPath() + "/" + gIndex);
     if(file.open(QIODevice::WriteOnly)) {
-         string data = Json::save(root, 0);
+        string data = Json::save(root, 0);
         file.write(&data[0], data.size());
         file.close();
         Engine::reloadBundle();
