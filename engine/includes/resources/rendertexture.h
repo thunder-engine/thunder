@@ -29,9 +29,6 @@ public:
 
     void resize (int width, int height);
 
-protected:
-    virtual void makeCurrent (uint32_t index = 0) const;
-
 private:
     RenderTexturePrivate *p_ptr;
 

@@ -86,8 +86,6 @@ public:
     Texture();
     ~Texture();
 
-    virtual void *nativeHandle();
-
     virtual void readPixels(int x, int y, int width, int height);
     int getPixel(int x, int y) const;
 

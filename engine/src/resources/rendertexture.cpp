@@ -65,9 +65,3 @@ void RenderTexture::resize(int width, int height) {
         setState(ToBeUpdated);
     }
 }
-/*!
-    \internal
-*/
-void RenderTexture::makeCurrent(uint32_t index) const {
-    A_UNUSED(index);
-}

@@ -11,7 +11,7 @@ TextureGL::TextureGL() :
 
 }
 
-void *TextureGL::nativeHandle() {
+uint32_t TextureGL::nativeHandle() {
     switch(state()) {
         case Suspend: {
             destroyTexture();
@@ -24,7 +24,7 @@ void *TextureGL::nativeHandle() {
         default: break;
     }
 
-    return reinterpret_cast<void *>(m_ID);
+    return m_ID;
 }
 
 void TextureGL::readPixels(int x, int y, int width, int height) {
@@ -51,6 +51,7 @@ void TextureGL::updateTexture() {
 
     uint32_t internal   = GL_RGBA8;
     uint32_t glformat   = GL_RGBA;
+    uint32_t type       = GL_UNSIGNED_BYTE;
 
     switch(format()) {
         case R8: {
@@ -61,17 +62,26 @@ void TextureGL::updateTexture() {
             internal    = GL_RGB8;
             glformat    = GL_RGB;
         } break;
+        case RGB10A2: {
+    #ifndef THUNDER_MOBILE
+            internal    = GL_RGB10_A2;
+            glformat    = GL_UNSIGNED_INT_10_10_10_2;
+    #else
+            internal    = GL_RGB10_A2;
+            glformat    = GL_UNSIGNED_INT_2_10_10_10_REV;
+    #endif
+        } break;
         case RGB16Float: {
             internal    = GL_RGB16F;
             glformat    = GL_RGB;
+            type        = GL_FLOAT;
         } break;
-        case RGBA32Float: {
-            internal    = GL_RGBA32F;
-            glformat    = GL_RGBA;
+        case R11G11B10Float: {
+            internal    = GL_R11F_G11F_B10F;
+            glformat    = GL_RGB;
+            type        = GL_FLOAT;
         } break;
         default: break;
-      //case DXT1:  format  = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
-      //case DXT5:  format  = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
     }
 
     glBindTexture(target, m_ID);
@@ -79,10 +89,10 @@ void TextureGL::updateTexture() {
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(getSides(), target, internal, glformat);
+            uploadTextureCubemap(getSides(), target, internal, glformat, type);
         } break;
         default: {
-            uploadTexture(getSides(), 0, target, internal, glformat);
+            uploadTexture(getSides(), 0, target, internal, glformat, type);
         } break;
     }
     //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
@@ -125,7 +135,7 @@ void TextureGL::destroyTexture() {
     }
 }
 
-bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t index) {
+bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
     const Surface &image = (*sides)[imageIndex];
 
     if(isCompressed()) {
@@ -146,10 +156,6 @@ bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t 
             CheckGLError();
         }
 
-        GLenum type = GL_UNSIGNED_BYTE;
-        if(Texture::format() == RGB16Float || Texture::format() == RGBA32Float) {
-            type = GL_FLOAT;
-        }
         // load all mipmaps
         int32_t w = width();
         int32_t h = height();
@@ -167,12 +173,12 @@ bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t 
     return true;
 }
 
-bool TextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format) {
+bool TextureGL::uploadTextureCubemap(const Sides *sides, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
     // loop through cubemap faces and load them as 2D textures
     for(uint32_t n = 0; n < 6; n++) {
         // specify cubemap face
         target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
-        if(!uploadTexture(sides, n, target, internal, format)) {
+        if(!uploadTexture(sides, n, target, internal, format, type)) {
             return false;
         }
     }

@@ -154,13 +154,6 @@ void Texture::setDirty() {
     setState(ToBeUpdated);
 }
 /*!
-    \internal
-    Returns a native (underlying graphics API) pointer to the texture resource.
-*/
-void *Texture::nativeHandle() {
-    return nullptr;
-}
-/*!
     Read pixels from GPU at \a x and \a y position with \a width and \a height dimensions into texture data.
 */
 void Texture::readPixels(int x, int y, int width, int height) {

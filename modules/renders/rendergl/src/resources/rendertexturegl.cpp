@@ -9,7 +9,7 @@ RenderTextureGL::RenderTextureGL() :
     setHeight(1);
 }
 
-void *RenderTextureGL::nativeHandle() {
+uint32_t RenderTextureGL::nativeHandle() {
     switch(state()) {
         case Suspend: {
             destroyTexture();
@@ -24,13 +24,17 @@ void *RenderTextureGL::nativeHandle() {
         default: break;
     }
 
-    return reinterpret_cast<void *>(m_ID);
+    return m_ID;
 }
 
-void RenderTextureGL::updateTexture() {
+uint32_t RenderTextureGL::buffer() {
     if(!m_Buffer) {
         glGenFramebuffers(1, &m_Buffer);
     }
+    return m_Buffer;
+}
+
+void RenderTextureGL::updateTexture() {
     if(!m_ID) {
         glGenTextures(1, &m_ID);
     }
@@ -38,11 +42,11 @@ void RenderTextureGL::updateTexture() {
     uint32_t target = (isCubemap()) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     glBindTexture(target, m_ID);
 
-    glTexParameterf ( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    glTexParameterf ( target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameterf ( target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameterf ( target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+    glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     uint32_t internal   = GL_RGBA8;
     uint32_t glformat   = GL_RGBA;
@@ -81,15 +85,15 @@ void RenderTextureGL::updateTexture() {
 
     uint8_t depthBits = depth();
     if(depthBits) {
-        glformat= GL_DEPTH_COMPONENT;
-        type    = GL_UNSIGNED_INT;
+        glformat = GL_DEPTH_COMPONENT;
+        type = GL_UNSIGNED_INT;
 
         switch(depthBits) {
             case 16: {
-                internal    = GL_DEPTH_COMPONENT16;
+                internal = GL_DEPTH_COMPONENT16;
             } break;
             case 24: {
-                internal    = GL_DEPTH_COMPONENT24;
+                internal = GL_DEPTH_COMPONENT24;
             } break;
             default: break;
         }
@@ -97,10 +101,10 @@ void RenderTextureGL::updateTexture() {
 
     if(target == GL_TEXTURE_CUBE_MAP) {
         for(int i = 0; i < 6; i++) {
-            glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, width(), height(), 0, glformat, type, nullptr );
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal, width(), height(), 0, glformat, type, nullptr);
         }
     } else {
-        glTexImage2D    ( target, 0, internal, width(), height(), 0, glformat, type, nullptr );
+        glTexImage2D(target, 0, internal, width(), height(), 0, glformat, type, nullptr);
     }
 }
 
@@ -108,17 +112,10 @@ void RenderTextureGL::destroyTexture() {
     if(m_Buffer) {
         glDeleteFramebuffers(1, &m_Buffer);
     }
-    m_Buffer    = 0;
+    m_Buffer = 0;
 
     if(m_ID) {
         glDeleteTextures(1, &m_ID);
     }
     m_ID = 0;
-}
-
-void RenderTextureGL::makeCurrent(uint32_t index) const {
-    if(index == 0) {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
-    }
-    glFramebufferTexture2D( GL_FRAMEBUFFER, (depth()) ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, m_ID, 0 );
 }

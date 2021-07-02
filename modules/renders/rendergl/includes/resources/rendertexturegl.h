@@ -1,5 +1,5 @@
-#ifndef RENDERTEXTUREVK_H
-#define RENDERTEXTUREVK_H
+#ifndef RENDERTEXTUREGL_H
+#define RENDERTEXTUREGL_H
 
 #include <resources/rendertexture.h>
 
@@ -13,11 +13,9 @@ class RenderTextureGL : public RenderTexture {
 public:
     RenderTextureGL();
 
-    uint32_t buffer() const { return m_Buffer; }
+    uint32_t buffer();
 
-    void *nativeHandle() override;
-
-    void makeCurrent(uint32_t index = 0) const override;
+    uint32_t nativeHandle();
 
 private:
     void updateTexture();
@@ -29,4 +27,4 @@ private:
 
 };
 
-#endif // RENDERTEXTUREVK_H
+#endif // RENDERTEXTUREGL_H

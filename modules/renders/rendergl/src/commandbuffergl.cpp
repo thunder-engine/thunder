@@ -88,7 +88,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
 
     uint8_t i = 0;
     for(auto &it : mat->textures()) {
-        Texture *tex = static_cast<TextureGL *>(it.second);
+        Texture *tex = it.second;
         Texture *tmp = instance->texture(it.first.c_str());
         if(tmp) {
             tex = tmp;
@@ -101,11 +101,18 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
 
         if(tex) {
             glActiveTexture(GL_TEXTURE0 + i);
-            uint32_t target = GL_TEXTURE_2D;
+            uint32_t texture = GL_TEXTURE_2D;
             if(tex->isCubemap()) {
-                target = GL_TEXTURE_CUBE_MAP;
+                texture = GL_TEXTURE_CUBE_MAP;
             }
-            glBindTexture(target, (uint32_t)(size_t)tex->nativeHandle());
+            uint32_t handle = 0;
+            RenderTextureGL *target = dynamic_cast<RenderTextureGL *>(tex);
+            if(target) {
+                handle = target->nativeHandle();
+            } else {
+                handle = static_cast<TextureGL *>(tex)->nativeHandle();
+            }
+            glBindTexture(texture, handle);
         }
         i++;
     }
@@ -208,25 +215,35 @@ void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture 
     if(!target.empty()) {
         for(uint32_t i = 0; i < target.size(); i++) {
             RenderTextureGL *c = static_cast<RenderTextureGL *>(target[i]);
-            if(i == 0) {
+            if(buffer == 0) {
                 buffer = c->buffer();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer);
             }
             colors[i] = GL_COLOR_ATTACHMENT0 + i;
-            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, (uint32_t)(size_t)c->nativeHandle(), level );
+            uint32_t handle = c->nativeHandle();
+            if(handle > 0) {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, handle, level);
+            } else {
+                // Set render buffer
+            }
         }
     }
 
     if(depth) {
         RenderTextureGL *t = static_cast<RenderTextureGL *>(depth);
-        if(!buffer) {
+        if(buffer == 0) {
             glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
         }
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, (uint32_t)(size_t)t->nativeHandle(), 0 );
+        uint32_t handle = t->nativeHandle();
+        if(handle > 0) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, handle, 0);
+        } else {
+            // Set render buffer
+        }
     }
 
     if(target.size() > 1) {
-        glDrawBuffers( target.size(), colors );
+        glDrawBuffers(target.size(), colors);
     }
 }
 
