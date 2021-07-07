@@ -686,13 +686,10 @@ Actor *Engine::composeActor(const string &component, const string &name, Object 
                     system->composeComponent(comp);
                 }
             }
+        }
 
-            if(actor->transform() == nullptr) {
-                actor->addComponent(TRANSFORM);
-            }
-        } else {
-            delete actor;
-            actor = nullptr;
+        if(actor->transform() == nullptr) {
+            actor->addComponent(TRANSFORM);
         }
     }
     return actor;

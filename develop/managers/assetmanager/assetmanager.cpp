@@ -212,7 +212,7 @@ void AssetManager::reimport() {
 void AssetManager::onBuildSuccessful() {
     IBuilder *builder = dynamic_cast<IBuilder *>(sender());
     if(builder) {
-        for(auto it : builder->sources()) {
+        for(auto &it : builder->sources()) {
             IConverterSettings *settings = fetchSettings(it);
             if(settings) {
                 settings->saveSettings();

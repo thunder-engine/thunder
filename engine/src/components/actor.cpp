@@ -346,15 +346,6 @@ bool Actor::isSerializable() const {
 */
 Object *Actor::clone(Object *parent) {
     PROFILE_FUNCTION();
-    ActorPrivate::List objects;
-    ActorPrivate::enumObjects(this, objects);
-    for(auto it : objects) {
-        Actor *actor = dynamic_cast<Actor *>(it);
-        if(actor) {
-            actor->transform();
-        }
-    }
-
     Actor *result = static_cast<Actor *>(Object::clone(parent));
     Prefab *prefab = dynamic_cast<Prefab *>(Object::parent());
     if(prefab) {

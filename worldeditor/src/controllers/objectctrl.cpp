@@ -605,7 +605,7 @@ void CreateObject::undo() {
 void CreateObject::redo() {
     if(m_pController->selected().empty()) {
         if(m_Type == "Actor") {
-            Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), m_pController->map());
+            Object *object = Engine::composeActor("", qPrintable(m_Type), m_pController->map());
             m_Objects.push_back(object->uuid());
         }
     } else {
