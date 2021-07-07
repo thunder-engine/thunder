@@ -31,8 +31,8 @@ Vector3Vector HandleTools::pointsArc(const Quaternion &rotation, float size, flo
     for(int i = 0; i < sides; i++) {
         result.push_back(rotation * Vector3(x, 0, y));
 
-        float tx = x;
-        float ty = y;
+        float tx = -y;
+        float ty = x;
 
         x += tx * tfactor;
         y += ty * tfactor;
