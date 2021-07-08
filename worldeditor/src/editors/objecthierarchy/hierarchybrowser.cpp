@@ -145,7 +145,7 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
 
     m_Prefab.push_back((createAction(tr("Unpack Prefab"), SLOT(onItemUnpack()))));
     m_Prefab.push_back(createAction(tr("Unpack Prefab Completely"), SLOT(onItemUnpackAll())));
-    for(auto it : m_Prefab) {
+    for(auto &it : m_Prefab) {
         m_ContentMenu.addAction(it);
     }
     m_ContentMenu.addSeparator();
@@ -304,7 +304,7 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
             }
         }
 
-        for(auto it : m_Prefab) {
+        for(auto &it : m_Prefab) {
             it->setEnabled(enabled);
         }
     }

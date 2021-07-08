@@ -603,17 +603,21 @@ void CreateObject::undo() {
     emit m_pController->objectsSelected(m_pController->selected());
 }
 void CreateObject::redo() {
-    if(m_pController->selected().empty()) {
-        if(m_Type == "Actor") {
-            Object *object = Engine::composeActor("", qPrintable(m_Type), m_pController->map());
-            m_Objects.push_back(object->uuid());
-        }
-    } else {
-        for(auto it : m_pController->selected()) {
-            Object *object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
-            m_Objects.push_back(object->uuid());
-        }
+    auto list = m_pController->selected();
+    if(list.empty()) {
+        list.push_back(m_pController->map());
     }
+
+    for(auto &it : list) {
+        Object *object;
+        if(m_Type == "Actor") {
+            object = Engine::composeActor("", qPrintable(m_Type), it);
+        } else {
+            object = Engine::objectCreate(qPrintable(m_Type), qPrintable(m_Type), it);
+        }
+        m_Objects.push_back(object->uuid());
+    }
+
     emit m_pController->objectsUpdated();
     emit m_pController->objectsSelected(m_pController->selected());
 }
