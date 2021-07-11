@@ -47,12 +47,12 @@
     <message>
         <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+187"/>
         <source>Remove Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>删除属性</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Update Key</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">更新密钥</translation>
     </message>
 </context>
 <context>
@@ -140,7 +140,7 @@
     <message>
         <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
 </context>
 <context>
@@ -181,12 +181,12 @@
     <message>
         <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+152"/>
         <source>Show in Explorer</source>
-        <translation type="unfinished">在资源管理器中显示</translation>
+        <translation>在资源管理器中显示</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Create Asset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">创建资产</translation>
     </message>
     <message>
         <location line="+4"/>
