@@ -5,9 +5,10 @@
 
 #include <global.h>
 
-class RenderTexture;
-class MaterialInstance;
 class Mesh;
+class Texture;
+class RenderTarget;
+class MaterialInstance;
 
 class Blur;
 
@@ -20,7 +21,7 @@ public:
     PostProcessor();
     virtual ~PostProcessor();
 
-    virtual RenderTexture *draw(RenderTexture *source, Pipeline *pipeline);
+    virtual Texture *draw(Texture *source, Pipeline *pipeline);
 
     virtual void resize(int32_t width, int32_t height);
 
@@ -33,13 +34,14 @@ public:
     static Blur *blur();
 
 protected:
-    bool m_Enabled;
+    bool m_enabled;
 
-    RenderTexture *m_pResultTexture;
+    MaterialInstance *m_material;
 
-    MaterialInstance *m_pMaterial;
+    Mesh *m_mesh;
 
-    Mesh *m_pMesh;
+    Texture *m_resultTexture;
+    RenderTarget *m_resultTarget;
 };
 
 #endif // POSTPROCESSOR_H

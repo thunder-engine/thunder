@@ -5,7 +5,7 @@
 #include "resources/materialgl.h"
 #include "resources/meshgl.h"
 #include "resources/texturegl.h"
-#include "resources/rendertexturegl.h"
+#include "resources/rendertargetgl.h"
 
 #include <log.h>
 #include <timer.h>
@@ -32,12 +32,12 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 
     uint32_t flags = 0;
     if(clearColor) {
-        flags   |= GL_COLOR_BUFFER_BIT;
+        flags |= GL_COLOR_BUFFER_BIT;
         glClearColor(color.x, color.y, color.z, color.w);
     }
     if(clearDepth) {
         glDepthMask(GL_TRUE);
-        flags   |= GL_DEPTH_BUFFER_BIT;
+        flags |= GL_DEPTH_BUFFER_BIT;
         glClearDepthf(depth);
     }
     glClear(flags);
@@ -105,14 +105,7 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
             if(tex->isCubemap()) {
                 texture = GL_TEXTURE_CUBE_MAP;
             }
-            uint32_t handle = 0;
-            RenderTextureGL *target = dynamic_cast<RenderTextureGL *>(tex);
-            if(target) {
-                handle = target->nativeHandle();
-            } else {
-                handle = static_cast<TextureGL *>(tex)->nativeHandle();
-            }
-            glBindTexture(texture, handle);
+            glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
         }
         i++;
     }
@@ -206,44 +199,12 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     }
 }
 
-void CommandBufferGL::setRenderTarget(const TargetBuffer &target, RenderTexture *depth, uint32_t level) {
+void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
-    uint32_t colors[8];
-
-    uint32_t buffer = 0;
-    if(!target.empty()) {
-        for(uint32_t i = 0; i < target.size(); i++) {
-            RenderTextureGL *c = static_cast<RenderTextureGL *>(target[i]);
-            if(buffer == 0) {
-                buffer = c->buffer();
-                glBindFramebuffer(GL_FRAMEBUFFER, buffer);
-            }
-            colors[i] = GL_COLOR_ATTACHMENT0 + i;
-            uint32_t handle = c->nativeHandle();
-            if(handle > 0) {
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, handle, level);
-            } else {
-                // Set render buffer
-            }
-        }
-    }
-
-    if(depth) {
-        RenderTextureGL *t = static_cast<RenderTextureGL *>(depth);
-        if(buffer == 0) {
-            glBindFramebuffer(GL_FRAMEBUFFER, t->buffer());
-        }
-        uint32_t handle = t->nativeHandle();
-        if(handle > 0) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, handle, 0);
-        } else {
-            // Set render buffer
-        }
-    }
-
-    if(target.size() > 1) {
-        glDrawBuffers(target.size(), colors);
+    RenderTargetGL *t = static_cast<RenderTargetGL *>(target);
+    if(t) {
+        t->bindBuffer(level);
     }
 }
 
@@ -286,6 +247,7 @@ void CommandBufferGL::setGlobalTexture(const char *name, Texture *value) {
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     glViewport(x, y, width, height);
+    setGlobalValue("camera.screen", Vector4(1.0f / (float)width, 1.0f / (float)height, width, height));
 }
 
 void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {

@@ -1,0 +1,57 @@
+#include "resources/rendertarget.h"
+
+class RenderTargetPrivate {
+public:
+    RenderTargetPrivate() :
+        m_depth(nullptr) {
+
+    }
+
+    vector<Texture *> m_color;
+
+    Texture *m_depth;
+};
+
+/*!
+    \class RenderTarget
+    \brief Represents offscreen render pass.
+    \inmodule Resource
+*/
+
+RenderTarget::RenderTarget() :
+        p_ptr(new RenderTargetPrivate) {
+
+}
+
+RenderTarget::~RenderTarget() {
+    delete p_ptr;
+}
+
+uint32_t RenderTarget::colorAttachmentCount() const {
+    return p_ptr->m_color.size();
+}
+
+Texture *RenderTarget::colorAttachment(uint32_t index) const {
+    if(index < p_ptr->m_color.size()) {
+        return p_ptr->m_color[index];
+    }
+    return nullptr;
+}
+
+uint32_t RenderTarget::setColorAttachment(uint32_t index, Texture *texture) {
+    if(index < p_ptr->m_color.size()) {
+        p_ptr->m_color[index] = texture;
+        return index;
+    } else {
+        p_ptr->m_color.push_back(texture);
+        return p_ptr->m_color.size() - 1;
+    }
+}
+
+Texture *RenderTarget::depthAttachment() const {
+    return p_ptr->m_depth;
+}
+
+void RenderTarget::setDepthAttachment(Texture *texture) {
+    p_ptr->m_depth = texture;
+}

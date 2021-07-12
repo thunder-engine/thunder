@@ -12,7 +12,7 @@
 
 #include "resources/mesh.h"
 #include "resources/material.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 #include "resources/atlas.h"
 
 #include "analytics/profiler.h"
@@ -37,8 +37,8 @@
 
 #define DEPTH_MAP   "depthMap"
 
-#define SSAO_MAP    "ssaoMap"
-#define SSLR_MAP    "sslrMap"
+#define GBUFFER     "gBuffer"
+#define LIGHPASS    "lightPass"
 
 #define OVERRIDE "uni.texture0"
 
@@ -64,36 +64,56 @@ Pipeline::Pipeline() :
     RenderSystem::atlasPageSize(pageWidth, pageHeight);
     m_Buffer->setGlobalValue("light.map", Vector4(1.0f / pageWidth, 1.0f / pageHeight, pageWidth, pageHeight));
 
-    RenderTexture *depth    = Engine::objectCreate<RenderTexture>();
-    depth->setDepth(24);
-    m_Targets[DEPTH_MAP]    = depth;
-    m_Buffer->setGlobalTexture(DEPTH_MAP,   depth);
+    {
+        Texture *depth = Engine::objectCreate<Texture>();
+        depth->setFormat(Texture::Depth);
+        depth->setDepthBits(24);
+        m_textureBuffers[DEPTH_MAP] = depth;
+        m_Buffer->setGlobalTexture(DEPTH_MAP, depth);
+    }
+    {
+        Texture *normals = Engine::objectCreate<Texture>();
+        normals->setFormat(Texture::RGB10A2);
+        m_textureBuffers[G_NORMALS] = normals;
+        m_Buffer->setGlobalTexture(G_NORMALS, normals);
+    }
+    {
+        Texture *diffuse = Engine::objectCreate<Texture>();
+        diffuse->setFormat(Texture::RGBA8);
+        m_textureBuffers[G_DIFFUSE] = diffuse;
+        m_Buffer->setGlobalTexture(G_DIFFUSE, diffuse);
+    }
+    {
+        Texture *params = Engine::objectCreate<Texture>();
+        params->setFormat(Texture::RGBA8);
+        m_textureBuffers[G_PARAMS] = params;
+        m_Buffer->setGlobalTexture(G_PARAMS, params);
+    }
+    {
+        Texture *emissive = Engine::objectCreate<Texture>();
+        emissive->setFormat(Texture::R11G11B10Float);
+        m_textureBuffers[G_EMISSIVE] = emissive;
+        m_Buffer->setGlobalTexture(G_EMISSIVE, emissive);
+    }
 
-    RenderTexture *normals  = Engine::objectCreate<RenderTexture>();
-    normals->setTarget(Texture::RGB10A2);
-    m_Targets[G_NORMALS]    = normals;
-    m_Buffer->setGlobalTexture(G_NORMALS,   normals);
+    RenderTarget *gbuffer = Engine::objectCreate<RenderTarget>();
+    gbuffer->setColorAttachment(0, m_textureBuffers[G_NORMALS]);
+    gbuffer->setColorAttachment(1, m_textureBuffers[G_DIFFUSE]);
+    gbuffer->setColorAttachment(2, m_textureBuffers[G_PARAMS]);
+    gbuffer->setColorAttachment(3, m_textureBuffers[G_EMISSIVE]);
+    gbuffer->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
+    m_renderTargets[GBUFFER] = gbuffer;
 
-    RenderTexture *diffuse  = Engine::objectCreate<RenderTexture>();
-    diffuse->setTarget(Texture::RGBA8);
-    m_Targets[G_DIFFUSE]    = diffuse;
-    m_Buffer->setGlobalTexture(G_DIFFUSE,   diffuse);
-
-    RenderTexture *params   = Engine::objectCreate<RenderTexture>();
-    params->setTarget(Texture::RGBA8);
-    m_Targets[G_PARAMS]     = params;
-    m_Buffer->setGlobalTexture(G_PARAMS,    params);
-
-    RenderTexture *emissive = Engine::objectCreate<RenderTexture>();
-    emissive->setTarget(Texture::R11G11B10Float);
-    m_Targets[G_EMISSIVE]   = emissive;
-    m_Buffer->setGlobalTexture(G_EMISSIVE,  emissive);
+    RenderTarget *light = Engine::objectCreate<RenderTarget>();
+    light->setColorAttachment(0, m_textureBuffers[G_EMISSIVE]);
+    light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
+    m_renderTargets[LIGHPASS] = light;
 
     m_PostEffects = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
 }
 
 Pipeline::~Pipeline() {
-    m_Targets.clear();
+    m_textureBuffers.clear();
 }
 
 void Pipeline::draw(Camera &camera) {
@@ -101,29 +121,29 @@ void Pipeline::draw(Camera &camera) {
 
     m_Buffer->setViewport(0, 0, m_Width, m_Height);
 
-    // Step1 - Fill G buffer pass draw opaque geometry
-    m_Buffer->setRenderTarget({m_Targets[G_NORMALS], m_Targets[G_DIFFUSE], m_Targets[G_PARAMS], m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
+    // Step 1.1 - Fill G buffer pass draw opaque geometry
+    m_Buffer->setRenderTarget(m_renderTargets[GBUFFER]);
     m_Buffer->clearRenderTarget(true, camera.color());
 
     cameraReset(camera);
     drawComponents(ICommandBuffer::DEFAULT, m_Filter);
 
-    // Step2.1 - Screen Space Ambient Occlusion
-    m_Targets[SSAO_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::DEFAULT);
+    // Step 1.2 - Opaque pass post processing
+    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::DEFAULT);
 
-    // Step2.2 - Light pass
-    m_Buffer->setRenderTarget({m_Targets[G_EMISSIVE]}, m_Targets[DEPTH_MAP]);
+    // Step2.1 - Light pass
+    m_Buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
     drawComponents(ICommandBuffer::LIGHT, m_SceneLights);
 
-    // Step2.3 - Screen Space Local Reflections
-    m_Targets[SSLR_MAP] = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::LIGHT);
+    // Step2.2 - Screen Space Local Reflections
+    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::LIGHT);
 
-    // Step3 - Draw Transparent pass
+    // Step 3.1 - Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
-    // Step4 - Post Processing passes
-    m_Buffer->setScreenProjection();
-    m_pFinal = postProcess(m_Targets[G_EMISSIVE], ICommandBuffer::TRANSLUCENT);
+    // Step 3.2 - Post Processing passes
+    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::TRANSLUCENT);
+    m_pFinal = m_textureBuffers[G_EMISSIVE];
 
     drawUi(camera);
 }
@@ -165,12 +185,16 @@ void Pipeline::cameraReset(Camera &camera) {
     m_Buffer->setViewProjection(v, p);
 }
 
-RenderTexture *Pipeline::target(const string &target) const {
-    auto it = m_Targets.find(target);
-    if(it != m_Targets.end()) {
+Texture *Pipeline::target(const string &target) const {
+    auto it = m_textureBuffers.find(target);
+    if(it != m_textureBuffers.end()) {
         return it->second;
     }
     return nullptr;
+}
+
+void Pipeline::setTarget(const string &target, Texture *texture) {
+    m_textureBuffers[target] = texture;
 }
 
 void Pipeline::resize(int32_t width, int32_t height) {
@@ -178,8 +202,9 @@ void Pipeline::resize(int32_t width, int32_t height) {
         m_Width = width;
         m_Height = height;
 
-        for(auto &it : m_Targets) {
-            it.second->resize(width, height);
+        for(auto &it : m_textureBuffers) {
+            it.second->setWidth(width);
+            it.second->setHeight(height);
         }
         for(auto &it : m_PostEffects) {
             it->resize(width, height);
@@ -225,7 +250,7 @@ void Pipeline::setTarget(uint32_t resource) {
     m_Target = resource;
 }
 
-RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
+RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_Tiles.find(id);
     if(tile != m_Tiles.end()) {
         if(tile->second.second.size() == count) {
@@ -247,7 +272,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     uint32_t columns = MAX(count / 2, 1);
     uint32_t rows = count / columns;
 
-    RenderTexture *target = nullptr;
+    RenderTarget *target = nullptr;
     AtlasNode *sub = nullptr;
 
     for(auto page : m_ShadowPages) {
@@ -264,10 +289,14 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         int32_t pageWidth, pageHeight;
         RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
-        target = Engine::objectCreate<RenderTexture>();
-        target->setDepth(24);
-        target->resize(pageWidth, pageHeight);
-        target->setFixed(true);
+        Texture *map = Engine::objectCreate<Texture>();
+        map->setFormat(Texture::Depth);
+        map->setWidth(pageWidth);
+        map->setHeight(pageHeight);
+        map->setDepthBits(24);
+
+        target = Engine::objectCreate<RenderTarget>();
+        target->setDepthAttachment(map);
 
         AtlasNode *root = new AtlasNode;
 
@@ -292,7 +321,7 @@ RenderTexture *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
         }
     }
     if(tiles.size() == count) {
-        m_Tiles[id] = pair<RenderTexture *, vector<AtlasNode *>>(target, tiles);
+        m_Tiles[id] = make_pair(target, tiles);
     }
     return target;
 }
@@ -345,16 +374,23 @@ void Pipeline::updateShadows(Camera &camera) {
     }
 }
 
-RenderTexture *Pipeline::postProcess(RenderTexture *source, uint32_t layer) {
+void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
     m_Buffer->setScreenProjection();
-    RenderTexture *result = source;
+    Texture *result = source->colorAttachment(0);
     for(auto it : m_PostEffects) {
         if(it->layer() == layer) {
             result = it->draw(result, this);
         }
     }
+    Texture *texture = source->colorAttachment(0);
+    if(result != texture) {
+        m_Buffer->setViewport(0, 0, texture->width(), texture->height());
+        m_Buffer->setRenderTarget(source);
+        m_pSprite->setTexture(OVERRIDE, result);
+        m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
+    }
+
     m_Buffer->resetViewProjection();
-    return result;
 }
 
 void Pipeline::combineComponents(Object *object, bool update) {

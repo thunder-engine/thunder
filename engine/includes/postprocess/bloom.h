@@ -13,32 +13,32 @@ class Engine;
 
 class Bloom : public PostProcessor {
     struct BloomPass {
-        RenderTexture *m_pDownTexture;
+        Vector3 m_blurSize;
 
-        float m_BlurPoints[MAX_SAMPLES];
+        float m_blurPoints[MAX_SAMPLES];
 
-        int32_t m_BlurSteps;
+        Texture *m_downTexture;
 
-        Vector3 m_BlurSize;
+        int32_t m_blurSteps;
     };
 
 public:
     Bloom();
 
 private:
-    RenderTexture *draw(RenderTexture *source, Pipeline *pipeline) override;
+    Texture *draw(Texture *source, Pipeline *pipeline) override;
 
     void resize(int32_t width, int32_t height) override;
 
     void setSettings(const PostProcessSettings &settings) override;
 
 private:
-    float m_Threshold;
+    float m_threshold;
 
-    int32_t m_Width;
-    int32_t m_Height;
+    int32_t m_width;
+    int32_t m_height;
 
-    BloomPass m_BloomPasses[BLOOM_PASSES];
+    BloomPass m_bloomPasses[BLOOM_PASSES];
 
 };
 

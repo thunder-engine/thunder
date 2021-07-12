@@ -38,7 +38,7 @@ protected:
 
     void drawUi(Camera &camera) override;
 
-    RenderTexture *m_pTarget;
+    Texture *m_pTarget;
 
     Vector4 m_PrimaryGridColor;
     Vector4 m_SecondaryGridColor;

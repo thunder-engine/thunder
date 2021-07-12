@@ -16,7 +16,7 @@ public:
     ~Reflections () override;
 
 private:
-    RenderTexture *draw(RenderTexture *source, Pipeline *pipeline) override;
+    Texture *draw(Texture *source, Pipeline *pipeline) override;
 
     void resize(int32_t width, int32_t height) override;
 
@@ -25,10 +25,12 @@ private:
     uint32_t layer() const override;
 
 private:
-    MaterialInstance *m_pIblMaterial;
+    MaterialInstance *m_iblMaterial;
 
-    Texture *m_pEnvironmentTexture;
+    Texture *m_environmentTexture;
+    Texture *m_sslrTexture;
 
+    RenderTarget *m_sslrTarget;
 };
 
 #endif // REFLECTIONS_H

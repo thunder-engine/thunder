@@ -34,7 +34,7 @@
 #endif
 #include "resources/text.h"
 #include "resources/texture.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/font.h"
@@ -195,7 +195,7 @@ Engine::Engine(File *file, const char *path) :
     Sprite::registerClassFactory(p_ptr->m_pResourceSystem);
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
-    RenderTexture::registerClassFactory(p_ptr->m_pResourceSystem);
+    RenderTarget::registerClassFactory(p_ptr->m_pResourceSystem);
     ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
 
     AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);

@@ -13,7 +13,10 @@ public:
             m_Format(Texture::R8),
             m_Compress(Texture::Uncompressed),
             m_Filtering(Texture::None),
-            m_Wrap(Texture::Clamp) {
+            m_Wrap(Texture::Clamp),
+            m_Width(1),
+            m_Height(1),
+            m_Depth(0) {
 
     }
 
@@ -24,6 +27,8 @@ public:
 
     int32_t m_Width;
     int32_t m_Height;
+
+    int32_t m_Depth;
 
     Vector2Vector m_Shape;
     Texture::Sides m_Sides;
@@ -190,12 +195,14 @@ int Texture::height() const {
 */
 void Texture::setWidth(int width) {
     p_ptr->m_Width = width;
+    setState(ToBeUpdated);
 }
 /*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
     p_ptr->m_Height = height;
+    setState(ToBeUpdated);
 }
 /*!
     Sets new \a width and \a height for the texture.
@@ -257,6 +264,20 @@ int Texture::wrap() const {
 */
 void Texture::setWrap(int type) {
     p_ptr->m_Wrap = type;
+}
+/*!
+    Returns the number of depth bits.
+    \note This value is valid only for the depth textures.
+*/
+int Texture::depthBits() const {
+    return p_ptr->m_Depth;
+}
+/*!
+    Sets the number of \a depth bits.
+    \note This value is valid only for the depth textures.
+*/
+void Texture::setDepthBits(int depth) {
+    p_ptr->m_Depth = depth;
 }
 /*!
     \internal

@@ -11,28 +11,29 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/pipeline.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 
 class SpotLightPrivate {
 public:
     SpotLightPrivate() :
-            m_Angle(45.0f),
-            m_Near(0.1f) {
+            m_shadowMap(nullptr),
+            m_angle(45.0f),
+            m_near(0.1f) {
     }
 
-    Vector3 m_Position;
-    Vector3 m_Direction;
+    AABBox m_box;
 
-    Vector4 m_Tiles;
+    Matrix4 m_matrix;
 
-    Matrix4 m_Matrix;
+    Vector3 m_position;
+    Vector3 m_direction;
 
-    float m_Angle;
-    float m_Near;
+    Vector4 m_tiles;
 
-    RenderTexture *m_pTarget;
+    RenderTarget *m_shadowMap;
 
-    AABBox m_Box;
+    float m_angle;
+    float m_near;
 };
 /*!
     \class SpotLight
@@ -53,11 +54,11 @@ SpotLight::SpotLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector3("light.position",  &p_ptr->m_Position);
-        instance->setVector3("light.direction", &p_ptr->m_Direction);
+        instance->setVector3("light.position",  &p_ptr->m_position);
+        instance->setVector3("light.direction", &p_ptr->m_direction);
 
-        instance->setMatrix4("light.matrix", &p_ptr->m_Matrix);
-        instance->setVector4("light.tiles",  &p_ptr->m_Tiles);
+        instance->setMatrix4("light.matrix", &p_ptr->m_matrix);
+        instance->setVector4("light.tiles",  &p_ptr->m_tiles);
 
         setMaterial(instance);
     }
@@ -75,15 +76,15 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
 
-        p_ptr->m_Position = actor()->transform()->worldPosition();
-        p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
+        p_ptr->m_position = actor()->transform()->worldPosition();
+        p_ptr->m_direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
         float d = attenuationDistance();
 
-        Matrix4 t(p_ptr->m_Position - p_ptr->m_Direction * d * 0.5f,
+        Matrix4 t(p_ptr->m_position - p_ptr->m_direction * d * 0.5f,
                   q, Vector3(d * 1.5f, d * 1.5f, d)); // (1.0f - p.z)
 
-        buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
+        buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
         buffer.drawMesh(t, mesh, layer, instance);
     }
@@ -95,7 +96,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     A_UNUSED(camera);
 
     if(!castShadows()) {
-        p_ptr->m_pTarget = nullptr;
+        p_ptr->m_shadowMap = nullptr;
         return;
     }
     ICommandBuffer *buffer = pipeline->buffer();
@@ -115,21 +116,21 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     scale[14] = 0.5f;
 
     float zFar = attenuationDistance();
-    Matrix4 crop = Matrix4::perspective(p_ptr->m_Angle * 2.0f, 1.0f, p_ptr->m_Near, zFar);
+    Matrix4 crop = Matrix4::perspective(p_ptr->m_angle * 2.0f, 1.0f, p_ptr->m_near, zFar);
 
     int32_t x, y, w, h;
-    p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
+    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
 
     int32_t pageWidth, pageHeight;
     RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
-    p_ptr->m_Matrix = scale * crop * rot;
-    p_ptr->m_Tiles = Vector4(static_cast<float>(x) / pageWidth,
+    p_ptr->m_matrix = scale * crop * rot;
+    p_ptr->m_tiles = Vector4(static_cast<float>(x) / pageWidth,
                              static_cast<float>(y) / pageHeight,
                              static_cast<float>(w) / pageWidth,
                              static_cast<float>(h) / pageHeight);
 
-    buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
+    buffer->setRenderTarget(p_ptr->m_shadowMap);
     buffer->enableScissor(x, y, w, h);
     buffer->clearRenderTarget();
     buffer->disableScissor();
@@ -138,7 +139,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     buffer->setViewport(x, y, w, h);
 
     RenderList filter = Camera::frustumCulling(components,
-                                               Camera::frustumCorners(false, p_ptr->m_Angle * 2.0f, 1.0f, pos, q, p_ptr->m_Near, zFar));
+                                               Camera::frustumCorners(false, p_ptr->m_angle * 2.0f, 1.0f, pos, q, p_ptr->m_near, zFar));
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
         it->draw(*buffer, ICommandBuffer::SHADOWCAST);
@@ -149,7 +150,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     \internal
 */
 AABBox SpotLight::bound() const {
-    return p_ptr->m_Box * actor()->transform()->worldTransform();
+    return p_ptr->m_box * actor()->transform()->worldTransform();
 }
 
 /*!
@@ -166,21 +167,21 @@ void SpotLight::setAttenuationDistance(float distance) {
     p.y = distance;
     setParams(p);
 
-    p_ptr->m_Box = AABBox(Vector3(0.0f, 0.0f,-0.5f) * distance, Vector3(distance * 1.5f, distance * 1.5f, distance));
+    p_ptr->m_box = AABBox(Vector3(0.0f, 0.0f,-0.5f) * distance, Vector3(distance * 1.5f, distance * 1.5f, distance));
 }
 /*!
     Returns the angle of the light cone in degrees.
 */
 float SpotLight::outerAngle() const {
-    return p_ptr->m_Angle;
+    return p_ptr->m_angle;
 }
 /*!
     Changes the \a angle of the light cone in degrees.
 */
 void SpotLight::setOuterAngle(float angle) {
-    p_ptr->m_Angle = angle;
+    p_ptr->m_angle = angle;
     Vector4 p = params();
-    p.w = cos(DEG2RAD * p_ptr->m_Angle);
+    p.w = cos(DEG2RAD * p_ptr->m_angle);
     setParams(p);
 }
 

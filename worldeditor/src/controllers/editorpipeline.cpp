@@ -7,7 +7,7 @@
 #include <components/transform.h>
 #include <components/renderable.h>
 
-#include <resources/rendertexture.h>
+#include <resources/rendertarget.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 
@@ -29,27 +29,33 @@
 
 #define G_EMISSIVE  "emissiveMap"
 
+#define SEL_TARGET  "objectSelect"
+#define OUT_TARGET  "outLine"
+#define FINAL_TARGET "finalTarget"
+
 #define OUTLINE     "Outline"
 
 class Outline : public PostProcessor {
 public:
     Outline() :
-        m_Width(1.0f) {
+        m_width(1.0f) {
         Material *material = Engine::loadResource<Material>(".embedded/outline.mtl");
         if(material) {
-            m_pMaterial = material->createInstance();
-            m_pMaterial->setFloat("width", &m_Width);
-            m_pMaterial->setVector4("color", &m_Color);
+            m_material = material->createInstance();
+            m_material->setFloat("width", &m_width);
+            m_material->setVector4("color", &m_color);
         }
 
-        m_pResultTexture = Engine::objectCreate<RenderTexture>();
-        m_pResultTexture->setTarget(Texture::RGBA8);
+        m_resultTexture = Engine::objectCreate<Texture>();
+        m_resultTexture->setFormat(Texture::RGBA8);
+
+        m_resultTarget->setColorAttachment(0, m_resultTexture);
 
         setEnabled(true);
     }
 
-    float m_Width;
-    Vector4 m_Color;
+    float m_width;
+    Vector4 m_color;
 };
 
 EditorPipeline::EditorPipeline() :
@@ -65,20 +71,25 @@ EditorPipeline::EditorPipeline() :
         m_MouseX(0),
         m_MouseY(0) {
 
-    RenderTexture *select = Engine::objectCreate<RenderTexture>();
-    select->setTarget(Texture::RGBA8);
-    m_Targets[SELECT_MAP] = select;
-    m_Buffer->setGlobalTexture(SELECT_MAP, select);
-
-    RenderTexture *depth = Engine::objectCreate<RenderTexture>();
-    depth->setDepth(24);
-    m_Targets[OUTDEPTH_MAP] = depth;
-    m_Buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
-
-    RenderTexture *outline = Engine::objectCreate<RenderTexture>();
-    outline->setTarget(Texture::RGBA8);
-    m_Targets[OUTLINE_MAP] = outline;
-    m_Buffer->setGlobalTexture(OUTLINE_MAP, outline);
+    {
+        Texture *select = Engine::objectCreate<Texture>();
+        select->setFormat(Texture::RGBA8);
+        m_textureBuffers[SELECT_MAP] = select;
+        m_Buffer->setGlobalTexture(SELECT_MAP, select);
+    }
+    {
+        Texture *depth = Engine::objectCreate<Texture>();
+        depth->setFormat(Texture::Depth);
+        depth->setDepthBits(24);
+        m_textureBuffers[OUTDEPTH_MAP] = depth;
+        m_Buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
+    }
+    {
+        Texture *outline = Engine::objectCreate<Texture>();
+        outline->setFormat(Texture::RGBA8);
+        m_textureBuffers[OUTLINE_MAP] = outline;
+        m_Buffer->setGlobalTexture(OUTLINE_MAP, outline);
+    }
 
     m_pSelect = Engine::objectCreate<Texture>();
     m_pSelect->setFormat(Texture::RGBA8);
@@ -86,7 +97,24 @@ EditorPipeline::EditorPipeline() :
 
     m_pDepth = Engine::objectCreate<Texture>();
     m_pDepth->setFormat(Texture::Depth);
-    m_pDepth->resize(1, 1);
+    m_pDepth->setDepthBits(24);
+    m_pDepth->setWidth(1);
+    m_pDepth->setHeight(1);
+
+    RenderTarget *object = Engine::objectCreate<RenderTarget>();
+    object->setColorAttachment(0, m_textureBuffers[SELECT_MAP]);
+    object->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
+    m_renderTargets[SEL_TARGET] = object;
+
+    RenderTarget *out = Engine::objectCreate<RenderTarget>();
+    out->setColorAttachment(0, m_textureBuffers[OUTLINE_MAP]);
+    out->setDepthAttachment(m_textureBuffers[OUTDEPTH_MAP]);
+    m_renderTargets[OUT_TARGET] = out;
+
+    RenderTarget *final = Engine::objectCreate<RenderTarget>();
+    final->setColorAttachment(0, m_pFinal);
+    final->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
+    m_renderTargets[FINAL_TARGET] = final;
 
     m_pGrid = Engine::objectCreate<Mesh>("Grid");
 
@@ -134,8 +162,8 @@ void EditorPipeline::loadSettings() {
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
     color = SettingsManager::instance()->property("General/Colors/Outline_Color").value<QColor>();
-    m_pOutline->m_Color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-    m_pOutline->m_Width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
+    m_pOutline->m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    m_pOutline->m_width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
 }
 
 void EditorPipeline::setController(CameraCtrl *ctrl) {
@@ -166,15 +194,15 @@ void EditorPipeline::setDragObjects(const ObjectList &list) {
 
 void EditorPipeline::setTarget(const QString &string) {
     m_pTarget = nullptr;
-    auto it = m_Targets.find(qPrintable(string));
-    if(it != m_Targets.end()) {
+    auto it = m_textureBuffers.find(qPrintable(string));
+    if(it != m_textureBuffers.end()) {
         m_pTarget = it->second;
     }
 }
 
 QStringList EditorPipeline::targets() const {
     QStringList result;
-    for(auto &it : m_Targets) {
+    for(auto &it : m_textureBuffers) {
         result.push_back(it.first.c_str());
     }
 
@@ -183,7 +211,7 @@ QStringList EditorPipeline::targets() const {
 
 void EditorPipeline::draw(Camera &camera) {
     // Retrive object id
-    m_Buffer->setRenderTarget({m_Targets[SELECT_MAP]}, m_Targets[DEPTH_MAP]);
+    m_Buffer->setRenderTarget(m_renderTargets[SEL_TARGET]);
     m_Buffer->clearRenderTarget();
 
     m_Buffer->setViewport(0, 0, m_Width, m_Height);
@@ -212,7 +240,7 @@ void EditorPipeline::draw(Camera &camera) {
     }
 
     // Selection outline
-    m_Buffer->setRenderTarget({m_Targets[OUTLINE_MAP]}, m_Targets[OUTDEPTH_MAP]);
+    m_Buffer->setRenderTarget(m_renderTargets[OUT_TARGET]);
     m_Buffer->clearRenderTarget();
     RenderList filter;
     for(auto actor : m_pController->selected()) {
@@ -231,9 +259,11 @@ void EditorPipeline::draw(Camera &camera) {
         m_pFinal = m_pTarget;
     }
 
+    m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_pFinal);
+
     // Draw handles
     cameraReset(camera);
-    m_Buffer->setRenderTarget({m_pFinal}, m_Targets[DEPTH_MAP]);
+    m_Buffer->setRenderTarget(m_renderTargets[FINAL_TARGET]);
     drawGrid(camera);
 
     Handles::beginDraw(m_Buffer);

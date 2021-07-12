@@ -15,7 +15,7 @@ public:
 
     ~AmbientOcclusion () override;
 
-    RenderTexture *draw(RenderTexture *source, Pipeline *pipeline) override;
+    Texture *draw(Texture *source, Pipeline *pipeline) override;
 
     void resize(int32_t width, int32_t height) override;
 
@@ -24,18 +24,22 @@ public:
     uint32_t layer() const override;
 
 protected:
-    Vector3 m_SamplesKernel[KERNEL_SIZE];
-    float m_BlurSamplesKernel[4];
+    Vector3 m_samplesKernel[KERNEL_SIZE];
+    float m_blurSamplesKernel[4];
 
-    float m_Radius;
-    float m_Bias;
-    float m_Power;
+    float m_radius;
+    float m_bias;
+    float m_power;
 
-    Texture *m_pNoise;
-    RenderTexture *m_pSSAO;
+    Texture *m_noiseTexture;
+    Texture *m_ssaoTexture;
+    Texture *m_blurTexture;
 
-    MaterialInstance *m_pBlur;
-    MaterialInstance *m_pOcclusion;
+    RenderTarget *m_ssaoTarget;
+    RenderTarget *m_blurTarget;
+
+    MaterialInstance *m_blur;
+    MaterialInstance *m_occlusion;
 };
 
 #endif // AMBIENTOCCLUSION_H

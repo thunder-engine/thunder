@@ -30,24 +30,50 @@ uint32_t TextureGL::nativeHandle() {
 void TextureGL::readPixels(int x, int y, int width, int height) {
     bool depth = (format() == Depth);
 
-    Surface &surface = getSides()->at(0);
+    Sides *sides = getSides();
+    if(!sides->empty()) {
+        Surface &surface = sides->at(0);
 
-    glReadPixels(x, y, width, height,
-                 (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
-                 (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, &(surface[0])[0]);
-    CheckGLError();
+        glReadPixels(x, y, width, height,
+                     (depth) ? GL_DEPTH_COMPONENT : GL_RGBA,
+                     (depth) ? GL_FLOAT : GL_UNSIGNED_BYTE, &(surface[0])[0]);
+        CheckGLError();
+    }
 }
 
 void TextureGL::updateTexture() {
-    if(!m_ID) {
+    if(m_ID == 0) {
         glGenTextures(1, &m_ID);
-        CheckGLError();
     }
 
-    uint32_t target = GL_TEXTURE_2D;
-    if(isCubemap()) {
-        target = GL_TEXTURE_CUBE_MAP;
+    uint32_t target = isCubemap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    glBindTexture(target, m_ID);
+
+    Texture::Sides *sides = getSides();
+
+    bool mipmap = (sides->empty()) ? false : (sides->at(0).size() > 1);
+
+    int32_t min = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+    int32_t mag = GL_NEAREST;
+
+    switch(filtering()) {
+        case Bilinear:  mag = GL_LINEAR; min = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
+        case Trilinear: mag = GL_LINEAR; min = GL_LINEAR_MIPMAP_LINEAR; break;
+        default: break;
     }
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
+
+    int32_t glwrap = GL_CLAMP_TO_EDGE;
+
+    switch(wrap()) {
+        case Repeat: glwrap = GL_REPEAT; break;
+        case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
+        default: break;
+    }
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
 
     uint32_t internal   = GL_RGBA8;
     uint32_t glformat   = GL_RGBA;
@@ -65,10 +91,10 @@ void TextureGL::updateTexture() {
         case RGB10A2: {
     #ifndef THUNDER_MOBILE
             internal    = GL_RGB10_A2;
-            glformat    = GL_UNSIGNED_INT_10_10_10_2;
+            type        = GL_UNSIGNED_INT_10_10_10_2;
     #else
             internal    = GL_RGB10_A2;
-            glformat    = GL_UNSIGNED_INT_2_10_10_10_REV;
+            type        = GL_UNSIGNED_INT_2_10_10_10_REV;
     #endif
         } break;
         case RGB16Float: {
@@ -81,50 +107,28 @@ void TextureGL::updateTexture() {
             glformat    = GL_RGB;
             type        = GL_FLOAT;
         } break;
+        case Depth: {
+            internal    = (depthBits() == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
+            glformat    = GL_DEPTH_COMPONENT;
+            type        = GL_UNSIGNED_INT;
+        } break;
         default: break;
     }
-
-    glBindTexture(target, m_ID);
-    CheckGLError();
 
     switch(target) {
         case GL_TEXTURE_CUBE_MAP: {
-            uploadTextureCubemap(getSides(), target, internal, glformat, type);
+            uploadTextureCubemap(sides, target, internal, glformat, type);
         } break;
         default: {
-            uploadTexture(getSides(), 0, target, internal, glformat, type);
+            uploadTexture(sides, 0, target, internal, glformat, type);
         } break;
     }
-    //glTexParameterf ( target, GL_TEXTURE_LOD_BIAS, 0.0);
 
-    bool mipmap = (getSides()->at(0).size() > 1);
-
-    int32_t min = (mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
-    int32_t mag = GL_NEAREST;
-    switch(filtering()) {
-        case Bilinear:  mag = GL_LINEAR; min = (mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR; break;
-        case Trilinear: mag = GL_LINEAR; min = GL_LINEAR_MIPMAP_LINEAR; break;
-        default: break;
-    }
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
-
-    int32_t glwrap;
-    switch(wrap()) {
-        case Repeat: glwrap   = GL_REPEAT; break;
-        case Mirrored: glwrap = GL_MIRRORED_REPEAT; break;
-        default: glwrap       = GL_CLAMP_TO_EDGE; break;
-    }
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
-    CheckGLError();
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
-    CheckGLError();
-    glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
-    CheckGLError();
+    //glTexParameterf(target, GL_TEXTURE_LOD_BIAS, 0.0);
 
     //float aniso = 0.0f;
     //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-    //glTexParameterf ( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
+    //glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
 }
 
 void TextureGL::destroyTexture() {
@@ -136,37 +140,39 @@ void TextureGL::destroyTexture() {
 }
 
 bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
-    const Surface &image = (*sides)[imageIndex];
+    int32_t w = width();
+    int32_t h = height();
 
-    if(isCompressed()) {
-        // load all mipmaps
-        int32_t w  = width();
-        int32_t h  = height();
-        for(uint32_t i = 0; i < image.size(); i++) {
-            const int8_t *data = &(image[i])[0];
-            glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
-            CheckGLError();
-        }
+    if(sides->empty()) {
+        glTexImage2D(target, 0, internal, w, h, 0, format, type, nullptr);
     } else {
-        GLint alignment = -1;
-        if(!isDwordAligned()) {
-            glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
-            CheckGLError();
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            CheckGLError();
-        }
+        const Surface &image = sides->at(imageIndex);
+        if(isCompressed()) {
+            // load all mipmaps
+            for(uint32_t i = 0; i < image.size(); i++) {
+                const int8_t *data = &(image[i])[0];
+                glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
+                CheckGLError();
+            }
+        } else {
+            GLint alignment = -1;
+            if(!isDwordAligned()) {
+                glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
+                CheckGLError();
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                CheckGLError();
+            }
 
-        // load all mipmaps
-        int32_t w = width();
-        int32_t h = height();
-        for(uint32_t i = 0; i < image.size(); i++) {
-            const int8_t *data = &(image[i])[0];
-            glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
-            CheckGLError();
-        }
-        if(alignment != -1) {
-            glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-            CheckGLError();
+            // load all mipmaps
+            for(uint32_t i = 0; i < image.size(); i++) {
+                const int8_t *data = &(image[i])[0];
+                glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
+                CheckGLError();
+            }
+            if(alignment != -1) {
+                glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+                CheckGLError();
+            }
         }
     }
 

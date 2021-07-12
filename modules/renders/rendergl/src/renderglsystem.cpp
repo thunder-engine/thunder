@@ -8,7 +8,7 @@
 #include <resources/pipeline.h>
 
 #include "resources/texturegl.h"
-#include "resources/rendertexturegl.h"
+#include "resources/rendertargetgl.h"
 
 #include "commandbuffergl.h"
 
@@ -38,16 +38,9 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderSystem(),
         m_pEngine(engine),
         m_registered(false) {
+
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
-
-    TextureGL::registerClassFactory(system);
-    RenderTextureGL::registerClassFactory(system);
-    MaterialGL::registerClassFactory(system);
-    MeshGL::registerClassFactory(system);
-
-    CommandBufferGL::registerClassFactory(m_pEngine);
 }
 
 RenderGLSystem::~RenderGLSystem() {
@@ -61,7 +54,7 @@ void RenderGLSystem::registerClasses() {
     System *system = m_pEngine->resourceSystem();
 
     TextureGL::registerClassFactory(system);
-    RenderTextureGL::registerClassFactory(system);
+    RenderTargetGL::registerClassFactory(system);
     MaterialGL::registerClassFactory(system);
     MeshGL::registerClassFactory(system);
 
@@ -80,7 +73,7 @@ void RenderGLSystem::unregisterClasses() {
     System *system = m_pEngine->resourceSystem();
 
     TextureGL::unregisterClassFactory(system);
-    RenderTextureGL::unregisterClassFactory(system);
+    RenderTargetGL::unregisterClassFactory(system);
     MaterialGL::unregisterClassFactory(system);
     MeshGL::unregisterClassFactory(system);
 

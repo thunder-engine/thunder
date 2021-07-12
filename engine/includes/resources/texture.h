@@ -115,7 +115,11 @@ public:
     int filtering() const;
     void setFiltering(int type);
 
+    int depthBits() const;
+    void setDepthBits(int depth);
+
     void clear();
+
 private:
     TexturePrivate *p_ptr;
 

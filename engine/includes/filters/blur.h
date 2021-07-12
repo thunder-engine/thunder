@@ -4,7 +4,8 @@
 #include <amath.h>
 
 class Mesh;
-class RenderTexture;
+class Texture;
+class RenderTarget;
 class MaterialInstance;
 
 class ICommandBuffer;
@@ -13,26 +14,29 @@ class ICommandBuffer;
 
 class Blur {
 public:
-    Blur ();
+    Blur();
 
-    void draw (ICommandBuffer &buffer, RenderTexture *source, RenderTexture *target);
+    void draw(ICommandBuffer &buffer, Texture *source, RenderTarget *target);
 
     void setParameters(const Vector2 &size, int32_t steps, float *points);
 
     static void generateKernel(float radius, int32_t steps, float *points);
 
 protected:
+    Vector2 m_size;
+    Vector2 m_direction;
+
+    float m_points[MAX_SAMPLES];
+
     MaterialInstance *m_pBlurMaterial;
 
     Mesh *m_pMesh;
 
-    int32_t m_Steps;
-    float m_Points[MAX_SAMPLES];
+    Texture *m_tempTexture;
+    RenderTarget *m_tempTarget;
 
-    RenderTexture *m_Temp;
+    int32_t m_steps;
 
-    Vector2 m_Size;
-    Vector2 m_Direction;
 };
 
 #endif // BLUR_H

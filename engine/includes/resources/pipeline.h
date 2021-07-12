@@ -16,7 +16,8 @@ class Camera;
 
 class Mesh;
 class MaterialInstance;
-class RenderTexture;
+class Texture;
+class RenderTarget;
 class PostProcessor;
 
 class PostProcessSettings;
@@ -42,13 +43,14 @@ public:
 
     virtual void analizeScene(Scene *scene, RenderSystem *render);
 
-    RenderTexture *target(const string &target) const;
+    Texture *target(const string &target) const;
+    void setTarget(const string &target, Texture *texture);
 
     void setTarget(uint32_t resource);
 
     ICommandBuffer *buffer() const;
 
-    RenderTexture *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
     int screenWidth() const;
 
@@ -59,7 +61,7 @@ protected:
 
     void drawComponents(uint32_t layer, list<Renderable *> &list);
 
-    RenderTexture *postProcess(RenderTexture *source, uint32_t layer);
+    void postProcess(RenderTarget *source, uint32_t layer);
 
     void sortByDistance(list<Renderable *> &in, const Vector3 &origin);
 
@@ -69,7 +71,8 @@ protected:
     void combineComponents(Object *object, bool update);
 
 protected:
-    typedef map<string, RenderTexture *> TargetMap;
+    typedef map<string, Texture *> BuffersMap;
+    typedef map<string, RenderTarget *> TargetsMap;
 
     ICommandBuffer *m_Buffer;
 
@@ -78,14 +81,15 @@ protected:
     list<Renderable *> m_UiComponents;
     list<Renderable *> m_Filter;
 
-    TargetMap m_Targets;
+    BuffersMap m_textureBuffers;
+    TargetsMap m_renderTargets;
 
     list<PostProcessor *> m_PostEffects;
 
     list<PostProcessSettings *> m_PostProcessSettings;
 
-    unordered_map<uint32_t, pair<RenderTexture *, vector<AtlasNode *>>> m_Tiles;
-    unordered_map<RenderTexture *, AtlasNode *> m_ShadowPages;
+    unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_Tiles;
+    unordered_map<RenderTarget *, AtlasNode *> m_ShadowPages;
 
     Mesh *m_pPlane;
     MaterialInstance *m_pSprite;
@@ -95,7 +99,7 @@ protected:
     int32_t m_Width;
     int32_t m_Height;
 
-    RenderTexture *m_pFinal;
+    Texture *m_pFinal;
 
     RenderSystem *m_pSystem;
 };

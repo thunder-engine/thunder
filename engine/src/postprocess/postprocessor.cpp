@@ -2,7 +2,7 @@
 
 #include "resources/mesh.h"
 #include "resources/material.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 #include "resources/pipeline.h"
 
 #include "commandbuffer.h"
@@ -12,34 +12,38 @@
 static Blur *s_pBlur = nullptr;
 
 PostProcessor::PostProcessor() :
-        m_Enabled(false),
-        m_pResultTexture(nullptr),
-        m_pMaterial(nullptr) {
+        m_enabled(false),
+        m_material(nullptr),
+        m_resultTexture(nullptr) {
 
-    m_pMesh = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+    m_mesh = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+
+    m_resultTarget = Engine::objectCreate<RenderTarget>();
 }
 
 PostProcessor::~PostProcessor() {
 
 }
 
-RenderTexture *PostProcessor::draw(RenderTexture *source, Pipeline *pipeline) {
-    if(m_Enabled && m_pMaterial && m_pResultTexture) {
-        m_pMaterial->setTexture("rgbMap", source);
+Texture *PostProcessor::draw(Texture *source, Pipeline *pipeline) {
+    if(m_enabled && m_material) {
+        m_material->setTexture("rgbMap", source);
 
         ICommandBuffer *buffer = pipeline->buffer();
 
-        buffer->setRenderTarget({m_pResultTexture});
-        buffer->drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pMaterial);
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
 
-        return m_pResultTexture;
+        return m_resultTexture;
     }
+
     return source;
 }
 
 void PostProcessor::resize(int32_t width, int32_t height) {
-    if(m_pResultTexture) {
-        m_pResultTexture->resize(width, height);
+    if(m_resultTexture) {
+        m_resultTexture->setWidth(width);
+        m_resultTexture->setHeight(height);
     }
 }
 
@@ -52,7 +56,7 @@ uint32_t PostProcessor::layer() const {
 }
 
 void PostProcessor::setEnabled(bool value) {
-    m_Enabled = value;
+    m_enabled = value;
 }
 
 Blur *PostProcessor::blur() {

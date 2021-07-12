@@ -11,7 +11,7 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/pipeline.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 
 static Quaternion rot[6] = {Quaternion(Vector3(0, 1, 0),-90),
                             Quaternion(Vector3(0, 1, 0), 90),
@@ -23,23 +23,23 @@ static Quaternion rot[6] = {Quaternion(Vector3(0, 1, 0),-90),
 class PointLightPrivate {
 public:
     PointLightPrivate() :
-            m_Near(0.1f) {
+            m_near(0.1f) {
 
     }
 
-    Vector3 m_Position;
+    Vector3 m_position;
 
-    Vector3 m_Direction;
+    Vector3 m_direction;
 
-    Vector4 m_Tiles[6];
+    Vector4 m_tiles[6];
 
-    Matrix4 m_Matrix[6];
+    Matrix4 m_matrix[6];
 
-    float m_Near;
+    float m_near;
 
-    RenderTexture *m_pTarget;
+    RenderTarget *m_shadowMap;
 
-    AABBox m_Box;
+    AABBox m_box;
 };
 
 /*!
@@ -57,11 +57,11 @@ PointLight::PointLight() :
     Material *material = Engine::loadResource<Material>(".embedded/PointLight.mtl");
     MaterialInstance *instance = material->createInstance();
 
-    instance->setVector3("light.position", &p_ptr->m_Position);
-    instance->setVector3("light.direction", &p_ptr->m_Direction);
+    instance->setVector3("light.position", &p_ptr->m_position);
+    instance->setVector3("light.direction", &p_ptr->m_direction);
 
-    instance->setMatrix4("light.matrix", p_ptr->m_Matrix, 6);
-    instance->setVector4("light.tiles",  p_ptr->m_Tiles, 6);
+    instance->setMatrix4("light.matrix", p_ptr->m_matrix, 6);
+    instance->setVector4("light.tiles",  p_ptr->m_tiles, 6);
 
     setMaterial(instance);
 
@@ -82,17 +82,17 @@ void PointLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
 
         Matrix4 m = actor()->transform()->worldTransform();
-        p_ptr->m_Position = Vector3(m[12], m[13], m[14]);
+        p_ptr->m_position = Vector3(m[12], m[13], m[14]);
 
         float r = attenuationRadius();
 
-        Matrix4 t(p_ptr->m_Position,
+        Matrix4 t(p_ptr->m_position,
                   Quaternion(),
                   Vector3(r * 2.0f, r * 2.0f, r * 2.0f));
 
-        p_ptr->m_Direction = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
+        p_ptr->m_direction = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
 
-        buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
+        buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
         buffer.drawMesh(t, mesh, layer, instance);
     }
@@ -104,7 +104,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
     A_UNUSED(camera);
 
     if(!castShadows()) {
-        p_ptr->m_pTarget = nullptr;
+        p_ptr->m_shadowMap = nullptr;
         return;
     }
 
@@ -123,13 +123,13 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
     scale[14] = 0.5f;
 
     int32_t x[6], y[6], w[6], h[6];
-    p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, 6);
+    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, 6);
 
     int32_t pageWidth, pageHeight;
     RenderSystem::atlasPageSize(pageWidth, pageHeight);
 
     float zFar = attenuationRadius();
-    Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_Near, zFar);
+    Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_near, zFar);
 
     Matrix4 wt = t->worldTransform();
 
@@ -138,14 +138,14 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
 
     for(int32_t i = 0; i < 6; i++) {
         Matrix4 mat = (wp * Matrix4(rot[i].toMatrix())).inverse();
-        p_ptr->m_Matrix[i] = scale * crop * mat;
+        p_ptr->m_matrix[i] = scale * crop * mat;
 
-        p_ptr->m_Tiles[i] = Vector4(static_cast<float>(x[i]) / pageWidth,
+        p_ptr->m_tiles[i] = Vector4(static_cast<float>(x[i]) / pageWidth,
                                     static_cast<float>(y[i]) / pageHeight,
                                     static_cast<float>(w[i]) / pageWidth,
                                     static_cast<float>(h[i]) / pageHeight);
 
-        buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
+        buffer->setRenderTarget(p_ptr->m_shadowMap);
         buffer->enableScissor(x[i], y[i], w[i], h[i]);
         buffer->clearRenderTarget();
         buffer->disableScissor();
@@ -154,7 +154,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
         buffer->setViewport(x[i], y[i], w[i], h[i]);
 
         RenderList filter = Camera::frustumCulling(components,
-                                                   Camera::frustumCorners(false, 90.0f, 1.0f, pos, rot[i], p_ptr->m_Near, zFar));
+                                                   Camera::frustumCorners(false, 90.0f, 1.0f, pos, rot[i], p_ptr->m_near, zFar));
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
             static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
@@ -176,7 +176,7 @@ void PointLight::setAttenuationRadius(float radius) {
     p.w = radius;
     setParams(p);
 
-    p_ptr->m_Box = AABBox(Vector3(), Vector3(radius * 2));
+    p_ptr->m_box = AABBox(Vector3(), Vector3(radius * 2));
 }
 /*!
     Returns the source radius of the light.
@@ -211,7 +211,7 @@ void PointLight::setSourceLength(float length) {
     \internal
 */
 AABBox PointLight::bound() const {
-    AABBox result = p_ptr->m_Box;
+    AABBox result = p_ptr->m_box;
     result.center += actor()->transform()->worldPosition();
     return result;
 }

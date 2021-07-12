@@ -9,7 +9,7 @@
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/pipeline.h"
-#include "resources/rendertexture.h"
+#include "resources/rendertarget.h"
 
 #include "systems/rendersystem.h"
 
@@ -21,14 +21,14 @@
 
 class DirectLightPrivate {
 public:
-    Matrix4 m_pMatrix[MAX_LODS];
-    Vector4 m_pTiles[MAX_LODS];
+    Matrix4 m_matrix[MAX_LODS];
+    Vector4 m_tiles[MAX_LODS];
 
-    Vector4 m_NormalizedDistance;
+    Vector4 m_normalizedDistance;
 
-    Vector3 m_Direction;
+    Vector3 m_direction;
 
-    RenderTexture *m_pTarget;
+    RenderTarget *m_shadowMap;
 };
 /*!
     \class DirectLight
@@ -46,11 +46,11 @@ DirectLight::DirectLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector4("light.lod",       &p_ptr->m_NormalizedDistance);
-        instance->setVector3("light.direction", &p_ptr->m_Direction);
+        instance->setVector4("light.lod",       &p_ptr->m_normalizedDistance);
+        instance->setVector3("light.direction", &p_ptr->m_direction);
 
-        instance->setMatrix4("light.matrix", p_ptr->m_pMatrix, MAX_LODS);
-        instance->setVector4("light.tiles",  p_ptr->m_pTiles,  MAX_LODS);
+        instance->setMatrix4("light.matrix", p_ptr->m_matrix, MAX_LODS);
+        instance->setVector4("light.tiles",  p_ptr->m_tiles,  MAX_LODS);
 
         setMaterial(instance);
     }
@@ -68,9 +68,9 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
     if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
 
-        p_ptr->m_Direction = q * Vector3(0.0f, 0.0f, 1.0f);
+        p_ptr->m_direction = q * Vector3(0.0f, 0.0f, 1.0f);
 
-        buffer.setGlobalTexture(SHADOW_MAP, p_ptr->m_pTarget);
+        buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
         buffer.setScreenProjection();
         buffer.drawMesh(Matrix4(), mesh, layer, instance);
@@ -82,7 +82,7 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 */
 void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
     if(!castShadows()) {
-        p_ptr->m_pTarget = nullptr;
+        p_ptr->m_shadowMap = nullptr;
         return;
     }
 
@@ -105,7 +105,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
             float val = MIX(u, l, split);
             distance[i] = val;
             Vector4 depth = p * Vector4(0.0f, 0.0f, -val * 2.0f - 1.0f, 1.0f);
-            p_ptr->m_NormalizedDistance[i] = depth.z / depth.w;
+            p_ptr->m_normalizedDistance[i] = depth.z / depth.w;
         }
     }
 
@@ -129,7 +129,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
     Quaternion wRotation = t->worldRotation();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
-    p_ptr->m_pTarget = pipeline->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
+    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
 
     int32_t pageWidth, pageHeight;
     RenderSystem::atlasPageSize(pageWidth, pageHeight);
@@ -176,14 +176,14 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
 
         Matrix4 crop = Matrix4::ortho(min.x, max.x, min.y, max.y, min.z, max.z);
 
-        p_ptr->m_pMatrix[lod] = scale * crop * rot;
+        p_ptr->m_matrix[lod] = scale * crop * rot;
 
-        p_ptr->m_pTiles[lod] = Vector4(static_cast<float>(x[lod]) / pageWidth,
+        p_ptr->m_tiles[lod] = Vector4(static_cast<float>(x[lod]) / pageWidth,
                                        static_cast<float>(y[lod]) / pageHeight,
                                        static_cast<float>(w[lod]) / pageWidth,
                                        static_cast<float>(h[lod]) / pageHeight);
 
-        buffer->setRenderTarget(TargetBuffer(), p_ptr->m_pTarget);
+        buffer->setRenderTarget(p_ptr->m_shadowMap);
         buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);
         buffer->clearRenderTarget();
         buffer->disableScissor();
