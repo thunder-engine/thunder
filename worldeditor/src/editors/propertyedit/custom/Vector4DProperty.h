@@ -1,16 +1,16 @@
-#ifndef VECTOR3DPROPERTY_H
-#define VECTOR3DPROPERTY_H
+#ifndef VECTOR4DPROPERTY_H
+#define VECTOR4DPROPERTY_H
 
 #include "Property.h"
 
 #include <amath.h>
-Q_DECLARE_METATYPE(Vector3)
+Q_DECLARE_METATYPE(Vector4)
 
-class Vector3DProperty : public Property {
+class Vector4DProperty : public Property {
     Q_OBJECT
 
 public:
-    Vector3DProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
+    Vector4DProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
     QVariant value(int role = Qt::UserRole) const;
 
@@ -25,4 +25,4 @@ protected slots:
 
 };
 
-#endif // VECTOR3DPROPERTY_H
+#endif // VECTOR4DPROPERTY_H

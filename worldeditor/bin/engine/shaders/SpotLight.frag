@@ -54,7 +54,7 @@ void main (void) {
             vec4 offset = light.tiles[0];
             vec4 proj   = light.matrix[0] * vec4(world, 1.0);
             vec3 coord  = (proj.xyz / proj.w);
-            shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
+            shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias.x);
         }
 
         vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);

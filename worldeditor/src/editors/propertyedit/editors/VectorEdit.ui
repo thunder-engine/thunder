@@ -38,6 +38,9 @@
    <item>
     <widget class="QLineEdit" name="z"/>
    </item>
+   <item>
+    <widget class="QLineEdit" name="w"/>
+   </item>
   </layout>
  </widget>
  <resources/>

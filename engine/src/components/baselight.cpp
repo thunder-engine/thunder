@@ -20,7 +20,7 @@ public:
 
     float m_Shadows;
 
-    float m_Bias;
+    Vector4 m_Bias;
 
     Vector4 m_Params;
 
@@ -97,14 +97,14 @@ void BaseLight::setColor(const Vector4 &color) {
 /*!
     Returns shadow map bias value.
 */
-float BaseLight::bias() const {
+Vector4 &BaseLight::bias() const {
     return p_ptr->m_Bias;
 }
 /*!
     Changes shadow map \a bias value.
     You can use this value to mitigate the shadow map acne effect.
 */
-void BaseLight::setBias(const float bias) {
+void BaseLight::setBias(const Vector4 &bias) {
     p_ptr->m_Bias = bias;
 }
 /*!
@@ -119,8 +119,8 @@ MaterialInstance *BaseLight::material() const {
 void BaseLight::setMaterial(MaterialInstance *instance) {
     instance->setVector4("light.color",  &p_ptr->m_Color);
     instance->setVector4("light.params", &p_ptr->m_Params);
+    instance->setVector4("light.bias",   &p_ptr->m_Bias);
     instance->setFloat("light.shadows",  &p_ptr->m_Shadows);
-    instance->setFloat("light.bias",     &p_ptr->m_Bias);
 
     p_ptr->m_pMaterialInstance = instance;
 }

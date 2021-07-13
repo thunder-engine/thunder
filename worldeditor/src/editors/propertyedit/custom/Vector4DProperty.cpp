@@ -1,14 +1,13 @@
-#include "Vector2DProperty.h"
 #include "Vector4DProperty.h"
 
-#include "../editors/VectorEdit.h"
+#include "editors/propertyedit/editors/VectorEdit.h"
 #include "../nextobject.h"
 
-Vector2DProperty::Vector2DProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
+Vector4DProperty::Vector4DProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
         Property(name, propertyObject, parent) {
 }
 
-QVariant Vector2DProperty::value(int role) const {
+QVariant Vector4DProperty::value(int role) const {
     QVariant data = Property::value(role);
     if(data.isValid() && role != Qt::UserRole) {
         switch(role) {
@@ -21,9 +20,9 @@ QVariant Vector2DProperty::value(int role) const {
     return data;
 }
 
-QWidget *Vector2DProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
+QWidget *Vector4DProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     VectorEdit *e  = new VectorEdit(parent);
-    e->setComponents(2);
+    e->setComponents(4);
     m_Editor = e;
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
@@ -33,33 +32,31 @@ QWidget *Vector2DProperty::createEditor(QWidget *parent, const QStyleOptionViewI
     return m_Editor;
 }
 
-bool Vector2DProperty::setEditorData(QWidget *editor, const QVariant &data) {
+bool Vector4DProperty::setEditorData(QWidget *editor, const QVariant &data) {
     VectorEdit *e  = static_cast<VectorEdit *>(editor);
     if(e) {
         e->blockSignals(true);
-        e->setData(Vector4(data.value<Vector2>(), 0.0, 0.0));
+        e->setData(data.value<Vector4>());
         e->blockSignals(false);
         return true;
     }
     return Property::setEditorData(editor, data);
 }
 
-QVariant Vector2DProperty::editorData(QWidget *editor) {
+QVariant Vector4DProperty::editorData(QWidget *editor) {
     VectorEdit *e  = static_cast<VectorEdit *>(editor);
     if(e) {
-        Vector4 v = e->data();
-        return QVariant::fromValue(Vector2(v.x, v.y));
+        return QVariant::fromValue(e->data());
     }
     return Property::editorData(editor);
 }
 
-QSize Vector2DProperty::sizeHint(const QSize& size) const {
+QSize Vector4DProperty::sizeHint(const QSize& size) const {
     return QSize(size.width(), 26);
 }
 
-void Vector2DProperty::onDataChanged(const QVariant &data) {
+void Vector4DProperty::onDataChanged(const QVariant &data) {
     if(data.isValid()) {
-        Vector4 v = data.value<Vector4>();
-        setValue(QVariant::fromValue(Vector2(v.x, v.y)));
+        setValue(data);
     }
 }

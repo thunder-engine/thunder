@@ -38,22 +38,26 @@ void main (void) {
 
         float ln = dot( light.direction, n );
 
-        float shadow    = 1.0;
+        float shadow = 1.0;
         if(light.shadows == 1.0) {
-            int index   = 3;
+            int index = 3;
+            float bias = light.bias.w;
             if(light.lod.x > depth) {
-                index   = 0;
+                index = 0;
+                bias = light.bias.x;
             } else if(light.lod.y > depth) {
-                index   = 1;
+                index = 1;
+                bias = light.bias.y;
             } else if(light.lod.z > depth) {
-                index   = 2;
+                index = 2;
+                bias = light.bias.z;
             }
 
             vec4 offset = light.tiles[index];
             vec4 proj   = light.matrix[index] * vec4(world, 1.0);
             vec3 coord  = proj.xyz / proj.w;
             if(coord.x > 0.0 && coord.x < 1.0 && coord.y > 0.0 && coord.y < 1.0 && coord.z > 0.0 && coord.z < 1.0) {
-                shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
+                shadow  = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - bias);
             }
         }
 

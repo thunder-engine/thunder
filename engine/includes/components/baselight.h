@@ -23,7 +23,7 @@ class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
         A_PROPERTY(bool, castShadows, BaseLight::castShadows, BaseLight::setCastShadows),
         A_PROPERTY(float, brightness, BaseLight::brightness, BaseLight::setBrightness),
         A_PROPERTYEX(Vector4, color, BaseLight::color, BaseLight::setColor, "editor=Color"),
-        A_PROPERTY(float, bias, BaseLight::bias, BaseLight::setBias)
+        A_PROPERTY(Vector4, bias, BaseLight::bias, BaseLight::setBias)
     )
     A_NOMETHODS()
 
@@ -42,8 +42,8 @@ public:
     Vector4 &color() const;
     void setColor(const Vector4 &color);
 
-    float bias() const;
-    void setBias(const float bias);
+    Vector4 &bias() const;
+    void setBias(const Vector4 &bias);
 
 protected:
     MaterialInstance *material() const;

@@ -13,20 +13,20 @@ class VectorEdit : public QWidget {
     Q_OBJECT
 
 public:
-    explicit VectorEdit (QWidget *parent = nullptr);
-    ~VectorEdit ();
+    explicit VectorEdit(QWidget *parent = nullptr);
+    ~VectorEdit();
 
-    Vector3 data () const;
+    Vector4 data() const;
 
-    void setData (const Vector3 &);
+    void setData(const Vector4 &);
 
-    void setComponents (uint8_t value);
+    void setComponents(uint8_t value);
 
 signals:
-    void dataChanged (const QVariant &);
+    void dataChanged(const QVariant &);
 
 protected slots:
-    void onValueChanged ();
+    void onValueChanged();
 
 private:
     Ui::VectorEdit *ui;

@@ -14,6 +14,7 @@
 #include "custom/ColorProperty.h"
 #include "custom/Vector2DProperty.h"
 #include "custom/Vector3DProperty.h"
+#include "custom/Vector4DProperty.h"
 #include "custom/FilePathProperty.h"
 #include "custom/ComponentProperty.h"
 #include "custom/LocaleProperty.h"
@@ -46,7 +47,6 @@ enum Axises {
     AXIS_Z = (1<<2)
 };
 
-Q_DECLARE_METATYPE(Vector4)
 Q_DECLARE_METATYPE(Alignment)
 Q_DECLARE_METATYPE(Axises)
 
@@ -396,6 +396,9 @@ Property *NextObject::createCustomProperty(const QString &name, QObject *propert
 
     if(userType == QMetaType::type("Vector3"))
         return new Vector3DProperty(name, propertyObject, parent);
+
+    if(userType == QMetaType::type("Vector4"))
+        return new Vector4DProperty(name, propertyObject, parent);
 
     if(userType == QMetaType::type("QColor"))
         return new ColorProperty(name, propertyObject, parent);

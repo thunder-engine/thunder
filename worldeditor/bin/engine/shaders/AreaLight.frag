@@ -93,7 +93,7 @@ void main (void) {
             vec4 offset = light.tiles[index];
             vec4 proj = light.matrix[index] * vec4(world, 1.0);
             vec3 coord = (proj.xyz / proj.w);
-            factor = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias);
+            factor = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias.x);
         }
 
         if(factor > 0.0) {
