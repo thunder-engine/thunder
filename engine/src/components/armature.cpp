@@ -105,7 +105,7 @@ void Armature::update() {
     int8_t *data = &array[0];
 
     for(uint32_t i = 0; i < p_ptr->m_Bones.size(); i++) {
-        if(i < p_ptr->m_InvertTransform.size()) {
+        if(i < p_ptr->m_InvertTransform.size() && p_ptr->m_Bones[i]) {
             p_ptr->m_Transform[i] = p_ptr->m_Bones[i]->worldTransform() * p_ptr->m_InvertTransform[i];
         }
         Matrix4 t = p_ptr->m_Transform[i];
@@ -130,6 +130,8 @@ void Armature::setBindPose(Pose *pose) {
         p_ptr->m_pBindPose = pose;
         p_ptr->m_BindDirty = true;
         p_ptr->m_pBindPose->subscribe(p_ptr);
+
+        update();
     }
 }
 /*!
