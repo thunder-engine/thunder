@@ -1,5 +1,7 @@
 #include "resources/materialgl.h"
 
+#include <cstring>
+
 #include "agl.h"
 #include "commandbuffergl.h"
 
@@ -8,6 +10,11 @@
 
 #include <file.h>
 #include <log.h>
+
+MaterialGL::MaterialGL() :
+    m_uniformSize(0) {
+
+}
 
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
@@ -51,6 +58,11 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             m_ShaderSources[Static] = (*it).second.toString();
         }
+    }
+
+    m_uniformSize = 0;
+    for(auto &it : m_Uniforms) {
+        m_uniformSize += it.size;
     }
 
     switchState(ToBeUpdated);
@@ -198,25 +210,11 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
         glUseProgram(result);
         uint8_t t = 0;
         for(auto &it : m_Textures) {
-            int32_t location = glGetUniformLocation(result, it.first.c_str());
+            int32_t location = glGetUniformLocation(result, it.name.c_str());
             if(location > -1) {
                 glUniform1i(location, t);
             }
             t++;
-        }
-
-        for(auto &it : m_Uniforms) {
-            int32_t location = glGetUniformLocation(result, it.first.c_str());
-            if(location > -1) {
-                switch(it.second.type()) {
-                    case MetaType::VECTOR4: {
-                        glUniform4fv(location, 1, it.second.toVector4().v);
-                    } break;
-                    default: {
-                        glUniform1f(location, it.second.toFloat());
-                    } break;
-                }
-            }
         }
     }
 
@@ -254,7 +252,10 @@ bool MaterialGL::checkShader(uint32_t shader, const string &path, bool link) {
 }
 
 MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
-    MaterialInstance *result = Material::createInstance(type);
+    MaterialInstanceGL *result = new MaterialInstanceGL(this);
+
+    initInstance(result);
+
     if(result) {
         uint16_t t = Instanced;
         switch(type) {
@@ -267,4 +268,136 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
         result->setSurfaceType(t);
     }
     return result;
+}
+
+uint32_t MaterialGL::uniformSize() const {
+    return m_uniformSize;
+}
+
+MaterialInstanceGL::MaterialInstanceGL(Material *material) :
+    MaterialInstance(material),
+    m_instanceUbo(0),
+    m_uniformBuffer(nullptr),
+    m_uniformDirty(true) {
+
+    MaterialGL *m = static_cast<MaterialGL *>(m_material);
+    uint32_t size = m->uniformSize();
+    if(size) {
+        m_uniformBuffer = new uint8_t[size];
+    }
+}
+
+MaterialInstanceGL::~MaterialInstanceGL() {
+    m_instanceUbo = 0;
+    delete []m_uniformBuffer;
+}
+
+bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
+    MaterialGL *material = static_cast<MaterialGL *>(m_material);
+    uint32_t program = material->bind(layer, surfaceType());
+    if(program) {
+        glUseProgram(program);
+
+        // Push global uniform values to shader
+        /// \todo Must be removed in future. After the Light structure will be removed from shader
+        for(const auto &it : buffer->params()) {
+            int32_t location = glGetUniformLocation(program, it.first.c_str());
+            if(location > -1) {
+                const Variant &data = it.second;
+                switch(data.type()) {
+                    case MetaType::VECTOR2: glUniform2fv      (location, 1, data.toVector2().v); break;
+                    case MetaType::VECTOR3: glUniform3fv      (location, 1, data.toVector3().v); break;
+                    case MetaType::VECTOR4: glUniform4fv      (location, 1, data.toVector4().v); break;
+                    case MetaType::MATRIX4: glUniformMatrix4fv(location, 1, GL_FALSE, data.toMatrix4().mat); break;
+                    default:                glUniform1f       (location, data.toFloat()); break;
+                }
+            }
+        }
+
+        uint32_t size = material->uniformSize();
+        if(size) {
+            if(m_instanceUbo == 0) {
+                glGenBuffers(1, &m_instanceUbo);
+                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+                glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+                glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            }
+
+            if(m_uniformDirty) {
+                glBindBuffer(GL_UNIFORM_BUFFER, m_instanceUbo);
+                glBufferSubData(GL_UNIFORM_BUFFER, 0, size, m_uniformBuffer);
+                glBindBuffer(GL_UNIFORM_BUFFER, 0);
+                m_uniformDirty = false;
+            }
+
+            glBindBufferBase(GL_UNIFORM_BUFFER, UNIFORM_BIND, m_instanceUbo);
+        }
+
+        uint8_t i = 0;
+        for(auto &it : material->textures()) {
+            Texture *tex = it.texture;
+            Texture *tmp = texture(it.name.c_str());
+
+            if(tmp) {
+                tex = tmp;
+            } else {
+                tmp = buffer->texture(it.name.c_str());
+                if(tmp) {
+                    tex = tmp;
+                }
+            }
+
+            if(tex) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                uint32_t texture = GL_TEXTURE_2D;
+                if(tex->isCubemap()) {
+                    texture = GL_TEXTURE_CUBE_MAP;
+                }
+
+                glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
+            }
+            i++;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+void MaterialInstanceGL::setInteger(const char *name, const int32_t *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setFloat(const char *name, const float *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setVector2(const char *name, const Vector2 *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setVector3(const char *name, const Vector3 *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setVector4(const char *name, const Vector4 *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setMatrix4(const char *name, const Matrix4 *value, int32_t count) {
+    setValue(name, value);
+}
+
+void MaterialInstanceGL::setValue(const char *name, const void *value) {
+    MaterialGL *material = static_cast<MaterialGL *>(m_material);
+    for(auto &it : material->m_Uniforms) {
+        if(it.name == name) {
+            if(m_uniformBuffer) {
+                memcpy(&m_uniformBuffer[it.offset], value, it.size);
+                m_uniformDirty = true;
+            }
+            break;
+        }
+    }
 }

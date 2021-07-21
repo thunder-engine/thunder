@@ -2,10 +2,10 @@
 
 #include "ShaderLayout.h"
 
-layout(location = 50) uniform sampler2D depthMap;
-layout(location = 51) uniform sampler2D normalsMap;
-layout(location = 52) uniform sampler2D paramsMap;
-layout(location = 53) uniform sampler2D emissiveMap;
+layout(binding = UNIFORM) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 3) uniform sampler2D emissiveMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -68,6 +68,7 @@ void main(void) {
     color = vec4(0.0, 0.0, 0.0, 0.0);
     if(depth < 1.0) {
         vec4 normals = texture(normalsMap, _uv0);
+
         vec4 params = texture(paramsMap, _uv0);
         float rough = params.x;
         if(normals.w == 0.0 || rough > 0.8) {
@@ -75,13 +76,13 @@ void main(void) {
         }
 
         vec3 origin = vec3(_uv0, depth);
-        vec3 world = getWorld(camera.screenToWorld, origin.xy, origin.z);
+        vec3 world = getWorld(g.cameraScreenToWorld, origin.xy, origin.z);
 		
-        vec3 v = normalize(world - camera.position.xyz);
+        vec3 v = normalize(world - g.cameraPosition.xyz);
         vec3 n = normals.xyz * 2.0 - 1.0;
         vec3 refl = reflect(v, n);
 
-        vec4 ray = camera.worldToScreen * vec4(world + refl, 1.0);
+        vec4 ray = g.cameraWorldToScreen * vec4(world + refl, 1.0);
         ray /= ray.w;
         ray.xyz = ray.xyz * 0.5 + 0.5;
         

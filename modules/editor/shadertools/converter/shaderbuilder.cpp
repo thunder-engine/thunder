@@ -13,7 +13,7 @@
 
 #include <bson.h>
 
-#define FORMAT_VERSION 4
+#define FORMAT_VERSION 5
 
 AssetConverterSettings *ShaderBuilder::createSettings() const {
     AssetConverterSettings *result = AssetConverter::createSettings();

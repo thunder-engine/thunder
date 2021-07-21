@@ -7,10 +7,11 @@
 #include "resources/meshgl.h"
 
 #define VERTEX_ATRIB    0
-#define NORMAL_ATRIB    1
-#define TANGENT_ATRIB   2
-#define COLOR_ATRIB     3
-#define UV0_ATRIB       4
+#define UV0_ATRIB       1
+#define NORMAL_ATRIB    2
+#define TANGENT_ATRIB   3
+#define COLOR_ATRIB     4
+
 #define UV1_ATRIB       5
 #define BONES_ATRIB     6
 #define WEIGHTS_ATRIB   7
@@ -24,6 +25,8 @@ public:
     CommandBufferGL();
 
     ~CommandBufferGL() override;
+
+    void begin();
 
     void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f) override;
 
@@ -41,7 +44,7 @@ public:
 
     void setGlobalValue(const char *name, const Variant &value) override;
 
-    void setGlobalTexture(const char *name, Texture *value) override;
+    void setGlobalTexture(const char *name, Texture *texture) override;
 
     void setViewport(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
@@ -49,31 +52,28 @@ public:
 
     void disableScissor() override;
 
-    Matrix4 projection() const override { return m_Projection; }
+    Matrix4 projection() const override;
 
-    Matrix4 view() const override { return m_View; }
+    Matrix4 view() const override;
 
     Texture *texture(const char *name) const override;
 
-protected:
-    void putUniforms(uint32_t program, MaterialInstance *instance);
+    void finish() override;
+
+    const VariantMap &params() const;
 
 protected:
-    Matrix4 m_View;
-
-    Matrix4 m_Projection;
-
-    Matrix4 m_Model;
-
-    Vector4 m_Color;
+    GlobalBufferObject m_global;
+    LocalBufferObject m_local;
 
     VariantMap m_Uniforms;
-
-    Material::TextureMap m_Textures;
+    Material::TextureList m_Textures;
 
     Matrix4 m_SaveView;
-
     Matrix4 m_SaveProjection;
+
+    uint32_t m_globalUbo;
+    uint32_t m_localUbo;
 };
 
 #endif // COMMANDBUFFERGL_H

@@ -89,6 +89,10 @@ Texture *CommandBuffer::texture(const char *name) const {
     return nullptr;
 }
 
+void CommandBuffer::finish() {
+
+}
+
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     A_UNUSED(x);
     A_UNUSED(y);

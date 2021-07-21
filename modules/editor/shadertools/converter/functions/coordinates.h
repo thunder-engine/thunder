@@ -89,7 +89,7 @@ public:
     int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = camera.position.xyz;\n").arg(depth);
+            value  += QString("\tvec3 local%1 = g.cameraPosition.xyz;\n").arg(depth);
         }
         return ShaderFunction::build(value, link, depth, size);
     }
@@ -105,7 +105,7 @@ public:
     int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = camera.target.xyz;\n").arg(depth);
+            value  += QString("\tvec3 local%1 = g.cameraTarget.xyz;\n").arg(depth);
         }
         return ShaderFunction::build(value, link, depth, size);
     }

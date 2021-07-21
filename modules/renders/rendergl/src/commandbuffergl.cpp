@@ -1,30 +1,56 @@
 #include "commandbuffergl.h"
 
+#include <cstring>
+
 #include "agl.h"
 
 #include "resources/materialgl.h"
 #include "resources/meshgl.h"
 #include "resources/texturegl.h"
 #include "resources/rendertargetgl.h"
+#include "resources/pipeline.h"
 
 #include <log.h>
 #include <timer.h>
 
-#define MODEL_UNIFORM   0
-#define VIEW_UNIFORM    1
-#define PROJ_UNIFORM    2
-
-#define COLOR_BIND  3
-#define CLIP_BIND   4
-#define TIMER_BIND  5
-
-CommandBufferGL::CommandBufferGL() {
+CommandBufferGL::CommandBufferGL() :
+        m_globalUbo(0),
+        m_localUbo(0) {
     PROFILE_FUNCTION();
 
 }
 
 CommandBufferGL::~CommandBufferGL() {
 
+}
+
+void CommandBufferGL::begin() {
+    PROFILE_FUNCTION();
+
+    if(m_globalUbo == 0) {
+        glGenBuffers(1, &m_globalUbo);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalBufferObject), nullptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_BIND, m_globalUbo);
+
+    m_global.time = Timer::deltaTime();
+    m_global.clip = 0.99f;
+
+    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_globalUbo);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    if(m_localUbo == 0) {
+        glGenBuffers(1, &m_localUbo);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(LocalBufferObject), nullptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_localUbo);
+    }
 }
 
 void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
@@ -43,72 +69,8 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
     glClear(flags);
 }
 
-void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) {
-    int32_t location;
-
-    glUniformMatrix4fv(VIEW_UNIFORM, 1, GL_FALSE, m_View.mat);
-    glUniformMatrix4fv(PROJ_UNIFORM, 1, GL_FALSE, m_Projection.mat);
-
-    glUniform1f   (TIMER_BIND, Timer::time());
-    glUniform1f   (CLIP_BIND,  0.99f);
-    glUniform4fv  (COLOR_BIND, 1, m_Color.v);
-
-    // Push uniform values to shader
-    for(const auto &it : m_Uniforms) {
-        location = glGetUniformLocation(program, it.first.c_str());
-        if(location > -1) {
-            const Variant &data = it.second;
-            switch(data.type()) {
-                case MetaType::VECTOR2: glUniform2fv      (location, 1, data.toVector2().v); break;
-                case MetaType::VECTOR3: glUniform3fv      (location, 1, data.toVector3().v); break;
-                case MetaType::VECTOR4: glUniform4fv      (location, 1, data.toVector4().v); break;
-                case MetaType::MATRIX4: glUniformMatrix4fv(location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                default:                glUniform1f       (location, data.toFloat()); break;
-            }
-        }
-    }
-
-    for(const auto &it : instance->params()) {
-        location = glGetUniformLocation(program, it.first.c_str());
-        if(location > -1) {
-            const MaterialInstance::Info &data = it.second;
-            switch(data.type) {
-                case MetaType::INTEGER: glUniform1iv      (location, data.count, static_cast<const int32_t *>(data.ptr)); break;
-                case MetaType::FLOAT:   glUniform1fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR2: glUniform2fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR3: glUniform3fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::VECTOR4: glUniform4fv      (location, data.count, static_cast<const float *>(data.ptr)); break;
-                case MetaType::MATRIX4: glUniformMatrix4fv(location, data.count, GL_FALSE, static_cast<const float *>(data.ptr)); break;
-                default: break;
-            }
-        }
-    }
-
-    MaterialGL *mat = static_cast<MaterialGL *>(instance->material());
-
-    uint8_t i = 0;
-    for(auto &it : mat->textures()) {
-        Texture *tex = it.second;
-        Texture *tmp = instance->texture(it.first.c_str());
-        if(tmp) {
-            tex = tmp;
-        } else {
-            tmp = texture(it.first.c_str());
-            if(tmp) {
-                tex = tmp;
-            }
-        }
-
-        if(tex) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            uint32_t texture = GL_TEXTURE_2D;
-            if(tex->isCubemap()) {
-                texture = GL_TEXTURE_CUBE_MAP;
-            }
-            glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
-        }
-        i++;
-    }
+const VariantMap &CommandBufferGL::params() const {
+    return m_Uniforms;
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
@@ -123,15 +85,14 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
             return;
         }
 
-        MaterialGL *mat = static_cast<MaterialGL *>(material->material());
-        uint32_t program = mat->bind(layer, material->surfaceType());
-        if(program) {
-            glUseProgram(program);
+        m_local.model = model;
 
-            glUniformMatrix4fv(MODEL_UNIFORM, 1, GL_FALSE, model.mat);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LocalBufferObject), &m_local);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-            putUniforms(program, material);
-
+        MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
+        if(instance->bind(this, layer)) {
             m->bindVao(this, lod);
 
             Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
@@ -169,18 +130,16 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             return;
         }
 
-        MaterialGL *mat = static_cast<MaterialGL *>(material->material());
-        uint32_t program = mat->bind(layer, material->surfaceType());
+        m_local.model.identity();
 
-        if(program) {
-            glUseProgram(program);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LocalBufferObject), &m_local);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-            glUniformMatrix4fv(MODEL_UNIFORM, 1, GL_FALSE, Matrix4().mat);
-
+        MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
+        if(instance->bind(this, layer)) {
             glBindBuffer(GL_ARRAY_BUFFER, m->instance());
             glBufferData(GL_ARRAY_BUFFER, count * sizeof(Matrix4), models, GL_DYNAMIC_DRAW);
-
-            putUniforms(program, material);
 
             m->bindVao(this, lod);
 
@@ -211,36 +170,87 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
 }
 
 Texture *CommandBufferGL::texture(const char *name) const {
-    auto it = m_Textures.find(name);
-    if(it != m_Textures.end()) {
-        return (*it).second;
+    for(auto &it : m_Textures) {
+        if(it.name == name) {
+            return it.texture;
+        }
     }
     return nullptr;
 }
 
 void CommandBufferGL::setColor(const Vector4 &color) {
-    m_Color = color;
+    m_local.color = color;
 }
 
 void CommandBufferGL::resetViewProjection() {
-    m_View = m_SaveView;
-    m_Projection = m_SaveProjection;
+    PROFILE_FUNCTION();
+
+    m_global.view = m_SaveView;
+    m_global.projection = m_SaveProjection;
+
+    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_global);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    m_SaveView = m_View;
-    m_SaveProjection= m_Projection;
+    PROFILE_FUNCTION();
 
-    m_View = view;
-    m_Projection = projection;
+    m_SaveView = m_global.view;
+    m_SaveProjection = m_global.projection;
+
+    m_global.view = view;
+    m_global.projection = projection;
+
+    glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_global);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
-    m_Uniforms[name] = value;
+    PROFILE_FUNCTION();
+
+    static unordered_map<string, pair<size_t, size_t>> offsets = {
+        {"camera.position",      make_pair(offsetof(GlobalBufferObject, cameraPosition), sizeof(GlobalBufferObject::cameraPosition))},
+        {"camera.target",        make_pair(offsetof(GlobalBufferObject, cameraTarget), sizeof(GlobalBufferObject::cameraTarget))},
+        {"camera.view",          make_pair(offsetof(GlobalBufferObject, cameraView), sizeof(GlobalBufferObject::cameraView))},
+        {"camera.projectionInv", make_pair(offsetof(GlobalBufferObject, cameraProjectionInv), sizeof(GlobalBufferObject::cameraProjectionInv))},
+        {"camera.projection",    make_pair(offsetof(GlobalBufferObject, cameraProjection), sizeof(GlobalBufferObject::cameraProjection))},
+        {"camera.screenToWorld", make_pair(offsetof(GlobalBufferObject, cameraScreenToWorld), sizeof(GlobalBufferObject::cameraScreenToWorld))},
+        {"camera.worldToScreen", make_pair(offsetof(GlobalBufferObject, cameraWorldToScreen), sizeof(GlobalBufferObject::cameraWorldToScreen))},
+        {"camera.screen",        make_pair(offsetof(GlobalBufferObject, cameraScreen), sizeof(GlobalBufferObject::cameraScreen))},
+        {"light.pageSize",       make_pair(offsetof(GlobalBufferObject, lightPageSize), sizeof(GlobalBufferObject::lightPageSize))},
+        {"light.ambient",        make_pair(offsetof(GlobalBufferObject, lightAmbient), sizeof(GlobalBufferObject::lightAmbient))},
+    };
+
+    auto it = offsets.find(name);
+    if(it != offsets.end()) {
+        void *src = value.data();
+        memcpy((uint8_t *)&m_global + it->second.first, value.data(), it->second.second);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
+        glBufferSubData(GL_UNIFORM_BUFFER, it->second.first, it->second.second, src);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    } else {
+        m_Uniforms[name] = value;
+    }
 }
 
-void CommandBufferGL::setGlobalTexture(const char *name, Texture *value) {
-    m_Textures[name] = value;
+void CommandBufferGL::setGlobalTexture(const char *name, Texture *texture) {
+    PROFILE_FUNCTION();
+
+    for(auto &it : m_Textures) {
+        if(it.name == name) {
+            it.texture = texture;
+            return;
+        }
+    }
+
+    Material::TextureItem item;
+    item.name = name;
+    item.texture = texture;
+    item.binding = -1;
+    m_Textures.push_back(item);
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -255,4 +265,16 @@ void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 
 void CommandBufferGL::disableScissor() {
     glDisable(GL_SCISSOR_TEST);
+}
+
+void CommandBufferGL::finish() {
+    glFinish();
+}
+
+Matrix4 CommandBufferGL::projection() const {
+    return m_global.projection;
+}
+
+Matrix4 CommandBufferGL::view() const {
+    return m_global.view;
 }

@@ -278,6 +278,7 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
     }
 
     Engine::addModule(plugin);
+
     return true;
 }
 

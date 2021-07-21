@@ -3,17 +3,24 @@
 #include "ShaderLayout.h"
 #include "BRDF.h"
 
-layout(location = 0) uniform mat4 t_model;
-layout(location = 1) uniform mat4 t_view;
+layout(binding = UNIFORM) uniform Uniforms {
+    mat4 matrix[6];
+    vec4 tiles[6];
+    vec4 color;
+    vec4 params; // x - brightness, y - radius/width, z - length/height, w - cutoff
+    vec4 bias;
+    vec4 position;
+    vec4 direction;
+    vec4 right;
+    vec4 up;
+    float shadows;
+} uni;
 
-layout(location = 50) uniform sampler2D normalsMap;
-layout(location = 51) uniform sampler2D diffuseMap;
-layout(location = 52) uniform sampler2D paramsMap;
-layout(location = 53) uniform sampler2D depthMap;
-layout(location = 54) uniform sampler2D shadowMap;
-
-layout(location = 55) uniform vec3 lightRight;
-layout(location = 56) uniform vec3 lightUp;
+layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 2) uniform sampler2D diffuseMap;
+layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 4) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 5) uniform sampler2D shadowMap;
 
 layout(location = 0) in vec4 _vertex;
 
@@ -81,19 +88,19 @@ void main (void) {
     // Light model LIT
     if(slice0.w > 0.33) {
         float depth = texture(depthMap, proj).x;
-        vec3 world  = getWorld(camera.screenToWorld, proj, depth);
+        vec3 world  = getWorld(g.cameraScreenToWorld, proj, depth);
 
-        vec3 dir = light.position.xyz - world;
+        vec3 dir = uni.position.xyz - world;
         float dist = length(dir);
         vec3 l = dir / dist;
         // Shadows step
         float factor = 1.0;
-        if(light.shadows == 1.0) {
+        if(uni.shadows == 1.0) {
             int index = sampleCube(-l);
-            vec4 offset = light.tiles[index];
-            vec4 proj = light.matrix[index] * vec4(world, 1.0);
+            vec4 offset = uni.tiles[index];
+            vec4 proj = uni.matrix[index] * vec4(world, 1.0);
             vec3 coord = (proj.xyz / proj.w);
-            factor = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - light.bias.x);
+            factor = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - uni.bias.x);
         }
 
         if(factor > 0.0) {
@@ -107,25 +114,25 @@ void main (void) {
             vec3 albedo = slice2.xyz;
 
             // Vectors
-            vec3 v = normalize(camera.position.xyz - world);
+            vec3 v = normalize(g.cameraPosition.xyz - world);
             vec3 n = normalize(slice0.xyz * 2.0 - 1.0);
             vec3 r = -reflect(v, n);
 
             float cosTheta = clamp(dot(l, n), -0.999, 0.999);
 
-            vec3 lightPlaneNormal = light.direction;
-            float lightWidth = light.params.y;
-            float lightHeight = light.params.z;
-            float cutoff = light.params.w;
+            vec3 lightPlaneNormal = uni.direction.xyz;
+            float lightWidth = uni.params.y;
+            float lightHeight = uni.params.z;
+            float cutoff = uni.params.w;
 
             float halfWidth = lightWidth * 0.5;
             float halfHeight = lightHeight * 0.5;
-            vec3 p0 = light.position.xyz - lightRight * halfWidth + lightUp * halfHeight;
-            vec3 p1 = light.position.xyz - lightRight * halfWidth - lightUp * halfHeight;
-            vec3 p2 = light.position.xyz + lightRight * halfWidth - lightUp * halfHeight;
-            vec3 p3 = light.position.xyz + lightRight * halfWidth + lightUp * halfHeight;
+            vec3 p0 = uni.position.xyz - uni.right.xyz * halfWidth + uni.up.xyz * halfHeight;
+            vec3 p1 = uni.position.xyz - uni.right.xyz * halfWidth - uni.up.xyz * halfHeight;
+            vec3 p2 = uni.position.xyz + uni.right.xyz * halfWidth - uni.up.xyz * halfHeight;
+            vec3 p3 = uni.position.xyz + uni.right.xyz * halfWidth + uni.up.xyz * halfHeight;
 
-            if(dot(world - light.position.xyz, lightPlaneNormal) > 0) {
+            if(dot(world - uni.position.xyz, lightPlaneNormal) > 0) {
                 float solidAngle = rectangleSolidAngle(world, p0, p1, p2, p3);
 
                 factor *= solidAngle * 0.25 * (clamp(dot(normalize(p0 - world), n), 0.0, 1.0) +
@@ -151,11 +158,9 @@ void main (void) {
 
             vec3 result = albedo * (1.0 - metal) + (mix(vec3(spec), albedo, metal) * refl);
 
-            rgb = vec4(light.color.xyz * light.params.x * result * max(factor, 0.0), 1.0);
-        } else {
-            rgb = vec4(vec3(0.0), 1.0);
+            rgb = vec4(uni.color.xyz * uni.params.x * result * max(factor, 0.0), 1.0);
+            return;
         }
-    } else {
-        rgb = vec4(vec3(0.0), 1.0);
     }
+    rgb = vec4(vec3(0.0), 1.0);
 }

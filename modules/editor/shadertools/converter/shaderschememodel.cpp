@@ -3,6 +3,7 @@
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
+#include <QMatrix4x4>
 
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -38,8 +39,9 @@ const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
 #define RAW         "Raw"
 #define VIEW        "View"
 #define TEXTURES    "Textures"
+#define UNIFORMS    "Uniforms"
 
-#define UNIFORM 50
+#define UNIFORM 4
 
 ShaderSchemeModel::ShaderSchemeModel() :
         m_BlendMode(Opaque),
@@ -137,6 +139,13 @@ ShaderSchemeModel::ShaderSchemeModel() :
 
         i++;
     }
+
+    m_rhiMap = {
+        {"RenderGL", OpenGL},
+        {"RenderVK", Vulkan},
+        {"RenderMT", Metal},
+        {"RenderD3D", DirectX},
+    };
 }
 
 ShaderSchemeModel::~ShaderSchemeModel() {
@@ -198,6 +207,7 @@ void ShaderSchemeModel::load(const QString &path) {
     setDepthWrite(m_Data.contains(DEPTHWRITE) ? m_Data[DEPTHWRITE].toBool() : true);
     setRawPath(m_Data[RAW].toString());
     loadTextures(m_Data[TEXTURES].toMap());
+    loadUniforms(m_Data[UNIFORMS].toList());
     blockSignals(false);
 
     emit schemeUpdated();
@@ -213,6 +223,7 @@ void ShaderSchemeModel::save(const QString &path) {
     m_Data[VIEW] = isViewSpace();
     m_Data[RAW] = rawPath().filePath();
     m_Data[TEXTURES] = saveTextures();
+    m_Data[UNIFORMS] = saveUniforms();
 
     AbstractSchemeModel::save(path);
 }
@@ -302,6 +313,78 @@ QVariantMap ShaderSchemeModel::saveTextures() const {
     return result;
 }
 
+void ShaderSchemeModel::loadUniforms(const QVariantList &data) {
+    m_Uniforms.clear();
+    for(auto &it : data) {
+        QVariantList value = it.toList();
+        auto field = value.begin();
+        QString name = field->toString();
+        ++field;
+        uint32_t type = field->toInt();
+        ++field;
+        size_t count = field->toInt();
+        ++field;
+        switch(type) {
+            case QMetaType::Int: {
+                m_Uniforms.push_back({name, type, count, 0});
+            } break;
+            case QMetaType::Float: {
+                m_Uniforms.push_back({name, type, count, 0.0f});
+            } break;
+            case QMetaType::QVector2D: {
+                 m_Uniforms.push_back({name, type, count, QVector2D()});
+            } break;
+            case QMetaType::QVector3D: {
+                m_Uniforms.push_back({name, type, count, QVector3D()});
+            } break;
+            case QMetaType::QVector4D: {
+                m_Uniforms.push_back({name, type, count, QColor()});
+            } break;
+            case QMetaType::QMatrix4x4: {
+                m_Uniforms.push_back({name, type, count, QMatrix4x4()});
+            } break;
+            default: break;
+        }
+    }
+}
+
+QVariantList ShaderSchemeModel::saveUniforms() const {
+    QVariantList result;
+
+    if(m_RawPath.absoluteFilePath().isEmpty()) {
+        return result;
+    }
+
+    for(auto &it : m_Uniforms) {
+        QVariantList value;
+        value.push_back(it.name);
+        switch(it.type) {
+            case QMetaType::Int: {
+                value.push_back((int)QMetaType::Int);
+            } break;
+            case QMetaType::Float: {
+                value.push_back((int)QMetaType::Float);
+            } break;
+            case QMetaType::QVector2D: {
+                value.push_back((int)QMetaType::QVector2D);
+            } break;
+            case QMetaType::QVector3D: {
+                value.push_back((int)QMetaType::QVector3D);
+            } break;
+            case QMetaType::QVector4D: {
+                value.push_back((int)QMetaType::QVector4D);
+            } break;
+            case QMetaType::QMatrix4x4: {
+                value.push_back((int)QMetaType::QMatrix4x4);
+            } break;
+            default: break;
+        }
+        value.push_back((uint32_t)it.count);
+        result.push_back(value);
+    }
+    return result;
+}
+
 bool ShaderSchemeModel::buildGraph() {
     cleanup();
 
@@ -310,36 +393,43 @@ bool ShaderSchemeModel::buildGraph() {
 
     QString layout;
     if(m_RawPath.absoluteFilePath().isEmpty()) {
-        if(!m_Uniforms.empty() || !m_Textures.empty()) {
-            layout = QString("layout(location = %1) uniform struct Uniforms {\n").arg(UNIFORM);
-        }
-        // Make uniforms
-        for(const auto &it : m_Uniforms) {
-            switch(it.second.first) {
-                case QMetaType::QVector2D: layout += "\tvec2 " + it.first + ";\n"; break;
-                case QMetaType::QVector3D: layout += "\tvec3 " + it.first + ";\n"; break;
-                case QMetaType::QVector4D: layout += "\tvec4 " + it.first + ";\n"; break;
-                default: layout += "\tfloat " + it.first + ";\n"; break;
+        uint32_t binding = UNIFORM;
+        if(!m_Uniforms.empty()) {
+            layout += QString("layout(binding = %1) uniform Uniforms {\n").arg(binding);
+
+            // Make uniforms
+            for(const auto &it : m_Uniforms) {
+                switch(it.type) {
+                    case QMetaType::Float:     layout += "\tfloat " + it.name + ";\n"; break;
+                    case QMetaType::QVector2D: layout += "\tvec2 " + it.name + ";\n"; break;
+                    case QMetaType::QVector3D: layout += "\tvec3 " + it.name + ";\n"; break;
+                    case QMetaType::QVector4D: layout += "\tvec4 " + it.name + ";\n"; break;
+                    default: break;
+                }
             }
+
+            layout.append("} uni;\n\n");
+
+            binding++;
         }
-        layout.append("\n");
 
         // Textures
         uint16_t i = 0;
         for(auto &it : m_Textures) {
             QString texture;
             if(it.second & Cube) {
-                texture += "\tsamplerCube ";
+                texture += QString("layout(binding = %1) uniform samplerCube ").arg(binding);
             } else {
-                texture += "\tsampler2D ";
+                texture += QString("layout(binding = %1) uniform sampler2D ").arg(binding);
             }
             texture += ((it.second & Target) ? it.first : QString("texture%1").arg(i)) + ";\n";
             layout.append(texture);
+
             i++;
+            binding++;
         }
-        if(!m_Uniforms.empty() || !m_Textures.empty()) {
-            layout.append("} uni;\n");
-        }
+
+        layout.append("\n");
     }
     QString fragment(layout);
     QString vertex(layout);
@@ -392,36 +482,74 @@ Variant ShaderSchemeModel::data(bool editor) const {
     properties.push_back(isDepthWrite());
     user["Properties"] = properties;
 
-    VariantMap textures;
+    VariantList textures;
     uint16_t i = 0;
+    uint32_t binding = (m_Uniforms.isEmpty()) ? UNIFORM : UNIFORM + 1;
     for(auto &it : m_Textures) {
+        VariantList data;
+
         bool target = (it.second & Target);
         QString name;
         if(m_RawPath.absoluteFilePath().isEmpty()) {
-            name = QString("uni.%1").arg((target) ? it.first : QString("texture%1").arg(i));
+            name = (target) ? it.first : QString("texture%1").arg(i);
         } else {
             name = it.first;
         }
-        textures[name.toStdString()] = ((target) ? "" : it.first.toStdString());
-        i++;
-    }
-    user["Textures"] = textures;
 
-    VariantMap uniforms;
-    for(auto &it : m_Uniforms) {
-        Variant value;
-        switch(it.second.first) {
-            case QMetaType::QVector4D: {
-                QColor c = it.second.second.value<QColor>();
-                value = Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
-            } break;
-            default: {
-                value = Variant(it.second.second.toFloat());
-            } break;
-        }
-        uniforms[string("uni.") + it.first.toStdString()] = value;
+        data.push_back(((target) ? "" : it.first.toStdString())); // path
+        data.push_back(binding); // binding
+        data.push_back(name.toStdString()); // name
+        data.push_back(it.second); // flags
+
+        textures.push_back(data);
+        ++i;
+        ++binding;
     }
-    user["Uniforms"] = uniforms;
+    user[TEXTURES] = textures;
+
+    VariantList uniforms;
+    for(auto &it : m_Uniforms) {
+        VariantList data;
+
+        uint32_t size = 0;
+        Variant value;
+        switch(it.type) {
+            case QMetaType::Int: {
+                value = Variant(it.value.toInt());
+                size = sizeof(int);
+            } break;
+            case QMetaType::Float: {
+                value = Variant(it.value.toFloat());
+                size = sizeof(float);
+            } break;
+            case QMetaType::QVector2D: {
+                QVector2D v = it.value.value<QVector2D>();
+                value = Variant(Vector2(v.x(), v.y()));
+                size = sizeof(Vector2);
+            } break;
+            case QMetaType::QVector3D: {
+                QVector3D v = it.value.value<QVector3D>();
+                value = Variant(Vector3(v.x(), v.y(), v.z()));
+                size = sizeof(Vector3);
+            } break;
+            case QMetaType::QVector4D: {
+                QColor c = it.value.value<QColor>();
+                value = Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
+                size = sizeof(Vector4);
+            } break;
+            case QMetaType::QMatrix4x4: {
+                value = Variant(Matrix4());
+                size = sizeof(Matrix4);
+            } break;
+            default: break;
+        }
+        data.push_back(value);
+        data.push_back(uint32_t(size * it.count));
+        data.push_back("uni." + it.name.toStdString());
+
+        uniforms.push_back(data);
+    }
+    user[UNIFORMS] = uniforms;
 
     string define;
     switch(m_BlendMode) {
@@ -450,6 +578,9 @@ Variant ShaderSchemeModel::data(bool editor) const {
     uint32_t version = 430;
     bool es = false;
     Rhi rhi = Rhi::OpenGL;
+    if(qEnvironmentVariableIsSet("RENDER")) {
+        rhi = m_rhiMap.value(qEnvironmentVariable("RENDER"));
+    }
     if(ProjectManager::instance()->currentPlatformName() != "desktop") {
         version = 300;
         es = true;
@@ -538,7 +669,14 @@ int ShaderSchemeModel::setTexture(const QString &path, Vector4 &sub, uint8_t fla
 }
 
 void ShaderSchemeModel::addUniform(const QString &name, uint8_t type, const QVariant &value) {
-    m_Uniforms[name] = UniformPair(type, value);
+    for(auto &it : m_Uniforms) {
+        if(it.name == name) {
+            it.type = type;
+            it.value = value;
+            return;
+        }
+    }
+    m_Uniforms.push_back({name, type, 1, value});
 }
 
 QStringList ShaderSchemeModel::buildRoot() {
@@ -609,10 +747,10 @@ QStringList ShaderSchemeModel::buildRoot() {
 }
 
 void ShaderSchemeModel::cleanup() {
-    if(m_RawPath == QFileInfo()) {
+    if(m_RawPath.absoluteFilePath().isEmpty()) {
         m_Textures.clear();
+        m_Uniforms.clear();
     }
-    m_Uniforms.clear();
     m_Pragmas.clear();
 }
 

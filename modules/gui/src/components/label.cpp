@@ -16,7 +16,7 @@
 #define FONT     "Font"
 #define MATERIAL "Material"
 
-#define OVERRIDE "uni.texture0"
+#define OVERRIDE "texture0"
 #define COLOR "uni.color0"
 
 class LabelPrivate : public Resource::IObserver {

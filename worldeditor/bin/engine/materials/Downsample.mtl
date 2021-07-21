@@ -13,5 +13,12 @@
         "rgbMap": 2
     },
     "Type": 1,
+    "Uniforms": [
+        [
+            "threshold",
+            38,
+            1
+        ]
+    ],
     "View": true
 }

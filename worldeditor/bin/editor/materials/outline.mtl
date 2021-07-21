@@ -14,5 +14,17 @@
         "rgbMap": 2
     },
     "Type": 1,
+    "Uniforms": [
+        [
+            "color",
+            84,
+            1
+        ],
+        [
+            "width",
+            38,
+            1
+        ]
+    ],
     "View": true
 }

@@ -19,6 +19,13 @@
 
 #define SPLIT_WEIGHT 0.95f // 0.75f
 
+namespace {
+const char *uni_lod       = "uni.lod";
+const char *uni_direction = "uni.direction";
+const char *uni_matrix    = "uni.matrix";
+const char *uni_tiles     = "uni.tiles";
+};
+
 class DirectLightPrivate {
 public:
     Matrix4 m_matrix[MAX_LODS];
@@ -46,12 +53,6 @@ DirectLight::DirectLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector4("light.lod",       &p_ptr->m_normalizedDistance);
-        instance->setVector3("light.direction", &p_ptr->m_direction);
-
-        instance->setMatrix4("light.matrix", p_ptr->m_matrix, MAX_LODS);
-        instance->setVector4("light.tiles",  p_ptr->m_tiles,  MAX_LODS);
-
         setMaterial(instance);
     }
 }
@@ -67,9 +68,11 @@ void DirectLight::draw(CommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
     if(mesh && instance && (layer & CommandBuffer::LIGHT)) {
-        Quaternion q = actor()->transform()->worldRotation();
+        Transform *transform = actor()->transform();
+        Quaternion q = transform->worldQuaternion();
 
         p_ptr->m_direction = q * Vector3(0.0f, 0.0f, 1.0f);
+        instance->setVector3(uni_direction, &p_ptr->m_direction);
 
         buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
@@ -107,6 +110,10 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
             distance[i] = val;
             Vector4 depth = p * Vector4(0.0f, 0.0f, -val * 2.0f - 1.0f, 1.0f);
             p_ptr->m_normalizedDistance[i] = depth.z / depth.w;
+        }
+        auto m = material();
+        if(m) {
+            m->setVector4(uni_lod, &p_ptr->m_normalizedDistance);
         }
     }
 
@@ -183,6 +190,12 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
                                        static_cast<float>(y[lod]) / pageHeight,
                                        static_cast<float>(w[lod]) / pageWidth,
                                        static_cast<float>(h[lod]) / pageHeight);
+
+        auto instance = material();
+        if(instance) {
+            instance->setMatrix4(uni_matrix, p_ptr->m_matrix, MAX_LODS);
+            instance->setVector4(uni_tiles,  p_ptr->m_tiles,  MAX_LODS);
+        }
 
         buffer->setRenderTarget(p_ptr->m_shadowMap);
         buffer->enableScissor(x[lod], y[lod], w[lod], h[lod]);

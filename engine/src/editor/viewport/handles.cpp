@@ -13,7 +13,7 @@
 
 #define CONTROL_SIZE 90.0f
 
-#define OVERRIDE "uni.texture0"
+#define OVERRIDE "texture0"
 
 Vector4 Handles::s_Normal = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 Vector4 Handles::s_Grey = Vector4(0.3f, 0.3f, 0.3f, 0.6f);
@@ -423,7 +423,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
             result = true;
         }
 
-        s_Sprite->setTexture(OVERRIDE,  texture);
+        s_Sprite->setTexture(OVERRIDE, texture);
         if(s_Buffer) {
             s_Buffer->setColor(s_Color);
             s_Buffer->drawMesh(q, s_Quad, 0, CommandBuffer::TRANSLUCENT, s_Sprite);

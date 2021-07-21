@@ -27,7 +27,7 @@ Bloom::Bloom() :
     Material *material = Engine::loadResource<Material>(".embedded/Downsample.mtl");
     if(material) {
         m_material = material->createInstance();
-        m_material->setFloat("threshold", &m_threshold);
+        m_material->setFloat("uni.threshold", &m_threshold);
     }
 
     for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
@@ -61,6 +61,7 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
 
             m_resultTarget->setColorAttachment(0, m_bloomPasses[i].m_downTexture);
             buffer->setRenderTarget(m_resultTarget);
+
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
         }
         buffer->setViewport(0, 0, source->width(), source->height());
@@ -102,6 +103,7 @@ void Bloom::resize(int32_t width, int32_t height) {
 
 void Bloom::setSettings(const PostProcessSettings &settings) {
     m_threshold = settings.readValue(BLOOM_THRESHOLD).toFloat();
+    m_material->setFloat("uni.threshold", &m_threshold);
 }
 
 const char *Bloom::name() const {
