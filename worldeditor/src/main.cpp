@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName(EDITOR_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
+    qputenv("RENDER", "RenderVK");
+
     QPixmap pixmap(":/splash.png");
     QSplashScreen splash(pixmap);
     splash.show();

@@ -128,7 +128,7 @@ Matrix4 Camera::viewMatrix() const {
 Matrix4 Camera::projectionMatrix() const {
     if(p_ptr->m_Ortho) {
         float width = p_ptr->m_OrthoSize * p_ptr->m_Ratio;
-        return Matrix4::ortho(-width / 2, width / 2, -p_ptr->m_OrthoSize / 2, p_ptr->m_OrthoSize / 2, p_ptr->m_Near, p_ptr->m_Far);
+        return Matrix4::ortho(-width / 2, width / 2, -p_ptr->m_OrthoSize / 2, p_ptr->m_OrthoSize / 2, -p_ptr->m_Far, p_ptr->m_Far);
     }
     return Matrix4::perspective(p_ptr->m_FOV, p_ptr->m_Ratio, p_ptr->m_Near, p_ptr->m_Far);
 }
