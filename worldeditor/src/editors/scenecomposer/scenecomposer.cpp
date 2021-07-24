@@ -75,10 +75,19 @@ const QString gRecent("Recent");
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::SceneComposer),
-        m_pProperties(nullptr),
+        m_Engine(nullptr),
+        m_Toolbars(nullptr),
+        m_Properties(nullptr),
         m_CurrentWorkspace(":/Workspaces/Default.ws"),
-        m_pQueue(new ImportQueue(engine)),
-        m_pMainDocument(nullptr) {
+        m_Builder(nullptr),
+        m_Queue(new ImportQueue(engine)),
+        m_ProjectModel(nullptr),
+        m_FeedManager(nullptr),
+        m_DocumentModel(nullptr),
+        m_Undo(nullptr),
+        m_Redo(nullptr),
+        m_MainDocument(nullptr),
+        m_CurrentDocument(nullptr) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -90,19 +99,19 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pBuilder  = new QProcess(this);
-    connect(m_pBuilder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
-    connect(m_pBuilder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
-    connect(m_pBuilder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onFinished(int,QProcess::ExitStatus)));
+    m_Builder = new QProcess(this);
+    connect(m_Builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
+    connect(m_Builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
+    connect(m_Builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onFinished(int,QProcess::ExitStatus)));
 
-    m_pEngine   = engine;
+    m_Engine = engine;
 
     QLog *handler = static_cast<QLog *>(Log::handler());
     connect(handler, SIGNAL(postRecord(uint8_t, const QString &)), ui->consoleOutput, SLOT(onLogRecord(uint8_t, const QString &)));
 
-    connect(m_pQueue, &ImportQueue::rendered, ContentList::instance(), &ContentList::onRendered);
-    connect(m_pQueue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
-    connect(m_pQueue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
+    connect(m_Queue, &ImportQueue::rendered, ContentList::instance(), &ContentList::onRendered);
+    connect(m_Queue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
+    connect(m_Queue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
 
     ui->viewportWidget->setWindowTitle(tr("Viewport"));
     ui->propertyWidget->setWindowTitle(tr("Properties"));
@@ -111,7 +120,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->timeline->setWindowTitle(tr("Timeline"));
     ui->classMapView->setWindowTitle(tr("Class View"));
 
-    cmToolbars      = new QMenu(this);
+    m_Toolbars = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
 
     ctl->resetModified();
@@ -120,15 +129,15 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ctl->createMenu(ui->renderMode->menu());
 
     ui->viewport->setController(ctl);
-    ui->viewport->setScene(m_pEngine->scene());
+    ui->viewport->setScene(m_Engine->scene());
 
-    ui->preview->setEngine(m_pEngine);
-    ui->preview->setScene(m_pEngine->scene());
+    ui->preview->setEngine(m_Engine);
+    ui->preview->setScene(m_Engine->scene());
     ui->preview->setWindowTitle("Preview");
 
     ui->hierarchy->setController(ctl);
 
-    m_pMainDocument = ui->viewport;
+    m_MainDocument = ui->viewport;
 
     Input::init(ui->preview);
 
@@ -165,11 +174,11 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &SceneComposer::onBuildProject);
 
-    m_pProjectModel = new ProjectModel();
-    m_pFeedManager = new FeedManager();
+    m_ProjectModel = new ProjectModel();
+    m_FeedManager = new FeedManager();
 
-    ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_pProjectModel);
-    ui->quickWidget->rootContext()->setContextProperty("feedManager", m_pFeedManager);
+    ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_ProjectModel);
+    ui->quickWidget->rootContext()->setContextProperty("feedManager", m_FeedManager);
     ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Startup.qml"));
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(openProject(QString)), this, SLOT(onOpenProject(QString)));
@@ -260,9 +269,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 }
 
 SceneComposer::~SceneComposer() {
-    delete m_pProperties;
+    delete m_Properties;
 
-    delete cmToolbars;
+    delete m_Toolbars;
 
     delete ui;
 }
@@ -278,25 +287,25 @@ void SceneComposer::resizeEvent(QResizeEvent *event) {
 }
 
 void SceneComposer::onObjectSelected(Object::ObjectList objects) {
-    if(m_pProperties) {
-        delete m_pProperties;
-        m_pProperties = nullptr;
-        ui->propertyView->setObject(m_pProperties);
+    if(m_Properties) {
+        delete m_Properties;
+        m_Properties = nullptr;
+        ui->propertyView->setObject(m_Properties);
     }
     if(!objects.empty()) {
         ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
 
-        m_pProperties = new NextObject(*objects.begin(), this);
-        connect(ctl, SIGNAL(objectsUpdated()), m_pProperties, SLOT(onUpdated()));
+        m_Properties = new NextObject(*objects.begin(), this);
+        connect(ctl, SIGNAL(objectsUpdated()), m_Properties, SLOT(onUpdated()));
         connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
 
-        connect(m_pProperties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
-        connect(m_pProperties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
-        connect(m_pProperties, SIGNAL(aboutToBeChanged(Object *, QString, Variant)), ctl, SLOT(onPropertyChanged(Object *, QString, Variant)), Qt::DirectConnection);
-        connect(m_pProperties, SIGNAL(changed(Object *, QString)), ctl, SLOT(onUpdated()));
-        connect(m_pProperties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
+        connect(m_Properties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
+        connect(m_Properties, SIGNAL(updated()), ui->propertyView, SLOT(onUpdated()));
+        connect(m_Properties, SIGNAL(aboutToBeChanged(Object *, QString, Variant)), ctl, SLOT(onPropertyChanged(Object *, QString, Variant)), Qt::DirectConnection);
+        connect(m_Properties, SIGNAL(changed(Object *, QString)), ctl, SLOT(onUpdated()));
+        connect(m_Properties, SIGNAL(changed(Object *, QString)), ui->timeline, SLOT(onUpdated(Object *, QString)));
 
-        connect(ui->timeline, SIGNAL(moved()), m_pProperties, SLOT(onUpdated()));
+        connect(ui->timeline, SIGNAL(moved()), m_Properties, SLOT(onUpdated()));
     }
 
     IConverterSettings *s = dynamic_cast<IConverterSettings *>(ui->propertyView->object());
@@ -309,7 +318,7 @@ void SceneComposer::onObjectSelected(Object::ObjectList objects) {
     ui->commitButton->setVisible(false);
     ui->revertButton->setVisible(false);
 
-    ui->propertyView->setObject(m_pProperties);
+    ui->propertyView->setObject(m_Properties);
 }
 
 void SceneComposer::onRepickSelected() {
@@ -347,12 +356,15 @@ void SceneComposer::onItemSelected(QObject *item) {
 }
 
 void SceneComposer::onOpenEditor(const QString &path) {
-    QWidget *editor = dynamic_cast<QWidget *>(m_pDocumentModel->openFile(path));
+    if(m_DocumentModel == nullptr) {
+        return;
+    }
+    QWidget *editor = dynamic_cast<QWidget *>(m_DocumentModel->openFile(path));
     if(editor) {
         connect(editor, SIGNAL(templateUpdate()), ui->contentBrowser, SLOT(assetUpdated()));
 
         if(dynamic_cast<QMainWindow *>(editor) == nullptr) {
-            QWidget *neighbor = m_pMainDocument;
+            QWidget *neighbor = m_MainDocument;
             for(auto &it : findChildren<QWidget *>()) {
                 if(it->inherits(editor->metaObject()->className())) {
                     neighbor = it;
@@ -490,7 +502,7 @@ void SceneComposer::on_actionNew_triggered() {
 
     ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
     ctrl->clear();
-    ctrl->setMap(Engine::objectCreate<Actor>("Chunk", m_pEngine->scene()));
+    ctrl->setMap(Engine::objectCreate<Actor>("Chunk", m_Engine->scene()));
     ui->hierarchy->setRootObject(ctrl->map());
 
     UndoManager::instance()->clear();
@@ -542,8 +554,8 @@ void SceneComposer::onOpen(const QString &arg) {
 }
 
 void SceneComposer::on_actionSave_triggered() {
-    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
-        m_pDocumentModel->saveFile(dynamic_cast<IAssetEditor *>(m_pCurrentDocument));
+    if(m_CurrentDocument && m_CurrentDocument != m_MainDocument) {
+        m_DocumentModel->saveFile(dynamic_cast<IAssetEditor *>(m_CurrentDocument));
     } else {
         ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
         Object *map = ctrl->map();
@@ -570,8 +582,8 @@ void SceneComposer::on_actionSave_triggered() {
 }
 
 void SceneComposer::on_actionSave_As_triggered() {
-    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
-        m_pDocumentModel->saveFileAs(dynamic_cast<IAssetEditor *>(m_pCurrentDocument));
+    if(m_CurrentDocument && m_CurrentDocument != m_MainDocument) {
+        m_DocumentModel->saveFileAs(dynamic_cast<IAssetEditor *>(m_CurrentDocument));
     } else {
         QString dir = ProjectManager::instance()->contentPath();
         m_Path = QFileDialog::getSaveFileName(this,
@@ -634,14 +646,14 @@ void SceneComposer::on_actionTake_Screenshot_triggered() {
 }
 
 void SceneComposer::onOpenProject(const QString &path) {
-    connect(m_pQueue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
+    connect(m_Queue, &ImportQueue::finished, this, &SceneComposer::onImportFinished, Qt::QueuedConnection);
 
     ui->quickWidget->stackUnder(ui->toolWidget);
     resetWorkspace();
 
-    m_pProjectModel->addProject(path);
+    m_ProjectModel->addProject(path);
     ProjectManager::instance()->init(path);
-    m_pEngine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
+    m_Engine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
     AssetManager::instance()->rescan(!Engine::reloadBundle());
     PluginManager::instance()->rescan();
@@ -680,8 +692,8 @@ void SceneComposer::onImportProject() {
 }
 
 void SceneComposer::onImportFinished() {
-    m_pDocumentModel = new DocumentModel;
-    connect(m_pDocumentModel, &DocumentModel::itemSelected, this, &SceneComposer::onItemSelected);
+    m_DocumentModel = new DocumentModel;
+    connect(m_DocumentModel, &DocumentModel::itemSelected, this, &SceneComposer::onItemSelected);
 
     CameraCtrl *ctrl = ui->viewport->controller();
     ctrl->init(ui->viewport->scene());
@@ -712,7 +724,7 @@ void SceneComposer::onImportFinished() {
             }
         }
     }
-    disconnect(m_pQueue, nullptr, this, nullptr);
+    disconnect(m_Queue, nullptr, this, nullptr);
 
     ui->preferencesWidget->setModel(SettingsManager::instance());
     ui->projectWidget->setModel(ProjectManager::instance());
@@ -849,9 +861,9 @@ void SceneComposer::onBuildProject() {
 
             qDebug() << args.join(" ");
 
-            m_pBuilder->start("Builder", args);
-            if(!m_pBuilder->waitForStarted()) {
-                Log(Log::ERR) << qPrintable(m_pBuilder->errorString());
+            m_Builder->start("Builder", args);
+            if(!m_Builder->waitForStarted()) {
+                Log(Log::ERR) << qPrintable(m_Builder->errorString());
             }
         }
     }
@@ -926,16 +938,16 @@ void SceneComposer::findWorkspaces(const QString &dir) {
 void SceneComposer::onCurrentToolWindowChanged(QWidget *toolWindow) {
     IAssetEditor *editor = dynamic_cast<IAssetEditor *>(toolWindow);
     if(editor) {
-        m_pCurrentDocument = toolWindow;
+        m_CurrentDocument = toolWindow;
     } else if(ui->viewportWidget == toolWindow) {
-        m_pCurrentDocument = m_pMainDocument;
+        m_CurrentDocument = m_MainDocument;
     }
 }
 
 void SceneComposer::on_menuFile_aboutToShow() {
     QString name;
-    if(m_pCurrentDocument && m_pCurrentDocument != m_pMainDocument) {
-        name = QString(" \"%1\"").arg(m_pDocumentModel->fileName(dynamic_cast<IAssetEditor *>(m_pCurrentDocument)));
+    if(m_CurrentDocument && m_CurrentDocument != m_MainDocument) {
+        name = QString(" \"%1\"").arg(m_DocumentModel->fileName(dynamic_cast<IAssetEditor *>(m_CurrentDocument)));
     }
     ui->actionSave->setText(tr("Save%1").arg(name));
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));

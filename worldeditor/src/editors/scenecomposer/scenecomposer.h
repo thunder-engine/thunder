@@ -60,31 +60,31 @@ private:
 
     Ui::SceneComposer *ui;
 
-    Engine *m_pEngine;
+    Engine *m_Engine;
 
-    QMenu *cmToolbars;
+    QMenu *m_Toolbars;
 
-    QObject *m_pProperties;
+    QObject *m_Properties;
 
     QString m_Path;
 
     QString m_CurrentWorkspace;
 
-    QProcess *m_pBuilder;
+    QProcess *m_Builder;
 
-    ImportQueue *m_pQueue;
+    ImportQueue *m_Queue;
 
     ByteArray m_Back;
 
-    ProjectModel *m_pProjectModel;
-    FeedManager *m_pFeedManager;
-    DocumentModel *m_pDocumentModel;
+    ProjectModel *m_ProjectModel;
+    FeedManager *m_FeedManager;
+    DocumentModel *m_DocumentModel;
 
     QAction *m_Undo;
     QAction *m_Redo;
 
-    QWidget *m_pMainDocument;
-    QWidget *m_pCurrentDocument;
+    QWidget *m_MainDocument;
+    QWidget *m_CurrentDocument;
 
 private slots:
     void onSettingsUpdated();
