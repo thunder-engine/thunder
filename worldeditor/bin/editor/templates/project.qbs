@@ -126,7 +126,7 @@ Project {
         }
         Properties {
             condition: qbs.targetOS[0] === "android"
-            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.appStl: "c++_shared"
             Android.ndk.platform: "android-21"
             Android.sdk.packageName: "com.${Company_Name}.${Project_Name}"
             Android.sdk.manifestFile: "${manifestFile}"

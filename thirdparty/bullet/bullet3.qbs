@@ -39,9 +39,14 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
 
+		Properties {
+            condition: qbs.targetOS.contains("darwin")
+			cpp.commonCompilerFlags: "-Wno-argument-outside-range"
+        }
+
         Properties {
             condition: qbs.targetOS.contains("android")
-            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.appStl: bullet3.ANDROID_STL
             Android.ndk.platform: bullet3.ANDROID
         }
 
