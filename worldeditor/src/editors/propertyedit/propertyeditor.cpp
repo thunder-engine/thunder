@@ -110,9 +110,9 @@ public:
 
     virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
         const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(model);
-        QModelIndex origin  = filter->mapToSource(index);
+        QModelIndex origin = filter->mapToSource(index);
         QVariant data = static_cast<Property *>(origin.internalPointer())->editorData(editor);
-        if (data.isValid()) {
+        if(data.isValid()) {
             filter->sourceModel()->setData(origin, data, Qt::EditRole);
         } else {
             QStyledItemDelegate::setModelData(editor, model, index);
@@ -173,16 +173,16 @@ PropertyEditor::~PropertyEditor() {
 
 void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QObject *parent) {
     if(propertyObject) {
-        QAbstractItemModel *m   = m_pFilter->sourceModel();
+        QAbstractItemModel *m = m_pFilter->sourceModel();
         static_cast<PropertyModel *>(m)->addItem(propertyObject, name, parent);
         ui->treeView->expandToDepth(-1);
 
-        int i   = 0;
-        QModelIndex it  = m->index(i, 1);
+        int i = 0;
+        QModelIndex it = m->index(i, 1);
         while(it.isValid()) {
             updatePersistent(it);
             i++;
-            it  = m->index(i, 1);
+            it = m->index(i, 1);
         }
     }
 }
@@ -244,20 +244,20 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
         updatePersistent(it);
 
         i++;
-        it  = index.child(i, 1);
+        it = index.child(i, 1);
     }
 }
 
 void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
     m_pFilter->setFilterFixedString(arg1);
 
-    QAbstractItemModel *m   = m_pFilter->sourceModel();
-    int i   = 0;
-    QModelIndex it  = m->index(i, 1);
+    QAbstractItemModel *m = m_pFilter->sourceModel();
+    int i = 0;
+    QModelIndex it = m->index(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it  = m->index(i, 1);
+        it = m->index(i, 1);
     }
     ui->treeView->expandToDepth(-1);
 }
@@ -265,18 +265,18 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
     if(m_Animated) {
         QMenu menu;
-        QAction *action     = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
-        QModelIndex origin  = m_pFilter->mapToSource(ui->treeView->indexAt(pos));
+        QAction *action = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
+        QModelIndex origin = m_pFilter->mapToSource(ui->treeView->indexAt(pos));
         if(origin.isValid()) {
-            PropertyModel *model    = static_cast<PropertyModel *>(m_pFilter->sourceModel());
-            QModelIndex index   = model->index(origin.row(), 1, origin.parent());
-            Property *item  = static_cast<Property *>(index.internalPointer());
-            QVariant data   = item->value(Qt::DisplayRole);
-            int32_t type    = data.userType();
+            PropertyModel *model = static_cast<PropertyModel *>(m_pFilter->sourceModel());
+            QModelIndex index = model->index(origin.row(), 1, origin.parent());
+            Property *item = static_cast<Property *>(index.internalPointer());
+            QVariant data = item->value(Qt::DisplayRole);
+            int32_t type = data.userType();
             action->setEnabled((type == QMetaType::Bool || type == QMetaType::Int || type == QMetaType::Float ||
                                 type == QMetaType::type("Vector3") || type == QMetaType::type("QColor")));
 
-            NextObject *property   = dynamic_cast<NextObject *>(item->propertyObject());
+            NextObject *property = dynamic_cast<NextObject *>(item->propertyObject());
             if(property) {
                 action->setProperty("object", QVariant::fromValue(property));
                 action->setProperty("property", item->objectName());

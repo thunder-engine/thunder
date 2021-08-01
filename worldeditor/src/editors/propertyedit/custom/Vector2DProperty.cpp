@@ -22,7 +22,7 @@ QVariant Vector2DProperty::value(int role) const {
 }
 
 QWidget *Vector2DProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
-    VectorEdit *e  = new VectorEdit(parent);
+    VectorEdit *e = new VectorEdit(parent);
     e->setComponents(2);
     m_Editor = e;
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
@@ -34,7 +34,7 @@ QWidget *Vector2DProperty::createEditor(QWidget *parent, const QStyleOptionViewI
 }
 
 bool Vector2DProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    VectorEdit *e  = static_cast<VectorEdit *>(editor);
+    VectorEdit *e = static_cast<VectorEdit *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(Vector4(data.value<Vector2>(), 0.0, 0.0));
@@ -45,7 +45,7 @@ bool Vector2DProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant Vector2DProperty::editorData(QWidget *editor) {
-    VectorEdit *e  = static_cast<VectorEdit *>(editor);
+    VectorEdit *e = static_cast<VectorEdit *>(editor);
     if(e) {
         Vector4 v = e->data();
         return QVariant::fromValue(Vector2(v.x, v.y));
