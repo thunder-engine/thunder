@@ -19,6 +19,7 @@ Project {
         }
         return qbs.targetOS[0] + "/" + arch;
     }
+    property string ANDROID_STL: "c++_shared"
 
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
     property string bundle: {
@@ -45,7 +46,7 @@ Project {
                 console.error(p.readStdErr())
             }
             LEGAL = new TextFile(thunder.sourceDirectory + "/legal").readAll()
-            SDK_VERSION = new TextFile(thunder.sourceDirectory + "/version").readAll()
+            SDK_VERSION = new TextFile(thunder.sourceDirectory + "/version.cfg").readAll()
         }
     }
 

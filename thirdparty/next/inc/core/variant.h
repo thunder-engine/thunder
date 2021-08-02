@@ -39,15 +39,6 @@ typedef map<string, Variant>    VariantMap;
 typedef list<Variant>           VariantList;
 typedef vector<int8_t>          ByteArray;
 
-#ifdef __ANDROID__
-#include <sstream>
-string to_string(auto v) {
-    ostringstream ss;
-    ss << v;
-    return ss.str();
-}
-#endif
-
 class NEXT_LIBRARY_EXPORT Variant {
 public:
     class NEXT_LIBRARY_EXPORT SharedPrivate {

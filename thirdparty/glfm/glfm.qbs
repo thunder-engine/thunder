@@ -37,7 +37,7 @@ Project {
             ])
 
             cpp.includePaths: outer.concat([nativePath])
-            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.appStl: glfm.ANDROID_STL
             Android.ndk.platform: glfm.ANDROID
         }
 

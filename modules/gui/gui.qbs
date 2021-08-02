@@ -79,7 +79,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.appStl: gui.ANDROID_STL
             Android.ndk.platform: gui.ANDROID
         }
 
