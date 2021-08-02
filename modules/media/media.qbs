@@ -54,7 +54,12 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.libraryPaths: ["../../thirdparty/openal/windows/" + ((qbs.architecture === "x86_64") ? "x64" : "x32")]
-            cpp.dynamicLibraries: [ "OpenAL32" ]
+            cpp.dynamicLibraries: ["OpenAL32"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.dynamicLibraries: ["openal"]
         }
 
         Properties {
