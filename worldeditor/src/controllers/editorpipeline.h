@@ -38,6 +38,8 @@ protected:
 
     void drawUi(Camera &camera) override;
 
+    bool isInHierarchy(Actor *origin, Actor *actor);
+
     Texture *m_pTarget;
 
     Vector4 m_PrimaryGridColor;

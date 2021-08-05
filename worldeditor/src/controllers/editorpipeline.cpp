@@ -246,7 +246,7 @@ void EditorPipeline::draw(Camera &camera) {
     for(auto actor : m_pController->selected()) {
         for(auto it : m_Filter) {
             Renderable *component = dynamic_cast<Renderable *>(it);
-            if(component && component->actor() == actor) {
+            if(component && isInHierarchy(component->actor(), static_cast<Actor *>(actor))) {
                 filter.push_back(component);
             }
         }
@@ -274,6 +274,18 @@ void EditorPipeline::draw(Camera &camera) {
 void EditorPipeline::drawUi(Camera &camera) {
     cameraReset(camera);
     drawComponents(ICommandBuffer::UI | ICommandBuffer::TRANSLUCENT, m_UiComponents);
+}
+
+bool EditorPipeline::isInHierarchy(Actor *origin, Actor *actor) {
+    if(origin == actor) {
+        return true;
+    }
+    Actor *parent = static_cast<Actor *>(origin->parent());
+    if(parent) {
+        return isInHierarchy(parent, actor);
+    }
+
+    return false;
 }
 
 void EditorPipeline::resize(int32_t width, int32_t height) {
