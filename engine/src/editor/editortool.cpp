@@ -92,6 +92,12 @@ AABBox EditorTool::objectBound() {
                 } else {
                     result.encapsulate(it.renderable->bound());
                 }
+            } else {
+                if(first) {
+                    result.center = it.object->transform()->worldPosition();
+                } else {
+                    result.encapsulate(it.object->transform()->worldPosition());
+                }
             }
         }
     }
