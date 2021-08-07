@@ -52,6 +52,8 @@ public:
     bool isModified() const { return m_Modified; }
     void resetModified() { m_Modified = false; }
 
+    void resetSelection();
+
     QList<EditorTool *> tools() const { return m_Tools; }
 
 public slots:

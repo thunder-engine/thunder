@@ -557,6 +557,12 @@ Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     return Engine::findObject(id, parent);
 }
 
+void ObjectCtrl::resetSelection() {
+    for(auto &it : m_Selected) {
+        it.renderable = nullptr;
+    }
+}
+
 void ObjectCtrl::resize(int32_t width, int32_t height) {
     m_Screen = Vector2(width, height);
 }
@@ -791,6 +797,8 @@ void RemoveComponent::redo() {
 
         QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
         m_index = children.indexOf(object);
+
+        m_pController->resetSelection();
 
         delete object;
     }
