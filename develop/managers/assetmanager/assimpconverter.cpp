@@ -252,7 +252,7 @@ uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
             file.close();
         }
 
-        for(auto it : fbxSettings->m_Resources) {
+        for(auto &it : fbxSettings->m_Resources) {
             Engine::unloadResource(it.toStdString());
         }
         Log(Log::INF) << "Mesh imported in:" << time.elapsed() << "msec";
@@ -305,36 +305,33 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         actor->transform()->setScale(Vector3(scale.x, scale.y, scale.z));
 
         QString uuid = actor->name().c_str();
-        if(element->mNumMeshes) {
-            uint32_t index = element->mMeshes[element->mNumMeshes - 1];
-            const aiMesh *mesh = scene->mMeshes[index];
 
-            Mesh *result = AssimpConverter::importMesh(mesh, actor, fbxSettings);
-            if(result) {
-                uuid = AssimpConverter::saveData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>(), fbxSettings);
+        Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
+        if(result) {
+            uuid = AssimpConverter::saveData(Bson::save(Engine::toVariant(result)), actor->name().c_str(), MetaType::type<Mesh *>(), fbxSettings);
 
-                Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
-                if(resource == nullptr) {
-                    Engine::setResource(result, uuid.toStdString());
-                    fbxSettings->m_Resources.push_back(uuid);
-                    resource = result;
-                }
+            Mesh *resource = Engine::loadResource<Mesh>(qPrintable(uuid));
+            if(resource == nullptr) {
+                Engine::setResource(result, uuid.toStdString());
+                fbxSettings->m_Resources.push_back(uuid);
+                resource = result;
+            }
 
-                if(mesh->HasBones()) {
-                    SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
-                    Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
+            if(result->flags() & Mesh::Skinned) {
+                SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
+                Engine::replaceUUID(render, qHash(uuid + ".SkinnedMeshRender"));
 
-                    render->setMesh(resource);
-                    fbxSettings->m_Renders.push_back(render);
-                } else {
-                    MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
-                    Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
+                render->setMesh(resource);
+                fbxSettings->m_Renders.push_back(render);
+            } else {
+                MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
+                Engine::replaceUUID(render, qHash(uuid + ".MeshRender"));
 
-                    render->setMesh(resource);
-                    fbxSettings->m_Renders.push_back(render);
-                }
+                render->setMesh(resource);
+                fbxSettings->m_Renders.push_back(render);
             }
         }
+
         Engine::replaceUUID(actor, qHash(uuid));
         Engine::replaceUUID(actor->transform(), qHash(uuid + ".Transform"));
 
@@ -353,128 +350,159 @@ Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element
     return importObjectHelper(scene, element, m, parent, fbxSettings);
 }
 
-Mesh *AssimpConverter::importMesh(const aiMesh *item, Actor *parent, AssimpImportSettings *fbxSettings) {
-    Mesh *mesh = new Mesh;
-    mesh->setMode(Mesh::Triangles);
+Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings) {
+    if(element->mNumMeshes) {
+        Mesh *mesh = new Mesh;
+        mesh->setTopology(Mesh::Triangles);
 
-    Lod l;
-    l.setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
-    // Export
-    uint32_t vertexCount = item->mNumVertices;
-    l.vertices().resize(vertexCount);
+        Lod l;
+        l.setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
 
-    Vector3 m;
-    if(item->HasBones()) {
-        Transform *t = parent->transform();
-        Matrix4 rot;
-        rot.rotate(t->worldRotation());
+        size_t total_v = 0;
+        size_t total_i = 0;
 
-        Vector3 s = t->worldScale();
-        Vector3 p = t->worldPosition();
+        size_t count_v = 0;
+        size_t count_i = 0;
 
-        m = rot.inverse() * Vector3(p.x / s.x, p.y / s.y, p.z / s.z);
-    }
-
-    for(uint32_t v = 0; v < vertexCount; v++) {
-        Vector3 pos = Vector3(item->mVertices[v].x, item->mVertices[v].y, item->mVertices[v].z) * fbxSettings->customScale();
-        if(fbxSettings->m_Flip) {
-            pos = Vector3(-pos.x, pos.z, pos.y);
+        for(uint32_t index = 0; index < element->mNumMeshes; index++) {
+            const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
+            count_v += item->mNumVertices;
+            count_i += static_cast<uint32_t>(item->mNumFaces * 3);
         }
-        l.vertices()[v] = m + pos;
-    }
 
-    if(item->HasVertexColors(0)) {
-        mesh->setFlags(mesh->flags() | Mesh::Color);
+        IndexVector &indices = l.indices();
+        indices.resize(count_i);
+
+        Vector3Vector &vertices = l.vertices();
+        vertices.resize(count_v);
+
         Vector4Vector &colors = l.colors();
-        colors.resize(vertexCount);
-        memcpy(&colors[0], item->mColors[0], sizeof(Vector4) * vertexCount);
-    }
+        colors.resize(count_v);
 
-    if(item->HasTextureCoords(0)) {
-        mesh->setFlags(mesh->flags() | Mesh::Uv0);
-        l.uv0().resize(vertexCount);
         Vector2Vector &uv0 = l.uv0();
-        aiVector3D *uv = item->mTextureCoords[0];
-        for(uint32_t u = 0; u < vertexCount; u++) {
-            uv0[u] = Vector2(uv[u].x, uv[u].y);
-        }
-    } else {
-        Log(Log::WRN) << "No uv exist";
-    }
+        uv0.resize(count_v);
 
-    if(item->HasNormals()) {
-        mesh->setFlags(mesh->flags() | Mesh::Normals);
         Vector3Vector &normals = l.normals();
-        normals.resize(vertexCount);
-        for(uint32_t n = 0; n < vertexCount; n++) {
-            normals[n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
-                                               Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
-        }
-    } else {
-        Log(Log::WRN) << "No normals exist";
-    }
+        normals.resize(count_v);
 
-    if(item->HasTangentsAndBitangents()) {
-        mesh->setFlags(mesh->flags() | Mesh::Tangents);
         Vector3Vector &tangents = l.tangents();
-        tangents.resize(vertexCount);
-        for(uint32_t t = 0; t < vertexCount; t++) {
-            tangents[t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
-                                                Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
-        }
-    } else {
-        Log(Log::WRN) << "No tangents exist";
-    }
+        tangents.resize(count_v);
 
-    IndexVector &indices = l.indices();
-    uint32_t indexCount = static_cast<uint32_t>(item->mNumFaces * 3);
-    indices.resize(indexCount);
+        for(uint32_t index = 0; index < element->mNumMeshes; index++) {
+            uint32_t it = element->mMeshes[index];
+            const aiMesh *item = scene->mMeshes[it];
 
-    for(uint32_t i = 0; i < item->mNumFaces; i++) {
-        aiFace *face = &item->mFaces[i];
+            // Export
+            Vector3 delta;
+            if(item->HasBones()) {
+                Transform *t = parent->transform();
+                Matrix4 rot;
+                rot.rotate(t->worldRotation());
 
-        uint32_t index = i * 3;
+                Vector3 s = t->worldScale();
+                Vector3 p = t->worldPosition();
 
-        indices[index+0] = face->mIndices[0];
-        indices[index+1] = face->mIndices[1];
-        indices[index+2] = face->mIndices[2];
-    }
+                delta = rot.inverse() * Vector3(p.x / s.x, p.y / s.y, p.z / s.z);
+            }
 
-    if(item->HasBones()) {
-        mesh->setFlags(mesh->flags() | Mesh::Skinned);
+            uint32_t vertexCount = item->mNumVertices;
 
-        Vector4Vector &weights = l.weights();
-        Vector4Vector &bones = l.bones();
+            float scl = fbxSettings->customScale();
+            for(uint32_t v = 0; v < vertexCount; v++) {
+                Vector3 pos(item->mVertices[v].x * scl, item->mVertices[v].y * scl, item->mVertices[v].z * scl);
+                if(fbxSettings->m_Flip) {
+                    pos = Vector3(-pos.x, pos.z, pos.y);
+                }
+                vertices[total_v + v] = delta + pos;
+            }
 
-        weights.resize(vertexCount);
-        bones.resize(vertexCount);
+            if(item->HasVertexColors(0)) {
+                mesh->setFlags(mesh->flags() | Mesh::Color);
+                memcpy(&colors[total_v], item->mColors[0], sizeof(Vector4) * vertexCount);
+            }
 
-        memset(&weights[0], 0, sizeof(Vector4) * vertexCount);
-        memset(&bones[0], 0, sizeof(Vector4) * vertexCount);
+            if(item->HasTextureCoords(0)) {
+                mesh->setFlags(mesh->flags() | Mesh::Uv0);
+                aiVector3D *uv = item->mTextureCoords[0];
+                for(uint32_t u = 0; u < vertexCount; u++) {
+                    uv0[total_v + u] = Vector2(uv[u].x, uv[u].y);
+                }
+            } else {
+                Log(Log::WRN) << "No uv exist";
+            }
 
-        for(uint32_t b = 0; b < item->mNumBones; b++) {
-            aiBone *bone = item->mBones[b];
-            int32_t index = indexOf(bone, fbxSettings->m_Bones);
-            for(uint32_t w = 0; w < bone->mNumWeights; w++) {
-                aiVertexWeight *weight = &bone->mWeights[w];
+            if(item->HasNormals()) {
+                mesh->setFlags(mesh->flags() | Mesh::Normals);
+                for(uint32_t n = 0; n < vertexCount; n++) {
+                    normals[total_v + n] = fbxSettings->m_Flip ? Vector3(-(item->mNormals[n].x), item->mNormals[n].z, item->mNormals[n].y) :
+                                                                 Vector3(  item->mNormals[n].x,  item->mNormals[n].y, item->mNormals[n].z);
+                }
+            } else {
+                Log(Log::WRN) << "No normals exist";
+            }
 
-                uint8_t a;
-                for(a = 0; a < 4; a++) {
-                    if(weights[weight->mVertexId].v[a] <= 0.0f) {
-                        break;
+            if(item->HasTangentsAndBitangents()) {
+                mesh->setFlags(mesh->flags() | Mesh::Tangents);
+                for(uint32_t t = 0; t < vertexCount; t++) {
+                    tangents[total_v + t] = fbxSettings->m_Flip ? Vector3(-(item->mTangents[t].x), item->mTangents[t].z, item->mTangents[t].y) :
+                                                                  Vector3(  item->mTangents[t].x,  item->mTangents[t].y, item->mTangents[t].z);
+                }
+            } else {
+                Log(Log::WRN) << "No tangents exist";
+            }
+
+            uint32_t indexCount = static_cast<uint32_t>(item->mNumFaces * 3);
+            for(uint32_t i = 0; i < item->mNumFaces; i++) {
+                aiFace *face = &item->mFaces[i];
+
+                uint32_t index = total_i + i * 3;
+
+                indices[index+0] = total_v + face->mIndices[0];
+                indices[index+1] = total_v + face->mIndices[1];
+                indices[index+2] = total_v + face->mIndices[2];
+            }
+
+            if(item->HasBones()) {
+                mesh->setFlags(mesh->flags() | Mesh::Skinned);
+
+                Vector4Vector &weights = l.weights();
+                Vector4Vector &bones = l.bones();
+
+                weights.resize(total_v + vertexCount);
+                bones.resize(total_v + vertexCount);
+
+                memset(&weights[total_v], 0, sizeof(Vector4) * vertexCount);
+                memset(&bones[total_v], 0, sizeof(Vector4) * vertexCount);
+
+                for(uint32_t b = 0; b < item->mNumBones; b++) {
+                    aiBone *bone = item->mBones[b];
+                    int32_t index = indexOf(bone, fbxSettings->m_Bones);
+                    for(uint32_t w = 0; w < bone->mNumWeights; w++) {
+                        aiVertexWeight *weight = &bone->mWeights[w];
+
+                        uint8_t a;
+                        for(a = 0; a < 4; a++) {
+                            if(weights[total_v + weight->mVertexId].v[a] <= 0.0f) {
+                                break;
+                            }
+                        }
+                        if(a < 4) {
+                            weights[total_v + weight->mVertexId].v[a] = weight->mWeight;
+                            bones[total_v + weight->mVertexId].v[a] = index;
+                        }
                     }
                 }
-                if(a < 4) {
-                    weights[weight->mVertexId].v[a] = weight->mWeight;
-                    bones[weight->mVertexId].v[a] = index;
-                }
             }
+
+            total_v += vertexCount;
+            total_i += indexCount;
         }
+
+        mesh->addLod(&l);
+
+        return mesh;
     }
-
-    mesh->addLod(&l);
-
-    return mesh;
+    return nullptr;
 }
 
 static bool compare(const AnimationTrack &left, const AnimationTrack &right) {

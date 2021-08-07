@@ -461,7 +461,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
             AABBox box;
             box.setBox(bb[0], bb[1]);
             mesh->setBound(box);
-            mesh->setMode(Mesh::Triangles);
+            mesh->setTopology(Mesh::Triangles);
             mesh->setLod(0, &lod);
         }
     }

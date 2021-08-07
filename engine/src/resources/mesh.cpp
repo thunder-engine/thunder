@@ -162,7 +162,7 @@ public:
     MeshPrivate() :
             m_Dynamic(false),
             m_Flags(0),
-            m_Mode(Mesh::Triangles) {
+            m_Topology(Mesh::Triangles) {
 
     }
 
@@ -170,7 +170,7 @@ public:
 
     uint8_t m_Flags;
 
-    int m_Mode;
+    int m_Topology;
 
     LodQueue m_Lods;
 
@@ -253,7 +253,7 @@ void Mesh::loadUserData(const VariantMap &data) {
 
         VariantList surface = (*mesh).second.value<VariantList>();
         auto x = surface.begin();
-        p_ptr->m_Mode = static_cast<Mesh::TriangleModes>((*x).toInt());
+        p_ptr->m_Topology = static_cast<Mesh::TriangleTopology>((*x).toInt());
         x++;
         while(x != surface.end()) {
             Lod l;
@@ -290,31 +290,31 @@ void Mesh::loadUserData(const VariantMap &data) {
                 data = (*y).toByteArray();
                 y++;
                 l.m_Indices.resize(tCount * 3);
-                memcpy(&l.m_Indices[0], &data[0],  sizeof(uint32_t) * tCount * 3);
+                memcpy(&l.m_Indices[0], &data[0], sizeof(uint32_t) * tCount * 3);
             }
             if(p_ptr->m_Flags & MeshAttributes::Color) { // Optional field
                 data = (*y).toByteArray();
                 y++;
                 l.m_Colors.resize(vCount);
-                memcpy(&l.m_Colors[0], &data[0],  sizeof(Vector4) * vCount);
+                memcpy(&l.m_Colors[0], &data[0], sizeof(Vector4) * vCount);
             }
             if(p_ptr->m_Flags & MeshAttributes::Uv0) { // Optional field
                 data = (*y).toByteArray();
                 y++;
                 l.m_Uv0.resize(vCount);
-                memcpy(&l.m_Uv0[0], &data[0],  sizeof(Vector2) * vCount);
+                memcpy(&l.m_Uv0[0], &data[0], sizeof(Vector2) * vCount);
             }
             if(p_ptr->m_Flags & MeshAttributes::Uv1) { // Optional field
                 data = (*y).toByteArray();
                 y++;
                 l.m_Uv1.resize(vCount);
-                memcpy(&l.m_Uv1[0], &data[0],  sizeof(Vector2) * vCount);
+                memcpy(&l.m_Uv1[0], &data[0], sizeof(Vector2) * vCount);
             }
             if(p_ptr->m_Flags & MeshAttributes::Normals) { // Optional field
                 data = (*y).toByteArray();
                 y++;
                 l.m_Normals.resize(vCount);
-                memcpy(&l.m_Normals[0], &data[0],  sizeof(Vector3) * vCount);
+                memcpy(&l.m_Normals[0], &data[0], sizeof(Vector3) * vCount);
             }
             if(p_ptr->m_Flags & MeshAttributes::Tangents) { // Optional field
                 data = (*y).toByteArray();
@@ -354,9 +354,9 @@ VariantMap Mesh::saveUserData() const {
     result[HEADER]  = header;
 
     VariantList surface;
-    surface.push_back(mode());
+    surface.push_back(topology());
 
-    for(uint32_t index = 0; index < lodsCount(); index++) {
+    for(size_t index = 0; index < p_ptr->m_Lods.size(); index++) {
         Lod *l = lod(index);
 
         VariantList lod;
@@ -451,18 +451,18 @@ void Mesh::setBound(const AABBox &box) {
     p_ptr->m_Box = box;
 }
 /*!
-    Returns poligon mode for the mesh.
-    For more details please see the Mesh::Modes enum.
+    Returns poligon topology for the mesh.
+    For more details please see the Mesh::TriangleTopology enum.
 */
-int Mesh::mode() const {
-    return p_ptr->m_Mode;
+int Mesh::topology() const {
+    return p_ptr->m_Topology;
 }
 /*!
-    Sets poligon \a mode for the mesh.
-    For more details please see the Mesh::Modes enum.
+    Sets poligon \a topology for the mesh.
+    For more details please see the Mesh::TriangleTopology enum.
 */
-void Mesh::setMode(int mode) {
-    p_ptr->m_Mode = mode;
+void Mesh::setTopology(int topology) {
+    p_ptr->m_Topology = topology;
 }
 /*!
     Returns vertex attributes flags.
@@ -512,7 +512,7 @@ void Mesh::setLod(int lod, Lod *data) {
 */
 void Mesh::batchMesh(Mesh *mesh, Matrix4 *transform) {
     if(mesh) {
-        for(int i = 0; i < mesh->p_ptr->m_Lods.size(); i++) {
+        for(size_t i = 0; i < mesh->p_ptr->m_Lods.size(); i++) {
             Lod lod = mesh->p_ptr->m_Lods[i];
             if(transform) {
                 for(auto &v : lod.vertices()) {

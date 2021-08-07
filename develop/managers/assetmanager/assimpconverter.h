@@ -110,7 +110,7 @@ public:
 
     Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 
-    static Mesh *importMesh(const aiMesh *mesh, Actor *parent, AssimpImportSettings *fbxSettings);
+    static Mesh *importMesh(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
 
     static void importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings);
 

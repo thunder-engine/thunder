@@ -144,7 +144,7 @@ EditorPipeline::EditorPipeline() :
         indices[index + 1] = index + 1;
     }
 
-    m_pGrid->setMode(Mesh::Lines);
+    m_pGrid->setTopology(Mesh::Lines);
     m_pGrid->addLod(&lod);
 
     Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");

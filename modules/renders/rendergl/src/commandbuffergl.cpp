@@ -133,11 +133,11 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
 
             m->bindVao(this, lod);
 
-            Mesh::TriangleModes mode = static_cast<Mesh::TriangleModes>(mesh->mode());
-            if(mode > Mesh::Lines) {
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
+            if(topology > Mesh::Lines) {
                 uint32_t vert = l->vertices().size();
                 int32_t glMode = GL_TRIANGLE_STRIP;
-                switch(mode) {
+                switch(topology) {
                 case Mesh::LineStrip:   glMode = GL_LINE_STRIP; break;
                 case Mesh::TriangleFan: glMode = GL_TRIANGLE_FAN; break;
                 default: break;
@@ -146,7 +146,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
                 uint32_t index = l->indices().size();
-                glDrawElements((mode == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
+                glDrawElements((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -182,14 +182,14 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
             m->bindVao(this, lod);
 
-            Mesh::TriangleModes mode = static_cast<Mesh::TriangleModes>(mesh->mode());
-            if(mode > Mesh::Lines) {
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
+            if(topology > Mesh::Lines) {
                 uint32_t vert = l->vertices().size();
-                glDrawArraysInstanced((mode == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
+                glDrawArraysInstanced((topology == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
                 uint32_t index = l->indices().size();
-                glDrawElementsInstanced((mode == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
+                glDrawElementsInstanced((topology == Mesh::Triangles) ? GL_TRIANGLES : GL_LINES, index, GL_UNSIGNED_INT, nullptr, count);
                 PROFILER_STAT(POLYGONS, (index / 3) * count);
             }
             PROFILER_STAT(DRAWCALLS, 1);

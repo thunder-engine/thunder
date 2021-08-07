@@ -442,7 +442,7 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         }
 
         spriteMesh->setFlags(m->flags());
-        spriteMesh->setMode(m->mode());
+        spriteMesh->setTopology(m->topology());
         spriteMesh->recalcBounds();
         return true;
     }

@@ -82,7 +82,7 @@ class NEXT_LIBRARY_EXPORT Mesh : public Resource {
 
     A_PROPERTIES(
         A_PROPERTY(AABBox, bound, Mesh::bound, Mesh::setBound),
-        A_PROPERTY(int, mode, Mesh::mode, Mesh::setMode),
+        A_PROPERTY(int, topology, Mesh::topology, Mesh::setTopology),
         A_PROPERTY(int, flags, Mesh::flags, Mesh::setFlags)
     )
     A_METHODS(
@@ -121,7 +121,7 @@ public:
         Skinned  = (1<<5),
     };
 
-    enum TriangleModes {
+    enum TriangleTopology {
         Triangles = 0,
         Lines,
         TriangleStrip,
@@ -130,21 +130,21 @@ public:
     };
 
 public:
-    Mesh ();
-    ~Mesh ();
+    Mesh();
+    ~Mesh();
 
     virtual void clear();
 
-    bool isDynamic () const;
-    void makeDynamic ();
+    bool isDynamic() const;
+    void makeDynamic();
 
     int lodsCount() const;
 
     AABBox bound() const;
     void setBound(const AABBox &box);
 
-    int mode() const;
-    void setMode(int mode);
+    int topology() const;
+    void setTopology(int mode);
 
     int flags() const;
     void setFlags(int flags);
