@@ -91,10 +91,6 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-        }
-
-        Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: bullet.ANDROID_STL
             Android.ndk.platform: bullet.ANDROID
