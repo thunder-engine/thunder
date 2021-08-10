@@ -40,7 +40,7 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
         colors[i] = GL_COLOR_ATTACHMENT0 + i;
         TextureGL *c = static_cast<TextureGL *>(colorAttachment(i));
         if(c) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, colors[i], GL_TEXTURE_2D, c->nativeHandle(), 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, colors[i], GL_TEXTURE_2D, c->nativeHandle(), level);
         } else {
             // Set render buffer
         }
@@ -50,7 +50,7 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
     if(depth) {
         uint32_t handle = depth->nativeHandle();
         if(handle > 0) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, handle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, handle, level);
         } else {
             // Set render buffer
         }

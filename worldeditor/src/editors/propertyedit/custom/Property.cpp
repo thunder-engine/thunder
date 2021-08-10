@@ -13,15 +13,16 @@
 Property::Property(const QString &name, QObject *propertyObject, QObject *parent, bool root) :
         QObject(parent),
         m_propertyObject(propertyObject),
-        m_Editor(nullptr),
-        m_Root(root),
-        m_Checkable(true) {
+        m_editor(nullptr),
+        m_root(root),
+        m_checkable(false) {
 
     QStringList list = name.split('/');
 
     m_name = list.back();
     setObjectName(name);
-    m_Root = (root) ? (list.size() == 1) : false;
+    m_root = (root) ? (list.size() == 1) : false;
+    m_checkable = m_root;
 }
 
 QVariant Property::value(int role) const {
@@ -55,15 +56,15 @@ bool Property::isReadOnly() const {
 
 QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
-    if(m_Root && next) {
+    if(m_root && next) {
         Actions *act = new Actions(m_name, parent);
         Object *object = next->component(objectName());
         act->setObject(object);
         act->setMenu(next->menu(object));
 
-        m_Editor = act;
+        m_editor = act;
     }
-    return m_Editor;
+    return m_editor;
 }
 
 QSize Property::sizeHint(const QSize &size) const {
@@ -92,9 +93,25 @@ Property *Property::findPropertyObject(QObject *propertyObject) {
 }
 
 void Property::setChecked(bool value) {
-    static_cast<Actions *>(m_Editor)->onDataChanged(value);
+    if(!m_override.isEmpty() && m_propertyObject) {
+        m_propertyObject->setProperty(qPrintable(m_override), value);
+    }
+    if(m_editor) {
+        static_cast<Actions *>(m_editor)->onDataChanged(value);
+    }
 }
 
 bool Property::isChecked() const {
-    return static_cast<Actions *>(m_Editor)->isChecked();
+    if(!m_override.isEmpty() && m_propertyObject) {
+        return m_propertyObject->property(qPrintable(m_override)).toBool();
+    }
+    if(m_editor) {
+        return static_cast<Actions *>(m_editor)->isChecked();
+    }
+    return false;
+}
+
+void Property::setOverride(const QString &property) {
+    m_override = property;
+    m_checkable = true;
 }

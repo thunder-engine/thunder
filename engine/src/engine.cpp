@@ -392,7 +392,7 @@ Variant Engine::value(const string &key, const Variant &defaultValue) {
     return defaultValue;
 }
 /*!
-    Sets the value of setting \a key to \a value. If the \a key already exists, the previous value is overwritten.
+    Sets the value of setting \a key to \a value. If the \a key already exists, the previous value will be overwritten.
 */
 void Engine::setValue(const string &key, const Variant &value) {
     PROFILE_FUNCTION();

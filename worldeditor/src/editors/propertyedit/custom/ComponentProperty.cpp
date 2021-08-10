@@ -14,17 +14,17 @@ ComponentProperty::ComponentProperty(const QString &name, QObject *propertyObjec
 
 QWidget *ComponentProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     ComponentSelect *editor = new ComponentSelect(parent);
-    m_Editor = editor;
+    m_editor = editor;
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
     connect(editor, &ComponentSelect::componentChanged, this, &ComponentProperty::onComponentChanged);
     return editor;
 }
 
 bool ComponentProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ComponentSelect *e = dynamic_cast<ComponentSelect *>(editor);
+    ComponentSelect *e = static_cast<ComponentSelect *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(data.value<SceneComponent>());
@@ -35,7 +35,7 @@ bool ComponentProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant ComponentProperty::editorData(QWidget *editor) {
-    ComponentSelect *e = dynamic_cast<ComponentSelect *>(editor);
+    ComponentSelect *e = static_cast<ComponentSelect *>(editor);
     if(e) {
         return QVariant::fromValue(e->data());
     }

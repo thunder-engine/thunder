@@ -11,17 +11,17 @@ BoolProperty::BoolProperty(const QString &name, QObject *propertyObject, QObject
 
 QWidget *BoolProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_Editor = new QCheckBox(parent);
+    m_editor = new QCheckBox(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));
-    return m_Editor;
+    connect(m_editor, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));
+    return m_editor;
 }
 
 bool BoolProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    QCheckBox *e    = dynamic_cast<QCheckBox *>(editor);
+    QCheckBox *e = static_cast<QCheckBox *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setChecked(data.toBool());
@@ -32,7 +32,7 @@ bool BoolProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant BoolProperty::editorData(QWidget *editor) {
-    QCheckBox *e    = dynamic_cast<QCheckBox *>(editor);
+    QCheckBox *e = static_cast<QCheckBox *>(editor);
     if(e) {
         return QVariant(e->isChecked());
     }

@@ -11,7 +11,7 @@
 #include "components/arealight.h"
 #include "components/skinnedmeshrender.h"
 
-#include "components/postprocesssettings.h"
+#include "components/postprocessvolume.h"
 
 #include "components/camera.h"
 
@@ -63,7 +63,7 @@ void RenderSystem::registerClasses() {
 
     ICommandBuffer::registerClassFactory(this);
 
-    PostProcessSettings::registerClassFactory(this);
+    PostProcessVolume::registerClassFactory(this);
 }
 
 void RenderSystem::unregisterClasses() {
@@ -83,7 +83,7 @@ void RenderSystem::unregisterClasses() {
 
     ICommandBuffer::unregisterClassFactory(this);
 
-    PostProcessSettings::unregisterClassFactory(this);
+    PostProcessVolume::unregisterClassFactory(this);
 }
 
 int RenderSystem::threadPolicy() const {

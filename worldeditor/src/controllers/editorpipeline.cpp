@@ -50,8 +50,6 @@ public:
         m_resultTexture->setFormat(Texture::RGBA8);
 
         m_resultTarget->setColorAttachment(0, m_resultTexture);
-
-        setEnabled(true);
     }
 
     float m_width;
@@ -118,9 +116,7 @@ EditorPipeline::EditorPipeline() :
 
     m_pGrid = Engine::objectCreate<Mesh>("Grid");
 
-    auto it = m_PostEffects.begin();
-    ++it;
-    m_PostEffects.insert(it, m_pOutline);
+    m_PostEffects.push_back(m_pOutline);
 
     Lod lod;
     Vector3Vector &vertices = lod.vertices();
@@ -261,19 +257,23 @@ void EditorPipeline::draw(Camera &camera) {
 
     m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_pFinal);
 
-    // Draw handles
-    cameraReset(camera);
-    m_Buffer->setRenderTarget(m_renderTargets[FINAL_TARGET]);
-    drawGrid(camera);
+    if(m_pTarget == nullptr) {
+        // Draw handles
+        cameraReset(camera);
+        m_Buffer->setRenderTarget(m_renderTargets[FINAL_TARGET]);
+        drawGrid(camera);
 
-    Handles::beginDraw(m_Buffer);
-    m_pController->drawHandles();
-    Handles::endDraw();
+        Handles::beginDraw(m_Buffer);
+        m_pController->drawHandles();
+        Handles::endDraw();
+    }
 }
 
 void EditorPipeline::drawUi(Camera &camera) {
     cameraReset(camera);
     drawComponents(ICommandBuffer::UI | ICommandBuffer::TRANSLUCENT, m_UiComponents);
+
+    postProcess(m_renderTargets["lightPass"], ICommandBuffer::UI);
 }
 
 bool EditorPipeline::isInHierarchy(Actor *origin, Actor *actor) {

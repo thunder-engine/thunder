@@ -40,19 +40,19 @@ QWidget *EnumProperty::createEditor(QWidget *parent, const QStyleOptionViewItem 
     ComboEdit *editor = new ComboEdit(parent);
     editor->addItems(m_enum);
 
-    m_Editor = editor;
+    m_editor = editor;
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
 
-    connect(m_Editor, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(valueChanged(const QString &)));
+    connect(m_editor, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(valueChanged(const QString &)));
 
-    return m_Editor;
+    return m_editor;
 }
 
 bool EnumProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(editor);
+    ComboEdit *e = static_cast<ComboEdit *>(editor);
     if(e) {
         int value = data.toInt();
         const QMetaObject *meta = m_propertyObject->metaObject();
@@ -71,7 +71,7 @@ bool EnumProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant EnumProperty::editorData(QWidget *editor) {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(editor);
+    ComboEdit *e = static_cast<ComboEdit *>(editor);
     if(e) {
         return QVariant(e->currentText());
     } else {

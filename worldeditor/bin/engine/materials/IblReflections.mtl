@@ -1,7 +1,7 @@
 {
     "Blend": 1,
     "Depth": false,
-    "DepthWrite": true,
+    "DepthWrite": false,
     "Links": [
     ],
     "Model": 0,

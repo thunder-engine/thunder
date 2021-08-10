@@ -7,6 +7,10 @@
 
 #include "resources/rendertarget.h"
 
+#define ANTIALIASING "Graphics/Advanced/AntiAliasing"
+
+#include "commandbuffer.h"
+
 AntiAliasing::AntiAliasing() {
     Material *material = Engine::loadResource<Material>(".embedded/AntiAliasing.mtl");
     if(material) {
@@ -18,5 +22,9 @@ AntiAliasing::AntiAliasing() {
 
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
-    setEnabled(true);
+    Engine::setValue(ANTIALIASING, true);
+}
+
+uint32_t AntiAliasing::layer() const {
+    return ICommandBuffer::UI;
 }

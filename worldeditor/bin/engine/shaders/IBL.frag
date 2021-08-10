@@ -12,7 +12,7 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 7) in vec3 _view;
 
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec4 color;
 
 vec3 boxProjection(vec3 dir) {
     return dir;
@@ -36,8 +36,8 @@ void main(void) {
         vec3 ibl = textureLod(environmentMap, refl, rough * 10.0).xyz;
 
         vec4 sslr = texture(rgbMap, _uv0);
-        color = mix(ibl, sslr.xyz, sslr.w) * (1.0 - rough);
-    } else {
-        color = vec3(0.0);
+        color = vec4(mix(ibl, sslr.xyz, sslr.w), (1.0 - rough));
+        return;
     }
+    color = vec4(0.0);
 }

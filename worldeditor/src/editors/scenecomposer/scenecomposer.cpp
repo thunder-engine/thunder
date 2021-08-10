@@ -815,7 +815,6 @@ void SceneComposer::saveWorkspace() {
     settings.setValue(WORKSPACE, m_CurrentWorkspace);
 }
 
-
 void SceneComposer::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant windows = settings.value(WINDOWS);
@@ -838,7 +837,6 @@ void SceneComposer::resetGeometry() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     restoreGeometry(settings.value(GEOMETRY).toByteArray());
 }
-
 
 void SceneComposer::onBuildProject() {
     QAction *action = dynamic_cast<QAction *>(sender());

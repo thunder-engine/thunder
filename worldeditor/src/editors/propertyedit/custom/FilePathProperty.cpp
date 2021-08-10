@@ -25,17 +25,17 @@ void FilePathProperty::setValue(const QVariant &value) {
 
 QWidget *FilePathProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_Editor = new PathEdit(parent);
+    m_editor = new PathEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
-    return m_Editor;
+    connect(m_editor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
+    return m_editor;
 }
 
 bool FilePathProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    PathEdit *e = dynamic_cast<PathEdit *>(editor);
+    PathEdit *e = static_cast<PathEdit *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(data.toString());
@@ -46,7 +46,7 @@ bool FilePathProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant FilePathProperty::editorData(QWidget *editor) {
-    PathEdit *e = dynamic_cast<PathEdit *>(editor);
+    PathEdit *e = static_cast<PathEdit *>(editor);
     if(e) {
         return QVariant::fromValue(e->data());
     }

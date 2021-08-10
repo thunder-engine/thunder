@@ -8,7 +8,7 @@
 #include "components/camera.h"
 #include "components/renderable.h"
 #include "components/directlight.h"
-#include "components/postprocesssettings.h"
+#include "components/postprocessvolume.h"
 
 #include "resources/mesh.h"
 #include "resources/material.h"
@@ -41,6 +41,10 @@
 #define LIGHPASS    "lightPass"
 
 #define OVERRIDE "uni.texture0"
+
+bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
+    return left->priority() < right->priority();
+}
 
 Pipeline::Pipeline() :
         m_Buffer(nullptr),
@@ -131,17 +135,17 @@ void Pipeline::draw(Camera &camera) {
     // Step 1.2 - Opaque pass post processing
     postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::DEFAULT);
 
-    // Step2.1 - Light pass
+    // Step 2.1 - Light pass
     m_Buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
     drawComponents(ICommandBuffer::LIGHT, m_SceneLights);
 
-    // Step2.2 - Screen Space Local Reflections
+    // Step 2.2 - Light pass post processing
     postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::LIGHT);
 
     // Step 3.1 - Transparent pass
     drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
 
-    // Step 3.2 - Post Processing passes
+    // Step 3.2 - Transparent pass post processing
     postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::TRANSLUCENT);
     m_pFinal = m_textureBuffers[G_EMISSIVE];
 
@@ -153,6 +157,8 @@ void Pipeline::drawUi(Camera &camera) {
 
     m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_Width, 0, m_Height, -500.0f, 500.0f));
     drawComponents(ICommandBuffer::UI, m_UiComponents);
+
+    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::UI);
 }
 
 void Pipeline::finish() {
@@ -235,14 +241,27 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
     m_Filter = Camera::frustumCulling(m_SceneComponents, Camera::frustumCorners(*camera));
     sortByDistance(m_Filter, camera->actor()->transform()->position());
 
-    if(!m_PostProcessSettings.empty()) {
-        PostProcessSettings *settings = m_PostProcessSettings.front();
+    // Post process settings mixer
+    PostProcessSettings &settings = scene->finalPostProcessSettings();
+    settings.resetDefault();
 
-        m_Buffer->setGlobalValue("light.ambient", settings->ambientLightIntensity());
-
-        for(auto &it : m_PostEffects) {
-            it->setSettings(*settings);
+    //std::sort(m_postProcessVolume.begin(), m_postProcessVolume.end(), typeLessThan);
+    for(auto &it : m_postProcessVolume) {
+        if(!it->unbound()) {
+            Actor *a = camera->actor();
+            if(a) {
+                Transform *t = a->transform();
+                if(!it->bound().intersect(t->worldPosition(), camera->nearPlane())) {
+                    continue;
+                }
+            }
         }
+        settings.lerp(it->settings(), it->blendWeight());
+    }
+
+    m_Buffer->setGlobalValue("light.ambient", 0.1f/*settings.ambientLightIntensity()*/);
+    for(auto &it : m_PostEffects) {
+        it->setSettings(settings);
     }
 }
 
@@ -396,21 +415,26 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
 void Pipeline::combineComponents(Object *object, bool update) {
     for(auto &it : object->getChildren()) {
         Object *child = it;
-        if(child->isRenderable()) {
-            Renderable *comp = static_cast<Renderable *>(child);
-            if(comp->actor()->isEnabledInHierarchy()) {
-                if(update) {
-                    comp->update();
-                }
-                if(comp->isLight()) {
-                    m_SceneLights.push_back(comp);
-                } else {
-                    if(comp->actor()->layers() & ICommandBuffer::UI) {
-                        m_UiComponents.push_back(comp);
+        if(child->isComponent()) {
+            Component *component = static_cast<Component *>(child);
+            if(component->isRenderable()) {
+                Renderable *comp = static_cast<Renderable *>(child);
+                if(comp->actor()->isEnabledInHierarchy()) {
+                    if(update) {
+                        comp->update();
+                    }
+                    if(comp->isLight()) {
+                        m_SceneLights.push_back(comp);
                     } else {
-                        m_SceneComponents.push_back(comp);
+                        if(comp->actor()->layers() & ICommandBuffer::UI) {
+                            m_UiComponents.push_back(comp);
+                        } else {
+                            m_SceneComponents.push_back(comp);
+                        }
                     }
                 }
+            } else if(component->isPostProcessVolume()){
+                m_postProcessVolume.push_back(static_cast<PostProcessVolume *>(component));
             }
         } else {
             combineComponents(child, update);

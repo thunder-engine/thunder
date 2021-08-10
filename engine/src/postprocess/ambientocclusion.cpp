@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "components/postprocesssettings.h"
+#include "components/scene.h"
 
 #include "resources/pipeline.h"
 #include "resources/material.h"
@@ -21,6 +21,14 @@
 #define SSAO_MAP    "uni.ssaoMap"
 #define RGB_MAP     "uni.rgbMap"
 
+namespace {
+const char *AMBIENT_OCCLUSION("Graphics/Advanced/AmbientOcclusion");
+
+const char *AMBIENT_RADIUS("ambientOcclusion/Radius");
+const char *AMBIENT_BIAS("ambientOcclusion/Bias");
+const char *AMBIENT_POWER("ambientOcclusion/Power");
+};
+
 AmbientOcclusion::AmbientOcclusion() :
         m_radius(0.2f),
         m_bias(0.025f),
@@ -31,12 +39,12 @@ AmbientOcclusion::AmbientOcclusion() :
         m_occlusion(nullptr) {
 
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
-        m_samplesKernel[i].x = RANGE( 0.0f, 1.0f) * 2.0f - 1.0f;
-        m_samplesKernel[i].y = RANGE( 0.0f, 1.0f) * 2.0f - 1.0f;
-        m_samplesKernel[i].z = RANGE( 0.0f, 1.0f);
+        m_samplesKernel[i].x = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
+        m_samplesKernel[i].y = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
+        m_samplesKernel[i].z = RANGE(0.0f, 1.0f);
 
         m_samplesKernel[i].normalize();
-        m_samplesKernel[i] *= RANGE( 0.0f, 1.0f);
+        m_samplesKernel[i] *= RANGE(0.0f, 1.0f);
 
         float scale = static_cast<float>(i) / KERNEL_SIZE;
         scale = MIX(0.1f, 1.0f, scale * scale);
@@ -53,8 +61,8 @@ AmbientOcclusion::AmbientOcclusion() :
 
     Vector3 *ptr = reinterpret_cast<Vector3 *>(&(s[0])[0]);
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
-        ptr[i].x = RANGE( 0.0f, 1.0f) * 2.0f - 1.0f;
-        ptr[i].y = RANGE( 0.0f, 1.0f) * 2.0f - 1.0f;
+        ptr[i].x = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
+        ptr[i].y = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
         ptr[i].z = 0.0f;
 
         ptr[i].normalize();
@@ -66,16 +74,11 @@ AmbientOcclusion::AmbientOcclusion() :
     m_ssaoTarget = Engine::objectCreate<RenderTarget>();
     m_ssaoTarget->setColorAttachment(0, m_ssaoTexture);
 
-    m_blurTexture = Engine::objectCreate<Texture>();
-    m_blurTexture->setFormat(Texture::R8);
+    m_resultTexture = Engine::objectCreate<Texture>();
+    m_resultTexture->setFormat(Texture::R8);
 
     m_blurTarget = Engine::objectCreate<RenderTarget>();
-    m_blurTarget->setColorAttachment(0, m_blurTexture);
-
-    m_resultTexture = Engine::objectCreate<Texture>();
-    m_resultTexture->setFormat(Texture::R11G11B10Float);
-
-    m_resultTarget->setColorAttachment(0, m_resultTexture);
+    m_blurTarget->setColorAttachment(0, m_resultTexture);
 
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.mtl");
@@ -93,7 +96,6 @@ AmbientOcclusion::AmbientOcclusion() :
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.mtl");
         if(mtl) {
-            mtl->setTexture("ssaoSample", nullptr);
             m_blur = mtl->createInstance();
             m_blur->setTexture("ssaoSample", m_ssaoTexture);
         }
@@ -101,13 +103,17 @@ AmbientOcclusion::AmbientOcclusion() :
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
         if(mtl) {
-            mtl->setTexture(SSAO_MAP, nullptr);
-            mtl->setTexture(RGB_MAP, nullptr);
-
             m_occlusion = mtl->createInstance();
-            m_occlusion->setTexture(SSAO_MAP, m_blurTexture);
+            m_occlusion->setTexture(SSAO_MAP, m_resultTexture);
         }
     }
+
+    Engine::setValue(AMBIENT_OCCLUSION, true);
+
+    PostProcessSettings::registerSetting(AMBIENT_RADIUS, m_radius);
+    PostProcessSettings::registerSetting(AMBIENT_BIAS, m_bias);
+    PostProcessSettings::registerSetting(AMBIENT_POWER, m_power);
+
 }
 
 AmbientOcclusion::~AmbientOcclusion() {
@@ -125,32 +131,27 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
         }
 
         if(m_blur) {
+            buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
+
             buffer->setRenderTarget(m_blurTarget);
             buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_blur);
         }
 
         if(m_occlusion) {
-            m_occlusion->setTexture(RGB_MAP, source);
+            m_resultTarget->setColorAttachment(0, source);
 
-            buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
+            buffer->setViewport(0, 0, source->width(), source->height());
 
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_occlusion);
         }
-
-        pipeline->setTarget("blur", m_resultTexture);
-
-        return m_resultTexture;
     }
     return source;
 }
 
 void AmbientOcclusion::resize(int32_t width, int32_t height) {
-    m_ssaoTexture->setWidth(width / 2);
-    m_ssaoTexture->setHeight(height / 2);
-
-    m_blurTexture->setWidth(width / 2);
-    m_blurTexture->setHeight(height / 2);
+    m_ssaoTexture->setWidth(width);
+    m_ssaoTexture->setHeight(height);
 
     m_resultTexture->setWidth(width);
     m_resultTexture->setHeight(height);
@@ -161,10 +162,9 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
-    m_enabled = settings.ambientOcclusionEnabled();
-    m_radius = settings.ambientOcclusionRadius();
-    m_bias = settings.ambientOcclusionBias();
-    m_power = settings.ambientOcclusionPower();
+    m_radius = settings.readValue(AMBIENT_RADIUS).toFloat();
+    m_bias = settings.readValue(AMBIENT_BIAS).toFloat();
+    m_power = settings.readValue(AMBIENT_POWER).toFloat();
 }
 
 uint32_t AmbientOcclusion::layer() const {

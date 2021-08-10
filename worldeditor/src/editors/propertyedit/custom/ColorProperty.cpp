@@ -25,7 +25,7 @@ QVariant ColorProperty::value(int role) const {
 
 void ColorProperty::setValue(const QVariant &value) {
     if (value.type() == QVariant::String) {
-        QString name    = value.toString();
+        QString name = value.toString();
         Property::setValue(QVariant::fromValue( QColor(name) ));
     } else {
         Property::setValue(value);
@@ -34,19 +34,19 @@ void ColorProperty::setValue(const QVariant &value) {
 
 QWidget *ColorProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_Editor = new ColorEdit(parent);
+    m_editor = new ColorEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
-    return m_Editor;
+    connect(m_editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
+    return m_editor;
 }
 
 bool ColorProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ColorEdit *e  = dynamic_cast<ColorEdit *>(editor);
+    ColorEdit *e = static_cast<ColorEdit *>(editor);
     if(e) {
-        QColor color    = data.value<QColor>();
+        QColor color = data.value<QColor>();
         e->blockSignals(true);
         e->setColor(color.name(QColor::HexArgb));
         e->blockSignals(false);
@@ -56,7 +56,7 @@ bool ColorProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant ColorProperty::editorData(QWidget *editor) {
-    ColorEdit *e  = dynamic_cast<ColorEdit *>(editor);
+    ColorEdit *e = static_cast<ColorEdit *>(editor);
     if(e) {
         return e->color();
     }
