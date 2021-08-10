@@ -235,6 +235,19 @@ QTreeView::branch:open:has-children:has-siblings  {
     border-image: none;
     image: url(:/Style/styles/dark/icons/arrow-down.png);
 }
+QTreeView::indicator {
+    background-color: #525252;
+    border-radius: 3px;
+}
+QTreeView::indicator:checked:hover {
+    background-color: #757575;
+}
+QTreeView::indicator:checked {
+    image: url(:/Style/styles/dark/icons/close-hover.png);
+}
+QTreeView::indicator:unchecked:hover {
+    background-color: #757575;
+}
 
 QHeaderView::section {
     padding: 2px 2px;

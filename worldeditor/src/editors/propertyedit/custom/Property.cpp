@@ -14,12 +14,14 @@ Property::Property(const QString &name, QObject *propertyObject, QObject *parent
         QObject(parent),
         m_propertyObject(propertyObject),
         m_Editor(nullptr),
-        m_Root(root) {
+        m_Root(root),
+        m_Checkable(true) {
 
     QStringList list = name.split('/');
 
     m_name = list.back();
     setObjectName(name);
+    m_Root = (root) ? (list.size() == 1) : false;
 }
 
 QVariant Property::value(int role) const {
@@ -87,4 +89,12 @@ Property *Property::findPropertyObject(QObject *propertyObject) {
         }
     }
     return nullptr;
+}
+
+void Property::setChecked(bool value) {
+    static_cast<Actions *>(m_Editor)->onDataChanged(value);
+}
+
+bool Property::isChecked() const {
+    return static_cast<Actions *>(m_Editor)->isChecked();
 }

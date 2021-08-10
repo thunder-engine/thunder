@@ -10,41 +10,46 @@ class Property : public QObject {
 
 public:
 
-    Property (const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
+    Property(const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
 
-    virtual QVariant value (int role = Qt::UserRole) const;
+    void setName(const QString &value) { m_name = value; }
 
-    virtual void setValue (const QVariant &value);
+    QString name() const;
 
-    void setName (const QString &value) { m_name = value; }
+    QWidget *editor() const { return m_Editor; }
 
-    QString name () const;
+    QObject *propertyObject() const { return m_propertyObject; }
 
-    QWidget *editor () const { return m_Editor; }
+    bool isRoot() const { return m_Root; }
 
-    QObject *propertyObject () const { return m_propertyObject; }
+    bool isReadOnly() const;
 
-    bool isRoot () const { return m_Root; }
+    bool isCheckable() const { return isRoot(); }
 
-    bool isReadOnly () const;
+    virtual bool isPersistent() const { return true; }
 
-    virtual bool isPersistent () const { return true; }
+    int row() { return parent()->children().indexOf(this); }
 
-    int row ()  { return parent()->children().indexOf(this); }
+    QString editorHints() const { return m_hints; }
 
-    QString editorHints () const { return m_hints; }
-	
-    virtual void setEditorHints (const QString &hints) { m_hints = hints; }
+    virtual QVariant value(int role = Qt::UserRole) const;
 
-    virtual QWidget *createEditor (QWidget *parent, const QStyleOptionViewItem &);
+    virtual void setValue(const QVariant &value);
 
-    virtual QVariant editorData (QWidget *);
+    virtual void setEditorHints(const QString &hints) { m_hints = hints; }
 
-    virtual bool setEditorData (QWidget *, const QVariant &);
+    virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &);
 
-    virtual QSize sizeHint (const QSize &size) const;
+    virtual QVariant editorData(QWidget *);
 
-    Property *findPropertyObject (QObject *propertyObject);
+    virtual bool setEditorData(QWidget *, const QVariant &);
+
+    virtual QSize sizeHint(const QSize &size) const;
+
+    virtual void setChecked(bool value);
+    virtual bool isChecked() const;
+
+    Property *findPropertyObject(QObject *propertyObject);
 
 protected:
     QObject *m_propertyObject;
@@ -54,6 +59,7 @@ protected:
     QWidget *m_Editor;
 
     bool m_Root;
+    bool m_Checkable;
 };
 
 #endif

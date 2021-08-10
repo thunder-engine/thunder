@@ -21,10 +21,7 @@ Actions::Actions(const QString &name, QWidget *parent) :
 
     ui->toolButton->hide();
 
-    ui->checkBox->hide();
-
     setMenu(nullptr);
-    connect(ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(onDataChanged(int)));
 }
 
 Actions::~Actions() {
@@ -53,15 +50,17 @@ void Actions::setObject(Object *object) {
     }
     if(index > -1) {
         m_Property = meta->property(index);
-        ui->checkBox->show();
-        ui->checkBox->blockSignals(true);
-        ui->checkBox->setChecked(m_Property.read(m_pObject).toBool());
-        ui->checkBox->blockSignals(false);
     }
 }
 
-void Actions::onDataChanged(int value) {
+void Actions::onDataChanged(bool value) {
     if(m_Property.isValid()) {
-        m_Property.write(m_pObject, (value != 0));
+        m_Property.write(m_pObject, value);
+    }
+}
+
+bool Actions::isChecked() const {
+    if(m_Property.isValid()) {
+        return m_Property.read(m_pObject).toBool();
     }
 }

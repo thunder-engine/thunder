@@ -72,16 +72,16 @@ public:
         connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(closeEditor(QWidget*)));
     }
 
-    virtual ~PropertyDelegate   () {
+    virtual ~PropertyDelegate() {
         delete m_finishedMapper;
     }
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
         QWidget *editor = nullptr;
         if(index.isValid()) {
-            QModelIndex origin  = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
+            QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
             Property *p = static_cast<Property *>(origin.internalPointer());
-            editor      = p->createEditor(parent, option);
+            editor = p->createEditor(parent, option);
             if(editor) {
                 if(editor->metaObject()->indexOfSignal("editFinished()") != -1) {
                     connect(editor, SIGNAL(editFinished()), m_finishedMapper, SLOT(map()));
@@ -120,11 +120,11 @@ public:
     }
 
     virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-        QModelIndex origin  = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
-        QSize result    = QStyledItemDelegate::sizeHint(option, index);
+        QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
+        QSize result = QStyledItemDelegate::sizeHint(option, index);
         if(origin.isValid()) {
-            Property *p     = static_cast<Property *>(origin.internalPointer());
-            result  = p->sizeHint(result);
+            Property *p = static_cast<Property *>(origin.internalPointer());
+            result = p->sizeHint(result);
         }
         return result;
     }
@@ -209,7 +209,7 @@ void PropertyEditor::onUpdated() {
 }
 
 void PropertyEditor::onAnimated(bool flag) {
-    m_Animated  = flag;
+    m_Animated = flag;
 }
 
 void PropertyEditor::registerCustomPropertyCB(UserTypeCB callback) {

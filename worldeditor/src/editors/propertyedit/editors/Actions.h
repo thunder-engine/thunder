@@ -16,14 +16,16 @@ class Actions : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Actions (const QString &name, QWidget *parent = nullptr);
-    ~Actions ();
+    explicit Actions(const QString &name, QWidget *parent = nullptr);
+    ~Actions();
 
-    void setMenu (QMenu *menu);
-    void setObject (Object *object);
+    void setMenu(QMenu *menu);
+    void setObject(Object *object);
 
-private slots:
-    void onDataChanged (int);
+    bool isChecked() const;
+
+public slots:
+    void onDataChanged(bool);
 
 private:
     Ui::Actions *ui;

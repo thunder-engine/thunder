@@ -7,24 +7,24 @@ class BaseObjectModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    explicit BaseObjectModel    (QObject *parent = nullptr);
+    explicit BaseObjectModel(QObject *parent = nullptr);
 
-    virtual QObject            *createRoot                  ();
+    virtual QObject *createRoot();
 
-    int                         rowCount                    (const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    QModelIndex                 parent                      (const QModelIndex &index) const;
+    QModelIndex parent(const QModelIndex &index) const override;
 
-    QModelIndex                 index                       (int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
-    Qt::ItemFlags               flags                       (const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    virtual bool                removeResource              (const QModelIndex &index) { Q_UNUSED(index); return false; }
+    virtual bool removeResource(const QModelIndex &index) { Q_UNUSED(index); return false; }
 
-    virtual QString             path                        (const QModelIndex &index) const { Q_UNUSED(index); return QString(); }
+    virtual QString path(const QModelIndex &index) const { Q_UNUSED(index); return QString(); }
 
 protected:
-    QObject                    *m_rootItem;
+    QObject *m_rootItem;
 
 };
 

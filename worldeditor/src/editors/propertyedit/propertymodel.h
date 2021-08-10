@@ -13,21 +13,19 @@ class PropertyModel : public BaseObjectModel {
 	Q_OBJECT
 
 public:
-    PropertyModel(QObject* parent = nullptr);
+    explicit PropertyModel(QObject* parent = nullptr);
 
-    virtual ~PropertyModel();
+    ~PropertyModel();
 
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-    QModelIndex buddy(const QModelIndex &index) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void addItem(QObject *propertyObject, const QString &propertyName = QString(), QObject *parent = nullptr);
 
@@ -42,7 +40,7 @@ public:
 private:
     void updateDynamicProperties(Property *parent, QObject *propertyObject);
 
-    QList<PropertyEditor::UserTypeCB>   m_userCallbacks;
+    QList<PropertyEditor::UserTypeCB> m_userCallbacks;
 	
 };
 

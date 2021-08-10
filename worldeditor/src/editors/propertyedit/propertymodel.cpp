@@ -26,7 +26,7 @@ struct PropertyPair {
         Object(obj) {
     }
 
-    QMetaProperty      Property;
+    QMetaProperty Property;
     const QMetaObject *Object;
 
     bool operator==(const PropertyPair& other) const {
@@ -82,12 +82,13 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::SizeHintRole: {
-            //if(item->isRoot()) {
-            //    return QSize(1, 32);
-            //}
             return QSize(1, 24);
         }
-
+        case Qt::CheckStateRole: {
+            if(index.column() == 0 && item->isCheckable()) {
+                return item->isChecked() ? Qt::Checked : Qt::Unchecked;
+            }
+        } break;
         default: break;
     }
 
@@ -96,9 +97,17 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
 
 // edit methods
 bool PropertyModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if(index.isValid() && role == Qt::EditRole) {
-        Property *item = static_cast<Property *>(index.internalPointer());
+    if(!index.isValid()) {
+        return false;
+    }
+    Property *item = static_cast<Property *>(index.internalPointer());
+    if(role == Qt::EditRole) {
         item->setValue(value);
+        emit dataChanged(index, index);
+        return true;
+    } else if(role == Qt::CheckStateRole) {
+        Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+        item->setChecked(state == Qt::Checked);
         emit dataChanged(index, index);
         return true;
     }
@@ -106,17 +115,27 @@ bool PropertyModel::setData(const QModelIndex &index, const QVariant &value, int
 }
 
 Qt::ItemFlags PropertyModel::flags(const QModelIndex &index) const {
-    if(!index.isValid())
+    if(!index.isValid()) {
         return Qt::ItemIsEnabled;
-    Property *item = static_cast<Property*>(index.internalPointer());
-    // only allow change of value attribute
-    if(item->isRoot()) {
-        return Qt::ItemIsEnabled;
-    } else if (item->isReadOnly()) {
-        return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable;
-    } else {
-        return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     }
+    Property *item = static_cast<Property *>(index.internalPointer());
+    // only allow change of value attribute
+
+    Qt::ItemFlags result;
+    if(item->isRoot()) {
+        result |= Qt::ItemIsEnabled;
+    } else if(item->isReadOnly()) {
+        result |= Qt::ItemIsDragEnabled | Qt::ItemIsSelectable;
+    } else {
+        result |= Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    }
+
+    result = QAbstractItemModel::flags(index);
+    if(index.column() == 0 && item->isCheckable()) {
+        result |= Qt::ItemIsUserCheckable;
+    }
+
+    return result;
 }
 
 QVariant PropertyModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -129,13 +148,6 @@ QVariant PropertyModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-QModelIndex PropertyModel::buddy(const QModelIndex &index) const  {
-    if(index.isValid() && index.column() == 0) {
-        return createIndex(index.row(), 1, index.internalPointer());
-    }
-    return index;
-}
-
 void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName, QObject *parent) {
     // first create property <-> class hierarchy
     QList<PropertyPair> propertyMap;
@@ -146,7 +158,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
         if(count) {
             for(int i = 0; i < count; i++) {
                 QMetaProperty property = metaObject->property(i);
-                if(property.isUser(propertyObject) ) {   // Hide Qt specific properties
+                if(property.isUser(propertyObject)) { // Hide Qt specific properties
                     PropertyPair pair(metaObject, property);
                     int index = propertyMap.indexOf(pair);
                     if(index != -1) {
@@ -177,7 +189,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
     // finally insert properties for classes containing them
     int i = rowCount();
     Property *propertyItem = static_cast<Property *>((parent == nullptr) ? m_rootItem : parent);
-    beginInsertRows( QModelIndex(), i, i + finalClassList.count() );
+    beginInsertRows(QModelIndex(), i, i + finalClassList.count());
     foreach(const QMetaObject *metaObject, finalClassList) {
         QString name = propertyObject->objectName();
         if(name.isEmpty()) {
@@ -194,7 +206,7 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             propertyItem = new Property(name, propertyObject, m_rootItem, true);
         }
 
-        foreach(PropertyPair pair, propertyMap) {
+        for(PropertyPair &pair : propertyMap) {
             // Check if the property is associated with the current class from the finalClassList
             if(pair.Object == metaObject) {
                 QMetaProperty property(pair.Property);
@@ -293,7 +305,7 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
     Property *it = parent;
     // Add properties left in the list
-    foreach(QByteArray dynProp, dynamicProperties) {
+    for(QByteArray &dynProp : dynamicProperties) {
         QByteArrayList list = dynProp.split('/');
 
         Property *s = it;
