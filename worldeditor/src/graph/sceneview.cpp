@@ -53,6 +53,7 @@ SceneView::~SceneView() {
 
 void SceneView::timerEvent(QTimerEvent *) {
     Timer::update();
+    m_pScene->setToBeUpdated(true);
 }
 
 void SceneView::setEngine(Engine *engine) {

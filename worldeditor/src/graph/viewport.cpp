@@ -6,6 +6,7 @@
 #include <systems/rendersystem.h>
 
 #include <components/camera.h>
+#include <components/scene.h>
 
 #include <resources/pipeline.h>
 
@@ -57,6 +58,7 @@ void Viewport::onDraw() {
         findCamera();
 
         PluginManager::instance()->updateRender(m_pScene);
+        m_pScene->setToBeUpdated(false);
     }
 }
 
