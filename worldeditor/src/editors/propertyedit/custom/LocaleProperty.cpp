@@ -23,11 +23,11 @@ LocaleProperty::LocaleProperty(const QString &name, QObject *propertyObject, QOb
 QWidget *LocaleProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
     ComboEdit *editor = new ComboEdit(parent);
-    m_Editor = editor;
+    m_editor = editor;
 
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
 
     for(auto it : m_locales) {
@@ -35,12 +35,12 @@ QWidget *LocaleProperty::createEditor(QWidget *parent, const QStyleOptionViewIte
         editor->addItem(name.replace(0, 1, name[0].toUpper()), it);
     }
 
-    connect(m_Editor, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(valueChanged()));
-    return m_Editor;
+    connect(m_editor, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(valueChanged()));
+    return m_editor;
 }
 
 bool LocaleProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(editor);
+    ComboEdit *e = static_cast<ComboEdit *>(editor);
     if(e) {
         int index = e->findData(data.toLocale());
         if(index == -1) {
@@ -55,7 +55,7 @@ bool LocaleProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant LocaleProperty::editorData(QWidget *editor) {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(editor);
+    ComboEdit *e = static_cast<ComboEdit *>(editor);
     if(e) {
         return QVariant::fromValue(QLocale(e->currentData().toString()));
     }
@@ -67,7 +67,7 @@ QSize LocaleProperty::sizeHint(const QSize& size) const {
 }
 
 void LocaleProperty::valueChanged() {
-    ComboEdit *e = dynamic_cast<ComboEdit *>(m_Editor);
+    ComboEdit *e = dynamic_cast<ComboEdit *>(m_editor);
     if(e) {
         setValue(e->currentData());
     }

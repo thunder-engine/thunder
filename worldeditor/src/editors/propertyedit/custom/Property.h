@@ -16,15 +16,15 @@ public:
 
     QString name() const;
 
-    QWidget *editor() const { return m_Editor; }
+    QWidget *editor() const { return m_editor; }
 
     QObject *propertyObject() const { return m_propertyObject; }
 
-    bool isRoot() const { return m_Root; }
+    bool isRoot() const { return m_root; }
 
     bool isReadOnly() const;
 
-    bool isCheckable() const { return isRoot(); }
+    bool isCheckable() const { return m_checkable; }
 
     virtual bool isPersistent() const { return true; }
 
@@ -49,17 +49,20 @@ public:
     virtual void setChecked(bool value);
     virtual bool isChecked() const;
 
+    void setOverride(const QString &property);
+
     Property *findPropertyObject(QObject *propertyObject);
 
 protected:
     QObject *m_propertyObject;
     QString m_hints;
     QString m_name;
+    QString m_override;
 
-    QWidget *m_Editor;
+    QWidget *m_editor;
 
-    bool m_Root;
-    bool m_Checkable;
+    bool m_root;
+    bool m_checkable;
 };
 
 #endif

@@ -40,8 +40,14 @@ public:
 
     virtual void actorParentChanged();
 
+    virtual bool isRenderable() const;
+
+    virtual bool isPostProcessVolume() const;
+
 private:
     bool isSerializable() const override;
+
+    bool isComponent() const override;
 
     virtual void onReferenceDestroyed();
 

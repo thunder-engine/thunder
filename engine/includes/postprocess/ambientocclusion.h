@@ -33,7 +33,6 @@ protected:
 
     Texture *m_noiseTexture;
     Texture *m_ssaoTexture;
-    Texture *m_blurTexture;
 
     RenderTarget *m_ssaoTarget;
     RenderTarget *m_blurTarget;

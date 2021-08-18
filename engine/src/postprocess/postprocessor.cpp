@@ -12,7 +12,7 @@
 static Blur *s_pBlur = nullptr;
 
 PostProcessor::PostProcessor() :
-        m_enabled(false),
+        m_enabled(true),
         m_material(nullptr),
         m_resultTexture(nullptr) {
 

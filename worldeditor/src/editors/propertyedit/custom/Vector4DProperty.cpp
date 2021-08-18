@@ -23,13 +23,13 @@ QVariant Vector4DProperty::value(int role) const {
 QWidget *Vector4DProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     VectorEdit *e  = new VectorEdit(parent);
     e->setComponents(4);
-    m_Editor = e;
+    m_editor = e;
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(dataChanged(QVariant)), this, SLOT(onDataChanged(QVariant)));
-    return m_Editor;
+    connect(m_editor, SIGNAL(dataChanged(QVariant)), this, SLOT(onDataChanged(QVariant)));
+    return m_editor;
 }
 
 bool Vector4DProperty::setEditorData(QWidget *editor, const QVariant &data) {

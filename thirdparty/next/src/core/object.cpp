@@ -891,9 +891,9 @@ bool Object::isSerializable() const {
     return true;
 }
 /*!
-    Returns true if the object can be rendered; otherwise returns false.
+    Returns true if the object is component; otherwise returns false.
 */
-bool Object::isRenderable() const {
+bool Object::isComponent() const {
     return false;
 }
 /*!

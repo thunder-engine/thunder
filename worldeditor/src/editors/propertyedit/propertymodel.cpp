@@ -305,7 +305,12 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
 
     Property *it = parent;
     // Add properties left in the list
+
     for(QByteArray &dynProp : dynamicProperties) {
+        if(dynProp.contains("_override")) {
+            continue;
+        }
+
         QByteArrayList list = dynProp.split('/');
 
         Property *s = it;
@@ -333,6 +338,11 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
                 if(p == nullptr) {
                     p = new Property(dynProp, propertyObject, it);
                 }
+
+                if(dynamicProperties.indexOf(dynProp + "_override") > -1) {
+                    p->setOverride(dynProp + "_override");
+                }
+
                 p->setProperty("__Dynamic", true);
             }
         }

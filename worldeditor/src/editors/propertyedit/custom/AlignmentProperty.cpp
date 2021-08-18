@@ -10,17 +10,17 @@ AlignmentProperty::AlignmentProperty(const QString &name, QObject *propertyObjec
 
 QWidget *AlignmentProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_Editor = new AlignmentEdit(parent);
+    m_editor = new AlignmentEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(alignmentChanged(int)), this, SLOT(onDataChanged(int)));
-    return m_Editor;
+    connect(m_editor, SIGNAL(alignmentChanged(int)), this, SLOT(onDataChanged(int)));
+    return m_editor;
 }
 
 bool AlignmentProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    AlignmentEdit *e = dynamic_cast<AlignmentEdit *>(editor);
+    AlignmentEdit *e = static_cast<AlignmentEdit *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setAlignment(static_cast<AlignmentEdit::Alignment>(data.toInt()));
@@ -31,7 +31,7 @@ bool AlignmentProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant AlignmentProperty::editorData(QWidget *editor) {
-    AlignmentEdit *e = dynamic_cast<AlignmentEdit *>(editor);
+    AlignmentEdit *e = static_cast<AlignmentEdit *>(editor);
     if(e) {
         return QVariant(e->alignment());
     }

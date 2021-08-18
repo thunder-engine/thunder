@@ -37,19 +37,19 @@ void TemplateProperty::setValue(const QVariant &value) {
 QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
     ContentSelect *editor = new ContentSelect(parent);
     editor->setType( Property::value(Qt::EditRole).value<Template>().type );
-    m_Editor = editor;
+    m_editor = editor;
 
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
 
     connect(editor, &ContentSelect::assetChanged, this, &TemplateProperty::onAssetChanged);
-    return m_Editor;
+    return m_editor;
 }
 
 bool TemplateProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    ContentSelect *e = dynamic_cast<ContentSelect *>(editor);
+    ContentSelect *e = static_cast<ContentSelect *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setData(data.toString());
@@ -60,7 +60,7 @@ bool TemplateProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant TemplateProperty::editorData(QWidget *editor) {
-    ContentSelect *e = dynamic_cast<ContentSelect *>(editor);
+    ContentSelect *e = static_cast<ContentSelect *>(editor);
     if(e) {
         return e->data();
     }

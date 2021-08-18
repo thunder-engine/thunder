@@ -1,0 +1,15 @@
+{
+    "guid": "{00000000-0287-0000-0000-000000000000}",
+    "md5": "{341b1d6a-81d9-f450-53ab-a613795810f4}",
+    "settings": {
+        "Filtering": 1,
+        "Format": 2,
+        "MIP_maping": false,
+        "Type": 0,
+        "Wrap": 1
+    },
+    "subitems": {
+    },
+    "type": 46,
+    "version": 3
+}

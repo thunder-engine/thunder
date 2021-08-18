@@ -7,7 +7,9 @@ class Engine;
 
 class AntiAliasing : public PostProcessor {
 public:
-    AntiAliasing ();
+    AntiAliasing();
+
+    uint32_t layer() const override;
 };
 
 #endif // ANTIALIASING_H

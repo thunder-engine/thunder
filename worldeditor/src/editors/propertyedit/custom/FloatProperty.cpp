@@ -10,17 +10,17 @@ FloatProperty::FloatProperty(const QString &name, QObject *propertyObject, QObje
 
 QWidget *FloatProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_Editor = new FloatEdit(parent);
+    m_editor = new FloatEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_Editor->setDisabled(object->isReadOnly(objectName()));
+        m_editor->setDisabled(object->isReadOnly(objectName()));
     }
-    connect(m_Editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
-    return m_Editor;
+    connect(m_editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+    return m_editor;
 }
 
 bool FloatProperty::setEditorData(QWidget *editor, const QVariant &data) {
-    FloatEdit *e = dynamic_cast<FloatEdit *>(editor);
+    FloatEdit *e = static_cast<FloatEdit *>(editor);
     if(e) {
         e->blockSignals(true);
         e->setValue(data.toDouble());
@@ -31,7 +31,7 @@ bool FloatProperty::setEditorData(QWidget *editor, const QVariant &data) {
 }
 
 QVariant FloatProperty::editorData(QWidget *editor) {
-    FloatEdit *e = dynamic_cast<FloatEdit *>(editor);
+    FloatEdit *e = static_cast<FloatEdit *>(editor);
     if(e) {
         return QVariant(e->value());
     }
@@ -39,7 +39,7 @@ QVariant FloatProperty::editorData(QWidget *editor) {
 }
 
 void FloatProperty::onDataChanged() {
-    FloatEdit *e = dynamic_cast<FloatEdit *>(m_Editor);
+    FloatEdit *e = static_cast<FloatEdit *>(m_editor);
     if(e) {
         setValue(QVariant(e->value()));
     }

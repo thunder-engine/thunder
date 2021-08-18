@@ -80,10 +80,28 @@ void Component::actorParentChanged() {
 
 }
 /*!
+    Returns true in case of the component can be rendered on the screen; otherwise returns false.
+*/
+bool Component::isRenderable() const {
+    return false;
+}
+/*!
+    \internal
+*/
+bool Component::isPostProcessVolume() const {
+    return false;
+}
+/*!
     \internal
 */
 bool Component::isSerializable() const {
     return (clonedFrom() == 0);
+}
+/*!
+    \internal
+*/
+bool Component::isComponent() const {
+    return true;
 }
 
 void Component::onReferenceDestroyed() {

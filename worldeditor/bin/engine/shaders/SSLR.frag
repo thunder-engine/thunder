@@ -5,7 +5,7 @@
 layout(location = 50) uniform sampler2D depthMap;
 layout(location = 51) uniform sampler2D normalsMap;
 layout(location = 52) uniform sampler2D paramsMap;
-layout(location = 53) uniform sampler2D diffuseMap;
+layout(location = 53) uniform sampler2D emissiveMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
@@ -65,16 +65,16 @@ vec3 rayMarch(vec3 pos, vec3 dir, float step) {
 
 void main(void) {
     float depth = texture(depthMap, _uv0).x;
-	color = vec4(0.0, 0.0, 0.0, 1.0);
+    color = vec4(0.0, 0.0, 0.0, 1.0);
     if(depth < 1.0) {
         vec3 origin = vec3(_uv0, depth);
         vec3 world = getWorld(camera.screenToWorld, origin.xy, origin.z);
 
-		vec4 params = texture(paramsMap, _uv0);
+        vec4 params = texture(paramsMap, _uv0);
         float rough = params.x;
-		if(rough > 0.8) {
-			return;
-		}
+        if(rough > 0.8) {
+            return;
+        }
 		
         vec3 v = normalize(world - camera.position.xyz);
         vec3 n = texture(normalsMap, _uv0).xyz * 2.0 - 1.0;
@@ -86,6 +86,6 @@ void main(void) {
         
         vec3 dir = normalize(ray.xyz - origin);
         vec3 coord = rayMarch(origin, dir, 1.0 / marchSteps);
-        color = vec4(texture(diffuseMap, coord.xy).xyz, coord.z * rough);
+        color = vec4(texture(emissiveMap, coord.xy).xyz, coord.z);
     }
 }

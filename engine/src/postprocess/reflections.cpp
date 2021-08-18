@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "components/postprocesssettings.h"
+#include "components/scene.h"
 
 #include "resources/pipeline.h"
 #include "resources/material.h"
@@ -15,6 +15,8 @@
 #include "amath.h"
 
 #define BLUR_STEPS 4
+
+#define REFLECTIONS "Graphics/Advanced/Reflections"
 
 Reflections::Reflections() :
         m_iblMaterial(nullptr),
@@ -45,6 +47,8 @@ Reflections::Reflections() :
             m_iblMaterial->setTexture("environmentMap", m_environmentTexture);
         }
     }
+
+    Engine::setValue(REFLECTIONS, true);
 }
 
 Reflections::~Reflections() {
@@ -61,6 +65,7 @@ Texture *Reflections::draw(Texture *source, Pipeline *pipeline) {
 
         if(m_iblMaterial) { // combine step
             buffer->setRenderTarget(m_resultTarget);
+            buffer->clearRenderTarget();
             buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_iblMaterial);
         }
 
@@ -70,13 +75,12 @@ Texture *Reflections::draw(Texture *source, Pipeline *pipeline) {
     return source;
 }
 
-void Reflections::setSettings(const PostProcessSettings &settings) {
-    m_enabled = settings.reflectionsEnabled();
-}
-
 void Reflections::resize(int32_t width, int32_t height) {
     m_resultTexture->setWidth(width);
     m_resultTexture->setHeight(height);
+
+    m_sslrTexture->setWidth(width);
+    m_sslrTexture->setHeight(height);
 }
 
 uint32_t Reflections::layer() const {

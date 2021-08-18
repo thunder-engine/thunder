@@ -20,7 +20,7 @@ class Texture;
 class RenderTarget;
 class PostProcessor;
 
-class PostProcessSettings;
+class PostProcessVolume;
 
 class AtlasNode;
 
@@ -81,12 +81,12 @@ protected:
     list<Renderable *> m_UiComponents;
     list<Renderable *> m_Filter;
 
+    list<PostProcessVolume *> m_postProcessVolume;
+
     BuffersMap m_textureBuffers;
     TargetsMap m_renderTargets;
 
     list<PostProcessor *> m_PostEffects;
-
-    list<PostProcessSettings *> m_PostProcessSettings;
 
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_Tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_ShadowPages;
