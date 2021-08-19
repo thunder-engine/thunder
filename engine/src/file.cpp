@@ -67,7 +67,7 @@ void File::fsearchPathAdd(const char *path, bool isFirst) {
     }
     \endcode
 */
-StringList File::_flist(const char *path) {
+StringList File::flist(const char *path) {
     char **rc = PHYSFS_enumerateFiles(path);
     char **i;
 
@@ -84,14 +84,14 @@ StringList File::_flist(const char *path) {
     Create directory. Returns true if the operation succeeded; otherwise returns false.
     \note Directory can be created only if \a path marked as writable.
 */
-bool File::_mkdir(const char *path) {
+bool File::mkdir(const char *path) {
     return (PHYSFS_mkdir(path) == 0);
 }
 /*!
     Delete file. Returns true if the operation succeeded; otherwise returns false.
     \note The file can be deleted only if \a path marked as writable.
 */
-bool File::_delete(const char *path) {
+bool File::fdelete(const char *path) {
     bool result = (PHYSFS_delete(path) != 0);
     if(!result) {
         Log(Log::ERR) << "[ FileIO ] Can't delete file" << path;
@@ -101,7 +101,7 @@ bool File::_delete(const char *path) {
 /*!
     Checks if a file by \a path exists. Returns true if operation succeeded; otherwise returns false.
 */
-bool File::_exists(const char *path) {
+bool File::exists(const char *path) {
     return PHYSFS_exists(path);
 }
 /*!
@@ -109,13 +109,13 @@ bool File::_exists(const char *path) {
 
     Returns true if operation succeeded; otherwise returns false.
 */
-bool File::_isdir(const char *path) {
+bool File::isdir(const char *path) {
     return PHYSFS_isDirectory(path);
 }
 /*!
     Closes file \a stream. Returns 0 if succeeded; otherwise returns non-zero value.
 */
-int File::_fclose(_FILE *stream) {
+int File::fclose(_FILE *stream) {
     return PHYSFS_close(static_cast<PHYSFS_file *>(stream));
 }
 /*!
@@ -126,7 +126,7 @@ int File::_fclose(_FILE *stream) {
 
     \sa _ftell()
  */
-_size_t File::_fseek(_FILE *stream, uint64_t origin) {
+_size_t File::fseek(_FILE *stream, uint64_t origin) {
     A_UNUSED(origin);
     return static_cast<_size_t>(PHYSFS_seek(static_cast<PHYSFS_file *>(stream), origin));
 }
@@ -142,7 +142,7 @@ _size_t File::_fseek(_FILE *stream, uint64_t origin) {
 
     Returns _FILE pointer to file stream if succeeded; otherwise returns nullptr value.
 */
-_FILE *File::_fopen(const char *path, const char *mode) {
+_FILE *File::fopen(const char *path, const char *mode) {
     _FILE *result = nullptr;
     switch (mode[0]) {
         case 'r': result = static_cast<void *>(PHYSFS_openRead(path)); break;
@@ -161,7 +161,7 @@ _FILE *File::_fopen(const char *path, const char *mode) {
 
     Returns number of objects read.
 */
-_size_t File::_fread(void *ptr, _size_t size, _size_t count, _FILE *stream) {
+_size_t File::fread(void *ptr, _size_t size, _size_t count, _FILE *stream) {
     return static_cast<_size_t>(PHYSFS_read(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
 /*!
@@ -170,13 +170,13 @@ _size_t File::_fread(void *ptr, _size_t size, _size_t count, _FILE *stream) {
 
     Returns number of objects written.
 */
-_size_t File::_fwrite(const void *ptr, _size_t size, _size_t count, _FILE *stream) {
+_size_t File::fwrite(const void *ptr, _size_t size, _size_t count, _FILE *stream) {
     return static_cast<_size_t>(PHYSFS_write(static_cast<PHYSFS_file *>(stream), ptr, size, count));
 }
 /*!
     Get total length of a file \a stream in bytes.
 */
-_size_t File::_fsize(_FILE *stream) {
+_size_t File::fsize(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_fileLength(static_cast<PHYSFS_file *>(stream)));
 }
 /*!
@@ -186,6 +186,6 @@ _size_t File::_fsize(_FILE *stream) {
 
     \sa _fseek()
 */
-_size_t File::_ftell(_FILE *stream) {
+_size_t File::ftell(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_tell(static_cast<PHYSFS_file *>(stream)));
 }

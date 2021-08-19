@@ -148,12 +148,12 @@ bool DesktopAdaptor::start() {
 #endif
     g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
 
-    _FILE *fp = g_pFile->_fopen(CONFIG_NAME, "r");
+    _FILE *fp = g_pFile->fopen(CONFIG_NAME, "r");
     if(fp) {
         ByteArray data;
-        data.resize(g_pFile->_fsize(fp));
-        g_pFile->_fread(&data[0], data.size(), 1, fp);
-        g_pFile->_fclose(fp);
+        data.resize(g_pFile->fsize(fp));
+        g_pFile->fread(&data[0], data.size(), 1, fp);
+        g_pFile->fclose(fp);
 
         Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
@@ -363,10 +363,10 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     glfwGetWindowPos(m_pWindow, &x, &y);
     glfwSetWindowMonitor(m_pWindow, (s_Windowed) ? nullptr : m_pMonitor, x, y, s_Width, s_Height, GLFW_DONT_CARE);
 
-    _FILE *fp = g_pFile->_fopen(CONFIG_NAME, "w");
+    _FILE *fp = g_pFile->fopen(CONFIG_NAME, "w");
     if(fp) {
         string data = Json::save(map, 0);
-        g_pFile->_fwrite(&data[0], data.size(), 1, fp);
-        g_pFile->_fclose(fp);
+        g_pFile->fwrite(&data[0], data.size(), 1, fp);
+        g_pFile->fclose(fp);
     }
 }
