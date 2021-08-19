@@ -86,3 +86,7 @@ void Reflections::resize(int32_t width, int32_t height) {
 uint32_t Reflections::layer() const {
     return ICommandBuffer::LIGHT;
 }
+
+const char *Reflections::name() const {
+    return "Reflections";
+}

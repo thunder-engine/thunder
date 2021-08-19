@@ -22,6 +22,8 @@ private:
 
     uint32_t layer() const override;
 
+    const char *name() const override;
+
 private:
     MaterialInstance *m_iblMaterial;
 

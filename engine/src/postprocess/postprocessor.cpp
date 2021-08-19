@@ -55,8 +55,16 @@ uint32_t PostProcessor::layer() const {
     return ICommandBuffer::TRANSLUCENT;
 }
 
+const char *PostProcessor::name() const {
+    return nullptr;
+}
+
 void PostProcessor::setEnabled(bool value) {
     m_enabled = value;
+}
+
+bool PostProcessor::isEnabled() const {
+    return m_enabled;
 }
 
 Blur *PostProcessor::blur() {

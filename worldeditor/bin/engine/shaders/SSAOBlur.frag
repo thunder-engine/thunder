@@ -15,8 +15,8 @@ const int blurRange = 2;
 void main() {
     int n = 0;
     float result = 0.0;
-    for (int x = -blurRange; x < blurRange; x++) {
-        for (int y = -blurRange; y < blurRange; y++) {
+    for(int x = -blurRange; x < blurRange; x++) {
+        for(int y = -blurRange; y < blurRange; y++) {
             vec2 offset = vec2(float(x), float(y)) * camera.screen.xy;
             result += texture(ssaoSample, _uv0 + offset).r;
             n++;

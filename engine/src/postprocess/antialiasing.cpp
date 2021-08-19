@@ -28,3 +28,7 @@ AntiAliasing::AntiAliasing() {
 uint32_t AntiAliasing::layer() const {
     return ICommandBuffer::UI;
 }
+
+const char *AntiAliasing::name() const {
+    return "AntiAliasing";
+}

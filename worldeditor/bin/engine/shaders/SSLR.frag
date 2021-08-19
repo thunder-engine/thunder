@@ -65,19 +65,20 @@ vec3 rayMarch(vec3 pos, vec3 dir, float step) {
 
 void main(void) {
     float depth = texture(depthMap, _uv0).x;
-    color = vec4(0.0, 0.0, 0.0, 1.0);
+    color = vec4(0.0, 0.0, 0.0, 0.0);
     if(depth < 1.0) {
-        vec3 origin = vec3(_uv0, depth);
-        vec3 world = getWorld(camera.screenToWorld, origin.xy, origin.z);
-
+        vec4 normals = texture(normalsMap, _uv0);
         vec4 params = texture(paramsMap, _uv0);
         float rough = params.x;
-        if(rough > 0.8) {
+        if(normals.w == 0.0 || rough > 0.8) {
             return;
         }
+
+        vec3 origin = vec3(_uv0, depth);
+        vec3 world = getWorld(camera.screenToWorld, origin.xy, origin.z);
 		
         vec3 v = normalize(world - camera.position.xyz);
-        vec3 n = texture(normalsMap, _uv0).xyz * 2.0 - 1.0;
+        vec3 n = normals.xyz * 2.0 - 1.0;
         vec3 refl = reflect(v, n);
 
         vec4 ray = camera.worldToScreen * vec4(world + refl, 1.0);

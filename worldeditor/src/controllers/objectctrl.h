@@ -64,6 +64,7 @@ public slots:
     void onUpdateSelected();
 
     void onBufferMenu();
+    void onPostMenu();
 
     void onDrop();
     void onDragEnter(QDragEnterEvent *);
@@ -111,6 +112,8 @@ private slots:
 
     void onBufferChanged();
 
+    void onPostEffectChanged(bool checked);
+
 protected:
     EditorTool::SelectMap m_Selected;
 
@@ -140,7 +143,8 @@ protected:
 
     EditorTool *m_pActiveTool;
 
-    QMenu *m_pMenu;
+    QMenu *m_postMenu;
+    QMenu *m_bufferMenu;
 };
 
 class UndoObject : public QUndoCommand {

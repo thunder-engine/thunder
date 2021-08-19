@@ -29,6 +29,11 @@ public:
     void setTarget(const QString &string = QString());
     QStringList targets() const;
 
+    void setEffect(const QString &name, bool enabled);
+    QStringList effects() const;
+
+    bool isEffectEnabled(const QString &name) const;
+
 protected:
     void drawGrid(Camera &camera);
 

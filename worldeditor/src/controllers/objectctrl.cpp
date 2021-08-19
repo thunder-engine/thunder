@@ -64,7 +64,8 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
         m_pMap(nullptr),
         m_pPipeline(nullptr),
         m_pActiveTool(nullptr),
-        m_pMenu(nullptr) {
+        m_postMenu(nullptr),
+        m_bufferMenu(nullptr) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
     connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
@@ -96,12 +97,13 @@ void ObjectCtrl::init(Scene *scene) {
     m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);
 
-    connect(m_pMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onBufferMenu);
+    connect(m_postMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onPostMenu);
+    connect(m_bufferMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onBufferMenu);
 }
 
 void ObjectCtrl::onBufferMenu() {
-    if(m_pMenu) {
-        m_pMenu->clear();
+    if(m_bufferMenu) {
+        m_bufferMenu->clear();
 
         QStringList list = m_pPipeline->targets();
         list.push_front(tr("Final Buffer"));
@@ -116,13 +118,36 @@ void ObjectCtrl::onBufferMenu() {
             result.replace(regExp2, "\\1 \\2");
             result.replace(0, 1, result[0].toUpper());
 
-            QAction *action = m_pMenu->addAction(result);
+            QAction *action = m_bufferMenu->addAction(result);
             action->setData(it);
             connect(action, &QAction::triggered, this, &ObjectCtrl::onBufferChanged);
             if(first) {
-                m_pMenu->addSeparator();
+                m_bufferMenu->addSeparator();
                 first = false;
             }
+        }
+    }
+}
+
+void ObjectCtrl::onPostMenu() {
+    if(m_postMenu) {
+        m_postMenu->clear();
+
+        for(auto &it : m_pPipeline->effects()) {
+            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+
+            QString result = it;
+            result.replace(regExp1, "\\1 \\2");
+            result.replace(regExp2, "\\1 \\2");
+            result.replace(0, 1, result[0].toUpper());
+
+            QAction *action = m_postMenu->addAction(result);
+            action->setCheckable(true);
+            action->setChecked(m_pPipeline->isEffectEnabled(it));
+            action->setData(it);
+
+            connect(action, &QAction::toggled, this, &ObjectCtrl::onPostEffectChanged);
         }
     }
 }
@@ -131,6 +156,13 @@ void ObjectCtrl::onBufferChanged() {
     QAction *action = qobject_cast<QAction *>(sender());
     if(action && m_pPipeline) {
         m_pPipeline->setTarget(action->data().toString());
+    }
+}
+
+void ObjectCtrl::onPostEffectChanged(bool checked) {
+    QAction *action = qobject_cast<QAction *>(sender());
+    if(action && m_pPipeline) {
+        m_pPipeline->setEffect(action->data().toString(), checked);
     }
 }
 
@@ -570,7 +602,8 @@ void ObjectCtrl::resize(int32_t width, int32_t height) {
 void ObjectCtrl::createMenu(QMenu *menu) {
     CameraCtrl::createMenu(menu);
     menu->addSeparator();
-    m_pMenu = menu->addMenu(tr("Buffer Visualization"));
+    m_postMenu = menu->addMenu(tr("Post Processing"));
+    m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

@@ -205,6 +205,35 @@ QStringList EditorPipeline::targets() const {
     return result;
 }
 
+void EditorPipeline::setEffect(const QString &name, bool enabled) {
+    for(auto &it : m_PostEffects) {
+        if(name == it->name()) {
+            it->setEnabled(enabled);
+        }
+    }
+}
+
+QStringList EditorPipeline::effects() const {
+    QStringList result;
+    for(auto &it : m_PostEffects) {
+        const char *name = it->name();
+        if(name) {
+            result.push_back(name);
+        }
+    }
+
+    return result;
+}
+
+bool EditorPipeline::isEffectEnabled(const QString &name) const {
+    for(auto &it : m_PostEffects) {
+        if(name == it->name()) {
+            return it->isEnabled();
+        }
+    }
+    return false;
+}
+
 void EditorPipeline::draw(Camera &camera) {
     // Retrive object id
     m_Buffer->setRenderTarget(m_renderTargets[SEL_TARGET]);
