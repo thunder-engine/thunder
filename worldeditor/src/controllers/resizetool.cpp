@@ -31,12 +31,15 @@ void ResizeTool::beginControl() {
 }
 
 void ResizeTool::update() {
+    m_Box = objectBound();
+    if(!m_Box.isValid()) {
+        return;
+    }
+
     bool isDrag = m_pController->isDrag();
     if(!isDrag) {
         m_Position = objectPosition();
     }
-
-    m_Box = objectBound();
 
     int axis;
     m_World = Handles::rectTool(m_Box.center, m_Box.extent * 2.0f, axis, isDrag);
