@@ -101,7 +101,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
+        Material *mtl = Engine::loadResource<Material>("CombineOcclusion.mtl");
         if(mtl) {
             m_occlusion = mtl->createInstance();
             m_occlusion->setTexture(SSAO_MAP, m_resultTexture);
@@ -169,4 +169,8 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
 
 uint32_t AmbientOcclusion::layer() const {
     return ICommandBuffer::DEFAULT;
+}
+
+const char *AmbientOcclusion::name() const {
+    return "ScreenSpaceAmbientOcclusion";
 }

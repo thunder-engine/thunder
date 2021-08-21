@@ -62,8 +62,6 @@ private:
 
     Engine *m_Engine;
 
-    QMenu *m_Toolbars;
-
     QObject *m_Properties;
 
     QString m_Path;

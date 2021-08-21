@@ -498,15 +498,15 @@ bool Engine::reloadBundle() {
     indices.clear();
 
     File *file = Engine::file();
-    _FILE *fp = file->_fopen(gIndex, "r");
+    _FILE *fp = file->fopen(gIndex, "r");
     if(fp) {
         ByteArray data;
-        data.resize(file->_fsize(fp));
+        data.resize(file->fsize(fp));
         if(data.empty()) {
             return false;
         }
-        file->_fread(&data[0], data.size(), 1, fp);
-        file->_fclose(fp);
+        file->fread(&data[0], data.size(), 1, fp);
+        file->fclose(fp);
 
         Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
@@ -514,7 +514,7 @@ bool Engine::reloadBundle() {
 
             int32_t version = root[gVersion].toInt();
             if(version == INDEX_VERSION) {
-                for(auto it : root[gContent].toMap()) {
+                for(auto &it : root[gContent].toMap()) {
                     VariantList item = it.second.toList();
                     auto i = item.begin();
                     string path = i->toString();
@@ -523,7 +523,7 @@ bool Engine::reloadBundle() {
                     indices[path] = pair<string, string>(type, it.first);
                 }
 
-                for(auto it : root[gSettings].toMap()) {
+                for(auto &it : root[gSettings].toMap()) {
                     EnginePrivate::m_Values[it.first] = it.second;
                 }
 

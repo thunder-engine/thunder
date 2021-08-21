@@ -69,7 +69,7 @@ bool AudioClip::isStream() const {
     \internal This is an internal function and must not be called manually.
 */
 bool AudioClip::loadAudioData() {
-    m_pClip     = m_pFile->_fopen(m_Path.c_str(), "r");
+    m_pClip     = m_pFile->fopen(m_Path.c_str(), "r");
     if(m_pClip) {
         ov_callbacks callbacks = {
             &read,
@@ -85,9 +85,9 @@ bool AudioClip::loadAudioData() {
         vorbis_info *info = ov_info(m_pVorbisFile, -1);
 
         m_Frequency = info->rate;
-        m_Channels  = info->channels;
+        m_Channels = info->channels;
 
-        m_Duration  = ov_time_total(m_pVorbisFile, -1);
+        m_Duration = ov_time_total(m_pVorbisFile, -1);
 
         return true;
     }
@@ -101,44 +101,44 @@ bool AudioClip::unloadAudioData() {
 }
 
 size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
-    AudioClip *object   = static_cast<AudioClip *>(datasource);
+    AudioClip *object = static_cast<AudioClip *>(datasource);
 
     if(object->m_pFile && object->m_pClip) {
-        return object->m_pFile->_fread(ptr, size, nmemb, object->m_pClip);
+        return object->m_pFile->fread(ptr, size, nmemb, object->m_pClip);
     }
     return 0;
 }
 
 int AudioClip::seek(void *datasource, int64_t offset, int whence) {
-    AudioClip *object   = static_cast<AudioClip *>(datasource);
+    AudioClip *object = static_cast<AudioClip *>(datasource);
 
     if(object->m_pFile && object->m_pClip) {
         if(whence == SEEK_END) { // Physfs workaround
             object->m_SizeFlag  = true;
         }
-        return object->m_pFile->_fseek(object->m_pClip, offset);
+        return object->m_pFile->fseek(object->m_pClip, offset);
     }
     return 0;
 }
 
 int AudioClip::close(void *datasource) {
-    AudioClip *object   = static_cast<AudioClip *>(datasource);
+    AudioClip *object = static_cast<AudioClip *>(datasource);
 
     if(object->m_pFile && object->m_pClip) {
-        return object->m_pFile->_fclose(object->m_pClip);
+        return object->m_pFile->fclose(object->m_pClip);
     }
     return 0;
 }
 
 long AudioClip::tell(void *datasource) {
-    AudioClip *object   = static_cast<AudioClip *>(datasource);
+    AudioClip *object = static_cast<AudioClip *>(datasource);
 
     if(object->m_pFile && object->m_pClip) {
         if(object->m_SizeFlag) { // Physfs workaround
             object->m_SizeFlag = false;
-            return object->m_pFile->_fsize(object->m_pClip);
+            return object->m_pFile->fsize(object->m_pClip);
         } else {
-            return object->m_pFile->_ftell(object->m_pClip);
+            return object->m_pFile->ftell(object->m_pClip);
         }
 
     }
@@ -151,11 +151,11 @@ long AudioClip::tell(void *datasource) {
 void AudioClip::loadUserData(const VariantMap &data) {
     auto it = data.find(HEADER);
     if(it != data.end()) {
-        VariantList header  = (*it).second.value<VariantList>();
-        auto i      = header.begin();
-        m_Path      = (*i).toString();
+        VariantList header = (*it).second.value<VariantList>();
+        auto i = header.begin();
+        m_Path = (*i).toString();
         i++;
-        m_Stream    = (*i).toBool();
+        m_Stream = (*i).toBool();
         i++;
 
         loadAudioData();

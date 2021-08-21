@@ -76,6 +76,8 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
     connect(this, &ObjectCtrl::mapUpdated, this, &ObjectCtrl::onUpdated);
     connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
 
+    SettingsManager::instance()->registerProperty("General/Colors/Background_Color", QColor(51, 51, 51, 0));
+
     m_Tools = {
         new SelectTool(this, m_Selected),
         new MoveTool(this, m_Selected),
@@ -94,44 +96,8 @@ void ObjectCtrl::init(Scene *scene) {
 
     m_pPipeline = new EditorPipeline;
     m_pPipeline->setController(this);
+    m_pPipeline->createMenu(m_pMenu);
     m_pActiveCamera->setPipeline(m_pPipeline);
-
-    connect(m_pMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onBufferMenu);
-}
-
-void ObjectCtrl::onBufferMenu() {
-    if(m_pMenu) {
-        m_pMenu->clear();
-
-        QStringList list = m_pPipeline->targets();
-        list.push_front(tr("Final Buffer"));
-
-        bool first = true;
-        for(auto &it : list) {
-            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
-
-            QString result = it;
-            result.replace(regExp1, "\\1 \\2");
-            result.replace(regExp2, "\\1 \\2");
-            result.replace(0, 1, result[0].toUpper());
-
-            QAction *action = m_pMenu->addAction(result);
-            action->setData(it);
-            connect(action, &QAction::triggered, this, &ObjectCtrl::onBufferChanged);
-            if(first) {
-                m_pMenu->addSeparator();
-                first = false;
-            }
-        }
-    }
-}
-
-void ObjectCtrl::onBufferChanged() {
-    QAction *action = qobject_cast<QAction *>(sender());
-    if(action && m_pPipeline) {
-        m_pPipeline->setTarget(action->data().toString());
-    }
 }
 
 void ObjectCtrl::drawHandles() {
@@ -216,9 +182,6 @@ void ObjectCtrl::setDrag(bool drag) {
 
 void ObjectCtrl::onApplySettings() {
     if(m_pActiveCamera) {
-        EditorPipeline *pipeline = static_cast<EditorPipeline *>(m_pActiveCamera->pipeline());
-        pipeline->loadSettings();
-
         QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();
         m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
@@ -570,7 +533,7 @@ void ObjectCtrl::resize(int32_t width, int32_t height) {
 void ObjectCtrl::createMenu(QMenu *menu) {
     CameraCtrl::createMenu(menu);
     menu->addSeparator();
-    m_pMenu = menu->addMenu(tr("Buffer Visualization"));
+    m_pMenu = menu;
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

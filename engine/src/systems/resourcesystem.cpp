@@ -77,12 +77,12 @@ Resource *ResourceSystem::loadResource(const string &path) {
         }
 
         File *file = Engine::file();
-        _FILE *fp = file->_fopen(uuid.c_str(), "r");
+        _FILE *fp = file->fopen(uuid.c_str(), "r");
         if(fp) {
             ByteArray data;
-            data.resize(file->_fsize(fp));
-            file->_fread(&data[0], data.size(), 1, fp);
-            file->_fclose(fp);
+            data.resize(file->fsize(fp));
+            file->fread(&data[0], data.size(), 1, fp);
+            file->fclose(fp);
 
             Variant var = Bson::load(data);
             if(!var.isValid()) {
@@ -157,12 +157,12 @@ void ResourceSystem::processState(Resource *resource) {
                 string uuid = reference(resource);
                 if(!uuid.empty()) {
                     File *file = Engine::file();
-                    _FILE *fp = file->_fopen(uuid.c_str(), "r");
+                    _FILE *fp = file->fopen(uuid.c_str(), "r");
                     if(fp) {
                         ByteArray data;
-                        data.resize(file->_fsize(fp));
-                        file->_fread(&data[0], data.size(), 1, fp);
-                        file->_fclose(fp);
+                        data.resize(file->fsize(fp));
+                        file->fread(&data[0], data.size(), 1, fp);
+                        file->fclose(fp);
 
                         Variant var = Bson::load(data);
                         if(!var.isValid()) {

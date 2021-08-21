@@ -23,6 +23,8 @@ public:
 
     uint32_t layer() const override;
 
+    const char *name() const override;
+
 protected:
     Vector3 m_samplesKernel[KERNEL_SIZE];
     float m_blurSamplesKernel[4];

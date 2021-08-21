@@ -76,7 +76,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::SceneComposer),
         m_Engine(nullptr),
-        m_Toolbars(nullptr),
         m_Properties(nullptr),
         m_CurrentWorkspace(":/Workspaces/Default.ws"),
         m_Builder(nullptr),
@@ -96,6 +95,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     qRegisterMetaType<uint32_t> ("uint32_t");
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
+
+    SettingsManager::instance()->registerProperty("Language", QLocale());
 
     ui->setupUi(this);
 
@@ -120,7 +121,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->timeline->setWindowTitle(tr("Timeline"));
     ui->classMapView->setWindowTitle(tr("Class View"));
 
-    m_Toolbars = new QMenu(this);
     ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
 
     ctl->resetModified();
@@ -270,8 +270,6 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
 SceneComposer::~SceneComposer() {
     delete m_Properties;
-
-    delete m_Toolbars;
 
     delete ui;
 }
@@ -444,6 +442,9 @@ void SceneComposer::closeEvent(QCloseEvent *event) {
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
         settings.setValue(str, QString::fromStdString(Json::save(params)));
     }
+
+    SettingsManager::instance()->saveSettings();
+
     saveWorkspace();
     QApplication::quit();
 }
@@ -730,6 +731,7 @@ void SceneComposer::onImportFinished() {
     ui->projectWidget->setModel(ProjectManager::instance());
 
     ComponentModel::instance()->update();
+    SettingsManager::instance()->loadSettings();
 
     ui->actionNew->setEnabled(true);
     ui->actionSave->setEnabled(true);

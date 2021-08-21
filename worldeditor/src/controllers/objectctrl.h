@@ -56,14 +56,15 @@ public:
 
     QList<EditorTool *> tools() const { return m_Tools; }
 
+    bool isDrag() const { return m_Drag; }
+    void setDrag(bool drag);
+
 public slots:
     void onInputEvent(QInputEvent *) override;
 
     void onCreateComponent(const QString &name);
     void onDeleteComponent(const QString &name);
     void onUpdateSelected();
-
-    void onBufferMenu();
 
     void onDrop();
     void onDragEnter(QDragEnterEvent *);
@@ -85,9 +86,6 @@ public slots:
 
     void drawHelpers(Object &object);
 
-    bool isDrag() const { return m_Drag; }
-    void setDrag(bool drag);
-
 signals:
     void mapUpdated();
 
@@ -108,8 +106,6 @@ private slots:
     void onApplySettings();
 
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
-
-    void onBufferChanged();
 
 protected:
     EditorTool::SelectMap m_Selected;
