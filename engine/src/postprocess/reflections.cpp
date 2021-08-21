@@ -50,7 +50,7 @@ Reflections::Reflections() :
 
     Engine::setValue(REFLECTIONS, true);
 
-    setEnabled(false)
+    setEnabled(false);
 }
 
 Reflections::~Reflections() {
