@@ -105,6 +105,9 @@ QAbstractButton[checkblue="true"]:checked:hover {
     background: #0288d1
 }
 
+QToolButton {
+    padding: 2px 16px 2px 8px;
+}
 QToolButton::menu-indicator {
     margin: 2px 5px;
     image: url(:/Style/styles/dark/icons/arrow-down.png);

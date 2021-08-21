@@ -1,5 +1,5 @@
-#ifndef OBJECTCONTROLLERPIPELINE_H
-#define OBJECTCONTROLLERPIPELINE_H
+#ifndef EDITORPIPELINE_H
+#define EDITORPIPELINE_H
 
 #include "pipeline.h"
 
@@ -10,17 +10,19 @@ class Texture;
 class Renderable;
 class Outline;
 
-class EditorPipeline : public Pipeline {
+class QMenu;
+
+class EditorPipeline : public QObject, public Pipeline {
 public:
     EditorPipeline();
 
-    void loadSettings();
+
 
     void setController(CameraCtrl *ctrl);
 
-    uint32_t objectId () const;
+    uint32_t objectId() const;
 
-    Vector3 mouseWorld () const;
+    Vector3 mouseWorld() const;
 
     void setMousePosition(int32_t x, int32_t y);
 
@@ -29,7 +31,21 @@ public:
     void setTarget(const QString &string = QString());
     QStringList targets() const;
 
+    void createMenu(QMenu *menu);
+
+    static void registerSettings();
+
+private slots:
+    void onBufferMenu();
+
+    void onBufferChanged();
+    void onPostEffectChanged(bool checked);
+
+    void onApplySettings();
+
 protected:
+    void fillEffectMenu(QMenu *menu, uint32_t layers);
+
     void drawGrid(Camera &camera);
 
     void draw(Camera &camera) override;
@@ -63,6 +79,10 @@ protected:
     uint32_t m_ObjectId;
     int32_t m_MouseX;
     int32_t m_MouseY;
+
+    QMenu *m_postMenu;
+    QMenu *m_lightMenu;
+    QMenu *m_bufferMenu;
 };
 
-#endif // OBJECTCONTROLLERPIPELINE_H
+#endif // EDITORPIPELINE_H

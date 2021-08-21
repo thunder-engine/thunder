@@ -29,7 +29,10 @@ public:
 
     virtual uint32_t layer() const;
 
+    virtual const char *name() const;
+
     void setEnabled(bool value);
+    bool isEnabled() const;
 
     static Blur *blur();
 

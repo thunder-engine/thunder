@@ -61,7 +61,6 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
 
             m_resultTarget->setColorAttachment(0, m_bloomPasses[i].m_downTexture);
             buffer->setRenderTarget(m_resultTarget);
-
             buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
         }
         buffer->setViewport(0, 0, source->width(), source->height());
@@ -103,4 +102,8 @@ void Bloom::resize(int32_t width, int32_t height) {
 
 void Bloom::setSettings(const PostProcessSettings &settings) {
     m_threshold = settings.readValue(BLOOM_THRESHOLD).toFloat();
+}
+
+const char *Bloom::name() const {
+    return "Bloom";
 }

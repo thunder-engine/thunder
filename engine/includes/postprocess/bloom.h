@@ -32,6 +32,8 @@ private:
 
     void setSettings(const PostProcessSettings &settings) override;
 
+    const char *name() const override;
+
 private:
     float m_threshold;
 
