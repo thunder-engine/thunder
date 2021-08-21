@@ -64,8 +64,7 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
         m_pMap(nullptr),
         m_pPipeline(nullptr),
         m_pActiveTool(nullptr),
-        m_postMenu(nullptr),
-        m_bufferMenu(nullptr) {
+        m_pMenu(nullptr) {
 
     connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
     connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
@@ -76,6 +75,8 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
     connect(this, &ObjectCtrl::mapUpdated, this, &ObjectCtrl::onUpdated);
     connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
+
+    SettingsManager::instance()->registerProperty("General/Colors/Background_Color", QColor(51, 51, 51, 0));
 
     m_Tools = {
         new SelectTool(this, m_Selected),
@@ -95,75 +96,8 @@ void ObjectCtrl::init(Scene *scene) {
 
     m_pPipeline = new EditorPipeline;
     m_pPipeline->setController(this);
+    m_pPipeline->createMenu(m_pMenu);
     m_pActiveCamera->setPipeline(m_pPipeline);
-
-    connect(m_postMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onPostMenu);
-    connect(m_bufferMenu, &QMenu::aboutToShow, this, &ObjectCtrl::onBufferMenu);
-}
-
-void ObjectCtrl::onBufferMenu() {
-    if(m_bufferMenu) {
-        m_bufferMenu->clear();
-
-        QStringList list = m_pPipeline->targets();
-        list.push_front(tr("Final Buffer"));
-
-        bool first = true;
-        for(auto &it : list) {
-            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
-
-            QString result = it;
-            result.replace(regExp1, "\\1 \\2");
-            result.replace(regExp2, "\\1 \\2");
-            result.replace(0, 1, result[0].toUpper());
-
-            QAction *action = m_bufferMenu->addAction(result);
-            action->setData(it);
-            connect(action, &QAction::triggered, this, &ObjectCtrl::onBufferChanged);
-            if(first) {
-                m_bufferMenu->addSeparator();
-                first = false;
-            }
-        }
-    }
-}
-
-void ObjectCtrl::onPostMenu() {
-    if(m_postMenu) {
-        m_postMenu->clear();
-
-        for(auto &it : m_pPipeline->effects()) {
-            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
-
-            QString result = it;
-            result.replace(regExp1, "\\1 \\2");
-            result.replace(regExp2, "\\1 \\2");
-            result.replace(0, 1, result[0].toUpper());
-
-            QAction *action = m_postMenu->addAction(result);
-            action->setCheckable(true);
-            action->setChecked(m_pPipeline->isEffectEnabled(it));
-            action->setData(it);
-
-            connect(action, &QAction::toggled, this, &ObjectCtrl::onPostEffectChanged);
-        }
-    }
-}
-
-void ObjectCtrl::onBufferChanged() {
-    QAction *action = qobject_cast<QAction *>(sender());
-    if(action && m_pPipeline) {
-        m_pPipeline->setTarget(action->data().toString());
-    }
-}
-
-void ObjectCtrl::onPostEffectChanged(bool checked) {
-    QAction *action = qobject_cast<QAction *>(sender());
-    if(action && m_pPipeline) {
-        m_pPipeline->setEffect(action->data().toString(), checked);
-    }
 }
 
 void ObjectCtrl::drawHandles() {
@@ -248,9 +182,6 @@ void ObjectCtrl::setDrag(bool drag) {
 
 void ObjectCtrl::onApplySettings() {
     if(m_pActiveCamera) {
-        EditorPipeline *pipeline = static_cast<EditorPipeline *>(m_pActiveCamera->pipeline());
-        pipeline->loadSettings();
-
         QColor color = SettingsManager::instance()->property("General/Colors/Background_Color").value<QColor>();
         m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
@@ -602,8 +533,7 @@ void ObjectCtrl::resize(int32_t width, int32_t height) {
 void ObjectCtrl::createMenu(QMenu *menu) {
     CameraCtrl::createMenu(menu);
     menu->addSeparator();
-    m_postMenu = menu->addMenu(tr("Post Processing"));
-    m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
+    m_pMenu = menu;
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

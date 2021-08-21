@@ -62,8 +62,6 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
             m_resultTarget->setColorAttachment(0, m_bloomPasses[i].m_downTexture);
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
-
-            pipeline->setTarget(string("bloom ") + to_string(i), m_bloomPasses[i].m_downTexture);
         }
         buffer->setViewport(0, 0, source->width(), source->height());
 

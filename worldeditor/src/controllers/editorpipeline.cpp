@@ -21,6 +21,8 @@
 
 #include <QVariant>
 #include <QColor>
+#include <QMenu>
+#include <QRegularExpression>
 
 #define SELECT_MAP  "selectMap"
 #define DEPTH_MAP   "depthMap"
@@ -34,6 +36,13 @@
 #define FINAL_TARGET "finalTarget"
 
 #define OUTLINE     "Outline"
+
+namespace {
+    const QString postSettings("Graphics/");
+    const QString gridColor("General/Colors/Grid_Color");
+    const QString outlineWidth("General/Colors/Outline_Width");
+    const QString outlineColor("General/Colors/Outline_Color");
+};
 
 class Outline : public PostProcessor {
 public:
@@ -67,7 +76,10 @@ EditorPipeline::EditorPipeline() :
         m_pSelect(nullptr),
         m_ObjectId(0),
         m_MouseX(0),
-        m_MouseY(0) {
+        m_MouseY(0),
+        m_postMenu(nullptr),
+        m_lightMenu(nullptr),
+        m_bufferMenu(nullptr) {
 
     {
         Texture *select = Engine::objectCreate<Texture>();
@@ -150,16 +162,28 @@ EditorPipeline::EditorPipeline() :
 
     Handles::init();
 
-    loadSettings();
+    SettingsManager::instance()->registerProperty(qPrintable(gridColor), QColor(102, 102, 102, 102));
+    SettingsManager::instance()->registerProperty(qPrintable(outlineWidth), 1.0f);
+    SettingsManager::instance()->registerProperty(qPrintable(outlineColor), QColor(255, 128, 0, 255));
+
+    for(auto it : m_PostEffects) {
+        SettingsManager::instance()->registerProperty(qPrintable(postSettings + it->name()), it->isEnabled());
+    }
+
+    QObject::connect(SettingsManager::instance(), &SettingsManager::updated, this, &EditorPipeline::onApplySettings);
 }
 
-void EditorPipeline::loadSettings() {
-    QColor color = SettingsManager::instance()->property("General/Colors/Grid_Color").value<QColor>();
+void EditorPipeline::onApplySettings() {
+    QColor color = SettingsManager::instance()->property(qPrintable(gridColor)).value<QColor>();
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
-    color = SettingsManager::instance()->property("General/Colors/Outline_Color").value<QColor>();
+    color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
     m_pOutline->m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-    m_pOutline->m_width = SettingsManager::instance()->property("General/Colors/Outline_Width").toFloat();
+    m_pOutline->m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
+
+    for(auto it : m_PostEffects) {
+        it->setEnabled(SettingsManager::instance()->property(qPrintable(postSettings + it->name())).toBool());
+    }
 }
 
 void EditorPipeline::setController(CameraCtrl *ctrl) {
@@ -205,33 +229,15 @@ QStringList EditorPipeline::targets() const {
     return result;
 }
 
-void EditorPipeline::setEffect(const QString &name, bool enabled) {
-    for(auto &it : m_PostEffects) {
-        if(name == it->name()) {
-            it->setEnabled(enabled);
-        }
-    }
-}
+void EditorPipeline::createMenu(QMenu *menu) {
+    m_postMenu = menu->addMenu(tr("Post Processing"));
+    m_lightMenu = menu->addMenu(tr("Lighting Features"));
+    m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
 
-QStringList EditorPipeline::effects() const {
-    QStringList result;
-    for(auto &it : m_PostEffects) {
-        const char *name = it->name();
-        if(name) {
-            result.push_back(name);
-        }
-    }
+    fillEffectMenu(m_lightMenu, ICommandBuffer::DEFAULT | ICommandBuffer::LIGHT);
+    fillEffectMenu(m_postMenu, ICommandBuffer::TRANSLUCENT | ICommandBuffer::UI);
 
-    return result;
-}
-
-bool EditorPipeline::isEffectEnabled(const QString &name) const {
-    for(auto &it : m_PostEffects) {
-        if(name == it->name()) {
-            return it->isEnabled();
-        }
-    }
-    return false;
+    QObject::connect(m_bufferMenu, &QMenu::aboutToShow, this, &EditorPipeline::onBufferMenu);
 }
 
 void EditorPipeline::draw(Camera &camera) {
@@ -419,4 +425,79 @@ void EditorPipeline::drawGrid(Camera &camera) {
     m_Buffer->drawMesh(transform * m, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);
 
     m_Buffer->setColor(Vector4(1.0f));
+}
+
+void EditorPipeline::onBufferMenu() {
+    if(m_bufferMenu) {
+        m_bufferMenu->clear();
+
+        QStringList list = targets();
+        list.push_front(tr("Final Buffer"));
+
+        bool first = true;
+        for(auto &it : list) {
+            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+
+            QString result = it;
+            result.replace(regExp1, "\\1 \\2");
+            result.replace(regExp2, "\\1 \\2");
+            result.replace(0, 1, result[0].toUpper());
+
+            QAction *action = m_bufferMenu->addAction(result);
+            action->setData(it);
+            QObject::connect(action, &QAction::triggered, this, &EditorPipeline::onBufferChanged);
+            if(first) {
+                m_bufferMenu->addSeparator();
+                first = false;
+            }
+        }
+    }
+}
+
+void EditorPipeline::fillEffectMenu(QMenu *menu, uint32_t layers) {
+    if(menu) {
+        menu->clear();
+
+        for(auto &it : m_PostEffects) {
+            if(it->layer() & layers) {
+                static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+                static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+
+                QString result = it->name();
+                if(result.isEmpty()) {
+                    continue;
+                }
+                result.replace(regExp1, "\\1 \\2");
+                result.replace(regExp2, "\\1 \\2");
+                result.replace(0, 1, result[0].toUpper());
+
+                QAction *action = menu->addAction(result);
+                action->setCheckable(true);
+                action->setChecked(it->isEnabled());
+                action->setData(it->name());
+
+                QObject::connect(action, &QAction::toggled, this, &EditorPipeline::onPostEffectChanged);
+            }
+        }
+    }
+}
+
+void EditorPipeline::onBufferChanged() {
+    QAction *action = qobject_cast<QAction *>(QObject::sender());
+    if(action) {
+        setTarget(action->data().toString());
+    }
+}
+
+void EditorPipeline::onPostEffectChanged(bool checked) {
+    QAction *action = qobject_cast<QAction *>(QObject::sender());
+    if(action) {
+        for(auto &it : m_PostEffects) {
+            if(action->data().toString() == it->name()) {
+                it->setEnabled(checked);
+                SettingsManager::instance()->setProperty(qPrintable(postSettings + it->name()), checked);
+            }
+        }
+    }
 }

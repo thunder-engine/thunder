@@ -172,5 +172,5 @@ uint32_t AmbientOcclusion::layer() const {
 }
 
 const char *AmbientOcclusion::name() const {
-    return "AmbientOcclusion";
+    return "ScreenSpaceAmbientOcclusion";
 }

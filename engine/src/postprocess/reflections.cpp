@@ -49,6 +49,8 @@ Reflections::Reflections() :
     }
 
     Engine::setValue(REFLECTIONS, true);
+
+    setEnabled(false)
 }
 
 Reflections::~Reflections() {
@@ -88,5 +90,5 @@ uint32_t Reflections::layer() const {
 }
 
 const char *Reflections::name() const {
-    return "Reflections";
+    return "ScreenSpaceLocalReflections";
 }
