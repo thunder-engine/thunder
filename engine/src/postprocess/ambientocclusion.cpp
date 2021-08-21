@@ -101,7 +101,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
-        Material *mtl = Engine::loadResource<Material>("CombineOcclusion.mtl");
+        Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
         if(mtl) {
             m_occlusion = mtl->createInstance();
             m_occlusion->setTexture(SSAO_MAP, m_resultTexture);
