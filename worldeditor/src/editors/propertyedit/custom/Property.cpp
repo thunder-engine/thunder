@@ -96,7 +96,7 @@ void Property::setChecked(bool value) {
     if(!m_override.isEmpty() && m_propertyObject) {
         m_propertyObject->setProperty(qPrintable(m_override), value);
     }
-    if(m_editor) {
+    if(m_editor && dynamic_cast<Actions *>(m_editor)) {
         static_cast<Actions *>(m_editor)->onDataChanged(value);
     }
 }
@@ -105,7 +105,7 @@ bool Property::isChecked() const {
     if(!m_override.isEmpty() && m_propertyObject) {
         return m_propertyObject->property(qPrintable(m_override)).toBool();
     }
-    if(m_editor) {
+    if(m_editor && dynamic_cast<Actions *>(m_editor)) {
         return static_cast<Actions *>(m_editor)->isChecked();
     }
     return false;
