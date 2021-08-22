@@ -32,6 +32,12 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
         radius(extent.length()) {
 }
 /*!
+    Returns true in case of AABBox is valid; otherwise returns false.
+*/
+bool AABBox::isValid() const {
+    return (extent.x != -1.0f) && (extent.y != -1.0f)  && (extent.z != -1.0f);
+}
+/*!
     Grow the AABBox to encapsulate a spehere with \a position and \a radius.
 */
 void AABBox::encapsulate(const Vector3 &position, areal radius) {
@@ -49,14 +55,14 @@ void AABBox::encapsulate(const Vector3 &position, areal radius) {
     setBox(bb[0], bb[1]);
 }
 /*!
-    Grow the AABBox to encapsulate the \a box.
+    Grow the AABBox to encapsulate the \a aabb.
 */
-void AABBox::encapsulate(const AABBox &box) {
+void AABBox::encapsulate(const AABBox &aabb) {
     Vector3 bb0[2];
-    this->box(bb0[0], bb0[1]);
+    box(bb0[0], bb0[1]);
 
     Vector3 bb1[2];
-    box.box(bb1[0], bb1[1]);
+    aabb.box(bb1[0], bb1[1]);
 
     std::vector<Vector3> points = { Vector3(bb1[0].x, bb1[0].y, bb1[0].z),
                                     Vector3(bb1[1].x, bb1[0].y, bb1[0].z),

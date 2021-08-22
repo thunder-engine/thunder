@@ -79,6 +79,7 @@ Vector3 EditorTool::objectPosition() {
 
 AABBox EditorTool::objectBound() {
     AABBox result;
+    result.extent = Vector3(-1.0f);
     bool first = true;
     if(!m_Selected.empty()) {
         for(auto &it : m_Selected) {

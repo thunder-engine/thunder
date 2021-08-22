@@ -26,10 +26,12 @@ void MoveTool::update() {
         for(const auto &it : m_Selected) {
             Vector3 dt(delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
-            if(a) {
+            if(a && a->transform()) {
                 dt = a->transform()->worldTransform().rotation().inverse() * delta;
             }
-            it.object->transform()->setPosition(it.position + dt);
+            if(it.object->transform()) {
+                it.object->transform()->setPosition(it.position + dt);
+            }
         }
         m_pController->objectsUpdated();
         m_pController->objectsChanged(m_pController->selected(), "Position");
