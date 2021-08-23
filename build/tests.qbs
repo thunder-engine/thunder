@@ -61,19 +61,6 @@ Project {
             cpp.rpaths: "@executable_path/../Frameworks/"
         }
 
-        Properties {
-            condition: qbs.targetOS[0] === "windows"
-            cpp.dynamicLibraries: outer.concat([ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32" ])
-        }
-        Properties {
-            condition: qbs.targetOS[0] === "linux"
-            cpp.dynamicLibraries: outer.concat([ "X11", "Xrandr", "Xi", "Xxf86vm", "Xcursor", "Xinerama", "dl", "pthread" ])
-        }
-        Properties {
-            condition: qbs.targetOS[0] === "macos"
-            cpp.weakFrameworks: [ "OpenGL", "Cocoa", "CoreVideo", "IOKit" ]
-        }
-
         Group {
             name: "Install " + tests.tests_NAME
             fileTagsFilter: product.type
