@@ -58,6 +58,7 @@ Q_DECLARE_METATYPE(Axises)
 
 const QString EditorTag("editor=");
 const QString EnumTag("enum=");
+const QString MetaTag("meta=");
 const QString ReadOnlyTag("ReadOnly");
 
 NextObject::NextObject(Object *data, QObject *parent) :
@@ -196,35 +197,21 @@ bool NextObject::event(QEvent *e) {
     return false;
 }
 
-QString NextObject::editorTag(const MetaProperty &property) {
+QString NextObject::propertyTag(const MetaProperty &property, const QString &tag) const {
     if(property.table() && property.table()->annotation) {
         QString annotation(property.table()->annotation);
         QStringList list = annotation.split(',');
         foreach(QString it, list) {
-            int index = it.indexOf(EditorTag);
+            int index = it.indexOf(tag);
             if(index > -1) {
-                return it.remove(EditorTag);
+                return it.remove(tag);
             }
         }
     }
     return QString();
 }
 
-QString NextObject::enumTag(const MetaProperty &property) {
-    if(property.table() && property.table()->annotation) {
-        QString annotation(property.table()->annotation);
-        QStringList list = annotation.split(',');
-        foreach(QString it, list) {
-            int index = it.indexOf(EnumTag);
-            if(index > -1) {
-                return it.remove(EnumTag);
-            }
-        }
-    }
-    return QString();
-}
-
-Object *NextObject::findChild(QStringList &path) {
+Object *NextObject::findChild(QStringList &path) const {
     Object *parent = m_pObject;
     if(parent == nullptr) {
         return nullptr;
@@ -245,9 +232,26 @@ bool NextObject::isReadOnly(const QString &key) const {
     return m_Flags.value(key, false);
 }
 
+QString NextObject::propertyHint(const QString &name) const {
+    QStringList list = name.split('/');
+    if(m_pObject) {
+        Object *o = findChild(list);
+        QString propertyName = list.join('/');
+        Variant current = o->property(qPrintable(propertyName));
+
+        const MetaObject *meta = o->metaObject();
+        int index = meta->indexOfProperty(qPrintable(propertyName));
+        MetaProperty property = meta->property(index);
+
+        return propertyTag(property, MetaTag);
+    }
+
+    return QString();
+}
+
 QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Object *object) {
-    QString editor = editorTag(property);
-    QString enumProperty = enumTag(property);
+    QString editor = propertyTag(property, EditorTag);
+    QString enumProperty = propertyTag(property, EnumTag);
 
     switch(value.userType()) {
         case MetaType::BOOLEAN: {
@@ -318,8 +322,8 @@ QVariant NextObject::qVariant(Variant &value, const MetaProperty &property, Obje
 }
 
 Variant NextObject::aVariant(QVariant &value, Variant &current, const MetaProperty &property) {
-    QString editor = NextObject::editorTag(property);
-    QString enumProperty = enumTag(property);
+    QString editor = propertyTag(property, EditorTag);
+    QString enumProperty = propertyTag(property, EnumTag);
 
     switch(current.userType()) {
         case MetaType::BOOLEAN: {

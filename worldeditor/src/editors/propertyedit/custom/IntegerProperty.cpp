@@ -10,11 +10,29 @@ IntegerProperty::IntegerProperty(const QString &name, QObject *propertyObject, Q
 
 QWidget *IntegerProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_editor = new IntegerEdit(parent);
+    IntegerEdit *editor = new IntegerEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
+        editor->setDisabled(object->isReadOnly(objectName()));
+        if(!m_hints.isEmpty()) {
+            static QRegExp regExp {"\\d+"};
+
+            QStringList list;
+            int pos = 0;
+
+            while((pos = regExp.indexIn(m_hints, pos)) != -1) {
+                list << regExp.cap(0);
+                pos += regExp.matchedLength();
+            }
+
+            if(list.size() == 2) {
+                editor->setInterval(list[0].toInt(), list[1].toInt());
+            }
+        }
     }
+
+    m_editor = editor;
+
     connect(m_editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
     return m_editor;
 }

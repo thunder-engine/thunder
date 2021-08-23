@@ -3,25 +3,44 @@
 
 #include <limits.h>
 
+#include <QIntValidator>
+
 IntegerEdit::IntegerEdit(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::IntegerEdit) {
     ui->setupUi(this);
 
-    ui->spinBox->setProperty("minimum", -INT_MAX);
-    ui->spinBox->setProperty("maximum",  INT_MAX);
+    QIntValidator *validator = new QIntValidator(-INT32_MAX, INT32_MAX, this);
 
-    connect(ui->spinBox, SIGNAL(editingFinished()), this, SIGNAL(editingFinished()));
+    ui->lineEdit->setValidator(validator);
+
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &IntegerEdit::editingFinished);
+    connect(ui->horizontalSlider, &QSlider::valueChanged, this, &IntegerEdit::onValueChanged);
+
+    ui->horizontalSlider->setVisible(false);
 }
 
 IntegerEdit::~IntegerEdit() {
     delete ui;
 }
 
+void IntegerEdit::setInterval(int min, int max) {
+    ui->horizontalSlider->setRange(min, max);
+
+    ui->horizontalSlider->setVisible(true);
+}
+
 void IntegerEdit::setValue(int32_t value) {
-    ui->spinBox->setValue(value);
+    ui->lineEdit->setText(QString::number(value));
+    ui->horizontalSlider->setValue(value);
 }
 
 int32_t IntegerEdit::value() const {
-    return ui->spinBox->value();
+    return ui->lineEdit->text().toInt();
+}
+
+void IntegerEdit::onValueChanged(int value) {
+    ui->lineEdit->setText(QString::number(value));
+
+    emit editingFinished();
 }

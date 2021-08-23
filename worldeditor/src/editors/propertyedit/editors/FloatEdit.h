@@ -11,15 +11,20 @@ class FloatEdit : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FloatEdit (QWidget *parent = nullptr);
-    ~FloatEdit ();
+    explicit FloatEdit(QWidget *parent = nullptr);
+    ~FloatEdit();
 
-    void setValue (double value);
+    void setValue(double value);
 
-    double value () const;
+    double value() const;
+
+    void setInterval(double min, double max);
 
 signals:
-    void editingFinished ();
+    void editingFinished();
+
+private slots:
+    void onValueChanged(int value);
 
 private:
     Ui::FloatEdit *ui;

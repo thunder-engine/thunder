@@ -25,9 +25,11 @@ public:
 
     Object *component(const QString &name);
 
-    Object *findChild(QStringList &path);
+    Object *findChild(QStringList &path) const;
 
     bool isReadOnly(const QString &key) const;
+
+    QString propertyHint(const QString &name) const;
 
     static Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent);
 
@@ -48,8 +50,7 @@ protected slots:
 protected:
     bool event(QEvent *e);
 
-    QString editorTag(const MetaProperty &property);
-    QString enumTag(const MetaProperty &property);
+    QString propertyTag(const MetaProperty &property, const QString &tag) const;
 
     QVariant qVariant(Variant &value, const MetaProperty &property, Object *object);
     Variant aVariant(QVariant &value, Variant &current, const MetaProperty &property);

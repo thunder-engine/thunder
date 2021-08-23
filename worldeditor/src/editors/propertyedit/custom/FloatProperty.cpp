@@ -10,11 +10,27 @@ FloatProperty::FloatProperty(const QString &name, QObject *propertyObject, QObje
 
 QWidget *FloatProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
     Q_UNUSED(option)
-    m_editor = new FloatEdit(parent);
+    FloatEdit *editor = new FloatEdit(parent);
     NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
     if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
+        editor->setDisabled(object->isReadOnly(objectName()));
+        if(!m_hints.isEmpty()) {
+            static QRegExp regExp {"\\d+\\.\\d+"};
+
+            QStringList list;
+            int pos = 0;
+
+            while((pos = regExp.indexIn(m_hints, pos)) != -1) {
+                list << regExp.cap(0);
+                pos += regExp.matchedLength();
+            }
+
+            if(list.size() == 2) {
+                editor->setInterval(list[0].toFloat(), list[1].toFloat());
+            }
+        }
     }
+    m_editor = editor;
     connect(m_editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
     return m_editor;
 }

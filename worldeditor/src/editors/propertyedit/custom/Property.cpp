@@ -38,6 +38,10 @@ void Property::setValue(const QVariant &value) {
     }
 }
 
+void Property::setEditorHints(const QString &hints) {
+    m_hints = hints;
+}
+
 QString Property::name() const {
     if(m_name.length() != 0)
         return m_name;

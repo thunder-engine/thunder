@@ -36,7 +36,7 @@ public:
 
     virtual void setValue(const QVariant &value);
 
-    virtual void setEditorHints(const QString &hints) { m_hints = hints; }
+    virtual void setEditorHints(const QString &hints);
 
     virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &);
 

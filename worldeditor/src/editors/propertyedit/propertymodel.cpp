@@ -2,6 +2,7 @@
 
 #include "custom/Property.h"
 #include "custom/EnumProperty.h"
+#include "nextobject.h"
 
 #include <QApplication>
 #include <QMetaProperty>
@@ -59,7 +60,7 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
             if(index.column() == 0) {
                 return fromCamelCase(item->name().replace('_', ' '));
             }
-            if(index.column() == 1) {
+            if(index.column() == 1 && (item->editor() == nullptr || role == Qt::EditRole)) {
                 return item->value(role);
             }
         } break;
@@ -186,11 +187,12 @@ void PropertyModel::addItem(QObject *propertyObject, const QString &propertyName
             finalClassList.push_back(obj);
         }
     }
+
     // finally insert properties for classes containing them
     int i = rowCount();
     Property *propertyItem = static_cast<Property *>((parent == nullptr) ? m_rootItem : parent);
     beginInsertRows(QModelIndex(), i, i + finalClassList.count());
-    foreach(const QMetaObject *metaObject, finalClassList) {
+    for(const QMetaObject *metaObject : finalClassList) {
         QString name = propertyObject->objectName();
         if(name.isEmpty()) {
             // Set default name of the hierarchy property to the class name
@@ -306,6 +308,8 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
     Property *it = parent;
     // Add properties left in the list
 
+    NextObject *next = dynamic_cast<NextObject *>(propertyObject);
+
     for(QByteArray &dynProp : dynamicProperties) {
         if(dynProp.contains("_override")) {
             continue;
@@ -330,8 +334,13 @@ void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyO
             } else if(!list[i].isEmpty()) {
                 if(!m_userCallbacks.isEmpty()) {
                     QList<PropertyEditor::UserTypeCB>::iterator iter = m_userCallbacks.begin();
-                    while( p == nullptr && iter != m_userCallbacks.end() ) {
+                    while(p == nullptr && iter != m_userCallbacks.end()) {
                         p = (*iter)(dynProp, propertyObject, it);
+
+                        if(p && next) {
+                            p->setEditorHints(next->propertyHint(QString(dynProp)));
+                        }
+
                         ++iter;
                     }
                 }
