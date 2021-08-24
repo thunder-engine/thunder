@@ -61,6 +61,10 @@ public:
         m_resultTarget->setColorAttachment(0, m_resultTexture);
     }
 
+    uint32_t layer() const {
+        return ICommandBuffer::UI;
+    }
+
     float m_width;
     Vector4 m_color;
 };
@@ -374,10 +378,6 @@ void EditorPipeline::drawGrid(Camera &camera) {
     if(ortho) {
         scale *= 0.2f;
     }
-
-    pos = Vector3(scale * int32_t(pos.x / scale),
-                  0.0f,
-                  scale * int32_t(pos.z / scale));
 
     Quaternion rot;
     if(ortho) {

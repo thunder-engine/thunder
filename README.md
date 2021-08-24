@@ -2,10 +2,10 @@
 Thunder Engine is free for all purposes an open-source multi-functional lightweight game engine for creating 2D and 3D games. It provides a wide range of frameworks and tools. So developers can focus on the creation, and the Thunder Engine will do the routine.
 
 #### Build Status
-[![Build Status](https://travis-ci.com/thunder-engine/thunder.svg?branch=master)](https://travis-ci.com/thunder-engine/thunder)
+[![Build Status](https://github.com/thunder-engine/thunder/actions/workflows/main.yml/badge.svg)
 #### Code Quality Status
 [![Coverity Status](https://img.shields.io/coverity/scan/15068.svg)](https://scan.coverity.com/projects/eprikazchikov-thunder)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/06a1475c3d7241d6b70cd7d28c680142)](https://www.codacy.com/app/eprikazchikov/thunder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eprikazchikov/thunder&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/8874a5f2ddb84eb1bbaebe00f5562c23)](https://www.codacy.com/gh/thunder-engine/thunder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=thunder-engine/thunder&amp;utm_campaign=Badge_Grade)
 
 ### About
 
@@ -22,7 +22,7 @@ The main ideology of project is to create the modular engine to give developers 
 - Scripts supported by AngelScipt engine
 - Module based architecture
 
-Please find a complete [list of features](https://github.com/thunder-engine/thunder-doc/blob/master/basics/features.rst).
+Please find a complete [list of features](https://doc.thunderengine.org/en/latest/basics/features.html).
 
 #### Have a question or an idea?
 I'm always open to new ideas and you can always ask a question or you can [create a ticket](https://github.com/thunder-engine/thunder/issues/new/choose)

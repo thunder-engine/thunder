@@ -235,6 +235,8 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
     m_SceneLights.clear();
     m_UiComponents.clear();
 
+    m_postProcessVolume.clear();
+
     combineComponents(scene, scene->isToBeUpdated());
 
     Camera *camera = Camera::current();

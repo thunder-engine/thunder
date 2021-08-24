@@ -14,7 +14,6 @@
         <file>icons/bigthunder.png</file>
         <file>icons/thunder.png</file>
         <file>icons/thunder.svg</file>
-        <file>fontawesome/eye.png</file>
         <file>fontawesome/fast-backward.png</file>
         <file>fontawesome/fast-forward.png</file>
         <file>fontawesome/play.png</file>
@@ -73,6 +72,7 @@
         <file>styles/dark/icons/arrow-left.png</file>
         <file>styles/dark/icons/key-normal.png</file>
         <file>styles/dark/icons/key-select.png</file>
+        <file>styles/dark/icons/eye.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>

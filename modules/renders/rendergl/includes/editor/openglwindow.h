@@ -6,6 +6,11 @@
 class OpenGLWindow : public QOpenGLWindow {
     Q_OBJECT
 
+public:
+    OpenGLWindow() {
+        startTimer(16);
+    }
+
 signals:
     void draw();
 
@@ -14,6 +19,9 @@ protected:
         QOpenGLWindow::paintGL();
 
         emit draw();
+    }
+
+    void timerEvent(QTimerEvent *) override {
         update();
     }
 };

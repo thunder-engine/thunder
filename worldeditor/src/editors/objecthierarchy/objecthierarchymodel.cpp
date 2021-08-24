@@ -8,7 +8,7 @@
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr),
-        m_Visible(":/Images/fontawesome/eye.png"),
+        m_Visible(":/Style/styles/dark/icons/eye.png"),
         m_Invisible(),
         m_Prefab(":/Images/editor/objects/prefab.png"),
         m_Actor(":/Images/editor/objects/actor.png") {
