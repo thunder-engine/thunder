@@ -24,12 +24,12 @@ public:
         AABBox box;
     };
 
-    typedef QMap<uint32_t, Select> SelectMap;
+    typedef QList<Select> SelectList;
 
 public:
-    explicit EditorTool(EditorTool::SelectMap &selection);
+    explicit EditorTool(EditorTool::SelectList &selection);
 
-    virtual void update();
+    virtual void update(bool pivot, bool local, float snap);
 
     virtual void beginControl();
     virtual void endControl();
@@ -46,7 +46,7 @@ public:
     const VariantList &cache() const;
 
 protected:
-    SelectMap &m_Selected;
+    SelectList &m_Selected;
 
     VariantList m_PropertiesCache;
 

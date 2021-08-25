@@ -57,20 +57,17 @@
 #include "editors/contentbrowser/contenttree.h"
 #include "editors/assetselect/assetlist.h"
 
-#define FPS         "FPS"
-#define VERTICES    "Vertices"
-#define POLYGONS    "Polygons"
-#define DRAWCALLS   "Draw Calls"
-
-#define GEOMETRY    "main.geometry"
-#define WINDOWS     "main.windows"
-#define WORKSPACE   "main.workspace"
-
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Actor *)
 Q_DECLARE_METATYPE(Object::ObjectList *)
 
-const QString gRecent("Recent");
+namespace  {
+    const QString gRecent("Recent");
+
+    const QString gGeometry("main.geometry");
+    const QString gWindows("main.windows");
+    const QString gWorkspace("main.workspace");
+};
 
 SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
@@ -153,7 +150,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
 
     int index = 0;
     for(auto &it : ctl->tools()) {
-        QPushButton *tool = new QPushButton(ui->viewportWidget);
+        QPushButton *tool = new QPushButton();
         tool->setProperty("blue", true);
         tool->setProperty("checkred", true);
         tool->setCheckable(true);
@@ -170,6 +167,7 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         index++;
     }
 
+    ui->orthoButton->setProperty("checkgreen", true);
     ui->commitButton->setProperty("green", true);
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &SceneComposer::onBuildProject);
@@ -222,7 +220,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy,   SIGNAL(updated()), ctl, SLOT(onUpdated()));
     connect(ui->hierarchy,   SIGNAL(parented(Object::ObjectList,Object*)), ctl, SLOT(onParentActor(Object::ObjectList,Object*)));
     connect(ui->hierarchy,   SIGNAL(focused(Object*)), ctl, SLOT(onFocusActor(Object*)));
-    connect(ui->orthoButton, SIGNAL(toggled(bool)), ctl, SLOT(onOrthographic(bool)));
+    connect(ui->orthoButton, &QPushButton::toggled, ctl, &ObjectCtrl::onOrthographic);
+    connect(ui->localButton, &QPushButton::toggled, ctl, &ObjectCtrl::onLocal);
+    connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
     connect(PluginManager::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
 
@@ -778,7 +778,7 @@ void SceneComposer::on_actionSave_Workspace_triggered() {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             QVariantMap layout;
-            layout[WINDOWS] = ui->toolWidget->saveState();
+            layout[gWindows] = ui->toolWidget->saveState();
 
             QByteArray data;
             QDataStream ds(&data, QIODevice::WriteOnly);
@@ -799,7 +799,7 @@ void SceneComposer::on_actionReset_Workspace_triggered() {
         QDataStream ds(&data, QIODevice::ReadOnly);
         QVariantMap layout;
         ds >> layout;
-        ui->toolWidget->restoreState(layout.value(WINDOWS));
+        ui->toolWidget->restoreState(layout.value(gWindows));
 
         foreach(auto it, ui->menuWorkspace->children()) {
             QAction *action = static_cast<QAction*>(it);
@@ -812,15 +812,15 @@ void SceneComposer::on_actionReset_Workspace_triggered() {
 
 void SceneComposer::saveWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue(GEOMETRY, saveGeometry());
-    settings.setValue(WINDOWS, ui->toolWidget->saveState());
-    settings.setValue(WORKSPACE, m_CurrentWorkspace);
+    settings.setValue(gGeometry, saveGeometry());
+    settings.setValue(gWindows, ui->toolWidget->saveState());
+    settings.setValue(gWorkspace, m_CurrentWorkspace);
 }
 
 void SceneComposer::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QVariant windows = settings.value(WINDOWS);
-    m_CurrentWorkspace = settings.value(WORKSPACE, m_CurrentWorkspace).toString();
+    QVariant windows = settings.value(gWindows);
+    m_CurrentWorkspace = settings.value(gWorkspace, m_CurrentWorkspace).toString();
     if(!windows.isValid()) {
         on_actionReset_Workspace_triggered();
     } else {
@@ -837,7 +837,7 @@ void SceneComposer::resetWorkspace() {
 
 void SceneComposer::resetGeometry() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    restoreGeometry(settings.value(GEOMETRY).toByteArray());
+    restoreGeometry(settings.value(gGeometry).toByteArray());
 }
 
 void SceneComposer::onBuildProject() {
@@ -903,6 +903,11 @@ void SceneComposer::parseLogs(const QString &log) {
             Log(Log::INF) << qPrintable(it);
         }
     }
+}
+
+void SceneComposer::onLocal(bool flag) {
+    ui->localButton->setIcon(flag ? QIcon(":/Style/styles/dark/icons/local.png") :
+                                    QIcon(":/Style/styles/dark/icons/global.png"));
 }
 
 void SceneComposer::on_actionOptions_triggered() {

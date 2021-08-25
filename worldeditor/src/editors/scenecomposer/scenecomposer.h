@@ -106,6 +106,8 @@ private slots:
 
     void parseLogs(const QString &log);
 
+    void onLocal(bool flag);
+
     void on_commitButton_clicked();
     void on_revertButton_clicked();
 

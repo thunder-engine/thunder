@@ -8,25 +8,28 @@
 #include "objectctrl.h"
 #include "undomanager.h"
 
-MoveTool::MoveTool(ObjectCtrl *controller, SelectMap &selection) :
+MoveTool::MoveTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
 }
 
-void MoveTool::update() {
+void MoveTool::update(bool pivot, bool local, float snap) {
     bool isDrag = m_pController->isDrag();
-    m_World = Handles::moveTool(objectPosition(), Quaternion(), isDrag);
+
+    Transform *t = m_Selected.back().object->transform();
+
+    m_World = Handles::moveTool(objectPosition(), local ? t->worldQuaternion() : Quaternion(), isDrag);
     if(isDrag) {
         Vector3 delta(m_World - m_SavedWorld);
-        if(m_MoveGrid > 0.0f) {
+        if(snap > 0.0f) {
             for(int32_t i = 0; i < 3; i++) {
-                delta[i] = m_MoveGrid[i] * int(delta[i] / m_MoveGrid[i]);
+                delta[i] = snap * int(delta[i] / snap);
             }
         }
         for(const auto &it : m_Selected) {
-            Vector3 dt(delta);
+            Vector3 dt(local ? t->worldQuaternion() * delta : delta);
             Actor *a = dynamic_cast<Actor *>(it.object->parent());
-            if(a && a->transform()) {
+            if(!local && a && a->transform()) {
                 dt = a->transform()->worldTransform().rotation().inverse() * delta;
             }
             if(it.object->transform()) {

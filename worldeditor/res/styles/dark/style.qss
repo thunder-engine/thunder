@@ -418,3 +418,11 @@ QSlider::sub-page:qlineargradient {
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
 }
+
+QToolTip {
+    color: #ffffff;
+    border: 0px;
+    padding: 2px;
+    background: #525252;
+    min-width: 300
+}

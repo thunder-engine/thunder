@@ -5,15 +5,13 @@
 
 class ScaleTool : public SelectTool {
 public:
-    explicit ScaleTool(ObjectCtrl *controller, EditorTool::SelectMap &selection);
+    explicit ScaleTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
 
-    void update() override;
+    void update(bool pivot, bool local, float snap) override;
 
     QString icon() const override;
     QString name() const override;
 
-protected:
-    float m_ScaleGrid;
 };
 
 #endif // SCALETOOL_H

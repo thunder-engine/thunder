@@ -61,8 +61,8 @@ public:
         m_resultTarget->setColorAttachment(0, m_resultTexture);
     }
 
-    uint32_t layer() const {
-        return ICommandBuffer::UI;
+    const char *name() const override {
+        return "Outline";
     }
 
     float m_width;

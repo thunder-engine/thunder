@@ -9,13 +9,13 @@
 #include "objectctrl.h"
 #include "undomanager.h"
 
-ScaleTool::ScaleTool(ObjectCtrl *controller, SelectMap &selection) :
-    SelectTool(controller, selection),
-    m_ScaleGrid(0.0f) {
+ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
+    SelectTool(controller, selection) {
 
 }
 
-void ScaleTool::update() {
+void ScaleTool::update(bool pivot, bool local, float snap) {
+    A_UNUSED(pivot);
     bool isDrag = m_pController->isDrag();
 
     if(!isDrag) {
@@ -23,7 +23,9 @@ void ScaleTool::update() {
         Handles::s_Axes = 0;
     }
 
-    m_World = Handles::scaleTool(m_Position, Quaternion(), isDrag);
+    Transform *t = m_Selected.back().object->transform();
+
+    m_World = Handles::scaleTool(m_Position, local ? t->worldQuaternion() : Quaternion(), isDrag);
 
     Camera *camera = Camera::current();
     if(isDrag && camera) {
@@ -34,22 +36,22 @@ void ScaleTool::update() {
         Vector3 s;
         if(Handles::s_Axes & Handles::AXIS_X) {
             float scale = (normal.x < 0) ? delta.x : -delta.x;
-            if(m_ScaleGrid > 0) {
-                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            if(snap > 0) {
+                scale = snap * int(scale / snap);
             }
             s.x += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Y) {
             float scale = (normal.y < 0) ? delta.y : -delta.y;
-            if(m_ScaleGrid > 0) {
-                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            if(snap > 0) {
+                scale = snap * int(scale / snap);
             }
             s.y += scale;
         }
         if(Handles::s_Axes & Handles::AXIS_Z) {
             float scale = (normal.z < 0) ? delta.z : -delta.z;
-            if(m_ScaleGrid > 0) {
-                scale = m_ScaleGrid * int(scale / m_ScaleGrid);
+            if(snap > 0) {
+                scale = snap * int(scale / snap);
             }
             s.z += scale;
         }

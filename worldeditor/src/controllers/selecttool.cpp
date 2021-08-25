@@ -8,7 +8,7 @@
 #include "objectctrl.h"
 #include "undomanager.h"
 
-SelectTool::SelectTool(ObjectCtrl *controller, SelectMap &selection) :
+SelectTool::SelectTool(ObjectCtrl *controller, SelectList &selection) :
     EditorTool(selection),
     m_pController(controller) {
 

@@ -519,17 +519,17 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             plane.point = position;
             plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
             if(s_Axes == AXIS_X) {
-                plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
+                plane.normal = rotation * Vector3(0.0f, plane.normal.y, plane.normal.z);
             } else if(s_Axes == AXIS_Z) {
-                plane.normal = Vector3(plane.normal.x, plane.normal.y, 0.0f);
+                plane.normal = rotation * Vector3(plane.normal.x, plane.normal.y, 0.0f);
             } else if(s_Axes == (AXIS_X | AXIS_Z)) {
-                plane.normal = Vector3(0.0f, 1.0f, 0.0f);
+                plane.normal = rotation * Vector3(0.0f, 1.0f, 0.0f);
             } else if(s_Axes == (AXIS_X | AXIS_Y)) {
-                plane.normal = Vector3(0.0f, 0.0f, 1.0f);
+                plane.normal = rotation * Vector3(0.0f, 0.0f, 1.0f);
             } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
-                plane.normal = Vector3(1.0f, 0.0f, 0.0f);
+                plane.normal = rotation * Vector3(1.0f, 0.0f, 0.0f);
             } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-                plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
+                plane.normal = rotation * Vector3(plane.normal.x, 0.0f, plane.normal.z);
             }
             plane.normal.normalize();
             plane.d = plane.normal.dot(plane.point);
@@ -537,15 +537,19 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
             Vector3 point;
             ray.intersect(plane, &point, true);
+
+            Vector3 mask;
             if(s_Axes & AXIS_X) {
-                result.x = point.x;
+                mask += Vector3(1, 0, 0);
             }
             if(s_Axes & AXIS_Y) {
-                result.y = point.y;
+                mask += Vector3(0, 1, 0);
             }
             if(s_Axes & AXIS_Z) {
-                result.z = point.z;
+                mask += Vector3(0, 0, 1);
             }
+
+            result = point * mask;
         }
     }
     return result;
@@ -568,7 +572,8 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
 
             Matrix4 model(position, rotation, scale * 5.0f);
 
-            Matrix4 q1 = model * Matrix4(Vector3(), t->quaternion() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
+            Matrix4 q1 = Matrix4(position, Quaternion(), scale * 5.0f) *
+                         Matrix4(Vector3(), t->quaternion() * Quaternion(Vector3(90, 0, 0)), Vector3(conesize));
 
             Matrix4 x = model * Matrix4(Vector3(), Quaternion(Vector3( 0, 0, 90)) *
                                                    Quaternion(Vector3( 0, 1, 0), RAD2DEG * atan2(normal.y, normal.z) + 180), Vector3(conesize));
@@ -637,15 +642,15 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             } else {
                 s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor;
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(x, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(x, camera->orthographic() ? s_Circle : s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor;
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(y, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(y, camera->orthographic() ? s_Circle : s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor;
                 s_Buffer->setColor(s_Color);
-                s_Buffer->drawMesh(z, s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
+                s_Buffer->drawMesh(z, camera->orthographic() ? s_Circle : s_Arc, ICommandBuffer::TRANSLUCENT, s_Gizmo);
 
                 if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                     s_AngleBegin = dt0.signedAngle(t->quaternion() * Vector3(1.0f, 0.0f, 0.0f), plane.normal);

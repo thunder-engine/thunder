@@ -73,6 +73,8 @@
         <file>styles/dark/icons/key-normal.png</file>
         <file>styles/dark/icons/key-select.png</file>
         <file>styles/dark/icons/eye.png</file>
+        <file>styles/dark/icons/global.png</file>
+        <file>styles/dark/icons/local.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>

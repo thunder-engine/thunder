@@ -10,13 +10,15 @@ EditorTool::Select::Select() :
 
 }
 
-EditorTool::EditorTool(EditorTool::SelectMap &selection) :
+EditorTool::EditorTool(EditorTool::SelectList &selection) :
     m_Selected(selection) {
 
 }
 
-void EditorTool::update() {
-
+void EditorTool::update(bool pivot, bool local, float snap) {
+    A_UNUSED(pivot);
+    A_UNUSED(local);
+    A_UNUSED(snap);
 }
 
 void EditorTool::beginControl() {

@@ -5,15 +5,13 @@
 
 class RotateTool : public SelectTool {
 public:
-    explicit RotateTool(ObjectCtrl *controller, EditorTool::SelectMap &selection);
+    explicit RotateTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
 
-    void update() override;
+    void update(bool pivot, bool local, float snap) override;
 
     QString icon() const override;
     QString name() const override;
 
-protected:
-    float m_AngleGrid;
 };
 
 #endif // ROTATETOOL_H

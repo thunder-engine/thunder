@@ -7,7 +7,7 @@ class ObjectCtrl;
 
 class SelectTool : public EditorTool {
 public:
-    explicit SelectTool(ObjectCtrl *controller, EditorTool::SelectMap &selection);
+    explicit SelectTool(ObjectCtrl *controller, EditorTool::SelectList &selection);
 
     void beginControl() override;
 
@@ -15,8 +15,6 @@ public:
     QString name() const override;
 
 protected:
-    Vector3 m_MoveGrid;
-
     Vector3 m_World;
     Vector3 m_SavedWorld;
     Vector3 m_Position;

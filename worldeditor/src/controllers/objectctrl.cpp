@@ -60,6 +60,7 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
         m_Modified(false),
         m_Drag(false),
         m_Canceled(false),
+        m_Local(false),
         m_Axes(0),
         m_pMap(nullptr),
         m_pPipeline(nullptr),
@@ -119,7 +120,7 @@ void ObjectCtrl::drawHandles() {
 
     if(!m_Selected.empty()) {
         if(m_pActiveTool) {
-            m_pActiveTool->update();
+            m_pActiveTool->update(false, m_Local, 0.0f);
         }
     }
 
@@ -230,7 +231,7 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
         if(actor) {
             EditorTool::Select data;
             data.object = actor;
-            m_Selected[it] = data;
+            m_Selected.push_back(data);
         }
     }
     emit objectsSelected(selected());
@@ -239,8 +240,8 @@ void ObjectCtrl::selectActors(const list<uint32_t> &list) {
 void ObjectCtrl::onSelectActor(const list<uint32_t> &list, bool additive) {
     std::list<uint32_t> local = list;
     if(additive) {
-        for(auto &it : m_Selected.keys()) {
-            local.push_back(it);
+        for(auto &it : m_Selected) {
+            local.push_back(it.object->uuid());
         }
     }
     UndoManager::instance()->push(new SelectObjects(local, this));
@@ -283,6 +284,14 @@ void ObjectCtrl::onChangeTool() {
 
 void ObjectCtrl::onUpdated() {
     m_Modified = true;
+}
+
+void ObjectCtrl::onLocal(bool flag) {
+    m_Local = flag;
+}
+
+void ObjectCtrl::onPivot(bool flag) {
+
 }
 
 void ObjectCtrl::onCreateComponent(const QString &name) {

@@ -9,19 +9,24 @@
 #include "objectctrl.h"
 #include "undomanager.h"
 
-RotateTool::RotateTool(ObjectCtrl *controller, SelectMap &selection) :
-    SelectTool(controller, selection),
-    m_AngleGrid(0.0f) {
+RotateTool::RotateTool(ObjectCtrl *controller, SelectList &selection) :
+    SelectTool(controller, selection) {
 
 }
 
-void RotateTool::update() {
+void RotateTool::update(bool pivot, bool local, float snap) {
+    A_UNUSED(pivot);
+    A_UNUSED(local);
+
     if(!m_pController->isDrag()) {
         m_Position = objectPosition();
     }
-    float angle = Handles::rotationTool(m_Position, Quaternion(), m_pController->isDrag());
-    if(m_AngleGrid > 0) {
-        angle = m_AngleGrid * int(angle / m_AngleGrid);
+
+    Transform *t = m_Selected.back().object->transform();
+
+    float angle = Handles::rotationTool(m_Position, local ? t->worldQuaternion() : Quaternion(), m_pController->isDrag());
+    if(snap > 0) {
+        angle = snap * int(angle / snap);
     }
 
     if(m_pController->isDrag()) {

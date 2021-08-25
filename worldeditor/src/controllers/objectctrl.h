@@ -84,6 +84,9 @@ public slots:
 
     void onUpdated();
 
+    void onLocal(bool flag);
+    void onPivot(bool flag);
+
     void drawHelpers(Object &object);
 
 signals:
@@ -108,12 +111,14 @@ private slots:
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:
-    EditorTool::SelectMap m_Selected;
+    EditorTool::SelectList m_Selected;
 
     bool m_Modified;
 
     bool m_Drag;
     bool m_Canceled;
+
+    bool m_Local;
 
     uint8_t m_Axes;
 

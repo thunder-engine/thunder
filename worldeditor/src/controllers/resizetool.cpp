@@ -12,7 +12,7 @@
 
 #include <QDebug>
 
-ResizeTool::ResizeTool(ObjectCtrl *controller, SelectMap &selection) :
+ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
 
 }
@@ -30,7 +30,11 @@ void ResizeTool::beginControl() {
     }
 }
 
-void ResizeTool::update() {
+void ResizeTool::update(bool pivot, bool local, float snap) {
+    A_UNUSED(pivot);
+    A_UNUSED(local);
+    A_UNUSED(snap);
+
     m_Box = objectBound();
     if(!m_Box.isValid()) {
         return;
