@@ -9,7 +9,7 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr),
         m_Visible(":/Style/styles/dark/icons/eye.png"),
-        m_Invisible(),
+        m_Invisible(":/Style/styles/dark/icons/eye_close.png"),
         m_Prefab(":/Images/editor/objects/prefab.png"),
         m_Actor(":/Images/editor/objects/actor.png") {
 

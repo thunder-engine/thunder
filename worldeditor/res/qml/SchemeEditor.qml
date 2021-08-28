@@ -33,8 +33,11 @@ Rectangle {
 
     property variant selection: []
 
-    property int cell: 16
-    property int nodeBorder: (stateMachine) ? cell / 2 : 0
+    property int baseCell: 16
+    property int minCell: 8
+    property int maxCell: 24
+    property int nodeBorder: (stateMachine) ? baseCell / 2 : 0
+    property int cellStep: baseCell
 
     property int focusNode: -1
     property int focusPort: -1
@@ -58,7 +61,7 @@ Rectangle {
     }
 
     function nodeWidth(node) {
-        return Math.max(Math.round((fontMetrics.advanceWidth(node.name) + 80) / cell) * cell, 10 * cell)
+        return Math.max(Math.round((fontMetrics.advanceWidth(node.name) + 80) / baseCell) * baseCell, 10 * baseCell)
     }
 
     function nodeHeight(node) {
@@ -71,7 +74,7 @@ Rectangle {
                 iport++;
             }
         }
-        return (Math.max(iport, oport) + 1) * (cell * 2)
+        return (Math.max(iport, oport) + 1) * (baseCell * 2)
     }
 
     function moveNodes(id, x, y) {
@@ -117,6 +120,35 @@ Rectangle {
                 nodeSelect(0)
             }
         }
+    }
+
+    function handleSelection(node, modifiers) {
+        if(selection.indexOf(node) === -1) {
+            if((modifiers & Qt.ControlModifier) || (modifiers & Qt.ShiftModifier)) {
+                var array = selection
+                array.push(node)
+
+                selection = array
+                nodesSelected(selection)
+            } else {
+                nodeSelect(node)
+            }
+        }
+    }
+
+    GridLines {
+        id: grid
+        anchors.fill: parent
+        anchors.topMargin: 0
+
+        translateX: scheme.x
+        translateY: scheme.y
+
+        drawHorizontal: true
+        subItemsX: 10
+        subItemsY: 10
+        cellX: cellStep
+        cellY: cellStep
     }
 
     MouseArea {
@@ -199,8 +231,21 @@ Rectangle {
         onWheel: {
             if(wheel.angleDelta.y > 0) {
                 scheme.scale = Math.min(scheme.scale + 0.1, 1.0)
+                if(scheme.scale < 1.0) {
+                    cellStep += 2
+                    if(cellStep > maxCell) {
+                        cellStep = minCell
+                    }
+                }
+
             } else {
                 scheme.scale = Math.max(scheme.scale - 0.1, 0.1)
+                if(scheme.scale > 0.1) {
+                    cellStep -= 2
+                    if(cellStep < minCell) {
+                        cellStep = maxCell
+                    }
+                }
             }
             canvas.requestPaint()
         }
@@ -250,7 +295,7 @@ Rectangle {
                     var port = nodes[selectNode].ports[selectPort]
                     if(port !== undefined) {
                         x0 += (port.out) ? width : 0
-                        y0 += port.pos * (cell * 2) + (cell * 3)
+                        y0 += port.pos * (baseCell * 2) + (baseCell * 3)
 
                         x0 *= scheme.scale
                         y0 *= scheme.scale
@@ -298,10 +343,10 @@ Rectangle {
 
                     if(oport !== undefined && iport !== undefined) {
                         var x1 = nodes[links[i].sender].pos.x + ((oport.out) ? nodeWidth(nodes[links[i].sender]) - radius : -radius)
-                        var y1 = nodes[links[i].sender].pos.y + oport.pos * (cell * 2) + (cell * 3) - radius
+                        var y1 = nodes[links[i].sender].pos.y + oport.pos * (baseCell * 2) + (baseCell * 3) - radius
 
                         var x2 = nodes[links[i].receiver].pos.x + ((iport.out) ? nodeWidth(nodes[links[i].receiver]) - radius : -radius)
-                        var y2 = nodes[links[i].receiver].pos.y + iport.pos * (cell * 2) + (cell * 3) - radius
+                        var y2 = nodes[links[i].receiver].pos.y + iport.pos * (baseCell * 2) + (baseCell * 3) - radius
 
                         x1 *= scheme.scale
                         y1 *= scheme.scale
@@ -411,8 +456,10 @@ Rectangle {
                 node: index
 
                 property bool isFocus: {
-                    var result = (rubberBand.visible && isCollide(nodeObject.x, nodeObject.y, nodeObject.width, nodeObject.height,
-                                                                  rubberBand.x, rubberBand.y, rubberBand.width, rubberBand.height))
+                    var result = (rubberBand.visible && isCollide(nodeObject.x * scheme.scale + scheme.x, nodeObject.y * scheme.scale + scheme.y,
+                                                                  nodeObject.width, nodeObject.height,
+                                                                  rubberBand.x, rubberBand.y,
+                                                                  rubberBand.width, rubberBand.height))
 
                     if(result === true) {
                         nodes[index].focus = true
@@ -447,22 +494,16 @@ Rectangle {
                         drag.onActiveChanged: {
                             if(!drag.active) {
                                 schemeModel.moveNode(selection, nodes)
-                            } else {
-                                if(selection.indexOf(nodeObject.node) === -1) {
-                                    var array = selection
-                                    array.push(nodeObject.node)
-
-                                    selection = array
-                                    nodesSelected(selection)
-                                }
                             }
                         }
 
                         onPositionChanged: {
                             if(drag.active) {
+                                handleSelection(nodeObject.node, mouse.modifiers)
+
                                 moveNodes(node,
-                                          Math.round(nodeObject.x / cell) * cell,
-                                          Math.round(nodeObject.y / cell) * cell)
+                                          Math.round(nodeObject.x / baseCell) * baseCell,
+                                          Math.round(nodeObject.y / baseCell) * baseCell)
                             }
                             canvas.mouseX = nodeObject.x + mouse.x + scheme.x
                             canvas.mouseY = nodeObject.y + mouse.y + scheme.y
@@ -470,15 +511,7 @@ Rectangle {
                         }
 
                         onClicked: {
-                            if((selection.length > 0) && ((mouse.modifiers & Qt.ControlModifier) || (mouse.modifiers & Qt.ShiftModifier))) {
-                                var array = selection
-                                array.push(nodeObject.node)
-
-                                selection = array
-                                nodesSelected(selection)
-                            } else {
-                                nodeSelect(nodeObject.node)
-                            }
+                            handleSelection(nodeObject.node, mouse.modifiers)
                         }
                     }
 
@@ -495,7 +528,7 @@ Rectangle {
                         id: messageBox
                         visible: false
                         anchors.top: name.bottom
-                        height: cell
+                        height: baseCell
                         width: nodeBody.width
                         color: theme.red
 
@@ -539,9 +572,9 @@ Rectangle {
                                 }
                                 return 0
                             }
-                            y: portObject.pos * (cell * 2) + (cell * 2)
+                            y: portObject.pos * (baseCell * 2) + (baseCell * 2)
 
-                            height: (cell * 2)
+                            height: (baseCell * 2)
                             width: nodeObject.width / 2
 
                             node: nodeObject.node

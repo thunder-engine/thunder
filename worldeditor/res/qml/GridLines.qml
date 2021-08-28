@@ -17,7 +17,8 @@ Canvas {
     property bool drawVerical: true
     property bool drawHorizontal: true
 
-    property string lineColor: theme.greyLight
+    property string subLineColor: theme.greyLight
+    property string lineColor: theme.greyDark
 
     onTranslateXChanged: {
         requestPaint()
@@ -40,20 +41,20 @@ Canvas {
 
     onPaint: {
         context.clearRect(0, 0, grid.width, grid.height)
-        context.strokeStyle = lineColor
         context.translate(translateX, translateY)
 
+        context.strokeStyle = subLineColor
+
         // Vertical lines
+        context.beginPath()
         if(drawVerical) {
             var beforeX = Math.round(-translateX / cellX)
             var afterX = Math.round((grid.width - translateX) / cellX)
             for(var x = beforeX; x < afterX; x++) {
-                context.lineWidth = (x % subItemsX == 0) ? 2 : 1
-
-                context.beginPath()
-                context.moveTo(x * cellX, -translateY)
-                context.lineTo(x * cellX, grid.height - translateY)
-                context.stroke()
+                if(x % subItemsX != 0) {
+                    context.moveTo(x * cellX, -translateY)
+                    context.lineTo(x * cellX, grid.height - translateY)
+                }
             }
         }
 
@@ -62,14 +63,39 @@ Canvas {
             var beforeY = Math.round(-translateY / cellY)
             var afterY = Math.round((grid.height + translateY) / cellY)
             for(var y = beforeY; y < afterY; y++) {
-                context.lineWidth = (y % subItemsY == 0) ? 2 : 1
-
-                context.beginPath()
-                context.moveTo(-translateX, y * cellY)
-                context.lineTo(grid.width - translateX, y * cellY)
-                context.stroke()
+                if(y % subItemsY != 0) {
+                    context.moveTo(-translateX, y * cellY)
+                    context.lineTo(grid.width - translateX, y * cellY)
+                }
             }
         }
+        context.closePath()
+        context.stroke()
+
+        context.strokeStyle = lineColor
+
+        // Vertical lines
+        context.beginPath()
+        if(drawVerical) {
+            beforeX = Math.round(-translateX / cellX / subItemsX)
+            afterX = Math.round((grid.width - translateX) / cellX / subItemsX)
+            for(x = beforeX; x < afterX; x++) {
+                context.moveTo(x * cellX * subItemsX, -translateY)
+                context.lineTo(x * cellX * subItemsX, grid.height - translateY)
+            }
+        }
+
+        // Horizontal lines
+        if(drawHorizontal) {
+            beforeY = Math.round(-translateY / cellY / subItemsY)
+            afterY = Math.round((grid.height + translateY) / cellY / subItemsY)
+            for(y = beforeY; y < afterY; y++) {
+                context.moveTo(-translateX, y * cellY * subItemsY)
+                context.lineTo(grid.width - translateX, y * cellY * subItemsY)
+            }
+        }
+        context.closePath()
+        context.stroke()
 
         context.setTransform(1, 0, 0, 1, 0, 0)
     }

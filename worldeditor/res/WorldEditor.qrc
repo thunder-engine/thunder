@@ -75,6 +75,7 @@
         <file>styles/dark/icons/eye.png</file>
         <file>styles/dark/icons/global.png</file>
         <file>styles/dark/icons/local.png</file>
+        <file>styles/dark/icons/eye_close.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>
