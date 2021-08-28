@@ -41,14 +41,14 @@ void Text::loadUserData(const VariantMap &data) {
 */
 VariantMap Text::saveUserData () const {
     VariantMap result;
-    result["Data"]  = data();
+    result["Data"] = data();
     return result;
 }
 /*!
     Returns text content as a raw byte array.
 */
 uint8_t *Text::data() const {
-    return reinterpret_cast<uint8_t *>(&p_ptr->m_Data[0]);
+    return reinterpret_cast<uint8_t *>(p_ptr->m_Data.data());
 }
 /*!
     Returns size of the text resource.
@@ -66,5 +66,5 @@ void Text::setSize(uint32_t size) {
     Returns text content as a tring.
 */
 string Text::text() {
-    return string(reinterpret_cast<char *>(&p_ptr->m_Data[0]), size());
+    return string(reinterpret_cast<char *>(p_ptr->m_Data.data()), size());
 }
