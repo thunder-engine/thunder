@@ -120,8 +120,8 @@ void ParticleEdit::closeEvent(QCloseEvent *event) {
     if(isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The effect has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setText(tr("The effect has been modified."));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -174,7 +174,7 @@ void ParticleEdit::onEmitterCreated() {
 void ParticleEdit::onEmitterDeleted(QString name) {
     QMessageBox msgBox(this);
     msgBox.setIcon(QMessageBox::Question);
-    msgBox.setText("Do you want to delete emitter?");
+    msgBox.setText(tr("Do you want to delete emitter?"));
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -204,7 +204,7 @@ void ParticleEdit::onFunctionCreated(QString emitter, QString function) {
             onNodeSelected(m_pBuilder->createFunction(emitter, function));
         } else {
             QMessageBox msgBox(this);
-            msgBox.setText("This type of modifier already assigned.");
+            msgBox.setText(tr("This type of modifier already assigned."));
             msgBox.exec();
         }
     }

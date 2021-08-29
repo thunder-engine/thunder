@@ -85,9 +85,6 @@ bool TextureEdit::isModified() const {
 }
 
 void TextureEdit::loadAsset(IConverterSettings *settings) {
-    show();
-    raise();
-
     if(m_pSettings) {
         disconnect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }

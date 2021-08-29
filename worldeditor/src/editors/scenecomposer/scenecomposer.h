@@ -11,6 +11,9 @@
 #include <amath.h>
 #include <engine.h>
 
+#include "aboutdialog.h"
+#include "managers/pluginmanager/plugindialog.h"
+
 using namespace std;
 
 class Object;
@@ -84,6 +87,9 @@ private:
     QWidget *m_MainDocument;
     QWidget *m_CurrentDocument;
 
+    AboutDialog m_aboutDlg;
+    PluginDialog m_pluginDlg;
+
 private slots:
     void onSettingsUpdated();
 
@@ -115,8 +121,6 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
 
-    void on_actionPlugin_Manager_triggered();
-
     void on_actionEditor_Mode_triggered();
     void on_actionGame_Mode_triggered();
 
@@ -134,8 +138,6 @@ private slots:
     void on_actionSave_Workspace_triggered();
     void on_actionReset_Workspace_triggered();
 
-    void on_actionOptions_triggered();
-    void on_actionAbout_triggered();
     void on_actionNew_Object_triggered();
 
     void on_menuFile_aboutToShow();

@@ -72,7 +72,6 @@ void AnimationEdit::onNodesSelected(const QVariant &indices) {
 }
 
 void AnimationEdit::loadAsset(IConverterSettings *settings) {
-    show();
     if(m_Path != settings->source()) {
         m_Path = settings->source();
         m_pMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));

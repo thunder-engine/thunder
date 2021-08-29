@@ -31,7 +31,6 @@
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
-#include "managers/pluginmanager/plugindialog.h"
 #include "managers/asseteditormanager/importqueue.h"
 #include "managers/feedmanager/feedmanager.h"
 
@@ -40,8 +39,6 @@
 #include "pluginmanager.h"
 #include "settingsmanager.h"
 #include "undomanager.h"
-
-#include "aboutdialog.h"
 
 #include "documentmodel.h"
 
@@ -206,6 +203,8 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
     ui->menuWorkspace->insertSeparator(ui->actionReset_Workspace);
 
     ui->actionAbout->setText(tr("About %1...").arg(EDITOR_NAME));
+    connect(ui->actionAbout, &QAction::triggered, &m_aboutDlg, &AboutDialog::exec);
+    connect(ui->actionPlugin_Manager, &QAction::triggered, &m_pluginDlg, &PluginDialog::exec);
 
     connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &SceneComposer::onToolWindowVisibilityChanged);
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &SceneComposer::onCurrentToolWindowChanged);
@@ -359,20 +358,24 @@ void SceneComposer::onOpenEditor(const QString &path) {
     }
     QWidget *editor = dynamic_cast<QWidget *>(m_DocumentModel->openFile(path));
     if(editor) {
-        connect(editor, SIGNAL(templateUpdate()), ui->contentBrowser, SLOT(assetUpdated()));
+        connect(editor, SIGNAL(templateUpdate()), ui->contentBrowser, SLOT(assetUpdated()), Qt::UniqueConnection);
 
-        if(dynamic_cast<QMainWindow *>(editor) == nullptr) {
-            QWidget *neighbor = m_MainDocument;
-            for(auto &it : findChildren<QWidget *>()) {
-                if(it->inherits(editor->metaObject()->className())) {
-                    neighbor = it;
-                    break;
+        if((dynamic_cast<QMainWindow *>(editor) == nullptr)) {
+            if(ui->toolWidget->areaFor(editor) == nullptr) {
+                QWidget *neighbor = m_MainDocument;
+                for(auto &it : findChildren<QWidget *>()) {
+                    if(it->inherits(editor->metaObject()->className())) {
+                        neighbor = it;
+                        break;
+                    }
                 }
-            }
 
-            ui->toolWidget->removeToolWindow(editor);
-            editor->setParent(this);
-            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(neighbor));
+                ui->toolWidget->removeToolWindow(editor);
+                editor->setParent(this);
+                ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(neighbor));
+            } else {
+                ui->toolWidget->activateToolWindow(editor);
+            }
         } else {
             editor->show();
         }
@@ -388,8 +391,8 @@ void SceneComposer::checkImportSettings(IConverterSettings *settings) {
     if(settings->isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The import settings has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setText(tr("The import settings has been modified."));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -410,7 +413,8 @@ void SceneComposer::checkImportSettings(IConverterSettings *settings) {
 
 void SceneComposer::updateTitle() {
     if(!m_Path.isEmpty()) {
-        setWindowTitle(m_Path + " - " + QString(EDITOR_NAME));
+        QFileInfo info(m_Path);
+        setWindowTitle(info.baseName() + " - " + QString(EDITOR_NAME));
     } else {
         setWindowTitle(EDITOR_NAME);
     }
@@ -453,8 +457,8 @@ bool SceneComposer::checkSave() {
     if(static_cast<ObjectCtrl *>(ui->viewport->controller())->isModified()) {
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The map has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setText(tr("The map has been modified."));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -597,10 +601,6 @@ void SceneComposer::on_actionSave_As_triggered() {
             on_actionSave_triggered();
         }
     }
-}
-
-void SceneComposer::on_actionPlugin_Manager_triggered() {
-    PluginDialog(this).exec();
 }
 
 void SceneComposer::on_actionEditor_Mode_triggered() {
@@ -906,15 +906,6 @@ void SceneComposer::parseLogs(const QString &log) {
 void SceneComposer::onLocal(bool flag) {
     ui->localButton->setIcon(flag ? QIcon(":/Style/styles/dark/icons/local.png") :
                                     QIcon(":/Style/styles/dark/icons/global.png"));
-}
-
-void SceneComposer::on_actionOptions_triggered() {
-
-}
-
-void SceneComposer::on_actionAbout_triggered() {
-    AboutDialog dlg;
-    dlg.exec();
 }
 
 void SceneComposer::on_actionNew_Object_triggered() {
