@@ -133,7 +133,7 @@ public:
     QWidgetList toolWindows() const;
     void hideToolWindow(QWidget *toolWindow);
     QVariant saveState() const;
-    void restoreState(const QVariant& data);
+    bool restoreState(const QVariant& data);
 
     int suggestionSwitchInterval() const;
     void setSuggestionSwitchInterval(int msec);

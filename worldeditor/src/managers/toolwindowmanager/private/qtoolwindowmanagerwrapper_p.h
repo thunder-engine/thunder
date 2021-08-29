@@ -103,7 +103,7 @@ private:
     QVariantMap saveState() const;
 
     //construct layout based on given dump
-    void restoreState(const QVariantMap& data);
+    bool restoreState(const QVariantMap& data);
 
     friend class QToolWindowManager;
 };

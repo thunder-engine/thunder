@@ -821,12 +821,10 @@ void SceneComposer::resetWorkspace() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant windows = settings.value(gWindows);
     m_CurrentWorkspace = settings.value(gWorkspace, m_CurrentWorkspace).toString();
-    if(!windows.isValid()) {
+    if(!windows.isValid() || !ui->toolWidget->restoreState(windows)) {
         on_actionReset_Workspace_triggered();
     } else {
-        ui->toolWidget->restoreState(windows);
-
-        foreach(auto it, ui->menuWorkspace->children()) {
+        for(auto it : ui->menuWorkspace->children()) {
             QAction *action = static_cast<QAction*>(it);
             action->blockSignals(true);
             action->setChecked((action->data().toString() == m_CurrentWorkspace));

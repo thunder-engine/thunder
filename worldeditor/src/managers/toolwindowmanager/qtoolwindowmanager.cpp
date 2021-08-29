@@ -643,32 +643,35 @@ QVariant QToolWindowManager::saveState() const
 /*!
   Restores state and position of tool windows stored in \a data.
 */
-void QToolWindowManager::restoreState(const QVariant &data)
+bool QToolWindowManager::restoreState(const QVariant &data)
 {
     Q_D(QToolWindowManager);
     if (!data.isValid())
-        return;
+        return false;
     QVariantMap dataMap = data.toMap();
     if (dataMap[QLatin1String("QToolWindowManagerStateFormat")].toInt() != 1) {
         qWarning("state format is not recognized");
-        return;
+        return false;
     }
     moveToolWindows(d->m_toolWindows, NoArea);
     d->simplifyLayout();
     QToolWindowManagerWrapper *mainWrapper = findChild<QToolWindowManagerWrapper*>();
     if (!mainWrapper) {
         qWarning("can't find main wrapper");
-        return;
+        return false;
     }
-    mainWrapper->restoreState(dataMap[QLatin1String("mainWrapper")].toMap());
-    foreach (QVariant windowData, dataMap[QLatin1String("floatingWindows")].toList()) {
+    bool result = mainWrapper->restoreState(dataMap[QLatin1String("mainWrapper")].toMap());
+    for(QVariant &windowData : dataMap[QLatin1String("floatingWindows")].toList()) {
         QToolWindowManagerWrapper *wrapper = new QToolWindowManagerWrapper(this);
         wrapper->restoreState(windowData.toMap());
         wrapper->show();
     }
     d->simplifyLayout();
-    foreach (QWidget *toolWindow, d->m_toolWindows)
+    for(QWidget *toolWindow : d->m_toolWindows) {
         emit toolWindowVisibilityChanged(toolWindow, toolWindow->parentWidget() != nullptr);
+    }
+
+    return result;
 }
 
 

@@ -120,10 +120,11 @@ QVariantMap QToolWindowManagerWrapper::saveState() const
             return QVariantMap();
         }
     }
+    qDebug() << "Number of values:" << result.size();
     return result;
 }
 
-void QToolWindowManagerWrapper::restoreState(const QVariantMap &data)
+bool QToolWindowManagerWrapper::restoreState(const QVariantMap &data)
 {
     restoreGeometry(data[QLatin1String("geometry")].toByteArray());
     if (layout()->count() > 0) {
@@ -139,7 +140,10 @@ void QToolWindowManagerWrapper::restoreState(const QVariantMap &data)
     QToolWindowManagerPrivate *const manager_d = m_manager->d_func();
     if (data.contains(QLatin1String("splitter"))) {
         layout()->addWidget(manager_d->restoreSplitterState(data[QLatin1String("splitter")].toMap()));
+        return true;
     } else if (data.contains(QLatin1String("area"))) {
         layout()->addWidget(manager_d->restoreAreaState(data[QLatin1String("area")].toMap()));
+        return true;
     }
+    return false;
 }
