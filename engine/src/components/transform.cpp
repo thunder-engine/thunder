@@ -111,8 +111,10 @@ Vector3 &Transform::rotation() const {
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
 void Transform::setRotation(const Vector3 &angles) {
+    unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Rotation = angles;
-    setQuaternion(Quaternion(p_ptr->m_Rotation));
+    p_ptr->m_Quaternion = Quaternion(p_ptr->m_Rotation);
+    setDirty();
 }
 /*!
     Returns current rotation of the Transform in local space as Quaternion.
@@ -126,6 +128,9 @@ Quaternion &Transform::quaternion() const {
 void Transform::setQuaternion(const Quaternion &quaternion) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Quaternion = quaternion;
+#ifdef NEXT_SHARED
+    //p_ptr->m_Rotation = p_ptr->m_Quaternion.euler();
+#endif
     setDirty();
 }
 /*!

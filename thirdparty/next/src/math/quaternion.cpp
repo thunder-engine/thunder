@@ -185,10 +185,11 @@ Quaternion Quaternion::operator*(areal factor) const {
 */
 Quaternion Quaternion::operator*(const Quaternion &quaternion) const {
     Quaternion ret;
-    ret.x = w * quaternion.x + x * quaternion.x + y * quaternion.z - z * quaternion.y;
-    ret.y = w * quaternion.y + y * quaternion.w + z * quaternion.x - x * quaternion.z;
-    ret.z = w * quaternion.z + z * quaternion.w + x * quaternion.y - y * quaternion.x;
+    ret.x = y * quaternion.z - z * quaternion.y + x * quaternion.w + w * quaternion.x;
+    ret.y = z * quaternion.x - x * quaternion.z + y * quaternion.w + w * quaternion.y;
+    ret.z = x * quaternion.y - y * quaternion.x + z * quaternion.w + w * quaternion.z;
     ret.w = w * quaternion.w - x * quaternion.x - y * quaternion.y - z * quaternion.z;
+
     return ret;
 }
 /*!

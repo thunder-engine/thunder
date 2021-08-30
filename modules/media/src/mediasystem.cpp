@@ -59,7 +59,7 @@ void MediaSystem::update(Scene *) {
 
         alListenerfv(AL_POSITION,    t->worldPosition().v);
 
-        Quaternion rot  = t->worldRotation();
+        Quaternion rot = t->worldQuaternion();
 
         Vector3 dir = rot * Vector3(0.0f, 0.0f,-1.0f);
         Vector3 up  = rot * Vector3(0.0f, 1.0f, 0.0f);

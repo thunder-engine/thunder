@@ -376,7 +376,7 @@ Matrix4 Matrix4::ortho(areal left, areal right, areal bottom, areal top, areal z
     Creates a transformation matrix that corresponds to a camera viewing the target from the source.
     Receiving \a eye point, a \a target point, and an \a up vector.
 */
-Matrix4 Matrix4::lookAt(Vector3 &eye, Vector3 &target, Vector3 &up) {
+Matrix4 Matrix4::lookAt(const Vector3 &eye, const Vector3 &target, const Vector3 &up) {
     Matrix4 m0, m1;
 
     m0.direction(eye - target, up);

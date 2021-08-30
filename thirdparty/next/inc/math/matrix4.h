@@ -69,7 +69,7 @@ public:
 
     static Matrix4              perspective                 (areal fov, areal aspect, areal znear, areal zfar);
     static Matrix4              ortho                       (areal left, areal right, areal bottom, areal top, areal znear, areal zfar);
-    static Matrix4              lookAt                      (Vector3 &eye, Vector3 &target, Vector3 &up);
+    static Matrix4              lookAt                      (const Vector3 &eye, const Vector3 &target, const Vector3 &up);
 
     areal                       mat[16];
 };
