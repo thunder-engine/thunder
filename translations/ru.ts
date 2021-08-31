@@ -32,7 +32,7 @@
 <context>
     <name>Actions</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+45"/>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+60"/>
         <source>Commit</source>
         <translation>Применить</translation>
     </message>
@@ -58,7 +58,7 @@
 <context>
     <name>AnimationEdit</name>
     <message>
-        <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+98"/>
+        <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+97"/>
         <source>Animation Editor</source>
         <translation>Редактор Анимации</translation>
     </message>
@@ -84,7 +84,7 @@
 <context>
     <name>CameraCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+171"/>
+        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+175"/>
         <source>Front View</source>
         <translation>Вид Спереди</translation>
     </message>
@@ -136,14 +136,6 @@
     </message>
 </context>
 <context>
-    <name>ComponentSelect</name>
-    <message>
-        <location filename="../worldeditor/src/editors/componentselect/componentselect.ui" line="+14"/>
-        <source>Form</source>
-        <translation>Форма</translation>
-    </message>
-</context>
-<context>
     <name>ConsoleManager</name>
     <message>
         <location filename="../worldeditor/src/managers/consolemanager/consolemanager.ui" line="+14"/>
@@ -179,7 +171,7 @@
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+152"/>
+        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+154"/>
         <source>Show in Explorer</source>
         <translation>Показать в Explorer</translation>
     </message>
@@ -190,7 +182,7 @@
     </message>
     <message>
         <location line="+4"/>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>New Folder</source>
         <translation>Новая Папка</translation>
     </message>
@@ -218,7 +210,7 @@
         <translation>Реймпорт</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+105"/>
         <source>Delete Asset</source>
         <translation>Удалить Ассет</translation>
     </message>
@@ -268,6 +260,29 @@
         <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+105"/>
         <source>Save Document</source>
         <translation>Сохранить Документ</translation>
+    </message>
+</context>
+<context>
+    <name>EditorPipeline</name>
+    <message>
+        <location filename="../worldeditor/src/controllers/editorpipeline.cpp" line="+237"/>
+        <source>Post Processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lighting Features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Buffer Visualization</source>
+        <translation type="unfinished">Визуализация Буфера</translation>
+    </message>
+    <message>
+        <location line="+196"/>
+        <source>Final Buffer</source>
+        <translation type="unfinished">Финальный Буфер</translation>
     </message>
 </context>
 <context>
@@ -405,7 +420,7 @@
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+105"/>
+        <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+114"/>
         <source>The mesh import settings has been modified.</source>
         <translation>Настройки импорта сетки были изменены.</translation>
     </message>
@@ -418,12 +433,12 @@
 <context>
     <name>NextObject</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/nextobject.cpp" line="+84"/>
+        <location filename="../worldeditor/src/editors/propertyedit/nextobject.cpp" line="+92"/>
         <source>Remove Component</source>
         <translation>Удалить Компонент</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+70"/>
         <source>%1 (Invalid)</source>
         <translation>%1 (Невалидный)</translation>
     </message>
@@ -431,12 +446,7 @@
 <context>
     <name>ObjectCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+103"/>
-        <source>Final Buffer</source>
-        <translation>Финальный Буфер</translation>
-    </message>
-    <message>
-        <location line="+229"/>
+        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+306"/>
         <source>Creation Component Failed</source>
         <translation>Не удалось создать компонент</translation>
     </message>
@@ -445,21 +455,11 @@
         <source>Component with type &quot;%1&quot; already defined for this actor.</source>
         <translation>Компонент с типом &quot;%1&quot; уже существует у данного Actor.</translation>
     </message>
-    <message>
-        <location line="+15"/>
-        <source>Remove Component </source>
-        <translation>Удалить Компонент </translation>
-    </message>
-    <message>
-        <location line="+203"/>
-        <source>Buffer Visualization</source>
-        <translation>Визуализация Буфера</translation>
-    </message>
 </context>
 <context>
     <name>ObjectHierarchyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/objecthierarchy/objecthierarchymodel.cpp" line="+103"/>
+        <location filename="../worldeditor/src/editors/objecthierarchy/objecthierarchymodel.cpp" line="+111"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -531,6 +531,26 @@
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
+    <message>
+        <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+123"/>
+        <source>The effect has been modified.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Do you want to save your changes?</source>
+        <translation type="unfinished">Вы хотите сохранить свои изменения?</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Do you want to delete emitter?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>This type of modifier already assigned.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PathEdit</name>
@@ -591,7 +611,7 @@
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertyeditor.cpp" line="+306"/>
+        <location filename="../worldeditor/src/editors/propertyedit/propertyeditor.cpp" line="+268"/>
         <source>Insert Keyframe</source>
         <translation>Вставить ключевой кадр</translation>
     </message>
@@ -599,7 +619,7 @@
 <context>
     <name>PropertyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+125"/>
+        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+145"/>
         <source>Property</source>
         <translation>Свойство</translation>
     </message>
@@ -612,12 +632,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+24"/>
+        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+262"/>
         <source>Create %1</source>
         <translation>Создать %1</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.h" line="+156"/>
+        <location filename="../worldeditor/src/controllers/objectctrl.h" line="+159"/>
         <source>Selection Change</source>
         <translation>Изменение Выбора</translation>
     </message>
@@ -633,11 +653,16 @@
     </message>
     <message>
         <location line="+11"/>
-        <source>Destroy Objects</source>
-        <translation>Уничтожить Объекты</translation>
+        <source>Delete Actors</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+12"/>
+        <source>Remove Component</source>
+        <translation type="unfinished">Удалить Компонент</translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Parenting Objects</source>
         <translation>Смена Родителя</translation>
     </message>
@@ -647,7 +672,7 @@
         <translation>Изменить Свойство</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+348"/>
         <source>Create Sprite Element</source>
         <translation>Создать Элемент Спрайта</translation>
     </message>
@@ -685,7 +710,12 @@
         <translation>Отменить</translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+171"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
@@ -822,7 +852,7 @@
     <message>
         <location line="+8"/>
         <location line="+3"/>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+763"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+774"/>
         <source>Save Workspace</source>
         <translation>Сохранить рабочее пространство</translation>
     </message>
@@ -848,48 +878,64 @@
         <translation>Построить все</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-655"/>
-        <location line="+836"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-663"/>
+        <location line="+843"/>
         <source>Viewport</source>
         <translation>Окно</translation>
     </message>
     <message>
-        <location line="-835"/>
-        <location line="+836"/>
+        <location line="-842"/>
+        <location line="+843"/>
         <source>Properties</source>
         <translation>Свойства</translation>
     </message>
     <message>
-        <location line="-835"/>
-        <location line="+836"/>
+        <location line="-842"/>
+        <location line="+843"/>
         <source>Project Settings</source>
         <translation>Настройки проекта</translation>
     </message>
     <message>
-        <location line="-835"/>
-        <location line="+836"/>
+        <location line="-842"/>
+        <location line="+843"/>
         <source>Editor Preferences</source>
         <translation>Настройки редактора</translation>
     </message>
     <message>
-        <location line="-835"/>
-        <location line="+836"/>
+        <location line="-842"/>
+        <location line="+843"/>
         <source>Timeline</source>
         <translation>Таймлайн</translation>
     </message>
     <message>
-        <location line="-835"/>
-        <location line="+836"/>
+        <location line="-842"/>
+        <location line="+843"/>
         <source>Class View</source>
         <translation>Представление Классов</translation>
     </message>
     <message>
-        <location line="-746"/>
+        <location line="-754"/>
         <source>About %1...</source>
         <translation>О %1…</translation>
     </message>
     <message>
-        <location line="+310"/>
+        <location line="+189"/>
+        <source>The import settings has been modified.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+66"/>
+        <source>Do you want to save your changes?</source>
+        <translation type="unfinished">Вы хотите сохранить свои изменения?</translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <source>The map has been modified.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+64"/>
         <source>Open Map</source>
         <translation>Открыть Карту</translation>
     </message>
@@ -905,7 +951,7 @@
         <translation>Сохранить Карту</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+74"/>
         <source>Build for %1</source>
         <translation>Построить для %1</translation>
     </message>
@@ -920,17 +966,17 @@
         <translation>Импортировать существующий проект</translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+87"/>
         <source>Workspaces (*.ws)</source>
         <translation>Рабочие области (*.ws)</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+68"/>
         <source>Select Target Directory</source>
         <translation>Выбор каталога</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+102"/>
         <source>Save%1</source>
         <translation>Сохранить%1</translation>
     </message>
@@ -1086,7 +1132,7 @@
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+257"/>
+        <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+252"/>
         <source>Update Properties</source>
         <translation>Обновление Свойств</translation>
     </message>
