@@ -4,6 +4,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
+#include "components/private/postprocessorsettings.h"
 
 #include "resources/texture.h"
 

@@ -10,6 +10,8 @@
 #include "components/directlight.h"
 #include "components/postprocessvolume.h"
 
+#include "components/private/postprocessorsettings.h"
+
 #include "resources/mesh.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"

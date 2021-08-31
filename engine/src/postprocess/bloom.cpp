@@ -8,7 +8,7 @@
 
 #include "commandbuffer.h"
 
-#include "components/scene.h"
+#include "components/private/postprocessorsettings.h"
 
 #include <cmath>
 #include <cstring>
