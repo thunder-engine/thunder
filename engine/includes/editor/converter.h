@@ -15,7 +15,7 @@ class NEXT_LIBRARY_EXPORT IConverterSettings : public QObject {
 
 public:
     IConverterSettings();
-    virtual ~IConverterSettings() {}
+    virtual ~IConverterSettings();
 
     virtual uint32_t type() const;
     virtual void setType(uint32_t type);
@@ -55,8 +55,8 @@ public:
     bool loadSettings();
     void saveSettings();
 
-    bool isModified() const { return m_Modified; }
-    void setModified() { m_Modified = true; }
+    bool isModified() const;
+    void setModified();
 
 signals:
     void updated();

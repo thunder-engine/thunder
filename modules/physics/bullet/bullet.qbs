@@ -5,11 +5,7 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/components/*.cpp",
-        "src/resources/*.cpp",
-
-        "includes/*.h",
-        "includes/components/*.h",
-        "includes/resources/*.h"
+        "src/resources/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -30,7 +26,6 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/converters/*.cpp")
-            sources.push("src/converters/*.qrc")
             sources.push("includes/converters/*.h")
             return sources
         }
@@ -63,6 +58,17 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: bullet.PLUGINS_PATH
+            qbs.installPrefix: bullet.PREFIX
+        }
+
+        Group {
+            name: "Bullet includes"
+            prefix: "includes/"
+            files: [
+                "bullet.h"
+            ]
+            qbs.install: true
+            qbs.installDir: bullet.INC_PATH + "/modules"
             qbs.installPrefix: bullet.PREFIX
         }
     }

@@ -320,33 +320,6 @@ Product {
         qbs.installPrefix: install.PREFIX
     }
     Group {
-        name: "Next includes"
-        prefix: "../thirdparty/next/inc/"
-        files: [
-            "**"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/next"
-        qbs.installPrefix: install.PREFIX
-        qbs.installSourceBase: prefix
-    }
-    Group {
-        name: "Engine includes"
-        prefix: "../engine/includes/"
-        files: [
-            "**/*.h"
-        ]
-        excludeFiles: [
-            "adapters/*.h",
-            "editor/*.h",
-            "systems/*.h",
-            "**/private/*.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/engine"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
         name: "Editor includes"
         prefix: "../engine/includes/editor"
         files: [
@@ -354,46 +327,6 @@ Product {
         ]
         qbs.install: true
         qbs.installDir: install.INC_PATH + "/editor"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "RenderGL includes"
-        prefix: "../modules/renders/rendergl/includes/"
-        files: [
-            "**/rendergl.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/modules"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "Angel includes"
-        prefix: "../modules/vms/angel/includes/"
-        files: [
-            "**/angel.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/modules"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "Media includes"
-        prefix: "../modules/media/includes/"
-        files: [
-            "**/media.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/modules"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "Bullet includes"
-        prefix: "../modules/physics/bullet/includes/"
-        files: [
-            "**/bullet.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/modules"
         qbs.installPrefix: install.PREFIX
     }
 }

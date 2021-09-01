@@ -159,6 +159,18 @@ void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
 }
 
+const QString IBuilder::persistentAsset() const {
+    return "";
+}
+
+const QString IBuilder::persistentUUID() const {
+    return "";
+}
+
+QString IBuilder::project() const {
+    return m_Project;
+}
+
 QStringList IBuilder::sources() const {
     return m_Sources;
 }
@@ -179,6 +191,10 @@ void IBuilder::rescanSources(const QString &path) {
 
 bool IBuilder::isEmpty() const {
     return m_Sources.empty();
+}
+
+bool IBuilder::isOutdated() const {
+    return m_Outdated;
 }
 
 QString IBuilder::formatList(const QStringList &list) const {
