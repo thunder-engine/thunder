@@ -267,12 +267,12 @@
     <message>
         <location filename="../worldeditor/src/controllers/editorpipeline.cpp" line="+237"/>
         <source>Post Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>Пост Обработка</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Lighting Features</source>
-        <translation type="unfinished"></translation>
+        <translation>Компоненты Освещения</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -282,7 +282,7 @@
     <message>
         <location line="+196"/>
         <source>Final Buffer</source>
-        <translation type="unfinished">Финальный Буфер</translation>
+        <translation>Окончательный Буфер</translation>
     </message>
 </context>
 <context>
@@ -534,17 +534,17 @@
     <message>
         <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+123"/>
         <source>The effect has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>Эффект был изменен.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Вы хотите сохранить свои изменения?</translation>
+        <translation>Вы хотите сохранить свои изменения?</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Do you want to delete emitter?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы хотите удалить эмиттер?</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -654,12 +654,12 @@
     <message>
         <location line="+11"/>
         <source>Delete Actors</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить Акторы</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Remove Component</source>
-        <translation type="unfinished">Удалить Компонент</translation>
+        <translation>Удалить Компонент</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -712,7 +712,7 @@
     <message>
         <location line="+171"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Переключает оси трансформации между &lt;span style=&quot; font-weight:600;&quot;&gt;мировым&lt;/span&gt; пространством и &lt;span style=&quot; font-weight:600;&quot;&gt;локальным&lt;/span&gt; (объектным) пространством.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;.</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -927,12 +927,12 @@
         <location line="+1"/>
         <location line="+66"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Вы хотите сохранить свои изменения?</translation>
+        <translation>Вы хотите сохранить свои изменения?</translation>
     </message>
     <message>
         <location line="-1"/>
         <source>The map has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>Карта была изменена.</translation>
     </message>
     <message>
         <location line="+64"/>
