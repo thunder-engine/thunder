@@ -219,17 +219,6 @@ Product {
     }
 
     Group {
-        name: "OpenAL Binary"
-        condition: qbs.targetOS.contains("windows")
-        files: [
-            "../thirdparty/openal/windows/bin/OpenAL32.dll"
-        ]
-        qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
         name: "Shaders Engine"
         files: [
             install.RESOURCE_ROOT + "/engine/shaders/*"
@@ -317,16 +306,6 @@ Product {
         ]
         qbs.install: true
         qbs.installDir: install.SDK_PATH + "/resources/editor/textures"
-        qbs.installPrefix: install.PREFIX
-    }
-    Group {
-        name: "Editor includes"
-        prefix: "../engine/includes/editor"
-        files: [
-            "**/*.h"
-        ]
-        qbs.install: true
-        qbs.installDir: install.INC_PATH + "/editor"
         qbs.installPrefix: install.PREFIX
     }
 }

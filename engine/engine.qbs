@@ -34,7 +34,6 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/editor/*.cpp")
-            sources.push("includes/editor/*.h")
             return sources
         }
         Depends { name: "cpp" }
@@ -90,6 +89,17 @@ Project {
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Editor includes"
+            prefix: "includes/editor"
+            files: [
+                "**/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: engine.INC_PATH + "/editor"
             qbs.installPrefix: engine.PREFIX
         }
     }

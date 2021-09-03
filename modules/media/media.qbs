@@ -82,6 +82,17 @@ Project {
             qbs.installDir: media.INC_PATH + "/modules"
             qbs.installPrefix: media.PREFIX
         }
+
+        Group {
+            name: "OpenAL Binary"
+            condition: qbs.targetOS.contains("windows")
+            files: [
+                "../../thirdparty/openal/windows/bin/OpenAL32.dll"
+            ]
+            qbs.install: true
+            qbs.installDir: media.BIN_PATH + "/" + media.bundle
+            qbs.installPrefix: media.PREFIX
+        }
     }
 
     StaticLibrary {
