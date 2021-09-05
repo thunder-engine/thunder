@@ -9,7 +9,7 @@
 #include "resource.h"
 
 class RenderSystem;
-class ICommandBuffer;
+class CommandBuffer;
 
 class Scene;
 class Camera;
@@ -48,7 +48,7 @@ public:
 
     void setTarget(uint32_t resource);
 
-    ICommandBuffer *buffer() const;
+    CommandBuffer *buffer() const;
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
@@ -74,7 +74,7 @@ protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
 
-    ICommandBuffer *m_Buffer;
+    CommandBuffer *m_Buffer;
 
     list<Renderable *> m_SceneComponents;
     list<Renderable *> m_SceneLights;

@@ -95,15 +95,15 @@ Image::~Image() {
 /*!
     \internal
 */
-void Image::draw(ICommandBuffer &buffer, uint32_t layer) {
+void Image::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(p_ptr->m_pCustomMesh) {
-        if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
+        if(layer & CommandBuffer::RAYCAST) {
+            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
         buffer.drawMesh(a->transform()->worldTransform(),
                         p_ptr->m_pCustomMesh,
-                        layer, (p_ptr->m_pCustomMaterial) ? p_ptr->m_pCustomMaterial : p_ptr->m_pMaterial);
+                        0, layer, (p_ptr->m_pCustomMaterial) ? p_ptr->m_pCustomMaterial : p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -190,11 +190,15 @@ void Image::setItem(const string &item) {
     p_ptr->m_Hash = hash_str(p_ptr->m_Item);
     p_ptr->composeMesh();
 }
-
+/*!
+    \internal
+*/
 void Image::boundChanged() {
     p_ptr->composeMesh();
 }
-
+/*!
+    \internal
+*/
 void Image::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
@@ -210,7 +214,9 @@ void Image::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap Image::saveUserData() const {
     VariantMap result = Component::saveUserData();
     {

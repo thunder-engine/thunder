@@ -13,33 +13,27 @@ class NEXT_LIBRARY_EXPORT AnimationTransition {
 public:
     bool operator== (const AnimationTransition &right) const;
 
-    bool checkCondition (const Variant &value);
+    bool checkCondition(const Variant &value);
 
-    AnimationState *m_pTargetState;
+    AnimationState *m_targetState;
 
-    int m_ConditionHash;
+    int m_conditionHash;
 };
 typedef vector<AnimationTransition> TransitionVector;
 
 class NEXT_LIBRARY_EXPORT AnimationState {
 public:
-    enum Type {
-        Base
-    };
-
     AnimationState();
 
     bool operator== (const AnimationState &right) const;
 
-    int type() const;
+    TransitionVector m_transitions;
 
-    TransitionVector m_Transitions;
+    int m_hash;
 
-    int m_Hash;
+    AnimationClip *m_clip;
 
-    AnimationClip *m_pClip;
-
-    bool m_Loop;
+    bool m_loop;
 };
 typedef vector<AnimationState *> AnimationStateVector;
 

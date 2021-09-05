@@ -10,7 +10,7 @@ class MaterialInstance;
 
 class Transform;
 
-class ICommandBuffer;
+class CommandBuffer;
 
 class NEXT_LIBRARY_EXPORT Handles {
 public:
@@ -30,7 +30,7 @@ public:
 public:
     static void init();
 
-    static void beginDraw(ICommandBuffer *buffer);
+    static void beginDraw(CommandBuffer *buffer);
     static void endDraw();
     static void cleanDepth();
 

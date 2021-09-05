@@ -34,6 +34,14 @@ public:
     bool m_unbound;
 };
 
+/*!
+    \class PostProcessVolume
+    \brief A post process settings volume.
+    \inmodule Engine
+
+    Used to affect post process settings in the game and editor.
+*/
+
 PostProcessVolume::PostProcessVolume() :
     p_ptr(new PostProcessVolumePrivate()) {
 
@@ -60,29 +68,45 @@ PostProcessVolume::~PostProcessVolume() {
     delete p_ptr;
     p_ptr = nullptr;
 }
-
+/*!
+    Returns the priority of volume in the list.
+*/
 int PostProcessVolume::priority() const {
     return p_ptr->m_priority;
 }
-
+/*!
+    Sets the \a priority of volume in the list.
+*/
 void PostProcessVolume::setPriority(int priority) {
     p_ptr->m_priority = priority;
 }
-
+/*!
+    Returns true in case of component has no bounding volume; otherwise return false.
+*/
 bool PostProcessVolume::unbound() const {
     return p_ptr->m_unbound;
 }
+/*!
+    Sets flag \a unbound if current settings must be applied entire scene.
+*/
 void PostProcessVolume::setUnbound(bool unbound) {
     p_ptr->m_unbound = unbound;
 }
-
+/*!
+    Returns the weight of settings for blending process.
+*/
 float PostProcessVolume::blendWeight() const {
     return p_ptr->m_blendWeight;
 }
+/*!
+    Sets the \a weight of settings for blending process.
+*/
 void PostProcessVolume::setBlendWeight(float weight) {
     p_ptr->m_blendWeight = weight;
 }
-
+/*!
+    \internal
+*/
 AABBox PostProcessVolume::bound() const {
     Transform *t = actor()->transform();
     AABBox result;
@@ -90,7 +114,9 @@ AABBox PostProcessVolume::bound() const {
     result.extent = t->worldScale() * 0.5;
     return result;
 }
-
+/*!
+    \internal
+*/
 const PostProcessSettings &PostProcessVolume::settings() const {
     return p_ptr->m_settings;
 }

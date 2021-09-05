@@ -7,24 +7,24 @@ class AngelSystem;
 
 class Angel : public Module {
 public:
-    Angel                       (Engine *engine);
+    Angel(Engine *engine);
 
-    ~Angel                      ();
+    ~Angel();
 
-    const char                 *description             () const;
+    const char *description() const;
 
-    const char                 *version                 () const;
+    const char *version() const;
 
-    uint8_t                     types                   () const;
+    uint32_t types() const;
 
-    System                     *system                  ();
+    System *system();
 
-    IConverter                 *converter               ();
+    IConverter *converter();
 
 protected:
-    Engine                     *m_pEngine;
+    Engine *m_pEngine;
 
-    AngelSystem                *m_pSystem;
+    AngelSystem *m_pSystem;
 };
 #ifdef NEXT_SHARED
 extern "C" {

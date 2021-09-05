@@ -190,17 +190,17 @@ void ParticleRender::update() {
 /*!
     \internal
 */
-void ParticleRender::draw(ICommandBuffer &buffer, uint32_t layer) {
+void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(layer & a->layers()) {
-        if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
+        if(layer & CommandBuffer::RAYCAST) {
+            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
         uint32_t index = 0;
         for(auto &it : p_ptr->m_Emitters) {
             if(it.m_Count > 1) {
                 ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
-                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), layer, it.m_pInstance);
+                buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), 0, layer, it.m_pInstance);
             }
             index++;
         }

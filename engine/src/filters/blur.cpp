@@ -32,7 +32,7 @@ Blur::Blur() :
     m_tempTarget->setColorAttachment(0, m_tempTexture);
 }
 
-void Blur::draw(ICommandBuffer &buffer, Texture *source, RenderTarget *target) {
+void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
     if(m_pBlurMaterial) {
         Texture *t = target->colorAttachment(0);
         m_tempTexture->setWidth(t->width());
@@ -45,7 +45,7 @@ void Blur::draw(ICommandBuffer &buffer, Texture *source, RenderTarget *target) {
 
         buffer.setRenderTarget(m_tempTarget);
         buffer.clearRenderTarget();
-        buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlurMaterial);
+        buffer.drawMesh(Matrix4(), m_pMesh, 0, CommandBuffer::UI, m_pBlurMaterial);
 
         m_direction.x = 0.0f;
         m_direction.y = 1.0f;
@@ -53,7 +53,7 @@ void Blur::draw(ICommandBuffer &buffer, Texture *source, RenderTarget *target) {
         m_pBlurMaterial->setTexture(OVERRIDE, m_tempTexture);
 
         buffer.setRenderTarget(target);
-        buffer.drawMesh(Matrix4(), m_pMesh, ICommandBuffer::UI, m_pBlurMaterial);
+        buffer.drawMesh(Matrix4(), m_pMesh, 0, CommandBuffer::UI, m_pBlurMaterial);
     }
 }
 

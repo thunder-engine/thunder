@@ -111,8 +111,9 @@ void CommandBufferGL::putUniforms(uint32_t program, MaterialInstance *instance) 
     }
 }
 
-void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
+void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
+    A_UNUSED(sub);
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);
@@ -156,8 +157,9 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer,
     }
 }
 
-void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
+void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
+    A_UNUSED(sub);
 
     if(mesh && material) {
         MeshGL *m = static_cast<MeshGL *>(mesh);

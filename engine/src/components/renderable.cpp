@@ -14,7 +14,7 @@ Renderable::Renderable() {
 /*!
     \internal
 */
-void Renderable::draw(ICommandBuffer &buffer, uint32_t layer) {
+void Renderable::draw(CommandBuffer &buffer, uint32_t layer) {
     A_UNUSED(buffer);
     A_UNUSED(layer);
 }

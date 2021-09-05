@@ -63,4 +63,5 @@ bool Actions::isChecked() const {
     if(m_Property.isValid()) {
         return m_Property.read(m_pObject).toBool();
     }
+    return false;
 }

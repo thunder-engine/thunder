@@ -62,10 +62,10 @@ DirectLight::~DirectLight() {
 /*!
     \internal
 */
-void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
+void DirectLight::draw(CommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
-    if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
+    if(mesh && instance && (layer & CommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
 
         p_ptr->m_direction = q * Vector3(0.0f, 0.0f, 1.0f);
@@ -73,7 +73,7 @@ void DirectLight::draw(ICommandBuffer &buffer, uint32_t layer) {
         buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
         buffer.setScreenProjection();
-        buffer.drawMesh(Matrix4(), mesh, layer, instance);
+        buffer.drawMesh(Matrix4(), mesh, 0, layer, instance);
         buffer.resetViewProjection();
     }
 }
@@ -90,7 +90,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
 
     float nearPlane = camera.nearPlane();
 
-    ICommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = pipeline->buffer();
     Matrix4 p = buffer->projection();
 
     {
@@ -199,7 +199,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
 
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
+            static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
         }
     }
 }

@@ -122,19 +122,19 @@ AmbientOcclusion::~AmbientOcclusion() {
 
 Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
     if(m_enabled) {
-        ICommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = pipeline->buffer();
         if(m_material) {
             buffer->setViewport(0, 0, m_ssaoTexture->width(), m_ssaoTexture->height());
 
             buffer->setRenderTarget(m_ssaoTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
         }
 
         if(m_blur) {
             buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
 
             buffer->setRenderTarget(m_blurTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_blur);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blur);
         }
 
         if(m_occlusion) {
@@ -143,7 +143,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setViewport(0, 0, source->width(), source->height());
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_occlusion);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_occlusion);
         }
     }
     return source;
@@ -168,7 +168,7 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
 }
 
 uint32_t AmbientOcclusion::layer() const {
-    return ICommandBuffer::DEFAULT;
+    return CommandBuffer::DEFAULT;
 }
 
 const char *AmbientOcclusion::name() const {

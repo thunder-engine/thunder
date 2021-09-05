@@ -17,8 +17,8 @@
 
 #define INSTANCE_ATRIB  8
 
-class CommandBufferGL : public ICommandBuffer {
-    A_OVERRIDE(CommandBufferGL, ICommandBuffer, System)
+class CommandBufferGL : public CommandBuffer {
+    A_OVERRIDE(CommandBufferGL, CommandBuffer, System)
 
 public:
     CommandBufferGL();
@@ -27,9 +27,9 @@ public:
 
     void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f) override;
 
-    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
+    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
-    void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
+    void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 

@@ -65,7 +65,7 @@ public:
     static bool composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize, float scale = 1.0f);
 
 private:
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     AABBox bound() const override;
 

@@ -52,9 +52,9 @@ void Basic_properties() {
     actor.setEnabled(false);
     QCOMPARE(actor.isEnabled(), false);
 
-    QCOMPARE(actor.layers(), ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST| ICommandBuffer::TRANSLUCENT);
-    actor.setLayers(ICommandBuffer::UI);
-    QCOMPARE(actor.layers(), ICommandBuffer::UI);
+    QCOMPARE(actor.layers(), CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST| CommandBuffer::TRANSLUCENT);
+    actor.setLayers(CommandBuffer::UI);
+    QCOMPARE(actor.layers(), CommandBuffer::UI);
 }
 
 void Transform_hierarchy() {

@@ -65,7 +65,7 @@ Object *GuiSystem::instantiateObject(const MetaObject *meta, Object *parent) {
     Object *result = System::instantiateObject(meta, parent);
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
-        actor->setLayers(ICommandBuffer::UI | ICommandBuffer::RAYCAST);
+        actor->setLayers(CommandBuffer::UI | CommandBuffer::RAYCAST);
     }
     return result;
 }

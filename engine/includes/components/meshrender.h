@@ -29,7 +29,7 @@ public:
 private:
     AABBox bound() const override;
 
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

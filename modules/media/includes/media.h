@@ -5,24 +5,24 @@
 
 class Media : public Module {
 public:
-    Media                       (Engine *engine);
+    Media(Engine *engine);
 
-    ~Media                      ();
+    ~Media();
 
-    const char                 *description             () const;
+    const char *description() const;
 
-    const char                 *version                 () const;
+    const char *version() const;
 
-    uint8_t                     types                   () const;
+    uint32_t types() const;
 
-    System                     *system                  ();
+    System *system();
 
-    IConverter                 *converter               ();
+    IConverter *converter();
 
 protected:
-    Engine                     *m_pEngine;
+    Engine *m_pEngine;
 
-    System                     *m_pSystem;
+    System *m_pSystem;
 };
 #ifdef NEXT_SHARED
 extern "C" {

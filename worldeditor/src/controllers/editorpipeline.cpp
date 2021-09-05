@@ -238,8 +238,8 @@ void EditorPipeline::createMenu(QMenu *menu) {
     m_lightMenu = menu->addMenu(tr("Lighting Features"));
     m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
 
-    fillEffectMenu(m_lightMenu, ICommandBuffer::DEFAULT | ICommandBuffer::LIGHT);
-    fillEffectMenu(m_postMenu, ICommandBuffer::TRANSLUCENT | ICommandBuffer::UI);
+    fillEffectMenu(m_lightMenu, CommandBuffer::DEFAULT | CommandBuffer::LIGHT);
+    fillEffectMenu(m_postMenu, CommandBuffer::TRANSLUCENT | CommandBuffer::UI);
 
     QObject::connect(m_bufferMenu, &QMenu::aboutToShow, this, &EditorPipeline::onBufferMenu);
 }
@@ -252,8 +252,8 @@ void EditorPipeline::draw(Camera &camera) {
     m_Buffer->setViewport(0, 0, m_Width, m_Height);
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::RAYCAST, m_Filter);
-    drawComponents(ICommandBuffer::RAYCAST, m_UiComponents);
+    drawComponents(CommandBuffer::RAYCAST, m_Filter);
+    drawComponents(CommandBuffer::RAYCAST, m_UiComponents);
 
     Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
 
@@ -286,7 +286,7 @@ void EditorPipeline::draw(Camera &camera) {
             }
         }
     }
-    drawComponents(ICommandBuffer::RAYCAST, filter);
+    drawComponents(CommandBuffer::RAYCAST, filter);
 
     Pipeline::draw(camera);
 
@@ -310,9 +310,9 @@ void EditorPipeline::draw(Camera &camera) {
 
 void EditorPipeline::drawUi(Camera &camera) {
     cameraReset(camera);
-    drawComponents(ICommandBuffer::UI | ICommandBuffer::TRANSLUCENT, m_UiComponents);
+    drawComponents(CommandBuffer::UI | CommandBuffer::TRANSLUCENT, m_UiComponents);
 
-    postProcess(m_renderTargets["lightPass"], ICommandBuffer::UI);
+    postProcess(m_renderTargets["lightPass"], CommandBuffer::UI);
 }
 
 bool EditorPipeline::isInHierarchy(Actor *origin, Actor *actor) {
@@ -416,13 +416,13 @@ void EditorPipeline::drawGrid(Camera &camera) {
     Matrix4 transform(pos, rot, scale);
 
     m_Buffer->setColor(m_PrimaryGridColor);
-    m_Buffer->drawMesh(transform, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_Buffer->drawMesh(transform, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
 
     Matrix4 m;
     m.scale(0.1f);
 
     m_Buffer->setColor(m_SecondaryGridColor);
-    m_Buffer->drawMesh(transform * m, m_pGrid, ICommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_Buffer->drawMesh(transform * m, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
 
     m_Buffer->setColor(Vector4(1.0f));
 }

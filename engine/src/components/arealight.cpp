@@ -80,10 +80,10 @@ AreaLight::~AreaLight() {
 /*!
     \internal
 */
-void AreaLight::draw(ICommandBuffer &buffer, uint32_t layer) {
+void AreaLight::draw(CommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
-    if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
+    if(mesh && instance && (layer & CommandBuffer::LIGHT)) {
 
         Matrix4 m = actor()->transform()->worldTransform();
         p_ptr->m_position = Vector3(m[12], m[13], m[14]);
@@ -100,7 +100,7 @@ void AreaLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
-        buffer.drawMesh(t, mesh, layer, instance);
+        buffer.drawMesh(t, mesh, 0, layer, instance);
     }
 }
 /*!
@@ -114,7 +114,7 @@ void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
         return;
     }
 
-    ICommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = pipeline->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
@@ -163,7 +163,7 @@ void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
                                                    Camera::frustumCorners(false, 90.0f, 1.0f, pos, rot[i], p_ptr->m_near, zFar));
         // Draw in the depth buffer from position of the light source
         for(auto it : filter) {
-            static_cast<Renderable *>(it)->draw(*buffer, ICommandBuffer::SHADOWCAST);
+            static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
         }
         buffer->resetViewProjection();
     }

@@ -59,16 +59,16 @@ Reflections::~Reflections() {
 
 Texture *Reflections::draw(Texture *source, Pipeline *pipeline) {
     if(m_enabled) {
-        ICommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = pipeline->buffer();
         if(m_material) { // sslr step
             buffer->setRenderTarget(m_sslrTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
         }
 
         if(m_iblMaterial) { // combine step
             buffer->setRenderTarget(m_resultTarget);
             buffer->clearRenderTarget();
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_iblMaterial);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_iblMaterial);
         }
 
         return m_resultTexture;
@@ -86,7 +86,7 @@ void Reflections::resize(int32_t width, int32_t height) {
 }
 
 uint32_t Reflections::layer() const {
-    return ICommandBuffer::LIGHT;
+    return CommandBuffer::LIGHT;
 }
 
 const char *Reflections::name() const {

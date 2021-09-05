@@ -33,8 +33,8 @@ void AnimationClipModel::setController(AnimationController *controller) {
         if(m_pStateMachine) {
 
             for(auto it : m_pStateMachine->states()) {
-                QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_pClip)).c_str());
-                m_Clips[info.baseName()] = it->m_pClip;
+                QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_clip)).c_str());
+                m_Clips[info.baseName()] = it->m_clip;
             }
             if(!m_Clips.isEmpty()) {
                 setClip(m_Clips.begin().key());

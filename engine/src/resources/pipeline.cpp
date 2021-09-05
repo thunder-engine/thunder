@@ -57,7 +57,7 @@ Pipeline::Pipeline() :
         m_pFinal(nullptr),
         m_pSystem(nullptr) {
 
-    m_Buffer = Engine::objectCreate<ICommandBuffer>();
+    m_Buffer = Engine::objectCreate<CommandBuffer>();
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
@@ -132,23 +132,23 @@ void Pipeline::draw(Camera &camera) {
     m_Buffer->clearRenderTarget(true, camera.color());
 
     cameraReset(camera);
-    drawComponents(ICommandBuffer::DEFAULT, m_Filter);
+    drawComponents(CommandBuffer::DEFAULT, m_Filter);
 
     // Step 1.2 - Opaque pass post processing
-    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::DEFAULT);
+    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
 
     // Step 2.1 - Light pass
     m_Buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
-    drawComponents(ICommandBuffer::LIGHT, m_SceneLights);
+    drawComponents(CommandBuffer::LIGHT, m_SceneLights);
 
     // Step 2.2 - Light pass post processing
-    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::LIGHT);
+    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
 
     // Step 3.1 - Transparent pass
-    drawComponents(ICommandBuffer::TRANSLUCENT, m_Filter);
+    drawComponents(CommandBuffer::TRANSLUCENT, m_Filter);
 
     // Step 3.2 - Transparent pass post processing
-    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::TRANSLUCENT);
+    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
     m_pFinal = m_textureBuffers[G_EMISSIVE];
 
     drawUi(camera);
@@ -158,9 +158,9 @@ void Pipeline::drawUi(Camera &camera) {
     A_UNUSED(camera);
 
     m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_Width, 0, m_Height, -500.0f, 500.0f));
-    drawComponents(ICommandBuffer::UI, m_UiComponents);
+    drawComponents(CommandBuffer::UI, m_UiComponents);
 
-    postProcess(m_renderTargets[LIGHPASS], ICommandBuffer::UI);
+    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
 }
 
 void Pipeline::finish() {
@@ -169,7 +169,7 @@ void Pipeline::finish() {
     m_Buffer->clearRenderTarget();
 
     m_pSprite->setTexture(OVERRIDE, m_pFinal);
-    m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
+    m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, CommandBuffer::UI, m_pSprite);
 }
 
 void Pipeline::cameraReset(Camera &camera) {
@@ -349,7 +349,7 @@ RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x
     return target;
 }
 
-ICommandBuffer *Pipeline::buffer() const {
+CommandBuffer *Pipeline::buffer() const {
     return m_Buffer;
 }
 
@@ -410,7 +410,7 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
         m_Buffer->setViewport(0, 0, texture->width(), texture->height());
         m_Buffer->setRenderTarget(source);
         m_pSprite->setTexture(OVERRIDE, result);
-        m_Buffer->drawMesh(Matrix4(), m_pPlane, ICommandBuffer::UI, m_pSprite);
+        m_Buffer->drawMesh(Matrix4(), m_pPlane, 0, CommandBuffer::UI, m_pSprite);
     }
 
     m_Buffer->resetViewProjection();
@@ -430,7 +430,7 @@ void Pipeline::combineComponents(Object *object, bool update) {
                     if(comp->isLight()) {
                         m_SceneLights.push_back(comp);
                     } else {
-                        if(comp->actor()->layers() & ICommandBuffer::UI) {
+                        if(comp->actor()->layers() & CommandBuffer::UI) {
                             m_UiComponents.push_back(comp);
                         } else {
                             m_SceneComponents.push_back(comp);

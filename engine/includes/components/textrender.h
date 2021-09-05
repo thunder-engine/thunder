@@ -69,7 +69,7 @@ public:
     static void composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
 private:
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     AABBox bound() const override;
 

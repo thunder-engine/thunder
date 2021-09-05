@@ -70,10 +70,10 @@ SpotLight::~SpotLight() {
 /*!
     \internal
 */
-void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
+void SpotLight::draw(CommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
-    if(mesh && instance && (layer & ICommandBuffer::LIGHT)) {
+    if(mesh && instance && (layer & CommandBuffer::LIGHT)) {
         Quaternion q = actor()->transform()->worldRotation();
 
         p_ptr->m_position = actor()->transform()->worldPosition();
@@ -86,7 +86,7 @@ void SpotLight::draw(ICommandBuffer &buffer, uint32_t layer) {
 
         buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
-        buffer.drawMesh(t, mesh, layer, instance);
+        buffer.drawMesh(t, mesh, 0, layer, instance);
     }
 }
 /*!
@@ -99,7 +99,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
         p_ptr->m_shadowMap = nullptr;
         return;
     }
-    ICommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = pipeline->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
@@ -142,7 +142,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
                                                Camera::frustumCorners(false, p_ptr->m_angle * 2.0f, 1.0f, pos, q, p_ptr->m_near, zFar));
     // Draw in the depth buffer from position of the light source
     for(auto it : filter) {
-        it->draw(*buffer, ICommandBuffer::SHADOWCAST);
+        it->draw(*buffer, CommandBuffer::SHADOWCAST);
     }
     buffer->resetViewProjection();
 }

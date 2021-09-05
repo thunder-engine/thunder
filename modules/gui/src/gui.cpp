@@ -30,6 +30,6 @@ const char *Gui::version() const {
     return "1.0";
 }
 
-uint8_t Gui::types() const {
+uint32_t Gui::types() const {
     return SYSTEM;
 }

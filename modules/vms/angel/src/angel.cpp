@@ -27,8 +27,8 @@ const char *Angel::version() const {
     return "1.0";
 }
 
-uint8_t Angel::types() const {
-    uint8_t result  = SYSTEM;
+uint32_t Angel::types() const {
+    uint32_t result  = SYSTEM;
 #ifdef NEXT_SHARED
     result  |= CONVERTER;
 #endif

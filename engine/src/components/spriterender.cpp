@@ -114,16 +114,16 @@ SpriteRender::~SpriteRender() {
 /*!
     \internal
 */
-void SpriteRender::draw(ICommandBuffer &buffer, uint32_t layer) {
+void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(p_ptr->m_pMesh && layer & a->layers()) {
-        if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
+        if(layer & CommandBuffer::RAYCAST) {
+            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
 
         buffer.drawMesh(a->transform()->worldTransform(),
                         (p_ptr->m_pCustomMesh) ? p_ptr->m_pCustomMesh : p_ptr->m_pMesh,
-                        layer, p_ptr->m_pMaterial);
+                        0, layer, p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }

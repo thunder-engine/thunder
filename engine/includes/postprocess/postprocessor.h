@@ -31,9 +31,10 @@ public:
 
     virtual const char *name() const;
 
-    void setEnabled(bool value);
+    void setEnabled(bool enable);
     bool isEnabled() const;
 
+protected:
     static Blur *blur();
 
 protected:

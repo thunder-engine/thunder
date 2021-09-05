@@ -25,7 +25,7 @@ const char *RenderGL::version() const {
     return "1.0";
 }
 
-uint8_t RenderGL::types() const {
+uint32_t RenderGL::types() const {
     return SYSTEM;
 }
 

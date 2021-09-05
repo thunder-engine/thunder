@@ -36,7 +36,7 @@ public:
     void setItem(const string &item);
 
 private:
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;

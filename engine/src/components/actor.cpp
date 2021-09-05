@@ -23,7 +23,7 @@ public:
         m_prefab(nullptr),
         m_scene(nullptr),
         m_actor(actor),
-        m_layers(ICommandBuffer::DEFAULT | ICommandBuffer::RAYCAST | ICommandBuffer::SHADOWCAST | ICommandBuffer::TRANSLUCENT),
+        m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
         m_enable(true),
         m_hierarchyEnable(m_enable),
         m_static(false) {

@@ -30,7 +30,7 @@ public:
 protected:
     void update() override;
 
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     AABBox bound() const override;
 

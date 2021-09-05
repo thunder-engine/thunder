@@ -30,7 +30,7 @@ public:
 
     virtual const char *description() const = 0;
     virtual const char *version() const = 0;
-    virtual uint8_t types() const = 0;
+    virtual uint32_t types() const = 0;
 
     virtual System *system() { return nullptr; }
 

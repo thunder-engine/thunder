@@ -8,7 +8,7 @@ class Texture;
 class RenderTarget;
 class MaterialInstance;
 
-class ICommandBuffer;
+class CommandBuffer;
 
 #define MAX_SAMPLES 32
 
@@ -16,7 +16,7 @@ class Blur {
 public:
     Blur();
 
-    void draw(ICommandBuffer &buffer, Texture *source, RenderTarget *target);
+    void draw(CommandBuffer &buffer, Texture *source, RenderTarget *target);
 
     void setParameters(const Vector2 &size, int32_t steps, float *points);
 

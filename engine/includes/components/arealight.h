@@ -29,7 +29,7 @@ public:
     void setSourceHeight(float height);
 
 private:
-    void draw(ICommandBuffer &buffer, uint32_t layer) override;
+    void draw(CommandBuffer &buffer, uint32_t layer) override;
 
     void shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) override;
 

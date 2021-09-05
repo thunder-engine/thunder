@@ -38,11 +38,11 @@ void Widget::update() {
     Renderable::update();
 }
 
-void Widget::draw(ICommandBuffer &buffer, uint32_t layer) {
+void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
     A_UNUSED(buffer);
     A_UNUSED(layer);
 
-    if(p_ptr->m_pParent == nullptr && (layer == ICommandBuffer::UI)) {
+    if(p_ptr->m_pParent == nullptr && (layer == CommandBuffer::UI)) {
         Camera *camera = Camera::current();
         if(camera) {
             Pipeline *pipeline = camera->pipeline();

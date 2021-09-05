@@ -52,7 +52,7 @@ Bloom::Bloom() :
 
 Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
     if(m_enabled && m_material) {
-        ICommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = pipeline->buffer();
 
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             m_material->setTexture("rgbMap", (i == 0) ? source : m_bloomPasses[i - 1].m_downTexture);
@@ -61,7 +61,7 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
 
             m_resultTarget->setColorAttachment(0, m_bloomPasses[i].m_downTexture);
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, ICommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
         }
         buffer->setViewport(0, 0, source->width(), source->height());
 

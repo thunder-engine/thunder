@@ -10,8 +10,8 @@ class Mesh;
 class Camera;
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT ICommandBuffer: public Object {
-    A_REGISTER(ICommandBuffer, Object, System)
+class NEXT_LIBRARY_EXPORT CommandBuffer: public Object {
+    A_REGISTER(CommandBuffer, Object, System)
 
 public:
     enum LayerTypes {
@@ -26,9 +26,9 @@ public:
 public:
     virtual void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f);
 
-    virtual void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+    virtual void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
-    virtual void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
+    virtual void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 

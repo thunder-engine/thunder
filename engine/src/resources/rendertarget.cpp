@@ -26,18 +26,24 @@ RenderTarget::RenderTarget() :
 RenderTarget::~RenderTarget() {
     delete p_ptr;
 }
-
+/*!
+    Returns the number of attached color textures.
+*/
 uint32_t RenderTarget::colorAttachmentCount() const {
     return p_ptr->m_color.size();
 }
-
+/*!
+    Returns the attached color textures with \a index.
+*/
 Texture *RenderTarget::colorAttachment(uint32_t index) const {
     if(index < p_ptr->m_color.size()) {
         return p_ptr->m_color[index];
     }
     return nullptr;
 }
-
+/*!
+    Attach a color \a texture at \a index to render target.
+*/
 uint32_t RenderTarget::setColorAttachment(uint32_t index, Texture *texture) {
     if(index < p_ptr->m_color.size()) {
         p_ptr->m_color[index] = texture;
@@ -47,11 +53,15 @@ uint32_t RenderTarget::setColorAttachment(uint32_t index, Texture *texture) {
         return p_ptr->m_color.size() - 1;
     }
 }
-
+/*!
+    Returns an attached depth texture if exist.
+*/
 Texture *RenderTarget::depthAttachment() const {
     return p_ptr->m_depth;
 }
-
+/*!
+    Attach a depth \a texture to render target.
+*/
 void RenderTarget::setDepthAttachment(Texture *texture) {
     p_ptr->m_depth = texture;
 }

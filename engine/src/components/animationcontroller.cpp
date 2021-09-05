@@ -41,11 +41,11 @@ public:
         if(m_pStateMachine == nullptr) {
             return;
         }
-        if(m_pCurrentState == nullptr || m_pCurrentState->m_Hash != hash) {
+        if(m_pCurrentState == nullptr || m_pCurrentState->m_hash != hash) {
             AnimationState *newState = m_pStateMachine->findState(hash);
             if(newState) {
                 m_pCurrentState = newState;
-                setClip(m_pCurrentState->m_pClip);
+                setClip(m_pCurrentState->m_clip);
                 setPosition(0);
             }
 #ifdef NEXT_SHARED
@@ -68,7 +68,7 @@ public:
             m_pCurrentState = nullptr;
             if(m_pStateMachine) {
                 m_CurrentVariables = m_pStateMachine->variables();
-                setStateHash(m_pStateMachine->initialState()->m_Hash);
+                setStateHash(m_pStateMachine->initialState()->m_hash);
             }
         }
     }
@@ -131,7 +131,7 @@ public:
             }
             property->setValid(true);
 
-            if(m_pCurrentState && !m_pCurrentState->m_Loop) {
+            if(m_pCurrentState && !m_pCurrentState->m_loop) {
                 property->setLoopCount(1);
             } else {
                 property->setLoopCount(-1);
@@ -199,10 +199,10 @@ void AnimationController::update() {
     PROFILE_FUNCTION();
     if(p_ptr->m_pCurrentState) {
         // Check conditions
-        for(auto it : p_ptr->m_pCurrentState->m_Transitions) {
-            auto variable = p_ptr->m_CurrentVariables.find(it.m_ConditionHash);
+        for(auto it : p_ptr->m_pCurrentState->m_transitions) {
+            auto variable = p_ptr->m_CurrentVariables.find(it.m_conditionHash);
             if(variable != p_ptr->m_CurrentVariables.end() && it.checkCondition(variable->second)) {
-                crossFadeHash(it.m_pTargetState->m_Hash, 0.75f);
+                crossFadeHash(it.m_targetState->m_hash, 0.75f);
             }
         }
 
@@ -216,9 +216,9 @@ void AnimationController::update() {
             }
         }
 
-        if(nextState && !p_ptr->m_pCurrentState->m_Transitions.empty()) {
-            auto next = p_ptr->m_pCurrentState->m_Transitions.begin();
-            setStateHash(next->m_pTargetState->m_Hash);
+        if(nextState && !p_ptr->m_pCurrentState->m_transitions.empty()) {
+            auto next = p_ptr->m_pCurrentState->m_transitions.begin();
+            setStateHash(next->m_targetState->m_hash);
         } else {
             setPosition(p_ptr->m_Time + static_cast<uint32_t>(1000.0f * Timer::deltaTime()));
         }
@@ -248,7 +248,7 @@ void AnimationController::setStateMachine(AnimationStateMachine *resource) {
     p_ptr->m_pCurrentState = nullptr;
     if(p_ptr->m_pStateMachine) {
         p_ptr->m_CurrentVariables = p_ptr->m_pStateMachine->variables();
-        setStateHash(p_ptr->m_pStateMachine->initialState()->m_Hash);
+        setStateHash(p_ptr->m_pStateMachine->initialState()->m_hash);
     }
 }
 /*!
@@ -302,11 +302,11 @@ void AnimationController::crossFadeHash(int hash, float duration) {
     if(p_ptr->m_pStateMachine == nullptr) {
         return;
     }
-    if(p_ptr->m_pCurrentState == nullptr || p_ptr->m_pCurrentState->m_Hash != hash) {
+    if(p_ptr->m_pCurrentState == nullptr || p_ptr->m_pCurrentState->m_hash != hash) {
         AnimationState *newState = p_ptr->m_pStateMachine->findState(hash);
         if(newState) {
             if(p_ptr->m_pCurrentState) {
-                p_ptr->setClips(p_ptr->m_pCurrentState->m_pClip, newState->m_pClip, duration);
+                p_ptr->setClips(p_ptr->m_pCurrentState->m_clip, newState->m_clip, duration);
             }
             p_ptr->m_pCurrentState = newState;
         }
@@ -319,7 +319,7 @@ AnimationClip *AnimationController::clip() const {
     PROFILE_FUNCTION();
 
     if(p_ptr->m_pCurrentState) {
-        return p_ptr->m_pCurrentState->m_pClip;
+        return p_ptr->m_pCurrentState->m_clip;
     }
     return nullptr;
 }
@@ -394,7 +394,7 @@ void AnimationController::setIntegerHash(int hash, int32_t value) {
 int AnimationController::duration() const {
     PROFILE_FUNCTION();
     if(p_ptr->m_pCurrentState) {
-        return p_ptr->m_pCurrentState->m_pClip->duration();
+        return p_ptr->m_pCurrentState->m_clip->duration();
     }
     return 0;
 }

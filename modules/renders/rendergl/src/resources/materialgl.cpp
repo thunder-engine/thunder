@@ -102,16 +102,16 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
 uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
     int32_t b = blendMode();
 
-    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
+    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return 0;
     }
-    if(layer & ICommandBuffer::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & CommandBuffer::TRANSLUCENT && b == Material::Opaque) {
         return 0;
     }
 
     uint16_t type = MaterialGL::Default;
-    if((layer & ICommandBuffer::RAYCAST) || (layer & ICommandBuffer::SHADOWCAST)) {
+    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
         type = MaterialGL::Simple;
     }
     uint32_t program = getProgram(vertex * type);
@@ -123,12 +123,12 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         glDisable(GL_DEPTH_TEST);
     } else {
         glEnable(GL_DEPTH_TEST);
-        //glDepthFunc((layer & ICommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
+        //glDepthFunc((layer & CommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
 
         glDepthMask((m_DepthWrite) ? GL_TRUE : GL_FALSE);
     }
 
-    if(!doubleSided() && !(layer & ICommandBuffer::RAYCAST)) {
+    if(!doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
         glEnable( GL_CULL_FACE );
         if(m_MaterialType == LightFunction) {
             glCullFace(GL_FRONT);
@@ -139,7 +139,7 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         glDisable(GL_CULL_FACE);
     }
 
-    if(b != Material::Opaque && !(layer & ICommandBuffer::RAYCAST)) {
+    if(b != Material::Opaque && !(layer & CommandBuffer::RAYCAST)) {
         glEnable(GL_BLEND);
         if(b == Material::Translucent) {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

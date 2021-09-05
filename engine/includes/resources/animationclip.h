@@ -9,7 +9,8 @@ class NEXT_LIBRARY_EXPORT AnimationTrack {
 
     A_PROPERTIES(
         A_PROPERTY(string, path, AnimationTrack::path, AnimationTrack::setPath),
-        A_PROPERTY(string, property, AnimationTrack::property, AnimationTrack::setProperty)
+        A_PROPERTY(string, property, AnimationTrack::property, AnimationTrack::setProperty),
+        A_PROPERTY(int, duration, AnimationTrack::duration, AnimationTrack::setDuration)
     )
     A_METHODS(
         A_METHOD(int, AnimationTrack::hash)
@@ -18,6 +19,8 @@ class NEXT_LIBRARY_EXPORT AnimationTrack {
     typedef map<int32_t, AnimationCurve> CurveMap;
 
 public:
+    AnimationTrack();
+
     string path() const;
     void setPath(const string &path);
 
@@ -32,15 +35,15 @@ public:
     CurveMap &curves();
 
 private:
-    string m_Path;
+    string m_path;
 
-    string m_Property;
+    string m_property;
 
-    int m_Hash;
+    int m_hash;
 
-    int m_Duration;
+    int m_duration;
 
-    CurveMap m_Curves;
+    CurveMap m_curves;
 };
 typedef list<AnimationTrack> AnimationTrackList;
 

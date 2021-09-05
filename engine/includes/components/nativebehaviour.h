@@ -10,6 +10,8 @@ class NEXT_LIBRARY_EXPORT NativeBehaviour : public Component {
     A_NOMETHODS()
 
 public:
+    NativeBehaviour();
+
     virtual void start();
 
     virtual void update();

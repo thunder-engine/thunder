@@ -15,7 +15,7 @@ class Camera;
 
 class QOpenGLWidget;
 class QMenu;
-class ICommandBuffer;
+class CommandBuffer;
 
 class CameraCtrl : public QObject {
     Q_OBJECT

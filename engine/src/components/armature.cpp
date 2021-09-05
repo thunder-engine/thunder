@@ -86,6 +86,16 @@ public:
     bool m_BindDirty;
 };
 
+/*!
+    \class Armature
+    \brief A bone management component.
+    \inmodule Engine
+
+    An armature in Thunder Engine can be thought of as similar to the armature of a real skeleton, and just like a real skeleton.
+    These bones can be moved around and anything that they are attached to or associated with will move and deform in a similar way.
+    An armature uses the Transform component in a child object like a bone structure.
+*/
+
 Armature::Armature() :
         p_ptr(new ArmaturePrivate) {
 
@@ -94,7 +104,9 @@ Armature::Armature() :
 Armature::~Armature() {
     delete p_ptr;
 }
-
+/*!
+    \internal
+*/
 void Armature::update() {
     if(p_ptr->m_BindDirty) {
         p_ptr->cleanDirty(actor());
@@ -117,11 +129,15 @@ void Armature::update() {
     }
     p_ptr->m_pCache->setDirty();
 }
-
+/*!
+    Returns a bind pose of the bone structure.
+*/
 Pose *Armature::bindPose() const {
     return p_ptr->m_pBindPose;
 }
-
+/*!
+    Sets a bind (initial) pose of the bone structure.
+*/
 void Armature::setBindPose(Pose *pose) {
     if(p_ptr->m_pBindPose != pose) {
         if(p_ptr->m_pBindPose) {

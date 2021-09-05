@@ -61,7 +61,7 @@ void RenderSystem::registerClasses() {
 
     ParticleRender::registerClassFactory(this);
 
-    ICommandBuffer::registerClassFactory(this);
+    CommandBuffer::registerClassFactory(this);
 
     PostProcessVolume::registerClassFactory(this);
 }
@@ -81,7 +81,7 @@ void RenderSystem::unregisterClasses() {
 
     ParticleRender::unregisterClassFactory(this);
 
-    ICommandBuffer::unregisterClassFactory(this);
+    CommandBuffer::unregisterClassFactory(this);
 
     PostProcessVolume::unregisterClassFactory(this);
 }

@@ -42,14 +42,14 @@ MeshRender::~MeshRender() {
 /*!
     \internal
 */
-void MeshRender::draw(ICommandBuffer &buffer, uint32_t layer) {
+void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
     if(p_ptr->m_pMesh && layer & a->layers() && a->transform()) {
-        if(layer & ICommandBuffer::RAYCAST) {
-            buffer.setColor(ICommandBuffer::idToColor(a->uuid()));
+        if(layer & CommandBuffer::RAYCAST) {
+            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, layer, p_ptr->m_pMaterial);
+        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, 0, layer, p_ptr->m_pMaterial);
         buffer.setColor(Vector4(1.0f));
     }
 }

@@ -4,38 +4,66 @@
 
 static hash<string> hash_str;
 
+/*!
+    \class AnimationTrack
+    \brief A structure that describes an animation track that will affect an object's property.
+    \inmodule Resource
+*/
+
+AnimationTrack::AnimationTrack() :
+    m_hash(0),
+    m_duration(0) {
+
+}
+/*!
+    Returns a path to the object in the hierarchy.
+*/
 string AnimationTrack::path() const {
-    return m_Path;
+    return m_path;
 }
-
+/*!
+    Sets a \a path to the object in the hierarchy.
+*/
 void AnimationTrack::setPath(const string &path) {
-    m_Path = path;
-    m_Hash = hash_str(m_Path + "." + m_Property);
+    m_path = path;
+    m_hash = hash_str(m_path + "." + m_property);
 }
-
+/*!
+    Returns a property name that will be animated.
+*/
 string AnimationTrack::property() const {
-    return m_Property;
+    return m_property;
 }
-
+/*!
+    Sets a property name that will be animated.
+*/
 void AnimationTrack::setProperty(const string &property) {
-    m_Property = property;
-    m_Hash = hash_str(m_Path + "." + m_Property);
+    m_property = property;
+    m_hash = hash_str(m_path + "." + m_property);
 }
-
+/*!
+    Returns a duration of track in milliseconds.
+*/
 int AnimationTrack::duration() const {
-    return m_Duration;
+    return m_duration;
 }
-
+/*!
+    Sets a \a duration of track in milliseconds.
+*/
 void AnimationTrack::setDuration(int duration) {
-    m_Duration = duration;
+    m_duration = duration;
 }
-
+/*!
+    Returns a hash of path and name for quick access.
+*/
 int AnimationTrack::hash() const {
-    return m_Hash;
+    return m_hash;
 }
-
+/*!
+    \internal
+*/
 AnimationTrack::CurveMap &AnimationTrack::curves() {
-    return m_Curves;
+    return m_curves;
 }
 
 /*!
@@ -60,7 +88,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
     auto section = data.find(TRACKS);
     if(section != data.end()) {
         VariantList &tracks = *(reinterpret_cast<VariantList *>((*section).second.data()));
-        for(auto it : tracks) {
+        for(auto &it : tracks) {
             VariantList &trackData = *(reinterpret_cast<VariantList *>(it.data()));
             auto i = trackData.begin();
 
@@ -72,7 +100,7 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             track.setDuration((*i).toInt());
             i++;
 
-            for(auto it : (*i).toList()) {
+            for(auto &it : (*i).toList()) {
                 VariantList &curveList = *(reinterpret_cast<VariantList *>(it.data()));
                 auto t = curveList.begin();
 
@@ -121,7 +149,7 @@ VariantMap AnimationClip::saveUserData() const {
         track.push_back(t.duration());
 
         VariantList curves;
-        for(auto c : t.curves()) {
+        for(auto &c : t.curves()) {
             VariantList curve;
             curve.push_back(c.first);
 
