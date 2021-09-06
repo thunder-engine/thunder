@@ -499,6 +499,10 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionAPI_Reference"/>
+    <addaction name="separator"/>
+    <addaction name="actionReport_Issue"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionPlugin_Manager"/>
    </widget>
@@ -759,6 +763,16 @@
    </property>
    <property name="shortcut">
     <string notr="true"/>
+   </property>
+  </action>
+  <action name="actionAPI_Reference">
+   <property name="text">
+    <string>API Reference</string>
+   </property>
+  </action>
+  <action name="actionReport_Issue">
+   <property name="text">
+    <string>Report Issue...</string>
    </property>
   </action>
  </widget>

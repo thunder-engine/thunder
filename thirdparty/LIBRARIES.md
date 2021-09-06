@@ -4,17 +4,16 @@
 - Version: 2.33.0
 - License: zLib
 
+## Assimp
+- Link: https://github.com/assimp/assimp
+- Version: 5.0.1
+- License: Assimp license (BSD-like)
+
 ## Bullet
 
 - Link: https://github.com/bulletphysics/bullet3
 - Version: 2.88
 - License: zLib
-
-## FBX SDK
-
-- Link: https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-archives
-- Version: 2018.1.1
-- License: Proprietary
 
 ## freetype
 

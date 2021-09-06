@@ -959,3 +959,11 @@ void SceneComposer::changeEvent(QEvent *event) {
         ui->classMapView->setWindowTitle(tr("Class View"));
     }
 }
+
+void SceneComposer::on_actionReport_Issue_triggered() {
+    QDesktopServices::openUrl(QUrl("https://github.com/thunder-engine/thunder/issues/new/choose", QUrl::TolerantMode));
+}
+
+void SceneComposer::on_actionAPI_Reference_triggered() {
+    QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest/reference/index.html", QUrl::TolerantMode));
+}

@@ -141,6 +141,8 @@ private slots:
     void on_actionNew_Object_triggered();
 
     void on_menuFile_aboutToShow();
+    void on_actionReport_Issue_triggered();
+    void on_actionAPI_Reference_triggered();
 };
 
 #endif // WORLDBUILDER_H
