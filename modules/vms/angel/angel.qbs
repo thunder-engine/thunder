@@ -8,10 +8,6 @@ Project {
         "src/components/*.cpp",
         "src/resources/*.cpp",
 
-        "includes/*.h",
-        "includes/bindings/*.h",
-        "includes/components/*.h",
-        "includes/resources/*.h",
         "../../../thirdparty/angelscript/modules/*/*.cpp"
     ]
 
@@ -66,6 +62,17 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: angel.PLUGINS_PATH
+            qbs.installPrefix: angel.PREFIX
+        }
+
+        Group {
+            name: "Angel includes"
+            prefix: "includes/"
+            files: [
+                "angel.h"
+            ]
+            qbs.install: true
+            qbs.installDir: angel.INC_PATH + "/modules"
             qbs.installPrefix: angel.PREFIX
         }
     }

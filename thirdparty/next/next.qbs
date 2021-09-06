@@ -7,12 +7,7 @@ Project {
         "src/core/*.cpp",
         "src/math/*.cpp",
         "src/anim/*.cpp",
-        "src/analytics/*.cpp",
-        "inc/*.h",
-        "inc/core/*.h",
-        "inc/math/*.h",
-        "inc/anim/*.h",
-        "inc/analytics/*.h"
+        "src/analytics/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -52,6 +47,17 @@ Project {
             qbs.installPrefix: next.PREFIX
         }
 
+        Group {
+            name: "Next includes"
+            prefix: "inc/"
+            files: [
+                "**"
+            ]
+            qbs.install: true
+            qbs.installDir: next.INC_PATH + "/next"
+            qbs.installPrefix: next.PREFIX
+            qbs.installSourceBase: prefix
+        }
     }
 
     StaticLibrary {

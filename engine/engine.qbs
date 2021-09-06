@@ -8,14 +8,7 @@ Project {
         "src/resources/*.cpp",
         "src/systems/*.cpp",
         "src/filters/*.cpp",
-        "src/postprocess/*.cpp",
-        "includes/*.h",
-        "includes/adapters/*.h",
-        "includes/components/**/*.h",
-        "includes/resources/*.h",
-        "includes/systems/*.h",
-        "includes/filters/*.h",
-        "includes/postprocess/*.h"
+        "src/postprocess/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -38,11 +31,9 @@ Project {
     DynamicLibrary {
         name: "engine-editor"
         condition: engine.desktop
-        files:
-        {
+        files: {
             var sources = srcFiles
             sources.push("src/editor/*.cpp")
-            sources.push("includes/editor/*.h")
             return sources
         }
         Depends { name: "cpp" }
@@ -84,6 +75,31 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: engine.LIB_PATH + "/" + engine.bundle
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "*.h",
+                "components/*.h",
+                "resources/*.h",
+                "postprocess/postprocessor.h"
+            ]
+            qbs.install: true
+            qbs.installDir: engine.INC_PATH + "/engine"
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Editor includes"
+            prefix: "includes/editor"
+            files: [
+                "**/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: engine.INC_PATH + "/editor"
             qbs.installPrefix: engine.PREFIX
         }
     }

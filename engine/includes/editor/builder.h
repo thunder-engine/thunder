@@ -23,17 +23,17 @@ public:
 
     virtual QString builderVersion() = 0;
 
-    virtual const QString persistentAsset() const { return ""; }
-    virtual const QString persistentUUID() const { return ""; }
+    virtual const QString persistentAsset() const;
+    virtual const QString persistentUUID() const;
 
-    QString project() const { return m_Project; }
+    QString project() const;
 
     QStringList sources() const;
 
     void rescanSources(const QString &path);
     virtual bool isEmpty() const;
 
-    bool isOutdated() const { return m_Outdated; }
+    bool isOutdated() const;
 
     virtual QAbstractItemModel *classMap() const;
 

@@ -6,10 +6,6 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-
-        "includes/*.h",
-        "includes/components/*.h",
-        "includes/resources/*.h"
     ]
 
     property stringList incPaths: [
@@ -73,6 +69,28 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: media.PLUGINS_PATH
+            qbs.installPrefix: media.PREFIX
+        }
+
+        Group {
+            name: "Media includes"
+            prefix: "includes/"
+            files: [
+                "media.h"
+            ]
+            qbs.install: true
+            qbs.installDir: media.INC_PATH + "/modules"
+            qbs.installPrefix: media.PREFIX
+        }
+
+        Group {
+            name: "OpenAL Binary"
+            condition: qbs.targetOS.contains("windows")
+            files: [
+                "../../thirdparty/openal/windows/bin/OpenAL32.dll"
+            ]
+            qbs.install: true
+            qbs.installDir: media.BIN_PATH + "/" + media.bundle
             qbs.installPrefix: media.PREFIX
         }
     }

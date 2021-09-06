@@ -6,10 +6,6 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-
-        "includes/*.h",
-        "includes/components/*.h",
-        "includes/resources/*.h"
     ]
 
     property stringList incPaths: [
@@ -66,6 +62,17 @@ Project {
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
             qbs.installDir: rendergl.PLUGINS_PATH
+            qbs.installPrefix: rendergl.PREFIX
+        }
+
+        Group {
+            name: "RenderGL includes"
+            prefix: "includes/"
+            files: [
+                "rendergl.h"
+            ]
+            qbs.install: true
+            qbs.installDir: rendergl.INC_PATH + "/modules"
             qbs.installPrefix: rendergl.PREFIX
         }
     }

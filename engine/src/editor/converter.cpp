@@ -8,13 +8,15 @@
 
 #include "config.h"
 
-const QString gMd5("md5");
-const QString gVersion("version");
-const QString gGUID("guid");
+namespace {
+    const QString gMd5("md5");
+    const QString gVersion("version");
+    const QString gGUID("guid");
 
-const QString gEntry(".entry");
-const QString gCompany(".company");
-const QString gProject(".project");
+    const QString gEntry(".entry");
+    const QString gCompany(".company");
+    const QString gProject(".project");
+};
 
 IConverterSettings::IConverterSettings() :
         m_Valid(false),
@@ -24,6 +26,10 @@ IConverterSettings::IConverterSettings() :
         m_CurrentVersion(0) {
 
     connect(this, &IConverterSettings::updated, this, &IConverterSettings::setModified);
+}
+
+IConverterSettings::~IConverterSettings() {
+
 }
 
 uint32_t IConverterSettings::type() const {
@@ -193,7 +199,7 @@ void IConverterSettings::saveSettings() {
     obj.insert(gType, static_cast<int>(type()));
 
     QJsonObject sub;
-    for(QString it : subKeys()) {
+    for(const QString &it : subKeys()) {
         QJsonArray array;
         QString uuid = subItem(it);
         array.push_back(uuid);
@@ -214,6 +220,14 @@ void IConverterSettings::saveSettings() {
         fp.close();
         m_Modified = false;
     }
+}
+
+bool IConverterSettings::isModified() const {
+    return m_Modified;
+}
+
+void IConverterSettings::setModified() {
+    m_Modified = true;
 }
 
 void IConverter::init() {
