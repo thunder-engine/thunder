@@ -124,7 +124,7 @@ int File::fclose(_FILE *stream) {
     The next read or write will occur at that \a origin position.
     Seeking past the beginning or end of the file is not allowed, and causes an error.
 
-    \sa _ftell()
+    \sa ftell()
  */
 _size_t File::fseek(_FILE *stream, uint64_t origin) {
     A_UNUSED(origin);
@@ -184,7 +184,7 @@ _size_t File::fsize(_FILE *stream) {
 
     Returns offset in bytes from start of file.
 
-    \sa _fseek()
+    \sa fseek()
 */
 _size_t File::ftell(_FILE *stream) {
     return static_cast<_size_t>(PHYSFS_tell(static_cast<PHYSFS_file *>(stream)));

@@ -27,8 +27,8 @@ const char *Media::version() const {
     return "1.0";
 }
 
-uint32_t Media::types() const {
-    uint32_t result = SYSTEM;
+int Media::types() const {
+    int result = SYSTEM;
 #ifdef NEXT_SHARED
     result  |= CONVERTER;
 #endif

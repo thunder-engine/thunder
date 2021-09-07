@@ -40,7 +40,7 @@ bool AnimationTransition::checkCondition(const Variant &value) {
 /*!
     \class AnimationStateMachine
     \brief AnimationStateMachine resource contains information about animation states and transition rules.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 AnimationStateMachine::AnimationStateMachine() :

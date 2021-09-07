@@ -1,5 +1,7 @@
 #include "resources/translator.h"
 
+#include <metaproperty.h>
+
 #define DATA  "Data"
 
 class TranslatorPrivate {
@@ -11,7 +13,7 @@ public:
 /*!
     \class Translator
     \brief Translator resource provides a translation table.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Translator::Translator() :
@@ -44,23 +46,25 @@ void Translator::setPair(const string &source, const string &translation) {
 void Translator::loadUserData(const VariantMap &data) {
     auto it = data.find(DATA);
     if(it != data.end()) {
-        for(auto pair : (*it).second.toMap()) {
+        for(auto &pair : (*it).second.toMap()) {
             p_ptr->m_Table[pair.first] = pair.second.toString();
         }
     }
 
     setState(Ready);
 }
-
-VariantMap Translator::saveUserData () const {
+/*!
+    \internal
+*/
+VariantMap Translator::saveUserData() const {
     VariantMap result;
     VariantMap data;
 
-    for(auto it : p_ptr->m_Table) {
+    for(auto &it : p_ptr->m_Table) {
         data[it.first] = it.second;
     }
 
-    result[DATA]  = data;
+    result[DATA] = data;
     return result;
 }
 

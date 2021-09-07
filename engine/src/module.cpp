@@ -1,7 +1,7 @@
 #include "module.h"
 
 /*!
-    \class System
+    \class Module
     \brief A base interface for all engine modules.
     \inmodule Engine
 
@@ -32,7 +32,7 @@
 */
 
 /*!
-    \fn uint32_t Module::types() const
+    \fn int Module::types() const
 
     Returns a set of plugin types which module supports.
     To return more then one type plise use syntax like this:

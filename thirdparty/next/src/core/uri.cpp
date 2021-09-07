@@ -25,32 +25,44 @@ Uri::Uri(const string &uri) :
 Uri::~Uri() {
     delete p_ptr;
 }
-
+/*!
+    Returns the scheme of the URI. If an empty string is returned, this means the scheme is undefined and the URI is then relative.
+*/
 string Uri::scheme() const {
     PROFILE_FUNCTION();
     return p_ptr->mResult[2].str();
 }
-
+/*!
+    Returns the host of the URI if it is defined; otherwise an empty string is returned.
+*/
 string Uri::host() const {
     PROFILE_FUNCTION();
     return p_ptr->mResult[4];
 }
-
+/*!
+    Returns the path of the URI.
+*/
 string Uri::path() const {
     PROFILE_FUNCTION();
     return p_ptr->mResult[5];
 }
-
+/*!
+    Returns the query string of the URI if there's a query string, or an empty result if not.
+*/
 string Uri::query() const {
     PROFILE_FUNCTION();
     return p_ptr->mResult[7];
 }
-
+/*!
+    Returns the fragment of the URI.
+*/
 string Uri::fragment() const {
     PROFILE_FUNCTION();
     return p_ptr->mResult[9];
 }
-
+/*!
+    Returns a directory of URI path.
+*/
 string Uri::dir() const {
     PROFILE_FUNCTION();
     string str = path();
@@ -60,7 +72,9 @@ string Uri::dir() const {
     }
     return str;
 }
-
+/*!
+    Returns a file name in the URI path.
+*/
 string Uri::name() const {
     PROFILE_FUNCTION();
     string str = path();
@@ -70,7 +84,9 @@ string Uri::name() const {
     }
     return str;
 }
-
+/*!
+    Returns a base name of file in the URI path.
+*/
 string Uri::baseName() const {
     PROFILE_FUNCTION();
     string str = name();
@@ -80,7 +96,9 @@ string Uri::baseName() const {
     }
     return str;
 }
-
+/*!
+    Returns a file suffix in the URI path.
+*/
 string Uri::suffix() const {
     PROFILE_FUNCTION();
     string str = name();

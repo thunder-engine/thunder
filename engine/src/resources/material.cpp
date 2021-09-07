@@ -101,7 +101,7 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
 /*!
     \class Material
     \brief A Material is a resource which can be applied to a Mesh to control the visual look of the scene.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Material::Material() :

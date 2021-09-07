@@ -313,7 +313,7 @@ public:
 /*!
     \class ParticleEffect
     \brief Contains all necessary information about the effect.
-    \inmodule Resource
+    \inmodule Resources
 
     PartcileEffect alows developer to create or modify a complex particle effects.
 */

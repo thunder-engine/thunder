@@ -128,7 +128,7 @@ def main():
     fileList = (f for f in os.listdir("html") if f.endswith(".html"))
     for curFile in fileList:
         filename = os.path.splitext(curFile)[0]
-        if curFile.find("-module") == -1:
+        if curFile.find("-module") == -1 and curFile.find("thunder-engine"):
             classDef = htmlparser.parseFile("html/" + curFile)
             if classDef is not None:
                 files.append(filename)
@@ -137,7 +137,12 @@ def main():
 
                 description = ""
                 for desc in classDef.description:
-                    description += desc + "\n\n"
+                    text = desc.text
+                    if desc.code == True:
+                        description += "::\n\n"
+                        text = "    " + text.replace("\n", "\n    ")
+                        
+                    description += text + "\n\n"
 
                 d["description"] = description
 

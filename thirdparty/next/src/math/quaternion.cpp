@@ -24,7 +24,7 @@ Quaternion::Quaternion() :
     w(1) {
 }
 /*!
-    Constructs a quaternion with values (\a x, \a y, \a z).
+    Constructs a quaternion with values (\a x, \a y, \a z, \a w).
 */
 Quaternion::Quaternion(areal x, areal y, areal z, areal w) :
     x(x),

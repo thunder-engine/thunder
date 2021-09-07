@@ -172,7 +172,7 @@ void calculateDF(int8_t *dst, const FT_Bitmap &src, int32_t dw, int32_t dh) {
 /*!
     \class Font
     \brief The Font resource provides support for vector fonts.
-    \inmodule Resource
+    \inmodule Resources
 
     The basic element of a font is a glyph.
     All required glyphs are contained in a special texture - Atlas.

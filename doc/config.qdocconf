@@ -1,14 +1,17 @@
 project = Thunder Engine
 description = Thunder Engine Reference Documentation
 
-navigation.homepage  = "Thunder Engine"
+navigation.homepage = "Thunder Engine"
 
 navigation.cppclassespage = "Engine"
 
 outputdir = html
 outputformats = HTML
 
-headerdirs  = ../
+headerdirs += \
+	../ \
+	../thirdparty/next/inc
+
 sourcedirs += \
     ../engine/src \
     ../thirdparty/next/src
@@ -18,7 +21,6 @@ excludedirs += \
     ../engine/includes/analytics \
     ../engine/includes/converters \
     ../engine/includes/filters \
-    ../engine/includes/postprocess \
     ../engine/includes/systems \
     ../thirdparty/assimp
 
@@ -27,4 +29,4 @@ headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
 
 exampledirs = .
 
-imagedirs   = ./images
+imagedirs = ./images

@@ -34,20 +34,20 @@ static ObjectSystem::GroupMap   s_Groups;
     \sa objectCreate()
 */
 /*!
-    \fn void ObjectSystem::factoryAdd(const string &group, const MetaObject *meta)
+    \fn template<typename T> void ObjectSystem::factoryAdd(const string &group, const MetaObject *meta)
 
     Registers class with T type, \a meta object and \a group to object instantiation mechanism.
     \note New classes inherited from base Object class can be automaticaly registered using T::registerClassFactory().
     This is preferable way to use this functionality.
 */
 /*!
-    \fn void ObjectSystem::factoryRemove(const string &group)
+    \fn template<typename T> void ObjectSystem::factoryRemove(const string &group)
 
     Unregisters class with type T and \a group from object instantiation mechanism.
     \note The preferable way to use this function is T::unregisterClassFactory() invocation.
 */
 /*!
-    \fn T *ObjectSystem::objectCreate(const string &name = string(), Object *parent = 0)
+    \fn template<typename T> T *ObjectSystem::objectCreate(const string &name = string(), Object *parent = 0)
 
     Returns new instance of type T and \a name as child of \a parent object.
     \note Class T should be registered first via factoryAdd()

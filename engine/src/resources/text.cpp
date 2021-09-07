@@ -14,7 +14,7 @@ public:
 /*!
     \class Text
     \brief Text file resource.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Text::Text() :

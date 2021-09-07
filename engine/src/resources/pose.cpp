@@ -51,7 +51,7 @@ public:
 /*!
     \class Pose
     \brief Representation of pose of an animated character.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Pose::Pose() :

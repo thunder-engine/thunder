@@ -7,7 +7,7 @@ static hash<string> hash_str;
 /*!
     \class AnimationTrack
     \brief A structure that describes an animation track that will affect an object's property.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 AnimationTrack::AnimationTrack() :
@@ -35,7 +35,7 @@ string AnimationTrack::property() const {
     return m_property;
 }
 /*!
-    Sets a property name that will be animated.
+    Sets a \a property name that will be animated.
 */
 void AnimationTrack::setProperty(const string &property) {
     m_property = property;
@@ -69,7 +69,7 @@ AnimationTrack::CurveMap &AnimationTrack::curves() {
 /*!
     \class AnimationClip
     \brief AnimationClip resource contains keyframe based animation data.
-    \inmodule Resource
+    \inmodule Resources
 
     An AnimationClip resource contains keyframe based animation data.
     The animation data split to a number of tracks that must be connected with the properties of Components.

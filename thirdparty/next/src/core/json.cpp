@@ -19,7 +19,7 @@ typedef stack<string>   NameStack;
 void appendProperty(VariantStack &s, const Variant &data, const string &name) {
     Variant v;
     if(!s.empty()) {
-        v   = s.top();
+        v = s.top();
         s.pop();
     }
     switch(v.type()) {
@@ -52,7 +52,7 @@ void appendProperty(VariantStack &s, const Variant &data, const string &name) {
 inline string readString(const string &data, uint32_t &it) {
     PROFILE_FUNCTION();
     uint32_t s  = ++it;
-    char c      = data[s];
+    char c = data[s];
     while(it < data.length() && c != '"') {
         c = data[++it];
         if(c == '\\') {
@@ -100,14 +100,14 @@ enum States {
     Example:
     \code
         VariantMap dictionary;
-        dictionary["bool"]    = true;
-        dictionary["str"]     = "string";
-        dictionary["int"]     = 1;
-        dictionary["float"]   = 2.0f;
+        dictionary["bool"]  = true;
+        dictionary["str"]   = "string";
+        dictionary["int"]   = 1;
+        dictionary["float"] = 2.0f;
 
         string data = Json::save(dictionary); // Serializing dictionary to string
         ....
-        VariantMap result   = Json::load(data).toMap(); // Resotoring it back
+        VariantMap result = Json::load(data).toMap(); // Resotoring it back
     \endcode
 */
 /*!
@@ -117,11 +117,11 @@ Variant Json::load(const string &data) {
     PROFILE_FUNCTION();
     Variant result;
 
-    VariantStack    s;
-    NameStack       n;
+    VariantStack s;
+    NameStack    n;
     string name;
-    States state    = propertyValue;
-    uint32_t it     = 0;
+    States state = propertyValue;
+    uint32_t it  = 0;
     while(it < data.length()) {
         skipSpaces(data.c_str(), it);
         switch(data[it]) {
@@ -129,17 +129,17 @@ Variant Json::load(const string &data) {
                 VariantMap map;
                 s.push(map);
                 n.push(name);
-                name    = "";
-                state   = propertyName;
+                name  = "";
+                state = propertyName;
             } break;
             case '}': {
-                result  = s.top();
+                result = s.top();
                 s.pop();
                 if(!s.empty()) {
                     appendProperty(s, result, n.top());
                 }
                 n.pop();
-                state   = propertyName;
+                state = propertyName;
             } break;
             case '[': {
                 if(state == propertyValue) {
@@ -150,29 +150,29 @@ Variant Json::load(const string &data) {
                 }
             } break;
             case ']': {
-                result    = s.top();
+                result = s.top();
                 s.pop();
                 if(!s.empty()) {
                     appendProperty(s, result, n.top());
                 }
                 n.pop();
-                state   = propertyName;
+                state = propertyName;
             } break;
             case ':': {
                 state   = propertyValue;
             } break;
             case ',': {
                 if(s.top().type() == MetaType::VARIANTLIST) {
-                    state   = propertyValue;
+                    state = propertyValue;
                 } else {
-                    state   = propertyName;
-                    name    = "";
+                    state = propertyName;
+                    name = "";
                 }
             } break;
             case '"': {
-                string str  = readString(data, it);
+                string str = readString(data, it);
                 if(state == propertyName) {
-                    name    = str;
+                    name = str;
                 } else {
                     appendProperty(s, str, name);
                 }
@@ -196,7 +196,7 @@ Variant Json::load(const string &data) {
                         break;
                     }
                     if(c == '.') {
-                        number  = true;
+                        number = true;
                     }
                 }
                 if(state == propertyValue) {
@@ -210,7 +210,7 @@ Variant Json::load(const string &data) {
                     if(state == propertyValue) {
                         appendProperty(s, true, name);
                     }
-                    it  += 3;
+                    it += 3;
                 }
             } break;
             case 'f': {
@@ -218,7 +218,7 @@ Variant Json::load(const string &data) {
                     if(state == propertyValue) {
                         appendProperty(s, false, name);
                     }
-                    it  += 4;
+                    it += 4;
                 }
             } break;
             case 'n': {
@@ -226,7 +226,7 @@ Variant Json::load(const string &data) {
                     if(state == propertyValue) {
                         appendProperty(s, static_cast<void *>(nullptr), name);
                     }
-                    it  += 3;
+                    it += 3;
                 }
             } break;
             default: {

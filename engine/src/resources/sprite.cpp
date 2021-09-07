@@ -36,7 +36,7 @@ public:
 /*!
     \class Sprite
     \brief Represents 2D sprite.
-    \inmodule Resource
+    \inmodule Resources
 
     Sprites usually used in games to display environment and characters in 2D games.
     This class also supports sprite sheets to contain several images in one container to simplify animation or handle tile maps.

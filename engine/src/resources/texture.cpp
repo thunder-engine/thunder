@@ -37,7 +37,7 @@ public:
 /*!
     \class Texture
     \brief Texture resource contains all necessary texture data.
-    \inmodule Resource
+    \inmodule Resources
 
     This class can be used to handle texture resource or create them at runtime.
 */

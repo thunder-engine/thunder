@@ -27,7 +27,7 @@
 */
 
 /*!
-    \fn void update(Scene *scene)
+    \fn void System::update(Scene *scene)
 
     All processing operations for the current \a scene must be done in this method.
 */

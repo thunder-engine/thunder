@@ -78,7 +78,7 @@ const char *PostProcessor::name() const {
     return nullptr;
 }
 /*!
-    Sets post effect to enable or disable.
+    Sets post effect to \a enable or disable.
     The disabled effect will not be applied.
 */
 void PostProcessor::setEnabled(bool enable) {

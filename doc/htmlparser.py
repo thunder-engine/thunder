@@ -160,10 +160,15 @@ def parseFile(file):
         title = root.find(".//*[@class='title']")
         classDef = ClassDef(title.text.replace(" Class", ""))
 
-        elements = descr.findall("./p")
         classDef.description = list()
-        for p in elements:
-            classDef.description.append("".join(p.itertext()))
+
+        index = 1
+        while(len(descr) > index and descr[index].tag != "h3"):
+            desc = DescriptionDef("".join(descr[index].itertext()))
+            if(descr[index].tag == "pre"):
+                desc.code = True
+            classDef.description.append(desc)
+            index += 1
 
         types = root.find(".//*[@class='types']")
         if types is not None:
@@ -186,7 +191,7 @@ def parseFile(file):
     return None
 
 def parseModule(file, files):
-    print ("module " + file)
+    print("module " + file)
 
     f = open(file, "r")
     data = f.read()

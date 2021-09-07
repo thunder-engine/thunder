@@ -214,7 +214,7 @@ Vector2 &TextRender::size() const {
     return p_ptr->m_Boundaries;
 }
 /*!
-    Changes the \a size of boundaries of the text area. This parameter is involved in Word Wrap calculations.
+    Changes the size of \a boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
 void TextRender::setSize(const Vector2 &boundaries) {
     p_ptr->m_Boundaries = boundaries;

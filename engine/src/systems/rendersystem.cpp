@@ -97,9 +97,7 @@ const char *RenderSystem::name() const {
 bool RenderSystem::init() {
     return true;
 }
-/*!
-    Main drawing procedure.
-*/
+
 void RenderSystem::update(Scene *scene) {
     PROFILE_FUNCTION();
 

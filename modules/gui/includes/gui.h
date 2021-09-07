@@ -14,7 +14,7 @@ public:
 
     const char *version() const override;
 
-    uint32_t types() const override;
+    int types() const override;
 
     System *system() override;
 

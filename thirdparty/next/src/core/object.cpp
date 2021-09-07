@@ -116,7 +116,7 @@ public:
     \sa MetaObject
 */
 /*!
-    \fn T Object::findChild(bool recursive)
+    \fn template<typename T> T Object::findChild(bool recursive)
 
     Returns the first child of this object that can be cast to type T.
     The search is performed recursively, unless \a recursive option is false.
@@ -126,7 +126,7 @@ public:
     \sa find(), findChildren()
 */
 /*!
-    \fn list<T> Object::findChildren(bool recursive)
+    \fn template<typename T> list<T> Object::findChildren(bool recursive)
 
     Returns all children of this object that can be cast to type T.
     The search is performed recursively, unless \a recursive option is false.

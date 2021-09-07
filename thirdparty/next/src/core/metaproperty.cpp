@@ -24,7 +24,7 @@
     Callback which contain address to setter method of property.
 */
 /*!
-    \fn void MetaProperty::write(Object *object, const T &value) const
+    \fn template<typename T> void MetaProperty::write(void *object, const T &value) const
 
     Tries to write a \a value with type T to provided \a object.
 */

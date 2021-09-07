@@ -43,7 +43,7 @@ Variant::Data::Data() :
     \endcode
 */
 /*!
-    \fn T Variant::value() const
+    \fn template<typename T> T Variant::value() const
 
     Returns contained value which cast or converted to type T.
 
@@ -52,7 +52,7 @@ Variant::Data::Data() :
     \sa fromValue, canConvert, MetaType::convert
 */
 /*!
-    \fn static Variant Variant::fromValue(const T &value)
+    \fn template<typename T> static Variant Variant::fromValue(const T &value)
 
     Returns the variant containing provided \a value.
 
@@ -61,7 +61,7 @@ Variant::Data::Data() :
     \sa value, canConvert, MetaType::convert
 */
 /*!
-    \fn bool Variant::canConvert() const
+    \fn template<typename T> bool Variant::canConvert() const
 
     Returns the possibility of conversion for this variant to type T.
 
@@ -323,14 +323,14 @@ void *Variant::data() const {
     return mData.ptr;
 }
 /*!
-    Returns \value true if variant value is valid; otherwise return \value false.
+    Returns true if variant value is valid; otherwise return false.
 */
 bool Variant::isValid() const {
     PROFILE_FUNCTION();
     return (mData.type != MetaType::INVALID);
 }
 /*!
-    Returns \value true if variant converted to a \a type; otherwise return \value false.
+    Returns true if variant converted to a \a type; otherwise return false.
 */
 bool Variant::canConvert(uint32_t type) const {
     PROFILE_FUNCTION();

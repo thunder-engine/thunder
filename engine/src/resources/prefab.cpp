@@ -17,7 +17,7 @@ public:
 /*!
     \class Prefab
     \brief A small piece of objects hierarchy which can be placed on the scene.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Prefab::Prefab() :

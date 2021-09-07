@@ -136,7 +136,7 @@ Pose *Armature::bindPose() const {
     return p_ptr->m_pBindPose;
 }
 /*!
-    Sets a bind (initial) pose of the bone structure.
+    Sets a bind (initial) \a pose of the bone structure.
 */
 void Armature::setBindPose(Pose *pose) {
     if(p_ptr->m_pBindPose != pose) {

@@ -222,14 +222,14 @@ uint8_t type(const Variant &data) {
     Example:
     \code
         VariantMap dictionary;
-        dictionary["bool"]    = true;
-        dictionary["str"]     = "string";
-        dictionary["int"]     = 1;
-        dictionary["float"]   = 2.0f;
+        dictionary["bool"]  = true;
+        dictionary["str"]   = "string";
+        dictionary["int"]   = 1;
+        dictionary["float"] = 2.0f;
 
-        ByteArray data  = Bson::save(dictionary); // Serializing dictionary to binary format
+        ByteArray data = Bson::save(dictionary); // Serializing dictionary to binary format
         ....
-        VariantMap result   = Bson::load(data).toMap(); // Resotoring it back
+        VariantMap result = Bson::load(data).toMap(); // Resotoring it back
     \endcode
 */
 /*!

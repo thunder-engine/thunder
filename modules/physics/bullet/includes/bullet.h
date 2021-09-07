@@ -14,7 +14,7 @@ public:
 
     const char *version() const;
 
-    uint32_t types() const;
+    int types() const;
 
     System *system();
 

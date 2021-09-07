@@ -20,7 +20,7 @@ public:
 };
 
 /*!
-    \class Armature
+    \class Scene
     \brief A root object in the scene graph hierarchy.
     \inmodule Engine
 

@@ -53,7 +53,7 @@ string Input::inputString() {
     return s_pPlatform->inputString();
 }
 /*!
-    Shows and hide a virtual keyboard.
+    Sets virtual keyboard \a visible.
     \note Does nothing for the desktop platforms.
 */
 void Input::setKeyboardVisible(bool visible) {

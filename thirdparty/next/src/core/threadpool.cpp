@@ -124,7 +124,10 @@ ThreadPool::~ThreadPool() {
     }
     p_ptr->m_Workers.clear();
 }
-
+/*!
+    Pushes an \a object to thread pool.
+    In case of any free worker available executes task immediately.
+*/
 void ThreadPool::start(Object &object) {
     PROFILE_FUNCTION();
     unique_lock<mutex> locker(p_ptr->m_Mutex);
@@ -136,17 +139,21 @@ void ThreadPool::start(Object &object) {
     }
     p_ptr->m_Tasks.push(&object);
 }
-
+/*!
+    Returns the max number of threads allocated to work.
+*/
 uint32_t ThreadPool::maxThreads() const {
     PROFILE_FUNCTION();
     return p_ptr->m_Workers.size();
 }
-
-void ThreadPool::setMaxThreads(uint32_t value) {
+/*!
+    Sets the max \a number of threads allocated to work.
+*/
+void ThreadPool::setMaxThreads(uint32_t number) {
     PROFILE_FUNCTION();
     uint32_t current    = p_ptr->m_Workers.size();
-    if(current < value) {
-        for(uint32_t i = 0; i < value - current; i++) {
+    if(current < number) {
+        for(uint32_t i = 0; i < number - current; i++) {
             ThreadPoolPrivate::APoolWorker *worker = new ThreadPoolPrivate::APoolWorker(p_ptr);
             Object *object     = p_ptr->takeTask();
             if(object) {
@@ -154,8 +161,8 @@ void ThreadPool::setMaxThreads(uint32_t value) {
             }
             p_ptr->m_Workers.insert(worker);
         }
-    } else if(current > value) {
-        for(uint32_t i = 0; i < current - value; i++) {
+    } else if(current > number) {
+        for(uint32_t i = 0; i < current - number; i++) {
             auto it = p_ptr->m_Workers.end();
             --it;
             ThreadPoolPrivate::APoolWorker *worker = (*it);
@@ -164,7 +171,11 @@ void ThreadPool::setMaxThreads(uint32_t value) {
         }
     }
 }
-
+/*!
+    Waits up to \a msecs milliseconds for all threads to exit and removes all threads from the thread pool.
+    Returns true if all threads were removed; otherwise it returns false.
+    If \a msecs is -1 (the default), the timeout is ignored (waits for the last thread to exit).
+*/
 bool ThreadPool::waitForDone(int32_t msecs) {
     PROFILE_FUNCTION();
     unique_lock<mutex> locker(p_ptr->m_Mutex);
@@ -176,7 +187,10 @@ bool ThreadPool::waitForDone(int32_t msecs) {
     }
     return (p_ptr->m_Tasks.empty() && p_ptr->m_ActiveThreads == 0);
 }
-
+/*!
+    Returns the optimal thread count for the current system.
+    This value is based on the number of CPU cores.
+*/
 uint32_t ThreadPool::optimalThreadCount() {
     PROFILE_FUNCTION();
     return thread::hardware_concurrency();

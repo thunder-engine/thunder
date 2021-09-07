@@ -15,7 +15,7 @@
 /*!
     \class Lod
     \brief This class contains all necessary data of Level Of Detail for the Mesh.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 Lod::Lod() :
@@ -180,7 +180,7 @@ public:
 /*!
     \class Mesh
     \brief A class that allows creating or modifying meshes at the runtime.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 /*!
@@ -195,7 +195,7 @@ public:
 */
 
 /*!
-    \enum Mesh::TriangleModes
+    \enum Mesh::TriangleTopology
 
     \value Triangles \c This mode means the indices array will be used to stitch vertices into triangles.
     \value Lines \c The The mesh will be rendered as set of lines. Indices array will be used.

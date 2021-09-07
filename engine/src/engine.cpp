@@ -142,6 +142,12 @@ list<System *>   EnginePrivate::m_Serial;
 typedef Vector4 Color;
 
 /*!
+    \group Thunder Engine
+
+    \title Thunder Engine Software Developer Kit
+*/
+
+/*!
     \module Engine
 
     \title Thunder Engine Software Developer Kit
@@ -160,7 +166,7 @@ typedef Vector4 Color;
 */
 
 /*!
-    \fn T *Engine::loadResource(const string &path)
+    \fn template<typename T> T *loadResource(const std::string &path)
 
     Returns an instance of type T for loading resource by the provided \a path.
     \note In case of resource was loaded previously this function will return the same instance.

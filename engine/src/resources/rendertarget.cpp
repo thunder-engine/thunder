@@ -15,7 +15,7 @@ public:
 /*!
     \class RenderTarget
     \brief Represents offscreen render pass.
-    \inmodule Resource
+    \inmodule Resources
 */
 
 RenderTarget::RenderTarget() :

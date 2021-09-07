@@ -18,7 +18,7 @@ public:
 };
 
 /*!
-    \module Resource
+    \module Resources
 
     \title Thunder Engine Software Developer Kit
 
@@ -28,7 +28,7 @@ public:
 /*!
     \class Resource
     \brief Base class for every resource in Thunder Engine.
-    \inmodule Resource
+    \inmodule Resources
 
     \note This class must be a superclass only and shouldn't be created manually.
 */
