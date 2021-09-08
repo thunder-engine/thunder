@@ -286,9 +286,12 @@ bool Engine::start() {
 
     string path = value(gEntry, "").toString();
     Log(Log::DBG) << "Level:" << path.c_str() << "loading...";
-    Actor *level = loadResource<Actor>(path);
+    Map *level = loadResource<Map>(path);
     if(level) {
-        level->setParent(p_ptr->m_pScene);
+        Actor *actor = level->actor();
+        if(actor) {
+            actor->setParent(p_ptr->m_pScene);
+        }
     } else {
         Log(Log::ERR) << "Unable to load" << path.c_str();
         p_ptr->m_pPlatform->stop();

@@ -18,12 +18,12 @@ public:
     Prefab();
     ~Prefab();
 
-    Actor *actor () const;
-    void setActor (Actor *actor);
+    Actor *actor() const;
+    void setActor(Actor *actor);
 
 private:
-    void loadUserData (const VariantMap &data) override;
-    VariantMap saveUserData () const override;
+    void loadUserData(const VariantMap &data) override;
+    VariantMap saveUserData() const override;
 
 private:
     friend class ActorTest;
