@@ -90,8 +90,8 @@ Project {
         cpp.minimumIosVersion: "10.0"
         cpp.minimumTvosVersion: "10.0"
         cpp.cxxStandardLibrary: "libc++"
-        cpp.debugInformation: qbs.buildVariant === "release"
-        cpp.separateDebugInformation: cpp.debugInformation
+        cpp.debugInformation: true
+        cpp.separateDebugInformation: qbs.buildVariant === "release"
 
         Properties {
             condition: !rendergl.desktop
@@ -119,7 +119,7 @@ Project {
 
         Group {
             name: "Debug Symbols"
-            fileTagsFilter: cpp.debugInformation ? ["debuginfo_cl"] : []
+            fileTagsFilter: qbs.buildVariant === "release" ? ["debuginfo_cl"] : []
             qbs.install: true
             qbs.installDir: rendergl.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/symbols"
             qbs.installPrefix: rendergl.PREFIX
