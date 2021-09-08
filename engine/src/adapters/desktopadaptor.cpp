@@ -23,20 +23,24 @@
 
 #define CONFIG_NAME "config.json"
 
-#define SCREEN_WIDTH "screen.width"
-#define SCREEN_HEIGHT "screen.height"
-#define SCREEN_WINDOWED "screen.windowed"
+namespace {
+    const char *SCREEN_WIDTH("screen.width");
+    const char *SCREEN_HEIGHT("screen.height");
+    const char *SCREEN_WINDOWED("screen.windowed");
+    const char *SCREEN_VSYNC("screen.vsync");
+};
 
 #define NONE -1
 #define RELEASE 0
 #define PRESS 1
 #define REPEAT 2
 
-Vector4 DesktopAdaptor::s_MousePosition  = Vector4();
+Vector4 DesktopAdaptor::s_MousePosition = Vector4();
 Vector4 DesktopAdaptor::s_OldMousePosition = Vector4();
-int32_t DesktopAdaptor::s_Width  = 0;
+int32_t DesktopAdaptor::s_Width = 0;
 int32_t DesktopAdaptor::s_Height = 0;
-bool DesktopAdaptor::s_Windowed  = false;
+bool DesktopAdaptor::s_Windowed = false;
+bool DesktopAdaptor::s_vSync = false;
 
 static Engine *g_pEngine = nullptr;
 static File *g_pFile = nullptr;
@@ -157,7 +161,7 @@ bool DesktopAdaptor::start() {
 
         Variant var = Json::load(string(data.begin(), data.end()));
         if(var.isValid()) {
-            for(auto it : var.toMap()) {
+            for(auto &it : var.toMap()) {
                 Engine::setValue(it.first, it.second);
             }
         }
@@ -172,12 +176,16 @@ bool DesktopAdaptor::start() {
     s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
     s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
     s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
+    s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
     m_pWindow = glfwCreateWindow(s_Width, s_Height, g_pEngine->applicationName().c_str(), (s_Windowed) ? nullptr : m_pMonitor, nullptr);
     if(!m_pWindow) {
         stop();
         return false;
     }
+
+    glfwSwapInterval(s_vSync);
+
     glfwSetCharCallback(m_pWindow, charCallback);
     glfwSetKeyCallback(m_pWindow, keyCallback);
     glfwSetMouseButtonCallback(m_pWindow, buttonCallback);
@@ -358,10 +366,13 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
     s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
     s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
+    s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
     int32_t x, y;
     glfwGetWindowPos(m_pWindow, &x, &y);
     glfwSetWindowMonitor(m_pWindow, (s_Windowed) ? nullptr : m_pMonitor, x, y, s_Width, s_Height, GLFW_DONT_CARE);
+
+    glfwSwapInterval(s_vSync);
 
     _FILE *fp = g_pFile->fopen(CONFIG_NAME, "w");
     if(fp) {

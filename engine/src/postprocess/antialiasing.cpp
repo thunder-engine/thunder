@@ -7,7 +7,9 @@
 
 #include "resources/rendertarget.h"
 
-#define ANTIALIASING "Graphics/Advanced/AntiAliasing"
+namespace {
+    const char *ANTIALIASING("graphics.antialiasing");
+};
 
 #include "commandbuffer.h"
 

@@ -22,7 +22,7 @@
 #define RGB_MAP     "uni.rgbMap"
 
 namespace {
-const char *AMBIENT_OCCLUSION("Graphics/Advanced/AmbientOcclusion");
+const char *AMBIENT_OCCLUSION("graphics.ambientocclusion");
 
 const char *AMBIENT_RADIUS("ambientOcclusion/Radius");
 const char *AMBIENT_BIAS("ambientOcclusion/Bias");

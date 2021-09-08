@@ -79,6 +79,7 @@ protected:
     static int32_t              s_Width;
     static int32_t              s_Height;
     static bool                 s_Windowed;
+    static bool                 s_vSync;
 };
 
 #endif // DESKTOPADAPTOR_H

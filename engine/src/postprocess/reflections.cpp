@@ -16,7 +16,7 @@
 
 #define BLUR_STEPS 4
 
-#define REFLECTIONS "Graphics/Advanced/Reflections"
+const char *REFLECTIONS("graphics.reflections");
 
 Reflections::Reflections() :
         m_iblMaterial(nullptr),

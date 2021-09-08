@@ -14,7 +14,7 @@
 #include <cstring>
 
 namespace {
-const char *BLOOM("Graphics/Advanced/Bloom");
+const char *BLOOM("graphics.bloom");
 
 const char *BLOOM_THRESHOLD("bloom/Threshold");
 };
