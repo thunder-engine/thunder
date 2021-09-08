@@ -261,7 +261,9 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                 Invalid *invalid = new Invalid();
                 invalid->loadData(o);
                 object = invalid;
-
+                if(parent) {
+                    object->setSystem(parent->system());
+                }
                 object->setUUID(uuid);
                 object->setName(name);
                 object->setParent(parent);
