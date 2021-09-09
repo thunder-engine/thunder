@@ -40,13 +40,6 @@ int32_t RenderSystemPrivate::m_AtlasPageHeight = 1024;
 RenderSystem::RenderSystem() :
         p_ptr(new RenderSystemPrivate()) {
 
-}
-
-RenderSystem::~RenderSystem() {
-
-}
-
-void RenderSystem::registerClasses() {
     Renderable::registerClassFactory(this);
     MeshRender::registerClassFactory(this);
     TextRender::registerClassFactory(this);
@@ -66,7 +59,7 @@ void RenderSystem::registerClasses() {
     PostProcessVolume::registerClassFactory(this);
 }
 
-void RenderSystem::unregisterClasses() {
+RenderSystem::~RenderSystem() {
     Renderable::unregisterClassFactory(this);
     MeshRender::unregisterClassFactory(this);
     TextRender::unregisterClassFactory(this);

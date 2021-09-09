@@ -36,20 +36,9 @@ void _CheckGLError(const char* file, int line) {
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderSystem(),
-        m_pEngine(engine),
-        m_registered(false) {
+        m_pEngine(engine) {
 
     PROFILE_FUNCTION();
-
-}
-
-RenderGLSystem::~RenderGLSystem() {
-    PROFILE_FUNCTION();
-
-}
-
-void RenderGLSystem::registerClasses() {
-    RenderSystem::registerClasses();
 
     System *system = m_pEngine->resourceSystem();
 
@@ -59,16 +48,10 @@ void RenderGLSystem::registerClasses() {
     MeshGL::registerClassFactory(system);
 
     CommandBufferGL::registerClassFactory(m_pEngine);
-
-    m_registered = true;
 }
 
-void RenderGLSystem::unregisterClasses() {
-    if(!m_registered) {
-        return;
-    }
-
-    RenderSystem::unregisterClasses();
+RenderGLSystem::~RenderGLSystem() {
+    PROFILE_FUNCTION();
 
     System *system = m_pEngine->resourceSystem();
 

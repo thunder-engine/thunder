@@ -49,10 +49,6 @@ PluginManager::PluginManager() :
 }
 
 PluginManager::~PluginManager() {
-    if(m_pRender) {
-        m_pRender->unregisterClasses();
-    }
-
     m_Scenes.clear();
 
     m_Systems.clear();
@@ -286,7 +282,6 @@ bool PluginManager::registerSystem(Module *plugin) {
 
             if(QString(render->name()) == renderName) {
                 m_pRender = render;
-                m_pRender->registerClasses();
             } else {
                 return false;
             }

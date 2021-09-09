@@ -18,19 +18,12 @@ public:
 
     void update(Scene *scene) override;
 
-    void registerClasses() override;
-
-    void unregisterClasses() override;
-
 #ifdef NEXT_SHARED
     QWindow *createRhiWindow() const override;
 #endif
 
 private:
     Engine *m_pEngine;
-
-    bool m_registered;
-
 };
 
 #endif // RENDERGLSYSTEM_H

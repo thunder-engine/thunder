@@ -25,9 +25,6 @@ public:
 
     void composeComponent(Component *component) const override;
 
-    virtual void registerClasses();
-    virtual void unregisterClasses();
-
 #if defined(NEXT_SHARED)
     virtual QWindow *createRhiWindow() const;
 #endif
