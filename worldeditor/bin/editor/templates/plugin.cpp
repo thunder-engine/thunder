@@ -19,19 +19,19 @@ public:
         //-{UnregisterComponents}
     }
 
-    const char *description() const {
+    const char *description() const override {
         return "${Project_Name}";
     }
 
-    const char *version() const {
+    const char *version() const override {
         return "${Project_Version}";
     }
 
-    uint8_t types() const {
+    int types() const override {
         return EXTENSION;
     }
 
-    StringList components() const {
+    StringList components() const override {
         StringList result;
         //+{ComponentNames}
         //-{ComponentNames}
