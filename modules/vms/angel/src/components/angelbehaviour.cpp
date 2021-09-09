@@ -365,7 +365,15 @@ void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &
             }
         }
         if(it->second.isObject) {
-            Object *object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+            Object *object = nullptr;
+            if(value.type() == MetaType::INTEGER) {
+                uint32_t uuid = value.toInt();
+                if(uuid) {
+                    object = Engine::findObject(uuid, Engine::findRoot(this));
+                }
+            } else {
+                object = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(value.data()));
+            }
             if(it->second.object != object) {
                 disconnect(it->second.object, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
                 it->second.object = object;

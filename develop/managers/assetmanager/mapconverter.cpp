@@ -3,6 +3,7 @@
 #include <QFile>
 
 #include <bson.h>
+#include <json.h>
 #include <map.h>
 #include <components/actor.h>
 
@@ -24,16 +25,14 @@ uint8_t MapConverter::convertFile(IConverterSettings *settings) {
         src.close();
 
         Variant actor = readJson(data, settings);
-
-        Object *object = Engine::toObject(actor);
-        Map *map = Engine::objectCreate<Map>("");
-        map->setActor(static_cast<Actor *>(object));
+        injectResource(actor, Engine::objectCreate<Map>(""));
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(Engine::toVariant(map));
+            ByteArray data = Bson::save(actor);
             file.write((const char *)&data[0], data.size());
             file.close();
+
             return 0;
         }
     }

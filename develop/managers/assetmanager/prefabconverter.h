@@ -20,6 +20,8 @@ class PrefabConverter : public IConverter {
 
 protected:
     Variant readJson(const string &data, IConverterSettings *);
+    void injectResource(Variant &origin, Resource *resource);
+
     void toVersion1(Variant &variant);
 };
 

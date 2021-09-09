@@ -8,7 +8,7 @@
 #include <bson.h>
 #include <json.h>
 
-#define FORMAT_VERSION 1
+#define FORMAT_VERSION 2
 
 PrefabConverterSettings::PrefabConverterSettings() {
     setType(MetaType::type<Prefab *>());
@@ -20,6 +20,8 @@ IConverterSettings *PrefabConverter::createSettings() const {
 }
 
 Actor *PrefabConverter::createActor(const QString &guid) const {
+    PROFILE_FUNCTION();
+
     Prefab *prefab = Engine::loadResource<Prefab>(guid.toStdString());
     if(prefab) {
         return static_cast<Actor *>(prefab->actor()->clone());
@@ -28,20 +30,19 @@ Actor *PrefabConverter::createActor(const QString &guid) const {
 }
 
 uint8_t PrefabConverter::convertFile(IConverterSettings *settings) {
+    PROFILE_FUNCTION();
+
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         string data = src.readAll().toStdString();
         src.close();
 
         Variant actor = readJson(data, settings);
-
-        Object *object = Engine::toObject(actor);
-        Prefab *fab = Engine::objectCreate<Prefab>("");
-        fab->setActor(static_cast<Actor *>(object));
+        injectResource(actor, Engine::objectCreate<Prefab>(""));
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data = Bson::save(Engine::toVariant(fab));
+            ByteArray data = Bson::save(actor);
             file.write((const char *)&data[0], data.size());
             file.close();
 
@@ -52,6 +53,8 @@ uint8_t PrefabConverter::convertFile(IConverterSettings *settings) {
 }
 
 Variant PrefabConverter::readJson(const string &data, IConverterSettings *settings) {
+    PROFILE_FUNCTION();
+
     Variant result = Json::load(data);
 
     bool update = false;
@@ -72,6 +75,21 @@ Variant PrefabConverter::readJson(const string &data, IConverterSettings *settin
     }
 
     return result;
+}
+
+void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
+    PROFILE_FUNCTION();
+
+    VariantList &objects = *(reinterpret_cast<VariantList *>(origin.data()));
+    VariantList &o = *(reinterpret_cast<VariantList *>(objects.front().data()));
+
+    auto i = o.begin();
+    string type = i->toString();
+    i++; // uuid
+    i++; // parent
+    *i = resource->uuid();
+
+    objects.push_front(Engine::toVariant(resource).toList().front());
 }
 
 void PrefabConverter::toVersion1(Variant &variant) {

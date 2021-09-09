@@ -22,10 +22,6 @@ public:
     void setActor(Actor *actor);
 
 private:
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
-
-private:
     friend class ActorTest;
 
     PrefabPrivate *p_ptr;
