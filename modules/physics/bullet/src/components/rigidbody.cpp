@@ -195,7 +195,7 @@ void RigidBody::createCollider() {
     }
     setMass(mass);
 
-    if(m_pCollisionObject) {
+    if(m_pCollisionObject && m_pWorld) {
         m_pWorld->addRigidBody(static_cast<btRigidBody *>(m_pCollisionObject));
     }
 }

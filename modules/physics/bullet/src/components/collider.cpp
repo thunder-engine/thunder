@@ -31,8 +31,9 @@ btDynamicsWorld *Collider::world() const {
 
 void Collider::setWorld(btDynamicsWorld *world) {
     m_pWorld = world;
-
-    createCollider();
+    if(m_pWorld) {
+        createCollider();
+    }
 }
 
 void Collider::createCollider() {

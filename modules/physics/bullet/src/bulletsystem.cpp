@@ -48,6 +48,11 @@ BulletSystem::~BulletSystem() {
     for(auto &it : m_Worlds) {
         delete it.second;
     }
+
+    for(auto &it : m_ObjectList) {
+        static_cast<Collider *>(it)->setWorld(nullptr);
+    }
+
     delete m_pSolver;
     delete m_pOverlappingPairCache;
     delete m_pDispatcher;
