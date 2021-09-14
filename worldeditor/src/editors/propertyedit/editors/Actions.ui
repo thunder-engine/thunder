@@ -56,6 +56,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="commitButton">
+     <property name="toolTip">
+      <string>Saves your changes.</string>
+     </property>
      <property name="text">
       <string>Commit</string>
      </property>
@@ -63,6 +66,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="revertButton">
+     <property name="toolTip">
+      <string>Reverts back your unsaved changes.</string>
+     </property>
      <property name="text">
       <string>Revert</string>
      </property>

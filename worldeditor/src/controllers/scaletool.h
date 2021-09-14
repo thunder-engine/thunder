@@ -12,6 +12,8 @@ public:
     QString icon() const override;
     QString name() const override;
 
+    QString toolTip() const override;
+    QString shortcut() const override;
 };
 
 #endif // SCALETOOL_H

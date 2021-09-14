@@ -162,3 +162,11 @@ QString ResizeTool::icon() const {
 QString ResizeTool::name() const {
     return "Resize";
 }
+
+QString ResizeTool::toolTip() const {
+    return QObject::tr("Select and manipulate objects with rect transform tool");
+}
+
+QString ResizeTool::shortcut() const {
+    return "G";
+}

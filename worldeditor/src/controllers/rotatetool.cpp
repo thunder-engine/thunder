@@ -74,3 +74,11 @@ QString RotateTool::icon() const {
 QString RotateTool::name() const {
     return "Rotate";
 }
+
+QString RotateTool::toolTip() const {
+    return QObject::tr("Select and Rotate objects");
+}
+
+QString RotateTool::shortcut() const {
+    return "R";
+}

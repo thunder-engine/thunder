@@ -119,6 +119,9 @@
           <height>25</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Adds a new Component to this Actor.</string>
+        </property>
         <property name="text">
          <string>Add Component</string>
         </property>
@@ -164,6 +167,9 @@
             <height>25</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Saves your changes.</string>
+          </property>
           <property name="text">
            <string>Commit</string>
           </property>
@@ -185,6 +191,9 @@
             <width>0</width>
             <height>25</height>
            </size>
+          </property>
+          <property name="toolTip">
+           <string>Reverts back your unsaved changes.</string>
           </property>
           <property name="text">
            <string>Revert</string>
@@ -335,6 +344,9 @@
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>Switches between 3D and 3D mode.</string>
+          </property>
           <property name="text">
            <string notr="true">2D</string>
           </property>
@@ -358,7 +370,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>Switches the transformation axes between world space and local (object) space.</string>
           </property>
           <property name="text">
            <string/>
@@ -381,7 +393,7 @@
            </size>
           </property>
           <property name="text">
-           <string>View</string>
+           <string>Show</string>
           </property>
           <property name="popupMode">
            <enum>QToolButton::InstantPopup</enum>

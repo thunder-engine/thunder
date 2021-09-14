@@ -14,6 +14,9 @@ public:
     QString icon() const override;
     QString name() const override;
 
+    QString toolTip() const override;
+    QString shortcut() const override;
+
 protected:
      AABBox m_SavedBox;
 

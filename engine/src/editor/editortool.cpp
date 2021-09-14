@@ -15,6 +15,14 @@ EditorTool::EditorTool(EditorTool::SelectList &selection) :
 
 }
 
+QString EditorTool::toolTip() const {
+    return QString();
+}
+
+QString EditorTool::shortcut() const {
+    return QString();
+}
+
 void EditorTool::update(bool pivot, bool local, float snap) {
     A_UNUSED(pivot);
     A_UNUSED(local);

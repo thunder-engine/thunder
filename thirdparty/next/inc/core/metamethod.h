@@ -3,6 +3,7 @@
 
 #include <string>
 #include <type_traits>
+#include <stdexcept>
 
 #include "variant.h"
 #include "metatype.h"

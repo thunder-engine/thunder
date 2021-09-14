@@ -81,3 +81,11 @@ QString ScaleTool::icon() const {
 QString ScaleTool::name() const {
     return "scaleTool";
 }
+
+QString ScaleTool::toolTip() const {
+    return QObject::tr("Select and Scale objects");
+}
+
+QString ScaleTool::shortcut() const {
+    return "S";
+}

@@ -154,6 +154,9 @@ SceneComposer::SceneComposer(Engine *engine, QWidget *parent) :
         tool->setAutoExclusive(true);
         tool->setIcon(QIcon(it->icon()));
         tool->setObjectName(it->name());
+        QString shortcut = it->shortcut();
+        tool->setShortcut(QKeySequence(shortcut));
+        tool->setToolTip(it->toolTip() + (!shortcut.isEmpty() ? (" (" + shortcut + ")") : ""));
 
         ui->viewportLayout->insertWidget(index, tool);
 

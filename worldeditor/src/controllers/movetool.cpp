@@ -48,3 +48,11 @@ QString MoveTool::icon() const {
 QString MoveTool::name() const {
     return "Move";
 }
+
+QString MoveTool::toolTip() const {
+    return QObject::tr("Select and Translate objects");
+}
+
+QString MoveTool::shortcut() const {
+    return "T";
+}

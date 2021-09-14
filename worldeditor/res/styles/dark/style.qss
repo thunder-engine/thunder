@@ -424,5 +424,4 @@ QToolTip {
     border: 0px;
     padding: 2px;
     background: #525252;
-    min-width: 300
 }
