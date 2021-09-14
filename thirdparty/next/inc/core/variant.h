@@ -117,7 +117,7 @@ public:
 
         if(mData.type < MetaType::STRING) {
             if(mData.type == type) {
-                return *reinterpret_cast<const T *>(&mData.ptr);
+                return *reinterpret_cast<T *>(&mData.ptr);
             } else if(canConvert(type)) {
                 T result;
                 MetaType::convert(&mData.ptr, mData.type, &result, type);
@@ -127,9 +127,9 @@ public:
             if(mData.ptr) {
                 if(mData.type == type) {
                     if(mData.is_shared) {
-                        return *reinterpret_cast<const T *>(mData.shared->ptr);
+                        return *reinterpret_cast<T *>(mData.shared->ptr);
                     } else {
-                        return *reinterpret_cast<const T *>(mData.ptr);
+                        return *reinterpret_cast<T *>(mData.ptr);
                     }
                 } else if(canConvert(type)) {
                     T result;

@@ -92,8 +92,6 @@ Project {
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
-        cpp.linkerFlags: ["--whole-archive -lbullet3 --no-whole-archive"]
-
         Properties {
             condition: !bullet.desktop
             cpp.defines: ["THUNDER_MOBILE"]
