@@ -79,6 +79,7 @@ Project {
             "src/converters/templates.qrc",
         ].concat(bullet.srcFiles)
         Depends { name: "cpp" }
+        Depends { name: "bullet3" }
         Depends { name: "bundle" }
         bundle.isBundle: false
 
@@ -91,9 +92,15 @@ Project {
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
+        cpp.linkerFlags: ["--whole-archive -lbullet3 --no-whole-archive"]
+
         Properties {
             condition: !bullet.desktop
             cpp.defines: ["THUNDER_MOBILE"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("windows") && !qbs.toolchain.contains("gcc")
         }
 
         Properties {

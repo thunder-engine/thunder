@@ -10,6 +10,18 @@ Module *moduleCreate(Engine *engine) {
 }
 #endif
 
+static const char *meta = \
+"{"
+"   \"version\": \"1.0\","
+"   \"description\": \"BulletPhysics Module\","
+"   \"systems\": ["
+"       \"BulletSystem\""
+"   ],"
+"   \"converters\": ["
+"       \"PhysicMaterialConverter\""
+"   ]"
+"}";
+
 Bullet::Bullet(Engine *engine) :
         m_pEngine(engine),
         m_pSystem(new BulletSystem(engine)) {
@@ -19,29 +31,15 @@ Bullet::~Bullet() {
     delete m_pSystem;
 }
 
-const char *Bullet::description() const {
-    return "BulletPhysics Module";
+const char *Bullet::metaInfo() const {
+    return meta;
 }
 
-const char *Bullet::version() const {
-    return "1.0";
-}
-
-int Bullet::types() const {
-    int result  = SYSTEM;
-#ifdef NEXT_SHARED
-    result  |= CONVERTER;
-#endif
-    return result;
-}
-
-System *Bullet::system() {
+System *Bullet::system(const char *) {
     return m_pSystem;
 }
-
-IConverter *Bullet::converter() {
 #ifdef NEXT_SHARED
+IConverter *Bullet::converter(const char *) {
     return new PhysicMaterialConverter();
-#endif
-    return nullptr;
 }
+#endif
