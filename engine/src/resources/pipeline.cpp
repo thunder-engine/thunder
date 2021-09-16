@@ -423,7 +423,7 @@ void Pipeline::combineComponents(Object *object, bool update) {
             Component *component = static_cast<Component *>(child);
             if(component->isRenderable()) {
                 Renderable *comp = static_cast<Renderable *>(child);
-                if(comp->actor()->isEnabledInHierarchy()) {
+                if(comp->isEnabled() && comp->actor()->isEnabledInHierarchy()) {
                     if(update) {
                         comp->update();
                     }
