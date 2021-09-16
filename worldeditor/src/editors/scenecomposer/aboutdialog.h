@@ -16,6 +16,9 @@ public:
 
     void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
+private slots:
+    void on_pushClipboard_clicked();
+
 private:
     Ui::AboutDialog *ui;
 };

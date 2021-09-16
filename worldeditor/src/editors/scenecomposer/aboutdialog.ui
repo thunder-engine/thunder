@@ -77,6 +77,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QPushButton" name="pushClipboard">
+     <property name="text">
+      <string>Copy system information to clipboard...</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="legal">
      <property name="text">
       <string notr="true">Legal</string>
