@@ -217,6 +217,10 @@ void CodeEditor::replaceSelected(const QString &string) {
     }
 }
 
+void CodeEditor::reportIssue(int level, int line, int col, const QString &text) {
+
+}
+
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event) {
     auto menu = createStandardContextMenu(event->pos());
 
@@ -233,41 +237,46 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
     QTextCursor cursor = textCursor();
     if(event == QKeySequence::InsertParagraphSeparator) {
         cursor.beginEditBlock();
+
         int32_t indentRemain = firstNonIndent(cursor.block().text());
         if(m_pHighlighter->startsFoldingRegion(cursor.block())) {
             indentRemain += (m_SpaceTabs) ? m_SpaceIndent : 1;
         }
+
         cursor.insertBlock();
 
         QString text;
         text.fill((m_SpaceTabs) ? ' ' : '\t', indentRemain);
         cursor.insertText(text);
+
         cursor.endEditBlock();
         event->accept();
 
         return;
     }
     switch(event->key()) {
-    case Qt::Key_Tab: {
-        if(m_SpaceTabs) {
-            int32_t indentRemain = m_SpaceIndent - (cursor.positionInBlock() % m_SpaceIndent);
+        case Qt::Key_Slash: {
+            if(event->modifiers() == Qt::ControlModifier) {
+                commentSelection();
 
-            QString text;
-            text.fill(' ', indentRemain);
-            cursor.insertText(text);
-
-            event->accept();
-            return;
-        }
-    } break;
-    case Qt::Key_Insert: {
-        if(event->modifiers() == Qt::NoModifier) {
-            setOverwriteMode(!overwriteMode());
-            event->accept();
-            return;
-        }
-    } break;
-    default: break;
+                event->accept();
+                return;
+            }
+        } break;
+        case Qt::Key_Tab: {
+            if(indentSelection()) {
+                event->accept();
+                return;
+            }
+        } break;
+        case Qt::Key_Insert: {
+            if(event->modifiers() == Qt::NoModifier) {
+                setOverwriteMode(!overwriteMode());
+                event->accept();
+                return;
+            }
+        } break;
+        default: break;
     }
     QPlainTextEdit::keyPressEvent(event);
 }
@@ -356,9 +365,267 @@ void CodeEditor::mouseMoveEvent(QMouseEvent *event) {
     }
 }
 
+void CodeEditor::paintEvent(QPaintEvent *event) {
+    QPainter painter(viewport());
+
+    QPointF offset(contentOffset());
+    QRect er = event->rect();
+    QRect viewportRect = viewport()->rect();
+    bool editable = !isReadOnly();
+    QTextBlock block = firstVisibleBlock();
+    qreal maximumWidth = document()->documentLayout()->documentSize().width();
+    // Set a brush origin so that the WaveUnderline knows where the wave started
+    painter.setBrushOrigin(offset);
+    // keep right margin clean from full-width selection
+    int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth) - document()->documentMargin();
+    er.setRight(qMin(er.right(), maxX));
+    painter.setClipRect(er);
+
+    QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
+    painter.setPen(context.palette.text().color());
+    while(block.isValid()) {
+        QRectF r = blockBoundingRect(block).translated(offset);
+        QTextLayout *layout = block.layout();
+        if(!block.isVisible()) {
+            offset.ry() += r.height();
+            block = block.next();
+            continue;
+        }
+        if(r.bottom() >= er.top() && r.top() <= er.bottom()) {
+            QTextBlockFormat blockFormat = block.blockFormat();
+
+            QVector<QTextLayout::FormatRange> selections;
+
+            int blpos = block.position();
+            int bllen = block.length();
+
+            setupSelections(block, blpos, bllen, selections);
+
+            bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard))
+                               && context.cursorPosition >= blpos
+                               && context.cursorPosition < blpos + bllen);
+            bool drawCursorAsBlock = drawCursor && overwriteMode();
+            if(drawCursorAsBlock) {
+                if(context.cursorPosition == blpos + bllen - 1) {
+                    drawCursorAsBlock = false;
+                } else {
+                    QTextLayout::FormatRange o;
+                    o.start = context.cursorPosition - blpos;
+                    o.length = 1;
+                    o.format.setForeground(palette().base());
+                    o.format.setBackground(palette().text());
+                    selections.append(o);
+                }
+            }
+
+            layout->draw(&painter, offset, selections, er);
+
+            if((drawCursor && !drawCursorAsBlock) || (editable && context.cursorPosition < -1 && !layout->preeditAreaText().isEmpty())) {
+                int cpos = context.cursorPosition;
+                if(cpos < -1) {
+                    cpos = layout->preeditAreaPosition() - (cpos + 2);
+                } else {
+                    cpos -= blpos;
+                }
+                layout->drawCursor(&painter, offset, cpos, cursorWidth());
+            }
+        }
+        offset.ry() += r.height();
+        if(offset.y() > viewportRect.height()) {
+            break;
+        }
+        block = block.next();
+    }
+}
+
+void CodeEditor::commentSelection() {
+    QTextCursor cursor = textCursor();
+
+    int pos = cursor.position();
+    int anchor = cursor.anchor();
+    int start = qMin(anchor, pos);
+    int end = qMax(anchor, pos);
+
+    bool hasSelection = cursor.hasSelection();
+
+    QTextDocument *doc = document();
+    QTextBlock startBlock = doc->findBlock(start);
+    QTextBlock endBlock = doc->findBlock(end);
+
+    static const QString singleLine("//");
+    static const QString multiLineBegin("/*");
+    static const QString multiLineEnd("*/");
+
+    static const bool hasMultiLineStyle = true;
+    static const bool hasSingleLineStyle = true;
+
+    bool doSingleLineStyleUncomment = true;
+    bool doMultiLineStyleComment = false;
+    bool doMultiLineStyleUncomment = false;
+    bool anchorIsStart = (anchor == start);
+
+    cursor.beginEditBlock();
+
+    if(hasSelection && hasMultiLineStyle) {
+        QString startText = startBlock.text();
+        int startPos = start - startBlock.position();
+        const int multiLineStartLength = multiLineBegin.length();
+        bool hasLeadingCharacters = !startText.left(startPos).trimmed().isEmpty();
+
+        int pos = startPos - multiLineStartLength;
+        if(startPos >= multiLineStartLength
+            && startText.indexOf(multiLineBegin, pos) == pos) {
+            startPos -= multiLineStartLength;
+            start -= multiLineStartLength;
+        }
+
+        bool hasSelStart = startPos <= startText.length() - multiLineStartLength
+            && startText.indexOf(multiLineBegin, startPos) == startPos;
+
+        QString endText = endBlock.text();
+        int endPos = end - endBlock.position();
+        const int multiLineEndLength = multiLineEnd.length();
+        bool hasTrailingCharacters =
+                !endText.left(endPos).remove(singleLine).trimmed().isEmpty()
+                && !endText.mid(endPos).trimmed().isEmpty();
+
+        if(endPos <= endText.length() - multiLineEndLength && endText.indexOf(multiLineEnd, endPos) == endPos) {
+            endPos += multiLineEndLength;
+            end += multiLineEndLength;
+        }
+
+        pos = endPos - multiLineEndLength;
+        bool hasSelEnd = endPos >= multiLineEndLength && endText.indexOf(multiLineEnd, pos) == pos;
+
+        doMultiLineStyleUncomment = hasSelStart && hasSelEnd;
+        doMultiLineStyleComment = !doMultiLineStyleUncomment && (hasLeadingCharacters || hasTrailingCharacters || !hasSingleLineStyle);
+
+    } else if(!hasSelection && !hasSingleLineStyle) {
+        QString text = startBlock.text().trimmed();
+        doMultiLineStyleUncomment = text.startsWith(multiLineBegin) && text.endsWith(multiLineEnd);
+        doMultiLineStyleComment = !doMultiLineStyleUncomment && !text.isEmpty();
+
+        start = startBlock.position();
+        end = endBlock.position() + endBlock.length() - 1;
+
+        if(doMultiLineStyleUncomment) {
+            int offset = 0;
+            text = startBlock.text();
+            const int length = text.length();
+            while(offset < length && text.at(offset).isSpace()) {
+                ++offset;
+            }
+            start += offset;
+        }
+    }
+
+    if(doMultiLineStyleUncomment) {
+        cursor.setPosition(end);
+        cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor, multiLineEnd.length());
+        cursor.removeSelectedText();
+        cursor.setPosition(start);
+        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, multiLineBegin.length());
+        cursor.removeSelectedText();
+    } else if(doMultiLineStyleComment) {
+        cursor.setPosition(end);
+        cursor.insertText(multiLineEnd);
+        cursor.setPosition(start);
+        cursor.insertText(multiLineBegin);
+    } else {
+        endBlock = endBlock.next();
+
+        doSingleLineStyleUncomment = true;
+        for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+            QString text = block.text().trimmed();
+            if(!text.isEmpty() && !text.startsWith(singleLine)) {
+                doSingleLineStyleUncomment = false;
+                break;
+            }
+        }
+
+        const int singleLineLength = singleLine.length();
+        for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+            if(doSingleLineStyleUncomment) {
+                QString text = block.text();
+
+                int i = 0;
+                while(i <= text.size() - singleLineLength) {
+                    if(text.indexOf(singleLine, i) == i) {
+                        cursor.setPosition(block.position() + i);
+                        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, singleLineLength);
+                        cursor.removeSelectedText();
+                        break;
+                    }
+                    if(!text.at(i).isSpace()) {
+                        break;
+                    }
+                    ++i;
+                }
+            } else {
+                cursor.setPosition(block.position());
+                cursor.insertText(singleLine);
+            }
+        }
+    }
+
+    cursor.endEditBlock();
+
+    if(hasSelection && !doMultiLineStyleUncomment) {
+        cursor = textCursor();
+        if(!doMultiLineStyleComment)
+            start = startBlock.position();
+        int lastSelPos = anchorIsStart ? cursor.position() : cursor.anchor();
+        if(anchorIsStart) {
+            cursor.setPosition(start);
+            cursor.setPosition(lastSelPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(lastSelPos);
+            cursor.setPosition(start, QTextCursor::KeepAnchor);
+        }
+        setTextCursor(cursor);
+    }
+}
+
+bool CodeEditor::indentSelection() {
+    QTextCursor cursor = textCursor();
+
+    if(cursor.hasSelection()) { // Insert indents for a selected text
+        int pos = cursor.position();
+        int anchor = cursor.anchor();
+        int start = qMin(anchor, pos);
+        int end = qMax(anchor, pos);
+
+        QTextBlock startBlock = document()->findBlock(start);
+        QTextBlock endBlock = document()->findBlock(qMax(end - 1, 0)).next();
+
+        cursor.beginEditBlock();
+        for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+            cursor.setPosition(block.position());
+
+            QString text;
+            text.fill((m_SpaceTabs) ? ' ' : '\t', (m_SpaceTabs) ? m_SpaceIndent : 1);
+            cursor.insertText(text);
+        }
+        cursor.endEditBlock();
+
+        return true;
+    } else { // Indent at cursor position
+        if(m_SpaceTabs) {
+            int32_t indentRemain = m_SpaceIndent - (cursor.positionInBlock() % m_SpaceIndent);
+
+            QString text;
+            text.fill(' ', indentRemain);
+            cursor.insertText(text);
+
+            return true;
+        }
+    }
+    return false;
+}
+
 void CodeEditor::setTheme(const KSyntaxHighlighting::Theme &theme) {
     auto pal = qApp->palette();
-    if (theme.isValid()) {
+    if(theme.isValid()) {
         pal.setColor(QPalette::Base, theme.editorColor(KSyntaxHighlighting::Theme::BackgroundColor));
         pal.setColor(QPalette::Text, theme.textColor(KSyntaxHighlighting::Theme::Normal));
         pal.setColor(QPalette::Highlight, theme.editorColor(KSyntaxHighlighting::Theme::TextSelection));
@@ -373,12 +640,12 @@ void CodeEditor::setTheme(const KSyntaxHighlighting::Theme &theme) {
 int CodeEditor::sidebarWidth() const {
     int digits = 1;
     auto count = blockCount();
-    while (count >= 10) {
+    while(count >= 10) {
         ++digits;
         count /= 10;
     }
 
-    return 4 + fontMetrics().width(QLatin1Char('9')) * digits + fontMetrics().lineSpacing();
+    return 4 + fontMetrics().width(QLatin1Char('9')) * digits + 2 * fontMetrics().lineSpacing();
 }
 
 void CodeEditor::sidebarPaintEvent(QPaintEvent *event) {
@@ -443,7 +710,7 @@ void CodeEditor::updateSidebarGeometry() {
 }
 
 void CodeEditor::updateSidebarArea(const QRect& rect, int dy) {
-    if (dy) {
+    if(dy) {
         m_pSideBar->scroll(0, dy);
     } else {
         m_pSideBar->update(0, rect.y(), m_pSideBar->width(), rect.height());
@@ -615,6 +882,42 @@ void CodeEditor::doSetTextCursor(const QTextCursor &cursor) {
     QTextCursor c = cursor;
     c.setVisualNavigation(true);
     QPlainTextEdit::doSetTextCursor(c);
+}
+
+void CodeEditor::setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const {
+    auto context = getPaintContext();
+
+    int blockSelectionIndex = context.selections.size() - 1;
+
+    for(int i = 0; i < context.selections.size(); ++i) {
+        const QAbstractTextDocumentLayout::Selection &range = context.selections.at(i);
+        const int selStart = range.cursor.selectionStart() - position;
+        const int selEnd = range.cursor.selectionEnd() - position;
+        if(selStart < length && selEnd > 0 && selEnd > selStart) {
+            QTextLayout::FormatRange o;
+            o.start = selStart;
+            o.length = selEnd - selStart;
+            o.format = range.format;
+            if(m_BlockSelection && i == blockSelectionIndex) {
+                QString text = block.text();
+
+                o.start = columnPosition(text, qMin(m_ColumnPosition, m_ColumnAnchor));
+                o.length = columnPosition(text, qMax(m_ColumnPosition, m_ColumnAnchor)) - o.start;
+            }
+            selections.append(o);
+        } else if(!range.cursor.hasSelection() && range.format.hasProperty(QTextFormat::FullWidthSelection)
+                   && block.contains(range.cursor.position())) {
+            QTextLayout::FormatRange o;
+            QTextLine l = block.layout()->lineForTextPosition(range.cursor.position() - position);
+            o.start = l.textStart();
+            o.length = l.textLength();
+            if(o.start + o.length == length - 1) {
+                ++o.length; // include newline
+            }
+            o.format = range.format;
+            selections.append(o);
+        }
+    }
 }
 
 int32_t CodeEditor::firstNonIndent(const QString &text) const {

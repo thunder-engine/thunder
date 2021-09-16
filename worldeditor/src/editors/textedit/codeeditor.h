@@ -34,6 +34,8 @@ public:
     bool findString(const QString &string, bool reverse, bool casesens = true, bool words = false);
     void replaceSelected(const QString &string);
 
+    void reportIssue(int level, int line, int col, const QString &text);
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -41,6 +43,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *eevent) Q_DECL_OVERRIDE;
 
 private slots:
     void onApplySettings();
@@ -48,6 +51,9 @@ private slots:
 
 private:
     friend class CodeEditorSidebar;
+
+    void commentSelection();
+    bool indentSelection();
 
     void setTheme(const KSyntaxHighlighting::Theme &theme);
     int sidebarWidth() const;
@@ -69,6 +75,7 @@ private:
 
     void doSetTextCursor(const QTextCursor &cursor) Q_DECL_OVERRIDE;
     int32_t firstNonIndent(const QString &text) const;
+    void setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const;
 
     QString m_FileName;
 
