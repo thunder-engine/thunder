@@ -25,6 +25,8 @@ public:
 
     virtual bool isLight() const;
 
+    virtual void composeComponent();
+
 private:
     bool isRenderable() const override;
 

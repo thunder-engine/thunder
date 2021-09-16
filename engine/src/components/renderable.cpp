@@ -25,11 +25,21 @@ void Renderable::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox Renderable::bound() const {
     return AABBox();
 }
-
+/*!
+    \internal
+*/
 bool Renderable::isLight() const {
     return false;
 }
-
+/*!
+    \internal
+*/
 bool Renderable::isRenderable() const {
     return true;
+}
+/*!
+    \internal
+*/
+void Renderable::composeComponent() {
+
 }

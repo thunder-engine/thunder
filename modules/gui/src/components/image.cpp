@@ -199,6 +199,15 @@ void Image::boundChanged() {
 /*!
     \internal
 */
+void Image::composeComponent() {
+    Widget::composeComponent();
+
+    setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
+    setItem("Rectangle");
+}
+/*!
+    \internal
+*/
 void Image::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {

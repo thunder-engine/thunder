@@ -20,8 +20,6 @@
 
 #include "commandbuffer.h"
 
-#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
-
 class RenderSystemPrivate {
 public:
     RenderSystemPrivate() :
@@ -123,9 +121,9 @@ void RenderSystem::setAtlasPageSize(int32_t width, int32_t height) {
 }
 
 void RenderSystem::composeComponent(Component *component) const {
-    SpriteRender *sprite = dynamic_cast<SpriteRender *>(component);
-    if(sprite) {
-        sprite->setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
+    Renderable *renderable = dynamic_cast<Renderable *>(component);
+    if(renderable) {
+        renderable->composeComponent();
     }
 }
 #if defined(NEXT_SHARED)

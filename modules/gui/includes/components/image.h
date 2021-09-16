@@ -43,6 +43,8 @@ private:
 
     void boundChanged() override;
 
+    void composeComponent() override;
+
 private:
     ImagePrivate *p_ptr;
 };

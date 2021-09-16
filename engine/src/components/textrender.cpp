@@ -306,6 +306,14 @@ bool TextRender::event(Event *ev) {
 /*!
     \internal
 */
+void TextRender::composeComponent() {
+    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+    setText("Text");
+    setColor(Vector4(1.0f));
+}
+/*!
+    \internal
+*/
 AABBox TextRender::bound() const {
     if(p_ptr->m_pMesh) {
         return p_ptr->m_pMesh->bound() * actor()->transform()->worldTransform();

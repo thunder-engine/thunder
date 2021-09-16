@@ -10,6 +10,7 @@ namespace  {
     const char *BACKGROUND = "BackgroundGraphic";
     const char *PROGRESS = "ProgressGraphic";
     const char *IMAGE = "Image";
+    const char *RECTANGLE = "Rectangle";
     const char *PATH = ".embedded/ui.png";
 }
 
@@ -173,14 +174,15 @@ void ProgressBar::composeComponent() {
     {
         Image *image = Engine::objectCreate<Image>(IMAGE, actor());
         image->setSprite(Engine::loadResource<Sprite>(PATH));
-        image->setItem("Rectangle");
+        image->setItem(RECTANGLE);
         setBackgroundGraphic(image);
     }
     {
         Actor *progress = Engine::composeActor(IMAGE, "Progress", actor());
         Image *image = static_cast<Image *>(progress->component(IMAGE));
+        image->setParent(progress);
         image->setSprite(Engine::loadResource<Sprite>(PATH));
-        image->setItem("Rectangle");
+        image->setItem(RECTANGLE);
         setProgressGraphic(image);
 
         RectTransform *rect = dynamic_cast<RectTransform *>(progress->transform());

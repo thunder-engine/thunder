@@ -82,6 +82,9 @@ private:
     VariantMap saveUserData() const override;
 
     bool event(Event *ev) override;
+
+    void composeComponent() override;
+
 private:
    TextRenderPrivate *p_ptr;
 

@@ -34,6 +34,7 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    void composeComponent() override;
 private:
     MeshRenderPrivate *p_ptr;
 

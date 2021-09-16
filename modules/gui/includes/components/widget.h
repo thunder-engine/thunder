@@ -25,7 +25,7 @@ public:
 
     virtual void boundChanged();
 
-    virtual void composeComponent();
+    void composeComponent() override;
 
 protected:
     void update() override;

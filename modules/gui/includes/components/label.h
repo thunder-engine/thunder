@@ -59,6 +59,8 @@ private:
 
     void boundChanged() override;
 
+    void composeComponent() override;
+
 private:
     LabelPrivate *p_ptr;
 

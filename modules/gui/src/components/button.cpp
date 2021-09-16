@@ -24,11 +24,4 @@ void Button::composeComponent() {
     if(parent) {
         parent->setSize(Vector2(100.0f, 30.0f));
     }
-
-    Label *label = static_cast<Label *>(text->component("Label"));
-    label->setFontSize(14);
-    label->setColor(Vector4(0.20f, 0.20f, 0.20f, 1.0f));
-    label->setAlign(Alignment::Center | Alignment::Middle);
-    label->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
-    label->setText("Button");
 }

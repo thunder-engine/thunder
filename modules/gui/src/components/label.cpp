@@ -35,7 +35,7 @@ public:
         m_pMesh->makeDynamic();
         m_pMesh->setFlags(Mesh::Uv0);
 
-        Material *material = Engine::loadResource<Material>("DefaultFont.mtl");
+        Material *material = Engine::loadResource<Material>(".emdedded/DefaultFont.mtl");
         if(material) {
             m_pMaterial = material->createInstance();
             m_pMaterial->setVector4(COLOR, &m_Color);
@@ -259,4 +259,21 @@ bool Label::event(Event *ev) {
 void Label::boundChanged() {
     Widget::boundChanged();
     p_ptr->composeMesh();
+}
+/*!
+    \internal
+*/
+void Label::composeComponent() {
+    Widget::composeComponent();
+
+    setFontSize(14);
+    setColor(Vector4(0.20f, 0.20f, 0.20f, 1.0f));
+    setAlign(Alignment::Center | Alignment::Middle);
+    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+    setText("Text");
+
+    RectTransform *t = dynamic_cast<RectTransform *>(actor()->transform());
+    if(t) {
+        t->setSize(Vector2(100.0f, 30.0f));
+    }
 }

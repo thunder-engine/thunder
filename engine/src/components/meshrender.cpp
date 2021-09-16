@@ -138,3 +138,10 @@ VariantMap MeshRender::saveUserData() const {
     }
     return result;
 }
+/*!
+    \internal
+*/
+void MeshRender::composeComponent() {
+    setMesh(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
+    setMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.mtl"));
+}

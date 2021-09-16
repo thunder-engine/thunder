@@ -143,6 +143,7 @@ void Switch::composeComponent() {
     // Add knob
     Actor *knob = Engine::composeActor("Image", "Knob", actor());
     Image *image = static_cast<Image *>(knob->component("Image"));
+    image->setParent(knob);
     image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
     image->setItem("Rectangle");
     setKnobGraphic(image);
@@ -151,7 +152,7 @@ void Switch::composeComponent() {
     if(t && parent) {
         Vector2 size = parent->size();
         size.x *= 0.5f;
-        t->setSize(size);
         t->setMinAnchors(Vector2(0.0f));
+        t->setSize(size);
     }
 }

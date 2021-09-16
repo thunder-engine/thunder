@@ -16,6 +16,8 @@
 #define OVERRIDE "uni.texture0"
 #define COLOR "uni.color0"
 
+#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
+
 static hash<string> hash_str;
 
 class SpriteRenderPrivate : public Resource::IObserver {
@@ -447,4 +449,8 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         return true;
     }
     return false;
+}
+
+void SpriteRender::composeComponent() {
+    setMaterial(Engine::loadResource<Material>(DEFAULTSPRITE));
 }

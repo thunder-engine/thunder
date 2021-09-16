@@ -72,6 +72,8 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    void composeComponent() override;
+
 private:
     SpriteRenderPrivate *p_ptr;
 
