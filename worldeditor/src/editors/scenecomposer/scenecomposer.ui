@@ -511,11 +511,14 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionAbout"/>
+    <addaction name="separator"/>
+    <addaction name="actionThunder_Manual"/>
     <addaction name="actionAPI_Reference"/>
     <addaction name="separator"/>
+    <addaction name="actionThunder_Answers"/>
     <addaction name="actionReport_Issue"/>
     <addaction name="separator"/>
-    <addaction name="actionAbout"/>
     <addaction name="actionPlugin_Manager"/>
    </widget>
    <addaction name="menuFile"/>
@@ -785,6 +788,16 @@
   <action name="actionReport_Issue">
    <property name="text">
     <string>Report Issue...</string>
+   </property>
+  </action>
+  <action name="actionThunder_Answers">
+   <property name="text">
+    <string>Thunder Answers</string>
+   </property>
+  </action>
+  <action name="actionThunder_Manual">
+   <property name="text">
+    <string>Documentation</string>
    </property>
   </action>
  </widget>

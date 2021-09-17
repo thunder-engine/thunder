@@ -143,6 +143,8 @@ private slots:
     void on_menuFile_aboutToShow();
     void on_actionReport_Issue_triggered();
     void on_actionAPI_Reference_triggered();
+    void on_actionThunder_Answers_triggered();
+    void on_actionThunder_Manual_triggered();
 };
 
 #endif // WORLDBUILDER_H

@@ -970,3 +970,12 @@ void SceneComposer::on_actionReport_Issue_triggered() {
 void SceneComposer::on_actionAPI_Reference_triggered() {
     QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest/reference/index.html", QUrl::TolerantMode));
 }
+
+void SceneComposer::on_actionThunder_Answers_triggered() {
+    QDesktopServices::openUrl(QUrl("https://github.com/thunder-engine/thunder/discussions", QUrl::TolerantMode));
+}
+
+void SceneComposer::on_actionThunder_Manual_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest", QUrl::TolerantMode));
+}
