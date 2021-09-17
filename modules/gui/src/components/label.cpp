@@ -35,7 +35,7 @@ public:
         m_pMesh->makeDynamic();
         m_pMesh->setFlags(Mesh::Uv0);
 
-        Material *material = Engine::loadResource<Material>(".emdedded/DefaultFont.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
         if(material) {
             m_pMaterial = material->createInstance();
             m_pMaterial->setVector4(COLOR, &m_Color);
