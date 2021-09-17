@@ -91,9 +91,13 @@ Image *ProgressBar::backgroundGraphic() const {
     return p_ptr->m_backgroundGraphic;
 }
 void ProgressBar::setBackgroundGraphic(Image *image) {
-    p_ptr->m_backgroundGraphic = image;
-    if(p_ptr->m_backgroundGraphic) {
-        p_ptr->m_backgroundGraphic->setColor(p_ptr->m_backgroundColor);
+    if(p_ptr->m_backgroundGraphic != image) {
+        disconnect(p_ptr->m_backgroundGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        p_ptr->m_backgroundGraphic = image;
+        if(p_ptr->m_backgroundGraphic) {
+            connect(p_ptr->m_backgroundGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            p_ptr->m_backgroundGraphic->setColor(p_ptr->m_backgroundColor);
+        }
     }
 }
 
@@ -101,11 +105,15 @@ Image *ProgressBar::progressGraphic() const {
     return p_ptr->m_progressGraphic;
 }
 void ProgressBar::setProgressGraphic(Image *image) {
-    p_ptr->m_progressGraphic = image;
-    if(p_ptr->m_progressGraphic) {
-        p_ptr->m_progressGraphic->setColor(p_ptr->m_progressColor);
+    if(p_ptr->m_progressGraphic != image) {
+        disconnect(p_ptr->m_progressGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        p_ptr->m_progressGraphic = image;
+        if(p_ptr->m_progressGraphic) {
+            connect(p_ptr->m_progressGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            p_ptr->m_progressGraphic->setColor(p_ptr->m_progressColor);
 
-        p_ptr->recalcProgress();
+            p_ptr->recalcProgress();
+        }
     }
 }
 
@@ -167,7 +175,9 @@ VariantMap ProgressBar::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+*/
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
@@ -194,5 +204,20 @@ void ProgressBar::composeComponent() {
     RectTransform *parent = dynamic_cast<RectTransform *>(actor()->transform());
     if(parent) {
         parent->setSize(Vector2(100.0f, 20.0f));
+    }
+}
+/*!
+    \internal
+*/
+void ProgressBar::onReferenceDestroyed() {
+    Object *object = sender();
+    if(p_ptr->m_backgroundGraphic == object) {
+        p_ptr->m_backgroundGraphic = nullptr;
+        return;
+    }
+
+    if(p_ptr->m_progressGraphic == object) {
+        p_ptr->m_progressGraphic = nullptr;
+        return;
     }
 }

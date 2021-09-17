@@ -42,6 +42,8 @@ public:
     void clicked();
 
 protected:
+    void onReferenceDestroyed() override;
+
     void composeComponent() override;
 
     void loadUserData(const VariantMap &data) override;

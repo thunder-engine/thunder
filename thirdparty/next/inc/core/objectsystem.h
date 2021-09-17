@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <memory>
+#include <thread>
 
 #include "object.h"
 
@@ -25,6 +26,8 @@ public:
     static FactoryPair                 *metaFactory             (const string &uri);
 
     void                                processEvents           () override;
+
+    inline bool                         compareTreads           (ObjectSystem *system) const;
 
 public:
     template<typename T>
@@ -80,6 +83,9 @@ protected:
     Object::ObjectList                  m_ObjectList;
 
     Object                             *m_SuspendObject;
+
+
+    thread::id                          m_threadId;
 
 };
 

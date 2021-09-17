@@ -52,6 +52,8 @@ private:
 
     void composeComponent() override;
 
+    void onReferenceDestroyed() override;
+
 private:
     ProgressBarPrivate *p_ptr;
 

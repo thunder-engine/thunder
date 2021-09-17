@@ -39,6 +39,8 @@ private:
 
     void composeComponent() override;
 
+    void onReferenceDestroyed();
+
 private:
     SwitchPrivate *p_ptr;
 

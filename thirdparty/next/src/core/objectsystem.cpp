@@ -90,6 +90,8 @@ ObjectSystem::~ObjectSystem() {
 void ObjectSystem::processEvents() {
     PROFILE_FUNCTION();
 
+    m_threadId = this_thread::get_id();
+
     Object::processEvents();
 
     auto it = m_ObjectList.begin();
@@ -104,6 +106,12 @@ void ObjectSystem::processEvents() {
             ++it;
         }
     }
+}
+/*!
+    Returns true in case of other \a system execues in the same thread with current system; otherwise returns false.
+*/
+bool ObjectSystem::compareTreads(ObjectSystem *system) const {
+    return m_threadId == system->m_threadId;
 }
 /*!
     Returns new instance of type represented in \a uri and \a name as child of \a parent object.

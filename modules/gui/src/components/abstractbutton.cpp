@@ -87,9 +87,22 @@ Image *AbstractButton::targetGraphic() const {
 }
 
 void AbstractButton::setTargetGraphic(Image *image) {
-    p_ptr->m_targetGraphic = image;
-    if(p_ptr->m_targetGraphic) {
-        p_ptr->m_targetGraphic->setColor(p_ptr->m_normalColor);
+    if(p_ptr->m_targetGraphic != image) {
+        disconnect(p_ptr->m_targetGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        p_ptr->m_targetGraphic = image;
+        if(p_ptr->m_targetGraphic) {
+            connect(p_ptr->m_targetGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            p_ptr->m_targetGraphic->setColor(p_ptr->m_normalColor);
+        }
+    }
+}
+/*!
+    \internal
+*/
+void AbstractButton::onReferenceDestroyed() {
+    Object *object = sender();
+    if(p_ptr->m_targetGraphic == object) {
+        p_ptr->m_targetGraphic = nullptr;
     }
 }
 /*!

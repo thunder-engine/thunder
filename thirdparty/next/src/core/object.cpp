@@ -787,8 +787,12 @@ void Object::emitSignal(const char *signal, const Variant &args) {
                 if(method.type() == MetaMethod::Signal) {
                     link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
                 } else {
-                    // Queued Connection
-                    link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
+                    if(p_ptr->m_pSystem->compareTreads(link->receiver->p_ptr->m_pSystem)) { // Direct call
+                        MethodCallEvent e(link->method, link->sender, args);
+                        link->receiver->methodCallEvent(&e);
+                    } else { // Queued Connection
+                        link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
+                    }
                     link = nullptr;
                 }
             }
@@ -806,6 +810,7 @@ void Object::postEvent(Event *event) {
 
 void Object::processEvents() {
     PROFILE_FUNCTION();
+
     while(!p_ptr->m_EventQueue.empty()) {
         Event *e = nullptr;
         {

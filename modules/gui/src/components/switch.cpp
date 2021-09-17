@@ -54,9 +54,13 @@ Image *Switch::knobGraphic() const {
 }
 
 void Switch::setKnobGraphic(Image *image) {
-    p_ptr->m_knobGraphic = image;
-    if(p_ptr->m_knobGraphic) {
-        p_ptr->m_knobGraphic->setColor(p_ptr->m_knobColor);
+    if(p_ptr->m_knobGraphic != image) {
+        disconnect(p_ptr->m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        p_ptr->m_knobGraphic = image;
+        if(p_ptr->m_knobGraphic) {
+            connect(p_ptr->m_knobGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            p_ptr->m_knobGraphic->setColor(p_ptr->m_knobColor);
+        }
     }
 }
 
@@ -132,7 +136,9 @@ VariantMap Switch::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+*/
 void Switch::composeComponent() {
     AbstractButton::composeComponent();
 
@@ -154,5 +160,16 @@ void Switch::composeComponent() {
         size.x *= 0.5f;
         t->setMinAnchors(Vector2(0.0f));
         t->setSize(size);
+    }
+}
+/*!
+    \internal
+*/
+void Switch::onReferenceDestroyed() {
+    AbstractButton::onReferenceDestroyed();
+
+    Object *object = sender();
+    if(p_ptr->m_knobGraphic == object) {
+        p_ptr->m_knobGraphic = nullptr;
     }
 }
