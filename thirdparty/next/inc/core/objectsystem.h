@@ -27,7 +27,7 @@ public:
 
     void                                processEvents           () override;
 
-    inline bool                         compareTreads           (ObjectSystem *system) const;
+    bool                                compareTreads           (ObjectSystem *system) const;
 
 public:
     template<typename T>
