@@ -26,7 +26,7 @@
     <message>
         <location line="+1"/>
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
-        <translation>AboutDialogCopyright 2007-%1 von %2. Alle Rechte vorbehalten.</translation>
+        <translation>Copyright 2007-%1 von %2. Alle Rechte vorbehalten.</translation>
     </message>
 </context>
 <context>
