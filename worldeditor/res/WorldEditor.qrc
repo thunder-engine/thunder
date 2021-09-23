@@ -110,6 +110,9 @@
         <file alias="en.qm">l10n/en.qm</file>
         <file alias="fr.qm">l10n/fr.qm</file>
         <file alias="ru.qm">l10n/ru.qm</file>
+        <file alias="de.qm">l10n/de.qm</file>
+        <file alias="zh_Hans.qm">l10n/zh_Hans.qm</file>
+        <file alias="zh_Hant.qm">l10n/zh_Hant.qm</file>
     </qresource>
     <qresource prefix="/Themes">
         <file>themes/thunder-dark.theme</file>
