@@ -26,7 +26,7 @@
     <message>
         <location line="+1"/>
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
-        <translation>AboutDialogCopyright 2007-%1 by %2. All rights reserved.</translation>
+        <translation>Copyright 2007-%1 by %2. All rights reserved.</translation>
     </message>
 </context>
 <context>
@@ -267,22 +267,22 @@
     <message>
         <location filename="../worldeditor/src/controllers/editorpipeline.cpp" line="+237"/>
         <source>Post Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>Post Processing</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Lighting Features</source>
-        <translation type="unfinished"></translation>
+        <translation>Lighting Features</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Buffer Visualization</source>
-        <translation type="unfinished">Buffer Visualization</translation>
+        <translation>Buffer Visualization</translation>
     </message>
     <message>
         <location line="+196"/>
         <source>Final Buffer</source>
-        <translation type="unfinished">Final Buffer</translation>
+        <translation>Final Buffer</translation>
     </message>
 </context>
 <context>
@@ -534,22 +534,22 @@
     <message>
         <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+123"/>
         <source>The effect has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>The effect has been modified.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Do you want to save your changes?</translation>
+        <translation>Do you want to save your changes?</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Do you want to delete emitter?</source>
-        <translation type="unfinished"></translation>
+        <translation>Do you want to delete emitter?</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>This type of modifier already assigned.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">This type of modifier already assigned.</translation>
     </message>
 </context>
 <context>
@@ -654,12 +654,12 @@
     <message>
         <location line="+11"/>
         <source>Delete Actors</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete Actors</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Remove Component</source>
-        <translation type="unfinished">Remove Component</translation>
+        <translation>Remove Component</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -712,7 +712,7 @@
     <message>
         <location line="+171"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -921,18 +921,18 @@
     <message>
         <location line="+189"/>
         <source>The import settings has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">The import settings has been modified.</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+66"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Do you want to save your changes?</translation>
+        <translation>Do you want to save your changes?</translation>
     </message>
     <message>
         <location line="-1"/>
         <source>The map has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>The map has been modified.</translation>
     </message>
     <message>
         <location line="+64"/>
