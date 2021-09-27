@@ -87,5 +87,5 @@ QString ScaleTool::toolTip() const {
 }
 
 QString ScaleTool::shortcut() const {
-    return "S";
+    return "Shift+S";
 }

@@ -54,5 +54,5 @@ QString MoveTool::toolTip() const {
 }
 
 QString MoveTool::shortcut() const {
-    return "T";
+    return "Shift+T";
 }
