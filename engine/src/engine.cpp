@@ -70,6 +70,7 @@ public:
     EnginePrivate() :
             m_pScene(nullptr) {
 
+        locale::global(locale("C"));
     }
 
     ~EnginePrivate() {
