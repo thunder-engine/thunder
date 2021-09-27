@@ -11,16 +11,12 @@ public:
 
     ~Angel();
 
-    const char *description() const;
+    const char *metaInfo() const override;
 
-    const char *version() const;
-
-    int types() const;
-
-    System *system();
-
-    IConverter *converter();
-
+    System *system(const char *) override;
+#ifdef NEXT_SHARED
+    IConverter *converter(const char *) override;
+#endif
 protected:
     Engine *m_pEngine;
 

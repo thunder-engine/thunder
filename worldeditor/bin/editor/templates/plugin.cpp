@@ -6,6 +6,16 @@
 //+{Includes}
 //-{Includes}
 
+static const char *meta = \
+"{"
+"   \"version\": \"${Project_Version}\","
+"   \"description\": \"${Project_Name}\","
+"   \"extensions\": ["
+        //+{ComponentNames}
+        //-{ComponentNames}
+"   ]"
+"}";
+
 class Module${Project_Name} : public Module {
 public:
     Module${Project_Name}(Engine *engine) :
@@ -19,23 +29,8 @@ public:
         //-{UnregisterComponents}
     }
 
-    const char *description() const override {
-        return "${Project_Name}";
-    }
-
-    const char *version() const override {
-        return "${Project_Version}";
-    }
-
-    int types() const override {
-        return EXTENSION;
-    }
-
-    StringList components() const override {
-        StringList result;
-        //+{ComponentNames}
-        //-{ComponentNames}
-        return result;
+    const char *metaInfo() const override {
+        return meta;
     }
 
     Engine *m_pEngine;

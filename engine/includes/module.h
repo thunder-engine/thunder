@@ -14,31 +14,20 @@ class IAssetEditor;
     #define MODULE_EXPORT
 #endif
 
-
 class NEXT_LIBRARY_EXPORT Module {
-public:
-    enum PluginTypes {
-        SYSTEM    =(1<<0),
-        EXTENSION =(1<<1),
-        CONVERTER =(1<<2),
-        EDITOR    =(1<<3)
-    };
-
 public:
     Module() {}
     virtual ~Module() {}
 
-    virtual const char *description() const = 0;
-    virtual const char *version() const = 0;
-    virtual int types() const = 0;
+    virtual System *system(const char *name) { A_UNUSED(name); return nullptr; }
 
-    virtual System *system() { return nullptr; }
+    virtual const char *metaInfo() const = 0;
 
-    virtual IConverter *converter() { return nullptr; }
+#ifdef NEXT_SHARED
+    virtual IConverter *converter(const char *name) { A_UNUSED(name); return nullptr; }
 
-    virtual IAssetEditor *assetEditor() { return nullptr; }
-
-    virtual StringList components() const { return StringList(); }
+    virtual IAssetEditor *assetEditor(const char *name) { A_UNUSED(name); return nullptr; }
+#endif
 };
 
 #endif // MODULE_H

@@ -79,7 +79,11 @@ Project {
             "freetype",
             "rendergl",
             "angel",
-            "angelscript"
+            "angelscript",
+            "bullet",
+            "bullet3"
+            //+{LibrariesList}
+            //-{LibrariesList}
         ]
 
         Properties {
@@ -99,8 +103,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS[0] === "windows"
-            cpp.dynamicLibraries: [ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32"
-            ]
+            cpp.dynamicLibraries: [ "Shell32", "User32", "Gdi32", "Advapi32", "opengl32" ]
         }
         Properties {
             condition: qbs.targetOS[0] === "linux"

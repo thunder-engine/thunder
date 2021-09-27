@@ -57,6 +57,8 @@ static const char *gVersion("version");
 static const char *gContent("content");
 static const char *gSettings("settings");
 
+static const char *gSystems("systems");
+
 static const char *gEntry(".entry");
 static const char *gCompany(".company");
 static const char *gProject(".project");
@@ -579,8 +581,9 @@ void Engine::setGameMode(bool flag) {
 */
 void Engine::addModule(Module *module) {
     PROFILE_FUNCTION();
-    if(module->types() & Module::SYSTEM) {
-        System *system = module->system();
+    VariantMap metaInfo = Json::load(module->metaInfo()).toMap();
+    for(auto &it : metaInfo[gSystems].toList()) {
+        System *system = module->system(it.toString().c_str());
         if(system->threadPolicy() == System::Pool) {
             EnginePrivate::m_Pool.push_back(system);
         } else {

@@ -32,17 +32,6 @@
 */
 
 /*!
-    \fn int Module::types() const
-
-    Returns a set of plugin types which module supports.
-    To return more then one type plise use syntax like this:
-
-    \code
-    return SYSTEM | EXTENSION | CONVERTER;
-    \endcode
-*/
-
-/*!
     \fn System *Module::system()
 
     Returns a module's System if present; otherwise returns nullptr.
