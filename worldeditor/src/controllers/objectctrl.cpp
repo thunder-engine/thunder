@@ -366,14 +366,14 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         foreach(QString str, list) {
             if(!str.isEmpty()) {
                 QFileInfo info(str);
-                Actor *actor = mgr->createActor(str);
-                if(actor) {
-                    actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
-                    m_DragObjects.push_back(actor);
+                QString type = mgr->assetTypeName(info);
+                if(type == "Map") {
+                    m_DragMap = str;
                 } else {
-                    QString type = mgr->assetTypeName(info);
-                    if(type == "Map") {
-                        m_DragMap = str;
+                    Actor *actor = mgr->createActor(str);
+                    if(actor) {
+                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_pMap));
+                        m_DragObjects.push_back(actor);
                     }
                 }
             }
