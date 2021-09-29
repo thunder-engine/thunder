@@ -14,6 +14,8 @@
 #include <QPainter>
 #include <QPalette>
 #include <QAbstractItemModel>
+#include <QClipboard>
+#include <QMimeData>
 
 #include <QTextBlock>
 
@@ -265,13 +267,13 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
 
     if(m_blockSelection) {
         if(event == QKeySequence::Copy) {
-            qDebug() << copyBlockSelection();
+            QApplication::clipboard()->setText(copyBlockSelection());
 
             event->accept();
             return;
         } else if(event == QKeySequence::Cut) {
-            //copyBLockSelection();
-            //removeBlockSelection();
+            QApplication::clipboard()->setText(copyBlockSelection());
+            removeBlockSelection();
 
             event->accept();
             return;
@@ -283,15 +285,13 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
                     --m_columnPosition;
                 }
             }
-            //removeBlockSelection();
+            removeBlockSelection();
 
             event->accept();
             return;
         } else if(event == QKeySequence::Paste) {
-            //removeBlockSelection();
-
-            event->accept();
-            return;
+            removeBlockSelection();
+            //paste();
         }
     }
 
@@ -305,10 +305,13 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
             }
         } break;
         case Qt::Key_Tab: {
-            if(indentSelection()) {
-                event->accept();
-                return;
+            if(m_blockSelection && qMin(m_columnPosition, m_columnAnchor) != qMax(m_columnPosition, m_columnAnchor)) {
+                removeBlockSelection();
+            } else {
+                indentSelection();
             }
+            event->accept();
+            return;
         } break;
         case Qt::Key_Insert: {
             if(event->modifiers() == Qt::NoModifier) {
@@ -321,11 +324,12 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
     }
 
     if(m_blockSelection) {
-        const QString string = event->text();
-        //insertIntoBlockSelection(string);
+        const QString text = event->text();
+        if(!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
+            insertIntoBlockSelection(text);
 
-        event->accept();
-        return;
+            return;
+        }
     }
 
     QPlainTextEdit::keyPressEvent(event);
@@ -348,7 +352,7 @@ void CodeEditor::mousePressEvent(QMouseEvent *event) {
                 m_blockPosition = block;
                 m_columnPosition = col;
 
-                doSetTextCursor(cursor());
+                doSetTextCursor(cursor(), true);
                 viewport()->update();
             } else {
                 enableBlockSelection(block, col, block, col);
@@ -381,7 +385,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent *event) {
                 m_blockPosition = cur.blockNumber();
                 m_columnPosition = col;
 
-                doSetTextCursor(cursor());
+                doSetTextCursor(cursor(), true);
                 viewport()->update();
             } else {
                 if(textCursor().hasSelection()) {
@@ -648,41 +652,107 @@ void CodeEditor::commentSelection() {
     }
 }
 
-bool CodeEditor::indentSelection() {
-    QTextCursor cursor = textCursor();
+void CodeEditor::indentSelection() {
+    QTextCursor cur = textCursor();
 
-    if(cursor.hasSelection()) { // Insert indents for a selected text
-        int pos = cursor.position();
-        int anchor = cursor.anchor();
-        int start = qMin(anchor, pos);
-        int end = qMax(anchor, pos);
+    cur.beginEditBlock();
 
-        QTextBlock startBlock = document()->findBlock(start);
-        QTextBlock endBlock = document()->findBlock(qMax(end - 1, 0)).next();
+    int pos = cur.position();
 
-        cursor.beginEditBlock();
+    int col = m_blockSelection ? m_columnPosition : column(cur.block().text(), cur.positionInBlock());
+
+    int anchor = cur.anchor();
+    int start = qMin(anchor, pos);
+    int end = qMax(anchor, pos);
+
+    QTextBlock startBlock = document()->findBlock(start);
+    QTextBlock endBlock = document()->findBlock(qMax(end - 1, 0)).next();
+
+    const bool cursorAtBlockStart = (textCursor().position() == startBlock.position());
+    const bool anchorAtBlockStart = (textCursor().anchor() == startBlock.position());
+    const bool oneLinePartial = (startBlock.next() == endBlock)
+                              && (start > startBlock.position() || end < endBlock.position() - 1);
+
+    if (startBlock == endBlock) {
+        endBlock = endBlock.next();
+    }
+    if (cur.hasSelection() && !m_blockSelection && !oneLinePartial) {
+        for (QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+            const QString text = block.text();
+            int indentPosition = lineIndentPosition(text);
+
+            int targetColumn = indentedColumn(column(text, indentPosition), true);
+            cur.setPosition(block.position() + indentPosition);
+            cur.insertText(indentationString(0, targetColumn, 0, block));
+            cur.setPosition(block.position());
+            cur.setPosition(block.position() + indentPosition, QTextCursor::KeepAnchor);
+            cur.removeSelectedText();
+        }
+        if (cursorAtBlockStart) {
+            cur = textCursor();
+            cur.setPosition(startBlock.position(), QTextCursor::KeepAnchor);
+        } else if (anchorAtBlockStart) {
+            cur = textCursor();
+            cur.setPosition(startBlock.position(), QTextCursor::MoveAnchor);
+            cur.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+        }
+    } else if (cur.hasSelection() && !m_blockSelection && oneLinePartial) {
+        cur.removeSelectedText();
+    } else {
+        for (QTextBlock block = startBlock; block != endBlock; block = block.next()) {
+            QString text = block.text();
+
+            int blockColumn = column(text, text.size());
+            if (blockColumn < col) {
+                cur.setPosition(block.position() + text.size());
+                cur.insertText(indentationString(blockColumn, col, 0, block));
+                text = block.text();
+            }
+
+            int indentPosition = columnPosition(text, col, 0);
+            int spaces = spacesLeftFromPosition(text, indentPosition);
+            int startColumn = column(text, indentPosition - spaces);
+            int targetColumn = indentedColumn(column(text, indentPosition), true);
+            cur.setPosition(block.position() + indentPosition);
+            cur.setPosition(block.position() + indentPosition - spaces, QTextCursor::KeepAnchor);
+            cur.removeSelectedText();
+            cur.insertText(indentationString(startColumn, targetColumn, 0, block));
+        }
+
+        if(m_blockSelection) {
+            end = cur.position();
+            int offset = column(cur.block().text(), cur.positionInBlock()) - col;
+
+            m_columnAnchor += offset;
+            m_columnPosition += offset;
+
+            cur.setPosition(start);
+            cur.setPosition(end, QTextCursor::KeepAnchor);
+        }
+    }
+
+    cur.endEditBlock();
+
+    doSetTextCursor(cur, true);
+/*
+    if(cur.hasSelection()) { // Insert indents for a selected text
         for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
-            cursor.setPosition(block.position());
+            cur.setPosition(block.position());
 
             QString text;
             text.fill((m_spaceTabs) ? ' ' : '\t', (m_spaceTabs) ? m_spaceIndent : 1);
-            cursor.insertText(text);
+            cur.insertText(text);
         }
-        cursor.endEditBlock();
-
-        return true;
     } else { // Indent at cursor position
         if(m_spaceTabs) {
-            int32_t indentRemain = m_spaceIndent - (cursor.positionInBlock() % m_spaceIndent);
+            int32_t indentRemain = m_spaceIndent - (cur.positionInBlock() % m_spaceIndent);
 
             QString text;
             text.fill(' ', indentRemain);
-            cursor.insertText(text);
-
-            return true;
+            cur.insertText(text);
         }
     }
-    return false;
+*/
 }
 
 void CodeEditor::setTheme(const KSyntaxHighlighting::Theme &theme) {
@@ -874,15 +944,55 @@ int32_t CodeEditor::columnPosition(const QString &text, int column, int *offset)
         if(result < textSize && text.at(result) == QLatin1Char('\t')) {
             current -= (current % m_spaceIndent) + m_spaceIndent;
         } else {
-            current++;
+            ++current;
         }
-        result++;
+        ++result;
     }
 
     if(offset) {
         *offset = column - current;
     }
     return result;
+}
+
+QString CodeEditor::indentationString(int startColumn, int targetColumn, int padding, const QTextBlock &block) const {
+    targetColumn = qMax(startColumn, targetColumn);
+    return QString(targetColumn - startColumn, QLatin1Char(' '));
+}
+
+int CodeEditor::lineIndentPosition(const QString &text) const {
+    int i = 0;
+    while(i < text.size()) {
+        if(!text.at(i).isSpace()) {
+            break;
+        }
+        ++i;
+    }
+    int col = column(text, i);
+    return i - (col % m_spaceIndent);
+}
+
+int CodeEditor::spacesLeftFromPosition(const QString &text, int position) const {
+    if(position > text.size()) {
+        return 0;
+    }
+    int i = position;
+    while(i > 0) {
+        if(!text.at(i-1).isSpace()) {
+            break;
+        }
+        --i;
+    }
+    return position - i;
+}
+
+int CodeEditor::indentedColumn(int column, bool doIndent) const {
+    int aligned = (column / m_spaceIndent) * m_spaceIndent;
+    if (doIndent)
+        return aligned + m_spaceIndent;
+    if (aligned < column)
+        return aligned;
+    return qMax(0, aligned - m_spaceIndent);
 }
 
 QTextCursor CodeEditor::cursor() const {
@@ -928,7 +1038,7 @@ void CodeEditor::enableBlockSelection(int32_t positionBlock, int32_t positionCol
     m_columnAnchor = anchorColumn;
 
     m_blockSelection = true;
-    doSetTextCursor(cursor()); // true
+    doSetTextCursor(cursor(), true);
     viewport()->update();
 }
 
@@ -944,10 +1054,18 @@ void CodeEditor::disableBlockSelection() {
     viewport()->update();
 }
 
-void CodeEditor::doSetTextCursor(const QTextCursor &cursor) {
+void CodeEditor::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection) {
+    bool selectionChange = cursor.hasSelection() || textCursor().hasSelection();
+    if(!keepBlockSelection && m_blockSelection) {
+        m_blockSelection = false;
+    }
     QTextCursor c = cursor;
     c.setVisualNavigation(true);
     QPlainTextEdit::doSetTextCursor(c);
+}
+
+void CodeEditor::doSetTextCursor(const QTextCursor &cursor) {
+    doSetTextCursor(cursor, false);
 }
 
 void CodeEditor::setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const {
@@ -1036,7 +1154,7 @@ void CodeEditor::paintBlockSelection(const QTextBlock &block, QPainter &painter,
     if(m_columnAnchor < m_columnPosition) {
         blockRect.setLeft(rect.right());
     }
-    blockRect.setWidth(cursorWidth());
+    blockRect.setWidth(cursorw);
 }
 
 QString CodeEditor::copyBlockSelection() {
@@ -1086,7 +1204,7 @@ QString CodeEditor::copyBlockSelection() {
 }
 
 void CodeEditor::removeBlockSelection() {
-    QTextCursor cursor = textCursor();
+    QTextCursor cur = textCursor();
 
     const int firstColumn = qMin(m_columnPosition, m_columnAnchor);
     const int lastColumn = qMax(m_columnPosition, m_columnAnchor);
@@ -1096,9 +1214,9 @@ void CodeEditor::removeBlockSelection() {
     const int positionBlock = m_blockPosition;
     const int anchorBlock = m_blockAnchor;
 
-    int cursorPosition = cursor.selectionStart();
-    cursor.clearSelection();
-    cursor.beginEditBlock();
+    int cursorPosition = cur.selectionStart();
+    cur.clearSelection();
+    cur.beginEditBlock();
 
     QTextBlock block = document()->findBlockByNumber(qMin(m_blockPosition, m_blockAnchor));
     const QTextBlock &lastBlock = document()->findBlockByNumber(qMax(m_blockPosition, m_blockAnchor));
@@ -1107,10 +1225,10 @@ void CodeEditor::removeBlockSelection() {
         const int startPos = columnPosition(block.text(), firstColumn, &startOffset);
         // removing stuff doesn't make sense if the cursor is behind the code
         if(startPos < block.length() - 1 || startOffset < 0) {
-            cursor.setPosition(block.position());
-            setCursorToColumn(cursor, firstColumn);
-            setCursorToColumn(cursor, lastColumn, QTextCursor::KeepAnchor);
-            cursor.removeSelectedText();
+            cur.setPosition(block.position());
+            setCursorToColumn(cur, firstColumn);
+            setCursorToColumn(cur, lastColumn, QTextCursor::KeepAnchor);
+            cur.removeSelectedText();
         }
         if(block == lastBlock) {
             break;
@@ -1118,12 +1236,100 @@ void CodeEditor::removeBlockSelection() {
         block = block.next();
     }
 
-    cursor.setPosition(cursorPosition);
-    cursor.endEditBlock();
-    m_blockSelection.fromPostition(positionBlock, firstColumn, anchorBlock, firstColumn);
-    cursor = m_blockSelection.selection(m_document.data());
+    cur.setPosition(cursorPosition);
+    cur.endEditBlock();
+
+    m_blockPosition = positionBlock;
+    m_columnPosition = firstColumn;
+
+    m_blockAnchor = anchorBlock;
+    m_columnAnchor = firstColumn;
+
     bool hasSelection = !(m_blockPosition == m_blockAnchor && m_columnPosition == m_columnAnchor);
-    doSetTextCursor(cursor); // hasSelection
+    doSetTextCursor(cursor(), hasSelection);
+}
+
+void CodeEditor::insertIntoBlockSelection(const QString &text) {
+    QTextCursor cur = textCursor();
+    cur.beginEditBlock();
+
+    if(overwriteMode() && qMax(m_columnPosition, m_columnAnchor) == m_columnPosition) {
+        ++m_columnPosition;
+    }
+
+    if(m_columnPosition != m_columnAnchor) {
+        removeBlockSelection();
+        if(!m_blockSelection) {
+            insertPlainText(text);
+            cur.endEditBlock();
+            return;
+        }
+    }
+
+    if(text.isEmpty()) {
+        cur.endEditBlock();
+        return;
+    }
+
+    int positionBlock = m_blockPosition;
+    int anchorBlock = m_blockAnchor;
+    int column = m_columnPosition;
+
+    const QTextBlock &firstBlock = document()->findBlockByNumber(qMin(m_blockPosition, m_blockAnchor));
+    QTextBlock block = document()->findBlockByNumber(qMax(m_blockPosition, m_blockAnchor));
+
+    const int selectionLineCount = qMax(m_blockPosition, m_blockAnchor) - qMin(m_blockPosition, m_blockAnchor);
+    const int textNewLineCount = text.count(QLatin1Char('\n'));
+    QStringList textLines = text.split(QLatin1Char('\n'));
+
+    int textLength = 0;
+    const QStringList::const_iterator endLine = textLines.constEnd();
+    for(QStringList::const_iterator textLine = textLines.constBegin(); textLine != endLine; ++textLine) {
+        textLength += qMax(0, columnPosition(*textLine, column) - textLength);
+    }
+    for(QStringList::iterator textLine = textLines.begin(); textLine != textLines.end(); ++textLine) {
+        textLine->append(QString(qMax(0, textLength - columnPosition(*textLine, column)), QLatin1Char(' ')));
+    }
+
+    while(true) {
+        cur.setPosition(block.position());
+        if(selectionLineCount == textNewLineCount) {
+            setCursorToColumn(cur, column);
+            cur.insertText(textLines.at(block.blockNumber() - qMin(m_blockPosition, m_blockAnchor)));
+        } else {
+            QStringList::const_iterator textLine = textLines.constBegin();
+            while(true) {
+                setCursorToColumn(cur, column);
+                cur.insertText(*textLine);
+                ++textLine;
+                if(textLine == endLine) {
+                    break;
+                }
+                cur.movePosition(QTextCursor::EndOfBlock);
+                cur.insertText(QLatin1String("\n"));
+                if(qMax(anchorBlock, positionBlock) == anchorBlock) {
+                    ++anchorBlock;
+                } else {
+                    ++positionBlock;
+                }
+            }
+        }
+        if(block == firstBlock) {
+            break;
+        }
+        block = block.previous();
+    }
+    cur.endEditBlock();
+
+    column += textLength;
+
+    m_blockPosition = positionBlock;
+    m_columnPosition = column;
+
+    m_blockAnchor = anchorBlock;
+    m_columnAnchor = column;
+
+    doSetTextCursor(cursor(), true);
 }
 
 int32_t CodeEditor::firstNonIndent(const QString &text) const {
@@ -1135,6 +1341,36 @@ int32_t CodeEditor::firstNonIndent(const QString &text) const {
         ++i;
     }
     return i;
+}
+
+void CodeEditor::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor::MoveMode moveMode) {
+    int offset = 0;
+    const int cursorPosition = cursor.position();
+    const int pos = columnPosition(cursor.block().text(), column, &offset);
+    cursor.setPosition(cursor.block().position() + pos, offset == 0 ? moveMode : QTextCursor::MoveAnchor);
+    if(offset == 0) {
+        return;
+    }
+    if(offset < 0) {
+        cursor.setPosition(cursor.block().position() + pos - 1, QTextCursor::KeepAnchor);
+        cursor.insertText(indentationString(
+                              CodeEditor::column(cursor.block().text(), pos - 1),
+                              CodeEditor::column(cursor.block().text(), pos), 0, cursor.block()));
+    } else {
+        cursor.insertText(indentationString(CodeEditor::column(cursor.block().text(), pos), column, 0, cursor.block()));
+    }
+    if(moveMode == QTextCursor::KeepAnchor) {
+        cursor.setPosition(cursorPosition);
+    }
+    cursor.setPosition(cursor.block().position() + columnPosition(cursor.block().text(), column), moveMode);
+}
+
+void CodeEditor::insertFromMimeData(const QMimeData *source) {
+    if(!isReadOnly() && m_blockSelection) {
+        insertIntoBlockSelection(source->text());
+        return;
+    }
+    QPlainTextEdit::insertFromMimeData(source);
 }
 
 void CodeEditor::onApplySettings() {

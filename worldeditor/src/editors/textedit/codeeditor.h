@@ -67,6 +67,11 @@ private:
 
     int32_t column(const QString &text, int32_t pos) const;
     int32_t columnPosition(const QString &text, int column, int *offset = nullptr) const;
+    QString indentationString(int startColumn, int targetColumn, int padding, const QTextBlock &block) const;
+    int lineIndentPosition(const QString &text) const;
+    int spacesLeftFromPosition(const QString &text, int position) const;
+    int indentedColumn(int column, bool doIndent) const;
+
     QTextCursor cursor() const;
     void enableBlockSelection(int32_t positionBlock, int32_t positionColumn, int32_t anchorBlock, int32_t anchorColumn);
     void disableBlockSelection();
@@ -75,13 +80,19 @@ private:
     void paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const;
 
     void commentSelection();
-    bool indentSelection();
+    void indentSelection();
 
     QString copyBlockSelection();
     void removeBlockSelection();
+    void insertIntoBlockSelection(const QString &text);
 
+    void doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection);
     void doSetTextCursor(const QTextCursor &cursor) Q_DECL_OVERRIDE;
     int32_t firstNonIndent(const QString &text) const;
+
+    void setCursorToColumn(QTextCursor &cursor, int column, QTextCursor::MoveMode moveMode = QTextCursor::MoveAnchor);
+
+    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
     QString m_fileName;
 
