@@ -10,16 +10,12 @@ public:
     Bullet(Engine *engine);
     ~Bullet();
 
-    const char *description() const;
+    const char *metaInfo() const override;
 
-    const char *version() const;
-
-    int types() const;
-
-    System *system();
-
-    IConverter *converter();
-
+    System *system(const char *name) override;
+#ifdef NEXT_SHARED
+    IConverter *converter(const char *name) override;
+#endif
 protected:
     Engine *m_pEngine;
 

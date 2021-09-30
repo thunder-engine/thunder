@@ -10,6 +10,18 @@ Module *moduleCreate(Engine *engine) {
 }
 #endif
 
+static const char *meta = \
+"{"
+"   \"version\": \"1.0\","
+"   \"description\": \"Media Module\","
+"   \"systems\": ["
+"       \"MediaSystem\""
+"   ],"
+"   \"converters\": ["
+"       \"AudioConverter\""
+"   ]"
+"}";
+
 Media::Media(Engine *engine) :
         m_pEngine(engine),
         m_pSystem(new MediaSystem()){
@@ -19,29 +31,15 @@ Media::~Media() {
     delete m_pSystem;
 }
 
-const char *Media::description() const {
-    return "Media Module";
+const char *Media::metaInfo() const {
+    return meta;
 }
 
-const char *Media::version() const {
-    return "1.0";
-}
-
-int Media::types() const {
-    int result = SYSTEM;
-#ifdef NEXT_SHARED
-    result  |= CONVERTER;
-#endif
-    return result;
-}
-
-System *Media::system() {
+System *Media::system(const char *) {
     return m_pSystem;
 }
-
-IConverter *Media::converter() {
 #ifdef NEXT_SHARED
+IConverter *Media::converter(const char *) {
     return new AudioConverter();
-#endif
-    return nullptr;
 }
+#endif

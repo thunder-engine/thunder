@@ -10,13 +10,9 @@ public:
     Gui();
     ~Gui() override;
 
-    const char *description() const override;
+    const char *metaInfo() const override;
 
-    const char *version() const override;
-
-    int types() const override;
-
-    System *system() override;
+    System *system(const char *name) override;
 
 private:
     GuiSystem *m_system;

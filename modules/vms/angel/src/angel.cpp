@@ -10,6 +10,18 @@ Module *moduleCreate(Engine *engine) {
 }
 #endif
 
+static const char *meta = \
+"{"
+"   \"version\": \"1.0\","
+"   \"description\": \"AngelScript Module\","
+"   \"systems\": ["
+"       \"AngelSystem\""
+"   ],"
+"   \"converters\": ["
+"       \"AngelBuilder\""
+"   ]"
+"}";
+
 Angel::Angel(Engine *engine) :
         m_pEngine(engine),
         m_pSystem(new AngelSystem(engine)) {
@@ -19,29 +31,15 @@ Angel::~Angel() {
     delete m_pSystem;
 }
 
-const char *Angel::description() const {
-    return "AngelScript Module";
+const char *Angel::metaInfo() const {
+    return meta;
 }
 
-const char *Angel::version() const {
-    return "1.0";
-}
-
-int Angel::types() const {
-    int result  = SYSTEM;
-#ifdef NEXT_SHARED
-    result  |= CONVERTER;
-#endif
-    return result;
-}
-
-System *Angel::system() {
+System *Angel::system(const char *) {
     return m_pSystem;
 }
-
-IConverter *Angel::converter() {
 #ifdef NEXT_SHARED
+IConverter *Angel::converter(const char *) {
     return new AngelBuilder(m_pSystem);
-#endif
-    return nullptr;
 }
+#endif

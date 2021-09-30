@@ -34,6 +34,8 @@ public:
     bool findString(const QString &string, bool reverse, bool casesens = true, bool words = false);
     void replaceSelected(const QString &string);
 
+    void reportIssue(int level, int line, int col, const QString &text);
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -41,6 +43,8 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void onApplySettings();
@@ -62,38 +66,58 @@ private:
     void toggleFold(const QTextBlock &block);
 
     int32_t column(const QString &text, int32_t pos) const;
-    int32_t columnPosition(const QString &text, int column) const;
+    int32_t columnPosition(const QString &text, int column, int *offset = nullptr) const;
+    QString indentationString(int startColumn, int targetColumn, int padding, const QTextBlock &block) const;
+    int lineIndentPosition(const QString &text) const;
+    int spacesLeftFromPosition(const QString &text, int position) const;
+    int indentedColumn(int column, bool doIndent) const;
+
     QTextCursor cursor() const;
     void enableBlockSelection(int32_t positionBlock, int32_t positionColumn, int32_t anchorBlock, int32_t anchorColumn);
     void disableBlockSelection();
 
+    void setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const;
+    void paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const;
+
+    void commentSelection();
+    void indentSelection();
+
+    QString copyBlockSelection();
+    void removeBlockSelection();
+    void insertIntoBlockSelection(const QString &text);
+
+    void doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection);
     void doSetTextCursor(const QTextCursor &cursor) Q_DECL_OVERRIDE;
     int32_t firstNonIndent(const QString &text) const;
 
-    QString m_FileName;
+    void setCursorToColumn(QTextCursor &cursor, int column, QTextCursor::MoveMode moveMode = QTextCursor::MoveAnchor);
 
-    KSyntaxHighlighting::Definition m_Definition;
-    KSyntaxHighlighting::Repository m_Repository;
-    KSyntaxHighlighting::SyntaxHighlighter *m_pHighlighter;
+    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
-    QAbstractItemModel *m_pClassModel;
+    QString m_fileName;
 
-    CodeEditorSidebar *m_pSideBar;
+    KSyntaxHighlighting::Definition m_definition;
+    KSyntaxHighlighting::Repository m_repository;
+    KSyntaxHighlighting::SyntaxHighlighter *m_highlighter;
 
-    bool m_SpaceTabs;
-    int32_t m_SpaceIndent;
+    QAbstractItemModel *m_classModel;
 
-    bool m_BlockSelection;
-    int32_t m_BlockPosition;
-    int32_t m_ColumnPosition;
+    CodeEditorSidebar *m_sideBar;
 
-    int32_t m_BlockAnchor;
-    int32_t m_ColumnAnchor;
+    bool m_spaceTabs;
+    int32_t m_spaceIndent;
 
-    bool m_DisplayLineNumbers;
-    bool m_DisplayFoldingMarkers;
+    bool m_blockSelection;
+    int32_t m_blockPosition;
+    int32_t m_columnPosition;
 
-    bool m_FirstTime;
+    int32_t m_blockAnchor;
+    int32_t m_columnAnchor;
+
+    bool m_displayLineNumbers;
+    bool m_displayFoldingMarkers;
+
+    bool m_cursorVisible;
 };
 
 class CodeEditorSidebar : public QWidget {

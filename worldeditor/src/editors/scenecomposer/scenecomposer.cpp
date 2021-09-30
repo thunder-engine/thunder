@@ -818,6 +818,7 @@ void SceneComposer::saveWorkspace() {
     settings.setValue(gGeometry, saveGeometry());
     settings.setValue(gWindows, ui->toolWidget->saveState());
     settings.setValue(gWorkspace, m_CurrentWorkspace);
+    qDebug() << "Workspace saved";
 }
 
 void SceneComposer::resetWorkspace() {

@@ -80,5 +80,5 @@ QString RotateTool::toolTip() const {
 }
 
 QString RotateTool::shortcut() const {
-    return "R";
+    return "Shift+R";
 }

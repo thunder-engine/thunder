@@ -8,6 +8,15 @@ Module *moduleCreate(Engine *engine) {
 }
 #endif
 
+static const char *meta = \
+"{"
+"   \"version\": \"1.0\","
+"   \"description\": \"OpenGL Render Module\","
+"   \"systems\": ["
+"       \"RenderGLSystem\""
+"   ]"
+"}";
+
 RenderGL::RenderGL(Engine *engine) :
         m_pEngine(engine),
         m_pSystem(new RenderGLSystem(engine)) {
@@ -17,18 +26,10 @@ RenderGL::~RenderGL() {
     delete m_pSystem;
 }
 
-const char *RenderGL::description() const {
-    return "OpenGL Render Module";
+const char *RenderGL::metaInfo() const {
+    return meta;
 }
 
-const char *RenderGL::version() const {
-    return "1.0";
-}
-
-int RenderGL::types() const {
-    return SYSTEM;
-}
-
-System *RenderGL::system() {
+System *RenderGL::system(const char *) {
     return m_pSystem;
 }

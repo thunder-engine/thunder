@@ -143,7 +143,7 @@ void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
             includes << "#include \"" + it.value() + "\"\n";
             m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_pEngine);\n");
             m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_pEngine);\n");
-            m_Values[gComponentNames].append("result.push_back(\"" + it.key() + "\");\n");
+            m_Values[gComponentNames].append("\"        \\\"" + it.key() + "\\\"" + (it.hasNext() ? "," : "") + "\"\n");
         }
         includes.removeDuplicates();
         m_Values[gIncludes] = includes.join("");

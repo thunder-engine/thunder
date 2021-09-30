@@ -168,5 +168,5 @@ QString ResizeTool::toolTip() const {
 }
 
 QString ResizeTool::shortcut() const {
-    return "G";
+    return "Shift+G";
 }

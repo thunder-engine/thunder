@@ -5,6 +5,15 @@
 
 #include "systems/guisystem.h"
 
+static const char *meta = \
+"{"
+"   \"version\": \"1.0\","
+"   \"description\": \"GUI Plugin\","
+"   \"systems\": ["
+"       \"GuiSystem\""
+"   ]"
+"}";
+
 Module *moduleCreate(Engine *) {
     return new Gui();
 }
@@ -18,18 +27,10 @@ Gui::~Gui() {
     delete m_system;
 }
 
-System *Gui::system() {
+System *Gui::system(const char *) {
     return m_system;
 }
 
-const char *Gui::description() const {
-    return "GUI Plugin";
-}
-
-const char *Gui::version() const {
-    return "1.0";
-}
-
-int Gui::types() const {
-    return SYSTEM;
+const char *Gui::metaInfo() const {
+    return meta;
 }

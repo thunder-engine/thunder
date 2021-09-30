@@ -13,6 +13,7 @@
 #include <systems/rendersystem.h>
 
 #include <bson.h>
+#include <json.h>
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -25,9 +26,12 @@ enum {
 };
 
 #define PATH    "path"
-#define DESC    "desc"
 
+#define DESC    "description"
 #define VERSION "version"
+#define SYSTEMS "systems"
+#define EXTENSIONS "extensions"
+#define CONVERTERS "converters"
 
 #if defined(Q_OS_MAC)
 #define PLUGINS "/../../../plugins"
@@ -155,9 +159,9 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
         if(moduleCreate) {
             Module *plugin = moduleCreate(m_pEngine);
             if(plugin) {
-                uint8_t types = plugin->types();
-                if(types & Module::SYSTEM) {
-                    if(registerSystem(plugin)) {
+                VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
+                for(auto &it : metaInfo[SYSTEMS].toList()) {
+                    if(registerSystem(plugin, it.toString().c_str())) {
                         registerExtensionPlugin(path, plugin);
                     } else {
                         delete plugin;
@@ -167,17 +171,24 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                         return true;
                     }
                 }
-                if(types & Module::EXTENSION) {
+                if(!metaInfo[EXTENSIONS].toList().empty()) {
                     registerExtensionPlugin(path, plugin);
+
+                    if(reload) {
+                        QStringList components;
+                        for(auto &it : metaInfo[EXTENSIONS].toList()) {
+                            components << QString::fromStdString(it.toString());
+                        }
+
+                        ComponentMap result;
+                        serializeComponents(components, result);
+                        deserializeComponents(result);
+                    }
                 }
-                if(types & Module::CONVERTER) {
-                     AssetManager::instance()->registerConverter(plugin->converter());
+                for(auto &it : metaInfo[CONVERTERS].toList()) {
+                     AssetManager::instance()->registerConverter(plugin->converter(it.toString().c_str()));
                 }
-                if(reload) {
-                    ComponentMap result;
-                    serializeComponents(plugin->components(), result);
-                    deserializeComponents(result);
-                }
+
                 m_Libraries[path] = lib;
 
                 int start = rowCount();
@@ -187,8 +198,8 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     QObject *item = new QObject(m_rootItem);
                     item->setObjectName(file.fileName());
                     item->setProperty(PATH, file.filePath());
-                    item->setProperty(VERSION, plugin->version());
-                    item->setProperty(DESC, plugin->description());
+                    item->setProperty(VERSION, metaInfo[VERSION].toString().c_str());
+                    item->setProperty(DESC, metaInfo[DESC].toString().c_str());
                 endInsertRows();
                 return true;
             } else {
@@ -221,8 +232,15 @@ void PluginManager::reloadPlugin(const QString &path) {
 
     if(ext != m_Extensions.end() && lib != m_Libraries.end()) { // Reload plugin
         Module *plugin = ext.value();
+        VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
+
+        QStringList components;
+        for(auto &it : metaInfo[EXTENSIONS].toList()) {
+            components << QString::fromStdString(it.toString());
+        }
+
         ComponentMap result;
-        serializeComponents(plugin->components(), result);
+        serializeComponents(components, result);
         // Unload plugin
         delete plugin;
 
@@ -269,8 +287,8 @@ void PluginManager::rescanPath(const QString &path) {
     }
 }
 
-bool PluginManager::registerSystem(Module *plugin) {
-    System *system = plugin->system();
+bool PluginManager::registerSystem(Module *plugin, const char *name) {
+    System *system = plugin->system(name);
 
     if(system) {
         RenderSystem *render = dynamic_cast<RenderSystem *>(system);
@@ -319,9 +337,9 @@ void PluginManager::addScene(Scene *scene) {
 }
 
 typedef list<const Object *> ObjectArray;
-void enumComponents(const Object *object, const string &type, ObjectArray &list) {
+void enumComponents(const Object *object, const QString &type, ObjectArray &list) {
     for(const auto &it : object->getChildren()) {
-        if(it->typeName() == type) {
+        if(it->typeName() == type.toStdString()) {
             list.push_back(it);
         } else {
             enumComponents(it, type, list);
@@ -329,7 +347,7 @@ void enumComponents(const Object *object, const string &type, ObjectArray &list)
     }
 }
 
-void PluginManager::serializeComponents(const StringList &list, ComponentMap &map) {
+void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
     for(auto &type : list) {
         foreach(Scene *scene, m_Scenes) {
             ObjectArray array;

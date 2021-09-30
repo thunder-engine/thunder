@@ -9,7 +9,12 @@
         <translation>关于……</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+14"/>
+        <location line="+68"/>
+        <source>Copy system information to clipboard...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+16"/>
         <source>About %1...</source>
         <translation>关于 %1……</translation>
     </message>
@@ -28,16 +33,31 @@
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+35"/>
+        <source>Copied...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Actions</name>
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+60"/>
+        <source>Saves your changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Commit</source>
         <translation type="unfinished">提交</translation>
     </message>
     <message>
         <location line="+7"/>
+        <source>Reverts back your unsaved changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Revert</source>
         <translation>恢复</translation>
     </message>
@@ -691,32 +711,72 @@
         <source>Update Sprite Elements</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../worldeditor/src/controllers/movetool.cpp" line="+53"/>
+        <source>Select and Translate objects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/controllers/resizetool.cpp" line="+167"/>
+        <source>Select and manipulate objects with rect transform tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/controllers/rotatetool.cpp" line="+79"/>
+        <source>Select and Rotate objects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/controllers/scaletool.cpp" line="+86"/>
+        <source>Select and Scale objects</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SceneComposer</name>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.ui" line="+123"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.ui" line="+126"/>
         <source>Add Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+48"/>
         <source>Commit</source>
         <translation type="unfinished">提交</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+25"/>
         <source>Revert</source>
         <translation type="unfinished">恢复</translation>
     </message>
     <message>
-        <location line="+171"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the transformation axes between &lt;span style=&quot; font-weight:600;&quot;&gt;world&lt;/span&gt; space and &lt;span style=&quot; font-weight:600;&quot;&gt;local&lt;/span&gt; (object) space.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <location line="-76"/>
+        <source>Adds a new Component to this Actor.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Saves your changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Reverts back your unsaved changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Switches between 3D and 3D mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Switches the transformation axes between world space and local (object) space.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>View</source>
+        <source>Show</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -750,7 +810,7 @@
         <translation>帮助</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+22"/>
         <source>&amp;New</source>
         <translation type="unfinished"></translation>
     </message>
@@ -852,7 +912,7 @@
     <message>
         <location line="+8"/>
         <location line="+3"/>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+774"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+777"/>
         <source>Save Workspace</source>
         <translation>保存工作区</translation>
     </message>
@@ -878,38 +938,58 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-663"/>
-        <location line="+843"/>
+        <location line="+8"/>
+        <source>API Reference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Report Issue...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Thunder Answers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Documentation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-666"/>
+        <location line="+846"/>
         <source>Viewport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-842"/>
-        <location line="+843"/>
+        <location line="-845"/>
+        <location line="+846"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-842"/>
-        <location line="+843"/>
+        <location line="-845"/>
+        <location line="+846"/>
         <source>Project Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-842"/>
-        <location line="+843"/>
+        <location line="-845"/>
+        <location line="+846"/>
         <source>Editor Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-842"/>
-        <location line="+843"/>
+        <location line="-845"/>
+        <location line="+846"/>
         <source>Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-842"/>
-        <location line="+843"/>
+        <location line="-845"/>
+        <location line="+846"/>
         <source>Class View</source>
         <translation type="unfinished"></translation>
     </message>

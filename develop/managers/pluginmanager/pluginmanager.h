@@ -66,11 +66,11 @@ private:
     static PluginManager *m_pInstance;
 
 protected:
-    bool registerSystem(Module *plugin);
+    bool registerSystem(Module *plugin, const char *name);
 
     void registerExtensionPlugin(const QString &path, Module *plugin);
 
-    void serializeComponents(const StringList &list, ComponentMap &map);
+    void serializeComponents(const QStringList &list, ComponentMap &map);
 
     void deserializeComponents(const ComponentMap &map);
 

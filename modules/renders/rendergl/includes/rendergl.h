@@ -9,13 +9,9 @@ public:
 
     ~RenderGL();
 
-    const char *description() const;
+    const char *metaInfo() const override;
 
-    const char *version() const;
-
-    int types() const;
-
-    System *system();
+    System *system(const char *name) override;
 
 protected:
     Engine *m_pEngine;
