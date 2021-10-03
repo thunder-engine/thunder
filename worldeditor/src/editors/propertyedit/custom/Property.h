@@ -9,7 +9,6 @@ class Property : public QObject {
     Q_OBJECT
 
 public:
-
     Property(const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
 
     void setName(const QString &value) { m_name = value; }

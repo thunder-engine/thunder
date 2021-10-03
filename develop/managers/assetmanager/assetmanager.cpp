@@ -104,7 +104,7 @@ AssetManager::~AssetManager() {
     delete m_pDirWatcher;
     delete m_pFileWatcher;
 
-    for(auto it : m_Converters) {
+    for(AssetConverter *it : QSet<AssetConverter *>::fromList(m_Converters.values())) {
         delete it;
     }
 }

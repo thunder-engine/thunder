@@ -22,7 +22,7 @@ Property::Property(const QString &name, QObject *propertyObject, QObject *parent
     m_name = list.back();
     setObjectName(name);
     m_root = (root) ? (list.size() == 1) : false;
-    m_checkable = m_root;
+    m_checkable = m_root && (dynamic_cast<NextObject *>(m_propertyObject) != nullptr);
 }
 
 QVariant Property::value(int role) const {
