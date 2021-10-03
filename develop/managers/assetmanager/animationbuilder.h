@@ -63,7 +63,7 @@ public:
     bool m_Loop;
 };
 
-class AnimationBuilderSettings : public IConverterSettings {
+class AnimationBuilderSettings : public AssetConverterSettings {
 public:
     AnimationBuilderSettings();
 };
@@ -77,8 +77,8 @@ public:
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
 
-    uint8_t convertFile(IConverterSettings *s) Q_DECL_OVERRIDE;
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;

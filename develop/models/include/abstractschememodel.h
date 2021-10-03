@@ -11,7 +11,7 @@
 
 #include <variant.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 #include "undomanager.h"
 
@@ -21,7 +21,7 @@ class QAbstractItemModel;
 
 class AbstractSchemeModel;
 
-class AbstractSchemeModel : public IConverter {
+class AbstractSchemeModel : public AssetConverter {
     Q_OBJECT
 
 public:

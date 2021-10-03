@@ -23,7 +23,8 @@ static Quaternion rot[6] = {Quaternion(Vector3(0, 1, 0),-90),
 class AreaLightPrivate {
 public:
     AreaLightPrivate() :
-            m_near(0.1f) {
+            m_near(0.1f),
+            m_shadowMap(nullptr) {
 
     }
 

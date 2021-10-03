@@ -1,15 +1,15 @@
 #ifndef QBSBUILDER_H
 #define QBSBUILDER_H
 
-#include <editor/converter.h>
-#include <editor/builder.h>
+#include <editor/assetconverter.h>
+#include <editor/codebuilder.h>
 
 #include <QFileInfo>
 
 class QProcess;
 class ProjectManager;
 
-class QbsBuilder : public IBuilder {
+class QbsBuilder : public CodeBuilder {
     Q_OBJECT
 public:
     QbsBuilder();

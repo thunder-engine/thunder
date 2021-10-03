@@ -45,7 +45,7 @@ SceneComponent ComponentSelect::data() const {
 void ComponentSelect::setData(const SceneComponent &component) {
     m_Component = component;
 
-    sBrowser->setRootObject(m_Component.scene);
+    sBrowser->onSetRootObject(m_Component.scene);
     sBrowser->setComponentsFilter({m_Component.type});
 
     QString name("None");

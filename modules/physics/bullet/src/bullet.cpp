@@ -39,7 +39,7 @@ System *Bullet::system(const char *) {
     return m_pSystem;
 }
 #ifdef NEXT_SHARED
-IConverter *Bullet::converter(const char *) {
+AssetConverter *Bullet::assetConverter(const char *) {
     return new PhysicMaterialConverter();
 }
 #endif

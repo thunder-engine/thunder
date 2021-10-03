@@ -15,7 +15,7 @@ public:
 
     System *system(const char *) override;
 #ifdef NEXT_SHARED
-    IConverter *converter(const char *) override;
+    AssetConverter *assetConverter(const char *) override;
 #endif
 protected:
     Engine *m_pEngine;

@@ -1,7 +1,6 @@
 #include "particleedit.h"
 #include "ui_particleedit.h"
 
-#include <QSettings>
 #include <QQmlContext>
 #include <QQuickItem>
 #include <QQmlEngine>
@@ -11,56 +10,33 @@
 
 #include <global.h>
 
-#include "editors/propertyedit/nextobject.h"
-#include "controllers/objectctrl.h"
-#include "graph/viewport.h"
+#include "controllers/cameractrl.h"
 
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/particlerender.h>
 
-ParticleEdit::ParticleEdit(DocumentModel *document) :
-        QMainWindow(nullptr),
+ParticleEdit::ParticleEdit() :
         m_Modified(false),
         ui(new Ui::ParticleEdit),
-        m_pEditor(nullptr),
         m_pEffect(nullptr),
         m_pBuilder(new EffectConverter),
-        m_pRender(nullptr),
-        m_pDocument(document) {
+        m_pRender(nullptr) {
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl = new CameraCtrl(ui->glWidget);
+    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
     ctrl->init(nullptr);
-    ui->glWidget->setController(ctrl);
-    ui->glWidget->setScene( Engine::objectCreate<Scene>("Scene") );
-    ui->glWidget->setObjectName("Preview");
+    ui->preview->setController(ctrl);
+    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
-    ui->glWidget->setWindowTitle("Preview");
-    ui->treeView->setWindowTitle("Properties");
-    ui->quickWidget->setWindowTitle("Scheme");
-
-    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->glWidget->scene());
+    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->preview->scene());
     m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
 
     startTimer(16);
 
-    ui->centralwidget->addToolWindow(ui->quickWidget, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(ui->glWidget, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->quickWidget));
-    ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->glWidget));
-
-    foreach(QWidget *it, ui->centralwidget->toolWindows()) {
-        QAction *action = ui->menuWindow->addAction(it->windowTitle());
-        action->setObjectName(it->windowTitle());
-        action->setData(QVariant::fromValue(it));
-        action->setCheckable(true);
-        action->setChecked(true);
-        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
-    }
-    connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
 
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_pBuilder->children()));
@@ -74,16 +50,10 @@ ParticleEdit::ParticleEdit(DocumentModel *document) :
     connect(item, SIGNAL(functionSelected(QString, QString)), this, SLOT(onFunctionSelected(QString, QString)));
     connect(item, SIGNAL(functionCreate(QString, QString)), this, SLOT(onFunctionCreated(QString, QString)));
     connect(item, SIGNAL(functionDelete(QString, QString)), this, SLOT(onFunctionDeleted(QString, QString)));
-
-    readSettings();
 }
 
 ParticleEdit::~ParticleEdit() {
-    writeSettings();
-
     delete ui;
-
-    delete m_pEditor;
 
     delete m_pEffect;
 }
@@ -98,66 +68,36 @@ bool ParticleEdit::isModified() const {
     return m_Modified;
 }
 
-QStringList ParticleEdit::assetTypes() const {
-    return {"ParticleEffect"};
+QStringList ParticleEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
 }
 
-void ParticleEdit::readSettings() {
-    QSettings settings(COMPANY_NAME, PRODUCT_NAME);
-    restoreGeometry(settings.value("particle.geometry").toByteArray());
-    ui->centralwidget->restoreState(settings.value("particle.windows"));
-}
+void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
+    if(m_pSettings != settings) {
+        m_pSettings = settings;
 
-void ParticleEdit::writeSettings() {
-    QSettings settings(COMPANY_NAME, PRODUCT_NAME);
-    settings.setValue("particle.geometry", saveGeometry());
-    settings.setValue("particle.windows", ui->centralwidget->saveState());
-}
+        m_pRender->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
+        m_pBuilder->load(m_pSettings->source());
 
-void ParticleEdit::closeEvent(QCloseEvent *event) {
-    writeSettings();
+        onNodeSelected(nullptr);
 
-    if(isModified()) {
-        QMessageBox msgBox(this);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The effect has been modified."));
-        msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result  = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            event->ignore();
-            return;
-        }
-        if(result == QMessageBox::Yes) {
-            on_actionSave_triggered();
-        }
+        onUpdateTemplate(false);
     }
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
-void ParticleEdit::loadAsset(IConverterSettings *settings) {
-    show();
-
-    m_Path = settings->source();
-
-    m_pRender->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
-    m_pBuilder->load(m_Path);
-
-    ui->treeView->setObject(nullptr);
-    onUpdateTemplate(false);
+void ParticleEdit::saveAsset(const QString &path) {
+    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
+        m_pBuilder->save(path.isEmpty() ? m_pSettings->source() : path);
+        m_Modified = false;
+    }
 }
 
 void ParticleEdit::onNodeSelected(void *node) {
-    if(node) {
-        ui->treeView->setObject(static_cast<QObject *>(node));
-    }
+    emit itemSelected(static_cast<QObject *>(node));
 }
 
 void ParticleEdit::onNodeDeleted() {
-    ui->treeView->setObject(nullptr);
+    onNodeSelected(nullptr);
 }
 
 void ParticleEdit::onEmitterSelected(QString emitter) {
@@ -181,10 +121,9 @@ void ParticleEdit::onEmitterDeleted(QString name) {
     int result = msgBox.exec();
     if(result == QMessageBox::Yes) {
         m_pBuilder->deleteEmitter(name);
-        ui->treeView->setObject(nullptr);
+        onNodeSelected(nullptr);
     }
 }
-
 
 void ParticleEdit::onFunctionSelected(QString emitter, QString function) {
     EffectEmitter *obj = m_pBuilder->findChild<EffectEmitter *>(emitter);
@@ -215,36 +154,17 @@ void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
 }
 
 void ParticleEdit::onUpdateTemplate(bool update) {
-    ParticleRender *render = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
-    if(render) {
-        render->effect()->loadUserData(m_pBuilder->data().toMap());
-        render->setEffect(render->effect());
-    }
+    m_pRender->effect()->loadUserData(m_pBuilder->data().toMap());
+    m_pRender->setEffect(m_pRender->effect());
+
     QObjectList list = m_pBuilder->children();
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
 
     m_Modified = update;
 }
 
-void ParticleEdit::onToolWindowActionToggled(bool state) {
-    QWidget *toolWindow = static_cast<QAction*>(sender())->data().value<QWidget *>();
-    ui->centralwidget->moveToolWindow(toolWindow, state ?
-                                              QToolWindowManager::NewFloatingArea :
-                                              QToolWindowManager::NoArea);
-}
-
-void ParticleEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) {
-    QAction *action = ui->menuWindow->findChild<QAction *>(toolWindow->windowTitle());
-    if(action) {
-        action->blockSignals(true);
-        action->setChecked(visible);
-        action->blockSignals(false);
-    }
-}
-
-void ParticleEdit::on_actionSave_triggered() {
-    if(!m_Path.isEmpty()) {
-        m_pBuilder->save(m_Path);
-        m_Modified = false;
+void ParticleEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
     }
 }

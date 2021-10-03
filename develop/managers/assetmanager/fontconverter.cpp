@@ -11,7 +11,7 @@
 
 #define DATA    "Data"
 
-uint8_t FontConverter::convertFile(IConverterSettings *settings) {
+uint8_t FontConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Font font;
@@ -38,8 +38,8 @@ uint8_t FontConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *FontConverter::createSettings() const {
-    IConverterSettings *result = IConverter::createSettings();
+AssetConverterSettings *FontConverter::createSettings() const {
+    AssetConverterSettings *result = AssetConverter::createSettings();
     result->setType(MetaType::type<Font *>());
     return result;
 }

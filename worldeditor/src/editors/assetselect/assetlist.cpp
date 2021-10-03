@@ -16,9 +16,9 @@ AssetList *AssetList::m_pInstance = nullptr;
 
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
-        m_pEngine(nullptr) {
+        m_pEngine(nullptr),
+        m_DefaultIcon(QRect(0, 0, 64, 64)) {
 
-    m_DefaultIcon = QRect(0, 0, 64, 64);
 }
 
 AssetList *AssetList::instance() {

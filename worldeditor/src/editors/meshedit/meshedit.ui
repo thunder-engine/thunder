@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MeshEdit</class>
- <widget class="QMainWindow" name="MeshEdit">
+ <widget class="QWidget" name="MeshEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,40 +13,26 @@
   <property name="windowTitle">
    <string>Mesh Edit</string>
   </property>
-  <widget class="QToolWindowManager" name="centralwidget">
-   <widget class="PropertyEditor" name="treeView">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>300</width>
-      <height>241</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>300</width>
-      <height>200</height>
-     </size>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>21</height>
-    </rect>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
    </property>
-   <widget class="QMenu" name="menuWindow">
-    <property name="title">
-     <string>Window</string>
-    </property>
-   </widget>
-   <addaction name="menuWindow"/>
-  </widget>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="Viewport" name="preview" native="true"/>
+   </item>
+  </layout>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
@@ -58,15 +44,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PropertyEditor</class>
-   <extends>QTreeView</extends>
-   <header>editors/propertyedit/propertyeditor.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QToolWindowManager</class>
+   <class>Viewport</class>
    <extends>QWidget</extends>
-   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
+   <header>graph/viewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

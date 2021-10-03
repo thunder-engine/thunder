@@ -18,7 +18,7 @@ QString MapConverterSettings::typeName() const {
     return "Map";
 }
 
-uint8_t MapConverter::convertFile(IConverterSettings *settings) {
+uint8_t MapConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         string data = src.readAll().toStdString();
@@ -39,6 +39,6 @@ uint8_t MapConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *MapConverter::createSettings() const {
+AssetConverterSettings *MapConverter::createSettings() const {
     return new MapConverterSettings();
 }

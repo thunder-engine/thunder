@@ -62,7 +62,7 @@ CodeEditor::CodeEditor(QWidget *parent) :
     document()->setDefaultTextOption(option);
 
     SettingsManager *settings = SettingsManager::instance();
-    settings->registerProperty(qPrintable(gFont), QVariant::fromValue(QFont("Source Code Pro", 10)));
+    settings->registerProperty(qPrintable(gFont), "Source Code Pro");
     settings->registerProperty(qPrintable(gZoom), QVariant::fromValue(100));
 
     settings->registerProperty(qPrintable(gLineNumbers), QVariant::fromValue(true));
@@ -525,7 +525,6 @@ void CodeEditor::commentSelection() {
     static const bool hasMultiLineStyle = true;
     static const bool hasSingleLineStyle = true;
 
-    bool doSingleLineStyleUncomment = true;
     bool doMultiLineStyleComment = false;
     bool doMultiLineStyleUncomment = false;
     bool anchorIsStart = (anchor == start);
@@ -600,7 +599,7 @@ void CodeEditor::commentSelection() {
     } else {
         endBlock = endBlock.next();
 
-        doSingleLineStyleUncomment = true;
+        bool doSingleLineStyleUncomment = true;
         for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
             QString text = block.text().trimmed();
             if(!text.isEmpty() && !text.startsWith(singleLine)) {
@@ -1055,7 +1054,6 @@ void CodeEditor::disableBlockSelection() {
 }
 
 void CodeEditor::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection) {
-    bool selectionChange = cursor.hasSelection() || textCursor().hasSelection();
     if(!keepBlockSelection && m_blockSelection) {
         m_blockSelection = false;
     }
@@ -1375,7 +1373,11 @@ void CodeEditor::insertFromMimeData(const QMimeData *source) {
 
 void CodeEditor::onApplySettings() {
     SettingsManager *s = SettingsManager::instance();
-    QFont font = s->property(qPrintable(gFont)).value<QFont>();
+    QString name = s->property(qPrintable(gFont)).toString();
+    if(name.isEmpty()) {
+        name = "Source Code Pro";
+    }
+    QFont font(name, 10);
     font.setFixedPitch(true);
     setFont(font);
 

@@ -10,7 +10,7 @@
 #include <engine.h>
 #include <module.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 #include <systems/resourcesystem.h>
 
@@ -19,7 +19,7 @@ class QAbstractItemModel;
 
 class ProjectManager;
 
-class IBuilder;
+class CodeBuilder;
 
 struct Template {
     Template() :
@@ -43,9 +43,9 @@ typedef QFileInfo FilePath;
 class AssetManager : public QObject {
     Q_OBJECT
 public:
-    typedef QMap<QString, IConverter *> ConverterMap;
+    typedef QMap<QString, AssetConverter *> ConverterMap;
     typedef QMap<QString, QAbstractItemModel *> ClassMap;
-    typedef QMap<QString, IConverterSettings *> SettingsMap;
+    typedef QMap<QString, AssetConverterSettings *> SettingsMap;
 
 public:
     static AssetManager *instance();
@@ -67,7 +67,7 @@ public:
     bool pushToImport(const QFileInfo &source);
     bool import(const QFileInfo &source, const QFileInfo &target);
 
-    void registerConverter(IConverter *converter);
+    void registerConverter(AssetConverter *converter);
 
     static void findFreeName(QString &name, const QString &path, const QString &suff = QString());
 
@@ -79,9 +79,9 @@ public:
 
     QStringList labels() const;
 
-    IConverterSettings *fetchSettings(const QFileInfo &source);
+    AssetConverterSettings *fetchSettings(const QFileInfo &source);
 
-    IConverter *getConverter(IConverterSettings *settings);
+    AssetConverter *getConverter(AssetConverterSettings *settings);
 
     bool isOutdated() const;
 
@@ -91,12 +91,14 @@ public:
     ConverterMap converters() const;
     ClassMap classMaps() const;
 
-    bool pushToImport(IConverterSettings *settings);
+    bool pushToImport(AssetConverterSettings *settings);
 
 public slots:
     void reimport();
 
     void onBuildSuccessful();
+
+    void checkImportSettings(AssetConverterSettings *settings);
 
 signals:
     void ready();
@@ -136,7 +138,7 @@ protected:
     QFileSystemWatcher *m_pDirWatcher;
     QFileSystemWatcher *m_pFileWatcher;
 
-    QList<IConverterSettings *> m_ImportQueue;
+    QList<AssetConverterSettings *> m_ImportQueue;
 
     ProjectManager *m_pProjectManager;
 
@@ -145,7 +147,7 @@ protected:
     Engine *m_pEngine;
 
     ClassMap m_ClassMaps;
-    QList<IBuilder *> m_Builders;
+    QList<CodeBuilder *> m_Builders;
 
     QString m_Artifact;
 
@@ -157,9 +159,9 @@ protected:
     void cleanupBundle();
     void dumpBundle();
 
-    bool isOutdated(IConverterSettings *settings);
+    bool isOutdated(AssetConverterSettings *settings);
 
-    bool convert(IConverterSettings *settings);
+    bool convert(AssetConverterSettings *settings);
 
     QString pathToLocal(const QFileInfo &source);
 

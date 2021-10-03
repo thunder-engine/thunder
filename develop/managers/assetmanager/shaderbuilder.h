@@ -201,7 +201,7 @@ public:
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl"}; }
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
@@ -209,7 +209,7 @@ private:
     void loadTextures(const QVariantMap &data);
     QVariantMap saveTextures() const;
 
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 

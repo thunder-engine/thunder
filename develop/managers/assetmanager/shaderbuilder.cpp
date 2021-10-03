@@ -163,8 +163,8 @@ ShaderBuilder::~ShaderBuilder() {
     cleanup();
 }
 
-IConverterSettings *ShaderBuilder::createSettings() const {
-    IConverterSettings *result = AbstractSchemeModel::createSettings();
+AssetConverterSettings *ShaderBuilder::createSettings() const {
+    AssetConverterSettings *result = AbstractSchemeModel::createSettings();
     result->setVersion(FORMAT_VERSION);
     result->setType(MetaType::type<Material *>());
     return result;
@@ -188,7 +188,7 @@ Actor *ShaderBuilder::createActor(const QString &guid) const {
     return object;
 }
 
-uint8_t ShaderBuilder::convertFile(IConverterSettings *settings) {
+uint8_t ShaderBuilder::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
     if(build()) {
         if(settings->currentVersion() != settings->version()) {
@@ -494,7 +494,7 @@ Variant ShaderBuilder::data(bool editor) const {
     uint32_t version = 430;
     bool es = false;
     Rhi rhi = Rhi::OpenGL;
-    IPlatform *platform = ProjectManager::instance()->currentPlatform();
+    Platform *platform = ProjectManager::instance()->currentPlatform();
     if(dynamic_cast<AndroidPlatform *>(platform) != nullptr ||
        dynamic_cast<IOSPlatform *>(platform) != nullptr) {
         version = 300;

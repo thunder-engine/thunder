@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>ParticleEdit</class>
- <widget class="QMainWindow" name="ParticleEdit">
+ <widget class="QWidget" name="ParticleEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,81 +13,36 @@
   <property name="windowTitle">
    <string>Particle Editor</string>
   </property>
-  <widget class="QToolWindowManager" name="centralwidget">
-   <widget class="PropertyEditor" name="treeView">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>20</y>
-      <width>241</width>
-      <height>171</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="Viewport" name="glWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>200</y>
-      <width>231</width>
-      <height>171</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QQuickWidget" name="quickWidget">
-    <property name="geometry">
-     <rect>
-      <x>259</x>
-      <y>200</y>
-      <width>241</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <property name="resizeMode">
-     <enum>QQuickWidget::SizeRootObjectToView</enum>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1024</width>
-     <height>21</height>
-    </rect>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
    </property>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <widget class="QMenu" name="menuEmitter">
-     <property name="title">
-      <string>Emitter</string>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <addaction name="actionEmitter"/>
-     <addaction name="actionBeam"/>
-     <addaction name="actionMesh"/>
+     <widget class="Viewport" name="preview" native="true"/>
+     <widget class="QQuickWidget" name="quickWidget">
+      <property name="resizeMode">
+       <enum>QQuickWidget::SizeRootObjectToView</enum>
+      </property>
+     </widget>
     </widget>
-    <addaction name="menuEmitter"/>
-    <addaction name="separator"/>
-    <addaction name="actionDelete_emitter"/>
-   </widget>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionSave"/>
-   </widget>
-   <widget class="QMenu" name="menuWindow">
-    <property name="title">
-     <string>Window</string>
-    </property>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuWindow"/>
-  </widget>
+   </item>
+  </layout>
   <action name="actionDelete_emitter">
    <property name="text">
     <string>Delete Emitter</string>
@@ -164,18 +119,6 @@
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
    <header location="global">QtQuickWidgets/QQuickWidget</header>
-  </customwidget>
-  <customwidget>
-   <class>PropertyEditor</class>
-   <extends>QTreeView</extends>
-   <header>editors/propertyedit/propertyeditor.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QToolWindowManager</class>
-   <extends>QWidget</extends>
-   <header>managers/toolwindowmanager/qtoolwindowmanager.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Viewport</class>

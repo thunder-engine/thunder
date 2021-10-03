@@ -186,7 +186,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     }
                 }
                 for(auto &it : metaInfo[CONVERTERS].toList()) {
-                     AssetManager::instance()->registerConverter(plugin->converter(it.toString().c_str()));
+                     AssetManager::instance()->registerConverter(plugin->assetConverter(it.toString().c_str()));
                 }
 
                 m_Libraries[path] = lib;

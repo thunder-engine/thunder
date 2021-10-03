@@ -145,7 +145,7 @@ QString TextureImportSettings::typeName() const {
     if(m_TextureType == TextureType::Sprite) {
         return "Sprite";
     }
-    return IConverterSettings::typeName();
+    return AssetConverterSettings::typeName();
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
@@ -195,7 +195,7 @@ void TextureImportSettings::setSubItemData(const QString &name, const QJsonObjec
     m_Elements[name].m_Pivot = pivot;
 }
 
-uint8_t TextureConverter::convertFile(IConverterSettings *settings) {
+uint8_t TextureConverter::convertFile(AssetConverterSettings *settings) {
     Resource *resource = nullptr;
 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
@@ -417,7 +417,7 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
     }
 }
 
-IConverterSettings *TextureConverter::createSettings() const {
+AssetConverterSettings *TextureConverter::createSettings() const {
     return new TextureImportSettings();
 }
 

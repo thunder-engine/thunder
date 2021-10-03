@@ -10,15 +10,15 @@
 
 #include <resources/pipeline.h>
 
-#include "controllers/objectctrl.h"
+#include "controllers/cameractrl.h"
 
 #include "pluginmanager.h"
 
-#define OVERRIDE "uni.texture0"
-
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
-        m_pController(nullptr) {
+        m_pController(nullptr),
+        m_pScene(nullptr),
+        m_pRHIWindow(nullptr) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);

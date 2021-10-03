@@ -20,6 +20,8 @@ public:
 public slots:
     void onLogRecord(uint8_t type, const QString &str);
 
+    void parseLogs(const QString &log);
+
 private slots:
     void on_clearButton_clicked();
 

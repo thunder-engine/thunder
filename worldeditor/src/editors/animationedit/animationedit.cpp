@@ -3,27 +3,22 @@
 
 #include <QQmlContext>
 #include <QQuickItem>
-#include <QDir>
 
 #include "animationbuilder.h"
-
-#include "projectmanager.h"
 
 #include <components/animationcontroller.h>
 #include <resources/animationstatemachine.h>
 
-AnimationEdit::AnimationEdit(DocumentModel *document) :
-        QWidget(nullptr),
+AnimationEdit::AnimationEdit() :
         m_Modified(false),
         ui(new Ui::AnimationEdit),
         m_pBuilder(new AnimationBuilder()),
-        m_pMachine(nullptr),
-        m_pDocument(document) {
+        m_pMachine(nullptr) {
 
     ui->setupUi(this);
 
-    connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
-    connect(m_pBuilder, SIGNAL(nodeMoved()), this, SLOT(onUpdateTemplate()));
+    connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateAsset()));
+    connect(m_pBuilder, SIGNAL(nodeMoved()), this, SLOT(onUpdateAsset()));
 
     ui->components->setModel(m_pBuilder->components());
 
@@ -44,21 +39,32 @@ AnimationEdit::~AnimationEdit() {
     delete ui;
 }
 
-void AnimationEdit::closeEvent(QCloseEvent *event) {
-    if(!m_pDocument->checkSave(this)) {
-        event->ignore();
-        return;
-    }
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
-}
-
 bool AnimationEdit::isModified() const {
     return m_Modified;
 }
 
-QStringList AnimationEdit::assetTypes() const {
-    return {"AnimationStateMachine"};
+QStringList AnimationEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
+}
+
+void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
+    if(m_pSettings != settings) {
+        m_pSettings = settings;
+
+        m_pMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
+
+        m_pBuilder->load(m_pSettings->source());
+
+        onUpdateAsset(false);
+        onNodesSelected(QVariantList({0}));
+    }
+}
+
+void AnimationEdit::saveAsset(const QString &path) {
+    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
+        m_pBuilder->save(path.isEmpty() ? m_pSettings->source() : path);
+        onUpdateAsset(false);
+    }
 }
 
 void AnimationEdit::onNodesSelected(const QVariant &indices) {
@@ -66,32 +72,12 @@ void AnimationEdit::onNodesSelected(const QVariant &indices) {
     if(!list.isEmpty()) {
         const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
         if(node) {
-            m_pDocument->itemSelected(static_cast<QObject *>(node->ptr));
+            emit itemSelected(static_cast<QObject *>(node->ptr));
         }
     }
 }
 
-void AnimationEdit::loadAsset(IConverterSettings *settings) {
-    if(m_Path != settings->source()) {
-        m_Path = settings->source();
-        m_pMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
-
-        m_pBuilder->load(m_Path);
-
-        onUpdateTemplate(false);
-        onNodesSelected(QVariantList({0}));
-    }
-}
-
-void AnimationEdit::saveAsset(const QString &path) {
-    m_Path = path;
-    if(!m_Path.isEmpty()) {
-        m_pBuilder->save(m_Path);
-        onUpdateTemplate(false);
-    }
-}
-
-void AnimationEdit::onUpdateTemplate(bool update) {
+void AnimationEdit::onUpdateAsset(bool update) {
     if(m_pBuilder) {
         m_Modified = update;
         QString title(tr("Animation Editor"));
@@ -99,11 +85,13 @@ void AnimationEdit::onUpdateTemplate(bool update) {
             title.append('*');
         }
         setWindowTitle(title);
+
+        emit updateAsset();
     }
 }
 
 void AnimationEdit::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::LanguageChange) {
+    if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }

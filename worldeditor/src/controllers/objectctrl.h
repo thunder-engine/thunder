@@ -96,7 +96,7 @@ signals:
     void objectsChanged(Object::ObjectList objects, const QString &property);
     void objectsSelected(Object::ObjectList objects);
 
-    void loadMap(const QString &map);
+    void dropMap(QString map);
 
 protected:
     void drawHandles() override;

@@ -1,6 +1,6 @@
 #include "engine.h"
 
-#include <string>
+#include <stdint.h>
 #include <sstream>
 
 #include <log.h>

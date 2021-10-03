@@ -15,7 +15,7 @@
 #define BLOCK_SIZE  1024
 
 AudioImportSettings::AudioImportSettings(QObject *parent) :
-        IConverterSettings(),
+        AssetConverterSettings(),
         m_Stream(false),
         m_Mono(false),
         m_Quality(1.0) {
@@ -57,7 +57,7 @@ AudioConverter::AudioConverter() :
     connect(m_pDecoder, &QAudioDecoder::finished, this, &AudioConverter::onFinished);
 }
 
-uint8_t AudioConverter::convertFile(IConverterSettings *settings) {
+uint8_t AudioConverter::convertFile(AssetConverterSettings *settings) {
     m_Buffer.clear();
 
     int32_t channels   = 1;
@@ -216,7 +216,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     return result;
 }
 
-IConverterSettings *AudioConverter::createSettings() const {
+AssetConverterSettings *AudioConverter::createSettings() const {
     return new AudioImportSettings();
 }
 
@@ -230,7 +230,7 @@ void AudioConverter::onFinished() {
     m_pLoop->exit();
 }
 
-bool AudioConverter::readOgg(IConverterSettings *settings, int32_t &channels) {
+bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels) {
     OggVorbis_File vorbisFile;
     if(ov_fopen(qPrintable(settings->source()), &vorbisFile) < 0) {
         return false;
