@@ -83,8 +83,7 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
     VariantList &objects = *(reinterpret_cast<VariantList *>(origin.data()));
     VariantList &o = *(reinterpret_cast<VariantList *>(objects.front().data()));
 
-    auto i = o.begin();
-    string type = i->toString();
+    auto i = o.begin(); // type
     i++; // uuid
     i++; // parent
     *i = resource->uuid();

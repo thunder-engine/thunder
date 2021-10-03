@@ -525,7 +525,6 @@ void CodeEditor::commentSelection() {
     static const bool hasMultiLineStyle = true;
     static const bool hasSingleLineStyle = true;
 
-    bool doSingleLineStyleUncomment = true;
     bool doMultiLineStyleComment = false;
     bool doMultiLineStyleUncomment = false;
     bool anchorIsStart = (anchor == start);
@@ -600,7 +599,7 @@ void CodeEditor::commentSelection() {
     } else {
         endBlock = endBlock.next();
 
-        doSingleLineStyleUncomment = true;
+        bool doSingleLineStyleUncomment = true;
         for(QTextBlock block = startBlock; block != endBlock; block = block.next()) {
             QString text = block.text().trimmed();
             if(!text.isEmpty() && !text.startsWith(singleLine)) {
@@ -1055,7 +1054,6 @@ void CodeEditor::disableBlockSelection() {
 }
 
 void CodeEditor::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection) {
-    bool selectionChange = cursor.hasSelection() || textCursor().hasSelection();
     if(!keepBlockSelection && m_blockSelection) {
         m_blockSelection = false;
     }
