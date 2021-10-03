@@ -3,7 +3,7 @@
 
 #include "prefabconverter.h"
 
-class MapConverterSettings : public IConverterSettings {
+class MapConverterSettings : public AssetConverterSettings {
 public:
     MapConverterSettings();
 private:
@@ -12,9 +12,9 @@ private:
 
 class MapConverter : public PrefabConverter {
     QStringList suffixes() const Q_DECL_OVERRIDE { return { "map" }; }
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 };
 
 #endif // MAPCONVERTER_H

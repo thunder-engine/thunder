@@ -1,67 +1,38 @@
 #ifndef MESHEDIT_H
 #define MESHEDIT_H
 
-#include <QMainWindow>
+#include <editor/asseteditor.h>
 
-#include "editors/scenecomposer/documentmodel.h"
-
-class Engine;
 class Actor;
-class DirectLight;
-
-class Viewport;
-class NextObject;
 
 namespace Ui {
     class MeshEdit;
 }
 
-class MeshEdit : public QMainWindow, public IAssetEditor {
+class MeshEdit : public AssetEditor {
     Q_OBJECT
 
 public:
-    MeshEdit(DocumentModel *document);
+    MeshEdit();
     ~MeshEdit();
 
-    void readSettings();
-    void writeSettings();
-
-signals:
-    void templateUpdate();
-
 private:
-    void loadAsset(IConverterSettings *settings) override;
+    void loadAsset(AssetConverterSettings *settings) override;
+    void saveAsset(const QString &path) override;
     bool isModified() const override;
 
-    QStringList assetTypes() const override;
+    QStringList suffixes() const override;
 
-    void closeEvent(QCloseEvent *event) override;
-
-    bool m_Modified;
+    void changeEvent(QEvent *event) override;
 
     Ui::MeshEdit *ui;
 
     Actor *m_pMesh;
     Actor *m_pGround;
-    Actor *m_pDome;
     Actor *m_pLight;
-
-    QString m_Path;
-
-    IConverterSettings *m_pSettings;
-
-    Viewport *glWidget;
-
-    DocumentModel *m_pDocument;
 
 private slots:
     void onUpdateTemplate();
-
-    void onToolWindowActionToggled(bool checked);
-
-    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
-
-    void on_actionSave_triggered();
 
 };
 

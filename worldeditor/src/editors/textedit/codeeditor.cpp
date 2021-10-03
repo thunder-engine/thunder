@@ -62,7 +62,7 @@ CodeEditor::CodeEditor(QWidget *parent) :
     document()->setDefaultTextOption(option);
 
     SettingsManager *settings = SettingsManager::instance();
-    settings->registerProperty(qPrintable(gFont), QVariant::fromValue(QFont("Source Code Pro", 10)));
+    settings->registerProperty(qPrintable(gFont), "Source Code Pro");
     settings->registerProperty(qPrintable(gZoom), QVariant::fromValue(100));
 
     settings->registerProperty(qPrintable(gLineNumbers), QVariant::fromValue(true));
@@ -1375,7 +1375,11 @@ void CodeEditor::insertFromMimeData(const QMimeData *source) {
 
 void CodeEditor::onApplySettings() {
     SettingsManager *s = SettingsManager::instance();
-    QFont font = s->property(qPrintable(gFont)).value<QFont>();
+    QString name = s->property(qPrintable(gFont)).toString();
+    if(name.isEmpty()) {
+        name = "Source Code Pro";
+    }
+    QFont font(name, 10);
     font.setFixedPitch(true);
     setFont(font);
 

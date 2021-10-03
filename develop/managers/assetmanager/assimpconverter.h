@@ -1,7 +1,7 @@
 #ifndef ASSIMPCONVERTER_H
 #define ASSIMPCONVERTER_H
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 class Actor;
 class Mesh;
@@ -17,7 +17,7 @@ class FbxImportSettings;
 typedef list<const aiBone *> BonesList;
 typedef map<string, Actor *> ActorsMap;
 
-class AssimpImportSettings : public IConverterSettings {
+class AssimpImportSettings : public AssetConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(bool Use_Custom_Scale READ useScale WRITE setUseScale DESIGNABLE true USER true)
@@ -97,14 +97,14 @@ protected:
 
 };
 
-class AssimpConverter : public IConverter {
+class AssimpConverter : public AssetConverter {
 public:
     AssimpConverter();
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx"}; }
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 

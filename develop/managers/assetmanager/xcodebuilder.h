@@ -1,12 +1,12 @@
 #ifndef XCODEBUILDER_H
 #define XCODEBUILDER_H
 
-#include <editor/builder.h>
+#include <editor/codebuilder.h>
 
 class QProcess;
 class ProjectManager;
 
-class XcodeBuilder : public IBuilder {
+class XcodeBuilder : public CodeBuilder {
 public:
     XcodeBuilder ();
 

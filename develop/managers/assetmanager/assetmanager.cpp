@@ -20,8 +20,8 @@
 #include <json.h>
 #include <bson.h>
 
-#include <editor/converter.h>
-#include <editor/builder.h>
+#include <editor/assetconverter.h>
+#include <editor/codebuilder.h>
 
 #include <components/scene.h>
 #include <components/actor.h>
@@ -61,9 +61,9 @@ const QString gProject(".project");
 
 AssetManager *AssetManager::m_pInstance = nullptr;
 
-Q_DECLARE_METATYPE(IConverterSettings *)
+Q_DECLARE_METATYPE(AssetConverterSettings *)
 
-bool typeLessThan(IConverterSettings *left, IConverterSettings *right) {
+bool typeLessThan(AssetConverterSettings *left, AssetConverterSettings *right) {
     return left->type() < right->type();
 }
 
@@ -103,7 +103,7 @@ AssetManager::~AssetManager() {
     delete m_pDirWatcher;
     delete m_pFileWatcher;
 
-    for(IConverter *it : QSet<IConverter *>::fromList(m_Converters.values())) {
+    for(AssetConverter *it : QSet<AssetConverter *>::fromList(m_Converters.values())) {
         delete it;
     }
 }
@@ -184,7 +184,7 @@ QString AssetManager::assetTypeName(const QFileInfo &source) {
         path = source.path();
         sub = source.fileName();
     }
-    IConverterSettings *settings = fetchSettings(path);
+    AssetConverterSettings *settings = fetchSettings(path);
     if(sub.isEmpty()) {
         return settings->typeName();
     }
@@ -196,7 +196,7 @@ bool AssetManager::pushToImport(const QFileInfo &source) {
     return true;
 }
 
-bool AssetManager::pushToImport(IConverterSettings *settings) {
+bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     if(settings) {
         m_ImportQueue.push_back(settings);
     }
@@ -210,10 +210,10 @@ void AssetManager::reimport() {
 }
 
 void AssetManager::onBuildSuccessful() {
-    IBuilder *builder = dynamic_cast<IBuilder *>(sender());
+    CodeBuilder *builder = dynamic_cast<CodeBuilder *>(sender());
     if(builder) {
         for(auto &it : builder->sources()) {
-            IConverterSettings *settings = fetchSettings(it);
+            AssetConverterSettings *settings = fetchSettings(it);
             if(settings) {
                 settings->saveSettings();
             }
@@ -223,7 +223,7 @@ void AssetManager::onBuildSuccessful() {
     emit buildSuccessful();
 }
 
-bool AssetManager::isOutdated(IConverterSettings *settings) {
+bool AssetManager::isOutdated(AssetConverterSettings *settings) {
     if(settings->version() > settings->currentVersion()) {
         return true;
     }
@@ -279,7 +279,7 @@ void AssetManager::removeResource(const QFileInfo &source) {
         QFile::remove(src.absoluteFilePath());
 
         if(build) {
-            foreach(IBuilder *it, m_Builders) {
+            foreach(CodeBuilder *it, m_Builders) {
                 it->rescanSources(ProjectManager::instance()->contentPath());
                 if(!it->isEmpty()) {
                     it->convertFile(nullptr);
@@ -408,7 +408,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
         QFile::copy(src.absoluteFilePath() + gMetaExt, target.filePath() + gMetaExt);
     }
 
-    IConverterSettings *settings = fetchSettings(target);
+    AssetConverterSettings *settings = fetchSettings(target);
     QString guid = settings->destination();
     settings->setDestination(qPrintable(QUuid::createUuid().toString()));
     settings->setAbsoluteDestination(qPrintable(ProjectManager::instance()->importPath() + "/" + settings->destination()));
@@ -416,7 +416,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
     settings->saveSettings();
 
     if(settings->typeName() != CODE) {
-        IConverterSettings *s = fetchSettings(src);
+        AssetConverterSettings *s = fetchSettings(src);
         registerAsset(settings->source(), settings->destination(), s->typeName());
     }
     // Icon and resource
@@ -443,7 +443,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
             file.write(static_cast<const char *>(&str[0]), str.size());
             file.close();
 
-            IConverterSettings *settings = fetchSettings(path);
+            AssetConverterSettings *settings = fetchSettings(path);
             settings->saveSettings();
 
             Prefab *fab = Engine::objectCreate<Prefab>("");
@@ -475,10 +475,10 @@ bool AssetManager::import(const QFileInfo &source, const QFileInfo &target) {
     return QFile::copy(source.absoluteFilePath(), path + name + suff);
 }
 
-IConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
+AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     QDir dir(m_pProjectManager->contentPath());
     QString path = dir.relativeFilePath(source.absoluteFilePath());
-    IConverterSettings *settings = m_ConverterSettings.value(path, nullptr);
+    AssetConverterSettings *settings = m_ConverterSettings.value(path, nullptr);
     if(settings) {
         return settings;
     }
@@ -487,7 +487,7 @@ IConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     if(it != m_Converters.end()) {
         settings = it.value()->createSettings();
     } else {
-        settings = new IConverterSettings();
+        settings = new AssetConverterSettings();
     }
     settings->setSource(qPrintable(source.absoluteFilePath()));
 
@@ -501,14 +501,14 @@ IConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
     return settings;
 }
 
-void AssetManager::registerConverter(IConverter *converter) {
+void AssetManager::registerConverter(AssetConverter *converter) {
     if(converter) {
         for(QString &format : converter->suffixes()) {
             m_Converters[format.toLower()] = converter;
 
-            IBuilder *builder = dynamic_cast<IBuilder *>(converter);
+            CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
             if(builder) {
-                connect(builder, &IBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
+                connect(builder, &CodeBuilder::buildSuccessful, this, &AssetManager::onBuildSuccessful);
 
                 m_ClassMaps[format.toLower()] = builder->classMap();
                 m_Builders.push_back(builder);
@@ -569,7 +569,7 @@ Actor *AssetManager::createActor(const QString &source) {
             guid = pathToGuid(source.toStdString()).c_str();
         }
         QFileInfo info(path);
-        IConverter *converter = m_Converters.value(info.suffix().toLower(), nullptr);
+        AssetConverter *converter = m_Converters.value(info.suffix().toLower(), nullptr);
         if(converter) {
             return converter->createActor(guid);
         }
@@ -601,7 +601,7 @@ void AssetManager::dumpBundle() {
         VariantList item;
         item.push_back(it.first);
         item.push_back(it.second.first);
-        IConverterSettings *settings = fetchSettings(QString(guidToPath(it.second.second).c_str()));
+        AssetConverterSettings *settings = fetchSettings(QString(guidToPath(it.second.second).c_str()));
         item.push_back(settings->hash().toStdString());
         paths[it.second.second] = item;
     }
@@ -630,7 +630,7 @@ void AssetManager::onPerform() {
     QDir dir(m_pProjectManager->contentPath());
 
     if(!m_ImportQueue.isEmpty()) {
-        IConverterSettings *settings = m_ImportQueue.takeFirst();
+        AssetConverterSettings *settings = m_ImportQueue.takeFirst();
 
         if(!convert(settings)) {
             QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
@@ -638,7 +638,7 @@ void AssetManager::onPerform() {
             QFile::copy(settings->source(), dst);
         }
     } else {
-        foreach(IBuilder *it, m_Builders) {
+        foreach(CodeBuilder *it, m_Builders) {
             it->rescanSources(ProjectManager::instance()->contentPath());
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
@@ -651,7 +651,7 @@ void AssetManager::onPerform() {
         cleanupBundle();
 
         if(isOutdated()) {
-            foreach(IBuilder *it, m_Builders) {
+            foreach(CodeBuilder *it, m_Builders) {
                 if(!it->isEmpty()) {
                     it->buildProject();
                 }
@@ -669,7 +669,7 @@ void AssetManager::onPerform() {
 void AssetManager::onFileChanged(const QString &path, bool force) {
     QFileInfo info(path);
     if(info.exists() && (QString(".") + info.suffix()) != gMetaExt) {
-        IConverterSettings *settings = fetchSettings(info);
+        AssetConverterSettings *settings = fetchSettings(info);
 
         if(force || isOutdated(settings)) {
             pushToImport(settings);
@@ -704,7 +704,7 @@ void AssetManager::onDirectoryChanged(const QString &path, bool force) {
     }
 }
 
-IConverter *AssetManager::getConverter(IConverterSettings *settings) {
+AssetConverter *AssetManager::getConverter(AssetConverterSettings *settings) {
     QFileInfo info(settings->source());
     QString format = info.completeSuffix().toLower();
 
@@ -716,7 +716,7 @@ IConverter *AssetManager::getConverter(IConverterSettings *settings) {
 }
 
 
-bool AssetManager::convert(IConverterSettings *settings) {
+bool AssetManager::convert(AssetConverterSettings *settings) {
     QFileInfo info(settings->source());
     QString format = info.completeSuffix().toLower();
 
@@ -758,7 +758,7 @@ bool AssetManager::convert(IConverterSettings *settings) {
 }
 
 bool AssetManager::isOutdated() const {
-    foreach(IBuilder *it, m_Builders) {
+    foreach(CodeBuilder *it, m_Builders) {
         if(it->isOutdated()) {
             return true;
         }

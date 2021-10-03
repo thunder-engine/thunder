@@ -39,7 +39,7 @@ AnimationBuilder::AnimationBuilder() {
     m_Functions << "BaseState";
 }
 
-uint8_t AnimationBuilder::convertFile(IConverterSettings *settings) {
+uint8_t AnimationBuilder::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
@@ -51,7 +51,7 @@ uint8_t AnimationBuilder::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *AnimationBuilder::createSettings() const {
+AssetConverterSettings *AnimationBuilder::createSettings() const {
     return new AnimationBuilderSettings();
 }
 

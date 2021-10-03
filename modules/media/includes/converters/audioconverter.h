@@ -5,7 +5,7 @@
 
 #include "resources/audioclip.h"
 
-#include <converter.h>
+#include <assetconverter.h>
 
 #include <vorbis/vorbisenc.h>
 
@@ -13,7 +13,7 @@ class QAudioDecoder;
 class QAudioFormat;
 class QEventLoop;
 
-class AudioImportSettings : public IConverterSettings {
+class AudioImportSettings : public AssetConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(bool Streamed READ stream WRITE setStream DESIGNABLE true USER true)
@@ -40,14 +40,14 @@ protected:
     float m_Quality;
 };
 
-class AudioConverter : public IConverter {
+class AudioConverter : public AssetConverter {
     Q_OBJECT
 public:
     AudioConverter();
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mp3", "wav", "ogg"}; }
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
 public slots:
     void onBufferReady();
@@ -56,7 +56,7 @@ public slots:
 protected:
     VariantMap convertResource(AudioImportSettings *, int32_t srcChanels);
 
-    bool readOgg(IConverterSettings *settings, int32_t &channels);
+    bool readOgg(AssetConverterSettings *settings, int32_t &channels);
 
     QAudioDecoder *m_pDecoder;
 

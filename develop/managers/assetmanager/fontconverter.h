@@ -1,13 +1,13 @@
 #ifndef FONTCONVERTER_H
 #define FONTCONVERTER_H
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 #include <resources/font.h>
 
-class FontConverter : public IConverter {
+class FontConverter : public AssetConverter {
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"ttf", "otf"}; }
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 };
 
 #endif // FONTCONVERTER_H

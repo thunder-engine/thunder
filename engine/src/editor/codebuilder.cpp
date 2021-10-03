@@ -1,4 +1,4 @@
-#include "editor/builder.h"
+#include "editor/codebuilder.h"
 
 #include "resources/text.h"
 
@@ -29,22 +29,22 @@ QString BuilderSettings::typeName() const {
     return "Code";
 }
 
-IBuilder::IBuilder() :
+CodeBuilder::CodeBuilder() :
         m_Outdated(false) {
 
     m_Values["${Identifier_Prefix}"] = "com.tunderengine";
 }
 
-uint8_t IBuilder::convertFile(IConverterSettings *) {
+uint8_t CodeBuilder::convertFile(AssetConverterSettings *) {
     m_Outdated = true;
     return 1;
 }
 
-IConverterSettings *IBuilder::createSettings() const {
+AssetConverterSettings *CodeBuilder::createSettings() const {
     return new BuilderSettings();
 }
 
-void IBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap &values) {
+void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap &values) {
     QFile file(dst);
     if(!file.exists()) {
         file.setFileName(src);
@@ -103,7 +103,7 @@ void IBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap
     }
 }
 
-void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
+void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     QStringMap classes;
     // Generate plugin loader
     foreach(QString it, m_Sources) {
@@ -159,23 +159,23 @@ void IBuilder::generateLoader(const QString &dst, const QStringList &modules) {
     updateTemplate(dst + "/application.cpp", project() + "application.cpp", m_Values);
 }
 
-const QString IBuilder::persistentAsset() const {
+const QString CodeBuilder::persistentAsset() const {
     return "";
 }
 
-const QString IBuilder::persistentUUID() const {
+const QString CodeBuilder::persistentUUID() const {
     return "";
 }
 
-QString IBuilder::project() const {
+QString CodeBuilder::project() const {
     return m_Project;
 }
 
-QStringList IBuilder::sources() const {
+QStringList CodeBuilder::sources() const {
     return m_Sources;
 }
 
-void IBuilder::rescanSources(const QString &path) {
+void CodeBuilder::rescanSources(const QString &path) {
     m_Sources.clear();
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
@@ -189,15 +189,15 @@ void IBuilder::rescanSources(const QString &path) {
     m_Values[gFilesList] = formatList(m_Sources);
 }
 
-bool IBuilder::isEmpty() const {
+bool CodeBuilder::isEmpty() const {
     return m_Sources.empty();
 }
 
-bool IBuilder::isOutdated() const {
+bool CodeBuilder::isOutdated() const {
     return m_Outdated;
 }
 
-QString IBuilder::formatList(const QStringList &list) const {
+QString CodeBuilder::formatList(const QStringList &list) const {
     bool first  = true;
     QString result;
     for(int i = 0; i < list.size(); ++i) {
@@ -208,6 +208,6 @@ QString IBuilder::formatList(const QStringList &list) const {
 }
 
 
-QAbstractItemModel *IBuilder::classMap() const {
+QAbstractItemModel *CodeBuilder::classMap() const {
     return nullptr;
 }

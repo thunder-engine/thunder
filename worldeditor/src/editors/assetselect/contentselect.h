@@ -8,7 +8,7 @@
 class QSortFilterProxyModel;
 class AssetBrowser;
 
-class IConverterSettings;
+class AssetConverterSettings;
 
 namespace Ui {
     class ContentSelect;

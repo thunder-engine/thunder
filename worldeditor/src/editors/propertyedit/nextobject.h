@@ -16,10 +16,12 @@ class NextObject : public QObject {
     Q_PROPERTY(QString Name READ name WRITE setName DESIGNABLE true USER true)
 
 public:
-    explicit NextObject(Object *data, QObject *parent = nullptr);
+    explicit NextObject(QObject *parent = nullptr);
 
     QString name();
     void setName(const QString &name);
+
+    void setObject(Object *object);
 
     QMenu *menu(Object *obj);
 

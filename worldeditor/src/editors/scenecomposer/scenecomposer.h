@@ -1,150 +1,72 @@
-#ifndef WORLDBUILDER_H
-#define WORLDBUILDER_H
+#ifndef SCENECOMPOSER_H
+#define SCENECOMPOSER_H
 
-#include <QMainWindow>
-#include <QProcess>
-#include <QMenu>
+#include <editor/asseteditor.h>
 
-#include <vector>
-#include <cstdint>
-
-#include <amath.h>
-#include <engine.h>
-
-#include "aboutdialog.h"
-#include "managers/pluginmanager/plugindialog.h"
-
-using namespace std;
-
-class Object;
-class ImportQueue;
-
-class ProjectModel;
-class FeedManager;
-class DocumentModel;
-
-class IConverterSettings;
+class NextObject;
 
 namespace Ui {
     class SceneComposer;
 }
 
-class SceneComposer : public QMainWindow {
+class SceneComposer : public AssetEditor {
     Q_OBJECT
 
 public:
-    explicit SceneComposer(Engine *engine, QWidget *parent = nullptr);
-    ~SceneComposer() Q_DECL_OVERRIDE;
+    explicit SceneComposer(QWidget *parent = nullptr);
+    ~SceneComposer();
+
+    void setScene(Scene *scene);
+
+    VariantList saveState() const;
+    void restoreState(const VariantList &state);
+
+    void backupScene();
+    void restoreBackupScene();
+
+    void takeScreenshot();
+
+    QString path() const;
+
+signals:
+    void hierarchyCreated(Object *root);
+    void hierarchyUpdated();
+
+    void createComponent(QString);
+
+    void itemsSelected(const Object::ObjectList &objects);
 
 public slots:
-    void onObjectSelected(Object::ObjectList objects);
-    void onAssetSelected(IConverterSettings *settings);
-    void onItemSelected(QObject *item);
-    void onOpenEditor(const QString &path);
-
-    void onOpenProject(const QString &path);
-
-private:
-    void updateTitle();
-
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
-
-    bool checkSave();
-
-    void saveWorkspace();
-    void resetWorkspace();
-    void resetGeometry();
-
-    void findWorkspaces(const QString &dir);
-
-    void checkImportSettings(IConverterSettings *settings);
-
-    Ui::SceneComposer *ui;
-
-    Engine *m_Engine;
-
-    QObject *m_Properties;
-
-    QString m_Path;
-
-    QString m_CurrentWorkspace;
-
-    QProcess *m_Builder;
-
-    ImportQueue *m_Queue;
-
-    ByteArray m_Back;
-
-    ProjectModel *m_ProjectModel;
-    FeedManager *m_FeedManager;
-    DocumentModel *m_DocumentModel;
-
-    QAction *m_Undo;
-    QAction *m_Redo;
-
-    QWidget *m_MainDocument;
-    QWidget *m_CurrentDocument;
-
-    AboutDialog m_aboutDlg;
-    PluginDialog m_pluginDlg;
+    void onSelectActors(Object::ObjectList objects);
+    void onRemoveActors(Object::ObjectList objects);
+    void onUpdated();
+    void onParentActors(Object::ObjectList objects, Object *parent);
+    void onFocusActor(Object *actor);
 
 private slots:
-    void onSettingsUpdated();
+    void onLocal(bool flag);
 
     void onRepickSelected();
 
-    void onNewProject();
-    void onImportProject();
+    void onItemsSelected(const Object::ObjectList &objects);
 
-    void onBuildProject();
+private:
+    void newAsset() override;
+    void loadAsset(AssetConverterSettings *settings) override;
+    void saveAsset(const QString &path = QString()) override;
 
-    void onOpen(const QString &arg = QString());
+    bool isModified() const override;
+    void setModified(bool flag) override;
 
-    void onImportFinished();
+    QStringList suffixes() const override;
 
-    void readOutput();
+private:
+    Ui::SceneComposer *ui;
 
-    void readError();
+    ByteArray m_backupScene;
 
-    void onFinished(int exitCode, QProcess::ExitStatus);
+    NextObject *m_properties;
 
-    void parseLogs(const QString &log);
-
-    void onLocal(bool flag);
-
-    void on_commitButton_clicked();
-    void on_revertButton_clicked();
-
-    void on_actionNew_triggered();
-    void on_actionSave_triggered();
-    void on_actionSave_As_triggered();
-
-    void on_actionEditor_Mode_triggered();
-    void on_actionGame_Mode_triggered();
-
-    void on_actionTake_Screenshot_triggered();
-
-    void on_actionUndo_triggered();
-    void on_actionRedo_triggered();
-
-    void onWorkspaceActionClicked();
-    void onToolWindowActionToggled(bool state);
-
-    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
-    void onCurrentToolWindowChanged(QWidget *toolWindow);
-
-    void on_actionSave_Workspace_triggered();
-    void on_actionReset_Workspace_triggered();
-
-    void on_actionNew_Object_triggered();
-
-    void on_menuFile_aboutToShow();
-    void on_actionReport_Issue_triggered();
-    void on_actionAPI_Reference_triggered();
-    void on_actionThunder_Answers_triggered();
-    void on_actionThunder_Manual_triggered();
 };
 
-#endif // WORLDBUILDER_H
+#endif // SCENECOMPOSER_H

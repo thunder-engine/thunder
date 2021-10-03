@@ -32,21 +32,21 @@
 */
 
 /*!
-    \fn System *Module::system()
+    \fn System *Module::system(const char *name)
 
-    Returns a module's System if present; otherwise returns nullptr.
+    Returns a module's System given \a name if present; otherwise returns nullptr.
 */
 
 /*!
-    \fn IConverter *Module::converter()
+    \fn AssetConverter *Module::assetConverter(const char *name)
 
-    Returns a module's converter if present; otherwise returns nullptr.
+    Returns a module's asset converter with given \a name if present; otherwise returns nullptr.
 */
 
 /*!
-    \fn IAssetEditor *Module::assetEditor()
+    \fn AssetEditor *Module::assetEditor()
 
-    Returns a module's asset editor if present; otherwise returns nullptr.
+    Returns a module's asset editor with given \a name if present; otherwise returns nullptr.
 */
 
 /*!

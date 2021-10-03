@@ -169,7 +169,7 @@ AssimpConverter::AssimpConverter() {
 
 }
 
-IConverterSettings *AssimpConverter::createSettings() const {
+AssetConverterSettings *AssimpConverter::createSettings() const {
     return new AssimpImportSettings();
 }
 
@@ -178,10 +178,10 @@ Actor *AssimpConverter::createActor(const QString &guid) const {
     if(prefab) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }
-    return IConverter::createActor(guid);
+    return AssetConverter::createActor(guid);
 }
 
-uint8_t AssimpConverter::convertFile(IConverterSettings *settings) {
+uint8_t AssimpConverter::convertFile(AssetConverterSettings *settings) {
     QTime time;
     time.start();
 

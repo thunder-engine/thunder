@@ -46,7 +46,6 @@ public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
-    void setRootObject(Object *object);
     void setSimplified(bool enable);
     void setComponentsFilter(const QStringList &list);
     void setController(ObjectCtrl *ctrl);
@@ -62,6 +61,7 @@ signals:
 
 public slots:
     void onObjectSelected(Object::ObjectList objects);
+    void onSetRootObject(Object *object);
     void onHierarchyUpdated();
 
     void onDragEnter(QDragEnterEvent *e);

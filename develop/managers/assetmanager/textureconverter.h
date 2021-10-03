@@ -4,13 +4,13 @@
 #include <resources/texture.h>
 #include <resources/sprite.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 #include <QRect>
 
 class QImage;
 
-class TextureImportSettings : public IConverterSettings {
+class TextureImportSettings : public AssetConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(TextureType Type READ textureType WRITE setTextureType DESIGNABLE true USER true)
@@ -109,16 +109,16 @@ protected:
     bool          m_Lod;
 };
 
-class TextureConverter : public IConverter {
+class TextureConverter : public AssetConverter {
 public:
     void convertTexture(TextureImportSettings *settings, Texture *texture);
     void convertSprite(TextureImportSettings *settings, Sprite *sprite);
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
-    uint8_t convertFile(IConverterSettings *settings) Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
 
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 };

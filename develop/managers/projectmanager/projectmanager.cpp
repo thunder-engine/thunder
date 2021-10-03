@@ -5,9 +5,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QFileDialog>
+#include <QDebug>
 
 #include <QMetaProperty>
 #include <QCoreApplication>
+
+#include <log.h>
 
 #include "config.h"
 
@@ -21,7 +25,8 @@ const QString gProject("ProjectId");
 
 ProjectManager *ProjectManager::m_pInstance = nullptr;
 
-ProjectManager::ProjectManager() {
+ProjectManager::ProjectManager() :
+        m_Builder(new QProcess(this)) {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -44,6 +49,11 @@ ProjectManager::ProjectManager() {
     setSupportedPlatform(new IOSPlatform);
     setSupportedPlatform(new TvOSPlatform);
 #endif
+
+    connect(m_Builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
+
+    connect(m_Builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
+    connect(m_Builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
 }
 
 ProjectManager *ProjectManager::instance() {
@@ -182,6 +192,47 @@ void ProjectManager::saveSettings() {
     }
 }
 
+void ProjectManager::build(QString platform) {
+    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Select Target Directory"),
+                                                    "",
+                                                    QFileDialog::ShowDirsOnly |
+                                                    QFileDialog::DontResolveSymlinks);
+
+    if(!dir.isEmpty()) {
+        ProjectManager *mgr = ProjectManager::instance();
+
+        QStringList args;
+        args << "-s" << mgr->projectPath() << "-t" << dir;
+
+        if(!platform.isEmpty()) {
+            args << "-p" << platform;
+        }
+
+        qDebug() << args.join(" ");
+
+        m_Builder->start("Builder", args);
+        if(!m_Builder->waitForStarted()) {
+            Log(Log::ERR) << qPrintable(m_Builder->errorString());
+        }
+    }
+}
+
+void ProjectManager::onBuildFinished(int exitCode, QProcess::ExitStatus) {
+    if(exitCode == 0) {
+        Log(Log::INF) << "Build Finished";
+    } else {
+        Log(Log::ERR) << "Build Failed";
+    }
+}
+
+void ProjectManager::readOutput() {
+    emit readBuildLogs(m_Builder->readAllStandardOutput());
+}
+
+void ProjectManager::readError() {
+    emit readBuildLogs(m_Builder->readAllStandardError());
+}
+
 QStringList ProjectManager::modules() const {
     return m_Modules;
 }
@@ -191,15 +242,15 @@ QStringList ProjectManager::platforms() const {
     return (m_Platforms.isEmpty()) ? list : m_Platforms;
 }
 
-IPlatform *ProjectManager::supportedPlatform(const QString &platform) {
+Platform *ProjectManager::supportedPlatform(const QString &platform) {
     return m_SupportedPlatforms[platform];
 }
 
-void ProjectManager::setSupportedPlatform(IPlatform *platform) {
+void ProjectManager::setSupportedPlatform(Platform *platform) {
     m_SupportedPlatforms[platform->name()] = platform;
 }
 
-IPlatform *ProjectManager::currentPlatform() const {
+Platform *ProjectManager::currentPlatform() const {
     return m_pCurrentPlatform;
 }
 

@@ -1,4 +1,4 @@
-#include "editor/converter.h"
+#include "editor/assetconverter.h"
 
 #include <QJsonObject>
 #include <QJsonArray>
@@ -18,35 +18,35 @@ namespace {
     const QString gProject(".project");
 };
 
-IConverterSettings::IConverterSettings() :
+AssetConverterSettings::AssetConverterSettings() :
         m_Valid(false),
         m_Modified(false),
         m_Type(MetaType::INVALID),
         m_Version(0),
         m_CurrentVersion(0) {
 
-    connect(this, &IConverterSettings::updated, this, &IConverterSettings::setModified);
+    connect(this, &AssetConverterSettings::updated, this, &AssetConverterSettings::setModified);
 }
 
-IConverterSettings::~IConverterSettings() {
+AssetConverterSettings::~AssetConverterSettings() {
 
 }
 
-uint32_t IConverterSettings::type() const {
+uint32_t AssetConverterSettings::type() const {
     return m_Type;
 }
-void IConverterSettings::setType(uint32_t type) {
+void AssetConverterSettings::setType(uint32_t type) {
     m_Type = type;
 }
 
-bool IConverterSettings::isValid() const {
+bool AssetConverterSettings::isValid() const {
     return m_Valid;
 }
-void IConverterSettings::setValid(bool valid) {
+void AssetConverterSettings::setValid(bool valid) {
     m_Valid = valid;
 }
 
-QString IConverterSettings::typeName() const {
+QString AssetConverterSettings::typeName() const {
     if(m_Type != MetaType::INVALID) {
         QString result = MetaType::name(m_Type);
         result = result.replace("*", "");
@@ -55,87 +55,87 @@ QString IConverterSettings::typeName() const {
     return "Invalid";
 }
 
-QString IConverterSettings::hash() const {
+QString AssetConverterSettings::hash() const {
     return m_Md5;
 }
-void IConverterSettings::setHash(const QString &hash) {
+void AssetConverterSettings::setHash(const QString &hash) {
     m_Md5 = hash;
 }
 
-uint32_t IConverterSettings::version() const {
+uint32_t AssetConverterSettings::version() const {
     return m_Version;
 }
 
-void IConverterSettings::setVersion(uint32_t version) {
+void AssetConverterSettings::setVersion(uint32_t version) {
     m_Version = version;
 }
 
-uint32_t IConverterSettings::currentVersion() const {
+uint32_t AssetConverterSettings::currentVersion() const {
     return m_CurrentVersion;
 }
 
-void IConverterSettings::setCurrentVersion(uint32_t version) {
+void AssetConverterSettings::setCurrentVersion(uint32_t version) {
     m_CurrentVersion = version;
 }
 
-QString IConverterSettings::source() const {
+QString AssetConverterSettings::source() const {
     return m_Source;
 }
-void IConverterSettings::setSource(const QString &source) {
+void AssetConverterSettings::setSource(const QString &source) {
     m_Source = source;
 }
 
-QString IConverterSettings::destination() const {
+QString AssetConverterSettings::destination() const {
     return m_Destination;
 }
-void IConverterSettings::setDestination(const QString &destination) {
+void AssetConverterSettings::setDestination(const QString &destination) {
     m_Destination = destination;
 }
 
-QString IConverterSettings::absoluteDestination() const {
+QString AssetConverterSettings::absoluteDestination() const {
     return m_AbsoluteDestination;
 }
 
-void IConverterSettings::setAbsoluteDestination(const QString &destination) {
+void AssetConverterSettings::setAbsoluteDestination(const QString &destination) {
     m_AbsoluteDestination = destination;
 }
 
-const QStringList IConverterSettings::subKeys() const {
+const QStringList AssetConverterSettings::subKeys() const {
     return m_SubItems.keys();
 }
 
-QString IConverterSettings::subItem(const QString &key) const {
+QString AssetConverterSettings::subItem(const QString &key) const {
     return m_SubItems.value(key);
 }
 
-QJsonObject IConverterSettings::subItemData(const QString &key) const {
+QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
     Q_UNUSED(key)
     return QJsonObject();
 }
 
-QString IConverterSettings::subTypeName(const QString &key) const {
+QString AssetConverterSettings::subTypeName(const QString &key) const {
     QString result = MetaType::name(subType(key));
     result = result.replace("*", "");
     return result.trimmed();
 }
 
-int32_t IConverterSettings::subType(const QString &key) const {
+int32_t AssetConverterSettings::subType(const QString &key) const {
     return m_SubTypes.value(key);
 }
 
-void IConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
+void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
         m_SubItems[name] = uuid;
         m_SubTypes[name] = type;
     }
 }
 
-void IConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
+void AssetConverterSettings::setSubItemData(const QString &name, const QJsonObject &data) {
     Q_UNUSED(name)
     Q_UNUSED(data)
 }
 
-bool IConverterSettings::loadSettings() {
+bool AssetConverterSettings::loadSettings() {
     QFile meta(source() + gMetaExt);
     if(meta.open(QIODevice::ReadOnly)) {
         QJsonObject object = QJsonDocument::fromJson(meta.readAll()).object();
@@ -178,7 +178,7 @@ bool IConverterSettings::loadSettings() {
     return false;
 }
 
-void IConverterSettings::saveSettings() {
+void AssetConverterSettings::saveSettings() {
     QJsonObject set;
     QObject *object = dynamic_cast<QObject *>(this);
     if(object) {
@@ -222,31 +222,31 @@ void IConverterSettings::saveSettings() {
     }
 }
 
-bool IConverterSettings::isModified() const {
+bool AssetConverterSettings::isModified() const {
     return m_Modified;
 }
 
-void IConverterSettings::setModified() {
+void AssetConverterSettings::setModified() {
     m_Modified = true;
 }
 
-void IConverter::init() {
+void AssetConverter::init() {
 
 }
 
-IConverterSettings *IConverter::createSettings() const {
-    return new IConverterSettings();
+AssetConverterSettings *AssetConverter::createSettings() const {
+    return new AssetConverterSettings();
 }
 
-QString IConverter::templatePath() const {
+QString AssetConverter::templatePath() const {
     return QString();
 }
 
-QString IConverter::iconPath() const {
+QString AssetConverter::iconPath() const {
     return QString();
 }
 
-Actor *IConverter::createActor(const QString &guid) const {
+Actor *AssetConverter::createActor(const QString &guid) const {
     Q_UNUSED(guid)
     return nullptr;
 }

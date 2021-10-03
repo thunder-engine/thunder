@@ -16,7 +16,7 @@
 #include <resources/prefab.h>
 #include <resources/sprite.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 #include <editor/handles.h>
 
 #include "selecttool.h"
@@ -341,7 +341,7 @@ void ObjectCtrl::onDrop() {
     }
 
     if(!m_DragMap.isEmpty()) {
-        emit loadMap(ProjectManager::instance()->contentPath() + "/" + m_DragMap);
+        emit dropMap(ProjectManager::instance()->contentPath() + "/" + m_DragMap);
         m_DragMap.clear();
     }
 }

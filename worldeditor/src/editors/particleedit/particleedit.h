@@ -1,18 +1,12 @@
 #ifndef PARTICLEEDIT_H
 #define PARTICLEEDIT_H
 
-#include <QMainWindow>
 #include <stdint.h>
 
-#include "editors/scenecomposer/documentmodel.h"
+#include <editor/asseteditor.h>
 
-class QSettings;
-
-class Engine;
 class Actor;
 class ParticleRender;
-
-class Viewport;
 
 class EffectConverter;
 
@@ -20,18 +14,12 @@ namespace Ui {
     class ParticleEdit;
 }
 
-class ParticleEdit : public QMainWindow, public IAssetEditor {
+class ParticleEdit : public AssetEditor {
     Q_OBJECT
 
 public:
-    ParticleEdit(DocumentModel *document);
+    ParticleEdit();
     ~ParticleEdit();
-
-    void readSettings();
-    void writeSettings();
-
-signals:
-    void templateUpdate();
 
 private slots:
     void onUpdateTemplate(bool update = true);
@@ -47,36 +35,26 @@ private slots:
     void onFunctionCreated(QString emitter, QString function);
     void onFunctionDeleted(QString emitter, QString function);
 
-    void onToolWindowActionToggled(bool checked);
-
-    void onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible);
-
-    void on_actionSave_triggered();
-
 private:
-    void loadAsset(IConverterSettings *settings) override;
+    void loadAsset(AssetConverterSettings *settings) override;
+    void saveAsset(const QString &path) override;
+
     bool isModified() const override;
 
-    QStringList assetTypes() const override;
+    QStringList suffixes() const override;
 
-    void closeEvent(QCloseEvent *event) override;
     void timerEvent(QTimerEvent *) override;
+    void changeEvent(QEvent *event) override;
 
     bool m_Modified;
 
     Ui::ParticleEdit *ui;
 
-    QObject *m_pEditor;
-
     Actor *m_pEffect;
-
-    QString m_Path;
 
     EffectConverter *m_pBuilder;
 
     ParticleRender *m_pRender;
-
-    DocumentModel *m_pDocument;
 };
 
 #endif // PARTICLEEDIT_H

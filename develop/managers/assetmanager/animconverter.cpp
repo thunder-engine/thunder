@@ -13,7 +13,7 @@ AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
 }
 
-uint8_t AnimConverter::convertFile(IConverterSettings *settings) {
+uint8_t AnimConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         AnimationClip clip;
@@ -34,11 +34,11 @@ uint8_t AnimConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *AnimConverter::createSettings() const {
+AssetConverterSettings *AnimConverter::createSettings() const {
     return new AnimImportSettings();
 }
 
-Variant AnimConverter::readJson(const string &data, IConverterSettings *settings) {
+Variant AnimConverter::readJson(const string &data, AssetConverterSettings *settings) {
     Variant result = Json::load(data);
 
     bool update = false;

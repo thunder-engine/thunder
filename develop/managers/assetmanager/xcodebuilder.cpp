@@ -41,7 +41,7 @@ bool XcodeBuilder::buildProject() {
             m_Values[QString("${%1}").arg(property.name())] = property.read(m_pMgr).toString();
         }
 
-        IPlatform *platform = m_pMgr->currentPlatform();
+        Platform *platform = m_pMgr->currentPlatform();
         if(dynamic_cast<TvOSPlatform *>(platform)) {
             m_Values[gSdkName] = "appletvos";
             m_Values[gPlatformName] = "tvos";

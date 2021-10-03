@@ -1,23 +1,23 @@
-#ifndef IBUILDER_H
-#define IBUILDER_H
+#ifndef CODEBUILDER_H
+#define CODEBUILDER_H
 
-#include "converter.h"
+#include "assetconverter.h"
 
 #include <QMap>
 
 class QAbstractItemModel;
 
-class NEXT_LIBRARY_EXPORT BuilderSettings : public IConverterSettings {
+class NEXT_LIBRARY_EXPORT BuilderSettings : public AssetConverterSettings {
 public:
     BuilderSettings();
 private:
     QString typeName() const Q_DECL_OVERRIDE;
 };
 
-class NEXT_LIBRARY_EXPORT IBuilder : public IConverter {
+class NEXT_LIBRARY_EXPORT CodeBuilder : public AssetConverter {
     Q_OBJECT
 public:
-    IBuilder();
+    CodeBuilder();
 
     virtual bool buildProject() = 0;
 
@@ -37,13 +37,13 @@ public:
 
     virtual QAbstractItemModel *classMap() const;
 
-    uint8_t convertFile(IConverterSettings *) Q_DECL_OVERRIDE;
+    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
 signals:
     void buildSuccessful();
 
 private:
-    IConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
 protected:
     void updateTemplate(const QString &src, const QString &dst, QStringMap &values);
@@ -62,4 +62,4 @@ protected:
     bool m_Outdated;
 };
 
-#endif // IBUILDER_H
+#endif // CodeBUILDER_H

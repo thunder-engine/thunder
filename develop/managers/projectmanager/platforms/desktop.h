@@ -1,13 +1,13 @@
-#include "iplatform.h"
+#include "platform.h"
 
 #include "qbsbuilder.h"
 
-class DesktopPlatform : public IPlatform {
+class DesktopPlatform : public Platform {
     Q_OBJECT
 public:
     QString name() const { return "desktop"; }
     bool isPackage() const { return false; }
     bool isEmbedded() const { return false; }
 
-    IConverter *builder() const {return new QbsBuilder(); }
+    AssetConverter *builder() const {return new QbsBuilder(); }
 };

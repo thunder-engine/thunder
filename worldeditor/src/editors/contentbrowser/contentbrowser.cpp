@@ -363,7 +363,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
         path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
     }
 
-    IConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
 
     emit assetSelected(settings);
 }

@@ -5,9 +5,12 @@
 
 #include <QMenu>
 #include <QClipboard>
+#include <QProcess>
 
-#include "log.h"
 #include "logmodel.h"
+#include "qlog.h"
+
+#include "projectmanager.h"
 
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),
@@ -22,6 +25,10 @@ ConsoleManager::ConsoleManager(QWidget *parent) :
     m_pMenu = new QMenu(this);
     QAction *action = m_pMenu->addAction(tr("Copy"));
     connect(action, SIGNAL(triggered()), this, SLOT(onCopy()));
+
+    connect(ProjectManager::instance(), &ProjectManager::readBuildLogs, this, &ConsoleManager::parseLogs);
+
+    connect(static_cast<QLog *>(Log::handler()), SIGNAL(postRecord(uint8_t,QString)), this, SLOT(onLogRecord(uint8_t,QString)));
 }
 
 ConsoleManager::~ConsoleManager() {
@@ -54,5 +61,19 @@ void ConsoleManager::onCopy() {
 void ConsoleManager::changeEvent(QEvent *event) {
     if (event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
+    }
+}
+
+void ConsoleManager::parseLogs(const QString &log) {
+    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+
+    foreach(QString it, list) {
+        if(it.contains(" error ")) {
+            onLogRecord(Log::ERR, qPrintable(it));
+        } else if(it.contains(" warning ")) {
+            onLogRecord(Log::WRN, qPrintable(it));
+        } else {
+            onLogRecord(Log::INF, qPrintable(it));
+        }
     }
 }

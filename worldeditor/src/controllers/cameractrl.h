@@ -50,8 +50,6 @@ public:
 
     virtual Object::ObjectList selected();
 
-    void loadSettings();
-
     void update();
 
     void setFocusOn(Actor *actor, float &bottom);
@@ -67,6 +65,9 @@ public:
     virtual void createMenu(QMenu *menu);
 
     ViewSide viewSide() const { return m_ViewSide; }
+
+    bool restoreState(const VariantList &list);
+    VariantList saveState() const;
 
 public slots:
     virtual void onInputEvent(QInputEvent *);

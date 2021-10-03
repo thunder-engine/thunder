@@ -43,7 +43,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
         cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
@@ -85,7 +85,7 @@ Project {
                 "*.h",
                 "components/*.h",
                 "resources/*.h",
-                "postprocess/postprocessor.h"
+                "postprocess/postprocessor.h",
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"

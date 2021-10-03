@@ -15,7 +15,7 @@ PrefabConverterSettings::PrefabConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-IConverterSettings *PrefabConverter::createSettings() const {
+AssetConverterSettings *PrefabConverter::createSettings() const {
     return new PrefabConverterSettings();
 }
 
@@ -26,10 +26,10 @@ Actor *PrefabConverter::createActor(const QString &guid) const {
     if(prefab) {
         return static_cast<Actor *>(prefab->actor()->clone());
     }
-    return IConverter::createActor(guid);
+    return AssetConverter::createActor(guid);
 }
 
-uint8_t PrefabConverter::convertFile(IConverterSettings *settings) {
+uint8_t PrefabConverter::convertFile(AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
     QFile src(settings->source());
@@ -52,7 +52,7 @@ uint8_t PrefabConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-Variant PrefabConverter::readJson(const string &data, IConverterSettings *settings) {
+Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
     Variant result = Json::load(data);

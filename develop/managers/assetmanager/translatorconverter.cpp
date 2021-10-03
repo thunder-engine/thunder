@@ -6,7 +6,7 @@
 #include "resources/text.h"
 #include "projectmanager.h"
 
-uint8_t TranslatorConverter::convertFile(IConverterSettings *settings) {
+uint8_t TranslatorConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Translator loc;
@@ -30,8 +30,8 @@ uint8_t TranslatorConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *TranslatorConverter::createSettings() const {
-    IConverterSettings *result = IConverter::createSettings();
+AssetConverterSettings *TranslatorConverter::createSettings() const {
+    AssetConverterSettings *result = AssetConverter::createSettings();
     result->setType(MetaType::type<Translator *>());
     return result;
 }

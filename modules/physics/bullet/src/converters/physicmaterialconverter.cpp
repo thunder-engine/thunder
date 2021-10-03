@@ -11,11 +11,11 @@ PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
     setType(MetaType::type<PhysicMaterial *>());
 }
 
-IConverterSettings *PhysicMaterialConverter::createSettings() const {
+AssetConverterSettings *PhysicMaterialConverter::createSettings() const {
     return new PhysicMaterialImportSettings();
 }
 
-uint8_t PhysicMaterialConverter::convertFile(IConverterSettings *settings) {
+uint8_t PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         PhysicMaterial material;
