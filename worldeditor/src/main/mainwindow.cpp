@@ -436,7 +436,8 @@ void MainWindow::onOpenProject(const QString &path) {
 }
 
 void MainWindow::onNewProject() {
-    QString path = QFileDialog::getSaveFileName(this, tr("Create New Project"), ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
+    QString path = QFileDialog::getSaveFileName(this, tr("Create New Project"),
+                                                ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
@@ -447,7 +448,8 @@ void MainWindow::onNewProject() {
 }
 
 void MainWindow::onImportProject() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Import Existing Project"), ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
+    QString path = QFileDialog::getOpenFileName(this, tr("Import Existing Project"),
+                                                ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
         onOpenProject(path);
     }

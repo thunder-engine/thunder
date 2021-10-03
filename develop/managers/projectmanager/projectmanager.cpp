@@ -10,6 +10,8 @@
 
 #include <QMetaProperty>
 #include <QCoreApplication>
+#include <QStandardPaths>
+#include <QSettings>
 
 #include <log.h>
 
@@ -22,6 +24,7 @@
 
 const QString gCompany("Company");
 const QString gProject("ProjectId");
+const QString gProjects("Projects");
 
 ProjectManager *ProjectManager::m_pInstance = nullptr;
 
@@ -41,7 +44,9 @@ ProjectManager::ProjectManager() :
     m_ResourcePath = QFileInfo(sdkPath() + "/resources");
     m_TemplatePath = QFileInfo(resourcePath() + "/editor/templates");
 
-    m_MyProjectsPath = QFileInfo(dir.absolutePath());
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    m_MyProjectsPath = QFileInfo(path);
 
     setSupportedPlatform(new DesktopPlatform);
     setSupportedPlatform(new AndroidPlatform);
