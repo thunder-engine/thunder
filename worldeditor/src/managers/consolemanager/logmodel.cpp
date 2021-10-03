@@ -4,11 +4,11 @@
 #include <log.h>
 
 LogModel::LogModel() :
-        QAbstractItemModel() {
+        QAbstractItemModel(),
+        m_Error(QIcon(":/Images/message/Error.png")),
+        m_Warning(QIcon(":/Images/message/Warning.png")),
+        m_Info(QIcon(":/Images/message/Information.png")) {
 
-    m_Error     = QIcon(":/Images/message/Error.png");
-    m_Warning   = QIcon(":/Images/message/Warning.png");
-    m_Info      = QIcon(":/Images/message/Information.png");
 }
 
 void LogModel::addRecord(uint8_t type, const QString &str) {

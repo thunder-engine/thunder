@@ -53,8 +53,6 @@ private:
 
     void findWorkspaces(const QString &dir);
 
-    void checkImportSettings(AssetConverterSettings *settings);
-
     void setGameMode(bool game);
 
 private:

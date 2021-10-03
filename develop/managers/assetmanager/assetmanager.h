@@ -98,6 +98,8 @@ public slots:
 
     void onBuildSuccessful();
 
+    void checkImportSettings(AssetConverterSettings *settings);
+
 signals:
     void ready();
 

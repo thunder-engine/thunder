@@ -233,7 +233,7 @@ MainWindow::~MainWindow() {
 void MainWindow::onItemSelected(QObject *item) {
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(ui->propertyView->object());
     if(settings && settings != item) {
-        checkImportSettings(settings);
+        AssetManager::instance()->checkImportSettings(settings);
         disconnect(settings, &AssetConverterSettings::updated, this, &MainWindow::onSettingsUpdated);
     }
 
@@ -283,30 +283,6 @@ void MainWindow::onOpenEditor(const QString &path) {
 void MainWindow::onSettingsUpdated() {
     ui->commitButton->setEnabled(true);
     ui->revertButton->setEnabled(true);
-}
-
-void MainWindow::checkImportSettings(AssetConverterSettings *settings) {
-    if(settings->isModified()) {
-        QMessageBox msgBox(this);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The import settings has been modified."));
-        msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            return;
-        }
-        if(result == QMessageBox::Yes) {
-            settings->saveSettings();
-            AssetManager::instance()->pushToImport(settings);
-            AssetManager::instance()->reimport();
-        }
-        if(result == QMessageBox::No) {
-            settings->loadSettings();
-        }
-    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -554,7 +530,7 @@ void MainWindow::on_actionReset_Workspace_triggered() {
         ds >> layout;
         ui->toolWidget->restoreState(layout.value(gWindows));
 
-        foreach(auto it, ui->menuWorkspace->children()) {
+        for(auto it : ui->menuWorkspace->children()) {
             QAction *action = static_cast<QAction*>(it);
             action->blockSignals(true);
             action->setChecked((action->data().toString() == m_CurrentWorkspace));

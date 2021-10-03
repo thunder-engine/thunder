@@ -12,6 +12,7 @@
 #include <QUrl>
 #include <QDebug>
 #include <QCryptographicHash>
+#include <QMessageBox>
 
 #include <cstring>
 
@@ -103,7 +104,7 @@ AssetManager::~AssetManager() {
     delete m_pDirWatcher;
     delete m_pFileWatcher;
 
-    for(AssetConverter *it : QSet<AssetConverter *>::fromList(m_Converters.values())) {
+    for(auto it : m_Converters) {
         delete it;
     }
 }
@@ -123,20 +124,44 @@ void AssetManager::destroy() {
 void AssetManager::init(Engine *engine) {
     m_pEngine = engine;
 
-    registerConverter(new AnimConverter());
-    registerConverter(new AnimationBuilder());
-    registerConverter(new TextConverter());
-    registerConverter(new TextureConverter());
-    registerConverter(new ShaderBuilder());
-    registerConverter(new AssimpConverter());
-    registerConverter(new FontConverter());
-    registerConverter(new PrefabConverter());
-    registerConverter(new EffectConverter());
-    registerConverter(new TranslatorConverter());
-    registerConverter(new MapConverter());
+    registerConverter(new AnimConverter);
+    registerConverter(new AnimationBuilder);
+    registerConverter(new TextConverter);
+    registerConverter(new TextureConverter);
+    registerConverter(new ShaderBuilder);
+    registerConverter(new AssimpConverter);
+    registerConverter(new FontConverter);
+    registerConverter(new PrefabConverter);
+    registerConverter(new EffectConverter);
+    registerConverter(new TranslatorConverter);
+    registerConverter(new MapConverter);
 
     for(auto &it : m_Converters) {
         it->init();
+    }
+}
+
+void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
+    if(settings->isModified()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText(tr("The import settings has been modified."));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            return;
+        }
+        if(result == QMessageBox::Yes) {
+            settings->saveSettings();
+            pushToImport(settings);
+            reimport();
+        }
+        if(result == QMessageBox::No) {
+            settings->loadSettings();
+        }
     }
 }
 

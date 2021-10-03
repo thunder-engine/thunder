@@ -546,9 +546,9 @@ void ObjectCtrl::createMenu(QMenu *menu) {
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
-        UndoObject(ctrl, name, group) {
+        UndoObject(ctrl, name, group),
+        m_Objects(objects) {
 
-    m_Objects = objects;
 }
 void SelectObjects::undo() {
     SelectObjects::redo();
@@ -566,9 +566,9 @@ void SelectObjects::redo() {
 }
 
 CreateObject::CreateObject(const QString &type, ObjectCtrl *ctrl, QUndoCommand *group) :
-        UndoObject(ctrl, QObject::tr("Create %1").arg(type), group) {
+        UndoObject(ctrl, QObject::tr("Create %1").arg(type), group),
+        m_Type(type) {
 
-    m_Type = type;
 }
 void CreateObject::undo() {
     for(auto uuid : m_Objects) {
@@ -744,9 +744,11 @@ void DeleteActors::redo() {
 }
 
 RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
-        UndoObject(ctrl, name + " " + component->typeName().c_str(), group) {
+        UndoObject(ctrl, name + " " + component->typeName().c_str(), group),
+        m_parent(0),
+        m_uuid(component->uuid()),
+        m_index(0) {
 
-    m_uuid = component->uuid();
 }
 void RemoveComponent::undo() {
     Object *parent = m_pController->findObject(m_parent);
@@ -819,11 +821,11 @@ void ParentingObjects::redo() {
 }
 
 PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
-        UndoObject(ctrl, name, group) {
+        UndoObject(ctrl, name, group),
+        m_Value(value),
+        m_Property(property),
+        m_Object(object->uuid()) {
 
-    m_Value = value;
-    m_Property = property;
-    m_Object = object->uuid();
 }
 void PropertyObject::undo() {
     PropertyObject::redo();
