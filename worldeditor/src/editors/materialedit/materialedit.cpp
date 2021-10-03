@@ -1,14 +1,11 @@
 #include "materialedit.h"
 #include "ui_materialedit.h"
 
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QSettings>
-
 #include <QQmlContext>
 #include <QQuickItem>
 
 #include <QWidgetAction>
+#include <QMenu>
 
 #include <engine.h>
 #include <components/scene.h>
@@ -23,7 +20,6 @@
 #include <global.h>
 #include <json.h>
 
-#include "editors/propertyedit/nextobject.h"
 #include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
@@ -35,41 +31,37 @@
 
 #include "editors/componentbrowser/componentbrowser.h"
 
-MaterialEdit::MaterialEdit(DocumentModel *document) :
-        QMainWindow(nullptr),
+namespace {
+    const char *gMeshRender("MeshRender");
+};
+
+MaterialEdit::MaterialEdit() :
         m_Modified(false),
         ui(new Ui::MaterialEdit),
         m_pMesh(nullptr),
         m_pLight(nullptr),
         m_pMaterial(nullptr),
         m_pBuilder(new ShaderBuilder()),
-        m_pEditor(nullptr),
-        m_pDocument(document) {
+        m_pBrowser(new ComponentBrowser(this)) {
 
     ui->setupUi(this);
-
-    glWidget = new Viewport(this);
-    CameraCtrl *ctrl = new CameraCtrl(glWidget);
+    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
     ctrl->init(nullptr);
 
-    glWidget->setController(ctrl);
-    glWidget->setScene(Engine::objectCreate<Scene>("Scene"));
-    glWidget->setObjectName("Preview");
-    glWidget->setWindowTitle("Preview");
+    ui->preview->setController(ctrl);
+    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
-    ui->treeView->setWindowTitle("Properties");
-    ui->textEdit->setWindowTitle("Source Code");
     ui->schemeWidget->setWindowTitle("Scheme");
 
-    Scene *scene = glWidget->scene();
+    Scene *scene = ui->preview->scene();
     m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
     m_pLight->transform()->setQuaternion(rot);
 
-    Camera *camera = glWidget->controller()->camera();
+    Camera *camera = ctrl->camera();
     if(camera) {
         camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
     }
@@ -78,35 +70,17 @@ MaterialEdit::MaterialEdit(DocumentModel *document) :
 
     on_actionSphere_triggered();
 
-    ui->centralwidget->addToolWindow(ui->schemeWidget, QToolWindowManager::EmptySpaceArea);
-    ui->centralwidget->addToolWindow(glWidget, QToolWindowManager::ReferenceLeftOf, ui->centralwidget->areaFor(ui->schemeWidget));
-    ui->centralwidget->addToolWindow(ui->treeView, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(glWidget));
-    ui->centralwidget->addToolWindow(ui->components, QToolWindowManager::ReferenceRightOf, ui->centralwidget->areaFor(ui->schemeWidget));
-    ui->centralwidget->addToolWindow(ui->textEdit, QToolWindowManager::ReferenceBottomOf, ui->centralwidget->areaFor(ui->schemeWidget));
-
-    foreach(QWidget *it, ui->centralwidget->toolWindows()) {
-        QAction *action = ui->menuWindow->addAction(it->windowTitle());
-        action->setObjectName(it->windowTitle());
-        action->setData(QVariant::fromValue(it));
-        action->setCheckable(true);
-        action->setChecked(true);
-        connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
-    }
-    ui->components->setModel(static_cast<AbstractSchemeModel *>(m_pBuilder)->components());
-
-    connect(ui->centralwidget, SIGNAL(toolWindowVisibilityChanged(QWidget *, bool)), this, SLOT(onToolWindowVisibilityChanged(QWidget *, bool)));
     connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
 
     ui->schemeWidget->rootContext()->setContextProperty("schemeModel", m_pBuilder);
     ui->schemeWidget->rootContext()->setContextProperty("stateMachine", QVariant(false));
     ui->schemeWidget->setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
 
-    //ui->schemeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->schemeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QQuickItem *item = ui->schemeWidget->rootObject();
     connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
 
-    m_pBrowser  = new ComponentBrowser(this);
     m_pBrowser->setModel(static_cast<AbstractSchemeModel *>(m_pBuilder)->components());
     connect(m_pBrowser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
 
@@ -115,24 +89,12 @@ MaterialEdit::MaterialEdit(DocumentModel *document) :
     m_pAction->setDefaultWidget(m_pBrowser);
     m_pCreateMenu->addAction(m_pAction);
 
-    m_pUndo = UndoManager::instance()->createUndoAction(ui->menuEdit);
-    m_pUndo->setShortcut(QKeySequence("Ctrl+Z"));
-    ui->menuEdit->insertAction(ui->actionPlane, m_pUndo);
-
-    m_pRedo = UndoManager::instance()->createRedoAction(ui->menuEdit);
-    m_pRedo->setShortcut(QKeySequence("Ctrl+Y"));
-    ui->menuEdit->insertAction(ui->actionPlane, m_pRedo);
-
-    readSettings();
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 2);
 }
 
 MaterialEdit::~MaterialEdit() {
-    writeSettings();
-
     delete ui;
-    delete m_pEditor;
-    delete m_pBuilder;
-    delete glWidget;
 
     delete m_pMesh;
     delete m_pLight;
@@ -142,65 +104,36 @@ bool MaterialEdit::isModified() const {
     return m_Modified;
 }
 
-QStringList MaterialEdit::assetTypes() const {
-    return {"Material"};
+QStringList MaterialEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
 }
 
-void MaterialEdit::readSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    restoreGeometry(settings.value("material.geometry").toByteArray());
-    ui->centralwidget->restoreState(settings.value("material.windows"));
-}
+void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
+    if(m_pSettings != settings) {
+        m_pSettings = settings;
 
-void MaterialEdit::writeSettings() {
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    settings.setValue("material.geometry", saveGeometry());
-    settings.setValue("material.windows", ui->centralwidget->saveState());
-}
-
-void MaterialEdit::closeEvent(QCloseEvent *event) {
-    writeSettings();
-
-    if(isModified()) {
-        QMessageBox msgBox(this);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The material has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result  = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            event->ignore();
-            return;
+        m_pMaterial = Engine::objectCreate<Material>();
+        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
+        if(mesh) {
+            mesh->setMaterial(m_pMaterial);
         }
-        if(result == QMessageBox::Yes) {
-            on_actionSave_triggered();
-        }
+        static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_pSettings->source());
+
+        m_Modified = false;
+        onNodesSelected(QVariantList({0}));
     }
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
 }
 
-void MaterialEdit::loadAsset(IConverterSettings *settings) {
-    show();
-
-    m_Path = settings->source();
-    m_pMaterial = Engine::objectCreate<Material>();
-    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
-    if(mesh) {
-        mesh->setMaterial(m_pMaterial);
+void MaterialEdit::saveAsset(const QString &path) {
+    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
+        static_cast<AbstractSchemeModel *>(m_pBuilder)->save(path.isEmpty() ? m_pSettings->source() : path);
+        m_Modified = false;
     }
-    static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_Path);
-
-    m_Modified = false;
-    onNodesSelected(QVariantList({0}));
 }
 
 void MaterialEdit::onUpdateTemplate(bool update) {
     if(m_pBuilder && m_pBuilder->build()) {
-        ui->textEdit->setText(m_pBuilder->shader());
-        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
+        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
         if(mesh) {
             VariantMap map = m_pBuilder->data(true).toMap();
             m_pMaterial->loadUserData(map);
@@ -210,14 +143,14 @@ void MaterialEdit::onUpdateTemplate(bool update) {
 }
 
 void MaterialEdit::changeMesh(const string &path) {
-    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component("MeshRender"));
+    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
         if(m_pMaterial) {
             mesh->setMaterial(m_pMaterial);
         }
         float bottom;
-        static_cast<CameraCtrl *>(glWidget->controller())->setFocusOn(m_pMesh, bottom);
+        static_cast<CameraCtrl *>(ui->preview->controller())->setFocusOn(m_pMesh, bottom);
     }
 }
 
@@ -235,7 +168,7 @@ void MaterialEdit::onNodesSelected(const QVariant &indices) {
     if(!list.isEmpty()) {
         const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
         if(node) {
-            ui->treeView->setObject(static_cast<QObject *>(node->ptr));
+            emit itemSelected(static_cast<QObject *>(node->ptr));
         }
     }
 }
@@ -252,47 +185,12 @@ void MaterialEdit::on_actionSphere_triggered() {
     changeMesh(".embedded/sphere.fbx/Sphere001");
 }
 
-void MaterialEdit::on_actionSave_triggered() {
-    if(!m_Path.isEmpty()) {
-        static_cast<AbstractSchemeModel *>(m_pBuilder)->save(m_Path);
-        m_Modified = false;
-    }
-}
-
-void MaterialEdit::onKeyPress(QKeyEvent *pe) {
-    switch (pe->key()) {
-        case Qt::Key_L: {
-            /// \todo: Light control
-        } break;
-        default: break;
-    }
-}
-
-void MaterialEdit::onKeyRelease(QKeyEvent *pe) {
-    switch (pe->key()) {
-        case Qt::Key_L: {
-            /// \todo: Light control
-        } break;
-        default: break;
-    }
-}
-
-void MaterialEdit::onToolWindowActionToggled(bool state) {
-    QWidget *toolWindow = static_cast<QAction*>(sender())->data().value<QWidget *>();
-    ui->centralwidget->moveToolWindow(toolWindow, state ?
-                                              QToolWindowManager::NewFloatingArea :
-                                              QToolWindowManager::NoArea);
-}
-
-void MaterialEdit::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible) {
-    QAction *action = ui->menuWindow->findChild<QAction *>(toolWindow->windowTitle());
-    if(action) {
-        action->blockSignals(true);
-        action->setChecked(visible);
-        action->blockSignals(false);
-    }
-}
-
 void MaterialEdit::on_schemeWidget_customContextMenuRequested(const QPoint &) {
     m_pCreateMenu->exec(QCursor::pos());
+}
+
+void MaterialEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
 }

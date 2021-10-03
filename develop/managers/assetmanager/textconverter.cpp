@@ -6,7 +6,7 @@
 #include "resources/text.h"
 #include "projectmanager.h"
 
-uint8_t TextConverter::convertFile(IConverterSettings *settings) {
+uint8_t TextConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Text text;
@@ -29,8 +29,8 @@ uint8_t TextConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *TextConverter::createSettings() const {
-    IConverterSettings *result = IConverter::createSettings();
+AssetConverterSettings *TextConverter::createSettings() const {
+    AssetConverterSettings *result = AssetConverter::createSettings();
     result->setType(MetaType::type<Text *>());
     return result;
 }

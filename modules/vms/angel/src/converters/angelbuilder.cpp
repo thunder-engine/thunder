@@ -129,16 +129,16 @@ QAbstractItemModel *AngelBuilder::classMap() const {
     return m_pClassModel;
 }
 
-uint8_t AngelBuilder::convertFile(IConverterSettings *settings) {
+uint8_t AngelBuilder::convertFile(AssetConverterSettings *settings) {
     if(settings) {
         QFileInfo info(settings->absoluteDestination());
         m_Destination = info.absolutePath() + "/" + persistentUUID();
     }
 
-    return IBuilder::convertFile(settings);
+    return CodeBuilder::convertFile(settings);
 }
 
-IConverterSettings *AngelBuilder::createSettings() const {
+AssetConverterSettings *AngelBuilder::createSettings() const {
     return new AngelScriptImportSettings();
 }
 

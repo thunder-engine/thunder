@@ -1,5 +1,5 @@
-#ifndef BASECONVERTERSETTINGS_H
-#define BASECONVERTERSETTINGS_H
+#ifndef ASSETCONVERTER_H
+#define ASSETCONVERTER_H
 
 #include <QObject>
 #include <QMap>
@@ -10,12 +10,12 @@ class Actor;
 
 typedef QMap<QString, QString> QStringMap;
 
-class NEXT_LIBRARY_EXPORT IConverterSettings : public QObject {
+class NEXT_LIBRARY_EXPORT AssetConverterSettings : public QObject {
     Q_OBJECT
 
 public:
-    IConverterSettings();
-    virtual ~IConverterSettings();
+    AssetConverterSettings();
+    virtual ~AssetConverterSettings();
 
     virtual uint32_t type() const;
     virtual void setType(uint32_t type);
@@ -81,15 +81,15 @@ protected:
 
 typedef QList<uint32_t> QIntegerList;
 
-class NEXT_LIBRARY_EXPORT IConverter : public QObject {
+class NEXT_LIBRARY_EXPORT AssetConverter : public QObject {
     Q_OBJECT
 
 public:
     virtual void init();
     virtual QStringList suffixes() const = 0;
 
-    virtual uint8_t convertFile(IConverterSettings *settings) = 0;
-    virtual IConverterSettings *createSettings() const = 0;
+    virtual uint8_t convertFile(AssetConverterSettings *settings) = 0;
+    virtual AssetConverterSettings *createSettings() const = 0;
 
     virtual QString templatePath() const;
     virtual QString iconPath() const;
@@ -97,4 +97,4 @@ public:
     virtual Actor *createActor(const QString &guid) const;
 };
 
-#endif // BASECONVERTERSETTINGS_H
+#endif // ASSETCONVERTER_H

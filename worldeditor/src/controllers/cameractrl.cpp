@@ -340,3 +340,38 @@ void CameraCtrl::cameraMove(const Vector3 &delta) {
     Transform *t = m_pCamera->transform();
     t->setPosition(t->position() - delta * ((m_pActiveCamera->orthographic()) ? m_pActiveCamera->orthoSize() : m_pActiveCamera->focal()));
 }
+
+bool CameraCtrl::restoreState(const VariantList &list) {
+    bool result = false;
+    if(m_pActiveCamera) {
+        auto it = list.begin();
+        Actor *actor = m_pActiveCamera->actor();
+        Transform *t = actor->transform();
+        t->setPosition(it->toVector3());
+        it++;
+        t->setRotation(it->toVector3());
+        it++;
+        result = it->toBool(); // ortho
+        it++;
+        m_pActiveCamera->setFocal(it->toFloat());
+        it++;
+        m_pActiveCamera->setOrthoSize(it->toFloat());
+        it++;
+    }
+    return result;
+}
+
+VariantList CameraCtrl::saveState() const {
+    VariantList result;
+    if(m_pActiveCamera) {
+        Actor *actor = m_pActiveCamera->actor();
+        Transform *t = actor->transform();
+        result.push_back(t->position());
+        result.push_back(t->rotation());
+        result.push_back(m_pActiveCamera->orthographic());
+        result.push_back(m_pActiveCamera->focal());
+        result.push_back(m_pActiveCamera->orthoSize());
+    }
+    return result;
+}
+

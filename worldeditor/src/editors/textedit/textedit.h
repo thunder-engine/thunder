@@ -1,27 +1,20 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
-#include <QWidget>
 #include <QFileInfo>
 
-#include "editors/scenecomposer/documentmodel.h"
+#include <editor/asseteditor.h>
 
 namespace Ui {
     class TextEdit;
 }
 
-class ContentTreeFilter;
-class DocumentModel;
-
-class TextEdit : public QWidget, public IAssetEditor {
+class TextEdit : public AssetEditor {
     Q_OBJECT
 
 public:
-    TextEdit(DocumentModel *document);
+    TextEdit();
     ~TextEdit();
-
-signals:
-    void templateUpdate();
 
 private slots:
     void onCursorPositionChanged();
@@ -42,23 +35,21 @@ private slots:
     void on_pushReplaceFind_clicked();
 
 private:
-    void loadAsset(IConverterSettings *settings) override;
+    void loadAsset(AssetConverterSettings *settings) override;
+    void saveAsset(const QString &path = QString()) override;
 
-    void closeEvent(QCloseEvent *event) override;
+    bool isSingleInstance() const override { return false; }
+
+    AssetEditor *createInstance() override { return new TextEdit; }
+
     void changeEvent(QEvent *event) override;
 
     bool isModified() const override;
     void setModified(bool flag) override;
 
-    void saveAsset(const QString &path = QString()) override;
-
-    QStringList assetTypes() const override;
-
-    QFileInfo m_fileInfo;
+    QStringList suffixes() const override;
 
     Ui::TextEdit *ui;
-
-    DocumentModel *m_pDocument;
 };
 
 #endif // TEXTEDIT_H

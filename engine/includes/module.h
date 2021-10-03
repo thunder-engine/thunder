@@ -5,8 +5,8 @@
 #include <file.h>
 
 class System;
-class IConverter;
-class IAssetEditor;
+class AssetConverter;
+class AssetEditor;
 
 #if defined(NEXT_SHARED) && defined(_WIN32)
     #define MODULE_EXPORT __declspec(dllexport)
@@ -24,9 +24,9 @@ public:
     virtual const char *metaInfo() const = 0;
 
 #ifdef NEXT_SHARED
-    virtual IConverter *converter(const char *name) { A_UNUSED(name); return nullptr; }
+    virtual AssetConverter *assetConverter(const char *name) { A_UNUSED(name); return nullptr; }
 
-    virtual IAssetEditor *assetEditor(const char *name) { A_UNUSED(name); return nullptr; }
+    virtual AssetEditor *assetEditor(const char *name) { A_UNUSED(name); return nullptr; }
 #endif
 };
 

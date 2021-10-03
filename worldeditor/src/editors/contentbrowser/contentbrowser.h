@@ -9,7 +9,7 @@
 
 #include <engine.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 class ContentItemDeligate;
 class ContentListFilter;
@@ -39,7 +39,7 @@ public slots:
     void assetUpdated();
 
 signals:
-    void assetSelected(IConverterSettings *settings);
+    void assetSelected(AssetConverterSettings *settings);
     void openEditor(const QString &path);
 
 protected:

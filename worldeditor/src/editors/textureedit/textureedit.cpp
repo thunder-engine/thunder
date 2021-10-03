@@ -5,10 +5,6 @@
 
 #include "textureconverter.h"
 
-#include "editors/propertyedit/nextobject.h"
-#include "controllers/objectctrl.h"
-#include "graph/sceneview.h"
-
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
@@ -18,20 +14,15 @@
 #include <resources/texture.h>
 #include <resources/material.h>
 
-#include "projectmanager.h"
-
 #include "spritecontroller.h"
 
 #include "spriteelement.h"
 
-TextureEdit::TextureEdit(DocumentModel *document) :
-        QWidget(nullptr),
+TextureEdit::TextureEdit() :
         ui(new Ui::TextureEdit),
         m_Rresource(nullptr),
         m_pRender(nullptr),
-        m_pSettings(nullptr),
         m_pConverter(new TextureConverter),
-        m_pDocument(document),
         m_Details(new SpriteElement(this)) {
 
     ui->setupUi(this);
@@ -65,32 +56,18 @@ TextureEdit::~TextureEdit() {
     delete ui;
 }
 
-void TextureEdit::closeEvent(QCloseEvent *event) {
-    if(!m_pDocument->checkSave(this)) {
-        event->ignore();
-        return;
-    }
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pDocument->closeFile(dir.relativeFilePath(m_Path));
-}
-
-void TextureEdit::changeEvent(QEvent *event) {
-    if(event->type() == QEvent::LanguageChange) {
-        ui->retranslateUi(this);
-    }
-}
-
 bool TextureEdit::isModified() const {
-    return m_pSettings->isModified();
+    if(m_pSettings) {
+        return m_pSettings->isModified();
+    }
+    return false;
 }
 
-void TextureEdit::loadAsset(IConverterSettings *settings) {
+void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     if(m_pSettings) {
-        disconnect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+        disconnect(m_pSettings, &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
-    m_pSettings = dynamic_cast<TextureImportSettings *>(settings);
-
-    m_Path = settings->source();
+    m_pSettings = static_cast<TextureImportSettings *>(settings);
 
     if(m_Rresource) {
         m_Rresource->unsubscribe(this);
@@ -117,19 +94,19 @@ void TextureEdit::loadAsset(IConverterSettings *settings) {
     ctrl->setSize(m_pRender->texture()->width(),
                   m_pRender->texture()->height());
 
-    m_Details->setSettings(m_pSettings);
+    m_Details->setSettings(static_cast<TextureImportSettings*>(m_pSettings));
     m_Details->raise();
 
-    connect(m_pSettings, &IConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+    connect(m_pSettings, &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
 }
 
-QStringList TextureEdit::assetTypes() const {
-    return {"Texture", "Sprite"};
+QStringList TextureEdit::suffixes() const {
+    return static_cast<AssetConverter *>(m_pConverter)->suffixes();
 }
 
 void TextureEdit::onUpdateTemplate() {
     if(m_pSettings) {
-        m_pConverter->convertTexture(m_pSettings, m_pRender->texture());
+        m_pConverter->convertTexture(static_cast<TextureImportSettings*>(m_pSettings), m_pRender->texture());
     }
 }
 
@@ -149,5 +126,11 @@ void TextureEdit::resourceUpdated(const Resource *resource, Resource::ResourceSt
 
         SpriteController *ctrl = static_cast<SpriteController *>(ui->preview->controller());
         ctrl->setImportSettings(nullptr);
+    }
+}
+
+void TextureEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
     }
 }

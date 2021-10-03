@@ -39,7 +39,7 @@ System *Media::system(const char *) {
     return m_pSystem;
 }
 #ifdef NEXT_SHARED
-IConverter *Media::converter(const char *) {
+AssetConverter *Media::assetConverter(const char *) {
     return new AudioConverter();
 }
 #endif

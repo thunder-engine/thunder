@@ -7,17 +7,12 @@
 #include <QMessageBox>
 #include <QDir>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 #include "codeeditor.h"
 
-#include "editors/contentbrowser/contenttree.h"
-#include "projectmanager.h"
-
-TextEdit::TextEdit(DocumentModel *document) :
-        QWidget(nullptr),
-        ui(new Ui::TextEdit),
-        m_pDocument(document) {
+TextEdit::TextEdit() :
+        ui(new Ui::TextEdit) {
 
     ui->setupUi(this);
 
@@ -37,22 +32,6 @@ TextEdit::~TextEdit() {
     delete ui;
 }
 
-void TextEdit::closeEvent(QCloseEvent *event) {
-    if(!m_pDocument->checkSave(this)) {
-        event->ignore();
-        return;
-    }
-    QDir dir(ProjectManager::instance()->contentPath());
-    m_pDocument->closeFile(dir.relativeFilePath(m_fileInfo.absoluteFilePath()));
-}
-
-
-void TextEdit::changeEvent(QEvent *event) {
-    if(event->type() == QEvent::LanguageChange) {
-        ui->retranslateUi(this);
-    }
-}
-
 bool TextEdit::isModified() const {
     return ui->editor->document()->isModified();
 }
@@ -61,10 +40,15 @@ void TextEdit::setModified(bool flag) {
     ui->editor->document()->setModified(flag);
 }
 
-void TextEdit::loadAsset(IConverterSettings *settings) {
-    ui->editor->openFile(settings->source());
-    m_fileInfo = QFileInfo(settings->source());
-    setWindowTitle(m_fileInfo.fileName());
+void TextEdit::loadAsset(AssetConverterSettings *settings) {
+    m_pSettings = settings;
+    ui->editor->openFile(m_pSettings->source());
+    setWindowTitle(QFileInfo(m_pSettings->source()).fileName());
+}
+
+void TextEdit::saveAsset(const QString &path) {
+    ui->editor->saveFile(path);
+    onTextChanged();
 }
 
 void TextEdit::onCursorPositionChanged() {
@@ -73,20 +57,15 @@ void TextEdit::onCursorPositionChanged() {
 }
 
 void TextEdit::onTextChanged() {
-    QString title = m_fileInfo.fileName();
+    QString title = QFileInfo(m_pSettings->source()).fileName();
     if(ui->editor->document() && ui->editor->document()->isModified()) {
         title.append('*');
     }
     setWindowTitle(title);
 }
 
-void TextEdit::saveAsset(const QString &path) {
-    ui->editor->saveFile(path);
-    onTextChanged();
-}
-
-QStringList TextEdit::assetTypes() const {
-    return {"Code", "Text"};
+QStringList TextEdit::suffixes() const {
+    return {"cpp", "h", "as", "txt", "json", "html", "htm", "xml"};
 }
 
 void TextEdit::on_actionFind_triggered() {
@@ -117,4 +96,10 @@ void TextEdit::on_pushReplace_clicked() {
 void TextEdit::on_pushReplaceFind_clicked() {
     on_pushReplace_clicked();
     on_pushNext_clicked();
+}
+
+void TextEdit::changeEvent(QEvent *event) {
+    if(event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
 }

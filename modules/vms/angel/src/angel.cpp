@@ -39,7 +39,7 @@ System *Angel::system(const char *) {
     return m_pSystem;
 }
 #ifdef NEXT_SHARED
-IConverter *Angel::converter(const char *) {
+AssetConverter *Angel::assetConverter(const char *) {
     return new AngelBuilder(m_pSystem);
 }
 #endif

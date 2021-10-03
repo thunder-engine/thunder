@@ -110,7 +110,7 @@ bool QbsBuilder::buildProject() {
         builderInit();
         generateProject();
 
-        IPlatform *platform = m_pMgr->currentPlatform();
+        Platform *platform = m_pMgr->currentPlatform();
         QString product = m_pMgr->projectName();
         QString path = m_pMgr->cachePath() + "/" + platform->name() + "/" + gMode + "/install-root/";
         if(m_pMgr->targetPath().isEmpty()) {
@@ -185,7 +185,7 @@ QString QbsBuilder::builderVersion() {
 void QbsBuilder::builderInit() {
     SettingsManager *settings = SettingsManager::instance();
 
-    IPlatform *platform = m_pMgr->supportedPlatform("desktop");
+    Platform *platform = m_pMgr->supportedPlatform("desktop");
     if(platform) {
         QString profile;
     #if defined(Q_OS_WIN)
@@ -301,7 +301,7 @@ void QbsBuilder::parseLogs(const QString &log) {
 bool QbsBuilder::checkProfiles() {
     QStringList profiles;
     for(QString p : m_pMgr->platforms()) {
-        IPlatform *platform = m_pMgr->supportedPlatform(p);
+        Platform *platform = m_pMgr->supportedPlatform(p);
         if(platform) {
             profiles << platform->property(qPrintable(gProfile)).toString();
         }

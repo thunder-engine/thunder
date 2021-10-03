@@ -6,7 +6,7 @@
 
 #include "undomanager.h"
 
-#include "editors/scenecomposer/scenecomposer.h"
+#include "main/mainwindow.h"
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     asset->init(&engine);
     asset->registerConverter(new QbsBuilder());
 
-    SceneComposer window(&engine);
+    MainWindow window(&engine);
 
     SettingsManager::instance()->loadSettings();
 

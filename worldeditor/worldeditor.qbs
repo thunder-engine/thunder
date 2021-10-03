@@ -26,7 +26,6 @@ Project {
         "../develop/managers/settingsmanager",
         "../develop/managers/undomanager",
         "../develop/models/include",
-        "../modules/renders/rendergl/includes",
         "../modules/media/includes",
         "../thirdparty/assimp/include",
         "../thirdparty/next/inc",

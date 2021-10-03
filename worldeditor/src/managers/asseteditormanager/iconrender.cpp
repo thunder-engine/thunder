@@ -26,7 +26,7 @@
 #include <resources/sprite.h>
 #include <resources/prefab.h>
 
-#include <editor/converter.h>
+#include <editor/assetconverter.h>
 
 #include "pluginmanager.h"
 #include "assetmanager.h"

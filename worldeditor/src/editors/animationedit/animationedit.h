@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "editors/scenecomposer/documentmodel.h"
+#include <editor/asseteditor.h>
 
 class AbstractSchemeModel;
 class AnimationStateMachine;
@@ -12,30 +12,26 @@ namespace Ui {
     class AnimationEdit;
 }
 
-class AnimationEdit : public QWidget, public IAssetEditor {
+class AnimationEdit : public AssetEditor {
     Q_OBJECT
 
 public:
-    AnimationEdit(DocumentModel *document);
+    AnimationEdit();
     ~AnimationEdit();
-
-signals:
-    void templateUpdate();
 
 private slots:
     void onNodesSelected(const QVariant &);
 
-    void onUpdateTemplate(bool update = true);
+    void onUpdateAsset(bool update = true);
 
 private:
-    void loadAsset(IConverterSettings *settings) override;
+    void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path = QString()) override;
 
     bool isModified() const override;
 
-    QStringList assetTypes() const override;
+    QStringList suffixes() const override;
 
-    void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *event) override;
 
     bool m_Modified;
@@ -46,9 +42,6 @@ private:
 
     AnimationStateMachine *m_pMachine;
 
-    QString m_Path;
-
-    DocumentModel *m_pDocument;
 };
 
 #endif // ANIMATIONEDIT_H

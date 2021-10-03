@@ -49,7 +49,7 @@ EffectConverter::EffectConverter() {
     qRegisterMetaType<Velocity*>("Velocity");
 }
 
-uint8_t EffectConverter::convertFile(IConverterSettings *settings) {
+uint8_t EffectConverter::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
 
     QFile file(settings->absoluteDestination());
@@ -63,7 +63,7 @@ uint8_t EffectConverter::convertFile(IConverterSettings *settings) {
     return 1;
 }
 
-IConverterSettings *EffectConverter::createSettings() const {
+AssetConverterSettings *EffectConverter::createSettings() const {
     return new EffectConverterSettings();
 }
 

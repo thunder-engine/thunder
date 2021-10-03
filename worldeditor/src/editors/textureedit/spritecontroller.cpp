@@ -15,6 +15,7 @@
 
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(view),
+        m_pPipeline(nullptr),
         m_pSettings(nullptr),
         m_Width(0),
         m_Height(0),

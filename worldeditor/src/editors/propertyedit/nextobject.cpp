@@ -61,11 +61,9 @@ const QString EnumTag("enum=");
 const QString MetaTag("meta=");
 const QString ReadOnlyTag("ReadOnly");
 
-NextObject::NextObject(Object *data, QObject *parent) :
+NextObject::NextObject(QObject *parent) :
         QObject(parent),
-        m_pObject(data) {
-
-    onUpdated();
+        m_pObject(nullptr) {
 }
 
 QString NextObject::name() {
@@ -80,6 +78,11 @@ void NextObject::setName(const QString &name) {
         m_pObject->setName(qPrintable(name));
         emit updated();
     }
+}
+
+void NextObject::setObject(Object *object) {
+    m_pObject = object;
+    onUpdated();
 }
 
 QMenu *NextObject::menu(Object *obj) {
