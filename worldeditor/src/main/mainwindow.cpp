@@ -110,8 +110,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->preview->setScene(m_Engine->scene());
     ui->preview->setWindowTitle(tr("Preview"));
 
-    //ui->hierarchy->setController(ctl);
-
     m_MainDocument = ui->viewportWidget;
 
     Input::init(ui->preview);
@@ -130,6 +128,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->componentButton->setProperty("blue", true);
     ui->commitButton->setProperty("green", true);
+
+    ui->hierarchy->setContextMenu(ui->viewportWidget->contextMenu());
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
 
@@ -175,6 +175,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject);
     connect(ui->viewportWidget, &SceneComposer::hierarchyUpdated, ui->hierarchy, &HierarchyBrowser::onHierarchyUpdated);
+    connect(ui->viewportWidget, &SceneComposer::itemUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
     connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
     connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->timeline, &Timeline::onObjectSelected);
 
@@ -315,22 +316,21 @@ void MainWindow::on_commitButton_clicked() {
         s->saveSettings();
         AssetManager::instance()->pushToImport(s);
         AssetManager::instance()->reimport();
-
-        ui->commitButton->setEnabled(s->isModified());
-        ui->revertButton->setEnabled(s->isModified());
     }
+
+    ui->commitButton->setEnabled(false);
+    ui->revertButton->setEnabled(false);
 }
 
 void MainWindow::on_revertButton_clicked() {
     AssetConverterSettings *s = dynamic_cast<AssetConverterSettings *>(ui->propertyView->object());
     if(s && s->isModified()) {
         s->loadSettings();
-
-        ui->commitButton->setEnabled(s->isModified());
-        ui->revertButton->setEnabled(s->isModified());
-
         ui->propertyView->onUpdated();
     }
+
+    ui->commitButton->setEnabled(false);
+    ui->revertButton->setEnabled(false);
 }
 
 void MainWindow::on_actionNew_triggered() {
@@ -393,11 +393,10 @@ void MainWindow::onOpenProject(const QString &path) {
     ProjectManager::instance()->init(path);
     m_Engine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
-    AssetManager::instance()->rescan(!Engine::reloadBundle());
     PluginManager::instance()->rescan();
-
     PluginManager::instance()->initSystems();
 
+    AssetManager::instance()->rescan(!Engine::reloadBundle());
     ui->contentBrowser->rescan();
 
     for(QString &it : ProjectManager::instance()->platforms()) {

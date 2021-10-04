@@ -48,9 +48,10 @@ public:
 
     void setSimplified(bool enable);
     void setComponentsFilter(const QStringList &list);
-    void setController(ObjectCtrl *ctrl);
 
     Object *findObject(uint32_t id);
+
+    void setContextMenu(QMenu *menu);
 
 signals:
     void selected(Object::ObjectList objects);
@@ -63,6 +64,9 @@ public slots:
     void onObjectSelected(Object::ObjectList objects);
     void onSetRootObject(Object *object);
     void onHierarchyUpdated();
+    void onObjectUpdated();
+
+    void onItemRename();
 
     void onDragEnter(QDragEnterEvent *e);
     void onDragLeave(QDragLeaveEvent *);
@@ -77,29 +81,17 @@ private slots:
     void on_treeView_customContextMenuRequested(const QPoint &pos);
     void on_lineEdit_textChanged(const QString &arg1);
 
-    void onCreateActor();
-
-    void onItemDuplicate();
-    void onItemRename();
-    void onItemDelete();
-
-    void onItemUnpack();
-    void onItemUnpackAll();
-
 private:
     QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
 
     void changeEvent(QEvent *event) override;
 
 private:
-    QMenu m_ContentMenu;
-
     Ui::HierarchyBrowser *ui;
-    QRubberBand *m_pRect;
-    ObjectsFilter *m_pFilter;
-    ObjectCtrl *m_pController;
+    QRubberBand *m_rect;
+    ObjectsFilter *m_filter;
+    QMenu *m_contentMenu;
 
-    QList<QAction *> m_Prefab;
 };
 
 #endif // HIERARCHYBROWSER_H

@@ -13,12 +13,6 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         m_Prefab(":/Images/editor/objects/prefab.png"),
         m_Actor(":/Images/editor/objects/actor.png") {
 
-    startTimer(1000);
-}
-
-void ObjectHierarchyModel::timerEvent(QTimerEvent *) {
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
 }
 
 void ObjectHierarchyModel::setRoot(Object *scene) {

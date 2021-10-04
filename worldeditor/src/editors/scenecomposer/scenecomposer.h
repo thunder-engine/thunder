@@ -3,7 +3,10 @@
 
 #include <editor/asseteditor.h>
 
+#include <QMenu>
+
 class NextObject;
+class ObjectCtrl;
 
 namespace Ui {
     class SceneComposer;
@@ -28,9 +31,13 @@ public:
 
     QString path() const;
 
+    QMenu *contextMenu();
+
 signals:
     void hierarchyCreated(Object *root);
     void hierarchyUpdated();
+
+    void renameItem();
 
     void createComponent(QString);
 
@@ -50,6 +57,15 @@ private slots:
 
     void onItemsSelected(const Object::ObjectList &objects);
 
+    void onCreateActor();
+    void onItemDuplicate();
+    void onItemDelete();
+    void onItemUnpack();
+    void onItemUnpackAll();
+    void onItemRename();
+
+    void onAboutToShow();
+
 private:
     void newAsset() override;
     void loadAsset(AssetConverterSettings *settings) override;
@@ -60,12 +76,20 @@ private:
 
     QStringList suffixes() const override;
 
+    QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
+
 private:
     Ui::SceneComposer *ui;
+
+    QMenu m_contentMenu;
 
     ByteArray m_backupScene;
 
     NextObject *m_properties;
+
+    ObjectCtrl *m_controller;
+
+    QList<QAction *> m_prefab;
 
 };
 

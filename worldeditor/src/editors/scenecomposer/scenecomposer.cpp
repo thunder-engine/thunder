@@ -24,20 +24,21 @@
 
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
-        m_properties(new NextObject(this)) {
+        m_properties(new NextObject(this)),
+        m_controller(nullptr) {
 
     ui->setupUi(this);
 
     ui->renderMode->setMenu(new QMenu);
 
-    ObjectCtrl *ctl = new ObjectCtrl(ui->viewport);
-    ctl->resetModified();
-    ctl->createMenu(ui->renderMode->menu());
+    m_controller = new ObjectCtrl(ui->viewport);
+    m_controller->resetModified();
+    m_controller->createMenu(ui->renderMode->menu());
 
-    ui->viewport->setController(ctl);
+    ui->viewport->setController(m_controller);
 
     int index = 0;
-    for(auto &it : ctl->tools()) {
+    for(auto &it : m_controller->tools()) {
         QPushButton *tool = new QPushButton();
         tool->setProperty("blue", true);
         tool->setProperty("checkred", true);
@@ -51,28 +52,54 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
         ui->viewportLayout->insertWidget(index, tool);
 
-        connect(tool, SIGNAL(clicked()), ctl, SLOT(onChangeTool()));
+        connect(tool, SIGNAL(clicked()), m_controller, SLOT(onChangeTool()));
         if(index == 0) {
             tool->click();
         }
         index++;
     }
 
-    connect(ctl, SIGNAL(mapUpdated()), this, SIGNAL(hierarchyUpdated()));
-    connect(ctl, SIGNAL(dropMap(QString)), this, SIGNAL(dropAsset(QString)));
-    connect(ctl, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onItemsSelected(Object::ObjectList)));
+    connect(m_controller, SIGNAL(mapUpdated()), this, SIGNAL(hierarchyUpdated()));
+    connect(m_controller, SIGNAL(dropMap(QString)), this, SIGNAL(dropAsset(QString)));
+    connect(m_controller, SIGNAL(objectsSelected(Object::ObjectList)), this, SLOT(onItemsSelected(Object::ObjectList)));
 
-    connect(this, SIGNAL(createComponent(QString)), ctl, SLOT(onCreateComponent(QString)));
+    connect(this, SIGNAL(createComponent(QString)), m_controller, SLOT(onCreateComponent(QString)));
 
-    connect(ui->orthoButton, &QPushButton::toggled, ctl, &ObjectCtrl::onOrthographic);
-    connect(ui->localButton, &QPushButton::toggled, ctl, &ObjectCtrl::onLocal);
+    connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectCtrl::onOrthographic);
+    connect(ui->localButton, &QPushButton::toggled, m_controller, &ObjectCtrl::onLocal);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
-    connect(PluginManager::instance(), SIGNAL(pluginReloaded()), ctl, SLOT(onUpdateSelected()));
+    connect(PluginManager::instance(), SIGNAL(pluginReloaded()), m_controller, SLOT(onUpdateSelected()));
 
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
+    connect(m_controller, SIGNAL(objectsUpdated()), m_properties, SLOT(onUpdated()));
+
+    connect(m_properties, SIGNAL(deleteComponent(QString)), m_controller, SLOT(onDeleteComponent(QString)));
+    connect(m_properties, SIGNAL(changed(Object*,QString)), m_controller, SLOT(onUpdated()));
+    connect(m_properties, SIGNAL(aboutToBeChanged(Object*,QString,Variant)), m_controller, SLOT(onPropertyChanged(Object*,QString,Variant)), Qt::DirectConnection);
+    connect(m_properties, SIGNAL(updated()), this, SIGNAL(itemUpdated()));
+
+    //connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
+    //connect(m_properties, SIGNAL(changed(Object*,QString)), ui->timeline, SLOT(onUpdated(Object*,QString)));
+    //connect(ui->timeline, SIGNAL(moved()), m_properties, SLOT(onUpdated()));
+
     ui->orthoButton->setProperty("checkgreen", true);
+
+    m_contentMenu.addAction(createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2)));
+    m_contentMenu.addAction(createAction(tr("Duplicate"), SLOT(onItemDuplicate())));
+    m_contentMenu.addAction(createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete)));
+    m_contentMenu.addSeparator();
+
+    m_prefab.push_back((createAction(tr("Unpack Prefab"), SLOT(onItemUnpack()))));
+    m_prefab.push_back(createAction(tr("Unpack Prefab Completely"), SLOT(onItemUnpackAll())));
+    for(auto &it : m_prefab) {
+        m_contentMenu.addAction(it);
+    }
+    m_contentMenu.addSeparator();
+    m_contentMenu.addAction(createAction(tr("Create Actor"), SLOT(onCreateActor())));
+
+    connect(&m_contentMenu, SIGNAL(aboutToShow()), this, SLOT(onAboutToShow()));
 }
 
 SceneComposer::~SceneComposer() {
@@ -104,22 +131,13 @@ QString SceneComposer::path() const {
     return QString();
 }
 
+QMenu *SceneComposer::contextMenu() {
+    return &m_contentMenu;
+}
+
 void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
     if(!objects.empty()) {
-        ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-
         m_properties->setObject(*objects.begin());
-
-        connect(ctl, SIGNAL(objectsUpdated()), m_properties, SLOT(onUpdated()));
-
-        connect(m_properties, SIGNAL(deleteComponent(QString)), ctl, SLOT(onDeleteComponent(QString)));
-        connect(m_properties, SIGNAL(changed(Object*,QString)), ctl, SLOT(onUpdated()));
-        connect(m_properties, SIGNAL(aboutToBeChanged(Object*,QString,Variant)), ctl, SLOT(onPropertyChanged(Object*,QString,Variant)), Qt::DirectConnection);
-        connect(m_properties, SIGNAL(updated()), this, SIGNAL(itemUpdated()));
-
-        //connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
-        //connect(m_properties, SIGNAL(changed(Object*,QString)), ui->timeline, SLOT(onUpdated(Object*,QString)));
-        //connect(ui->timeline, SIGNAL(moved()), m_properties, SLOT(onUpdated()));
     }
 
     emit itemSelected(!objects.empty() ? m_properties : nullptr);
@@ -128,61 +146,53 @@ void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
 }
 
 void SceneComposer::onSelectActors(Object::ObjectList objects) {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctl->onSelectActor(objects);
+    m_controller->onSelectActor(objects);
 }
 
 void SceneComposer::onRemoveActors(Object::ObjectList objects) {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctl->onRemoveActor(objects);
+    m_controller->onRemoveActor(objects);
 }
 
 void SceneComposer::onUpdated() {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctl->onUpdated();
+    m_controller->onUpdated();
     emit itemUpdated();
 }
 
 void SceneComposer::onParentActors(Object::ObjectList objects, Object *parent) {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctl->onParentActor(objects, parent);
+    m_controller->onParentActor(objects, parent);
 }
 
 void SceneComposer::onFocusActor(Object *actor) {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctl->onFocusActor(actor);
+    m_controller->onFocusActor(actor);
 }
 
 void SceneComposer::onRepickSelected() {
-    ObjectCtrl *ctl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    onItemsSelected(ctl->selected());
+    onItemsSelected(m_controller->selected());
 }
 
 void SceneComposer::backupScene() {
-    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    m_backupScene = Bson::save(Engine::toVariant(ctrl->map()));
+    m_backupScene = Bson::save(Engine::toVariant(m_controller->map()));
 }
 
 void SceneComposer::restoreBackupScene() {
     Object *map = Engine::toObject(Bson::load(m_backupScene), nullptr);
     if(map) {
-        ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-        ctrl->clear();
-        ctrl->setMap(map);
+        m_controller->clear();
+        m_controller->setMap(map);
 
         map->setParent(ui->viewport->scene()); // Set parent after detach previous one
 
-        emit hierarchyCreated(ctrl->map());
+        emit hierarchyCreated(m_controller->map());
     }
 }
 
 bool SceneComposer::isModified() const {
-    return static_cast<ObjectCtrl *>(ui->viewport->controller())->isModified();
+    return m_controller->isModified();
 }
 
 void SceneComposer::setModified(bool flag) {
     if(!flag) {
-        static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
+        m_controller->resetModified();
     }
 }
 
@@ -192,11 +202,10 @@ QStringList SceneComposer::suffixes() const {
 
 void SceneComposer::newAsset() {
     AssetEditor::newAsset();
-    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    ctrl->clear();
-    ctrl->setMap(Engine::objectCreate<Actor>("Chunk", ui->viewport->scene()));
+    m_controller->clear();
+    m_controller->setMap(Engine::objectCreate<Actor>("Chunk", ui->viewport->scene()));
 
-    emit hierarchyCreated(ctrl->map());
+    emit hierarchyCreated(m_controller->map());
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
@@ -210,19 +219,17 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
     Variant var = Json::load(array.constData());
     Object *map = Engine::toObject(var, ui->viewport->scene());
     if(map) {
-        ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-        ctrl->clear();
-        ctrl->setMap(map);
+        m_controller->clear();
+        m_controller->setMap(map);
 
-        emit hierarchyCreated(ctrl->map());
+        emit hierarchyCreated(m_controller->map());
 
         UndoManager::instance()->clear();
     }
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    ObjectCtrl *ctrl = static_cast<ObjectCtrl *>(ui->viewport->controller());
-    Object *map = ctrl->map();
+    Object *map = m_controller->map();
     if(map) {
         string data = Json::save(Engine::toVariant(map), 0);
         if(!data.empty()) {
@@ -232,7 +239,7 @@ void SceneComposer::saveAsset(const QString &path) {
                 file.close();
             }
         }
-        static_cast<ObjectCtrl *>(ui->viewport->controller())->resetModified();
+        m_controller->resetModified();
 
         QString path = ProjectManager::instance()->iconPath() + "/auto.png";
         QImage result = ui->viewport->grabFramebuffer();
@@ -244,4 +251,72 @@ void SceneComposer::saveAsset(const QString &path) {
 void SceneComposer::onLocal(bool flag) {
     ui->localButton->setIcon(flag ? QIcon(":/Style/styles/dark/icons/local.png") :
                                     QIcon(":/Style/styles/dark/icons/global.png"));
+}
+
+void SceneComposer::onCreateActor() {
+    UndoManager::instance()->push(new CreateObject("Actor", m_controller));
+}
+
+void SceneComposer::onItemRename() {
+    emit renameItem();
+}
+
+void SceneComposer::onItemDuplicate() {
+    UndoManager::instance()->push(new DuplicateObjects(m_controller));
+}
+
+void SceneComposer::onItemDelete() {
+     UndoManager::instance()->push(new DeleteActors(m_controller->selected(), m_controller));
+}
+
+void SceneComposer::onItemUnpack() {
+    for(auto it : m_controller->selected()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            actor->setPrefab(nullptr);
+            it->clearCloneRef();
+        }
+    }
+}
+
+void unpackHelper(Object *object) {
+    if(object) {
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor) {
+            actor->setPrefab(nullptr);
+            object->clearCloneRef();
+        }
+
+        for(auto it : object->getChildren()) {
+            unpackHelper(it);
+        }
+    }
+}
+
+void SceneComposer::onItemUnpackAll() {
+    for(auto it : m_controller->selected()) {
+        unpackHelper(it);
+    }
+}
+
+void SceneComposer::onAboutToShow() {
+    bool enabled = false;
+    for(auto &it : m_controller->selected()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor && actor->isInstance()) {
+            enabled = true;
+        }
+    }
+
+    for(auto &it : m_prefab) {
+        it->setEnabled(enabled);
+    }
+}
+
+QAction *SceneComposer::createAction(const QString &name, const char *member, const QKeySequence &shortcut) {
+    QAction *a = new QAction(name, this);
+    a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    a->setShortcut(shortcut);
+    connect(a, SIGNAL(triggered(bool)), this, member);
+    return a;
 }
