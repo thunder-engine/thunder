@@ -363,6 +363,9 @@ void MainWindow::on_actionGame_Mode_triggered() {
 
 void MainWindow::setGameMode(bool mode) {
     if(mode) {
+        if(ui->preview->parent() == nullptr) {
+            ui->toolWidget->moveToolWindow(ui->preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(ui->viewportWidget));
+        }
         ui->toolWidget->activateToolWindow(ui->preview);
         ui->viewportWidget->backupScene();
     } else {
