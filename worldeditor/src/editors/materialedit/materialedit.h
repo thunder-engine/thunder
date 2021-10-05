@@ -51,11 +51,17 @@ private:
 
     ComponentBrowser *m_pBrowser;
 
+    int m_node;
+    int m_port;
+    bool m_out;
+
 private slots:
     void onComponentSelected(const QString &path);
 
     void onNodesSelected(const QVariant &);
     void onUpdateTemplate(bool update = true);
+
+    void onShowContextMenu(int node, int port, bool out);
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();

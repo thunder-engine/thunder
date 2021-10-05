@@ -55,7 +55,7 @@ void AbstractSchemeModel::nodeDelete(Node *node) {
 
 AbstractSchemeModel::Link *AbstractSchemeModel::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
     bool result = true;
-    for(auto it : m_Links) {
+    for(auto &it : m_Links) {
         if(it->sender == sender && it->receiver == receiver &&
            it->oport == oport && it->iport == iport) {
             result = false;
@@ -63,7 +63,7 @@ AbstractSchemeModel::Link *AbstractSchemeModel::linkCreate(Node *sender, Item *o
         }
     }
     if(result) {
-        for(auto it : m_Links) {
+        for(auto &it : m_Links) {
             if(it->iport == iport && iport != nullptr) {
                 linkDelete(iport);
             }
@@ -258,6 +258,10 @@ void AbstractSchemeModel::createNode(const QString &path, int x, int y) {
     UndoManager::instance()->push(new CreateNode(path, x, y, this));
 }
 
+void AbstractSchemeModel::createAndLink(const QString &path, int x, int y, int node, int port, bool out) {
+    UndoManager::instance()->push(new CreateNode(path, x, y, this, node, port, out));
+}
+
 QVariant AbstractSchemeModel::nodes() const {
     QVariantList result;
 
@@ -328,7 +332,7 @@ void AbstractSchemeModel::deleteNodes(QVariant selection) {
 
 void AbstractSchemeModel::copyNodes(QVariant list) {
     QJsonArray array;
-    for(QVariant it : list.toList()) {
+    for(QVariant &it : list.toList()) {
         Node *node = m_Nodes.at(it.toInt());
 
         array.push_back(QJsonValue::fromVariant(saveNode(node)));
@@ -343,31 +347,64 @@ QVariant AbstractSchemeModel::pasteNodes(int x, int y) {
     return paste->list();
 }
 
-CreateNode::CreateNode(const QString &path, int x, int y, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
+CreateNode::CreateNode(const QString &path, int x, int y, AbstractSchemeModel *model, int node, int port, bool out, const QString &name, QUndoCommand *parent) :
         UndoScheme(model, name, parent),
         m_pNode(nullptr),
         m_Path(path),
         m_Index(-1),
+        m_Node(node),
+        m_Port(port),
+        m_Out(out),
         m_Point(x, y) {
 
 }
 void CreateNode::undo() {
     m_pModel->nodeDelete(m_pNode);
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 void CreateNode::redo() {
     m_pNode = m_pModel->nodeCreate(m_Path, m_Index);
     if(m_pNode) {
         m_pNode->pos = m_Point;
     }
-    m_pModel->schemeUpdated();
+
+    if(m_Node > -1 && m_Port > -1) {
+        AbstractSchemeModel::Node *node = m_pModel->node(m_Node);
+        AbstractSchemeModel::Item *item = nullptr;
+        if(node) {
+            int index = 0;
+            for(auto &it : node->list) {
+                if(it->out == m_Out) {
+                    if(index == m_Port) {
+                        item = it;
+                        break;
+                    } else {
+                        index++;
+                    }
+                }
+            }
+        }
+
+        AbstractSchemeModel::Node *snd = (m_Out) ? node : m_pNode;
+        AbstractSchemeModel::Node *rcv = (m_Out) ? m_pNode : node;
+        if(snd && rcv) {
+            AbstractSchemeModel::Item *sp = (m_Out) ? item : snd->list.at(0);
+            AbstractSchemeModel::Item *rp = (m_Out) ? rcv->list.at(0) : item;
+
+            AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, sp, rcv, rp);
+            m_Index = m_pModel->link(link);
+            emit m_pModel->schemeUpdated();
+        }
+    }
+
+    emit m_pModel->schemeUpdated();
 }
 
 MoveNode::MoveNode(const QVariant &selection, const QVariant &nodes, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
         UndoScheme(model, name, parent) {
 
     QVariantList list = nodes.toList();
-    for(auto it : selection.toList()) {
+    for(auto &it : selection.toList()) {
         m_Indices.push_back(it.toInt());
 
         QVariantMap map = list.at(it.toInt()).toMap();
@@ -385,13 +422,13 @@ void MoveNode::redo() {
         node->pos = m_Points.at(i);
     }
     m_Points = positions;
-    m_pModel->nodeMoved();
+    emit m_pModel->nodeMoved();
 }
 
 DeleteNodes::DeleteNodes(const QVariant &selection, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
         UndoScheme(model, name, parent) {
 
-    for(QVariant it : selection.toList()) {
+    for(QVariant &it : selection.toList()) {
         m_Indices.push_back(it.toInt());
     }
 }
@@ -423,13 +460,13 @@ void DeleteNodes::undo() {
         }
     }
 
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 void DeleteNodes::redo() {
     QVariantList links;
 
     AbstractSchemeModel::NodeList list;
-    for(auto it : m_Indices) {
+    for(auto &it : m_Indices) {
         AbstractSchemeModel::Node *node = m_pModel->node(it);
         list.push_back(node);
         for(auto l : m_pModel->findLinks(node)) {
@@ -455,7 +492,7 @@ void DeleteNodes::redo() {
 
     m_Document = QJsonDocument::fromVariant(data);
 
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 
 PasteNodes::PasteNodes(const QString &data, int x, int y, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
@@ -466,10 +503,10 @@ PasteNodes::PasteNodes(const QString &data, int x, int y, AbstractSchemeModel *m
 
 }
 void PasteNodes::undo() {
-    for(auto it : m_List) {
+    for(auto &it : m_List) {
         m_pModel->nodeDelete(m_pModel->node(it.toInt()));
     }
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 void PasteNodes::redo () {
     int maxX = INT_MIN;
@@ -493,7 +530,7 @@ void PasteNodes::redo () {
 
         m_List.push_back(index);
     }
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 
 CreateLink::CreateLink(int sender, int oport, int receiver, int iport, AbstractSchemeModel *model, const QString &name, QUndoCommand *parent) :
@@ -509,7 +546,7 @@ void CreateLink::undo() {
     AbstractSchemeModel::Link *link = m_pModel->link(m_Index);
     if(link) {
         m_pModel->linkDelete(link);
-        m_pModel->schemeUpdated();
+        emit m_pModel->schemeUpdated();
     }
 }
 void CreateLink::redo() {
@@ -521,7 +558,7 @@ void CreateLink::redo() {
 
         AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, op, rcv, ip);
         m_Index = m_pModel->link(link);
-        m_pModel->schemeUpdated();
+        emit m_pModel->schemeUpdated();
     }
 }
 
@@ -543,7 +580,7 @@ void DeleteLink::undo() {
 
         AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, op, rcv, ip);
         m_Index = m_pModel->link(link);
-        m_pModel->schemeUpdated();
+        emit m_pModel->schemeUpdated();
     }
 }
 void DeleteLink::redo() {
@@ -556,7 +593,7 @@ void DeleteLink::redo() {
         m_IPort = link->receiver->list.indexOf(link->iport);
 
         m_pModel->linkDelete(link);
-        m_pModel->schemeUpdated();
+        emit m_pModel->schemeUpdated();
     }
 }
 
@@ -581,7 +618,7 @@ void DeleteLinksByPort::undo() {
             m_pModel->linkCreate(snd, op, rcv, ip);
         }
     }
-    m_pModel->schemeUpdated();
+    emit m_pModel->schemeUpdated();
 }
 void DeleteLinksByPort::redo() {
     AbstractSchemeModel::Node *node = m_pModel->node(m_Node);
@@ -611,6 +648,6 @@ void DeleteLinksByPort::redo() {
             }
             m_pModel->linkDelete(item);
         }
-        m_pModel->schemeUpdated();
+        emit m_pModel->schemeUpdated();
     }
 }

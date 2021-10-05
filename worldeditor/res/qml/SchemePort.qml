@@ -64,8 +64,11 @@ Rectangle {
                     }
                 }
 
-                selectNode = -1
-                selectPort = -1
+                var node = selectNode
+                var port = selectPort
+                clearSelection()
+                showContextMenu(node, port, portObject.out)
+                return
             }
             createMode = false
             canvas.requestPaint()

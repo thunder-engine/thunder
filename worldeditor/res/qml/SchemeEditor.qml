@@ -35,9 +35,9 @@ Rectangle {
 
     property int baseCell: 16
     property int minCell: 8
-    property int maxCell: 24
+    property int maxCell: 28
     property int nodeBorder: (stateMachine) ? baseCell / 2 : 0
-    property int cellStep: baseCell
+    property real cellStep: baseCell
 
     property int focusNode: -1
     property int focusPort: -1
@@ -54,6 +54,8 @@ Rectangle {
 
     signal nodesSelected(variant indices)
     signal linksSelected(variant indices)
+
+    signal showContextMenu(int node, int port, bool out)
 
     FontMetrics {
         id: fontMetrics
@@ -103,6 +105,12 @@ Rectangle {
         createMode = false
     }
 
+    function clearSelection() {
+        selectNode = -1
+        selectPort = -1
+        createMode = false
+    }
+
     function linkSelect(id) {
         selectLink = id
         linkSelected(id)
@@ -145,8 +153,7 @@ Rectangle {
         translateY: scheme.y
 
         drawHorizontal: true
-        subItemsX: 10
-        subItemsY: 10
+
         cellX: cellStep
         cellY: cellStep
     }
@@ -159,6 +166,7 @@ Rectangle {
 
         property int oldX: 0
         property int oldY: 0
+        property bool isScrolled: false
 
         onPositionChanged: {
             canvas.mouseX = mouse.x
@@ -167,6 +175,7 @@ Rectangle {
             if(mouse.buttons & Qt.RightButton) {
                 scheme.x += (mouse.x - oldX)
                 scheme.y += (mouse.y - oldY)
+                isScrolled = true;
             }
 
             canvas.requestPaint()
@@ -215,6 +224,11 @@ Rectangle {
 
         onReleased: {
             rubberBand.visible = false
+            if(mouse.button & Qt.RightButton && !isScrolled) {
+                showContextMenu(-1, -1, false)
+            }
+            isScrolled = false;
+
             if(nodes !== undefined) {
                 var array = new Array
                 for(var i = 0; i < nodes.length; i++) {
@@ -248,16 +262,6 @@ Rectangle {
                 }
             }
             canvas.requestPaint()
-        }
-    }
-
-    DropArea {
-        anchors.fill: parent
-        onDropped: {
-            if(drop.keys[0] === "text/component") {
-                schemeModel.createNode(drop.getDataAsArrayBuffer(drop.keys[0]),
-                                       drop.x - scheme.x, drop.y - scheme.y);
-            }
         }
     }
 
@@ -371,6 +375,8 @@ Rectangle {
 
     Item {
         id: scheme
+
+        objectName: "Scheme"
 
         x: rect.width / 2
         y: rect.height / 2

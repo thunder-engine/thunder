@@ -33,7 +33,11 @@ float sqr(float v) {
     return v * v;
 }
 
-float getLinearDepth (float value, float n, float f) {
+vec3 qtransform(vec4 q, vec3 v ) {
+    return v + 2.0 * cross(cross(v, q.xyz) + q.w*v, q.xyz);
+}
+
+float getLinearDepth(float value, float n, float f) {
     return n * f / (f - value * (f - n));
 }
 

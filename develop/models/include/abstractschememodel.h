@@ -106,6 +106,7 @@ public:
     Q_INVOKABLE void deleteNodes(QVariant list);
     Q_INVOKABLE void copyNodes(QVariant list);
     Q_INVOKABLE QVariant pasteNodes(int x, int y);
+    Q_INVOKABLE void createAndLink(const QString &path, int x, int y, int node, int port, bool out);
 
     Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
     Q_INVOKABLE void deleteLink(int index);
@@ -151,7 +152,7 @@ protected:
 
 class CreateNode : public UndoScheme {
 public:
-    CreateNode (const QString &path, int x, int y, AbstractSchemeModel *model, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
+    CreateNode (const QString &path, int x, int y, AbstractSchemeModel *model, int node = -1, int port = -1, bool out = false, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
 
     void undo () override;
     void redo () override;
@@ -159,6 +160,9 @@ private:
     AbstractSchemeModel::Node *m_pNode;
     QString m_Path;
     int m_Index;
+    int m_Node;
+    int m_Port;
+    bool m_Out;
     QPoint m_Point;
 };
 

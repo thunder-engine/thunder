@@ -1,102 +1,39 @@
 import QtQuick 2.0
 
-Canvas {
+ShaderEffect {
     id: grid
-    contextType: "2d"
-    antialiasing: false
 
-    objectName: "Canvas"
-
-    property int translateX: 0
-    property int translateY: 0
-    property int cellX: 16
-    property int cellY: 16
-    property int subItemsX: 9
-    property int subItemsY: 9
+    property real translateX: 0
+    property real translateY: 0
+    property real cellX: 16
+    property real cellY: 16
+    property real subItemsX: 10
+    property real subItemsY: 10
 
     property bool drawVerical: true
     property bool drawHorizontal: true
 
-    property string subLineColor: theme.greyLight
-    property string lineColor: theme.greyDark
+    fragmentShader: "
+        uniform float cellX;
+        uniform float cellY;
 
-    onTranslateXChanged: {
-        requestPaint()
-    }
-    onTranslateYChanged: {
-        requestPaint()
-    }
-    onCellXChanged: {
-        requestPaint()
-    }
-    onCellYChanged: {
-        requestPaint()
-    }
-    onDrawVericalChanged: {
-        requestPaint()
-    }
-    onDrawHorizontalChanged: {
-        requestPaint()
-    }
+        uniform float translateX;
+        uniform float translateY;
 
-    onPaint: {
-        context.clearRect(0, 0, grid.width, grid.height)
-        context.translate(translateX, translateY)
+        uniform float subItemsX;
+        uniform float subItemsY;
 
-        context.strokeStyle = subLineColor
-
-        // Vertical lines
-        context.beginPath()
-        if(drawVerical) {
-            var beforeX = Math.round(-translateX / cellX)
-            var afterX = Math.round((grid.width - translateX) / cellX)
-            for(var x = beforeX; x < afterX; x++) {
-                if(x % subItemsX != 0) {
-                    context.moveTo(x * cellX, -translateY)
-                    context.lineTo(x * cellX, grid.height - translateY)
+        void main() {
+            float offsetX = gl_FragCoord.x - translateX;
+            float offsetY = gl_FragCoord.y + translateY + cellY * 4.5;
+            if(mod(offsetX, cellX) < 1. || mod(offsetY, cellY) < 1.) {
+                if(mod(offsetX, cellX * subItemsX) < 1. || mod(offsetY, cellY * subItemsY) < 1.) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.6);
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.3);
                 }
+            } else {
+                discard;
             }
-        }
-
-        // Horizontal lines
-        if(drawHorizontal) {
-            var beforeY = Math.round(-translateY / cellY)
-            var afterY = Math.round((grid.height + translateY) / cellY)
-            for(var y = beforeY; y < afterY; y++) {
-                if(y % subItemsY != 0) {
-                    context.moveTo(-translateX, y * cellY)
-                    context.lineTo(grid.width - translateX, y * cellY)
-                }
-            }
-        }
-        context.closePath()
-        context.stroke()
-
-        context.strokeStyle = lineColor
-
-        // Vertical lines
-        context.beginPath()
-        if(drawVerical) {
-            beforeX = Math.round(-translateX / cellX / subItemsX)
-            afterX = Math.round((grid.width - translateX) / cellX / subItemsX)
-            for(x = beforeX; x < afterX; x++) {
-                context.moveTo(x * cellX * subItemsX, -translateY)
-                context.lineTo(x * cellX * subItemsX, grid.height - translateY)
-            }
-        }
-
-        // Horizontal lines
-        if(drawHorizontal) {
-            beforeY = Math.round(-translateY / cellY / subItemsY)
-            afterY = Math.round((grid.height + translateY) / cellY / subItemsY)
-            for(y = beforeY; y < afterY; y++) {
-                context.moveTo(-translateX, y * cellY * subItemsY)
-                context.lineTo(grid.width - translateX, y * cellY * subItemsY)
-            }
-        }
-        context.closePath()
-        context.stroke()
-
-        context.setTransform(1, 0, 0, 1, 0, 0)
-    }
+        }"
 }
