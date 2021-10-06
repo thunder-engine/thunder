@@ -184,6 +184,10 @@ bool DocumentModel::checkSave(AssetEditor *editor) {
     return true;
 }
 
+QList<AssetEditor *> DocumentModel::documents() {
+    return m_Documents.values();
+}
+
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {
     switch(role) {
         case Qt::EditRole:

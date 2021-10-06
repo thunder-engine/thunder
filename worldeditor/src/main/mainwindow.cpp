@@ -289,9 +289,12 @@ void MainWindow::onSettingsUpdated() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
-    if(!m_DocumentModel->checkSave(m_MainDocument)) {
-        event->ignore();
-        return;
+    for(auto it : m_DocumentModel->documents()) {
+        ui->toolWidget->activateToolWindow(it);
+        if(!m_DocumentModel->checkSave(it)) {
+            event->ignore();
+            return;
+        }
     }
 
     QString str = ProjectManager::instance()->projectId();

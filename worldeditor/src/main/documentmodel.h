@@ -30,6 +30,8 @@ public:
 
     bool checkSave(AssetEditor *editor);
 
+    QList<AssetEditor *> documents();
+
 signals:
     void itemSelected(QObject *item);
     void itemUpdated();
