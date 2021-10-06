@@ -101,7 +101,12 @@ ParticleRender::~ParticleRender() {
     \internal
 */
 void ParticleRender::update() {
-    float dt = Timer::deltaTime() * Timer::scale();
+    deltaUpdate(Timer::deltaTime() * Timer::scale());
+}
+/*!
+    \internal
+*/
+void ParticleRender::deltaUpdate(float dt) {
     Matrix4 &m = actor()->transform()->worldTransform();
 
     Camera *camera = Camera::current();

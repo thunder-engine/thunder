@@ -30,7 +30,6 @@ Viewport::Viewport(QWidget *parent) :
     connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
     QWidget *widget = QWidget::createWindowContainer(m_pRHIWindow);
-    widget->installEventFilter(this);
 
     layout()->addWidget(widget);
 
@@ -58,7 +57,6 @@ void Viewport::onDraw() {
         findCamera();
 
         PluginManager::instance()->updateRender(m_pScene);
-        m_pScene->setToBeUpdated(false);
     }
 }
 
@@ -87,7 +85,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove: {
         if(m_pController) {
-            static_cast<CameraCtrl *>(m_pController)->onInputEvent(static_cast<QInputEvent *>(event));
+            m_pController->onInputEvent(static_cast<QInputEvent *>(event));
         }
         return true;
     }

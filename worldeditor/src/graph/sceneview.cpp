@@ -43,17 +43,10 @@ SceneView::SceneView(QWidget *parent) :
     } else {
         qCritical() << "Unable to create rendering surface.";
     }
-
-    startTimer(10);
 }
 
 SceneView::~SceneView() {
     m_pEngine->setPlatformAdaptor(nullptr);
-}
-
-void SceneView::timerEvent(QTimerEvent *) {
-    Timer::update();
-    m_pScene->setToBeUpdated(true);
 }
 
 void SceneView::setEngine(Engine *engine) {
@@ -67,6 +60,7 @@ void SceneView::setScene(Scene *scene) {
 
 void SceneView::onDraw() {
     if(m_pScene) {
+        Timer::update();
         findCamera();
 
         if(m_pEngine) {

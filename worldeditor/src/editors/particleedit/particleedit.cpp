@@ -29,6 +29,7 @@ ParticleEdit::ParticleEdit() :
     ctrl->blockMovement(true);
     ctrl->setFree(false);
     ctrl->init(nullptr);
+
     ui->preview->setController(ctrl);
     ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
 
@@ -60,7 +61,7 @@ ParticleEdit::~ParticleEdit() {
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
     if(m_pRender) {
-        static_cast<NativeBehaviour *>(m_pRender)->update();
+        m_pRender->deltaUpdate(1.0f / 60.0f);
     }
 }
 

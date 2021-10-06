@@ -23,6 +23,8 @@ public:
     ParticleEffect *effect() const;
     void setEffect(ParticleEffect *effect);
 
+    void deltaUpdate(float dt);
+
 private:
     void spawnParticle(ParticleEmitter &emitter, ParticleData &data);
     void updateParticle(ParticleEmitter &emitter, ParticleData &data, float dt);

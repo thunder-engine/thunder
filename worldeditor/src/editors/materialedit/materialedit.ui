@@ -54,8 +54,8 @@
      <widget class="Viewport" name="preview" native="true">
       <property name="minimumSize">
        <size>
-        <width>200</width>
-        <height>200</height>
+        <width>400</width>
+        <height>400</height>
        </size>
       </property>
      </widget>

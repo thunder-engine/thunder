@@ -19,7 +19,7 @@
 void _CheckGLError(const char* file, int line) {
     GLenum err ( glGetError() );
 
-    while ( err != GL_NO_ERROR ) {
+    while(err != GL_NO_ERROR) {
         std::string error;
         switch ( err ) {
             case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION";      break;

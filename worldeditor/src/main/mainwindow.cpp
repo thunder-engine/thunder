@@ -396,10 +396,11 @@ void MainWindow::onOpenProject(const QString &path) {
     ProjectManager::instance()->init(path);
     m_Engine->file()->fsearchPathAdd(qPrintable(ProjectManager::instance()->importPath()), true);
 
+    AssetManager::instance()->rescan(!Engine::reloadBundle());
+
     PluginManager::instance()->rescan();
     PluginManager::instance()->initSystems();
 
-    AssetManager::instance()->rescan(!Engine::reloadBundle());
     ui->contentBrowser->rescan();
 
     for(QString &it : ProjectManager::instance()->platforms()) {

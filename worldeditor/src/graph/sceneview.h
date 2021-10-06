@@ -24,8 +24,6 @@ public:
     Scene *scene() { return m_pScene; }
 
 protected:
-    void timerEvent(QTimerEvent *) override;
-
     bool init() override { return true; }
 
     void update() override;
