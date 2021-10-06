@@ -88,8 +88,6 @@ public:
     void removeElement(const QString &key);
 
 private:
-    QString typeName() const Q_DECL_OVERRIDE;
-
     QJsonObject subItemData(const QString &key) const override;
     void setSubItemData(const QString &name, const QJsonObject &data) override;
 

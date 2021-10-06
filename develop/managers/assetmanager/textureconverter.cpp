@@ -53,6 +53,11 @@ TextureImportSettings::TextureType TextureImportSettings::textureType() const {
 void TextureImportSettings::setTextureType(TextureType type) {
     if(m_TextureType != type) {
         m_TextureType = type;
+        if(m_TextureType == TextureType::Sprite) {
+            setType(MetaType::type<Sprite *>());
+        } else {
+            setType(MetaType::type<Texture *>());
+        }
         emit updated();
     }
 }
@@ -139,13 +144,6 @@ void TextureImportSettings::removeElement(const QString &key) {
     m_SubTypes.remove(key);
 
     emit updated();
-}
-
-QString TextureImportSettings::typeName() const {
-    if(m_TextureType == TextureType::Sprite) {
-        return "Sprite";
-    }
-    return AssetConverterSettings::typeName();
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {
