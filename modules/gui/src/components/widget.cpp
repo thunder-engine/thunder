@@ -32,6 +32,7 @@ Widget::~Widget() {
         p_ptr->m_pTransform->unsubscribe(this);
     }
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 void Widget::update() {

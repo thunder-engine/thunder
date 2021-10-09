@@ -66,6 +66,7 @@ SpotLight::SpotLight() :
 
 SpotLight::~SpotLight() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

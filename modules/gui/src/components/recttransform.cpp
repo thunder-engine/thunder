@@ -36,6 +36,7 @@ RectTransform::~RectTransform() {
         it->setRectTransform(nullptr);
     }
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 Vector2 RectTransform::size() const {

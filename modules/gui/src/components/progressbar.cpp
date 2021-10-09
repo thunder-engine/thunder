@@ -58,6 +58,7 @@ ProgressBar::ProgressBar() :
 
 ProgressBar::~ProgressBar() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 float ProgressBar::from() const {

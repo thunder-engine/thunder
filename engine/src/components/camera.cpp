@@ -96,6 +96,7 @@ Camera::Camera() :
 
 Camera::~Camera() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns render pipline which attached to the camera.

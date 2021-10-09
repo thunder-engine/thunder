@@ -97,6 +97,7 @@ Label::Label() :
 
 Label::~Label() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

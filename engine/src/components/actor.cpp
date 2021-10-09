@@ -206,6 +206,7 @@ Actor::Actor() :
 
 Actor::~Actor() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns true in case of Actor is enabled; otherwise returns false.

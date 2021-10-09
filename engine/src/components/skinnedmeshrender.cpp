@@ -47,6 +47,7 @@ SkinnedMeshRender::SkinnedMeshRender() :
 
 SkinnedMeshRender::~SkinnedMeshRender() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

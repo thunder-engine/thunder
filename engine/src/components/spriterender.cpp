@@ -112,6 +112,7 @@ SpriteRender::SpriteRender() :
 
 SpriteRender::~SpriteRender() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

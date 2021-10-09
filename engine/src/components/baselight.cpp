@@ -45,6 +45,7 @@ BaseLight::BaseLight() :
 
 BaseLight::~BaseLight() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 /*!

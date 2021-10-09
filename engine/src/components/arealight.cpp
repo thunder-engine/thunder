@@ -77,6 +77,7 @@ AreaLight::AreaLight() :
 
 AreaLight::~AreaLight() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

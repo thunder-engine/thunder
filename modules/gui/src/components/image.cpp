@@ -90,6 +90,7 @@ Image::Image() :
 
 Image::~Image() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 /*!

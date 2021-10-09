@@ -73,6 +73,7 @@ PointLight::PointLight() :
 
 PointLight::~PointLight() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

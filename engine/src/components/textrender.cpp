@@ -89,6 +89,7 @@ TextRender::TextRender() :
 
 TextRender::~TextRender() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

@@ -45,6 +45,7 @@ AbstractButton::AbstractButton() :
 
 AbstractButton::~AbstractButton() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 
 float AbstractButton::fadeDuration() const {

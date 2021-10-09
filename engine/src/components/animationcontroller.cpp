@@ -179,6 +179,7 @@ AnimationController::AnimationController() :
 
 AnimationController::~AnimationController() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

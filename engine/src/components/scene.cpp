@@ -37,6 +37,7 @@ Scene::Scene() :
 
 Scene::~Scene() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns in case of scene must be updated in the current frame; otherwise returns false.

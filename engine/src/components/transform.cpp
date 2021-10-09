@@ -86,6 +86,7 @@ Transform::~Transform() {
     }
 
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns current position of the Transform in local space.

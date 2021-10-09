@@ -38,6 +38,7 @@ MeshRender::MeshRender() :
 
 MeshRender::~MeshRender() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

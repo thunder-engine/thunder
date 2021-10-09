@@ -58,6 +58,7 @@ DirectLight::DirectLight() :
 
 DirectLight::~DirectLight() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

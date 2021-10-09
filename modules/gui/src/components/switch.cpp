@@ -39,6 +39,7 @@ Switch::Switch() :
 
 Switch::~Switch() {
     delete p_ptr;
+    p_ptr = nullptr;
 
 }
 

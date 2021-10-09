@@ -96,6 +96,7 @@ ParticleRender::ParticleRender() :
 
 ParticleRender::~ParticleRender() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal

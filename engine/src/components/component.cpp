@@ -28,6 +28,7 @@ Component::Component() :
 }
 Component::~Component() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns a pointer to the actor to which the component is attached.

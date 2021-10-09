@@ -103,6 +103,7 @@ Armature::Armature() :
 
 Armature::~Armature() {
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     \internal
