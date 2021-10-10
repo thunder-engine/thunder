@@ -16,8 +16,6 @@ class EditorPipeline : public QObject, public Pipeline {
 public:
     EditorPipeline();
 
-
-
     void setController(CameraCtrl *ctrl);
 
     uint32_t objectId() const;
@@ -28,8 +26,8 @@ public:
 
     void setDragObjects(const ObjectList &list);
 
-    void setTarget(const QString &string = QString());
-    QStringList targets() const;
+    void debugRenderTexture(const QString &string = QString());
+    QStringList renderTextures() const;
 
     void createMenu(QMenu *menu);
 

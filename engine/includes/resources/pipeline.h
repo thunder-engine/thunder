@@ -43,10 +43,11 @@ public:
 
     virtual void analizeScene(Scene *scene, RenderSystem *render);
 
-    Texture *target(const string &target) const;
-    void setTarget(const string &target, Texture *texture);
+    Texture *renderTexture(const string &name) const;
+    void setRenderTexture(const string &name, Texture *texture);
 
     void setTarget(uint32_t resource);
+    RenderTarget *defaultTarget();
 
     CommandBuffer *buffer() const;
 
@@ -94,7 +95,7 @@ protected:
     Mesh *m_pPlane;
     MaterialInstance *m_pSprite;
 
-    uint32_t m_Target;
+    RenderTarget *m_pDefaultTarget;
 
     int32_t m_Width;
     int32_t m_Height;

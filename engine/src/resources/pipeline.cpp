@@ -49,15 +49,13 @@ bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
 }
 
 Pipeline::Pipeline() :
-        m_Buffer(nullptr),
+        m_Buffer(Engine::objectCreate<CommandBuffer>()),
         m_pSprite(nullptr),
-        m_Target(0),
+        m_pDefaultTarget(Engine::objectCreate<RenderTarget>()),
         m_Width(64),
         m_Height(64),
         m_pFinal(nullptr),
         m_pSystem(nullptr) {
-
-    m_Buffer = Engine::objectCreate<CommandBuffer>();
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
@@ -165,7 +163,7 @@ void Pipeline::drawUi(Camera &camera) {
 
 void Pipeline::finish() {
     m_Buffer->setScreenProjection();
-    m_Buffer->setRenderTarget(m_Target);
+    m_Buffer->setRenderTarget(m_pDefaultTarget);
     m_Buffer->clearRenderTarget();
 
     m_pSprite->setTexture(OVERRIDE, m_pFinal);
@@ -193,16 +191,16 @@ void Pipeline::cameraReset(Camera &camera) {
     m_Buffer->setViewProjection(v, p);
 }
 
-Texture *Pipeline::target(const string &target) const {
-    auto it = m_textureBuffers.find(target);
+Texture *Pipeline::renderTexture(const string &name) const {
+    auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
     }
     return nullptr;
 }
 
-void Pipeline::setTarget(const string &target, Texture *texture) {
-    m_textureBuffers[target] = texture;
+void Pipeline::setRenderTexture(const string &name, Texture *texture) {
+    m_textureBuffers[name] = texture;
 }
 
 void Pipeline::resize(int32_t width, int32_t height) {
@@ -269,8 +267,8 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
     }
 }
 
-void Pipeline::setTarget(uint32_t resource) {
-    m_Target = resource;
+RenderTarget *Pipeline::defaultTarget() {
+    return m_pDefaultTarget;
 }
 
 RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {

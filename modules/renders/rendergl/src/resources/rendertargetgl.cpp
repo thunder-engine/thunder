@@ -5,7 +5,7 @@
 #include "resources/texturegl.h"
 
 RenderTargetGL::RenderTargetGL() :
-        m_Buffer(0) {
+        m_Buffer(-1) {
 
 }
 
@@ -19,6 +19,7 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
         case ToBeUpdated: {
             if(updateBuffer(level)) {
                 setState(Ready);
+                return;
             }
         } break;
         default: break;
@@ -27,12 +28,26 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
     updateBuffer(level);
 }
 
+uint32_t RenderTargetGL::nativeHandle() const {
+    return (uint32_t)m_Buffer;
+}
+
+void RenderTargetGL::setNativeHandle(uint32_t id) {
+    if(m_Buffer == -1) {
+        m_Buffer = id;
+    }
+}
+
 bool RenderTargetGL::updateBuffer(uint32_t level) {
-    if(m_Buffer == 0) {
-        glGenFramebuffers(1, &m_Buffer);
+    if(m_Buffer == -1) {
+        glGenFramebuffers(1, (GLuint *)&m_Buffer);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
+
+    if(m_Buffer == 0) {
+        return true;
+    }
 
     uint32_t colors[8];
     uint32_t count = colorAttachmentCount();
@@ -69,7 +84,7 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
 
 void RenderTargetGL::destroyBuffer() {
     if(m_Buffer) {
-        glDeleteFramebuffers(1, &m_Buffer);
+        glDeleteFramebuffers(1, (GLuint *)&m_Buffer);
     }
-    m_Buffer = 0;
+    m_Buffer = -1;
 }

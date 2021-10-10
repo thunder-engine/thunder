@@ -31,10 +31,6 @@ void CommandBuffer::setRenderTarget(RenderTarget *target, uint32_t level) {
     A_UNUSED(level);
 }
 
-void CommandBuffer::setRenderTarget(uint32_t target) {
-    A_UNUSED(target);
-}
-
 Vector4 CommandBuffer::idToColor(uint32_t id) {
     uint8_t rgb[4];
     rgb[0] = id;

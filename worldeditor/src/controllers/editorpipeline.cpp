@@ -216,7 +216,7 @@ void EditorPipeline::setDragObjects(const ObjectList &list) {
     }
 }
 
-void EditorPipeline::setTarget(const QString &string) {
+void EditorPipeline::debugRenderTexture(const QString &string) {
     m_pTarget = nullptr;
     auto it = m_textureBuffers.find(qPrintable(string));
     if(it != m_textureBuffers.end()) {
@@ -224,7 +224,7 @@ void EditorPipeline::setTarget(const QString &string) {
     }
 }
 
-QStringList EditorPipeline::targets() const {
+QStringList EditorPipeline::renderTextures() const {
     QStringList result;
     for(auto &it : m_textureBuffers) {
         result.push_back(it.first.c_str());
@@ -431,7 +431,7 @@ void EditorPipeline::onBufferMenu() {
     if(m_bufferMenu) {
         m_bufferMenu->clear();
 
-        QStringList list = targets();
+        QStringList list = renderTextures();
         list.push_front(tr("Final Buffer"));
 
         bool first = true;
@@ -486,7 +486,7 @@ void EditorPipeline::fillEffectMenu(QMenu *menu, uint32_t layers) {
 void EditorPipeline::onBufferChanged() {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        setTarget(action->data().toString());
+        debugRenderTexture(action->data().toString());
     }
 }
 

@@ -112,7 +112,7 @@ void RenderGLSystem::update(Scene *scene) {
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
 
         Pipeline *pipe = camera->pipeline();
-        pipe->setTarget(target);
+        static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
         RenderSystem::update(scene);
     }
 }
@@ -122,5 +122,36 @@ void RenderGLSystem::update(Scene *scene) {
 
 QWindow *RenderGLSystem::createRhiWindow() const {
     return createWindow();
+}
+
+vector<uint8_t> RenderGLSystem::renderOffscreen(Scene *scene, int width, int height) {
+    makeCurrent();
+
+    static RenderTargetGL *target = nullptr;
+    if(target == nullptr) {
+        target = static_cast<RenderTargetGL *>(Engine::objectCreate<RenderTarget>());
+
+        Texture *color = Engine::objectCreate<Texture>();
+        color->setFormat(Texture::RGBA8);
+        color->setWidth(width);
+        color->setHeight(height);
+
+        Texture *depth = Engine::objectCreate<Texture>();
+        depth->setFormat(Texture::Depth);
+        depth->setDepthBits(24);
+        depth->setWidth(width);
+        depth->setHeight(height);
+
+        target->setColorAttachment(0, color);
+        target->setDepthAttachment(depth);
+    }
+    target->bindBuffer(0);
+
+    auto result = RenderSystem::renderOffscreen(scene, width, height);
+
+    result.resize(width * height * 4);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, result.data());
+
+    return result;
 }
 #endif

@@ -5,4 +5,6 @@ class QWindow;
 
 QWindow *createWindow();
 
+void makeCurrent();
+
 #endif // RHIWRAPPER_H
