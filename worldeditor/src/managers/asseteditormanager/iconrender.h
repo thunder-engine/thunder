@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include <stdint.h>
+#include <vector>
 
 class Engine;
 class Scene;
@@ -19,15 +20,15 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    Scene                    *m_pScene;
+    Scene *m_pScene;
 
-    Actor                    *m_pActor;
+    Actor *m_pActor;
 
-    Actor                    *m_pLight;
+    Actor *m_pLight;
 
-    Camera                   *m_pCamera;
+    Camera *m_pCamera;
 
-    bool                      m_Init;
+    bool m_Init;
 };
 
 #endif // ICONRENDER_H

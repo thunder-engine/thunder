@@ -145,6 +145,12 @@ vector<uint8_t> RenderGLSystem::renderOffscreen(Scene *scene, int width, int hei
         target->setColorAttachment(0, color);
         target->setDepthAttachment(depth);
     }
+
+    Camera *camera = Camera::current();
+    if(camera) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->resize(width, height);
+    }
     target->bindBuffer(0);
 
     auto result = RenderSystem::renderOffscreen(scene, width, height);

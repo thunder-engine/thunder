@@ -35,9 +35,6 @@ IconRender::~IconRender() {
 
 const QImage IconRender::render(const QString &resource, const QString &) {
     if(!m_Init) {
-        Pipeline *pipe = m_pCamera->pipeline();
-        pipe->resize(128, 128);
-
         m_pLight = Engine::composeActor("DirectLight", "LightSource", m_pScene);
         m_pLight->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
 
@@ -72,5 +69,7 @@ const QImage IconRender::render(const QString &resource, const QString &) {
 
     delete object;
 
-    return QImage();
+    QImage result(data.data(), 128, 128, QImage::Format_RGBA8888);
+
+    return result.mirrored();
 }
