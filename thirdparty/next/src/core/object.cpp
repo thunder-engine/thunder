@@ -787,11 +787,13 @@ void Object::emitSignal(const char *signal, const Variant &args) {
                 if(method.type() == MetaMethod::Signal) {
                     link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
                 } else {
-                    if(p_ptr->m_pSystem->compareTreads(link->receiver->p_ptr->m_pSystem)) { // Direct call
+                    if(p_ptr->m_pSystem && link->receiver->p_ptr->m_pSystem &&
+                       !p_ptr->m_pSystem->compareTreads(link->receiver->p_ptr->m_pSystem)) { // Queued Connection
+
+                        link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
+                    } else { // Direct call
                         MethodCallEvent e(link->method, link->sender, args);
                         link->receiver->methodCallEvent(&e);
-                    } else { // Queued Connection
-                        link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
                     }
                     link = nullptr;
                 }
