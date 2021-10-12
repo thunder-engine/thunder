@@ -7,14 +7,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/scene.h>
 #include <components/camera.h>
-#include <components/spriterender.h>
-
-#include <resources/pipeline.h>
-#include <resources/material.h>
-#include <resources/prefab.h>
-#include <resources/sprite.h>
 
 #include <editor/assetconverter.h>
 #include <editor/handles.h>
@@ -34,9 +27,9 @@
 #include "editorpipeline.h"
 
 string findFreeObjectName(const string &name, Object *parent) {
-    string newName  = name;
+    string newName = name;
     if(!newName.empty()) {
-        Object *o   = parent->find(parent->name() + "/" + newName);
+        Object *o = parent->find(parent->name() + "/" + newName);
         if(o != nullptr) {
             string number;
             while(isdigit(newName.back())) {
@@ -67,10 +60,10 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
         m_pActiveTool(nullptr),
         m_pMenu(nullptr) {
 
-    connect(view, SIGNAL(drop(QDropEvent *)), this, SLOT(onDrop()));
-    connect(view, SIGNAL(dragEnter(QDragEnterEvent *)), this, SLOT(onDragEnter(QDragEnterEvent *)));
-    connect(view, SIGNAL(dragMove(QDragMoveEvent *)), this, SLOT(onDragMove(QDragMoveEvent *)));
-    connect(view, SIGNAL(dragLeave(QDragLeaveEvent *)), this, SLOT(onDragLeave(QDragLeaveEvent *)));
+    connect(view, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop()));
+    connect(view, SIGNAL(dragEnter(QDragEnterEvent*)), this, SLOT(onDragEnter(QDragEnterEvent*)));
+    connect(view, SIGNAL(dragMove(QDragMoveEvent*)), this, SLOT(onDragMove(QDragMoveEvent*)));
+    connect(view, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);

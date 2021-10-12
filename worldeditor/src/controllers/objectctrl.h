@@ -2,26 +2,22 @@
 #define OBJECTCTRL_H
 
 #include <QObject>
-#include <QInputEvent>
 
 #include <cstdint>
 #include <map>
 
-#include <amath.h>
 #include <object.h>
-#include <json.h>
-
-#include <components/component.h>
 #include <editor/editortool.h>
-
-#include "graph/viewport.h"
 
 #include "cameractrl.h"
 
 #include "undomanager.h"
 
+class QInputEvent;
+
 class Engine;
 class Actor;
+class Component;
 class Scene;
 class Texture;
 

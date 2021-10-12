@@ -195,6 +195,7 @@ Engine::Engine(File *file, const char *path) :
 
     p_ptr->m_pFile  = file;
 
+    // The order is critical for the import
     Resource::registerClassFactory(p_ptr->m_pResourceSystem);
 
     Text::registerClassFactory(p_ptr->m_pResourceSystem);
@@ -205,15 +206,17 @@ Engine::Engine(File *file, const char *path) :
     Font::registerClassFactory(p_ptr->m_pResourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
     RenderTarget::registerClassFactory(p_ptr->m_pResourceSystem);
-    ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
 
-    AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
     Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
     Pose::registerSuper(p_ptr->m_pResourceSystem);
 
     Prefab::registerClassFactory(p_ptr->m_pResourceSystem);
     Map::registerClassFactory(p_ptr->m_pResourceSystem);
+
+    ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
+
+    AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
 
     Scene::registerClassFactory(this);
     Actor::registerClassFactory(this);

@@ -289,11 +289,13 @@ void MainWindow::onSettingsUpdated() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
-    for(auto it : m_DocumentModel->documents()) {
-        ui->toolWidget->activateToolWindow(it);
-        if(!m_DocumentModel->checkSave(it)) {
-            event->ignore();
-            return;
+    if(m_DocumentModel) {
+        for(auto it : m_DocumentModel->documents()) {
+            ui->toolWidget->activateToolWindow(it);
+            if(!m_DocumentModel->checkSave(it)) {
+                event->ignore();
+                return;
+            }
         }
     }
 
@@ -466,6 +468,8 @@ void MainWindow::onImportFinished() {
         } else {
             on_actionNew_triggered();
         }
+    } else {
+        on_actionNew_triggered();
     }
     disconnect(m_Queue, nullptr, this, nullptr);
 
