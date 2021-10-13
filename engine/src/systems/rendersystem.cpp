@@ -126,8 +126,18 @@ void RenderSystem::composeComponent(Component *component) const {
         renderable->composeComponent();
     }
 }
+
 #if defined(NEXT_SHARED)
 QWindow *RenderSystem::createRhiWindow() const {
     return nullptr;
+}
+
+vector<uint8_t> RenderSystem::renderOffscreen(Scene *scene, int width, int height) {
+    A_UNUSED(width);
+    A_UNUSED(height);
+
+    update(scene);
+
+    return vector<uint8_t>();
 }
 #endif

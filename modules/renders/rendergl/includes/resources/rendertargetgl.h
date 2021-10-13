@@ -15,11 +15,13 @@ public:
 
     void bindBuffer(uint32_t level);
 
+    uint32_t nativeHandle() const;
+    void setNativeHandle(uint32_t id);
 private:
     bool updateBuffer(uint32_t level);
     void destroyBuffer();
 
-    uint32_t m_Buffer;
+    int32_t m_Buffer;
 
 };
 

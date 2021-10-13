@@ -20,6 +20,8 @@ public:
 
 #ifdef NEXT_SHARED
     QWindow *createRhiWindow() const override;
+
+    vector<uint8_t> renderOffscreen(Scene *scene, int width, int height) override;
 #endif
 
 private:

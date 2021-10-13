@@ -32,8 +32,6 @@ public:
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 
-    virtual void setRenderTarget(uint32_t target);
-
     virtual void setColor(const Vector4 &color);
 
     virtual void setScreenProjection();

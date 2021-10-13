@@ -33,8 +33,6 @@ public:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void setRenderTarget(uint32_t target) override;
-
     void setColor(const Vector4 &color) override;
 
     void resetViewProjection() override;

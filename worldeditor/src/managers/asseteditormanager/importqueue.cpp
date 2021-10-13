@@ -4,7 +4,6 @@
 #include <QKeyEvent>
 #include <QDesktopWidget>
 #include <QDir>
-#include <QOpenGLContext>
 
 #include "assetmanager.h"
 #include "projectmanager.h"
@@ -31,7 +30,7 @@ ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
     QRect r = QApplication::desktop()->screenGeometry();
     move(r.center() - rect().center());
 
-    m_pRender = new IconRender(m_pEngine, QOpenGLContext::globalShareContext());
+    m_pRender = new IconRender(m_pEngine);
 }
 
 ImportQueue::~ImportQueue() {

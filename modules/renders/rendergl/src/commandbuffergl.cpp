@@ -210,10 +210,6 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-void CommandBufferGL::setRenderTarget(uint32_t target) {
-    glBindFramebuffer(GL_FRAMEBUFFER, target);
-}
-
 Texture *CommandBufferGL::texture(const char *name) const {
     auto it = m_Textures.find(name);
     if(it != m_Textures.end()) {

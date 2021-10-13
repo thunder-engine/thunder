@@ -306,7 +306,6 @@ void SceneView::findCamera() {
         if(camera) {
             Pipeline *pipe = camera->pipeline();
             pipe->resize(width(), height());
-            pipe->setTarget(0); // defaultFramebufferObject()
         }
         Camera::setCurrent(camera);
     }

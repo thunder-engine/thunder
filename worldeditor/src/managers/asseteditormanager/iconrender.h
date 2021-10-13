@@ -4,47 +4,31 @@
 #include <QObject>
 
 #include <stdint.h>
+#include <vector>
 
 class Engine;
 class Scene;
 class Actor;
 class Camera;
 
-class IController;
-class System;
-
-class QOffscreenSurface;
-class QOpenGLContext;
-class QOpenGLFramebufferObject;
-
 class IconRender : public QObject {
 public:
-    IconRender(Engine *engine, QOpenGLContext *share, QObject *parent = nullptr);
+    IconRender(Engine *engine, QObject *parent = nullptr);
 
     ~IconRender();
 
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    QOffscreenSurface        *m_Surface;
+    Scene *m_pScene;
 
-    QOpenGLContext           *m_Context;
+    Actor *m_pActor;
 
-    QOpenGLFramebufferObject *m_pFBO;
+    Actor *m_pLight;
 
-    Engine                   *m_pEngine;
+    Camera *m_pCamera;
 
-    Scene                    *m_pScene;
-
-    Actor                    *m_pActor;
-
-    Actor                    *m_pLight;
-
-    IController              *m_pController;
-
-    Camera                   *m_pCamera;
-
-    bool                      m_Init;
+    bool m_Init;
 };
 
 #endif // ICONRENDER_H

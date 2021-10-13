@@ -241,10 +241,11 @@ void SceneComposer::saveAsset(const QString &path) {
         }
         m_controller->resetModified();
 
-        QString path = ProjectManager::instance()->iconPath() + "/auto.png";
         QImage result = ui->viewport->grabFramebuffer();
-        QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
-        result.copy(rect).scaled(128, 128).save(path);
+        if(!result.isNull()) {
+            QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
+            result.copy(rect).scaled(128, 128).save(ProjectManager::instance()->iconPath() + "/auto.png");
+        }
     }
 }
 
