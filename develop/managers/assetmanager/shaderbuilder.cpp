@@ -592,8 +592,8 @@ void ShaderBuilder::addParam(const QString &param) {
 }
 
 void ShaderBuilder::buildRoot(QString &result) {
-    for(const auto it : m_pRootNode->list) {
-        for(auto it : m_Nodes) {
+    for(const auto &it : m_pRootNode->list) {
+        for(auto &it : m_Nodes) {
             ShaderFunction *node = static_cast<ShaderFunction *>(it->ptr);
             if(node && it->ptr != this) {
                 node->reset();

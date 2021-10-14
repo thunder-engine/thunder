@@ -118,9 +118,11 @@ void ResourceSystem::unloadResource(Resource *resource, bool force) {
 void ResourceSystem::reloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
-        resource->setState(Resource::Loading);
         if(force) {
+            resource->setState(Resource::Loading);
             processState(resource);
+        } else {
+            resource->setState(Resource::ToBeUpdated);
         }
     }
 }
