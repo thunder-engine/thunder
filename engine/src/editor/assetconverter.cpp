@@ -46,6 +46,10 @@ void AssetConverterSettings::setValid(bool valid) {
     m_Valid = valid;
 }
 
+bool AssetConverterSettings::isReadOnly() const {
+    return true;
+}
+
 QString AssetConverterSettings::typeName() const {
     if(m_Type != MetaType::INVALID) {
         QString result = MetaType::name(m_Type);

@@ -14,6 +14,7 @@ class EnginePrivate;
 
 class Actor;
 class Scene;
+class Chunk;
 class System;
 class PlatformAdaptor;
 
@@ -30,7 +31,7 @@ public:
 
     void                        resize                      ();
 
-    void                        update                      (Scene *scene);
+    void                        update                      ();
 /*
     Settings
 */
@@ -62,15 +63,20 @@ public:
     static System              *resourceSystem              ();
 
 /*
+    Scene management
+*/
+    static Scene               *scene                       ();
+
+    static Chunk               *loadSceneChunk              (const string &path, bool additive);
+
+    static void                 unloadSceneChunk            (Chunk *chunk);
+
+/*
     Misc
 */
     static bool                 isGameMode                  ();
 
     static void                 setGameMode                 (bool flag);
-
-    void                        addModule                   (Module *module);
-
-    Scene                      *scene                       ();
 
     static File                *file                        ();
 
@@ -82,9 +88,11 @@ public:
 
     static string               translate                   (const string &source);
 
-    string                      applicationName             () const;
+    static void                 addModule                   (Module *module);
 
-    string                      organizationName            () const;
+    static string               applicationName             ();
+
+    static string               organizationName            ();
 
     static void                 setResource                 (Object *object, const string &uuid);
 

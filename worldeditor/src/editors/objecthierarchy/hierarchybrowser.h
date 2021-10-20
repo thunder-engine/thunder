@@ -63,7 +63,6 @@ signals:
 public slots:
     void onObjectSelected(Object::ObjectList objects);
     void onSetRootObject(Object *object);
-    void onHierarchyUpdated();
     void onObjectUpdated();
 
     void onItemRename();

@@ -104,12 +104,6 @@ void RenderSystem::update(Scene *scene) {
     }
 }
 
-void RenderSystem::processEvents() {
-    m_pScene->setToBeUpdated(true);
-    System::processEvents();
-    m_pScene->setToBeUpdated(false);
-}
-
 void RenderSystem::atlasPageSize(int32_t &width, int32_t &height) {
     width = RenderSystemPrivate::m_AtlasPageWidth;
     height = RenderSystemPrivate::m_AtlasPageHeight;

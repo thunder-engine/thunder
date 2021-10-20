@@ -15,7 +15,6 @@ public:
     CameraCtrl *controller() const { return m_pController; }
 
     void setScene(Scene *scene);
-    Scene *scene() { return m_pScene; }
 
     QImage grabFramebuffer() { return QImage(); }
 
@@ -32,8 +31,6 @@ private slots:
     void onDraw();
 
 private:
-    void findCamera();
-
     CameraCtrl *m_pController;
 
     Scene *m_pScene;

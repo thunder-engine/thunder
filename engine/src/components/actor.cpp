@@ -10,6 +10,9 @@
 
 #include <cstring>
 
+#include <json.h>
+#include <log.h>
+
 const char *PREFAB  ("Prefab");
 const char *DATA    ("PrefabData");
 const char *STATIC  ("Static");
@@ -41,24 +44,28 @@ public:
             switch(state) {
                 case Resource::Loading: {
                     m_data = m_actor->saveUserData();
-                }
+                } break;
                 case Resource::Ready: {
-                    ActorPrivate::ConstList prefabs;
-                    ActorPrivate::enumConstObjects(m_prefab->actor(), prefabs);
+                    ActorPrivate::List prefabObjects;
+                    ActorPrivate::enumObjects(m_prefab->actor(), prefabObjects);
 
                     ActorPrivate::List objects;
                     ActorPrivate::enumObjects(m_actor, objects);
 
-                    list<pair<const Object *, Object *>> array;
+                    list<pair<Object *, Object *>> array;
 
                     ActorPrivate::List deleteObjects = objects;
-                    for(auto obj : prefabs) {
+                    for(auto obj : prefabObjects) {
                         bool create = true;
                         auto it = deleteObjects.begin();
                         while(it != deleteObjects.end()) {
                             Object *o = *it;
-                            if(obj->uuid() == o->clonedFrom() || o->clonedFrom() == 0) {
-                                array.push_back(pair<const Object *, Object *>(obj, o));
+                            if(obj->uuid() == o->clonedFrom()) {
+                                array.push_back(pair<Object *, Object *>(obj, o));
+                                it = deleteObjects.erase(it);
+                                create = false;
+                                break;
+                            } else if(o->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
                                 it = deleteObjects.erase(it);
                                 create = false;
                                 break;
@@ -67,9 +74,9 @@ public:
                         }
                         if(create) {
                             Object *parent = System::findObject(obj->parent()->uuid(), m_actor);
-                            Object *result = Engine::objectCreate(obj->typeName(), obj->name(), parent);
+                            Object *result = obj->clone(parent ? parent : m_actor);
 
-                            array.push_back(pair<const Object *, Object *>(obj, result));
+                            array.push_back(pair<Object *, Object *>(obj, result));
                         }
                     }
 
@@ -77,10 +84,10 @@ public:
                         const MetaObject *meta = it.first->metaObject();
 
                         for(int i = 0; i < meta->propertyCount(); i++) {
-                            MetaProperty rp = meta->property(i);
-                            MetaProperty lp = it.second->metaObject()->property(i);
-                            Variant data = rp.read(it.first);
-                            if(rp.type().flags() & MetaType::BASE_OBJECT) {
+                            MetaProperty origin = meta->property(i);
+                            MetaProperty target = it.second->metaObject()->property(i);
+                            Variant data = origin.read(it.first);
+                            if(origin.type().flags() & MetaType::BASE_OBJECT) {
                                 Object *ro = *(reinterpret_cast<Object **>(data.data()));
 
                                 for(auto item : array) {
@@ -92,7 +99,7 @@ public:
 
                                 data = Variant(data.userType(), &ro);
                             }
-                            lp.write(it.second, data);
+                            target.write(it.second, data);
                         }
 
                         for(auto item : it.first->getReceivers()) {
@@ -288,12 +295,10 @@ Transform *Actor::transform() {
 Scene *Actor::scene() {
     PROFILE_FUNCTION();
     if(p_ptr->m_scene == nullptr) {
-        Object *scene = parent();
-        if(scene) {
-            while(scene->parent() != nullptr) {
-                scene = scene->parent();
-            }
-            p_ptr->m_scene = dynamic_cast<Scene *>(scene);
+        Object *scene = this;
+        while(scene && scene->parent() != nullptr) {
+            scene = scene->parent();
+        p_ptr->m_scene = dynamic_cast<Scene *>(scene);
         }
     }
     return p_ptr->m_scene;
@@ -413,6 +418,13 @@ bool Actor::isValidInstance() const {
     return (p_ptr->m_prefab && !p_ptr->m_prefabRef.empty());
 }
 /*!
+    Returns a Prefab object from which the Actor was instanced.
+    \internal
+*/
+Prefab *Actor::prefab() const {
+    return p_ptr->m_prefab;
+}
+/*!
     Marks this Actor as an instance of the \a prefab structure.
     \note This method is used for internal purposes and shouldn't be called manually.
 
@@ -447,7 +459,7 @@ void Actor::loadObjectData(const VariantMap &data) {
 
             it = data.find(DELETED);
             if(it != data.end()) {
-                for(auto item : (*it).second.toList()) {
+                for(auto &item : (*it).second.toList()) {
                     uint32_t uuid = static_cast<uint32_t>(item.toInt());
                     Object *result = ObjectSystem::findObject(uuid, actor);
                     if(result && result != actor) {
@@ -465,7 +477,7 @@ void Actor::loadObjectData(const VariantMap &data) {
             unordered_map<uint32_t, uint32_t> staticMap;
             auto it = data.find(STATIC);
             if(it != data.end()) {
-                for(auto item : (*it).second.toList()) {
+                for(auto &item : (*it).second.toList()) {
                     VariantList array = item.toList();
 
                     uint32_t clone = static_cast<uint32_t>(array.front().toInt());

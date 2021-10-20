@@ -7,6 +7,8 @@
 
 #include "componentmodel.h"
 
+#include "config.h"
+
 class ComponentFilter : public QSortFilterProxyModel {
 public:
     explicit ComponentFilter(QObject *parent) :
@@ -14,7 +16,7 @@ public:
     }
 
     void setComponentGroups(const QStringList &list) {
-        m_List      = list;
+        m_List = list;
         invalidate();
     }
 
@@ -22,9 +24,9 @@ protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
         bool result = true;
         if(!m_List.isEmpty()) {
-            result  = checkContentTypeFilter(sourceRow, sourceParent);
+            result = checkContentTypeFilter(sourceRow, sourceParent);
         }
-        result     &= checkNameFilter(sourceRow, sourceParent);
+        result &= checkNameFilter(sourceRow, sourceParent);
 
         return result;
     }
@@ -40,8 +42,8 @@ protected:
     }
 
     bool checkNameFilter(int sourceRow, const QModelIndex &sourceParent) const {
-        QAbstractItemModel *model   = sourceModel();
-        QModelIndex index           = model->index(sourceRow, 0, sourceParent);
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 0, sourceParent);
         if(!filterRegExp().isEmpty() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
@@ -54,7 +56,7 @@ protected:
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
 protected:
-    QStringList     m_List;
+    QStringList m_List;
 };
 
 ComponentBrowser::ComponentBrowser(QWidget *parent) :
@@ -63,7 +65,7 @@ ComponentBrowser::ComponentBrowser(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_pProxyModel   = new ComponentFilter(this);
+    m_pProxyModel = new ComponentFilter(this);
     m_pProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     m_pProxyModel->sort(0);
 
@@ -88,12 +90,12 @@ void ComponentBrowser::setModel(QAbstractItemModel *model) {
 }
 
 void ComponentBrowser::onDragStarted(Qt::DropActions supportedActions) {
-    QModelIndex index   = m_pProxyModel->mapToSource(ui->componentsTree->selectionModel()->selectedIndexes().front());
+    QModelIndex index = m_pProxyModel->mapToSource(ui->componentsTree->selectionModel()->selectedIndexes().front());
 
-    QMimeData *data     = new QMimeData;
+    QMimeData *data = new QMimeData;
     data->setData(gMimeComponent, qPrintable(static_cast<QObject *>(index.internalPointer())->objectName()) );
 
-    QDrag *drag         = new QDrag(this);
+    QDrag *drag = new QDrag(this);
     drag->setMimeData(data);
     drag->exec(supportedActions, Qt::CopyAction);
 }

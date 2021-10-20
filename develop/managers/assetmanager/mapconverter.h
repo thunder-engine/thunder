@@ -8,6 +8,8 @@ public:
     MapConverterSettings();
 private:
     QString typeName() const Q_DECL_OVERRIDE;
+
+    bool isReadOnly() const Q_DECL_OVERRIDE;
 };
 
 class MapConverter : public PrefabConverter {
@@ -17,6 +19,8 @@ class MapConverter : public PrefabConverter {
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE;
+
+    bool toVersion3(Variant &variant) Q_DECL_OVERRIDE;
 };
 
 #endif // MAPCONVERTER_H

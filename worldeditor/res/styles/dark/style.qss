@@ -171,7 +171,7 @@ QAbstractScrollArea QLineEdit {
     margin: 0px 0px;
 }
 
-QAbstractScrollArea QAbstractButton, QCheckBox, QComboBox, QAbstractSpinBox {
+QAbstractScrollArea QAbstractButton, QComboBox, QAbstractSpinBox {
     background: #616161;
     margin: 3px 0px;
 }
@@ -353,6 +353,16 @@ QProgressBar::chunk {
 
 QCheckBox {
     padding: 2px 2px;
+    background: #00000000;
+}
+QCheckBox:disabled {
+    background: #00000000;
+}
+QCheckBox:hover {
+    background: #00000000;
+}
+QCheckBox:checked {
+    background: #00000000;
 }
 
 QCheckBox::indicator {
@@ -366,6 +376,7 @@ QCheckBox::indicator:checked:hover {
 
 QCheckBox::indicator:checked {
     image: url(:/Style/styles/dark/icons/close-hover.png);
+    width: 13
 }
 
 QCheckBox::indicator:unchecked:hover {

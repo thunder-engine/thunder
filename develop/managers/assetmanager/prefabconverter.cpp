@@ -15,6 +15,14 @@ PrefabConverterSettings::PrefabConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
+QString PrefabConverterSettings::typeName() const {
+    return "Prefab";
+}
+
+bool PrefabConverterSettings::isReadOnly() const {
+    return false;
+}
+
 AssetConverterSettings *PrefabConverter::createSettings() const {
     return new PrefabConverterSettings();
 }
@@ -63,7 +71,9 @@ Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *se
 
     bool update = false;
     switch(settings->currentVersion()) {
-        case 0: toVersion1(result); update = true;
+        case 0: update |= toVersion1(result);
+        case 1: update |= toVersion2(result);
+        case 2: update |= toVersion3(result);
         default: break;
     }
 
@@ -95,7 +105,7 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
     objects.push_front(Engine::toVariant(resource).toList().front());
 }
 
-void PrefabConverter::toVersion1(Variant &variant) {
+bool PrefabConverter::toVersion1(Variant &variant) {
     PROFILE_FUNCTION();
 
     // Create all declared objects
@@ -126,4 +136,13 @@ void PrefabConverter::toVersion1(Variant &variant) {
             properties = propertiesNew;
         }
     }
+    return true;
+}
+
+bool PrefabConverter::toVersion2(Variant &variant) {
+    return false;
+}
+
+bool PrefabConverter::toVersion3(Variant &variant) {
+    return false;
 }

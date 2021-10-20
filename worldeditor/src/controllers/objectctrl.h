@@ -30,7 +30,7 @@ public:
     ObjectCtrl(QWidget *view);
     ~ObjectCtrl();
 
-    void init(Scene *scene) override;
+    void init();
 
     void clear(bool signal = true);
 
@@ -40,19 +40,23 @@ public:
 
     void createMenu(QMenu *menu) override;
 
-    Object *map() const;
-    void setMap(Object *map);
+    list<pair<Object *, bool>> objects() const;
+    void addObject(Object *object);
+    void setObject(Object *object);
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
-    bool isModified() const { return m_Modified; }
-    void resetModified() { m_Modified = false; }
+    bool isModified() const;
+    void resetModified();
+
+    void setIsolatedActor(Actor *actor);
+    Actor *isolatedActor() const { return m_isolatedActor; }
 
     void resetSelection();
 
-    QList<EditorTool *> tools() const { return m_Tools; }
+    QList<EditorTool *> tools() const { return m_tools; }
 
-    bool isDrag() const { return m_Drag; }
+    bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
 
 public slots:
@@ -92,7 +96,7 @@ signals:
     void objectsChanged(Object::ObjectList objects, const QString &property);
     void objectsSelected(Object::ObjectList objects);
 
-    void dropMap(QString map);
+    void dropMap(QString map, bool additive);
 
 protected:
     void drawHandles() override;
@@ -107,47 +111,54 @@ private slots:
     void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:
-    EditorTool::SelectList m_Selected;
+    EditorTool::SelectList m_selected;
 
-    bool m_Modified;
+    Object::ObjectList m_isolationSelectedBackup;
 
-    bool m_Drag;
-    bool m_Canceled;
+    list<pair<Object *, bool>> m_editObjects;
+    Object::ObjectList m_dragObjects;
 
-    bool m_Local;
+    list<uint32_t> m_objectsList;
 
-    uint8_t m_Axes;
+    QList<EditorTool *> m_tools;
 
-    Object *m_pMap;
+    struct {
+        QString name;
+        bool additive;
+    } m_dragMap;
 
-    EditorPipeline *m_pPipeline;
+    Vector2 m_mousePosition;
+    Vector2 m_screenSize;
 
-    Object::ObjectList m_DragObjects;
+    Vector3 m_mouseWorld;
 
-    QString m_DragMap;
 
-    Vector2 m_MousePosition;
-    Vector2 m_Screen;
+    EditorPipeline *m_pipeline;
 
-    Vector3 m_MouseWorld;
+    Actor *m_isolatedActor;
 
-    list<uint32_t> m_ObjectsList;
+    EditorTool *m_activeTool;
 
-    QList<EditorTool *> m_Tools;
+    QMenu *m_menu;
 
-    EditorTool *m_pActiveTool;
+    uint8_t m_axes;
 
-    QMenu *m_pMenu;
+    bool m_isolatedActorModified;
+
+    bool m_drag;
+    bool m_canceled;
+
+    bool m_local;
 };
 
 class UndoObject : public QUndoCommand {
 public:
     UndoObject(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group = nullptr) :
             QUndoCommand(name, group) {
-        m_pController = ctrl;
+        m_controller = ctrl;
     }
 protected:
-    ObjectCtrl *m_pController;
+    ObjectCtrl *m_controller;
 };
 
 class SelectObjects : public UndoObject {
@@ -156,7 +167,7 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    list<uint32_t> m_Objects;
+    list<uint32_t> m_objects;
 };
 
 class CreateObject : public UndoObject {
@@ -165,8 +176,8 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    list<uint32_t> m_Objects;
-    QString m_Type;
+    list<uint32_t> m_objects;
+    QString m_type;
 };
 
 class DuplicateObjects : public UndoObject {
@@ -175,9 +186,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    list<uint32_t> m_Objects;
-    list<uint32_t> m_Selected;
-    VariantList m_Dump;
+    list<uint32_t> m_objects;
+    list<uint32_t> m_selected;
+    VariantList m_dump;
 };
 
 class CreateObjectSerial : public UndoObject {
@@ -186,9 +197,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    VariantList m_Dump;
-    list<uint32_t> m_Parents;
-    list<uint32_t> m_Objects;
+    VariantList m_dump;
+    list<uint32_t> m_parents;
+    list<uint32_t> m_objects;
 };
 
 class DeleteActors : public UndoObject {
@@ -222,9 +233,9 @@ public:
     void redo() override;
 protected:
     typedef QPair<uint32_t, uint32_t> ParentPair;
-    QList<ParentPair> m_Dump;
-    uint32_t m_Parent;
-    list<uint32_t> m_Objects;
+    QList<ParentPair> m_dump;
+    uint32_t m_parent;
+    list<uint32_t> m_objects;
 };
 
 class PropertyObject : public UndoObject {
@@ -233,9 +244,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    QString m_Property;
-    Variant m_Value;
-    uint32_t m_Object;
+    QString m_property;
+    Variant m_value;
+    uint32_t m_object;
 };
 
 #endif // OBJECTCTRL_H

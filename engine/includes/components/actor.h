@@ -59,6 +59,8 @@ public:
 
     bool isInstance() const;
     bool isValidInstance() const;
+
+    Prefab *prefab() const;
     void setPrefab(Prefab *prefab);
 
     Object *clone(Object *parent = nullptr) override;

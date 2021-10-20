@@ -350,6 +350,7 @@ Object::~Object() {
     }
 
     delete p_ptr;
+    p_ptr = nullptr;
 }
 /*!
     Returns new instance of Object class.

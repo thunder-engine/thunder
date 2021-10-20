@@ -20,9 +20,6 @@ public:
 
     void setEngine(Engine *engine);
 
-    void setScene(Scene *scene);
-    Scene *scene() { return m_pScene; }
-
 protected:
     bool init() override { return true; }
 
@@ -67,15 +64,11 @@ protected:
 
     bool eventFilter(QObject *object, QEvent *event) override;
 
-    void findCamera();
-
 private slots:
     void onDraw();
 
 protected:
     QWindow *m_pRHIWindow;
-
-    Scene *m_pScene;
 
     Engine *m_pEngine;
 

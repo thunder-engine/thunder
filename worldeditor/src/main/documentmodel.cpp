@@ -12,14 +12,12 @@
 #include "editors/textedit/textedit.h"
 #include "editors/textureedit/textureedit.h"
 #include "editors/materialedit/materialedit.h"
-#include "editors/meshedit/meshedit.h"
 #include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
 
 DocumentModel::DocumentModel() {
     addEditor(new TextureEdit);
     addEditor(new MaterialEdit);
-    addEditor(new MeshEdit);
     addEditor(new ParticleEdit);
     addEditor(new AnimationEdit);
     addEditor(new TextEdit);
@@ -133,6 +131,10 @@ void DocumentModel::saveFileAs(AssetEditor *editor) {
                                                     tr("Save Document"),
                                                     dir, filter.join(";;"));
         if(!path.isEmpty()) {
+            QFileInfo info(path);
+            if(info.suffix().isEmpty()) {
+                path += "." + dictionary.begin().value().front();
+            }
             editor->saveAsset(path);
         }
     }
@@ -165,14 +167,7 @@ void DocumentModel::onLoadAsset(QString path) {
 
 bool DocumentModel::checkSave(AssetEditor *editor) {
     if(editor->isModified()) {
-        QMessageBox msgBox(nullptr);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText("The asset has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result = msgBox.exec();
+        int result = closeAssetDialog();
         if(result == QMessageBox::Cancel) {
             return false;
         } else if(result == QMessageBox::Yes) {
@@ -186,6 +181,17 @@ bool DocumentModel::checkSave(AssetEditor *editor) {
 
 QList<AssetEditor *> DocumentModel::documents() {
     return m_Documents.values();
+}
+
+int DocumentModel::closeAssetDialog() {
+    QMessageBox msgBox(nullptr);
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setText("The asset has been modified.");
+    msgBox.setInformativeText("Do you want to save your changes?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+
+    return msgBox.exec();
 }
 
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {

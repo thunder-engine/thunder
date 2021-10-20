@@ -32,10 +32,7 @@ CameraCtrl::CameraCtrl(QWidget *view) :
         m_pCamera(nullptr),
         m_pView(view),
         m_pActiveCamera(nullptr) {
-}
 
-void CameraCtrl::init(Scene *scene) {
-    Q_UNUSED(scene)
     m_pCamera = Engine::composeActor("Camera", "Camera", nullptr);
     m_pActiveCamera = static_cast<Camera *>(m_pCamera->component("Camera"));
     m_pActiveCamera->setFocal(10.0f);
@@ -372,4 +369,3 @@ VariantList CameraCtrl::saveState() const {
     }
     return result;
 }
-

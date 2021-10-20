@@ -304,10 +304,11 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
                 return false;
             }
         }
+
+        m_Systems[QString::fromStdString(system->name())] = system;
     }
 
-    m_Systems[QString::fromStdString(system->name())] = system;
-    m_pEngine->addModule(plugin);
+    Engine::addModule(plugin);
     return true;
 }
 
@@ -316,14 +317,6 @@ void PluginManager::initSystems() {
         if(it) {
             it->init();
         }
-    }
-}
-
-void PluginManager::updateRender(Scene *scene) {
-    m_pEngine->resourceSystem()->processEvents();
-
-    if(m_pRender) {
-        m_pRender->update(scene);
     }
 }
 
@@ -349,7 +342,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
 
 void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
     for(auto &type : list) {
-        foreach(Scene *scene, m_Scenes) {
+        for(Scene *scene : m_Scenes) {
             ObjectArray array;
 
             enumComponents(scene, type, array);

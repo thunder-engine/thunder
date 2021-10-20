@@ -42,8 +42,6 @@ public:
 
     void initSystems();
 
-    void updateRender(Scene *scene);
-
     void addScene(Scene *scene);
 
     void rescanPath(const QString &path);

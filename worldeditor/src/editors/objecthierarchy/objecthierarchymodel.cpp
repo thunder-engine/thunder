@@ -17,6 +17,8 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
 
 void ObjectHierarchyModel::setRoot(Object *scene) {
     m_rootItem = scene;
+    beginResetModel();
+    endResetModel();
 }
 
 Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
@@ -38,37 +40,33 @@ Object *ObjectHierarchyModel::findObject(const uint32_t uuid, Object *parent) {
     return result;
 }
 
-void ObjectHierarchyModel::reset() {
-    beginResetModel();
-    endResetModel();
-}
-
 QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Actor *item = static_cast<Actor* >(index.internalPointer());
+    Object *object = static_cast<Object* >(index.internalPointer());
+    Actor *item = dynamic_cast<Actor *>(object);
 
     switch(role) {
         case Qt::EditRole:
         case Qt::ToolTipRole:
         case Qt::DisplayRole: {
             switch(index.column()) {
-                case 0: return QString::fromStdString(item->name());
-                case 1: return QString::fromStdString(item->typeName());
+                case 0: return QString::fromStdString(object->name());
+                case 1: return QString::fromStdString(object->typeName());
                 default: break;
             }
         } break;
         case Qt::DecorationRole: {
             if(index.column() == 0) {
-                return item->isInstance() ? m_Prefab : m_Actor;
+                return (item && item->isInstance()) ? m_Prefab : m_Actor;
             }
             if(index.column() == 2) {
-                return item->isEnabled() ? m_Visible : m_Invisible;
+                return (item && item->isEnabled()) ? m_Visible : m_Invisible;
             }
         } break;
         case Qt::TextColorRole: {
-            if(item->isInstance()) {
+            if(item && item->isInstance()) {
                 if(!item->isValidInstance()) {
                     return QColor(255, 95, 82);
                 }
@@ -81,7 +79,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::UserRole: {
-            return QString::number(item->uuid());
+            return QString::number(object->uuid());
         }
         default: break;
     }
@@ -103,8 +101,9 @@ QVariant ObjectHierarchyModel::headerData(int section, Qt::Orientation orientati
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         switch (section) {
             case 0: return tr("Name");
-            case 1: return tr("Class");
+            case 1: return tr("Type");
             case 2: return "";
+            case 3: return "";
             default: break;
         }
     }
@@ -113,7 +112,7 @@ QVariant ObjectHierarchyModel::headerData(int section, Qt::Orientation orientati
 
 int ObjectHierarchyModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent)
-    return 3;
+    return 4;
 }
 
 int ObjectHierarchyModel::rowCount(const QModelIndex &parent) const {

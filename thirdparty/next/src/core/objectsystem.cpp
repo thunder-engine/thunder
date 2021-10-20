@@ -248,12 +248,20 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             i++;
 
             Object *parent = root;
-            for(auto item : array) {
-                Object *obj = findObject(static_cast<uint32_t>((*i).toInt()), item.second);
-                if(obj) {
-                    parent = obj;
-                    break;
+            Object *obj = nullptr;
+            if(parent) {
+                obj = findObject(static_cast<uint32_t>((*i).toInt()), parent);
+            }
+            if(obj == nullptr) {
+                for(auto item : array) {
+                    obj = findObject(static_cast<uint32_t>((*i).toInt()), item.second);
+                    if(obj) {
+                        parent = obj;
+                        break;
+                    }
                 }
+            } else {
+                parent = obj;
             }
 
             i++;

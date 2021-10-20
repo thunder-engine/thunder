@@ -19,9 +19,9 @@ public:
     explicit SceneComposer(QWidget *parent = nullptr);
     ~SceneComposer();
 
-    void setScene(Scene *scene);
+    void setEngine(Engine *engine);
 
-    VariantList saveState() const;
+    VariantList saveState();
     void restoreState(const VariantList &state);
 
     void backupScene();
@@ -35,7 +35,6 @@ public:
 
 signals:
     void hierarchyCreated(Object *root);
-    void hierarchyUpdated();
 
     void renameItem();
 
@@ -60,11 +59,15 @@ private slots:
     void onCreateActor();
     void onItemDuplicate();
     void onItemDelete();
-    void onItemUnpack();
-    void onItemUnpackAll();
-    void onItemRename();
+    void onPrefabIsolate();
+    void onPrefabUnpack();
+    void onPrefabUnpackCompletely();
 
-    void onAboutToShow();
+    void onSaveIsolated();
+
+    void onObjectMenuAboutToShow();
+
+    void onDropMap(QString name, bool additive);
 
 private:
     void newAsset() override;
@@ -76,20 +79,33 @@ private:
 
     QStringList suffixes() const override;
 
-    QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
+    bool loadMap(QString path, bool additive);
+
+    void enterToIsolation(AssetConverterSettings *settings);
+    void quitFromIsolation();
+
+    QAction *createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
 
 private:
     Ui::SceneComposer *ui;
 
     QMenu m_contentMenu;
 
-    ByteArray m_backupScene;
+    VariantList m_isolationBackState;
+
+    QList<ByteArray> m_backupScenes;
+
+    QList<QAction *> m_prefabActions;
+
+    AssetConverterSettings *m_isolationSettings;
 
     NextObject *m_properties;
 
     ObjectCtrl *m_controller;
 
-    QList<QAction *> m_prefab;
+    Scene *m_isolationScene;
+
+    Engine *m_engine;
 
 };
 

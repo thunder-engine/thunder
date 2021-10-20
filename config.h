@@ -34,8 +34,9 @@ const QString gShared(".so");
 const QString gStatic(".a");
 const QString gApplication("");
 #endif
-const QString gMimeContent("text/content");
-const QString gMimeObject("text/object");
+static const QString gMimeContent("text/content");
+static const QString gMimeObject("text/object");
+static const QString gMimeComponent("text/component");
 
 const QString gDefaultFont("Helvetica Neue");
 

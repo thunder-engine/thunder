@@ -27,13 +27,12 @@ TextureEdit::TextureEdit() :
 
     ui->setupUi(this);
 
-    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
-
-    Scene *scene = ui->preview->scene();
+    Scene *scene = Engine::objectCreate<Scene>("Scene");
+    ui->preview->setScene(scene);
 
     SpriteController *ctrl = new SpriteController(ui->preview);
     ctrl->blockRotations(true);
-    ctrl->init(scene);
+    ctrl->init();
 
     connect(ctrl, &SpriteController::selectionChanged, m_Details, &SpriteElement::onSelectionChanged);
 

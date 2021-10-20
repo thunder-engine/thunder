@@ -28,7 +28,7 @@ public:
 
     TextureImportSettings *settings() const { return m_pSettings; }
 
-    void init(Scene *scene) override;
+    void init();
 
 signals:
     void selectionChanged(const QString &key);
