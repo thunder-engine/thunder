@@ -35,7 +35,7 @@ AABBox::AABBox(const Vector3 &center, const Vector3 &extent) :
     Returns true in case of AABBox is valid; otherwise returns false.
 */
 bool AABBox::isValid() const {
-    return (extent.x != -1.0f) && (extent.y != -1.0f)  && (extent.z != -1.0f);
+    return (extent.x >= 0.0f) && (extent.y >= 0.0f) && (extent.z >= 0.0f);
 }
 /*!
     Grow the AABBox to encapsulate a spehere with \a position and \a radius.
@@ -58,6 +58,10 @@ void AABBox::encapsulate(const Vector3 &position, areal radius) {
     Grow the AABBox to encapsulate the \a aabb.
 */
 void AABBox::encapsulate(const AABBox &aabb) {
+    if(!isValid()) {
+        *this = aabb;
+        return;
+    }
     Vector3 bb0[2];
     box(bb0[0], bb0[1]);
 

@@ -149,13 +149,11 @@ void CameraCtrl::onOrthographic(bool flag) {
 void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
     bottom  = 0;
     if(actor) {
-        Transform *t = actor->transform();
-
         AABBox bb(Vector3(FLT_MAX), Vector3(-FLT_MAX));
         for(auto it : actor->findChildren<Renderable *>()) {
             bb.encapsulate(it->bound());
         }
-        float radius = (bb.extent.length() * 2.0f) / sinf(m_pActiveCamera->fov() * DEG2RAD);
+        float radius = (bb.radius * 2.0f) / sinf(m_pActiveCamera->fov() * DEG2RAD);
 
         Vector3 min, max;
         bb.box(min, max);
@@ -164,7 +162,7 @@ void CameraCtrl::setFocusOn(Actor *actor, float &bottom) {
         m_FocalLengthTarget = radius;
         m_OrthoWidthTarget = radius;
         Transform *camera = m_pCamera->transform();
-        m_PositionTarget = t->worldPosition() + bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
+        m_PositionTarget = bb.center + camera->quaternion() * Vector3(0.0, 0.0, radius);
         m_TransferProgress = 0.0f;
         m_RotationTransfer = false;
     }
