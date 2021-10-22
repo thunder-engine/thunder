@@ -390,7 +390,7 @@ const MetaObject *Object::metaObject() const {
     By default the \a parent for the new object will be nullptr.
     This clone will not have the unique name so you will need to set it manualy if required.
 
-    Connections will be recreated with the same objects as original.
+    \warning Connections will NOT be transferred and the developer must create them manually.
 
     \sa connect()
 */
@@ -447,19 +447,6 @@ Object *Object::clone(Object *parent) {
                 data = Variant(data.userType(), &ro);
             }
             lp.write(it.second, data);
-        }
-        lock_guard<mutex>(it.first->p_ptr->m_Mutex);
-        for(auto item : it.first->p_ptr->m_lSenders) {
-            MetaMethod signal = item.sender->metaObject()->method(item.signal);
-            MetaMethod method = it.second->metaObject()->method(item.method);
-            connect(item.sender, (to_string(1) + signal.signature()).c_str(),
-                    it.second, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
-        }
-        for(auto item : it.first->p_ptr->m_lRecievers) {
-            MetaMethod signal = it.second->metaObject()->method(item.signal);
-            MetaMethod method = item.receiver->metaObject()->method(item.method);
-            connect(it.second, (to_string(1) + signal.signature()).c_str(),
-                    item.receiver, (to_string((method.type() == MetaMethod::Signal) ? 1 : 2) + method.signature()).c_str());
         }
     }
 
@@ -1013,14 +1000,14 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     for(const auto &l : getReceivers()) {
         VariantList link;
 
-        Object *sender = l.sender;
-
-        link.push_back(static_cast<int32_t>(sender->uuid()));
-        MetaMethod method = sender->metaObject()->method(l.signal);
-        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+        Object *receiver = l.receiver;
 
         link.push_back(static_cast<int32_t>(uuid()));
-        method = meta->method(l.method);
+        MetaMethod method = meta->method(l.signal);
+        link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
+
+        link.push_back(static_cast<int32_t>(receiver->uuid()));
+        method = receiver->metaObject()->method(l.method);
         link.push_back(Variant(char(method.type() + 0x30) + method.signature()));
 
         links.push_back(link);
