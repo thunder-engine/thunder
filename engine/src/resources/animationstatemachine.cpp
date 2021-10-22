@@ -106,8 +106,6 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             p_ptr->m_initialState = findState(hash_str((*block).toString()));
         }
     }
-
-    setState(Ready);
 }
 /*!
     Returns a state for the provided \a hash.

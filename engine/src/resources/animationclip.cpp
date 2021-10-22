@@ -132,8 +132,6 @@ void AnimationClip::loadUserData(const VariantMap &data) {
             m_Tracks.push_back(track);
         }
     }
-
-    setState(Ready);
 }
 /*!
     \internal

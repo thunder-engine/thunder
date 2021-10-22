@@ -11,7 +11,7 @@ RenderTargetGL::RenderTargetGL() :
 
 void RenderTargetGL::bindBuffer(uint32_t level) {
     switch(state()) {
-        case Suspend: {
+        case Unloading: {
             destroyBuffer();
             setState(ToBeDeleted);
             return;
@@ -26,6 +26,10 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
     }
 
     updateBuffer(level);
+}
+
+void RenderTargetGL::switchState(ResourceState state) {
+    setState(state);
 }
 
 uint32_t RenderTargetGL::nativeHandle() const {

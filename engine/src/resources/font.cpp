@@ -329,8 +329,6 @@ void Font::loadUserData(const VariantMap &data) {
             p_ptr->m_UseKerning = FT_HAS_KERNING( p_ptr->m_pFace );
         }
     }
-
-    setState(Ready);
 }
 /*!
     \internal

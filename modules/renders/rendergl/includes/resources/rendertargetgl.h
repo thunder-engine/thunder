@@ -17,7 +17,10 @@ public:
 
     uint32_t nativeHandle() const;
     void setNativeHandle(uint32_t id);
+
 private:
+    void switchState(ResourceState state) override;
+
     bool updateBuffer(uint32_t level);
     void destroyBuffer();
 

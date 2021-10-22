@@ -38,12 +38,13 @@ public:
 
     Status for the resource.
 
-    \value Invalid \c The state is invalid.
-    \value Loading \c This resource is loading.
-    \value ToBeUpdated \c This resource must be updated. Mostly used for the graphical rendering to upload textures and meshes to the graphical system.
+    \value Invalid \c The state is invalid (Unable to load resource).
+    \value Loading \c This resource is loading from the disc.
+    \value ToBeUpdated \c This resource must be updated. Mostly used for the graphical resources to upload resouce to the graphical system. In case of resource doesn't require updating internal data. The resource must switch state to Ready immediately.
     \value Ready \c This resource is ready to use.
     \value Suspend \c This resource is not needed at this moment. In case of resource system will require additional memory suspended resources will be unloaded.
-    \value ToBeDeleted \c This resource will be unloaded soon. Resources with this state shouldn't be used anywhere.
+    \value Unloading \c This resource is marked to be unloaded. Mostly used for the graphical resources to unload resources from the graphical system. In case of resource doesn't require to unload internal data. The resource must switch state to ToBeDeleted immediately.
+    \value ToBeDeleted \c This resource will be deleted soon. Resources with this state must not be used anywhere.
 */
 
 Resource::Resource() :
@@ -82,14 +83,33 @@ void Resource::unsubscribe(IObserver *observer) {
 Resource::ResourceState Resource::state() const {
     return p_ptr->m_State;
 }
+
+/*!
+    Switches the current state to a new state for the resource.
+*/
+void Resource::switchState(ResourceState state) {
+    switch(state) {
+        case ToBeUpdated: p_ptr->m_State = Ready; break;
+        case Unloading: p_ptr->m_State = ToBeDeleted; break;
+        default: p_ptr->m_State = state; break;
+    }
+    notifyCurrentState();
+}
+
 /*!
     Sets new \a state for the resource.
 */
 void Resource::setState(ResourceState state) {
     p_ptr->m_State = state;
+    notifyCurrentState();
+}
+/*!
+    Notifies subscribers about the current state of the resource.
+*/
+void Resource::notifyCurrentState() {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     for(auto it : p_ptr->m_Observers) {
-        it->resourceUpdated(this, state);
+        it->resourceUpdated(this, p_ptr->m_State);
     }
 }
 /*!

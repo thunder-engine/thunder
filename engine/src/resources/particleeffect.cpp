@@ -413,8 +413,6 @@ void ParticleEffect::loadUserData(const VariantMap &data) {
             }
         }
     }
-
-    setState(Ready);
 }
 /*!
     \internal

@@ -2,6 +2,7 @@
 
 #include <bson.h>
 #include <json.h>
+#include <log.h>
 
 #include "engine.h"
 
@@ -93,8 +94,8 @@ Resource *ResourceSystem::loadResource(const string &path) {
                 if(res) {
                     Resource *resource = dynamic_cast<Resource *>(res);
                     if(resource) {
-                        resource->setState(Resource::ToBeUpdated);
                         setResource(resource, uuid);
+                        resource->switchState(Resource::ToBeUpdated);
                         return resource;
                     }
                 }
@@ -108,7 +109,7 @@ Resource *ResourceSystem::loadResource(const string &path) {
 void ResourceSystem::unloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
-        resource->setState(Resource::Suspend);
+        resource->switchState(Resource::Suspend);
         if(force) {
             processState(resource);
         }
@@ -119,10 +120,10 @@ void ResourceSystem::reloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
         if(force) {
-            resource->setState(Resource::Loading);
+            resource->switchState(Resource::Loading);
             processState(resource);
         } else {
-            resource->setState(Resource::ToBeUpdated);
+            resource->switchState(Resource::ToBeUpdated);
         }
     }
 }
@@ -172,25 +173,40 @@ void ResourceSystem::processState(Resource *resource) {
                         }
 
                         VariantList objects = var.toList();
-                        VariantList fields = objects.front().toList();
-                        auto it = std::next(fields.begin(), 4);
-                        VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
-                        for(const auto &prop : properties) {
-                            Variant v  = prop.second;
-                            if(v.type() < MetaType::USERTYPE) {
-                                resource->setProperty(prop.first.c_str(), v);
+                        for(auto &obj : objects) {
+                            VariantList fields = obj.toList();
+                            auto it = std::next(fields.begin(), 1);
+                            uint32_t uuid = it->toInt();
+
+                            Object *object = Engine::findObject(uuid, resource);
+                            if(object) {
+                                it = std::next(fields.begin(), 4);
+                                VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
+                                for(const auto &prop : properties) {
+                                    Variant v  = prop.second;
+                                    if(v.type() < MetaType::USERTYPE) {
+                                        object->setProperty(prop.first.c_str(), v);
+                                    }
+                                }
+                                Resource *res = dynamic_cast<Resource *>(object);
+                                if(res) {
+                                    res->loadUserData(fields.back().toMap());
+                                }
                             }
                         }
-                        resource->loadUserData(fields.back().toMap());
+                        resource->switchState(Resource::ToBeUpdated);
+                    } else {
+                        Log(Log::ERR) << "Unable to load resource: " << uuid.c_str();
+                        resource->setState(Resource::Invalid);
                     }
                 }
             } break;
+            case Resource::Suspend: {
+                resource->switchState(Resource::Unloading);
+            } break;
             case Resource::ToBeDeleted: {
                 p_ptr->m_DeleteList.push_back(resource);
-            }
-            case Resource::Suspend: {
-                resource->setState(Resource::ToBeDeleted);
-            }
+            } break;
             default: break;
         }
     }

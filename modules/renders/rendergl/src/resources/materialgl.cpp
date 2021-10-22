@@ -53,18 +53,18 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         }
     }
 
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 
 uint32_t MaterialGL::getProgram(uint16_t type) {
     switch(state()) {
-        case Suspend: {
+        case Unloading: {
             for(auto it : m_Programs) {
                 glDeleteProgram(it.second);
             }
             m_Programs.clear();
 
-            setState(ToBeDeleted);
+            switchState(ToBeDeleted);
         } break;
         case ToBeUpdated: {
             for(auto it : m_Programs) {
@@ -87,7 +87,7 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
                 }
             }
 
-            setState(Ready);
+            switchState(Ready);
         } break;
         default: break;
     }
@@ -97,6 +97,10 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
         return it->second;
     }
     return 0;
+}
+
+void MaterialGL::switchState(ResourceState state) {
+    setState(state);
 }
 
 uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {

@@ -38,6 +38,8 @@ public:
     TextureMap textures() const { return m_Textures; }
 
 protected:
+    void switchState(ResourceState state) override;
+
     uint32_t buildShader(uint16_t type, const string &src = string());
 
     uint32_t buildProgram(uint32_t vertex, uint32_t fragment);

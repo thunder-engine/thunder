@@ -339,7 +339,7 @@ void Mesh::loadUserData(const VariantMap &data) {
         }
         p_ptr->m_Box.setBox(min, max);
     }
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 /*!
     \internal
@@ -486,7 +486,7 @@ int Mesh::addLod(Lod *lod) {
     if(lod) {
         p_ptr->m_Lods.push_back(*lod);
         recalcBounds();
-        setState(ToBeUpdated);
+        switchState(ToBeUpdated);
         return p_ptr->m_Lods.size() - 1;
     }
     return -1;
@@ -500,7 +500,7 @@ void Mesh::setLod(int lod, Lod *data) {
         if(data) {
             p_ptr->m_Lods[lod] = *data;
             recalcBounds();
-            setState(ToBeUpdated);
+            switchState(ToBeUpdated);
         }
     } else {
         addLod(data);
@@ -550,7 +550,6 @@ void Mesh::batchMesh(Mesh *mesh, Matrix4 *transform) {
             }
         }
         recalcBounds();
-        setState(ToBeUpdated);
     }
 }
 /*!

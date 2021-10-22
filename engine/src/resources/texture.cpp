@@ -94,12 +94,12 @@ void Texture::loadUserData(const VariantMap &data) {
         auto it = data.find(DATA);
         if(it != data.end()) {
             const VariantList &surfaces = (*it).second.value<VariantList>();
-            for(auto s : surfaces) {
+            for(auto &s : surfaces) {
                 Surface img;
                 int32_t w = p_ptr->m_Width;
                 int32_t h = p_ptr->m_Height;
                 const VariantList &lods = s.value<VariantList>();
-                for(auto l : lods) {
+                for(auto &l : lods) {
                     ByteArray bits = l.toByteArray();
                     uint32_t s = size(w, h);
                     if(s && !bits.empty()) {
@@ -115,8 +115,6 @@ void Texture::loadUserData(const VariantMap &data) {
             }
         }
     }
-
-    setState(ToBeUpdated);
 }
 
 VariantMap Texture::saveUserData() const {
@@ -125,7 +123,7 @@ VariantMap Texture::saveUserData() const {
     VariantList surfaces;
     for(auto &side : p_ptr->m_Sides) {
         VariantList surface;
-        for(auto lod : side) {
+        for(auto &lod : side) {
             surface.push_back(lod);
         }
         surfaces.push_back(surface);
@@ -156,7 +154,7 @@ void Texture::addSurface(const Surface &surface) {
     That means this texture must be forcefully reloaded.
 */
 void Texture::setDirty() {
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 /*!
     Read pixels from GPU at \a x and \a y position with \a width and \a height dimensions into texture data.
@@ -195,14 +193,14 @@ int Texture::height() const {
 */
 void Texture::setWidth(int width) {
     p_ptr->m_Width = width;
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 /*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
     p_ptr->m_Height = height;
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 /*!
     Sets new \a width and \a height for the texture.
@@ -221,7 +219,7 @@ void Texture::resize(int width, int height) {
     s.push_back(pixels);
     addSurface(s);
 
-    setState(ToBeUpdated);
+    switchState(ToBeUpdated);
 }
 /*!
     Returns format type of texture.

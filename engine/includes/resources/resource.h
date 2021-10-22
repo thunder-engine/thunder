@@ -21,6 +21,7 @@ public:
         ToBeUpdated,
         Ready,
         Suspend,
+        Unloading,
         ToBeDeleted
     };
 
@@ -39,11 +40,14 @@ public:
     void incRef();
     void decRef();
 
-    void subscribe (IObserver *observer);
-    void unsubscribe (IObserver *observer);
+    void subscribe(IObserver *observer);
+    void unsubscribe(IObserver *observer);
 
 protected:
-    virtual void setState(ResourceState state);
+    virtual void switchState(ResourceState state);
+    void setState(ResourceState state);
+
+    void notifyCurrentState();
 
 private:
     friend class ResourceSystem;

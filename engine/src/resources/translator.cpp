@@ -50,8 +50,6 @@ void Translator::loadUserData(const VariantMap &data) {
             p_ptr->m_Table[pair.first] = pair.second.toString();
         }
     }
-
-    setState(Ready);
 }
 /*!
     \internal

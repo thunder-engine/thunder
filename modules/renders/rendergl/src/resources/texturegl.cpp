@@ -13,18 +13,22 @@ TextureGL::TextureGL() :
 
 uint32_t TextureGL::nativeHandle() {
     switch(state()) {
-        case Suspend: {
+        case Unloading: {
             destroyTexture();
-            setState(ToBeDeleted);
+            switchState(ToBeDeleted);
         } break;
         case ToBeUpdated: {
             updateTexture();
-            setState(Ready);
+            switchState(Ready);
         } break;
         default: break;
     }
 
     return m_ID;
+}
+
+void TextureGL::switchState(ResourceState state) {
+    setState(state);
 }
 
 void TextureGL::readPixels(int x, int y, int width, int height) {

@@ -290,8 +290,8 @@ void Update_prefab() {
 
     level2->transform()->setPosition(Vector3(1.0f, 2.0f, 3.0f));
 
-    fab->setState(Resource::Loading);
-    fab->setState(Resource::Ready);
+    fab->switchState(Resource::Loading);
+    fab->switchState(Resource::Ready);
 
     TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(clone->component("TestComponent"));
     QCOMPARE(resultTestComponent != nullptr, true);

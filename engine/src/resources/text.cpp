@@ -33,8 +33,6 @@ void Text::loadUserData(const VariantMap &data) {
     if(it != data.end()) {
         p_ptr->m_Data = (*it).second.toByteArray();
     }
-
-    setState(Ready);
 }
 /*!
     \internal

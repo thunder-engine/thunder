@@ -13,14 +13,14 @@ void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
         case ToBeUpdated: {
             updateVbo(buffer);
 
-            setState(Ready);
+            switchState(Ready);
         } break;
         case Ready: break;
-        case Suspend: {
+        case Unloading: {
             destroyVbo();
             destroyVao(buffer);
 
-            setState(ToBeDeleted);
+            switchState(ToBeDeleted);
             return;
         }
         default: return;
@@ -51,6 +51,10 @@ void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     glBindVertexArray(*id);
 
     updateVao(lod);
+}
+
+void MeshGL::switchState(ResourceState state) {
+    setState(state);
 }
 
 void MeshGL::updateVao(uint32_t lod) {
