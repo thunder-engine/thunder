@@ -353,6 +353,7 @@ Object *Actor::clone(Object *parent) {
         result->setPrefab(prefab);
     } else {
         result->setPrefab(p_ptr->m_prefab);
+        result->p_ptr->m_prefabRef = p_ptr->m_prefabRef;
     }
     return result;
 }
