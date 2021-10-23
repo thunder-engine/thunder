@@ -269,7 +269,7 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
     }
 
     if(index.column() == 2) {
-        Actor *object  = static_cast<Actor *>(m_filter->mapToSource(index).internalPointer());
+        Actor *object = static_cast<Actor *>(m_filter->mapToSource(index).internalPointer());
         object->setEnabled(!object->isEnabled());
     }
     emit selected(list);
@@ -284,6 +284,13 @@ void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos) {
+    QItemSelectionModel *select = ui->treeView->selectionModel();
+    Object::ObjectList list;
+    foreach(QModelIndex it, select->selectedRows()) {
+        list.push_back(static_cast<Object *>(m_filter->mapToSource(it).internalPointer()));
+    }
+    emit selected(list);
+
     if(m_contentMenu) {
         m_contentMenu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
     }
