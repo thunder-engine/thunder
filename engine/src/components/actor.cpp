@@ -376,6 +376,10 @@ void Actor::clearCloneRef() {
 */
 void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
+    if(parent == this) {
+        return;
+    }
+
     if(p_ptr->m_transform) {
         Object::setParent(parent, position, force);
 

@@ -706,6 +706,10 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
     A_UNUSED(force);
 
+    if(parent == this) {
+        return;
+    }
+
     if(p_ptr->m_pParent) {
         p_ptr->m_pParent->removeChild(this);
     }

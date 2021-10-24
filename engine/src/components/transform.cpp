@@ -253,6 +253,9 @@ Vector3 &Transform::worldScale() const {
 */
 void Transform::setParent(Object *parent, int32_t position, bool force) {
     A_UNUSED(position);
+    if(parent == this) {
+        return;
+    }
     Object::setParent(parent, 0, force);
 
     Actor *p = dynamic_cast<Actor *>(actor()->parent());
