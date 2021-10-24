@@ -423,6 +423,10 @@ void MainWindow::onNewProject() {
     QString path = QFileDialog::getSaveFileName(this, tr("Create New Project"),
                                                 ProjectManager::instance()->myProjectsPath(), "*" + gProjectExt);
     if(!path.isEmpty()) {
+        QFileInfo info(path);
+        if(info.suffix().isEmpty()) {
+            path += gProjectExt;
+        }
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             file.close();
