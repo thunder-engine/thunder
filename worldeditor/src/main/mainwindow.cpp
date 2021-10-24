@@ -307,11 +307,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
         settings.setValue(str, QString::fromStdString(Json::save(params)));
+
+        SettingsManager::instance()->saveSettings();
+
+        saveWorkspace();
     }
 
-    SettingsManager::instance()->saveSettings();
-
-    saveWorkspace();
     QApplication::quit();
 }
 
