@@ -10,7 +10,9 @@
 
 #include <QUuid>
 
-const QString gUuid("uuid");
+namespace {
+    const char *gUuid("uuid");
+};
 
 AssetList *AssetList::m_pInstance = nullptr;
 
@@ -112,12 +114,11 @@ void AssetList::update() {
     }
 
     AssetManager *inst = AssetManager::instance();
-    for(auto it : static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->indices()) {
+    for(auto &it : static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->indices()) {
         QObject *item = new QObject(m_rootItem);
-        QFileInfo info(it.first.c_str());
 
         QString path = inst->guidToPath(it.second.second).c_str();
-        item->setObjectName(path/*info.filePath()*/);
+        item->setObjectName(path);
         item->setProperty(qPrintable(gUuid), it.second.second.c_str());
 
         QString type = inst->assetTypeName(path);

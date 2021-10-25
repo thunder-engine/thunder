@@ -128,7 +128,7 @@ bool ContentListFilter::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
 bool ContentListFilter::checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 3, sourceParent);
-    for(auto it : m_List) {
+    for(auto &it : m_List) {
         QString type = sourceModel()->data(index).toString();
         if(it == type) {
             return true;
@@ -313,6 +313,7 @@ QMimeData *ContentList::mimeData(const QModelIndexList &indexes) const {
         }
     }
     if(list.isEmpty()) {
+        delete mimeData;
         return nullptr;
     }
     mimeData->setData(gMimeContent, qPrintable(list.join(";")));
@@ -322,11 +323,6 @@ QMimeData *ContentList::mimeData(const QModelIndexList &indexes) const {
 void ContentList::update() {
     QString path = m_pProjectManager->contentPath();
     QDir dir(path);
-
-    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
-    if(!parent) {
-        parent = m_rootItem;
-    }
 
     foreach(QObject *it, m_rootItem->children()) {
         QFileInfo info(dir.absoluteFilePath(it->objectName()));

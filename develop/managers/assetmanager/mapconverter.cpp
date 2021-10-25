@@ -42,3 +42,7 @@ uint8_t MapConverter::convertFile(AssetConverterSettings *settings) {
 AssetConverterSettings *MapConverter::createSettings() const {
     return new MapConverterSettings();
 }
+
+QString MapConverter::templatePath() const {
+    return QString();
+}

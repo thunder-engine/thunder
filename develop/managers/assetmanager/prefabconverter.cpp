@@ -19,6 +19,10 @@ AssetConverterSettings *PrefabConverter::createSettings() const {
     return new PrefabConverterSettings();
 }
 
+QString PrefabConverter::templatePath() const {
+    return ":/Templates/Prefab.fab";
+}
+
 Actor *PrefabConverter::createActor(const QString &guid) const {
     PROFILE_FUNCTION();
 

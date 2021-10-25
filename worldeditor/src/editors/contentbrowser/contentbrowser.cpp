@@ -25,7 +25,9 @@
 
 #include "../propertyedit/propertymodel.h"
 
-const QString gTemplateName("${templateName}");
+namespace {
+    const char *gTemplateName("${templateName}");
+}
 
 class ContentItemDeligate : public QStyledItemDelegate  {
 
@@ -91,7 +93,7 @@ private:
         editor->setFixedWidth(width);
     }
 
-    float       m_Scale;
+    float m_Scale;
 };
 
 ContentBrowser::ContentBrowser(QWidget* parent) :
@@ -170,12 +172,13 @@ void ContentBrowser::createContextMenus() {
     }
     paths.removeDuplicates();
 
-    for(auto it : paths) {
+    for(auto &it : paths) {
         QFileInfo info(it);
         QString name = fromCamelCase(info.baseName().replace('_', ""));
         m_CreationMenu.addAction(name)->setData(it);
     }
 
+    createAction(tr("Open"), SLOT(onItemOpen()))->setData(QVariant::fromValue(ui->contentList));
     createAction(showIn, SLOT(showInGraphicalShell()));
     createAction(tr("Duplicate"), SLOT(onItemDuplicate()))->setData(QVariant::fromValue(ui->contentList));
     createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2))->setData(QVariant::fromValue(ui->contentList));
@@ -238,7 +241,7 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 }
 
 void ContentBrowser::onFilterMenuAboutToShow() {
-    for(auto it : AssetManager::instance()->labels()) {
+    for(auto &it : AssetManager::instance()->labels()) {
         if(!it.isEmpty()) {
             QAction *child = m_pFilterMenu->findChild<QAction *>(it);
             if(child == nullptr) {
@@ -248,6 +251,15 @@ void ContentBrowser::onFilterMenuAboutToShow() {
                 m_pFilterMenu->addAction(a);
             }
         }
+    }
+}
+
+void ContentBrowser::onItemOpen() {
+    QAction *action = qobject_cast<QAction*>(sender());
+    if(action) {
+        QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
+
+        on_contentList_doubleClicked(view->currentIndex());
     }
 }
 
@@ -356,10 +368,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
 
     QString source = ContentList::instance()->path(origin);
     QFileInfo path(source);
-    bool embedded = false;
-    if(source.contains(".embedded/")) {
-        embedded = true;
-    } else {
+    if(!source.contains(".embedded/")) {
         path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
     }
 

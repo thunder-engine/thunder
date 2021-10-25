@@ -58,6 +58,7 @@ private slots:
     void onFilterMenuTriggered(QAction *);
     void onFilterMenuAboutToShow();
 
+    void onItemOpen();
     void onItemDuplicate();
     void onItemRename();
     void onItemDelete();

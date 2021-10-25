@@ -13,8 +13,6 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
-#include <QDebug>
-
 class AssetFilter : public QSortFilterProxyModel {
 public:
     typedef QList<int32_t> TypeList;
@@ -158,14 +156,6 @@ void AssetBrowser::on_assetList_clicked(const QModelIndex &index) {
     QModelIndex origin = m_pContentProxy->mapToSource(index);
 
     QString source = AssetList::instance()->path(origin);
-    QFileInfo path(source);
-    bool embedded = false;
-    if(source.contains(".embedded/")) {
-        embedded = true;
-    } else {
-        path = ProjectManager::instance()->contentPath() + QDir::separator() + source;
-    }
-
     emit assetSelected(AssetManager::instance()->pathToGuid(source.toStdString()).c_str());
 }
 

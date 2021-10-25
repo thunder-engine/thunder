@@ -78,10 +78,6 @@ Product {
                     list.push("libicui18n.so.56", "libicui18n.so.56.1")
                     list.push("libicuuc.so.56", "libicuuc.so.56.1")
 
-                    list.push(libPrefix + "Qt5QmlModels" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "Qt5QmlModels" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
-                    list.push(libPrefix + "Qt5QmlModels" + libPostfix + "." + Qt.core.versionMajor)
-
                     list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
                     list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                     list.push(libPrefix + "Qt5DBus" + libPostfix + "." + Qt.core.versionMajor)

@@ -18,11 +18,14 @@ class PrefabConverter : public AssetConverter {
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 
+    QString templatePath() const Q_DECL_OVERRIDE;
+
 protected:
     Variant readJson(const string &data, AssetConverterSettings *);
     void injectResource(Variant &origin, Resource *resource);
 
     void toVersion1(Variant &variant);
+
 };
 
 #endif // PREFABCONVERTER_H

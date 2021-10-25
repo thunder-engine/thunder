@@ -15,6 +15,8 @@ class MapConverter : public PrefabConverter {
     uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+
+    QString templatePath() const Q_DECL_OVERRIDE;
 };
 
 #endif // MAPCONVERTER_H
