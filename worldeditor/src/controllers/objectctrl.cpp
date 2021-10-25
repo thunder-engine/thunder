@@ -382,7 +382,6 @@ void ObjectCtrl::onDrop() {
     }
 
     if(!m_dragMap.name.isEmpty()) {
-        bool additive = false;
         emit dropMap(ProjectManager::instance()->contentPath() + "/" + m_dragMap.name, m_dragMap.additive);
         m_dragMap.name.clear();
     }
@@ -921,9 +920,11 @@ void PropertyObject::redo() {
         int index = meta->indexOfProperty(qPrintable(m_property));
         if(index > -1) {
             MetaProperty property = meta->property(index);
-            m_value = property.read(object);
+            if(property.isValid()) {
+                m_value = property.read(object);
 
-            property.write(object, value);
+                property.write(object, value);
+            }
         }
     }
     emit m_controller->objectsUpdated();

@@ -86,20 +86,22 @@ public:
                         for(int i = 0; i < meta->propertyCount(); i++) {
                             MetaProperty origin = meta->property(i);
                             MetaProperty target = it.second->metaObject()->property(i);
-                            Variant data = origin.read(it.first);
-                            if(origin.type().flags() & MetaType::BASE_OBJECT) {
-                                Object *ro = *(reinterpret_cast<Object **>(data.data()));
+                            if(origin.isValid() && target.isValid()) {
+                                Variant data = origin.read(it.first);
+                                if(origin.type().flags() & MetaType::BASE_OBJECT) {
+                                    Object *ro = *(reinterpret_cast<Object **>(data.data()));
 
-                                for(auto item : array) {
-                                    if(item.first == ro) {
-                                        ro = item.second;
-                                        break;
+                                    for(auto item : array) {
+                                        if(item.first == ro) {
+                                            ro = item.second;
+                                            break;
+                                        }
                                     }
-                                }
 
-                                data = Variant(data.userType(), &ro);
+                                    data = Variant(data.userType(), &ro);
+                                }
+                                target.write(it.second, data);
                             }
-                            target.write(it.second, data);
                         }
 
                         for(auto item : it.first->getReceivers()) {

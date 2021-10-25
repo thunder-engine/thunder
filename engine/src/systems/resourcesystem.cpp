@@ -212,10 +212,7 @@ void ResourceSystem::processState(Resource *resource) {
                                 if(fields.begin()->toString() != "Prefab") {
                                     VariantList list;
                                     list.push_back(obj);
-                                    Object *created = Engine::toObject(list, resource);
-                                    if(created) {
-                                        created = created;
-                                    }
+                                    Engine::toObject(list, resource);
                                 }
                             }
                         }
