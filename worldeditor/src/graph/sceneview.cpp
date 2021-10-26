@@ -25,7 +25,6 @@
 
 SceneView::SceneView(QWidget *parent) :
         QWidget(parent),
-        m_pScene(nullptr),
         m_pEngine(nullptr) {
 
     QVBoxLayout *l = new QVBoxLayout;
@@ -54,18 +53,9 @@ void SceneView::setEngine(Engine *engine) {
     m_pEngine->setPlatformAdaptor(this);
 }
 
-void SceneView::setScene(Scene *scene) {
-    m_pScene = scene;
-}
-
 void SceneView::onDraw() {
-    if(m_pScene) {
-        Timer::update();
-        findCamera();
-
-        if(m_pEngine) {
-            m_pEngine->update(m_pScene);
-        }
+    if(m_pEngine) {
+        m_pEngine->update();
     }
 }
 
@@ -297,18 +287,6 @@ bool SceneView::eventFilter(QObject *object, QEvent *event) {
     default: break;
     }
     return QObject::eventFilter(object, event);
-}
-
-void SceneView::findCamera() {
-    Actor *chunk = m_pScene->findChild<Actor *>(false);
-    if(chunk) {
-        Camera *camera = chunk->findChild<Camera *>();
-        if(camera) {
-            Pipeline *pipe = camera->pipeline();
-            pipe->resize(width(), height());
-        }
-        Camera::setCurrent(camera);
-    }
 }
 
 Vector4 SceneView::mousePosition() {

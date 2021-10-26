@@ -8,6 +8,11 @@
 class PrefabConverterSettings : public AssetConverterSettings {
 public:
     PrefabConverterSettings();
+
+private:
+    QString typeName() const Q_DECL_OVERRIDE;
+
+    bool isReadOnly() const Q_DECL_OVERRIDE;
 };
 
 class PrefabConverter : public AssetConverter {
@@ -24,8 +29,9 @@ protected:
     Variant readJson(const string &data, AssetConverterSettings *);
     void injectResource(Variant &origin, Resource *resource);
 
-    void toVersion1(Variant &variant);
-
+    virtual bool toVersion1(Variant &variant);
+    virtual bool toVersion2(Variant &variant);
+    virtual bool toVersion3(Variant &variant);
 };
 
 #endif // PREFABCONVERTER_H

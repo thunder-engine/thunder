@@ -51,14 +51,12 @@ MaterialEdit::MaterialEdit() :
     CameraCtrl *ctrl = new CameraCtrl(ui->preview);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
-    ctrl->init(nullptr);
+
+    Scene *scene = Engine::objectCreate<Scene>("Scene");
 
     ui->preview->setController(ctrl);
-    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
+    ui->preview->setScene(scene);
 
-    ui->schemeWidget->setWindowTitle("Scheme");
-
-    Scene *scene = ui->preview->scene();
     m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));

@@ -21,25 +21,22 @@ SpriteController::SpriteController(QWidget *view) :
         m_Height(0),
         m_Drag(false) {
 
-}
-
-SpriteController::~SpriteController() {
-    delete m_pPipeline;
-}
-
-void SpriteController::init(Scene *scene) {
-    CameraCtrl::init(scene);
-
-    m_pPipeline = new EditorPipeline;
-    m_pPipeline->setController(this);
-    m_pActiveCamera->setPipeline(m_pPipeline);
-
     Camera *cam = camera();
     if(cam) {
         cam->actor()->transform()->setPosition(Vector3(0.0f, 0.0f, 1.0f));
         cam->setOrthoSize(SCALE);
         cam->setFocal(SCALE);
     }
+}
+
+SpriteController::~SpriteController() {
+    delete m_pPipeline;
+}
+
+void SpriteController::init() {
+    m_pPipeline = new EditorPipeline;
+    m_pPipeline->setController(this);
+    m_pActiveCamera->setPipeline(m_pPipeline);
 }
 
 void SpriteController::setImportSettings(TextureImportSettings *settings) {
@@ -56,7 +53,7 @@ void SpriteController::selectElements(const QStringList &list) {
 
     m_ElementList.clear();
     if(m_pSettings) {
-        for(auto it : m_List) {
+        for(auto &it : m_List) {
             m_ElementList.push_back(m_pSettings->elements().value(it));
         }
     }
@@ -382,7 +379,7 @@ void DestroySprites::redo() {
     TextureImportSettings *settings = m_pController->settings();
     if(settings) {
         m_Rects.clear();
-        for(auto it : m_List) {
+        for(auto &it : m_List) {
             m_Rects.push_back(settings->elements().value(it));
             settings->removeElement(it);
         }

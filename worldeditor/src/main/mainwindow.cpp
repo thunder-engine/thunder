@@ -2,35 +2,21 @@
 #include "ui_mainwindow.h"
 
 #include <QSettings>
-#include <QMessageBox>
 #include <QFileDialog>
-#include <QTimer>
-#include <QDateTime>
 #include <QVariant>
 #include <QWidgetAction>
 
 #include <QQmlContext>
 #include <QQuickItem>
-#include <QMenuBar>
 
 #include <json.h>
-#include <bson.h>
+#include <timer.h>
 
 #include <cstring>
-
-// Engine
-#include <module.h>
-#include <components/scene.h>
-#include <components/actor.h>
-#include <components/transform.h>
-#include <components/spriterender.h>
-#include <components/meshrender.h>
-#include <components/camera.h>
 
 #include <editor/asseteditor.h>
 
 // Misc
-#include "controllers/objectctrl.h"
 #include "graph/sceneview.h"
 
 #include "managers/asseteditormanager/importqueue.h"
@@ -56,25 +42,22 @@
 #include "editors/assetselect/assetlist.h"
 
 Q_DECLARE_METATYPE(Object *)
-Q_DECLARE_METATYPE(Actor *)
 Q_DECLARE_METATYPE(Object::ObjectList *)
 
 namespace  {
-    const QString gRecent("Recent");
-
-    const QString gGeometry("main.geometry");
-    const QString gWindows("main.windows");
-    const QString gWorkspace("main.workspace");
+    const char *gGeometry("main.geometry");
+    const char *gWindows("main.windows");
+    const char *gWorkspace("main.workspace");
 };
 
 MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
-        m_Engine(nullptr),
+        m_Engine(engine),
         m_CurrentWorkspace(":/Workspaces/Default.ws"),
         m_Queue(new ImportQueue(engine)),
-        m_ProjectModel(nullptr),
-        m_FeedManager(nullptr),
+        m_ProjectModel(new ProjectModel),
+        m_FeedManager(new FeedManager),
         m_DocumentModel(nullptr),
         m_Undo(nullptr),
         m_Redo(nullptr),
@@ -93,8 +76,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_Engine = engine;
-
     connect(m_Queue, &ImportQueue::rendered, ContentList::instance(), &ContentList::onRendered);
     connect(m_Queue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
     connect(m_Queue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
@@ -105,10 +86,9 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->preferencesWidget->setWindowTitle(tr("Editor Preferences"));
     ui->timeline->setWindowTitle(tr("Timeline"));
     ui->classMapView->setWindowTitle(tr("Class View"));
+    ui->preview->setWindowTitle(tr("Preview"));
 
     ui->preview->setEngine(m_Engine);
-    ui->preview->setScene(m_Engine->scene());
-    ui->preview->setWindowTitle(tr("Preview"));
 
     m_MainDocument = ui->viewportWidget;
 
@@ -132,9 +112,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->hierarchy->setContextMenu(ui->viewportWidget->contextMenu());
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
-
-    m_ProjectModel = new ProjectModel();
-    m_FeedManager = new FeedManager();
 
     ui->quickWidget->rootContext()->setContextProperty("projectsModel", m_ProjectModel);
     ui->quickWidget->rootContext()->setContextProperty("feedManager", m_FeedManager);
@@ -173,8 +150,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->toolWidget, &QToolWindowManager::toolWindowVisibilityChanged, this, &MainWindow::onToolWindowVisibilityChanged);
     connect(ui->toolWidget, &QToolWindowManager::currentToolWindowChanged, this, &MainWindow::onCurrentToolWindowChanged);
 
-    connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject);
-    connect(ui->viewportWidget, &SceneComposer::hierarchyUpdated, ui->hierarchy, &HierarchyBrowser::onHierarchyUpdated);
+    connect(ui->viewportWidget, &SceneComposer::hierarchyCreated, ui->hierarchy, &HierarchyBrowser::onSetRootObject, Qt::DirectConnection);
     connect(ui->viewportWidget, &SceneComposer::itemUpdated, ui->hierarchy, &HierarchyBrowser::onObjectUpdated);
     connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->hierarchy, &HierarchyBrowser::onObjectSelected);
     connect(ui->viewportWidget, &SceneComposer::itemsSelected, ui->timeline, &Timeline::onObjectSelected);
@@ -210,7 +186,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         action->setObjectName(it->windowTitle());
         action->setData(QVariant::fromValue(it));
         action->setCheckable(true);
-        action->setChecked(true);
+        action->setChecked(false);
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onToolWindowActionToggled(bool)));
     }
 
@@ -290,7 +266,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
     if(m_DocumentModel) {
-        for(auto it : m_DocumentModel->documents()) {
+        for(auto &it : m_DocumentModel->documents()) {
             ui->toolWidget->activateToolWindow(it);
             if(!m_DocumentModel->checkSave(it)) {
                 event->ignore();
@@ -374,6 +350,7 @@ void MainWindow::setGameMode(bool mode) {
         }
         ui->toolWidget->activateToolWindow(ui->preview);
         ui->viewportWidget->backupScene();
+        Timer::reset();
     } else {
         ui->toolWidget->activateToolWindow(ui->viewportWidget);
         ui->viewportWidget->restoreBackupScene();
@@ -449,7 +426,7 @@ void MainWindow::onImportFinished() {
     connect(m_DocumentModel, &DocumentModel::itemSelected, this, &MainWindow::onItemSelected);
     connect(m_DocumentModel, &DocumentModel::itemUpdated, ui->propertyView, &PropertyEditor::onUpdated);
 
-    ui->viewportWidget->setScene(m_Engine->scene());
+    ui->viewportWidget->setEngine(m_Engine);
     m_DocumentModel->addEditor(ui->viewportWidget);
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);

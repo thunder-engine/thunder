@@ -18,9 +18,6 @@ public:
 
     Object *findObject(const uint32_t uuid, Object *parent = nullptr);
 
-public slots:
-    void reset();
-
 private:
     QVariant data(const QModelIndex &index, int role) const;
 

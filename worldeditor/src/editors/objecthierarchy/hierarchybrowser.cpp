@@ -7,6 +7,8 @@
 #include <QDragEnterEvent>
 #include <QAction>
 #include <QStyledItemDelegate>
+#include <QPainter>
+#include <QPushButton>
 
 #include <object.h>
 #include <invalid.h>
@@ -97,9 +99,9 @@ public:
 
     }
 
-    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index ) const override {
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         Q_UNUSED(index)
-        editor->setGeometry( option.rect );
+        editor->setGeometry(option.rect);
     }
 };
 
@@ -130,8 +132,10 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
     connect(ui->treeView, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
     connect(ui->treeView, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop(QDropEvent*)));
 
+    ui->treeView->header()->moveSection(2, 0);
     ui->treeView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeView->header()->setSectionResizeMode(2, QHeaderView::Fixed);
+    ui->treeView->header()->setSectionResizeMode(3, QHeaderView::Fixed);
     ui->treeView->header()->resizeSection(1, 50);
     ui->treeView->header()->hideSection(1);
     ui->treeView->header()->hideSection(3);
@@ -142,8 +146,10 @@ HierarchyBrowser::~HierarchyBrowser() {
 }
 
 void HierarchyBrowser::onSetRootObject(Object *object) {
-    static_cast<ObjectHierarchyModel *>(m_filter->sourceModel())->setRoot(object);
-    onHierarchyUpdated();
+    ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
+    model->setRoot(object);
+
+    ui->treeView->expandToDepth(0);
 }
 
 void HierarchyBrowser::setSimplified(bool enable) {
@@ -178,12 +184,9 @@ void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
     }
 }
 
-void HierarchyBrowser::onHierarchyUpdated() {
-    static_cast<ObjectHierarchyModel *>(m_filter->sourceModel())->reset();
-}
-
 void HierarchyBrowser::onObjectUpdated() {
     QAbstractItemModel *model = m_filter->sourceModel();
+
     emit model->layoutAboutToBeChanged();
     emit model->layoutChanged();
 }

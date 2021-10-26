@@ -6,8 +6,6 @@
 #include <systems/rendersystem.h>
 
 #include <components/camera.h>
-#include <components/scene.h>
-
 #include <resources/pipeline.h>
 
 #include "controllers/cameractrl.h"
@@ -46,28 +44,27 @@ void Viewport::setController(CameraCtrl *ctrl) {
 
 void Viewport::setScene(Scene *scene) {
     m_pScene = scene;
-    PluginManager::instance()->addScene(m_pScene);
 }
 
 void Viewport::onDraw() {
     if(m_pController) {
         m_pController->update();
-    }
-    if(m_pScene) {
-        findCamera();
 
-        PluginManager::instance()->updateRender(m_pScene);
-    }
-}
-
-void Viewport::findCamera() {
-    if(m_pController) {
         Camera *camera = m_pController->camera();
         if(camera) {
             Pipeline *pipe = camera->pipeline();
             pipe->resize(width(), height());
         }
         Camera::setCurrent(camera);
+    }
+    if(m_pScene) {
+        Engine::resourceSystem()->processEvents();
+
+        RenderSystem *render = PluginManager::instance()->render();
+        if(render) {
+            render->update(m_pScene);
+        }
+        Camera::setCurrent(nullptr);
     }
 }
 

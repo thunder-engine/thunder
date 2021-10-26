@@ -25,6 +25,8 @@ public:
     virtual bool isValid() const;
     virtual void setValid(bool valid);
 
+    virtual bool isReadOnly() const;
+
     virtual QString source() const;
     virtual void setSource(const QString &source);
 

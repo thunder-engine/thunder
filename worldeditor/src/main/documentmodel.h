@@ -32,6 +32,8 @@ public:
 
     QList<AssetEditor *> documents();
 
+    static int closeAssetDialog();
+
 signals:
     void itemSelected(QObject *item);
     void itemUpdated();

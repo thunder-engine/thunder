@@ -15,6 +15,7 @@
 #include <components/scene.h>
 #include <components/actor.h>
 #include <components/particlerender.h>
+#include <components/camera.h>
 
 ParticleEdit::ParticleEdit() :
         m_Modified(false),
@@ -28,12 +29,13 @@ ParticleEdit::ParticleEdit() :
     CameraCtrl *ctrl = new CameraCtrl(ui->preview);
     ctrl->blockMovement(true);
     ctrl->setFree(false);
-    ctrl->init(nullptr);
+
+    Scene *scene = Engine::objectCreate<Scene>("Scene");
 
     ui->preview->setController(ctrl);
-    ui->preview->setScene(Engine::objectCreate<Scene>("Scene"));
+    ui->preview->setScene(scene);
 
-    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", ui->preview->scene());
+    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
     m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
 
     startTimer(16);
@@ -48,9 +50,9 @@ ParticleEdit::ParticleEdit() :
     connect(item, SIGNAL(emitterCreate()), this, SLOT(onEmitterCreated()));
     connect(item, SIGNAL(emitterDelete(QString)), this, SLOT(onEmitterDeleted(QString)));
 
-    connect(item, SIGNAL(functionSelected(QString, QString)), this, SLOT(onFunctionSelected(QString, QString)));
-    connect(item, SIGNAL(functionCreate(QString, QString)), this, SLOT(onFunctionCreated(QString, QString)));
-    connect(item, SIGNAL(functionDelete(QString, QString)), this, SLOT(onFunctionDeleted(QString, QString)));
+    connect(item, SIGNAL(functionSelected(QString,QString)), this, SLOT(onFunctionSelected(QString,QString)));
+    connect(item, SIGNAL(functionCreate(QString,QString)), this, SLOT(onFunctionCreated(QString,QString)));
+    connect(item, SIGNAL(functionDelete(QString,QString)), this, SLOT(onFunctionDeleted(QString,QString)));
 }
 
 ParticleEdit::~ParticleEdit() {

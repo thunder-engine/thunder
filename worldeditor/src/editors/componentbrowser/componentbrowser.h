@@ -8,8 +8,6 @@ class ComponentFilter;
 
 class Engine;
 
-static const QString gMimeComponent("text/component");
-
 namespace Ui {
     class ComponentBrowser;
 }

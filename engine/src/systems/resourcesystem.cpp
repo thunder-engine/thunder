@@ -153,6 +153,15 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
     }
 }
 
+typedef list<Object *> List;
+static void enumObjects(Object *object, List &list) {
+    PROFILE_FUNCTION();
+    list.push_back(object);
+    for(const auto &it : object->getChildren()) {
+        enumObjects(it, list);
+    }
+}
+
 void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
@@ -172,7 +181,11 @@ void ResourceSystem::processState(Resource *resource) {
                             var = Json::load(string(data.begin(), data.end()));
                         }
 
+                        List deleteObjects;
+                        enumObjects(resource, deleteObjects);
+
                         VariantList objects = var.toList();
+                        auto del = deleteObjects.begin();
                         for(auto &obj : objects) {
                             VariantList fields = obj.toList();
                             auto it = std::next(fields.begin(), 1);
@@ -188,12 +201,26 @@ void ResourceSystem::processState(Resource *resource) {
                                         object->setProperty(prop.first.c_str(), v);
                                     }
                                 }
+
+                                del = deleteObjects.erase(del);
+
                                 Resource *res = dynamic_cast<Resource *>(object);
                                 if(res) {
                                     res->loadUserData(fields.back().toMap());
                                 }
+                            } else {
+                                if(fields.begin()->toString() != "Prefab") {
+                                    VariantList list;
+                                    list.push_back(obj);
+                                    Engine::toObject(list, resource);
+                                }
                             }
                         }
+
+                        for(auto toDel : deleteObjects) {
+                            delete toDel;
+                        }
+
                         resource->switchState(Resource::ToBeUpdated);
                     } else {
                         Log(Log::ERR) << "Unable to load resource: " << uuid.c_str();

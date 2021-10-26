@@ -65,7 +65,7 @@ static TouchMap s_Touches;
 
 void onFrame(GLFMDisplay *, const double) {
     if(g_pEngine) {
-        g_pEngine->update(g_pEngine->scene());
+        g_pEngine->update();
     }
 }
 

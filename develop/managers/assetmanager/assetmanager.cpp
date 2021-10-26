@@ -764,13 +764,13 @@ bool AssetManager::convert(AssetConverterSettings *settings) {
 
                 if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + value)) {
                     Object *res = Engine::loadResource(value.toStdString());
-                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res));
+                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
                     emit imported(path, type);
                 }
             }
 
             Object *res = Engine::loadResource(guid.toStdString());
-            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res));
+            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
             emit imported(source, type);
 
             settings->saveSettings();
