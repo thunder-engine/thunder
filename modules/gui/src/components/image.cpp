@@ -23,7 +23,7 @@ static hash<string> hash_str;
 
 class ImagePrivate : public Resource::IObserver {
 public:
-    ImagePrivate(Image *image) :
+    explicit ImagePrivate(Image *image) :
         m_Color(1.0f),
         m_pImage(image),
         m_pCustomMesh(Engine::objectCreate<Mesh>("")),

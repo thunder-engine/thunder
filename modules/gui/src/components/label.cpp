@@ -21,7 +21,7 @@
 
 class LabelPrivate : public Resource::IObserver {
 public:
-    LabelPrivate(Label *label) :
+    explicit LabelPrivate(Label *label) :
         m_Color(1.0f),
         m_pLabel(label),
         m_pFont(nullptr),

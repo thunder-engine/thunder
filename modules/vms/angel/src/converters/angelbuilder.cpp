@@ -40,7 +40,7 @@ static QHash<asETypeIdFlags, QString> baseTypes = { {asTYPEID_VOID,   "void"},
 
 class CBytecodeStream : public asIBinaryStream {
 public:
-    CBytecodeStream(ByteArray &ptr) :
+    explicit CBytecodeStream(ByteArray &ptr) :
         array(ptr) {
 
     }

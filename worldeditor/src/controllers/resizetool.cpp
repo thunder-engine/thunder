@@ -147,9 +147,9 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
         shape = Qt::SizeFDiagCursor;
     } else if(Handles::s_Axes == (Handles::POINT_B | Handles::POINT_L)) {
         shape = Qt::SizeBDiagCursor;
-    } else if(Handles::s_Axes == Handles::POINT_T | Handles::s_Axes == Handles::POINT_B) {
+    } else if((Handles::s_Axes == Handles::POINT_T) | (Handles::s_Axes == Handles::POINT_B)) {
         shape = Qt::SizeVerCursor;
-    } else if(Handles::s_Axes == Handles::POINT_L | Handles::s_Axes == Handles::POINT_R) {
+    } else if((Handles::s_Axes == Handles::POINT_L) | (Handles::s_Axes == Handles::POINT_R)) {
         shape = Qt::SizeHorCursor;
     }
     m_Cursor = QCursor(shape);

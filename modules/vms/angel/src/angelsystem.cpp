@@ -32,7 +32,7 @@
 
 class AngelStream : public asIBinaryStream {
 public:
-    AngelStream(ByteArray &ptr) :
+    explicit AngelStream(ByteArray &ptr) :
             m_Array(ptr),
             m_Offset(0) {
 

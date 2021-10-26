@@ -72,13 +72,9 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 advance(it, index.row());
                 if(it != m_pClip->m_Tracks.end()) {
                     QStringList lst = QString::fromStdString(it->path()).split('/');
-                    QString component = lst.last();
                     lst.pop_back();
                     QString actor = lst.last();
 
-                    if(component.isEmpty()) {
-                        component = QString::fromStdString(m_pController->actor()->name());
-                    }
                     return QString("%1 : %2").arg(actor, QString(it->property().c_str()).replace('_', ""));
                 }
             } else {

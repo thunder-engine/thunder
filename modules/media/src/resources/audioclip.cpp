@@ -156,7 +156,6 @@ void AudioClip::loadUserData(const VariantMap &data) {
         m_Path = (*i).toString();
         i++;
         m_Stream = (*i).toBool();
-        i++;
 
         loadAudioData();
     }

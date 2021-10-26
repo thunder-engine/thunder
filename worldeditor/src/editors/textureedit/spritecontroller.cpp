@@ -34,6 +34,9 @@ SpriteController::~SpriteController() {
 }
 
 void SpriteController::init() {
+    if(m_pPipeline) {
+        delete m_pPipeline;
+    }
     m_pPipeline = new EditorPipeline;
     m_pPipeline->setController(this);
     m_pActiveCamera->setPipeline(m_pPipeline);

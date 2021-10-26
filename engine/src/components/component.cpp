@@ -116,7 +116,6 @@ bool Component::isSelected(ObjectList &selected) {
     for(auto it : selected) {
         if(it == parent()) {
             return true;
-            break;
         }
     }
     return false;

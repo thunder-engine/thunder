@@ -798,38 +798,38 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
                 s_Buffer->drawMesh(z * r, s_ScaleXYZ, 0, CommandBuffer::TRANSLUCENT, s_Gizmo);
             }
             s_Color = s_Normal;
-        }
 
-        Plane plane;
-        plane.point = position;
-        plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
-        if(s_Axes == AXIS_X) {
-            plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
-        } else if(s_Axes == AXIS_Z) {
-            plane.normal = Vector3(plane.normal.x, plane.normal.y, 0.0f);
-        } else if(s_Axes == (AXIS_X | AXIS_Z)) {
-            plane.normal = Vector3(0.0f, 1.0f, 0.0f);
-        } else if(s_Axes == (AXIS_X | AXIS_Y)) {
-            plane.normal = Vector3(0.0f, 0.0f, 1.0f);
-        } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
-            plane.normal = Vector3(1.0f, 0.0f, 0.0f);
-        } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
-            plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
-        }
-        plane.normal.normalize();
-        plane.d = plane.normal.dot(plane.point);
+            Plane plane;
+            plane.point = position;
+            plane.normal = camera->actor()->transform()->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+            if(s_Axes == AXIS_X) {
+                plane.normal = Vector3(0.0f, plane.normal.y, plane.normal.z);
+            } else if(s_Axes == AXIS_Z) {
+                plane.normal = Vector3(plane.normal.x, plane.normal.y, 0.0f);
+            } else if(s_Axes == (AXIS_X | AXIS_Z)) {
+                plane.normal = Vector3(0.0f, 1.0f, 0.0f);
+            } else if(s_Axes == (AXIS_X | AXIS_Y)) {
+                plane.normal = Vector3(0.0f, 0.0f, 1.0f);
+            } else if(s_Axes == (AXIS_Z | AXIS_Y)) {
+                plane.normal = Vector3(1.0f, 0.0f, 0.0f);
+            } else if(s_Axes == AXIS_Y || s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
+                plane.normal = Vector3(plane.normal.x, 0.0f, plane.normal.z);
+            }
+            plane.normal.normalize();
+            plane.d = plane.normal.dot(plane.point);
 
-        Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
-        Vector3 point;
-        ray.intersect(plane, &point, true);
-        if(s_Axes & AXIS_X) {
-            result.x = point.x;
-        }
-        if(s_Axes & AXIS_Y) {
-            result.y = point.y;
-        }
-        if(s_Axes & AXIS_Z) {
-            result.z = point.z;
+            Ray ray = camera->castRay(s_Mouse.x, s_Mouse.y);
+            Vector3 point;
+            ray.intersect(plane, &point, true);
+            if(s_Axes & AXIS_X) {
+                result.x = point.x;
+            }
+            if(s_Axes & AXIS_Y) {
+                result.y = point.y;
+            }
+            if(s_Axes & AXIS_Z) {
+                result.z = point.z;
+            }
         }
     }
     return result;
@@ -858,7 +858,7 @@ Vector3 Handles::rectTool(const Vector3 &position, const Vector3 &box, int &axis
                 size = Vector2(box.z, box.y);
                 q = Quaternion(Vector3(0.0f, 90.0f, 0.0f));
             }
-            if(abs(normal.y) > abs(normal.x) && abs(normal.y) > abs(normal.x)) {
+            if(abs(normal.y) > abs(normal.x)) {
                 axis = Handles::AXIS_Y;
                 plane.normal = Vector3(0.0f, 1.0f, 0.0f);
                 size = Vector2(box.x, box.z);

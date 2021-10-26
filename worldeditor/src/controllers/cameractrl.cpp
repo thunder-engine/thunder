@@ -351,7 +351,6 @@ bool CameraCtrl::restoreState(const VariantList &list) {
         m_pActiveCamera->setFocal(it->toFloat());
         it++;
         m_pActiveCamera->setOrthoSize(it->toFloat());
-        it++;
     }
     return result;
 }

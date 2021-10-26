@@ -9,17 +9,19 @@
 #include <QDirIterator>
 #include <QDebug>
 
-const QString gFilesList("{FilesList}");
+namespace  {
+    const char *gFilesList("{FilesList}");
 
-const QString gRegisterModules("{RegisterModules}");
-const QString gModuleIncludes("{ModuleIncludes}");
+    const char *gRegisterModules("{RegisterModules}");
+    const char *gModuleIncludes("{ModuleIncludes}");
 
-const QString gRegisterComponents("{RegisterComponents}");
-const QString gUnregisterComponents("{UnregisterComponents}");
-const QString gComponentNames("{ComponentNames}");
-const QString gIncludes("{Includes}");
+    const char *gRegisterComponents("{RegisterComponents}");
+    const char *gUnregisterComponents("{UnregisterComponents}");
+    const char *gComponentNames("{ComponentNames}");
+    const char *gIncludes("{Includes}");
+}
 
-const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
+static const QRegExp gClass("A_REGISTER\\((\\w+),(|\\s+)(\\w+),(|\\s+)(\\w+)\\)");
 
 BuilderSettings::BuilderSettings() {
     setType(MetaType::type<Text *>());
@@ -149,7 +151,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         m_Values[gIncludes] = includes.join("");
     }
     {
-        for(QString it : modules) {
+        for(auto &it : modules) {
             m_Values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
             m_Values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
         }
@@ -198,11 +200,9 @@ bool CodeBuilder::isOutdated() const {
 }
 
 QString CodeBuilder::formatList(const QStringList &list) const {
-    bool first  = true;
     QString result;
     for(int i = 0; i < list.size(); ++i) {
-        result += QString("\t\t\t\"%1\"\n%2").arg(list.at(i)).arg((i < (list.size() - 1)) ? "," : "");
-        first   = false;
+        result += QString("\t\t\t\"%1\"\n%2").arg(list.at(i), (i < (list.size() - 1)) ? "," : "");
     }
     return result;
 }

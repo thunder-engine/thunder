@@ -131,7 +131,6 @@ Qt::ItemFlags PropertyModel::flags(const QModelIndex &index) const {
         result |= Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     }
 
-    result = QAbstractItemModel::flags(index);
     if(index.column() == 0 && item->isCheckable()) {
         result |= Qt::ItemIsUserCheckable;
     }
