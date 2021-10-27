@@ -180,6 +180,8 @@ public:
     virtual bool                    operator==                  (const Object &) const final { return false; }
     virtual bool                    operator!=                  (const Object &) const final { return false; }
 
+    virtual void                    loadUserData                (const VariantMap &data);
+
 // Signals
 public:
     void                            destroyed                   ();
@@ -187,7 +189,6 @@ public:
 protected:
     virtual void                    loadData                    (const VariantList &data);
     virtual void                    loadObjectData              (const VariantMap &data);
-    virtual void                    loadUserData                (const VariantMap &data);
 
     virtual VariantList             saveData                    () const;
     virtual VariantMap              saveUserData                () const;

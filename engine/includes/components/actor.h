@@ -58,7 +58,6 @@ public:
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
     bool isInstance() const;
-    bool isValidInstance() const;
 
     Prefab *prefab() const;
     void setPrefab(Prefab *prefab);

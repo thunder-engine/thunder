@@ -4,6 +4,7 @@
 #include <QSize>
 
 #include "components/actor.h"
+#include "resources/prefab.h"
 
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
@@ -67,7 +68,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::TextColorRole: {
             if(item && item->isInstance()) {
-                if(!item->isValidInstance()) {
+                if(Engine::reference(item->prefab()).empty()) {
                     return QColor(255, 95, 82);
                 }
                 return QColor(88, 165, 240);

@@ -92,7 +92,7 @@ Resource *ResourceSystem::loadResource(const string &path) {
             if(var.isValid()) {
                 Object *res = Engine::toObject(var);
                 if(res) {
-                    Resource *resource = dynamic_cast<Resource *>(res);
+                    Resource *resource = static_cast<Resource *>(res);
                     if(resource) {
                         setResource(resource, uuid);
                         resource->switchState(Resource::ToBeUpdated);
@@ -185,35 +185,37 @@ void ResourceSystem::processState(Resource *resource) {
                         enumObjects(resource, deleteObjects);
 
                         VariantList objects = var.toList();
-                        auto del = deleteObjects.begin();
+                        auto delIt = deleteObjects.begin();
+                        bool first = true;
                         for(auto &obj : objects) {
                             VariantList fields = obj.toList();
                             auto it = std::next(fields.begin(), 1);
                             uint32_t uuid = it->toInt();
 
-                            Object *object = Engine::findObject(uuid, resource);
+                            Object *object = resource;
+                            if(!first) {
+                                object = Engine::findObject(uuid, resource);
+                            } else {
+                                first = false;
+                            }
+
                             if(object) {
                                 it = std::next(fields.begin(), 4);
                                 VariantMap &properties = *(reinterpret_cast<VariantMap *>((*it).data()));
                                 for(const auto &prop : properties) {
-                                    Variant v  = prop.second;
+                                    Variant v = prop.second;
                                     if(v.type() < MetaType::USERTYPE) {
                                         object->setProperty(prop.first.c_str(), v);
                                     }
                                 }
 
-                                del = deleteObjects.erase(del);
+                                object->loadUserData(fields.back().toMap());
 
-                                Resource *res = dynamic_cast<Resource *>(object);
-                                if(res) {
-                                    res->loadUserData(fields.back().toMap());
-                                }
+                                delIt = deleteObjects.erase(delIt);
                             } else {
-                                if(fields.begin()->toString() != "Prefab") {
-                                    VariantList list;
-                                    list.push_back(obj);
-                                    Engine::toObject(list, resource);
-                                }
+                                VariantList list;
+                                list.push_back(obj);
+                                Engine::toObject(list, resource);
                             }
                         }
 
@@ -228,7 +230,7 @@ void ResourceSystem::processState(Resource *resource) {
                     }
                 }
             } break;
-            case Resource::Suspend: {
+            case Resource::Suspend: { /// \todo Don't delete reseource imidiately Cache pattern implementation required
                 resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {

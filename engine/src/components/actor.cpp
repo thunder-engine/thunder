@@ -49,23 +49,22 @@ public:
                     ActorPrivate::List prefabObjects;
                     ActorPrivate::enumObjects(m_prefab->actor(), prefabObjects);
 
-                    ActorPrivate::List objects;
-                    ActorPrivate::enumObjects(m_actor, objects);
+                    ActorPrivate::List deleteObjects;
+                    ActorPrivate::enumObjects(m_actor, deleteObjects);
 
                     list<pair<Object *, Object *>> array;
 
-                    ActorPrivate::List deleteObjects = objects;
-                    for(auto obj : prefabObjects) {
+                    for(auto prefabObject : prefabObjects) {
                         bool create = true;
                         auto it = deleteObjects.begin();
                         while(it != deleteObjects.end()) {
-                            Object *o = *it;
-                            if(obj->uuid() == o->clonedFrom()) {
-                                array.push_back(pair<Object *, Object *>(obj, o));
+                            Object *clone = *it;
+                            if(prefabObject->uuid() == clone->clonedFrom()) {
+                                array.push_back(make_pair(prefabObject, clone));
                                 it = deleteObjects.erase(it);
                                 create = false;
                                 break;
-                            } else if(o->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
+                            } else if(clone->clonedFrom() == 0) { // probably was created right in instance we don't need to sync it
                                 it = deleteObjects.erase(it);
                                 create = false;
                                 break;
@@ -73,16 +72,15 @@ public:
                             ++it;
                         }
                         if(create) {
-                            Object *parent = System::findObject(obj->parent()->uuid(), m_actor);
-                            Object *result = obj->clone(parent ? parent : m_actor);
+                            Object *parent = System::findObject(prefabObject->parent()->uuid(), m_actor);
+                            Object *result = prefabObject->clone(parent ? parent : m_actor);
 
-                            array.push_back(pair<Object *, Object *>(obj, result));
+                            array.push_back(make_pair(prefabObject, result));
                         }
                     }
 
                     for(auto it : array) {
                         const MetaObject *meta = it.first->metaObject();
-
                         for(int i = 0; i < meta->propertyCount(); i++) {
                             MetaProperty origin = meta->property(i);
                             MetaProperty target = it.second->metaObject()->property(i);
@@ -91,7 +89,7 @@ public:
                                 if(origin.type().flags() & MetaType::BASE_OBJECT) {
                                     Object *ro = *(reinterpret_cast<Object **>(data.data()));
 
-                                    for(auto item : array) {
+                                    for(auto &item : array) {
                                         if(item.first == ro) {
                                             ro = item.second;
                                             break;
@@ -175,8 +173,6 @@ public:
         }
         return nullptr;
     }
-
-    string m_prefabRef;
 
     VariantMap m_data;
 
@@ -360,7 +356,6 @@ Object *Actor::clone(Object *parent) {
         result->setPrefab(prefab);
     } else {
         result->setPrefab(p_ptr->m_prefab);
-        result->p_ptr->m_prefabRef = p_ptr->m_prefabRef;
     }
     return result;
 }
@@ -410,14 +405,7 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
 */
 bool Actor::isInstance() const {
     PROFILE_FUNCTION();
-    return (p_ptr->m_prefab || !p_ptr->m_prefabRef.empty());
-}
-/*!
-    In case of this Action is an instance of a prefab will validate the the instance and return the result.
-*/
-bool Actor::isValidInstance() const {
-    PROFILE_FUNCTION();
-    return (p_ptr->m_prefab && !p_ptr->m_prefabRef.empty());
+    return (p_ptr->m_prefab != nullptr);
 }
 /*!
     Returns a Prefab object from which the Actor was instanced.
@@ -453,8 +441,7 @@ void Actor::loadObjectData(const VariantMap &data) {
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        p_ptr->m_prefabRef = (*it).second.toString();
-        setPrefab(dynamic_cast<Prefab *>(system->loadResource(p_ptr->m_prefabRef)));
+        setPrefab(dynamic_cast<Prefab *>(system->loadResource((*it).second.toString())));
 
         if(p_ptr->m_prefab) {
             Actor *actor = static_cast<Actor *>(p_ptr->m_prefab->actor()->clone());
