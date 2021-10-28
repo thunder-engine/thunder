@@ -10,19 +10,20 @@
 #include <resources/animationstatemachine.h>
 
 AnimationEdit::AnimationEdit() :
-        m_Modified(false),
+        m_modified(false),
         ui(new Ui::AnimationEdit),
-        m_pBuilder(new AnimationBuilder()),
-        m_pMachine(nullptr) {
+        m_schemeModel(new AnimationBuilder()),
+        m_stateMachine(nullptr),
+        m_selectedItem(nullptr) {
 
     ui->setupUi(this);
 
-    connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateAsset()));
-    connect(m_pBuilder, SIGNAL(nodeMoved()), this, SLOT(onUpdateAsset()));
+    connect(m_schemeModel, SIGNAL(schemeUpdated()), this, SLOT(onUpdateAsset()));
+    connect(m_schemeModel, SIGNAL(nodeMoved()), this, SLOT(onUpdateAsset()));
 
-    ui->components->setModel(m_pBuilder->components());
+    ui->components->setModel(m_schemeModel->components());
 
-    ui->quickWidget->rootContext()->setContextProperty("schemeModel", m_pBuilder);
+    ui->quickWidget->rootContext()->setContextProperty("schemeModel", m_schemeModel);
     ui->quickWidget->rootContext()->setContextProperty("stateMachine", true);
     ui->quickWidget->setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
 
@@ -40,20 +41,24 @@ AnimationEdit::~AnimationEdit() {
 }
 
 bool AnimationEdit::isModified() const {
-    return m_Modified;
+    return m_modified;
 }
 
 QStringList AnimationEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
+    return static_cast<AssetConverter *>(m_schemeModel)->suffixes();
+}
+
+void AnimationEdit::onActivated() {
+    emit itemSelected(m_selectedItem);
 }
 
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(m_pSettings != settings) {
         m_pSettings = settings;
 
-        m_pMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
+        m_stateMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
 
-        m_pBuilder->load(m_pSettings->source());
+        m_schemeModel->load(m_pSettings->source());
 
         onUpdateAsset(false);
         onNodesSelected(QVariantList({0}));
@@ -62,7 +67,7 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
 
 void AnimationEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        m_pBuilder->save(path.isEmpty() ? m_pSettings->source() : path);
+        m_schemeModel->save(path.isEmpty() ? m_pSettings->source() : path);
         onUpdateAsset(false);
     }
 }
@@ -70,18 +75,19 @@ void AnimationEdit::saveAsset(const QString &path) {
 void AnimationEdit::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
-        const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
+        const AbstractSchemeModel::Node *node = m_schemeModel->node(list.front().toInt());
         if(node) {
-            emit itemSelected(static_cast<QObject *>(node->ptr));
+            m_selectedItem = static_cast<QObject *>(node->ptr);
+            emit itemSelected(m_selectedItem);
         }
     }
 }
 
 void AnimationEdit::onUpdateAsset(bool update) {
-    if(m_pBuilder) {
-        m_Modified = update;
+    if(m_schemeModel) {
+        m_modified = update;
         QString title(tr("Animation Editor"));
-        if(m_Modified) {
+        if(m_modified) {
             title.append('*');
         }
         setWindowTitle(title);

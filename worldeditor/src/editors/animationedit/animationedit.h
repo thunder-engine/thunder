@@ -24,6 +24,8 @@ private slots:
 
     void onUpdateAsset(bool update = true);
 
+    void onActivated() override;
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path = QString()) override;
@@ -34,13 +36,15 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    bool m_Modified;
+    bool m_modified;
 
     Ui::AnimationEdit *ui;
 
-    AbstractSchemeModel *m_pBuilder;
+    AbstractSchemeModel *m_schemeModel;
 
-    AnimationStateMachine *m_pMachine;
+    AnimationStateMachine *m_stateMachine;
+
+    QObject *m_selectedItem;
 
 };
 

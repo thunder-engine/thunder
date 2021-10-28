@@ -18,31 +18,33 @@
 #include <components/camera.h>
 
 ParticleEdit::ParticleEdit() :
-        m_Modified(false),
+        m_modified(false),
         ui(new Ui::ParticleEdit),
-        m_pEffect(nullptr),
-        m_pBuilder(new EffectConverter),
-        m_pRender(nullptr) {
+        m_effect(nullptr),
+        m_builder(new EffectConverter),
+        m_controller(nullptr),
+        m_render(nullptr),
+        m_selectedItem(nullptr) {
 
     ui->setupUi(this);
 
-    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
-    ctrl->blockMovement(true);
-    ctrl->setFree(false);
+    m_controller = new CameraCtrl(ui->preview);
+    m_controller->blockMovement(true);
+    m_controller->setFree(false);
 
     Scene *scene = Engine::objectCreate<Scene>("Scene");
 
-    ui->preview->setController(ctrl);
+    ui->preview->setController(m_controller);
     ui->preview->setScene(scene);
 
-    m_pEffect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
-    m_pRender = static_cast<ParticleRender *>(m_pEffect->component("ParticleRender"));
+    m_effect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
+    m_render = static_cast<ParticleRender *>(m_effect->component("ParticleRender"));
 
     startTimer(16);
 
-    connect(m_pBuilder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
+    connect(m_builder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
 
-    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_pBuilder->children()));
+    ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_builder->children()));
     ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Emitters.qml"));
 
     QQuickItem *item = ui->quickWidget->rootObject();
@@ -58,29 +60,35 @@ ParticleEdit::ParticleEdit() :
 ParticleEdit::~ParticleEdit() {
     delete ui;
 
-    delete m_pEffect;
+    delete m_effect;
 }
 
 void ParticleEdit::timerEvent(QTimerEvent *) {
-    if(m_pRender) {
-        m_pRender->deltaUpdate(1.0f / 60.0f);
+    if(m_render) {
+        Camera::setCurrent(m_controller->camera());
+        m_render->deltaUpdate(1.0f / 60.0f);
+        Camera::setCurrent(nullptr);
     }
 }
 
 bool ParticleEdit::isModified() const {
-    return m_Modified;
+    return m_modified;
 }
 
 QStringList ParticleEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
+    return static_cast<AssetConverter *>(m_builder)->suffixes();
+}
+
+void ParticleEdit::onActivated() {
+    emit itemSelected(m_selectedItem);
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(m_pSettings != settings) {
         m_pSettings = settings;
 
-        m_pRender->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
-        m_pBuilder->load(m_pSettings->source());
+        m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
+        m_builder->load(m_pSettings->source());
 
         onNodeSelected(nullptr);
 
@@ -90,13 +98,14 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
 
 void ParticleEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        m_pBuilder->save(path.isEmpty() ? m_pSettings->source() : path);
-        m_Modified = false;
+        m_builder->save(path.isEmpty() ? m_pSettings->source() : path);
+        m_modified = false;
     }
 }
 
 void ParticleEdit::onNodeSelected(void *node) {
-    emit itemSelected(static_cast<QObject *>(node));
+    m_selectedItem = static_cast<QObject *>(node);
+    emit itemSelected(m_selectedItem);
 }
 
 void ParticleEdit::onNodeDeleted() {
@@ -104,14 +113,14 @@ void ParticleEdit::onNodeDeleted() {
 }
 
 void ParticleEdit::onEmitterSelected(QString emitter) {
-    EffectEmitter *obj = m_pBuilder->findChild<EffectEmitter *>(emitter);
+    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
     if(obj) {
         onNodeSelected(obj);
     }
 }
 
 void ParticleEdit::onEmitterCreated() {
-    onNodeSelected(m_pBuilder->createEmitter());
+    onNodeSelected(m_builder->createEmitter());
 }
 
 void ParticleEdit::onEmitterDeleted(QString name) {
@@ -123,13 +132,13 @@ void ParticleEdit::onEmitterDeleted(QString name) {
 
     int result = msgBox.exec();
     if(result == QMessageBox::Yes) {
-        m_pBuilder->deleteEmitter(name);
+        m_builder->deleteEmitter(name);
         onNodeSelected(nullptr);
     }
 }
 
 void ParticleEdit::onFunctionSelected(QString emitter, QString function) {
-    EffectEmitter *obj = m_pBuilder->findChild<EffectEmitter *>(emitter);
+    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
     if(obj) {
         EffectFunction *func = obj->findChild<EffectFunction *>(function);
         if(func) {
@@ -139,11 +148,11 @@ void ParticleEdit::onFunctionSelected(QString emitter, QString function) {
 }
 
 void ParticleEdit::onFunctionCreated(QString emitter, QString function) {
-    EffectEmitter *obj = m_pBuilder->findChild<EffectEmitter *>(emitter);
+    EffectEmitter *obj = m_builder->findChild<EffectEmitter *>(emitter);
     if(obj) {
         EffectFunction *func = obj->findChild<EffectFunction *>(function);
         if(func == nullptr) {
-            onNodeSelected(m_pBuilder->createFunction(emitter, function));
+            onNodeSelected(m_builder->createFunction(emitter, function));
         } else {
             QMessageBox msgBox(this);
             msgBox.setText(tr("This type of modifier already assigned."));
@@ -153,17 +162,17 @@ void ParticleEdit::onFunctionCreated(QString emitter, QString function) {
 }
 
 void ParticleEdit::onFunctionDeleted(QString emitter, QString function) {
-    m_pBuilder->deleteFunction(emitter, function);
+    m_builder->deleteFunction(emitter, function);
 }
 
 void ParticleEdit::onUpdateTemplate(bool update) {
-    m_pRender->effect()->loadUserData(m_pBuilder->data().toMap());
-    m_pRender->setEffect(m_pRender->effect());
+    m_render->effect()->loadUserData(m_builder->data().toMap());
+    m_render->setEffect(m_render->effect());
 
-    QObjectList list = m_pBuilder->children();
+    QObjectList list = m_builder->children();
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(list));
 
-    m_Modified = update;
+    m_modified = update;
 }
 
 void ParticleEdit::changeEvent(QEvent *event) {

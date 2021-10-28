@@ -69,6 +69,8 @@ private slots:
 
     void onDropMap(QString name, bool additive);
 
+    void onActivated() override;
+
 private:
     void newAsset() override;
     void loadAsset(AssetConverterSettings *settings) override;

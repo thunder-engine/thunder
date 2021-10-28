@@ -13,7 +13,6 @@
 #include <components/transform.h>
 #include <components/meshrender.h>
 #include <components/directlight.h>
-#include <components/camera.h>
 
 #include <resources/mesh.h>
 
@@ -36,16 +35,18 @@ namespace {
 };
 
 MaterialEdit::MaterialEdit() :
-        m_Modified(false),
         ui(new Ui::MaterialEdit),
-        m_pMesh(nullptr),
-        m_pLight(nullptr),
-        m_pMaterial(nullptr),
-        m_pBuilder(new ShaderBuilder()),
-        m_pBrowser(new ComponentBrowser(this)),
+        m_mesh(nullptr),
+        m_light(nullptr),
+        m_material(nullptr),
+        m_builder(new ShaderBuilder()),
+        m_createMenu(new QMenu(this)),
+        m_browser(new ComponentBrowser(this)),
+        m_selectedItem(nullptr),
         m_node(-1),
         m_port(-1),
-        m_out(false) {
+        m_out(false),
+        m_modified(false) {
 
     ui->setupUi(this);
     CameraCtrl *ctrl = new CameraCtrl(ui->preview);
@@ -57,23 +58,18 @@ MaterialEdit::MaterialEdit() :
     ui->preview->setController(ctrl);
     ui->preview->setScene(scene);
 
-    m_pLight = Engine::composeActor("DirectLight", "LightSource", scene);
+    m_light = Engine::composeActor("DirectLight", "LightSource", scene);
     Matrix3 rot;
     rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_pLight->transform()->setQuaternion(rot);
+    m_light->transform()->setQuaternion(rot);
 
-    Camera *camera = ctrl->camera();
-    if(camera) {
-        camera->setColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
-    }
-
-    m_pMesh = Engine::composeActor("MeshRender", "MeshRender", scene);
+    m_mesh = Engine::composeActor("MeshRender", "MeshRender", scene);
 
     on_actionSphere_triggered();
 
-    connect(m_pBuilder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
+    connect(m_builder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
 
-    ui->schemeWidget->rootContext()->setContextProperty("schemeModel", m_pBuilder);
+    ui->schemeWidget->rootContext()->setContextProperty("schemeModel", m_builder);
     ui->schemeWidget->rootContext()->setContextProperty("stateMachine", QVariant(false));
     ui->schemeWidget->setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
 
@@ -83,13 +79,12 @@ MaterialEdit::MaterialEdit() :
     connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
     connect(item, SIGNAL(showContextMenu(int,int,bool)), this, SLOT(onShowContextMenu(int,int,bool)));
 
-    m_pBrowser->setModel(static_cast<AbstractSchemeModel *>(m_pBuilder)->components());
-    connect(m_pBrowser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
+    m_browser->setModel(static_cast<AbstractSchemeModel *>(m_builder)->components());
+    connect(m_browser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
 
-    m_pCreateMenu = new QMenu(this);
-    m_pAction = new QWidgetAction(m_pCreateMenu);
-    m_pAction->setDefaultWidget(m_pBrowser);
-    m_pCreateMenu->addAction(m_pAction);
+    QWidgetAction *action = new QWidgetAction(m_createMenu);
+    action->setDefaultWidget(m_browser);
+    m_createMenu->addAction(action);
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 2);
@@ -98,66 +93,70 @@ MaterialEdit::MaterialEdit() :
 MaterialEdit::~MaterialEdit() {
     delete ui;
 
-    delete m_pMesh;
-    delete m_pLight;
+    delete m_mesh;
+    delete m_light;
 }
 
 bool MaterialEdit::isModified() const {
-    return m_Modified;
+    return m_modified;
 }
 
 QStringList MaterialEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_pBuilder)->suffixes();
+    return static_cast<AssetConverter *>(m_builder)->suffixes();
+}
+
+void MaterialEdit::onActivated() {
+    emit itemSelected(m_selectedItem);
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(m_pSettings != settings) {
         m_pSettings = settings;
 
-        m_pMaterial = Engine::objectCreate<Material>();
-        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
+        m_material = Engine::objectCreate<Material>();
+        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
-            mesh->setMaterial(m_pMaterial);
+            mesh->setMaterial(m_material);
         }
-        static_cast<AbstractSchemeModel *>(m_pBuilder)->load(m_pSettings->source());
+        static_cast<AbstractSchemeModel *>(m_builder)->load(m_pSettings->source());
 
-        m_Modified = false;
+        m_modified = false;
         onNodesSelected(QVariantList({0}));
     }
 }
 
 void MaterialEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        static_cast<AbstractSchemeModel *>(m_pBuilder)->save(path.isEmpty() ? m_pSettings->source() : path);
-        m_Modified = false;
+        static_cast<AbstractSchemeModel *>(m_builder)->save(path.isEmpty() ? m_pSettings->source() : path);
+        m_modified = false;
     }
 }
 
 void MaterialEdit::onUpdateTemplate(bool update) {
-    if(m_pBuilder && m_pBuilder->build()) {
-        MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
+    if(m_builder && m_builder->build()) {
+        MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
-            VariantMap map = m_pBuilder->data(true).toMap();
-            m_pMaterial->loadUserData(map);
+            VariantMap map = m_builder->data(true).toMap();
+            m_material->loadUserData(map);
         }
-        m_Modified = update;
+        m_modified = update;
     }
 }
 
 void MaterialEdit::changeMesh(const string &path) {
-    MeshRender *mesh = static_cast<MeshRender *>(m_pMesh->component(gMeshRender));
+    MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
     if(mesh) {
         mesh->setMesh(Engine::loadResource<Mesh>(path));
-        if(m_pMaterial) {
-            mesh->setMaterial(m_pMaterial);
+        if(m_material) {
+            mesh->setMaterial(m_material);
         }
         float bottom;
-        static_cast<CameraCtrl *>(ui->preview->controller())->setFocusOn(m_pMesh, bottom);
+        static_cast<CameraCtrl *>(ui->preview->controller())->setFocusOn(m_mesh, bottom);
     }
 }
 
 void MaterialEdit::onComponentSelected(const QString &path) {
-    m_pCreateMenu->hide();
+    m_createMenu->hide();
 
     QQuickItem *scheme = ui->schemeWidget->rootObject()->findChild<QQuickItem *>("Scheme");
     if(scheme) {
@@ -173,9 +172,9 @@ void MaterialEdit::onComponentSelected(const QString &path) {
             y = (float)(mouseY - y) * scale;
 
             if(m_node > -1 && m_port > -1) {
-                m_pBuilder->createAndLink(path, x, y, m_node, m_port, m_out);
+                m_builder->createAndLink(path, x, y, m_node, m_port, m_out);
             } else {
-                m_pBuilder->createNode(path, x, y);
+                m_builder->createNode(path, x, y);
             }
         }
     }
@@ -184,9 +183,10 @@ void MaterialEdit::onComponentSelected(const QString &path) {
 void MaterialEdit::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
-        const AbstractSchemeModel::Node *node = m_pBuilder->node(list.front().toInt());
+        const AbstractSchemeModel::Node *node = m_builder->node(list.front().toInt());
         if(node) {
-            emit itemSelected(static_cast<QObject *>(node->ptr));
+            m_selectedItem = static_cast<QObject *>(node->ptr);
+            emit itemSelected(m_selectedItem);
         }
     }
 }
@@ -203,15 +203,11 @@ void MaterialEdit::on_actionSphere_triggered() {
     changeMesh(".embedded/sphere.fbx/Sphere001");
 }
 
-void MaterialEdit::on_schemeWidget_customContextMenuRequested(const QPoint &) {
-    //m_pCreateMenu->exec(QCursor::pos());
-}
-
 void MaterialEdit::onShowContextMenu(int node, int port, bool out) {
     m_node = node;
     m_port = port;
     m_out = out;
-    m_pCreateMenu->exec(QCursor::pos());
+    m_createMenu->exec(QCursor::pos());
 }
 
 void MaterialEdit::changeEvent(QEvent *event) {

@@ -225,6 +225,12 @@ QStringList SceneComposer::suffixes() const {
     return {"map", "fab", "fbx"};
 }
 
+void SceneComposer::onActivated() {
+    emit hierarchyCreated(m_engine->scene());
+
+    emit itemSelected(!m_controller->selected().empty() ? m_properties : nullptr);
+}
+
 void SceneComposer::newAsset() {
     AssetEditor::newAsset();
 

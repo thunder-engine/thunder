@@ -38,6 +38,9 @@ signals:
     void itemSelected(QObject *item);
     void itemUpdated();
 
+public slots:
+    virtual void onActivated();
+
 protected:
     AssetConverterSettings *m_pSettings;
 

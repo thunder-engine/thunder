@@ -225,8 +225,8 @@ void MainWindow::onItemSelected(QObject *item) {
     bool isNext = (dynamic_cast<NextObject *>(item) != nullptr);
     ui->componentButton->setVisible(isNext);
 
-    ui->commitButton->setVisible(!isNext && item);
-    ui->revertButton->setVisible(!isNext && item);
+    ui->commitButton->setVisible(!isNext && settings);
+    ui->revertButton->setVisible(!isNext && settings);
 
     ui->propertyView->setObject(item);
 }
@@ -584,11 +584,17 @@ void MainWindow::onBuildProject() {
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
     AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow);
+    if(editor == m_CurrentDocument) {
+        return;
+    }
+
     if(editor) {
         m_CurrentDocument = editor;
     } else if(ui->viewportWidget == toolWindow) {
         m_CurrentDocument = m_MainDocument;
     }
+    ui->hierarchy->onSetRootObject(nullptr);
+    m_CurrentDocument->onActivated();
 }
 
 void MainWindow::on_menuFile_aboutToShow() {

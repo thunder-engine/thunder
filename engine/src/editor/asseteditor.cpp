@@ -31,3 +31,7 @@ AssetEditor *AssetEditor::createInstance() {
 void AssetEditor::setModified(bool flag) {
     Q_UNUSED(flag)
 }
+
+void AssetEditor::onActivated() {
+    emit itemSelected(nullptr);
+}

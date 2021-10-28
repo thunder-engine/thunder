@@ -204,7 +204,7 @@ void ParticleRender::draw(CommandBuffer &buffer, uint32_t layer) {
         }
         uint32_t index = 0;
         for(auto &it : p_ptr->m_Emitters) {
-            if(it.m_Count > 1) {
+            if(it.m_Count > 0) {
                 ParticleEmitter *emitter = p_ptr->m_pEffect->emitter(index);
                 buffer.drawMeshInstanced(&it.m_Buffer[0], it.m_Count, emitter->mesh(), 0, layer, it.m_pInstance);
             }

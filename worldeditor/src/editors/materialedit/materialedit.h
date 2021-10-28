@@ -35,27 +35,30 @@ private:
     QStringList suffixes() const override;
 
 private:
-    bool m_Modified;
-
     Ui::MaterialEdit *ui;
 
-    Actor *m_pMesh;
-    Actor *m_pLight;
+    Actor *m_mesh;
+    Actor *m_light;
 
-    Material *m_pMaterial;
+    Material *m_material;
 
-    ShaderBuilder *m_pBuilder;
+    ShaderBuilder *m_builder;
 
-    QMenu *m_pCreateMenu;
-    QWidgetAction *m_pAction;
+    QMenu *m_createMenu;
 
-    ComponentBrowser *m_pBrowser;
+    ComponentBrowser *m_browser;
+
+    QObject *m_selectedItem;
 
     int m_node;
     int m_port;
     bool m_out;
 
+    bool m_modified;
+
 private slots:
+    void onActivated() override;
+
     void onComponentSelected(const QString &path);
 
     void onNodesSelected(const QVariant &);
@@ -67,7 +70,6 @@ private slots:
     void on_actionCube_triggered();
     void on_actionSphere_triggered();
 
-    void on_schemeWidget_customContextMenuRequested(const QPoint &);
 };
 
 #endif // MATERIALEDIT_H

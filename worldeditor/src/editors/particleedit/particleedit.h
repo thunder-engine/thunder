@@ -10,6 +10,8 @@ class ParticleRender;
 
 class EffectConverter;
 
+class CameraCtrl;
+
 namespace Ui {
     class ParticleEdit;
 }
@@ -35,6 +37,8 @@ private slots:
     void onFunctionCreated(QString emitter, QString function);
     void onFunctionDeleted(QString emitter, QString function);
 
+    void onActivated() override;
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
@@ -46,15 +50,19 @@ private:
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *event) override;
 
-    bool m_Modified;
+    bool m_modified;
 
     Ui::ParticleEdit *ui;
 
-    Actor *m_pEffect;
+    Actor *m_effect;
 
-    EffectConverter *m_pBuilder;
+    EffectConverter *m_builder;
 
-    ParticleRender *m_pRender;
+    CameraCtrl *m_controller;
+
+    ParticleRender *m_render;
+
+    QObject *m_selectedItem;
 };
 
 #endif // PARTICLEEDIT_H
