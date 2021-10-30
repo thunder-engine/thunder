@@ -45,7 +45,7 @@ public:
 Sprite::Sprite() :
         p_ptr(new SpritePrivate) {
 
-    p_ptr->m_pTexture = Engine::objectCreate<Texture>("", this);
+    p_ptr->m_pTexture = Engine::objectCreate<Texture>("");
     p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
     resize(1024, 1024);
 }
@@ -179,7 +179,6 @@ void Sprite::loadUserData(const VariantMap &data) {
             if(texture) {
                 delete p_ptr->m_pTexture; // May lead to crash in case of m_pTexture had references
                 p_ptr->m_pTexture = texture;
-                p_ptr->m_pTexture->setParent(this);
             }
         }
     }
@@ -265,5 +264,4 @@ void Sprite::setTexture(Texture *texture) {
         delete p_ptr->m_pTexture;
     }
     p_ptr->m_pTexture = texture;
-    p_ptr->m_pTexture->setParent(this);
 }
