@@ -42,6 +42,8 @@ signals:
 
     void itemsSelected(const Object::ObjectList &objects);
 
+    void itemChanged(Object *item, QString property);
+
 public slots:
     void onSelectActors(Object::ObjectList objects);
     void onRemoveActors(Object::ObjectList objects);
@@ -97,6 +99,7 @@ private:
 
     QList<ByteArray> m_backupScenes;
 
+    QList<QAction *> m_objectActions;
     QList<QAction *> m_prefabActions;
 
     AssetConverterSettings *m_isolationSettings;

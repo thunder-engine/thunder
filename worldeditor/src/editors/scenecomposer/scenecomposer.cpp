@@ -80,6 +80,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(m_controller, &ObjectCtrl::dropMap, this, &SceneComposer::onDropMap);
     connect(m_controller, &ObjectCtrl::objectsSelected, this, &SceneComposer::onItemsSelected);
     connect(m_controller, &ObjectCtrl::objectsUpdated, m_properties, &NextObject::onUpdated);
+    //connect(m_controller, &ObjectCtrl::objectsChanged, ui->timeline, onChanged(Object::ObjectList,QString)));
 
     connect(this, &SceneComposer::createComponent, m_controller, &ObjectCtrl::onCreateComponent);
 
@@ -90,20 +91,21 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectCtrl::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
-    connect(m_properties, SIGNAL(deleteComponent(QString)), m_controller, SLOT(onDeleteComponent(QString)));
-    connect(m_properties, SIGNAL(changed(Object*,QString)), m_controller, SLOT(onUpdated()));
-    connect(m_properties, SIGNAL(aboutToBeChanged(Object*,QString,Variant)), m_controller, SLOT(onPropertyChanged(Object*,QString,Variant)), Qt::DirectConnection);
-    connect(m_properties, SIGNAL(updated()), this, SIGNAL(itemUpdated()));
-
-    //connect(ctl, SIGNAL(objectsChanged(Object::ObjectList,QString)), ui->timeline, SLOT(onChanged(Object::ObjectList,QString)));
-    //connect(m_properties, SIGNAL(changed(Object*,QString)), ui->timeline, SLOT(onUpdated(Object*,QString)));
-    //connect(ui->timeline, SIGNAL(moved()), m_properties, SLOT(onUpdated()));
+    connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectCtrl::onDeleteComponent);
+    connect(m_properties, &NextObject::changed, m_controller, &ObjectCtrl::onUpdated);
+    connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectCtrl::onPropertyChanged, Qt::DirectConnection);
+    connect(m_properties, &NextObject::updated, this, &SceneComposer::itemUpdated);
+    connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
 
     ui->orthoButton->setProperty("checkgreen", true);
 
-    m_contentMenu.addAction(createAction(tr("Rename"), SIGNAL(renameItem()), true, QKeySequence(Qt::Key_F2)));
-    m_contentMenu.addAction(createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false));
-    m_contentMenu.addAction(createAction(tr("Delete"), SLOT(onItemDelete()), false, QKeySequence(Qt::Key_Delete)));
+
+    m_objectActions.push_back((createAction(tr("Rename"), SIGNAL(renameItem()), true, QKeySequence(Qt::Key_F2))));
+    m_objectActions.push_back((createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false)));
+    m_objectActions.push_back((createAction(tr("Delete"), SLOT(onItemDelete()), false, QKeySequence(Qt::Key_Delete))));
+    for(auto &it : m_objectActions) {
+        m_contentMenu.addAction(it);
+    }
     m_contentMenu.addSeparator();
 
     m_prefabActions.push_back((createAction(tr("Edit Isolated"), SLOT(onPrefabIsolate()), true)));
@@ -156,13 +158,17 @@ QMenu *SceneComposer::contextMenu() {
 }
 
 void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
-    if(!objects.empty()) {
-        m_properties->setObject(*objects.begin());
-    }
-
-    emit itemSelected(!objects.empty() ? m_properties : nullptr);
-
     emit itemsSelected(objects);
+
+    if(!objects.empty()) {
+        Actor *actor = dynamic_cast<Actor *>(*objects.begin());
+        if(actor) {
+            m_properties->setObject(*objects.begin());
+            emit itemSelected(m_properties);
+            return;
+        }
+    }
+    emit itemSelected(nullptr);
 }
 
 void SceneComposer::onSelectActors(Object::ObjectList objects) {
@@ -175,7 +181,7 @@ void SceneComposer::onRemoveActors(Object::ObjectList objects) {
 
 void SceneComposer::onUpdated() {
     m_controller->onUpdated();
-    emit itemUpdated();
+    m_properties->onUpdated();
 }
 
 void SceneComposer::onParentActors(Object::ObjectList objects, Object *parent) {
@@ -337,17 +343,25 @@ void SceneComposer::onPrefabUnpackCompletely() {
 void SceneComposer::onObjectMenuAboutToShow() {
     auto list = m_controller->selected();
 
-    bool enabled = false;
+    bool objectEnabled = false;
+    bool prefabEnabled = false;
     bool single = (list.size() == 1);
     for(auto &it : list) {
         Actor *actor = dynamic_cast<Actor *>(it);
-        if(actor && actor->isInstance()) {
-            enabled = true;
+        if(actor) {
+            objectEnabled = true;
+            if(actor->isInstance()) {
+                prefabEnabled = true;
+            }
         }
     }
 
+    for(auto &it : m_objectActions) {
+        it->setEnabled(single && objectEnabled);
+    }
+
     for(auto &it : m_prefabActions) {
-        it->setEnabled((!it->property(gSingle).toBool() || single) && enabled);
+        it->setEnabled((!it->property(gSingle).toBool() || single) && prefabEnabled);
     }
 }
 
