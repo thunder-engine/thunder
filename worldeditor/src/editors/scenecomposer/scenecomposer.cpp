@@ -242,7 +242,7 @@ void SceneComposer::newAsset() {
 
     quitFromIsolation();
 
-    m_controller->setObject(Engine::objectCreate<Actor>("Chunk", m_engine->scene()));
+    m_controller->setObject(Engine::objectCreate<Chunk>("Chunk", m_engine->scene()));
     emit hierarchyCreated(m_engine->scene());
 }
 
