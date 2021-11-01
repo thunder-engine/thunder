@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>IntegerEdit</class>
- <widget class="QWidget" name="IntegerEdit">
+ <class>BooleanEdit</class>
+ <widget class="QWidget" name="BooleanEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +15,7 @@
     <number>2</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="topMargin">
     <number>1</number>
@@ -27,20 +27,7 @@
     <number>1</number>
    </property>
    <item>
-    <widget class="QSlider" name="horizontalSlider">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEdit"/>
+    <widget class="QCheckBox" name="checkBox"/>
    </item>
   </layout>
  </widget>

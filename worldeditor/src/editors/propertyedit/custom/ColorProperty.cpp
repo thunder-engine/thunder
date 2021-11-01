@@ -1,10 +1,10 @@
 #include "ColorProperty.h"
 
-#include "editors/propertyedit/editors/ColorEdit.h"
-#include "../nextobject.h"
+#include "../editors/ColorEdit.h"
 
-ColorProperty::ColorProperty(const QString& name /*= QString()*/, QObject* propertyObject /*= 0*/, QObject* parent /*= 0*/) :
+ColorProperty::ColorProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
+
 }
 
 QVariant ColorProperty::value(int role) const {
@@ -32,13 +32,10 @@ void ColorProperty::setValue(const QVariant &value) {
     }
 }
 
-QWidget *ColorProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
-    Q_UNUSED(option)
+QWidget *ColorProperty::createEditor(QWidget *parent) const {
     m_editor = new ColorEdit(parent);
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
-    }
+    m_editor->setDisabled(isReadOnly());
+
     connect(m_editor, SIGNAL(colorChanged(QString)), this, SLOT(onColorChanged(QString)));
     return m_editor;
 }
@@ -66,8 +63,3 @@ QVariant ColorProperty::editorData(QWidget *editor) {
 void ColorProperty::onColorChanged(const QString &color) {
     setValue(color);
 }
-
-QSize ColorProperty::sizeHint(const QSize& size) const {
-    return size;
-}
-

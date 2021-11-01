@@ -1,20 +1,16 @@
 #include "AxisesProperty.h"
 
 #include "../editors/AxisesEdit.h"
-#include "../nextobject.h"
 
 AxisesProperty::AxisesProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
 
 }
 
-QWidget *AxisesProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
-    Q_UNUSED(option)
+QWidget *AxisesProperty::createEditor(QWidget *parent) const {
     m_editor = new AxisesEdit(parent);
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
-    }
+    m_editor->setDisabled(isReadOnly());
+
     connect(m_editor, SIGNAL(axisesChanged(int)), this, SLOT(onDataChanged(int)));
 
     return m_editor;
@@ -42,4 +38,3 @@ QVariant AxisesProperty::editorData(QWidget *editor) {
 void AxisesProperty::onDataChanged(int data) {
     setValue(QVariant(data));
 }
-

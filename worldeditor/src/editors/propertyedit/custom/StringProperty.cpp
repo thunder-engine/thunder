@@ -1,23 +1,15 @@
 #include "StringProperty.h"
 
 #include "../editors/StringEdit.h"
-#include "../nextobject.h"
 
 StringProperty::StringProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
-}
-
-StringProperty::~StringProperty() {
 
 }
 
-QWidget *StringProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
-    Q_UNUSED(option);
+QWidget *StringProperty::createEditor(QWidget *parent) const {
     m_editor = new StringEdit(parent);
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
-    }
+    m_editor->setDisabled(isReadOnly());
     connect(m_editor, SIGNAL(editFinished()), this, SLOT(onDataChanged()));
     return m_editor;
 }
@@ -39,10 +31,6 @@ QVariant StringProperty::editorData(QWidget *editor) {
         return QVariant(e->text());
     }
     return Property::editorData(editor);
-}
-
-QSize StringProperty::sizeHint(const QSize& size) const {
-    return QSize(size.width(), 26);
 }
 
 void StringProperty::onDataChanged() {

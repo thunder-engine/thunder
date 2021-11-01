@@ -47,10 +47,10 @@ void ContentSelect::setData(const QString &guid) {
             if(!path.empty()) {
                 QFileInfo file(path.c_str());
                 m_pBrowser->setSelected(file.filePath());
-                ui->toolButton->setText(file.baseName());
+                ui->toolButton->setText(QString(" ") + file.baseName());
                 QImage img  = m_pBrowser->icon(file.filePath());
                 if(!img.isNull()) {
-                    ui->label->setPixmap( QPixmap::fromImage(img.scaled( ui->label->size() )) );
+                    ui->toolButton->setIcon(QPixmap::fromImage(img.scaled(ui->toolButton->iconSize())));
                 }
             } else {
                 ui->toolButton->setText("Ivalid");

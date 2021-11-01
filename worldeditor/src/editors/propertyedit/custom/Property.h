@@ -9,7 +9,7 @@ class Property : public QObject {
     Q_OBJECT
 
 public:
-    Property(const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
+    explicit Property(const QString &name = QString(), QObject *propertyObject = 0, QObject *parent = 0, bool root = false);
 
     void setName(const QString &value) { m_name = value; }
 
@@ -37,9 +37,9 @@ public:
 
     virtual void setEditorHints(const QString &hints);
 
-    virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &);
-
     virtual QVariant editorData(QWidget *);
+
+    QWidget *getEditor(QWidget *parent) const;
 
     virtual bool setEditorData(QWidget *, const QVariant &);
 
@@ -53,12 +53,14 @@ public:
     Property *findPropertyObject(QObject *propertyObject);
 
 protected:
+    virtual QWidget *createEditor(QWidget *parent) const;
+
     QObject *m_propertyObject;
     QString m_hints;
     QString m_name;
     QString m_override;
 
-    QWidget *m_editor;
+    mutable QWidget *m_editor;
 
     bool m_root;
     bool m_checkable;

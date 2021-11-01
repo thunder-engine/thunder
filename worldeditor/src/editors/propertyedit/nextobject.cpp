@@ -12,8 +12,6 @@
 #include "custom/AxisesProperty.h"
 #include "custom/AssetProperty.h"
 #include "custom/ColorProperty.h"
-#include "custom/Vector2DProperty.h"
-#include "custom/Vector3DProperty.h"
 #include "custom/Vector4DProperty.h"
 #include "custom/FilePathProperty.h"
 #include "custom/ComponentProperty.h"
@@ -399,13 +397,13 @@ Property *NextObject::createCustomProperty(const QString &name, QObject *propert
     }
 
     if(userType == QMetaType::type("Vector2"))
-        return new Vector2DProperty(name, propertyObject, parent);
+        return new Vector4DProperty(name, propertyObject, 2, parent);
 
     if(userType == QMetaType::type("Vector3"))
-        return new Vector3DProperty(name, propertyObject, parent);
+        return new Vector4DProperty(name, propertyObject, 3, parent);
 
     if(userType == QMetaType::type("Vector4"))
-        return new Vector4DProperty(name, propertyObject, parent);
+        return new Vector4DProperty(name, propertyObject, 4, parent);
 
     if(userType == QMetaType::type("QColor"))
         return new ColorProperty(name, propertyObject, parent);

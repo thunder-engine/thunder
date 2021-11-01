@@ -3,27 +3,25 @@
 
 #include "Property.h"
 
-#include <QFileInfo>
+class QFileInfo;
 
 class FilePathProperty : public Property {
     Q_OBJECT
 public:
-    FilePathProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
-
-    QVariant value(int role = Qt::UserRole) const;
-    void setValue(const QVariant &value);
-
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option);
-
-    bool setEditorData(QWidget *editor, const QVariant &data);
-
-    QVariant editorData(QWidget *editor);
+    explicit FilePathProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
 private slots:
     void onPathChanged(const QFileInfo &info);
 
 private:
-    QSize sizeHint(const QSize &size) const;
+    QVariant value(int role = Qt::UserRole) const override;
+    void setValue(const QVariant &value) override;
+
+    QWidget *createEditor(QWidget *parent) const override;
+
+    bool setEditorData(QWidget *editor, const QVariant &data) override;
+
+    QVariant editorData(QWidget *editor) override;
 
 };
 

@@ -227,8 +227,8 @@ void MainWindow::onItemSelected(QObject *item) {
     bool isNext = (dynamic_cast<NextObject *>(item) != nullptr);
     ui->componentButton->setVisible(isNext);
 
-    ui->commitButton->setVisible(!isNext && settings);
-    ui->revertButton->setVisible(!isNext && settings);
+    ui->commitButton->setVisible(settings);
+    ui->revertButton->setVisible(settings);
 
     ui->propertyView->setObject(item);
 }

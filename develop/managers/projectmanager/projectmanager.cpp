@@ -22,9 +22,11 @@
 #include "platforms/ios.h"
 #include "platforms/tvos.h"
 
-const QString gCompany("Company");
-const QString gProject("ProjectId");
-const QString gProjects("Projects");
+namespace {
+    const char *gCompany("Company");
+    const char *gProject("ProjectId");
+    const char *gProjects("Projects");
+};
 
 ProjectManager *ProjectManager::m_pInstance = nullptr;
 

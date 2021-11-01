@@ -1,35 +1,31 @@
 #include "FloatProperty.h"
 
 #include "../editors/FloatEdit.h"
-#include "../nextobject.h"
 
 FloatProperty::FloatProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
 
 }
 
-QWidget *FloatProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
-    Q_UNUSED(option)
-    FloatEdit *editor = new FloatEdit(parent);
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        editor->setDisabled(object->isReadOnly(objectName()));
-        if(!m_hints.isEmpty()) {
-            static QRegExp regExp {"\\d+\\.\\d+"};
+QWidget *FloatProperty::createEditor(QWidget *parent) const {
+    FloatEdit *editor = new FloatEdit;
+    editor->setDisabled(isReadOnly());
+    if(!m_hints.isEmpty()) {
+        static QRegExp regExp {"\\d+\\.\\d+"};
 
-            QStringList list;
-            int pos = 0;
+        QStringList list;
+        int pos = 0;
 
-            while((pos = regExp.indexIn(m_hints, pos)) != -1) {
-                list << regExp.cap(0);
-                pos += regExp.matchedLength();
-            }
+        while((pos = regExp.indexIn(m_hints, pos)) != -1) {
+            list << regExp.cap(0);
+            pos += regExp.matchedLength();
+        }
 
-            if(list.size() == 2) {
-                editor->setInterval(list[0].toFloat(), list[1].toFloat());
-            }
+        if(list.size() == 2) {
+            editor->setInterval(list[0].toFloat(), list[1].toFloat());
         }
     }
+
     m_editor = editor;
     connect(m_editor, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
     return m_editor;
@@ -59,8 +55,4 @@ void FloatProperty::onDataChanged() {
     if(e) {
         setValue(QVariant(e->value()));
     }
-}
-
-QSize FloatProperty::sizeHint(const QSize &size) const {
-    return QSize(size.width(), 27);
 }

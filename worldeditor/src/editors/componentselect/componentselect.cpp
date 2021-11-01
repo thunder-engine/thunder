@@ -57,7 +57,7 @@ void ComponentSelect::setData(const SceneComponent &component) {
         name = m_Component.actor->name().c_str();
         m_clearAction->setVisible(true);
     }
-    QString str = QString("%1 (%2)").arg(name).arg(m_Component.type);
+    QString str = QString("%1 (%2)").arg(name, m_Component.type);
     ui->lineEdit->setText(str);
 }
 

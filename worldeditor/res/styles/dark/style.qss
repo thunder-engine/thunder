@@ -173,7 +173,7 @@ QAbstractScrollArea QLineEdit {
 
 QAbstractScrollArea QAbstractButton, QComboBox, QAbstractSpinBox {
     background: #616161;
-    margin: 3px 0px;
+    margin: 1px 0px;
 }
 
 QAbstractScrollArea QToolButton:hover {
@@ -296,7 +296,7 @@ QScrollBar::handle:vertical {
    background: #616161;
    border-radius: 4px;
    min-height: 20px;
-   margin: 0px 0px 0px 0px;
+   margin: 0px;
 }
 QScrollBar::add-line:vertical {
    height: 0px;
@@ -317,7 +317,7 @@ QScrollBar::handle:horizontal {
    background: #616161;
    border-radius: 4px;
    min-width: 20px;
-   margin: 0px 0px 0px 0px;
+   margin: 0px;
 }
 QScrollBar::add-line:horizontal {
    width: 0px;
@@ -353,32 +353,30 @@ QProgressBar::chunk {
 
 QCheckBox {
     padding: 2px 2px;
+}
+QCheckBox:unchecked {
     background: #00000000;
 }
-QCheckBox:disabled {
-    background: #00000000;
-}
-QCheckBox:hover {
+QCheckBox:unchecked:hover {
     background: #00000000;
 }
 QCheckBox:checked {
     background: #00000000;
 }
-
+QCheckBox:checked:hover {
+    background: #00000000;
+}
 QCheckBox::indicator {
     background-color: #525252;
     border-radius: 3px;
 }
-
 QCheckBox::indicator:checked:hover {
     background-color: #757575;
 }
-
 QCheckBox::indicator:checked {
     image: url(:/Style/styles/dark/icons/close-hover.png);
-    width: 13
+    width: 13;
 }
-
 QCheckBox::indicator:unchecked:hover {
     background-color: #757575;
 }
@@ -402,6 +400,10 @@ QWidget[pannel="true"] QLineEdit {
 
 QWidget[pannel="true"] QToolButton:hover {
     background: #9e9e9e;
+}
+
+QLabel {
+    border-color: #757575;
 }
 
 QSlider {

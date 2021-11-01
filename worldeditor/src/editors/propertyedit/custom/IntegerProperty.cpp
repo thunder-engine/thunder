@@ -1,33 +1,28 @@
 #include "IntegerProperty.h"
 
 #include "../editors/IntegerEdit.h"
-#include "../nextobject.h"
 
 IntegerProperty::IntegerProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
 
 }
 
-QWidget *IntegerProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &option) {
-    Q_UNUSED(option)
+QWidget *IntegerProperty::createEditor(QWidget *parent) const {
     IntegerEdit *editor = new IntegerEdit(parent);
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        editor->setDisabled(object->isReadOnly(objectName()));
-        if(!m_hints.isEmpty()) {
-            static QRegExp regExp {"\\d+"};
+    editor->setDisabled(isReadOnly());
+    if(!m_hints.isEmpty()) {
+        static QRegExp regExp {"\\d+"};
 
-            QStringList list;
-            int pos = 0;
+        QStringList list;
+        int pos = 0;
 
-            while((pos = regExp.indexIn(m_hints, pos)) != -1) {
-                list << regExp.cap(0);
-                pos += regExp.matchedLength();
-            }
+        while((pos = regExp.indexIn(m_hints, pos)) != -1) {
+            list << regExp.cap(0);
+            pos += regExp.matchedLength();
+        }
 
-            if(list.size() == 2) {
-                editor->setInterval(list[0].toInt(), list[1].toInt());
-            }
+        if(list.size() == 2) {
+            editor->setInterval(list[0].toInt(), list[1].toInt());
         }
     }
 
@@ -61,8 +56,4 @@ void IntegerProperty::onDataChanged() {
     if(e) {
         setValue(QVariant(e->value()));
     }
-}
-
-QSize IntegerProperty::sizeHint(const QSize &size) const {
-    return QSize(size.width(), 27);
 }

@@ -9,20 +9,20 @@ class EnumProperty : public Property {
     Q_OBJECT
 
 public:
-    EnumProperty (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
-
-    virtual QVariant value (int role = Qt::UserRole) const;
-
-    virtual QWidget *createEditor (QWidget* parent, const QStyleOptionViewItem &);
-
-    virtual bool setEditorData (QWidget *editor, const QVariant &data);
-
-    virtual QVariant editorData (QWidget *editor);
+    explicit EnumProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
 private slots:
-    void valueChanged (const QString &item);
+    void valueChanged(const QString &item);
 
 private:
+    QVariant value(int role = Qt::UserRole) const override;
+
+    QWidget *createEditor(QWidget *parent) const override;
+
+    bool setEditorData(QWidget *editor, const QVariant &data) override;
+
+    QVariant editorData(QWidget *editor) override;
+
     QStringList m_enum;
 
 };

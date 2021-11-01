@@ -50,7 +50,10 @@ QString Property::name() const {
 }
 
 bool Property::isReadOnly() const {
-    if(m_propertyObject && m_propertyObject->dynamicPropertyNames().contains( objectName().toLocal8Bit() )) {
+    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
+    if(object) {
+        return object->isReadOnly(objectName());
+    } else if(m_propertyObject && m_propertyObject->dynamicPropertyNames().contains( objectName().toLocal8Bit() )) {
         return false;
     } else if(m_propertyObject && m_propertyObject->metaObject()->property(m_propertyObject->metaObject()->indexOfProperty(qPrintable(objectName()))).isWritable()) {
         return false;
@@ -58,7 +61,15 @@ bool Property::isReadOnly() const {
     return true;
 }
 
-QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
+QWidget *Property::getEditor(QWidget *parent) const {
+    if(m_editor) {
+        m_editor->setParent(parent);
+        return m_editor;
+    }
+    return createEditor(parent);
+}
+
+QWidget *Property::createEditor(QWidget *parent) const {
     NextObject *next = dynamic_cast<NextObject *>(m_propertyObject);
     if(m_root && next) {
         Actions *act = new Actions(m_name, parent);
@@ -72,7 +83,8 @@ QWidget *Property::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
 }
 
 QSize Property::sizeHint(const QSize &size) const {
-    return size;
+    QWidget *widget = getEditor(nullptr);
+    return QSize(size.width(), widget ? widget->height() : size.height());
 }
 
 bool Property::setEditorData(QWidget *, const QVariant &) {

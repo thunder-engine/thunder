@@ -22,17 +22,17 @@ public:
     };
 
 public:
-    explicit AlignmentEdit (QWidget *parent = nullptr);
-    ~AlignmentEdit ();
+    explicit AlignmentEdit(QWidget *parent = nullptr);
+    ~AlignmentEdit();
 
-    int alignment () const;
-    void setAlignment (int value);
+    int alignment() const;
+    void setAlignment(int value);
 
 signals:
-    void alignmentChanged (int value);
+    void alignmentChanged(int value);
 
 private:
-    void onToggle ();
+    void onToggle();
 
     Ui::AlignmentEdit *ui;
 };

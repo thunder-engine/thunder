@@ -18,12 +18,12 @@
 #include <QMenu>
 
 Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
-    int userType = 0;
-    if(propertyObject) {
-        userType = propertyObject->property(qPrintable(name)).userType();
+    if(propertyObject == nullptr) {
+        return nullptr;
     }
 
-    switch(userType) {
+    QVariant value = propertyObject->property(qPrintable(name));
+    switch(value.userType()) {
     case QMetaType::Bool: return new BoolProperty(name, propertyObject, parent);
     case QMetaType::Int: return new IntegerProperty(name, propertyObject, parent);
     case QMetaType::Float:
@@ -47,8 +47,8 @@ protected:
     }
 
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
-        QAbstractItemModel *model   = sourceModel();
-        QModelIndex index           = model->index(sourceRow, 0, sourceParent);
+        QAbstractItemModel *model = sourceModel();
+        QModelIndex index = model->index(sourceRow, 0, sourceParent);
         if(!filterRegExp().isEmpty() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(filterAcceptsRow(i, index)) {
@@ -76,12 +76,12 @@ public:
         delete m_finishedMapper;
     }
 
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const {
         QWidget *editor = nullptr;
         if(index.isValid()) {
             QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
             Property *p = static_cast<Property *>(origin.internalPointer());
-            editor = p->createEditor(parent, option);
+            editor = p->getEditor(parent);
             if(editor) {
                 if(editor->metaObject()->indexOfSignal("editFinished()") != -1) {
                     connect(editor, SIGNAL(editFinished()), m_finishedMapper, SLOT(map()));
@@ -232,14 +232,14 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
             ui->treeView->openPersistentEditor(origin);
         }
 
-        QWidget *e  = p->editor();
+        QWidget *e = p->editor();
         if(e) {
             ui->treeView->itemDelegate()->setEditorData(e, origin);
         }
     }
 
-    int i   = 0;
-    QModelIndex it  = index.child(i, 1);
+    int i = 0;
+    QModelIndex it = index.child(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
 

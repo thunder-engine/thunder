@@ -11,6 +11,7 @@ ColorEdit::ColorEdit(QWidget *parent) :
     connect(this, SIGNAL(clicked()), this, SLOT(colorPickDlg()));
 
     m_Brush = QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16));
+    setMaximumHeight(20);
 }
 
 QColor ColorEdit::color() const {
@@ -32,10 +33,11 @@ void ColorEdit::colorPickDlg() {
 void ColorEdit::paintEvent(QPaintEvent *ev) {
     QRect r = ev->rect();
     r.setTop(1);
-    r.setSize(QSize(r.width() - 4, r.height() - 2));
+    r.setSize(QSize(r.width() - 2, r.height() - 2));
 
     QPainter painter;
     painter.begin(this);
+    painter.setPen(Qt::NoPen);
     painter.setBrush(m_Brush);
     painter.drawRect(r);
     r.setWidth(r.width() / 2);

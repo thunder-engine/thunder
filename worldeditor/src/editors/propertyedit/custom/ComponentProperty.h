@@ -3,23 +3,22 @@
 
 #include "Property.h"
 
-#include <engine.h>
-
 class SceneComponent;
 
 class ComponentProperty : public Property {
     Q_OBJECT
 public:
-    ComponentProperty (const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
-
-    QWidget *createEditor (QWidget *parent, const QStyleOptionViewItem &option);
-    bool setEditorData (QWidget *editor, const QVariant &data);
-    QVariant editorData (QWidget *editor);
-
-    QSize sizeHint (const QSize &size) const;
+    explicit ComponentProperty(const QString &name = QString(), QObject *propertyObject = nullptr, QObject *parent = nullptr);
 
 private slots:
     void onComponentChanged(const SceneComponent &component);
+
+private:
+    QWidget *createEditor(QWidget *parent) const override;
+
+    bool setEditorData(QWidget *editor, const QVariant &data) override;
+
+    QVariant editorData(QWidget *editor) override;
 
 };
 

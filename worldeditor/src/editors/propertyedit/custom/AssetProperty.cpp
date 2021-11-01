@@ -1,14 +1,8 @@
-#include <QPainter>
-
 #include "AssetProperty.h"
-
-#include <engine.h>
 
 #include "editors/assetselect/contentselect.h"
 
 #include "assetmanager.h"
-#include "../nextobject.h"
-
 
 TemplateProperty::TemplateProperty(const QString &name, QObject *propertyObject, QObject *parent) :
         Property(name, propertyObject, parent) {
@@ -34,15 +28,11 @@ void TemplateProperty::setValue(const QVariant &value) {
     }
 }
 
-QWidget *TemplateProperty::createEditor(QWidget *parent, const QStyleOptionViewItem &) {
+QWidget *TemplateProperty::createEditor(QWidget *parent) const {
     ContentSelect *editor = new ContentSelect(parent);
-    editor->setType( Property::value(Qt::EditRole).value<Template>().type );
+    editor->setType(Property::value(Qt::EditRole).value<Template>().type);
     m_editor = editor;
-
-    NextObject *object = dynamic_cast<NextObject *>(m_propertyObject);
-    if(object) {
-        m_editor->setDisabled(object->isReadOnly(objectName()));
-    }
+    m_editor->setDisabled(isReadOnly());
 
     connect(editor, &ContentSelect::assetChanged, this, &TemplateProperty::onAssetChanged);
     return m_editor;
@@ -65,10 +55,6 @@ QVariant TemplateProperty::editorData(QWidget *editor) {
         return e->data();
     }
     return Property::editorData(editor);
-}
-
-QSize TemplateProperty::sizeHint(const QSize& size) const {
-    return QSize(size.width(), 74);
 }
 
 void TemplateProperty::onAssetChanged(const QString &uuid) {
