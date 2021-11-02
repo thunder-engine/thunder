@@ -204,17 +204,20 @@ void SceneComposer::backupScene() {
 }
 
 void SceneComposer::restoreBackupScene() {
-    m_controller->setObject(nullptr);
+    if(!m_backupScenes.isEmpty()) {
+        m_controller->setObject(nullptr);
 
-    for(auto &it : m_backupScenes) {
-        Object *map = Engine::toObject(Bson::load(it), nullptr);
-        if(map) {
-            m_controller->setObject(map);
-            map->setParent(m_engine->scene()); // Set parent after detach previous one
+        for(auto &it : m_backupScenes) {
+            Object *map = Engine::toObject(Bson::load(it), nullptr);
+            if(map) {
+                m_controller->setObject(map);
+                map->setParent(m_engine->scene()); // Set parent after detach previous one
+            }
         }
-    }
+        m_backupScenes.clear();
 
-    emit hierarchyCreated(m_engine->scene());
+        emit hierarchyCreated(m_engine->scene());
+    }
 }
 
 bool SceneComposer::isModified() const {
