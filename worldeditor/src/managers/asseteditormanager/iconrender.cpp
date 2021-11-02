@@ -57,9 +57,9 @@ const QImage IconRender::render(const QString &resource, const QString &) {
         }
 
         m_pCamera->setOrthographic(false);
-        float fov = m_pCamera->fov();
-        m_pActor->transform()->setPosition(Vector3(bb.center.x, bb.center.y,
-                                                 ((bb.extent.length() + m_pCamera->nearPlane()) * 1.1f) / sinf(fov * DEG2RAD)));
+        float radius = (bb.radius * 2.0f) / sinf(m_pCamera->fov() * DEG2RAD);
+        Vector3 cameraPosition(bb.center + m_pActor->transform()->quaternion() * Vector3(0.0, 0.0, radius));
+        m_pActor->transform()->setPosition(cameraPosition);
     } else {
         return QImage();
     }
