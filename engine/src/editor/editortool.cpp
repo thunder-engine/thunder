@@ -11,7 +11,8 @@ EditorTool::Select::Select() :
 }
 
 EditorTool::EditorTool(EditorTool::SelectList &selection) :
-    m_Selected(selection) {
+    m_Selected(selection),
+    m_Cursor(Qt::ArrowCursor) {
 
 }
 
@@ -79,7 +80,7 @@ void EditorTool::cancelControl() {
     }
 }
 
-QCursor EditorTool::cursor() const {
+Qt::CursorShape EditorTool::cursor() const {
     return m_Cursor;
 }
 

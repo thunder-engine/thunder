@@ -18,6 +18,10 @@ public:
 
     QImage grabFramebuffer() { return QImage(); }
 
+public slots:
+    void onCursorSet(const QCursor &cursor);
+    void onCursorUnset();
+
 signals:
     void drop(QDropEvent *);
     void dragEnter(QDragEnterEvent *);

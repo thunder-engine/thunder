@@ -2,6 +2,7 @@
 
 #include <QWindow>
 #include <QVBoxLayout>
+#include <QGuiApplication>
 
 #include <systems/rendersystem.h>
 
@@ -32,10 +33,7 @@ Viewport::Viewport(QWidget *parent) :
     layout()->addWidget(widget);
 
     setAcceptDrops(true);
-    setAutoFillBackground(false);
-
     setMouseTracking(true);
-    setFocusPolicy(Qt::StrongFocus);
 }
 
 void Viewport::setController(CameraCtrl *ctrl) {
@@ -44,6 +42,14 @@ void Viewport::setController(CameraCtrl *ctrl) {
 
 void Viewport::setScene(Scene *scene) {
     m_pScene = scene;
+}
+
+void Viewport::onCursorSet(const QCursor &cursor) {
+    m_pRHIWindow->setCursor(cursor);
+}
+
+void Viewport::onCursorUnset() {
+    m_pRHIWindow->unsetCursor();
 }
 
 void Viewport::onDraw() {
@@ -68,24 +74,29 @@ void Viewport::onDraw() {
     }
 }
 
+
+
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-    switch(event->type()) {
-    case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
-    case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
-    case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
-    case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-    case QEvent::Wheel:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseMove: {
-        if(m_pController) {
-            m_pController->onInputEvent(static_cast<QInputEvent *>(event));
+     // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
+    if(m_pRHIWindow == QGuiApplication::focusWindow()) {
+        switch(event->type()) {
+        case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
+        case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
+        case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
+        case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+        case QEvent::Wheel:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseMove: {
+            if(m_pController) {
+                m_pController->onInputEvent(static_cast<QInputEvent *>(event));
+            }
+            return true;
         }
-        return true;
-    }
-    default: break;
+        default: break;
+        }
     }
     return QObject::eventFilter(object, event);
 }

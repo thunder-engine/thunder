@@ -152,7 +152,7 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
     } else if((Handles::s_Axes == Handles::POINT_L) | (Handles::s_Axes == Handles::POINT_R)) {
         shape = Qt::SizeHorCursor;
     }
-    m_Cursor = QCursor(shape);
+    m_Cursor = shape;
 }
 
 QString ResizeTool::icon() const {

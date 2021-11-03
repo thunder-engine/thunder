@@ -40,7 +40,7 @@ public:
     virtual QString toolTip() const;
     virtual QString shortcut() const;
 
-    QCursor cursor() const;
+    Qt::CursorShape cursor() const;
 
     Vector3 objectPosition();
     AABBox objectBound();
@@ -52,7 +52,7 @@ protected:
 
     VariantList m_PropertiesCache;
 
-    QCursor m_Cursor;
+    Qt::CursorShape m_Cursor;
 
 };
 

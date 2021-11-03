@@ -552,12 +552,12 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
                 setDrag(false);
             }
 
-            if(m_activeTool->cursor().shape() != Qt::ArrowCursor) {
-                m_pView->setCursor(m_activeTool->cursor());
+            if(m_activeTool->cursor() != Qt::ArrowCursor) {
+                emit setCursor(QCursor(m_activeTool->cursor()));
             } else if(!m_objectsList.empty()) {
-                m_pView->setCursor(QCursor(Qt::CrossCursor));
+                emit setCursor(QCursor(Qt::CrossCursor));
             } else {
-                m_pView->unsetCursor();
+                emit unsetCursor();
             }
         } break;
         default: break;

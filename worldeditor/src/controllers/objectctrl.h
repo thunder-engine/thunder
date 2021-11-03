@@ -98,6 +98,9 @@ signals:
 
     void dropMap(QString map, bool additive);
 
+    void setCursor(const QCursor &cursor);
+    void unsetCursor();
+
 protected:
     void drawHandles() override;
 

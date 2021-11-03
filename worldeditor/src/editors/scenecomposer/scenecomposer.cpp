@@ -82,6 +82,9 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(m_controller, &ObjectCtrl::objectsUpdated, m_properties, &NextObject::onUpdated);
     //connect(m_controller, &ObjectCtrl::objectsChanged, ui->timeline, onChanged(Object::ObjectList,QString)));
 
+    connect(m_controller, &ObjectCtrl::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
+    connect(m_controller, &ObjectCtrl::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
+
     connect(this, &SceneComposer::createComponent, m_controller, &ObjectCtrl::onCreateComponent);
 
     connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectCtrl::onOrthographic);
@@ -98,7 +101,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
 
     ui->orthoButton->setProperty("checkgreen", true);
-
 
     m_objectActions.push_back((createAction(tr("Rename"), SIGNAL(renameItem()), true, QKeySequence(Qt::Key_F2))));
     m_objectActions.push_back((createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false)));
