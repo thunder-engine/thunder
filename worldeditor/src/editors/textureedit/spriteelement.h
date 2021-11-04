@@ -24,7 +24,6 @@ public slots:
     void onElementChanged();
 
 private:
-    void paintEvent(QPaintEvent *pe) Q_DECL_OVERRIDE;
     void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
 
 private:

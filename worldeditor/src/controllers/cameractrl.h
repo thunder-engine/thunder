@@ -52,17 +52,17 @@ public:
 
     void setFocusOn(Actor *actor, float &bottom);
 
-    void setFree(bool flag) { m_CameraFree = flag; m_CameraFreeSaved = m_CameraFree; }
+    void setFree(bool flag) { m_cameraFree = flag; m_cameraFreeSaved = m_cameraFree; }
 
-    void blockMovement(bool flag) { m_BlockMove = flag; }
+    void blockMovement(bool flag) { m_blockMove = flag; }
 
-    void blockRotations(bool flag) { m_BlockRotation = flag; }
+    void blockRotations(bool flag) { m_blockRotation = flag; }
 
-    Camera *camera() const { return m_pActiveCamera; }
+    Camera *camera() const { return m_activeCamera; }
 
     virtual void createMenu(QMenu *menu);
 
-    ViewSide viewSide() const { return m_ViewSide; }
+    ViewSide viewSide() const { return m_viewSide; }
 
     bool restoreState(const VariantList &list);
     VariantList saveState() const;
@@ -90,35 +90,35 @@ private:
     void doRotation(const Vector3 &vector);
 
 protected:
-    uint8_t m_CameraMove;
-    ViewSide m_ViewSide;
+    uint8_t m_cameraMove;
+    ViewSide m_viewSide;
 
-    bool m_BlockMove;
-    bool m_BlockRotation;
+    bool m_blockMove;
+    bool m_blockRotation;
 
-    bool m_CameraFree;
-    bool m_CameraFreeSaved;
-    bool m_RotationTransfer;
+    bool m_cameraFree;
+    bool m_cameraFreeSaved;
+    bool m_rotationTransfer;
 
-    Vector3 m_CameraSpeed;
+    Vector2 m_screenSize;
 
-    Vector3 m_Rotation;
-    Vector3 m_Position;
+    Vector3 m_cameraSpeed;
 
-    Vector3 m_RotationTarget;
-    Vector3 m_PositionTarget;
+    Vector3 m_rotation;
+    Vector3 m_position;
 
-    float m_OrthoWidthTarget;
-    float m_FocalLengthTarget;
-    float m_TransferProgress;
+    Vector3 m_rotationTarget;
+    Vector3 m_positionTarget;
 
-    QPoint m_Saved;
+    float m_orthoWidthTarget;
+    float m_focalLengthTarget;
+    float m_transferProgress;
 
-    Actor *m_pCamera;
+    QPoint m_saved;
 
-    QWidget *m_pView;
+    Actor *m_camera;
 
-    Camera *m_pActiveCamera;
+    Camera *m_activeCamera;
 };
 
 #endif // CAMERACTRL_H

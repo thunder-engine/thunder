@@ -11,6 +11,7 @@ class TextureConverter;
 class TextureImportSettings;
 
 class SpriteElement;
+class SpriteController;
 
 class DocumentModel;
 
@@ -33,6 +34,8 @@ private:
     void resizeEvent(QResizeEvent *event) override;
     void changeEvent(QEvent *event) override;
 
+    bool eventFilter(QObject *object, QEvent *event) override;
+
     bool isModified() const override;
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override;
@@ -45,10 +48,19 @@ private:
 
     TextureConverter *m_pConverter;
 
-    SpriteElement *m_Details;
+    Scene *m_pScene;
+
+    SpriteController *m_pController;
+
+    QWindow *m_pRHIWindow;
 
 private slots:
     void onUpdateTemplate();
+
+    void onCursorSet(const QCursor &cursor);
+    void onCursorUnset();
+
+    void onDraw();
 
 };
 

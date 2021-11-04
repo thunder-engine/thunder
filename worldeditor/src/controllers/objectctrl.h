@@ -104,8 +104,6 @@ signals:
 protected:
     void drawHandles() override;
 
-    void resize(int32_t width, int32_t height) override;
-
     void selectGeometry(Vector2 &, Vector2 &size);
 
 private slots:
@@ -131,10 +129,8 @@ protected:
     } m_dragMap;
 
     Vector2 m_mousePosition;
-    Vector2 m_screenSize;
 
     Vector3 m_mouseWorld;
-
 
     EditorPipeline *m_pipeline;
 

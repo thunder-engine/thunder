@@ -6,9 +6,9 @@
 #include "textureconverter.h"
 
 SpriteElement::SpriteElement(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::SpriteElement),
-    m_pSettings(nullptr) {
+        QWidget(parent),
+        ui(new Ui::SpriteElement),
+        m_pSettings(nullptr) {
 
     ui->setupUi(this);
 
@@ -97,10 +97,10 @@ void SpriteElement::onElementChanged() {
     if(m_pSettings) {
         TextureImportSettings::Element element;
 
-        element.m_Rect.setX      (ui->xEdit->text().toInt());
-        element.m_Rect.setY      (ui->yEdit->text().toInt());
-        element.m_Rect.setWidth  (ui->wEdit->text().toInt());
-        element.m_Rect.setHeight (ui->hEdit->text().toInt());
+        element.m_Rect.setX     (ui->xEdit->text().toInt());
+        element.m_Rect.setY     (ui->yEdit->text().toInt());
+        element.m_Rect.setWidth (ui->wEdit->text().toInt());
+        element.m_Rect.setHeight(ui->hEdit->text().toInt());
 
         element.m_BorderL = ui->borderEditL->text().toUInt();
         element.m_BorderR = ui->borderEditR->text().toUInt();
@@ -117,18 +117,6 @@ void SpriteElement::onElementChanged() {
         }
         m_pSettings->setElement(element, m_Key);
     }
-}
-
-void SpriteElement::paintEvent(QPaintEvent *pe) {
-    QWidget::paintEvent(pe);
-
-    QPainter painter(this);
-
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(66, 66, 66));
-    painter.drawRoundedRect(rect(), 4, 4);
-
-    painter.end();
 }
 
 void SpriteElement::changeEvent(QEvent *event) {

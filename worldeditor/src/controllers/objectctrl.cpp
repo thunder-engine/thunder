@@ -93,7 +93,7 @@ void ObjectCtrl::init() {
     m_pipeline = new EditorPipeline;
     m_pipeline->setController(this);
     m_pipeline->createMenu(m_menu);
-    m_pActiveCamera->setPipeline(m_pipeline);
+    m_activeCamera->setPipeline(m_pipeline);
 }
 
 void ObjectCtrl::drawHandles() {
@@ -183,9 +183,9 @@ void ObjectCtrl::setDrag(bool drag) {
 }
 
 void ObjectCtrl::onApplySettings() {
-    if(m_pActiveCamera) {
+    if(m_activeCamera) {
         QColor color = SettingsManager::instance()->property(m_isolatedActor ? gIsolationColor : gBackgroundColor).value<QColor>();
-        m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+        m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
     }
 }
 
@@ -257,7 +257,7 @@ void ObjectCtrl::setIsolatedActor(Actor *actor) {
     } else {
         color = SettingsManager::instance()->property(gBackgroundColor).value<QColor>();
     }
-    m_pActiveCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
+    m_activeCamera->setColor(Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF()));
 }
 
 void ObjectCtrl::selectActors(const list<uint32_t> &list) {
@@ -614,10 +614,6 @@ void ObjectCtrl::resetSelection() {
     for(auto &it : m_selected) {
         it.renderable = nullptr;
     }
-}
-
-void ObjectCtrl::resize(int32_t width, int32_t height) {
-    m_screenSize = Vector2(width, height);
 }
 
 void ObjectCtrl::createMenu(QMenu *menu) {

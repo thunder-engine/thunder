@@ -28,9 +28,7 @@ Viewport::Viewport(QWidget *parent) :
 
     connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-    QWidget *widget = QWidget::createWindowContainer(m_pRHIWindow);
-
-    layout()->addWidget(widget);
+    layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
 
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -73,8 +71,6 @@ void Viewport::onDraw() {
         Camera::setCurrent(nullptr);
     }
 }
-
-
 
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
      // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI

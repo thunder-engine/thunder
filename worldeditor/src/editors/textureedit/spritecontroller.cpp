@@ -1,8 +1,6 @@
 #include "spritecontroller.h"
 
 #include <QInputEvent>
-#include <QOpenGLWidget>
-#include <QDebug>
 
 #include <components/camera.h>
 #include <components/actor.h>
@@ -12,6 +10,8 @@
 #include <editor/handletools.h>
 
 #include "controllers/editorpipeline.h"
+
+#include "graph/viewport.h"
 
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(view),
@@ -39,7 +39,7 @@ void SpriteController::init() {
     }
     m_pPipeline = new EditorPipeline;
     m_pPipeline->setController(this);
-    m_pActiveCamera->setPipeline(m_pPipeline);
+    m_activeCamera->setPipeline(m_pPipeline);
 }
 
 void SpriteController::setImportSettings(TextureImportSettings *settings) {
@@ -74,13 +74,10 @@ QStringList &SpriteController::selectedElements() {
 
 void SpriteController::drawHandles() {
     if(m_pSettings) {
-        if(!m_Drag) {
-            m_pView->unsetCursor();
-        }
+        Qt::CursorShape shape = Qt::ArrowCursor;
 
         Handles::cleanDepth();
         for(auto it : m_pSettings->elements().keys()) {
-
             QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
             if(m_List.indexOf(it) > -1) {
                 QRect tmp = m_pSettings->elements().value(it).m_Rect;
@@ -110,7 +107,6 @@ void SpriteController::drawHandles() {
                 Handles::s_Color = Vector4(Handles::s_yColor.x, Handles::s_yColor.y, Handles::s_yColor.z, 0.5f);
                 Handles::drawLines(Matrix4(), {tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7});
 
-                Qt::CursorShape shape = Qt::ArrowCursor;
                 if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
                     shape = Qt::SizeAllCursor;
                 } if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_R)) {
@@ -126,10 +122,6 @@ void SpriteController::drawHandles() {
                 } else if(Handles::s_Axes == Handles::POINT_L | Handles::s_Axes == Handles::POINT_R) {
                     shape = Qt::SizeHorCursor;
                 }
-
-                if(shape != Qt::ArrowCursor) {
-                    m_pView->setCursor(QCursor(shape));
-                }
             } else {
                 Handles::s_Color = Handles::s_Grey;
                 Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
@@ -142,6 +134,12 @@ void SpriteController::drawHandles() {
             Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
         }
         Handles::s_Color = Handles::s_Normal;
+
+        if(shape != Qt::ArrowCursor) {
+            emit setCursor(QCursor(shape));
+        } else if(!m_Drag) {
+            emit unsetCursor();
+        }
     }
 }
 
@@ -162,17 +160,17 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(m_pSettings && e->buttons() == Qt::LeftButton) {
-                QString key;
-                QPoint world = mapToScene(e->pos());
-                for(auto &it : m_pSettings->elements().keys()) {
-                    QRect r = m_pSettings->elements().value(it).m_Rect;
-                    if(r.contains(world)) {
-                        key = it;
-                        break;
-                    }
-                }
-
                 if(Handles::s_Axes == 0) {
+                    QString key;
+                    QPoint world = mapToScene(e->pos());
+                    for(auto &it : m_pSettings->elements().keys()) {
+                        QRect r = m_pSettings->elements().value(it).m_Rect;
+                        if(r.contains(world)) {
+                            key = it;
+                            break;
+                        }
+                    }
+
                     if(key.isEmpty()) {
                         selectElements({});
                         m_StartPoint = world;
@@ -206,9 +204,9 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseMove: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
 
-            Vector3 screen = Vector3(e->pos().x() / m_Screen.x, e->pos().y() / m_Screen.y, 0.0f);
+            Vector3 screen = Vector3(e->pos().x() / m_screenSize.x, 1.0f - e->pos().y() / m_screenSize.y, 0.0f);
             Handles::s_Mouse = Vector2(screen.x, screen.y);
-            Handles::s_Screen = m_Screen;
+            Handles::s_Screen = m_screenSize;
 
             if(m_pSettings && e->buttons() & Qt::LeftButton) {
                 m_Drag = true;
@@ -263,14 +261,10 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
     }
 }
 
-void SpriteController::resize(int32_t width, int32_t height) {
-    m_Screen = Vector2(width, height);
-}
-
 QPoint SpriteController::mapToScene(const QPoint &pos) {
-    Vector3 screen((float)pos.x() / m_Screen.x, 1.0f - (float)pos.y() / m_Screen.y, 0.0f);
+    Vector3 screen((float)pos.x() / m_screenSize.x, 1.0f - (float)pos.y() / m_screenSize.y, 0.0f);
 
-    Vector3 world = Camera::unproject(screen, m_pActiveCamera->viewMatrix(), m_pActiveCamera->projectionMatrix());
+    Vector3 world = Camera::unproject(screen, m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
     world.x += SCALE * 0.5f;
     world.y += SCALE * 0.5f;
 

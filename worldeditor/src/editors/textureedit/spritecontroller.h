@@ -30,15 +30,16 @@ public:
 
     void init();
 
+    void onInputEvent(QInputEvent *) override;
+
 signals:
     void selectionChanged(const QString &key);
 
+    void setCursor(const QCursor &cursor);
+    void unsetCursor();
+
 private:
     void drawHandles() override;
-
-    void onInputEvent(QInputEvent *) override;
-
-    void resize(int32_t width, int32_t height) override;
 
     QPoint mapToScene(const QPoint &screen);
 
@@ -56,8 +57,6 @@ private:
 
     uint32_t m_Width;
     uint32_t m_Height;
-
-    Vector2 m_Screen;
 
     QStringList m_List;
     QList<TextureImportSettings::Element> m_ElementList;
