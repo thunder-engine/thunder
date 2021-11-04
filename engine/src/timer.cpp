@@ -1,9 +1,9 @@
 #include "timer.h"
 
 static TimePoint m_sLastTime;
-static float m_sTime        = 0.0;
-static float m_sDeltaTime   = 0.0;
-static float m_sTimeScale   = 1.0;
+static float m_sTime      = 0.0;
+static float m_sDeltaTime = 0.0;
+static float m_sTimeScale = 1.0;
 
 /*!
     \class Timer
@@ -17,27 +17,21 @@ static float m_sTimeScale   = 1.0;
 */
 
 /*!
-    Initialize the Timer module.
-    \note This method calls internally and must not be called manually.
-*/
-void Timer::init() {
-    m_sLastTime = std::chrono::high_resolution_clock::now();
-}
-/*!
     Resets all Timer related variables.
     \note Usually, this method calls internally and must not be called manually.
 */
 void Timer::reset() {
-    m_sTime        = 0.0;
-    m_sDeltaTime   = 0.0;
-    m_sTimeScale   = 1.0;
+    m_sTime = 0.0;
+    m_sDeltaTime = 0.0;
+    m_sTimeScale = 1.0;
+    m_sLastTime = std::chrono::high_resolution_clock::now();
 }
 /*!
     Updates all Timer related variables.
     \note Usually, this method calls internally and must not be called manually.
 */
 void Timer::update() {
-    TimePoint current   = std::chrono::high_resolution_clock::now();
+    TimePoint current = std::chrono::high_resolution_clock::now();
 
     m_sDeltaTime = (std::chrono::duration_cast<std::chrono::duration<float> >(current - m_sLastTime)).count() * m_sTimeScale;
     m_sTime += m_sDeltaTime;

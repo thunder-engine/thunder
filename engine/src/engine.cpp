@@ -259,7 +259,7 @@ bool Engine::init() {
 #endif
     bool result = EnginePrivate::m_Platform->init();
 
-    Timer::init();
+    Timer::reset();
     Input::init(EnginePrivate::m_Platform);
 
     p_ptr->m_ThreadPool.setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
