@@ -1,6 +1,5 @@
 #include "objecthierarchymodel.h"
 
-#include <QUrl>
 #include <QSize>
 
 #include "components/actor.h"
@@ -60,10 +59,14 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         } break;
         case Qt::DecorationRole: {
             if(index.column() == 0) {
-                return (item && item->isInstance()) ? m_Prefab : m_Actor;
+                if(item) {
+                    return item->isInstance() ? m_Prefab : m_Actor;
+                }
             }
             if(index.column() == 2) {
-                return (item && item->isEnabled()) ? m_Visible : m_Invisible;
+                if(item) {
+                    return item->isEnabled() ? m_Visible : m_Invisible;
+                }
             }
         } break;
         case Qt::TextColorRole: {
