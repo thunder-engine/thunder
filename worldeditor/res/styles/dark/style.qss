@@ -106,7 +106,7 @@ QAbstractButton[checkblue="true"]:checked:hover {
 }
 
 QToolButton {
-    padding: 2px 16px 2px 8px;
+    padding: 2px 16px 2px 16px;
 }
 QToolButton::menu-indicator {
     margin: 2px 5px;

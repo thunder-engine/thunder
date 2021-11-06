@@ -225,6 +225,8 @@ bool Armature::drawHandles(ObjectList &selected) {
             Handles::drawBone(it->parentTransform(), it);
         }
     }
+    update();
+
     return false;
 }
 
