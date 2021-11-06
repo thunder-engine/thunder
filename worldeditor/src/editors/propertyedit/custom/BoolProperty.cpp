@@ -19,7 +19,7 @@ bool BoolProperty::setEditorData(QWidget *editor, const QVariant &data) {
     BooleanEdit *e = static_cast<BooleanEdit *>(editor);
     if(e) {
         e->blockSignals(true);
-        e->setValue(data.toInt());
+        e->setValue(data.toBool());
         e->blockSignals(false);
         return true;
     }
