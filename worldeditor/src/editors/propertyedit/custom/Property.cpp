@@ -1,8 +1,4 @@
 #include <QMetaProperty>
-#include <QSpinBox>
-#include <QCheckBox>
-#include <QLineEdit>
-#include <QPainter>
 
 #include "Property.h"
 
@@ -63,7 +59,9 @@ bool Property::isReadOnly() const {
 
 QWidget *Property::getEditor(QWidget *parent) const {
     if(m_editor) {
-        m_editor->setParent(parent);
+        if(parent) {
+            m_editor->setParent(parent);
+        }
         return m_editor;
     }
     return createEditor(parent);
