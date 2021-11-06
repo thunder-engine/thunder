@@ -31,7 +31,10 @@ Viewport::Viewport(QWidget *parent) :
     layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
 
     setAcceptDrops(true);
+    setAutoFillBackground(false);
+
     setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 void Viewport::setController(CameraCtrl *ctrl) {
@@ -71,28 +74,26 @@ void Viewport::onDraw() {
         Camera::setCurrent(nullptr);
     }
 }
-
 bool Viewport::eventFilter(QObject *object, QEvent *event) {
-     // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
-    if(m_pRHIWindow == QGuiApplication::focusWindow()) {
-        switch(event->type()) {
-        case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
-        case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
-        case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
-        case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
-        case QEvent::KeyPress:
-        case QEvent::KeyRelease:
-        case QEvent::Wheel:
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove: {
-            if(m_pController) {
-                m_pController->onInputEvent(static_cast<QInputEvent *>(event));
-            }
-            return true;
+    switch(event->type()) {
+    case QEvent::DragEnter: emit dragEnter(static_cast<QDragEnterEvent *>(event)); return true;
+    case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
+    case QEvent::DragMove: emit dragMove(static_cast<QDragMoveEvent *>(event)); return true;
+    case QEvent::Drop: emit drop(static_cast<QDropEvent *>(event)); setFocus(); return true;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+    case QEvent::Wheel:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove: {
+        // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
+        if(m_pController && m_pRHIWindow == QGuiApplication::focusWindow()) {
+            m_pController->onInputEvent(static_cast<QInputEvent *>(event));
         }
-        default: break;
-        }
+        return true;
     }
+    default: break;
+    }
+
     return QObject::eventFilter(object, event);
 }
