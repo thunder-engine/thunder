@@ -1,65 +1,76 @@
 #include "animationclipmodel.h"
 
 #include <resources/animationclip.h>
-#include <resources/animationstatemachine.h>
-#include <components/animationcontroller.h>
 #include <components/actor.h>
 
 #include "assetmanager.h"
 
-#include <iterator>
-
-#include <QColor>
-
-const QStringList components = {"x", "y", "z", "w"};
+bool compareTracks(const AnimationTrack &first, const AnimationTrack &second) {
+    if(first.path() == second.path()) {
+        return first.property() < second.property();
+    }
+    return first.path() < second.path();
+}
 
 AnimationClipModel::AnimationClipModel(QObject *parent) :
         QAbstractItemModel(parent),
-        m_pController(nullptr),
-        m_pStateMachine(nullptr),
-        m_pClip(nullptr),
-        m_Position(0.0f) {
+        m_clip(nullptr),
+        m_rootActor(nullptr),
+        m_clipSettings(nullptr) {
 
 }
 
-void AnimationClipModel::setController(AnimationController *controller) {
-    m_pController = controller;
-    m_pStateMachine = nullptr;
-    m_pClip = nullptr;
-    m_Clips.clear();
-
-    if(m_pController) {
-        m_pStateMachine = m_pController->stateMachine();
-        if(m_pStateMachine) {
-
-            for(auto it : m_pStateMachine->states()) {
-                QFileInfo info(AssetManager::instance()->guidToPath(Engine::reference(it->m_clip)).c_str());
-                m_Clips[info.baseName()] = it->m_clip;
+uint32_t AnimationClipModel::findNear(uint32_t current, bool backward) {
+    uint32_t result = 0;
+    if(m_clip) {
+        if(backward) {
+            result = 0;
+            for(auto it : m_clip->m_Tracks) {
+                for(auto &c : it.curves()) {
+                    auto key = c.second.m_Keys.rbegin();
+                    while(key != c.second.m_Keys.rend()) {
+                        float pos = key->m_Position * m_clip->duration();
+                        if(pos < current) {
+                            result = MAX(result, pos);
+                            break;
+                        }
+                        key++;
+                    }
+                }
             }
-            if(!m_Clips.isEmpty()) {
-                setClip(m_Clips.begin().key());
-                return;
+        } else {
+            result = m_clip->duration();
+            for(auto it : m_clip->m_Tracks) {
+                for(auto &c : it.curves()) {
+                    for(auto key : c.second.m_Keys) {
+                        float pos = key.m_Position * m_clip->duration();
+                        if(pos > current) {
+                            result = MIN(result, pos);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
+    return result;
 }
 
-void AnimationClipModel::setClip(const QString &clip) {
-    m_pClip = m_Clips.value(clip);
-    if(m_pClip) {
-        m_pController->setClip(m_pClip);
+void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
+    m_clip = clip;
+    m_rootActor = root;
+    if(m_clip) {
+        string guid = Engine::reference(m_clip);
+        string path = AssetManager::instance()->guidToPath(guid);
+        m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.c_str()));
 
         emit layoutAboutToBeChanged();
         emit layoutChanged();
-
-        setPosition(0.0f);
     }
 }
 
 QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
-    if(!index.isValid() || m_pClip == nullptr) {
+    if(!index.isValid() || m_clip == nullptr) {
         return QVariant();
     }
 
@@ -67,13 +78,18 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
         case Qt::EditRole:
         case Qt::ToolTipRole:
         case Qt::DisplayRole: {
-            auto it = m_pClip->m_Tracks.begin();
-            if(index.internalPointer() == &m_pClip->m_Tracks) {
+            auto it = m_clip->m_Tracks.begin();
+            if(index.internalPointer() == &m_clip->m_Tracks) {
                 advance(it, index.row());
-                if(it != m_pClip->m_Tracks.end()) {
+                if(it != m_clip->m_Tracks.end()) {
                     QStringList lst = QString::fromStdString(it->path()).split('/');
                     lst.pop_back();
-                    QString actor = lst.last();
+                    QString actor;
+                    if(lst.isEmpty()) {
+                        actor = m_rootActor->name().c_str();
+                    } else {
+                        actor = lst.last();
+                    }
 
                     return QString("%1 : %2").arg(actor, QString(it->property().c_str()).replace('_', ""));
                 }
@@ -81,6 +97,7 @@ QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
                 advance(it, index.parent().row());
                 int component = std::next(it->curves().begin(), index.row())->first;
                 if(component >= 0) {
+                    static const QStringList components = {"x", "y", "z", "w"};
                     return QString("%1.%2").arg(it->property().c_str(), components.at(component));
                 }
             }
@@ -105,8 +122,8 @@ int AnimationClipModel::columnCount(const QModelIndex &) const {
 }
 
 QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &parent) const {
-    if(m_pClip) {
-        AnimationTrackList *list = &m_pClip->m_Tracks;
+    if(m_clip) {
+        AnimationTrackList *list = &m_clip->m_Tracks;
         if(!parent.isValid()) {
             return createIndex(row, column, list);
         } else {
@@ -122,11 +139,11 @@ QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &pa
 }
 
 QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
-    if(index.isValid() && m_pClip) {
-        AnimationTrackList *list  = &m_pClip->m_Tracks;
+    if(index.isValid() && m_clip) {
+        AnimationTrackList *list  = &m_clip->m_Tracks;
         if(index.internalPointer() != list) {
             int row = 0;
-            for(auto &it : m_pClip->m_Tracks) {
+            for(auto &it : m_clip->m_Tracks) {
                 if(index.internalPointer() == &(it.curves())) {
                     break;
                 }
@@ -140,8 +157,8 @@ QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
 }
 
 int AnimationClipModel::rowCount(const QModelIndex &parent) const {
-    if(m_pClip) {
-        AnimationTrackList *list = &m_pClip->m_Tracks;
+    if(m_clip) {
+        AnimationTrackList *list = &m_clip->m_Tracks;
         if(!list->empty()) {
             if(!parent.isValid()) {
                 return static_cast<int32_t>(list->size());
@@ -158,20 +175,6 @@ int AnimationClipModel::rowCount(const QModelIndex &parent) const {
     return 0;
 }
 
-float AnimationClipModel::position() const {
-    return m_Position;
-}
-
-void AnimationClipModel::setPosition(float value) {
-    m_Position = value;
-
-    if(m_pController) {
-        m_pController->setPosition(m_Position);
-    }
-
-    emit positionChanged(m_Position);
-}
-
 void AnimationClipModel::removeItems(const QModelIndexList &list) {
     if(!isReadOnly()) {
         QList<int> rows;
@@ -186,8 +189,8 @@ void AnimationClipModel::removeItems(const QModelIndexList &list) {
 
 AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, int32_t index) {
     if(track >= 0) {
-        if(m_pClip->m_Tracks.size() > size_t(track)) {
-            AnimationTrack &t = *std::next(m_pClip->m_Tracks.begin(), track);
+        if(m_clip->m_Tracks.size() > size_t(track)) {
+            AnimationTrack &t = *std::next(m_clip->m_Tracks.begin(), track);
             if(t.curves().size() > col && t.curves()[col].m_Keys.size() > index) {
                 return &t.curves()[col].m_Keys[index];
             }
@@ -197,10 +200,21 @@ AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t col, in
 }
 
 AnimationTrack &AnimationClipModel::track(int32_t track) {
-    return *std::next(m_pClip->m_Tracks.begin(), track);
+    return *std::next(m_clip->m_Tracks.begin(), track);
 }
 
-void AnimationClipModel::commitKey(int row, int col, int index, float value, float left, float right, int position) {
+QString AnimationClipModel::targetPath(QModelIndex &index) const {
+    auto it = m_clip->m_Tracks.begin();
+    if(index.internalPointer() == &m_clip->m_Tracks) {
+        advance(it, index.row());
+        if(it != m_clip->m_Tracks.end()) {
+            return QString::fromStdString(it->path());
+        }
+    }
+    return QString();
+}
+
+void AnimationClipModel::commitKey(int row, int col, int index, float value, float left, float right, uint32_t position) {
     AnimationCurve::KeyFrame *k = key(row, col, index);
     if(!isReadOnly() && k) {
         UndoManager::instance()->push(new UndoUpdateKey(row, col, index, value, left, right, position, this, tr("Update Key")));
@@ -208,14 +222,104 @@ void AnimationClipModel::commitKey(int row, int col, int index, float value, flo
 }
 
 bool AnimationClipModel::isReadOnly() const {
-    return false;
+    return (m_clipSettings) ? m_clipSettings->isReadOnly() : false;
+}
+
+void AnimationClipModel::propertyUpdated(Object *object, const QString &path, const QString &property, uint32_t position) {
+    const MetaObject *meta = object->metaObject();
+    int32_t index = meta->indexOfProperty(qPrintable(property));
+    if(index >= 0) {
+        MetaProperty p = meta->property(index);
+        Variant value = p.read(object);
+
+        vector<float> data;
+        switch(value.type()) {
+            case MetaType::VECTOR2: {
+                Vector2 v = value.toVector2();
+                data = {v.x, v.y};
+            } break;
+            case MetaType::VECTOR3: {
+                Vector3 v = value.toVector3();
+                data = {v.x, v.y, v.z};
+            } break;
+            case MetaType::VECTOR4: {
+                Vector4 v = value.toVector4();
+                data = {v.x, v.y, v.z, v.w};
+            } break;
+            default: {
+                data = {value.toFloat()};
+            } break;
+        }
+
+        AnimationTrackList tracks = m_clip->m_Tracks;
+
+        for(uint32_t component = 0; component < data.size(); component++) {
+            bool createTrack = true;
+
+            float value = data[component];
+
+            for(auto &it : tracks) {
+                if(it.path() == path.toStdString() && it.property() == property.toStdString()) {
+                    bool updateKeyframe = false;
+
+                    auto &curve = it.curves()[component];
+                    for(auto &k : curve.m_Keys) {
+                        if(uint32_t(k.m_Position * it.duration()) == position) {
+                            k.m_Value = value;
+                            k.m_LeftTangent = value;
+                            k.m_RightTangent = value;
+                            updateKeyframe = true;
+                        }
+                    }
+                    if(!updateKeyframe) { // Create new keyframe
+                        AnimationCurve::KeyFrame key;
+                        int duration = it.duration();
+                        if(duration <= position) {
+                            duration = position;
+                            it.setDuration(duration);
+                        }
+                        key.m_Position = (float)position / float(duration == 0 ? 1.0f : duration);
+                        key.m_Value = value;
+                        key.m_LeftTangent = key.m_Value;
+                        key.m_RightTangent = key.m_Value;
+
+                        curve.m_Keys.push_back(key);
+
+                        it.fixCurves();
+                    }
+                    createTrack = false;
+
+                    break;
+                }
+            }
+
+            if(createTrack) {
+                AnimationTrack track;
+                track.setPath(path.toStdString());
+                track.setProperty(property.toStdString());
+                track.setDuration(position);
+
+                AnimationCurve curve;
+
+                AnimationCurve::KeyFrame key;
+                key.m_Position = (position == 0 ? 0.0f : 1.0f);
+                key.m_Value = value;
+                key.m_LeftTangent = key.m_Value;
+                key.m_RightTangent = key.m_Value;
+
+                curve.m_Keys.push_back(key);
+
+                track.curves()[component] = curve;
+
+                tracks.push_back(track);
+                tracks.sort(compareTracks);
+            }
+        }
+        UndoManager::instance()->push(new UndoUpdateItems(tracks, this, tr("Update Properties")));
+    }
 }
 
 void AnimationClipModel::updateController() {
-    m_pController->setStateMachine(m_pStateMachine);
-    m_pController->setPosition(m_Position);
-    m_pController->setClip(m_pClip);
-
     emit changed();
 
     emit layoutAboutToBeChanged();
@@ -249,7 +353,7 @@ void UndoUpdateKey::redo() {
 
 void UndoRemoveItems::undo() {
     int i = 0;
-    for(auto track : m_Tracks) {
+    for(auto &track : m_Tracks) {
         auto it = std::next(m_pModel->clip()->m_Tracks.begin(), m_Rows.at(i));
         m_pModel->clip()->m_Tracks.insert(it, track);
         i++;

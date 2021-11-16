@@ -23,6 +23,20 @@ public:
     MaterialEdit();
     ~MaterialEdit();
 
+private slots:
+    void onActivated() override;
+
+    void onComponentSelected(const QString &path);
+
+    void onNodesSelected(const QVariant &);
+    void onUpdateTemplate(bool update = true);
+
+    void onShowContextMenu(int node, int port, bool out);
+
+    void on_actionPlane_triggered();
+    void on_actionCube_triggered();
+    void on_actionSphere_triggered();
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
@@ -55,20 +69,6 @@ private:
     bool m_out;
 
     bool m_modified;
-
-private slots:
-    void onActivated() override;
-
-    void onComponentSelected(const QString &path);
-
-    void onNodesSelected(const QVariant &);
-    void onUpdateTemplate(bool update = true);
-
-    void onShowContextMenu(int node, int port, bool out);
-
-    void on_actionPlane_triggered();
-    void on_actionCube_triggered();
-    void on_actionSphere_triggered();
 
 };
 

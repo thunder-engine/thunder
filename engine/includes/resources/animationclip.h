@@ -32,6 +32,8 @@ public:
 
     int hash() const;
 
+    void fixCurves();
+
     CurveMap &curves();
 
 private:

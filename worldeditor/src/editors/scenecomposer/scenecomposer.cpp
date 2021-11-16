@@ -79,8 +79,8 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(m_controller, &ObjectCtrl::mapUpdated, this, &SceneComposer::itemUpdated);
     connect(m_controller, &ObjectCtrl::dropMap, this, &SceneComposer::onDropMap);
     connect(m_controller, &ObjectCtrl::objectsSelected, this, &SceneComposer::onItemsSelected);
+    connect(m_controller, &ObjectCtrl::objectsChanged, this, &SceneComposer::itemsChanged);
     connect(m_controller, &ObjectCtrl::objectsUpdated, m_properties, &NextObject::onUpdated);
-    //connect(m_controller, &ObjectCtrl::objectsChanged, ui->timeline, onChanged(Object::ObjectList,QString)));
 
     connect(m_controller, &ObjectCtrl::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
     connect(m_controller, &ObjectCtrl::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
@@ -95,10 +95,10 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
     connect(m_properties, &NextObject::deleteComponent, m_controller, &ObjectCtrl::onDeleteComponent);
-    connect(m_properties, &NextObject::changed, m_controller, &ObjectCtrl::onUpdated);
     connect(m_properties, &NextObject::aboutToBeChanged, m_controller, &ObjectCtrl::onPropertyChanged, Qt::DirectConnection);
     connect(m_properties, &NextObject::updated, this, &SceneComposer::itemUpdated);
     connect(m_properties, &NextObject::changed, this, &SceneComposer::onUpdated);
+    connect(m_properties, &NextObject::changed, this, &SceneComposer::itemsChanged);
 
     ui->orthoButton->setProperty("checkgreen", true);
 

@@ -27,7 +27,7 @@ public:
     void unregisterCustomPropertyCB(UserTypeCB callback);
 
 signals:
-    void insertKeyframe(QString &property);
+    void propertyContextMenuRequested(QString property, const QPoint pos);
 
 public slots:
     void onUpdated();
@@ -48,8 +48,6 @@ private slots:
     void on_lineEdit_textChanged(const QString &arg1);
 
     void on_treeView_customContextMenuRequested(const QPoint &pos);
-
-    void onInsertKeyframe();
 
 private:
     void changeEvent(QEvent *event) override;

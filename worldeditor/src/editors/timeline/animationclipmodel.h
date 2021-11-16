@@ -8,8 +8,9 @@
 
 #include "undomanager.h"
 
-class AnimationController;
-class AnimationStateMachine;
+class AnimatormationStateMachine;
+
+class AssetConverterSettings;
 
 class AnimationClipModel : public QAbstractItemModel {
     Q_OBJECT
@@ -17,7 +18,7 @@ class AnimationClipModel : public QAbstractItemModel {
 public:
     AnimationClipModel(QObject *parent);
 
-    void setController(AnimationController *controller);
+    uint32_t findNear(uint32_t current, bool backward = false);
 
     QVariant data(const QModelIndex &index, int) const override;
 
@@ -31,48 +32,39 @@ public:
 
     int rowCount(const QModelIndex &) const override;
 
-    float position() const;
-    void setPosition(float value);
-
     void removeItems(const QModelIndexList &list);
 
     AnimationCurve::KeyFrame *key(int32_t track, int32_t col, int32_t index);
 
     AnimationTrack &track(int32_t track);
 
+    QString targetPath(QModelIndex &index) const;
+
     void updateController();
 
-    AnimationClip *clip() const { return m_pClip; }
+    AnimationClip *clip() const { return m_clip; }
+    void setClip(AnimationClip *clip, Actor *root);
 
-    QStringList clips() const { return m_Clips.keys(); }
-
-    void commitKey(int row, int col, int index, float value, float left, float right, int position);
+    void commitKey(int row, int col, int index, float value, float left, float right, uint32_t position);
 
     bool isReadOnly() const;
 
-public slots:
-    void setClip(const QString &clip);
+    void propertyUpdated(Object *object, const QString &path, const QString &property, uint32_t position);
 
 signals:
     void changed();
 
-    void positionChanged(float value);
-
 protected:
-    AnimationController *m_pController;
+    Actor *m_rootActor;
 
-    AnimationStateMachine *m_pStateMachine;
+    AnimationClip *m_clip;
 
-    AnimationClip *m_pClip;
-
-    float m_Position;
-
-    QMap<QString, AnimationClip *> m_Clips;
+    AssetConverterSettings *m_clipSettings;
 };
 
 class UndoUpdateKey : public QUndoCommand {
 public:
-    UndoUpdateKey(int row, int col, int index, float value, float left, float right, float position, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+    UndoUpdateKey(int row, int col, int index, float value, float left, float right, uint32_t position, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
         QUndoCommand(name, parent),
         m_pModel(model),
         m_Row(row),
@@ -94,7 +86,7 @@ protected:
     float m_Value;
     float m_Left;
     float m_Right;
-    float m_Position;
+    uint32_t m_Position;
     AnimationCurve::KeyFrame m_Key;
 };
 

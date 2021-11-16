@@ -3,25 +3,32 @@
 
 #include <QQmlContext>
 #include <QQuickItem>
+#include <QMenu>
+#include <QWidgetAction>
 
 #include "animationbuilder.h"
 
-#include <components/animationcontroller.h>
+#include <components/animator.h>
 #include <resources/animationstatemachine.h>
 
+#include "editors/componentbrowser/componentbrowser.h"
+
 AnimationEdit::AnimationEdit() :
-        m_modified(false),
         ui(new Ui::AnimationEdit),
         m_schemeModel(new AnimationBuilder()),
         m_stateMachine(nullptr),
-        m_selectedItem(nullptr) {
+        m_createMenu(new QMenu(this)),
+        m_browser(new ComponentBrowser(this)),
+        m_selectedItem(nullptr),
+        m_node(-1),
+        m_port(-1),
+        m_out(false),
+        m_modified(false) {
 
     ui->setupUi(this);
 
     connect(m_schemeModel, SIGNAL(schemeUpdated()), this, SLOT(onUpdateAsset()));
     connect(m_schemeModel, SIGNAL(nodeMoved()), this, SLOT(onUpdateAsset()));
-
-    ui->components->setModel(m_schemeModel->components());
 
     ui->quickWidget->rootContext()->setContextProperty("schemeModel", m_schemeModel);
     ui->quickWidget->rootContext()->setContextProperty("stateMachine", true);
@@ -31,9 +38,14 @@ AnimationEdit::AnimationEdit() :
 
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
+    connect(item, SIGNAL(showContextMenu(int,int,bool)), this, SLOT(onShowContextMenu(int,int,bool)));
 
-    ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 4);
+    m_browser->setModel(m_schemeModel->components());
+    connect(m_browser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
+
+    QWidgetAction *action = new QWidgetAction(m_createMenu);
+    action->setDefaultWidget(m_browser);
+    m_createMenu->addAction(action);
 }
 
 AnimationEdit::~AnimationEdit() {
@@ -94,6 +106,38 @@ void AnimationEdit::onUpdateAsset(bool update) {
 
         emit updateAsset();
     }
+}
+
+void AnimationEdit::onComponentSelected(const QString &path) {
+    m_createMenu->hide();
+
+    QQuickItem *scheme = ui->quickWidget->rootObject()->findChild<QQuickItem *>("Scheme");
+    if(scheme) {
+        int x = scheme->property("x").toInt();
+        int y = scheme->property("y").toInt();
+        float scale = scheme->property("scale").toFloat();
+
+        QQuickItem *canvas = ui->quickWidget->rootObject()->findChild<QQuickItem *>("Canvas");
+        if(canvas) {
+            int mouseX = canvas->property("mouseX").toInt();
+            int mouseY = canvas->property("mouseY").toInt();
+            x = (float)(mouseX - x) * scale;
+            y = (float)(mouseY - y) * scale;
+
+            if(m_node > -1) {
+                m_schemeModel->createAndLink(path, x, y, m_node, m_port, m_out);
+            } else {
+                m_schemeModel->createNode(path, x, y);
+            }
+        }
+    }
+}
+
+void AnimationEdit::onShowContextMenu(int node, int port, bool out) {
+    m_node = node;
+    m_port = port;
+    m_out = out;
+    m_createMenu->exec(QCursor::pos());
 }
 
 void AnimationEdit::changeEvent(QEvent *event) {

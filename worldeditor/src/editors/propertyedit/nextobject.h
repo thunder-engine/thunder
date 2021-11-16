@@ -27,7 +27,7 @@ public:
 
     Object *component(const QString &name);
 
-    Object *findChild(QStringList &path) const;
+
 
     bool isReadOnly(const QString &key) const;
 
@@ -38,9 +38,13 @@ public:
 public slots:
     void onUpdated();
 
+    void onPropertyContextMenuRequested(QString property, const QPoint point);
+
+    void onInsertKeyframe();
+
 signals:
-    void aboutToBeChanged(Object *object, const QString property, const Variant &value);
-    void changed(Object *object, const QString property);
+    void aboutToBeChanged(Object::ObjectList objects, const QString property, const Variant &value);
+    void changed(Object::ObjectList objects, const QString property);
 
     void updated();
 
@@ -51,6 +55,8 @@ protected slots:
 
 protected:
     bool event(QEvent *e);
+
+    Object *findChild(QStringList &path) const;
 
     QString propertyTag(const MetaProperty &property, const QString &tag) const;
 

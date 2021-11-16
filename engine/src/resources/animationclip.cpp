@@ -60,6 +60,43 @@ int AnimationTrack::hash() const {
     return m_hash;
 }
 /*!
+    Tries to fix animation curves in the animation track. Renormalizes existant keyframes and checks the duration.
+*/
+void AnimationTrack::fixCurves() {
+    float scale = -1.0f;
+    for(auto &curve : m_curves) {
+        // Sort keys
+        for(uint32_t j = 0; j < (curve.second.m_Keys.size() - 1); j++) {
+            bool swapped = false;
+            for(uint32_t i = 0; i < (curve.second.m_Keys.size() - 1 - j); i++) {
+                if(curve.second.m_Keys[i].m_Position > curve.second.m_Keys[i + 1].m_Position) {
+                    AnimationCurve::KeyFrame tmp = curve.second.m_Keys[i + 1];
+                    curve.second.m_Keys[i + 1] = curve.second.m_Keys[i];
+                    curve.second.m_Keys[i] = tmp;
+
+                    swapped = true;
+                }
+            }
+            if(!swapped) {
+                break;
+            }
+        }
+
+        auto &last = curve.second.m_Keys.back();
+        scale = MAX(scale, last.m_Position);
+    }
+
+    setDuration(duration() * scale);
+
+    if(scale > 0.0f) {
+        for(auto &curve : m_curves) {
+            for(auto &it : curve.second.m_Keys) {
+                it.m_Position /= scale;
+            }
+        }
+    }
+}
+/*!
     \internal
 */
 AnimationTrack::CurveMap &AnimationTrack::curves() {

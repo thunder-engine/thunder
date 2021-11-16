@@ -8,8 +8,6 @@
 #include <QScrollBar>
 #include <QSettings>
 
-#include <QDebug>
-
 #include "animationclipmodel.h"
 #include "timelinescene.h"
 #include "ui/treerow.h"
@@ -118,19 +116,24 @@ KeyFrameEditor::KeyFrameEditor(QWidget *parent) :
         m_scene->rulerWidget()->setTranslateX(translateX);
     });
 
-    connect(m_scene, &TimelineScene::headPositionChanged, this,
-            [this](float value) {
-        if(m_model) {
-            m_model->blockSignals(true);
-            m_model->setPosition(value);
-            m_model->blockSignals(false);
+    connect(m_scene, &TimelineScene::rowSelectionChanged, this,
+            [this]() {
+        QStringList list;
+        for(auto &it : m_scene->selectedIndexes()) {
+            if(m_model) {
+                list << m_model->targetPath(it);
+            }
         }
+        emit rowsSelected(list);
     });
 
+    connect(m_scene, &TimelineScene::headPositionChanged, this, &KeyFrameEditor::headPositionChanged);
     connect(m_scene, &TimelineScene::keySelectionChanged, this, &KeyFrameEditor::keySelectionChanged);
+
     connect(m_scene, &TimelineScene::keyPositionChanged, this, &KeyFrameEditor::onKeyPositionChanged);
     connect(m_scene, &TimelineScene::insertKeyframe, this, &KeyFrameEditor::onInsertKeyframe);
     connect(m_scene, &TimelineScene::deleteSelectedKey, this, &KeyFrameEditor::onDeleteSelectedKey);
+    connect(m_scene, &TimelineScene::removeSelectedProperty, this, &KeyFrameEditor::onRemoveProperties);
 }
 
 KeyFrameEditor::~KeyFrameEditor() {
@@ -152,8 +155,12 @@ void KeyFrameEditor::writeSettings() {
 
 void KeyFrameEditor::setModel(AnimationClipModel *model) {
     m_model = model;
-    connect(m_model, &AnimationClipModel::layoutChanged, this, &KeyFrameEditor::onClipUpdated);
-    connect(m_model, &AnimationClipModel::positionChanged, m_scene, &TimelineScene::onPositionChanged);
+    m_scene->setModel(m_model);
+    connect(m_model, &AnimationClipModel::layoutChanged, this, &KeyFrameEditor::onClipUpdated, Qt::UniqueConnection);
+}
+
+void KeyFrameEditor::setPosition(uint32_t position) {
+    m_scene->onPositionChanged(position);
 }
 
 void KeyFrameEditor::onClipUpdated() {
@@ -171,8 +178,6 @@ void KeyFrameEditor::onClipUpdated() {
         m_scene->timelineLayout()->removeItem(&it->timelineItem());
         delete it;
     }
-
-    m_scene->setReadOnly(m_model->isReadOnly());
 }
 
 void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items) {
@@ -225,13 +230,11 @@ void KeyFrameEditor::resizeEvent(QResizeEvent *event) {
 }
 
 void KeyFrameEditor::onRemoveProperties() {
-    if(!m_scene->isReadOnly()) {
-        m_model->removeItems(m_scene->selectedIndexes());
-    }
+    m_model->removeItems(m_scene->selectedIndexes());
 }
 
 void KeyFrameEditor::onKeyPositionChanged(float delta) {
-    if(!m_scene->isReadOnly()) {
+    if(!m_model->isReadOnly()) {
         for(auto &it : m_scene->selectedKeyframes()) {
             it->setPosition(it->originPosition());
         }
@@ -240,7 +243,7 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
 }
 
 void KeyFrameEditor::onInsertKeyframe(int row, int col, float position) {
-    if(!m_scene->isReadOnly() && row >= 0) {
+    if(!m_model->isReadOnly() && row >= 0) {
         if(!m_model->clip()->m_Tracks.empty()) {
             UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Key")));
         }
@@ -248,7 +251,7 @@ void KeyFrameEditor::onInsertKeyframe(int row, int col, float position) {
 }
 
 void KeyFrameEditor::onDeleteSelectedKey() {
-    if(!m_scene->isReadOnly()) {
+    if(!m_model->isReadOnly()) {
         UndoManager::instance()->push(new UndoDeleteSelectedKey(m_scene, tr("Delete Selected Keyframe")));
     }
 }

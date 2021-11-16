@@ -26,7 +26,7 @@
 
 #include "components/armature.h"
 
-#include "components/animationcontroller.h"
+#include "components/animator.h"
 
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
@@ -228,7 +228,7 @@ Engine::Engine(File *file, const char *path) :
     Transform::registerClassFactory(this);
     Camera::registerClassFactory(this);
 
-    AnimationController::registerClassFactory(this);
+    Animator::registerClassFactory(this);
 
     NativeBehaviour::registerClassFactory(this);
 

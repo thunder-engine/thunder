@@ -24,9 +24,14 @@ public:
     void setModel(AnimationClipModel *model);
 
     void setReadOnly(bool flag);
+    void setPosition(uint32_t position);
 
 signals:
     void keySelectionChanged(int row, int col, int index);
+
+    void rowsSelected(QStringList list);
+
+    void headPositionChanged(uint32_t position);
 
 public slots:
     void onDeleteSelectedKey();

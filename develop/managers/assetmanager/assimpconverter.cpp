@@ -653,7 +653,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration; // Normalized time
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 
                         Vector3 pos = Vector3(key->mValue.x, key->mValue.y, key->mValue.z) * fbxSettings->customScale();
@@ -698,7 +698,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ, frameW;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = (float)time / (float)duration;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = frameW.m_Position = (float)time / (float)duration; // Normalized time
                         duration = MAX(duration, frameX.m_Position);
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = frameW.m_Type = AnimationCurve::KeyFrame::Linear;
 
@@ -742,7 +742,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         AnimationCurve::KeyFrame frameX, frameY, frameZ;
 
                         uint32_t time = uint32_t((key->mTime / animRate) * 1000);
-                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration;
+                        frameX.m_Position = frameY.m_Position = frameZ.m_Position = (float)time / (float)duration; // Normalized time
                         duration = MAX(duration, frameX.m_Position);
                         frameX.m_Type = frameY.m_Type = frameZ.m_Type = AnimationCurve::KeyFrame::Linear;
 

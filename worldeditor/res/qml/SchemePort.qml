@@ -67,7 +67,7 @@ Rectangle {
                 var node = selectNode
                 var port = selectPort
                 clearSelection()
-                showContextMenu(node, port, portObject.out)
+                showContextMenu(node, port, portObject ? portObject.out : true)
                 return
             }
             createMode = false

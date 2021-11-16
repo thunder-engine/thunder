@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QJsonDocument>
 
-#include <components/animationcontroller.h>
+#include <components/animator.h>
 #include <resources/animationstatemachine.h>
 
 #include <engine.h>

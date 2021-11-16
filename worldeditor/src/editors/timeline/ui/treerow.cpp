@@ -26,6 +26,8 @@ TreeRow::TreeRow(TimelineScene *scene, TreeRow *parent) :
     m_timeline.setPos(OFFSET, 0);
 
     m_timeline.setScene(m_scene);
+
+    setFlags(QGraphicsItem::ItemIsSelectable);
 }
 
 QModelIndex TreeRow::index() const {
@@ -101,7 +103,7 @@ bool TreeRow::isHovered() const {
 void TreeRow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF r = rect();
     painter->setPen(QColor(54, 54, 54));
-    painter->setBrush(m_hover ? QColor(110, 110, 110, 200) : QColor(96, 96, 96, 200));
+    painter->setBrush(isSelected() ? QColor(2, 119, 189, 200) : (m_hover ? QColor(110, 110, 110, 200) : QColor(96, 96, 96, 200)));
     r.setWidth(TREE_WIDTH + OFFSET);
     painter->drawRect(r);
 

@@ -42,7 +42,7 @@ signals:
 
     void itemsSelected(const Object::ObjectList &objects);
 
-    void itemChanged(Object *item, QString property);
+    void itemsChanged(const Object::ObjectList &objects, QString property);
 
 public slots:
     void onSelectActors(Object::ObjectList objects);

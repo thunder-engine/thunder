@@ -8,8 +8,9 @@ class QGraphicsLinearLayout;
 class Ruler;
 class KeyFrame;
 class PlayHead;
-
 class TreeRow;
+
+class AnimationClipModel;
 
 class TimelineScene : public QGraphicsScene {
     Q_OBJECT
@@ -35,19 +36,19 @@ public:
 
     void updateMaxDuration();
 
-    bool isReadOnly() const;
-    void setReadOnly(bool flag);
+    void setModel(AnimationClipModel *model);
 
 signals:
-    void headPositionChanged(float value);
+    void headPositionChanged(uint32_t value);
     void rowSelectionChanged();
     void keySelectionChanged(int row, int col, int index);
     void keyPositionChanged(float delta);
     void insertKeyframe(int row, int col, float position);
     void deleteSelectedKey();
+    void removeSelectedProperty();
 
 public slots:
-    void onPositionChanged(float time);
+    void onPositionChanged(uint32_t time);
     void onContentWidthChanged();
 
 private:
@@ -57,11 +58,14 @@ private:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
     void wheelEvent(QGraphicsSceneWheelEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
 private:
     QGraphicsLinearLayout *m_layoutRoot;
     QGraphicsLinearLayout *m_layoutTree;
     QGraphicsLinearLayout *m_layoutTimeline;
+
+    AnimationClipModel *m_model;
 
     QGraphicsWidget *m_widgetRoot;
     Ruler *m_rulerItem;
@@ -76,7 +80,6 @@ private:
     QPointF m_pressPos;
     float m_pressKeyPosition;
     bool m_drag;
-    bool m_readOnly;
 };
 
 #endif // TIMELINESCENE_H

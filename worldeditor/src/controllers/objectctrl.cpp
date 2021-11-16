@@ -298,8 +298,8 @@ void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent) {
     UndoManager::instance()->push(new ParentingObjects(objects, parent, this));
 }
 
-void ObjectCtrl::onPropertyChanged(Object *object, const QString &property, const Variant &value) {
-    UndoManager::instance()->push(new PropertyObject(object, property, value, this));
+void ObjectCtrl::onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value) {
+    UndoManager::instance()->push(new PropertyObject(objects.front(), property, value, this));
 }
 
 void ObjectCtrl::onFocusActor(Object *object) {
@@ -924,4 +924,5 @@ void PropertyObject::redo() {
         }
     }
     emit m_controller->objectsUpdated();
+    emit m_controller->objectsChanged({object}, m_property);
 }
