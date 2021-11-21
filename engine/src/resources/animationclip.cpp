@@ -70,10 +70,7 @@ void AnimationTrack::fixCurves() {
             bool swapped = false;
             for(uint32_t i = 0; i < (curve.second.m_Keys.size() - 1 - j); i++) {
                 if(curve.second.m_Keys[i].m_Position > curve.second.m_Keys[i + 1].m_Position) {
-                    AnimationCurve::KeyFrame tmp = curve.second.m_Keys[i + 1];
-                    curve.second.m_Keys[i + 1] = curve.second.m_Keys[i];
-                    curve.second.m_Keys[i] = tmp;
-
+                    std::swap(curve.second.m_Keys[i + 1], curve.second.m_Keys[i]);
                     swapped = true;
                 }
             }

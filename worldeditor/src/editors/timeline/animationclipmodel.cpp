@@ -63,10 +63,9 @@ void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
         string guid = Engine::reference(m_clip);
         string path = AssetManager::instance()->guidToPath(guid);
         m_clipSettings = AssetManager::instance()->fetchSettings(QString(path.c_str()));
-
-        emit layoutAboutToBeChanged();
-        emit layoutChanged();
     }
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
@@ -204,11 +203,13 @@ AnimationTrack &AnimationClipModel::track(int32_t track) {
 }
 
 QString AnimationClipModel::targetPath(QModelIndex &index) const {
-    auto it = m_clip->m_Tracks.begin();
-    if(index.internalPointer() == &m_clip->m_Tracks) {
-        advance(it, index.row());
-        if(it != m_clip->m_Tracks.end()) {
-            return QString::fromStdString(it->path());
+    if(m_clip) {
+        auto it = m_clip->m_Tracks.begin();
+        if(index.internalPointer() == &m_clip->m_Tracks) {
+            advance(it, index.row());
+            if(it != m_clip->m_Tracks.end()) {
+                return QString::fromStdString(it->path());
+            }
         }
     }
     return QString();
@@ -382,7 +383,18 @@ void UndoUpdateItems::redo() {
     AnimationClip *clip = m_pModel->clip();
     if(clip) {
         AnimationTrackList save = clip->m_Tracks;
-        clip->m_Tracks = m_Tracks;
+        //if(clip->m_Tracks.size() == m_Tracks.size()) {
+        //    auto source = m_Tracks.begin();
+        //    for(auto &target : clip->m_Tracks) {
+        //        target = *source;
+        //        for(auto curve : target.curves()) {
+        //
+        //        }
+        //        ++source;
+        //    }
+        //} else {
+            clip->m_Tracks = m_Tracks;
+        //}
         m_Tracks = save;
         m_pModel->updateController();
     }

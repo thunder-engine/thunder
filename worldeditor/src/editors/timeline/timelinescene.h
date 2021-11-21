@@ -36,6 +36,7 @@ public:
 
     void updateMaxDuration();
 
+    AnimationClipModel *model() const { return m_model; }
     void setModel(AnimationClipModel *model);
 
 signals:

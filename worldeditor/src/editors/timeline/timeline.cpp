@@ -201,6 +201,8 @@ void Timeline::onPropertyUpdated(Object *object, const QString property) {
 
 void Timeline::onModified() {
     m_Modified = true;
+    // Rebind clip
+    //m_controller->setClip(m_clips.value(m_currentClip));
 }
 
 void Timeline::onSelectKey(int row, int col, int index) {
@@ -242,8 +244,9 @@ void Timeline::onRowsSelected(QStringList list) {
 }
 
 void Timeline::onClipChanged(const QString &clip) {
-    m_model->setClip(m_clips.value(clip), m_controller->actor());
-    m_controller->setClip(m_clips.value(clip));
+    m_currentClip = clip;
+    m_model->setClip(m_clips.value(m_currentClip), m_controller->actor());
+    m_controller->setClip(m_clips.value(m_currentClip));
 }
 
 void Timeline::onKeyChanged() {
@@ -304,8 +307,6 @@ QString Timeline::pathTo(Object *src, Object *dst) {
             result += parent + "/";
         }
         result += dst->name().c_str();
-    } else {
-        result = src->name().c_str();
     }
 
     return result;

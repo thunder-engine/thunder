@@ -97,12 +97,10 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     m_Undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
     m_Undo->setShortcut(QKeySequence("Ctrl+Z"));
     ui->menuEdit->insertAction(ui->actionEditor_Mode, m_Undo);
-    connect(m_Undo, &QAction::triggered, UndoManager::instance(), &UndoManager::undo);
 
     m_Redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
     m_Redo->setShortcut(QKeySequence("Ctrl+Y"));
     ui->menuEdit->insertAction(ui->actionEditor_Mode, m_Redo);
-    connect(m_Redo, &QAction::triggered, UndoManager::instance(), &UndoManager::redo);
 
     ui->menuEdit->insertSeparator(ui->actionEditor_Mode);
 

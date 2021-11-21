@@ -93,6 +93,8 @@ private:
 
     QMap<QString, AnimationClip *> m_clips;
 
+    QString m_currentClip;
+
     int32_t m_TimerId;
 
     int32_t m_Row;

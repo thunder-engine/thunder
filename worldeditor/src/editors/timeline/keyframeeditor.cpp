@@ -245,7 +245,7 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
 void KeyFrameEditor::onInsertKeyframe(int row, int col, float position) {
     if(!m_model->isReadOnly() && row >= 0) {
         if(!m_model->clip()->m_Tracks.empty()) {
-            UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Key")));
+            UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Keyframe")));
         }
     }
 }
@@ -318,6 +318,7 @@ void UndoKeyPositionChanged::undo() {
     }
     m_scene->updateMaxDuration();
     m_scene->update();
+    m_scene->model()->updateController();
 }
 
 void UndoKeyPositionChanged::redo() {
@@ -330,6 +331,7 @@ void UndoKeyPositionChanged::redo() {
     }
     m_scene->updateMaxDuration();
     m_scene->update();
+    m_scene->model()->updateController();
 }
 
 void UndoDeleteSelectedKey::undo() {
@@ -356,6 +358,7 @@ void UndoDeleteSelectedKey::undo() {
     }
     m_scene->updateMaxDuration();
     m_scene->update();
+    m_scene->model()->updateController();
 }
 
 void UndoDeleteSelectedKey::redo() {
@@ -393,4 +396,5 @@ void UndoDeleteSelectedKey::redo() {
     list.clear();
     m_scene->updateMaxDuration();
     m_scene->update();
+    m_scene->model()->updateController();
 }
