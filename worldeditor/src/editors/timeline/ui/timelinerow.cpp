@@ -73,57 +73,6 @@ TreeRow *TimelineRow::treeRow() const {
     return m_row;
 }
 
-void TimelineRow::fixCurve() {
-    if(m_component > -1) {
-        auto &curves = m_track->curves();
-        auto &curve = curves[m_component];
-
-        // Sort keys
-        for(uint32_t j = 0; j < (curve.m_Keys.size() - 1); j++) {
-            bool swapped = false;
-            for(uint32_t i = 0; i < (curve.m_Keys.size() - 1 - j); i++) {
-                if(curve.m_Keys[i].m_Position > curve.m_Keys[i + 1].m_Position) {
-                    AnimationCurve::KeyFrame tmp = curve.m_Keys[i + 1];
-                    curve.m_Keys[i + 1] = curve.m_Keys[i];
-                    curve.m_Keys[i] = tmp;
-
-                    KeyFrame k = m_keyframes[i];
-                    if(k.isSelected()) {
-                        KeyFrame k1 = m_keyframes[i];
-                        k1.setKey(&curve.m_Keys[i + 1]);
-
-                        KeyFrame k2 = m_keyframes[i + i];
-                        k2.setKey(&curve.m_Keys[i]);
-
-                        m_keyframes[i + 1] = k1;
-                        m_keyframes[i] = k2;
-                    }
-                    swapped = true;
-                }
-            }
-            if(!swapped) {
-                break;
-            }
-        }
-
-        float scale = -1.0f;
-        for(auto &curve : curves) {
-            auto &last = curve.second.m_Keys.back();
-            scale = MAX(scale, last.m_Position);
-        }
-
-        m_track->setDuration(m_track->duration() * scale);
-
-        if(scale > 0.0f) {
-            for(auto &curve : curves) {
-                for(auto &it : curve.second.m_Keys) {
-                    it.m_Position /= scale;
-                }
-            }
-        }
-    }
-}
-
 QList<KeyFrame *> TimelineRow::onRowPressed(const QPointF &point) {
     QList<KeyFrame *> result;
 
@@ -144,8 +93,8 @@ QList<KeyFrame *> TimelineRow::onRowPressed(const QPointF &point) {
         TreeRow *row = treeRow();
         int offset = ROW;
         for(auto &it : row->children()) {
-            TimelineRow &item = it->timelineItem();
-            auto list = item.onRowPressed(QPointF(point.x(), point.y() + offset));
+            TimelineRow *item = it->timelineItem();
+            auto list = item->onRowPressed(QPointF(point.x(), point.y() + offset));
             if(row->isExpanded()) {
                 offset += ROW;
             }
@@ -184,11 +133,11 @@ void TimelineRow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWi
     drawKeys(painter, true);
 
     for(auto &it : treeRow()->children()) {
-        it->timelineItem().drawKeys(painter, false);
+        it->timelineItem()->drawKeys(painter, false);
     }
 
     for(auto &it : treeRow()->children()) {
-        it->timelineItem().drawKeys(painter, true);
+        it->timelineItem()->drawKeys(painter, true);
     }
 }
 

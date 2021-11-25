@@ -218,7 +218,7 @@ QString AnimationClipModel::targetPath(QModelIndex &index) const {
 void AnimationClipModel::commitKey(int row, int col, int index, float value, float left, float right, uint32_t position) {
     AnimationCurve::KeyFrame *k = key(row, col, index);
     if(!isReadOnly() && k) {
-        UndoManager::instance()->push(new UndoUpdateKey(row, col, index, value, left, right, position, this, tr("Update Key")));
+        UndoManager::instance()->push(new UndoUpdateKey(row, col, index, value, left, right, position, this, tr("Update Keyframe")));
     }
 }
 

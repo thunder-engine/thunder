@@ -28,7 +28,7 @@ public:
 
     QModelIndexList selectedIndexes() const;
 
-    QList<KeyFrame *> &selectedKeyframes();
+    QList<KeyFrame *> selectedKeyframes();
 
     void clearSelection();
 
@@ -75,8 +75,6 @@ private:
     KeyFrame *m_pressedKeyframe;
 
     QModelIndexList m_selectedRows;
-
-    QList<KeyFrame *> m_selectedKeyframes;
 
     QPointF m_pressPos;
     float m_pressKeyPosition;

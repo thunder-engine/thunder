@@ -31,9 +31,9 @@ float KeyFrame::position() const {
 void KeyFrame::setPosition(float pos) {
     if(m_key) {
         m_key->m_Position = pos;
-        m_row->timelineItem().update();
-        if(m_row->parentRow()) {
-            m_row->parentRow()->timelineItem().update();
+        m_row->timelineItem()->update();
+        if(m_row->parentRow() && m_row->parentRow()->timelineItem()) {
+            m_row->parentRow()->timelineItem()->update();
         }
     }
 }

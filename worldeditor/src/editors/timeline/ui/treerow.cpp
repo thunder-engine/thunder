@@ -59,15 +59,15 @@ void TreeRow::onRowPressed(const QPointF &point) {
         m_expanded = !m_expanded;
         for(auto it : m_children) {
             it->setVisible(m_expanded);
-            it->timelineItem().setVisible(m_expanded);
+            it->timelineItem()->setVisible(m_expanded);
         }
         update();
         m_timeline.update();
     }
 }
 
-TimelineRow &TreeRow::timelineItem() {
-    return m_timeline;
+TimelineRow *TreeRow::timelineItem() {
+    return &m_timeline;
 }
 
 void TreeRow::addChild(TreeRow *child) {

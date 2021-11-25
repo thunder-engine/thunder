@@ -89,13 +89,21 @@ QModelIndexList TimelineScene::selectedIndexes() const {
     return m_selectedRows;
 }
 
-QList<KeyFrame *> &TimelineScene::selectedKeyframes() {
-    return m_selectedKeyframes;
+QList<KeyFrame *> TimelineScene::selectedKeyframes() {
+    QList<KeyFrame *> result;
+    for(int i = 0; i < m_layoutTimeline->count(); i++) {
+        TimelineRow *row = static_cast<TimelineRow *>(m_layoutTimeline->itemAt(i));
+        for(auto &it : row->keys()) {
+            if(it.isSelected()) {
+                result.push_back(&it);
+            }
+        }
+    }
+
+    return result;
 }
 
 void TimelineScene::clearSelection() {
-    m_selectedKeyframes.clear();
-
     for(int i = 0; i < m_layoutTimeline->count(); i++) {
         TimelineRow *row = static_cast<TimelineRow *>(m_layoutTimeline->itemAt(i));
         for(auto &it : row->keys()) {
@@ -188,7 +196,6 @@ void TimelineScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
                                 for(auto &it : list) {
                                     it->setSelected(true);
-                                    m_selectedKeyframes.push_back(it);
                                 }
 
                                 int idx = r->keys().indexOf(*m_pressedKeyframe);
@@ -234,11 +241,11 @@ void TimelineScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
             for(int i = 0; i < m_layoutTree->count(); i++) {
                 TreeRow *row = static_cast<TreeRow *>(m_layoutTree->itemAt(i));
                 if(row->parentRow() == nullptr) {
-                    TimelineRow &item = row->timelineItem();
+                    TimelineRow *item = row->timelineItem();
                     QList<KeyFrame *> outdate;
-                    for(auto &key : item.keys()) {
+                    for(auto &key : item->keys()) {
                         if(key.isSelected()) {
-                            for(auto &it : item.keys()) {
+                            for(auto &it : item->keys()) {
                                 if(key.position() == it.position() && !it.isSelected()) {
                                     outdate.push_back(&it);
                                 }
@@ -247,9 +254,9 @@ void TimelineScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
                     }
                     if(!outdate.isEmpty()) {
                         for(auto it : outdate) {
-                            item.keys().removeOne(*it);
+                            item->keys().removeOne(*it);
                         }
-                        item.update();
+                        item->update();
                     }
                 }
             }
@@ -283,6 +290,8 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         }
     }
 
+    auto selKeyframes = selectedKeyframes();
+
     if(!m_drag && m_pressPos != invalidPos && (event->scenePos() - m_pressPos).manhattanLength() > DRAG_SENSITIVITY) {
         m_drag = true;
 
@@ -293,14 +302,14 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
             if(parent) {
                 int count = 0;
                 for(auto &it : parent->children()) {
-                    KeyFrame *k = it->timelineItem().keyAtPosition(m_pressKeyPosition, false);
+                    KeyFrame *k = it->timelineItem()->keyAtPosition(m_pressKeyPosition, false);
                     if(k) {
                         count++;
                     }
                 }
             }
 
-            for(auto &it : m_selectedKeyframes) {
+            for(auto &it : selKeyframes) {
                 it->setOriginPosition(it->position());
             }
         }
@@ -312,9 +321,9 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
             if(!m_model->isReadOnly()) {
                 x = m_rulerItem->screenToTime(x, !(event->modifiers() & Qt::AltModifier));
 
-                for(auto &it : m_selectedKeyframes) {
-                    TimelineRow &row = it->row()->timelineItem();
-                    AnimationTrack *track = row.track();
+                for(auto &it : selKeyframes) {
+                    TimelineRow *row = it->row()->timelineItem();
+                    AnimationTrack *track = row->track();
 
                     float delta = (x * 1000.0f / track->duration()) - m_pressKeyPosition;
                     it->setPosition(it->originPosition() + delta);
