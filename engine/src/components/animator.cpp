@@ -21,6 +21,7 @@ public:
         d_ptr(object),
         m_pStateMachine(nullptr),
         m_pCurrentState(nullptr),
+        m_pCurrentClip(nullptr),
         m_Time(0) {
 
     }
@@ -89,6 +90,37 @@ public:
         setClips(nullptr, clip);
     }
 
+    void rebind() {
+        PROFILE_FUNCTION();
+
+        if(m_pCurrentClip) {
+            Actor *actor = d_ptr->actor();
+            for(auto &it : m_pCurrentClip->m_Tracks) {
+                BaseAnimationBlender *property = nullptr;
+                auto target = m_Properties.find(it.hash());
+                if(target != m_Properties.end()) {
+                    property = target->second;
+                } else {
+                property = new BaseAnimationBlender();
+                    Object *object = actor->find(it.path());
+#ifdef NEXT_SHARED
+                    if(object == nullptr) {
+                        Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
+                    }
+#endif
+                    property->setTarget(object, it.property().c_str());
+                    m_Properties[it.hash()] = property;
+                }
+
+                property->setValid(true);
+                property->setDuration(it.duration());
+                for(auto &i : it.curves()) {
+                    property->setCurve(&i.second, i.first);
+                }
+            }
+        }
+    }
+
     void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f) {
         PROFILE_FUNCTION();
 
@@ -110,6 +142,8 @@ public:
                 }
             }
         }
+
+        m_pCurrentClip = end;
 
         for(auto &it : m_Properties) {
             it.second->stop();
@@ -157,6 +191,8 @@ public:
     AnimationStateMachine *m_pStateMachine;
 
     AnimationState *m_pCurrentState;
+
+    AnimationClip *m_pCurrentClip;
 
     uint32_t m_Time;
 };
@@ -321,6 +357,15 @@ void Animator::setClip(AnimationClip *clip) {
     PROFILE_FUNCTION();
 
     p_ptr->setClip(clip);
+}
+
+/*!
+    Rebinds all animated properties with Animator.
+*/
+void Animator::rebind() {
+    PROFILE_FUNCTION();
+
+    p_ptr->rebind();
 }
 /*!
     Sets the new boolean \a value for the parameter with the \a name.

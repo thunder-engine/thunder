@@ -58,6 +58,8 @@ public:
 
     void setClip(AnimationClip *clip);
 
+    void rebind();
+
 private:
     void start() override;
     void update() override;

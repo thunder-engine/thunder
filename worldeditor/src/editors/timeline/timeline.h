@@ -56,6 +56,8 @@ protected:
 private slots:
     void onModified();
 
+    void onRebind();
+
     void onSelectKey(int, int, int);
 
     void onRowsSelected(QStringList list);

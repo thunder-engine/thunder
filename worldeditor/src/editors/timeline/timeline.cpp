@@ -37,6 +37,7 @@ Timeline::Timeline(QWidget *parent) :
     ui->widget->setModel(m_model);
 
     connect(m_model, &AnimationClipModel::changed, this, &Timeline::onModified);
+    connect(m_model, &AnimationClipModel::rebind, this, &Timeline::onRebind);
 
     connect(ui->valueEdit, &QLineEdit::editingFinished, this, &Timeline::onKeyChanged);
     connect(ui->timeEdit, &QLineEdit::editingFinished, this, &Timeline::onKeyChanged);
@@ -141,11 +142,13 @@ void Timeline::setController(Animator *controller) {
                     m_clips[info.baseName()] = it->m_clip;
                 }
                 if(!m_clips.isEmpty()) {
+                    m_currentClip = m_clips.begin().key();
                     m_model->setClip(m_clips.begin().value(), controller->actor());
                     m_controller->setClip(m_clips.begin().value());
                 }
             }
         } else {
+            m_currentClip.clear();
             m_model->setClip(nullptr, nullptr);
         }
 
@@ -201,8 +204,11 @@ void Timeline::onPropertyUpdated(Object *object, const QString property) {
 
 void Timeline::onModified() {
     m_Modified = true;
-    // Rebind clip
-    //m_controller->setClip(m_clips.value(m_currentClip));
+
+}
+
+void Timeline::onRebind() {
+    m_controller->rebind();
 }
 
 void Timeline::onSelectKey(int row, int col, int index) {

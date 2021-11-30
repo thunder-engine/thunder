@@ -66,30 +66,6 @@ private:
     QGraphicsView *m_timelineView;
 };
 
-class UndoInsertKey : public QUndoCommand {
-public:
-    explicit UndoInsertKey(int row, int col, float pos, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_model(model),
-        m_row(row),
-        m_column(col),
-        m_position(pos) {
-
-    }
-    void undo() override;
-    void redo() override;
-
-protected:
-    void insertKey(AnimationCurve &curve);
-
-protected:
-    AnimationClipModel *m_model;
-    int m_row;
-    int m_column;
-    float m_position;
-    QList<int> m_indices;
-};
-
 class UndoKeyPositionChanged : public QUndoCommand {
 public:
     explicit UndoKeyPositionChanged(float delta, TimelineScene *scene, const QString &name, QUndoCommand *parent = nullptr) :
@@ -101,7 +77,7 @@ public:
     void undo() override;
     void redo() override;
 
- protected:
+protected:
     float m_delta;
     TimelineScene *m_scene;
 };
@@ -115,6 +91,7 @@ public:
     }
     void undo() override;
     void redo() override;
+
 protected:
     struct FrameData {
         AnimationCurve::KeyFrame key;

@@ -53,6 +53,7 @@ public:
 
 signals:
     void changed();
+    void rebind();
 
 protected:
     Actor *m_rootActor;
@@ -62,11 +63,22 @@ protected:
     AssetConverterSettings *m_clipSettings;
 };
 
-class UndoUpdateKey : public QUndoCommand {
+class UndoAnimationClip : public QUndoCommand {
+public:
+    explicit UndoAnimationClip(AnimationClipModel *model, const QString &text, QUndoCommand *parent = nullptr) :
+        QUndoCommand(text, parent),
+        m_model(model) {
+
+    }
+
+protected:
+    AnimationClipModel *m_model;
+};
+
+class UndoUpdateKey : public UndoAnimationClip {
 public:
     UndoUpdateKey(int row, int col, int index, float value, float left, float right, uint32_t position, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
+        UndoAnimationClip(model, name, parent),
         m_Row(row),
         m_Column(col),
         m_Index(index),
@@ -78,8 +90,8 @@ public:
     }
     void undo() override;
     void redo() override;
+
 protected:
-    AnimationClipModel *m_pModel;
     int m_Row;
     int m_Column;
     int m_Index;
@@ -90,35 +102,55 @@ protected:
     AnimationCurve::KeyFrame m_Key;
 };
 
-class UndoRemoveItems : public QUndoCommand {
+class UndoRemoveItems : public UndoAnimationClip {
 public:
     UndoRemoveItems(QList<int> rows, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
+        UndoAnimationClip(model, name, parent),
         m_Rows(rows) {
 
     }
     void undo() override;
     void redo() override;
+
 protected:
-    AnimationClipModel *m_pModel;
     QList<int> m_Rows;
     AnimationTrackList m_Tracks;
 };
 
-class UndoUpdateItems : public QUndoCommand {
+class UndoUpdateItems : public UndoAnimationClip {
 public:
     UndoUpdateItems(AnimationTrackList &tracks, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
-        m_pModel(model),
+        UndoAnimationClip(model, name, parent),
         m_Tracks(tracks) {
 
     }
     void undo() override;
     void redo() override;
+
 protected:
-    AnimationClipModel *m_pModel;
     AnimationTrackList m_Tracks;
+};
+
+class UndoInsertKey : public UndoAnimationClip {
+public:
+    explicit UndoInsertKey(int row, int col, float pos, AnimationClipModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+        UndoAnimationClip(model, name, parent),
+        m_row(row),
+        m_column(col),
+        m_position(pos) {
+
+    }
+    void undo() override;
+    void redo() override;
+
+protected:
+    void insertKey(AnimationCurve &curve);
+
+protected:
+    int m_row;
+    int m_column;
+    float m_position;
+    QList<int> m_indices;
 };
 
 #endif // ANIMATIONCLIPMODEL_H

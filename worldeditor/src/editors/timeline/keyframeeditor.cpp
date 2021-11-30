@@ -256,58 +256,6 @@ void KeyFrameEditor::onDeleteSelectedKey() {
     }
 }
 
-void UndoInsertKey::undo() {
-    auto &curves = (*std::next(m_model->clip()->m_Tracks.begin(), m_row)).curves();
-
-    int i = (m_column == -1) ? 0 : m_column;
-    for(auto index : m_indices) {
-        auto &curve = curves[i];
-        auto it = std::next(curve.m_Keys.begin(), index);
-
-        curve.m_Keys.erase(it);
-        i++;
-    }
-
-    m_model->updateController();
-}
-
-void UndoInsertKey::redo() {
-    m_indices.clear();
-
-    AnimationTrack &track = (*std::next(m_model->clip()->m_Tracks.begin(), m_row));
-    auto &curves = track.curves();
-
-    if(m_column > -1) {
-        auto &curve = curves[m_column];
-        insertKey(curve);
-    } else {
-        for(uint32_t i = 0; i < curves.size(); i++) {
-            auto &curve = curves[i];
-            insertKey(curve);
-        }
-    }
-
-    m_model->updateController();
-}
-
-void UndoInsertKey::insertKey(AnimationCurve &curve) {
-    AnimationCurve::KeyFrame key;
-    key.m_Position = m_position;
-    key.m_Value = curve.value(key.m_Position);
-    key.m_LeftTangent = key.m_Value;
-    key.m_RightTangent = key.m_Value;
-
-    int index = 0;
-    for(auto it : curve.m_Keys) {
-        if(it.m_Position > key.m_Position) {
-            break;
-        }
-        index++;
-    }
-    m_indices.push_back(index);
-    curve.m_Keys.insert(curve.m_Keys.begin() + index, key);
-}
-
 void UndoKeyPositionChanged::undo() {
     QSet<float> positions;
     QSet<TimelineRow *> rows;
@@ -333,6 +281,7 @@ void UndoKeyPositionChanged::undo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoKeyPositionChanged::redo() {
@@ -360,6 +309,7 @@ void UndoKeyPositionChanged::redo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::undo() {
@@ -403,6 +353,7 @@ void UndoDeleteSelectedKey::undo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::redo() {
@@ -438,4 +389,5 @@ void UndoDeleteSelectedKey::redo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
