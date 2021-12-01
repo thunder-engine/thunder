@@ -24,7 +24,7 @@ public:
 
     void onRowPressed(const QPointF &point);
 
-    TimelineRow &timelineItem();
+    TimelineRow *timelineItem();
 
     void addChild(TreeRow *child);
 

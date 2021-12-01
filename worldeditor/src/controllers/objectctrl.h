@@ -76,7 +76,7 @@ public slots:
     void onRemoveActor(Object::ObjectList list);
     void onParentActor(Object::ObjectList objects, Object *parent);
 
-    void onPropertyChanged(Object *object, const QString &property, const Variant &value);
+    void onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value);
 
     void onFocusActor(Object *object);
 

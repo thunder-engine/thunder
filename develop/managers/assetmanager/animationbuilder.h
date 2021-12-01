@@ -10,7 +10,7 @@
 #include <resources/animationclip.h>
 #include <resources/animationstatemachine.h>
 
-class AnimationController;
+class Animator;
 
 class BaseState : public QObject {
     Q_OBJECT

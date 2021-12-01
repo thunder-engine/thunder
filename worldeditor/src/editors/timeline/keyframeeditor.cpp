@@ -8,8 +8,6 @@
 #include <QScrollBar>
 #include <QSettings>
 
-#include <QDebug>
-
 #include "animationclipmodel.h"
 #include "timelinescene.h"
 #include "ui/treerow.h"
@@ -118,19 +116,24 @@ KeyFrameEditor::KeyFrameEditor(QWidget *parent) :
         m_scene->rulerWidget()->setTranslateX(translateX);
     });
 
-    connect(m_scene, &TimelineScene::headPositionChanged, this,
-            [this](float value) {
-        if(m_model) {
-            m_model->blockSignals(true);
-            m_model->setPosition(value);
-            m_model->blockSignals(false);
+    connect(m_scene, &TimelineScene::rowSelectionChanged, this,
+            [this]() {
+        QStringList list;
+        for(auto &it : m_scene->selectedIndexes()) {
+            if(m_model) {
+                list << m_model->targetPath(it);
+            }
         }
+        emit rowsSelected(list);
     });
 
+    connect(m_scene, &TimelineScene::headPositionChanged, this, &KeyFrameEditor::headPositionChanged);
     connect(m_scene, &TimelineScene::keySelectionChanged, this, &KeyFrameEditor::keySelectionChanged);
+
     connect(m_scene, &TimelineScene::keyPositionChanged, this, &KeyFrameEditor::onKeyPositionChanged);
     connect(m_scene, &TimelineScene::insertKeyframe, this, &KeyFrameEditor::onInsertKeyframe);
     connect(m_scene, &TimelineScene::deleteSelectedKey, this, &KeyFrameEditor::onDeleteSelectedKey);
+    connect(m_scene, &TimelineScene::removeSelectedProperty, this, &KeyFrameEditor::onRemoveProperties);
 }
 
 KeyFrameEditor::~KeyFrameEditor() {
@@ -152,8 +155,12 @@ void KeyFrameEditor::writeSettings() {
 
 void KeyFrameEditor::setModel(AnimationClipModel *model) {
     m_model = model;
-    connect(m_model, &AnimationClipModel::layoutChanged, this, &KeyFrameEditor::onClipUpdated);
-    connect(m_model, &AnimationClipModel::positionChanged, m_scene, &TimelineScene::onPositionChanged);
+    m_scene->setModel(m_model);
+    connect(m_model, &AnimationClipModel::layoutChanged, this, &KeyFrameEditor::onClipUpdated, Qt::UniqueConnection);
+}
+
+void KeyFrameEditor::setPosition(uint32_t position) {
+    m_scene->onPositionChanged(position);
 }
 
 void KeyFrameEditor::onClipUpdated() {
@@ -168,11 +175,9 @@ void KeyFrameEditor::onClipUpdated() {
     // Delete unused
     for(auto it : items) {
         m_scene->treeLayout()->removeItem(it);
-        m_scene->timelineLayout()->removeItem(&it->timelineItem());
+        m_scene->timelineLayout()->removeItem(it->timelineItem());
         delete it;
     }
-
-    m_scene->setReadOnly(m_model->isReadOnly());
 }
 
 void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items) {
@@ -225,13 +230,11 @@ void KeyFrameEditor::resizeEvent(QResizeEvent *event) {
 }
 
 void KeyFrameEditor::onRemoveProperties() {
-    if(!m_scene->isReadOnly()) {
-        m_model->removeItems(m_scene->selectedIndexes());
-    }
+    m_model->removeItems(m_scene->selectedIndexes());
 }
 
 void KeyFrameEditor::onKeyPositionChanged(float delta) {
-    if(!m_scene->isReadOnly()) {
+    if(!m_model->isReadOnly()) {
         for(auto &it : m_scene->selectedKeyframes()) {
             it->setPosition(it->originPosition());
         }
@@ -240,127 +243,124 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
 }
 
 void KeyFrameEditor::onInsertKeyframe(int row, int col, float position) {
-    if(!m_scene->isReadOnly() && row >= 0) {
+    if(!m_model->isReadOnly() && row >= 0) {
         if(!m_model->clip()->m_Tracks.empty()) {
-            UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Key")));
+            UndoManager::instance()->push(new UndoInsertKey(row, col, position, m_model, tr("Insert Keyframe")));
         }
     }
 }
 
 void KeyFrameEditor::onDeleteSelectedKey() {
-    if(!m_scene->isReadOnly()) {
+    if(!m_model->isReadOnly()) {
         UndoManager::instance()->push(new UndoDeleteSelectedKey(m_scene, tr("Delete Selected Keyframe")));
     }
 }
 
-void UndoInsertKey::undo() {
-    auto &curves = (*std::next(m_model->clip()->m_Tracks.begin(), m_row)).curves();
-
-    int i = (m_column == -1) ? 0 : m_column;
-    for(auto index : m_indices) {
-        auto &curve = curves[i];
-        auto it = std::next(curve.m_Keys.begin(), index);
-
-        curve.m_Keys.erase(it);
-        i++;
-    }
-
-    m_model->updateController();
-}
-
-void UndoInsertKey::redo() {
-    m_indices.clear();
-
-    AnimationTrack &track = (*std::next(m_model->clip()->m_Tracks.begin(), m_row));
-    auto &curves = track.curves();
-
-    if(m_column > -1) {
-        auto &curve = curves[m_column];
-        insertKey(curve);
-    } else {
-        for(uint32_t i = 0; i < curves.size(); i++) {
-            auto &curve = curves[i];
-            insertKey(curve);
-        }
-    }
-
-    m_model->updateController();
-}
-
-void UndoInsertKey::insertKey(AnimationCurve &curve) {
-    AnimationCurve::KeyFrame key;
-    key.m_Position = m_position;
-    key.m_Value = curve.value(key.m_Position);
-    key.m_LeftTangent = key.m_Value;
-    key.m_RightTangent = key.m_Value;
-
-    int index = 0;
-    for(auto it : curve.m_Keys) {
-        if(it.m_Position > key.m_Position) {
-            break;
-        }
-        index++;
-    }
-    m_indices.push_back(index);
-    curve.m_Keys.insert(curve.m_Keys.begin() + index, key);
-}
-
 void UndoKeyPositionChanged::undo() {
+    QSet<float> positions;
+    QSet<TimelineRow *> rows;
     for(auto &it : m_scene->selectedKeyframes()) {
-        it->setPosition(it->position() - m_delta);
+        float pos = it->position() - m_delta;
+        it->setPosition(pos);
+        positions.insert(pos);
+        rows.insert(it->row()->timelineItem());
     }
 
-    for(auto &it : m_scene->selectedKeyframes()) {
-        it->row()->timelineItem().fixCurve();
+    for(auto &row : rows) {
+        AnimationTrack *track = row->track();
+
+        track->fixCurves();
+        row->updateKeys();
+        for(auto position : positions) {
+            KeyFrame *key = row->keyAtPosition(position, false);
+            if(key) {
+                key->setSelected(true);
+            }
+        }
     }
+
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoKeyPositionChanged::redo() {
+    QSet<float> positions;
+    QSet<TimelineRow *> rows;
     for(auto &it : m_scene->selectedKeyframes()) {
-        it->setPosition(it->position() + m_delta);
+        float pos = it->position() + m_delta;
+        it->setPosition(pos);
+        positions.insert(pos);
+        rows.insert(it->row()->timelineItem());
     }
 
-    for(auto &it : m_scene->selectedKeyframes()) {
-        it->row()->timelineItem().fixCurve();
+    for(auto &row : rows) {
+        AnimationTrack *track = row->track();
+
+        track->fixCurves();
+        row->updateKeys();
+        for(auto position : positions) {
+            KeyFrame *key = row->keyAtPosition(position, false);
+            if(key) {
+                key->setSelected(true);
+            }
+        }
     }
+
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::undo() {
+    QSet<float> positions;
+    QSet<TimelineRow *> rows;
     for(auto &it : m_keys) {
         TreeRow *tree =  m_scene->row(it.row, it.column);
         if(tree) {
-            TimelineRow &row = tree->timelineItem();
+            TimelineRow *row = tree->timelineItem();
 
-            AnimationTrack *track = row.track();
+            rows.insert(row);
+
+            AnimationTrack *track = row->track();
             auto &curves = track->curves();
             auto &curve = curves[it.column];
             curve.m_Keys.insert(curve.m_Keys.begin() + it.index, it.key);
 
-            row.updateKeys();
-            auto &keys = row.keys();
+            positions.insert(it.key.m_Position);
+
+            auto &keys = row->keys();
             keys[it.index].setSelected(true);
-            m_scene->selectedKeyframes().push_back(&keys[it.index]);
 
             if(tree->parentRow()) {
                 tree->parentRow()->update();
             }
-            row.fixCurve();
         }
     }
+
+    for(auto &row : rows) {
+        AnimationTrack *track = row->track();
+
+        track->fixCurves();
+        row->updateKeys();
+        for(auto position : positions) {
+            KeyFrame *key = row->keyAtPosition(position, false);
+            if(key) {
+                key->setSelected(true);
+            }
+        }
+    }
+
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::redo() {
     m_keys.clear();
-    auto &list = m_scene->selectedKeyframes();
-    for(auto &it : list) {
-        TimelineRow &row = it->row()->timelineItem();
-        AnimationTrack *track = row.track();
+    for(auto &it : m_scene->selectedKeyframes()) {
+        TimelineRow *row = it->row()->timelineItem();
+        AnimationTrack *track = row->track();
         if(track) {
             AnimationCurve::KeyFrame *k = it->key();
             if(k) {
@@ -373,7 +373,7 @@ void UndoDeleteSelectedKey::redo() {
                 if(key != curve.m_Keys.end()) {
                     FrameData data;
                     data.key = *key;
-                    data.index = row.keys().indexOf(*it);
+                    data.index = row->keys().indexOf(*it);
                     data.column = column;
                     data.row = index.parent().row();
                     m_keys.push_back(data);
@@ -382,12 +382,12 @@ void UndoDeleteSelectedKey::redo() {
                 }
             }
 
-            row.fixCurve();
+            track->fixCurves();
+            row->updateKeys();
         }
-        it->setSelected(false);
     }
 
-    list.clear();
     m_scene->updateMaxDuration();
     m_scene->update();
+    emit m_scene->model()->changed();
 }

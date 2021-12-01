@@ -13,6 +13,10 @@ AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
 }
 
+bool AnimImportSettings::isReadOnly() const {
+    return false;
+}
+
 uint8_t AnimConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {

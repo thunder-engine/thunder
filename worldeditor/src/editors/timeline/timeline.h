@@ -8,8 +8,10 @@
 
 #include <animationcurve.h>
 
-class AnimationController;
+class Animator;
 class AnimationClipModel;
+
+class AnimationClip;
 
 namespace Ui {
     class Timeline;
@@ -27,32 +29,44 @@ signals:
 
     void animated(bool);
 
+    void objectSelected(Object::ObjectList objects);
+
 public slots:
-    void onObjectSelected(Object::ObjectList objects);
+    void onObjectsSelected(Object::ObjectList objects);
 
-    void onUpdated(Object *object, const QString property);
+    void onObjectsChanged(Object::ObjectList objects, const QString property);
 
-    void onChanged(Object::ObjectList objects, const QString property);
+    void onPropertyUpdated(Object *object, const QString property);
 
     void showBar();
 
 protected:
     void saveClip();
 
-    AnimationController *findController(Object *object);
+    Animator *findController(Object *object);
 
-    float findNear(bool backward = false);
+    void setController(Animator *controller);
 
     QString pathTo(Object *src, Object *dst);
 
     void updateClips();
 
+    uint32_t position() const;
+
 private slots:
     void onModified();
 
+    void onRebind();
+
     void onSelectKey(int, int, int);
 
+    void onRowsSelected(QStringList list);
+
+    void onClipChanged(const QString &clip);
+
     void onKeyChanged();
+
+    void setPosition(uint32_t position);
 
     void on_play_clicked();
 
@@ -68,20 +82,20 @@ private slots:
 
     void on_breakKey_clicked();
 
-    void on_deleteKey_clicked();
-
 private:
     void timerEvent(QTimerEvent *) override;
 
     void changeEvent(QEvent *event) override;
 
-    Object::ObjectList m_SelectedObjects;
-
     Ui::Timeline *ui;
 
-    AnimationController *m_pController;
+    Animator *m_controller;
 
-    AnimationClipModel *m_pModel;
+    AnimationClipModel *m_model;
+
+    QMap<QString, AnimationClip *> m_clips;
+
+    QString m_currentClip;
 
     int32_t m_TimerId;
 

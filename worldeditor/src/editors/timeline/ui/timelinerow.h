@@ -43,8 +43,6 @@ public:
 
     TreeRow *treeRow() const;
 
-    void fixCurve();
-
 private:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 

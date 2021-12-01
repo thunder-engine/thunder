@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsWidget>
 #include <QGraphicsView>
+#include <QMenu>
 
 #include <QDebug>
 
@@ -12,6 +13,8 @@
 #include "ui/treerow.h"
 #include "ui/ruler.h"
 #include "ui/playhead.h"
+
+#include "animationclipmodel.h"
 
 #define DRAG_SENSITIVITY 2
 
@@ -22,14 +25,14 @@ TimelineScene::TimelineScene(QWidget *editor) :
         m_layoutRoot(new QGraphicsLinearLayout(Qt::Horizontal)),
         m_layoutTree(new QGraphicsLinearLayout(Qt::Vertical)),
         m_layoutTimeline(new QGraphicsLinearLayout(Qt::Vertical)),
+        m_model(nullptr),
         m_widgetRoot(new QGraphicsWidget),
         m_rulerItem(new Ruler),
         m_playHead(new PlayHead(m_rulerItem)),
         m_pressedKeyframe(nullptr),
         m_pressPos(invalidPos),
         m_pressKeyPosition(-MAX_VALUE),
-        m_drag(false),
-        m_readOnly(false) {
+        m_drag(false) {
 
     addItem(m_rulerItem);
     addItem(m_widgetRoot);
@@ -86,13 +89,21 @@ QModelIndexList TimelineScene::selectedIndexes() const {
     return m_selectedRows;
 }
 
-QList<KeyFrame *> &TimelineScene::selectedKeyframes() {
-    return m_selectedKeyframes;
+QList<KeyFrame *> TimelineScene::selectedKeyframes() {
+    QList<KeyFrame *> result;
+    for(int i = 0; i < m_layoutTimeline->count(); i++) {
+        TimelineRow *row = static_cast<TimelineRow *>(m_layoutTimeline->itemAt(i));
+        for(auto &it : row->keys()) {
+            if(it.isSelected()) {
+                result.push_back(&it);
+            }
+        }
+    }
+
+    return result;
 }
 
 void TimelineScene::clearSelection() {
-    m_selectedKeyframes.clear();
-
     for(int i = 0; i < m_layoutTimeline->count(); i++) {
         TimelineRow *row = static_cast<TimelineRow *>(m_layoutTimeline->itemAt(i));
         for(auto &it : row->keys()) {
@@ -127,16 +138,12 @@ void TimelineScene::updateMaxDuration() {
     m_rulerItem->setMaxDuration(duration);
 }
 
-bool TimelineScene::isReadOnly() const {
-    return m_readOnly;
+void TimelineScene::setModel(AnimationClipModel *model) {
+    m_model = model;
 }
 
-void TimelineScene::setReadOnly(bool flag) {
-    m_readOnly = flag;
-}
-
-void TimelineScene::onPositionChanged(float time) {
-    m_playHead->setTime(time / 1000.0f);
+void TimelineScene::onPositionChanged(uint32_t time) {
+    m_playHead->setTime((float)time / 1000.0f);
     update();
 }
 
@@ -151,66 +158,74 @@ void TimelineScene::onContentWidthChanged() {
 }
 
 void TimelineScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QGraphicsScene::mousePressEvent(event);
     if(event->button() == Qt::LeftButton) {
         m_pressPos = event->scenePos();
+
+        for(int i = 0; i < m_layoutTree->count(); i++) {
+            TreeRow *row = static_cast<TreeRow *>(m_layoutTree->itemAt(i));
+            row->setSelected(false);
+        }
         m_selectedRows.clear();
 
         const QList<QGraphicsItem *> hoverItems = items(m_pressPos);
         if(!hoverItems.isEmpty()) {
             QGraphicsItem *item = hoverItems.at(0);
             switch(item->type()) {
-            case RowItem::TreeItem: {
-                TreeRow *row = static_cast<TreeRow *>(item);
-                row->onRowPressed(event->scenePos());
-                m_selectedRows.push_back(row->index());
-                emit rowSelectionChanged();
-            } break;
-            case RowItem::TimelineItem: {
-                TimelineRow *r = static_cast<TimelineRow *>(item);
-
-                auto list = r->onRowPressed(event->scenePos());
-                if(!list.isEmpty()) {
-                    m_pressedKeyframe = list.at(0);
-                    if(m_pressedKeyframe) {
-                        if(!m_pressedKeyframe->isSelected()) {
-                            if((event->modifiers() & Qt::ControlModifier) == false) {
-                                clearSelection();
-                            }
-
-                            for(auto &it : list) {
-                                it->setSelected(true);
-                                m_selectedKeyframes.push_back(it);
-                            }
-
-                            int idx = r->keys().indexOf(*m_pressedKeyframe);
-                            int row = -1;
-                            int col = -1;
-
-                            QModelIndex index = r->treeRow()->index();
-                            if(index.parent().isValid()) {
-                                row = index.parent().row();
-                                col = index.row();
-                            } else {
-                                row = index.row();
-                            }
-
-                            emit keySelectionChanged(row, col, idx);
-                        }
+                case QGraphicsTextItem::Type:
+                case RowItem::TreeItem: {
+                    TreeRow *row = static_cast<TreeRow *>(item);
+                    if(item->type() == QGraphicsTextItem::Type) {
+                        row = static_cast<TreeRow *>(item->parentItem());
                     }
-                } else {
-                    clearSelection();
-                }
-            } break;
-            case RowItem::RulerItem: {
-                float x = event->scenePos().x() - m_rulerItem->x();
-                x = m_rulerItem->screenToTime(x, true);
+                    row->onRowPressed(event->scenePos());
+                    row->setSelected(true);
+                    m_selectedRows.push_back(row->index());
+                    emit rowSelectionChanged();
+                } break;
+                case RowItem::TimelineItem: {
+                    TimelineRow *r = static_cast<TimelineRow *>(item);
 
-                m_playHead->setTime(x);
-                emit headPositionChanged(x * 1000.0f);
-                update();
-            } break;
-            default: break;
+                    auto list = r->onRowPressed(event->scenePos());
+                    if(!list.isEmpty()) {
+                        m_pressedKeyframe = list.at(0);
+                        if(m_pressedKeyframe) {
+                            if(!m_pressedKeyframe->isSelected()) {
+                                if((event->modifiers() & Qt::ControlModifier) == false) {
+                                    clearSelection();
+                                }
+
+                                for(auto &it : list) {
+                                    it->setSelected(true);
+                                }
+
+                                int idx = r->keys().indexOf(*m_pressedKeyframe);
+                                int row = -1;
+                                int col = -1;
+
+                                QModelIndex index = r->treeRow()->index();
+                                if(index.parent().isValid()) {
+                                    row = index.parent().row();
+                                    col = index.row();
+                                } else {
+                                    row = index.row();
+                                }
+
+                                emit keySelectionChanged(row, col, idx);
+                            }
+                        }
+                    } else {
+                        clearSelection();
+                    }
+                } break;
+                case RowItem::RulerItem: {
+                    float x = event->scenePos().x() - m_rulerItem->x();
+                    x = m_rulerItem->screenToTime(x, true);
+
+                    m_playHead->setTime(x);
+                    emit headPositionChanged(x * 1000.0f);
+                    update();
+                } break;
+                default: break;
             }
         }
     }
@@ -226,11 +241,11 @@ void TimelineScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
             for(int i = 0; i < m_layoutTree->count(); i++) {
                 TreeRow *row = static_cast<TreeRow *>(m_layoutTree->itemAt(i));
                 if(row->parentRow() == nullptr) {
-                    TimelineRow &item = row->timelineItem();
+                    TimelineRow *item = row->timelineItem();
                     QList<KeyFrame *> outdate;
-                    for(auto &key : item.keys()) {
+                    for(auto &key : item->keys()) {
                         if(key.isSelected()) {
-                            for(auto &it : item.keys()) {
+                            for(auto &it : item->keys()) {
                                 if(key.position() == it.position() && !it.isSelected()) {
                                     outdate.push_back(&it);
                                 }
@@ -239,9 +254,9 @@ void TimelineScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
                     }
                     if(!outdate.isEmpty()) {
                         for(auto it : outdate) {
-                            item.keys().removeOne(*it);
+                            item->keys().removeOne(*it);
                         }
-                        item.update();
+                        item->update();
                     }
                 }
             }
@@ -275,24 +290,26 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         }
     }
 
-    if(!m_readOnly && !m_drag && m_pressPos != invalidPos && (event->scenePos() - m_pressPos).manhattanLength() > DRAG_SENSITIVITY) {
+    auto selKeyframes = selectedKeyframes();
+
+    if(!m_drag && m_pressPos != invalidPos && (event->scenePos() - m_pressPos).manhattanLength() > DRAG_SENSITIVITY) {
         m_drag = true;
 
-        if(m_pressedKeyframe) {
+        if(m_pressedKeyframe && !m_model->isReadOnly()) {
             m_pressKeyPosition = m_pressedKeyframe->position();
 
             TreeRow *parent = m_pressedKeyframe->row()->parentRow();
             if(parent) {
                 int count = 0;
                 for(auto &it : parent->children()) {
-                    KeyFrame *k = it->timelineItem().keyAtPosition(m_pressKeyPosition, false);
+                    KeyFrame *k = it->timelineItem()->keyAtPosition(m_pressKeyPosition, false);
                     if(k) {
                         count++;
                     }
                 }
             }
 
-            for(auto &it : m_selectedKeyframes) {
+            for(auto &it : selKeyframes) {
                 it->setOriginPosition(it->position());
             }
         }
@@ -301,18 +318,19 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if(m_drag) {
         float x = event->scenePos().x() - m_rulerItem->x();
         if(m_pressedKeyframe) {
-            x = m_rulerItem->screenToTime(x, !(event->modifiers() & Qt::AltModifier));
+            if(!m_model->isReadOnly()) {
+                x = m_rulerItem->screenToTime(x, !(event->modifiers() & Qt::AltModifier));
 
-            for(auto &it : m_selectedKeyframes) {
-                TimelineRow &row = it->row()->timelineItem();
-                AnimationTrack *track = row.track();
+                for(auto &it : selKeyframes) {
+                    TimelineRow *row = it->row()->timelineItem();
+                    AnimationTrack *track = row->track();
 
-                float delta = (x * 1000.0f / track->duration()) - m_pressKeyPosition;
-                it->setPosition(it->originPosition() + delta);
+                    float delta = (x * 1000.0f / track->duration()) - m_pressKeyPosition;
+                    it->setPosition(it->originPosition() + delta);
+                }
             }
         } else {
-            x = m_rulerItem->screenToTime(x, true);
-
+            x = MAX(0.0f, m_rulerItem->screenToTime(x, true));
             m_playHead->setTime(x);
             emit headPositionChanged(x * 1000.0f);
             update();
@@ -366,5 +384,38 @@ void TimelineScene::keyPressEvent(QKeyEvent *event) {
 
     if(event->key() == Qt::Key_Delete) {
         emit deleteSelectedKey();
+    }
+}
+
+void TimelineScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
+    const QList<QGraphicsItem *> hoverItems = items(event->scenePos());
+    if(!hoverItems.isEmpty()) {
+        for(int i = 0; i < m_layoutTree->count(); i++) {
+            TreeRow *row = static_cast<TreeRow *>(m_layoutTree->itemAt(i));
+            row->setSelected(false);
+        }
+        m_selectedRows.clear();
+
+        QMenu menu;
+
+        QGraphicsItem *item = hoverItems.at(0);
+        switch(item->type()) {
+            case QGraphicsTextItem::Type:
+            case RowItem::TreeItem: {
+                TreeRow *row = static_cast<TreeRow *>(item);
+                if(item->type() == QGraphicsTextItem::Type) {
+                    row = static_cast<TreeRow *>(item->parentItem());
+                }
+                row->setSelected(true);
+                m_selectedRows.push_back(row->index());
+
+                menu.addAction(tr("Remove Property"), this, SIGNAL(removeSelectedProperty()));
+            } break;
+            default: break;
+        }
+
+        if(!menu.actions().isEmpty()) {
+            menu.exec(event->screenPos());
+        }
     }
 }

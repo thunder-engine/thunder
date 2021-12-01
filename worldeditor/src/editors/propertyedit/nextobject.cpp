@@ -54,10 +54,12 @@ Q_DECLARE_METATYPE(Axises)
 #define COMPONENT   "Component"
 #define TEMPLATE    "Template"
 
-const QString EditorTag("editor=");
-const QString EnumTag("enum=");
-const QString MetaTag("meta=");
-const QString ReadOnlyTag("ReadOnly");
+namespace  {
+    const char *EditorTag("editor=");
+    const char *EnumTag("enum=");
+    const char *MetaTag("meta=");
+    const char *ReadOnlyTag("ReadOnly");
+}
 
 NextObject::NextObject(QObject *parent) :
         QObject(parent),
@@ -117,6 +119,26 @@ void NextObject::onUpdated() {
         setObjectName(m_pObject->typeName().c_str());
     }
     emit updated();
+}
+
+void NextObject::onPropertyContextMenuRequested(QString property, const QPoint point) {
+    QMenu menu;
+    QAction *action = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
+
+    QVariant data = NextObject::property(qPrintable(property));
+    int32_t type = data.userType();
+    action->setEnabled((type == QMetaType::Bool || type == QMetaType::Int || type == QMetaType::Float ||
+                        type == QMetaType::type("Vector3") || type == QMetaType::type("QColor")));
+
+    action->setProperty("property", property);
+
+    menu.exec(point);
+}
+
+void NextObject::onInsertKeyframe() {
+    QAction *action = static_cast<QAction *>(sender());
+    QStringList list = action->property("property").toString().split('/');
+    emit changed({findChild(list)}, list.back());
 }
 
 void NextObject::onDeleteComponent() {
@@ -188,9 +210,9 @@ bool NextObject::event(QEvent *e) {
                 Variant target = aVariant(value, current, property);
 
                 if(target.isValid() && current != target) {
-                    emit aboutToBeChanged(o, propertyName, target);
+                    emit aboutToBeChanged({o}, propertyName, target);
 
-                    emit changed(o, propertyName);
+                    emit changed({o}, propertyName);
                 }
             }
         }

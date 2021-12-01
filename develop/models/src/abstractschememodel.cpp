@@ -368,18 +368,20 @@ void CreateNode::redo() {
         m_pNode->pos = m_Point;
     }
 
-    if(m_Node > -1 && m_Port > -1) {
+    if(m_Node > -1) {
         AbstractSchemeModel::Node *node = m_pModel->node(m_Node);
         AbstractSchemeModel::Item *item = nullptr;
-        if(node) {
-            int index = 0;
-            for(auto &it : node->list) {
-                if(it->out == m_Out) {
-                    if(index == m_Port) {
-                        item = it;
-                        break;
-                    } else {
-                        index++;
+        if(m_Port > -1) {
+            if(node) {
+                int index = 0;
+                for(auto &it : node->list) {
+                    if(it->out == m_Out) {
+                        if(index == m_Port) {
+                            item = it;
+                            break;
+                        } else {
+                            index++;
+                        }
                     }
                 }
             }
@@ -388,12 +390,11 @@ void CreateNode::redo() {
         AbstractSchemeModel::Node *snd = (m_Out) ? node : m_pNode;
         AbstractSchemeModel::Node *rcv = (m_Out) ? m_pNode : node;
         if(snd && rcv) {
-            AbstractSchemeModel::Item *sp = (m_Out) ? item : snd->list.at(0);
-            AbstractSchemeModel::Item *rp = (m_Out) ? rcv->list.at(0) : item;
+            AbstractSchemeModel::Item *sp = (m_Port > -1) ? ((m_Out) ? item : snd->list.at(0)) : nullptr;
+            AbstractSchemeModel::Item *rp = (m_Port > -1) ? ((m_Out) ? rcv->list.at(0) : item) : nullptr;
 
             AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, sp, rcv, rp);
             m_Index = m_pModel->link(link);
-            emit m_pModel->schemeUpdated();
         }
     }
 

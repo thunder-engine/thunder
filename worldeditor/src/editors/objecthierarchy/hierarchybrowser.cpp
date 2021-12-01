@@ -170,6 +170,18 @@ void HierarchyBrowser::setContextMenu(QMenu *menu) {
     m_contentMenu = menu;
 }
 
+void expandToIndex(const QModelIndex &index, QTreeView *view) {
+    QModelIndex parent = index.parent();
+    if(!parent.isValid()) {
+        return;
+    }
+
+    if(!view->isExpanded(parent)) {
+        view->setExpanded(parent, true);
+        expandToIndex(parent, view);
+    }
+}
+
 void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();
@@ -180,6 +192,7 @@ void HierarchyBrowser::onObjectSelected(Object::ObjectList objects) {
                                             -1, Qt::MatchExactly | Qt::MatchRecursive);
         for(QModelIndex &it : list) {
             select->select(it, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+            expandToIndex(it, ui->treeView);
         }
     }
 }

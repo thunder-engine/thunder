@@ -15,8 +15,6 @@
 #include <QStyledItemDelegate>
 #include <QSignalMapper>
 
-#include <QMenu>
-
 Property *createCustomProperty(const QString &name, QObject *propertyObject, Property *parent) {
     if(propertyObject == nullptr) {
         return nullptr;
@@ -184,6 +182,10 @@ void PropertyEditor::addObject(QObject *propertyObject, const QString &name, QOb
             i++;
             it = m->index(i, 1);
         }
+
+        if(propertyObject->metaObject()->indexOfSlot("onPropertyContextMenuRequested(QString,QPoint)") != -1) {
+            connect(this, SIGNAL(propertyContextMenuRequested(QString,QPoint)), propertyObject, SLOT(onPropertyContextMenuRequested(QString,QPoint)));
+        }
     }
 }
 
@@ -222,6 +224,9 @@ void PropertyEditor::unregisterCustomPropertyCB(UserTypeCB callback) {
 
 void PropertyEditor::clear() {
     static_cast<PropertyModel *>(m_pFilter->sourceModel())->clear();
+    if(m_pPropertyObject) {
+        disconnect(this, &PropertyEditor::propertyContextMenuRequested, nullptr, nullptr);
+    }
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
@@ -264,34 +269,14 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
     if(m_Animated) {
-        QMenu menu;
-        QAction *action = menu.addAction(tr("Insert Keyframe"), this, SLOT(onInsertKeyframe()));
         QModelIndex origin = m_pFilter->mapToSource(ui->treeView->indexAt(pos));
         if(origin.isValid()) {
             PropertyModel *model = static_cast<PropertyModel *>(m_pFilter->sourceModel());
             QModelIndex index = model->index(origin.row(), 1, origin.parent());
             Property *item = static_cast<Property *>(index.internalPointer());
-            QVariant data = item->value(Qt::DisplayRole);
-            int32_t type = data.userType();
-            action->setEnabled((type == QMetaType::Bool || type == QMetaType::Int || type == QMetaType::Float ||
-                                type == QMetaType::type("Vector3") || type == QMetaType::type("QColor")));
 
-            NextObject *property = dynamic_cast<NextObject *>(item->propertyObject());
-            if(property) {
-                action->setProperty("object", QVariant::fromValue(property));
-                action->setProperty("property", item->objectName());
-            }
+            emit propertyContextMenuRequested(item->objectName(), ui->treeView->mapToGlobal(pos));
         }
-        menu.exec(ui->treeView->mapToGlobal(pos));
-    }
-}
-
-void PropertyEditor::onInsertKeyframe() {
-    QAction *action = static_cast<QAction *>(sender());
-    NextObject *next = action->property("object").value<NextObject *>();
-    if(next) {
-        QStringList list = action->property("property").toString().split('/');
-        emit next->changed(next->findChild(list), list.back());
     }
 }
 

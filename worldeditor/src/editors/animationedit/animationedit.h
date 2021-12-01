@@ -8,6 +8,8 @@
 class AbstractSchemeModel;
 class AnimationStateMachine;
 
+class ComponentBrowser;
+
 namespace Ui {
     class AnimationEdit;
 }
@@ -24,6 +26,10 @@ private slots:
 
     void onUpdateAsset(bool update = true);
 
+    void onShowContextMenu(int node, int port, bool out);
+
+    void onComponentSelected(const QString &path);
+
     void onActivated() override;
 
 private:
@@ -36,15 +42,24 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    bool m_modified;
-
+private:
     Ui::AnimationEdit *ui;
 
     AbstractSchemeModel *m_schemeModel;
 
     AnimationStateMachine *m_stateMachine;
 
+    QMenu *m_createMenu;
+
+    ComponentBrowser *m_browser;
+
     QObject *m_selectedItem;
+
+    int m_node;
+    int m_port;
+    bool m_out;
+
+    bool m_modified;
 
 };
 

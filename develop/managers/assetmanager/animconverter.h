@@ -7,6 +7,8 @@
 class AnimImportSettings : public AssetConverterSettings {
 public:
     AnimImportSettings();
+
+    bool isReadOnly() const override;
 };
 
 class AnimConverter : public AssetConverter {
