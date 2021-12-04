@@ -13,6 +13,8 @@
 #include "assetmanager.h"
 #include "projectmanager.h"
 
+#define ICON_SIZE 128
+
 ContentList *ContentList::m_pInstance = nullptr;
 
 ContentListFilter::ContentListFilter(QObject *parent) :
@@ -216,12 +218,12 @@ QVariant ContentList::data(const QModelIndex &index, int role) const {
             }
         }
         case Qt::SizeHintRole: {
-            return QSize(m_DefaultIcon.width() + 16, m_DefaultIcon.height() + 32);
+            return QSize(ICON_SIZE + 16, ICON_SIZE + 32);
         }
         case Qt::DecorationRole: {
             QImage img = item->property(qPrintable(gIcon)).value<QImage>();
             if(!img.isNull()) {
-                return (img.height() < img.width()) ? img.scaledToWidth(m_DefaultIcon.width()) : img.scaledToHeight(m_DefaultIcon.height());
+                return (img.height() < img.width()) ? img.scaledToWidth(ICON_SIZE) : img.scaledToHeight(ICON_SIZE);
             }
         } break;
         case Qt::ToolTipRole: {

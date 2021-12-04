@@ -218,7 +218,12 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
     switch(pe->type()) {
         case QEvent::KeyPress: {
             QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-            switch(e->nativeVirtualKey()) {
+#ifdef Q_OS_LINUX
+            quint32 key = e->key();
+#else
+            quint32 key = e->nativeVirtualKey();
+#endif
+            switch(key) {
                 case Qt::Key_W:
                 case Qt::Key_Up: {
                     if(!m_activeCamera->orthographic()) {
@@ -244,7 +249,12 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
         } break;
         case QEvent::KeyRelease: {
             QKeyEvent *e = static_cast<QKeyEvent *>(pe);
-            switch(e->nativeVirtualKey()) {
+#ifdef Q_OS_LINUX
+            quint32 key = e->key();
+#else
+            quint32 key = e->nativeVirtualKey();
+#endif
+            switch(key) {
                 case Qt::Key_W:
                 case Qt::Key_Up: {
                     m_cameraMove &= ~MOVE_FORWARD;

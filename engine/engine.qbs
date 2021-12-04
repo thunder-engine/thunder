@@ -65,6 +65,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["IOKit"]
             cpp.sonamePrefix: "@executable_path"

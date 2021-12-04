@@ -101,7 +101,7 @@ bool ContentTreeFilter::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
 bool ContentTreeFilter::checkContentTypeFilter(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 2, sourceParent);
-    for(auto it : m_List) {
+    for(auto &it : m_List) {
         QString type = sourceModel()->data(index).toString();
         if(it == type || type.isEmpty()) {
             return true;

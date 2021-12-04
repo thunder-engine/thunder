@@ -20,8 +20,8 @@
    <string notr="true">World Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/Images/WorldBuilder.png</normaloff>:/Images/WorldBuilder.png</iconset>
+   <iconset resource="../../res/WorldEditor.qrc">
+    <normaloff>:/Images/icons/thunder.png</normaloff>:/Images/icons/thunder.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="layoutDirection">
@@ -350,7 +350,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -708,6 +708,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../res/WorldEditor.qrc"/>
+ </resources>
  <connections/>
 </ui>

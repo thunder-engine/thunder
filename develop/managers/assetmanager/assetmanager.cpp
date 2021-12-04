@@ -677,8 +677,9 @@ void AssetManager::onPerform() {
 
         if(isOutdated()) {
             foreach(CodeBuilder *it, m_Builders) {
-                if(!it->isEmpty()) {
-                    it->buildProject();
+                if(!it->isEmpty() && !it->buildProject()) {
+                    m_pTimer->stop();
+                    emit importFinished();
                 }
             }
             return;
