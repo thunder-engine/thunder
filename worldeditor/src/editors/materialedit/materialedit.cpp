@@ -4,7 +4,6 @@
 #include <QQmlContext>
 #include <QQuickItem>
 
-#include <QWidgetAction>
 #include <QMenu>
 
 #include <engine.h>
@@ -19,16 +18,9 @@
 #include <global.h>
 #include <json.h>
 
-#include "controllers/objectctrl.h"
-#include "graph/sceneview.h"
+#include "controllers/cameractrl.h"
 
 #include "shaderbuilder.h"
-
-#include "functionmodel.h"
-
-#include "projectmanager.h"
-
-#include "editors/componentbrowser/componentbrowser.h"
 
 namespace {
     const char *gMeshRender("MeshRender");
@@ -41,12 +33,11 @@ MaterialEdit::MaterialEdit() :
         m_material(nullptr),
         m_builder(new ShaderBuilder()),
         m_createMenu(new QMenu(this)),
-        m_browser(new ComponentBrowser(this)),
         m_selectedItem(nullptr),
+        m_lastCommand(nullptr),
         m_node(-1),
         m_port(-1),
-        m_out(false),
-        m_modified(false) {
+        m_out(false) {
 
     ui->setupUi(this);
     CameraCtrl *ctrl = new CameraCtrl(ui->preview);
@@ -59,15 +50,13 @@ MaterialEdit::MaterialEdit() :
     ui->preview->setScene(scene);
 
     m_light = Engine::composeActor("DirectLight", "LightSource", scene);
-    Matrix3 rot;
-    rot.rotate(Vector3(-45.0f, 45.0f, 0.0f));
-    m_light->transform()->setQuaternion(rot);
+    m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
     m_mesh = Engine::composeActor("MeshRender", "MeshRender", scene);
 
     on_actionSphere_triggered();
 
-    connect(m_builder, SIGNAL(schemeUpdated()), this, SLOT(onUpdateTemplate()));
+    connect(m_builder, &ShaderBuilder::schemeUpdated, this, &MaterialEdit::onSchemeUpdated);
 
     ui->schemeWidget->rootContext()->setContextProperty("schemeModel", m_builder);
     ui->schemeWidget->rootContext()->setContextProperty("stateMachine", QVariant(false));
@@ -79,12 +68,32 @@ MaterialEdit::MaterialEdit() :
     connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
     connect(item, SIGNAL(showContextMenu(int,int,bool)), this, SLOT(onShowContextMenu(int,int,bool)));
 
-    m_browser->setModel(static_cast<AbstractSchemeModel *>(m_builder)->components());
-    connect(m_browser, SIGNAL(componentSelected(QString)), this, SLOT(onComponentSelected(QString)));
+    for(auto &it : m_builder->nodes()) {
+        QMenu *menu = m_createMenu;
+        QStringList list = it.split("/", QString::SkipEmptyParts);
 
-    QWidgetAction *action = new QWidgetAction(m_createMenu);
-    action->setDefaultWidget(m_browser);
-    m_createMenu->addAction(action);
+        for(int i = 0; i < list.size(); i++) {
+            QString part = list.at(i);
+            QAction *action = nullptr;
+            for(QAction *act : menu->actions()) {
+                if(part == act->objectName()) {
+                    action = act;
+                    menu = act->menu();
+                    break;
+                }
+            }
+            if(action == nullptr) {
+                action = menu->addAction(part);
+                action->setObjectName(qPrintable(part));
+                if(i < (list.size() - 1)) {
+                    menu = new QMenu;
+                    action->setMenu(menu);
+                } else {
+                    connect(action, &QAction::triggered, this, &MaterialEdit::onComponentSelected);
+                }
+            }
+        }
+    }
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 2);
@@ -98,7 +107,7 @@ MaterialEdit::~MaterialEdit() {
 }
 
 bool MaterialEdit::isModified() const {
-    return m_modified;
+    return (UndoManager::instance()->lastCommand(m_builder) != m_lastCommand);
 }
 
 QStringList MaterialEdit::suffixes() const {
@@ -120,7 +129,8 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
         }
         static_cast<AbstractSchemeModel *>(m_builder)->load(m_pSettings->source());
 
-        m_modified = false;
+        m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
+
         onNodesSelected(QVariantList({0}));
     }
 }
@@ -128,18 +138,18 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
 void MaterialEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
         static_cast<AbstractSchemeModel *>(m_builder)->save(path.isEmpty() ? m_pSettings->source() : path);
-        m_modified = false;
+
+        m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
     }
 }
 
-void MaterialEdit::onUpdateTemplate(bool update) {
+void MaterialEdit::onSchemeUpdated() {
     if(m_builder && m_builder->build()) {
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
             VariantMap map = m_builder->data(true).toMap();
             m_material->loadUserData(map);
         }
-        m_modified = update;
     }
 }
 
@@ -155,8 +165,10 @@ void MaterialEdit::changeMesh(const string &path) {
     }
 }
 
-void MaterialEdit::onComponentSelected(const QString &path) {
+void MaterialEdit::onComponentSelected() {
     m_createMenu->hide();
+
+    QAction *action = static_cast<QAction *>(sender());
 
     QQuickItem *scheme = ui->schemeWidget->rootObject()->findChild<QQuickItem *>("Scheme");
     if(scheme) {
@@ -172,9 +184,9 @@ void MaterialEdit::onComponentSelected(const QString &path) {
             y = (float)(mouseY - y) * scale;
 
             if(m_node > -1 && m_port > -1) {
-                m_builder->createAndLink(path, x, y, m_node, m_port, m_out);
+                m_builder->createAndLink(action->objectName(), x, y, m_node, m_port, m_out);
             } else {
-                m_builder->createNode(path, x, y);
+                m_builder->createNode(action->objectName(), x, y);
             }
         }
     }

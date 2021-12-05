@@ -89,7 +89,7 @@ AbstractSchemeModel::Node *AnimationBuilder::nodeCreate(const QString &path, int
     return node;
 }
 
-AbstractSchemeModel::Link *AnimationBuilder::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
+AbstractSchemeModel::Link *AnimationBuilder::linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) {
     if(receiver == m_pRootNode) {
         return nullptr;
     }

@@ -18,8 +18,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-#include <QDir>
-
 #include "material/aconstvalue.h"
 #include "material/acoordinates.h"
 //#include "material/agradient.h"
@@ -148,7 +146,7 @@ ShaderBuilder::ShaderBuilder() :
 
     int i   = 0;
     foreach(QString it, list) {
-        Item *item = new Item;
+        Port *item = new Port;
         item->name = it;
         item->out  = false;
         item->pos  = i;
@@ -183,7 +181,7 @@ Actor *ShaderBuilder::createActor(const QString &guid) const {
                 mesh->setMaterial(mat);
             }
         }
-}
+    }
 
     return object;
 }
@@ -235,6 +233,22 @@ AbstractSchemeModel::Node *ShaderBuilder::nodeCreate(const QString &path, int &i
 
 QAbstractItemModel *ShaderBuilder::components() const {
     return new FunctionModel(m_Functions);
+}
+
+QStringList ShaderBuilder::nodes() const {
+    QStringList result;
+    for(auto &it : m_Functions) {
+        const int type = QMetaType::type( qPrintable(it) );
+        const QMetaObject *meta = QMetaType::metaObjectForType(type);
+        if(meta) {
+            int index = meta->indexOfClassInfo("Group");
+            if(index != -1) {
+                result << QString(meta->classInfo(index).value()) + "/" + it;
+            }
+        }
+    }
+
+    return result;
 }
 
 void ShaderBuilder::load(const QString &path) {
@@ -600,7 +614,7 @@ void ShaderBuilder::buildRoot(QString &result) {
             }
         }
 
-        Item *item  = it;
+        Port *item  = it;
         switch(item->type) {
             case QMetaType::Double:    result += "float get" + item->name + "(Params p) {\n"; break;
             case QMetaType::QVector2D: result += "vec2 get"  + item->name + "(Params p) {\n"; break;

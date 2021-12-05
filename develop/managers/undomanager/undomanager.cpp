@@ -15,7 +15,7 @@ void UndoManager::destroy() {
 }
 
 const UndoCommand *UndoManager::lastCommand(const QObject *editor) const {
-    for(int i = index() - 1; i > 0; i--) {
+    for(int i = index() - 1; i >= 0; i--) {
         const UndoCommand *cmd = dynamic_cast<const UndoCommand *>(command(i));
         if(cmd && cmd->editor() == editor) {
             return cmd;

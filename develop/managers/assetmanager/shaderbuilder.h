@@ -199,6 +199,8 @@ public:
     FilePath rawPath() const { return m_RawPath; }
     void setRawPath(const FilePath &path) { m_RawPath = path; }
 
+    QStringList nodes() const;
+
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl"}; }
     uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;

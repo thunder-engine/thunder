@@ -38,7 +38,7 @@ void AbstractSchemeModel::nodeDelete(Node *node) {
     auto it = m_Nodes.begin();
     while(it != m_Nodes.end()) {
         if(*it == node) {
-            for(Item *item : node->list) {
+            for(Port *item : node->list) {
                 linkDelete(item);
                 delete item;
             }
@@ -53,7 +53,7 @@ void AbstractSchemeModel::nodeDelete(Node *node) {
     }
 }
 
-AbstractSchemeModel::Link *AbstractSchemeModel::linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) {
+AbstractSchemeModel::Link *AbstractSchemeModel::linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) {
     bool result = true;
     for(auto &it : m_Links) {
         if(it->sender == sender && it->receiver == receiver &&
@@ -82,7 +82,7 @@ AbstractSchemeModel::Link *AbstractSchemeModel::linkCreate(Node *sender, Item *o
     return nullptr;
 }
 
-void AbstractSchemeModel::linkDelete(Item *item) {
+void AbstractSchemeModel::linkDelete(Port *item) {
     auto it = m_Links.begin();
     while(it != m_Links.end()) {
         Link *link = *it;
@@ -130,7 +130,7 @@ const AbstractSchemeModel::LinkList AbstractSchemeModel::findLinks(const Node *n
     return result;
 }
 
-const AbstractSchemeModel::LinkList AbstractSchemeModel::findLinks(const Item *item) const {
+const AbstractSchemeModel::LinkList AbstractSchemeModel::findLinks(const Port *item) const {
     LinkList result;
     for(const auto it : m_Links) {
         if(it->oport == item || it->iport == item) {
@@ -203,9 +203,9 @@ void AbstractSchemeModel::load(const QString &path) {
         Node *rcv = node(l[RECEIVER].toInt());
         if(snd && rcv) {
             int index1 = l[OPORT].toInt();
-            Item *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
+            Port *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
             int index2 = l[IPORT].toInt();
-            Item *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
+            Port *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
 
             linkCreate(snd, op, rcv, ip);
         }
@@ -277,6 +277,7 @@ QVariant AbstractSchemeModel::nodes() const {
             port["name"] = p->name;
             port["out"] = p->out;
             port["pos"] = p->pos;
+            port["type"] = p->type;
 
             ports.push_back(port);
         }
@@ -370,7 +371,7 @@ void CreateNode::redo() {
 
     if(m_Node > -1) {
         AbstractSchemeModel::Node *node = m_pModel->node(m_Node);
-        AbstractSchemeModel::Item *item = nullptr;
+        AbstractSchemeModel::Port *item = nullptr;
         if(m_Port > -1) {
             if(node) {
                 int index = 0;
@@ -390,8 +391,8 @@ void CreateNode::redo() {
         AbstractSchemeModel::Node *snd = (m_Out) ? node : m_pNode;
         AbstractSchemeModel::Node *rcv = (m_Out) ? m_pNode : node;
         if(snd && rcv) {
-            AbstractSchemeModel::Item *sp = (m_Port > -1) ? ((m_Out) ? item : snd->list.at(0)) : nullptr;
-            AbstractSchemeModel::Item *rp = (m_Port > -1) ? ((m_Out) ? rcv->list.at(0) : item) : nullptr;
+            AbstractSchemeModel::Port *sp = (m_Port > -1) ? ((m_Out) ? item : snd->list.at(0)) : nullptr;
+            AbstractSchemeModel::Port *rp = (m_Port > -1) ? ((m_Out) ? rcv->list.at(0) : item) : nullptr;
 
             AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, sp, rcv, rp);
             m_Index = m_pModel->link(link);
@@ -453,9 +454,9 @@ void DeleteNodes::undo() {
         AbstractSchemeModel::Node *rcv = m_pModel->node(l[RECEIVER].toInt());
         if(snd && rcv) {
             int index1 = l[OPORT].toInt();
-            AbstractSchemeModel::Item *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
+            AbstractSchemeModel::Port *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
             int index2 = l[IPORT].toInt();
-            AbstractSchemeModel::Item *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
+            AbstractSchemeModel::Port *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
 
             m_pModel->linkCreate(snd, op, rcv, ip);
         }
@@ -554,8 +555,8 @@ void CreateLink::redo() {
     AbstractSchemeModel::Node *snd = m_pModel->node(m_Sender);
     AbstractSchemeModel::Node *rcv = m_pModel->node(m_Receiver);
     if(snd && rcv) {
-        AbstractSchemeModel::Item *op = (m_OPort > -1) ? snd->list.at(m_OPort) : nullptr;
-        AbstractSchemeModel::Item *ip = (m_IPort > -1) ? rcv->list.at(m_IPort) : nullptr;
+        AbstractSchemeModel::Port *op = (m_OPort > -1) ? snd->list.at(m_OPort) : nullptr;
+        AbstractSchemeModel::Port *ip = (m_IPort > -1) ? rcv->list.at(m_IPort) : nullptr;
 
         AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, op, rcv, ip);
         m_Index = m_pModel->link(link);
@@ -576,8 +577,8 @@ void DeleteLink::undo() {
     AbstractSchemeModel::Node *snd = m_pModel->node(m_Sender);
     AbstractSchemeModel::Node *rcv = m_pModel->node(m_Receiver);
     if(snd && rcv) {
-        AbstractSchemeModel::Item *op = (m_OPort > -1) ? snd->list.at(m_OPort) : nullptr;
-        AbstractSchemeModel::Item *ip = (m_IPort > -1) ? rcv->list.at(m_IPort) : nullptr;
+        AbstractSchemeModel::Port *op = (m_OPort > -1) ? snd->list.at(m_OPort) : nullptr;
+        AbstractSchemeModel::Port *ip = (m_IPort > -1) ? rcv->list.at(m_IPort) : nullptr;
 
         AbstractSchemeModel::Link *link = m_pModel->linkCreate(snd, op, rcv, ip);
         m_Index = m_pModel->link(link);
@@ -612,9 +613,9 @@ void DeleteLinksByPort::undo() {
         AbstractSchemeModel::Node *rcv = m_pModel->node(l[RECEIVER].toInt());
         if(snd && rcv) {
             int index1 = l[OPORT].toInt();
-            AbstractSchemeModel::Item *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
+            AbstractSchemeModel::Port *op = (index1 > -1) ? snd->list.at(index1) : nullptr;
             int index2 = l[IPORT].toInt();
-            AbstractSchemeModel::Item *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
+            AbstractSchemeModel::Port *ip = (index2 > -1) ? rcv->list.at(index2) : nullptr;
 
             m_pModel->linkCreate(snd, op, rcv, ip);
         }
@@ -637,7 +638,7 @@ void DeleteLinksByPort::redo() {
             }
             m_pModel->linkDelete(node);
         } else {
-            AbstractSchemeModel::Item *item = node->list.at(m_Port);
+            AbstractSchemeModel::Port *item = node->list.at(m_Port);
             for(auto l : m_pModel->findLinks(item)) {
                 QVariantMap link;
                 link[SENDER] = m_pModel->node(l->sender);

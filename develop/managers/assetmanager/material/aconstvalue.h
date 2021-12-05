@@ -17,7 +17,7 @@ public:
 
     AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
+        AbstractSchemeModel::Port *out      = new AbstractSchemeModel::Port;
         out->name   = "";
         out->out    = true;
         out->pos    = 0;
@@ -59,7 +59,7 @@ public:
 
     virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
         out->name = "";
         out->out  = true;
         out->pos  = 0;
@@ -109,7 +109,7 @@ public:
 
     virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out      = new AbstractSchemeModel::Item;
+        AbstractSchemeModel::Port *out      = new AbstractSchemeModel::Port;
         out->name   = "";
         out->out    = true;
         out->pos    = 0;
@@ -150,7 +150,7 @@ public:
 
     virtual AbstractSchemeModel::Node *createNode (ShaderBuilder *model, const QString &path) override {
         AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
         out->name   = "";
         out->out    = true;
         out->pos    = 0;

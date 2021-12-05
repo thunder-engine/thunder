@@ -31,7 +31,7 @@ public:
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         int i   = 0;
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
             out->name = IN;
             out->out  = false;
             out->pos  = 0;
@@ -40,7 +40,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
             out->name = "";
             out->out  = true;
             out->pos  = 0;
@@ -140,7 +140,7 @@ public:
         AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
         int i   = 0;
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = a;
             out->out  = false;
             out->pos  = 0;
@@ -149,7 +149,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = b;
             out->out  = false;
             out->pos  = 1;
@@ -158,7 +158,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = AGB;
             out->out  = false;
             out->pos  = 2;
@@ -167,7 +167,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = AEB;
             out->out  = false;
             out->pos  = 3;
@@ -176,7 +176,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = BGA;
             out->out  = false;
             out->pos  = 4;
@@ -185,7 +185,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
             out->name = "";
             out->out  = true;
             out->pos  = 0;

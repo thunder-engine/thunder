@@ -8,8 +8,8 @@
 class ShaderBuilder;
 
 class ComponentBrowser;
+class UndoCommand;
 
-class QWidgetAction;
 class QMenu;
 
 namespace Ui {
@@ -26,10 +26,10 @@ public:
 private slots:
     void onActivated() override;
 
-    void onComponentSelected(const QString &path);
+    void onComponentSelected();
 
     void onNodesSelected(const QVariant &);
-    void onUpdateTemplate(bool update = true);
+    void onSchemeUpdated();
 
     void onShowContextMenu(int node, int port, bool out);
 
@@ -60,15 +60,13 @@ private:
 
     QMenu *m_createMenu;
 
-    ComponentBrowser *m_browser;
-
     QObject *m_selectedItem;
+
+    const UndoCommand *m_lastCommand;
 
     int m_node;
     int m_port;
     bool m_out;
-
-    bool m_modified;
 
 };
 

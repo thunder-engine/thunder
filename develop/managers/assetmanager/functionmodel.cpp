@@ -48,31 +48,31 @@ QVariant FunctionModel::data(const QModelIndex &index, int role) const {
 void FunctionModel::update() {
     int start   = rowCount();
 
-    foreach(QString it, m_Classes) {
+    for(QString &it : m_Classes) {
         const QByteArray className = qPrintable(it);
         const int type = QMetaType::type( className );
         const QMetaObject *meta = QMetaType::metaObjectForType(type);
         if(meta) {
-            int index   = meta->indexOfClassInfo("Group");
+            int index = meta->indexOfClassInfo("Group");
             if(index != -1) {
                 QUrl url(QString(meta->classInfo(index).value()) + "/" + it);
 
-                QObject *pItem      = m_rootItem;
-                QStringList list    = url.path().split("/", QString::SkipEmptyParts);
+                QObject *item = m_rootItem;
+                QStringList list = url.path().split("/", QString::SkipEmptyParts);
                 int i   = 0;
-                for(const auto& part : list) {
-                    QObject *p  = pItem;
-                    pItem = nullptr;
+                for(const auto &part : list) {
+                    QObject *p  = item;
+                    item = nullptr;
                     foreach(QObject *item, p->children()) {
                         if(part == item->objectName()) {
-                            pItem = item;
+                            item = item;
                             break;
                         }
                     }
-                    if(!pItem) {
-                        pItem   = new QObject(p);
-                        pItem->setObjectName(part);
-                        pItem->setProperty(URI, url.host());
+                    if(!item) {
+                        item = new QObject(p);
+                        item->setObjectName(part);
+                        item->setProperty(URI, url.host());
                     }
                     i++;
                 }
@@ -80,7 +80,7 @@ void FunctionModel::update() {
         }
     }
 
-    int count   = rowCount() - 1;
+    int count = rowCount() - 1;
     if(count > 0) {
         beginInsertRows(QModelIndex(), start, start + count);
 

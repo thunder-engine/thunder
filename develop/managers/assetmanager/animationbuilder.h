@@ -84,7 +84,7 @@ private:
     void save(const QString &path) Q_DECL_OVERRIDE;
 
     Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    Link *linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport) Q_DECL_OVERRIDE;
+    Link *linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) Q_DECL_OVERRIDE;
 
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;

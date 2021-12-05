@@ -25,7 +25,7 @@ class AbstractSchemeModel : public AssetConverter {
     Q_OBJECT
 
 public:
-    struct Item {
+    struct Port {
         bool                        out;
 
         uint32_t                    type;
@@ -36,7 +36,7 @@ public:
 
         QVariant                    var;
     };
-    typedef QList<Item *>           ItemList;
+    typedef QList<Port *>           PortList;
 
     struct Node {
         bool                        root;
@@ -47,7 +47,7 @@ public:
 
         void                       *ptr;
 
-        ItemList                    list;
+        PortList                    list;
 
         QPoint                      pos;
 
@@ -60,11 +60,11 @@ public:
     struct Link {
         Node                       *sender;
 
-        Item                       *oport;
+        Port                       *oport;
 
         Node                       *receiver;
 
-        Item                       *iport;
+        Port                       *iport;
 
         void                       *ptr;
     };
@@ -78,13 +78,13 @@ public:
     virtual Node *nodeCreate(const QString &path, int &index) = 0;
     virtual void nodeDelete(Node *node);
 
-    virtual Link *linkCreate(Node *sender, Item *oport, Node *receiver, Item *iport);
-    virtual void linkDelete(Item *item);
+    virtual Link *linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport);
+    virtual void linkDelete(Port *item);
     virtual void linkDelete(Node *node);
     virtual void linkDelete(Link *link);
 
     const LinkList findLinks(const Node *node) const;
-    const LinkList findLinks(const Item *node) const;
+    const LinkList findLinks(const Port *node) const;
     const Link *findLink(const Node *node, const char *item) const;
 
     Node *node(int index);
@@ -140,10 +140,10 @@ protected:
     QVariantMap m_Data;
 };
 
-class UndoScheme : public QUndoCommand {
+class UndoScheme : public UndoCommand {
 public:
-    UndoScheme (AbstractSchemeModel *model, const QString &name, QUndoCommand *parent = nullptr) :
-            QUndoCommand(name, parent) {
+    UndoScheme(AbstractSchemeModel *model, const QString &name, QUndoCommand *parent = nullptr) :
+            UndoCommand(name, model, parent) {
         m_pModel = model;
     }
 protected:
@@ -152,10 +152,10 @@ protected:
 
 class CreateNode : public UndoScheme {
 public:
-    CreateNode (const QString &path, int x, int y, AbstractSchemeModel *model, int node = -1, int port = -1, bool out = false, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
+    CreateNode(const QString &path, int x, int y, AbstractSchemeModel *model, int node = -1, int port = -1, bool out = false, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 private:
     AbstractSchemeModel::Node *m_pNode;
     QString m_Path;
@@ -168,10 +168,10 @@ private:
 
 class MoveNode : public UndoScheme {
 public:
-    MoveNode (const QVariant &selection, const QVariant &nodes, AbstractSchemeModel *model, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
+    MoveNode(const QVariant &selection, const QVariant &nodes, AbstractSchemeModel *model, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 private:
     QList<int> m_Indices;
     QList<QPoint> m_Points;
@@ -179,10 +179,10 @@ private:
 
 class DeleteNodes : public UndoScheme {
 public:
-    DeleteNodes (const QVariant &selection, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
+    DeleteNodes(const QVariant &selection, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 private:
     QList<int> m_Indices;
     QJsonDocument m_Document;
@@ -190,12 +190,12 @@ private:
 
 class PasteNodes : public UndoScheme {
 public:
-    PasteNodes (const QString &data, int x, int y, AbstractSchemeModel *model, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
+    PasteNodes(const QString &data, int x, int y, AbstractSchemeModel *model, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 
-    QVariant list() const {return m_List; }
+    QVariant list() const { return m_List; }
 
 private:
     QJsonDocument m_Document;
@@ -206,10 +206,10 @@ private:
 
 class CreateLink : public UndoScheme {
 public:
-    CreateLink (int sender, int oport, int receiver, int iport, AbstractSchemeModel *model, const QString &name = QObject::tr("Create Link"), QUndoCommand *parent = nullptr);
+    CreateLink(int sender, int oport, int receiver, int iport, AbstractSchemeModel *model, const QString &name = QObject::tr("Create Link"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 
 private:
     int m_Sender;
@@ -222,10 +222,10 @@ private:
 
 class DeleteLink : public UndoScheme {
 public:
-    DeleteLink (int index, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Link"), QUndoCommand *parent = nullptr);
+    DeleteLink(int index, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Link"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 
 private:
     int m_Sender;
@@ -238,10 +238,10 @@ private:
 
 class DeleteLinksByPort : public UndoScheme {
 public:
-    DeleteLinksByPort (int node, int port, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Links"), QUndoCommand *parent = nullptr);
+    DeleteLinksByPort(int node, int port, AbstractSchemeModel *model, const QString &name = QObject::tr("Delete Links"), QUndoCommand *parent = nullptr);
 
-    void undo () override;
-    void redo () override;
+    void undo() override;
+    void redo() override;
 
 private:
     int m_Node;

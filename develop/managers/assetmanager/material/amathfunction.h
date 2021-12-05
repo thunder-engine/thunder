@@ -15,7 +15,7 @@ public:
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
         int i   = 0;
         foreach(QString it, m_Params) {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
             out->name   = it;
             out->out    = false;
             out->pos    = i;
@@ -24,7 +24,7 @@ public:
             i++;
         }
         {
-            AbstractSchemeModel::Item *out  = new AbstractSchemeModel::Item;
+            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
             out->name   = "";
             out->out    = true;
             out->pos    = 0;
