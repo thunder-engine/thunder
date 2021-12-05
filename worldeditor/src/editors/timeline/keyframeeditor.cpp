@@ -281,7 +281,6 @@ void UndoKeyPositionChanged::undo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
-    emit m_scene->model()->changed();
 }
 
 void UndoKeyPositionChanged::redo() {
@@ -309,7 +308,6 @@ void UndoKeyPositionChanged::redo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
-    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::undo() {
@@ -353,7 +351,6 @@ void UndoDeleteSelectedKey::undo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
-    emit m_scene->model()->changed();
 }
 
 void UndoDeleteSelectedKey::redo() {
@@ -389,5 +386,4 @@ void UndoDeleteSelectedKey::redo() {
 
     m_scene->updateMaxDuration();
     m_scene->update();
-    emit m_scene->model()->changed();
 }

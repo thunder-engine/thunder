@@ -321,8 +321,6 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
 }
 
 void AnimationClipModel::updateController() {
-    emit changed();
-
     emit layoutAboutToBeChanged();
     emit layoutChanged();
 }

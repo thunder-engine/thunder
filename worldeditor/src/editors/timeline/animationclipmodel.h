@@ -52,7 +52,6 @@ public:
     void propertyUpdated(Object *object, const QString &path, const QString &property, uint32_t position);
 
 signals:
-    void changed();
     void rebind();
 
 protected:
@@ -63,10 +62,10 @@ protected:
     AssetConverterSettings *m_clipSettings;
 };
 
-class UndoAnimationClip : public QUndoCommand {
+class UndoAnimationClip : public UndoCommand {
 public:
     explicit UndoAnimationClip(AnimationClipModel *model, const QString &text, QUndoCommand *parent = nullptr) :
-        QUndoCommand(text, parent),
+        UndoCommand(text, model, parent),
         m_model(model) {
 
     }

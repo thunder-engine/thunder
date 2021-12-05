@@ -19,11 +19,11 @@ Timeline::Timeline(QWidget *parent) :
         ui(new Ui::Timeline),
         m_controller(nullptr),
         m_model(new AnimationClipModel(this)),
+        m_lastCommand(nullptr),
         m_TimerId(0),
         m_Row(-1),
         m_Col(-1),
-        m_Ind(-1),
-        m_Modified(false) {
+        m_Ind(-1) {
 
     ui->setupUi(this);
     ui->pause->setVisible(false);
@@ -36,7 +36,6 @@ Timeline::Timeline(QWidget *parent) :
 
     ui->widget->setModel(m_model);
 
-    connect(m_model, &AnimationClipModel::changed, this, &Timeline::onModified);
     connect(m_model, &AnimationClipModel::rebind, this, &Timeline::onRebind);
 
     connect(ui->valueEdit, &QLineEdit::editingFinished, this, &Timeline::onKeyChanged);
@@ -60,8 +59,9 @@ Timeline::~Timeline() {
 }
 
 void Timeline::saveClip() {
+    const UndoCommand *lastCommand = UndoManager::instance()->lastCommand(m_model);
     AnimationClip *clip = m_model->clip();
-    if(m_Modified && clip) {
+    if(m_lastCommand != lastCommand && clip) {
         VariantMap data = clip->saveUserData();
 
         string ref = Engine::reference(clip);
@@ -70,7 +70,7 @@ void Timeline::saveClip() {
             file.write(Json::save(data["Tracks"], 0).c_str());
             file.close();
 
-            m_Modified = false;
+            m_lastCommand = lastCommand;
         }
     }
 }
@@ -122,13 +122,32 @@ void Timeline::setPosition(uint32_t position) {
     if(m_controller) {
         m_controller->setPosition(position);
     }
-    // This method is very heavy
+
     ui->widget->setPosition(position);
 
     emit moved();
 }
 
 void Timeline::setController(Animator *controller) {
+    bool enable = (controller != nullptr);
+
+    ui->begin->setEnabled(enable);
+    ui->end->setEnabled(enable);
+
+    ui->record->setEnabled(enable);
+    ui->record->setChecked(false);
+
+    ui->play->setEnabled(enable);
+    ui->play->setChecked(false);
+
+    ui->next->setEnabled(enable);
+    ui->previous->setEnabled(enable);
+
+    ui->deleteKey->setEnabled(false);
+    ui->flatKey->setEnabled(false);
+
+    emit animated(enable);
+
     if(m_controller != controller) {
         saveClip();
 
@@ -151,22 +170,6 @@ void Timeline::setController(Animator *controller) {
             m_currentClip.clear();
             m_model->setClip(nullptr, nullptr);
         }
-
-        bool enable = (m_controller != nullptr);
-
-        ui->begin->setEnabled(enable);
-        ui->end->setEnabled(enable);
-
-        ui->record->setEnabled(enable);
-        ui->record->setChecked(false);
-
-        ui->play->setEnabled(enable);
-        ui->play->setChecked(false);
-
-        ui->next->setEnabled(enable);
-        ui->previous->setEnabled(enable);
-
-        emit animated(enable);
 
         updateClips();
     }
@@ -202,11 +205,6 @@ void Timeline::onPropertyUpdated(Object *object, const QString property) {
     }
 }
 
-void Timeline::onModified() {
-    m_Modified = true;
-
-}
-
 void Timeline::onRebind() {
     m_controller->rebind();
 }
@@ -231,6 +229,7 @@ void Timeline::onSelectKey(int row, int col, int index) {
         ui->timeEdit->setText(QString::number(key->m_Position * t.duration()));
     }
     ui->deleteKey->setEnabled(key != nullptr);
+    ui->flatKey->setEnabled(key != nullptr);
 }
 
 void Timeline::onRowsSelected(QStringList list) {

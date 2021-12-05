@@ -1,6 +1,6 @@
 #include "undomanager.h"
 
-UndoManager *UndoManager::m_pInstance   = nullptr;
+UndoManager *UndoManager::m_pInstance = nullptr;
 
 UndoManager *UndoManager::instance() {
     if(!m_pInstance) {
@@ -14,6 +14,12 @@ void UndoManager::destroy() {
     m_pInstance = nullptr;
 }
 
-void UndoManager::init() {
-
+const UndoCommand *UndoManager::lastCommand(const QObject *editor) const {
+    for(int i = index() - 1; i > 0; i--) {
+        const UndoCommand *cmd = dynamic_cast<const UndoCommand *>(command(i));
+        if(cmd && cmd->editor() == editor) {
+            return cmd;
+        }
+    }
+    return nullptr;
 }

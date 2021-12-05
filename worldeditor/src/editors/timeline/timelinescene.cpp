@@ -144,7 +144,6 @@ void TimelineScene::setModel(AnimationClipModel *model) {
 
 void TimelineScene::onPositionChanged(uint32_t time) {
     m_playHead->setTime((float)time / 1000.0f);
-    update();
 }
 
 void TimelineScene::onContentWidthChanged() {
@@ -223,7 +222,6 @@ void TimelineScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
                     m_playHead->setTime(x);
                     emit headPositionChanged(x * 1000.0f);
-                    update();
                 } break;
                 default: break;
             }
@@ -333,7 +331,6 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
             x = MAX(0.0f, m_rulerItem->screenToTime(x, true));
             m_playHead->setTime(x);
             emit headPositionChanged(x * 1000.0f);
-            update();
         }
     }
 }

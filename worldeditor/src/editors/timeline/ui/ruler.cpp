@@ -94,7 +94,7 @@ void Ruler::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
         int h = 12;
         if(i % 10 == 0) {
             h = 5;
-            painter->setPen((x < maxDuration) ? QColor(54, 54, 54) : QColor(54, 54, 54, 128));
+            painter->setPen((x <= maxDuration && maxDuration > 0) ? QColor(54, 54, 54) : QColor(54, 54, 54, 128));
             painter->drawText(QRectF(x + 2, -3, 30, 16), Qt::AlignVCenter, QString::number(i * m_Scale));
             painter->drawLine(x, h, x, MAX_VALUE);
             painter->setPen(midColor);

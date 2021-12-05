@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
         window.onOpenProject(QApplication::arguments().at(1));
     }
 
-    UndoManager::instance()->init();
     ComponentModel::instance()->init(&engine);
     ContentList::instance()->init(&engine);
     AssetList::instance()->init(&engine);

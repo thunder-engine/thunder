@@ -12,6 +12,7 @@ class Animator;
 class AnimationClipModel;
 
 class AnimationClip;
+class UndoCommand;
 
 namespace Ui {
     class Timeline;
@@ -54,8 +55,6 @@ protected:
     uint32_t position() const;
 
 private slots:
-    void onModified();
-
     void onRebind();
 
     void onSelectKey(int, int, int);
@@ -93,6 +92,8 @@ private:
 
     AnimationClipModel *m_model;
 
+    const UndoCommand *m_lastCommand;
+
     QMap<QString, AnimationClip *> m_clips;
 
     QString m_currentClip;
@@ -102,8 +103,6 @@ private:
     int32_t m_Row;
     int32_t m_Col;
     int32_t m_Ind;
-
-    bool m_Modified;
 };
 
 #endif // TIMELINE_H

@@ -6,12 +6,12 @@
 #include "ruler.h"
 
 PlayHead::PlayHead(Ruler *ruler) :
-        QGraphicsWidget(),
+        QGraphicsRectItem(),
         m_ruler(ruler),
         m_time(0.0f) {
 
-    setMinimumWidth(1);
-    setMaximumWidth(1);
+    setZValue(99);
+    setRect(0, 0, 1, 0);
 }
 
 void PlayHead::setTime(float time) {
@@ -21,12 +21,12 @@ void PlayHead::setTime(float time) {
 }
 
 void PlayHead::setHeight(float value) {
-    setMinimumHeight(value);
-    setMaximumHeight(value);
+    setRect(rect().x(), rect().y(), rect().width(), MAX_VALUE);
 }
 
 void PlayHead::updatePosition() {
     setX(m_ruler->x() + m_ruler->timeToScreen(m_time));
+    update();
 }
 
 void PlayHead::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {

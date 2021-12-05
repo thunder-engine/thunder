@@ -3,16 +3,15 @@
 
 #include <QWidget>
 
-#include <QUndoCommand>
+#include "undomanager.h"
+#include "timelinescene.h"
+#include "animationclipmodel.h"
 
 #include <animationcurve.h>
 
-class AnimationClipModel;
 class TreeRow;
-class TimelineScene;
 class QGraphicsView;
 class QSplitter;
-class AnimationCurve;
 
 class KeyFrameEditor : public QWidget {
     Q_OBJECT
@@ -66,10 +65,10 @@ private:
     QGraphicsView *m_timelineView;
 };
 
-class UndoKeyPositionChanged : public QUndoCommand {
+class UndoKeyPositionChanged : public UndoCommand {
 public:
     explicit UndoKeyPositionChanged(float delta, TimelineScene *scene, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
+        UndoCommand(name, scene ? scene->model() : nullptr, parent),
         m_delta(delta),
         m_scene(scene) {
 
@@ -82,10 +81,10 @@ protected:
     TimelineScene *m_scene;
 };
 
-class UndoDeleteSelectedKey : public QUndoCommand {
+class UndoDeleteSelectedKey : public UndoCommand {
 public:
     UndoDeleteSelectedKey(TimelineScene *scene, const QString &name, QUndoCommand *parent = nullptr) :
-        QUndoCommand(name, parent),
+        UndoCommand(name, scene ? scene->model() : nullptr, parent),
         m_scene(scene) {
 
     }

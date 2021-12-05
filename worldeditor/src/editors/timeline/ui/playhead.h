@@ -1,11 +1,11 @@
 #ifndef PLAYHEAD_H
 #define PLAYHEAD_H
 
-#include <QGraphicsWidget>
+#include <QGraphicsRectItem>
 
 class Ruler;
 
-class PlayHead : public QGraphicsWidget {
+class PlayHead : public QGraphicsRectItem {
 public:
     explicit PlayHead(Ruler *ruler);
 
