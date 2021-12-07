@@ -32,8 +32,6 @@
 
 #include "editors/componentselect/componentselect.h"
 
-#include "controllers/objectctrl.h"
-
 #include <QMap>
 #include <QMenu>
 

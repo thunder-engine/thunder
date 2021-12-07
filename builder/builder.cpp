@@ -1,9 +1,9 @@
 #include "builder.h"
 
 #include "log.h"
-#include "pluginmanager.h"
 #include "projectmanager.h"
-#include "settingsmanager.h"
+#include <editor/pluginmanager.h>
+#include <editor/settingsmanager.h>
 
 #include "platforms/desktop.h"
 

@@ -9,9 +9,9 @@
 #include <object.h>
 #include <editor/editortool.h>
 
-#include "cameractrl.h"
+#include <editor/viewport/cameractrl.h>
 
-#include "undomanager.h"
+#include <undomanager.h>
 
 class QInputEvent;
 
@@ -150,10 +150,10 @@ protected:
     bool m_local;
 };
 
-class UndoObject : public QUndoCommand {
+class UndoObject : public UndoCommand {
 public:
     UndoObject(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group = nullptr) :
-            QUndoCommand(name, group) {
+            UndoCommand(name, ctrl, group) {
         m_controller = ctrl;
     }
 protected:

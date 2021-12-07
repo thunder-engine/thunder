@@ -16,12 +16,12 @@
 
 #include <systems/rendersystem.h>
 
+#include <editor/pluginmanager.h>
+
 #include "textureconverter.h"
 #include "spritecontroller.h"
 
 #include "spriteelement.h"
-
-#include "pluginmanager.h"
 
 TextureEdit::TextureEdit() :
         ui(new Ui::TextureEdit),

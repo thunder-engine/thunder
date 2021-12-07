@@ -42,7 +42,7 @@
 #include "mapconverter.h"
 
 #include "projectmanager.h"
-#include "pluginmanager.h"
+#include <editor/pluginmanager.h>
 
 #include "log.h"
 
@@ -50,15 +50,15 @@
 
 #define INDEX_VERSION 2
 
-#define CODE "Code"
+const char *gCode("Code");
 
-const QString gCRC("crc");
-const QString gVersion("version");
-const QString gGUID("guid");
+const char *gCRC("crc");
+const char *gVersion("version");
+const char *gGUID("guid");
 
-const QString gEntry(".entry");
-const QString gCompany(".company");
-const QString gProject(".project");
+const char *gEntry(".entry");
+const char *gCompany(".company");
+const char *gProject(".project");
 
 AssetManager *AssetManager::m_pInstance = nullptr;
 
@@ -135,6 +135,10 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new EffectConverter);
     registerConverter(new TranslatorConverter);
     registerConverter(new MapConverter);
+
+    for(auto it : PluginManager::instance()->converters()) {
+        registerConverter(it);
+    }
 
     for(auto &it : m_Converters) {
         it->init();
@@ -267,7 +271,7 @@ bool AssetManager::isOutdated(AssetConverterSettings *settings) {
         md5.push_back('}');
 
         if(settings->hash() == md5) {
-            if(settings->typeName() == CODE || QFileInfo::exists(settings->absoluteDestination())) {
+            if(settings->typeName() == gCode || QFileInfo::exists(settings->absoluteDestination())) {
                 result = false;
             }
         }
@@ -440,7 +444,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
 
     settings->saveSettings();
 
-    if(settings->typeName() != CODE) {
+    if(settings->typeName() != gCode) {
         AssetConverterSettings *s = fetchSettings(src);
         registerAsset(settings->source(), settings->destination(), s->typeName());
     }
@@ -475,7 +479,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
             fab->setActor(actor);
             clone->setPrefab(fab);
 
-            if(settings->typeName() != CODE) {
+            if(settings->typeName() != gCode) {
                 registerAsset(settings->source(), settings->destination(), settings->typeName());
 
                 string dest = settings->destination().toStdString();
@@ -528,7 +532,9 @@ AssetConverterSettings *AssetManager::fetchSettings(const QFileInfo &source) {
 
 void AssetManager::registerConverter(AssetConverter *converter) {
     if(converter) {
+        bool valid = false;
         for(QString &format : converter->suffixes()) {
+            valid = true;
             m_Converters[format.toLower()] = converter;
 
             CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
@@ -538,6 +544,9 @@ void AssetManager::registerConverter(AssetConverter *converter) {
                 m_ClassMaps[format.toLower()] = builder->classMap();
                 m_Builders.push_back(builder);
             }
+        }
+        if(!valid) {
+            delete converter;
         }
     }
 }
@@ -700,7 +709,7 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
         if(force || isOutdated(settings)) {
             pushToImport(settings);
         } else {
-            if(settings->typeName() != CODE) {
+            if(settings->typeName() != gCode) {
                 QString guid = settings->destination();
                 registerAsset(info, guid, settings->typeName());
                 for(const QString &it : settings->subKeys()) {

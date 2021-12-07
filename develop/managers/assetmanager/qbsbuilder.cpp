@@ -13,9 +13,9 @@
 #include <config.h>
 
 #include <projectmanager.h>
-#include <settingsmanager.h>
 #include <assetmanager.h>
-#include <pluginmanager.h>
+#include <editor/settingsmanager.h>
+#include <editor/pluginmanager.h>
 #include <platforms/android.h>
 
 const QString gSdkPath("${sdkPath}");

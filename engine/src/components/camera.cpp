@@ -386,7 +386,7 @@ RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &fru
 }
 
 #ifdef NEXT_SHARED
-#include "handles.h"
+#include "viewport/handles.h"
 
 bool Camera::drawHandles(ObjectList &selected) {
     Transform *t = actor()->transform();

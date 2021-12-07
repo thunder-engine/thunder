@@ -187,7 +187,7 @@ bool PostProcessVolume::isPostProcessVolume() const {
 }
 
 #ifdef NEXT_SHARED
-#include "handles.h"
+#include "viewport/handles.h"
 
 bool PostProcessVolume::drawHandles(ObjectList &selected) {
     Transform *t = actor()->transform();

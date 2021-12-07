@@ -1,4 +1,4 @@
-#include "cameractrl.h"
+#include "editor/viewport/cameractrl.h"
 
 #include <QMenu>
 
@@ -13,8 +13,6 @@
 #include <components/meshrender.h>
 #include <components/spriterender.h>
 #include <components/textrender.h>
-
-#include "graph/sceneview.h"
 
 #define DT 0.0625f
 

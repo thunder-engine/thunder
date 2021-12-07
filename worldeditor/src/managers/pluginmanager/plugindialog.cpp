@@ -1,11 +1,11 @@
 #include <QFileDialog>
 
-#include "plugindialog.h"
-
 #include "ui_plugindialog.h"
 
-#include "pluginmanager.h"
+#include "plugindialog.h"
 #include "plugindelegate.h"
+
+#include <editor/pluginmanager.h>
 
 PluginDialog::PluginDialog(QWidget *parent) :
         QDialog(parent),
@@ -29,14 +29,14 @@ void PluginDialog::on_closeButton_clicked() {
 }
 
 void PluginDialog::on_loadButton_clicked() {
-    QDir dir        = QDir(QDir::currentPath());
-    QString path    = QFileDialog::getOpenFileName(this,
-                                                    tr("Please select Thunder Engine Mod"),
-                                                    dir.absolutePath(),
-                                                    tr("Mods (*.dll *.mod)") );
-    if( !path.isEmpty() ) {
-        PluginManager *model  = PluginManager::instance();
-        if( model->loadPlugin(dir.relativeFilePath(path)) ) {
+    QDir dir     = QDir(QDir::currentPath());
+    QString path = QFileDialog::getOpenFileName(this,
+                                                tr("Please select Thunder Engine Mod"),
+                                                dir.absolutePath(),
+                                                tr("Mods (*.dll *.mod)") );
+    if(!path.isEmpty()) {
+        PluginManager *model = PluginManager::instance();
+        if(model->loadPlugin(dir.relativeFilePath(path))) {
             ui->tableView->setModel(model);
         }
     }

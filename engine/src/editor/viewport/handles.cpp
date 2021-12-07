@@ -1,5 +1,5 @@
-#include "editor/handles.h"
-#include "editor/handletools.h"
+#include "editor/viewport/handles.h"
+#include "editor/viewport/handletools.h"
 
 #include "commandbuffer.h"
 #include "components/camera.h"

@@ -1,4 +1,9 @@
-#include "editorpipeline.h"
+#include "editor/viewport/editorpipeline.h"
+
+#include "editor/viewport/handles.h"
+#include "editor/viewport/cameractrl.h"
+
+#include "editor/settingsmanager.h"
 
 #include <commandbuffer.h>
 
@@ -12,12 +17,6 @@
 #include <resources/mesh.h>
 
 #include <postprocess/postprocessor.h>
-
-#include <editor/handles.h>
-
-#include "settingsmanager.h"
-
-#include "objectctrl.h"
 
 #include <QVariant>
 #include <QColor>

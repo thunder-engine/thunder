@@ -35,7 +35,7 @@ btCollisionShape *BoxCollider::shape() {
 }
 
 #ifdef NEXT_SHARED
-#include <editor/handles.h>
+#include <viewport/handles.h>
 
 bool BoxCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {

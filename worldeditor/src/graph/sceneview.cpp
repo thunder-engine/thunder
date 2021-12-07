@@ -16,7 +16,7 @@
 #include <resources/pipeline.h>
 #include <systems/rendersystem.h>
 
-#include "pluginmanager.h"
+#include <editor/pluginmanager.h>
 
 #define NONE 0
 #define RELEASE 1

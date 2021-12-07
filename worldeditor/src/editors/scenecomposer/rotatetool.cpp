@@ -4,7 +4,7 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <editor/handles.h>
+#include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
 #include "undomanager.h"

@@ -33,7 +33,7 @@ Project {
         condition: engine.desktop
         files: {
             var sources = srcFiles
-            sources.push("src/editor/*.cpp")
+            sources.push("src/editor/**/*.cpp")
             return sources
         }
         Depends { name: "cpp" }
@@ -46,7 +46,12 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED", "NEXT_LIBRARY"]
+        cpp.defines: {
+            var result = engine.defines
+            result.push("NEXT_SHARED")
+            result.push("NEXT_LIBRARY")
+            return result
+        }
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
@@ -105,6 +110,17 @@ Project {
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/editor"
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Viewport Editor includes"
+            prefix: "includes/editor/viewport"
+            files: [
+                "**/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: engine.INC_PATH + "/editor/viewport"
             qbs.installPrefix: engine.PREFIX
         }
     }

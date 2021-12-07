@@ -11,7 +11,6 @@ namespace Ui {
     class HierarchyBrowser;
 }
 
-class ObjectCtrl;
 class ObjectHierarchyModel;
 
 class TreeView : public QTreeView {

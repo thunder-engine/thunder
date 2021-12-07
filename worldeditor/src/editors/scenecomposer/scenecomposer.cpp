@@ -15,12 +15,12 @@
 #include <resources/prefab.h>
 
 #include <editor/assetconverter.h>
+#include <editor/pluginmanager.h>
 
-#include "controllers/objectctrl.h"
+#include "objectctrl.h"
 
 #include "undomanager.h"
 #include "projectmanager.h"
-#include "pluginmanager.h"
 #include "assetmanager.h"
 
 #include "editors/propertyedit/nextobject.h"

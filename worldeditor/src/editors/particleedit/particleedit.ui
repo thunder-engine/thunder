@@ -123,7 +123,7 @@
   <customwidget>
    <class>Viewport</class>
    <extends>QWidget</extends>
-   <header>graph/viewport.h</header>
+   <header>editor/viewport/viewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

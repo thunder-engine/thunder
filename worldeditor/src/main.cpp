@@ -4,14 +4,14 @@
 
 #include <stdio.h>
 
-#include "undomanager.h"
-
 #include "main/mainwindow.h"
 
+#include "undomanager.h"
 #include "assetmanager.h"
 #include "projectmanager.h"
-#include "pluginmanager.h"
-#include "settingsmanager.h"
+
+#include <editor/pluginmanager.h>
+#include <editor/settingsmanager.h>
 
 #include <engine.h>
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);
-    asset->registerConverter(new QbsBuilder());
+    asset->registerConverter(new QbsBuilder);
 
     MainWindow window(&engine);
 

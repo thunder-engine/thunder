@@ -3,10 +3,12 @@
 
 #include <QOpenGLWidget>
 
+#include <global.h>
+
 class CameraCtrl;
 class Scene;
 
-class Viewport : public QWidget {
+class NEXT_LIBRARY_EXPORT Viewport : public QWidget {
     Q_OBJECT
 public:
     Viewport(QWidget *parent = 0);

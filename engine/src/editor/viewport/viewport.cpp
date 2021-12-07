@@ -1,4 +1,8 @@
-#include "viewport.h"
+#include "editor/viewport/viewport.h"
+
+#include "editor/viewport/cameractrl.h"
+
+#include "editor/pluginmanager.h"
 
 #include <QWindow>
 #include <QVBoxLayout>
@@ -8,10 +12,6 @@
 
 #include <components/camera.h>
 #include <resources/pipeline.h>
-
-#include "controllers/cameractrl.h"
-
-#include "pluginmanager.h"
 
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),

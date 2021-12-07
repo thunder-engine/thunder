@@ -477,7 +477,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
 }
 
 #ifdef NEXT_SHARED
-#include "handles.h"
+#include "viewport/handles.h"
 
 bool TextRender::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {

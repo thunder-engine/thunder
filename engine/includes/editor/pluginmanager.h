@@ -1,26 +1,29 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
-#include "baseobjectmodel.h"
+#include <QAbstractItemModel>
 
 #include <stdint.h>
 #include <variant.h>
 
 #include <file.h>
+#include <global.h>
 
 class QLibrary;
 
+class Object;
+class Scene;
 class Engine;
 class Module;
 class System;
 class RenderSystem;
-
-class Object;
-class Scene;
+class AssetConverter;
 
 typedef QHash<Object *, ByteArray> ComponentMap;
 
-class PluginManager : public BaseObjectModel {
+typedef QMap<QString, AssetConverter *> ConvertersMap;
+
+class NEXT_LIBRARY_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT
 
 public:
@@ -30,15 +33,9 @@ public:
 
     void init(Engine *engine);
 
-    void rescan();
+    void rescan(QString path);
 
     bool loadPlugin(const QString &path, bool reload = false);
-
-    int columnCount(const QModelIndex &) const;
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-    QVariant data(const QModelIndex &index, int role) const;
 
     void initSystems();
 
@@ -47,6 +44,8 @@ public:
     void rescanPath(const QString &path);
 
     RenderSystem *render() const;
+
+    ConvertersMap converters() const;
 
 signals:
     void pluginReloaded();
@@ -60,6 +59,18 @@ private:
     PluginManager();
 
     ~PluginManager();
+
+    int columnCount(const QModelIndex &) const override;
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    QVariant data(const QModelIndex &index, int role) const override;
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+
+    QModelIndex parent(const QModelIndex &child) const override;
 
     static PluginManager *m_pInstance;
 
@@ -77,11 +88,33 @@ private:
 
     typedef QMap<QString, QLibrary *> LibrariesMap;
 
+    typedef QMap<QString, System *> SystemsMap;
+
+    struct Plugin {
+        bool operator== (const Plugin &left) {
+            return path == left.path;
+        }
+
+        QString name;
+
+        QString version;
+
+        QString description;
+
+        QString path;
+    };
+
     Engine *m_pEngine;
+
+    RenderSystem *m_pRender;
+
+    QString m_PluginPath;
 
     QStringList m_Suffixes;
 
-    QMap<QString, System *> m_Systems;
+    SystemsMap m_Systems;
+
+    ConvertersMap m_Converters;
 
     PluginsMap m_Extensions;
 
@@ -89,7 +122,7 @@ private:
 
     QList<Scene *> m_Scenes;
 
-    RenderSystem *m_pRender;
+    QList<Plugin> m_Plugins;
 };
 
 #endif // PLUGINMANAGER_H

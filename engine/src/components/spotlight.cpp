@@ -187,7 +187,7 @@ void SpotLight::setOuterAngle(float angle) {
 }
 
 #ifdef NEXT_SHARED
-#include "handles.h"
+#include "viewport/handles.h"
 
 bool SpotLight::drawHandles(ObjectList &selected) {
     A_UNUSED(selected);

@@ -1,17 +1,15 @@
 #include "spritecontroller.h"
 
 #include <QInputEvent>
+#include <QCursor>
 
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include <editor/handles.h>
-#include <editor/handletools.h>
-
-#include "controllers/editorpipeline.h"
-
-#include "graph/viewport.h"
+#include <editor/viewport/handles.h>
+#include <editor/viewport/handletools.h>
+#include <editor/viewport/editorpipeline.h>
 
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(view),

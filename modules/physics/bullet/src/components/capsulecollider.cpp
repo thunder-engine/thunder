@@ -33,7 +33,7 @@ btCollisionShape *CapsuleCollider::shape() {
 }
 
 #ifdef NEXT_SHARED
-#include <editor/handles.h>
+#include <viewport/handles.h>
 
 bool CapsuleCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {

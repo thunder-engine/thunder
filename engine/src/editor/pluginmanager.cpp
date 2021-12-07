@@ -15,9 +15,6 @@
 #include <bson.h>
 #include <json.h>
 
-#include "assetmanager.h"
-#include "projectmanager.h"
-
 enum {
     PLUGIN_NAME,
     PLUGIN_DESCRIPTION,
@@ -44,7 +41,7 @@ typedef Module *(*moduleHandler)  (Engine *engine);
 PluginManager *PluginManager::m_pInstance = nullptr;
 
 PluginManager::PluginManager() :
-        BaseObjectModel(),
+        QAbstractItemModel(),
         m_pEngine(nullptr),
         m_pRender(nullptr) {
 
@@ -57,12 +54,12 @@ PluginManager::~PluginManager() {
 
     m_Systems.clear();
 
-    foreach(auto it, m_Extensions) {
+    for(auto it : m_Extensions) {
         delete it;
     }
     m_Extensions.clear();
 
-    foreach(auto it, m_Libraries) {
+    for(auto it : m_Libraries) {
         delete it;
     }
     m_Libraries.clear();
@@ -90,14 +87,15 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QObject *item = static_cast<QObject *>(index.internalPointer());
+    Plugin plugin = m_Plugins.at(index.row());
+
     switch(role) {
         case Qt::DisplayRole: {
             switch(index.column()) {
-                case PLUGIN_NAME:        return item->objectName();
-                case PLUGIN_DESCRIPTION: return item->property(DESC).toString();
-                case PLUGIN_PATH:        return item->property(PATH).toString();
-                case PLUGIN_VERSION:     return item->property(VERSION).toString();
+                case PLUGIN_NAME:        return plugin.name;
+                case PLUGIN_DESCRIPTION: return plugin.description;
+                case PLUGIN_PATH:        return plugin.path;
+                case PLUGIN_VERSION:     return plugin.version;
                 default: break;
             }
         } break;
@@ -105,6 +103,18 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
     }
 
     return QVariant();
+}
+
+int PluginManager::rowCount(const QModelIndex &parent) const {
+    return m_Plugins.size();
+}
+
+QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent) const {
+    return createIndex(row, column);
+}
+
+QModelIndex PluginManager::parent(const QModelIndex &child) const {
+    return QModelIndex();
 }
 
 PluginManager *PluginManager::instance() {
@@ -125,7 +135,9 @@ void PluginManager::init(Engine *engine) {
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
-void PluginManager::rescan() {
+void PluginManager::rescan(QString path) {
+    m_PluginPath = path;
+
     QString system(QCoreApplication::applicationDirPath() + PLUGINS);
 
     QStringList list = m_Libraries.keys();
@@ -141,15 +153,10 @@ void PluginManager::rescan() {
                 delete value;
             }
             m_Libraries.remove(it);
-
-            QFileInfo info(it);
-            QObject *item = m_rootItem->findChild<QObject *>(info.fileName());
-            if(item) {
-                delete item;
-            }
         }
     }
-    rescanPath(ProjectManager::instance()->pluginsPath());
+    m_Plugins.clear();
+    rescanPath(m_PluginPath);
 }
 
 bool PluginManager::loadPlugin(const QString &path, bool reload) {
@@ -186,7 +193,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     }
                 }
                 for(auto &it : metaInfo[CONVERTERS].toList()) {
-                     AssetManager::instance()->registerConverter(plugin->assetConverter(it.toString().c_str()));
+                    m_Converters[it.toString().c_str()] = plugin->assetConverter(it.toString().c_str());
                 }
 
                 m_Libraries[path] = lib;
@@ -195,11 +202,13 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 beginInsertRows(QModelIndex(), start, start);
                     QFileInfo file(path);
 
-                    QObject *item = new QObject(m_rootItem);
-                    item->setObjectName(file.fileName());
-                    item->setProperty(PATH, file.filePath());
-                    item->setProperty(VERSION, metaInfo[VERSION].toString().c_str());
-                    item->setProperty(DESC, metaInfo[DESC].toString().c_str());
+                    Plugin plugin;
+                    plugin.name = file.fileName();
+                    plugin.path = file.filePath();
+                    plugin.version = metaInfo[VERSION].toString().c_str();
+                    plugin.description = metaInfo[DESC].toString().c_str();
+
+                    m_Plugins.push_back(plugin);
                 endInsertRows();
                 return true;
             } else {
@@ -218,7 +227,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
 void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo info(path);
 
-    QFileInfo dest = ProjectManager::instance()->pluginsPath() + QDir::separator() + info.fileName();
+    QFileInfo dest = m_PluginPath + QDir::separator() + info.fileName();
     QFileInfo temp = dest.absoluteFilePath() + ".tmp";
 
     // Rename old version of plugin
@@ -244,9 +253,10 @@ void PluginManager::reloadPlugin(const QString &path) {
         // Unload plugin
         delete plugin;
 
-        QObject *child = m_rootItem->findChild<QObject *>(info.fileName());
-        if(child) {
-            child->deleteLater();
+        for(auto it : m_Plugins) {
+            if(it.name == info.fileName()) {
+                m_Plugins.removeAll(it);
+            }
         }
 
         if(lib.value()->unload()) {
@@ -371,4 +381,8 @@ void PluginManager::deserializeComponents(const ComponentMap &map) {
 
 RenderSystem *PluginManager::render() const {
     return m_pRender;
+}
+
+ConvertersMap PluginManager::converters() const {
+    return m_Converters;
 }

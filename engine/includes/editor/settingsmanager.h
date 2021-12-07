@@ -4,9 +4,11 @@
 #include <QObject>
 #include <QLocale>
 
+#include <global.h>
+
 class QTranslator;
 
-class SettingsManager : public QObject {
+class NEXT_LIBRARY_EXPORT SettingsManager : public QObject {
     Q_OBJECT
 
 public:

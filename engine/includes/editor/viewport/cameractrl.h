@@ -9,6 +9,8 @@
 #include <amath.h>
 #include <object.h>
 
+#include <global.h>
+
 class Actor;
 class Scene;
 class Camera;
@@ -17,7 +19,7 @@ class QOpenGLWidget;
 class QMenu;
 class CommandBuffer;
 
-class CameraCtrl : public QObject {
+class NEXT_LIBRARY_EXPORT CameraCtrl : public QObject {
     Q_OBJECT
 
 public:

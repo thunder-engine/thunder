@@ -33,7 +33,7 @@ btCollisionShape *SphereCollider::shape() {
 }
 
 #ifdef NEXT_SHARED
-#include <editor/handles.h>
+#include <viewport/handles.h>
 
 bool SphereCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {

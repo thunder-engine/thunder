@@ -13,9 +13,10 @@
 #include <resources/pipeline.h>
 
 #include <editor/assetconverter.h>
+#include <editor/pluginmanager.h>
+
 #include <systems/rendersystem.h>
 
-#include "pluginmanager.h"
 #include "assetmanager.h"
 
 IconRender::IconRender(Engine *engine, QObject *parent) :

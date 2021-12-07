@@ -24,9 +24,9 @@
 
 #include "projectmodel.h"
 #include "projectmanager.h"
-#include "pluginmanager.h"
-#include "settingsmanager.h"
 #include "undomanager.h"
+#include <editor/pluginmanager.h>
+#include <editor/settingsmanager.h>
 
 #include "documentmodel.h"
 
@@ -382,7 +382,7 @@ void MainWindow::onOpenProject(const QString &path) {
 
     AssetManager::instance()->rescan(!Engine::reloadBundle());
 
-    PluginManager::instance()->rescan();
+    PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
     PluginManager::instance()->initSystems();
 
     ui->contentBrowser->rescan();

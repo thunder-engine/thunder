@@ -15,10 +15,10 @@
 
 #include <resources/mesh.h>
 
+#include <editor/viewport/cameractrl.h>
+
 #include <global.h>
 #include <json.h>
-
-#include "controllers/cameractrl.h"
 
 #include "shaderbuilder.h"
 

@@ -106,7 +106,7 @@ void Widget::composeComponent() {
 }
 
 #ifdef NEXT_SHARED
-#include <handles.h>
+#include <viewport/handles.h>
 
 bool Widget::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {

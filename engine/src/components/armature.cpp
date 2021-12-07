@@ -217,7 +217,7 @@ VariantMap Armature::saveUserData() const {
     return result;
 }
 #ifdef NEXT_SHARED
-#include "handles.h"
+#include "viewport/handles.h"
 
 bool Armature::drawHandles(ObjectList &selected) {
     if(isBoneSelected(selected)) {

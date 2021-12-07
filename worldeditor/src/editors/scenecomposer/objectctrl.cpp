@@ -9,7 +9,8 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <editor/handles.h>
+#include <editor/viewport/handles.h>
+#include <editor/viewport/editorpipeline.h>
 
 #include "selecttool.h"
 #include "movetool.h"
@@ -21,8 +22,7 @@
 
 #include "assetmanager.h"
 #include "projectmanager.h"
-#include "settingsmanager.h"
-#include "editorpipeline.h"
+#include <editor/settingsmanager.h>
 
 namespace  {
     static const char *gBackgroundColor("General/Colors/Background_Color");

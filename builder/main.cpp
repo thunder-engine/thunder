@@ -7,7 +7,8 @@
 #include <global.h>
 #include "projectmanager.h"
 #include "assetmanager.h"
-#include "pluginmanager.h"
+
+#include <editor/pluginmanager.h>
 
 #include "consolelog.h"
 
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
 
     Builder builder;
 
-    PluginManager::instance()->rescan();
+    PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
     PluginManager::instance()->initSystems();
 
     builder.setPlatform(parser.value(platformOption));

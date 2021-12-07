@@ -19,8 +19,8 @@
 
 #include <QTextBlock>
 
-#include "settingsmanager.h"
 #include "assetmanager.h"
+#include <editor/settingsmanager.h>
 
 const QString gFont("Editors/Text_Editor/Font/Font_Name");
 const QString gZoom("Editors/Text_Editor/Font/Zoom");

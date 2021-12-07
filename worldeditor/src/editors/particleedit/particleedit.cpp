@@ -10,7 +10,7 @@
 
 #include <global.h>
 
-#include "controllers/cameractrl.h"
+#include <editor/viewport/cameractrl.h>
 
 #include <components/scene.h>
 #include <components/actor.h>

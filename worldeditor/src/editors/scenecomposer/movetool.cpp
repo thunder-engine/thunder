@@ -3,7 +3,7 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include <editor/handles.h>
+#include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
 #include "undomanager.h"

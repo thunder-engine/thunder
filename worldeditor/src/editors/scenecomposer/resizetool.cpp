@@ -5,12 +5,10 @@
 #include <components/camera.h>
 #include <components/renderable.h>
 
-#include <editor/handles.h>
+#include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
 #include "undomanager.h"
-
-#include <QDebug>
 
 ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {
