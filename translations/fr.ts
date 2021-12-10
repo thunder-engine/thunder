@@ -31,7 +31,7 @@
     <message>
         <location line="+1"/>
         <source>Copyright 2007-%1 by %2. All rights reserved.</source>
-        <translation>AboutDialogCopyright 2007-%1 par %2. Tous droits réservés.</translation>
+        <translation>Copyright 2007-%1 par %2. Tous droits réservés.</translation>
     </message>
     <message>
         <location line="+35"/>
@@ -292,7 +292,7 @@
     <message>
         <location line="+1"/>
         <source>Lighting Features</source>
-        <translation type="unfinished"></translation>
+        <translation>Fonctionnalités d&apos;éclairage</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -554,7 +554,7 @@
     <message>
         <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+123"/>
         <source>The effect has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cet effet a été modifié.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -564,7 +564,7 @@
     <message>
         <location line="+53"/>
         <source>Do you want to delete emitter?</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous supprimer cet émetteur ?</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -674,7 +674,7 @@
     <message>
         <location line="+11"/>
         <source>Delete Actors</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer les acteurs</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -1012,7 +1012,7 @@
     <message>
         <location line="-1"/>
         <source>The map has been modified.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte a été modifiée.</translation>
     </message>
     <message>
         <location line="+64"/>
