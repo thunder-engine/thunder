@@ -8,9 +8,20 @@
 static const char *meta = \
 "{"
 "   \"version\": \"1.0\","
+"   \"module\": \"Gui\","
 "   \"description\": \"GUI Plugin\","
 "   \"systems\": ["
 "       \"GuiSystem\""
+"   ],"
+"   \"extensions\": ["
+"       \"AbstractButton\","
+"       \"Button\","
+"       \"Image\","
+"       \"Label\","
+"       \"ProgressBar\","
+"       \"RectTransform\","
+"       \"Switch\","
+"       \"Widget\""
 "   ]"
 "}";
 

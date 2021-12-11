@@ -26,6 +26,7 @@ enum {
 
 #define DESC    "description"
 #define VERSION "version"
+#define MODULE  "module"
 #define SYSTEMS "systems"
 #define EXTENSIONS "extensions"
 #define CONVERTERS "converters"
@@ -117,6 +118,10 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
     return QModelIndex();
 }
 
+QString PluginManager::getModuleName(const QString &type) const {
+    return m_Modules.value(type, QString());
+}
+
 PluginManager *PluginManager::instance() {
     if(!m_pInstance) {
         m_pInstance = new PluginManager;
@@ -181,12 +186,14 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 if(!metaInfo[EXTENSIONS].toList().empty()) {
                     registerExtensionPlugin(path, plugin);
 
-                    if(reload) {
-                        QStringList components;
-                        for(auto &it : metaInfo[EXTENSIONS].toList()) {
-                            components << QString::fromStdString(it.toString());
-                        }
+                    QStringList components;
+                    for(auto &it : metaInfo[EXTENSIONS].toList()) {
+                        QString type = QString::fromStdString(it.toString());
+                        m_Modules[type] = metaInfo[MODULE].toString().c_str();
+                        components << type;
+                    }
 
+                    if(reload) {
                         ComponentMap result;
                         serializeComponents(components, result);
                         deserializeComponents(result);
@@ -253,7 +260,7 @@ void PluginManager::reloadPlugin(const QString &path) {
         // Unload plugin
         delete plugin;
 
-        for(auto it : m_Plugins) {
+        for(auto &it : m_Plugins) {
             if(it.name == info.fileName()) {
                 m_Plugins.removeAll(it);
             }
@@ -323,7 +330,7 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
 }
 
 void PluginManager::initSystems() {
-    foreach(auto it, m_Systems) {
+    for(auto it : m_Systems) {
         if(it) {
             it->init();
         }

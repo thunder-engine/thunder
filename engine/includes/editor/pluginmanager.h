@@ -12,6 +12,7 @@
 class QLibrary;
 
 class Object;
+class ObjectSystem;
 class Scene;
 class Engine;
 class Module;
@@ -46,6 +47,10 @@ public:
     RenderSystem *render() const;
 
     ConvertersMap converters() const;
+
+    QString getModuleName(const QString &type) const;
+
+    QString getModuleName(const ObjectSystem *system) const;
 
 signals:
     void pluginReloaded();
@@ -90,6 +95,8 @@ private:
 
     typedef QMap<QString, System *> SystemsMap;
 
+    typedef QMap<QString, QString> ModulesMap;
+
     struct Plugin {
         bool operator== (const Plugin &left) {
             return path == left.path;
@@ -119,6 +126,8 @@ private:
     PluginsMap m_Extensions;
 
     LibrariesMap m_Libraries;
+
+    ModulesMap m_Modules;
 
     QList<Scene *> m_Scenes;
 

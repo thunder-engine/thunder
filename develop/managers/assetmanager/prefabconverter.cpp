@@ -8,6 +8,9 @@
 #include <bson.h>
 #include <json.h>
 
+#include <editor/pluginmanager.h>
+#include "projectmanager.h"
+
 #define FORMAT_VERSION 2
 
 PrefabConverterSettings::PrefabConverterSettings() {
@@ -50,7 +53,7 @@ uint8_t PrefabConverter::convertFile(AssetConverterSettings *settings) {
         src.close();
 
         Variant actor = readJson(data, settings);
-        injectResource(actor, Engine::objectCreate<Prefab>(""));
+        injectResource(actor, requestResource());
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
@@ -103,6 +106,23 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
     *i = resource->uuid();
 
     objects.push_front(Engine::toVariant(resource).toList().front());
+
+    QSet<QString> modules;
+    for(auto &it : objects) {
+        VariantList *object = reinterpret_cast<VariantList *>(it.data());
+        if(object) {
+            QString type = QString::fromStdString(object->begin()->toString());
+            QString module = PluginManager::instance()->getModuleName(type);
+            if(!module.isEmpty()) {
+                modules.insert(module);
+            }
+        }
+    }
+    ProjectManager::instance()->reportModules(modules);
+}
+
+Resource *PrefabConverter::requestResource() {
+    return Engine::objectCreate<Prefab>("");
 }
 
 bool PrefabConverter::toVersion1(Variant &variant) {

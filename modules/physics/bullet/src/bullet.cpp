@@ -13,12 +13,21 @@ Module *moduleCreate(Engine *engine) {
 static const char *meta = \
 "{"
 "   \"version\": \"1.0\","
+"   \"module\": \"Bullet\","
 "   \"description\": \"BulletPhysics Module\","
 "   \"systems\": ["
 "       \"BulletSystem\""
 "   ],"
 "   \"converters\": ["
 "       \"PhysicMaterialConverter\""
+"   ],"
+"   \"extensions\": ["
+"       \"BoxCollider\","
+"       \"CapsuleCollider\","
+"       \"Collider\","
+"       \"RigidBody\","
+"       \"SphereCollider\","
+"       \"VolumeCollider\""
 "   ]"
 "}";
 

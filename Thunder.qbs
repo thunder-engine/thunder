@@ -83,11 +83,7 @@ Project {
     references: [
         "thirdparty/thirdparty.qbs",
         "engine/engine.qbs",
-        "modules/media/media.qbs",
-        "modules/physics/bullet/bullet.qbs",
-        "modules/renders/renders.qbs",
-        "modules/vms/angel/angel.qbs",
-        "modules/gui/gui.qbs",
+        "modules/modules.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
         "build/install.qbs",

@@ -3,7 +3,6 @@
 #include "ui_plugindialog.h"
 
 #include "plugindialog.h"
-#include "plugindelegate.h"
 
 #include <editor/pluginmanager.h>
 
@@ -16,7 +15,6 @@ PluginDialog::PluginDialog(QWidget *parent) :
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
     ui->tableView->setModel(PluginManager::instance());
-    ui->tableView->setItemDelegate(new PluginDelegate(this));
     ui->tableView->horizontalHeader()->setHighlightSections(false);
 }
 
@@ -29,7 +27,7 @@ void PluginDialog::on_closeButton_clicked() {
 }
 
 void PluginDialog::on_loadButton_clicked() {
-    QDir dir     = QDir(QDir::currentPath());
+    QDir dir = QDir(QDir::currentPath());
     QString path = QFileDialog::getOpenFileName(this,
                                                 tr("Please select Thunder Engine Mod"),
                                                 dir.absolutePath(),

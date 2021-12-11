@@ -13,12 +13,16 @@ Module *moduleCreate(Engine *engine) {
 static const char *meta = \
 "{"
 "   \"version\": \"1.0\","
+"   \"module\": \"Media\","
 "   \"description\": \"Media Module\","
 "   \"systems\": ["
 "       \"MediaSystem\""
 "   ],"
 "   \"converters\": ["
 "       \"AudioConverter\""
+"   ],"
+"   \"extensions\": ["
+"       \"AudioSource\""
 "   ]"
 "}";
 

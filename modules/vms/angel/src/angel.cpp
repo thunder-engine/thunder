@@ -13,12 +13,16 @@ Module *moduleCreate(Engine *engine) {
 static const char *meta = \
 "{"
 "   \"version\": \"1.0\","
+"   \"module\": \"Angel\","
 "   \"description\": \"AngelScript Module\","
 "   \"systems\": ["
 "       \"AngelSystem\""
 "   ],"
 "   \"converters\": ["
 "       \"AngelBuilder\""
+"   ],"
+"   \"extensions\": ["
+"       \"AngelBehaviour\""
 "   ]"
 "}";
 

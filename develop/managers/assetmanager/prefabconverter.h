@@ -29,6 +29,8 @@ protected:
     Variant readJson(const string &data, AssetConverterSettings *);
     void injectResource(Variant &origin, Resource *resource);
 
+    virtual Resource *requestResource();
+
     virtual bool toVersion1(Variant &variant);
     virtual bool toVersion2(Variant &variant);
     virtual bool toVersion3(Variant &variant);

@@ -31,7 +31,7 @@ namespace {
 ProjectManager *ProjectManager::m_pInstance = nullptr;
 
 ProjectManager::ProjectManager() :
-        m_Builder(new QProcess(this)) {
+        m_builder(new QProcess(this)) {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -42,13 +42,13 @@ ProjectManager::ProjectManager() :
     dir.cdUp();
 #endif
 
-    m_SDKPath = QFileInfo(dir.absolutePath());
-    m_ResourcePath = QFileInfo(sdkPath() + "/resources");
-    m_TemplatePath = QFileInfo(resourcePath() + "/editor/templates");
+    m_sdkPath = QFileInfo(dir.absolutePath());
+    m_resourcePath = QFileInfo(sdkPath() + "/resources");
+    m_templatePath = QFileInfo(resourcePath() + "/editor/templates");
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
-    m_MyProjectsPath = QFileInfo(path);
+    m_myProjectsPath = QFileInfo(path);
 
     setSupportedPlatform(new DesktopPlatform);
     setSupportedPlatform(new AndroidPlatform);
@@ -57,10 +57,10 @@ ProjectManager::ProjectManager() :
     setSupportedPlatform(new TvOSPlatform);
 #endif
 
-    connect(m_Builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
+    connect(m_builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
 
-    connect(m_Builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
-    connect(m_Builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
+    connect(m_builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
+    connect(m_builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
 }
 
 ProjectManager *ProjectManager::instance() {
@@ -76,43 +76,43 @@ void ProjectManager::destroy() {
 }
 
 void ProjectManager::init(const QString &project, const QString &target) {
-    m_ProjectPath = QFileInfo(project);
+    m_projectPath = QFileInfo(project);
 
     if(!target.isEmpty()) {
         QDir dir;
         dir.mkpath(target);
     }
-    m_TargetPath = QFileInfo(target);
+    m_targetPath = QFileInfo(target);
 
     loadSettings();
 
-    m_ProjectName = m_ProjectPath.completeBaseName();
+    m_projectName = m_projectPath.completeBaseName();
 
-    m_ContentPath = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gContent);
-    m_PluginsPath = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlugins);
-    m_CachePath = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gCache);
+    m_contentPath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gContent);
+    m_pluginsPath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gPlugins);
+    m_cachePath = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gCache);
 
-    m_IconPath = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gThumbnails);
-    m_GeneratedPath = QFileInfo(m_CachePath.absoluteFilePath() + QDir::separator() + gGenerated);
+    m_iconPath = QFileInfo(m_cachePath.absoluteFilePath() + QDir::separator() + gThumbnails);
+    m_generatedPath = QFileInfo(m_cachePath.absoluteFilePath() + QDir::separator() + gGenerated);
 
-    m_ManifestFile = QFileInfo(m_ProjectPath.absolutePath() + QDir::separator() + gPlatforms + "/android/AndroidManifest.xml");
+    m_manifestFile = QFileInfo(m_projectPath.absolutePath() + QDir::separator() + gPlatforms + "/android/AndroidManifest.xml");
 
     QDir dir;
-    dir.mkpath(m_ContentPath.absoluteFilePath());
-    dir.mkpath(m_IconPath.absoluteFilePath());
-    dir.mkpath(m_GeneratedPath.absoluteFilePath());
-    dir.mkpath(m_PluginsPath.absoluteFilePath());
+    dir.mkpath(m_contentPath.absoluteFilePath());
+    dir.mkpath(m_iconPath.absoluteFilePath());
+    dir.mkpath(m_generatedPath.absoluteFilePath());
+    dir.mkpath(m_pluginsPath.absoluteFilePath());
 
     setCurrentPlatform();
 }
 
 void ProjectManager::loadSettings() {
-    QFile file(m_ProjectPath.absoluteFilePath());
+    QFile file(m_projectPath.absoluteFilePath());
     if(file.open(QIODevice::ReadOnly)) {
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         file.close();
 
-        m_ProjectId = QUuid::createUuid().toString();
+        m_projectId = QUuid::createUuid().toString();
         if(!doc.isNull()) {
             const QMetaObject *meta = metaObject();
             QJsonObject object = doc.object();
@@ -133,14 +133,14 @@ void ProjectManager::loadSettings() {
             {
                 QJsonObject::iterator it = object.find(gProject);
                 if(it != doc.object().end()) {
-                    m_ProjectId = it.value().toString();
+                    m_projectId = it.value().toString();
                 }
             }
             {
                 QJsonObject::iterator it = object.find(gPlatforms);
                 if(it != doc.object().end()) {
                     foreach(auto platform, it.value().toArray()) {
-                        m_Platforms << platform.toString();
+                        m_platforms << platform.toString();
                     }
                 }
             }
@@ -148,15 +148,13 @@ void ProjectManager::loadSettings() {
                 QJsonObject::iterator it = object.find(gModules);
                 if(it != doc.object().end()) {
                     foreach(auto module, it.value().toArray()) {
-                        m_Modules << module.toString();
+                        m_modules << module.toString();
                     }
                 }
             }
         }
 
-        if(m_Modules.indexOf("RenderGL") == -1) {
-            m_Modules.append("RenderGL");
-        }
+        m_autoModules.insert("RenderGL");
 
         saveSettings();
     }
@@ -181,18 +179,18 @@ void ProjectManager::saveSettings() {
         }
     }
 
-    object[gProject] = QJsonValue(m_ProjectId);
-    if(!m_Platforms.isEmpty()) {
-        object[gPlatforms] = QJsonArray::fromStringList(m_Platforms);
+    object[gProject] = QJsonValue(m_projectId);
+    if(!m_platforms.isEmpty()) {
+        object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
     }
 
-    if(!m_Modules.isEmpty()) {
-        object[gModules] = QJsonArray::fromStringList(m_Modules);
+    if(!m_modules.isEmpty()) {
+        object[gModules] = QJsonArray::fromStringList(m_modules.toList());
     }
 
     doc.setObject(object);
 
-    QFile file(m_ProjectPath.absoluteFilePath());
+    QFile file(m_projectPath.absoluteFilePath());
     if(file.open(QIODevice::WriteOnly)) {
         file.write(doc.toJson());
         file.close();
@@ -217,9 +215,9 @@ void ProjectManager::build(QString platform) {
 
         qDebug() << args.join(" ");
 
-        m_Builder->start("Builder", args);
-        if(!m_Builder->waitForStarted()) {
-            Log(Log::ERR) << qPrintable(m_Builder->errorString());
+        m_builder->start("Builder", args);
+        if(!m_builder->waitForStarted()) {
+            Log(Log::ERR) << qPrintable(m_builder->errorString());
         }
     }
 }
@@ -233,41 +231,45 @@ void ProjectManager::onBuildFinished(int exitCode, QProcess::ExitStatus) {
 }
 
 void ProjectManager::readOutput() {
-    emit readBuildLogs(m_Builder->readAllStandardOutput());
+    emit readBuildLogs(m_builder->readAllStandardOutput());
 }
 
 void ProjectManager::readError() {
-    emit readBuildLogs(m_Builder->readAllStandardError());
+    emit readBuildLogs(m_builder->readAllStandardError());
 }
 
 QStringList ProjectManager::modules() const {
-    return m_Modules;
+    return (m_autoModules + m_modules).toList();
 }
 
 QStringList ProjectManager::platforms() const {
-    QStringList list = m_SupportedPlatforms.keys();
-    return (m_Platforms.isEmpty()) ? list : m_Platforms;
+    QStringList list = m_supportedPlatforms.keys();
+    return (m_platforms.isEmpty()) ? list : m_platforms;
 }
 
 Platform *ProjectManager::supportedPlatform(const QString &platform) {
-    return m_SupportedPlatforms[platform];
+    return m_supportedPlatforms[platform];
 }
 
 void ProjectManager::setSupportedPlatform(Platform *platform) {
-    m_SupportedPlatforms[platform->name()] = platform;
+    m_supportedPlatforms[platform->name()] = platform;
 }
 
 Platform *ProjectManager::currentPlatform() const {
-    return m_pCurrentPlatform;
+    return m_currentPlatform;
 }
 
 void ProjectManager::setCurrentPlatform(const QString &platform) {
-    m_pCurrentPlatform = (platform.isEmpty()) ?  m_SupportedPlatforms["desktop"] : m_SupportedPlatforms[platform];
+    m_currentPlatform = (platform.isEmpty()) ?  m_supportedPlatforms["desktop"] : m_supportedPlatforms[platform];
 
-    m_ImportPath = QFileInfo(m_CachePath.absoluteFilePath() +
-                             ((platform == nullptr) ? "" : QDir::separator() + m_pCurrentPlatform->name()) +
+    m_importPath = QFileInfo(m_cachePath.absoluteFilePath() +
+                             ((platform == nullptr) ? "" : QDir::separator() + m_currentPlatform->name()) +
                              QDir::separator() + gImport);
 
     QDir dir;
-    dir.mkpath(m_ImportPath.absoluteFilePath());
+    dir.mkpath(m_importPath.absoluteFilePath());
+}
+
+void ProjectManager::reportModules(QSet<QString> &modules) {
+    m_autoModules += modules;
 }
