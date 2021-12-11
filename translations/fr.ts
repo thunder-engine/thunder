@@ -287,7 +287,7 @@
     <message>
         <location filename="../worldeditor/src/controllers/editorpipeline.cpp" line="+237"/>
         <source>Post Processing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Post-traitement</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -559,7 +559,7 @@
     <message>
         <location line="+1"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Voulez-vous enregistrer vos modifications ?</translation>
+        <translation>Voulez-vous enregistrer vos modifications ?</translation>
     </message>
     <message>
         <location line="+53"/>
@@ -679,7 +679,7 @@
     <message>
         <location line="+12"/>
         <source>Remove Component</source>
-        <translation type="unfinished">Supprimer le composant</translation>
+        <translation>Supprimer le composant</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -1007,7 +1007,7 @@
         <location line="+1"/>
         <location line="+66"/>
         <source>Do you want to save your changes?</source>
-        <translation type="unfinished">Voulez-vous enregistrer vos modifications ?</translation>
+        <translation>Voulez-vous enregistrer vos modifications ?</translation>
     </message>
     <message>
         <location line="-1"/>
