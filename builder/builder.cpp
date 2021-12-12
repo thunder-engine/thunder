@@ -23,7 +23,7 @@ void Builder::setPlatform(const QString &platform) {
     ProjectManager *project = ProjectManager::instance();
     SettingsManager::instance()->loadSettings();
     if(platform.isEmpty()) {
-        for(QString it : project->platforms()) {
+        for(QString &it : project->platforms()) {
             m_Stack.push(it);
         }
     } else  {
@@ -51,7 +51,7 @@ void Builder::package(const QString &target) {
         dir += "/Contents/MacOS";
     }
 #endif
-    dir    += "/base.pak";
+    dir += "/base.pak";
 
     Log(Log::INF) << "Packaging Assets to:" << qPrintable(dir);
     QuaZip zip(dir);
@@ -68,7 +68,7 @@ void Builder::package(const QString &target) {
         if(info.isFile()) {
             QFile inFile(info.absoluteFilePath());
 
-            string origin   = AssetManager::instance()->guidToPath(info.fileName().toStdString());
+            string origin = AssetManager::instance()->guidToPath(info.fileName().toStdString());
             Log(Log::INF) << "\tCoping:" << origin.c_str();
 
             if(!inFile.open(QIODevice::ReadOnly)) {

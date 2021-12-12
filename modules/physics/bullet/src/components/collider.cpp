@@ -1,10 +1,5 @@
 #include "components/collider.h"
 
-/// \todo Temporary
-#include <components/transform.h>
-#include <components/actor.h>
-#include <log.h>
-
 Collider::Collider() :
         m_pCollisionShape(nullptr),
         m_pCollisionObject(nullptr),

@@ -92,7 +92,7 @@ bool AngelBuilder::buildProject() {
             mod->AddScriptSection("AngelData", base.readAll());
             base.close();
         }
-        for(QString it : m_Sources) {
+        for(QString &it : m_Sources) {
             QFile file(it);
             if(file.open( QIODevice::ReadOnly)) {
                 mod->AddScriptSection("AngelData", file.readAll().data());

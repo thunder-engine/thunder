@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QVariant>
 #include <QWidgetAction>
+#include <QApplication>
 
 #include <QQmlContext>
 #include <QQuickItem>
@@ -627,4 +628,8 @@ void MainWindow::on_actionThunder_Answers_triggered() {
 
 void MainWindow::on_actionThunder_Manual_triggered() {
     QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest", QUrl::TolerantMode));
+}
+
+void MainWindow::on_actionExit_triggered() {
+    closeEvent(new QCloseEvent);
 }

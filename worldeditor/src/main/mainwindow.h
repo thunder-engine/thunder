@@ -113,6 +113,7 @@ private slots:
     void on_actionAPI_Reference_triggered();
     void on_actionThunder_Answers_triggered();
     void on_actionThunder_Manual_triggered();
+    void on_actionExit_triggered();
 };
 
 #endif // MAINWIDOW_H
