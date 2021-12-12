@@ -86,7 +86,7 @@ protected:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"as"}; }
     QAbstractItemModel *classMap() const Q_DECL_OVERRIDE;
 
-    uint8_t convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 

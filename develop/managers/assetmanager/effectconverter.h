@@ -266,7 +266,7 @@ public:
 
 protected:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"efx"}; }
-    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;

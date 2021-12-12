@@ -2,7 +2,6 @@
 
 #include <QFileInfo>
 #include <QTime>
-#include <QVariantMap>
 #include <QUuid>
 #include <QDebug>
 
@@ -12,8 +11,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "bson.h"
-#include "log.h"
+#include <bson.h>
+#include <log.h>
 
 #include "components/actor.h"
 #include "components/armature.h"
@@ -181,7 +180,7 @@ Actor *AssimpConverter::createActor(const QString &guid) const {
     return AssetConverter::createActor(guid);
 }
 
-uint8_t AssimpConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *settings) {
     QTime time;
     time.start();
 
@@ -259,9 +258,9 @@ uint8_t AssimpConverter::convertFile(AssetConverterSettings *settings) {
 
         settings->setCurrentVersion(settings->version());
 
-        return 0;
+        return Success;
     }
-    return 1;
+    return InternalError;
 }
 
 Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiMatrix4x4 &p, Actor *parent, AssimpImportSettings *fbxSettings) {

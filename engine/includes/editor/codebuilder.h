@@ -37,7 +37,7 @@ public:
 
     virtual QAbstractItemModel *classMap() const;
 
-    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
 signals:
     void buildSuccessful();

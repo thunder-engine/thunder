@@ -39,16 +39,16 @@ AnimationBuilder::AnimationBuilder() {
     m_Functions << "BaseState";
 }
 
-uint8_t AnimationBuilder::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode AnimationBuilder::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
     QFile file(settings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data  = Bson::save( object() );
         file.write((const char *)&data[0], data.size());
         file.close();
-        return 0;
+        return Success;
     }
-    return 1;
+    return InternalError;
 }
 
 AssetConverterSettings *AnimationBuilder::createSettings() const {

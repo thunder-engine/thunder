@@ -15,7 +15,7 @@ AssetConverterSettings *PhysicMaterialConverter::createSettings() const {
     return new PhysicMaterialImportSettings();
 }
 
-uint8_t PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         PhysicMaterial material;
@@ -31,9 +31,9 @@ uint8_t PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
             ByteArray data = Bson::save(Engine::toVariant(&material));
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
-            return 0;
+            return Success;
         }
     }
 
-    return 1;
+    return InternalError;
 }

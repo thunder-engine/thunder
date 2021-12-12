@@ -44,7 +44,7 @@ Actor *PrefabConverter::createActor(const QString &guid) const {
     return AssetConverter::createActor(guid);
 }
 
-uint8_t PrefabConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
     QFile src(settings->source());
@@ -61,10 +61,10 @@ uint8_t PrefabConverter::convertFile(AssetConverterSettings *settings) {
             file.write((const char *)&data[0], data.size());
             file.close();
 
-            return 0;
+            return Success;
         }
     }
-    return 1;
+    return InternalError;
 }
 
 Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *settings) {

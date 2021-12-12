@@ -14,7 +14,7 @@ public:
 class AnimConverter : public AssetConverter {
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"anim"}; }
 
-    uint8_t convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation.anim"; }

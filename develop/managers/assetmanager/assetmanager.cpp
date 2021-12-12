@@ -1,15 +1,9 @@
 #include "assetmanager.h"
 
-#include <QCoreApplication>
 #include <QDirIterator>
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <QUuid>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QMetaProperty>
-#include <QUrl>
 #include <QDebug>
 #include <QCryptographicHash>
 #include <QMessageBox>
@@ -661,18 +655,10 @@ void AssetManager::dumpBundle() {
 }
 
 void AssetManager::onPerform() {
-    QDir dir(m_pProjectManager->contentPath());
-
     if(!m_ImportQueue.isEmpty()) {
-        AssetConverterSettings *settings = m_ImportQueue.takeFirst();
-
-        if(!convert(settings)) {
-            QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
-            dir.mkpath(QFileInfo(dst).absoluteDir().absolutePath());
-            QFile::copy(settings->source(), dst);
-        }
+        convert(m_ImportQueue.takeFirst());
     } else {
-        foreach(CodeBuilder *it, m_Builders) {
+        for(CodeBuilder *it : m_Builders) {
             it->rescanSources(ProjectManager::instance()->contentPath());
             if(!it->isEmpty()) {
                 QString uuid = it->persistentUUID();
@@ -685,7 +671,7 @@ void AssetManager::onPerform() {
         cleanupBundle();
 
         if(isOutdated()) {
-            foreach(CodeBuilder *it, m_Builders) {
+            for(CodeBuilder *it : m_Builders) {
                 if(!it->isEmpty() && !it->buildProject()) {
                     m_pTimer->stop();
                     emit importFinished();
@@ -693,10 +679,10 @@ void AssetManager::onPerform() {
             }
             return;
         }
-        m_pTimer->stop();
-
         m_pDirWatcher->addPath(m_pProjectManager->contentPath());
         m_Labels.removeDuplicates();
+
+        m_pTimer->stop();
         emit importFinished();
     }
 }
@@ -751,45 +737,53 @@ AssetConverter *AssetManager::getConverter(AssetConverterSettings *settings) {
 }
 
 
-bool AssetManager::convert(AssetConverterSettings *settings) {
+void AssetManager::convert(AssetConverterSettings *settings) {
     QFileInfo info(settings->source());
     QString format = info.completeSuffix().toLower();
 
     auto it = m_Converters.find(format);
     if(it != m_Converters.end()) {
-        Log(Log::INF) << "Converting:" << qPrintable(settings->source());
+            uint8_t result = it.value()->convertFile(settings);
+            switch(result) {
+            case AssetConverter::Success: {
+                Log(Log::INF) << "Converting:" << qPrintable(settings->source());
 
-        if(it.value()->convertFile(settings) == 0) {
-            QString guid = settings->destination();
-            QString type = settings->typeName();
-            QString source = settings->source();
-            registerAsset(source, guid, type);
+                QString guid = settings->destination();
+                QString type = settings->typeName();
+                QString source = settings->source();
+                registerAsset(source, guid, type);
 
-            for(const QString &it : settings->subKeys()) {
-                QString value = settings->subItem(it);
-                QString type = settings->subTypeName(it);
-                QString path = source + "/" + it;
+                for(const QString &it : settings->subKeys()) {
+                    QString value = settings->subItem(it);
+                    QString type = settings->subTypeName(it);
+                    QString path = source + "/" + it;
 
-                registerAsset(path, value, settings->subTypeName(it));
+                    registerAsset(path, value, settings->subTypeName(it));
 
-                if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + value)) {
-                    Object *res = Engine::loadResource(value.toStdString());
-                    static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
-                    emit imported(path, type);
+                    if(QFileInfo::exists(m_pProjectManager->importPath() + "/" + value)) {
+                        Object *res = Engine::loadResource(value.toStdString());
+                        static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
+                        emit imported(path, type);
+                    }
                 }
-            }
 
-            Object *res = Engine::loadResource(guid.toStdString());
-            static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
-            emit imported(source, type);
+                Object *res = Engine::loadResource(guid.toStdString());
+                static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
+                emit imported(source, type);
 
-            settings->saveSettings();
+                settings->saveSettings();
+            } break;
+            case AssetConverter::CopyAsIs: {
+                QDir dir(m_pProjectManager->contentPath());
 
-            return true;
+                QString dst = m_pProjectManager->importPath() + "/" + settings->destination();
+                QFileInfo info(dst);
+                dir.mkpath(info.absoluteDir().absolutePath());
+                QFile::copy(settings->source(), dst);
+            } break;
+            default: break;
         }
     }
-
-    return false;
 }
 
 bool AssetManager::isOutdated() const {

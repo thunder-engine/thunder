@@ -46,7 +46,7 @@ public:
     AudioConverter();
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mp3", "wav", "ogg"}; }
-    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
 public slots:

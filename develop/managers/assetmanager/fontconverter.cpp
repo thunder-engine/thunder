@@ -4,14 +4,11 @@
 
 #include <bson.h>
 
-#include <file.h>
-
 #include "resources/font.h"
-#include "projectmanager.h"
 
 #define DATA    "Data"
 
-uint8_t FontConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Font font;
@@ -29,13 +26,13 @@ uint8_t FontConverter::convertFile(AssetConverterSettings *settings) {
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data  = Bson::save( Engine::toVariant(&font) );
+            ByteArray data = Bson::save( Engine::toVariant(&font) );
             file.write((const char *)&data[0], data.size());
             file.close();
-            return 0;
+            return Success;
         }
     }
-    return 1;
+    return InternalError;
 }
 
 AssetConverterSettings *FontConverter::createSettings() const {

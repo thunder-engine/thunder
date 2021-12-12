@@ -186,7 +186,7 @@ Actor *ShaderBuilder::createActor(const QString &guid) const {
     return object;
 }
 
-uint8_t ShaderBuilder::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
     if(build()) {
         if(settings->currentVersion() != settings->version()) {
@@ -199,11 +199,11 @@ uint8_t ShaderBuilder::convertFile(AssetConverterSettings *settings) {
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
             settings->setCurrentVersion(settings->version());
-            return 0;
+            return Success;
         }
     }
 
-    return 1;
+    return InternalError;
 }
 
 AbstractSchemeModel::Node *ShaderBuilder::nodeCreate(const QString &path, int &index) {

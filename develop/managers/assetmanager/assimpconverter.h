@@ -102,7 +102,7 @@ public:
     AssimpConverter();
 
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"fbx"}; }
-    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 

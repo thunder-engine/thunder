@@ -87,10 +87,18 @@ class NEXT_LIBRARY_EXPORT AssetConverter : public QObject {
     Q_OBJECT
 
 public:
+    enum ReturnCode {
+        Success = 0,
+        InternalError,
+        Unsupported,
+        Skipped,
+        CopyAsIs
+    };
+
     virtual void init();
     virtual QStringList suffixes() const = 0;
 
-    virtual uint8_t convertFile(AssetConverterSettings *settings) = 0;
+    virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
     virtual AssetConverterSettings *createSettings() const = 0;
 
     virtual QString templatePath() const;

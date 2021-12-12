@@ -203,7 +203,7 @@ public:
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl"}; }
-    uint8_t convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *) Q_DECL_OVERRIDE;
 
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;

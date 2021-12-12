@@ -77,7 +77,7 @@ public:
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
 
-    uint8_t convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     void load(const QString &path) Q_DECL_OVERRIDE;

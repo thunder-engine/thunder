@@ -8,7 +8,7 @@
 class TranslatorConverter : public AssetConverter {
 public:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"loc"}; }
-    uint8_t convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 };
 

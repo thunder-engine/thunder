@@ -8,7 +8,6 @@
 
 #include "undomanager.h"
 #include "assetmanager.h"
-#include "projectmanager.h"
 
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
@@ -18,8 +17,6 @@
 #include <global.h>
 #include "qlog.h"
 
-#include <QDesktopServices>
-#include <QUrl>
 #include <QSplashScreen>
 
 #include "editors/componentbrowser/componentmodel.h"

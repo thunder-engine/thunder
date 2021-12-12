@@ -9,13 +9,13 @@
 #include "config.h"
 
 namespace {
-    const QString gMd5("md5");
-    const QString gVersion("version");
-    const QString gGUID("guid");
+    const char *gMd5("md5");
+    const char *gVersion("version");
+    const char *gGUID("guid");
 
-    const QString gEntry(".entry");
-    const QString gCompany(".company");
-    const QString gProject(".project");
+    const char *gEntry(".entry");
+    const char *gCompany(".company");
+    const char *gProject(".project");
 };
 
 AssetConverterSettings::AssetConverterSettings() :

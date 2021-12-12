@@ -193,7 +193,7 @@ void TextureImportSettings::setSubItemData(const QString &name, const QJsonObjec
     m_Elements[name].m_Pivot = pivot;
 }
 
-uint8_t TextureConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
     Resource *resource = nullptr;
 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
@@ -220,7 +220,7 @@ uint8_t TextureConverter::convertFile(AssetConverterSettings *settings) {
 
     settings->setCurrentVersion(settings->version());
 
-    return 0;
+    return Success;
 }
 
 void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *texture) {

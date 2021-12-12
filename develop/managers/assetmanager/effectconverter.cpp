@@ -6,7 +6,6 @@
 #include <QJsonArray>
 
 #include <bson.h>
-#include <json.h>
 
 #include <components/actor.h>
 #include <components/particlerender.h>
@@ -49,7 +48,7 @@ EffectConverter::EffectConverter() {
     qRegisterMetaType<Velocity*>("Velocity");
 }
 
-uint8_t EffectConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode EffectConverter::convertFile(AssetConverterSettings *settings) {
     load(settings->source());
 
     QFile file(settings->absoluteDestination());
@@ -57,10 +56,10 @@ uint8_t EffectConverter::convertFile(AssetConverterSettings *settings) {
         ByteArray data  = Bson::save( object() );
         file.write(reinterpret_cast<const char *>(&data[0]), data.size());
         file.close();
-        return 0;
+        return Success;
     }
 
-    return 1;
+    return InternalError;
 }
 
 AssetConverterSettings *EffectConverter::createSettings() const {

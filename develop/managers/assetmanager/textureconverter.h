@@ -114,7 +114,7 @@ public:
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
-    uint8_t convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
+    ReturnCode convertFile(AssetConverterSettings *settings) Q_DECL_OVERRIDE;
 
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 

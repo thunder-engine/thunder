@@ -57,7 +57,7 @@ AudioConverter::AudioConverter() :
     connect(m_pDecoder, &QAudioDecoder::finished, this, &AudioConverter::onFinished);
 }
 
-uint8_t AudioConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *settings) {
     m_Buffer.clear();
 
     int32_t channels   = 1;
@@ -85,7 +85,7 @@ uint8_t AudioConverter::convertFile(AssetConverterSettings *settings) {
         file.close();
     }
 
-    return 0;
+    return Success;
 }
 
 VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels) {

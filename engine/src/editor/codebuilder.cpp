@@ -37,9 +37,9 @@ CodeBuilder::CodeBuilder() :
     m_Values["${Identifier_Prefix}"] = "com.tunderengine";
 }
 
-uint8_t CodeBuilder::convertFile(AssetConverterSettings *) {
+AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     m_Outdated = true;
-    return 1;
+    return Skipped;
 }
 
 AssetConverterSettings *CodeBuilder::createSettings() const {

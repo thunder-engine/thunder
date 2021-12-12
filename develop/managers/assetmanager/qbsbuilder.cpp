@@ -5,8 +5,6 @@
 #include <QStandardPaths>
 #include <QMetaProperty>
 
-#include <QDynamicPropertyChangeEvent>
-
 #include <QDebug>
 
 #include <log.h>
@@ -18,34 +16,34 @@
 #include <editor/pluginmanager.h>
 #include <platforms/android.h>
 
-const QString gSdkPath("${sdkPath}");
+const char *gSdkPath("${sdkPath}");
 
-const QString gIncludePaths("${includePaths}");
-const QString gLibraryPaths("${libraryPaths}");
-const QString gLibraries("${libraries}");
+const char *gIncludePaths("${includePaths}");
+const char *gLibraryPaths("${libraryPaths}");
+const char *gLibraries("${libraries}");
 
-const QString gEditorSuffix("-Editor");
+const char *gEditorSuffix("-Editor");
 
-const QString gProfile("profile");
-const QString gArchitectures("architectures");
+const char *gProfile("profile");
+const char *gArchitectures("architectures");
 
 // Android specific
-const QString gManifestFile("${manifestFile}");
-const QString gResourceDir("${resourceDir}");
-const QString gAssetsPaths("${assetsPath}");
+const char *gManifestFile("${manifestFile}");
+const char *gResourceDir("${resourceDir}");
+const char *gAssetsPaths("${assetsPath}");
 
-const QString gWinProfile = "Platforms/Windows/QbsProfile";
-const QString gOsxProfile = "Platforms/OSX/QbsProfile";
-const QString gLinProfile = "Platforms/Linux/QbsProfile";
+const char *gWinProfile = "Platforms/Windows/QbsProfile";
+const char *gOsxProfile = "Platforms/OSX/QbsProfile";
+const char *gLinProfile = "Platforms/Linux/QbsProfile";
 
-const QString gAndroidJava("Platforms/Android/Java_Path");
-const QString gAndroidSdk("Platforms/Android/SDK_Path");
-const QString gAndroidNdk("Platforms/Android/NDK_Path");
+const char *gAndroidJava("Platforms/Android/Java_Path");
+const char *gAndroidSdk("Platforms/Android/SDK_Path");
+const char *gAndroidNdk("Platforms/Android/NDK_Path");
 
 #ifndef _DEBUG
-    const QString gMode = "release";
+    const char *gMode = "release";
 #else
-    const QString gMode = "debug";
+    const char *gMode = "debug";
 #endif
 
 // generate --generator visualstudio2013
@@ -132,7 +130,7 @@ bool QbsBuilder::buildProject() {
 
             QStringList args;
             args << "resolve" << m_Settings;
-            args << "profile:" + profile << "config:" + gMode;
+            args << "profile:" + profile << QString("config:") + gMode;
             args << "qbs.architecture:" + architecture;
 
             qbs.start(m_QBSPath.absoluteFilePath(), args);
@@ -147,7 +145,7 @@ bool QbsBuilder::buildProject() {
                 args << "--build-directory" << "../" + platform->name();
             }
             args << "--products" << product << "profile:" + profile;
-            args << "config:" + gMode << "qbs.architecture:" + architecture;
+            args << QString("config:") + gMode << "qbs.architecture:" + architecture;
 
             qDebug() << args.join(" ");
 

@@ -161,7 +161,7 @@ protected:
 
     bool isOutdated(AssetConverterSettings *settings);
 
-    bool convert(AssetConverterSettings *settings);
+    void convert(AssetConverterSettings *settings);
 
     QString pathToLocal(const QFileInfo &source);
 

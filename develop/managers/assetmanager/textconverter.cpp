@@ -4,9 +4,8 @@
 
 #include <bson.h>
 #include "resources/text.h"
-#include "projectmanager.h"
 
-uint8_t TextConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Text text;
@@ -22,11 +21,11 @@ uint8_t TextConverter::convertFile(AssetConverterSettings *settings) {
             ByteArray data  = Bson::save( Engine::toVariant(&text) );
             file.write((const char *)&data[0], data.size());
             file.close();
-            return 0;
+            return Success;
         }
     }
 
-    return 1;
+    return InternalError;
 }
 
 AssetConverterSettings *TextConverter::createSettings() const {

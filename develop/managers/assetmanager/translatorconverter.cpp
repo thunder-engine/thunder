@@ -3,10 +3,8 @@
 #include <QFile>
 
 #include <bson.h>
-#include "resources/text.h"
-#include "projectmanager.h"
 
-uint8_t TranslatorConverter::convertFile(AssetConverterSettings *settings) {
+AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
         Translator loc;
@@ -20,14 +18,14 @@ uint8_t TranslatorConverter::convertFile(AssetConverterSettings *settings) {
 
         QFile file(settings->absoluteDestination());
         if(file.open(QIODevice::WriteOnly)) {
-            ByteArray data  = Bson::save( Engine::toVariant(&loc) );
+            ByteArray data = Bson::save( Engine::toVariant(&loc) );
             file.write(reinterpret_cast<const char *>(&data[0]), data.size());
             file.close();
-            return 0;
+            return Success;
         }
     }
 
-    return 1;
+    return InternalError;
 }
 
 AssetConverterSettings *TranslatorConverter::createSettings() const {

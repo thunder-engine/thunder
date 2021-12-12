@@ -1,11 +1,6 @@
 #include "mapconverter.h"
 
-#include <QFile>
-
-#include <bson.h>
-#include <json.h>
 #include <map.h>
-#include <components/actor.h>
 
 #define FORMAT_VERSION 3
 
