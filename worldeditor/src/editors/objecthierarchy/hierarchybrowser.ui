@@ -50,6 +50,9 @@
      <property name="expandsOnDoubleClick">
       <bool>false</bool>
      </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
      <attribute name="headerMinimumSectionSize">
       <number>20</number>
      </attribute>

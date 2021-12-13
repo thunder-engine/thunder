@@ -74,7 +74,7 @@ public slots:
     void onSelectActor(const list<uint32_t> &list, bool additive = false);
     void onSelectActor(Object::ObjectList list, bool additive = false);
     void onRemoveActor(Object::ObjectList list);
-    void onParentActor(Object::ObjectList objects, Object *parent);
+    void onParentActor(Object::ObjectList objects, Object *parent, int position);
 
     void onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value);
 
@@ -227,13 +227,14 @@ protected:
 
 class ParentingObjects : public UndoObject {
 public:
-    ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
+    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectCtrl *ctrl, const QString &name = QObject::tr("Parenting Objects"), QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
     typedef QPair<uint32_t, uint32_t> ParentPair;
     QList<ParentPair> m_dump;
     uint32_t m_parent;
+    int32_t m_position;
     list<uint32_t> m_objects;
 };
 

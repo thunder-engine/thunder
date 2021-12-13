@@ -142,11 +142,11 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
         if(row >= children.size() || row < 0) {
             return QModelIndex();
         }
+
         QList<Object *> list;
         for(auto it : children) {
             list.push_back(it);
         }
-
         return createIndex(row, column, list.at(row));
     }
     return QModelIndex();
@@ -179,7 +179,7 @@ Qt::ItemFlags ObjectHierarchyModel::flags(const QModelIndex &index) const {
     }
     Qt::ItemFlags result = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     if(index.column() == 0) {
-        result  |= Qt::ItemIsEditable;
+        result |= Qt::ItemIsEditable;
     }
     return result;
 }

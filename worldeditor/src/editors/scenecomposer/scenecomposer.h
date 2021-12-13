@@ -48,7 +48,7 @@ public slots:
     void onSelectActors(Object::ObjectList objects);
     void onRemoveActors(Object::ObjectList objects);
     void onUpdated();
-    void onParentActors(Object::ObjectList objects, Object *parent);
+    void onParentActors(Object::ObjectList objects, Object *parent, int position);
     void onFocusActor(Object *actor);
 
 private slots:

@@ -186,8 +186,8 @@ void SceneComposer::onUpdated() {
     m_properties->onUpdated();
 }
 
-void SceneComposer::onParentActors(Object::ObjectList objects, Object *parent) {
-    m_controller->onParentActor(objects, parent);
+void SceneComposer::onParentActors(Object::ObjectList objects, Object *parent, int position) {
+    m_controller->onParentActor(objects, parent, position);
 }
 
 void SceneComposer::onFocusActor(Object *actor) {

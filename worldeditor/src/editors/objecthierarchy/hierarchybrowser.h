@@ -56,7 +56,7 @@ signals:
     void selected(Object::ObjectList objects);
     void removed(Object::ObjectList objects);
     void focused(Object *object);
-    void parented(Object::ObjectList objects, Object *parent);
+    void parented(Object::ObjectList objects, Object *parent, int index);
     void updated();
 
 public slots:
@@ -86,8 +86,12 @@ private:
 
 private:
     Ui::HierarchyBrowser *ui;
+
     QRubberBand *m_rect;
+    QRubberBand *m_line;
+
     ObjectsFilter *m_filter;
+
     QMenu *m_contentMenu;
 
 };

@@ -294,8 +294,8 @@ void ObjectCtrl::onRemoveActor(Object::ObjectList list) {
     UndoManager::instance()->push(new DeleteActors(list, this));
 }
 
-void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent) {
-    UndoManager::instance()->push(new ParentingObjects(objects, parent, this));
+void ObjectCtrl::onParentActor(Object::ObjectList objects, Object *parent, int position) {
+    UndoManager::instance()->push(new ParentingObjects(objects, parent, position, this));
 }
 
 void ObjectCtrl::onPropertyChanged(Object::ObjectList objects, const QString &property, const Variant &value) {
@@ -859,12 +859,13 @@ void RemoveComponent::redo() {
     emit m_controller->mapUpdated();
 }
 
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group) {
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
     }
     m_parent = origin->uuid();
+    m_position = position;
 }
 void ParentingObjects::undo() {
     auto ref = m_dump.begin();
@@ -890,7 +891,7 @@ void ParentingObjects::redo() {
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
-            object->setParent(m_controller->findObject(m_parent));
+            object->setParent(m_controller->findObject(m_parent), m_position);
         }
     }
     emit m_controller->objectsUpdated();

@@ -3,12 +3,10 @@
 
 #include <QSortFilterProxyModel>
 #include <QDrag>
+#include <QPainter>
 #include <QMimeData>
 #include <QDragEnterEvent>
-#include <QAction>
 #include <QStyledItemDelegate>
-#include <QPainter>
-#include <QPushButton>
 
 #include <object.h>
 #include <invalid.h>
@@ -18,6 +16,8 @@
 #include "config.h"
 
 #include "objecthierarchymodel.h"
+
+#define ROW_SENCE 4
 
 class ObjectsFilter : public QSortFilterProxyModel {
 public:
@@ -105,16 +105,40 @@ public:
     }
 };
 
+class RubberBand : public QRubberBand {
+public:
+    explicit RubberBand(Shape shape, QWidget *parent = nullptr) :
+        QRubberBand(shape, parent) {
+
+    }
+
+    void paintEvent(QPaintEvent *ev) {
+        if(shape() == Rectangle) {
+            QRubberBand::paintEvent(ev);
+        } else {
+            QPainter p(this);
+            p.setPen(QPen(blue, 2));
+            p.setBrush(Qt::white);
+            p.drawLine(0, 2, geometry().width(), 2);
+            p.drawEllipse(1, 1, 3, 3);
+        }
+    }
+
+    QColor blue = QColor("#0277bd");
+};
+
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::HierarchyBrowser),
         m_rect(nullptr),
+        m_line(nullptr),
         m_filter(nullptr),
         m_contentMenu(nullptr) {
 
     ui->setupUi(this);
 
-    m_rect = new QRubberBand(QRubberBand::Rectangle, ui->treeView);
+    m_rect = new RubberBand(QRubberBand::Rectangle, ui->treeView);
+    m_line = new RubberBand(QRubberBand::Line, ui->treeView);
 
     m_filter = new ObjectsFilter(this);
     m_filter->setSourceModel(new ObjectHierarchyModel(this));
@@ -214,23 +238,51 @@ void HierarchyBrowser::onDragEnter(QDragEnterEvent *e) {
 
 void HierarchyBrowser::onDragLeave(QDragLeaveEvent *) {
     m_rect->hide();
+    m_line->hide();
 }
 
 void HierarchyBrowser::onDragMove(QDragMoveEvent *e) {
-    QRect r;
     QModelIndex index = ui->treeView->indexAt(e->pos());
     if(index.isValid()) {
-        r = ui->treeView->visualRect(index);
-        r.setX(0);
+        QRect r = ui->treeView->visualRect(index);
         r.setWidth(ui->treeView->width());
         r.translate(0, ui->treeView->header()->height() + 1);
+
+        int y = ui->treeView->header()->height() + 1 + e->pos().y();
+        if(abs(r.top() - y) < ROW_SENCE && index.parent().isValid()) { // Before
+            r.setBottom(r.top() + 1);
+            r.setTop(r.top() - 3);
+
+            m_rect->hide();
+            m_line->show();
+            m_line->setGeometry(r);
+            m_line->repaint();
+        } else if(abs(r.bottom() - y) < ROW_SENCE && index.parent().isValid()) { // After
+            QModelIndex child = ui->treeView->model()->index(0, 0, index);
+            if(child.isValid()) {
+                QRect c = ui->treeView->visualRect(child);
+                r.setX(c.x());
+            }
+
+            r.setTop(r.bottom() - 2);
+            r.setBottom(r.bottom() + 2);
+
+            m_rect->hide();
+            m_line->show();
+            m_line->setGeometry(r);
+            m_line->repaint();
+        } else {
+            r.setX(0);
+
+            m_line->hide();
+            m_rect->show();
+            m_rect->setGeometry(r);
+            m_rect->repaint();
+        }
     } else {
-        r = ui->treeView->rect();
-        r.setTop(ui->treeView->header()->rect().bottom());
+        m_rect->hide();
+        m_line->hide();
     }
-    m_rect->show();
-    m_rect->setGeometry(r);
-    m_rect->repaint();
 }
 
 void HierarchyBrowser::onDrop(QDropEvent *e) {
@@ -238,16 +290,33 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
 
     Object::ObjectList objects;
     Object *parent = model->root();
+    int position = -1;
     if(e->mimeData()->hasFormat(gMimeObject)) {
         QString path(e->mimeData()->data(gMimeObject));
         foreach(const QString &it, path.split(";")) {
             QString id = it.left(it.indexOf(':'));
             Object *item = model->findObject(id.toUInt());
-            QModelIndex index = m_filter->mapToSource(ui->treeView->indexAt(e->pos()));
             if(item) {
-                objects.push_back(item);
+                QModelIndex origin = ui->treeView->indexAt(e->pos());
+                QModelIndex index = m_filter->mapToSource(origin);
                 if(index.isValid()) {
+                    QRect r = ui->treeView->visualRect(origin);
+                    r.setWidth(ui->treeView->width());
+                    r.translate(0, ui->treeView->header()->height() + 1);
+
+                    int y = ui->treeView->header()->height() + 1 + e->pos().y();
+                    if(abs(r.top() - y) < ROW_SENCE && index.parent().isValid()) {
+                        // Set before
+                        position = index.row();
+                        index = index.parent();
+                    } else if(abs(r.bottom() - y) < ROW_SENCE && index.parent().isValid()) {
+                        // Set after
+                        position = index.row() + 1;
+                        index = index.parent();
+                    }
+
                     if(item != index.internalPointer()) {
+                        objects.push_back(item);
                         parent = static_cast<Object *>(index.internalPointer());
                     }
                 }
@@ -255,9 +324,10 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         }
     }
     if(!objects.empty()) {
-        emit parented(objects, parent);
+        emit parented(objects, parent, position);
     }
     m_rect->hide();
+    m_line->hide();
 }
 
 void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
@@ -327,4 +397,3 @@ void HierarchyBrowser::changeEvent(QEvent *event) {
         ui->retranslateUi(this);
     }
 }
-
