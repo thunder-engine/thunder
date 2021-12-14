@@ -41,6 +41,9 @@ protected:
     QPixmap m_Visible;
     QPixmap m_Invisible;
 
+    QPixmap m_Select;
+    QPixmap m_SelectDisable;
+
     QPixmap m_Prefab;
     QPixmap m_Actor;
 };

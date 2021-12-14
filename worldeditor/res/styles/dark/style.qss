@@ -204,21 +204,34 @@ QTreeView QLineEdit {
 QTreeView {
     background: #757575;
     border-radius: 3px;
+    show-decoration-selected: 1;
 }
 QTreeView::item {
     border-radius: 0px;
     margin: 0px 0px;
 }
 QTreeView::item:selected {
-    background: #400277bd;
+    background: #0277bd;
+}
+QTreeView::item:selected:hover {
+    background: #0277bd;
 }
 QTreeView::item:hover {
-    background: #200277bd;
+    background: #20ffffff;
 }
 QTreeView::branch {
-    border-image: none 0;
     background-color: transparent;
 }
+QTreeView::branch:selected {
+    background-color: #0277bd;
+}
+QTreeView::branch:selected:hover {
+    background-color: #0277bd;
+}
+QTreeView::branch:hover {
+    background-color: #20ffffff;
+}
+
 QTreeView::branch:has-siblings:!adjoins-item {
     border-image: none 0;
 }
@@ -238,6 +251,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     border-image: none;
     image: url(:/Style/styles/dark/icons/arrow-down.png);
 }
+
 QTreeView::indicator {
     background-color: #525252;
     border-radius: 3px;

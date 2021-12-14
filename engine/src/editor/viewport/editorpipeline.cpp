@@ -37,10 +37,10 @@
 #define OUTLINE     "Outline"
 
 namespace {
-    const QString postSettings("Graphics/");
-    const QString gridColor("General/Colors/Grid_Color");
-    const QString outlineWidth("General/Colors/Outline_Width");
-    const QString outlineColor("General/Colors/Outline_Color");
+    const char *postSettings("Graphics/");
+    const char *gridColor("General/Colors/Grid_Color");
+    const char *outlineWidth("General/Colors/Outline_Width");
+    const char *outlineColor("General/Colors/Outline_Color");
 };
 
 class Outline : public PostProcessor {
@@ -165,27 +165,27 @@ EditorPipeline::EditorPipeline() :
 
     Handles::init();
 
-    SettingsManager::instance()->registerProperty(qPrintable(gridColor), QColor(102, 102, 102, 102));
-    SettingsManager::instance()->registerProperty(qPrintable(outlineWidth), 1.0f);
-    SettingsManager::instance()->registerProperty(qPrintable(outlineColor), QColor(255, 128, 0, 255));
+    SettingsManager::instance()->registerProperty(gridColor, QColor(102, 102, 102, 102));
+    SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
+    SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
 
     for(auto it : m_PostEffects) {
-        SettingsManager::instance()->registerProperty(qPrintable(postSettings + it->name()), it->isEnabled());
+        SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
     }
 
     QObject::connect(SettingsManager::instance(), &SettingsManager::updated, this, &EditorPipeline::onApplySettings);
 }
 
 void EditorPipeline::onApplySettings() {
-    QColor color = SettingsManager::instance()->property(qPrintable(gridColor)).value<QColor>();
+    QColor color = SettingsManager::instance()->property(gridColor).value<QColor>();
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
-    color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
+    color = SettingsManager::instance()->property(outlineColor).value<QColor>();
     m_pOutline->m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-    m_pOutline->m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
+    m_pOutline->m_width = SettingsManager::instance()->property(outlineWidth).toFloat();
 
     for(auto it : m_PostEffects) {
-        it->setEnabled(SettingsManager::instance()->property(qPrintable(postSettings + it->name())).toBool());
+        it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
     }
 }
 
@@ -251,8 +251,16 @@ void EditorPipeline::draw(Camera &camera) {
     m_Buffer->setViewport(0, 0, m_Width, m_Height);
 
     cameraReset(camera);
-    drawComponents(CommandBuffer::RAYCAST, m_Filter);
-    drawComponents(CommandBuffer::RAYCAST, m_UiComponents);
+    for(auto it : m_Filter) {
+        if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+            it->draw(*m_Buffer, CommandBuffer::RAYCAST);
+        }
+    }
+    for(auto it : m_UiComponents) {
+        if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+            it->draw(*m_Buffer, CommandBuffer::RAYCAST);
+        }
+    }
 
     Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
 
@@ -495,7 +503,7 @@ void EditorPipeline::onPostEffectChanged(bool checked) {
         for(auto &it : m_PostEffects) {
             if(action->data().toString() == it->name()) {
                 it->setEnabled(checked);
-                SettingsManager::instance()->setProperty(qPrintable(postSettings + it->name()), checked);
+                SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name()), checked);
             }
         }
     }

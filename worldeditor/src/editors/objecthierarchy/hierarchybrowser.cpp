@@ -157,12 +157,11 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
     connect(ui->treeView, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop(QDropEvent*)));
 
     ui->treeView->header()->moveSection(2, 0);
+    ui->treeView->header()->moveSection(3, 1);
     ui->treeView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeView->header()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->treeView->header()->setSectionResizeMode(3, QHeaderView::Fixed);
-    ui->treeView->header()->resizeSection(1, 50);
     ui->treeView->header()->hideSection(1);
-    ui->treeView->header()->hideSection(3);
 }
 
 HierarchyBrowser::~HierarchyBrowser() {
@@ -354,11 +353,13 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
         list.push_back(static_cast<Object *>(m_filter->mapToSource(it).internalPointer()));
     }
 
-    if(index.column() == 2) {
-        Object *object = static_cast<Object *>(m_filter->mapToSource(index).internalPointer());
-        Actor *actor = dynamic_cast<Actor *>(object);
-        if(actor) {
-            actor->setEnabled(!actor->isEnabled());
+    Object *object = static_cast<Object *>(m_filter->mapToSource(index).internalPointer());
+    Actor *actor = dynamic_cast<Actor *>(object);
+    if(actor) {
+        if(index.column() == 2) {
+            actor->setHideFlags(actor->hideFlags() ^ Actor::ENABLE);
+        } else if(index.column() == 3) {
+            actor->setHideFlags(actor->hideFlags() ^ Actor::SELECTABLE);
         }
     }
     emit selected(list);

@@ -9,8 +9,6 @@ class Transform;
 
 class Prefab;
 
-class ResourceSystem;
-
 class ActorPrivate;
 
 class NEXT_LIBRARY_EXPORT Actor : public Object {
@@ -32,6 +30,12 @@ class NEXT_LIBRARY_EXPORT Actor : public Object {
     )
 
 public:
+    enum HideFlags {
+        ENABLE = (1<<0),
+        SELECTABLE = (1<<1)
+    };
+
+public:
     Actor();
     ~Actor();
 
@@ -46,6 +50,9 @@ public:
 
     bool isEnabled() const;
     void setEnabled(const bool enabled);
+
+    int hideFlags() const;
+    void setHideFlags(int flags);
 
     bool isEnabledInHierarchy() const;
 

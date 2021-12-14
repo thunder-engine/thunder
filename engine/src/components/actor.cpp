@@ -13,6 +13,7 @@
 #include <json.h>
 #include <log.h>
 
+const char *FLAGS   ("Flags");
 const char *PREFAB  ("Prefab");
 const char *DATA    ("PrefabData");
 const char *STATIC  ("Static");
@@ -27,8 +28,8 @@ public:
         m_scene(nullptr),
         m_actor(actor),
         m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
-        m_enable(true),
-        m_hierarchyEnable(m_enable),
+        m_flags(Actor::SELECTABLE),
+        m_hierarchyEnable(m_flags & Actor::ENABLE),
         m_static(false) {
 
     }
@@ -186,7 +187,7 @@ public:
 
     int32_t m_layers;
 
-    bool m_enable;
+    int m_flags;
 
     bool m_hierarchyEnable;
 
@@ -220,7 +221,7 @@ Actor::~Actor() {
 */
 bool Actor::isEnabled() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_enable;
+    return p_ptr->m_flags & ENABLE;
 }
 /*!
     Marks this Actor as \a enabled or disabled.
@@ -228,8 +229,25 @@ bool Actor::isEnabled() const {
 */
 void Actor::setEnabled(const bool enabled) {
     PROFILE_FUNCTION();
-    p_ptr->m_enable = enabled;
+    if(enabled) {
+        p_ptr->m_flags |= ENABLE;
+    } else {
+        p_ptr->m_flags &= ~ENABLE;
+    }
+
     setHierarchyEnabled(enabled);
+}
+
+int Actor::hideFlags() const {
+    PROFILE_FUNCTION();
+
+    return p_ptr->m_flags;
+}
+
+void Actor::setHideFlags(int flags) {
+    PROFILE_FUNCTION();
+
+    p_ptr->m_flags = flags;
 }
 /*!
     Returns false in case of one of Actors in hierarchy was disabled; otherwise returns true.
@@ -488,8 +506,13 @@ void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
     ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
+    auto it = data.find(FLAGS);
+    if(it != data.end()) {
+        p_ptr->m_flags = it->second.toInt();
+    }
+
     if(p_ptr->m_prefab) {
-        auto it = data.find(DATA);
+        it = data.find(DATA);
         if(it != data.end()) {
             ActorPrivate::List objects;
             ActorPrivate::enumObjects(this, objects);
@@ -545,6 +568,8 @@ void Actor::loadUserData(const VariantMap &data) {
 VariantMap Actor::saveUserData() const {
     PROFILE_FUNCTION();
     VariantMap result = Object::saveUserData();
+
+    result[FLAGS] = p_ptr->m_flags;
 
     if(isInstance()) {
         string ref = Engine::reference(p_ptr->m_prefab);

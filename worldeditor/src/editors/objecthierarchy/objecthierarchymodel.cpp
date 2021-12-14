@@ -1,7 +1,5 @@
 #include "objecthierarchymodel.h"
 
-#include <QSize>
-
 #include "components/actor.h"
 #include "resources/prefab.h"
 
@@ -10,8 +8,10 @@ ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         m_rootItem(nullptr),
         m_Visible(":/Style/styles/dark/icons/eye.png"),
         m_Invisible(":/Style/styles/dark/icons/eye_close.png"),
-        m_Prefab(":/Images/editor/objects/prefab.png"),
-        m_Actor(":/Images/editor/objects/actor.png") {
+        m_Select(":/Style/styles/dark/icons/select.png"),
+        m_SelectDisable(":/Style/styles/dark/icons/select_disable.png"),
+        m_Prefab(":/Style/styles/dark/icons/prefab.png"),
+        m_Actor(":/Style/styles/dark/icons/actor.png") {
 
 }
 
@@ -63,9 +63,12 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
                     return item->isInstance() ? m_Prefab : m_Actor;
                 }
             }
-            if(index.column() == 2) {
-                if(item) {
-                    return item->isEnabled() ? m_Visible : m_Invisible;
+            if(item) {
+                if(index.column() == 2) {
+                    return (item->hideFlags() & Actor::ENABLE) ? m_Visible : m_Invisible;
+                }
+                if(index.column() == 3) {
+                    return (item->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_SelectDisable;
                 }
             }
         } break;
@@ -75,11 +78,6 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
                     return QColor(255, 95, 82);
                 }
                 return QColor(88, 165, 240);
-            }
-        } break;
-        case Qt::SizeHintRole: {
-            if(index.column() == 2) {
-                return QSize(16, 1);
             }
         } break;
         case Qt::UserRole: {
