@@ -28,7 +28,7 @@ public:
         m_scene(nullptr),
         m_actor(actor),
         m_layers(CommandBuffer::DEFAULT | CommandBuffer::RAYCAST | CommandBuffer::SHADOWCAST | CommandBuffer::TRANSLUCENT),
-        m_flags(Actor::SELECTABLE),
+        m_flags(Actor::ENABLE | Actor::SELECTABLE),
         m_hierarchyEnable(m_flags & Actor::ENABLE),
         m_static(false) {
 
@@ -247,7 +247,14 @@ int Actor::hideFlags() const {
 void Actor::setHideFlags(int flags) {
     PROFILE_FUNCTION();
 
+    bool old = isEnabled();
+
     p_ptr->m_flags = flags;
+
+    bool current = isEnabled();
+    if(old != current) {
+        setHierarchyEnabled(current);
+    }
 }
 /*!
     Returns false in case of one of Actors in hierarchy was disabled; otherwise returns true.
