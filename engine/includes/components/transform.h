@@ -42,10 +42,10 @@ public:
     void setScale(const Vector3 &scale);
 
     Transform *parentTransform() const;
-    void setParentTransform(Transform *parent, bool force = false);
+    virtual void setParentTransform(Transform *parent, bool force = false);
 
-    Matrix4 &localTransform() const;
-    Matrix4 &worldTransform() const;
+    virtual Matrix4 &localTransform() const;
+    virtual Matrix4 &worldTransform() const;
 
     Vector3 &worldPosition() const;
     Vector3 &worldRotation() const;
@@ -57,8 +57,8 @@ public:
 protected:
     list<Transform *> &children() const;
 
-private:
-    void setDirty();
+protected:
+    virtual void setDirty();
 
 private:
     friend class TransformPrivate;

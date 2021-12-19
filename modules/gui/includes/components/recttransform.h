@@ -37,6 +37,15 @@ class RectTransform : public Transform {
     void subscribe(Widget *widget);
     void unsubscribe(Widget *widget);
 
+    void setParentTransform(Transform *parent, bool force = false) override;
+
+    Matrix4 &worldTransform() const override;
+
+private:
+    void setDirty() override;
+
+    void cleanDirty() const;
+
 private:
     RectTransformPrivate *p_ptr;
 };
