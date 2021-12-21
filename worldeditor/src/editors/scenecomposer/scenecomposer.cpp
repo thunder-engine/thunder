@@ -381,12 +381,19 @@ void SceneComposer::onDropMap(QString name, bool additive) {
 bool SceneComposer::loadMap(QString path, bool additive) {
     quitFromIsolation();
 
+    if(!additive) {
+        for(auto it : m_engine->scene()->getChildren()) {
+            it->deleteLater();
+        }
+    }
+
     QFile loadFile(m_pSettings->source());
     if(loadFile.open(QIODevice::ReadOnly)) {
         QByteArray array = loadFile.readAll();
         Variant var = Json::load(array.constData());
-        Object *chunk = Engine::toObject(var, m_engine->scene());
+        Object *chunk = Engine::toObject(var, nullptr);
         if(chunk) {
+            chunk->setParent(m_engine->scene());
             chunk->setName(QFileInfo(path).baseName().toStdString());
 
             if(additive) {
