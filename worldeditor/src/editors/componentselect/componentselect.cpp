@@ -45,9 +45,6 @@ SceneComponent ComponentSelect::data() const {
 void ComponentSelect::setData(const SceneComponent &component) {
     m_Component = component;
 
-    sBrowser->onSetRootObject(m_Component.scene);
-    sBrowser->setComponentsFilter({m_Component.type});
-
     QString name("None");
     m_clearAction->setVisible(false);
     if(m_Component.component) {
@@ -63,6 +60,8 @@ void ComponentSelect::setData(const SceneComponent &component) {
 
 void ComponentSelect::onSceneDialog() {
     connect(sBrowser, &HierarchyBrowser::focused, this, &ComponentSelect::onFocused, Qt::UniqueConnection);
+    sBrowser->onSetRootObject(m_Component.scene);
+    sBrowser->setComponentsFilter({m_Component.type});
     sBrowser->show();
 }
 
