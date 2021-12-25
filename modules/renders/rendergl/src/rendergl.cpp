@@ -18,7 +18,7 @@ static const char *meta = \
 "}";
 
 RenderGL::RenderGL(Engine *engine) :
-        m_pEngine(engine),
+        Module(engine),
         m_pSystem(new RenderGLSystem(engine)) {
 }
 

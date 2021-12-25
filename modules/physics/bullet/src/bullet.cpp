@@ -32,7 +32,7 @@ static const char *meta = \
 "}";
 
 Bullet::Bullet(Engine *engine) :
-        m_pEngine(engine),
+        Module(engine),
         m_pSystem(new BulletSystem(engine)) {
 }
 

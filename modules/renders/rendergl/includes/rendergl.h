@@ -14,9 +14,8 @@ public:
     System *system(const char *name) override;
 
 protected:
-    Engine *m_pEngine;
-
     System *m_pSystem;
+
 };
 #ifdef NEXT_SHARED
 extern "C" {

@@ -25,12 +25,12 @@ static const char *meta = \
 "   ]"
 "}";
 
-Module *moduleCreate(Engine *) {
-    return new Gui();
+Module *moduleCreate(Engine *engine) {
+    return new Gui(engine);
 }
 
-Gui::Gui() :
-        Module(),
+Gui::Gui(Engine *engine) :
+        Module(engine),
         m_system(new GuiSystem) {
 }
 

@@ -17,9 +17,8 @@ public:
     AssetConverter *assetConverter(const char *name) override;
 #endif
 protected:
-    Engine *m_pEngine;
-
     BulletSystem *m_pSystem;
+
 };
 #ifdef NEXT_SHARED
 extern "C" {

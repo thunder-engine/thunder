@@ -63,7 +63,7 @@ void registerEngine(asIScriptEngine *engine) {
     engine->RegisterGlobalFunction("void unloadResource(const string &in)", asFUNCTION(unloadResource), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Chunk @loadSceneChunk(const string &in, bool)", asFUNCTION(loadSceneChunk), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void unloadSceneChunk(Chunk &in)", asFUNCTION(unloadSceneChunk), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void unloadSceneChunk(Chunk &)", asFUNCTION(unloadSceneChunk), asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }

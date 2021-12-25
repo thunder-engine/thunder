@@ -27,7 +27,7 @@ static const char *meta = \
 "}";
 
 Media::Media(Engine *engine) :
-        m_pEngine(engine),
+        Module(engine),
         m_pSystem(new MediaSystem()){
 }
 

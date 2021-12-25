@@ -20,7 +20,7 @@ static const char *meta = \
 class Module${Project_Name} : public Module {
 public:
     Module${Project_Name}(Engine *engine) :
-            m_pEngine(engine) {
+            Module(engine) {
         //+{RegisterComponents}
         //-{RegisterComponents}
     }
@@ -33,8 +33,6 @@ public:
     const char *metaInfo() const override {
         return meta;
     }
-
-    Engine *m_pEngine;
 };
 #ifdef NEXT_SHARED
 extern "C" {

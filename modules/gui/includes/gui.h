@@ -7,7 +7,7 @@ class GuiSystem;
 
 class Gui : public Module {
 public:
-    Gui();
+    Gui(Engine *engine);
     ~Gui() override;
 
     const char *metaInfo() const override;
@@ -20,7 +20,7 @@ private:
 };
 
 extern "C" {
-    MODULE_EXPORT Module *moduleCreate(Engine *);
+    MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }
 
 #endif // GUI_H

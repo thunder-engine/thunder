@@ -110,7 +110,6 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["OpenAL"]
         }
 
         Group {

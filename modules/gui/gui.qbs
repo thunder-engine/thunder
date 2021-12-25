@@ -7,7 +7,6 @@ Project {
         "src/components/*.cpp",
         "src/systems/*.cpp",
 
-        "includes/*.h",
         "includes/components/*.h",
         "includes/systems/*.h"
     ]
@@ -52,6 +51,17 @@ Project {
             qbs.installDir: gui.PLUGINS_PATH
             qbs.installPrefix: gui.PREFIX
         }
+
+        Group {
+            name: "Gui includes"
+            prefix: "includes/"
+            files: [
+                "gui.h"
+            ]
+            qbs.install: true
+            qbs.installDir: gui.INC_PATH + "/modules"
+            qbs.installPrefix: gui.PREFIX
+        }
     }
 
     StaticLibrary {
@@ -85,7 +95,6 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["OpenAL"]
         }
 
         Group {
