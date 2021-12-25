@@ -372,11 +372,18 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
     s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
-    int32_t x, y;
-    glfwGetWindowPos(m_pWindow, &x, &y);
-    glfwSetWindowMonitor(m_pWindow, (s_Windowed) ? nullptr : m_pMonitor, x, y, s_Width, s_Height, GLFW_DONT_CARE);
+    if(m_pWindow) {
+        int32_t x, y;
+        glfwGetWindowPos(m_pWindow, &x, &y);
+        glfwSetWindowMonitor(m_pWindow, (s_Windowed) ? nullptr : m_pMonitor, x, y, s_Width, s_Height, GLFW_DONT_CARE);
 
-    glfwSwapInterval(s_vSync);
+        glfwSwapInterval(s_vSync);
+    }
+
+    map[SCREEN_WIDTH] = s_Width;
+    map[SCREEN_HEIGHT] = s_Height;
+    map[SCREEN_WINDOWED] = s_Windowed;
+    map[SCREEN_VSYNC] = s_vSync;
 
     _FILE *fp = g_pFile->fopen(CONFIG_NAME, "w");
     if(fp) {
