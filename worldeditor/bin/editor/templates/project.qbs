@@ -66,7 +66,6 @@ Project {
 
         bundle.identifierPrefix: "${Identifier_Prefix}"
         cpp.cxxLanguageVersion: "c++14"
-        cpp.cxxStandardLibrary: "libc++"
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/static"
@@ -137,6 +136,7 @@ Project {
             Android.sdk.resourcesDir: "${resourceDir}"
             cpp.dynamicLibraries: [ "log", "android", "EGL", "GLESv3", "z" ]
             cpp.defines: outer.concat([ "THUNDER_MOBILE" ])
+            cpp.cxxStandardLibrary: "libc++"
             Depends { productTypes: ["android.nativelibrary"] }
         }
 

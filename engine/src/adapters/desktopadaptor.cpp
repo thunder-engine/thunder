@@ -152,6 +152,10 @@ bool DesktopAdaptor::start() {
 #endif
     g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
 
+    if(!g_pFile->exists(CONFIG_NAME)) {
+        Engine::syncValues();
+    }
+
     _FILE *fp = g_pFile->fopen(CONFIG_NAME, "r");
     if(fp) {
         ByteArray data;
