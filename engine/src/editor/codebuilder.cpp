@@ -11,6 +11,7 @@
 
 namespace  {
     const char *gFilesList("{FilesList}");
+    const char *gLibrariesList("{LibrariesList}");
 
     const char *gRegisterModules("{RegisterModules}");
     const char *gModuleIncludes("{ModuleIncludes}");
@@ -154,6 +155,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         for(auto &it : modules) {
             m_Values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
             m_Values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
+            m_Values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(it.toLower()));
         }
     }
 

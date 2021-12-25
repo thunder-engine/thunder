@@ -72,17 +72,14 @@ Project {
         ]
 
         cpp.staticLibraries: [
+            //+{LibrariesList}
+            //-{LibrariesList}
             "engine",
             "next",
             "physfs",
             "freetype",
-            "rendergl",
-            "angel",
             "angelscript",
-            "bullet",
             "bullet3"
-            //+{LibrariesList}
-            //-{LibrariesList}
         ]
 
         Properties {
@@ -151,4 +148,3 @@ Project {
         }
     }
 }
-
