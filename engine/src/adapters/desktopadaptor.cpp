@@ -70,6 +70,8 @@ protected:
 DesktopAdaptor::DesktopAdaptor(Engine *engine) :
         m_pWindow(nullptr),
         m_pMonitor(nullptr) {
+    Log::overrideHandler(new DesktopHandler());
+
     g_pEngine = engine;
 
 }
@@ -116,8 +118,6 @@ void DesktopAdaptor::update() {
 }
 
 bool DesktopAdaptor::start() {
-    Log::overrideHandler(new DesktopHandler());
-
     g_pFile->fsearchPathAdd((g_pEngine->locationAppDir() + "/base.pak").c_str());
 
     if(Engine::reloadBundle() == false) {
@@ -148,7 +148,14 @@ bool DesktopAdaptor::start() {
         }
     }
 #else
-    ::mkdir(gAppConfig.c_str(), 0777);
+    for(size_t i = 1; i <= gAppConfig.size(); i++) {
+        if(gAppConfig[i] == '/' || i == gAppConfig.size()) {
+            int result = ::mkdir(gAppConfig.substr(0, i).c_str(), 0777);
+            if(result != 0 && (errno == EEXIST || errno == EACCES)) {
+                continue;
+            }
+        }
+    }
 #endif
     g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
 
@@ -367,7 +374,8 @@ string DesktopAdaptor::locationLocalDir() {
 #elif __APPLE__
     result = "~/Library/Preferences";
 #else
-    result = "~/.config";
+    result += ::getenv("HOME");
+    result += "/.config";
 #endif
     return result;
 }

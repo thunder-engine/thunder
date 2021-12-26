@@ -42,7 +42,7 @@ public:
     };
 
 public:
-    CameraCtrl(QWidget *view);
+    CameraCtrl();
 
     virtual void drawHandles();
 

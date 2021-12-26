@@ -16,7 +16,7 @@
 
 #define DT 0.0625f
 
-CameraCtrl::CameraCtrl(QWidget *view) :
+CameraCtrl::CameraCtrl() :
         m_cameraMove(MoveTypes::MOVE_IDLE),
         m_viewSide(ViewSide::VIEW_SCENE),
         m_blockMove(false),

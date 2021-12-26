@@ -75,7 +75,7 @@ void Pose::addBone(Bone *bone) {
     \note Returns nullptr in case no such bone.
 */
 const Bone *Pose::bone(int index) const {
-    if(index < p_ptr->m_Bones.size()) {
+    if(index < (int)p_ptr->m_Bones.size()) {
         return &p_ptr->m_Bones[index];
     }
     return nullptr;
@@ -94,7 +94,7 @@ void Pose::loadUserData(const VariantMap &data) {
 
     auto it = data.find(DATA);
     if(it != data.end()) {
-        for(auto b : (*it).second.value<VariantList>()) {
+        for(auto &b : (*it).second.value<VariantList>()) {
             VariantList attribs = b.value<VariantList>();
             if(attribs.size() == 4) {
                 Bone bone;

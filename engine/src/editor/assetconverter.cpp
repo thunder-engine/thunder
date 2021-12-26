@@ -12,10 +12,6 @@ namespace {
     const char *gMd5("md5");
     const char *gVersion("version");
     const char *gGUID("guid");
-
-    const char *gEntry(".entry");
-    const char *gCompany(".company");
-    const char *gProject(".project");
 };
 
 AssetConverterSettings::AssetConverterSettings() :

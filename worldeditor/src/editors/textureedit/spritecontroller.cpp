@@ -12,7 +12,7 @@
 #include <editor/viewport/editorpipeline.h>
 
 SpriteController::SpriteController(QWidget *view) :
-        CameraCtrl(view),
+        CameraCtrl(),
         m_pPipeline(nullptr),
         m_pSettings(nullptr),
         m_Width(0),

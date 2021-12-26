@@ -190,6 +190,7 @@ bool PostProcessVolume::isPostProcessVolume() const {
 #include "viewport/handles.h"
 
 bool PostProcessVolume::drawHandles(ObjectList &selected) {
+    A_UNUSED(selected);
     Transform *t = actor()->transform();
 
     if(!p_ptr->m_unbound) {

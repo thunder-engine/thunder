@@ -16,7 +16,7 @@ class AssetEditor;
 
 class NEXT_LIBRARY_EXPORT Module {
 public:
-    explicit Module(Engine *engine) {}
+    explicit Module(Engine *engine) { A_UNUSED(engine); }
     virtual ~Module() {}
 
     virtual System *system(const char *name) { A_UNUSED(name); return nullptr; }

@@ -107,14 +107,17 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
 }
 
 int PluginManager::rowCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent);
     return m_Plugins.size();
 }
 
 QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent) const {
+    Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
 QModelIndex PluginManager::parent(const QModelIndex &child) const {
+    Q_UNUSED(child);
     return QModelIndex();
 }
 

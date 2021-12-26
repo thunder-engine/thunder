@@ -52,7 +52,7 @@ string findFreeObjectName(const string &name, Object *parent) {
 }
 
 ObjectCtrl::ObjectCtrl(QWidget *view) :
-        CameraCtrl(view),
+        CameraCtrl(),
         m_pipeline(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),

@@ -28,7 +28,7 @@ ParticleEdit::ParticleEdit() :
 
     ui->setupUi(this);
 
-    m_controller = new CameraCtrl(ui->preview);
+    m_controller = new CameraCtrl();
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 

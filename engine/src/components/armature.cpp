@@ -65,7 +65,7 @@ public:
                 const Bone *b = m_pBindPose->bone(c);
                 for(auto it : bones) {
                     Transform *t = it->transform();
-                    if(t->clonedFrom() == b->index()) {
+                    if((int)t->clonedFrom() == b->index()) {
                         m_Bones[c] = t;
                         m_InvertTransform[c] = Matrix4(b->position(), b->rotation(), b->scale());
                         break;

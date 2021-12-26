@@ -40,7 +40,7 @@ MaterialEdit::MaterialEdit() :
         m_out(false) {
 
     ui->setupUi(this);
-    CameraCtrl *ctrl = new CameraCtrl(ui->preview);
+    CameraCtrl *ctrl = new CameraCtrl();
     ctrl->blockMovement(true);
     ctrl->setFree(false);
 
