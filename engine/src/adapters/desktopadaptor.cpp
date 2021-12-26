@@ -152,6 +152,20 @@ bool DesktopAdaptor::start() {
 #endif
     g_pFile->fsearchPathAdd(gAppConfig.c_str(), true);
 
+    s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
+    s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
+
+    m_pMonitor = glfwGetPrimaryMonitor();
+    if(m_pMonitor) {
+        const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
+        if(s_Width <= 0) {
+            s_Width = mode->width;
+        }
+        if(s_Height <= 0) {
+            s_Height = mode->height;
+        }
+    }
+
     if(!g_pFile->exists(CONFIG_NAME)) {
         Engine::syncValues();
     }
@@ -171,14 +185,6 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    m_pMonitor = glfwGetPrimaryMonitor();
-    if(m_pMonitor) {
-        const GLFWvidmode *mode = glfwGetVideoMode(m_pMonitor);
-        s_Width = mode->width;
-        s_Height = mode->height;
-    }
-    s_Width = Engine::value(SCREEN_WIDTH, s_Width).toInt();
-    s_Height = Engine::value(SCREEN_HEIGHT, s_Height).toInt();
     s_Windowed = Engine::value(SCREEN_WINDOWED, s_Windowed).toBool();
     s_vSync = Engine::value(SCREEN_VSYNC, s_vSync).toBool();
 
