@@ -11,7 +11,7 @@ class NEXT_LIBRARY_EXPORT Chunk : public Object {
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_METHOD(Component *, Chunk::componentInChild)
+        A_METHOD(Object *, Chunk::find)
     )
 
 public:
@@ -20,8 +20,6 @@ public:
 
     Resource *resource() const;
     void setResource(Resource *resource);
-
-    Component *componentInChild(const string type);
 
 private:
     mutable Resource *m_resource;
