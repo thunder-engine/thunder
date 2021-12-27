@@ -654,8 +654,8 @@ void CreateObject::undo() {
             delete object;
         }
     }
-    emit m_controller->objectsUpdated();
     emit m_controller->objectsSelected(m_controller->selected());
+    emit m_controller->objectsUpdated();
 }
 void CreateObject::redo() {
     auto list = m_controller->selected();
@@ -673,8 +673,8 @@ void CreateObject::redo() {
         m_objects.push_back(object->uuid());
     }
 
-    emit m_controller->objectsUpdated();
     emit m_controller->objectsSelected(m_controller->selected());
+    emit m_controller->objectsUpdated();
 }
 
 DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

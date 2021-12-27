@@ -169,6 +169,8 @@ void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
             emit itemSelected(m_properties);
             return;
         }
+    } else {
+        m_properties->setObject(nullptr);
     }
     emit itemSelected(nullptr);
 }
