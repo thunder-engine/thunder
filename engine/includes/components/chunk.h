@@ -4,12 +4,15 @@
 #include <engine.h>
 
 class Resource;
+class Component;
 
 class NEXT_LIBRARY_EXPORT Chunk : public Object {
     A_REGISTER(Chunk, Object, General)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(Component *, Chunk::componentInChild)
+    )
 
 public:
     Chunk();
@@ -18,8 +21,10 @@ public:
     Resource *resource() const;
     void setResource(Resource *resource);
 
+    Component *componentInChild(const string type);
+
 private:
-    Resource *m_resource;
+    mutable Resource *m_resource;
 
 };
 

@@ -208,6 +208,13 @@ void SceneComposer::backupScene() {
 void SceneComposer::restoreBackupScene() {
     if(!m_backupScenes.isEmpty()) {
         m_controller->setObject(nullptr);
+        emit hierarchyCreated(m_engine->scene());
+
+        list<Object *> toDelete = m_engine->scene()->getChildren();
+        for(auto &it : toDelete) {
+            it->setParent(nullptr);
+            Engine::unloadSceneChunk(static_cast<Chunk *>(it));
+        }
 
         for(auto &it : m_backupScenes) {
             Object *map = Engine::toObject(Bson::load(it), nullptr);

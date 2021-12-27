@@ -9,6 +9,10 @@ public:
 
     }
 
+    ~MapPrivate() {
+        delete m_chunk;
+    }
+
     Chunk *m_chunk;
 };
 
@@ -34,6 +38,7 @@ Chunk *Map::chunk() const {
         auto &children = getChildren();
         if(!children.empty()) {
             p_ptr->m_chunk = dynamic_cast<Chunk *>(children.front());
+            p_ptr->m_chunk->setResource(const_cast<Map *>(this));
         }
     }
     return p_ptr->m_chunk;
