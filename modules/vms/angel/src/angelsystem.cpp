@@ -324,7 +324,7 @@ void AngelSystem::registerClasses(asIScriptEngine *engine) {
     engine->RegisterObjectMethod("Actor", "Actor &get_Parent()", asMETHOD(Actor, parent), asCALL_THISCALL);
     engine->RegisterObjectMethod("Actor", "void set_Parent(Actor &)", asMETHOD(Actor, setParent), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("Actor", "string &get_Name()", asMETHOD(Object, name), asCALL_THISCALL);
+    engine->RegisterObjectMethod("Actor", "string get_Name()", asMETHOD(Object, name), asCALL_THISCALL);
     engine->RegisterObjectMethod("Actor", "void set_Name(string &in)", asMETHOD(Object, setName), asCALL_THISCALL);
 
     registerEngine(engine);
