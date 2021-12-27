@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.ui" line="+14"/>
+        <location filename="../worldeditor/src/main/aboutdialog.ui" line="+14"/>
         <source>About...</source>
         <translation>About…</translation>
     </message>
@@ -14,7 +14,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/aboutdialog.cpp" line="+16"/>
+        <location filename="../worldeditor/src/main/aboutdialog.cpp" line="+16"/>
         <source>About %1...</source>
         <translation>About %1…</translation>
     </message>
@@ -42,7 +42,7 @@
 <context>
     <name>Actions</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+60"/>
+        <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+57"/>
         <source>Saves your changes.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -65,25 +65,30 @@
 <context>
     <name>AnimationClipModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+187"/>
+        <location filename="../worldeditor/src/editors/timeline/animationclipmodel.cpp" line="+185"/>
         <source>Remove Properties</source>
         <translation>Remove Properties</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <source>Update Key</source>
-        <translation>Update Key</translation>
+        <location line="+36"/>
+        <source>Update Keyframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+98"/>
+        <source>Update Properties</source>
+        <translation type="unfinished">Update Properties</translation>
     </message>
 </context>
 <context>
     <name>AnimationEdit</name>
     <message>
-        <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+97"/>
+        <location filename="../worldeditor/src/editors/animationedit/animationedit.cpp" line="+101"/>
         <source>Animation Editor</source>
         <translation>Animation Editor</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/animationedit/animationedit.ui" line="+55"/>
+        <location filename="../worldeditor/src/editors/animationedit/animationedit.ui" line="+42"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
@@ -104,7 +109,7 @@
 <context>
     <name>CameraCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/cameractrl.cpp" line="+175"/>
+        <location filename="../engine/src/editor/viewport/cameractrl.cpp" line="+166"/>
         <source>Front View</source>
         <translation>Front View</translation>
     </message>
@@ -168,7 +173,7 @@
         <translation>Clear</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/managers/consolemanager/consolemanager.cpp" line="+23"/>
+        <location filename="../worldeditor/src/managers/consolemanager/consolemanager.cpp" line="+26"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
@@ -191,7 +196,7 @@
         <translation>Search</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+154"/>
+        <location filename="../worldeditor/src/editors/contentbrowser/contentbrowser.cpp" line="+156"/>
         <source>Show in Explorer</source>
         <translation>Show in Explorer</translation>
     </message>
@@ -202,12 +207,17 @@
     </message>
     <message>
         <location line="+4"/>
-        <location line="+27"/>
+        <location line="+28"/>
         <source>New Folder</source>
         <translation>New Folder</translation>
     </message>
     <message>
-        <location line="-6"/>
+        <location line="-8"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <location line="+10"/>
         <source>Duplicate</source>
         <translation>Duplicate</translation>
@@ -230,7 +240,7 @@
         <translation>Reimport</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+114"/>
         <source>Delete Asset</source>
         <translation>Delete Asset</translation>
     </message>
@@ -243,7 +253,7 @@
 <context>
     <name>ContentList</name>
     <message>
-        <location filename="../worldeditor/src/editors/contentbrowser/contentlist.cpp" line="+190"/>
+        <location filename="../worldeditor/src/editors/contentbrowser/contentlist.cpp" line="+192"/>
         <source>Path</source>
         <translation>Path</translation>
     </message>
@@ -261,7 +271,7 @@
 <context>
     <name>ContentSelect</name>
     <message>
-        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+68"/>
+        <location filename="../worldeditor/src/editors/assetselect/contentselect.ui" line="+50"/>
         <source>None</source>
         <translation>None</translation>
     </message>
@@ -277,7 +287,7 @@
 <context>
     <name>DocumentModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/documentmodel.cpp" line="+105"/>
+        <location filename="../worldeditor/src/main/documentmodel.cpp" line="+131"/>
         <source>Save Document</source>
         <translation>Save Document</translation>
     </message>
@@ -285,7 +295,7 @@
 <context>
     <name>EditorPipeline</name>
     <message>
-        <location filename="../worldeditor/src/controllers/editorpipeline.cpp" line="+237"/>
+        <location filename="../engine/src/editor/viewport/editorpipeline.cpp" line="+236"/>
         <source>Post Processing</source>
         <translation>Post Processing</translation>
     </message>
@@ -300,7 +310,7 @@
         <translation>Buffer Visualization</translation>
     </message>
     <message>
-        <location line="+196"/>
+        <location line="+204"/>
         <source>Final Buffer</source>
         <translation>Final Buffer</translation>
     </message>
@@ -316,36 +326,6 @@
         <location line="+21"/>
         <source>Search</source>
         <translation>Search</translation>
-    </message>
-    <message>
-        <location filename="../worldeditor/src/editors/objecthierarchy/hierarchybrowser.cpp" line="+141"/>
-        <source>Rename</source>
-        <translation>Rename</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Duplicate</source>
-        <translation>Duplicate</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Unpack Prefab</source>
-        <translation>Unpack Prefab</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unpack Prefab Completely</source>
-        <translation>Unpack Prefab Completely</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Create Actor</source>
-        <translation>Create Actor</translation>
     </message>
 </context>
 <context>
@@ -364,19 +344,275 @@
 <context>
     <name>KeyFrameEditor</name>
     <message>
-        <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+238"/>
+        <location filename="../worldeditor/src/editors/timeline/keyframeeditor.cpp" line="+241"/>
         <source>Set Keyframe Time</source>
         <translation>Set Keyframe Time</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Insert Key</source>
-        <translation>Insert Key</translation>
+        <source>Insert Keyframe</source>
+        <translation type="unfinished">Insert Keyframe</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Delete Selected Keyframe</source>
         <translation>Delete Selected Keyframe</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../worldeditor/src/main/mainwindow.ui" line="+126"/>
+        <source>Adds a new Component to this Actor.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add Component</source>
+        <translation type="unfinished">Add Component</translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Saves your changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Commit</source>
+        <translation type="unfinished">Commit</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Reverts back your unsaved changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Revert</source>
+        <translation type="unfinished">Revert</translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>File</source>
+        <translation type="unfinished">File</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Build Project</source>
+        <translation type="unfinished">Build Project</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Edit</source>
+        <translation type="unfinished">Edit</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Window</source>
+        <translation type="unfinished">Window</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Workspace</source>
+        <translation type="unfinished">Workspace</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Help</source>
+        <translation type="unfinished">Help</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>&amp;Open</source>
+        <translation type="unfinished">&amp;Open</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Save</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&amp;Exit</source>
+        <translation type="unfinished">&amp;Exit</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Content Browser</source>
+        <translation type="unfinished">Content Browser</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Object properties</source>
+        <translation type="unfinished">Object properties</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Application Console</source>
+        <translation type="unfinished">Application Console</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Editor Mode</source>
+        <translation type="unfinished">Editor Mode</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Game Mode</source>
+        <translation type="unfinished">Game Mode</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Save As...</source>
+        <translation type="unfinished">Save As…</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Scene objects</source>
+        <translation type="unfinished">Scene objects</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Components</source>
+        <translation type="unfinished">Components</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Take Screenshot</source>
+        <translation type="unfinished">Take Screenshot</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>About Plugins...</source>
+        <translation type="unfinished">About Plugins…</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Plugin Manager</source>
+        <translation type="unfinished">Plugin Manager</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+3"/>
+        <location filename="../worldeditor/src/main/mainwindow.cpp" line="+497"/>
+        <source>Save Workspace</source>
+        <translation type="unfinished">Save Workspace</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+3"/>
+        <source>Reset Workspace</source>
+        <translation type="unfinished">Reset Workspace</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>About...</source>
+        <translation type="unfinished">About…</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Options...</source>
+        <translation type="unfinished">Options…</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Build All</source>
+        <translation type="unfinished">Build All</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>API Reference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Report Issue...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Thunder Answers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Documentation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;New</translation>
+    </message>
+    <message>
+        <location filename="../worldeditor/src/main/mainwindow.cpp" line="-413"/>
+        <source>Viewport</source>
+        <translation type="unfinished">Viewport</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Properties</source>
+        <translation type="unfinished">Properties</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Project Settings</source>
+        <translation type="unfinished">Project Settings</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Editor Preferences</source>
+        <translation type="unfinished">Editor Preferences</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Timeline</source>
+        <translation type="unfinished">Timeline</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Class View</source>
+        <translation type="unfinished">Class View</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>About %1...</source>
+        <translation type="unfinished">About %1…</translation>
+    </message>
+    <message>
+        <location line="+249"/>
+        <source>Build for %1</source>
+        <translation type="unfinished">Build for %1</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Create New Project</source>
+        <translation type="unfinished">Create New Project</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Import Existing Project</source>
+        <translation type="unfinished">Import Existing Project</translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <source>Workspaces (*.ws)</source>
+        <translation type="unfinished">Workspaces (*.ws)</translation>
+    </message>
+    <message>
+        <location line="+108"/>
+        <source>Save%1</source>
+        <translation type="unfinished">Save%1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save%1 As...</source>
+        <translation type="unfinished">Save%1 As…</translation>
     </message>
 </context>
 <context>
@@ -387,22 +623,7 @@
         <translation>Material Editor</translation>
     </message>
     <message>
-        <location line="+82"/>
-        <source>Edit</source>
-        <translation>Edit</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>File</source>
-        <translation>File</translation>
-    </message>
-    <message>
-        <location line="+32"/>
+        <location line="+64"/>
         <source>Plane</source>
         <translation>Plane</translation>
     </message>
@@ -423,42 +644,19 @@
     </message>
 </context>
 <context>
-    <name>MeshEdit</name>
-    <message>
-        <location filename="../worldeditor/src/editors/meshedit/meshedit.ui" line="+14"/>
-        <source>Mesh Edit</source>
-        <translation>Mesh Edit</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Save</source>
-        <translation>Save</translation>
-    </message>
-    <message>
-        <location filename="../worldeditor/src/editors/meshedit/meshedit.cpp" line="+114"/>
-        <source>The mesh import settings has been modified.</source>
-        <translation>The mesh import settings has been modified.</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Do you want to save your changes?</source>
-        <translation>Do you want to save your changes?</translation>
-    </message>
-</context>
-<context>
     <name>NextObject</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/nextobject.cpp" line="+92"/>
+        <location filename="../worldeditor/src/editors/propertyedit/nextobject.cpp" line="+93"/>
         <source>Remove Component</source>
         <translation>Remove Component</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+31"/>
+        <source>Insert Keyframe</source>
+        <translation type="unfinished">Insert Keyframe</translation>
+    </message>
+    <message>
+        <location line="+59"/>
         <source>%1 (Invalid)</source>
         <translation>%1 (Invalid)</translation>
     </message>
@@ -466,7 +664,7 @@
 <context>
     <name>ObjectCtrl</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+306"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/objectctrl.cpp" line="+347"/>
         <source>Creation Component Failed</source>
         <translation>Creation Component Failed</translation>
     </message>
@@ -479,14 +677,14 @@
 <context>
     <name>ObjectHierarchyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/objecthierarchy/objecthierarchymodel.cpp" line="+111"/>
+        <location filename="../worldeditor/src/editors/objecthierarchy/objecthierarchymodel.cpp" line="+105"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Class</source>
-        <translation>Class</translation>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -497,27 +695,7 @@
         <translation>Particle Editor</translation>
     </message>
     <message>
-        <location line="+48"/>
-        <source>Edit</source>
-        <translation>Edit</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Emitter</source>
-        <translation>Emitter</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>File</source>
-        <translation>File</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+34"/>
         <source>Delete Emitter</source>
         <translation>Delete Emitter</translation>
     </message>
@@ -552,22 +730,12 @@
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+123"/>
-        <source>The effect has been modified.</source>
-        <translation>The effect has been modified.</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Do you want to save your changes?</source>
-        <translation>Do you want to save your changes?</translation>
-    </message>
-    <message>
-        <location line="+53"/>
+        <location filename="../worldeditor/src/editors/particleedit/particleedit.cpp" line="+129"/>
         <source>Do you want to delete emitter?</source>
         <translation>Do you want to delete emitter?</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+29"/>
         <source>This type of modifier already assigned.</source>
         <translation type="unfinished">This type of modifier already assigned.</translation>
     </message>
@@ -608,7 +776,7 @@
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/managers/pluginmanager/plugindialog.cpp" line="+34"/>
+        <location filename="../worldeditor/src/managers/pluginmanager/plugindialog.cpp" line="+32"/>
         <source>Please select Thunder Engine Mod</source>
         <translation>Please select Thunder Engine Mod</translation>
     </message>
@@ -616,6 +784,29 @@
         <location line="+2"/>
         <source>Mods (*.dll *.mod)</source>
         <translation>Mods (*.dll *.mod)</translation>
+    </message>
+</context>
+<context>
+    <name>PluginManager</name>
+    <message>
+        <location filename="../engine/src/editor/pluginmanager.cpp" line="+76"/>
+        <source>PlugIn Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Full Path</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -630,16 +821,11 @@
         <source>Search</source>
         <translation>Search</translation>
     </message>
-    <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertyeditor.cpp" line="+268"/>
-        <source>Insert Keyframe</source>
-        <translation>Insert Keyframe</translation>
-    </message>
 </context>
 <context>
     <name>PropertyModel</name>
     <message>
-        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+145"/>
+        <location filename="../worldeditor/src/editors/propertyedit/propertymodel.cpp" line="+144"/>
         <source>Property</source>
         <translation>Property</translation>
     </message>
@@ -652,12 +838,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.cpp" line="+262"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/objectctrl.cpp" line="+298"/>
         <source>Create %1</source>
         <translation>Create %1</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/objectctrl.h" line="+159"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/objectctrl.h" line="+165"/>
         <source>Selection Change</source>
         <translation>Selection Change</translation>
     </message>
@@ -687,17 +873,17 @@
         <translation>Parenting Objects</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Change Property</source>
         <translation>Change Property</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+348"/>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.cpp" line="+341"/>
         <source>Create Sprite Element</source>
         <translation>Create Sprite Element</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+80"/>
+        <location filename="../worldeditor/src/editors/textureedit/spritecontroller.h" line="+79"/>
         <source>Select Sprite Elements</source>
         <translation>Select Sprite Elements</translation>
     </message>
@@ -712,22 +898,22 @@
         <translation>Update Sprite Elements</translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/movetool.cpp" line="+53"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/movetool.cpp" line="+53"/>
         <source>Select and Translate objects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/resizetool.cpp" line="+167"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/resizetool.cpp" line="+165"/>
         <source>Select and manipulate objects with rect transform tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/rotatetool.cpp" line="+79"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/rotatetool.cpp" line="+79"/>
         <source>Select and Rotate objects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../worldeditor/src/controllers/scaletool.cpp" line="+86"/>
+        <location filename="../worldeditor/src/editors/scenecomposer/scaletool.cpp" line="+86"/>
         <source>Select and Scale objects</source>
         <translation type="unfinished"></translation>
     </message>
@@ -735,37 +921,12 @@
 <context>
     <name>SceneComposer</name>
     <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.ui" line="+126"/>
-        <source>Add Component</source>
-        <translation>Add Component</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>Commit</source>
-        <translation>Commit</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Revert</source>
-        <translation>Revert</translation>
-    </message>
-    <message>
-        <location line="-76"/>
-        <source>Adds a new Component to this Actor.</source>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.ui" line="+14"/>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
-        <source>Saves your changes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Reverts back your unsaved changes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+152"/>
+        <location line="+56"/>
         <source>Switches between 3D and 3D mode.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -780,290 +941,44 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
-        <source>File</source>
-        <translation>File</translation>
+        <location line="+77"/>
+        <source>Save</source>
+        <translation type="unfinished">Save</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Build Project</source>
-        <translation>Build Project</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Edit</source>
-        <translation>Edit</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Workspace</source>
-        <translation>Workspace</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Help</source>
-        <translation>Help</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>&amp;New</source>
-        <translation>&amp;New</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>&amp;Open</source>
-        <translation>&amp;Open</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>&amp;Save</source>
-        <translation>&amp;Save</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>&amp;Exit</source>
-        <translation>&amp;Exit</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Content Browser</source>
-        <translation>Content Browser</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Object properties</source>
-        <translation>Object properties</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Application Console</source>
-        <translation>Application Console</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Undo</source>
-        <translation>Undo</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Redo</source>
-        <translation>Redo</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Editor Mode</source>
-        <translation>Editor Mode</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Game Mode</source>
-        <translation>Game Mode</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Save As...</source>
-        <translation>Save As…</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Scene objects</source>
-        <translation>Scene objects</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Edit Object</source>
-        <translation>Edit Object</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Delete Object</source>
-        <translation>Delete Object</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>New Object</source>
-        <translation>New Object</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Components</source>
-        <translation>Components</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Take Screenshot</source>
-        <translation>Take Screenshot</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>About Plugins...</source>
-        <translation>About Plugins…</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Plugin Manager</source>
-        <translation>Plugin Manager</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+3"/>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+777"/>
-        <source>Save Workspace</source>
-        <translation>Save Workspace</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+3"/>
-        <source>Reset Workspace</source>
-        <translation>Reset Workspace</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>About...</source>
-        <translation>About…</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Options...</source>
-        <translation>Options…</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Build All</source>
-        <translation>Build All</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>API Reference</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Report Issue...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Thunder Answers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Documentation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="-666"/>
-        <location line="+846"/>
-        <source>Viewport</source>
-        <translation>Viewport</translation>
-    </message>
-    <message>
-        <location line="-845"/>
-        <location line="+846"/>
-        <source>Properties</source>
-        <translation>Properties</translation>
-    </message>
-    <message>
-        <location line="-845"/>
-        <location line="+846"/>
-        <source>Project Settings</source>
-        <translation>Project Settings</translation>
-    </message>
-    <message>
-        <location line="-845"/>
-        <location line="+846"/>
-        <source>Editor Preferences</source>
-        <translation>Editor Preferences</translation>
-    </message>
-    <message>
-        <location line="-845"/>
-        <location line="+846"/>
-        <source>Timeline</source>
-        <translation>Timeline</translation>
-    </message>
-    <message>
-        <location line="-845"/>
-        <location line="+846"/>
-        <source>Class View</source>
-        <translation>Class View</translation>
-    </message>
-    <message>
-        <location line="-754"/>
-        <source>About %1...</source>
-        <translation>About %1…</translation>
-    </message>
-    <message>
-        <location line="+189"/>
-        <source>The import settings has been modified.</source>
-        <translation type="unfinished">The import settings has been modified.</translation>
+        <location filename="../worldeditor/src/editors/scenecomposer/scenecomposer.cpp" line="+105"/>
+        <source>Rename</source>
+        <translation type="unfinished">Rename</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+66"/>
-        <source>Do you want to save your changes?</source>
-        <translation>Do you want to save your changes?</translation>
-    </message>
-    <message>
-        <location line="-1"/>
-        <source>The map has been modified.</source>
-        <translation>The map has been modified.</translation>
-    </message>
-    <message>
-        <location line="+64"/>
-        <source>Open Map</source>
-        <translation>Open Map</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+71"/>
-        <source>Maps (*.map)</source>
-        <translation>Maps (*.map)</translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>Save Map</source>
-        <translation>Save Map</translation>
-    </message>
-    <message>
-        <location line="+74"/>
-        <source>Build for %1</source>
-        <translation>Build for %1</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Create New Project</source>
-        <translation>Create New Project</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Import Existing Project</source>
-        <translation>Import Existing Project</translation>
-    </message>
-    <message>
-        <location line="+87"/>
-        <source>Workspaces (*.ws)</source>
-        <translation>Workspaces (*.ws)</translation>
-    </message>
-    <message>
-        <location line="+68"/>
-        <source>Select Target Directory</source>
-        <translation>Select Target Directory</translation>
-    </message>
-    <message>
-        <location line="+102"/>
-        <source>Save%1</source>
-        <translation>Save%1</translation>
+        <source>Duplicate</source>
+        <translation type="unfinished">Duplicate</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save%1 As...</source>
-        <translation>Save%1 As…</translation>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Edit Isolated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unpack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unpack Completely</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Create Actor</source>
+        <translation type="unfinished">Create Actor</translation>
     </message>
 </context>
 <context>
@@ -1088,7 +1003,7 @@
         <translation>ElementSprite Details</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+89"/>
         <source>Border</source>
         <translation>Border</translation>
     </message>
@@ -1098,12 +1013,12 @@
         <translation>Pivot</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="-144"/>
         <source>Position</source>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-10"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -1174,7 +1089,7 @@
         <translation>Sprite Edit</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+77"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
@@ -1211,10 +1126,13 @@
         <source>Value</source>
         <translation>Value</translation>
     </message>
+</context>
+<context>
+    <name>TimelineScene</name>
     <message>
-        <location filename="../worldeditor/src/editors/timeline/timeline.cpp" line="+252"/>
-        <source>Update Properties</source>
-        <translation>Update Properties</translation>
+        <location filename="../worldeditor/src/editors/timeline/timelinescene.cpp" line="+409"/>
+        <source>Remove Property</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
