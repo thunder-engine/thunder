@@ -73,6 +73,16 @@ public:
     \value Trilinear \c Texture samples are averaged and also interpolated from adjacent mipmap levels.
 */
 
+/*!
+    \typedef Texture::Sides
+    \internal
+*/
+
+/*!
+    \typedef Texture::Surface
+    \internal
+*/
+
 Texture::Texture() :
         p_ptr(new TexturePrivate) {
 
@@ -116,7 +126,9 @@ void Texture::loadUserData(const VariantMap &data) {
         }
     }
 }
-
+/*!
+    \internal
+*/
 VariantMap Texture::saveUserData() const {
     VariantMap result;
 

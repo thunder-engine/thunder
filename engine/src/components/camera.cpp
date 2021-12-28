@@ -327,8 +327,17 @@ array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
 }
 /*!
     Returns frustum corners with provided parameters.
+    This function accepts a list of parameters:
+    \a ortho is a flag that points orthographic or perspective camera.
+    \a sigma is an angle of frustum or ortho size in the case of an orthographic camera.
+    \a ratio is an aspect ratio.
+    \a position of the frustum in world space.
+    \a rotation of frustum in world space.
+    \a nearPlane clipping plane.
+    \a farPlane clipping plane.
 */
-array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position, const Quaternion &rotation, float nearPlane, float farPlane) {
+array<Vector3, 8> Camera::frustumCorners(bool ortho, float sigma, float ratio, const Vector3 &position,
+                                         const Quaternion &rotation, float nearPlane, float farPlane) {
     float nh;
     float fh;
     float nw;

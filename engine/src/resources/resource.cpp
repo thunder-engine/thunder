@@ -85,7 +85,7 @@ Resource::ResourceState Resource::state() const {
 }
 
 /*!
-    Switches the current state to a new state for the resource.
+    Switches the current state to a new \a state for the resource.
 */
 void Resource::switchState(ResourceState state) {
     switch(state) {

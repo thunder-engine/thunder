@@ -34,6 +34,10 @@ static ObjectSystem::GroupMap   s_Groups;
     \sa objectCreate()
 */
 /*!
+    \typedef ObjectSystem::FactoryPair
+    \internal
+*/
+/*!
     \fn template<typename T> void ObjectSystem::factoryAdd(const string &group, const MetaObject *meta)
 
     Registers class with T type, \a meta object and \a group to object instantiation mechanism.

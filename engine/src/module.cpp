@@ -11,24 +11,9 @@
 */
 
 /*!
-    \enum Module::PluginTypes
+    \fn const char *Module::metaInfo() const
 
-    \value SYSTEM \c Module provides a system.
-    \value EXTENSION \c Module provides a set of components.
-    \value CONVERTER \c Module provides a converter for assets (only in Editor).
-    \value EDITOR \c Module provides an asset editor (only in Editor).
-*/
-
-/*!
-    \fn const char *Module::description() const
-
-    Returns a short description of the module.
-*/
-
-/*!
-    \fn const char *Module::version() const
-
-    Return an internal version of the module as a string.
+    Returns a meta information in JSON format.
 */
 
 /*!
@@ -47,10 +32,4 @@
     \fn AssetEditor *Module::assetEditor()
 
     Returns a module's asset editor with given \a name if present; otherwise returns nullptr.
-*/
-
-/*!
-    \fn StringList Module::components() const
-
-    Returns a list of provided components.
 */

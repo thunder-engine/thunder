@@ -205,6 +205,13 @@ public:
     The Transform component must persist constantly and you shoudn't remove it.
 */
 
+/*!
+    \enum Actor::HideFlags
+
+    \value ENABLE \c This Actor can be visible on the screen and can be updated in the game cycle.
+    \value SELECTABLE \c This Actor can be selected in the Editor.
+*/
+
 Actor::Actor() :
         p_ptr(new ActorPrivate(this)) {
 
@@ -237,13 +244,17 @@ void Actor::setEnabled(const bool enabled) {
 
     setHierarchyEnabled(enabled);
 }
-
+/*!
+    Returns a set of Actor::HideFlags applied to this Actor.
+*/
 int Actor::hideFlags() const {
     PROFILE_FUNCTION();
 
     return p_ptr->m_flags;
 }
-
+/*!
+    Applies a new set of Actor::HideFlags flags to this Actor.
+*/
 void Actor::setHideFlags(int flags) {
     PROFILE_FUNCTION();
 
