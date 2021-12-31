@@ -3,7 +3,6 @@ Project {
 
     references: [
         "qbstools",
-        "shadertools",
-        "texturetools"
+        "shadertools"
     ]
 }
