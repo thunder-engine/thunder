@@ -21,7 +21,7 @@
 #include "config.h"
 
 #include "assetmanager.h"
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 #include <editor/settingsmanager.h>
 
 namespace  {

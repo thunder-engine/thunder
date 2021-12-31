@@ -10,11 +10,12 @@ Module *moduleCreate(Engine *engine) {
 
 static const char *meta = \
 "{"
+"   \"module\": \"RenderGL\","
 "   \"version\": \"1.0\","
 "   \"description\": \"OpenGL Render Module\","
-"   \"systems\": ["
-"       \"RenderGLSystem\""
-"   ]"
+"   \"objects\": {"
+"       \"RenderGLSystem\": \"system\""
+"   }"
 "}";
 
 RenderGL::RenderGL(Engine *engine) :
@@ -30,6 +31,6 @@ const char *RenderGL::metaInfo() const {
     return meta;
 }
 
-System *RenderGL::system(const char *) {
+void *RenderGL::getObject(const char *) {
     return m_pSystem;
 }

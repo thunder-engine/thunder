@@ -26,7 +26,6 @@
 #include "animconverter.h"
 #include "textconverter.h"
 #include "textureconverter.h"
-#include "shaderbuilder.h"
 #include "assimpconverter.h"
 #include "fontconverter.h"
 #include "prefabconverter.h"
@@ -35,7 +34,7 @@
 #include "translatorconverter.h"
 #include "mapconverter.h"
 
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 
 #include "log.h"
@@ -44,15 +43,17 @@
 
 #define INDEX_VERSION 2
 
-const char *gCode("Code");
+namespace {
+    const char *gCode("Code");
 
-const char *gCRC("crc");
-const char *gVersion("version");
-const char *gGUID("guid");
+    const char *gCRC("crc");
+    const char *gVersion("version");
+    const char *gGUID("guid");
 
-const char *gEntry(".entry");
-const char *gCompany(".company");
-const char *gProject(".project");
+    const char *gEntry(".entry");
+    const char *gCompany(".company");
+    const char *gProject(".project");
+};
 
 AssetManager *AssetManager::m_pInstance = nullptr;
 
@@ -122,7 +123,6 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new AnimationBuilder);
     registerConverter(new TextConverter);
     registerConverter(new TextureConverter);
-    registerConverter(new ShaderBuilder);
     registerConverter(new AssimpConverter);
     registerConverter(new FontConverter);
     registerConverter(new PrefabConverter);
@@ -130,8 +130,9 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new TranslatorConverter);
     registerConverter(new MapConverter);
 
-    for(auto it : PluginManager::instance()->converters()) {
-        registerConverter(it);
+    for(auto &it : PluginManager::instance()->extensions("converter")) {
+        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
+        registerConverter(converter);
     }
 
     for(auto &it : m_Converters) {
@@ -793,14 +794,6 @@ bool AssetManager::isOutdated() const {
         }
     }
     return false;
-}
-
-QString AssetManager::artifact() const {
-    return m_Artifact;
-}
-
-void AssetManager::setArtifact(const QString &value) {
-    m_Artifact = value;
 }
 
 AssetManager::ConverterMap AssetManager::converters() const {

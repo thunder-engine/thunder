@@ -11,7 +11,7 @@
 #include "assetlist.h"
 
 #include "assetmanager.h"
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 class AssetFilter : public QSortFilterProxyModel {
 public:

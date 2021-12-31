@@ -4,7 +4,7 @@
 #include <QFileSystemWatcher>
 #include <QUrl>
 
-#include <projectmanager.h>
+#include <editor/projectmanager.h>
 
 #include "config.h"
 #include "contentlist.h"

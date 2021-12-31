@@ -11,7 +11,7 @@
 #include "config.h"
 
 #include "assetmanager.h"
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 #define ICON_SIZE 128
 

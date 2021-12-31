@@ -1,14 +1,11 @@
 #include "builder.h"
 
 #include "log.h"
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
 
-#include "platforms/desktop.h"
-
-#include "xcodebuilder.h"
-#include "qbsbuilder.h"
+#include "assetmanager.h"
 
 #include <QCoreApplication>
 
@@ -33,12 +30,10 @@ void Builder::setPlatform(const QString &platform) {
     if(!m_Stack.isEmpty()) {
         project->setCurrentPlatform(m_Stack.pop());
 
-        AssetManager *asset = AssetManager::instance();
-        AssetConverter *converter = project->currentPlatform()->builder();
-        converter->convertFile(nullptr);
-        asset->registerConverter(converter);
+        CodeBuilder *builder = project->currentBuilder();
+        builder->convertFile(nullptr);
 
-        asset->rescan(true);
+        AssetManager::instance()->rescan(true);
     }
 }
 
@@ -53,10 +48,10 @@ void Builder::package(const QString &target) {
 #endif
     dir += "/base.pak";
 
-    Log(Log::INF) << "Packaging Assets to:" << qPrintable(dir);
+    aInfo() << "Packaging Assets to:" << qPrintable(dir);
     QuaZip zip(dir);
     if(!zip.open(QuaZip::mdCreate)) {
-        Log(Log::ERR) << "Can't open package";
+        aError() << "Can't open package";
         return;
     }
     QuaZipFile outZipFile(&zip);
@@ -69,18 +64,18 @@ void Builder::package(const QString &target) {
             QFile inFile(info.absoluteFilePath());
 
             string origin = AssetManager::instance()->guidToPath(info.fileName().toStdString());
-            Log(Log::INF) << "\tCoping:" << origin.c_str();
+            aInfo() << "\tCoping:" << origin.c_str();
 
             if(!inFile.open(QIODevice::ReadOnly)) {
                 zip.close();
-                Log(Log::ERR) << "Can't open input file";
+                aError() << "Can't open input file";
                 return;
             }
 
             if(!outZipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(info.fileName(), info.absoluteFilePath()))) {
                 inFile.close();
                 zip.close();
-                Log(Log::ERR) << "Can't open output file";
+                aError() << "Can't open output file";
                 return;
             }
             outZipFile.write(inFile.readAll());
@@ -89,7 +84,7 @@ void Builder::package(const QString &target) {
             inFile.close();
         }
     }
-    Log(Log::INF) << "Packaging Done";
+    aInfo() << "Packaging Done";
 
     if(m_Stack.isEmpty()) {
         emit packDone();
@@ -136,22 +131,23 @@ bool copyRecursively(QString sourceFolder, QString destFolder) {
 
 void Builder::onImportFinished() {
     ProjectManager *mgr = ProjectManager::instance();
-    QString path = AssetManager::instance()->artifact();
+    QString platform = mgr->currentPlatformName();
+    QString path = mgr->artifact();
     QFileInfo info(path);
-    QString targetPath = mgr->targetPath() + "/" + mgr->currentPlatform()->name() + "/";
+    QString targetPath = mgr->targetPath() + "/" + platform + "/";
 
     QDir dir;
     dir.mkpath(targetPath);
     QFileInfo target(targetPath + info.fileName());
 
     if((target.isDir() && QDir(target.absoluteFilePath()).removeRecursively()) || QFile::remove(target.absoluteFilePath())) {
-        Log(Log::INF) << "Previous build removed.";
+        aInfo() << "Previous build removed.";
     }
 
     if((info.isDir() && copyRecursively(path, target.absoluteFilePath())) || QFile::copy(path, target.absoluteFilePath())) {
-        Log(Log::INF) << "New build copied to:" << qPrintable(target.absoluteFilePath());
+        aInfo() << "New build copied to:" << qPrintable(target.absoluteFilePath());
 
-        if(!mgr->currentPlatform()->isPackage()) {
+        if(!mgr->currentBuilder()->isPackage(platform)) {
             emit moveDone(target.absoluteFilePath());
             return;
         } else {

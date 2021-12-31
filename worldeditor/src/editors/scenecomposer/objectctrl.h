@@ -8,10 +8,8 @@
 
 #include <object.h>
 #include <editor/editortool.h>
-
+#include <editor/undomanager.h>
 #include <editor/viewport/cameractrl.h>
-
-#include <undomanager.h>
 
 class QInputEvent;
 

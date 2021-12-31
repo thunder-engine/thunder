@@ -5,10 +5,11 @@
 #include <file.h>
 
 #include <global.h>
-#include "projectmanager.h"
+
 #include "assetmanager.h"
 
 #include <editor/pluginmanager.h>
+#include <editor/projectmanager.h>
 
 #include "consolelog.h"
 
@@ -47,9 +48,6 @@ int main(int argc, char *argv[]) {
         parser.showHelp(1);
     }
 
-    ProjectManager *mgr = ProjectManager::instance();
-    mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
-
     Log::overrideHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
     File *file = new File();
@@ -60,6 +58,10 @@ int main(int argc, char *argv[]) {
     Engine engine(file, argv[0]);
 
     PluginManager::instance()->init(&engine);
+
+    ProjectManager *mgr = ProjectManager::instance();
+    mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
+
     PluginManager::instance()->rescanPath(ProjectManager::instance()->pluginsPath());
     AssetManager::instance()->init(&engine);
 

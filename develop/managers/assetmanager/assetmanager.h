@@ -21,25 +21,6 @@ class ProjectManager;
 
 class CodeBuilder;
 
-struct Template {
-    Template() :
-        type(MetaType::INVALID) {
-
-    }
-    Template(const QString &p, const uint32_t t) :
-        path(p) {
-            type = MetaType::name(t);
-            type = type.replace("*", "");
-            type = type.trimmed();
-    }
-
-    QString path;
-    QString type;
-};
-Q_DECLARE_METATYPE(Template)
-
-typedef QFileInfo FilePath;
-
 class AssetManager : public QObject {
     Q_OBJECT
 public:
@@ -84,9 +65,6 @@ public:
     AssetConverter *getConverter(AssetConverterSettings *settings);
 
     bool isOutdated() const;
-
-    QString artifact() const;
-    void setArtifact(const QString &value);
 
     ConverterMap converters() const;
     ClassMap classMaps() const;
@@ -148,8 +126,6 @@ protected:
 
     ClassMap m_ClassMaps;
     QList<CodeBuilder *> m_Builders;
-
-    QString m_Artifact;
 
     SettingsMap m_ConverterSettings;
 

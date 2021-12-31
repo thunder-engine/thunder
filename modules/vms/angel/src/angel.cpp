@@ -12,16 +12,14 @@ Module *moduleCreate(Engine *engine) {
 
 static const char *meta = \
 "{"
-"   \"version\": \"1.0\","
 "   \"module\": \"Angel\","
+"   \"version\": \"1.0\","
 "   \"description\": \"AngelScript Module\","
-"   \"systems\": ["
-"       \"AngelSystem\""
-"   ],"
-"   \"converters\": ["
-"       \"AngelBuilder\""
-"   ],"
-"   \"extensions\": ["
+"   \"objects\": {"
+"       \"AngelSystem\": \"system\","
+"       \"AngelBuilder\": \"converter\""
+"   },"
+"   \"components\": ["
 "       \"AngelBehaviour\""
 "   ]"
 "}";
@@ -39,11 +37,18 @@ const char *Angel::metaInfo() const {
     return meta;
 }
 
-System *Angel::system(const char *) {
-    return m_pSystem;
-}
+void *Angel::getObject(const char *name) {
+    if(strcmp(name, "AngelSystem") == 0) {
+        return m_pSystem;
+    }
 #ifdef NEXT_SHARED
-AssetConverter *Angel::assetConverter(const char *) {
-    return new AngelBuilder(m_pSystem);
-}
+    else if(strcmp(name, "AngelBuilder") == 0) {
+        static AngelBuilder *builder = nullptr;
+        if(builder == nullptr) {
+            builder = new AngelBuilder(m_pSystem);
+        }
+        return builder;
+    }
 #endif
+    return nullptr;
+}

@@ -6,7 +6,7 @@
 #include <animationcurve.h>
 #include <animationclip.h>
 
-#include "undomanager.h"
+#include <editor/undomanager.h>
 
 class AnimatormationStateMachine;
 

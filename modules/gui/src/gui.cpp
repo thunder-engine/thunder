@@ -7,13 +7,13 @@
 
 static const char *meta = \
 "{"
-"   \"version\": \"1.0\","
 "   \"module\": \"Gui\","
+"   \"version\": \"1.0\","
 "   \"description\": \"GUI Plugin\","
-"   \"systems\": ["
-"       \"GuiSystem\""
-"   ],"
-"   \"extensions\": ["
+"   \"objects\": {"
+"       \"GuiSystem\": \"system\""
+"   },"
+"   \"components\": ["
 "       \"AbstractButton\","
 "       \"Button\","
 "       \"Image\","
@@ -38,10 +38,10 @@ Gui::~Gui() {
     delete m_system;
 }
 
-System *Gui::system(const char *) {
-    return m_system;
-}
-
 const char *Gui::metaInfo() const {
     return meta;
+}
+
+void *Gui::getObject(const char *) {
+    return m_system;
 }

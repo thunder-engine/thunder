@@ -22,20 +22,15 @@ enum {
     PLUGIN_PATH
 };
 
-#define PATH    "path"
-
-#define DESC    "description"
-#define VERSION "version"
-#define MODULE  "module"
-#define SYSTEMS "systems"
-#define EXTENSIONS "extensions"
-#define CONVERTERS "converters"
-
 #if defined(Q_OS_MAC)
 #define PLUGINS "/../../../plugins"
 #else
 #define PLUGINS "/plugins"
 #endif
+
+const char *gComponents("components");
+
+QStringList g_Suffixes = { "*.dll", "*.dylib", "*.so" };
 
 typedef Module *(*moduleHandler)  (Engine *engine);
 
@@ -46,8 +41,6 @@ PluginManager::PluginManager() :
         m_pEngine(nullptr),
         m_pRender(nullptr) {
 
-    m_Suffixes = QStringList() << "*.dll" << "*.dylib" << "*.so";
-
 }
 
 PluginManager::~PluginManager() {
@@ -55,15 +48,11 @@ PluginManager::~PluginManager() {
 
     m_Systems.clear();
 
-    for(auto it : m_Extensions) {
-        delete it;
+    for(auto it : m_Plugins) {
+        delete it.module;
+        delete it.library;
     }
-    m_Extensions.clear();
-
-    for(auto it : m_Libraries) {
-        delete it;
-    }
-    m_Libraries.clear();
+    m_Plugins.clear();
 }
 
 int PluginManager::columnCount(const QModelIndex &) const {
@@ -88,10 +77,9 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    Plugin plugin = m_Plugins.at(index.row());
-
     switch(role) {
         case Qt::DisplayRole: {
+            Plugin plugin = m_Plugins.at(index.row());
             switch(index.column()) {
                 case PLUGIN_NAME:        return plugin.name;
                 case PLUGIN_DESCRIPTION: return plugin.description;
@@ -121,10 +109,6 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
     return QModelIndex();
 }
 
-QString PluginManager::getModuleName(const QString &type) const {
-    return m_Modules.value(type, QString());
-}
-
 PluginManager *PluginManager::instance() {
     if(!m_pInstance) {
         m_pInstance = new PluginManager;
@@ -146,24 +130,6 @@ void PluginManager::init(Engine *engine) {
 void PluginManager::rescan(QString path) {
     m_PluginPath = path;
 
-    QString system(QCoreApplication::applicationDirPath() + PLUGINS);
-
-    QStringList list = m_Libraries.keys();
-    for(auto &it : list) {
-        if(!it.contains(system)) {
-            PluginsMap::Iterator ext = m_Extensions.find(it);
-            if(ext != m_Extensions.end()) {
-                Module *plugin = ext.value();
-                delete plugin;
-            }
-            QLibrary *value = m_Libraries.value(it, nullptr);
-            if(value && value->unload()) {
-                delete value;
-            }
-            m_Libraries.remove(it);
-        }
-    }
-    m_Plugins.clear();
     rescanPath(m_PluginPath);
 }
 
@@ -175,60 +141,61 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
             Module *plugin = moduleCreate(m_pEngine);
             if(plugin) {
                 VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
-                for(auto &it : metaInfo[SYSTEMS].toList()) {
-                    if(registerSystem(plugin, it.toString().c_str())) {
-                        registerExtensionPlugin(path, plugin);
+
+                QFileInfo file(path);
+
+                Plugin plug;
+                plug.isLoaded = true;
+                plug.name = metaInfo["module"].toString().c_str();
+                plug.path = file.filePath();
+                plug.version = metaInfo[VERSION].toString().c_str();
+                plug.description = metaInfo[DESC].toString().c_str();
+                plug.library = lib;
+                plug.module = plugin;
+
+                for(auto &it : metaInfo["objects"].toMap()) {
+                    if(it.second == "system") {
+                        if(!registerSystem(plugin, it.first.c_str())) {
+                            delete plugin;
+
+                            lib->unload();
+                            delete lib;
+                            return true;
+                        }
                     } else {
-                        delete plugin;
-
-                        lib->unload();
-                        delete lib;
-                        return true;
+                        plug.objects.append(qMakePair(it.first.c_str(), it.second.toString().c_str()));
                     }
                 }
-                if(!metaInfo[EXTENSIONS].toList().empty()) {
-                    registerExtensionPlugin(path, plugin);
 
-                    QStringList components;
-                    for(auto &it : metaInfo[EXTENSIONS].toList()) {
-                        QString type = QString::fromStdString(it.toString());
-                        m_Modules[type] = metaInfo[MODULE].toString().c_str();
-                        components << type;
-                    }
-
-                    if(reload) {
-                        ComponentMap result;
-                        serializeComponents(components, result);
-                        deserializeComponents(result);
-                    }
-                }
-                for(auto &it : metaInfo[CONVERTERS].toList()) {
-                    m_Converters[it.toString().c_str()] = plugin->assetConverter(it.toString().c_str());
+                for(auto &it : metaInfo[gComponents].toList()) {
+                    QString type = QString::fromStdString(it.toString());
+                    plug.components << type;
                 }
 
-                m_Libraries[path] = lib;
+                if(!plug.components.isEmpty() && reload) {
+                    ComponentMap result;
+                    serializeComponents(plug.components, result);
+                    deserializeComponents(result);
+                }
 
-                int start = rowCount();
-                beginInsertRows(QModelIndex(), start, start);
-                    QFileInfo file(path);
-
-                    Plugin plugin;
-                    plugin.name = file.fileName();
-                    plugin.path = file.filePath();
-                    plugin.version = metaInfo[VERSION].toString().c_str();
-                    plugin.description = metaInfo[DESC].toString().c_str();
-
-                    m_Plugins.push_back(plugin);
-                endInsertRows();
+                int index = m_Plugins.indexOf(plug);
+                if(index == -1) {
+                    int start = rowCount();
+                    beginInsertRows(QModelIndex(), start, start);
+                        m_Plugins.push_back(plug);
+                    endInsertRows();
+                } else {
+                    m_Plugins[index] = plug;
+                }
                 return true;
             } else {
-                Log(Log::ERR) << "[ PluginManager::loadPlugin ] Can't create plugin:" << qPrintable(lib->fileName());
+                aError() << "[PluginManager] Can't create plugin:" << qPrintable(lib->fileName());
             }
         } else {
-            Log(Log::ERR) << "[ PluginManager::loadPlugin ] Bad plugin:" << qPrintable(lib->fileName());
+            aError() << "[PluginManager] Bad plugin:" << qPrintable(lib->fileName());
         }
     } else {
-        Log(Log::ERR) << "[ PluginManager::loadPlugin ] Can't load plugin:" << qPrintable(lib->fileName());
+        aError() << "[PluginManager] Can't load plugin:" << qPrintable(lib->fileName());
     }
     delete lib;
     return false;
@@ -246,70 +213,62 @@ void PluginManager::reloadPlugin(const QString &path) {
         QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 
-    PluginsMap::Iterator ext = m_Extensions.find(dest.absoluteFilePath());
-    LibrariesMap::Iterator lib = m_Libraries.find(dest.absoluteFilePath());
+    for(auto &it : m_Plugins) {
+        if(it.path == path) {
+            it.isLoaded = false;
 
-    if(ext != m_Extensions.end() && lib != m_Libraries.end()) { // Reload plugin
-        Module *plugin = ext.value();
-        VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
+            QStringList components;
 
-        QStringList components;
-        for(auto &it : metaInfo[EXTENSIONS].toList()) {
-            components << QString::fromStdString(it.toString());
-        }
-
-        ComponentMap result;
-        serializeComponents(components, result);
-        // Unload plugin
-        delete plugin;
-
-        for(auto &it : m_Plugins) {
-            if(it.name == info.fileName()) {
-                m_Plugins.removeAll(it);
+            VariantMap metaInfo = Json::load(it.module->metaInfo()).toMap();
+            for(auto &it : metaInfo[gComponents].toList()) {
+                components << QString::fromStdString(it.toString());
             }
-        }
 
-        if(lib.value()->unload()) {
-            // Copy new plugin
-            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath(), true)) {
-                deserializeComponents(result);
-                // Remove old plugin
-                if(QFile::remove(temp.absoluteFilePath())) {
-                    Log(Log::INF) << "Plugin:" << qPrintable(path) << "reloaded";
-                    return;
+            ComponentMap result;
+            serializeComponents(components, result);
+            // Unload plugin
+            delete it.module;
+
+            if(it.library->unload()) {
+                // Copy new plugin
+                if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath(), true)) {
+                    deserializeComponents(result);
+                    // Remove old plugin
+                    if(QFile::remove(temp.absoluteFilePath())) {
+                        aInfo() << "Plugin:" << qPrintable(path) << "reloaded";
+                        return;
+                    }
                 }
+                delete it.library;
+            } else {
+                aError() << "Plugin unload:" << qPrintable(path) << "failed";
             }
-            delete lib.value();
-            m_Extensions.remove(ext.key());
-        } else {
-            Log(Log::ERR) << "Plugin unload:" << qPrintable(path) << "failed";
+        } else { // Just copy and load plugin
+            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath())) {
+                aInfo() << "Plugin:" << qPrintable(path) << "simply loaded";
+                return;
+            }
         }
-    } else { // Just copy and load plugin
-        if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath())) {
-            Log(Log::INF) << "Plugin:" << qPrintable(path) << "simply loaded";
-            return;
-        }
-    }
-    // Rename it back
-    if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
-        if(loadPlugin(dest.absoluteFilePath())) {
-            Log(Log::INF) << "Old version of plugin:" << qPrintable(path) << "is loaded";
-        } else {
-            Log(Log::ERR) << "Load of old version of plugin:" << qPrintable(path) << "is failed";
+        // Rename it back
+        if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
+            if(loadPlugin(dest.absoluteFilePath())) {
+                aInfo() << "Old version of plugin:" << qPrintable(path) << "is loaded";
+            } else {
+                aError() << "Load of old version of plugin:" << qPrintable(path) << "is failed";
+            }
         }
     }
 }
 
 void PluginManager::rescanPath(const QString &path) {
-    QDirIterator it(path, m_Suffixes, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(path, g_Suffixes, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         loadPlugin(it.next());
     }
 }
 
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
-    System *system = plugin->system(name);
-
+    System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
         RenderSystem *render = dynamic_cast<RenderSystem *>(system);
         if(render) {
@@ -338,11 +297,6 @@ void PluginManager::initSystems() {
             it->init();
         }
     }
-}
-
-void PluginManager::registerExtensionPlugin(const QString &path, Module *plugin) {
-    m_Extensions[path] = plugin;
-    emit updated();
 }
 
 void PluginManager::addScene(Scene *scene) {
@@ -393,6 +347,38 @@ RenderSystem *PluginManager::render() const {
     return m_pRender;
 }
 
-ConvertersMap PluginManager::converters() const {
-    return m_Converters;
+QStringList PluginManager::extensions(const QString &type) const {
+    QStringList result;
+
+    for(auto &it : m_Plugins) {
+        for(auto &object : it.objects) {
+            if(object.second == type) {
+                result << object.first;
+            }
+        }
+    }
+
+    return result;
+}
+
+void *PluginManager::getPluginObject(const QString &name) {
+    for(auto &it : m_Plugins) {
+        for(auto &object : it.objects) {
+            if(object.first == name) {
+                return it.module->getObject(qPrintable(name));
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+QString PluginManager::getModuleName(const QString &type) const {
+    for(auto &it : m_Plugins) {
+        if(it.components.indexOf(type) != -1) {
+            return it.name;
+        }
+    }
+
+    return QString();
 }

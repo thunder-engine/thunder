@@ -3,7 +3,8 @@
 
 #include <QWidget>
 
-#include "undomanager.h"
+#include <editor/undomanager.h>
+
 #include "timelinescene.h"
 #include "animationclipmodel.h"
 

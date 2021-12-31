@@ -171,6 +171,10 @@ const QString CodeBuilder::persistentUUID() const {
     return "";
 }
 
+QStringList CodeBuilder::platforms() const {
+    return QStringList();
+}
+
 QString CodeBuilder::project() const {
     return m_Project;
 }
@@ -197,6 +201,11 @@ bool CodeBuilder::isEmpty() const {
     return m_Sources.empty();
 }
 
+bool CodeBuilder::isPackage(const QString &platform) const {
+    Q_UNUSED(platform);
+    return false;
+}
+
 bool CodeBuilder::isOutdated() const {
     return m_Outdated;
 }
@@ -208,7 +217,6 @@ QString CodeBuilder::formatList(const QStringList &list) const {
     }
     return result;
 }
-
 
 QAbstractItemModel *CodeBuilder::classMap() const {
     return nullptr;

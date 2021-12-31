@@ -8,7 +8,7 @@
 #include <resources/material.h>
 
 #include "assetmanager.h"
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 #include <metatype.h>
 

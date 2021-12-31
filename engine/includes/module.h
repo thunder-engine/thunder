@@ -14,20 +14,19 @@ class AssetEditor;
     #define MODULE_EXPORT
 #endif
 
+#define MODULE  "module"
+#define DESC    "description"
+#define VERSION "version"
+
 class NEXT_LIBRARY_EXPORT Module {
 public:
     explicit Module(Engine *engine) { A_UNUSED(engine); }
     virtual ~Module() {}
 
-    virtual System *system(const char *name) { A_UNUSED(name); return nullptr; }
-
     virtual const char *metaInfo() const = 0;
 
-#ifdef NEXT_SHARED
-    virtual AssetConverter *assetConverter(const char *name) { A_UNUSED(name); return nullptr; }
+    virtual void *getObject(const char *name) { A_UNUSED(name); return nullptr; }
 
-    virtual AssetEditor *assetEditor(const char *name) { A_UNUSED(name); return nullptr; }
-#endif
 };
 
 #endif // MODULE_H

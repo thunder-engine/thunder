@@ -10,7 +10,7 @@
 #include "logmodel.h"
 #include "qlog.h"
 
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),

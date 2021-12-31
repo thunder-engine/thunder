@@ -15,13 +15,11 @@ static const char *meta = \
 "   \"version\": \"1.0\","
 "   \"module\": \"Bullet\","
 "   \"description\": \"BulletPhysics Module\","
-"   \"systems\": ["
-"       \"BulletSystem\""
-"   ],"
-"   \"converters\": ["
-"       \"PhysicMaterialConverter\""
-"   ],"
-"   \"extensions\": ["
+"   \"objects\": {"
+"       \"BulletSystem\": \"system\","
+"       \"PhysicMaterialConverter\": \"converter\""
+"   },"
+"   \"components\": ["
 "       \"BoxCollider\","
 "       \"CapsuleCollider\","
 "       \"Collider\","
@@ -44,11 +42,14 @@ const char *Bullet::metaInfo() const {
     return meta;
 }
 
-System *Bullet::system(const char *) {
-    return m_pSystem;
-}
+void *Bullet::getObject(const char *name) {
+    if(strcmp(name, "BulletSystem") == 0) {
+        return m_pSystem;
+    }
 #ifdef NEXT_SHARED
-AssetConverter *Bullet::assetConverter(const char *) {
-    return new PhysicMaterialConverter();
-}
+    else if(strcmp(name, "PhysicMaterialConverter") == 0) {
+        return new PhysicMaterialConverter();
+    }
 #endif
+    return nullptr;
+}

@@ -3,7 +3,7 @@
 
 #include <QFileDialog>
 
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 PathEdit::PathEdit(QWidget *parent) :
         QWidget(parent),

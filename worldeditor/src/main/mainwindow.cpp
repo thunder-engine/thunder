@@ -22,10 +22,12 @@
 
 #include "managers/asseteditormanager/importqueue.h"
 #include "managers/feedmanager/feedmanager.h"
+#include "managers/projectmanager/projectmodel.h"
 
-#include "projectmodel.h"
-#include "projectmanager.h"
-#include "undomanager.h"
+#include "assetmanager.h"
+
+#include <editor/projectmanager.h>
+#include <editor/undomanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
 

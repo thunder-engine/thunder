@@ -13,10 +13,8 @@ public:
 
     const char *metaInfo() const override;
 
-    System *system(const char *) override;
-#ifdef NEXT_SHARED
-    AssetConverter *assetConverter(const char *) override;
-#endif
+    void *getObject(const char *name) override;
+
 protected:
     AngelSystem *m_pSystem;
 
