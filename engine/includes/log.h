@@ -53,6 +53,11 @@ private:
 
 };
 
+#define aError()   Log(Log::ERR)
+#define aWarning() Log(Log::WRN)
+#define aInfo()    Log(Log::INF)
+#define aDebug()   Log(Log::DBG)
+
 class LogHandler {
 public:
     virtual void setRecord (Log::LogTypes type, const char *record) = 0;
