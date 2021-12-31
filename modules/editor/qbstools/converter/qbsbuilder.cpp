@@ -275,9 +275,9 @@ QStringList QbsBuilder::getArchitectures(const QString &platform) const {
     }
 #if defined(Q_OS_MAC)
     if(platform == "ios") {
-        architectures << "arm64");
+        architectures << "arm64";
     } else if(platform == "tvos") {
-        architectures << "arm64");
+        architectures << "arm64";
     }
 #endif
     return architectures;
