@@ -2,6 +2,8 @@
 
 #include "mediasystem.h"
 
+#include <cstring>
+
 #ifdef NEXT_SHARED
 #include "converters/audioconverter.h"
 

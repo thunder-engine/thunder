@@ -3,6 +3,8 @@
 #include <amath.h>
 #include <engine.h>
 
+#include <cstring>
+
 #include "converter/shaderbuilder.h"
 #include "editor/materialedit.h"
 

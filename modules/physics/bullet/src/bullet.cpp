@@ -2,6 +2,8 @@
 
 #include "bulletsystem.h"
 
+#include <cstring>
+
 #ifdef NEXT_SHARED
 #include "converters/physicmaterialconverter.h"
 

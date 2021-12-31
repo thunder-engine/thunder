@@ -2,6 +2,8 @@
 
 #include "angelsystem.h"
 
+#include <cstring>
+
 #ifdef NEXT_SHARED
 #include "converters/angelbuilder.h"
 
