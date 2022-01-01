@@ -6,7 +6,6 @@
 #include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
-#include "undomanager.h"
 
 MoveTool::MoveTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {

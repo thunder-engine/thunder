@@ -8,7 +8,6 @@
 #include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
-#include "undomanager.h"
 
 ResizeTool::ResizeTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {

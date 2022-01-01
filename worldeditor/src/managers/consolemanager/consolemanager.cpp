@@ -10,7 +10,7 @@
 #include "logmodel.h"
 #include "qlog.h"
 
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),
@@ -25,8 +25,6 @@ ConsoleManager::ConsoleManager(QWidget *parent) :
     m_pMenu = new QMenu(this);
     QAction *action = m_pMenu->addAction(tr("Copy"));
     connect(action, SIGNAL(triggered()), this, SLOT(onCopy()));
-
-    connect(ProjectManager::instance(), &ProjectManager::readBuildLogs, this, &ConsoleManager::parseLogs);
 
     connect(static_cast<QLog *>(Log::handler()), SIGNAL(postRecord(uint8_t,QString)), this, SLOT(onLogRecord(uint8_t,QString)));
 }

@@ -7,6 +7,7 @@
 
 class AbstractSchemeModel;
 class AnimationStateMachine;
+class AssetConverter;
 
 class ComponentBrowser;
 
@@ -45,7 +46,8 @@ private:
 private:
     Ui::AnimationEdit *ui;
 
-    AbstractSchemeModel *m_schemeModel;
+    AbstractSchemeModel *m_model;
+    AssetConverter *m_assetConverter;
 
     AnimationStateMachine *m_stateMachine;
 

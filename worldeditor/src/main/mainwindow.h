@@ -5,25 +5,18 @@
 #include <QProcess>
 #include <QMenu>
 
-#include <vector>
-#include <cstdint>
-
 #include <amath.h>
 #include <engine.h>
 
 #include "aboutdialog.h"
-#include "managers/pluginmanager/plugindialog.h"
+#include "managers/plugindialog/plugindialog.h"
 
-using namespace std;
-
-class Object;
 class ImportQueue;
 
 class ProjectModel;
 class FeedManager;
 class DocumentModel;
 
-class AssetConverterSettings;
 class AssetEditor;
 
 namespace Ui {
@@ -43,6 +36,9 @@ public slots:
 
     void onOpenProject(const QString &path);
 
+signals:
+    void readBuildLogs(QString log);
+
 private:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
@@ -54,6 +50,8 @@ private:
     void findWorkspaces(const QString &dir);
 
     void setGameMode(bool game);
+
+    void build(QString platform);
 
 private:
     Ui::MainWindow *ui;
@@ -77,6 +75,8 @@ private:
     AboutDialog m_aboutDlg;
     PluginDialog m_pluginDlg;
 
+    QProcess *m_builder;
+
 private slots:
     void onSettingsUpdated();
 
@@ -86,6 +86,10 @@ private slots:
     void onBuildProject();
 
     void onImportFinished();
+
+    void onBuildFinished(int exitCode, QProcess::ExitStatus);
+    void readOutput();
+    void readError();
 
     void on_commitButton_clicked();
     void on_revertButton_clicked();

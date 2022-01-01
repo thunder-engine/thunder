@@ -11,7 +11,7 @@ public:
 
     const char *metaInfo() const override;
 
-    System *system(const char *name) override;
+    void *getObject(const char *name) override;
 
 protected:
     System *m_pSystem;

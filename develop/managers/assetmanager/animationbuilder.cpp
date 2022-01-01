@@ -1,23 +1,9 @@
 #include "animationbuilder.h"
 
-#include <QVariant>
-#include <QDir>
-#include <QJsonDocument>
-
-#include <components/animator.h>
-#include <resources/animationstatemachine.h>
-
-#include <engine.h>
-
 #include <QFile>
+#include <QMetaClassInfo>
 
-#include <json.h>
 #include <bson.h>
-
-#include "assetmanager.h"
-#include "projectmanager.h"
-
-#include "functionmodel.h"
 
 #define ENTRY "Entry"
 #define NAME "Name"
@@ -30,7 +16,7 @@ AnimationBuilderSettings::AnimationBuilderSettings() {
     setType(MetaType::type<AnimationStateMachine *>());
 }
 
-AnimationBuilder::AnimationBuilder() {
+AnimationSchemeModel::AnimationSchemeModel() {
     m_pEntry = nullptr;
     m_pRootNode->name = "Entry";
 
@@ -39,23 +25,7 @@ AnimationBuilder::AnimationBuilder() {
     m_Functions << "BaseState";
 }
 
-AssetConverter::ReturnCode AnimationBuilder::convertFile(AssetConverterSettings *settings) {
-    load(settings->source());
-    QFile file(settings->absoluteDestination());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data  = Bson::save( object() );
-        file.write((const char *)&data[0], data.size());
-        file.close();
-        return Success;
-    }
-    return InternalError;
-}
-
-AssetConverterSettings *AnimationBuilder::createSettings() const {
-    return new AnimationBuilderSettings();
-}
-
-void AnimationBuilder::load(const QString &path) {
+void AnimationSchemeModel::load(const QString &path) {
     AbstractSchemeModel::load(path);
 
     m_pEntry = m_Nodes.at(m_Data[ENTRY].toInt());
@@ -64,13 +34,13 @@ void AnimationBuilder::load(const QString &path) {
     }
 }
 
-void AnimationBuilder::save(const QString &path) {
+void AnimationSchemeModel::save(const QString &path) {
     m_Data[ENTRY] = m_Nodes.indexOf(m_pEntry);
 
     AbstractSchemeModel::save(path);
 }
 
-AbstractSchemeModel::Node *AnimationBuilder::nodeCreate(const QString &path, int &index) {
+AbstractSchemeModel::Node *AnimationSchemeModel::nodeCreate(const QString &path, int &index) {
     Node *node = new Node;
     node->root = false;
     node->name = path;
@@ -89,7 +59,7 @@ AbstractSchemeModel::Node *AnimationBuilder::nodeCreate(const QString &path, int
     return node;
 }
 
-AbstractSchemeModel::Link *AnimationBuilder::linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) {
+AbstractSchemeModel::Link *AnimationSchemeModel::linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) {
     if(receiver == m_pRootNode) {
         return nullptr;
     }
@@ -108,7 +78,7 @@ AbstractSchemeModel::Link *AnimationBuilder::linkCreate(Node *sender, Port *opor
     return AbstractSchemeModel::linkCreate(sender, oport, receiver, iport);
 }
 
-void AnimationBuilder::loadUserValues(AbstractSchemeModel::Node *node, const QVariantMap &values) {
+void AnimationSchemeModel::loadUserValues(AbstractSchemeModel::Node *node, const QVariantMap &values) {
     BaseState *ptr = reinterpret_cast<BaseState *>(node->ptr);
     node->name = values[NAME].toString();
 
@@ -119,18 +89,14 @@ void AnimationBuilder::loadUserValues(AbstractSchemeModel::Node *node, const QVa
     ptr->setLoop(values[LOOP].toBool());
 }
 
-void AnimationBuilder::saveUserValues(Node *node, QVariantMap &values) {
+void AnimationSchemeModel::saveUserValues(Node *node, QVariantMap &values) {
     BaseState *ptr = reinterpret_cast<BaseState *>(node->ptr);
     values[NAME] = node->name;
     values[CLIP] = ptr->clip().path;
     values[LOOP] = ptr->loop();
 }
 
-QAbstractItemModel *AnimationBuilder::components() const {
-    return new FunctionModel(m_Functions);
-}
-
-Variant AnimationBuilder::object() const {
+Variant AnimationSchemeModel::object() const {
     VariantList result;
 
     VariantList object;
@@ -150,7 +116,23 @@ Variant AnimationBuilder::object() const {
     return result;
 }
 
-Variant AnimationBuilder::data() const {
+QStringList AnimationSchemeModel::nodeList() const {
+    QStringList result;
+    for(auto &it : m_Functions) {
+        const int type = QMetaType::type( qPrintable(it) );
+        const QMetaObject *meta = QMetaType::metaObjectForType(type);
+        if(meta) {
+            int index = meta->indexOfClassInfo("Group");
+            if(index != -1) {
+                result << QString(meta->classInfo(index).value()) + "/" + it;
+            }
+        }
+    }
+
+    return result;
+}
+
+Variant AnimationSchemeModel::data() const {
     VariantMap result;
 
     VariantList machine;
@@ -196,4 +178,20 @@ Variant AnimationBuilder::data() const {
 
     result[MACHINE] = machine;
     return result;
+}
+
+AssetConverter::ReturnCode AnimationBuilder::convertFile(AssetConverterSettings *settings) {
+    m_model.load(settings->source());
+    QFile file(settings->absoluteDestination());
+    if(file.open(QIODevice::WriteOnly)) {
+        ByteArray data = Bson::save( m_model.object() );
+        file.write((const char *)&data[0], data.size());
+        file.close();
+        return Success;
+    }
+    return InternalError;
+}
+
+AssetConverterSettings *AnimationBuilder::createSettings() const {
+    return new AnimationBuilderSettings();
 }

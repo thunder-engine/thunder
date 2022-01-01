@@ -5,8 +5,9 @@
 #include <QDesktopWidget>
 #include <QDir>
 
+#include <editor/projectmanager.h>
+
 #include "assetmanager.h"
-#include "projectmanager.h"
 
 #include "editors/contentbrowser/contentlist.h"
 #include "editors/assetselect/assetlist.h"

@@ -107,4 +107,21 @@ public:
     virtual Actor *createActor(const QString &guid) const;
 };
 
+struct Template {
+    Template() :
+        type(MetaType::INVALID) {
+
+    }
+    Template(const QString &p, const uint32_t t) :
+        path(p) {
+            type = MetaType::name(t);
+            type = type.replace("*", "");
+            type = type.trimmed();
+    }
+
+    QString path;
+    QString type;
+};
+Q_DECLARE_METATYPE(Template)
+
 #endif // ASSETCONVERTER_H

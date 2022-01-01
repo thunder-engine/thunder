@@ -26,12 +26,15 @@ public:
     virtual const QString persistentAsset() const;
     virtual const QString persistentUUID() const;
 
+    virtual QStringList platforms() const;
+
     QString project() const;
 
     QStringList sources() const;
 
     void rescanSources(const QString &path);
     virtual bool isEmpty() const;
+    virtual bool isPackage(const QString &platform) const;
 
     bool isOutdated() const;
 

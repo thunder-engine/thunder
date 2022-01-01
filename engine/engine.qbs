@@ -43,7 +43,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
         bundle.isBundle: false
 
         cpp.defines: {
@@ -121,6 +121,17 @@ Project {
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/editor/viewport"
+            qbs.installPrefix: engine.PREFIX
+        }
+
+        Group {
+            name: "Scheme Editor includes"
+            prefix: "includes/editor/scheme"
+            files: [
+                "**/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: engine.INC_PATH + "/editor/scheme"
             qbs.installPrefix: engine.PREFIX
         }
     }

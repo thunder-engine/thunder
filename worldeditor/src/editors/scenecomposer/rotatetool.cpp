@@ -7,7 +7,6 @@
 #include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
-#include "undomanager.h"
 
 RotateTool::RotateTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {

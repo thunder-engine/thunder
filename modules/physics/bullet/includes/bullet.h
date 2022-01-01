@@ -12,10 +12,8 @@ public:
 
     const char *metaInfo() const override;
 
-    System *system(const char *name) override;
-#ifdef NEXT_SHARED
-    AssetConverter *assetConverter(const char *name) override;
-#endif
+    void *getObject(const char *name) override;
+
 protected:
     BulletSystem *m_pSystem;
 

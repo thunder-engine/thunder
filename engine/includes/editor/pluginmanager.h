@@ -2,6 +2,7 @@
 #define PLUGINMANAGER_H
 
 #include <QAbstractItemModel>
+#include <QSet>
 
 #include <stdint.h>
 #include <variant.h>
@@ -18,14 +19,21 @@ class Engine;
 class Module;
 class System;
 class RenderSystem;
-class AssetConverter;
 
 typedef QHash<Object *, ByteArray> ComponentMap;
 
-typedef QMap<QString, AssetConverter *> ConvertersMap;
-
 class NEXT_LIBRARY_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT
+
+public:
+    enum {
+        PLUGIN_NAME,
+        PLUGIN_DESCRIPTION,
+        PLUGIN_VERSION,
+        PLUGIN_AUTHOR,
+        PLUGIN_PATH,
+        PLUGIN_LAST
+    };
 
 public:
     static PluginManager *instance();
@@ -46,11 +54,11 @@ public:
 
     RenderSystem *render() const;
 
-    ConvertersMap converters() const;
+    QStringList extensions(const QString &type) const;
+
+    void *getPluginObject(const QString &name);
 
     QString getModuleName(const QString &type) const;
-
-    QString getModuleName(const ObjectSystem *system) const;
 
 signals:
     void pluginReloaded();
@@ -82,20 +90,12 @@ private:
 protected:
     bool registerSystem(Module *plugin, const char *name);
 
-    void registerExtensionPlugin(const QString &path, Module *plugin);
-
     void serializeComponents(const QStringList &list, ComponentMap &map);
 
     void deserializeComponents(const ComponentMap &map);
 
 private:
-    typedef QMap<QString, Module *> PluginsMap;
-
-    typedef QMap<QString, QLibrary *> LibrariesMap;
-
     typedef QMap<QString, System *> SystemsMap;
-
-    typedef QMap<QString, QString> ModulesMap;
 
     struct Plugin {
         bool operator== (const Plugin &left) {
@@ -108,7 +108,21 @@ private:
 
         QString description;
 
+        QString author;
+
+        QString documentation;
+
+        QString url;
+
         QString path;
+
+        QStringList components;
+
+        QList<QPair<QString, QString>> objects;
+
+        QLibrary *library;
+
+        Module *module;
     };
 
     Engine *m_pEngine;
@@ -117,17 +131,7 @@ private:
 
     QString m_PluginPath;
 
-    QStringList m_Suffixes;
-
     SystemsMap m_Systems;
-
-    ConvertersMap m_Converters;
-
-    PluginsMap m_Extensions;
-
-    LibrariesMap m_Libraries;
-
-    ModulesMap m_Modules;
 
     QList<Scene *> m_Scenes;
 

@@ -1,7 +1,7 @@
 #ifndef ANIMATIONBUILDER_H
 #define ANIMATIONBUILDER_H
 
-#include "abstractschememodel.h"
+#include "editor/scheme/abstractschememodel.h"
 
 #include <QVariant>
 
@@ -68,33 +68,27 @@ public:
     AnimationBuilderSettings();
 };
 
-class AnimationBuilder : public AbstractSchemeModel {
+class AnimationSchemeModel : public AbstractSchemeModel {
     Q_OBJECT
 
 public:
-    AnimationBuilder();
-
-private:
-    QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
-
-    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
-    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+    AnimationSchemeModel();
 
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
 
+    Variant object() const;
+
+    QStringList nodeList() const Q_DECL_OVERRIDE;
+
+private:
     Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
     Link *linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) Q_DECL_OVERRIDE;
 
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
-    QAbstractItemModel *components() const Q_DECL_OVERRIDE;
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation_Controller.actl"; }
-
 protected:
-    Variant object() const;
-
     Variant data() const;
 
     Node *m_pEntry;
@@ -102,6 +96,19 @@ protected:
 
     QStringList m_Functions;
 
+};
+
+class AnimationBuilder : public AssetConverter {
+private:
+    QStringList suffixes() const Q_DECL_OVERRIDE { return {"actl"}; }
+
+    ReturnCode convertFile(AssetConverterSettings *s) Q_DECL_OVERRIDE;
+    AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
+
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation_Controller.actl"; }
+
+private:
+    AnimationSchemeModel m_model;
 };
 
 #endif // ANIMATIONBUILDER_H

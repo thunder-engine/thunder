@@ -144,8 +144,8 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         while(it.hasNext()) {
             it.next();
             includes << "#include \"" + it.value() + "\"\n";
-            m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_pEngine);\n");
-            m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_pEngine);\n");
+            m_Values[gRegisterComponents].append(it.key() + "::registerClassFactory(m_engine);\n");
+            m_Values[gUnregisterComponents].append(it.key() + "::unregisterClassFactory(m_engine);\n");
             m_Values[gComponentNames].append("\"        \\\"" + it.key() + "\\\"" + (it.hasNext() ? "," : "") + "\"\n");
         }
         includes.removeDuplicates();
@@ -169,6 +169,10 @@ const QString CodeBuilder::persistentAsset() const {
 
 const QString CodeBuilder::persistentUUID() const {
     return "";
+}
+
+QStringList CodeBuilder::platforms() const {
+    return QStringList();
 }
 
 QString CodeBuilder::project() const {
@@ -197,6 +201,11 @@ bool CodeBuilder::isEmpty() const {
     return m_Sources.empty();
 }
 
+bool CodeBuilder::isPackage(const QString &platform) const {
+    Q_UNUSED(platform);
+    return false;
+}
+
 bool CodeBuilder::isOutdated() const {
     return m_Outdated;
 }
@@ -208,7 +217,6 @@ QString CodeBuilder::formatList(const QStringList &list) const {
     }
     return result;
 }
-
 
 QAbstractItemModel *CodeBuilder::classMap() const {
     return nullptr;

@@ -10,21 +10,19 @@ class XcodeBuilder : public CodeBuilder {
 public:
     XcodeBuilder ();
 
-    bool buildProject ();
-
-    QString builderVersion ();
-
-    QStringList suffixes () const { return {"cpp", "h"}; }
-
 private:
-    void generateProject();
+    bool buildProject () Q_DECL_OVERRIDE;
+
+    QString builderVersion () Q_DECL_OVERRIDE;
+
+    QStringList suffixes () const Q_DECL_OVERRIDE { return {"cpp", "h"}; }
+
+    QStringList platforms() const Q_DECL_OVERRIDE { return {"ios", "tvos"}; }
 
 private:
     QProcess *m_pProcess;
 
     QStringList m_Settings;
-
-    ProjectManager *m_pMgr;
 
     bool m_Progress;
 };

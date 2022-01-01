@@ -20,11 +20,7 @@ Project {
         "../common",
         "../engine/includes",
         "../engine/includes/resources",
-        "../develop/managers/projectmanager",
         "../develop/managers/assetmanager",
-        "../develop/managers/pluginmanager",
-        "../develop/managers/settingsmanager",
-        "../develop/managers/undomanager",
         "../develop/models/include",
         "../modules/media/includes",
         "../thirdparty/assimp/include",
@@ -37,8 +33,6 @@ Project {
         "../thirdparty/zlib/src",
         "../thirdparty/libogg/src",
         "../thirdparty/libvorbis/src",
-        "../thirdparty/glsl",
-        "../thirdparty/spirvcross/src",
         "../thirdparty/syntaxhighlighting/src",
         "../thirdparty/ofbx/src"
     ]
@@ -56,8 +50,6 @@ Project {
         Depends { name: "vorbis-editor" }
         Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "glsl" }
-        Depends { name: "spirvcross" }
         Depends { name: "syntaxhighlighting" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle

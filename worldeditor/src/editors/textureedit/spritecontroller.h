@@ -1,11 +1,10 @@
 #ifndef SPRITECONTROLLER_H
 #define SPRITECONTROLLER_H
 
+#include <editor/undomanager.h>
 #include <editor/viewport/cameractrl.h>
 
 #include "textureconverter.h"
-
-#include <undomanager.h>
 
 #define SCALE 100.0f
 

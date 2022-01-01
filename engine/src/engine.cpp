@@ -59,7 +59,7 @@ namespace {
     static const char *gContent("content");
     static const char *gSettings("settings");
 
-    static const char *gSystems("systems");
+    static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
     static const char *gCompany(".company");
@@ -596,12 +596,14 @@ void Engine::setGameMode(bool flag) {
 void Engine::addModule(Module *module) {
     PROFILE_FUNCTION();
     VariantMap metaInfo = Json::load(module->metaInfo()).toMap();
-    for(auto &it : metaInfo[gSystems].toList()) {
-        System *system = module->system(it.toString().c_str());
-        if(system->threadPolicy() == System::Pool) {
-            EnginePrivate::m_Pool.push_back(system);
-        } else {
-            EnginePrivate::m_Serial.push_back(system);
+    for(auto &it : metaInfo[gObjects].toMap()) {
+        if(it.second.toString() == "system") {
+            System *system = reinterpret_cast<System *>(module->getObject(it.first.c_str()));
+            if(system->threadPolicy() == System::Pool) {
+                EnginePrivate::m_Pool.push_back(system);
+            } else {
+                EnginePrivate::m_Serial.push_back(system);
+            }
         }
     }
 }

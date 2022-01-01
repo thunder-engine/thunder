@@ -7,7 +7,6 @@
 #include <editor/viewport/handles.h>
 
 #include "objectctrl.h"
-#include "undomanager.h"
 
 ScaleTool::ScaleTool(ObjectCtrl *controller, SelectList &selection) :
     SelectTool(controller, selection) {

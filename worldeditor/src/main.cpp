@@ -6,7 +6,7 @@
 
 #include "main/mainwindow.h"
 
-#include "undomanager.h"
+#include <editor/undomanager.h>
 #include "assetmanager.h"
 
 #include <editor/pluginmanager.h>
@@ -22,8 +22,6 @@
 #include "editors/componentbrowser/componentmodel.h"
 #include "editors/contentbrowser/contentlist.h"
 #include "editors/assetselect/assetlist.h"
-
-#include "qbsbuilder.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -55,6 +53,8 @@ int main(int argc, char *argv[]) {
 
     Log::setLogLevel(Log::DBG);
 
+    SettingsManager::instance()->loadSettings();
+
     Engine engine(file, argv[0]);
     engine.init();
     Log::overrideHandler(new QLog());
@@ -65,11 +65,8 @@ int main(int argc, char *argv[]) {
 
     AssetManager *asset = AssetManager::instance();
     asset->init(&engine);
-    asset->registerConverter(new QbsBuilder);
 
     MainWindow window(&engine);
-
-    SettingsManager::instance()->loadSettings();
 
     window.show();
     splash.finish(&window);

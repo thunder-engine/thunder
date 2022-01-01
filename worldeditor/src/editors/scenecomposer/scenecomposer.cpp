@@ -16,11 +16,10 @@
 
 #include <editor/assetconverter.h>
 #include <editor/pluginmanager.h>
+#include <editor/undomanager.h>
+#include <editor/projectmanager.h>
 
 #include "objectctrl.h"
-
-#include "undomanager.h"
-#include "projectmanager.h"
 #include "assetmanager.h"
 
 #include "editors/propertyedit/nextobject.h"

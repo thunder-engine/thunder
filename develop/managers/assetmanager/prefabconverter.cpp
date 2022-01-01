@@ -9,7 +9,7 @@
 #include <json.h>
 
 #include <editor/pluginmanager.h>
-#include "projectmanager.h"
+#include <editor/projectmanager.h>
 
 #define FORMAT_VERSION 2
 

@@ -7,20 +7,25 @@
 #include <QEvent>
 
 #include "assetmanager.h"
-#include "projectmanager.h"
+
+#include <editor/projectmanager.h>
+#include <editor/pluginmanager.h>
 
 #include "editors/textedit/textedit.h"
 #include "editors/textureedit/textureedit.h"
-#include "editors/materialedit/materialedit.h"
 #include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
 
 DocumentModel::DocumentModel() {
     addEditor(new TextureEdit);
-    addEditor(new MaterialEdit);
     addEditor(new ParticleEdit);
     addEditor(new AnimationEdit);
     addEditor(new TextEdit);
+
+    for(auto &it : PluginManager::instance()->extensions("editor")) {
+        AssetEditor *editor = reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it));
+        addEditor(editor);
+    }
 }
 
 DocumentModel::~DocumentModel() {
