@@ -20,12 +20,15 @@ class AssetEditor;
 
 class NEXT_LIBRARY_EXPORT Module {
 public:
-    explicit Module(Engine *engine) { A_UNUSED(engine); }
+    explicit Module(Engine *engine) { m_engine = engine; }
     virtual ~Module() {}
 
     virtual const char *metaInfo() const = 0;
 
     virtual void *getObject(const char *name) { A_UNUSED(name); return nullptr; }
+
+protected:
+    Engine *m_engine;
 
 };
 

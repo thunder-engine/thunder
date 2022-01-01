@@ -74,19 +74,9 @@ public:
 signals:
     void updated();
 
-    void readBuildLogs(QString log);
-
 public slots:
     void loadSettings();
     void saveSettings();
-
-    void build(QString platform);
-
-private slots:
-    void onBuildFinished(int exitCode, QProcess::ExitStatus);
-
-    void readOutput();
-    void readError();
 
 private:
     ProjectManager();
@@ -128,8 +118,6 @@ private:
 
     QSet<QString> m_modules;
     QSet<QString> m_autoModules;
-
-    QProcess *m_builder;
 };
 
 #endif // PROJECTMANAGER_H

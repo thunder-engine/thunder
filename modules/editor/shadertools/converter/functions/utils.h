@@ -1,7 +1,7 @@
 #ifndef UTILS
 #define UTILS
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 #define IN  "In"
 
@@ -50,7 +50,7 @@ public:
         return result;
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         size    = 0;
 
         const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, IN);
@@ -94,7 +94,7 @@ public:
                     }
                 }
 
-                switch (size) {
+                switch(size) {
                     case QMetaType::QVector2D:  value.append("\tvec2");  break;
                     case QMetaType::QVector3D:  value.append("\tvec3");  break;
                     case QMetaType::QVector4D:  value.append("\tvec4");  break;
@@ -195,7 +195,7 @@ public:
         return result;
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         size = 0;
 
         const AbstractSchemeModel::Link *al  = m_pModel->findLink(m_pNode, a);

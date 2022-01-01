@@ -1,7 +1,7 @@
 #ifndef MATERIALPARAM
 #define MATERIALPARAM
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 class ParamFloat : public ShaderFunction {
     Q_OBJECT
@@ -28,7 +28,7 @@ public:
         return result;
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::Double;
             m_pModel->addUniform(objectName(), size, m_defaultValue);
@@ -77,7 +77,7 @@ public:
         return result;
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector4D;
             m_pModel->addUniform(objectName(), size, m_defaultValue);

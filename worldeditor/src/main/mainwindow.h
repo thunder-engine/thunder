@@ -43,6 +43,9 @@ public slots:
 
     void onOpenProject(const QString &path);
 
+signals:
+    void readBuildLogs(QString log);
+
 private:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
@@ -54,6 +57,8 @@ private:
     void findWorkspaces(const QString &dir);
 
     void setGameMode(bool game);
+
+    void build(QString platform);
 
 private:
     Ui::MainWindow *ui;
@@ -77,6 +82,8 @@ private:
     AboutDialog m_aboutDlg;
     PluginDialog m_pluginDlg;
 
+    QProcess *m_builder;
+
 private slots:
     void onSettingsUpdated();
 
@@ -86,6 +93,10 @@ private slots:
     void onBuildProject();
 
     void onImportFinished();
+
+    void onBuildFinished(int exitCode, QProcess::ExitStatus);
+    void readOutput();
+    void readError();
 
     void on_commitButton_clicked();
     void on_revertButton_clicked();

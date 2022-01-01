@@ -1,7 +1,7 @@
-#ifndef ACOORDINATES_H
-#define ACOORDINATES_H
+#ifndef COORDINATES_H
+#define COORDINATES_H
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 #define UV   "UV"
 
@@ -27,7 +27,7 @@ public:
     int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = (0.5 * ( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
+            value  += QString("\tvec3 local%1 =(0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
         }
         return ShaderFunction::build(value, link, depth, size);
     }
@@ -164,20 +164,20 @@ public:
         return ShaderFunction::build(value, link, depth, size);
     }
 
-    double valueX () const {
+    double valueX() const {
         return m_Speed.x;
     }
 
-    void setValueX (const double value) {
+    void setValueX(const double value) {
         m_Speed.x = value;
         emit updated();
     }
 
-    double valueY () const {
+    double valueY() const {
         return m_Speed.y;
     }
 
-    void setValueY (const double value) {
+    void setValueY(const double value) {
         m_Speed.y = value;
         emit updated();
     }
@@ -187,4 +187,4 @@ protected:
 
 };
 
-#endif // ACOORDINATES_H
+#endif // COORDINATES_H

@@ -27,8 +27,7 @@ namespace {
 
 ProjectManager *ProjectManager::m_pInstance = nullptr;
 
-ProjectManager::ProjectManager() :
-        m_builder(new QProcess(this)) {
+ProjectManager::ProjectManager() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
@@ -46,11 +45,6 @@ ProjectManager::ProjectManager() :
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
     m_myProjectsPath = QFileInfo(path);
-
-    connect(m_builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
-
-    connect(m_builder, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
-    connect(m_builder, SIGNAL(readyReadStandardError()), this, SLOT(readError()));
 }
 
 ProjectManager *ProjectManager::instance() {
@@ -195,47 +189,6 @@ void ProjectManager::saveSettings() {
         file.write(doc.toJson());
         file.close();
     }
-}
-
-void ProjectManager::build(QString platform) {
-    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Select Target Directory"),
-                                                    "",
-                                                    QFileDialog::ShowDirsOnly |
-                                                    QFileDialog::DontResolveSymlinks);
-
-    if(!dir.isEmpty()) {
-        ProjectManager *mgr = ProjectManager::instance();
-
-        QStringList args;
-        args << "-s" << mgr->projectPath() << "-t" << dir;
-
-        if(!platform.isEmpty()) {
-            args << "-p" << platform;
-        }
-
-        qDebug() << args.join(" ");
-
-        m_builder->start("Builder", args);
-        if(!m_builder->waitForStarted()) {
-            Log(Log::ERR) << qPrintable(m_builder->errorString());
-        }
-    }
-}
-
-void ProjectManager::onBuildFinished(int exitCode, QProcess::ExitStatus) {
-    if(exitCode == 0) {
-        Log(Log::INF) << "Build Finished";
-    } else {
-        Log(Log::ERR) << "Build Failed";
-    }
-}
-
-void ProjectManager::readOutput() {
-    emit readBuildLogs(m_builder->readAllStandardOutput());
-}
-
-void ProjectManager::readError() {
-    emit readBuildLogs(m_builder->readAllStandardError());
 }
 
 QStringList ProjectManager::modules() const {

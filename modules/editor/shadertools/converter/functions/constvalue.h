@@ -1,7 +1,7 @@
-#ifndef ACONSTVALUE_H
-#define ACONSTVALUE_H
+#ifndef CONSTVALUE_H
+#define CONSTVALUE_H
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 #include <QColor>
 #include <QVector2D>
@@ -13,7 +13,7 @@ class ConstFloat : public ShaderFunction {
     Q_PROPERTY(double Value READ value WRITE setValue DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE ConstFloat  () { m_Value    = 0.0; }
+    Q_INVOKABLE ConstFloat() { m_Value    = 0.0; }
 
     AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
         AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
@@ -27,16 +27,16 @@ public:
         return result;
     }
 
-    double value () const {
+    double value() const {
         return m_Value;
     }
 
-    void setValue (double value) {
+    void setValue(double value) {
         m_Value = value;
         emit updated();
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size    = QMetaType::Double;
             value  += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_Value);
@@ -69,25 +69,25 @@ public:
         return result;
     }
 
-    double valueR () const {
+    double valueR() const {
         return m_Value.x();
     }
 
-    void setValueR (const double value) {
+    void setValueR(const double value) {
         m_Value.setX(value);
         emit updated();
     }
 
-    double valueG () const {
+    double valueG() const {
         return m_Value.y();
     }
 
-    void setValueG (const double value) {
+    void setValueG(const double value) {
         m_Value.setY(value);
         emit updated();
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size   = QMetaType::QVector2D;
             value += QString("\tvec2 local%1 = vec2(%2, %3);\n").arg(depth).arg(m_Value.x()).arg(m_Value.y());
@@ -119,11 +119,11 @@ public:
         return result;
     }
 
-    QColor value () const {
+    QColor value() const {
         return m_Value;
     }
 
-    void setValue (const QColor &value) {
+    void setValue(const QColor &value) {
         m_Value = value.rgb();
         emit updated();
     }
@@ -160,16 +160,16 @@ public:
         return result;
     }
 
-    QColor value () const {
+    QColor value() const {
         return m_Value;
     }
 
-    void setValue (const QColor &value) {
+    void setValue(const QColor &value) {
         m_Value = value;
         emit updated();
     }
 
-    int32_t build (QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
         if(m_Position == -1) {
             size   = QMetaType::QVector4D;
             value += QString("\tvec4 local%1 = vec4(%2, %3, %4, %5);\n").arg(depth).arg(m_Value.redF()).arg(m_Value.greenF()).arg(m_Value.blueF()).arg(m_Value.alphaF());
@@ -180,4 +180,4 @@ protected:
     QColor m_Value;
 };
 
-#endif // ACONSTVALUE_H
+#endif // CONSTVALUE_H

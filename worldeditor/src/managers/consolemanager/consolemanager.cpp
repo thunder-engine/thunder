@@ -26,8 +26,6 @@ ConsoleManager::ConsoleManager(QWidget *parent) :
     QAction *action = m_pMenu->addAction(tr("Copy"));
     connect(action, SIGNAL(triggered()), this, SLOT(onCopy()));
 
-    connect(ProjectManager::instance(), &ProjectManager::readBuildLogs, this, &ConsoleManager::parseLogs);
-
     connect(static_cast<QLog *>(Log::handler()), SIGNAL(postRecord(uint8_t,QString)), this, SLOT(onLogRecord(uint8_t,QString)));
 }
 

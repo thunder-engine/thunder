@@ -12,6 +12,7 @@
 
 #include <json.h>
 #include <timer.h>
+#include <log.h>
 
 #include <cstring>
 
@@ -65,7 +66,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_Undo(nullptr),
         m_Redo(nullptr),
         m_MainDocument(nullptr),
-        m_CurrentDocument(nullptr) {
+        m_CurrentDocument(nullptr),
+        m_builder(new QProcess(this)) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -205,6 +207,13 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     on_actionEditor_Mode_triggered();
     resetGeometry();
+
+    connect(m_builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
+
+    connect(m_builder, &QProcess::readyReadStandardOutput, this, &MainWindow::readOutput);
+    connect(m_builder, &QProcess::readyReadStandardError, this, &MainWindow::readError);
+
+    connect(this, &MainWindow::readBuildLogs, ui->consoleOutput, &ConsoleManager::parseLogs);
 }
 
 MainWindow::~MainWindow() {
@@ -582,7 +591,7 @@ void MainWindow::resetGeometry() {
 void MainWindow::onBuildProject() {
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        ProjectManager::instance()->build(action->property(qPrintable(gPlatforms)).toString());
+        build(action->property(qPrintable(gPlatforms)).toString());
     }
 }
 
@@ -634,4 +643,45 @@ void MainWindow::on_actionThunder_Manual_triggered() {
 
 void MainWindow::on_actionExit_triggered() {
     closeEvent(new QCloseEvent);
+}
+
+void MainWindow::build(QString platform) {
+    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Select Target Directory"),
+                                                    "",
+                                                    QFileDialog::ShowDirsOnly |
+                                                    QFileDialog::DontResolveSymlinks);
+
+    if(!dir.isEmpty()) {
+        ProjectManager *mgr = ProjectManager::instance();
+
+        QStringList args;
+        args << "-s" << mgr->projectPath() << "-t" << dir;
+
+        if(!platform.isEmpty()) {
+            args << "-p" << platform;
+        }
+
+        qDebug() << args.join(" ");
+
+        m_builder->start("Builder", args);
+        if(!m_builder->waitForStarted()) {
+            aError() << qPrintable(m_builder->errorString());
+        }
+    }
+}
+
+void MainWindow::onBuildFinished(int exitCode, QProcess::ExitStatus) {
+    if(exitCode == 0) {
+        aInfo() << "Build Finished";
+    } else {
+        aError() << "Build Failed";
+    }
+}
+
+void MainWindow::readOutput() {
+    emit readBuildLogs(m_builder->readAllStandardOutput());
+}
+
+void MainWindow::readError() {
+    emit readBuildLogs(m_builder->readAllStandardError());
 }

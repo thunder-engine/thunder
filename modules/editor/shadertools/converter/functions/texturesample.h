@@ -1,7 +1,7 @@
 #ifndef TEXTURESAMPLE_H
 #define TEXTURESAMPLE_H
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 #define UV      "UV"
 #define R       "R"

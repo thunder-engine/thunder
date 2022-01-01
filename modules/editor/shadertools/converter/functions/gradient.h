@@ -1,30 +1,25 @@
-#ifndef AGRADIENT_H
-#define AGRADIENT_H
+#ifndef GRADIENT_H
+#define GRADIENT_H
 
-#include "../shaderbuilder.h"
+#include "function.h"
 
 #define OUT     "Out"
 #define EDGE1   "Edge1"
 #define EDGE2   "Edge2"
 
-class ASmothCurve : public AObject, public IShaderFunction {
-    ACLASS(ASmothCurve)
-    AREGISTER(ASmothCurve, Material/Gradient)
+class SmothCurve : public ShaderFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Gradient")
 
 public:
-    ASmothCurve() {
-        APROPERTY(float,    OUT,      "", 1.0f, AProperty::READ | AProperty::SCHEME,   -1);
-        APROPERTY(float,    EDGE1,    "", 0.0f, AProperty::WRITE | AProperty::SCHEME,   0);
-        APROPERTY(float,    EDGE2,    "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   1);
-        APROPERTY(float,    X,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
+    SmothCurve() {
+        //APROPERTY(float,    OUT,      "", 1.0f, AProperty::READ | AProperty::SCHEME,   -1);
+        //APROPERTY(float,    EDGE1,    "", 0.0f, AProperty::WRITE | AProperty::SCHEME,   0);
+        //APROPERTY(float,    EDGE2,    "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   1);
+        //APROPERTY(float,    X,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
     }
 
-    void build(string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
-        string arg1;
-        string arg2;
-        string arg3;
-
-        const link_data *l;
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
 /*
         l   = findLink(*this, EDGE1);
         if(l) {
@@ -78,27 +73,23 @@ public:
 
         value.append(local.str());
 */
+        return ShaderFunction::build(value, link, depth, size);
     }
 };
 
-class ALinearGradient : public AObject, public IShaderObject {
-    ACLASS(ALinearGradient)
-    AREGISTER(ALinearGradient, Material/Gradient)
+class LinearGradient : public ShaderFunction {
+    Q_OBJECT
+    Q_CLASSINFO("Group", "Gradient")
 
 public:
-    ALinearGradient() {
-        APROPERTY(float,    OUT,      "", 1.0f, AProperty::READ | AProperty::SCHEME,   -1);
-        APROPERTY(float,    X,        "", 0.0f, AProperty::WRITE | AProperty::SCHEME,   0);
-        APROPERTY(float,    Y,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   1);
-        APROPERTY(float,    A,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
+    LinearGradient() {
+        //APROPERTY(float,    OUT,      "", 1.0f, AProperty::READ | AProperty::SCHEME,   -1);
+        //APROPERTY(float,    X,        "", 0.0f, AProperty::WRITE | AProperty::SCHEME,   0);
+        //APROPERTY(float,    Y,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   1);
+        //APROPERTY(float,    A,        "", 1.0f, AProperty::WRITE | AProperty::SCHEME,   2);
     }
 
-    void build(string &value, const AObject::link_data &, uint32_t &depth, uint8_t &size) {
-        string arg1;
-        string arg2;
-        string arg3;
-
-        const link_data *l;
+    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
 /*
         l   = findLink(*this, X);
         if(l) {
@@ -151,7 +142,8 @@ public:
         }
         value.append(local.str());
 */
+        return ShaderFunction::build(value, link, depth, size);
     }
 };
 
-#endif // AGRADIENT_H
+#endif // GRADIENT_H

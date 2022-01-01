@@ -27,7 +27,9 @@ Project {
     DynamicLibrary {
         name: "shadertools"
         condition: shadertools.desktop
-        files: shadertools.srcFiles
+        files: [
+            "converter/shaderschememodel.h",
+        ].concat(shadertools.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
