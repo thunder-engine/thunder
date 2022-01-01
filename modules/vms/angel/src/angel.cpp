@@ -17,6 +17,7 @@ static const char *meta = \
 "   \"module\": \"Angel\","
 "   \"version\": \"1.0\","
 "   \"description\": \"AngelScript Module\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"AngelSystem\": \"system\","
 "       \"AngelBuilder\": \"converter\""

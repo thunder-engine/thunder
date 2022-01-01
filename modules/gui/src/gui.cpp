@@ -10,6 +10,7 @@ static const char *meta = \
 "   \"module\": \"Gui\","
 "   \"version\": \"1.0\","
 "   \"description\": \"GUI Plugin\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"GuiSystem\": \"system\""
 "   },"

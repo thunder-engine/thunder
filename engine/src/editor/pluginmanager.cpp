@@ -15,13 +15,6 @@
 #include <bson.h>
 #include <json.h>
 
-enum {
-    PLUGIN_NAME,
-    PLUGIN_DESCRIPTION,
-    PLUGIN_VERSION,
-    PLUGIN_PATH
-};
-
 #if defined(Q_OS_MAC)
 #define PLUGINS "/../../../plugins"
 #else
@@ -32,7 +25,7 @@ const char *gComponents("components");
 
 QStringList g_Suffixes = { "*.dll", "*.dylib", "*.so" };
 
-typedef Module *(*moduleHandler)  (Engine *engine);
+typedef Module *(*moduleHandler) (Engine *engine);
 
 PluginManager *PluginManager::m_pInstance = nullptr;
 
@@ -48,7 +41,7 @@ PluginManager::~PluginManager() {
 
     m_Systems.clear();
 
-    for(auto it : m_Plugins) {
+    for(auto &it : m_Plugins) {
         delete it.module;
         delete it.library;
     }
@@ -56,19 +49,10 @@ PluginManager::~PluginManager() {
 }
 
 int PluginManager::columnCount(const QModelIndex &) const {
-    return 4;
+    return 1;
 }
 
-QVariant PluginManager::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/ ) const {
-    if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch (section) {
-            case PLUGIN_NAME:       return tr("PlugIn Name");
-            case PLUGIN_DESCRIPTION:return tr("Description");
-            case PLUGIN_VERSION:    return tr("Version");
-            case PLUGIN_PATH:       return tr("Full Path");
-            default: break;
-        }
-    }
+QVariant PluginManager::headerData(int section, Qt::Orientation orientation, int role) const {
     return QVariant();
 }
 
@@ -85,6 +69,7 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
                 case PLUGIN_DESCRIPTION: return plugin.description;
                 case PLUGIN_PATH:        return plugin.path;
                 case PLUGIN_VERSION:     return plugin.version;
+                case PLUGIN_AUTHOR:      return plugin.author;
                 default: break;
             }
         } break;
@@ -145,11 +130,11 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 QFileInfo file(path);
 
                 Plugin plug;
-                plug.isLoaded = true;
                 plug.name = metaInfo["module"].toString().c_str();
                 plug.path = file.filePath();
                 plug.version = metaInfo[VERSION].toString().c_str();
                 plug.description = metaInfo[DESC].toString().c_str();
+                plug.author = metaInfo[AUTHOR].toString().c_str();
                 plug.library = lib;
                 plug.module = plugin;
 
@@ -215,8 +200,6 @@ void PluginManager::reloadPlugin(const QString &path) {
 
     for(auto &it : m_Plugins) {
         if(it.path == path) {
-            it.isLoaded = false;
-
             QStringList components;
 
             VariantMap metaInfo = Json::load(it.module->metaInfo()).toMap();

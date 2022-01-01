@@ -5,25 +5,18 @@
 #include <QProcess>
 #include <QMenu>
 
-#include <vector>
-#include <cstdint>
-
 #include <amath.h>
 #include <engine.h>
 
 #include "aboutdialog.h"
-#include "managers/pluginmanager/plugindialog.h"
+#include "managers/plugindialog/plugindialog.h"
 
-using namespace std;
-
-class Object;
 class ImportQueue;
 
 class ProjectModel;
 class FeedManager;
 class DocumentModel;
 
-class AssetConverterSettings;
 class AssetEditor;
 
 namespace Ui {

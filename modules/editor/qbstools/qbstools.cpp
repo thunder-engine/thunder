@@ -9,6 +9,7 @@ static const char *meta = \
 "   \"module\": \"QbsTools\","
 "   \"version\": \"1.0\","
 "   \"description\": \"Qbs Tools plugin\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"QbsBuilder\": \"converter\""
 "   }"

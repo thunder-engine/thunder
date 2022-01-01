@@ -27,6 +27,8 @@ private slots:
 private:
     void changeEvent(QEvent *event) override;
 
+    void updatePersistent(const QModelIndex &index);
+
 protected:
     Ui::PluginDialog *ui;
 };

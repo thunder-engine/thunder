@@ -17,6 +17,7 @@ static const char *meta = \
 "   \"version\": \"1.0\","
 "   \"module\": \"Bullet\","
 "   \"description\": \"BulletPhysics Module\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"BulletSystem\": \"system\","
 "       \"PhysicMaterialConverter\": \"converter\""

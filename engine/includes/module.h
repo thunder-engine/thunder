@@ -17,6 +17,7 @@ class AssetEditor;
 #define MODULE  "module"
 #define DESC    "description"
 #define VERSION "version"
+#define AUTHOR  "author"
 
 class NEXT_LIBRARY_EXPORT Module {
 public:

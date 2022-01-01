@@ -17,6 +17,7 @@ static const char *meta = \
 "   \"module\": \"Media\","
 "   \"version\": \"1.0\","
 "   \"description\": \"Media Module\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"MediaSystem\": \"system\","
 "       \"AudioConverter\": \"converter\""

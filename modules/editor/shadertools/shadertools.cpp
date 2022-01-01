@@ -13,6 +13,7 @@ static const char *meta = \
 "   \"module\": \"ShaderTools\","
 "   \"version\": \"1.0\","
 "   \"description\": \"Shader Tools plugin\","
+"   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"ShaderBuilder\": \"converter\","
 "       \"MaterialEdit\": \"editor\""

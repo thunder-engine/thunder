@@ -26,6 +26,16 @@ class NEXT_LIBRARY_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT
 
 public:
+    enum {
+        PLUGIN_NAME,
+        PLUGIN_DESCRIPTION,
+        PLUGIN_VERSION,
+        PLUGIN_AUTHOR,
+        PLUGIN_PATH,
+        PLUGIN_LAST
+    };
+
+public:
     static PluginManager *instance();
 
     static void destroy();
@@ -92,13 +102,17 @@ private:
             return path == left.path;
         }
 
-        bool isLoaded = false;
-
         QString name;
 
         QString version;
 
         QString description;
+
+        QString author;
+
+        QString documentation;
+
+        QString url;
 
         QString path;
 
