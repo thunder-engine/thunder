@@ -5,9 +5,13 @@
 #include <editor/pluginmanager.h>
 #include <editor/settingsmanager.h>
 
+#include <quazip.h>
+#include <quazipfile.h>
+
 #include "assetmanager.h"
 
 #include <QCoreApplication>
+#include <QDirIterator>
 
 Builder::Builder() {
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished);

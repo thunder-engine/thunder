@@ -37,7 +37,8 @@ Project {
         cpp.defines: ["NEXT_SHARED"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
-            project.sdkPath + project.platform + "/bin"
+            project.sdkPath + project.platform + "/bin",
+            project.sdkPath + project.platform + "/lib"
         ]
         cpp.dynamicLibraries: [
             "next-editor",
@@ -48,6 +49,7 @@ Project {
             fileTagsFilter: "dynamiclibrary"
             qbs.install: true
             qbs.installDir: ""
+            qbs.installPrefix: ""
         }
     }
 

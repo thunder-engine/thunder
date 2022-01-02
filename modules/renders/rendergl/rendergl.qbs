@@ -52,6 +52,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["OpenGL"]
             cpp.sonamePrefix: "@executable_path"

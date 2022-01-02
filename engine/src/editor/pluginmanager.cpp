@@ -192,53 +192,60 @@ void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo dest = m_PluginPath + QDir::separator() + info.fileName();
     QFileInfo temp = dest.absoluteFilePath() + ".tmp";
 
+
+
     // Rename old version of plugin
     if(dest.exists()) {
         QFile::remove(temp.absoluteFilePath());
         QFile::rename(dest.absoluteFilePath(), temp.absoluteFilePath());
     }
 
+    Plugin *plugin = nullptr;
     for(auto &it : m_Plugins) {
         if(it.path == path) {
-            QStringList components;
-
-            VariantMap metaInfo = Json::load(it.module->metaInfo()).toMap();
-            for(auto &it : metaInfo[gComponents].toList()) {
-                components << QString::fromStdString(it.toString());
-            }
-
-            ComponentMap result;
-            serializeComponents(components, result);
-            // Unload plugin
-            delete it.module;
-
-            if(it.library->unload()) {
-                // Copy new plugin
-                if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath(), true)) {
-                    deserializeComponents(result);
-                    // Remove old plugin
-                    if(QFile::remove(temp.absoluteFilePath())) {
-                        aInfo() << "Plugin:" << qPrintable(path) << "reloaded";
-                        return;
-                    }
-                }
-                delete it.library;
-            } else {
-                aError() << "Plugin unload:" << qPrintable(path) << "failed";
-            }
-        } else { // Just copy and load plugin
-            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath())) {
-                aInfo() << "Plugin:" << qPrintable(path) << "simply loaded";
-                return;
-            }
+            plugin = &it;
         }
-        // Rename it back
-        if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
-            if(loadPlugin(dest.absoluteFilePath())) {
-                aInfo() << "Old version of plugin:" << qPrintable(path) << "is loaded";
-            } else {
-                aError() << "Load of old version of plugin:" << qPrintable(path) << "is failed";
+    }
+
+    if(plugin != nullptr) {
+        QStringList components;
+
+        VariantMap metaInfo = Json::load(plugin->module->metaInfo()).toMap();
+        for(auto &it : metaInfo[gComponents].toList()) {
+            components << QString::fromStdString(it.toString());
+        }
+
+        ComponentMap result;
+        serializeComponents(components, result);
+        // Unload plugin
+        delete plugin->module;
+
+        if(plugin->library->unload()) {
+            // Copy new plugin
+            if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath(), true)) {
+                deserializeComponents(result);
+                // Remove old plugin
+                if(QFile::remove(temp.absoluteFilePath())) {
+                    aInfo() << "Plugin:" << qPrintable(path) << "reloaded";
+                    return;
+                }
             }
+            delete plugin->library;
+        } else {
+            aError() << "Plugin unload:" << qPrintable(path) << "failed";
+        }
+    } else { // Just copy and load plugin
+        if(QFile::copy(path, dest.absoluteFilePath()) && loadPlugin(dest.absoluteFilePath())) {
+            aInfo() << "Plugin:" << qPrintable(dest.absoluteFilePath()) << "simply loaded";
+            return;
+        }
+    }
+    // Rename it back
+    if(QFile::remove(dest.absoluteFilePath()) && QFile::rename(temp.absoluteFilePath(), dest.absoluteFilePath())) {
+        if(loadPlugin(dest.absoluteFilePath())) {
+            aInfo() << "Old version of plugin:" << qPrintable(path) << "is loaded";
+        } else {
+            aError() << "Load of old version of plugin:" << qPrintable(path) << "is failed";
         }
     }
 }

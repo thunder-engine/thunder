@@ -66,9 +66,9 @@ void ConsoleManager::parseLogs(const QString &log) {
     QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
 
     foreach(QString it, list) {
-        if(it.contains(" error ")) {
+        if(it.contains(" error ") || it.toLower().contains(" error:")) {
             onLogRecord(Log::ERR, qPrintable(it));
-        } else if(it.contains(" warning ")) {
+        } else if(it.contains(" warning ") || it.toLower().contains(" warning:")) {
             onLogRecord(Log::WRN, qPrintable(it));
         } else {
             onLogRecord(Log::INF, qPrintable(it));

@@ -48,6 +48,11 @@ Project {
         }
 
         Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.rpaths: "$ORIGIN/../../lib"
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
 			cpp.commonCompilerFlags: "-Wno-argument-outside-range"

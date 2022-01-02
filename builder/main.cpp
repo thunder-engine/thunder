@@ -11,9 +11,20 @@
 #include <editor/pluginmanager.h>
 #include <editor/projectmanager.h>
 
-#include "consolelog.h"
-
 #include "builder.h"
+
+#include <iostream>
+#include <ctime>
+
+#include <log.h>
+
+class ConsoleLog : public LogHandler {
+public:
+    void setRecord(Log::LogTypes, const char *record) {
+        time_t result = time(nullptr);
+        std::cout << asctime(localtime(&result)) << record << std::endl;
+    }
+};
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
@@ -53,7 +64,7 @@ int main(int argc, char *argv[]) {
     File *file = new File();
     file->finit(qPrintable(QCoreApplication::arguments().at(0)));
 
-    Log(Log::INF) << "Starting builder...";
+    aInfo() << "Starting builder...";
 
     Engine engine(file, argv[0]);
 
