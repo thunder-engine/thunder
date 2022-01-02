@@ -24,12 +24,12 @@ const QString gIndex("index");
 #if defined(Q_OS_WIN)
 const QString gShared(".dll");
 const QString gStatic(".lib");
-const QString gPrefix("")
+const QString gPrefix("");
 const QString gApplication(".exe");
 #elif defined(Q_OS_MAC)
 const QString gShared(".dylib");
 const QString gStatic(".a");
-const QString gPrefix("lib")
+const QString gPrefix("lib");
 const QString gApplication(".app");
 #elif defined(Q_OS_UNIX)
 const QString gShared(".so");
