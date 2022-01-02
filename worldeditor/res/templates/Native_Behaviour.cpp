@@ -11,4 +11,14 @@ public:
     ~${templateName}() {
 
     }
+
+    // Will be called once at first run
+    void start() {
+
+    }
+
+    // Will be called each frame
+    void update() {
+
+    }
 };
