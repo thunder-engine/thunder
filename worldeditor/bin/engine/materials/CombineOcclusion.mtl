@@ -74,5 +74,7 @@
         "ssaoMap": 2
     },
     "Type": 1,
+    "Uniforms": [
+    ],
     "View": true
 }

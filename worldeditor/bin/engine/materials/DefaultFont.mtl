@@ -157,5 +157,7 @@
         ".embedded/invalid.png": 0
     },
     "Type": 0,
+    "Uniforms": [
+    ],
     "View": true
 }

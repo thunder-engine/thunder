@@ -16,11 +16,6 @@
 
 #include <cstring>
 
-#define BLUR_STEPS 4
-
-#define SSAO_MAP    "uni.ssaoMap"
-#define RGB_MAP     "uni.rgbMap"
-
 namespace {
 const char *AMBIENT_OCCLUSION("graphics.ambientocclusion");
 
@@ -36,7 +31,7 @@ AmbientOcclusion::AmbientOcclusion() :
         m_noiseTexture(nullptr),
         m_ssaoTexture(nullptr),
         m_blur(nullptr),
-        m_occlusion(nullptr) {
+        m_combine(nullptr) {
 
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
         m_samplesKernel[i].x = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
@@ -84,11 +79,7 @@ AmbientOcclusion::AmbientOcclusion() :
         Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.mtl");
         if(mtl) {
             m_material = mtl->createInstance();
-            m_material->setVector3("samplesKernel", m_samplesKernel, KERNEL_SIZE);
-
-            m_material->setFloat("radius", &m_radius);
-            m_material->setFloat("bias", &m_bias);
-            m_material->setFloat("power", &m_power);
+            m_material->setVector3("uni.samplesKernel", m_samplesKernel, KERNEL_SIZE);
 
             m_material->setTexture("noiseMap", m_noiseTexture);
         }
@@ -103,8 +94,8 @@ AmbientOcclusion::AmbientOcclusion() :
     {
         Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
         if(mtl) {
-            m_occlusion = mtl->createInstance();
-            m_occlusion->setTexture(SSAO_MAP, m_resultTexture);
+            m_combine = mtl->createInstance();
+            m_combine->setTexture("ssaoMap", m_resultTexture);
         }
     }
 
@@ -128,6 +119,8 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
 
             buffer->setRenderTarget(m_ssaoTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
+
+            pipeline->setRenderTexture("ssao_sample", m_ssaoTexture);
         }
 
         if(m_blur) {
@@ -135,15 +128,19 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
 
             buffer->setRenderTarget(m_blurTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blur);
+
+            pipeline->setRenderTexture("ssao_blur", m_resultTexture);
         }
 
-        if(m_occlusion) {
+        if(m_combine) {
             m_resultTarget->setColorAttachment(0, source);
 
             buffer->setViewport(0, 0, source->width(), source->height());
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_occlusion);
+            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_combine);
+
+            pipeline->setRenderTexture("ssao_combine", source);
         }
     }
     return source;
@@ -155,16 +152,16 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
 
     m_resultTexture->setWidth(width);
     m_resultTexture->setHeight(height);
-
-    float radius = width * 0.01f;
-    memset(m_blurSamplesKernel, 0, sizeof(float) * BLUR_STEPS);
-    Blur::generateKernel(radius, BLUR_STEPS, m_blurSamplesKernel);
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
     m_radius = settings.readValue(AMBIENT_RADIUS).toFloat();
     m_bias = settings.readValue(AMBIENT_BIAS).toFloat();
     m_power = settings.readValue(AMBIENT_POWER).toFloat();
+
+    m_material->setFloat("uni.radius", &m_radius);
+    m_material->setFloat("uni.bias", &m_bias);
+    m_material->setFloat("uni.power", &m_power);
 }
 
 uint32_t AmbientOcclusion::layer() const {

@@ -13,12 +13,23 @@
 #include "resources/pipeline.h"
 #include "resources/rendertarget.h"
 
-static Quaternion rot[6] = {Quaternion(Vector3(0, 1, 0),-90),
-                            Quaternion(Vector3(0, 1, 0), 90),
-                            Quaternion(Vector3(1, 0, 0), 90),
-                            Quaternion(Vector3(1, 0, 0),-90),
-                            Quaternion(Vector3(0, 1, 0),180),
-                            Quaternion()};
+#define SIDES 6
+
+namespace {
+const char *uni_position  = "uni.position";
+const char *uni_direction = "uni.direction";
+const char *uni_right     = "uni.right";
+const char *uni_up        = "uni.up";
+const char *uni_matrix    = "uni.matrix";
+const char *uni_tiles     = "uni.tiles";
+};
+
+static const Quaternion rot[SIDES] = {Quaternion(Vector3(0, 1, 0),-90),
+                                      Quaternion(Vector3(0, 1, 0), 90),
+                                      Quaternion(Vector3(1, 0, 0), 90),
+                                      Quaternion(Vector3(1, 0, 0),-90),
+                                      Quaternion(Vector3(0, 1, 0),180),
+                                      Quaternion()};
 
 class AreaLightPrivate {
 public:
@@ -34,9 +45,9 @@ public:
     Vector3 m_right;
     Vector3 m_up;
 
-    Vector4 m_tiles[6];
+    Vector4 m_tiles[SIDES];
 
-    Matrix4 m_matrix[6];
+    Matrix4 m_matrix[SIDES];
 
     float m_near;
 
@@ -60,14 +71,6 @@ AreaLight::AreaLight() :
     Material *material = Engine::loadResource<Material>(".embedded/AreaLight.mtl");
     MaterialInstance *instance = material->createInstance();
 
-    instance->setVector3("light.position", &p_ptr->m_position);
-    instance->setVector3("light.direction", &p_ptr->m_direction);
-    instance->setVector3("lightRight", &p_ptr->m_right);
-    instance->setVector3("lightUp", &p_ptr->m_up);
-
-    instance->setMatrix4("light.matrix", p_ptr->m_matrix, 6);
-    instance->setVector4("light.tiles",  p_ptr->m_tiles, 6);
-
     setMaterial(instance);
 
     Vector4 p = params();
@@ -86,9 +89,9 @@ void AreaLight::draw(CommandBuffer &buffer, uint32_t layer) {
     Mesh *mesh = shape();
     MaterialInstance *instance = material();
     if(mesh && instance && (layer & CommandBuffer::LIGHT)) {
-
         Matrix4 m = actor()->transform()->worldTransform();
         p_ptr->m_position = Vector3(m[12], m[13], m[14]);
+        instance->setVector3(uni_position, &p_ptr->m_position);
 
         float r = radius();
 
@@ -97,8 +100,13 @@ void AreaLight::draw(CommandBuffer &buffer, uint32_t layer) {
                   Vector3(r * 2.0f, r * 2.0f, r * 2.0f));
 
         p_ptr->m_direction = m.rotation() * Vector3(0.0f, 0.0f, 1.0f);
+        instance->setVector3(uni_direction, &p_ptr->m_direction);
+
         p_ptr->m_right = m.rotation() * Vector3(1.0f, 0.0f, 0.0f);
+        instance->setVector3(uni_right, &p_ptr->m_right);
+
         p_ptr->m_up = m.rotation() * Vector3(0.0f, 1.0f, 0.0f);
+        instance->setVector3(uni_up, &p_ptr->m_up);
 
         buffer.setGlobalTexture(SHADOW_MAP, (p_ptr->m_shadowMap) ? p_ptr->m_shadowMap->depthAttachment() : nullptr);
 
@@ -130,8 +138,8 @@ void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     scale[13] = 0.5f;
     scale[14] = 0.5f;
 
-    int32_t x[6], y[6], w[6], h[6];
-    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, 6);
+    int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
+    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, SIDES);
 
     int32_t pageWidth, pageHeight;
     RenderSystem::atlasPageSize(pageWidth, pageHeight);
@@ -144,7 +152,7 @@ void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     Matrix4 wp;
     wp.translate(Vector3(wt[12], wt[13], wt[14]));
 
-    for(int32_t i = 0; i < 6; i++) {
+    for(int32_t i = 0; i < SIDES; i++) {
         Matrix4 mat = (wp * Matrix4(rot[i].toMatrix())).inverse();
         p_ptr->m_matrix[i] = scale * crop * mat;
 
@@ -168,6 +176,11 @@ void AreaLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
             static_cast<Renderable *>(it)->draw(*buffer, CommandBuffer::SHADOWCAST);
         }
         buffer->resetViewProjection();
+    }
+    auto instance = material();
+    if(instance) {
+        instance->setMatrix4(uni_matrix, p_ptr->m_matrix, SIDES);
+        instance->setVector4(uni_tiles,  p_ptr->m_tiles, SIDES);
     }
 }
 /*!

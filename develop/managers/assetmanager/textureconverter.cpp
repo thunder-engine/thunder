@@ -315,7 +315,7 @@ void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *
             int w = texture->width();
             int h = texture->height();
             QImage mip = it;
-            while(w > 1 || h > 1 ) {
+            while(w > 1 && h > 1 ) {
                 w = MAX(w / 2, 1);
                 h = MAX(h / 2, 1);
 

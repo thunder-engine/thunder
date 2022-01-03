@@ -27,7 +27,6 @@ public:
 
 protected:
     Vector3 m_samplesKernel[KERNEL_SIZE];
-    float m_blurSamplesKernel[4];
 
     float m_radius;
     float m_bias;
@@ -40,7 +39,7 @@ protected:
     RenderTarget *m_blurTarget;
 
     MaterialInstance *m_blur;
-    MaterialInstance *m_occlusion;
+    MaterialInstance *m_combine;
 };
 
 #endif // AMBIENTOCCLUSION_H

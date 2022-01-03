@@ -25,8 +25,7 @@ Project {
     DynamicLibrary {
         name: "rendergl-editor"
         condition: rendergl.desktop
-        files:
-        {
+        files: {
             var sources = srcFiles
             sources.push("src/editor/*.cpp")
             sources.push("includes/editor/*.h")

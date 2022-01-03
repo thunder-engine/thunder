@@ -118,6 +118,9 @@ private:
     void loadTextures(const QVariantMap &data);
     QVariantMap saveTextures() const;
 
+    void loadUniforms(const QVariantList &data);
+    QVariantList saveUniforms() const;
+
     Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
 
     Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
@@ -130,9 +133,17 @@ private:
     QString loadIncludes(const QString &path, const string &define) const;
 
 private:
-    typedef QPair<uint8_t, QVariant> UniformPair;
+    struct Uniform {
+        QString name;
 
-    typedef map<QString, UniformPair> UniformMap;
+        uint32_t type;
+
+        size_t count;
+
+        QVariant value;
+    };
+
+    typedef QList<Uniform> UniformList;
 
     typedef QPair<QString, uint8_t> TexturePair;
 
@@ -140,15 +151,19 @@ private:
 
     typedef map<string, string> PragmaMap;
 
+    typedef QMap<QString, Rhi> RhiMap;
+
     typedef QList<MaterialInput> InputList;
 
     QStringList m_Functions;
 
-    UniformMap m_Uniforms;
+    UniformList m_Uniforms;
 
     TextureList m_Textures;
 
     PragmaMap m_Pragmas;
+
+    RhiMap m_rhiMap;
 
     InputList m_Inputs;
 
@@ -167,6 +182,7 @@ private:
     bool m_ViewSpace;
 
     QFileInfo m_RawPath;
+
 };
 
 Q_DECLARE_METATYPE(ShaderSchemeModel::LightModel)

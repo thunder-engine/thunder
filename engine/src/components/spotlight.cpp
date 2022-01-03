@@ -13,6 +13,13 @@
 #include "resources/pipeline.h"
 #include "resources/rendertarget.h"
 
+namespace {
+const char *uni_position  = "uni.position";
+const char *uni_direction = "uni.direction";
+const char *uni_matrix    = "uni.matrix";
+const char *uni_tiles     = "uni.tiles";
+};
+
 class SpotLightPrivate {
 public:
     SpotLightPrivate() :
@@ -54,12 +61,6 @@ SpotLight::SpotLight() :
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
-        instance->setVector3("light.position",  &p_ptr->m_position);
-        instance->setVector3("light.direction", &p_ptr->m_direction);
-
-        instance->setMatrix4("light.matrix", &p_ptr->m_matrix);
-        instance->setVector4("light.tiles",  &p_ptr->m_tiles);
-
         setMaterial(instance);
     }
 }
@@ -79,6 +80,9 @@ void SpotLight::draw(CommandBuffer &buffer, uint32_t layer) {
 
         p_ptr->m_position = actor()->transform()->worldPosition();
         p_ptr->m_direction = q * Vector3(0.0f, 0.0f, 1.0f);
+
+        instance->setVector3(uni_position,  &p_ptr->m_position);
+        instance->setVector3(uni_direction, &p_ptr->m_direction);
 
         float d = attenuationDistance();
 
@@ -130,6 +134,12 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
                              static_cast<float>(y) / pageHeight,
                              static_cast<float>(w) / pageWidth,
                              static_cast<float>(h) / pageHeight);
+
+    auto instance = material();
+    if(instance) {
+        instance->setMatrix4(uni_matrix, &p_ptr->m_matrix);
+        instance->setVector4(uni_tiles,  &p_ptr->m_tiles);
+    }
 
     buffer->setRenderTarget(p_ptr->m_shadowMap);
     buffer->enableScissor(x, y, w, h);

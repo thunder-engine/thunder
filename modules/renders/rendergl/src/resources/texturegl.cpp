@@ -4,8 +4,6 @@
 
 #include "agl.h"
 
-#define DATA    "Data"
-
 TextureGL::TextureGL() :
         m_ID(0) {
 
@@ -79,47 +77,47 @@ void TextureGL::updateTexture() {
     glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
 
-    uint32_t internal   = GL_RGBA8;
-    uint32_t glformat   = GL_RGBA;
-    uint32_t type       = GL_UNSIGNED_BYTE;
+    uint32_t internal = GL_RGBA8;
+    uint32_t glformat = GL_RGBA;
+    uint32_t type     = GL_UNSIGNED_BYTE;
 
     switch(format()) {
         case R8: {
-            internal    = GL_R8;
-            glformat    = GL_RED;
+            internal = GL_R8;
+            glformat = GL_RED;
         } break;
         case RGB8: {
-            internal    = GL_RGB8;
-            glformat    = GL_RGB;
+            internal = GL_RGB8;
+            glformat = GL_RGB;
         } break;
         case RGB10A2: {
     #ifndef THUNDER_MOBILE
-            internal    = GL_RGB10_A2;
-            type        = GL_UNSIGNED_INT_10_10_10_2;
+            internal = GL_RGB10_A2;
+            type     = GL_UNSIGNED_INT_10_10_10_2;
     #else
-            internal    = GL_RGB10_A2;
-            type        = GL_UNSIGNED_INT_2_10_10_10_REV;
+            internal = GL_RGB10_A2;
+            type     = GL_UNSIGNED_INT_2_10_10_10_REV;
     #endif
         } break;
         case RGB16Float: {
-            internal    = GL_RGB16F;
-            glformat    = GL_RGB;
-            type        = GL_FLOAT;
+            internal = GL_RGB16F;
+            glformat = GL_RGB;
+            type     = GL_FLOAT;
         } break;
         case RGBA32Float: {
-            internal    = GL_RGBA32F;
-            glformat    = GL_RGBA;
-            type        = GL_FLOAT;
+            internal = GL_RGBA32F;
+            glformat = GL_RGBA;
+            type     = GL_FLOAT;
         } break;
         case R11G11B10Float: {
-            internal    = GL_R11F_G11F_B10F;
-            glformat    = GL_RGB;
-            type        = GL_FLOAT;
+            internal = GL_R11F_G11F_B10F;
+            glformat = GL_RGB;
+            type     = GL_FLOAT;
         } break;
         case Depth: {
-            internal    = (depthBits() == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
-            glformat    = GL_DEPTH_COMPONENT;
-            type        = GL_UNSIGNED_INT;
+            internal = (depthBits() == 16) ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT24;
+            glformat = GL_DEPTH_COMPONENT;
+            type     = GL_UNSIGNED_INT;
         } break;
         default: break;
     }
@@ -159,7 +157,7 @@ bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t 
         if(isCompressed()) {
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const int8_t *data = &(image[i])[0];
+                const int8_t *data = image[i].data();
                 glCompressedTexImage2D(target, i, internal, (w >> i), (h >> i), 0, size((w >> i), (h >> i)), data);
                 CheckGLError();
             }
@@ -174,7 +172,7 @@ bool TextureGL::uploadTexture(const Sides *sides, uint32_t imageIndex, uint32_t 
 
             // load all mipmaps
             for(uint32_t i = 0; i < image.size(); i++) {
-                const int8_t *data = &(image[i])[0];
+                const int8_t *data = image[i].data();
                 glTexImage2D(target, i, internal, (w >> i), (h >> i), 0, format, type, data);
                 CheckGLError();
             }

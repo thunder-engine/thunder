@@ -18,15 +18,12 @@ public:
 
     void draw(CommandBuffer &buffer, Texture *source, RenderTarget *target);
 
-    void setParameters(const Vector2 &size, int32_t steps, float *points);
+    void setParameters(const Vector2 &size, int32_t steps, const float *points);
 
     static void generateKernel(float radius, int32_t steps, float *points);
 
 protected:
-    Vector2 m_size;
     Vector2 m_direction;
-
-    float m_points[MAX_SAMPLES];
 
     MaterialInstance *m_pBlurMaterial;
 
@@ -34,9 +31,6 @@ protected:
 
     Texture *m_tempTexture;
     RenderTarget *m_tempTarget;
-
-    int32_t m_steps;
-
 };
 
 #endif // BLUR_H

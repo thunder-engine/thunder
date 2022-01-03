@@ -14,7 +14,7 @@
 #define MATERIAL "Material"
 #define BASEMAP "BaseMap"
 
-#define OVERRIDE "uni.texture0"
+#define OVERRIDE "texture0"
 #define COLOR "uni.color0"
 
 #define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"

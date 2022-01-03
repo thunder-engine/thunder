@@ -16,6 +16,7 @@ class Actor;
 class Scene;
 class Chunk;
 class System;
+class Resource;
 class PlatformAdaptor;
 
 class NEXT_LIBRARY_EXPORT Engine : public ObjectSystem {

@@ -46,7 +46,6 @@ public:
     Texture *renderTexture(const string &name) const;
     void setRenderTexture(const string &name, Texture *texture);
 
-    void setTarget(uint32_t resource);
     RenderTarget *defaultTarget();
 
     CommandBuffer *buffer() const;

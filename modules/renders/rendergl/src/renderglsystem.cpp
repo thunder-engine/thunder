@@ -112,7 +112,11 @@ void RenderGLSystem::update(Scene *scene) {
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
 
         Pipeline *pipe = camera->pipeline();
+        CommandBufferGL *cmd = static_cast<CommandBufferGL *>(pipe->buffer());
+        cmd->begin();
+
         static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
+
         RenderSystem::update(scene);
     }
 }

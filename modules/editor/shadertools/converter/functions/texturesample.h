@@ -83,7 +83,7 @@ public:
                 }
             }
             uv = QString("vec2(%1, %2) + %3 * vec2(%4, %5)").arg(m_Sub.x).arg(m_Sub.y).arg(uv).arg(m_Sub.z).arg(m_Sub.w);
-            value += QString("\tvec4 lt%1 = texture(uni.%2, %3);\n").arg(depth).arg(m_Name).arg(uv);
+            value += QString("\tvec4 lt%1 = texture(%2, %3);\n").arg(depth).arg(m_Name).arg(uv);
 
             if(link.oport->name == "") {
                 size = QMetaType::QVector4D;
@@ -197,7 +197,8 @@ public:
                 }
 
                 uv = "vec3(" + uv + ", 1.0)";
-                value  += QString("\tvec4 lt%1 = texture(uni.texture%2, %3);\n").arg(depth).arg(result).arg(uv);
+                value += QString("\tvec4 lt%1 = texture(texture%2, %3);\n").arg(depth).arg(result).arg(uv);
+
                 if(link.oport->name == "") {
                     size = MetaType::VECTOR4;
                     value  += QString("\tvec4 local%1 = lt%1;\n").arg(depth);

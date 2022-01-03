@@ -115,5 +115,47 @@
         "shadowMap": 2
     },
     "Type": 2,
+    "Uniforms": [
+        [
+            "matrix",
+            81,
+            4
+        ],
+        [
+            "tiles",
+            84,
+            4
+        ],
+        [
+            "color",
+            84,
+            1
+        ],
+        [
+            "lod",
+            84,
+            1
+        ],
+        [
+            "params",
+            84,
+            1
+        ],
+        [
+            "bias",
+            84,
+            1
+        ],
+        [
+            "direction",
+            84,
+            1
+        ],
+        [
+            "shadows",
+            38,
+            1
+        ]
+    ],
     "View": true
 }

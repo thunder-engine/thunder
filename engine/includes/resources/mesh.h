@@ -103,7 +103,7 @@ class NEXT_LIBRARY_EXPORT Mesh : public Resource {
                A_VALUE(Tangents),
                A_VALUE(Skinned)),
 
-        A_ENUM(TriangleModes,
+        A_ENUM(Topology,
                A_VALUE(Triangles),
                A_VALUE(Lines),
                A_VALUE(TriangleStrip),

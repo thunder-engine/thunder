@@ -15,5 +15,27 @@
         "normalsMap": 2
     },
     "Type": 1,
+    "Uniforms": [
+        [
+            "radius",
+            38,
+            1
+        ],
+        [
+            "bias",
+            38,
+            1
+        ],
+        [
+            "power",
+            38,
+            1
+        ],
+        [
+            "samplesKernel",
+            83,
+            16
+        ]
+    ],
     "View": true
 }
