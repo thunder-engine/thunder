@@ -1,8 +1,8 @@
-#pragma version
+#version 450 core
 
 #pragma flags
 
-#include "Common.vert"
+#include "ShaderLayout.h"
 
 layout(location = 3) uniform vec4  t_color;
 layout(location = 4) uniform float _clip;
@@ -18,14 +18,14 @@ layout(location = 6) in vec4 _color;
 
 layout(location = 7) in vec3 _view;
 
-#pragma material
-
 layout(location = 0) out vec4 gbuffer1;
 layout(location = 1) out vec4 gbuffer2;
 layout(location = 2) out vec4 gbuffer3;
 layout(location = 3) out vec4 gbuffer4;
 
-void simpleMode(Params params) {
+#pragma fragment
+
+void simpleMode() {
     float alpha = getOpacity ( params );
     if(alpha <= _clip) {
         discard;
@@ -33,7 +33,7 @@ void simpleMode(Params params) {
     gbuffer1    = t_color;
 }
 
-void passMode(Params params) {
+void passMode() {
     vec3 albd   = getDiffuse ( params ) * t_color.xyz;
     vec3 emit   = getEmissive( params ) * t_color.xyz;
     float alpha = getOpacity ( params ) * t_color.w;
@@ -60,22 +60,23 @@ void passMode(Params params) {
 #endif
 }
 
-void lightMode(Params params) {
+void lightMode() {
     gbuffer1    = vec4( getEmissive( params ), 1.0 );
 }
 
 void main(void) {
-#ifdef SIMPLE
-    simpleMode(params);
-#elif LIGHT
-    lightMode(params);
-#else
     params.reflect  = vec3(0.0);
     params.normal   = _n;
+
+#ifdef SIMPLE
+    simpleMode();
+#elif LIGHT
+    lightMode();
+#else
     params.normal   = getNormal( params ) * 2.0 - 1.0;
     params.normal   = normalize( params.normal.x * _t + params.normal.y * _b + params.normal.z * _n );
     params.reflect  = reflect( _view, params.normal );
 
-    passMode(params);
+    passMode();
 #endif
 }

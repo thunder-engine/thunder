@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/BRDF.h</file>
+        <file>shaders/Shader.frag</file>
+        <file>shaders/Shader.vert</file>
+        <file>shaders/ShaderLayout.h</file>
+    </qresource>
+</RCC>

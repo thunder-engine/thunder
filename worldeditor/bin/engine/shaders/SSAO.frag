@@ -1,8 +1,8 @@
-#pragma version
+#version 450 core
 
 #define MAX_SAMPLE_COUNT 16
 
-#include "Common.vert"
+#include "ShaderLayout.h"
 
 layout(location = 50) uniform sampler2D depthMap;
 layout(location = 51) uniform sampler2D normalsMap;

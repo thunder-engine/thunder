@@ -1,6 +1,6 @@
-#pragma version
+#version 450 core
 
-#include "Common.vert"
+#include "ShaderLayout.h"
 
 layout(location = 50) uniform sampler2D rgbMap;
 

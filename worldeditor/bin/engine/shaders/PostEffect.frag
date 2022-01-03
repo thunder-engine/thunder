@@ -1,4 +1,4 @@
-#pragma version
+#version 450 core
 
 uniform sampler2D   rgbMap;
 

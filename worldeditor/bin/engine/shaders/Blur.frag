@@ -1,4 +1,4 @@
-#pragma version
+#version 450 core
 
 layout(location = 50) uniform sampler2D   rgbMap;
 

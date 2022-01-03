@@ -38,8 +38,8 @@ public:
     };
 
     enum Flags {
-        Cube    =(1<<0),
-        Target  =(1<<1)
+        Cube   = (1<<0),
+        Target = (1<<1)
     };
 
     enum Rhi {
@@ -61,9 +61,7 @@ public:
 
     Variant data(bool editor = false) const;
 
-    bool build();
-
-    QString shader() const { return m_Shader; }
+    bool buildGraph();
 
     bool isDoubleSided() const { return m_DoubleSided; }
     void setDoubleSided(bool value) { m_DoubleSided = value; emit schemeUpdated(); }
@@ -99,6 +97,21 @@ public:
     void save(const QString &path) Q_DECL_OVERRIDE;
 
 private:
+    struct MaterialInput {
+        MaterialInput(QString name, QVariant value, bool vertex = false) :
+            m_name(name),
+            m_value(value),
+            m_vertex(vertex) {
+
+        }
+
+        QString m_name;
+
+        QVariant m_value;
+
+        bool m_vertex;
+    };
+
     void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
     void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
@@ -109,15 +122,14 @@ private:
 
     Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
 
-    void addParam(const QString &param);
-
-    void buildRoot(QString &result);
+    QStringList buildRoot();
 
     void cleanup();
 
     void addPragma(const string &key, const string &value);
     QString loadIncludes(const QString &path, const string &define) const;
 
+private:
     typedef QPair<uint8_t, QVariant> UniformPair;
 
     typedef map<QString, UniformPair> UniformMap;
@@ -126,36 +138,35 @@ private:
 
     typedef QList<TexturePair> TextureList;
 
-    QStringList                 m_Functions;
-
-    /// Shader uniforms
-    UniformMap                  m_Uniforms;
-    /// Shader uniforms
-    TextureList                 m_Textures;
-    /// Shader params
-    QString                     m_Params;
-    /// Shader source code
-    QString                     m_Shader;
-
-    Blend                       m_BlendMode;
-
-    LightModel                  m_LightModel;
-
-    Type                        m_MaterialType;
-
-    bool                        m_DoubleSided;
-
-    bool                        m_DepthTest;
-
-    bool                        m_DepthWrite;
-
-    bool                        m_ViewSpace;
-
     typedef map<string, string> PragmaMap;
 
-    PragmaMap                   m_Pragmas;
+    typedef QList<MaterialInput> InputList;
 
-    QFileInfo                   m_RawPath;
+    QStringList m_Functions;
+
+    UniformMap m_Uniforms;
+
+    TextureList m_Textures;
+
+    PragmaMap m_Pragmas;
+
+    InputList m_Inputs;
+
+    Blend m_BlendMode;
+
+    LightModel m_LightModel;
+
+    Type m_MaterialType;
+
+    bool m_DoubleSided;
+
+    bool m_DepthTest;
+
+    bool m_DepthWrite;
+
+    bool m_ViewSpace;
+
+    QFileInfo m_RawPath;
 };
 
 Q_DECLARE_METATYPE(ShaderSchemeModel::LightModel)

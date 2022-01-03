@@ -1,8 +1,8 @@
-#pragma version
+#version 450 core
 
 #pragma flags
 
-#include "Common.vert"
+#include "ShaderLayout.h"
 
 layout(location = 0) uniform mat4 t_model;
 layout(location = 1) uniform mat4 t_view;
@@ -51,7 +51,7 @@ struct Vertex {
     vec3    n;
 };
 
-#pragma material
+#pragma vertex
 
 #ifdef TYPE_STATIC
 Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
@@ -68,11 +68,11 @@ Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
 #ifdef TYPE_SKINNED
 Vertex skinnedMesh(vec3 v, vec3 t, vec3 n, vec4 bones, vec4 weights) {
     Vertex result;
-    result.v = vec3( 0.0 );
-    result.t = vec3( 0.0 );
-    result.n = vec3( 0.0 );
+    result.v = vec3(0.0);
+    result.t = vec3(0.0);
+    result.n = vec3(0.0);
 
-    vec4 finalVector = vec4( 0.0 );
+    vec4 finalVector = vec4(0.0);
     for(int i = 0; i < 4; i++) {
         if(weights.x > 0.0) {
             float width = 1.0 / 512.0;
@@ -113,16 +113,16 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
     result.n = n;
 
     float angle = posRot.w;  // rotation
-    float x     = cos( angle ) * ( v.x ) + sin( angle ) * ( v.y );
-    float y     = sin( angle ) * ( v.x ) - cos( angle ) * ( v.y );
+    float x     = cos(angle) * v.x + sin(angle) * v.y;
+    float y     = sin(angle) * v.x - cos(angle) * v.y;
 
     vec3 target = camera.target.xyz;
     if(camera.projection[2].w < 0.0) {
         target = posRot.xyz;
     }
-    vec3 normal = normalize( camera.position.xyz - target );
-    vec3 right  = normalize( cross( vec3(0.0, 1.0, 0.0), normal ) );
-    vec3 up     = normalize( cross( normal, right ) );
+    vec3 normal = normalize(camera.position.xyz - target);
+    vec3 right  = normalize(cross(vec3(0.0, 1.0, 0.0), normal));
+    vec3 up     = normalize(cross(normal, right));
 
     result.v    = (up * x + right * y) * sizeDist.xyz + posRot.xyz ;
 
@@ -137,29 +137,32 @@ void main(void) {
     mat4 model  = t_model;
 #endif
     mat4 mv     = t_view * model;
-    mat3 rot    = mat3( model );
+    mat3 rot    = mat3(model);
 
-    vec3 camera = vec3( t_view[0].w,
-                        t_view[1].w,
-                        t_view[2].w );
+    vec3 camera = vec3(t_view[0].w,
+                       t_view[1].w,
+                       t_view[2].w);
 
 #ifdef TYPE_STATIC
-    Vertex vert = staticMesh( vertex, tangent, normal, rot );
-
+    Vertex vert = staticMesh(vertex, tangent, normal, rot);
+    params.normal = vert.n;
+    vert.v += getWorldPositionOffset(params);
     _vertex = t_projection * (mv * vec4(vert.v, 1.0));
-    _view = ( model * vec4(vert.v, 1.0) ).xyz - camera;
+    _view = (model * vec4(vert.v, 1.0)).xyz - camera;
 #endif
 
 #ifdef TYPE_BILLBOARD
     Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist );
-
+    params.normal = vert.n;
+    vert.v += getWorldPositionOffset(params);
     _vertex = t_projection * (mv * vec4(vert.v, 1.0));
-    _view = ( model * vec4(vert.v, 1.0) ).xyz - camera;
+    _view = (model * vec4(vert.v, 1.0)).xyz - camera;
 #endif
 
 #ifdef TYPE_SKINNED
-    Vertex vert = skinnedMesh( vertex, tangent, normal, bones, weights );
-
+    Vertex vert = skinnedMesh(vertex, tangent, normal, bones, weights);
+    params.normal = vert.n;
+    vert.v += getWorldPositionOffset(params);
     _vertex = t_projection * (t_view * vec4(vert.v, 1.0));
     _view = vert.v - camera;
 #endif

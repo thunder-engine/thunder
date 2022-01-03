@@ -19,7 +19,7 @@
 
 #include "functions/constvalue.h"
 #include "functions/coordinates.h"
-//#include "functions/agradient.h"
+//#include "functions/gradient.h"
 #include "functions/materialparam.h"
 #include "functions/mathfunction.h"
 #include "functions/mathoperator.h"
@@ -116,21 +116,25 @@ ShaderSchemeModel::ShaderSchemeModel() :
     qRegisterMetaType<If*>("If");
     m_Functions << "Mask" << "If";
 
-    QStringList list;
-    list << "Diffuse" << "Emissive" << "Normal" << "Metallic" << "Roughness" << "Opacity" << "IOR";
+    m_Inputs.append({ "Diffuse",                QVector3D(1.0, 1.0, 1.0), false });
+    m_Inputs.append({ "Emissive",               QVector3D(0.0, 0.0, 0.0), false });
+    m_Inputs.append({ "Normal",                 QVector3D(0.5, 0.5, 1.0), false });
+    m_Inputs.append({ "Metallic",               0.0, false });
+    m_Inputs.append({ "Roughness",              0.0, false });
+    m_Inputs.append({ "Opacity",                1.0, false });
+    m_Inputs.append({ "IOR",                    1.0, false });
+    m_Inputs.append({ "World Position Offset",  QVector3D(0.0, 0.0, 0.0), true });
 
-    QVariantList value;
-    value << QVector3D(1.0, 1.0, 1.0) << QVector3D(0.0, 0.0, 0.0) << QVector3D(0.5, 0.5, 1.0) << 0.0 << 0.0 << 1.0 << 1.0;
-
-    int i   = 0;
-    foreach(QString it, list) {
+    int i = 0;
+    foreach(auto it, m_Inputs) {
         Port *item = new Port;
-        item->name = it;
+        item->name = it.m_name;
         item->out  = false;
         item->pos  = i;
-        item->type = (i < 3) ? QMetaType::QVector3D : QMetaType::Double;
-        item->var  = value.at(i);
+        item->type = it.m_value.type();
+        item->var  = it.m_value;
         m_pRootNode->list.push_back(item);
+
         i++;
     }
 }
@@ -285,7 +289,7 @@ void ShaderSchemeModel::saveUserValues(Node *node, QVariantMap &values) {
 
 void ShaderSchemeModel::loadTextures(const QVariantMap &data) {
     m_Textures.clear();
-    for(auto &it : data.keys()) {
+    foreach(auto it, data.keys()) {
         m_Textures.push_back(TexturePair(it, data.value(it).toInt()));
     }
 }
@@ -298,27 +302,27 @@ QVariantMap ShaderSchemeModel::saveTextures() const {
     return result;
 }
 
-bool ShaderSchemeModel::build() {
+bool ShaderSchemeModel::buildGraph() {
     cleanup();
 
     // Nodes
-    QString str;
-    buildRoot(str);
+    QStringList functions = buildRoot();
 
+    QString layout;
     if(m_RawPath.absoluteFilePath().isEmpty()) {
         if(!m_Uniforms.empty() || !m_Textures.empty()) {
-            m_Shader = QString("layout(location = %1) uniform struct Uniforms {\n").arg(UNIFORM);
+            layout = QString("layout(location = %1) uniform struct Uniforms {\n").arg(UNIFORM);
         }
         // Make uniforms
         for(const auto &it : m_Uniforms) {
             switch(it.second.first) {
-                case QMetaType::QVector2D:  m_Shader += "\tvec2 " + it.first + ";\n"; break;
-                case QMetaType::QVector3D:  m_Shader += "\tvec3 " + it.first + ";\n"; break;
-                case QMetaType::QVector4D:  m_Shader += "\tvec4 " + it.first + ";\n"; break;
-                default:  m_Shader += "\tfloat " + it.first + ";\n"; break;
+                case QMetaType::QVector2D: layout += "\tvec2 " + it.first + ";\n"; break;
+                case QMetaType::QVector3D: layout += "\tvec3 " + it.first + ";\n"; break;
+                case QMetaType::QVector4D: layout += "\tvec4 " + it.first + ";\n"; break;
+                default: layout += "\tfloat " + it.first + ";\n"; break;
             }
         }
-        m_Shader.append("\n");
+        layout.append("\n");
 
         // Textures
         uint16_t i = 0;
@@ -330,17 +334,26 @@ bool ShaderSchemeModel::build() {
                 texture += "\tsampler2D ";
             }
             texture += ((it.second & Target) ? it.first : QString("texture%1").arg(i)) + ";\n";
-            m_Shader.append( texture );
+            layout.append(texture);
             i++;
         }
         if(!m_Uniforms.empty() || !m_Textures.empty()) {
-            m_Shader += "} uni;\n";
+            layout.append("} uni;\n");
         }
     }
-    m_Shader.append(str);
+    QString fragment(layout);
+    QString vertex(layout);
 
-    addPragma("version", "#version 450 core");
-    addPragma("material", m_Shader.toStdString());
+    for(int i = 0; i < m_Inputs.size(); i++) {
+        if(m_Inputs.at(i).m_vertex) {
+            vertex.append(functions.at(i));
+        } else {
+            fragment.append(functions.at(i));
+        }
+    }
+
+    addPragma("vertex", vertex.toStdString());
+    addPragma("fragment", fragment.toStdString());
 
     return true;
 }
@@ -437,14 +450,13 @@ Variant ShaderSchemeModel::data(bool editor) const {
     uint32_t version = 430;
     bool es = false;
     Rhi rhi = Rhi::OpenGL;
-    QString platform = ProjectManager::instance()->currentPlatformName();
-    if(platform == "android" || platform == "ios") {
+    if(ProjectManager::instance()->currentPlatformName() != "desktop") {
         version = 300;
         es = true;
     }
     SpirVConverter::setGlslVersion(version, es);
 
-    QString fragment = (!m_RawPath.filePath().isEmpty()) ? m_RawPath.filePath() : "Surface.frag";
+    QString fragment = (!m_RawPath.filePath().isEmpty()) ? m_RawPath.filePath() : "Shader.frag";
     {
         Variant data = compile(rhi, fragment, define, EShLanguage::EShLangFragment);
         if(data.isValid()) {
@@ -459,7 +471,7 @@ Variant ShaderSchemeModel::data(bool editor) const {
         }
     }
 
-    QString vertex = "BasePass.vert";
+    QString vertex = "Shader.vert";
     define = "#define TYPE_STATIC 1";
     {
         Variant data = compile(rhi, vertex, define, EShLanguage::EShLangVertex);
@@ -529,12 +541,10 @@ void ShaderSchemeModel::addUniform(const QString &name, uint8_t type, const QVar
     m_Uniforms[name] = UniformPair(type, value);
 }
 
-void ShaderSchemeModel::addParam(const QString &param) {
-    m_Params.append(param).append("\n");
-}
-
-void ShaderSchemeModel::buildRoot(QString &result) {
-    for(const auto &it : m_pRootNode->list) {
+QStringList ShaderSchemeModel::buildRoot() {
+    QStringList result;
+    foreach(const auto it, m_pRootNode->list) { // Iterate all ports for the root node
+        QString function;
         for(auto &it : m_Nodes) {
             ShaderFunction *node = static_cast<ShaderFunction *>(it->ptr);
             if(node && it->ptr != this) {
@@ -543,24 +553,28 @@ void ShaderSchemeModel::buildRoot(QString &result) {
         }
 
         Port *item  = it;
+
+        QString name = item->name.replace(" ", "");
         switch(item->type) {
-            case QMetaType::Double:    result += "float get" + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector2D: result += "vec2 get"  + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector3D: result += "vec3 get"  + item->name + "(Params p) {\n"; break;
-            case QMetaType::QVector4D: result += "vec4 get"  + item->name + "(Params p) {\n"; break;
+            case QMetaType::Double:    function += "float get" + name + "(Params p) {\n"; break;
+            case QMetaType::QVector2D: function += "vec2 get"  + name + "(Params p) {\n"; break;
+            case QMetaType::QVector3D: function += "vec3 get"  + name + "(Params p) {\n"; break;
+            case QMetaType::QVector4D: function += "vec4 get"  + name + "(Params p) {\n"; break;
             default: break;
         }
 
-        const Link *link = findLink(m_pRootNode, qPrintable(item->name));
+        const Link *link = findLink(m_pRootNode, qPrintable(name));
         if(link) {
             ShaderFunction *node = static_cast<ShaderFunction *>(link->sender->ptr);
             if(node) {
                 int32_t depth = 0;
                 uint8_t size = 0;
-                int32_t index = node->build(result, *link, depth, size);
+                int32_t index = node->build(function, *link, depth, size);
                 if(index >= 0) {
-                    result += "\treturn " + ShaderFunction::convert("local" + QString::number(index), size, item->type) + ";\n";
-                    result.append("}\n\n");
+                    function += "\treturn " + ShaderFunction::convert("local" + QString::number(index), size, item->type) + ";\n";
+                    function.append("}\n\n");
+
+                    result << function;
                     continue;
                 }
             }
@@ -586,19 +600,20 @@ void ShaderSchemeModel::buildRoot(QString &result) {
             default: break;
         }
 
-        result.append(data);
-        result.append("}\n");
+        function.append(data);
+        function.append("}\n");
+
+        result << function;
     }
+    return result;
 }
 
 void ShaderSchemeModel::cleanup() {
     if(m_RawPath == QFileInfo()) {
         m_Textures.clear();
     }
-    m_Params.clear();
     m_Uniforms.clear();
     m_Pragmas.clear();
-    m_Shader.clear();
 }
 
 void ShaderSchemeModel::addPragma(const string &key, const string &value) {
@@ -610,6 +625,7 @@ QString ShaderSchemeModel::loadIncludes(const QString &path, const string &defin
 
     QStringList paths;
     paths << ProjectManager::instance()->contentPath() + "/";
+    paths << ":/shaders/";
     paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
     paths << ProjectManager::instance()->resourcePath() + "/editor/shaders/";
 

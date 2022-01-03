@@ -106,7 +106,7 @@ void MaterialEdit::saveAsset(const QString &path) {
 }
 
 void MaterialEdit::onSchemeUpdated() {
-    if(m_builder && m_model->build()) {
+    if(m_builder && m_model->buildGraph()) {
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
             VariantMap map = m_model->data(true).toMap();

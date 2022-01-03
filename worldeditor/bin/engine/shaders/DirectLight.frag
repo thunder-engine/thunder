@@ -1,7 +1,7 @@
-#pragma version
+#version 450 core
 
-#include "Common.vert"
-#include "BRDF.frag"
+#include "ShaderLayout.h"
+#include "BRDF.h"
 
 layout(location = 50) uniform sampler2D normalsMap;
 layout(location = 51) uniform sampler2D diffuseMap;

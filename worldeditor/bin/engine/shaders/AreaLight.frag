@@ -1,7 +1,7 @@
-#pragma version
+#version 450 core
 
-#include "Common.vert"
-#include "BRDF.frag"
+#include "ShaderLayout.h"
+#include "BRDF.h"
 
 layout(location = 0) uniform mat4 t_model;
 layout(location = 1) uniform mat4 t_view;

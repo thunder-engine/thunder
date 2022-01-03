@@ -42,7 +42,7 @@ Actor *ShaderBuilder::createActor(const QString &guid) const {
 
 AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *settings) {
     m_schemeModel.load(settings->source());
-    if(m_schemeModel.build()) {
+    if(m_schemeModel.buildGraph()) {
         if(settings->currentVersion() != settings->version()) {
             m_schemeModel.save(settings->source());
         }
