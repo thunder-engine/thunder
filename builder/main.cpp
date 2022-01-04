@@ -22,7 +22,8 @@ class ConsoleLog : public LogHandler {
 public:
     void setRecord(Log::LogTypes, const char *record) {
         time_t result = time(nullptr);
-        std::cout << asctime(localtime(&result)) << record << std::endl;
+        // << asctime(localtime(&result))
+        std::cout << record << std::endl;
     }
 };
 

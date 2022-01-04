@@ -22,11 +22,11 @@ void _CheckGLError(const char* file, int line) {
     while(err != GL_NO_ERROR) {
         std::string error;
         switch ( err ) {
-            case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION";      break;
-            case GL_INVALID_ENUM:       error="GL_INVALID_ENUM";           break;
-            case GL_INVALID_VALUE:      error="GL_INVALID_VALUE";          break;
-            case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY";          break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION";  break;
+            case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION"; break;
+            case GL_INVALID_ENUM:       error="GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:      error="GL_INVALID_VALUE"; break;
+            case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
         }
         Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;
         err = glGetError();

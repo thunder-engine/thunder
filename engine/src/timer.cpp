@@ -11,7 +11,7 @@ static float m_sTimeScale = 1.0;
     \inmodule Engine
 
     The Timer class helps to make your game more smooth and accurate.
-    This class is used in all systems which doing any animation
+    This class is used in all systems which doing any animation.
     Using deltaTime() method developers are able to calculate a logic based on delays for example shots or movements of your character.
     Time scale value can be used for the slow-motion effects because it applied for all deltaTime() values.
 */
@@ -19,6 +19,7 @@ static float m_sTimeScale = 1.0;
 /*!
     Resets all Timer related variables.
     \note Usually, this method calls internally and must not be called manually.
+    \internal
 */
 void Timer::reset() {
     m_sTime = 0.0;
@@ -29,6 +30,7 @@ void Timer::reset() {
 /*!
     Updates all Timer related variables.
     \note Usually, this method calls internally and must not be called manually.
+    \internal
 */
 void Timer::update() {
     TimePoint current = std::chrono::high_resolution_clock::now();

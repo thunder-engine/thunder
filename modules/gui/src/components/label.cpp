@@ -171,6 +171,9 @@ Vector4 Label::color() const {
 */
 void Label::setColor(const Vector4 &color) {
     p_ptr->m_Color = color;
+    if(p_ptr->m_pMaterial) {
+        p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
+    }
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.
