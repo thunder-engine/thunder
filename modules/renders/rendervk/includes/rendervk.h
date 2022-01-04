@@ -7,22 +7,17 @@ class RenderVK : public Module {
 public:
     RenderVK(Engine *engine);
 
-    ~RenderVK();
+    ~RenderVK() override;
 
-    const char *description() const;
+    const char *metaInfo() const override;
 
-    const char *version() const;
-
-    uint8_t types() const;
-
-    System *system();
+    void *getObject(const char *name) override;
 
 protected:
-    Engine *m_pEngine;
-
     System *m_pSystem;
+
 };
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }

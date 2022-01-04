@@ -1,7 +1,10 @@
 import qbs
+import qbs.Environment
 
 Project {
     id: rendervk
+    condition: rendervk.withVulkan
+
     property stringList srcFiles: [
         "src/*.cpp",
         "src/components/*.cpp",
@@ -23,6 +26,7 @@ Project {
         "../../../thirdparty/glfw/include",
         "../../../thirdparty/glfm/include",
         "../../../thirdparty/vulkan/include",
+        Environment.getEnv("VULKAN_SDK") + "/Include"
     ]
 
     DynamicLibrary {
@@ -43,7 +47,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: rendervk.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -51,13 +55,12 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("windows")
-            cpp.libraryPaths: ["../../../thirdparty/vulkan/windows"]
+            cpp.libraryPaths: [Environment.getEnv("VULKAN_SDK") + "/Lib"]
             cpp.staticLibraries: [ "vulkan-1" ]
         }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            //cpp.weakFrameworks: ["OpenGL"]
             cpp.sonamePrefix: "@executable_path"
         }
 
@@ -93,13 +96,12 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            Android.ndk.appStl: "gnustl_static"
+            Android.ndk.appStl: rendervk.ANDROID_STL
             Android.ndk.platform: rendervk.ANDROID
         }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            //cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {

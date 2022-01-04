@@ -54,7 +54,7 @@ public:
     bool bind(const VertexBufferObject &vertex, const FragmentBufferObject &fragment, VkCommandBuffer buffer, uint32_t index, uint32_t layer);
 
 private:
-    void setTexture(const char *name, Texture *value, int32_t count) override;
+    void setTexture(const char *name, Texture *value) override;
 
 private:
     VkDescriptorPool m_descriptorPool;

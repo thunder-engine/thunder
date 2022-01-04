@@ -21,6 +21,8 @@ public:
 private:
     void readPixels(int x, int y, int width, int height) override;
 
+    void switchState(ResourceState state) override;
+
     void updateTexture();
     void destroyTexture();
 

@@ -45,7 +45,7 @@ void MeshVk::bind(VkCommandBuffer buffer, uint32_t lod) {
     }
 
     VkPrimitiveTopology t;
-    Mesh::Topology mode = static_cast<Mesh::Topology>(topology());
+    Mesh::TriangleTopology mode = static_cast<Mesh::TriangleTopology>(topology());
     if(mode > Mesh::Lines) {
         t = (mode == Mesh::TriangleStrip) ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP : VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     } else {

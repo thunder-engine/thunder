@@ -12,14 +12,11 @@
 
 #include <log.h>
 
-#if defined(NEXT_SHARED)
+#if defined(SHARED_DEFINE)
 #include "editor/vulkanwindow.h"
-
-#include <QLoggingCategory>
 
 QVulkanInstance s_Instance;
 
-Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
 #endif
 
 #define MAX_RESOLUTION 8192
@@ -29,6 +26,7 @@ VkPhysicalDevice s_currentPhysicalDevice;
 VkCommandPool s_currentCommandPool;
 VkQueue s_currentQueue;
 VkRenderPass s_currentRenderPass;
+VkFramebuffer s_frameBuffer;
 VkCommandBuffer s_currentCommandBuffer;
 VkImage s_currentColorImage;
 VkImage s_currentDepthImage;
@@ -36,21 +34,14 @@ VkImage s_currentDepthImage;
 int32_t s_swapChainImageCount;
 int32_t s_currentSwapChainImageIndex;
 
+uint32_t s_width;
+uint32_t s_height;
+
 RenderVkSystem::RenderVkSystem(Engine *engine) :
         RenderSystem(),
         m_pEngine(engine),
         m_registered(false) {
     PROFILE_FUNCTION();
-
-}
-
-RenderVkSystem::~RenderVkSystem() {
-    PROFILE_FUNCTION();
-
-}
-
-void RenderVkSystem::registerClasses() {
-    RenderSystem::registerClasses();
 
     System *system = m_pEngine->resourceSystem();
 
@@ -60,16 +51,10 @@ void RenderVkSystem::registerClasses() {
     MeshVk::registerClassFactory(system);
 
     CommandBufferVk::registerClassFactory(m_pEngine);
-
-    m_registered = true;
 }
 
-void RenderVkSystem::unregisterClasses() {
-    if(!m_registered) {
-        return;
-    }
-
-    RenderSystem::unregisterClasses();
+RenderVkSystem::~RenderVkSystem() {
+    PROFILE_FUNCTION();
 
     System *system = m_pEngine->resourceSystem();
 
@@ -90,11 +75,9 @@ const char *RenderVkSystem::name() const {
 bool RenderVkSystem::init() {
     PROFILE_FUNCTION();
 
-#if defined(NEXT_SHARED)
-    QLoggingCategory::setFilterRules(QStringLiteral("qt.vulkan=true"));
-
-    s_Instance.setLayers(QByteArrayList()
-                        << "VK_LAYER_LUNARG_standard_validation");
+#if defined(SHARED_DEFINE)
+    s_Instance.setLayers({"VK_LAYER_KHRONOS_validation"});
+    s_Instance.setExtensions({"VK_EXT_debug_utils"});
 
     if(!s_Instance.create()) {
         qFatal("Failed to create Vulkan instance: %d", s_Instance.errorCode());
@@ -118,22 +101,14 @@ void RenderVkSystem::update(Scene *scene) {
     if(camera && CommandBufferVk::isInited()) {
         Pipeline *pipe = camera->pipeline();
         CommandBufferVk *cmd = static_cast<CommandBufferVk *>(pipe->buffer());
-        cmd->begin(s_currentCommandBuffer, s_currentColorImage, s_currentDepthImage, s_currentSwapChainImageIndex);
-        pipe->setTarget(0);
+        cmd->begin(s_currentCommandBuffer, s_currentSwapChainImageIndex);
+
+        static_cast<RenderTargetVk *>(pipe->defaultTarget())->setNativeHandle(s_currentRenderPass, s_frameBuffer, s_width, s_height);
+
         RenderSystem::update(scene);
+
+        cmd->end();
     }
-/*
-    VkPhysicalDevice device = RenderVkSystem::currentPhysicalDevice();
-    VkPhysicalDeviceProperties poperties;
-    vkGetPhysicalDeviceProperties(device, &poperties);
-
-    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-
-    VkFormatProperties props;
-    vkGetPhysicalDeviceFormatProperties(device, format, &props);
-    const bool canSampleLinear = (props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-    const bool canSampleOptimal = (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-*/
 }
 
 void RenderVkSystem::setCurrentDevice(VkDevice device) {
@@ -176,16 +151,12 @@ VkRenderPass RenderVkSystem::currentRenderPass() {
     return s_currentRenderPass;
 }
 
+void RenderVkSystem::setCurrentFrameBuffer(VkFramebuffer buffer) {
+    s_frameBuffer = buffer;
+}
+
 void RenderVkSystem::setCommandBuffer(VkCommandBuffer buffer) {
     s_currentCommandBuffer = buffer;
-}
-
-void RenderVkSystem::setCurrentColorImage(VkImage image) {
-    s_currentColorImage = image;
-}
-
-void RenderVkSystem::setCurrentDepthImage(VkImage image) {
-    s_currentDepthImage = image;
 }
 
 void RenderVkSystem::setSwapChainImageCount(int32_t count) {
@@ -200,11 +171,52 @@ void RenderVkSystem::setCurrentSwapChainImageIndex(int32_t index) {
     s_currentSwapChainImageIndex = index;
 }
 
-#if defined(NEXT_SHARED)
+void RenderVkSystem::setWindowSize(uint32_t width, uint32_t height) {
+    s_width = width;
+    s_height = height;
+}
+
+#if defined(SHARED_DEFINE)
 QWindow *RenderVkSystem::createRhiWindow() const {
     VulkanWindow *window = new VulkanWindow();
     window->setVulkanInstance(&s_Instance);
     RenderVkSystem::setCurrentPhysicalDevice(window->physicalDevice());
     return window;
+}
+
+vector<uint8_t> RenderVkSystem::renderOffscreen(Scene *scene, int width, int height) {
+    static RenderTarget *target = nullptr;
+    if(target == nullptr) {
+        target = Engine::objectCreate<RenderTarget>();
+
+        Texture *color = Engine::objectCreate<Texture>();
+        color->setFormat(Texture::RGBA8);
+        color->setWidth(width);
+        color->setHeight(height);
+
+        Texture *depth = Engine::objectCreate<Texture>();
+        depth->setFormat(Texture::Depth);
+        depth->setDepthBits(24);
+        depth->setWidth(width);
+        depth->setHeight(height);
+
+        target->setColorAttachment(0, color);
+        target->setDepthAttachment(depth);
+    }
+
+    Camera *camera = Camera::current();
+    if(camera) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->resize(width, height);
+
+        /// \todo Bind render target
+    }
+
+    vector<uint8_t> result;// = RenderSystem::renderOffscreen(scene, width, height);
+
+    result.resize(width * height * 4);
+    //glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, result.data());
+
+    return result;
 }
 #endif

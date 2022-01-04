@@ -15,7 +15,12 @@ class RenderTargetVk : public RenderTarget {
 public:
     RenderTargetVk();
 
-    void bindTarget(VkCommandBuffer &buffer, uint32_t level);
+    void bind(VkCommandBuffer &buffer, uint32_t level);
+    void unbind(VkCommandBuffer &buffer);
+
+    void clear(VkCommandBuffer &buffer, bool clearColor, const Vector4 &color, bool clearDepth, float depth);
+
+    void setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, uint32_t width, uint32_t height);
 
 private:
     bool updateBuffer(VkCommandBuffer &buffer, uint32_t level);
@@ -23,6 +28,9 @@ private:
 
     VkRenderPass m_renderPass;
     VkFramebuffer m_frameBuffer;
+
+    uint32_t m_width;
+    uint32_t m_height;
 
 };
 

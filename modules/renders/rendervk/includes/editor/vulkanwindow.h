@@ -3,9 +3,11 @@
 
 #include <QVulkanWindow>
 
-class TriangleRenderer : public QVulkanWindowRenderer {
+class RenderVkSystem;
+
+class VulkanWindowRenderer : public QVulkanWindowRenderer {
 public:
-    TriangleRenderer(QVulkanWindow *w);
+    VulkanWindowRenderer(QVulkanWindow *w);
 
     void initSwapChainResources() override;
     void initResources() override;
@@ -16,12 +18,14 @@ public:
 
 protected:
     QVulkanWindow *m_window;
-    QVulkanDeviceFunctions *m_devFuncs;
 
 };
 
 class VulkanWindow : public QVulkanWindow {
     Q_OBJECT
+
+public:
+    void render();
 
 signals:
     void draw();

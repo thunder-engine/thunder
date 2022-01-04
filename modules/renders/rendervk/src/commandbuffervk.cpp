@@ -7,20 +7,16 @@
 
 #include "rendervksystem.h"
 
-#include <log.h>
 #include <timer.h>
-
-#include <array>
 
 CommandBufferVk::CommandBufferVk() :
         m_commandBuffer(nullptr),
-        m_currentColorImage(nullptr),
-        m_currentDepthImage(nullptr),
         m_currentImageIndex(0),
         m_viewportX(0),
         m_viewportY(0),
         m_viewportWidth(1),
-        m_viewportHeight(1) {
+        m_viewportHeight(1),
+        m_currentTarget(nullptr) {
     PROFILE_FUNCTION();
 
     m_fragment.m_Clip = 0.1f;
@@ -32,45 +28,33 @@ CommandBufferVk::~CommandBufferVk() {
 
 }
 
-void CommandBufferVk::begin(VkCommandBuffer buffer, VkImage colorImage, VkImage depthImage, uint32_t index) {
+void CommandBufferVk::begin(VkCommandBuffer buffer, uint32_t index) {
     m_commandBuffer = buffer;
-    m_currentColorImage = colorImage;
-    m_currentDepthImage = depthImage;
     m_currentImageIndex = index;
+}
+
+void CommandBufferVk::end() {
+    if(m_currentTarget) {
+        m_currentTarget->unbind(m_commandBuffer);
+        m_currentTarget = nullptr;
+    }
 }
 
 void CommandBufferVk::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
     PROFILE_FUNCTION();
 
-    if(clearColor) {
-        VkClearColorValue clearColorValue = {{ color.x, color.y, color.z, color.w }};
-        VkImageSubresourceRange range;
-        range.layerCount = 1;
-        range.levelCount = 1;
-        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        range.baseArrayLayer = 0;
-        range.baseMipLevel = 0;
-        vkCmdClearColorImage(m_commandBuffer, m_currentColorImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColorValue, 1, &range);
-    }
-    if(clearDepth) {
-        VkClearDepthStencilValue clearDS = { depth, 0 };
-        VkImageSubresourceRange range;
-        range.layerCount = 1;
-        range.levelCount = 1;
-        range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-        range.baseArrayLayer = 0;
-        range.baseMipLevel = 0;
-        vkCmdClearDepthStencilImage(m_commandBuffer, m_currentDepthImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDS, 1, &range);
+    if(m_currentTarget) {
+        m_currentTarget->clear(m_commandBuffer, clearColor, color, clearDepth, depth);
     }
 }
 
-void CommandBufferVk::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVk::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
-    drawMeshInstanced(&model, 1, mesh, layer, material);
+    drawMeshInstanced(&model, 1, mesh, sub, layer, material);
 }
 
-void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
     if(mesh && material) {
@@ -86,7 +70,7 @@ void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
         MaterialInstanceVk *mat = static_cast<MaterialInstanceVk *>(material);
         if(mat->bind(m_vertex, m_fragment, m_commandBuffer, m_currentImageIndex, layer)) {
             m->bind(m_commandBuffer, lod);
-            Mesh::Topology mode = static_cast<Mesh::Topology>(mesh->topology());
+            Mesh::TriangleTopology mode = static_cast<Mesh::TriangleTopology>(mesh->topology());
             if(mode > Mesh::Lines) {
                 uint32_t vert = l->vertices().size();
                 vkCmdDraw(m_commandBuffer, vert, count, 0, 0);
@@ -104,14 +88,14 @@ void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
-    RenderTargetVk *t = static_cast<RenderTargetVk *>(target);
-    if(t) {
-        t->bindTarget(m_commandBuffer, level);
+    if(m_currentTarget) {
+        m_currentTarget->unbind(m_commandBuffer);
     }
-}
 
-void CommandBufferVk::setRenderTarget(uint32_t target) {
-    PROFILE_FUNCTION();
+    m_currentTarget = static_cast<RenderTargetVk *>(target);
+    if(m_currentTarget) {
+        m_currentTarget->bind(m_commandBuffer, level);
+    }
 }
 
 Matrix4 CommandBufferVk::projection() const {
@@ -172,8 +156,7 @@ void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
 void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
     VkRect2D scissor = {};
     scissor.offset = {x, y};
-    scissor.extent.width = width;
-    scissor.extent.height = height;
+    scissor.extent = {(uint32_t)width, (uint32_t)height};
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
@@ -181,8 +164,7 @@ void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 void CommandBufferVk::disableScissor() {
     VkRect2D scissor = {};
     scissor.offset = {m_viewportX, m_viewportY};
-    scissor.extent.width = m_viewportWidth;
-    scissor.extent.height = m_viewportHeight;
+    scissor.extent = {(uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight};
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }

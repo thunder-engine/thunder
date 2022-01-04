@@ -3,7 +3,8 @@
 class RenderTargetPrivate {
 public:
     RenderTargetPrivate() :
-        m_depth(nullptr) {
+        m_depth(nullptr),
+        m_native(false) {
 
     }
 
@@ -32,7 +33,11 @@ RenderTarget::~RenderTarget() {
     Returns the number of attached color textures.
 */
 uint32_t RenderTarget::colorAttachmentCount() const {
-    return p_ptr->m_color.size();
+    uint32_t result = p_ptr->m_color.size();
+    if(result == 0 && p_ptr->m_native) {
+        ++result;
+    }
+    return result;
 }
 /*!
     Returns the attached color textures with \a index.

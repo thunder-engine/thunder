@@ -5,12 +5,14 @@
 #include "rendervksystem.h"
 
 RenderTargetVk::RenderTargetVk() :
-    m_renderPass(nullptr),
-    m_frameBuffer(nullptr) {
+        m_renderPass(nullptr),
+        m_frameBuffer(nullptr),
+        m_width(1),
+        m_height(1) {
 
 }
 
-void RenderTargetVk::bindTarget(VkCommandBuffer &buffer, uint32_t level) {
+void RenderTargetVk::bind(VkCommandBuffer &buffer, uint32_t level) {
     switch(state()) {
         case Suspend: {
             destroyBuffer();
@@ -29,19 +31,68 @@ void RenderTargetVk::bindTarget(VkCommandBuffer &buffer, uint32_t level) {
     updateBuffer(buffer, level);
 }
 
-bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
-    uint32_t width = 1;
-    uint32_t height = 1;
+void RenderTargetVk::unbind(VkCommandBuffer &buffer) {
+    vkCmdEndRenderPass(buffer);
+}
 
+void RenderTargetVk::clear(VkCommandBuffer &buffer, bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
+    uint32_t count = colorAttachmentCount();
+
+    vector<VkClearAttachment> attachments;
+    attachments.reserve(count);
+
+    vector<VkClearRect> rects;
+    attachments.reserve(count);
+
+    for(uint32_t i = 0; i < count; ++i) {
+        VkClearAttachment clearAttachment;
+        clearAttachment.clearValue.color = { { color.x, color.y, color.z, color.w } };
+        clearAttachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        clearAttachment.colorAttachment = 0;
+
+        attachments.push_back(clearAttachment);
+
+        VkClearRect rect = {};
+        rect.rect.extent = { m_width, m_height};
+        rect.layerCount = 1;
+        rects.push_back(rect);
+    }
+
+    vkCmdClearAttachments(buffer, attachments.size(), attachments.data(), rects.size(), rects.data());
+}
+
+void RenderTargetVk::setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, uint32_t width, uint32_t height) {
+    m_renderPass = pass;
+    m_frameBuffer = buffer;
+    m_width = width;
+    m_height = height;
+
+    makeNative();
+}
+
+bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
     uint32_t count = colorAttachmentCount();
 
     if(count > 0) {
         TextureVk *t = static_cast<TextureVk *>(colorAttachment(0));
         if(t) {
-            width = t->width();
-            height = t->height();
+            m_width = t->width();
+            m_height = t->height();
         }
     }
+
+    vector<VkClearValue> clearValues;
+    clearValues.reserve(count + 1);
+
+    for(uint32_t i = 0; i < count; i++) {
+        VkClearValue value;
+        value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+
+        clearValues.push_back(value);
+    }
+    VkClearValue value;
+    value.depthStencil = { 1.0f, 0 };
+    clearValues.push_back(value);
 
     if(m_renderPass == nullptr) {
         VkDevice device = RenderVkSystem::currentDevice();
@@ -63,9 +114,10 @@ bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
                 VkSampler sampler;
                 t->attributes(view, sampler);
                 attachments[i] = view;
+
+                attachmentDescriptions[i].format = t->vkFormat();
             }
 
-            attachmentDescriptions[i].format = t->vkFormat();
             attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
             attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentDescriptions[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -82,15 +134,7 @@ bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
             dependencies[i].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             dependencies[i].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
         }
-/*
-        dependencies[1].srcSubpass = 0;
-        dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-*/
+
         VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
         VkAttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
@@ -116,25 +160,21 @@ bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
         fbufCreateInfo.renderPass = m_renderPass;
         fbufCreateInfo.attachmentCount = attachments.size();
         fbufCreateInfo.pAttachments = attachments.data();
-        fbufCreateInfo.width = width;
-        fbufCreateInfo.height = height;
+        fbufCreateInfo.width = m_width;
+        fbufCreateInfo.height = m_height;
         fbufCreateInfo.layers = 1;
 
         vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &m_frameBuffer);
     }
 
-    VkClearValue clearValues[2];
-    clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
     VkRenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.renderPass = m_renderPass;
     renderPassBeginInfo.framebuffer = m_frameBuffer;
-    renderPassBeginInfo.renderArea.extent.width = width;
-    renderPassBeginInfo.renderArea.extent.height = height;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues;
+    renderPassBeginInfo.renderArea.extent.width = m_width;
+    renderPassBeginInfo.renderArea.extent.height = m_height;
+    renderPassBeginInfo.clearValueCount = clearValues.size();
+    renderPassBeginInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 

@@ -36,6 +36,8 @@ Project {
         return ""
     }
 
+    property bool withVulkan: false
+
     Probe {
         id: probe
         property string SDK_VERSION

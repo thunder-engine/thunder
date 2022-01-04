@@ -18,15 +18,19 @@
 
 #define INSTANCE_ATRIB  8
 
-class CommandBufferVk : public ICommandBuffer {
-    A_OVERRIDE(CommandBufferVk, ICommandBuffer, System)
+class RenderTargetVk;
+
+class CommandBufferVk : public CommandBuffer {
+    A_OVERRIDE(CommandBufferVk, CommandBuffer, System)
 
 public:
     CommandBufferVk();
 
     ~CommandBufferVk() override;
 
-    void begin(VkCommandBuffer buffer, VkImage colorImage, VkImage depthImage, uint32_t index);
+    void begin(VkCommandBuffer buffer, uint32_t index);
+
+    void end();
 
     static void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory);
 
@@ -41,13 +45,11 @@ public:
 private:
     void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f) override;
 
-    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
+    void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
-    void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t layer = ICommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
+    void drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr) override;
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
-
-    void setRenderTarget(uint32_t target) override;
 
     void setColor(const Vector4 &color) override;
 
@@ -79,14 +81,14 @@ protected:
     Matrix4 m_saveProjection;
 
     VkCommandBuffer m_commandBuffer;
-    VkImage m_currentColorImage;
-    VkImage m_currentDepthImage;
     uint32_t m_currentImageIndex;
 
     int32_t m_viewportX;
     int32_t m_viewportY;
     int32_t m_viewportWidth;
     int32_t m_viewportHeight;
+
+    RenderTargetVk *m_currentTarget;
 };
 
 #endif // COMMANDBUFFERVK_H

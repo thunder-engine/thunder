@@ -30,6 +30,10 @@ void TextureVk::attributes(VkImageView &imageView, VkSampler &sampler) {
     sampler = m_sampler;
 }
 
+void TextureVk::switchState(ResourceState state) {
+    setState(state);
+}
+
 VkFormat TextureVk::vkFormat() const {
     VkFormat result = VK_FORMAT_R8G8B8A8_UNORM;
     switch(format()) {
@@ -40,7 +44,7 @@ VkFormat TextureVk::vkFormat() const {
             result = VK_FORMAT_R8G8B8_UNORM;
         } break;
         case RGB10A2: {
-            result = VK_FORMAT_A2R10G10B10_UINT_PACK32;
+            result = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
         } break;
         case RGB16Float: {
             result = VK_FORMAT_R16G16B16_SFLOAT;
@@ -126,16 +130,28 @@ void TextureVk::createImage(VkDevice device, VkFormat format) {
     imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-    if(m_useStaging) {
-        imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    }
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.flags = 0;
     imageInfo.format = format;
-    imageInfo.tiling = (m_useStaging) ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR;
+
+    imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    bool isFrameBuffer = getSides()->empty();
+
+    if(!isFrameBuffer) {
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.flags = 0;
+
+        imageInfo.tiling = (m_useStaging) ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR;
+
+        if(m_useStaging) {
+            imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        }
+    } else {
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+
+        imageInfo.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    }
 
     if(vkCreateImage(device, &imageInfo, nullptr, &m_image) != VK_SUCCESS) {
         throw runtime_error("failed to create image!");
@@ -147,9 +163,9 @@ void TextureVk::createImage(VkDevice device, VkFormat format) {
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = CommandBufferVk::findMemoryType(memRequirements.memoryTypeBits,
-                                                                (m_useStaging) ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT :
-                                                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkMemoryPropertyFlags memFlags = (isFrameBuffer || m_useStaging) ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT :
+                                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    allocInfo.memoryTypeIndex = CommandBufferVk::findMemoryType(memRequirements.memoryTypeBits, memFlags);
 
     if(vkAllocateMemory(device, &allocInfo, nullptr, &m_deviceMemory) != VK_SUCCESS) {
         throw runtime_error("failed to allocate image memory!");

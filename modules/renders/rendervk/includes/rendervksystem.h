@@ -20,9 +20,6 @@ public:
 
     void update(Scene *scene) override;
 
-    void registerClasses() override;
-    void unregisterClasses() override;
-
     static void setCurrentDevice(VkDevice device);
     static VkDevice currentDevice();
 
@@ -38,17 +35,21 @@ public:
     static void setCurrentRenderPass(VkRenderPass pass);
     static VkRenderPass currentRenderPass();
 
+    static void setCurrentFrameBuffer(VkFramebuffer buffer);
+
     static void setCommandBuffer(VkCommandBuffer buffer);
-    static void setCurrentColorImage(VkImage image);
-    static void setCurrentDepthImage(VkImage image);
 
     static void setSwapChainImageCount(int32_t count);
     static int32_t swapChainImageCount();
 
     static void setCurrentSwapChainImageIndex(int32_t index);
 
-#ifdef NEXT_SHARED
+    static void setWindowSize(uint32_t width, uint32_t height);
+
+#ifdef SHARED_DEFINE
     QWindow *createRhiWindow() const override;
+
+    vector<uint8_t> renderOffscreen(Scene *scene, int width, int height) override;
 #endif
 
 private:

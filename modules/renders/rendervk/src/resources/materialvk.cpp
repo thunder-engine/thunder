@@ -121,16 +121,16 @@ void MaterialVk::destroyPrograms() {
 bool MaterialVk::bind(VkCommandBuffer buffer, VkPipelineLayout &layout, uint32_t layer, uint16_t vertex) {
     int32_t b = blendMode();
 
-    if((layer & ICommandBuffer::DEFAULT || layer & ICommandBuffer::SHADOWCAST) &&
+    if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) &&
        (b == Material::Additive || b == Material::Translucent)) {
         return false;
     }
-    if(layer & ICommandBuffer::TRANSLUCENT && b == Material::Opaque) {
+    if(layer & CommandBuffer::TRANSLUCENT && b == Material::Opaque) {
         return false;
     }
 
     uint16_t type = MaterialVk::Default;
-    if((layer & ICommandBuffer::RAYCAST) || (layer & ICommandBuffer::SHADOWCAST)) {
+    if((layer & CommandBuffer::RAYCAST) || (layer & CommandBuffer::SHADOWCAST)) {
         type = MaterialVk::Simple;
     }
 
@@ -404,7 +404,7 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
     }
     size_t swapChainCount = RenderVkSystem::swapChainImageCount();
 
-    MaterialVk *m = static_cast<MaterialVk *>(m_pMaterial);
+    MaterialVk *m = static_cast<MaterialVk *>(m_material);
 
     // Descriptor pool
     vector<VkDescriptorPoolSize> poolSize;
@@ -499,7 +499,7 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
 }
 
 bool MaterialInstanceVk::bind(const VertexBufferObject &vertex, const FragmentBufferObject &fragment, VkCommandBuffer buffer, uint32_t index, uint32_t layer) {
-    MaterialVk *m = static_cast<MaterialVk *>(m_pMaterial);
+    MaterialVk *m = static_cast<MaterialVk *>(m_material);
 
     VkPipelineLayout layout;
     if(m->bind(buffer, layout, layer, surfaceType())) {
@@ -516,8 +516,8 @@ bool MaterialInstanceVk::bind(const VertexBufferObject &vertex, const FragmentBu
     return false;
 }
 
-void MaterialInstanceVk::setTexture(const char *name, Texture *value, int32_t count) {
-    MaterialInstance::setTexture(name, value, count);
+void MaterialInstanceVk::setTexture(const char *name, Texture *value) {
+    MaterialInstance::setTexture(name, value);
 
     if(value && !m_uniformDescriptorSets.empty()) {
         VkDescriptorImageInfo imageInfo = {};
@@ -526,7 +526,7 @@ void MaterialInstanceVk::setTexture(const char *name, Texture *value, int32_t co
         TextureVk *t = static_cast<TextureVk *>(value);
         t->attributes(imageInfo.imageView, imageInfo.sampler);
 
-        MaterialVk *m = static_cast<MaterialVk *>(m_pMaterial);
+        MaterialVk *m = static_cast<MaterialVk *>(m_material);
 
         for(int32_t i = 0; i < RenderVkSystem::swapChainImageCount(); i++) {
             VkWriteDescriptorSet descriptorWrite = {};
