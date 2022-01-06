@@ -76,7 +76,7 @@ AmbientOcclusion::AmbientOcclusion() :
     m_blurTarget->setColorAttachment(0, m_resultTexture);
 
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.mtl");
+        Material *mtl = Engine::loadResource<Material>(".embedded/AmbientOcclusion.shader");
         if(mtl) {
             m_material = mtl->createInstance();
             m_material->setVector3("uni.samplesKernel", m_samplesKernel, KERNEL_SIZE);
@@ -85,7 +85,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.mtl");
+        Material *mtl = Engine::loadResource<Material>(".embedded/BlurOcclusion.shader");
         if(mtl) {
             m_blur = mtl->createInstance();
             m_blur->setTexture("ssaoSample", m_ssaoTexture);
@@ -159,9 +159,11 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
     m_bias = settings.readValue(AMBIENT_BIAS).toFloat();
     m_power = settings.readValue(AMBIENT_POWER).toFloat();
 
-    m_material->setFloat("uni.radius", &m_radius);
-    m_material->setFloat("uni.bias", &m_bias);
-    m_material->setFloat("uni.power", &m_power);
+    if(m_material) {
+        m_material->setFloat("uni.radius", &m_radius);
+        m_material->setFloat("uni.bias", &m_bias);
+        m_material->setFloat("uni.power", &m_power);
+    }
 }
 
 uint32_t AmbientOcclusion::layer() const {

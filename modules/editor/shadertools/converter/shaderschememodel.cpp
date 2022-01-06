@@ -11,12 +11,9 @@
 
 #include <QMetaProperty>
 
-#include <regex>
 #include <sstream>
 
 #include <editor/projectmanager.h>
-
-#include "spirvconverter.h"
 
 #include "functions/constvalue.h"
 #include "functions/coordinates.h"
@@ -27,21 +24,7 @@
 #include "functions/texturesample.h"
 #include "functions/utils.h"
 
-const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
-const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
-
-#define TYPE        "Type"
-#define BLEND       "Blend"
-#define MODEL       "Model"
-#define SIDE        "Side"
-#define DEPTH       "Depth"
-#define DEPTHWRITE  "DepthWrite"
-#define RAW         "Raw"
-#define VIEW        "View"
-#define TEXTURES    "Textures"
-#define UNIFORMS    "Uniforms"
-
-#define UNIFORM 4
+#include "shaderbuilder.h"
 
 ShaderSchemeModel::ShaderSchemeModel() :
         m_BlendMode(Opaque),
@@ -139,13 +122,6 @@ ShaderSchemeModel::ShaderSchemeModel() :
 
         i++;
     }
-
-    m_rhiMap = {
-        {"RenderGL", OpenGL},
-        {"RenderVK", Vulkan},
-        {"RenderMT", Metal},
-        {"RenderD3D", DirectX},
-    };
 }
 
 ShaderSchemeModel::~ShaderSchemeModel() {
@@ -220,7 +196,6 @@ void ShaderSchemeModel::save(const QString &path) {
     m_Data[SIDE] = isDoubleSided();
     m_Data[DEPTH] = isDepthTest();
     m_Data[DEPTHWRITE] = isDepthWrite();
-    m_Data[VIEW] = isViewSpace();
     m_Data[RAW] = rawPath().filePath();
     m_Data[TEXTURES] = saveTextures();
     m_Data[UNIFORMS] = saveUniforms();
@@ -398,7 +373,7 @@ bool ShaderSchemeModel::buildGraph() {
             layout += QString("layout(binding = %1) uniform Uniforms {\n").arg(binding);
 
             // Make uniforms
-            for(const auto &it : m_Uniforms) {
+            foreach(const auto &it, m_Uniforms) {
                 switch(it.type) {
                     case QMetaType::Float:     layout += "\tfloat " + it.name + ";\n"; break;
                     case QMetaType::QVector2D: layout += "\tvec2 " + it.name + ";\n"; break;
@@ -448,27 +423,7 @@ bool ShaderSchemeModel::buildGraph() {
     return true;
 }
 
-Variant ShaderSchemeModel::object() const {
-    VariantList result;
-
-    VariantList object;
-
-    object.push_back(Material::metaClass()->name()); // type
-    object.push_back(0); // id
-    object.push_back(0); // parent
-    object.push_back(Material::metaClass()->name()); // name
-
-    object.push_back(VariantMap()); // properties
-
-    object.push_back(VariantList()); // links
-    object.push_back(data()); // user data
-
-    result.push_back(object);
-
-    return result;
-}
-
-Variant ShaderSchemeModel::data(bool editor) const {
+VariantMap ShaderSchemeModel::data(bool editor) const {
     VariantMap user;
     VariantList properties;
     properties.push_back(materialType());
@@ -480,7 +435,7 @@ Variant ShaderSchemeModel::data(bool editor) const {
     properties.push_back(lightModel());
     properties.push_back(isDepthTest());
     properties.push_back(isDepthWrite());
-    user["Properties"] = properties;
+    user[PROPERTIES] = properties;
 
     VariantList textures;
     uint16_t i = 0;
@@ -575,86 +530,52 @@ Variant ShaderSchemeModel::data(bool editor) const {
         } break;
     }
 
-    uint32_t version = 430;
-    bool es = false;
-    Rhi rhi = Rhi::OpenGL;
-    if(qEnvironmentVariableIsSet("RENDER")) {
-        rhi = m_rhiMap.value(qEnvironmentVariable("RENDER"));
-    }
-    if(ProjectManager::instance()->currentPlatformName() != "desktop") {
-        version = 300;
-        es = true;
-    }
-    SpirVConverter::setGlslVersion(version, es);
-
     QString fragment = (!m_RawPath.filePath().isEmpty()) ? m_RawPath.filePath() : "Shader.frag";
     {
-        Variant data = compile(rhi, fragment, define, EShLanguage::EShLangFragment);
+        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_Pragmas).toStdString();
         if(data.isValid()) {
-            user["Shader"] = data;
+            user[SHADER] = data;
         }
     }
     if(m_MaterialType == Surface && !editor) {
         define += "\n#define SIMPLE 1";
-        Variant data = compile(rhi, fragment, define, EShLanguage::EShLangFragment);
+        Variant data = ShaderBuilder::loadIncludes(fragment, define, m_Pragmas).toStdString();
         if(data.isValid()) {
-            user["Simple"] = data;
+            user[SIMPLE] = data;
         }
     }
 
     QString vertex = "Shader.vert";
     define = "#define TYPE_STATIC 1";
     {
-        Variant data = compile(rhi, vertex, define, EShLanguage::EShLangVertex);
+        Variant data = ShaderBuilder::loadIncludes(vertex, define, m_Pragmas).toStdString();
         if(data.isValid()) {
-            user["Static"] = data;
+            user[STATIC] = data;
         }
     }
     if(m_MaterialType == Surface && !editor) {
         {
             define += "\n#define INSTANCING 1";
-            Variant data = compile(rhi, vertex, define, EShLanguage::EShLangVertex);
+            Variant data = ShaderBuilder::loadIncludes(vertex, define, m_Pragmas).toStdString();
             if(data.isValid()) {
-                user["StaticInst"] = data;
+                user[INSTANCED] = data;
             }
         }
         {
-            Variant data = compile(rhi, vertex, "#define TYPE_BILLBOARD 1", EShLanguage::EShLangVertex);
+            Variant data = ShaderBuilder::loadIncludes(vertex, "#define TYPE_BILLBOARD 1", m_Pragmas).toStdString();
             if(data.isValid()) {
-                user["Particle"] = data;
+                user[PARTICLE] = data;
             }
         }
         {
-            Variant data = compile(rhi, vertex, "#define TYPE_SKINNED 1", EShLanguage::EShLangVertex);
+            Variant data = ShaderBuilder::loadIncludes(vertex, "#define TYPE_SKINNED 1", m_Pragmas).toStdString();
             if(data.isValid()) {
-                user["Skinned"] = data;
+                user[SKINNED] = data;
             }
         }
     }
 
     return user;
-}
-
-Variant ShaderSchemeModel::compile(int32_t rhi, const QString &source, const string &define, int stage) const {
-    Variant data;
-
-    QString buff = loadIncludes(source, define);
-    vector<uint32_t> spv = SpirVConverter::glslToSpv(buff.toStdString(), static_cast<EShLanguage>(stage));
-    if(!spv.empty()) {
-        switch(rhi) {
-            case Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
-            case Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
-            case Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
-            default: {
-                ByteArray array;
-                array.resize(spv.size() * sizeof(uint32_t));
-                memcpy(&array[0], &spv[0], array.size());
-                data = array;
-                break;
-            }
-        }
-    }
-    return data;
 }
 
 int ShaderSchemeModel::setTexture(const QString &path, Vector4 &sub, uint8_t flags) {
@@ -756,45 +677,4 @@ void ShaderSchemeModel::cleanup() {
 
 void ShaderSchemeModel::addPragma(const string &key, const string &value) {
     m_Pragmas[key] = m_Pragmas[key].append(value).append("\r\n");
-}
-
-QString ShaderSchemeModel::loadIncludes(const QString &path, const string &define) const {
-    QString output;
-
-    QStringList paths;
-    paths << ProjectManager::instance()->contentPath() + "/";
-    paths << ":/shaders/";
-    paths << ProjectManager::instance()->resourcePath() + "/engine/shaders/";
-    paths << ProjectManager::instance()->resourcePath() + "/editor/shaders/";
-
-    foreach(QString it, paths) {
-        QFile file(it + path);
-        if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            while(!file.atEnd()) {
-                QString line = file.readLine();
-                smatch matches;
-                string data = line.toStdString();
-                if(regex_match(data, matches, include)) {
-                    string next(matches[1]);
-                    output += loadIncludes(next.c_str(), define) + "\n";
-                } else if(regex_match(data, matches, pragma)) {
-                    if(matches[1] == "flags") {
-                        output += QString(define.c_str()) + "\n";
-                    } else {
-                        auto it = m_Pragmas.find(matches[1]);
-                        if(it != m_Pragmas.end()) {
-                            output += QString(m_Pragmas.at(matches[1]).c_str()) + "\n";
-                        }
-                    }
-                } else {
-                    output += line + "\n";
-                }
-            }
-            file.close();
-
-            return output;
-        }
-    }
-
-    return output;
 }

@@ -23,18 +23,18 @@
 #include <QMenu>
 #include <QRegularExpression>
 
-#define SELECT_MAP  "selectMap"
-#define DEPTH_MAP   "depthMap"
-#define OUTLINE_MAP "outlineMap"
-#define OUTDEPTH_MAP "outdepthMap"
+#define SELECT_MAP      "selectMap"
+#define DEPTH_MAP       "depthMap"
+#define OUTLINE_MAP     "outlineMap"
+#define OUTDEPTH_MAP    "outdepthMap"
 
-#define G_EMISSIVE  "emissiveMap"
+#define G_EMISSIVE      "emissiveMap"
 
-#define SEL_TARGET  "objectSelect"
-#define OUT_TARGET  "outLine"
-#define FINAL_TARGET "finalTarget"
+#define SEL_TARGET      "objectSelect"
+#define OUT_TARGET      "outLine"
+#define FINAL_TARGET    "finalTarget"
 
-#define OUTLINE     "Outline"
+#define OUTLINE         "Outline"
 
 namespace {
     const char *postSettings("Graphics/");
@@ -47,7 +47,7 @@ class Outline : public PostProcessor {
 public:
     Outline() :
         m_width(1.0f) {
-        Material *material = Engine::loadResource<Material>(".embedded/outline.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
         if(material) {
             m_material = material->createInstance();
         }

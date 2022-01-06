@@ -34,7 +34,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets", "xml"]; }
         bundle.isBundle: false
 
         cpp.defines: ["NEXT_SHARED"]

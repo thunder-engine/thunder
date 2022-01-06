@@ -1,3 +1,12 @@
+<Shader>
+    <Properties>
+        <Property name="depthMap" type="texture2D" binding="4" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="6" target="true"/>
+        <Property name="emissiveMap" type="texture2D" binding="7" target="true"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -91,3 +100,7 @@ void main(void) {
         color = vec4(texture(emissiveMap, coord.xy).xyz, coord.z);
     }
 }
+]]>
+    </Fragment>
+    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</Shader>

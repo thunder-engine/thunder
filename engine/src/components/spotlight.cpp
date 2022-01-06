@@ -57,7 +57,7 @@ SpotLight::SpotLight() :
 
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
-    Material *material = Engine::loadResource<Material>(".embedded/SpotLight.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/SpotLight.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
 

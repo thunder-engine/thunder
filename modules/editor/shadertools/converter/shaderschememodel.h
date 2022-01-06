@@ -7,6 +7,29 @@
 
 #include "editor/scheme/abstractschememodel.h"
 
+#define SHADER      "Shader"
+#define SIMPLE      "Simple"
+
+#define STATIC      "Static"
+#define INSTANCED   "StaticInst"
+#define PARTICLE    "Particle"
+#define SKINNED     "Skinned"
+
+#define UNIFORM 4
+
+#define TYPE        "Type"
+#define BLEND       "Blend"
+#define MODEL       "Model"
+#define SIDE        "Side"
+#define DEPTH       "Depth"
+#define DEPTHWRITE  "DepthWrite"
+#define RAW         "Raw"
+#define TEXTURES    "Textures"
+#define UNIFORMS    "Uniforms"
+#define PROPERTIES  "Properties"
+
+typedef map<string, string> PragmaMap;
+
 class ShaderSchemeModel : public AbstractSchemeModel {
     Q_OBJECT
 
@@ -15,7 +38,6 @@ class ShaderSchemeModel : public AbstractSchemeModel {
     Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
-    Q_PROPERTY(bool View_Space READ isViewSpace WRITE setViewSpace DESIGNABLE true USER true)
     Q_PROPERTY(QFileInfo Raw_Path READ rawPath WRITE setRawPath DESIGNABLE true USER true)
 
 public:
@@ -42,13 +64,6 @@ public:
         Target = (1<<1)
     };
 
-    enum Rhi {
-        OpenGL = 1,
-        Vulkan,
-        Metal,
-        DirectX
-    };
-
     Q_ENUM(Type)
     Q_ENUM(LightModel)
     Q_ENUM(Blend)
@@ -57,9 +72,7 @@ public:
     ShaderSchemeModel();
     ~ShaderSchemeModel() Q_DECL_OVERRIDE;
 
-    Variant object() const;
-
-    Variant data(bool editor = false) const;
+    VariantMap data(bool editor = false) const;
 
     bool buildGraph();
 
@@ -71,9 +84,6 @@ public:
 
     bool isDepthWrite() const { return m_DepthWrite; }
     void setDepthWrite(bool value) { m_DepthWrite = value; emit schemeUpdated(); }
-
-    bool isViewSpace() const { return m_ViewSpace; }
-    void setViewSpace(bool value) { m_ViewSpace = value; emit schemeUpdated(); }
 
     Type materialType() const { return m_MaterialType; }
     void setMaterialType(Type type) { m_MaterialType = type; }
@@ -130,7 +140,6 @@ private:
     void cleanup();
 
     void addPragma(const string &key, const string &value);
-    QString loadIncludes(const QString &path, const string &define) const;
 
 private:
     struct Uniform {
@@ -149,10 +158,6 @@ private:
 
     typedef QList<TexturePair> TextureList;
 
-    typedef map<string, string> PragmaMap;
-
-    typedef QMap<QString, Rhi> RhiMap;
-
     typedef QList<MaterialInput> InputList;
 
     QStringList m_Functions;
@@ -162,8 +167,6 @@ private:
     TextureList m_Textures;
 
     PragmaMap m_Pragmas;
-
-    RhiMap m_rhiMap;
 
     InputList m_Inputs;
 

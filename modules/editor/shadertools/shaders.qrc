@@ -4,5 +4,7 @@
         <file>shaders/Shader.frag</file>
         <file>shaders/Shader.vert</file>
         <file>shaders/ShaderLayout.h</file>
+        <file>shaders/Default.frag</file>
+        <file>shaders/Default.vert</file>
     </qresource>
 </RCC>

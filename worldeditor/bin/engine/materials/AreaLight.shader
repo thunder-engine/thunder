@@ -1,3 +1,23 @@
+<Shader>
+    <Properties>
+        <Property name="matrix" type="mat4" count="6"/>
+        <Property name="tiles" type="vec4" count="6"/>
+        <Property name="color" type="vec4"/>
+        <Property name="params" type="vec4"/>
+        <Property name="bias" type="vec4"/>
+        <Property name="position" type="vec4"/>
+        <Property name="direction" type="vec4"/>
+        <Property name="right" type="vec4"/>
+        <Property name="up" type="vec4"/>
+        <Property name="shadows" type="float"/>
+        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
+        <Property name="diffuseMap" type="texture2D" binding="6" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="7" target="true"/>
+        <Property name="depthMap" type="texture2D" binding="8" target="true"/>
+        <Property name="shadowMap" type="texture2D" binding="9" target="true"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -164,3 +184,7 @@ void main (void) {
     }
     rgb = vec4(vec3(0.0), 1.0);
 }
+]]>
+    </Fragment>
+    <Pass type="LightFunction" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="false"/>
+</Shader>

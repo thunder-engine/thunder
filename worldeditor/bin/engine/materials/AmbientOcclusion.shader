@@ -1,3 +1,15 @@
+<Shader>
+    <Properties>
+        <Property name="radius" type="float"/>
+        <Property name="bias" type="float"/>
+        <Property name="power" type="float"/>
+        <Property name="samplesKernel" type="vec3" count="16"/>
+        <Property name="depthMap" type="texture2D" binding="5" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
+        <Property name="noiseMap" type="texture2D" binding="7" target="true"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #define MAX_SAMPLE_COUNT 16
@@ -58,3 +70,7 @@ void main(void) {
         color = 1.0;
     }
 }
+]]>
+    </Fragment>
+    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</Shader>

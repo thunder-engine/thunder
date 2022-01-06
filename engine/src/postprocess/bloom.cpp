@@ -24,7 +24,7 @@ Bloom::Bloom() :
         m_width(0),
         m_height(0) {
 
-    Material *material = Engine::loadResource<Material>(".embedded/Downsample.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/Downsample.shader");
     if(material) {
         m_material = material->createInstance();
         m_material->setFloat("uni.threshold", &m_threshold);
