@@ -217,7 +217,7 @@ QStringList AbstractSchemeModel::nodeList() const {
 
 void AbstractSchemeModel::save(const QString &path) {
     QVariantList nodes;
-    for(Node *it : m_Nodes) {
+    foreach(Node *it, m_Nodes) {
         if(it != m_pRootNode) {
             nodes.push_back(saveNode(it));
         }
@@ -225,7 +225,7 @@ void AbstractSchemeModel::save(const QString &path) {
     m_Data[NODES] = nodes;
 
     QVariantList links;
-    for(Link *it : m_Links) {
+    foreach(Link *it, m_Links) {
         QVariantMap link;
         link[SENDER] = node(it->sender);
         link[OPORT] = (it->oport != nullptr) ? it->sender->list.indexOf(it->oport) : -1;
