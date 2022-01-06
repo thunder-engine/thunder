@@ -25,6 +25,7 @@ void main(void) {
     _b = cross ( _t, _n );
     _color = color;
     _uv0 = uv0;
+    _vertex = g.projection * (mv * vec4(vertex, 1.0));
 
-    gl_Position = g.projection * (mv * vec4(vertex, 1.0));
+    gl_Position = _vertex;
 }

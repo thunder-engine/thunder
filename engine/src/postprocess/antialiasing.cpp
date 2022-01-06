@@ -14,7 +14,7 @@ namespace {
 #include "commandbuffer.h"
 
 AntiAliasing::AntiAliasing() {
-    Material *material = Engine::loadResource<Material>(".embedded/AntiAliasing.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/SSAA.shader");
     if(material) {
         m_material = material->createInstance();
     }

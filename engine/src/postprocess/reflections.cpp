@@ -34,13 +34,13 @@ Reflections::Reflections() :
     m_sslrTarget->setColorAttachment(0, m_sslrTexture);
 
     {
-        Material *material = Engine::loadResource<Material>(".embedded/LocalReflections.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/SSLR.shader");
         if(material) {
             m_material = material->createInstance();
         }
     }
     {
-        Material *material = Engine::loadResource<Material>(".embedded/IblReflections.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/IblReflections.shader");
         if(material) {
             m_iblMaterial = material->createInstance();
             m_iblMaterial->setTexture("rgbMap", m_sslrTexture);

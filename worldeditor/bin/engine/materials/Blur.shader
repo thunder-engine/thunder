@@ -1,3 +1,13 @@
+<Shader>
+    <Properties>
+        <Property name="direction" type="vec2"/>
+        <Property name="size" type="vec2"/>
+        <Property name="curve" type="vec4" count="8"/>
+        <Property name="steps" type="int"/>
+        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -26,3 +36,7 @@ void main (void) {
     }
     rgb = sum;
 }
+]]>
+    </Fragment>
+    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</Shader>

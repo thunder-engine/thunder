@@ -64,10 +64,12 @@ PointLight::PointLight() :
         p_ptr(new PointLightPrivate) {
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
-    Material *material = Engine::loadResource<Material>(".embedded/PointLight.mtl");
-    MaterialInstance *instance = material->createInstance();
+    Material *material = Engine::loadResource<Material>(".embedded/PointLight.shader");
+    if(material) {
+        MaterialInstance *instance = material->createInstance();
 
-    setMaterial(instance);
+        setMaterial(instance);
+    }
 
     Vector4 p = params();
     p.y = 0.1f;

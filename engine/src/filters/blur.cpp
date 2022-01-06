@@ -14,7 +14,7 @@ Blur::Blur() :
 
     m_pMesh = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
-    Material *material = Engine::loadResource<Material>(".embedded/Blur.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/Blur.shader");
     if(material) {
         m_pBlurMaterial = material->createInstance();
     }

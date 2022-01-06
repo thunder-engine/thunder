@@ -232,7 +232,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     VariantList data;
 
                                     uint32_t size = 0;
-                                    uint32_t count = 1;
+                                    uint32_t count = property.attribute("count", "1").toInt();
                                     Variant value;
                                     if(type == "int") {
                                         value = Variant(property.attribute(VALUE).toInt());

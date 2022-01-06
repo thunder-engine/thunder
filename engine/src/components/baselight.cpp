@@ -77,7 +77,9 @@ bool BaseLight::castShadows() const {
 */
 void BaseLight::setCastShadows(const bool shadows) {
     p_ptr->m_Shadows = (shadows) ? 1.0f : 0.0f;
-    p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    if(p_ptr->m_pMaterialInstance) {
+        p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    }
 }
 /*!
     Returns a brightness of emitting light.
@@ -90,7 +92,9 @@ float BaseLight::brightness() const {
 */
 void BaseLight::setBrightness(const float brightness) {
     p_ptr->m_Params.x = brightness;
-    p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
+    if(p_ptr->m_pMaterialInstance) {
+        p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
+    }
 }
 /*!
     Returns a color of emitting light.
@@ -103,7 +107,9 @@ Vector4 &BaseLight::color() const {
 */
 void BaseLight::setColor(const Vector4 &color) {
     p_ptr->m_Color = color;
-    p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
+    if(p_ptr->m_pMaterialInstance) {
+        p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
+    }
 }
 /*!
     Returns shadow map bias value.
@@ -117,7 +123,9 @@ Vector4 &BaseLight::bias() const {
 */
 void BaseLight::setBias(const Vector4 &bias) {
     p_ptr->m_Bias = bias;
-    p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
+    if(p_ptr->m_pMaterialInstance) {
+        p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
+    }
 }
 /*!
     \internal
@@ -130,10 +138,12 @@ MaterialInstance *BaseLight::material() const {
 */
 void BaseLight::setMaterial(MaterialInstance *instance) {
     p_ptr->m_pMaterialInstance = instance;
-    p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
-    p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
-    p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
-    p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    if(p_ptr->m_pMaterialInstance) {
+        p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
+        p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
+        p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
+        p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    }
 }
 /*!
     \internal

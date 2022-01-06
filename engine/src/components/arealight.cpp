@@ -68,10 +68,11 @@ AreaLight::AreaLight() :
         p_ptr(new AreaLightPrivate) {
     setShape(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001"));
 
-    Material *material = Engine::loadResource<Material>(".embedded/AreaLight.mtl");
-    MaterialInstance *instance = material->createInstance();
-
-    setMaterial(instance);
+    Material *material = Engine::loadResource<Material>(".embedded/AreaLight.shader");
+    if(material) {
+        MaterialInstance *instance = material->createInstance();
+        setMaterial(instance);
+    }
 
     Vector4 p = params();
     p.y = 0.1f;

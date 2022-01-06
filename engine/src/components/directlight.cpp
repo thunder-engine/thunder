@@ -49,7 +49,7 @@ DirectLight::DirectLight() :
         p_ptr(new DirectLightPrivate) {
     setShape(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001"));
 
-    Material *material  = Engine::loadResource<Material>(".embedded/DirectLight.mtl");
+    Material *material = Engine::loadResource<Material>(".embedded/DirectLight.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
 

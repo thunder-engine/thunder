@@ -1,3 +1,10 @@
+<Shader>
+    <Properties>
+        <Property name="threshold" type="float"/>
+        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -20,3 +27,7 @@ void main(void) {
 
     color = max(color * 0.25 - uni.threshold, 0.0);
 }
+]]>
+    </Fragment>
+    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</Shader>

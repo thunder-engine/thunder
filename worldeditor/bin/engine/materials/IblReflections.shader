@@ -1,3 +1,13 @@
+<Shader>
+    <Properties>
+        <Property name="depthMap" type="texture2D" binding="4" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="6" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="7" target="true"/>
+        <Property name="environmentMap" type="samplerСube" binding="8"/>
+    </Properties>
+    <Fragment>
+<![CDATA[
 #version 450 core
 
 #include "ShaderLayout.h"
@@ -41,3 +51,7 @@ void main(void) {
     }
     color = vec4(0.0);
 }
+]]>
+    </Fragment>
+    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+</Shader>

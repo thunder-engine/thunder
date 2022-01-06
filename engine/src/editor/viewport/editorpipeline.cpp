@@ -47,7 +47,7 @@ class Outline : public PostProcessor {
 public:
     Outline() :
         m_width(1.0f) {
-        Material *material = Engine::loadResource<Material>(".embedded/outline.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
         if(material) {
             m_material = material->createInstance();
         }
