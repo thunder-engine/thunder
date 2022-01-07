@@ -34,46 +34,50 @@ class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
 public:
-    static ContentTree         *instance                    ();
+    static ContentTree *instance();
 
-    static void                 destroy                     ();
+    static void destroy();
 
-    int                         columnCount                 (const QModelIndex &) const;
+    bool isDir(const QModelIndex &index) const;
 
-    QVariant                    headerData                  (int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/ ) const;
+    QString path(const QModelIndex &index) const override;
 
-    QVariant                    data                        (const QModelIndex &index, int role) const;
+    bool reimportResource(const QModelIndex &index);
 
-    bool                        setData                     (const QModelIndex &index, const QVariant &value, int role);
+    bool removeResource(const QModelIndex &index) override;
 
-    Qt::ItemFlags               flags                       (const QModelIndex &index) const;
-
-    QString                     path                        (const QModelIndex &index) const;
-
-    bool                        removeResource              (const QModelIndex &index);
+    QModelIndex getContent() const;
 
 public slots:
-    void                        onRendered                  (const QString &uuid);
+    void onRendered(const QString &uuid);
 
-    void                        update                      (const QString &path);
+    void update(const QString &path);
 
-    void                        clean                       (QObject *parent);
+    void clean(QObject *parent);
 
 private:
-    ContentTree                 ();
-    ~ContentTree                () {}
+    ContentTree();
+    ~ContentTree() {}
 
-    static ContentTree         *m_pInstance;
-
-protected:
-    Qt::DropActions             supportedDropActions        () const;
-    QStringList                 mimeTypes                   () const;
-    QMimeData                  *mimeData                    (const QModelIndexList &indexes) const;
+    static ContentTree *m_pInstance;
 
 protected:
-    QObject                    *m_pContent;
+    Qt::DropActions supportedDropActions() const override;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
-    QImage                      m_Folder;
+    int columnCount(const QModelIndex &) const override;
+
+    QVariant data(const QModelIndex &index, int role) const override;
+
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+protected:
+    QObject *m_pContent;
+
+    QImage m_Folder;
 };
 
 #endif // CONTENTTREE_H

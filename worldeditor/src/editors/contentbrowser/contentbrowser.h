@@ -48,7 +48,7 @@ protected:
     void createContextMenus();
 
     ContentItemDeligate *m_pContentDeligate;
-    ContentListFilter *m_pContentProxy;
+    ContentTreeFilter *m_pListProxy;
     ContentTreeFilter *m_pTreeProxy;
 
     QMenu *m_pFilterMenu;

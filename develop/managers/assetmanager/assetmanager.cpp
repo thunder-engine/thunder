@@ -371,6 +371,12 @@ void AssetManager::renameResource(const QFileInfo &oldName, const QFileInfo &new
 
                     dumpBundle();
                 }
+
+                AssetConverterSettings *settings = fetchSettings(dst);
+                if(settings) {
+                    AssetConverter *converter = getConverter(settings);
+                    converter->renameAsset(settings, oldName.baseName(), newName.baseName());
+                }
             }
         }
 

@@ -238,6 +238,12 @@ AssetConverterSettings *AssetConverter::createSettings() const {
     return new AssetConverterSettings();
 }
 
+void AssetConverter::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
+    Q_UNUSED(settings)
+    Q_UNUSED(oldName)
+    Q_UNUSED(newName)
+}
+
 QString AssetConverter::templatePath() const {
     return QString();
 }

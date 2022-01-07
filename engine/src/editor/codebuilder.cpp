@@ -47,6 +47,29 @@ AssetConverterSettings *CodeBuilder::createSettings() const {
     return new BuilderSettings();
 }
 
+void CodeBuilder::renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) {
+    QFile file(settings->source());
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        QByteArray data = file.readAll();
+        file.close();
+
+        static const QStringList templates = {
+            "class %1",
+            "%1()",
+            "(%1"
+        };
+
+        foreach(auto it, templates) {
+            data.replace(it.arg(oldName), qPrintable(it.arg(newName)));
+        }
+
+        if(file.open(QFile::WriteOnly | QFile::Text)) {
+            file.write(data);
+            file.close();
+        }
+    }
+}
+
 void CodeBuilder::updateTemplate(const QString &src, const QString &dst, QStringMap &values) {
     QFile file(dst);
     if(!file.exists()) {

@@ -48,6 +48,8 @@ signals:
 private:
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
+    void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName) Q_DECL_OVERRIDE;
+
 protected:
     void updateTemplate(const QString &src, const QString &dst, QStringMap &values);
 

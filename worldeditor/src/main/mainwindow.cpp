@@ -41,7 +41,6 @@
 // Editors
 #include "editors/propertyedit/nextobject.h"
 #include "editors/componentbrowser/componentmodel.h"
-#include "editors/contentbrowser/contentlist.h"
 #include "editors/contentbrowser/contenttree.h"
 #include "editors/assetselect/assetlist.h"
 
@@ -81,7 +80,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->setupUi(this);
 
-    connect(m_Queue, &ImportQueue::rendered, ContentList::instance(), &ContentList::onRendered);
     connect(m_Queue, &ImportQueue::rendered, ContentTree::instance(), &ContentTree::onRendered);
     connect(m_Queue, &ImportQueue::rendered, AssetList::instance(), &AssetList::onRendered);
 
@@ -603,7 +601,7 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 
     if(editor) {
         m_CurrentDocument = editor;
-    } else if(ui->viewportWidget == toolWindow) {
+    } else {
         m_CurrentDocument = m_MainDocument;
     }
     ui->hierarchy->onSetRootObject(nullptr);

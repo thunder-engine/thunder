@@ -101,6 +101,8 @@ public:
     virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
     virtual AssetConverterSettings *createSettings() const = 0;
 
+    virtual void renameAsset(AssetConverterSettings *settings, const QString &oldName, const QString &newName);
+
     virtual QString templatePath() const;
     virtual QString iconPath() const;
 
