@@ -38,5 +38,5 @@ void main (void) {
 }
 ]]>
     </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+    <Pass type="PostProcess" blendMode="Additive" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
 </Shader>
