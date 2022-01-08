@@ -311,10 +311,6 @@ void ContentBrowser::onItemDelete() {
     }
 }
 
-void ContentBrowser::rescan() {
-    on_contentTree_clicked(QModelIndex());
-}
-
 void ContentBrowser::assetUpdated() {
     ui->contentList->update();
 }

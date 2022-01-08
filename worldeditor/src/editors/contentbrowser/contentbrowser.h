@@ -33,8 +33,6 @@ public:
     ContentBrowser(QWidget *parent);
     ~ContentBrowser();
 
-    void rescan();
-
 public slots:
     void assetUpdated();
 

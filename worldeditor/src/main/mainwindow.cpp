@@ -395,8 +395,6 @@ void MainWindow::onOpenProject(const QString &path) {
     PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
     PluginManager::instance()->initSystems();
 
-    ui->contentBrowser->rescan();
-
     for(QString &it : ProjectManager::instance()->platforms()) {
         QString name = it;
         name.replace(0, 1, name.at(0).toUpper());
