@@ -34,9 +34,9 @@ private:
 
     Ui::ConsoleManager *ui;
 
-    LogModel           *m_pItems;
+    LogModel *m_pItems;
 
-    QMenu              *m_pMenu;
+    QMenu *m_pMenu;
 };
 
 #endif // CONSOLEMANAGER_H

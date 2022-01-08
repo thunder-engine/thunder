@@ -70,7 +70,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QListView" name="consoleOutput"/>
+    <widget class="QListView" name="consoleOutput">
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ContiguousSelection</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

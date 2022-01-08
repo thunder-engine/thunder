@@ -5,17 +5,16 @@
 
 #include <QMenu>
 #include <QClipboard>
-#include <QProcess>
 
 #include "logmodel.h"
 #include "qlog.h"
 
-#include <editor/projectmanager.h>
 
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::ConsoleManager),
-        m_pItems(new LogModel()){
+        m_pItems(new LogModel()) {
+
     ui->setupUi(this);
     ui->consoleOutput->setModel(m_pItems);
     ui->toolButton->hide();
@@ -57,21 +56,17 @@ void ConsoleManager::onCopy() {
 }
 
 void ConsoleManager::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::LanguageChange) {
+    if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
 void ConsoleManager::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-
-    foreach(QString it, list) {
-        if(it.contains(" error ") || it.toLower().contains(" error:")) {
-            onLogRecord(Log::ERR, qPrintable(it));
-        } else if(it.contains(" warning ") || it.toLower().contains(" warning:")) {
-            onLogRecord(Log::WRN, qPrintable(it));
-        } else {
-            onLogRecord(Log::INF, qPrintable(it));
-        }
+    if(log.contains(" error ") || log.contains(" error:", Qt::CaseInsensitive)) {
+        onLogRecord(Log::ERR, qPrintable(log));
+    } else if(log.contains(" warning ") || log.contains(" warning:", Qt::CaseInsensitive)) {
+        onLogRecord(Log::WRN, qPrintable(log));
+    } else {
+        onLogRecord(Log::INF, qPrintable(log));
     }
 }

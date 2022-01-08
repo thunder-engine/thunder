@@ -58,12 +58,8 @@ int main(int argc, char *argv[]) {
     engine.init();
     Log::overrideHandler(new QLog());
 
-    PluginManager *plugin = PluginManager::instance();
-    plugin->init(&engine);
-    QApplication::connect(plugin, SIGNAL(updated()), ComponentModel::instance(), SLOT(update()));
-
-    AssetManager *asset = AssetManager::instance();
-    asset->init(&engine);
+    PluginManager::instance()->init(&engine);
+    AssetManager::instance()->init(&engine);
 
     MainWindow window(&engine);
 
