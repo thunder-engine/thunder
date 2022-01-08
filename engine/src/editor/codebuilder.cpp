@@ -161,6 +161,8 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     m_Values[gUnregisterComponents].clear();
     m_Values[gComponentNames].clear();
     m_Values[gRegisterModules].clear();
+    m_Values[gModuleIncludes].clear();
+    m_Values[gLibrariesList].clear();
     {
         QStringList includes;
         QMapIterator<QString, QString> it(classes);

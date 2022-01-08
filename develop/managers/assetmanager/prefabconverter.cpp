@@ -113,7 +113,7 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
         if(object) {
             QString type = QString::fromStdString(object->begin()->toString());
             QString module = PluginManager::instance()->getModuleName(type);
-            if(!module.isEmpty()) {
+            if(!module.isEmpty() && module != (QString("Module") + ProjectManager::instance()->projectName())) {
                 modules.insert(module);
             }
         }

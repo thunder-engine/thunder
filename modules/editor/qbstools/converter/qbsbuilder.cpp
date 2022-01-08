@@ -322,12 +322,12 @@ void QbsBuilder::parseLogs(const QString &log) {
     QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
 
     foreach(QString it, list) {
-        if(it.contains(" error ")) {
-            aError() << gLabel << qPrintable(it);
-        } else if(it.contains(" warning ")) {
-            aWarning() << gLabel << qPrintable(it);
+        if(log.contains(" error ") || log.contains(" error:", Qt::CaseInsensitive)) {
+            aError() << gLabel << qPrintable(log);
+        } else if(log.contains(" warning ") || log.contains(" warning:", Qt::CaseInsensitive)) {
+            aWarning() << gLabel << qPrintable(log);
         } else {
-            aInfo() << gLabel << qPrintable(it);
+            aInfo() << gLabel << qPrintable(log);
         }
     }
 }
