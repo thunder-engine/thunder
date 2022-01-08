@@ -192,8 +192,6 @@ void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo dest = m_PluginPath + QDir::separator() + info.fileName();
     QFileInfo temp = dest.absoluteFilePath() + ".tmp";
 
-
-
     // Rename old version of plugin
     if(dest.exists()) {
         QFile::remove(temp.absoluteFilePath());
@@ -202,7 +200,7 @@ void PluginManager::reloadPlugin(const QString &path) {
 
     Plugin *plugin = nullptr;
     for(auto &it : m_Plugins) {
-        if(it.path == path) {
+        if(it.path == dest.absoluteFilePath()) {
             plugin = &it;
         }
     }
@@ -283,7 +281,7 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
 }
 
 void PluginManager::initSystems() {
-    for(auto it : m_Systems) {
+    foreach(auto it, m_Systems) {
         if(it) {
             it->init();
         }
@@ -307,7 +305,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
 
 void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
     for(auto &type : list) {
-        for(Scene *scene : m_Scenes) {
+        foreach(Scene *scene, m_Scenes) {
             ObjectArray array;
 
             enumComponents(scene, type, array);

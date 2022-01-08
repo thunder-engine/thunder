@@ -63,8 +63,6 @@ public:
 signals:
     void pluginReloaded();
 
-    void updated();
-
 public slots:
     void reloadPlugin(const QString &path);
 
