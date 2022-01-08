@@ -12,12 +12,12 @@ public:
 
     }
 
-    // Will be called once at first run
+    // Use this to initialize behaviour
     void start() {
 
     }
 
-    // Will be called each frame
+    // Will be called each frame. Use this to write your game logic
     void update() {
 
     }

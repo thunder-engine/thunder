@@ -23,6 +23,8 @@ public:
 
     virtual QString path(const QModelIndex &index) const { Q_UNUSED(index); return QString(); }
 
+    QModelIndex getIndex(QObject *object, const QModelIndex &parent = QModelIndex()) const;
+
 protected:
     QObject *m_rootItem;
 

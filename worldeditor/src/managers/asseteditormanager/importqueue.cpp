@@ -9,7 +9,7 @@
 
 #include "assetmanager.h"
 
-#include "editors/contentbrowser/contentlist.h"
+#include "editors/contentbrowser/contenttree.h"
 #include "editors/assetselect/assetlist.h"
 
 #include "iconrender.h"
@@ -64,7 +64,6 @@ void ImportQueue::onImportFinished() {
     }
     m_UpdateQueue.clear();
 
-    ContentList::instance()->update();
     AssetList::instance()->update();
 
     hide();

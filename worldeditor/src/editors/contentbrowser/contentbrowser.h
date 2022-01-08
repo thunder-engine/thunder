@@ -33,8 +33,6 @@ public:
     ContentBrowser(QWidget *parent);
     ~ContentBrowser();
 
-    void rescan();
-
 public slots:
     void assetUpdated();
 
@@ -48,7 +46,7 @@ protected:
     void createContextMenus();
 
     ContentItemDeligate *m_pContentDeligate;
-    ContentListFilter *m_pContentProxy;
+    ContentTreeFilter *m_pListProxy;
     ContentTreeFilter *m_pTreeProxy;
 
     QMenu *m_pFilterMenu;

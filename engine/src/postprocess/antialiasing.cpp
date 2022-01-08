@@ -34,3 +34,4 @@ uint32_t AntiAliasing::layer() const {
 const char *AntiAliasing::name() const {
     return "AntiAliasing";
 }
+

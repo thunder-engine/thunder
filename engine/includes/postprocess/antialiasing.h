@@ -12,6 +12,7 @@ public:
     uint32_t layer() const override;
 
     const char *name() const override;
+
 };
 
 #endif // ANTIALIASING_H
