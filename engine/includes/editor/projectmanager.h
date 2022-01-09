@@ -27,18 +27,18 @@ public:
     void init(const QString &project, const QString &target = QString());
 
     QString projectName() const { return m_projectName; }
-    void setProjectName(const QString &value) { m_projectName = value; emit updated(); }
+    void setProjectName(const QString &value) { if(m_projectName != value) { m_projectName = value; emit updated(); } }
 
     QString projectId() const { return m_projectId; }
 
     QString projectCompany() const { return m_companyName; }
-    void setProjectCompany(const QString &value) { m_companyName = value; emit updated(); }
+    void setProjectCompany(const QString &value) { if(m_companyName != value) { m_companyName = value; emit updated(); } }
 
     QString projectVersion() const { return m_projectVersion; }
-    void setProjectVersion(const QString &value) { m_projectVersion = value; emit updated(); }
+    void setProjectVersion(const QString &value) { if(m_projectVersion != value) { m_projectVersion = value; emit updated(); } }
 
     Template firstMap() const { return Template(m_firstMap, MetaType::type<Map *>()); }
-    void setFirstMap(const Template &value) { m_firstMap = value.path; emit updated(); }
+    void setFirstMap(const Template &value) { if(m_firstMap != value.path) { m_firstMap = value.path; emit updated(); } }
 
     QString projectPath() const { return m_projectPath.absoluteFilePath(); }
     QString targetPath() const { return m_targetPath.filePath(); }
@@ -118,6 +118,7 @@ private:
 
     QSet<QString> m_modules;
     QSet<QString> m_autoModules;
+
 };
 
 #endif // PROJECTMANAGER_H

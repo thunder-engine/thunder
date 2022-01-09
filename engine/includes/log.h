@@ -12,10 +12,11 @@ class LogPrivate;
 class NEXT_LIBRARY_EXPORT Log {
 public:
     enum LogTypes {
-        ERR             = 0,
-        WRN             = 1,
-        INF             = 2,
-        DBG             = 3
+        CRT = 0,
+        ERR,
+        WRN,
+        INF,
+        DBG,
     };
 
 public:
@@ -53,6 +54,7 @@ private:
 
 };
 
+#define aCritical()Log(Log::CRT)
 #define aError()   Log(Log::ERR)
 #define aWarning() Log(Log::WRN)
 #define aInfo()    Log(Log::INF)

@@ -7,7 +7,6 @@
 #include <QMetaProperty>
 #include <QDir>
 #include <QDirIterator>
-#include <QDebug>
 
 namespace  {
     const char *gFilesList("{FilesList}");

@@ -5,10 +5,10 @@
 
 #include <QMenu>
 #include <QClipboard>
+#include <QMessageBox>
 
 #include "logmodel.h"
 #include "qlog.h"
-
 
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),
@@ -62,11 +62,17 @@ void ConsoleManager::changeEvent(QEvent *event) {
 }
 
 void ConsoleManager::parseLogs(const QString &log) {
-    if(log.contains(" error ") || log.contains(" error:", Qt::CaseInsensitive)) {
-        onLogRecord(Log::ERR, qPrintable(log));
-    } else if(log.contains(" warning ") || log.contains(" warning:", Qt::CaseInsensitive)) {
-        onLogRecord(Log::WRN, qPrintable(log));
-    } else {
-        onLogRecord(Log::INF, qPrintable(log));
+    QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+
+    foreach(QString it, list) {
+        if(it.contains(" critical ") || it.contains(" critical:", Qt::CaseInsensitive)) {
+            onLogRecord(Log::CRT, qPrintable(it));
+        } else if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {
+            onLogRecord(Log::ERR, qPrintable(it));
+        } else if(it.contains(" warning ") || it.contains(" warning:", Qt::CaseInsensitive)) {
+            onLogRecord(Log::WRN, qPrintable(it));
+        } else {
+            onLogRecord(Log::INF, qPrintable(it));
+        }
     }
 }

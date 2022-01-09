@@ -6,7 +6,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QFileDialog>
-#include <QDebug>
 
 #include <QMetaProperty>
 #include <QCoreApplication>
@@ -20,7 +19,6 @@
 #include <editor/pluginmanager.h>
 
 namespace {
-    const char *gCompany("Company");
     const char *gProject("ProjectId");
     const char *gProjects("Projects");
 };
@@ -160,27 +158,39 @@ void ProjectManager::saveSettings() {
     const QMetaObject *meta = metaObject();
 
     QJsonObject object;
+
+    bool success = true;
+    QStringList req;
     for(int i = 0; i < meta->propertyCount(); i++) {
         QMetaProperty property = meta->property(i);
         if(property.isUser(this)) {
             const char *name = property.name();
             QVariant value = property.read(this);
+
             if(value.canConvert<Template>()) {
-                object[name] = QJsonValue(value.value<Template>().path);
+                Template temp = value.value<Template>();
+                if(temp.path.isEmpty()) {
+                    success = false;
+                    req << QString(name).replace('_', ' ');
+                }
+                object[name] = QJsonValue(temp.path);
             } else {
-                object[name] = QJsonValue(value.toString());
+                QString str = value.toString();
+                if(str.isEmpty()) {
+                    success = false;
+                    req << QString(name).replace('_', ' ');
+                }
+                object[name] = str;
             }
         }
     }
+    if(!success) {
+        aCritical() << "The required settings was not specified:" << qPrintable(req.join(", ")) << "Please specify them in the Project Settings.";
+    }
 
     object[gProject] = QJsonValue(m_projectId);
-    if(!m_platforms.isEmpty()) {
-        object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
-    }
-
-    if(!m_modules.isEmpty()) {
-        object[gModules] = QJsonArray::fromStringList(m_modules.toList());
-    }
+    object[gPlatforms] = QJsonArray::fromStringList(m_platforms);
+    object[gModules] = QJsonArray::fromStringList(m_modules.toList());
 
     doc.setObject(object);
 
@@ -188,6 +198,8 @@ void ProjectManager::saveSettings() {
     if(file.open(QIODevice::WriteOnly)) {
         file.write(doc.toJson());
         file.close();
+    } else {
+        aCritical() << "Unable to save the Project Settings.";
     }
 }
 

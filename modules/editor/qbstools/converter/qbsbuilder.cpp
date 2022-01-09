@@ -5,8 +5,6 @@
 #include <QStandardPaths>
 #include <QMetaProperty>
 
-#include <QDebug>
-
 #include <log.h>
 #include <config.h>
 
@@ -28,13 +26,12 @@ namespace {
     const char *gResourceDir("${resourceDir}");
     const char *gAssetsPaths("${assetsPath}");
 
-    const char *gWinProfile = "Platforms/Windows/QbsProfile";
-    const char *gOsxProfile = "Platforms/OSX/QbsProfile";
-    const char *gLinProfile = "Platforms/Linux/QbsProfile";
+    const char *gQBSProfile = "QBS_Builder/Profile";
+    const char *gQBSPath = "QBS_Builder/QBS_Path";
 
-    const char *gAndroidJava("Platforms/Android/Java_Path");
-    const char *gAndroidSdk("Platforms/Android/SDK_Path");
-    const char *gAndroidNdk("Platforms/Android/NDK_Path");
+    const char *gAndroidJava("QBS_Builder/Android/Java_Path");
+    const char *gAndroidSdk("QBS_Builder/Android/SDK_Path");
+    const char *gAndroidNdk("QBS_Builder/Android/NDK_Path");
 
     const char *gLabel("[QbsBuilder]");
 
@@ -56,17 +53,19 @@ QbsBuilder::QbsBuilder() :
     m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
     SettingsManager *settings = SettingsManager::instance();
-    settings->setProperty(qPrintable(gAndroidJava), QVariant::fromValue(QFileInfo("/")));
-    settings->setProperty(qPrintable(gAndroidSdk), QVariant::fromValue(QFileInfo("/")));
-    settings->setProperty(qPrintable(gAndroidNdk), QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(qPrintable(gAndroidJava), QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(qPrintable(gAndroidSdk), QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(qPrintable(gAndroidNdk), QVariant::fromValue(QFileInfo("/")));
 
 #if defined(Q_OS_WIN)
-    settings->setProperty(qPrintable(gWinProfile), "");
+    settings->registerProperty(qPrintable(gQBSProfile), "MSVC2015-amd64");
 #elif defined(Q_OS_MAC)
-    settings->setProperty(qPrintable(gOsxProfile), "");
+    settings->registerProperty(qPrintable(gQBSProfile), "xcode-macosx-x86_64");
 #elif defined(Q_OS_UNIX)
-    settings->setProperty(qPrintable(gLinProfile), "");
+    settings->registerProperty(qPrintable(gQBSProfile), "clang");
 #endif
+
+    settings->registerProperty(qPrintable(gQBSPath), QVariant::fromValue(QFileInfo("/")));
 
     connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
     connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
@@ -79,7 +78,18 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         ProjectManager *mgr = ProjectManager::instance();
-        m_QBSPath = QFileInfo(mgr->sdkPath() + "/tools/qbs/bin/qbs");
+        m_QBSPath = SettingsManager::instance()->value(gQBSPath).toString();
+        if(m_QBSPath.absoluteFilePath().isEmpty()) {
+            QString suffix;
+    #if defined(Q_OS_WIN)
+            suffix += ".exe";
+    #endif
+            m_QBSPath = ProjectManager::instance()->sdkPath() + "/tools/qbs/bin/qbs" + suffix;
+        }
+
+        if(!m_QBSPath.exists()) {
+            aCritical() << "Can't find the QBS Tool by the path:" << qPrintable(m_QBSPath.absoluteFilePath());
+        }
 
         m_Project = mgr->generatedPath() + "/";
         m_pProcess->setWorkingDirectory(m_Project);
@@ -124,7 +134,7 @@ bool QbsBuilder::buildProject() {
             args << "--products" << product << "profile:" + profile;
             args << QString("config:") + gMode << "qbs.architecture:" + architecture;
 
-            qDebug() << gLabel << args.join(" ");
+            aDebug() << gLabel << qPrintable(args.join(" "));
 
             m_pProcess->start(m_QBSPath.absoluteFilePath(), args);
             if(!m_pProcess->waitForStarted()) {
@@ -149,23 +159,23 @@ void QbsBuilder::builderInit() {
             }
         }
         {
-            QString sdk = settings->property(qPrintable(gAndroidSdk)).value<QFileInfo>().filePath();
+            QString sdk = settings->value(qPrintable(gAndroidSdk)).value<QFileInfo>().filePath();
             if(!sdk.isEmpty()) {
                 QStringList args;
                 args << "setup-android" << m_Settings;
                 args << "--sdk-dir" << sdk;
-                args << "--ndk-dir" << settings->property(qPrintable(gAndroidNdk)).value<QFileInfo>().filePath();
+                args << "--ndk-dir" << settings->value(qPrintable(gAndroidNdk)).value<QFileInfo>().filePath();
                 args << "android";
 
                 QProcess qbs(this);
                 QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-                env.insert("JAVA_HOME", settings->property(qPrintable(gAndroidJava)).value<QFileInfo>().path());
+                env.insert("JAVA_HOME", settings->value(qPrintable(gAndroidJava)).value<QFileInfo>().path());
                 qbs.setProcessEnvironment(env);
                 qbs.setWorkingDirectory(m_Project);
                 qbs.start(m_QBSPath.absoluteFilePath(), args);
                 if(qbs.waitForStarted()) {
                     qbs.waitForFinished();
-                    qDebug() << gLabel << qbs.readAllStandardError().toStdString().c_str();
+                    aDebug() << gLabel << qbs.readAllStandardError().toStdString().c_str();
                 }
             }
         }
@@ -186,7 +196,7 @@ bool QbsBuilder::checkProfiles() {
     qbs.start(m_QBSPath.absoluteFilePath(), args);
     if(qbs.waitForStarted() && qbs.waitForFinished()) {
         QByteArray data = qbs.readAll();
-        qDebug() << gLabel << data.toStdString().c_str();
+        aDebug() << gLabel << data.toStdString().c_str();
         bool result = true;
         for(QString &it : profiles) {
             result &= data.contains(qPrintable(it));
@@ -227,22 +237,22 @@ QString QbsBuilder::getProfile(const QString &platform) const {
     QString profile;
     if(platform == "desktop") {
     #if defined(Q_OS_WIN)
-        profile = settings->property(qPrintable(gWinProfile)).toString();
+        profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "MSVC2015-amd64";
-            settings->setProperty(qPrintable(gWinProfile), profile);
+            settings->setProperty(gQBSProfile, profile);
         }
     #elif defined(Q_OS_MAC)
-        profile = settings->property(qPrintable(gOsxProfile)).toString();
+        profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "xcode-macosx-x86_64";
-            settings->setProperty(qPrintable(gOsxProfile), profile);
+            settings->setProperty(gQBSProfile, profile);
         }
     #elif defined(Q_OS_UNIX)
-        profile = settings->property(qPrintable(gLinProfile)).toString();
+        profile = settings->property(gQBSProfile).toString();
         if(profile.isEmpty()) {
             profile = "clang";
-            settings->setProperty(qPrintable(gLinProfile), profile);
+            settings->setProperty(gQBSProfile, profile);
         }
     #endif
 
@@ -322,12 +332,12 @@ void QbsBuilder::parseLogs(const QString &log) {
     QStringList list = log.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
 
     foreach(QString it, list) {
-        if(log.contains(" error ") || log.contains(" error:", Qt::CaseInsensitive)) {
-            aError() << gLabel << qPrintable(log);
-        } else if(log.contains(" warning ") || log.contains(" warning:", Qt::CaseInsensitive)) {
-            aWarning() << gLabel << qPrintable(log);
+        if(it.contains(" error ") || it.contains(" error:", Qt::CaseInsensitive)) {
+            aError() << gLabel << qPrintable(it);
+        } else if(it.contains(" warning ") || it.contains(" warning:", Qt::CaseInsensitive)) {
+            aWarning() << gLabel << qPrintable(it);
         } else {
-            aInfo() << gLabel << qPrintable(log);
+            aInfo() << gLabel << qPrintable(it);
         }
     }
 }

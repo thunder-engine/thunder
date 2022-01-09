@@ -14,10 +14,10 @@
 #include <QDirIterator>
 
 Builder::Builder() {
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished);
+    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
 
-    connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit);
-    connect(this, &Builder::moveDone, this, &Builder::package);
+    connect(this, &Builder::moveDone, this, &Builder::package, Qt::QueuedConnection);
+    connect(this, &Builder::packDone, QCoreApplication::instance(), &QCoreApplication::quit, Qt::QueuedConnection);
 }
 
 void Builder::setPlatform(const QString &platform) {

@@ -11,6 +11,7 @@ static const char *meta = \
 "   \"module\": \"Module${Project_Name}\","
 "   \"version\": \"${Project_Version}\","
 "   \"description\": \"${Project_Name}\","
+"   \"author\": \"${Company_Name}\","
 "   \"components\": ["
         //+{ComponentNames}
         //-{ComponentNames}

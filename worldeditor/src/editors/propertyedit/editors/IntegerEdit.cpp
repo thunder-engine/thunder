@@ -32,7 +32,9 @@ void IntegerEdit::setInterval(int min, int max) {
 
 void IntegerEdit::setValue(int32_t value) {
     ui->lineEdit->setText(QString::number(value));
+    ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value);
+    ui->horizontalSlider->blockSignals(false);
 }
 
 int32_t IntegerEdit::value() const {

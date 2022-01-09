@@ -34,8 +34,11 @@ void FloatEdit::setInterval(double min, double max) {
 }
 
 void FloatEdit::setValue(double value) {
-    ui->lineEdit->setText(QString::number(value, 'f', 4));
+    QString str(QString::number(value, 'f', 4));
+    ui->lineEdit->setText(str);
+    ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value * SCALE);
+    ui->horizontalSlider->blockSignals(false);
 }
 
 double FloatEdit::value() const {

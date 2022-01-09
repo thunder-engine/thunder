@@ -39,6 +39,21 @@ void SettingsManager::registerProperty(const char *name, const QVariant &value) 
     }
 }
 
+QVariant SettingsManager::value(const char *name, const QVariant &defaultValue) {
+    QVariant result  = property(name);
+    if(!result.isValid()) {
+        result = defaultValue;
+    }
+    return result;
+}
+
+void SettingsManager::setValue(const char *name, const QVariant &value) {
+    QVariant current = SettingsManager::value(name);
+    if(current != value) {
+        setProperty(name, value);
+    }
+}
+
 void SettingsManager::loadSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariantMap data = settings.value(SETTINGS).toMap();

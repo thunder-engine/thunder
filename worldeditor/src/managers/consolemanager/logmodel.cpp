@@ -15,16 +15,16 @@ void LogModel::addRecord(uint8_t type, const QString &str) {
     m_Records.append(str);
     m_Types.append(type);
 
-    layoutAboutToBeChanged();
-    layoutChanged();
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 void LogModel::clear() {
     m_Records.clear();
     m_Types.clear();
 
-    layoutAboutToBeChanged();
-    layoutChanged();
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 int LogModel::columnCount(const QModelIndex &parent) const {

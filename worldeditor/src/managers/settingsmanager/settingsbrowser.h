@@ -22,6 +22,10 @@ signals:
     void commited();
     void reverted();
 
+private slots:
+    void onButtonClick();
+    void onModelUpdated();
+
 private:
     void changeEvent(QEvent *event);
 

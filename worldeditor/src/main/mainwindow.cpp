@@ -76,7 +76,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     qmlRegisterType<ProjectModel>("com.frostspear.thunderengine", 1, 0, "ProjectModel");
 
-    SettingsManager::instance()->registerProperty("Language", QLocale());
+    SettingsManager::instance()->registerProperty("General/Language", QLocale());
 
     ui->setupUi(this);
 

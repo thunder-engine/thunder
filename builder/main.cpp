@@ -14,16 +14,30 @@
 #include "builder.h"
 
 #include <iostream>
-#include <ctime>
 
 #include <log.h>
 
+static bool succeed = true;
+
 class ConsoleLog : public LogHandler {
 public:
-    void setRecord(Log::LogTypes, const char *record) {
-        time_t result = time(nullptr);
-        // << asctime(localtime(&result))
-        std::cout << record << std::endl;
+    void setRecord(Log::LogTypes type, const char *record) {
+        string level;
+        switch(type) {
+            case Log::CRT: level = "[ critical ]"; break;
+            case Log::ERR: level = "[ error ]"; break;
+            case Log::WRN: level = "[ warning ]"; break;
+            case Log::INF: level = "[ info ]"; break;
+            case Log::DBG: level = "[ debug ]"; break;
+
+            default: break;
+        }
+
+        std::cout << level << record << std::endl;
+        if(type <= Log::ERR) {
+            succeed = false;
+            QCoreApplication::exit(1);
+        }
     }
 };
 
@@ -71,20 +85,19 @@ int main(int argc, char *argv[]) {
 
     PluginManager::instance()->init(&engine);
 
-    ProjectManager *mgr = ProjectManager::instance();
-    mgr->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
+    ProjectManager::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
-    PluginManager::instance()->rescanPath(ProjectManager::instance()->pluginsPath());
     AssetManager::instance()->init(&engine);
+    PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
 
     Builder builder;
 
-    PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
-    PluginManager::instance()->initSystems();
-
     builder.setPlatform(parser.value(platformOption));
+    if(!succeed) {
+        return 1;
+    }
 
-    int result  = a.exec();
+    int result = a.exec();
 
     AssetManager::destroy();
     PluginManager::destroy();
