@@ -89,6 +89,8 @@ int main(int argc, char *argv[]) {
 
     AssetManager::instance()->init(&engine);
     PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
+    /// \todo To be removed
+    PluginManager::instance()->initSystems();
 
     Builder builder;
 
