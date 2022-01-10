@@ -67,7 +67,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>Switches between 3D and 3D mode.</string>
+         <string>Switches between 2D and 3D modes.</string>
         </property>
         <property name="text">
          <string notr="true">2D</string>

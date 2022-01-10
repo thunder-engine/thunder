@@ -122,7 +122,7 @@ ContentTree::ContentTree() :
     m_pContent = new QObject(m_rootItem);
     m_pContent->setObjectName("Content");
 
-    m_Folder = QImage(":/Images/Folder.png");
+    m_Folder = QImage(":/Style/styles/dark/images/folder.png");
 
     connect(AssetManager::instance(), SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
 }
@@ -284,11 +284,7 @@ void ContentTree::update(const QString &path) {
             item->setObjectName(source);
             if(!info.isDir()) {
                 item->setProperty(qPrintable(gType), instance->assetTypeName(info));
-                QImage img = instance->icon(source);
-                if(!img.isNull()) {
-                    item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_Folder.width()) :
-                                                                                        img.scaledToHeight(m_Folder.height()));
-                }
+                item->setProperty(qPrintable(gIcon), instance->icon(source));
             } else {
                 item->setProperty(qPrintable(gIcon), m_Folder);
             }

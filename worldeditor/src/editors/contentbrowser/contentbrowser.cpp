@@ -59,10 +59,6 @@ private:
         }
     }
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-        return QStyledItemDelegate::sizeHint(option, index);
-    }
-
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
         return new QLineEdit(parent);
     }
@@ -83,9 +79,8 @@ private:
     }
 
     void setEditorData(QWidget *editor, const QModelIndex &index) const {
-        int32_t width = editor->width();
         QStyledItemDelegate::setEditorData(editor, index);
-        editor->setFixedWidth(width);
+        editor->setFixedWidth(editor->width());
     }
 
     float m_Scale;

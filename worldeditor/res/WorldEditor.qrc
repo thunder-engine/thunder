@@ -79,6 +79,7 @@
         <file>styles/dark/icons/prefab.png</file>
         <file>styles/dark/icons/select.png</file>
         <file>styles/dark/icons/select_disable.png</file>
+        <file>styles/dark/images/folder.png</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Emitters.qml</file>
