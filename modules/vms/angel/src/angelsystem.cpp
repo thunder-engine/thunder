@@ -138,7 +138,7 @@ void AngelSystem::reload() {
     unload();
     m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
 
-    if(Engine::file()->exists(TEMPALTE)) {
+    if(Engine::isResourceExist(TEMPALTE)) {
         if(m_pScript) {
             Engine::reloadResource(TEMPALTE);
         } else {
