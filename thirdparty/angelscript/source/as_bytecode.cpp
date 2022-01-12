@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2018 Andreas Jonsson
+   Copyright (c) 2003-2019 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -2156,7 +2156,9 @@ void asCByteCode::DebugOutput(const char *name, asCScriptFunction *func)
 	FILE *file = fopen(path.AddressOf(), "w");
 #endif
 
-#if !defined(AS_XENON) // XBox 360: When running in DVD Emu, no write is allowed
+#if !defined(AS_XENON) && !defined(__MINGW32__)
+	// XBox 360: When running in DVD Emu, no write is allowed
+	// MinGW: As _mkdir is broken, don't assert on file not created if the AS_DEBUG directory doesn't exist
 	asASSERT( file );
 #endif
 

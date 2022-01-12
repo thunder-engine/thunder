@@ -1,7 +1,7 @@
 ## AngelScript
 
 - Link: https://www.angelcode.com/angelscript/
-- Version: 2.33.0
+- Version: 2.35.1
 - License: zLib
 
 ## Assimp

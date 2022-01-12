@@ -415,8 +415,8 @@ void AngelSystem::bindMetaType(asIScriptEngine *engine, const MetaType::Table &t
                 string propertyName = property.name();
                 replace(propertyName.begin(), propertyName.end(), '/', '_');
                 int metaType = MetaType::type(type.name());
-                string get = name + ((metaType < MetaType::STRING) ? "" : ref) + " get_" + propertyName + "()";
-                string set = string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ")";
+                string get = name + ((metaType < MetaType::STRING) ? "" : ref) + " get_" + propertyName + "() property";
+                string set = string("void set_") + propertyName + "(" + name + ((metaType < MetaType::STRING) ? "" : (ref + ((ptr) ? "" : "in"))) + ") property";
 
                 asSFuncPtr ptr1(3); // 3 Means Method
                 property.table()->readmem(ptr1.ptr.dummy, sizeof(void *));
