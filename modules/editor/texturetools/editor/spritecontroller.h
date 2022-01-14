@@ -4,7 +4,7 @@
 #include <editor/undomanager.h>
 #include <editor/viewport/cameractrl.h>
 
-#include "textureconverter.h"
+#include "../converter/textureconverter.h"
 
 #define SCALE 100.0f
 

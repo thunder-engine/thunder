@@ -12,13 +12,9 @@
 #include <editor/pluginmanager.h>
 
 #include "editors/textedit/textedit.h"
-#include "editors/textureedit/textureedit.h"
-#include "editors/particleedit/particleedit.h"
 #include "editors/animationedit/animationedit.h"
 
 DocumentModel::DocumentModel() {
-    addEditor(new TextureEdit);
-    addEditor(new ParticleEdit);
     addEditor(new AnimationEdit);
     addEditor(new TextEdit);
 

@@ -25,11 +25,9 @@
 
 #include "animconverter.h"
 #include "textconverter.h"
-#include "textureconverter.h"
 #include "assimpconverter.h"
 #include "fontconverter.h"
 #include "prefabconverter.h"
-#include "effectconverter.h"
 #include "animationbuilder.h"
 #include "translatorconverter.h"
 #include "mapconverter.h"
@@ -122,11 +120,9 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new AnimConverter);
     registerConverter(new AnimationBuilder);
     registerConverter(new TextConverter);
-    registerConverter(new TextureConverter);
     registerConverter(new AssimpConverter);
     registerConverter(new FontConverter);
     registerConverter(new PrefabConverter);
-    registerConverter(new EffectConverter);
     registerConverter(new TranslatorConverter);
     registerConverter(new MapConverter);
 

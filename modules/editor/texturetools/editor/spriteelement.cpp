@@ -3,7 +3,7 @@
 
 #include <QPainter>
 
-#include "textureconverter.h"
+#include "../converter/textureconverter.h"
 
 SpriteElement::SpriteElement(QWidget *parent) :
         QWidget(parent),

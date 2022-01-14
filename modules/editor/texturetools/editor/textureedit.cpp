@@ -18,9 +18,9 @@
 
 #include <editor/pluginmanager.h>
 
-#include "textureconverter.h"
-#include "spritecontroller.h"
+#include "../converter/textureconverter.h"
 
+#include "spritecontroller.h"
 #include "spriteelement.h"
 
 TextureEdit::TextureEdit() :

@@ -2,7 +2,9 @@ Project {
     id: editor
 
     references: [
-        "qbstools",
-        "shadertools"
+        "particletools",
+		"qbstools",
+        "shadertools",
+        "texturetools"
     ]
 }

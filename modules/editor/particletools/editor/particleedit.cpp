@@ -6,7 +6,7 @@
 #include <QQmlEngine>
 #include <QMessageBox>
 
-#include "effectconverter.h"
+#include "../converter/effectconverter.h"
 
 #include <global.h>
 
@@ -45,7 +45,7 @@ ParticleEdit::ParticleEdit() :
     connect(m_builder, SIGNAL(effectUpdated()), this, SLOT(onUpdateTemplate()));
 
     ui->quickWidget->rootContext()->setContextProperty("effectModel", QVariant::fromValue(m_builder->children()));
-    ui->quickWidget->setSource(QUrl("qrc:/QML/qml/Emitters.qml"));
+    ui->quickWidget->setSource(QUrl("qrc:/qml/Emitters.qml"));
 
     QQuickItem *item = ui->quickWidget->rootObject();
     connect(item, SIGNAL(emitterSelected(QString)), this, SLOT(onEmitterSelected(QString)));

@@ -2,17 +2,16 @@
 #define EFFECTCONVERTER_H
 
 #include <QObject>
+#include <QColor>
+#include <QVariant>
 
 #include <editor/assetconverter.h>
 #include <resources/particleeffect.h>
 #include <resources/material.h>
 
-#include "assetmanager.h"
 #include <editor/projectmanager.h>
 
 #include <metatype.h>
-
-#include <QVariant>
 
 class EffectFunction : public QObject {
     Q_OBJECT
