@@ -78,7 +78,7 @@ bool QbsBuilder::buildProject() {
         aInfo() << gLabel << "Build started.";
 
         ProjectManager *mgr = ProjectManager::instance();
-        m_QBSPath = SettingsManager::instance()->value(gQBSPath).toString();
+        m_QBSPath = SettingsManager::instance()->value(gQBSPath).value<QFileInfo>();
         if(m_QBSPath.absoluteFilePath().isEmpty()) {
             QString suffix;
     #if defined(Q_OS_WIN)

@@ -37,9 +37,7 @@ void PathEdit::onFileDialog() {
         path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
                                             tr("Select File"),
                                             current,
-                                            tr("All Files (*.*)"));
-
-        path = QDir(current).relativeFilePath(path);
+                                            tr("All Files (*)"));
     }
 
     if(path.length() > 0) {
