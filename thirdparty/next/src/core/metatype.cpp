@@ -327,19 +327,19 @@ static ConverterMap s_Converters= {
 };
 
 static NameMap s_Names = {
-    {"bool",            MetaType::BOOLEAN},
-    {"int",             MetaType::INTEGER},
-    {"float",           MetaType::FLOAT},
-    {"string",          MetaType::STRING},
-    {"map",             MetaType::VARIANTMAP},
-    {"list",            MetaType::VARIANTLIST},
-    {"AByteArray",      MetaType::BYTEARRAY},
-    {"Vector2",         MetaType::VECTOR2},
-    {"Vector3",         MetaType::VECTOR3},
-    {"Vector4",         MetaType::VECTOR4},
-    {"Quaternion",      MetaType::QUATERNION},
-    {"Matrix3",         MetaType::MATRIX3},
-    {"Matrix4",         MetaType::MATRIX4}
+    {"bool",       MetaType::BOOLEAN},
+    {"int",        MetaType::INTEGER},
+    {"float",      MetaType::FLOAT},
+    {"string",     MetaType::STRING},
+    {"map",        MetaType::VARIANTMAP},
+    {"list",       MetaType::VARIANTLIST},
+    {"ByteArray",  MetaType::BYTEARRAY},
+    {"Vector2",    MetaType::VECTOR2},
+    {"Vector3",    MetaType::VECTOR3},
+    {"Vector4",    MetaType::VECTOR4},
+    {"Quaternion", MetaType::QUATERNION},
+    {"Matrix3",    MetaType::MATRIX3},
+    {"Matrix4",    MetaType::MATRIX4}
 };
 /*!
     \class MetaType
@@ -445,7 +445,7 @@ void *MetaType::create(const void *copy) const {
     if(copy) {
         m_pTable->clone(&copy, &where);
     } else {
-        where   = m_pTable->static_new();
+        where = m_pTable->static_new();
     }
     return where;
 }
@@ -530,7 +530,7 @@ uint32_t MetaType::type(const char *name) {
 uint32_t MetaType::type(const type_info &type) {
     PROFILE_FUNCTION();
     for(auto it : s_Types) {
-        if(it.second.index() == type_index(type) ) {
+        if(it.second.index && it.second.index() == type_index(type) ) {
             return it.first;
         }
     }
