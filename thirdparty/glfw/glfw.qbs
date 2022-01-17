@@ -12,6 +12,7 @@ Project {
         "src/vulkan.c",
         "src/window.c",
         "src/osmesa_context.c",
+        "src/egl_context.c"
 
         "src/internal.h",
         "include/GLFW/glfw3.h",
@@ -25,12 +26,10 @@ Project {
             sources.push("src/win32_thread.c"),
             sources.push("src/win32_window.c"),
             sources.push("src/wgl_context.c"),
-            sources.push("src/egl_context.c"),
 
             sources.push("src/win32_platform.h"),
             sources.push("src/win32_joystick.h"),
-            sources.push("src/wgl_context.h"),
-            sources.push("src/egl_context.h")
+            sources.push("src/wgl_context.h")
         } else if(qbs.targetOS.contains("darwin")) {
             sources.push("src/cocoa_init.m"),
             sources.push("src/cocoa_joystick.m"),
@@ -52,12 +51,10 @@ Project {
             sources.push("src/posix_thread.c"),
             sources.push("src/x11_window.c"),
             sources.push("src/glx_context.c"),
-            sources.push("src/egl_context.c"),
 
             sources.push("src/x11_platform.h"),
             sources.push("src/linux_joystick.h"),
-            sources.push("src/glx_context.h"),
-            sources.push("src/egl_context.h")
+            sources.push("src/glx_context.h")
         }
 
         return sources;
