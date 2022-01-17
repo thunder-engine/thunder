@@ -22,7 +22,7 @@ Project {
 
     DynamicLibrary {
         name: "iostools"
-        condition: iostools.desktop
+        condition: iostools.desktop && qbs.targetOS.contains("darwin")
         files: iostools.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
@@ -36,11 +36,6 @@ Project {
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
         cpp.cxxStandardLibrary: "libc++"
-
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            cpp.rpaths: "$ORIGIN/../../lib"
-        }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")

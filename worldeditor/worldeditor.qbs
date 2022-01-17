@@ -22,16 +22,11 @@ Project {
         "../engine/includes/resources",
         "../develop/managers/assetmanager",
         "../develop/models/include",
-        "../modules/media/includes",
         "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
-        "../thirdparty/glfw/inc",
-        "../thirdparty/zlib/src",
-        "../thirdparty/libogg/src",
-        "../thirdparty/libvorbis/src",
         "../thirdparty/syntaxhighlighting/src"
     ]
 
