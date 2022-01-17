@@ -12,7 +12,7 @@ Project {
         "src/vulkan.c",
         "src/window.c",
         "src/osmesa_context.c",
-        "src/egl_context.c"
+        "src/egl_context.c",
 
         "src/internal.h",
         "include/GLFW/glfw3.h",
