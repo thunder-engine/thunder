@@ -93,7 +93,7 @@ protected:
     const QString persistentAsset() const Q_DECL_OVERRIDE;
     const QString persistentUUID() const Q_DECL_OVERRIDE;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/AngelBehaviour.as"; }
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/AngelBehaviour.as"; }
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 

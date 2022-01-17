@@ -15,14 +15,8 @@ Project {
         "../common",
         "../engine/includes",
         "../engine/includes/resources",
-        "../develop/managers/codemanager",
-        "../develop/managers/projectmanager",
         "../develop/managers/assetmanager",
-        "../develop/managers/pluginmanager",
-        "../develop/managers/settingsmanager",
-        "../develop/managers/undomanager",
         "../develop/models/include",
-        //"../modules/renders/rendergl/includes",
         "../thirdparty/assimp/include",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
@@ -31,8 +25,7 @@ Project {
         "../thirdparty/physfs/inc",
         "../thirdparty/glfw/inc",
         "../thirdparty/zlib/src",
-        "../thirdparty/quazip/src",
-        "../thirdparty/ofbx/src"
+        "../thirdparty/quazip/src"
     ]
 
     QtApplication {

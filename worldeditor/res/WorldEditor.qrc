@@ -97,9 +97,7 @@
         <file alias="Default.ws">workspaces/Default.ws</file>
     </qresource>
     <qresource prefix="/Templates">
-        <file alias="Material.mtl">templates/Material.mtl</file>
         <file alias="Native_Behaviour.cpp">templates/Native_Behaviour.cpp</file>
-        <file alias="Particle_Effect.efx">templates/Particle_Effect.efx</file>
         <file alias="Animation.anim">templates/Animation.anim</file>
         <file alias="Animation_Controller.actl">templates/Animation_Controller.actl</file>
         <file alias="Prefab.fab">templates/Prefab.fab</file>

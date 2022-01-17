@@ -270,7 +270,7 @@ protected:
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Particle_Effect.efx"; }
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/ParticleEffect.efx"; }
 
 signals:
     void effectUpdated();

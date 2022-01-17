@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/Emitters.qml</file>
+		<file>templates/ParticleEffect.efx</file>
     </qresource>
 </RCC>

@@ -32,7 +32,7 @@ private:
 
     Actor *createActor(const QString &guid) const Q_DECL_OVERRIDE;
 
-    QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Material.mtl"; }
+    QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/Material.mtl"; }
 
     Variant compile(int32_t rhi, const string &buff, int stage) const;
 

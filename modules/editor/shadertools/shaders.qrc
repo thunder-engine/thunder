@@ -6,5 +6,6 @@
         <file>shaders/ShaderLayout.h</file>
         <file>shaders/Default.frag</file>
         <file>shaders/Default.vert</file>
+		<file>templates/Material.mtl</file>
     </qresource>
 </RCC>
