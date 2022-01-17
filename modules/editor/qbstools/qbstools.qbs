@@ -5,7 +5,7 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "converter/*.cpp",
-
+        "*.qrc",
         "*.h",
         "converter/**/*.h",
     ]

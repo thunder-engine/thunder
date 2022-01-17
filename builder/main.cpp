@@ -34,7 +34,7 @@ public:
         }
 
         std::cout << level << record << std::endl;
-        if(type < Log::ERR) {
+        if(type <= Log::ERR) {
             succeed = false;
             QCoreApplication::exit(1);
         }

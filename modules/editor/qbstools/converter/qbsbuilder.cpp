@@ -229,7 +229,7 @@ void QbsBuilder::generateProject() {
     m_Values[gResourceDir]  = info.absolutePath() + "/res";
     m_Values[gAssetsPaths]  = ProjectManager::instance()->importPath();
 
-    updateTemplate(mgr->templatePath() + "/project.qbs", m_Project + mgr->projectName() + ".qbs", m_Values);
+    updateTemplate(":/templates/project.qbs", m_Project + mgr->projectName() + ".qbs", m_Values);
 }
 
 QString QbsBuilder::getProfile(const QString &platform) const {
