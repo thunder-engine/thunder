@@ -30,7 +30,7 @@ Project {
             sources.push("src/win32_platform.h"),
             sources.push("src/win32_joystick.h"),
             sources.push("src/wgl_context.h"),
-            sources.push("src/egl_context.h"),
+            sources.push("src/egl_context.h")
         } else if(qbs.targetOS.contains("darwin")) {
             sources.push("src/cocoa_init.m"),
             sources.push("src/cocoa_joystick.m"),
