@@ -177,6 +177,8 @@ bool MobileAdaptor::init() {
 
 void MobileAdaptor::update() {
     s_inputString.clear();
+
+    PlatformAdaptor::update();
 }
 
 bool MobileAdaptor::start() {
@@ -197,7 +199,7 @@ bool MobileAdaptor::isValid() {
     return true;
 }
 
-string MobileAdaptor::locationLocalDir() {
+string MobileAdaptor::locationLocalDir() const {
 #ifdef GLFM_PLATFORM_ANDROID
     return glfmAndroidGetActivity()->internalDataPath;
 #else
@@ -205,15 +207,15 @@ string MobileAdaptor::locationLocalDir() {
 #endif
 }
 
-uint32_t MobileAdaptor::screenWidth() {
+uint32_t MobileAdaptor::screenWidth() const {
     return s_Screen.x;
 }
 
-uint32_t MobileAdaptor::screenHeight() {
+uint32_t MobileAdaptor::screenHeight() const {
     return s_Screen.y;
 }
 
-string MobileAdaptor::inputString() {
+string MobileAdaptor::inputString() const {
     return s_inputString;
 }
 
@@ -221,19 +223,19 @@ void MobileAdaptor::setKeyboardVisible(bool visible) {
     glfmSetKeyboardVisible(gDisplay, visible);
 }
 
-uint32_t MobileAdaptor::touchCount() {
+uint32_t MobileAdaptor::touchCount() const {
     return s_Touches.size();
 }
 
-uint32_t MobileAdaptor::touchState(uint32_t index) {
+uint32_t MobileAdaptor::touchState(uint32_t index) const {
     return s_Touches[index].phase;
 }
 
-Vector4 MobileAdaptor::touchPosition(uint32_t index) {
+Vector4 MobileAdaptor::touchPosition(uint32_t index) const {
     return s_Touches[index].pos;
 }
 
-uint32_t MobileAdaptor::joystickCount() {
+uint32_t MobileAdaptor::joystickCount() const {
 #ifdef GLFM_PLATFORM_TVOS
     return 1;
 #else
@@ -241,10 +243,10 @@ uint32_t MobileAdaptor::joystickCount() {
 #endif
 }
 
-uint32_t MobileAdaptor::joystickButtons(uint32_t) {
+uint32_t MobileAdaptor::joystickButtons(uint32_t) const {
     return s_Buttons;
 }
 
-Vector4 MobileAdaptor::joystickThumbs(uint32_t) {
+Vector4 MobileAdaptor::joystickThumbs(uint32_t) const {
     return s_Thumbs;
 }

@@ -12,39 +12,6 @@ const char *KeyCode("KeyCode");
 void registerInput(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("Input");
 
-    engine->RegisterEnum(MouseButton);
-    engine->RegisterEnumValue(MouseButton, "LEFT",      Input::LEFT);
-    engine->RegisterEnumValue(MouseButton, "RIGHT",     Input::RIGHT);
-    engine->RegisterEnumValue(MouseButton, "MIDDLE",    Input::MIDDLE);
-    engine->RegisterEnumValue(MouseButton, "BUTTON0",   Input::BUTTON0);
-    engine->RegisterEnumValue(MouseButton, "BUTTON1",   Input::BUTTON1);
-    engine->RegisterEnumValue(MouseButton, "BUTTON2",   Input::BUTTON2);
-    engine->RegisterEnumValue(MouseButton, "BUTTON3",   Input::BUTTON3);
-    engine->RegisterEnumValue(MouseButton, "BUTTON4",   Input::BUTTON4);
-
-    engine->RegisterEnum(JoystickButton);
-    engine->RegisterEnumValue(JoystickButton, "UP_ARROW",       Input::UP_ARROW);
-    engine->RegisterEnumValue(JoystickButton, "DOWN_ARROW",     Input::DOWN_ARROW);
-    engine->RegisterEnumValue(JoystickButton, "LEFT_ARROW",     Input::LEFT_ARROW);
-    engine->RegisterEnumValue(JoystickButton, "RIGHT_ARROW",    Input::RIGHT_ARROW);
-    engine->RegisterEnumValue(JoystickButton, "START",          Input::START);
-    engine->RegisterEnumValue(JoystickButton, "BACK",           Input::BACK);
-    engine->RegisterEnumValue(JoystickButton, "LEFT_THUMB",     Input::LEFT_THUMB);
-    engine->RegisterEnumValue(JoystickButton, "RIGHT_THUMB",    Input::RIGHT_THUMB);
-    engine->RegisterEnumValue(JoystickButton, "LEFT_SHOULDER",  Input::LEFT_SHOULDER);
-    engine->RegisterEnumValue(JoystickButton, "RIGHT_SHOULDER", Input::RIGHT_SHOULDER);
-    engine->RegisterEnumValue(JoystickButton, "A",              Input::A);
-    engine->RegisterEnumValue(JoystickButton, "B",              Input::B);
-    engine->RegisterEnumValue(JoystickButton, "X",              Input::X);
-    engine->RegisterEnumValue(JoystickButton, "Y",              Input::Y);
-
-    engine->RegisterEnum(TouchState);
-    engine->RegisterEnumValue(TouchState, "TOUCH_HOVER",        Input::TOUCH_HOVER);
-    engine->RegisterEnumValue(TouchState, "TOUCH_BEGAN",        Input::TOUCH_BEGAN);
-    engine->RegisterEnumValue(TouchState, "TOUCH_MOVED",        Input::TOUCH_MOVED);
-    engine->RegisterEnumValue(TouchState, "TOUCH_ENDED",        Input::TOUCH_ENDED);
-    engine->RegisterEnumValue(TouchState, "TOUCH_CANCELLED",    Input::TOUCH_CANCELLED);
-
     engine->RegisterEnum(KeyCode);
     engine->RegisterEnumValue(KeyCode, "KEY_UNKNOWN",           Input::KEY_UNKNOWN);
     engine->RegisterEnumValue(KeyCode, "KEY_SPACE",             Input::KEY_SPACE);
@@ -161,24 +128,54 @@ void registerInput(asIScriptEngine *engine) {
     engine->RegisterEnumValue(KeyCode, "KEY_LEFT_SHIFT",        Input::KEY_LEFT_SHIFT);
     engine->RegisterEnumValue(KeyCode, "KEY_LEFT_CONTROL",      Input::KEY_LEFT_CONTROL);
     engine->RegisterEnumValue(KeyCode, "KEY_LEFT_ALT",          Input::KEY_LEFT_ALT);
-    engine->RegisterEnumValue(KeyCode, "KEY_LEFT_SUPER",        Input::KEY_LEFT_SUPER);
+    engine->RegisterEnumValue(KeyCode, "KEY_LEFT_SUPER",          Input::KEY_LEFT_SUPER);
     engine->RegisterEnumValue(KeyCode, "KEY_RIGHT_SHIFT",       Input::KEY_RIGHT_SHIFT);
     engine->RegisterEnumValue(KeyCode, "KEY_RIGHT_CONTROL",     Input::KEY_RIGHT_CONTROL);
     engine->RegisterEnumValue(KeyCode, "KEY_RIGHT_ALT",         Input::KEY_RIGHT_ALT);
-    engine->RegisterEnumValue(KeyCode, "KEY_RIGHT_SUPER",       Input::KEY_RIGHT_SUPER);
+    engine->RegisterEnumValue(KeyCode, "KEY_RIGHT_SUPER",         Input::KEY_RIGHT_SUPER);
     engine->RegisterEnumValue(KeyCode, "KEY_MENU",              Input::KEY_MENU);
+
+    engine->RegisterEnumValue(KeyCode, "MOUSE_LEFT",      Input::MOUSE_LEFT);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_RIGHT",     Input::MOUSE_RIGHT);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_MIDDLE",    Input::MOUSE_MIDDLE);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_BUTTON0",   Input::MOUSE_BUTTON0);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_BUTTON1",   Input::MOUSE_BUTTON1);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_BUTTON2",   Input::MOUSE_BUTTON2);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_BUTTON3",   Input::MOUSE_BUTTON3);
+    engine->RegisterEnumValue(KeyCode, "MOUSE_BUTTON4",   Input::MOUSE_BUTTON4);
+
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_UP_ARROW",       Input::JOYSTICK_UP_ARROW);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_DOWN_ARROW",     Input::JOYSTICK_DOWN_ARROW);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_LEFT_ARROW",     Input::JOYSTICK_LEFT_ARROW);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_RIGHT_ARROW",    Input::JOYSTICK_RIGHT_ARROW);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_START",          Input::JOYSTICK_START);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_BACK",           Input::JOYSTICK_BACK);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_LEFT_THUMB",     Input::JOYSTICK_LEFT_THUMB);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_RIGHT_THUMB",    Input::JOYSTICK_RIGHT_THUMB);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_LEFT_SHOULDER",  Input::JOYSTICK_LEFT_SHOULDER);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_RIGHT_SHOULDER", Input::JOYSTICK_RIGHT_SHOULDER);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_A",              Input::JOYSTICK_A);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_B",              Input::JOYSTICK_B);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_X",              Input::JOYSTICK_X);
+    engine->RegisterEnumValue(KeyCode, "JOYSTICK_Y",              Input::JOYSTICK_Y);
+
+    engine->RegisterEnumValue(KeyCode, "TOUCH_HOVER",        Input::TOUCH_HOVER);
+    engine->RegisterEnumValue(KeyCode, "TOUCH_BEGAN",        Input::TOUCH_BEGAN);
+    engine->RegisterEnumValue(KeyCode, "TOUCH_MOVED",        Input::TOUCH_MOVED);
+    engine->RegisterEnumValue(KeyCode, "TOUCH_ENDED",        Input::TOUCH_ENDED);
+    engine->RegisterEnumValue(KeyCode, "TOUCH_CANCELLED",    Input::TOUCH_CANCELLED);
 
     engine->RegisterGlobalFunction("bool isKey(int)", asFUNCTION(Input::isKey), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isKeyDown(int)", asFUNCTION(Input::isKeyDown), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isKeyUp(int)", asFUNCTION(Input::isKeyUp), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("bool isMouseButton()", asFUNCTION(Input::isMouseButton), asCALL_CDECL);
+    engine->RegisterGlobalFunction("bool isMouseButton(int)", asFUNCTION(Input::isMouseButton), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isMouseButtonDown(int)", asFUNCTION(Input::isMouseButtonDown), asCALL_CDECL);
     engine->RegisterGlobalFunction("bool isMouseButtonUp(int)", asFUNCTION(Input::isMouseButtonUp), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("Vector4 mousePosition()", asFUNCTION(Input::mousePosition), asCALL_CDECL);
     engine->RegisterGlobalFunction("Vector4 mouseDelta()", asFUNCTION(Input::mouseDelta), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void setMousePosition(int, int)", asFUNCTION(Input::setMousePosition), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void mouseLockCursor(bool)", asFUNCTION(Input::mouseLockCursor), asCALL_CDECL);
 
     engine->RegisterGlobalFunction("int joystickCount()", asFUNCTION(Input::joystickCount), asCALL_CDECL);
     engine->RegisterGlobalFunction("int joystickButtons(int)", asFUNCTION(Input::joystickButtons), asCALL_CDECL);

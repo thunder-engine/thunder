@@ -31,6 +31,7 @@
 #include "animationbuilder.h"
 #include "translatorconverter.h"
 #include "mapconverter.h"
+#include "controlschemeconverter.h"
 
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
@@ -125,6 +126,7 @@ void AssetManager::init(Engine *engine) {
     registerConverter(new PrefabConverter);
     registerConverter(new TranslatorConverter);
     registerConverter(new MapConverter);
+    registerConverter(new ControlScehemeConverter);
 
     for(auto &it : PluginManager::instance()->extensions("converter")) {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
@@ -584,7 +586,7 @@ QImage AssetManager::icon(const QString &source) {
 
     if(!icon.load(m_pProjectManager->iconPath() + "/" + guid.c_str() + ".png")) {
         QString type = assetTypeName(source);
-        icon = m_Icons.value(type);
+        icon = m_Icons.value(type, m_Icons.value("Invalid"));
     }
     return icon;
 }

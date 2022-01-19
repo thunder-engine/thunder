@@ -1,0 +1,44 @@
+[
+        {
+                "Name": "Moves",
+                "Bindings": [
+                        {
+                                "Code": "w",
+                                "Negative": false
+                        },
+                        {
+                                "Code": "s",
+                                "Negative": true
+                        },
+                        {
+                                "Code": "up",
+                                "Negative": false
+                        },
+                        {
+                                "Code": "down",
+                                "Negative": true
+                        }
+                ]
+        },
+        {
+                "Name": "Strafes",
+                "Bindings": [
+                        {
+                                "Code": "d",
+                                "Negative": false
+                        },
+                        {
+                                "Code": "a",
+                                "Negative": true
+                        },
+                        {
+                                "Code": "right",
+                                "Negative": false
+                        },
+                        {
+                                "Code": "left",
+                                "Negative": true
+                        }
+                ]
+        }
+]

@@ -61,7 +61,7 @@ Project {
 
         Properties {
             condition: engine.desktop
-            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
         }
 
         Properties {
@@ -156,7 +156,7 @@ Project {
 
         Properties {
             condition: engine.desktop
-            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
         }
 
         Properties {
@@ -169,13 +169,13 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("ios")
-            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
             cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_IOS"]
         }
 
         Properties {
             condition: qbs.targetOS.contains("tvos")
-            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
             cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_TV"]
         }
 

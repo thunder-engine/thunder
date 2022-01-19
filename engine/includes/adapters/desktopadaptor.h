@@ -8,78 +8,80 @@ struct GLFWmonitor;
 
 class DesktopAdaptor : public PlatformAdaptor {
 public:
-    DesktopAdaptor              (Engine *engine);
+    DesktopAdaptor(Engine *engine);
 
-    virtual ~DesktopAdaptor     () {}
+    virtual ~DesktopAdaptor() {}
 
-    bool                        init                        ();
+    bool init() override;
 
-    void                        update                      ();
+    void update() override;
 
-    bool                        start                       ();
+    bool start() override;
 
-    void                        stop                        ();
+    void stop() override;
 
-    void                        destroy                     ();
+    void destroy() override;
 
-    bool                        isValid                     ();
+    bool isValid() override;
 
-    bool                        key                         (Input::KeyCode code);
-    bool                        keyPressed                  (Input::KeyCode code);
-    bool                        keyReleased                 (Input::KeyCode code);
+    bool key(Input::KeyCode code) const override;
+    bool keyPressed(Input::KeyCode code) const override;
+    bool keyReleased(Input::KeyCode code) const override;
 
-    string                      inputString                 ();
+    string inputString() const override;
 
-    Vector4                     mousePosition               ();
-    Vector4                     mouseDelta                  ();
-    bool                        mouseButton                 (Input::MouseButton button);
-    bool                        mousePressed                (Input::MouseButton button);
-    bool                        mouseReleased               (Input::MouseButton button);
+    Vector4 mousePosition() const override;
+    Vector4 mouseDelta() const override;
+    bool mouseButton(int button) const override;
+    bool mousePressed(int button) const override;
+    bool mouseReleased(int button) const override;
 
-    void                        setMousePosition            (int32_t x, int32_t y);
+    void mouseLockCursor(bool lock) override;
 
-    uint32_t                    screenWidth                 ();
-    uint32_t                    screenHeight                ();
+    uint32_t screenWidth() const override;
+    uint32_t screenHeight() const override;
 
-    uint32_t                    joystickCount               ();
-    uint32_t                    joystickButtons             (uint32_t index);
-    Vector4                     joystickThumbs              (uint32_t index);
-    Vector2                     joystickTriggers            (uint32_t index);
+    uint32_t joystickCount() const override;
+    uint32_t joystickButtons(int index) const override;
+    Vector4 joystickThumbs(int index) const override;
+    Vector2 joystickTriggers(int index) const override;
 
-    void                       *pluginLoad                  (const char *name);
+    void *pluginLoad(const char *name) override;
 
-    bool                        pluginUnload                (void *plugin);
+    bool pluginUnload(void *plugin) override;
 
-    void                       *pluginAddress               (void *plugin, const string &name);
+    void *pluginAddress(void *plugin, const string &name) override;
 
-    string                      locationLocalDir            ();
+    string locationLocalDir() const override;
 
-    void                        syncConfiguration           (VariantMap &map) const;
-
-protected:
-    static void                 keyCallback                 (GLFWwindow *, int, int, int, int);
-
-    static void                 charCallback                (GLFWwindow *, unsigned int);
-
-    static void                 buttonCallback              (GLFWwindow*,int, int, int);
-
-    static void                 scrollCallback              (GLFWwindow *, double, double yoffset);
-
-    static void                 cursorPositionCallback      (GLFWwindow *, double xpos, double ypos);
-
-    static void                 errorCallback               (int error, const char *description);
+    void syncConfiguration(VariantMap &map) const override;
 
 protected:
-    GLFWwindow                 *m_pWindow;
-    GLFWmonitor                *m_pMonitor;
+    static void keyCallback(GLFWwindow *, int, int, int, int);
 
-    static Vector4              s_MousePosition;
-    static Vector4              s_OldMousePosition;
+    static void charCallback(GLFWwindow *, unsigned int);
 
-    static int32_t              s_Width;
-    static int32_t              s_Height;
-    static bool                 s_Windowed;
-    static bool                 s_vSync;
+    static void buttonCallback(GLFWwindow*,int, int, int);
+
+    static void scrollCallback(GLFWwindow *, double, double yoffset);
+
+    static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos);
+
+    static void errorCallback(int error, const char *description);
+
+protected:
+    GLFWwindow *m_pWindow;
+    GLFWmonitor *m_pMonitor;
+
+    static Vector4 s_MousePosition;
+    static Vector4 s_OldMousePosition;
+
+    static int32_t s_Width;
+    static int32_t s_Height;
+    static bool s_Windowed;
+    static bool s_vSync;
+
+    static bool s_mouseLocked;
 };
 
 #endif // DESKTOPADAPTOR_H

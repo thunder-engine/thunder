@@ -1,5 +1,5 @@
-#ifndef SHADER
-#define SHADER
+#ifndef MATERIAL_H
+#define MATERIAL_H
 
 #include "engine.h"
 #include "texture.h"
@@ -182,5 +182,5 @@ protected:
     map<string, Texture *> m_textureOverride;
 };
 
-#endif // SHADER
+#endif // MATERIAL_H
 

@@ -27,6 +27,7 @@
 #include "components/armature.h"
 
 #include "components/animator.h"
+#include "components/playerinput.h"
 
 #ifdef THUNDER_MOBILE
     #include "adapters/mobileadaptor.h"
@@ -47,6 +48,8 @@
 #include "resources/pose.h"
 #include "resources/prefab.h"
 #include "resources/map.h"
+
+#include "resources/controlscheme.h"
 
 #include "systems/resourcesystem.h"
 
@@ -233,6 +236,9 @@ Engine::Engine(File *file, const char *path) :
     NativeBehaviour::registerClassFactory(this);
 
     Armature::registerClassFactory(this);
+
+    ControlScheme::registerClassFactory(p_ptr->m_pResourceSystem);
+    PlayerInput::registerClassFactory(this);
 
     EnginePrivate::m_Scene = Engine::objectCreate<Scene>("Scene");
 }

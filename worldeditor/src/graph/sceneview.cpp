@@ -5,6 +5,8 @@
 #include <QMouseEvent>
 #include <QVBoxLayout>
 #include <QDebug>
+#include <QGamepad>
+#include <QGamepadManager>
 
 #include <engine.h>
 #include <timer.h>
@@ -13,7 +15,6 @@
 #include <components/scene.h>
 #include <components/camera.h>
 
-#include <resources/pipeline.h>
 #include <systems/rendersystem.h>
 
 #include <editor/pluginmanager.h>
@@ -23,293 +24,324 @@
 #define PRESS 2
 #define REPEAT 3
 
+Input::KeyCode mapToInput(int32_t key) {
+    static const QMap<int32_t, uint32_t> map = {
+        { Qt::Key_Space, Input::KEY_SPACE },
+        { Qt::Key_Apostrophe, Input::KEY_APOSTROPHE },
+        { Qt::Key_Comma, Input::KEY_COMMA },
+        { Qt::Key_Minus, Input::KEY_MINUS },
+        { Qt::Key_Period, Input::KEY_PERIOD },
+        { Qt::Key_Slash, Input::KEY_SLASH },
+        { Qt::Key_0, Input::KEY_0 },
+        { Qt::Key_1, Input::KEY_1 },
+        { Qt::Key_2, Input::KEY_2 },
+        { Qt::Key_3, Input::KEY_3 },
+        { Qt::Key_4, Input::KEY_4 },
+        { Qt::Key_5, Input::KEY_5 },
+        { Qt::Key_6, Input::KEY_6 },
+        { Qt::Key_7, Input::KEY_7 },
+        { Qt::Key_8, Input::KEY_8 },
+        { Qt::Key_9, Input::KEY_9 },
+        { Qt::Key_Semicolon, Input::KEY_SEMICOLON },
+        { Qt::Key_Equal, Input::KEY_EQUAL },
+        { Qt::Key_A, Input::KEY_A },
+        { Qt::Key_B, Input::KEY_B },
+        { Qt::Key_C, Input::KEY_C },
+        { Qt::Key_D, Input::KEY_D },
+        { Qt::Key_E, Input::KEY_E },
+        { Qt::Key_F, Input::KEY_F },
+        { Qt::Key_G, Input::KEY_G },
+        { Qt::Key_H, Input::KEY_H },
+        { Qt::Key_I, Input::KEY_I },
+        { Qt::Key_J, Input::KEY_J },
+        { Qt::Key_K, Input::KEY_K },
+        { Qt::Key_L, Input::KEY_L },
+        { Qt::Key_M, Input::KEY_M },
+        { Qt::Key_N, Input::KEY_N },
+        { Qt::Key_O, Input::KEY_O },
+        { Qt::Key_P, Input::KEY_P },
+        { Qt::Key_Q, Input::KEY_Q },
+        { Qt::Key_R, Input::KEY_R },
+        { Qt::Key_S, Input::KEY_S },
+        { Qt::Key_T, Input::KEY_T },
+        { Qt::Key_U, Input::KEY_U },
+        { Qt::Key_V, Input::KEY_V },
+        { Qt::Key_W, Input::KEY_W },
+        { Qt::Key_X, Input::KEY_X },
+        { Qt::Key_Y, Input::KEY_Y },
+        { Qt::Key_Z, Input::KEY_Z },
+        { Qt::Key_BracketLeft, Input::KEY_LEFT_BRACKET },
+        { Qt::Key_Backslash, Input::KEY_BACKSLASH },
+        { Qt::Key_BracketRight, Input::KEY_RIGHT_BRACKET },
+        { Qt::Key_Agrave, Input::KEY_GRAVE_ACCENT },
+        //result = Input::KEY_WORLD_1
+        //result = Input::KEY_WORLD_2
+        { Qt::Key_Escape, Input::KEY_ESCAPE },
+        { Qt::Key_Enter, Input::KEY_ENTER },
+        { Qt::Key_Tab, Input::KEY_TAB },
+        { Qt::Key_Backspace, Input::KEY_BACKSPACE },
+        { Qt::Key_Insert, Input::KEY_INSERT },
+        { Qt::Key_Delete, Input::KEY_DELETE },
+        { Qt::Key_Right, Input::KEY_RIGHT },
+        { Qt::Key_Left, Input::KEY_LEFT },
+        { Qt::Key_Down, Input::KEY_DOWN },
+        { Qt::Key_Up, Input::KEY_UP },
+        { Qt::Key_PageUp, Input::KEY_PAGE_UP },
+        { Qt::Key_PageDown, Input::KEY_PAGE_DOWN },
+        { Qt::Key_Home, Input::KEY_HOME },
+        { Qt::Key_End, Input::KEY_END },
+        { Qt::Key_CapsLock, Input::KEY_CAPS_LOCK },
+        { Qt::Key_ScrollLock, Input::KEY_SCROLL_LOCK },
+        { Qt::Key_NumLock, Input::KEY_NUM_LOCK },
+        { Qt::Key_Print, Input::KEY_PRINT_SCREEN },
+        { Qt::Key_Pause, Input::KEY_PAUSE },
+        { Qt::Key_F1 , Input::KEY_F1 },
+        { Qt::Key_F2 , Input::KEY_F2 },
+        { Qt::Key_F3 , Input::KEY_F3 },
+        { Qt::Key_F4 , Input::KEY_F4 },
+        { Qt::Key_F5 , Input::KEY_F5 },
+        { Qt::Key_F6 , Input::KEY_F6 },
+        { Qt::Key_F7 , Input::KEY_F7 },
+        { Qt::Key_F8 , Input::KEY_F8 },
+        { Qt::Key_F9 , Input::KEY_F9 },
+        { Qt::Key_F10, Input::KEY_F10 },
+        { Qt::Key_F11, Input::KEY_F11 },
+        { Qt::Key_F12, Input::KEY_F12 },
+        { Qt::Key_F13, Input::KEY_F13 },
+        { Qt::Key_F14, Input::KEY_F14 },
+        { Qt::Key_F15, Input::KEY_F15 },
+        { Qt::Key_F16, Input::KEY_F16 },
+        { Qt::Key_F17, Input::KEY_F17 },
+        { Qt::Key_F18, Input::KEY_F18 },
+        { Qt::Key_F19, Input::KEY_F19 },
+        { Qt::Key_F20, Input::KEY_F20 },
+        { Qt::Key_F21, Input::KEY_F21 },
+        { Qt::Key_F22, Input::KEY_F22 },
+        { Qt::Key_F23, Input::KEY_F23 },
+        { Qt::Key_F24, Input::KEY_F24 },
+        { Qt::Key_F25, Input::KEY_F25 },
+        //result = Input::KEY_KP_0
+        //result = Input::KEY_KP_1
+        //result = Input::KEY_KP_2
+        //result = Input::KEY_KP_3
+        //result = Input::KEY_KP_4
+        //result = Input::KEY_KP_5
+        //result = Input::KEY_KP_6
+        //result = Input::KEY_KP_7
+        //result = Input::KEY_KP_8
+        //result = Input::KEY_KP_9
+        //result = Input::KEY_KP_DECIMAL
+        //result = Input::KEY_KP_DIVIDE
+        //result = Input::KEY_KP_MULTIPLY
+        //result = Input::KEY_KP_SUBTRACT
+        //result = Input::KEY_KP_ADD
+        //result = Input::KEY_KP_ENTER
+        //result = Input::KEY_KP_EQUAL
+        { Qt::Key_Shift, Input::KEY_LEFT_SHIFT },
+        { Qt::Key_Control, Input::KEY_LEFT_CONTROL },
+        { Qt::Key_Alt, Input::KEY_LEFT_ALT },
+        { Qt::Key_Super_L, Input::KEY_LEFT_SUPER },
+        //result = Input::KEY_RIGHT_SHIFT
+        //result = Input::KEY_RIGHT_CONTROL
+        //result = Input::KEY_RIGHT_ALT
+        { Qt::Key_Super_R, Input::KEY_RIGHT_SUPER },
+        { Qt::Key_Menu, Input::KEY_MENU },
+    };
+
+    return (Input::KeyCode)map.value(key, Input::KEY_UNKNOWN);
+}
+
 SceneView::SceneView(QWidget *parent) :
         QWidget(parent),
-        m_pEngine(nullptr) {
+        m_engine(nullptr),
+        m_gamepad(new QGamepad),
+        m_mouseLock(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
     setLayout(l);
 
+    connect(m_gamepad, &QGamepad::connectedChanged, this, &SceneView::onGamepadConnected);
+
     RenderSystem *render = PluginManager::instance()->render();
     if(render) {
-        m_pRHIWindow = render->createRhiWindow();
-        m_pRHIWindow->installEventFilter(this);
+        m_rhiWindow = render->createRhiWindow();
+        m_rhiWindow->installEventFilter(this);
 
-        connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
+        connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-        layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
+        layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
     } else {
         qCritical() << "Unable to create rendering surface.";
     }
 }
 
 SceneView::~SceneView() {
-    m_pEngine->setPlatformAdaptor(nullptr);
+    m_engine->setPlatformAdaptor(nullptr);
 }
 
 void SceneView::setEngine(Engine *engine) {
-    m_pEngine = engine;
-    m_pEngine->setPlatformAdaptor(this);
+    m_engine = engine;
+    m_engine->setPlatformAdaptor(this);
 }
 
 void SceneView::onDraw() {
-    if(m_pEngine) {
-        m_pEngine->update();
+    if(m_engine) {
+        m_engine->update();
     }
 }
 
-Input::KeyCode mapToInput(int32_t key) {
-    Input::KeyCode result = Input::KEY_UNKNOWN;
+void SceneView::onGamepadConnected(bool value) {
 
-    switch(key) {
-    case Qt::Key_Space: result = Input::KEY_SPACE; break;
-    case Qt::Key_Apostrophe: result = Input::KEY_APOSTROPHE; break;
-    case Qt::Key_Comma: result = Input::KEY_COMMA; break;
-    case Qt::Key_Minus: result = Input::KEY_MINUS; break;
-    case Qt::Key_Period: result = Input::KEY_PERIOD; break;
-    case Qt::Key_Slash: result = Input::KEY_SLASH; break;
-    case Qt::Key_0: result = Input::KEY_0; break;
-    case Qt::Key_1: result = Input::KEY_1; break;
-    case Qt::Key_2: result = Input::KEY_2; break;
-    case Qt::Key_3: result = Input::KEY_3; break;
-    case Qt::Key_4: result = Input::KEY_4; break;
-    case Qt::Key_5: result = Input::KEY_5; break;
-    case Qt::Key_6: result = Input::KEY_6; break;
-    case Qt::Key_7: result = Input::KEY_7; break;
-    case Qt::Key_8: result = Input::KEY_8; break;
-    case Qt::Key_9: result = Input::KEY_9; break;
-    case Qt::Key_Semicolon: result = Input::KEY_SEMICOLON; break;
-    case Qt::Key_Equal: result = Input::KEY_EQUAL; break;
-    case Qt::Key_A: result = Input::KEY_A; break;
-    case Qt::Key_B: result = Input::KEY_B; break;
-    case Qt::Key_C: result = Input::KEY_C; break;
-    case Qt::Key_D: result = Input::KEY_D; break;
-    case Qt::Key_E: result = Input::KEY_E; break;
-    case Qt::Key_F: result = Input::KEY_F; break;
-    case Qt::Key_G: result = Input::KEY_G; break;
-    case Qt::Key_H: result = Input::KEY_H; break;
-    case Qt::Key_I: result = Input::KEY_I; break;
-    case Qt::Key_J: result = Input::KEY_J; break;
-    case Qt::Key_K: result = Input::KEY_K; break;
-    case Qt::Key_L: result = Input::KEY_L; break;
-    case Qt::Key_M: result = Input::KEY_M; break;
-    case Qt::Key_N: result = Input::KEY_N; break;
-    case Qt::Key_O: result = Input::KEY_O; break;
-    case Qt::Key_P: result = Input::KEY_P; break;
-    case Qt::Key_Q: result = Input::KEY_Q; break;
-    case Qt::Key_R: result = Input::KEY_R; break;
-    case Qt::Key_S: result = Input::KEY_S; break;
-    case Qt::Key_T: result = Input::KEY_T; break;
-    case Qt::Key_U: result = Input::KEY_U; break;
-    case Qt::Key_V: result = Input::KEY_V; break;
-    case Qt::Key_W: result = Input::KEY_W; break;
-    case Qt::Key_X: result = Input::KEY_X; break;
-    case Qt::Key_Y: result = Input::KEY_Y; break;
-    case Qt::Key_Z: result = Input::KEY_Z; break;
-    case Qt::Key_BracketLeft: result = Input::KEY_LEFT_BRACKET; break;
-    case Qt::Key_Backslash: result = Input::KEY_BACKSLASH; break;
-    case Qt::Key_BracketRight: result = Input::KEY_RIGHT_BRACKET; break;
-    case Qt::Key_Agrave: result = Input::KEY_GRAVE_ACCENT; break;
-    //result = Input::KEY_WORLD_1; break;
-    //result = Input::KEY_WORLD_2; break;
-    case Qt::Key_Escape: result = Input::KEY_ESCAPE; break;
-    case Qt::Key_Enter: result = Input::KEY_ENTER; break;
-    case Qt::Key_Tab: result = Input::KEY_TAB; break;
-    case Qt::Key_Backspace: result = Input::KEY_BACKSPACE; break;
-    case Qt::Key_Insert: result = Input::KEY_INSERT; break;
-    case Qt::Key_Delete: result = Input::KEY_DELETE; break;
-    case Qt::Key_Right: result = Input::KEY_RIGHT; break;
-    case Qt::Key_Left: result = Input::KEY_LEFT; break;
-    case Qt::Key_Down: result = Input::KEY_DOWN; break;
-    case Qt::Key_Up: result = Input::KEY_UP; break;
-    case Qt::Key_PageUp: result = Input::KEY_PAGE_UP; break;
-    case Qt::Key_PageDown: result = Input::KEY_PAGE_DOWN; break;
-    case Qt::Key_Home: result = Input::KEY_HOME; break;
-    case Qt::Key_End: result = Input::KEY_END; break;
-    case Qt::Key_CapsLock: result = Input::KEY_CAPS_LOCK; break;
-    case Qt::Key_ScrollLock: result = Input::KEY_SCROLL_LOCK; break;
-    case Qt::Key_NumLock: result = Input::KEY_NUM_LOCK; break;
-    //result = Input::KEY_PRINT_SCREEN; break;
-    case Qt::Key_Pause: result = Input::KEY_PAUSE; break;
-    case Qt::Key_F1 : result = Input::KEY_F1; break;
-    case Qt::Key_F2 : result = Input::KEY_F2; break;
-    case Qt::Key_F3 : result = Input::KEY_F3; break;
-    case Qt::Key_F4 : result = Input::KEY_F4; break;
-    case Qt::Key_F5 : result = Input::KEY_F5; break;
-    case Qt::Key_F6 : result = Input::KEY_F6; break;
-    case Qt::Key_F7 : result = Input::KEY_F7; break;
-    case Qt::Key_F8 : result = Input::KEY_F8; break;
-    case Qt::Key_F9 : result = Input::KEY_F9; break;
-    case Qt::Key_F10: result = Input::KEY_F10; break;
-    case Qt::Key_F11: result = Input::KEY_F11; break;
-    case Qt::Key_F12: result = Input::KEY_F12; break;
-    case Qt::Key_F13: result = Input::KEY_F13; break;
-    case Qt::Key_F14: result = Input::KEY_F14; break;
-    case Qt::Key_F15: result = Input::KEY_F15; break;
-    case Qt::Key_F16: result = Input::KEY_F16; break;
-    case Qt::Key_F17: result = Input::KEY_F17; break;
-    case Qt::Key_F18: result = Input::KEY_F18; break;
-    case Qt::Key_F19: result = Input::KEY_F19; break;
-    case Qt::Key_F20: result = Input::KEY_F20; break;
-    case Qt::Key_F21: result = Input::KEY_F21; break;
-    case Qt::Key_F22: result = Input::KEY_F22; break;
-    case Qt::Key_F23: result = Input::KEY_F23; break;
-    case Qt::Key_F24: result = Input::KEY_F24; break;
-    case Qt::Key_F25: result = Input::KEY_F25; break;
-    //result = Input::KEY_KP_0; break;
-    //result = Input::KEY_KP_1; break;
-    //result = Input::KEY_KP_2; break;
-    //result = Input::KEY_KP_3; break;
-    //result = Input::KEY_KP_4; break;
-    //result = Input::KEY_KP_5; break;
-    //result = Input::KEY_KP_6; break;
-    //result = Input::KEY_KP_7; break;
-    //result = Input::KEY_KP_8; break;
-    //result = Input::KEY_KP_9; break;
-    //result = Input::KEY_KP_DECIMAL; break;
-    //result = Input::KEY_KP_DIVIDE; break;
-    //result = Input::KEY_KP_MULTIPLY; break;
-    //result = Input::KEY_KP_SUBTRACT; break;
-    //result = Input::KEY_KP_ADD; break;
-    //result = Input::KEY_KP_ENTER; break;
-    //result = Input::KEY_KP_EQUAL; break;
-    case Qt::Key_Shift: result = Input::KEY_LEFT_SHIFT; break;
-    case Qt::Key_Control: result = Input::KEY_LEFT_CONTROL; break;
-    case Qt::Key_Alt: result = Input::KEY_LEFT_ALT; break;
-    case Qt::Key_Super_L: result = Input::KEY_LEFT_SUPER; break;
-    //result = Input::KEY_RIGHT_SHIFT; break;
-    //result = Input::KEY_RIGHT_CONTROL; break;
-    //result = Input::KEY_RIGHT_ALT; break;
-    case Qt::Key_Super_R: result = Input::KEY_RIGHT_SUPER; break;
-    case Qt::Key_Menu: result = Input::KEY_MENU; break;
-    default: break;
-    }
-
-    return result;
 }
 
 void SceneView::update() {
     m_inputString.clear();
 
-    for(auto &it : m_Keys) {
-        switch(it.second) {
-            case RELEASE: it.second = NONE; break;
-            case PRESS: it.second = REPEAT; break;
+    for(auto &it : m_keys) {
+        switch(it) {
+            case RELEASE: it = NONE; break;
+            case PRESS: it = REPEAT; break;
             default: break;
         }
     }
 
-    for(auto &it : m_MouseButtons) {
-        switch(it.second) {
-            case RELEASE: it.second = NONE; break;
-            case PRESS: it.second = REPEAT; break;
+    for(auto &it : m_mouseButtons) {
+        switch(it) {
+            case RELEASE: it = NONE; break;
+            case PRESS: it = REPEAT; break;
             default: break;
         }
     }
+
+    if(m_mouseLock && Engine::isGameMode()) {
+        m_saved = QPoint(width() / 2, height() / 2);
+
+        QCursor::setPos(mapToGlobal(m_saved));
+        m_rhiWindow->setCursor(Qt::BlankCursor);
+    } else {
+        m_rhiWindow->setCursor(Qt::ArrowCursor);
+    }
+
+    PlatformAdaptor::update();
+
+    m_mouseDelta = Vector4();
 }
 
-bool SceneView::key(Input::KeyCode code) {
-    return (m_Keys[code] > RELEASE);
+bool SceneView::key(Input::KeyCode code) const {
+    return (m_keys.value(code) > RELEASE);
 }
 
-bool SceneView::keyPressed(Input::KeyCode code) {
-    return (m_Keys[code] == PRESS);
+bool SceneView::keyPressed(Input::KeyCode code) const {
+    return (m_keys.value(code) == PRESS);
 }
 
-bool SceneView::keyReleased(Input::KeyCode code) {
-    return (m_Keys[code] == RELEASE);
+bool SceneView::keyReleased(Input::KeyCode code) const {
+    return (m_keys.value(code) == RELEASE);
 }
 
-string SceneView::inputString() {
+string SceneView::inputString() const {
     return m_inputString;
 }
 
-bool SceneView::mouseButton(Input::MouseButton button) {
-    return (m_MouseButtons[button] > RELEASE);
+bool SceneView::mouseButton(int button) const {
+    return (m_mouseButtons.value(button | 0x10000000) > RELEASE);
 }
 
-bool SceneView::mousePressed(Input::MouseButton button) {
-    return (m_MouseButtons[button] == PRESS);
+bool SceneView::mousePressed(int button) const {
+    return (m_mouseButtons.value(button | 0x10000000) == PRESS);
 }
 
-bool SceneView::mouseReleased(Input::MouseButton button) {
-    return (m_MouseButtons[button] == RELEASE);
+bool SceneView::mouseReleased(int button) const {
+    return (m_mouseButtons.value(button | 0x10000000) == RELEASE);
 }
 
 bool SceneView::eventFilter(QObject *object, QEvent *event) {
     switch(event->type()) {
-    case QEvent::KeyPress: {
-        QKeyEvent *ev = static_cast<QKeyEvent *>(event);
-        m_Keys[mapToInput(ev->key())] = ev->isAutoRepeat() ? REPEAT : PRESS;
-        m_inputString += ev->text().toStdString();
-        return true;
-    }
-    case QEvent::KeyRelease: {
-        QKeyEvent *ev = static_cast<QKeyEvent *>(event);
-        m_Keys[mapToInput(ev->key())] = RELEASE;
-        return true;
-    }
-    case QEvent::MouseButtonPress: {
-        QMouseEvent *ev = static_cast<QMouseEvent *>(event);
-        Input::MouseButton btn = Input::LEFT;
-        switch(ev->button()) {
-            case Qt::LeftButton: btn = Input::LEFT; break;
-            case Qt::RightButton: btn = Input::RIGHT; break;
-            case Qt::MiddleButton: btn = Input::MIDDLE; break;
-            case Qt::ExtraButton1: btn = Input::BUTTON0; break;
-            case Qt::ExtraButton2: btn = Input::BUTTON1; break;
-            case Qt::ExtraButton3: btn = Input::BUTTON2; break;
-            case Qt::ExtraButton4: btn = Input::BUTTON3; break;
-            case Qt::ExtraButton5: btn = Input::BUTTON4; break;
-            default: break;
+        case QEvent::KeyPress: {
+            QKeyEvent *ev = static_cast<QKeyEvent *>(event);
+            Input::KeyCode code = mapToInput(ev->key());
+            m_keys[code] = ev->isAutoRepeat() ? REPEAT : PRESS;
+            m_inputString += ev->text().toStdString();
+            return true;
         }
-        m_MouseButtons[btn] = PRESS;
-        return true;
-    }
-    case QEvent::MouseButtonRelease: {
-        QMouseEvent *ev = static_cast<QMouseEvent *>(event);
-        Input::MouseButton btn = Input::LEFT;
-        switch(ev->button()) {
-            case Qt::LeftButton: btn = Input::LEFT; break;
-            case Qt::RightButton: btn = Input::RIGHT; break;
-            case Qt::MiddleButton: btn = Input::MIDDLE; break;
-            case Qt::ExtraButton1: btn = Input::BUTTON0; break;
-            case Qt::ExtraButton2: btn = Input::BUTTON1; break;
-            case Qt::ExtraButton3: btn = Input::BUTTON2; break;
-            case Qt::ExtraButton4: btn = Input::BUTTON3; break;
-            case Qt::ExtraButton5: btn = Input::BUTTON4; break;
-            default: break;
+        case QEvent::KeyRelease: {
+            QKeyEvent *ev = static_cast<QKeyEvent *>(event);
+            Input::KeyCode code = mapToInput(ev->key());
+            m_keys[code] = RELEASE;
+            return true;
         }
-        m_MouseButtons[btn] = RELEASE;
-        return true;
-    }
-    default: break;
+        case QEvent::MouseButtonPress: {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            Input::KeyCode btn = Input::MOUSE_LEFT;
+            switch(ev->button()) {
+                case Qt::LeftButton: btn = Input::MOUSE_LEFT; break;
+                case Qt::RightButton: btn = Input::MOUSE_RIGHT; break;
+                case Qt::MiddleButton: btn = Input::MOUSE_MIDDLE; break;
+                case Qt::ExtraButton1: btn = Input::MOUSE_BUTTON0; break;
+                case Qt::ExtraButton2: btn = Input::MOUSE_BUTTON1; break;
+                case Qt::ExtraButton3: btn = Input::MOUSE_BUTTON2; break;
+                case Qt::ExtraButton4: btn = Input::MOUSE_BUTTON3; break;
+                case Qt::ExtraButton5: btn = Input::MOUSE_BUTTON4; break;
+                default: break;
+            }
+            m_mouseButtons[btn] = PRESS;
+            return true;
+        }
+        case QEvent::MouseButtonRelease: {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            Input::KeyCode btn = Input::MOUSE_LEFT;
+            switch(ev->button()) {
+                case Qt::LeftButton: btn = Input::MOUSE_LEFT; break;
+                case Qt::RightButton: btn = Input::MOUSE_RIGHT; break;
+                case Qt::MiddleButton: btn = Input::MOUSE_MIDDLE; break;
+                case Qt::ExtraButton1: btn = Input::MOUSE_BUTTON0; break;
+                case Qt::ExtraButton2: btn = Input::MOUSE_BUTTON1; break;
+                case Qt::ExtraButton3: btn = Input::MOUSE_BUTTON2; break;
+                case Qt::ExtraButton4: btn = Input::MOUSE_BUTTON3; break;
+                case Qt::ExtraButton5: btn = Input::MOUSE_BUTTON4; break;
+                default: break;
+            }
+            m_mouseButtons[btn] = RELEASE;
+            return true;
+        }
+        case QEvent::MouseMove: {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(event);
+            QPoint pos = ev->pos();
+            QPoint delta = pos - m_saved;
+
+            m_mouseDelta = Vector4(delta.x(), delta.y(),
+                                  (float)delta.x() / (float)width(),
+                                  (float)delta.y() / (float)height());
+            if(!m_mouseLock) {
+                m_saved = pos;
+            }
+            return true;
+        }
+        default: break;
     }
     return QObject::eventFilter(object, event);
 }
 
-Vector4 SceneView::mousePosition() {
+Vector4 SceneView::mousePosition() const {
     QPoint p = mapFromGlobal(QCursor::pos());
-    return Vector4(p.x(),
-                   height() - p.y(),
+    return Vector4(p.x(), height() - p.y(),
                    static_cast<float>(p.x()) / width(),
                    static_cast<float>(height() - p.y()) / height());
 }
 
-Vector4 SceneView::mouseDelta() { return Vector4(); }
-
-void SceneView::setMousePosition(int32_t x, int32_t y) {
-    QCursor::setPos(mapToGlobal(QPoint(x, y)));
+Vector4 SceneView::mouseDelta() const {
+    return m_mouseDelta;
 }
 
-uint32_t SceneView::screenWidth() { return width(); }
-uint32_t SceneView::screenHeight() { return height(); }
-uint32_t SceneView::joystickCount() { return 0; }
-uint32_t SceneView::joystickButtons(uint32_t) { return 0; }
-Vector4 SceneView::joystickThumbs(uint32_t) { return Vector4(); }
-Vector2 SceneView::joystickTriggers(uint32_t) { return Vector2(); }
-void *SceneView::pluginLoad(const char *) { return nullptr; }
-bool SceneView::pluginUnload(void *) { return false; }
-void *SceneView::pluginAddress(void *, const string &) { return nullptr; }
-string SceneView::locationLocalDir() { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
+void SceneView::mouseLockCursor(bool lock) {
+    m_mouseLock = lock;
+}
+
+uint32_t SceneView::screenWidth() const { return width(); }
+uint32_t SceneView::screenHeight() const { return height(); }
+uint32_t SceneView::joystickCount() const { return QGamepadManager::instance()->connectedGamepads().size(); }
+uint32_t SceneView::joystickButtons(int) const { return 0; }
+Vector4 SceneView::joystickThumbs(int) const { return Vector4(); }
+Vector2 SceneView::joystickTriggers(int) const { return Vector2(); }
+string SceneView::locationLocalDir() const { return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString(); }
