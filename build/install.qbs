@@ -21,8 +21,20 @@ Product {
         return ".so"
     }
 
-    property string QTPLUGINS_PATH: install.PLATFORM_PATH + "/" + install.bundle + "/plugins"
-    property string QML_PATH: install.PLATFORM_PATH + "/" + install.bundle + "/qml"
+    property string QTPLUGINS_PATH: {
+        if(qbs.targetOS.contains("darwin")) {
+            return install.BIN_PATH + "/" + install.bundle + "/../PlugIns"
+        }
+
+        return install.PLATFORM_PATH + "/" + install.bundle + "/plugins"
+    }
+    property string QML_PATH: {
+        if(qbs.targetOS.contains("darwin")) {
+            return install.BIN_PATH + "/" + install.bundle + "/../Resources/qml"
+        }
+
+        return install.PLATFORM_PATH + "/" + install.bundle + "/qml"
+    }
 
     property var pluginFiles: {
         var files = []
@@ -100,17 +112,18 @@ Product {
                 list.push("**/QtWidgets.framework/**")
                 list.push("**/QtScript.framework/**")
                 list.push("**/QtXml.framework/**")
-                list.push("**/Qt5XmlPatterns.framework/**")
+                list.push("**/QtXmlPatterns.framework/**")
                 list.push("**/QtNetwork.framework/**")
                 list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtQml.framework/**")
                 list.push("**/QtQuick.framework/**")
-                list.push("**/Qt5QuickTemplates2.framework/**")
-                list.push("**/Qt5QuickControls2.framework/**")
+                list.push("**/QtQuickTemplates2.framework/**")
+                list.push("**/QtQuickControls2.framework/**")
                 list.push("**/QtQuickWidgets.framework/**")
-                list.push("**/Qt5Svg.framework/**")
+                list.push("**/QtSvg.framework/**")
                 list.push("**/QtPrintSupport.framework/**")
                 list.push("**/QtDBus.framework/**")
+                list.push("**/QtTest.framework/**")
             }
             return list
         }
@@ -167,10 +180,21 @@ Product {
 
     Group {
         name: "Qt Config"
-        condition: (qbs.targetOS.contains("windows") || qbs.targetOS.contains("linux"))
-        files: install.RESOURCE_ROOT + "/qt.conf"
+        files: {
+            if(qbs.targetOS.contains("darwin")) {
+                return "darwin/qt.conf"
+            }
+
+            return "windows/qt.conf"
+        }
         qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
+        qbs.installDir: {
+            if(qbs.targetOS.contains("darwin")) {
+                return install.BIN_PATH + "/" + install.bundle + "/../Resources"
+            }
+
+            return install.BIN_PATH + "/" + install.bundle
+        }
         qbs.installPrefix: install.PREFIX
     }
 
