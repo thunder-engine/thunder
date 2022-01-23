@@ -23,12 +23,17 @@ Viewport::Viewport(QWidget *parent) :
     l->setContentsMargins(0, 0, 0, 0);
     setLayout(l);
 
-    m_pRHIWindow = PluginManager::instance()->render()->createRhiWindow();
-    m_pRHIWindow->installEventFilter(this);
+    RenderSystem *render = PluginManager::instance()->render();
+    if(render) {
+        m_pRHIWindow = PluginManager::instance()->render()->createRhiWindow();
+        if(m_pRHIWindow) {
+            m_pRHIWindow->installEventFilter(this);
 
-    connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
+            connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-    layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
+            layout()->addWidget(QWidget::createWindowContainer(m_pRHIWindow));
+        }
+    }
 
     setAcceptDrops(true);
     setAutoFillBackground(false);
@@ -46,11 +51,15 @@ void Viewport::setScene(Scene *scene) {
 }
 
 void Viewport::onCursorSet(const QCursor &cursor) {
-    m_pRHIWindow->setCursor(cursor);
+    if(m_pRHIWindow) {
+        m_pRHIWindow->setCursor(cursor);
+    }
 }
 
 void Viewport::onCursorUnset() {
-    m_pRHIWindow->unsetCursor();
+    if(m_pRHIWindow) {
+        m_pRHIWindow->unsetCursor();
+    }
 }
 
 void Viewport::onDraw() {
