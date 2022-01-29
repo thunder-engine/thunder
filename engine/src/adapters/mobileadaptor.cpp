@@ -121,22 +121,22 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
 bool onKey(GLFMDisplay *, GLFMKey keyCode, GLFMKeyAction, int) {
     switch(keyCode) {
         case GLFMKeyNavSelect: {
-            MobileAdaptor::s_Buttons ^= Input::A;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_A;
         } return true;
         case GLFMKeyPlayPause: {
-            MobileAdaptor::s_Buttons ^= Input::X;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_X;
         } return true;
         case GLFMKeyLeft: {
-            MobileAdaptor::s_Buttons ^= Input::LEFT_ARROW;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_LEFT_ARROW;
         } return true;
         case GLFMKeyUp: {
-            MobileAdaptor::s_Buttons ^= Input::UP_ARROW;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_UP_ARROW;
         } return true;
         case GLFMKeyRight: {
-            MobileAdaptor::s_Buttons ^= Input::RIGHT_ARROW;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_RIGHT_ARROW;
         } return true;
         case GLFMKeyDown: {
-            MobileAdaptor::s_Buttons ^= Input::DOWN_ARROW;
+            MobileAdaptor::s_Buttons ^= Input::JOYSTICK_DOWN_ARROW;
         } return true;
         default: break;
     }
