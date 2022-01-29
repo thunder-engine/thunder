@@ -9,33 +9,6 @@ class PlatformAdaptor;
 
 class NEXT_LIBRARY_EXPORT Input {
 public:
-    enum MouseButton {
-        LEFT                = 0,
-        RIGHT,
-        MIDDLE,
-        BUTTON0,
-        BUTTON1,
-        BUTTON2,
-        BUTTON3,
-        BUTTON4
-    };
-
-    enum JoystickButton {
-        UP_ARROW            = 0x0001,
-        DOWN_ARROW          = 0x0002,
-        LEFT_ARROW          = 0x0004,
-        RIGHT_ARROW         = 0x0008,
-        START               = 0x0010,
-        BACK                = 0x0020,
-        LEFT_THUMB          = 0x0040,
-        RIGHT_THUMB         = 0x0080,
-        LEFT_SHOULDER       = 0x0100,
-        RIGHT_SHOULDER      = 0x0200,
-        A                   = 0x1000,
-        B                   = 0x2000,
-        X                   = 0x4000,
-        Y                   = 0x8000
-    };
     enum KeyCode {
         KEY_UNKNOWN         = -1,
         KEY_SPACE           = 32,
@@ -157,8 +130,36 @@ public:
         KEY_RIGHT_CONTROL   = 345,
         KEY_RIGHT_ALT       = 346,
         KEY_RIGHT_SUPER     = 347,
-        KEY_MENU            = 348
+        KEY_MENU            = 348,
+
+        MOUSE_LEFT          = 0x10000000,
+        MOUSE_RIGHT,
+        MOUSE_MIDDLE,
+        MOUSE_BUTTON0,
+        MOUSE_BUTTON1,
+        MOUSE_BUTTON2,
+        MOUSE_BUTTON3,
+        MOUSE_BUTTON4,
+
+        MOUSE_DELTA_X       = 0x10100000,
+        MOUSE_DELTA_Y,
+
+        JOYSTICK_UP_ARROW       = 0x20000001,
+        JOYSTICK_DOWN_ARROW     = 0x20000002,
+        JOYSTICK_LEFT_ARROW     = 0x20000004,
+        JOYSTICK_RIGHT_ARROW    = 0x20000008,
+        JOYSTICK_START          = 0x20000010,
+        JOYSTICK_BACK           = 0x20000020,
+        JOYSTICK_LEFT_THUMB     = 0x20000040,
+        JOYSTICK_RIGHT_THUMB    = 0x20000080,
+        JOYSTICK_LEFT_SHOULDER  = 0x20000100,
+        JOYSTICK_RIGHT_SHOULDER = 0x20000200,
+        JOYSTICK_A              = 0x20001000,
+        JOYSTICK_B              = 0x20002000,
+        JOYSTICK_X              = 0x20004000,
+        JOYSTICK_Y              = 0x20008000,
     };
+
     enum TouchState {
         TOUCH_HOVER         = 0,
         TOUCH_BEGAN,
@@ -168,31 +169,35 @@ public:
     };
 
 public:
-    static void                 init                        (PlatformAdaptor *platform);
+    static void init(PlatformAdaptor *platform);
 
-    static bool                 isKey                       (KeyCode code);
-    static bool                 isKeyDown                   (KeyCode code);
-    static bool                 isKeyUp                     (KeyCode code);
+    static bool isKey(KeyCode code);
+    static bool isKeyDown(KeyCode code);
+    static bool isKeyUp(KeyCode code);
 
-    static string               inputString                 ();
-    static void                 setKeyboardVisible          (bool visible);
+    static string inputString();
+    static void setKeyboardVisible(bool visible);
 
-    static bool                 isMouseButton               (MouseButton button);
-    static bool                 isMouseButtonDown           (MouseButton button);
-    static bool                 isMouseButtonUp             (MouseButton button);
+    static bool isMouseButton(int button);
+    static bool isMouseButtonDown(int button);
+    static bool isMouseButtonUp(int button);
 
-    static Vector4              mousePosition               ();
-    static Vector4              mouseDelta                  ();
-    static void                 setMousePosition            (int32_t x, int32_t y);
+    static Vector4 mousePosition();
+    static Vector4 mouseDelta();
 
-    static uint32_t             joystickCount               ();
-    static uint32_t             joystickButtons             (uint32_t index);
-    static Vector4              joystickThumbs              (uint32_t index);
-    static Vector2              joystickTriggers            (uint32_t index);
+    static void mouseLockCursor(bool lock);
 
-    static uint32_t             touchCount                  ();
-    static uint32_t             touchState                  (uint32_t index);
-    static Vector4              touchPosition               (uint32_t index);
+    static uint32_t joystickCount();
+    static uint32_t joystickButtons(uint32_t index);
+    static Vector4 joystickThumbs(uint32_t index);
+    static Vector2 joystickTriggers(uint32_t index);
+
+    static uint32_t touchCount();
+    static uint32_t touchState(uint32_t index);
+    static Vector4 touchPosition(uint32_t index);
+
+    static uint32_t getCode(const string &name);
+
 };
 
 #endif // INPUT_H

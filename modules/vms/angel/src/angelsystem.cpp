@@ -116,14 +116,16 @@ void AngelSystem::update(Scene *scene) {
         for(auto it : m_ObjectList) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
-            if(component->isEnabled() && component->actor() && component->actor()->scene() == scene) {
-                if(!component->isStarted()) {
-                    execute(object, component->scriptStart());
-                    component->setStarted(true);
+            if(object) {
+                if(component->isEnabled() && component->actor() && component->actor()->scene() == scene) {
+                    if(!component->isStarted()) {
+                        execute(object, component->scriptStart());
+                        component->setStarted(true);
+                    }
+                    execute(object, component->scriptUpdate());
                 }
-                execute(object, component->scriptUpdate());
+                object->Release();
             }
-            object->Release();
         }
     }
 }

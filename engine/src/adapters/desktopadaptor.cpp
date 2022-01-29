@@ -41,6 +41,7 @@ int32_t DesktopAdaptor::s_Width = 0;
 int32_t DesktopAdaptor::s_Height = 0;
 bool DesktopAdaptor::s_Windowed = false;
 bool DesktopAdaptor::s_vSync = false;
+bool DesktopAdaptor::s_mouseLocked = false;
 
 static Engine *g_pEngine = nullptr;
 static File *g_pFile = nullptr;
@@ -112,6 +113,12 @@ void DesktopAdaptor::update() {
             case PRESS: it.second = REPEAT; break;
             default: break;
         }
+    }
+
+    PlatformAdaptor::update();
+
+    if(s_mouseLocked) {
+        glfwSetCursorPos(m_pWindow, screenWidth() / 2 , screenHeight() / 2);
     }
 
     glfwPollEvents();
@@ -226,55 +233,56 @@ bool DesktopAdaptor::isValid() {
     return !glfwWindowShouldClose(m_pWindow);
 }
 
-bool DesktopAdaptor::key(Input::KeyCode code) {
+bool DesktopAdaptor::key(Input::KeyCode code) const {
     return (glfwGetKey(m_pWindow, code) == GLFW_PRESS);
 }
 
-bool DesktopAdaptor::keyPressed(Input::KeyCode code) {
+bool DesktopAdaptor::keyPressed(Input::KeyCode code) const {
     return (s_Keys[code] == PRESS);
 }
 
-bool DesktopAdaptor::keyReleased(Input::KeyCode code) {
+bool DesktopAdaptor::keyReleased(Input::KeyCode code) const {
     return (s_Keys[code] == RELEASE);
 }
 
-string DesktopAdaptor::inputString() {
+string DesktopAdaptor::inputString() const {
     return s_inputString;
 }
 
-Vector4 DesktopAdaptor::mousePosition() {
+Vector4 DesktopAdaptor::mousePosition() const {
     return s_MousePosition;
 }
 
-Vector4 DesktopAdaptor::mouseDelta() {
+Vector4 DesktopAdaptor::mouseDelta() const {
     return s_MousePosition - s_OldMousePosition;
 }
 
-bool DesktopAdaptor::mouseButton(Input::MouseButton button) {
-    return (glfwGetMouseButton(m_pWindow, button) == GLFW_PRESS);
+bool DesktopAdaptor::mouseButton(int button) const {
+    return (glfwGetMouseButton(m_pWindow, button | 0x10000000) == GLFW_PRESS);
 }
 
-bool DesktopAdaptor::mousePressed(Input::MouseButton button) {
-    return (s_MouseButtons[button] == PRESS);
+bool DesktopAdaptor::mousePressed(int button) const {
+    return (s_MouseButtons[button | 0x10000000] == PRESS);
 }
 
-bool DesktopAdaptor::mouseReleased(Input::MouseButton button) {
-    return (s_MouseButtons[button] == RELEASE);
+bool DesktopAdaptor::mouseReleased(int  button) const {
+    return (s_MouseButtons[button | 0x10000000] == RELEASE);
 }
 
-uint32_t DesktopAdaptor::screenWidth() {
+void DesktopAdaptor::mouseLockCursor(bool lock) {
+    s_mouseLocked = lock;
+    glfwSetInputMode(m_pWindow, GLFW_CURSOR, s_mouseLocked ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
+}
+
+uint32_t DesktopAdaptor::screenWidth() const {
     return s_Width;
 }
 
-uint32_t DesktopAdaptor::screenHeight() {
+uint32_t DesktopAdaptor::screenHeight() const {
     return s_Height;
 }
 
-void DesktopAdaptor::setMousePosition(int32_t x, int32_t y) {
-    glfwSetCursorPos(m_pWindow, x, y);
-}
-
-uint32_t DesktopAdaptor::joystickCount() {
+uint32_t DesktopAdaptor::joystickCount() const {
     uint16_t result = 0;
     for(uint8_t i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
         if(glfwJoystickPresent(GLFW_JOYSTICK_1 + i)) {
@@ -284,7 +292,7 @@ uint32_t DesktopAdaptor::joystickCount() {
     return result;
 }
 
-uint32_t DesktopAdaptor::joystickButtons(uint32_t index) {
+uint32_t DesktopAdaptor::joystickButtons(int index) const {
     int count;
     const unsigned char *axes = glfwGetJoystickButtons(index, &count);
     uint16_t result = 0;
@@ -296,7 +304,7 @@ uint32_t DesktopAdaptor::joystickButtons(uint32_t index) {
     return result;
 }
 
-Vector4 DesktopAdaptor::joystickThumbs(uint32_t index) {
+Vector4 DesktopAdaptor::joystickThumbs(int index) const {
     int count;
     const float *axes = glfwGetJoystickAxes(index, &count);
     if(count >= 4) {
@@ -305,7 +313,7 @@ Vector4 DesktopAdaptor::joystickThumbs(uint32_t index) {
     return Vector4();
 }
 
-Vector2 DesktopAdaptor::joystickTriggers(uint32_t index) {
+Vector2 DesktopAdaptor::joystickTriggers(int index) const {
     int count;
     const float* axes = glfwGetJoystickAxes(index, &count);
     if(count >= 6) {
@@ -347,7 +355,7 @@ void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
 }
 
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
-    s_MouseButtons[static_cast<Input::MouseButton>(button)] = action;
+    s_MouseButtons[button] = action;
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
@@ -363,7 +371,7 @@ void DesktopAdaptor::errorCallback(int error, const char *description) {
     Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
 }
 
-string DesktopAdaptor::locationLocalDir() {
+string DesktopAdaptor::locationLocalDir() const {
     string result;
 #if _WIN32
     wchar_t path[MAX_PATH];

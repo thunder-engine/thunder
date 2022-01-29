@@ -23,21 +23,21 @@ public:
 
     bool                        isValid                     ();
 
-    string                      locationLocalDir            ();
+    string                      locationLocalDir            () const;
 
-    uint32_t                    screenWidth                 ();
-    uint32_t                    screenHeight                ();
+    uint32_t                    screenWidth                 () const;
+    uint32_t                    screenHeight                () const;
 
-    string                      inputString                 ();
+    string                      inputString                 () const;
     void                        setKeyboardVisible          (bool visible);
 
-    uint32_t                    touchCount                  ();
-    uint32_t                    touchState                  (uint32_t index);
-    Vector4                     touchPosition               (uint32_t index);
+    uint32_t                    touchCount                  () const;
+    uint32_t                    touchState                  (uint32_t index) const;
+    Vector4                     touchPosition               (uint32_t index) const;
 
-    uint32_t                    joystickCount               ();
-    uint32_t                    joystickButtons             (uint32_t);
-    Vector4                     joystickThumbs              (uint32_t);
+    uint32_t                    joystickCount               () const;
+    uint32_t                    joystickButtons             (uint32_t) const;
+    Vector4                     joystickThumbs              (uint32_t) const;
 
 public:
     static uint32_t             s_Buttons;

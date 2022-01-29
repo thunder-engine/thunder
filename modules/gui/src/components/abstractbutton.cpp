@@ -129,16 +129,16 @@ void AbstractButton::update() {
 
             if(p_ptr->m_Hovered) {
                 color = p_ptr->m_highlightedColor;
-                if(Input::isMouseButtonDown(Input::LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+                if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
                     p_ptr->m_currentFade = 0.0f;
                     onClicked();
                 }
 
-                if(Input::isMouseButtonUp(Input::LEFT)) {
+                if(Input::isMouseButtonUp(0)) {
                     p_ptr->m_currentFade = 0.0f;
                 }
 
-                if(Input::isMouseButton(Input::LEFT) || Input::touchCount() > 0) {
+                if(Input::isMouseButton(0) || Input::touchCount() > 0) {
                     color = p_ptr->m_pressedColor;
                 }
             }

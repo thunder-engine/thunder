@@ -1,7 +1,7 @@
 #ifndef SCENEVIEW_H
 #define SCENEVIEW_H
 
-#include <QOpenGLWidget>
+#include <QWidget>
 
 #include <adapters/platformadaptor.h>
 
@@ -9,8 +9,7 @@ class Engine;
 class System;
 class Scene;
 
-class QOffscreenSurface;
-class QOpenGLFramebufferObject;
+class QGamepad;
 
 class SceneView : public QWidget, public PlatformAdaptor {
     Q_OBJECT
@@ -33,49 +32,55 @@ protected:
 
     bool isValid() override { return true; }
 
-    bool key(Input::KeyCode) override;
-    bool keyPressed(Input::KeyCode) override;
-    bool keyReleased(Input::KeyCode) override;
+    bool key(Input::KeyCode) const override;
+    bool keyPressed(Input::KeyCode) const override;
+    bool keyReleased(Input::KeyCode) const override;
 
-    string inputString() override;
+    string inputString() const override;
 
-    bool mouseButton(Input::MouseButton) override;
-    bool mousePressed(Input::MouseButton) override;
-    bool mouseReleased(Input::MouseButton) override;
+    bool mouseButton(int) const override;
+    bool mousePressed(int) const override;
+    bool mouseReleased(int) const override;
 
-    Vector4 mousePosition() override;
-    void setMousePosition(int32_t x, int32_t y) override;
+    Vector4 mousePosition() const override;
+    void mouseLockCursor(bool lock) override;
 
-    Vector4 mouseDelta() override;
+    Vector4 mouseDelta() const override;
 
-    uint32_t screenWidth() override;
-    uint32_t screenHeight() override;
+    uint32_t screenWidth() const override;
+    uint32_t screenHeight() const override;
 
-    uint32_t joystickCount() override;
-    uint32_t joystickButtons(uint32_t) override;
-    Vector4 joystickThumbs(uint32_t) override;
-    Vector2 joystickTriggers(uint32_t) override;
+    uint32_t joystickCount() const override;
+    uint32_t joystickButtons(int) const override;
+    Vector4 joystickThumbs(int) const override;
+    Vector2 joystickTriggers(int) const override;
 
-    void *pluginLoad(const char *) override;
-    bool pluginUnload(void *) override;
-    void *pluginAddress(void *, const string &) override;
-
-    string locationLocalDir() override;
+    string locationLocalDir() const override;
 
     bool eventFilter(QObject *object, QEvent *event) override;
 
 private slots:
     void onDraw();
 
+    void onGamepadConnected(bool value);
+
 protected:
-    QWindow *m_pRHIWindow;
+    QWindow *m_rhiWindow;
 
-    Engine *m_pEngine;
+    Engine *m_engine;
 
-    unordered_map<int32_t, int32_t> m_Keys;
-    unordered_map<int32_t, int32_t> m_MouseButtons;
+    QGamepad *m_gamepad;
+
+    QHash<int32_t, int32_t> m_keys;
+    QHash<int32_t, int32_t> m_mouseButtons;
 
     string m_inputString;
+
+    QPoint m_saved;
+
+    Vector4 m_mouseDelta;
+
+    bool m_mouseLock;
 
 };
 

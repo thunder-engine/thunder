@@ -10,6 +10,7 @@ Project {
         "src/BulletCollision/NarrowPhaseCollision/*.cpp",
         "src/BulletDynamics/Dynamics/*.cpp",
         "src/BulletDynamics/ConstraintSolver/*.cpp",
+        "src/BulletDynamics/Character/*.cpp",
         "src/LinearMath/*.h",
         "src/BulletCollision/CollisionDispatch/*.h",
         "src/BulletCollision/CollisionShapes/*.h",
@@ -17,6 +18,7 @@ Project {
         "src/BulletCollision/NarrowPhaseCollision/*.h",
         "src/BulletDynamics/Dynamics/*.h",
         "src/BulletDynamics/ConstraintSolver/*.h",
+        "src/BulletDynamics/Character/*.h",
         "src/*.h"
     ]
 

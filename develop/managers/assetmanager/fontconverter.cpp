@@ -4,8 +4,6 @@
 
 #include <bson.h>
 
-#include "resources/font.h"
-
 #define DATA    "Data"
 
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
