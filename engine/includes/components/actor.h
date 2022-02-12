@@ -11,7 +11,7 @@ class Prefab;
 
 class ActorPrivate;
 
-class NEXT_LIBRARY_EXPORT Actor : public Object {
+class ENGINE_EXPORT Actor : public Object {
     A_REGISTER(Actor, Object, Scene)
 
     A_PROPERTIES(

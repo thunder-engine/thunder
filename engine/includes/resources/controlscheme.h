@@ -3,7 +3,7 @@
 
 #include <resource.h>
 
-class NEXT_LIBRARY_EXPORT ControlScheme : public Resource {
+class ENGINE_EXPORT ControlScheme : public Resource {
     A_REGISTER(ControlScheme, Resource, Resources)
 
 public:

@@ -10,7 +10,7 @@ class MeshPrivate;
 
 typedef vector<uint32_t> IndexVector;
 
-class NEXT_LIBRARY_EXPORT Lod {
+class ENGINE_EXPORT Lod {
     A_PROPERTIES(
         A_PROPERTY(Material *, material, Lod::material, Lod::setMaterial)
     )
@@ -74,10 +74,11 @@ private:
     IndexVector m_Indices;
 
     Material *m_Material;
+
 };
 typedef deque<Lod> LodQueue;
 
-class NEXT_LIBRARY_EXPORT Mesh : public Resource {
+class ENGINE_EXPORT Mesh : public Resource {
     A_REGISTER(Mesh, Resource, Resources)
 
     A_PROPERTIES(

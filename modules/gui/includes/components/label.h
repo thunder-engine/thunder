@@ -1,14 +1,14 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "components/widget.h"
+#include "widget.h"
 
 class Font;
 class Material;
 
 class LabelPrivate;
 
-class Label : public Widget {
+class GUI_EXPORT Label : public Widget {
     A_REGISTER(Label, Widget, Components/UI)
 
     A_PROPERTIES(

@@ -12,7 +12,7 @@ class Outline;
 
 class QMenu;
 
-class NEXT_LIBRARY_EXPORT EditorPipeline : public QObject, public Pipeline {
+class ENGINE_EXPORT EditorPipeline : public QObject, public Pipeline {
 public:
     EditorPipeline();
 

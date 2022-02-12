@@ -18,7 +18,7 @@ public:
     void setRadius(float radius);
 
 private:
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

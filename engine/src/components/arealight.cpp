@@ -238,7 +238,7 @@ AABBox AreaLight::bound() const {
     return result;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool AreaLight::drawHandles(ObjectList &selected) {

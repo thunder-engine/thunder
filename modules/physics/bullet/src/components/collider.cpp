@@ -1,5 +1,7 @@
 #include "components/collider.h"
 
+#include <btBulletDynamicsCommon.h>
+
 Collider::Collider() :
         m_pCollisionShape(nullptr),
         m_pCollisionObject(nullptr),
@@ -16,10 +18,6 @@ void Collider::update() {
 
 }
 
-btCollisionShape *Collider::shape() {
-    return m_pCollisionShape;
-}
-
 btDynamicsWorld *Collider::world() const {
     return m_pWorld;
 }
@@ -33,6 +31,10 @@ void Collider::setWorld(btDynamicsWorld *world) {
 
 void Collider::createCollider() {
 
+}
+
+btCollisionShape *Collider::shape() {
+    return m_pCollisionShape;
 }
 
 void Collider::destroyShape() {

@@ -9,7 +9,7 @@ class Material;
 class Mesh;
 class SpriteRenderPrivate;
 
-class NEXT_LIBRARY_EXPORT SpriteRender : public Renderable {
+class ENGINE_EXPORT SpriteRender : public Renderable {
     A_REGISTER(SpriteRender, Renderable, Components/2D)
 
     A_PROPERTIES(

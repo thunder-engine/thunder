@@ -3,7 +3,7 @@
 
 #include "engine.h"
 
-class NEXT_LIBRARY_EXPORT AtlasNode {
+class ENGINE_EXPORT AtlasNode {
 public:
     AtlasNode();
     ~AtlasNode();

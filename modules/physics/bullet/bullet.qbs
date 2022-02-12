@@ -15,6 +15,7 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../engine/includes",
+        "../../../engine/includes/components",
         "../../../engine/includes/resources",
         "../../../engine/includes/editor",
         "../../../thirdparty/bullet/src"
@@ -37,7 +38,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE", "BULLET_LIBRARY"]
         cpp.includePaths: bullet.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -67,13 +68,23 @@ Project {
         }
 
         Group {
-            name: "Bullet includes"
-            prefix: "includes/"
+            name: "Module includes"
             files: [
-                "bullet.h"
+                "includes/bullet.h"
             ]
             qbs.install: true
             qbs.installDir: bullet.INC_PATH + "/modules"
+            qbs.installPrefix: bullet.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "components/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: bullet.INC_PATH + "/engine"
             qbs.installPrefix: bullet.PREFIX
         }
     }

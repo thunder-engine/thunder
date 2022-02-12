@@ -5,7 +5,7 @@
 
 class PointLightPrivate;
 
-class NEXT_LIBRARY_EXPORT PointLight : public BaseLight {
+class ENGINE_EXPORT PointLight : public BaseLight {
     A_REGISTER(PointLight, BaseLight, Components/Lights)
 
     A_PROPERTIES(
@@ -35,7 +35,7 @@ private:
 
     AABBox bound() const override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

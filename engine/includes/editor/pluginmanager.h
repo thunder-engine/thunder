@@ -22,7 +22,7 @@ class RenderSystem;
 
 typedef QHash<Object *, ByteArray> ComponentMap;
 
-class NEXT_LIBRARY_EXPORT PluginManager : public QAbstractItemModel {
+class ENGINE_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT
 
 public:

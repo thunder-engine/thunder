@@ -48,8 +48,8 @@ Project {
 
         cpp.defines: {
             var result = engine.defines
-            result.push("NEXT_SHARED")
-            result.push("NEXT_LIBRARY")
+            result.push("SHARED_DEFINE")
+            result.push("ENGINE_LIBRARY")
             return result
         }
         cpp.includePaths: engine.incPaths

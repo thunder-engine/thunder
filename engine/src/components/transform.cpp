@@ -129,7 +129,7 @@ Quaternion &Transform::quaternion() const {
 void Transform::setQuaternion(const Quaternion &quaternion) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Quaternion = quaternion;
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     //p_ptr->m_Rotation = p_ptr->m_Quaternion.euler();
 #endif
     setDirty();

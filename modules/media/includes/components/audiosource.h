@@ -1,14 +1,14 @@
 #ifndef AUDIOSOURCE_H
 #define AUDIOSOURCE_H
 
-#include <components/nativebehaviour.h>
+#include "nativebehaviour.h"
 
 #include "resources/audioclip.h"
 
-class AudioSource : public NativeBehaviour {
+class MEDIA_EXPORT AudioSource : public NativeBehaviour {
     A_REGISTER(AudioSource, NativeBehaviour, Components/Audio)
 
-    A_PROPERTIES (
+    A_PROPERTIES(
         A_PROPERTY(AudioClip *, clip, AudioSource::clip, AudioSource::setClip),
         A_PROPERTY(bool, autoPlay, AudioSource::autoPlay, AudioSource::setAutoPlay),
         A_PROPERTY(bool, loop, AudioSource::loop, AudioSource::setLoop)
@@ -19,49 +19,50 @@ class AudioSource : public NativeBehaviour {
     )
 
 public:
-    AudioSource                 ();
-    ~AudioSource                ();
+    AudioSource();
+    ~AudioSource();
 
-    void                        play                    ();
+    void play();
 
-    void                        stop                    ();
+    void stop();
 
-    AudioClip                  *clip                    () const;
-    void                        setClip                 (AudioClip *clip);
+    AudioClip *clip() const;
+    void setClip(AudioClip *clip);
 
-    bool                        autoPlay                () const;
-    void                        setAutoPlay             (bool play);
+    bool autoPlay() const;
+    void setAutoPlay(bool play);
 
-    bool                        loop                    () const;
-    void                        setLoop                 (bool loop);
+    bool loop() const;
+    void setLoop(bool loop);
 
 private:
-    void                        start                   () override;
+    void start() override;
 
-    void                        update                  () override;
+    void update() override;
 
-    void                        loadUserData            (const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
 
-    VariantMap                  saveUserData            () const override;
+    VariantMap saveUserData() const override;
 
 protected:
-    AudioClip                  *m_pClip;
+    AudioClip *m_pClip;
 
-    uint32_t                    m_ID;
+    uint32_t m_ID;
 
-    uint32_t                    m_Format;
+    uint32_t m_Format;
 
-    uint32_t                    m_Buffers[2];
+    uint32_t m_Buffers[2];
 
-    uint32_t                    m_PositionSamples;
+    uint32_t m_PositionSamples;
 
-    bool                        m_Loop;
+    bool m_Loop;
 
-    bool                        m_AutoPlay;
+    bool m_AutoPlay;
 
-    uint8_t                    *m_pData;
+    uint8_t *m_pData;
 
-    uint8_t                     m_Current;
+    uint8_t m_Current;
+
 };
 
 #endif // AUDIOSOURCE_H

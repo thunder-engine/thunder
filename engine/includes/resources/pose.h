@@ -7,7 +7,7 @@
 
 class PosePrivate;
 
-class NEXT_LIBRARY_EXPORT Bone {
+class ENGINE_EXPORT Bone {
     A_PROPERTIES(
         A_PROPERTY(int, index, Bone::index, Bone::setIndex),
         A_PROPERTY(Vector3, position, Bone::position, Bone::setPosition),
@@ -38,9 +38,10 @@ protected:
     Vector3 m_position;
     Vector3 m_rotation;
     Vector3 m_scale;
+
 };
 
-class NEXT_LIBRARY_EXPORT Pose : public Resource {
+class ENGINE_EXPORT Pose : public Resource {
     A_REGISTER(Pose, Resource, Resources)
 
     A_NOPROPERTIES()

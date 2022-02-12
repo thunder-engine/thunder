@@ -34,7 +34,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: texturetools.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"

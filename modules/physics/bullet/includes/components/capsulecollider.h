@@ -1,7 +1,7 @@
 #ifndef CAPSULECOLLIDER_H
 #define CAPSULECOLLIDER_H
 
-#include "components/spherecollider.h"
+#include "spherecollider.h"
 
 class CapsuleCollider : public SphereCollider {
     A_REGISTER(CapsuleCollider, SphereCollider, Components/Physics)
@@ -18,7 +18,7 @@ public:
     void setHeight(float height);
 
 private:
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

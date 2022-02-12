@@ -476,7 +476,7 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
     }
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool TextRender::drawHandles(ObjectList &selected) {

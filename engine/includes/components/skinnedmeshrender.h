@@ -8,7 +8,7 @@ class Material;
 class Mesh;
 class SkinnedMeshRenderPrivate;
 
-class NEXT_LIBRARY_EXPORT SkinnedMeshRender : public Renderable {
+class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
     A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(
@@ -40,7 +40,7 @@ private:
     VariantMap saveUserData() const override;
 
     void onReferenceDestroyed() override;
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 private:

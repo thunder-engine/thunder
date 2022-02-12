@@ -1,12 +1,12 @@
 #ifndef ABSTRACTBUTTON_H
 #define ABSTRACTBUTTON_H
 
-#include <components/widget.h>
+#include "widget.h"
 
 class AbstractButtonPrivate;
 class Image;
 
-class AbstractButton : public Widget {
+class GUI_EXPORT AbstractButton : public Widget {
     A_REGISTER(AbstractButton, Widget, General)
 
     A_PROPERTIES(

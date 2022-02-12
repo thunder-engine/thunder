@@ -120,7 +120,7 @@ void BulletSystem::update(Scene *scene) {
 
         for(auto &it : m_ObjectList) {
             Collider *body = static_cast<Collider *>(it);
-            if(body->world() == nullptr && body->actor()->scene() == scene) {
+            if(body->m_pWorld == nullptr && body->actor()->scene() == scene) {
                 body->setWorld(world);
             }
 

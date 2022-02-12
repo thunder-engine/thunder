@@ -7,7 +7,7 @@
 
 class PlatformAdaptor;
 
-class NEXT_LIBRARY_EXPORT Input {
+class ENGINE_EXPORT Input {
 public:
     enum KeyCode {
         KEY_UNKNOWN         = -1,

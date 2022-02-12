@@ -10,7 +10,7 @@ class Mesh;
 class Camera;
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT CommandBuffer: public Object {
+class ENGINE_EXPORT CommandBuffer: public Object {
     A_REGISTER(CommandBuffer, Object, System)
 
 public:

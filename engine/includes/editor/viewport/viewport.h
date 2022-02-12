@@ -1,14 +1,14 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include <QOpenGLWidget>
+#include <QWidget>
 
-#include <global.h>
+#include <engine.h>
 
 class CameraCtrl;
 class Scene;
 
-class NEXT_LIBRARY_EXPORT Viewport : public QWidget {
+class ENGINE_EXPORT Viewport : public QWidget {
     Q_OBJECT
 public:
     Viewport(QWidget *parent = 0);

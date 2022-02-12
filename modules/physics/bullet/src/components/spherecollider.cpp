@@ -32,7 +32,7 @@ btCollisionShape *SphereCollider::shape() {
     return m_pCollisionShape;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include <viewport/handles.h>
 
 bool SphereCollider::drawHandles(ObjectList &selected) {

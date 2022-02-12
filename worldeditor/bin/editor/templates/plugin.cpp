@@ -35,7 +35,7 @@ public:
         return meta;
     }
 };
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine) {
         return new Module${Project_Name}(engine);

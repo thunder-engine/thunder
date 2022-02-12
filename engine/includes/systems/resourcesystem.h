@@ -7,7 +7,7 @@ class Resource;
 
 class ResourceSystemPrivate;
 
-class NEXT_LIBRARY_EXPORT ResourceSystem : public System {
+class ENGINE_EXPORT ResourceSystem : public System {
 public:
     typedef unordered_map<string, pair<string, string>> DictionaryMap;
 

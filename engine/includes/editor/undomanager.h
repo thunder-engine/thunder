@@ -5,7 +5,7 @@
 
 #include <engine.h>
 
-class NEXT_LIBRARY_EXPORT UndoCommand : public QUndoCommand {
+class ENGINE_EXPORT UndoCommand : public QUndoCommand {
 public:
     explicit UndoCommand(const QString &text, QObject *editor = nullptr, QUndoCommand *parent = nullptr) :
         QUndoCommand(text, parent),
@@ -21,7 +21,7 @@ private:
     QObject *m_editor;
 };
 
-class NEXT_LIBRARY_EXPORT UndoManager : public QUndoStack {
+class ENGINE_EXPORT UndoManager : public QUndoStack {
     Q_OBJECT
 
 public:

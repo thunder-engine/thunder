@@ -10,7 +10,7 @@
 
 extern int thunderMain(Engine *engine);
 
-class NEXT_LIBRARY_EXPORT PlatformAdaptor {
+class ENGINE_EXPORT PlatformAdaptor {
 public:
     virtual ~PlatformAdaptor() {}
 

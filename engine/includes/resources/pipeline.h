@@ -26,7 +26,7 @@ class AtlasNode;
 
 class Renderable;
 
-class NEXT_LIBRARY_EXPORT Pipeline : public Resource {
+class ENGINE_EXPORT Pipeline : public Resource {
     A_REGISTER(Pipeline, Resource, Resources)
 
 public:
@@ -102,6 +102,7 @@ protected:
     Texture *m_pFinal;
 
     RenderSystem *m_pSystem;
+
 };
 
 #endif // PIPELINE

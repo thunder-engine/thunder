@@ -6,7 +6,7 @@
 class ControlScheme;
 class PlayerInputPrivate;
 
-class NEXT_LIBRARY_EXPORT PlayerInput : public NativeBehaviour {
+class ENGINE_EXPORT PlayerInput : public NativeBehaviour {
     A_REGISTER(PlayerInput, NativeBehaviour, Components)
 
     A_PROPERTIES(

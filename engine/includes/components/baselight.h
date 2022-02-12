@@ -16,7 +16,7 @@ class Camera;
 
 #define SHADOW_MAP  "shadowMap"
 
-class NEXT_LIBRARY_EXPORT BaseLight : public Renderable {
+class ENGINE_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
 
     A_PROPERTIES(

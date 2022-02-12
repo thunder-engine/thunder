@@ -51,7 +51,7 @@ public:
                 setClip(m_pCurrentState->m_clip);
                 setPosition(0, false);
             }
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
             else {
               Log(Log::DBG) << "Unable to make the transition to state" << hash;
             }
@@ -103,7 +103,7 @@ public:
                 } else {
                 property = new BaseAnimationBlender();
                     Object *object = actor->find(it.path());
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
                     if(object == nullptr) {
                         Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
                     }
@@ -157,7 +157,7 @@ public:
             } else {
                 property = new BaseAnimationBlender();
                 Object *object = actor->find(it.path());
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
                 if(object == nullptr) {
                     Log(Log::DBG) << "Can't resolve animation path:" << it.path().c_str();
                 }

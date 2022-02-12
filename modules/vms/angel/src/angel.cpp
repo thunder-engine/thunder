@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "converters/angelbuilder.h"
 
 Module *moduleCreate(Engine *engine) {
@@ -44,7 +44,7 @@ void *Angel::getObject(const char *name) {
     if(strcmp(name, "AngelSystem") == 0) {
         return m_pSystem;
     }
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     else if(strcmp(name, "AngelBuilder") == 0) {
         static AngelBuilder *builder = nullptr;
         if(builder == nullptr) {

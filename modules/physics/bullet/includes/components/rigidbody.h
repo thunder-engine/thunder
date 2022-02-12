@@ -3,15 +3,10 @@
 
 #include "collider.h"
 
-enum Axises {
-    AXIS_X =(1<<0),
-    AXIS_Y =(1<<1),
-    AXIS_Z =(1<<2)
-};
+class RigidBodyPrivate;
+class PhysicMaterial;
 
-class VolumeCollider;
-
-class RigidBody : public Collider, public btMotionState {
+class RigidBody : public Collider {
     A_REGISTER(RigidBody, Collider, Components/Physics)
 
     A_PROPERTIES(
@@ -47,20 +42,13 @@ public:
 protected:
     void update() override;
 
-    void getWorldTransform(btTransform &worldTrans) const override;
-    void setWorldTransform(const btTransform &worldTrans) override;
-
     void createCollider() override;
 
+    PhysicMaterial *updateCollider();
+
 protected:
-    float m_Mass;
+    RigidBodyPrivate *p_ptr;
 
-    list<VolumeCollider *> m_Colliders;
-
-    int32_t m_LockPosition;
-    int32_t m_LockRotation;
-
-    bool m_Kinematic;
 };
 
 #endif // RIGIDBODY_H

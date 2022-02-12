@@ -7,7 +7,7 @@ class PostProcessVolumePrivate;
 
 class PostProcessSettings;
 
-class NEXT_LIBRARY_EXPORT PostProcessVolume : public Component {
+class ENGINE_EXPORT PostProcessVolume : public Component {
     A_PROPERTIES(
         A_PROPERTY(int, priority, PostProcessVolume::priority, PostProcessVolume::setPriority),
         A_PROPERTY(bool, unbound, PostProcessVolume::unbound, PostProcessVolume::setUnbound)
@@ -48,7 +48,7 @@ private:
 
     bool isPostProcessVolume() const override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

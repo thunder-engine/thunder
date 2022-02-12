@@ -8,7 +8,7 @@ class Material;
 
 class MaterialInstance;
 
-class NEXT_LIBRARY_EXPORT Material : public Resource {
+class ENGINE_EXPORT Material : public Resource {
     A_REGISTER(Material, Resource, Resources)
 
     A_PROPERTIES(
@@ -149,7 +149,7 @@ protected:
 
 };
 
-class NEXT_LIBRARY_EXPORT MaterialInstance {
+class ENGINE_EXPORT MaterialInstance {
 public:
     explicit MaterialInstance(Material *material);
     virtual ~MaterialInstance();
@@ -180,6 +180,7 @@ protected:
     uint16_t m_surfaceType;
 
     map<string, Texture *> m_textureOverride;
+
 };
 
 #endif // MATERIAL_H

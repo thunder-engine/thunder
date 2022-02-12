@@ -224,7 +224,7 @@ AABBox DirectLight::bound() const {
     return AABBox(0.0f, -1.0f);
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool DirectLight::drawHandles(ObjectList &selected) {

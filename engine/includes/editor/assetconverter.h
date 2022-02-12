@@ -10,7 +10,7 @@ class Actor;
 
 typedef QMap<QString, QString> QStringMap;
 
-class NEXT_LIBRARY_EXPORT AssetConverterSettings : public QObject {
+class ENGINE_EXPORT AssetConverterSettings : public QObject {
     Q_OBJECT
 
 public:
@@ -83,7 +83,7 @@ protected:
 
 typedef QList<uint32_t> QIntegerList;
 
-class NEXT_LIBRARY_EXPORT AssetConverter : public QObject {
+class ENGINE_EXPORT AssetConverter : public QObject {
     Q_OBJECT
 
 public:

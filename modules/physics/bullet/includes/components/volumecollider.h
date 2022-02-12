@@ -5,7 +5,7 @@
 
 class PhysicMaterial;
 
-class VolumeCollider : public Collider {
+class BULLET_EXPORT VolumeCollider : public Collider {
     A_REGISTER(VolumeCollider, Collider, General)
 
     A_PROPERTIES(

@@ -1,12 +1,13 @@
 #ifndef RECTTRANSFORM_H
 #define RECTTRANSFORM_H
 
-#include <components/transform.h>
+#include "transform.h"
+#include "gui.h"
 
 class RectTransformPrivate;
 class Widget;
 
-class RectTransform : public Transform {
+class GUI_EXPORT RectTransform : public Transform {
     A_REGISTER(RectTransform, Transform, General)
 
     A_PROPERTIES(

@@ -7,7 +7,6 @@ Project {
         "src/components/*.cpp",
         "src/systems/*.cpp",
 
-        "includes/components/*.h",
         "includes/systems/*.h"
     ]
 
@@ -16,6 +15,7 @@ Project {
         "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
+        "../../engine/includes/components",
         "../../engine/includes/editor",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
@@ -33,7 +33,12 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: {
+            var result = gui.defines
+            result.push("SHARED_DEFINE")
+            result.push("GUI_LIBRARY")
+            return result
+        }
         cpp.includePaths: gui.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -58,13 +63,23 @@ Project {
         }
 
         Group {
-            name: "Gui includes"
-            prefix: "includes/"
+            name: "Module includes"
             files: [
-                "gui.h"
+                "includes/gui.h"
             ]
             qbs.install: true
             qbs.installDir: gui.INC_PATH + "/modules"
+            qbs.installPrefix: gui.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "components/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: gui.INC_PATH + "/engine"
             qbs.installPrefix: gui.PREFIX
         }
     }

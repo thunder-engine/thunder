@@ -5,7 +5,7 @@
 
 class TranslatorPrivate;
 
-class NEXT_LIBRARY_EXPORT Translator : public Resource {
+class ENGINE_EXPORT Translator : public Resource {
     A_REGISTER(Translator, Resource, Resources)
 
     A_NOPROPERTIES()

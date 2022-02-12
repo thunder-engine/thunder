@@ -1,7 +1,7 @@
-#ifndef AGLOBAL_H
-#define AGLOBAL_H
+#ifndef GLOBAL_H
+#define GLOBAL_H
 
-#if defined(NEXT_SHARED) && defined(_WIN32)
+#if defined(SHARED_DEFINE) && defined(_WIN32)
     #ifdef NEXT_LIBRARY
         #define NEXT_LIBRARY_EXPORT __declspec(dllexport)
     #else
@@ -44,4 +44,4 @@
 
 typedef float areal;
 
-#endif // AGLOBAL_H
+#endif // GLOBAL_H

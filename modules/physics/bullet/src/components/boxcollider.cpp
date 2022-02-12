@@ -2,7 +2,6 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
-#include <log.h>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -34,7 +33,7 @@ btCollisionShape *BoxCollider::shape() {
     return m_pCollisionShape;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include <viewport/handles.h>
 
 bool BoxCollider::drawHandles(ObjectList &selected) {

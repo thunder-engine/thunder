@@ -7,14 +7,14 @@
 
 class QAbstractItemModel;
 
-class NEXT_LIBRARY_EXPORT BuilderSettings : public AssetConverterSettings {
+class ENGINE_EXPORT BuilderSettings : public AssetConverterSettings {
 public:
     BuilderSettings();
 private:
     QString typeName() const Q_DECL_OVERRIDE;
 };
 
-class NEXT_LIBRARY_EXPORT CodeBuilder : public AssetConverter {
+class ENGINE_EXPORT CodeBuilder : public AssetConverter {
     Q_OBJECT
 public:
     CodeBuilder();

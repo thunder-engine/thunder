@@ -105,7 +105,7 @@ void Widget::composeComponent() {
     Engine::objectCreate<RectTransform>("RectTransform", actor());
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include <viewport/handles.h>
 
 bool Widget::drawHandles(ObjectList &selected) {

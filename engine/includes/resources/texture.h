@@ -7,7 +7,7 @@
 
 class TexturePrivate;
 
-class NEXT_LIBRARY_EXPORT Texture : public Resource {
+class ENGINE_EXPORT Texture : public Resource {
     A_REGISTER(Texture, Resource, Resources)
 
     A_PROPERTIES(
@@ -137,6 +137,7 @@ protected:
     int32_t dwordAlignedLineSize(int32_t width, int32_t bpp);
 
     uint8_t components() const;
+
 };
 
 #endif // TEXTURE_H

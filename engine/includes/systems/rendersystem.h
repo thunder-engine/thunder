@@ -1,6 +1,7 @@
 #ifndef RENDERSYSTEM_H
 #define RENDERSYSTEM_H
 
+#include "engine.h"
 #include "system.h"
 
 class RenderSystemPrivate;
@@ -8,11 +9,11 @@ class RenderSystemPrivate;
 class Renderable;
 class PostProcessSettings;
 
-#if defined(NEXT_SHARED)
+#if defined(SHARED_DEFINE)
 class QWindow;
 #endif
 
-class NEXT_LIBRARY_EXPORT RenderSystem : public System {
+class ENGINE_EXPORT RenderSystem : public System {
 public:
     RenderSystem();
     ~RenderSystem();
@@ -27,7 +28,7 @@ public:
 
     void composeComponent(Component *component) const override;
 
-#if defined(NEXT_SHARED)
+#if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow() const;
 
     virtual vector<uint8_t> renderOffscreen(Scene *scene, int width, int height);

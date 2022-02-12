@@ -19,7 +19,7 @@ enum Alignment {
     Bottom  = (1<<6)
 };
 
-class NEXT_LIBRARY_EXPORT TextRender : public Renderable {
+class ENGINE_EXPORT TextRender : public Renderable {
     A_REGISTER(TextRender, Renderable, Components/2D)
 
     A_PROPERTIES(
@@ -73,7 +73,7 @@ private:
 
     AABBox bound() const override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

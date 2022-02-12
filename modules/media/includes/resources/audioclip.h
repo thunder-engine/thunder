@@ -1,12 +1,11 @@
 #ifndef AUDIOCLIP_H
 #define AUDIOCLIP_H
 
-#include "engine.h"
-#include "file.h"
+#include "media.h"
 
 class OggVorbis_File;
 
-class AudioClip : public Object {
+class MEDIA_EXPORT AudioClip : public Object {
     A_REGISTER(AudioClip, Object, Resources)
 
 public:
@@ -36,23 +35,23 @@ private:
 
     VariantMap saveUserData() const override;
 
-    bool            m_Stream;
+    bool m_Stream;
 
-    bool            m_SizeFlag;
+    bool m_SizeFlag;
 
-    uint32_t        m_Frequency;
+    uint32_t m_Frequency;
 
-    uint32_t        m_Channels;
+    uint32_t m_Channels;
 
-    uint32_t        m_Duration;
+    uint32_t m_Duration;
 
     OggVorbis_File *m_pVorbisFile;
 
-    string          m_Path;
+    string  m_Path;
 
-    File           *m_pFile;
+    File *m_pFile;
 
-    _FILE          *m_pClip;
+    _FILE *m_pClip;
 };
 
 #endif // AUDIOCLIP_H

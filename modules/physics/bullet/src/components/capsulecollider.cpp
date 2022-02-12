@@ -32,7 +32,7 @@ btCollisionShape *CapsuleCollider::shape() {
     return m_pCollisionShape;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include <viewport/handles.h>
 
 bool CapsuleCollider::drawHandles(ObjectList &selected) {

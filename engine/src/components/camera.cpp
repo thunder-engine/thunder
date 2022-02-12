@@ -394,7 +394,7 @@ RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &fru
     return result;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool Camera::drawHandles(ObjectList &selected) {

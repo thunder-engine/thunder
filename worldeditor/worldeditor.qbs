@@ -55,7 +55,7 @@ Project {
 
         cpp.defines: {
             var result  = worldEditor.defines
-            result.push("NEXT_SHARED")
+            result.push("SHARED_DEFINE")
             return result
         }
 

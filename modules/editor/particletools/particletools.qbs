@@ -33,7 +33,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: particletools.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"

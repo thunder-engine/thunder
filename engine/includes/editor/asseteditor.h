@@ -8,7 +8,7 @@
 
 class AssetConverterSettings;
 
-class NEXT_LIBRARY_EXPORT AssetEditor : public QWidget {
+class ENGINE_EXPORT AssetEditor : public QWidget {
     Q_OBJECT
 
 public:
