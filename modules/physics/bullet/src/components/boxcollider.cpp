@@ -6,31 +6,31 @@
 #include <btBulletDynamicsCommon.h>
 
 BoxCollider::BoxCollider() :
-        m_Size(Vector3(0.5f)) {
+        m_size(Vector3(0.5f)) {
 
 }
 
 const Vector3 &BoxCollider::size() const {
-    return m_Size;
+    return m_size;
 }
 
 void BoxCollider::setSize(const Vector3 &size) {
-    m_Size = size;
-    m_Dirty = true;
+    m_size = size;
+    m_dirty = true;
 }
 
 btCollisionShape *BoxCollider::shape() {
-    if(m_pCollisionShape == nullptr) {
-        m_pCollisionShape = new btBoxShape(btVector3(m_Size.x, m_Size.y, m_Size.z));
+    if(m_collisionShape == nullptr) {
+        m_collisionShape = new btBoxShape(btVector3(m_size.x, m_size.y, m_size.z));
 
         Transform *t = actor()->transform();
 
         Vector3 p = t->scale();
-        m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+        m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
-        m_Dirty = false;
+        m_dirty = false;
     }
-    return m_pCollisionShape;
+    return m_collisionShape;
 }
 
 #ifdef SHARED_DEFINE
@@ -39,7 +39,7 @@ btCollisionShape *BoxCollider::shape() {
 bool BoxCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawBox(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), t->worldScale() * m_Size * 2.0f);
+        Handles::drawBox(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), t->worldScale() * m_size * 2.0f);
     }
     return false;
 }

@@ -25,7 +25,7 @@ private:
     btCollisionShape *shape() override;
 
 protected:
-    Vector3 m_Size;
+    Vector3 m_size;
 
 };
 

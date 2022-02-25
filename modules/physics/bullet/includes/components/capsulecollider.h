@@ -25,7 +25,7 @@ private:
     btCollisionShape *shape() override;
 
 protected:
-    float m_Height;
+    float m_height;
 
 };
 

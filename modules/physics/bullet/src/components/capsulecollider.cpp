@@ -6,30 +6,30 @@
 #include <btBulletDynamicsCommon.h>
 
 CapsuleCollider::CapsuleCollider() :
-        m_Height(1.0f) {
+        m_height(1.0f) {
 
 }
 
 float CapsuleCollider::height() const {
-    return m_Height;
+    return m_height;
 }
 
 void CapsuleCollider::setHeight(float height) {
-    m_Height = height;
+    m_height = height;
 }
 
 btCollisionShape *CapsuleCollider::shape() {
-    if(m_pCollisionShape == nullptr) {
-        m_pCollisionShape = new btCapsuleShape(m_Radius, m_Height);
+    if(m_collisionShape == nullptr) {
+        m_collisionShape = new btCapsuleShape(m_radius, m_height);
 
         Transform *t = actor()->transform();
 
         Vector3 p = t->scale();
-        m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+        m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
-        m_Dirty = false;
+        m_dirty = false;
     }
-    return m_pCollisionShape;
+    return m_collisionShape;
 }
 
 #ifdef SHARED_DEFINE
@@ -38,7 +38,7 @@ btCollisionShape *CapsuleCollider::shape() {
 bool CapsuleCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), m_Radius, m_Height);
+        Handles::drawCapsule(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius, m_height);
     }
     return false;
 }

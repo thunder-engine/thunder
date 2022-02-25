@@ -24,8 +24,6 @@ public:
 
     virtual void update();
 
-    void destroyShape();
-
     void entered();
     void stay();
     void exited();
@@ -44,6 +42,10 @@ protected:
 
     void setContact(Collider *other);
 
+    void destroyShape();
+
+    void destroyCollider();
+
 protected:
     friend class BulletSystem;
     friend class RigidBody;
@@ -52,11 +54,11 @@ protected:
 
     CollisionMap m_Collisions;
 
-    btCollisionShape *m_pCollisionShape;
+    btCollisionShape *m_collisionShape;
 
-    btCollisionObject *m_pCollisionObject;
+    btCollisionObject *m_collisionObject;
 
-    btDynamicsWorld *m_pWorld;
+    btDynamicsWorld *m_world;
 
 };
 
