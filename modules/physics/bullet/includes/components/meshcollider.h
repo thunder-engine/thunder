@@ -4,7 +4,7 @@
 #include "collider.h"
 
 class Mesh;
-class btTriangleMesh;
+class PhysicMaterial;
 
 class MeshCollider : public Collider {
     A_REGISTER(MeshCollider, Collider, Components/Physics)
@@ -16,19 +16,26 @@ class MeshCollider : public Collider {
 
 public:
     MeshCollider();
+    ~MeshCollider();
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
+
+    PhysicMaterial *material() const;
+    void setMaterial(PhysicMaterial *material);
 
 private:
     btCollisionShape *shape() override;
 
     void createCollider() override;
 
+    void setEnabled(bool enable) override;
+
 protected:
     Mesh *m_mesh;
 
-    btTriangleMesh *m_triangleMesh;
+    PhysicMaterial *m_material;
+
 };
 
 #endif // MESHCOLLIDER_H
