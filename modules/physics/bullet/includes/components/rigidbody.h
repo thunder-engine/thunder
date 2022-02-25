@@ -44,7 +44,11 @@ protected:
 
     void createCollider() override;
 
-    PhysicMaterial *updateCollider();
+    void setEnabled(bool enable) override;
+
+    void updateCollider(bool updated);
+
+    PhysicMaterial *material() const;
 
 protected:
     RigidBodyPrivate *p_ptr;

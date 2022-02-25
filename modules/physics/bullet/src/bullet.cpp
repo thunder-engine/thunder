@@ -28,7 +28,9 @@ static const char *meta = \
 "       \"Collider\","
 "       \"RigidBody\","
 "       \"SphereCollider\","
-"       \"VolumeCollider\""
+"       \"VolumeCollider\","
+"       \"CharacterController\","
+"       \"MaterialrCollider\""
 "   ]"
 "}";
 

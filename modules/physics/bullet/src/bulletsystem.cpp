@@ -18,6 +18,8 @@
 #include "components/boxcollider.h"
 #include "components/spherecollider.h"
 #include "components/capsulecollider.h"
+#include "components/meshcollider.h"
+#include "components/charactercontroller.h"
 
 #include "resources/physicmaterial.h"
 
@@ -38,6 +40,9 @@ BulletSystem::BulletSystem(Engine *engine) :
     BoxCollider::registerClassFactory(this);
     SphereCollider::registerClassFactory(this);
     CapsuleCollider::registerClassFactory(this);
+
+    CharacterController::registerClassFactory(this);
+    MeshCollider::registerClassFactory(this);
 
     PhysicMaterial::registerClassFactory(engine->resourceSystem());
 }
@@ -66,6 +71,10 @@ BulletSystem::~BulletSystem() {
     BoxCollider::unregisterClassFactory(this);
     SphereCollider::unregisterClassFactory(this);
     CapsuleCollider::unregisterClassFactory(this);
+
+    MeshCollider::unregisterClassFactory(this);
+
+    CharacterController::unregisterClassFactory(this);
 }
 
 bool BulletSystem::init() {
@@ -120,7 +129,7 @@ void BulletSystem::update(Scene *scene) {
 
         for(auto &it : m_ObjectList) {
             Collider *body = static_cast<Collider *>(it);
-            if(body->m_pWorld == nullptr && body->actor()->scene() == scene) {
+            if(body->m_world == nullptr && body->actor()->scene() == scene) {
                 body->setWorld(world);
             }
 
