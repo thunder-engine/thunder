@@ -26,7 +26,7 @@ public:
     Actor *actor() const;
 
     bool isEnabled() const;
-    void setEnabled(bool enable);
+    virtual void setEnabled(bool enable);
 
     bool isStarted() const;
     void setStarted(bool started);

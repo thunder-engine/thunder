@@ -1,7 +1,6 @@
 #include "resources/audioclip.h"
 
 #include <vorbis/vorbisfile.h>
-#include <log.h>
 
 #define HEADER      "Header"
 
@@ -21,24 +20,28 @@ AudioClip::AudioClip() :
 AudioClip::~AudioClip() {
 
 }
+
 /*!
     Returns the number of audio channels.
 */
 uint32_t AudioClip::channels() const {
     return m_Channels;
 }
+
 /*!
     Returns the duration of audio clip.
 */
 uint32_t AudioClip::duration() const {
     return m_Duration;
 }
+
 /*!
     Returns frequency of audio clip in Hz.
 */
 uint32_t AudioClip::frequency() const {
     return m_Frequency;
 }
+
 /*!
     \internal This is an internal function and must not be called manually.
 */
@@ -59,12 +62,14 @@ uint32_t AudioClip::readData(uint8_t *out, uint32_t size, int32_t offset) {
     }
     return result;
 }
+
 /*!
     Returns true in case of the audio clip is streamed from disk; otherwise returns false.
 */
 bool AudioClip::isStream() const {
     return m_Stream;
 }
+
 /*!
     \internal This is an internal function and must not be called manually.
 */
@@ -93,13 +98,17 @@ bool AudioClip::loadAudioData() {
     }
     return false;
 }
+
 /*!
-    \internal This is an internal function and must not be called manually.
+    \internal
 */
 bool AudioClip::unloadAudioData() {
     return (ov_clear(m_pVorbisFile) == 0);
 }
 
+/*!
+    \internal
+*/
 size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
@@ -109,6 +118,9 @@ size_t AudioClip::read(void *ptr, size_t size, size_t nmemb, void *datasource) {
     return 0;
 }
 
+/*!
+    \internal
+*/
 int AudioClip::seek(void *datasource, int64_t offset, int whence) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
@@ -121,6 +133,9 @@ int AudioClip::seek(void *datasource, int64_t offset, int whence) {
     return 0;
 }
 
+/*!
+    \internal
+*/
 int AudioClip::close(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
@@ -130,6 +145,9 @@ int AudioClip::close(void *datasource) {
     return 0;
 }
 
+/*!
+    \internal
+*/
 long AudioClip::tell(void *datasource) {
     AudioClip *object = static_cast<AudioClip *>(datasource);
 
@@ -160,6 +178,7 @@ void AudioClip::loadUserData(const VariantMap &data) {
         loadAudioData();
     }
 }
+
 /*!
     \internal
 */

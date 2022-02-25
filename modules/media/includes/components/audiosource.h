@@ -2,8 +2,9 @@
 #define AUDIOSOURCE_H
 
 #include "nativebehaviour.h"
+#include "media.h"
 
-#include "resources/audioclip.h"
+class AudioClip;
 
 class MEDIA_EXPORT AudioSource : public NativeBehaviour {
     A_REGISTER(AudioSource, NativeBehaviour, Components/Audio)

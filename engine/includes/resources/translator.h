@@ -15,8 +15,8 @@ class ENGINE_EXPORT Translator : public Resource {
     )
 
 public:
-    Translator ();
-    ~Translator () override;
+    Translator();
+    ~Translator() override;
 
     string translate(const string &source) const;
 

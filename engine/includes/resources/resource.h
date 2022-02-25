@@ -32,8 +32,8 @@ public:
     };
 
 public:
-    Resource ();
-    ~Resource () override;
+    Resource();
+    ~Resource() override;
 
     ResourceState state() const;
 
