@@ -43,15 +43,15 @@ private:
 protected:
     typedef unordered_map<uint32_t, bool> CollisionMap;
 
-    CollisionMap m_Collisions;
+    CollisionMap m_collisions;
 
-    Vector3 m_Center;
+    Vector3 m_center;
 
-    PhysicMaterial *m_pMaterial;
+    PhysicMaterial *m_material;
 
-    bool m_Dirty;
+    bool m_dirty;
 
-    bool m_Trigger;
+    bool m_trigger;
 
 };
 

@@ -6,30 +6,31 @@
 #include <btBulletDynamicsCommon.h>
 
 SphereCollider::SphereCollider() :
-    m_Radius(0.5f) {
+    m_radius(0.5f) {
 
 }
 
 float SphereCollider::radius() const {
-    return m_Radius;
+    return m_radius;
 }
 
 void SphereCollider::setRadius(float radius) {
-    m_Radius = radius;
+    m_radius = radius;
+    m_dirty = true;
 }
 
 btCollisionShape *SphereCollider::shape() {
-    if(m_pCollisionShape == nullptr) {
-        m_pCollisionShape = new btSphereShape(m_Radius);
+    if(m_collisionShape == nullptr) {
+        m_collisionShape = new btSphereShape(m_radius);
 
         Transform *t = actor()->transform();
 
         Vector3 p = t->scale();
-        m_pCollisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+        m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
 
-        m_Dirty = false;
+        m_dirty = false;
     }
-    return m_pCollisionShape;
+    return m_collisionShape;
 }
 
 #ifdef SHARED_DEFINE
@@ -38,7 +39,7 @@ btCollisionShape *SphereCollider::shape() {
 bool SphereCollider::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         Transform *t = actor()->transform();
-        Handles::drawSphere(t->worldPosition() + t->worldQuaternion() * m_Center, t->worldRotation(), m_Radius);
+        Handles::drawSphere(t->worldPosition() + t->worldQuaternion() * m_center, t->worldRotation(), m_radius);
     }
     return false;
 }

@@ -14,22 +14,22 @@
 #include <btBulletDynamicsCommon.h>
 
 VolumeCollider::VolumeCollider() :
-        m_Center(0.0f),
-        m_pMaterial(nullptr),
-        m_Dirty(false),
-        m_Trigger(false) {
+        m_center(0.0f),
+        m_material(nullptr),
+        m_dirty(false),
+        m_trigger(false) {
 
 }
 
 VolumeCollider::~VolumeCollider() {
-    if(m_pWorld && m_pCollisionObject) {
-        m_pWorld->removeCollisionObject(m_pCollisionObject);
+    if(m_world && m_collisionObject) {
+        m_world->removeCollisionObject(m_collisionObject);
     }
 }
 
 void VolumeCollider::update() {
-    if(m_pCollisionObject && m_Trigger) {
-        btPairCachingGhostObject *ghost = static_cast<btPairCachingGhostObject *>(m_pCollisionObject);
+    if(m_collisionObject && m_trigger) {
+        btPairCachingGhostObject *ghost = static_cast<btPairCachingGhostObject *>(m_collisionObject);
         for(int32_t i = 0; i < ghost->getOverlappingPairs().size(); i++) {
             setContact(reinterpret_cast<Collider *>(ghost->getOverlappingPairs().at(i)->getUserPointer()));
         }
@@ -37,28 +37,28 @@ void VolumeCollider::update() {
 }
 
 bool VolumeCollider::trigger() const {
-    return m_Trigger;
+    return m_trigger;
 }
 
 void VolumeCollider::setTrigger(bool trigger) {
-    m_Trigger = trigger;
+    m_trigger = trigger;
 }
 
 PhysicMaterial *VolumeCollider::material() const {
-    return m_pMaterial;
+    return m_material;
 }
 
 void VolumeCollider::setMaterial(PhysicMaterial *material) {
-    m_pMaterial = material;
+    m_material = material;
 }
 
 const Vector3 &VolumeCollider::center() const {
-    return m_Center;
+    return m_center;
 }
 
 void VolumeCollider::setCenter(const Vector3 &center) {
-    m_Center = center;
-    m_Dirty = true;
+    m_center = center;
+    m_dirty = true;
 }
 
 void VolumeCollider::retrieveContact(const Collider *other) const {
@@ -69,19 +69,19 @@ void VolumeCollider::retrieveContact(const Collider *other) const {
 }
 
 bool VolumeCollider::isDirty() const {
-    return m_Dirty;
+    return m_dirty;
 }
 
 void VolumeCollider::createCollider() {
-    if(m_Trigger) {
-        if(m_pCollisionObject) {
-            m_pWorld->removeCollisionObject(m_pCollisionObject);
-            delete m_pCollisionObject;
+    if(m_trigger) {
+        if(m_collisionObject) {
+            m_world->removeCollisionObject(m_collisionObject);
+            delete m_collisionObject;
         }
 
-        m_pCollisionObject = new btPairCachingGhostObject;
-        m_pCollisionObject->setCollisionShape(shape());
-        m_pCollisionObject->setUserPointer(this);
+        m_collisionObject = new btPairCachingGhostObject;
+        m_collisionObject->setCollisionShape(shape());
+        m_collisionObject->setUserPointer(this);
 
         Actor *a = actor();
         if(a) {
@@ -89,12 +89,12 @@ void VolumeCollider::createCollider() {
             const Quaternion &q = t->quaternion();
             Vector3 p = t->position();
 
-            m_pCollisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
-                                                              btVector3(p.x + m_Center.x, p.y + m_Center.y, p.z + m_Center.z)));
+            m_collisionObject->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
+                                                              btVector3(p.x + m_center.x, p.y + m_center.y, p.z + m_center.z)));
         }
-        m_pCollisionObject->setCollisionFlags(m_pCollisionObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+        m_collisionObject->setCollisionFlags(m_collisionObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-        m_pWorld->addCollisionObject(m_pCollisionObject, btBroadphaseProxy::SensorTrigger,
+        m_world->addCollisionObject(m_collisionObject, btBroadphaseProxy::SensorTrigger,
                                      btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::SensorTrigger);
     }
 }
