@@ -111,15 +111,19 @@ void CharacterController::setCenter(const Vector3 &center) {
 }
 
 void CharacterController::move(const Vector3 &vector) {
-    if(m_character == nullptr) {
+    if(m_character) {
         m_character->setWalkDirection(btVector3(vector.x, vector.y, vector.z));
     }
 }
 
 void CharacterController::jump(const Vector3 &vector) {
-    if(m_character == nullptr) {
+    if(m_character) {
         m_character->jump(btVector3(vector.x, vector.y, vector.z));
     }
+}
+
+bool CharacterController::isGrounded() const {
+    return (m_character) ? m_character->onGround() : false;
 }
 
 void CharacterController::createCollider() {

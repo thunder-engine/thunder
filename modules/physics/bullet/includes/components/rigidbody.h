@@ -6,7 +6,7 @@
 class RigidBodyPrivate;
 class PhysicMaterial;
 
-class RigidBody : public Collider {
+class BULLET_EXPORT RigidBody : public Collider {
     A_REGISTER(RigidBody, Collider, Components/Physics)
 
     A_PROPERTIES(

@@ -1,9 +1,9 @@
 #ifndef SPHERECOLLIDER_H
 #define SPHERECOLLIDER_H
 
-#include "components/volumecollider.h"
+#include "volumecollider.h"
 
-class SphereCollider : public VolumeCollider {
+class BULLET_EXPORT SphereCollider : public VolumeCollider {
     A_REGISTER(SphereCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(

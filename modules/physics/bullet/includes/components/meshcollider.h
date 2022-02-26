@@ -6,7 +6,7 @@
 class Mesh;
 class PhysicMaterial;
 
-class MeshCollider : public Collider {
+class BULLET_EXPORT MeshCollider : public Collider {
     A_REGISTER(MeshCollider, Collider, Components/Physics)
 
     A_PROPERTIES(

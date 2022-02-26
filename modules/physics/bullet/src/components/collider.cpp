@@ -59,7 +59,9 @@ void Collider::cleanContacts() {
         if(it->second == true) {
             emitSignal(_SIGNAL(exited()));
             it = m_Collisions.erase(it);
-            m_collisionObject->activate(true);
+            if(m_collisionObject) {
+                m_collisionObject->activate(true);
+            }
         } else {
             ++it;
         }

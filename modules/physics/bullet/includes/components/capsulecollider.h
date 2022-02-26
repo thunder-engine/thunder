@@ -3,7 +3,7 @@
 
 #include "spherecollider.h"
 
-class CapsuleCollider : public SphereCollider {
+class BULLET_EXPORT CapsuleCollider : public SphereCollider {
     A_REGISTER(CapsuleCollider, SphereCollider, Components/Physics)
 
     A_PROPERTIES(

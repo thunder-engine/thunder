@@ -1,12 +1,12 @@
 #ifndef CHARACTERCONTROLLER_H
 #define CHARACTERCONTROLLER_H
 
-#include "components/collider.h"
+#include "collider.h"
 
 class btKinematicCharacterController;
 class btPairCachingGhostObject;
 
-class CharacterController : public Collider {
+class BULLET_EXPORT CharacterController : public Collider {
     A_REGISTER(CharacterController, Collider, Components/Physics)
 
     A_PROPERTIES(
@@ -19,7 +19,8 @@ class CharacterController : public Collider {
     )
     A_METHODS(
         A_METHOD(void, CharacterController::move),
-        A_METHOD(void, CharacterController::jump)
+        A_METHOD(void, CharacterController::jump),
+        A_METHOD(bool, CharacterController::isGrounded)
     )
 
 public:
@@ -46,6 +47,8 @@ public:
 
     void move(const Vector3 &vector);
     void jump(const Vector3 &vector);
+
+    bool isGrounded() const;
 
 private:
     void createCollider() override;
