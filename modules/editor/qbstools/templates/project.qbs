@@ -34,7 +34,7 @@ Project {
         ]
         Depends { name: "cpp" }
         cpp.cxxLanguageVersion: "c++14"
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
             project.sdkPath + project.platform + "/bin",

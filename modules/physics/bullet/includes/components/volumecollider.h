@@ -5,7 +5,7 @@
 
 class PhysicMaterial;
 
-class VolumeCollider : public Collider {
+class BULLET_EXPORT VolumeCollider : public Collider {
     A_REGISTER(VolumeCollider, Collider, General)
 
     A_PROPERTIES(
@@ -43,15 +43,15 @@ private:
 protected:
     typedef unordered_map<uint32_t, bool> CollisionMap;
 
-    CollisionMap m_Collisions;
+    CollisionMap m_collisions;
 
-    Vector3 m_Center;
+    Vector3 m_center;
 
-    PhysicMaterial *m_pMaterial;
+    PhysicMaterial *m_material;
 
-    bool m_Dirty;
+    bool m_dirty;
 
-    bool m_Trigger;
+    bool m_trigger;
 
 };
 

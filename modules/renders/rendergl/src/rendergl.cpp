@@ -2,7 +2,7 @@
 
 #include "renderglsystem.h"
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 Module *moduleCreate(Engine *engine) {
     return new RenderGL(engine);
 }

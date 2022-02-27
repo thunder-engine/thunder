@@ -1,11 +1,14 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
-#include "components/component.h"
+#include "component.h"
+#include "bullet.h"
 
-#include <btBulletDynamicsCommon.h>
+class btCollisionShape;
+class btCollisionObject;
+class btDynamicsWorld;
 
-class Collider : public Component {
+class BULLET_EXPORT Collider : public Component {
     A_REGISTER(Collider, Component, General)
 
     A_NOPROPERTIES()
@@ -21,13 +24,6 @@ public:
 
     virtual void update();
 
-    virtual btCollisionShape *shape();
-
-    btDynamicsWorld *world() const;
-    void setWorld(btDynamicsWorld *world);
-
-    void destroyShape();
-
     void entered();
     void stay();
     void exited();
@@ -35,24 +31,34 @@ public:
 protected:
     virtual void createCollider();
 
+    virtual btCollisionShape *shape();
+
+    btDynamicsWorld *world() const;
+    void setWorld(btDynamicsWorld *world);
+
     void dirtyContacts();
 
     void cleanContacts();
 
     void setContact(Collider *other);
 
+    void destroyShape();
+
+    void destroyCollider();
+
 protected:
     friend class BulletSystem;
+    friend class RigidBody;
 
     typedef unordered_map<uint32_t, bool> CollisionMap;
 
     CollisionMap m_Collisions;
 
-    btCollisionShape *m_pCollisionShape;
+    btCollisionShape *m_collisionShape;
 
-    btCollisionObject *m_pCollisionObject;
+    btCollisionObject *m_collisionObject;
 
-    btDynamicsWorld *m_pWorld;
+    btDynamicsWorld *m_world;
 
 };
 

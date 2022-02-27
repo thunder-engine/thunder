@@ -1,14 +1,14 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <components/widget.h>
+#include "widget.h"
 
 class Material;
 class Sprite;
 
 class ImagePrivate;
 
-class Image : public Widget {
+class GUI_EXPORT Image : public Widget {
     A_REGISTER(Image, Widget, Components/UI)
 
     A_PROPERTIES(

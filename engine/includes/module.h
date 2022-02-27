@@ -8,7 +8,7 @@ class System;
 class AssetConverter;
 class AssetEditor;
 
-#if defined(NEXT_SHARED) && defined(_WIN32)
+#if defined(SHARED_DEFINE) && defined(_WIN32)
     #define MODULE_EXPORT __declspec(dllexport)
 #else
     #define MODULE_EXPORT
@@ -19,7 +19,7 @@ class AssetEditor;
 #define VERSION "version"
 #define AUTHOR  "author"
 
-class NEXT_LIBRARY_EXPORT Module {
+class ENGINE_EXPORT Module {
 public:
     explicit Module(Engine *engine) { m_engine = engine; }
     virtual ~Module() {}

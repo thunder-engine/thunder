@@ -109,7 +109,7 @@ void Component::onReferenceDestroyed() {
 
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 bool Component::drawHandles(ObjectList &selected) { A_UNUSED(selected); return false; }
 
 bool Component::isSelected(ObjectList &selected) {

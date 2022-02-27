@@ -3,6 +3,16 @@
 
 #include <module.h>
 
+#if defined(SHARED_DEFINE) && defined(_WIN32)
+    #ifdef GUI_LIBRARY
+        #define GUI_EXPORT __declspec(dllexport)
+    #else
+        #define GUI_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define GUI_EXPORT
+#endif
+
 class GuiSystem;
 
 class Gui : public Module {

@@ -8,7 +8,7 @@
 class AbstractSchemeModel;
 class QMenu;
 
-class NEXT_LIBRARY_EXPORT SchemeView : public QQuickWidget {
+class ENGINE_EXPORT SchemeView : public QQuickWidget {
     Q_OBJECT
 
 public:

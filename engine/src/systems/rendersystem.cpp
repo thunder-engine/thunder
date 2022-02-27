@@ -121,7 +121,7 @@ void RenderSystem::composeComponent(Component *component) const {
     }
 }
 
-#if defined(NEXT_SHARED)
+#if defined(SHARED_DEFINE)
 QWindow *RenderSystem::createRhiWindow() const {
     return nullptr;
 }

@@ -5,6 +5,8 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
+#include "resources/audioclip.h"
+
 #define CLIP        "Clip"
 #define BUFFER_SIZE 65536
 
@@ -30,7 +32,7 @@ AudioSource::~AudioSource() {
 }
 
 void AudioSource::update() {
-    Actor *a    = actor();
+    Actor *a = actor();
 
     alSourcefv(m_ID, AL_POSITION,   a->transform()->worldPosition().v);
 
@@ -59,11 +61,11 @@ void AudioSource::update() {
                         m_PositionSamples   = 0;
                     }
                 }
-                m_Current   = 1 - m_Current;
+                m_Current = 1 - m_Current;
             } break;
             case 2: { // End of clip
                 alSourceUnqueueBuffers(m_ID, 2, m_Buffers);
-                m_Current   = 0;
+                m_Current = 0;
             } break;
             default: break;
         }
@@ -79,7 +81,7 @@ void AudioSource::start() {
 void AudioSource::play() {
     alSourcei(m_ID, AL_LOOPING, m_Loop);
 
-    m_PositionSamples   = 0;
+    m_PositionSamples = 0;
 
     if(m_pData) {
         delete m_pData;
@@ -89,14 +91,14 @@ void AudioSource::play() {
         uint32_t size;
         if(m_pClip->isStream()) {
             m_pData = new uint8_t[BUFFER_SIZE];
-            size    = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
+            size = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
             alBufferData(m_Buffers[0], m_Format, m_pData, size, m_pClip->frequency());
-            size	= m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
+            size = m_pClip->readData(m_pData, BUFFER_SIZE, m_PositionSamples);
             alBufferData(m_Buffers[1], m_Format, m_pData, size, m_pClip->frequency());
 
             alSourceQueueBuffers(m_ID, 2, m_Buffers);
         } else {
-            size    = (m_pClip->duration() + 0.5) * m_pClip->channels() * m_pClip->frequency() * 2;
+            size = (m_pClip->duration() + 0.5) * m_pClip->channels() * m_pClip->frequency() * 2;
             m_pData = new uint8_t[size];
             int32_t length  = m_pClip->readData(m_pData, size, m_PositionSamples);
             alBufferData(m_Buffers[0], m_Format, m_pData, length, m_pClip->frequency());
@@ -121,10 +123,10 @@ void AudioSource::setClip(AudioClip *clip) {
     if(m_pClip) {
         switch(m_pClip->channels()) {
             case 2: {
-                m_Format    = AL_FORMAT_STEREO16;
+                m_Format = AL_FORMAT_STEREO16;
             } break;
             default: {
-                m_Format    = AL_FORMAT_MONO16;
+                m_Format = AL_FORMAT_MONO16;
             } break;
         }
     }
@@ -141,9 +143,9 @@ void AudioSource::loadUserData(const VariantMap &data) {
 }
 
 VariantMap AudioSource::saveUserData() const {
-    VariantMap result   = Component::saveUserData();
+    VariantMap result = Component::saveUserData();
     {
-        result[CLIP]    = Engine::reference(clip());
+        result[CLIP] = Engine::reference(clip());
     }
     return result;
 }
@@ -153,7 +155,7 @@ bool AudioSource::autoPlay() const {
 }
 
 void AudioSource::setAutoPlay(bool play) {
-    m_AutoPlay  = play;
+    m_AutoPlay = play;
 }
 
 bool AudioSource::loop() const {
@@ -161,5 +163,5 @@ bool AudioSource::loop() const {
 }
 
 void AudioSource::setLoop(bool loop) {
-    m_Loop  = loop;
+    m_Loop = loop;
 }

@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "converters/physicmaterialconverter.h"
 
 Module *moduleCreate(Engine *engine) {
@@ -28,7 +28,9 @@ static const char *meta = \
 "       \"Collider\","
 "       \"RigidBody\","
 "       \"SphereCollider\","
-"       \"VolumeCollider\""
+"       \"VolumeCollider\","
+"       \"CharacterController\","
+"       \"MaterialrCollider\""
 "   ]"
 "}";
 
@@ -49,7 +51,7 @@ void *Bullet::getObject(const char *name) {
     if(strcmp(name, "BulletSystem") == 0) {
         return m_pSystem;
     }
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     else if(strcmp(name, "PhysicMaterialConverter") == 0) {
         return new PhysicMaterialConverter();
     }

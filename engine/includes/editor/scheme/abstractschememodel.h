@@ -10,7 +10,7 @@
 #include <editor/undomanager.h>
 #include <engine.h>
 
-class NEXT_LIBRARY_EXPORT AbstractSchemeModel : public QObject {
+class ENGINE_EXPORT AbstractSchemeModel : public QObject {
     Q_OBJECT
 
 public:

@@ -9,7 +9,7 @@ class AnimationStateMachinePrivate;
 
 class AnimationState;
 
-class NEXT_LIBRARY_EXPORT AnimationTransition {
+class ENGINE_EXPORT AnimationTransition {
 public:
     bool operator== (const AnimationTransition &right) const;
 
@@ -21,7 +21,7 @@ public:
 };
 typedef vector<AnimationTransition> TransitionVector;
 
-class NEXT_LIBRARY_EXPORT AnimationState {
+class ENGINE_EXPORT AnimationState {
 public:
     AnimationState();
 
@@ -37,7 +37,7 @@ public:
 };
 typedef vector<AnimationState *> AnimationStateVector;
 
-class NEXT_LIBRARY_EXPORT AnimationStateMachine : public Resource {
+class ENGINE_EXPORT AnimationStateMachine : public Resource {
     A_REGISTER(AnimationStateMachine, Resource, Resources)
 
     A_METHODS(

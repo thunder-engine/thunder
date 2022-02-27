@@ -39,7 +39,7 @@ public:
     Vector3 sizerate;
 };
 
-class NEXT_LIBRARY_EXPORT ParticleModificator {
+class ENGINE_EXPORT ParticleModificator {
 public:
     enum ValueType {
         CONSTANT    = 0,
@@ -75,10 +75,11 @@ protected:
     Vector4 m_Max;
 
     VariantAnimation m_Curve;
+
 };
 typedef std::deque<ParticleModificator *> ModifiersDeque;
 
-class NEXT_LIBRARY_EXPORT ParticleEmitter {
+class ENGINE_EXPORT ParticleEmitter {
     A_PROPERTIES(
         A_PROPERTY(Mesh *, mesh, ParticleEmitter::mesh, ParticleEmitter::setMesh),
         A_PROPERTY(Material *, material, ParticleEmitter::material, ParticleEmitter::setMaterial),
@@ -128,10 +129,11 @@ private:
     bool m_Local;
 
     bool m_Continous;
+
 };
 typedef deque<ParticleEmitter> EmitterDeque;
 
-class NEXT_LIBRARY_EXPORT ParticleEffect : public Resource {
+class ENGINE_EXPORT ParticleEffect : public Resource {
     A_REGISTER(ParticleEffect, Resource, Resources)
 
     A_NOPROPERTIES()

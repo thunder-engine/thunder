@@ -1,13 +1,13 @@
 #ifndef PROGRESSBAR_H
 #define PROGRESSBAR_H
 
-#include <components/widget.h>
+#include "widget.h"
 
 class Image;
 
 class ProgressBarPrivate;
 
-class ProgressBar : public Widget {
+class GUI_EXPORT ProgressBar : public Widget {
     A_REGISTER(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(

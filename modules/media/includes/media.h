@@ -3,6 +3,16 @@
 
 #include <module.h>
 
+#if defined(SHARED_DEFINE) && defined(_WIN32)
+    #ifdef MEDIA_LIBRARY
+        #define MEDIA_EXPORT __declspec(dllexport)
+    #else
+        #define MEDIA_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define MEDIA_EXPORT
+#endif
+
 class Media : public Module {
 public:
     Media(Engine *engine);
@@ -16,7 +26,7 @@ public:
 protected:
     System *m_pSystem;
 };
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }

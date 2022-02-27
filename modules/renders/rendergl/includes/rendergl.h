@@ -17,7 +17,7 @@ protected:
     System *m_pSystem;
 
 };
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 extern "C" {
     MODULE_EXPORT Module *moduleCreate(Engine *engine);
 }

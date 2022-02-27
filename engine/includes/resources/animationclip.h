@@ -5,7 +5,7 @@
 
 #include <variantanimation.h>
 
-class NEXT_LIBRARY_EXPORT AnimationTrack {
+class ENGINE_EXPORT AnimationTrack {
 
     A_PROPERTIES(
         A_PROPERTY(string, path, AnimationTrack::path, AnimationTrack::setPath),
@@ -49,7 +49,7 @@ private:
 };
 typedef list<AnimationTrack> AnimationTrackList;
 
-class NEXT_LIBRARY_EXPORT AnimationClip : public Resource {
+class ENGINE_EXPORT AnimationClip : public Resource {
     A_REGISTER(AnimationClip, Resource, Resources)
 
     A_NOPROPERTIES()

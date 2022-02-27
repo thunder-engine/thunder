@@ -7,7 +7,7 @@ class Texture;
 class Pose;
 class ArmaturePrivate;
 
-class NEXT_LIBRARY_EXPORT Armature : public Renderable {
+class ENGINE_EXPORT Armature : public Renderable {
     A_REGISTER(Armature, NativeBehaviour, Components/Animation);
 
     A_PROPERTIES(
@@ -32,7 +32,7 @@ private:
 
     AABBox recalcBounds(const AABBox &aabb) const;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 
     bool isBoneSelected(ObjectList &selected);

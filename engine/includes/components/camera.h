@@ -8,7 +8,7 @@
 class Pipeline;
 class CameraPrivate;
 
-class NEXT_LIBRARY_EXPORT Camera : public Component {
+class ENGINE_EXPORT Camera : public Component {
     A_REGISTER(Camera, Component, Components)
 
     A_PROPERTIES(
@@ -79,7 +79,7 @@ public:
     static RenderList frustumCulling(RenderList &list, const array<Vector3, 8> &frustum);
 
 private:
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

@@ -1,9 +1,9 @@
 #ifndef BOXCOLLIDER_H
 #define BOXCOLLIDER_H
 
-#include "components/volumecollider.h"
+#include "volumecollider.h"
 
-class BoxCollider : public VolumeCollider {
+class BULLET_EXPORT BoxCollider : public VolumeCollider {
     A_REGISTER(BoxCollider, VolumeCollider, Components/Physics)
 
     A_PROPERTIES(
@@ -18,14 +18,14 @@ public:
     void setSize(const Vector3 &size);
 
 private:
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 
     btCollisionShape *shape() override;
 
 protected:
-    Vector3 m_Size;
+    Vector3 m_size;
 
 };
 

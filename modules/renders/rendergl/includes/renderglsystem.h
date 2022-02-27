@@ -18,7 +18,7 @@ public:
 
     void update(Scene *scene) override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     QWindow *createRhiWindow() const override;
 
     vector<uint8_t> renderOffscreen(Scene *scene, int width, int height) override;
@@ -26,6 +26,7 @@ public:
 
 private:
     Engine *m_pEngine;
+
 };
 
 #endif // RENDERGLSYSTEM_H

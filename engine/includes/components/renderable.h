@@ -8,7 +8,7 @@
 class RenderablePrivate;
 class CommandBuffer;
 
-class NEXT_LIBRARY_EXPORT Renderable : public NativeBehaviour {
+class ENGINE_EXPORT Renderable : public NativeBehaviour {
     A_REGISTER(Renderable, NativeBehaviour, General)
 
     A_NOPROPERTIES()

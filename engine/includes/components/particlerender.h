@@ -8,7 +8,7 @@ class ParticleData;
 class ParticleEffect;
 class ParticleRenderPrivate;
 
-class NEXT_LIBRARY_EXPORT ParticleRender : public Renderable {
+class ENGINE_EXPORT ParticleRender : public Renderable {
     A_REGISTER(ParticleRender, Renderable, Components/Effects)
 
     A_PROPERTIES(

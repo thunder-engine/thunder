@@ -6,7 +6,7 @@
 class Resource;
 class Component;
 
-class NEXT_LIBRARY_EXPORT Chunk : public Object {
+class ENGINE_EXPORT Chunk : public Object {
     A_REGISTER(Chunk, Object, General)
 
     A_NOPROPERTIES()

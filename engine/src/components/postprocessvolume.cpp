@@ -186,7 +186,7 @@ bool PostProcessVolume::isPostProcessVolume() const {
     return true;
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool PostProcessVolume::drawHandles(ObjectList &selected) {

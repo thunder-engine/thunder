@@ -8,7 +8,7 @@ class AnimationStateMachine;
 
 class AnimatorPrivate;
 
-class NEXT_LIBRARY_EXPORT Animator : public NativeBehaviour {
+class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_REGISTER(Animator, NativeBehaviour, Components/Animation)
 
     A_PROPERTIES(

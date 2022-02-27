@@ -7,7 +7,7 @@ class Material;
 class Mesh;
 class MeshRenderPrivate;
 
-class NEXT_LIBRARY_EXPORT MeshRender : public Renderable {
+class ENGINE_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components/3D);
 
     A_PROPERTIES(

@@ -6,7 +6,7 @@
 class Actor;
 class ComponentPrivate;
 
-class NEXT_LIBRARY_EXPORT Component : public Object {
+class ENGINE_EXPORT Component : public Object {
     A_REGISTER(Component, Object, General)
 
     A_PROPERTIES(
@@ -26,14 +26,14 @@ public:
     Actor *actor() const;
 
     bool isEnabled() const;
-    void setEnabled(bool enable);
+    virtual void setEnabled(bool enable);
 
     bool isStarted() const;
     void setStarted(bool started);
 
     string tr(const string &source);
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     virtual bool drawHandles(ObjectList &selected);
     bool isSelected(ObjectList &selected);
 #endif

@@ -10,9 +10,9 @@
 class Actor;
 class Renderable;
 
-class NEXT_LIBRARY_EXPORT EditorTool {
+class ENGINE_EXPORT EditorTool {
 public:
-    struct NEXT_LIBRARY_EXPORT Select {
+    struct ENGINE_EXPORT Select {
         Select();
 
         Actor *object;

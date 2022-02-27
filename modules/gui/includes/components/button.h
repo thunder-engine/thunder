@@ -1,9 +1,9 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include <components/abstractbutton.h>
+#include "abstractbutton.h"
 
-class Button : public AbstractButton {
+class GUI_EXPORT Button : public AbstractButton {
     A_REGISTER(Button, AbstractButton, Components/UI)
 
     A_NOPROPERTIES()

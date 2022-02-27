@@ -216,7 +216,7 @@ VariantMap Armature::saveUserData() const {
     }
     return result;
 }
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool Armature::drawHandles(ObjectList &selected) {

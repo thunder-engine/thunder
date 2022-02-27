@@ -1,32 +1,30 @@
 #include "components/collider.h"
 
+#include <btBulletDynamicsCommon.h>
+
 Collider::Collider() :
-        m_pCollisionShape(nullptr),
-        m_pCollisionObject(nullptr),
-        m_pWorld(nullptr) {
+        m_collisionShape(nullptr),
+        m_collisionObject(nullptr),
+        m_world(nullptr) {
 
 }
 
 Collider::~Collider() {
     destroyShape();
-    delete m_pCollisionObject;
+    destroyCollider();
 }
 
 void Collider::update() {
 
 }
 
-btCollisionShape *Collider::shape() {
-    return m_pCollisionShape;
-}
-
 btDynamicsWorld *Collider::world() const {
-    return m_pWorld;
+    return m_world;
 }
 
 void Collider::setWorld(btDynamicsWorld *world) {
-    m_pWorld = world;
-    if(m_pWorld) {
+    m_world = world;
+    if(m_world) {
         createCollider();
     }
 }
@@ -35,9 +33,18 @@ void Collider::createCollider() {
 
 }
 
+btCollisionShape *Collider::shape() {
+    return m_collisionShape;
+}
+
 void Collider::destroyShape() {
-    delete m_pCollisionShape;
-    m_pCollisionShape = nullptr;
+    delete m_collisionShape;
+    m_collisionShape = nullptr;
+}
+
+void Collider::destroyCollider() {
+    delete m_collisionObject;
+    m_collisionObject = nullptr;
 }
 
 void Collider::dirtyContacts() {
@@ -52,7 +59,9 @@ void Collider::cleanContacts() {
         if(it->second == true) {
             emitSignal(_SIGNAL(exited()));
             it = m_Collisions.erase(it);
-            m_pCollisionObject->activate(true);
+            if(m_collisionObject) {
+                m_collisionObject->activate(true);
+            }
         } else {
             ++it;
         }

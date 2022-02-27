@@ -7,7 +7,7 @@ class RenderTargetPrivate;
 
 class Texture;
 
-class NEXT_LIBRARY_EXPORT RenderTarget : public Resource {
+class ENGINE_EXPORT RenderTarget : public Resource {
     A_REGISTER(RenderTarget, Resource, Resources)
 
     A_NOPROPERTIES()

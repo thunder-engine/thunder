@@ -1,13 +1,14 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include <components/renderable.h>
+#include "renderable.h"
+#include "gui.h"
 
 class WidgetPrivate;
 
 class RectTransform;
 
-class Widget : public Renderable {
+class GUI_EXPORT Widget : public Renderable {
     A_REGISTER(Widget, Renderable, Components/UI)
 
     A_NOPROPERTIES()
@@ -36,7 +37,7 @@ protected:
 
     void actorParentChanged() override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

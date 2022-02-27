@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "converters/audioconverter.h"
 
 Module *moduleCreate(Engine *engine) {
@@ -44,7 +44,7 @@ void *Media::getObject(const char *name) {
     if(strcmp(name, "MediaSystem") == 0) {
         return m_pSystem;
     }
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     else if(strcmp(name, "AudioConverter") == 0) {
         return new AudioConverter();
     }

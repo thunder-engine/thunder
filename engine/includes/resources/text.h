@@ -5,7 +5,7 @@
 
 class TextPrivate;
 
-class NEXT_LIBRARY_EXPORT Text : public Resource {
+class ENGINE_EXPORT Text : public Resource {
     A_REGISTER(Text, Resource, Resources)
 
     A_PROPERTIES(
@@ -17,20 +17,20 @@ class NEXT_LIBRARY_EXPORT Text : public Resource {
     )
 
 public:
-    Text ();
-    ~Text ();
+    Text();
+    ~Text();
 
-    uint32_t size () const;
-    void setSize (uint32_t);
+    uint32_t size() const;
+    void setSize(uint32_t);
 
-    string text ();
+    string text();
 
     uint8_t *data() const;
 
 protected:
-    void loadUserData (const VariantMap &data) override;
+    void loadUserData(const VariantMap &data) override;
 
-    VariantMap saveUserData () const override;
+    VariantMap saveUserData() const override;
 
 private:
     TextPrivate *p_ptr;

@@ -8,6 +8,7 @@
 class PhysicMaterialImportSettings : public AssetConverterSettings {
 public:
     PhysicMaterialImportSettings();
+
 };
 
 class PhysicMaterialConverter : public AssetConverter {
@@ -17,6 +18,7 @@ private:
     AssetConverterSettings *createSettings() const Q_DECL_OVERRIDE;
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Physical_Material.fix"; }
+
 };
 
 #endif // PHYSICMATERIALCONVERTER_H

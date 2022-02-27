@@ -8,7 +8,7 @@ class ResourceSystem;
 
 class Component;
 
-class NEXT_LIBRARY_EXPORT Resource : public Object {
+class ENGINE_EXPORT Resource : public Object {
     A_REGISTER(Resource, Object, General)
 
     A_NOPROPERTIES()
@@ -25,15 +25,15 @@ public:
         ToBeDeleted
     };
 
-    class NEXT_LIBRARY_EXPORT IObserver {
+    class ENGINE_EXPORT IObserver {
     public:
         virtual ~IObserver() {}
         virtual void resourceUpdated(const Resource *resource, ResourceState state) = 0;
     };
 
 public:
-    Resource ();
-    ~Resource () override;
+    Resource();
+    ~Resource() override;
 
     ResourceState state() const;
 

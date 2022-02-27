@@ -5,12 +5,12 @@
 
 class SpotLightPrivate;
 
-class NEXT_LIBRARY_EXPORT SpotLight : public BaseLight {
+class ENGINE_EXPORT SpotLight : public BaseLight {
     A_REGISTER(SpotLight, BaseLight, Components/Lights)
 
     A_PROPERTIES(
         A_PROPERTY(float, attenuationDistance, SpotLight::attenuationDistance, SpotLight::setAttenuationDistance),
-        A_PROPERTY(float, outerAngle,          SpotLight::outerAngle, SpotLight::setOuterAngle)
+        A_PROPERTY(float, outerAngle, SpotLight::outerAngle, SpotLight::setOuterAngle)
     )
     A_NOMETHODS()
 
@@ -30,7 +30,7 @@ private:
     void shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) override;
 
     AABBox bound() const override;
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

@@ -12,7 +12,7 @@ class Transform;
 
 class CommandBuffer;
 
-class NEXT_LIBRARY_EXPORT Handles {
+class ENGINE_EXPORT Handles {
 public:
     enum Axises {
         AXIS_X = (1 << 0),

@@ -7,7 +7,7 @@ class PrefabPrivate;
 
 class Actor;
 
-class NEXT_LIBRARY_EXPORT Prefab : public Resource {
+class ENGINE_EXPORT Prefab : public Resource {
     A_REGISTER(Prefab, Resource, Resources)
 
     A_PROPERTIES(

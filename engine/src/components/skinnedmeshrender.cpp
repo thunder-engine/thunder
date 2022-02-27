@@ -194,7 +194,7 @@ void SkinnedMeshRender::onReferenceDestroyed() {
     }
 }
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
 #include "viewport/handles.h"
 
 bool SkinnedMeshRender::drawHandles(ObjectList &selected) {

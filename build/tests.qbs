@@ -42,7 +42,7 @@ Project {
 
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: tests.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""

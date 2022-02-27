@@ -7,7 +7,7 @@ class DirectLightPrivate;
 
 class Camera;
 
-class NEXT_LIBRARY_EXPORT DirectLight : public BaseLight {
+class ENGINE_EXPORT DirectLight : public BaseLight {
     A_REGISTER(DirectLight, BaseLight, Components/Lights)
 
     A_NOPROPERTIES()
@@ -24,7 +24,7 @@ private:
 
     AABBox bound() const override;
 
-#ifdef NEXT_SHARED
+#ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
 

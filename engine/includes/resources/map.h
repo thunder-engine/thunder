@@ -5,7 +5,7 @@
 
 class MapPrivate;
 
-class NEXT_LIBRARY_EXPORT Map : public Resource {
+class ENGINE_EXPORT Map : public Resource {
     A_REGISTER(Map, Resource, Resources)
 
     A_PROPERTIES(

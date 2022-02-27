@@ -13,6 +13,7 @@ Project {
         "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
+        "../../engine/includes/components",
         "../../engine/includes/editor",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
@@ -41,7 +42,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "multimedia"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["NEXT_SHARED"]
+        cpp.defines: ["SHARED_DEFINE", "MEDIA_LIBRARY"]
         cpp.includePaths: media.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -74,13 +75,24 @@ Project {
         }
 
         Group {
-            name: "Media includes"
-            prefix: "includes/"
+            name: "Module includes"
             files: [
-                "media.h"
+                "includes/media.h"
             ]
             qbs.install: true
             qbs.installDir: media.INC_PATH + "/modules"
+            qbs.installPrefix: media.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "components/*.h",
+                "resources/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: media.INC_PATH + "/engine"
             qbs.installPrefix: media.PREFIX
         }
 

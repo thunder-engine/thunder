@@ -4,12 +4,12 @@
 #include <string>
 #include <stdint.h>
 
-#include <objectsystem.h>
+#include <engine.h>
 
 class Scene;
 class Component;
 
-class NEXT_LIBRARY_EXPORT System : public ObjectSystem {
+class ENGINE_EXPORT System : public ObjectSystem {
 public:
     enum ThreadPolicy {
         Main = 0,

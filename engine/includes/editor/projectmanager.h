@@ -11,7 +11,7 @@
 
 #include <editor/codebuilder.h>
 
-class NEXT_LIBRARY_EXPORT ProjectManager : public QObject {
+class ENGINE_EXPORT ProjectManager : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString Project_Name READ projectName WRITE setProjectName NOTIFY updated DESIGNABLE true USER true)

@@ -5,7 +5,7 @@
 
 class FontPrivate;
 
-class NEXT_LIBRARY_EXPORT Font : public Sprite {
+class ENGINE_EXPORT Font : public Sprite {
     A_REGISTER(Font, Sprite, Resources)
 
     A_NOPROPERTIES()

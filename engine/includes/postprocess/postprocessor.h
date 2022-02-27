@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <global.h>
+#include <engine.h>
 
 class Mesh;
 class Texture;
@@ -16,7 +16,7 @@ class Pipeline;
 
 class PostProcessSettings;
 
-class NEXT_LIBRARY_EXPORT PostProcessor {
+class ENGINE_EXPORT PostProcessor {
 public:
     PostProcessor();
     virtual ~PostProcessor();
