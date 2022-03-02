@@ -54,6 +54,8 @@ public:
 
     RenderSystem *render() const;
 
+    QStringList plugins() const;
+
     QStringList extensions(const QString &type) const;
 
     void *getPluginObject(const QString &name);
@@ -113,6 +115,8 @@ private:
         QString url;
 
         QString path;
+
+        QString baseName;
 
         QStringList components;
 

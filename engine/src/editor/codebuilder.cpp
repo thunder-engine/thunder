@@ -2,6 +2,9 @@
 
 #include "resources/text.h"
 
+#include <editor/pluginmanager.h>
+#include <editor/projectmanager.h>
+
 #include <QFile>
 #include <QMap>
 #include <QMetaProperty>
@@ -11,6 +14,7 @@
 namespace  {
     const char *gFilesList("{FilesList}");
     const char *gLibrariesList("{LibrariesList}");
+    const char *gEditorLibrariesList("{EditorLibrariesList}");
 
     const char *gRegisterModules("{RegisterModules}");
     const char *gModuleIncludes("{ModuleIncludes}");
@@ -162,6 +166,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
     m_Values[gRegisterModules].clear();
     m_Values[gModuleIncludes].clear();
     m_Values[gLibrariesList].clear();
+    m_Values[gEditorLibrariesList].clear();
     {
         QStringList includes;
         QMapIterator<QString, QString> it(classes);
@@ -180,6 +185,14 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
             m_Values[gRegisterModules].append(QString("engine->addModule(new %1(engine));\n").arg(it));
             m_Values[gModuleIncludes].append(QString("#include <%1.h>\n").arg(it.toLower()));
             m_Values[gLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(it.toLower()));
+        }
+
+        QString name = ProjectManager::instance()->projectName() + "-editor";
+        for(auto &it : PluginManager::instance()->plugins()) {
+            QFileInfo info(it);
+            if(name != info.baseName()) {
+                m_Values[gEditorLibrariesList].append(QString("\t\t\t\"%1\",\n").arg(info.baseName()));
+            }
         }
     }
 

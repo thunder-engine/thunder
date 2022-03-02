@@ -219,34 +219,6 @@ Product {
     }
 
     Group {
-        name: "Runtime DLLs"
-        condition: qbs.targetOS.contains("windows")
-
-        property string vspath: {
-            var result  = Environment.getEnv("VS140COMNTOOLS") + "../../VC/redist"
-            var type    = ""
-            if(qbs.debugInformation) {
-                result += "/Debug_NonRedist"
-                type    = "Debug"
-            }
-            var arch = "x86"
-            if(qbs.architecture !== "x86") {
-                arch = "x64"
-            }
-            result += "/" + arch + "/Microsoft.VC140." + type + "CRT"
-
-            return result;
-        }
-
-        files: [
-            vspath + "/msvcp140" + ((qbs.debugInformation) ? "d" : "") + ".dll"
-        ]
-        qbs.install: true
-        qbs.installDir: install.BIN_PATH + "/" + install.bundle
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
         name: "Shaders Engine"
         files: [
             install.RESOURCE_ROOT + "/engine/shaders/*"

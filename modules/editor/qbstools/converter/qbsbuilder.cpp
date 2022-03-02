@@ -19,7 +19,7 @@ namespace {
     const char *gLibraryPaths("${libraryPaths}");
     const char *gLibraries("${libraries}");
 
-    const char *gEditorSuffix("-Editor");
+    const char *gEditorSuffix("-editor");
 
     // Android specific
     const char *gManifestFile("${manifestFile}");

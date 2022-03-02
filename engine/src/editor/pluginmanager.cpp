@@ -336,6 +336,16 @@ RenderSystem *PluginManager::render() const {
     return m_pRender;
 }
 
+QStringList PluginManager::plugins() const {
+    QStringList result;
+
+    for(auto &it : m_Plugins) {
+        result << it.path;
+    }
+
+    return result;
+}
+
 QStringList PluginManager::extensions(const QString &type) const {
     QStringList result;
 

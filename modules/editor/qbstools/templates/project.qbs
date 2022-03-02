@@ -26,7 +26,7 @@ Project {
 
     DynamicLibrary {
         condition: desktop
-        name: "${Project_Name}-Editor"
+        name: "${Project_Name}-editor"
         files: [
             "plugin.cpp",
             //+{FilesList}
@@ -37,12 +37,16 @@ Project {
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: project.includePaths
         cpp.libraryPaths: [ ${libraryPaths}
+            project.sdkPath + project.platform + "/lib",
             project.sdkPath + project.platform + "/bin",
-            project.sdkPath + project.platform + "/lib"
+            project.sdkPath + project.platform + "/bin/plugins"
         ]
         cpp.dynamicLibraries: [
+            //+{EditorLibrariesList}
+            //-{EditorLibrariesList}
             "next-editor",
-            "engine-editor" ]
+            "engine-editor"
+        ]
 
         Group {
             name: "Install Plugin"
