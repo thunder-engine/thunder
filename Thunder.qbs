@@ -36,7 +36,7 @@ Project {
         return ""
     }
 
-    property bool withVulkan: false
+    property bool withVulkan: true
 
     Probe {
         id: probe

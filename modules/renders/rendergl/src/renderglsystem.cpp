@@ -39,15 +39,6 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
         m_pEngine(engine) {
 
     PROFILE_FUNCTION();
-
-    System *system = m_pEngine->resourceSystem();
-
-    TextureGL::registerClassFactory(system);
-    RenderTargetGL::registerClassFactory(system);
-    MaterialGL::registerClassFactory(system);
-    MeshGL::registerClassFactory(system);
-
-    CommandBufferGL::registerClassFactory(m_pEngine);
 }
 
 RenderGLSystem::~RenderGLSystem() {
@@ -71,6 +62,15 @@ const char *RenderGLSystem::name() const {
 */
 bool RenderGLSystem::init() {
     PROFILE_FUNCTION();
+
+    System *system = m_pEngine->resourceSystem();
+
+    TextureGL::registerClassFactory(system);
+    RenderTargetGL::registerClassFactory(system);
+    MaterialGL::registerClassFactory(system);
+    MeshGL::registerClassFactory(system);
+
+    CommandBufferGL::registerClassFactory(m_pEngine);
 
 #ifndef THUNDER_MOBILE
     if(!gladLoadGL()) {

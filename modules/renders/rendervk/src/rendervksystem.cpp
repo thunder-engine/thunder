@@ -41,16 +41,9 @@ RenderVkSystem::RenderVkSystem(Engine *engine) :
         RenderSystem(),
         m_pEngine(engine),
         m_registered(false) {
+
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
-
-    TextureVk::registerClassFactory(system);
-    RenderTargetVk::registerClassFactory(system);
-    MaterialVk::registerClassFactory(system);
-    MeshVk::registerClassFactory(system);
-
-    CommandBufferVk::registerClassFactory(m_pEngine);
 }
 
 RenderVkSystem::~RenderVkSystem() {
@@ -74,6 +67,15 @@ const char *RenderVkSystem::name() const {
 */
 bool RenderVkSystem::init() {
     PROFILE_FUNCTION();
+
+    System *system = m_pEngine->resourceSystem();
+
+    TextureVk::registerClassFactory(system);
+    RenderTargetVk::registerClassFactory(system);
+    MaterialVk::registerClassFactory(system);
+    MeshVk::registerClassFactory(system);
+
+    CommandBufferVk::registerClassFactory(m_pEngine);
 
 #if defined(SHARED_DEFINE)
     s_Instance.setLayers({"VK_LAYER_KHRONOS_validation"});
