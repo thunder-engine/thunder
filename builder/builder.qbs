@@ -40,7 +40,13 @@ Project {
 
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE", "BUILDER", "QUAZIP_STATIC"]
+        cpp.defines: {
+            var result = builder.defines
+            result.push("SHARED_DEFINE")
+            result.push("BUILDER")
+            result.push("QUAZIP_STATIC")
+            return result
+        }
         cpp.includePaths: builder.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
