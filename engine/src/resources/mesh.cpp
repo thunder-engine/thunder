@@ -452,7 +452,7 @@ AABBox Mesh::bound() const {
 /*!
     Sets new bounding \a box for the Mesh.
 */
-void Mesh::setBound(const AABBox &box) {
+void Mesh::setBound(AABBox box) {
     p_ptr->m_Box = box;
 }
 /*!

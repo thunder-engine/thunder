@@ -28,13 +28,13 @@ public:
     void setFadeDuration(float duration);
 
     Vector4 highlightedColor() const;
-    void setHighlightedColor(const Vector4 &color);
+    void setHighlightedColor(const Vector4 color);
 
     Vector4 normalColor() const;
-    void setNormalColor(const Vector4 &color);
+    void setNormalColor(const Vector4 color);
 
     Vector4 pressedColor() const;
-    void setPressedColor(const Vector4 &color);
+    void setPressedColor(const Vector4 color);
 
     Image *targetGraphic() const;
     void setTargetGraphic(Image *image);

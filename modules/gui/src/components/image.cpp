@@ -171,7 +171,7 @@ Vector4 Image::color() const {
 /*!
     Changes the \a color of the image to be drawn.
 */
-void Image::setColor(const Vector4 &color) {
+void Image::setColor(const Vector4 color) {
     p_ptr->m_Color = color;
     if(p_ptr->m_pCustomMaterial) {
         p_ptr->m_pCustomMaterial->setVector4(COLOR, &p_ptr->m_Color);
@@ -188,7 +188,7 @@ string Image::item() const {
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void Image::setItem(const string &item) {
+void Image::setItem(const string item) {
     p_ptr->m_Item = item;
     p_ptr->m_Hash = hash_str(p_ptr->m_Item);
     p_ptr->composeMesh();

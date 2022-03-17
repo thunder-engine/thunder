@@ -58,7 +58,7 @@ public:
         m_Integer = value;
     }
 
-    string testString(const string &data) const {
+    string testString(const string data) const {
         return data;
     }
 
@@ -70,7 +70,7 @@ public:
         return m_Vector2;
     }
 
-    void setVector(const Vector2 &value) {
+    void setVector(const Vector2 value) {
         m_Vector2 = value;
     }
 

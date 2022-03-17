@@ -34,7 +34,6 @@ Project {
         Depends { name: "assimp" }
         Depends { name: "bundle" }
         Depends { name: "zlib-editor" }
-        Depends { name: "quazip-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
@@ -45,8 +44,10 @@ Project {
             var result = builder.defines
             result.push("SHARED_DEFINE")
             result.push("BUILDER")
+            result.push("QUAZIP_STATIC")
             return result
         }
+
         cpp.includePaths: builder.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""

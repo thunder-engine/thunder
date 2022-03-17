@@ -24,7 +24,7 @@ string AnimationTrack::path() const {
 /*!
     Sets a \a path to the object in the hierarchy.
 */
-void AnimationTrack::setPath(const string &path) {
+void AnimationTrack::setPath(const string path) {
     m_path = path;
     m_hash = hash_str(m_path + "." + m_property);
 }
@@ -37,7 +37,7 @@ string AnimationTrack::property() const {
 /*!
     Sets a \a property name that will be animated.
 */
-void AnimationTrack::setProperty(const string &property) {
+void AnimationTrack::setProperty(const string property) {
     m_property = property;
     m_hash = hash_str(m_path + "." + m_property);
 }

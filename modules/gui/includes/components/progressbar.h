@@ -41,10 +41,10 @@ public:
     void setProgressGraphic(Image *image);
 
     Vector4 backgroundColor() const;
-    void setBackgroundColor(const Vector4 &color);
+    void setBackgroundColor(const Vector4 color);
 
     Vector4 progressColor() const;
-    void setProgressColor(const Vector4 &color);
+    void setProgressColor(const Vector4 color);
 
 private:
     void loadUserData(const VariantMap &data) override;

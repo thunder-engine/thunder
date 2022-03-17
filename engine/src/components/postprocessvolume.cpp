@@ -174,7 +174,7 @@ Variant PostProcessVolume::readProperty(const MetaProperty &property) const {
 /*!
     \internal
 */
-void PostProcessVolume::writeProperty(const MetaProperty &property, const Variant &value) {
+void PostProcessVolume::writeProperty(const MetaProperty &property, const Variant value) {
     PROFILE_FUNCTION();
 
     p_ptr->m_settings.writeValue(property.name(), value);

@@ -273,7 +273,7 @@ Vector4 &Camera::color() const {
 /*!
     Sets the \a color with which the screen will be cleared.
 */
-void Camera::setColor(const Vector4 &color) {
+void Camera::setColor(const Vector4 color) {
     p_ptr->m_Color = color;
 }
 /*!

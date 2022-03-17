@@ -43,7 +43,7 @@ public:
     void setSkinWidth(float width);
 
     Vector3 center() const;
-    void setCenter(const Vector3 &center);
+    void setCenter(const Vector3 center);
 
     void move(const Vector3 &vector);
     void jump(const Vector3 &vector);

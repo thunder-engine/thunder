@@ -30,16 +30,16 @@ public:
     ~Transform();
 
     Vector3 &position() const;
-    void setPosition(const Vector3 &position);
+    void setPosition(const Vector3 position);
 
     Vector3 &rotation() const;
-    void setRotation(const Vector3 &angles);
+    void setRotation(const Vector3 angles);
 
     virtual Quaternion &quaternion() const;
-    void setQuaternion(const Quaternion &quaternion);
+    void setQuaternion(const Quaternion quaternion);
 
     Vector3 &scale() const;
-    void setScale(const Vector3 &scale);
+    void setScale(const Vector3 scale);
 
     Transform *parentTransform() const;
     virtual void setParentTransform(Transform *parent, bool force = false);

@@ -15,7 +15,7 @@ public:
     BoxCollider();
 
     const Vector3 &size() const;
-    void setSize(const Vector3 &size);
+    void setSize(const Vector3 size);
 
 private:
 #ifdef SHARED_DEFINE

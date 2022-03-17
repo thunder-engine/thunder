@@ -106,7 +106,7 @@ Vector3 CharacterController::center() const {
     return m_center;
 }
 
-void CharacterController::setCenter(const Vector3 &center) {
+void CharacterController::setCenter(const Vector3 center) {
     m_center = center;
 }
 

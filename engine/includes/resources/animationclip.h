@@ -22,10 +22,10 @@ public:
     AnimationTrack();
 
     string path() const;
-    void setPath(const string &path);
+    void setPath(const string path);
 
     string property() const;
-    void setProperty(const string &property);
+    void setProperty(const string property);
 
     int duration() const;
     void setDuration(int duration);

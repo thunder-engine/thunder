@@ -105,7 +105,7 @@ Vector4 &BaseLight::color() const {
 /*!
     Changes a \a color of emitting light.
 */
-void BaseLight::setColor(const Vector4 &color) {
+void BaseLight::setColor(const Vector4 color) {
     p_ptr->m_Color = color;
     if(p_ptr->m_pMaterialInstance) {
         p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
@@ -121,7 +121,7 @@ Vector4 &BaseLight::bias() const {
     Changes shadow map \a bias value.
     You can use this value to mitigate the shadow map acne effect.
 */
-void BaseLight::setBias(const Vector4 &bias) {
+void BaseLight::setBias(const Vector4 bias) {
     p_ptr->m_Bias = bias;
     if(p_ptr->m_pMaterialInstance) {
         p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);

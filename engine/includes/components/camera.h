@@ -60,7 +60,7 @@ public:
     void setFov(const float angle);
 
     Vector4 &color() const;
-    void setColor(const Vector4 &color);
+    void setColor(const Vector4 color);
 
     float orthoSize() const;
     void setOrthoSize(const float size);
