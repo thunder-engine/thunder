@@ -142,7 +142,7 @@ public:
     int lodsCount() const;
 
     AABBox bound() const;
-    void setBound(const AABBox &box);
+    void setBound(AABBox box);
 
     int topology() const;
     void setTopology(int mode);

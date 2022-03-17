@@ -51,7 +51,7 @@ RectTransform::~RectTransform() {
 Vector2 RectTransform::size() const {
     return p_ptr->m_size;
 }
-void RectTransform::setSize(const Vector2 &size) {
+void RectTransform::setSize(const Vector2 size) {
     if(p_ptr->m_size != size) {
         Vector2 d = size - p_ptr->m_size;
         for(auto &it : children()) {
@@ -71,7 +71,7 @@ void RectTransform::setSize(const Vector2 &size) {
 Vector2 RectTransform::pivot() const {
     return p_ptr->m_pivot;
 }
-void RectTransform::setPivot(const Vector2 &pivot) {
+void RectTransform::setPivot(const Vector2 pivot) {
     if(p_ptr->m_pivot != pivot) {
         p_ptr->m_pivot = pivot;
         p_ptr->notify();
@@ -82,7 +82,7 @@ void RectTransform::setPivot(const Vector2 &pivot) {
 Vector2 RectTransform::minAnchors() const {
     return p_ptr->m_minAnchors;
 }
-void RectTransform::setMinAnchors(const Vector2 &anchors) {
+void RectTransform::setMinAnchors(const Vector2 anchors) {
     p_ptr->m_minAnchors = anchors;
     setDirty();
 }
@@ -90,7 +90,7 @@ void RectTransform::setMinAnchors(const Vector2 &anchors) {
 Vector2 RectTransform::maxAnchors() const {
     return p_ptr->m_maxAnchors;
 }
-void RectTransform::setMaxAnchors(const Vector2 &anchors) {
+void RectTransform::setMaxAnchors(const Vector2 anchors) {
     p_ptr->m_maxAnchors = anchors;
     setDirty();
 }

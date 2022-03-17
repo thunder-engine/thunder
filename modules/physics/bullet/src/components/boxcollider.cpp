@@ -14,7 +14,7 @@ const Vector3 &BoxCollider::size() const {
     return m_size;
 }
 
-void BoxCollider::setSize(const Vector3 &size) {
+void BoxCollider::setSize(const Vector3 size) {
     m_size = size;
     m_dirty = true;
 }

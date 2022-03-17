@@ -97,7 +97,7 @@ Vector3 &Transform::position() const {
 /*!
     Changes \a position of the Transform in local space.
 */
-void Transform::setPosition(const Vector3 &position) {
+void Transform::setPosition(const Vector3 position) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Position = position;
     setDirty();
@@ -111,7 +111,7 @@ Vector3 &Transform::rotation() const {
 /*!
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
-void Transform::setRotation(const Vector3 &angles) {
+void Transform::setRotation(const Vector3 angles) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Rotation = angles;
     p_ptr->m_Quaternion = Quaternion(p_ptr->m_Rotation);
@@ -126,7 +126,7 @@ Quaternion &Transform::quaternion() const {
 /*!
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
-void Transform::setQuaternion(const Quaternion &quaternion) {
+void Transform::setQuaternion(const Quaternion quaternion) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Quaternion = quaternion;
 #ifdef SHARED_DEFINE
@@ -143,7 +143,7 @@ Vector3 &Transform::scale() const {
 /*!
     Changes the \a scale of the Transform in local space.
 */
-void Transform::setScale(const Vector3 &scale) {
+void Transform::setScale(const Vector3 scale) {
     unique_lock<mutex> locker(p_ptr->m_Mutex);
     p_ptr->m_Scale = scale;
     setDirty();

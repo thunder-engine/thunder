@@ -56,7 +56,7 @@ const Vector3 &VolumeCollider::center() const {
     return m_center;
 }
 
-void VolumeCollider::setCenter(const Vector3 &center) {
+void VolumeCollider::setCenter(const Vector3 center) {
     m_center = center;
     m_dirty = true;
 }

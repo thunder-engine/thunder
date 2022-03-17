@@ -30,10 +30,10 @@ public:
     void setSprite(Sprite *sprite);
 
     Vector4 color() const;
-    void setColor(const Vector4 &color);
+    void setColor(const Vector4 color);
 
     string item() const;
-    void setItem(const string &item);
+    void setItem(const string item);
 
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;

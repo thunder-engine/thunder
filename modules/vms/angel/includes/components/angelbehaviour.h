@@ -17,7 +17,7 @@ public:
     ~AngelBehaviour();
 
     string script() const;
-    void setScript(const string &value);
+    void setScript(const string value);
 
     asIScriptObject *scriptObject() const;
     void setScriptObject(asIScriptObject *object);
@@ -56,7 +56,7 @@ private:
     void onReferenceDestroyed() override;
 
     Variant readProperty(const MetaProperty &property) const;
-    void writeProperty(const MetaProperty &property, const Variant &value);
+    void writeProperty(const MetaProperty &property, const Variant value);
 
     void methodCallEvent(MethodCallEvent *event) override;
 

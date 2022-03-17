@@ -40,10 +40,10 @@ public:
     void setBrightness(const float brightness);
 
     Vector4 &color() const;
-    void setColor(const Vector4 &color);
+    void setColor(const Vector4 color);
 
     Vector4 &bias() const;
-    void setBias(const Vector4 &bias);
+    void setBias(const Vector4 bias);
 
 protected:
     MaterialInstance *material() const;

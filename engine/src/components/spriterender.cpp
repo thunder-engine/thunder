@@ -220,7 +220,7 @@ Vector4 &SpriteRender::color() const {
 /*!
     Changes the \a color of the sprite to be drawn.
 */
-void SpriteRender::setColor(const Vector4 &color) {
+void SpriteRender::setColor(const Vector4 color) {
     p_ptr->m_Color = color;
     if(p_ptr->m_pMaterial) {
         p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
@@ -235,7 +235,7 @@ string SpriteRender::item() const {
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
-void SpriteRender::setItem(const string &item) {
+void SpriteRender::setItem(const string item) {
     p_ptr->m_Item = item;
     p_ptr->m_Hash = hash_str(p_ptr->m_Item);
     p_ptr->composeMesh(true);
@@ -249,7 +249,7 @@ Vector2 &SpriteRender::size() const {
 /*!
     Sets a new \a size of sprite.
 */
-void SpriteRender::setSize(const Vector2 &size) {
+void SpriteRender::setSize(const Vector2 size) {
     p_ptr->m_Size = size;
     p_ptr->composeMesh();
 }

@@ -36,7 +36,7 @@ string AngelBehaviour::script() const {
     return m_Script;
 }
 
-void AngelBehaviour::setScript(const string &value) {
+void AngelBehaviour::setScript(const string value) {
     PROFILE_FUNCTION();
     if(value != m_Script) {
         m_Script = value;
@@ -346,7 +346,7 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
     return Variant();
 }
 
-void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant &value) {
+void AngelBehaviour::writeProperty(const MetaProperty &property, const Variant value) {
     PROFILE_FUNCTION();
     auto it = m_PropertyAdresses.find(property.name());
     if(it != m_PropertyAdresses.end()) {

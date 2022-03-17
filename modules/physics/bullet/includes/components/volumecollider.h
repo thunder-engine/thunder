@@ -25,7 +25,7 @@ public:
     void setMaterial(PhysicMaterial *material);
 
     const Vector3 &center() const;
-    void setCenter(const Vector3 &center);
+    void setCenter(const Vector3 center);
 
     void retrieveContact(const Collider *other) const;
 

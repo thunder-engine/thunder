@@ -48,13 +48,13 @@ public:
     void setTexture(Texture *texture);
 
     Vector4 &color() const;
-    void setColor(const Vector4 &color);
+    void setColor(const Vector4 color);
 
     string item() const;
-    void setItem(const string &item);
+    void setItem(const string item);
 
     Vector2 &size() const;
-    void setSize(const Vector2 &size);
+    void setSize(const Vector2 size);
 
     int drawMode() const;
     void setDrawMode(int mode);

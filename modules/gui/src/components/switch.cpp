@@ -68,7 +68,7 @@ void Switch::setKnobGraphic(Image *image) {
 Vector4 Switch::knobColor() const {
     return p_ptr->m_knobColor;
 }
-void Switch::setKnobColor(const Vector4 &color) {
+void Switch::setKnobColor(const Vector4 color) {
     p_ptr->m_knobColor = color;
     if(p_ptr->m_knobGraphic) {
         p_ptr->m_knobGraphic->setColor(p_ptr->m_knobColor);

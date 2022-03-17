@@ -60,7 +60,7 @@ Vector4 AbstractButton::highlightedColor() const {
     return p_ptr->m_highlightedColor;
 }
 
-void AbstractButton::setHighlightedColor(const Vector4 &color) {
+void AbstractButton::setHighlightedColor(const Vector4 color) {
     p_ptr->m_highlightedColor = color;
 }
 
@@ -68,7 +68,7 @@ Vector4 AbstractButton::normalColor() const {
     return p_ptr->m_normalColor;
 }
 
-void AbstractButton::setNormalColor(const Vector4 &color) {
+void AbstractButton::setNormalColor(const Vector4 color) {
     p_ptr->m_normalColor = color;
     if(p_ptr->m_targetGraphic) {
         p_ptr->m_targetGraphic->setColor(p_ptr->m_normalColor);
@@ -79,7 +79,7 @@ Vector4 AbstractButton::pressedColor() const {
     return p_ptr->m_pressedColor;
 }
 
-void AbstractButton::setPressedColor(const Vector4 &color) {
+void AbstractButton::setPressedColor(const Vector4 color) {
     p_ptr->m_pressedColor = color;
 }
 

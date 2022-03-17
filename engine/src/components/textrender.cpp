@@ -113,7 +113,7 @@ string TextRender::text() const {
 /*!
     Changes the \a text which will be drawn.
 */
-void TextRender::setText(const string &text) {
+void TextRender::setText(const string text) {
     p_ptr->m_Text = text;
     p_ptr->composeMesh();
 }
@@ -189,7 +189,7 @@ Vector4 &TextRender::color() const {
 /*!
     Changes the \a color of the text to be drawn.
 */
-void TextRender::setColor(const Vector4 &color) {
+void TextRender::setColor(const Vector4 color) {
     p_ptr->m_Color = color;
     if(p_ptr->m_pMaterial) {
         p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
@@ -217,7 +217,7 @@ Vector2 &TextRender::size() const {
 /*!
     Changes the size of \a boundaries of the text area. This parameter is involved in Word Wrap calculations.
 */
-void TextRender::setSize(const Vector2 &boundaries) {
+void TextRender::setSize(const Vector2 boundaries) {
     p_ptr->m_Boundaries = boundaries;
     p_ptr->composeMesh();
 }

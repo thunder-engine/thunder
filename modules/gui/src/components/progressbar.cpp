@@ -121,7 +121,7 @@ void ProgressBar::setProgressGraphic(Image *image) {
 Vector4 ProgressBar::backgroundColor() const {
     return p_ptr->m_backgroundColor;
 }
-void ProgressBar::setBackgroundColor(const Vector4 &color) {
+void ProgressBar::setBackgroundColor(const Vector4 color) {
     p_ptr->m_backgroundColor = color;
     if(p_ptr->m_backgroundGraphic) {
         p_ptr->m_backgroundGraphic->setColor(p_ptr->m_backgroundColor);
@@ -131,7 +131,7 @@ void ProgressBar::setBackgroundColor(const Vector4 &color) {
 Vector4 ProgressBar::progressColor() const {
     return p_ptr->m_progressColor;
 }
-void ProgressBar::setProgressColor(const Vector4 &color) {
+void ProgressBar::setProgressColor(const Vector4 color) {
     p_ptr->m_progressColor = color;
     if(p_ptr->m_progressGraphic) {
         p_ptr->m_progressGraphic->setColor(p_ptr->m_progressColor);

@@ -25,7 +25,7 @@ class GUI_EXPORT Switch : public AbstractButton {
     void setKnobGraphic(Image *image);
 
     Vector4 knobColor() const;
-    void setKnobColor(const Vector4 &color);
+    void setKnobColor(const Vector4 color);
 
     bool isOn() const;
 

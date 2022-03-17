@@ -44,7 +44,7 @@ private:
 
     Variant readProperty(const MetaProperty &property) const;
 
-    void writeProperty(const MetaProperty &property, const Variant &value);
+    void writeProperty(const MetaProperty &property, const Variant value);
 
     bool isPostProcessVolume() const override;
 
