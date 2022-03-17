@@ -14,17 +14,11 @@ class TextureImportSettings : public AssetConverterSettings {
     Q_OBJECT
 
     Q_PROPERTY(TextureType Type READ textureType WRITE setTextureType DESIGNABLE true USER true)
-    Q_PROPERTY(FormatType Format READ formatType WRITE setFormatType DESIGNABLE true USER true)
     Q_PROPERTY(WrapType Wrap READ wrap WRITE setWrap DESIGNABLE true USER true)
     Q_PROPERTY(bool MIP_maping READ lod WRITE setLod DESIGNABLE true USER true)
     Q_PROPERTY(FilteringType Filtering READ filtering WRITE setFiltering DESIGNABLE true USER true)
 
 public:
-    enum class FormatType {
-        Uncompressed_R8G8B8     = Texture::RGB8,
-        Uncompressed_R8G8B8A8   = Texture::RGBA8,
-    };
-
     enum class TextureType {
         Texture2D   = 1,
         Sprite,
@@ -46,7 +40,6 @@ public:
     Q_ENUM(WrapType)
     Q_ENUM(FilteringType)
     Q_ENUM(TextureType)
-    Q_ENUM(FormatType)
 
     struct Element {
         Element() {
@@ -71,9 +64,6 @@ public:
     TextureType textureType() const;
     void setTextureType(TextureType type);
 
-    FormatType formatType() const;
-    void setFormatType(FormatType type);
-
     FilteringType filtering() const;
     void setFiltering(FilteringType type);
 
@@ -95,8 +85,6 @@ private:
 
 protected:
     TextureType   m_TextureType;
-
-    FormatType    m_FormType;
 
     FilteringType m_Filtering;
 

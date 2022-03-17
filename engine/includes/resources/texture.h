@@ -20,7 +20,7 @@ class ENGINE_EXPORT Texture : public Resource {
 
     A_METHODS(
         A_METHOD(void, Texture::readPixels),
-        A_METHOD(void, Texture::getPixel),
+        A_METHOD(int,  Texture::getPixel),
         A_METHOD(bool, Texture::isCompressed),
         A_METHOD(bool, Texture::isCubemap),
         A_METHOD(void, Texture::setDirty),
@@ -87,7 +87,8 @@ public:
     ~Texture();
 
     virtual void readPixels(int x, int y, int width, int height);
-    int getPixel(int x, int y) const;
+    int getPixel(int x, int y, int level) const;
+    ByteArray getPixels(int level) const;
 
     int width() const;
     void setWidth(int width);
@@ -126,6 +127,8 @@ private:
 protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
+
+    void switchState(ResourceState state) override;
 
     Sides *getSides();
 

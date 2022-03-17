@@ -25,10 +25,6 @@ uint32_t TextureGL::nativeHandle() {
     return m_ID;
 }
 
-void TextureGL::switchState(ResourceState state) {
-    setState(state);
-}
-
 void TextureGL::readPixels(int x, int y, int width, int height) {
     bool depth = (format() == Depth);
 

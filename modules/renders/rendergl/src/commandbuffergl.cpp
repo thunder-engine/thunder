@@ -30,7 +30,7 @@ void CommandBufferGL::begin() {
     if(m_globalUbo == 0) {
         glGenBuffers(1, &m_globalUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalBufferObject), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(Global), nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
@@ -40,13 +40,13 @@ void CommandBufferGL::begin() {
     m_global.clip = 0.99f;
 
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_globalUbo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_globalUbo);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     if(m_localUbo == 0) {
         glGenBuffers(1, &m_localUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(LocalBufferObject), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(Local), nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         glBindBufferBase(GL_UNIFORM_BUFFER, LOCAL_BIND, m_localUbo);
@@ -70,7 +70,7 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
 }
 
 const VariantMap &CommandBufferGL::params() const {
-    return m_Uniforms;
+    return m_uniforms;
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
@@ -88,7 +88,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
         m_local.model = model;
 
         glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LocalBufferObject), &m_local);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
@@ -133,7 +133,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
         m_local.model.identity();
 
         glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LocalBufferObject), &m_local);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
@@ -170,7 +170,9 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
 }
 
 Texture *CommandBufferGL::texture(const char *name) const {
-    for(auto &it : m_Textures) {
+    PROFILE_FUNCTION();
+
+    for(auto &it : m_textures) {
         if(it.name == name) {
             return it.texture;
         }
@@ -178,49 +180,40 @@ Texture *CommandBufferGL::texture(const char *name) const {
     return nullptr;
 }
 
-void CommandBufferGL::setColor(const Vector4 &color) {
-    m_local.color = color;
-}
-
 void CommandBufferGL::resetViewProjection() {
     PROFILE_FUNCTION();
 
-    m_global.view = m_SaveView;
-    m_global.projection = m_SaveProjection;
+    CommandBuffer::resetViewProjection();
 
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_global);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     PROFILE_FUNCTION();
 
-    m_SaveView = m_global.view;
-    m_SaveProjection = m_global.projection;
-
-    m_global.view = view;
-    m_global.projection = projection;
+    CommandBuffer::setViewProjection(view, projection);
 
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalBufferObject), &m_global);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
     PROFILE_FUNCTION();
 
-    static unordered_map<string, pair<size_t, size_t>> offsets = {
-        {"camera.position",      make_pair(offsetof(GlobalBufferObject, cameraPosition), sizeof(GlobalBufferObject::cameraPosition))},
-        {"camera.target",        make_pair(offsetof(GlobalBufferObject, cameraTarget), sizeof(GlobalBufferObject::cameraTarget))},
-        {"camera.view",          make_pair(offsetof(GlobalBufferObject, cameraView), sizeof(GlobalBufferObject::cameraView))},
-        {"camera.projectionInv", make_pair(offsetof(GlobalBufferObject, cameraProjectionInv), sizeof(GlobalBufferObject::cameraProjectionInv))},
-        {"camera.projection",    make_pair(offsetof(GlobalBufferObject, cameraProjection), sizeof(GlobalBufferObject::cameraProjection))},
-        {"camera.screenToWorld", make_pair(offsetof(GlobalBufferObject, cameraScreenToWorld), sizeof(GlobalBufferObject::cameraScreenToWorld))},
-        {"camera.worldToScreen", make_pair(offsetof(GlobalBufferObject, cameraWorldToScreen), sizeof(GlobalBufferObject::cameraWorldToScreen))},
-        {"camera.screen",        make_pair(offsetof(GlobalBufferObject, cameraScreen), sizeof(GlobalBufferObject::cameraScreen))},
-        {"light.pageSize",       make_pair(offsetof(GlobalBufferObject, lightPageSize), sizeof(GlobalBufferObject::lightPageSize))},
-        {"light.ambient",        make_pair(offsetof(GlobalBufferObject, lightAmbient), sizeof(GlobalBufferObject::lightAmbient))},
+    static const unordered_map<string, pair<size_t, size_t>> offsets = {
+        {"camera.position",      make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
+        {"camera.target",        make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
+        {"camera.view",          make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
+        {"camera.projectionInv", make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
+        {"camera.projection",    make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
+        {"camera.screenToWorld", make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
+        {"camera.worldToScreen", make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
+        {"camera.screen",        make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
+        {"light.pageSize",       make_pair(offsetof(Global, lightPageSize),       sizeof(Global::lightPageSize))},
+        {"light.ambient",        make_pair(offsetof(Global, lightAmbient),        sizeof(Global::lightAmbient))},
     };
 
     auto it = offsets.find(name);
@@ -232,14 +225,14 @@ void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
         glBufferSubData(GL_UNIFORM_BUFFER, it->second.first, it->second.second, src);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else {
-        m_Uniforms[name] = value;
+        m_uniforms[name] = value;
     }
 }
 
 void CommandBufferGL::setGlobalTexture(const char *name, Texture *texture) {
     PROFILE_FUNCTION();
 
-    for(auto &it : m_Textures) {
+    for(auto &it : m_textures) {
         if(it.name == name) {
             it.texture = texture;
             return;
@@ -250,7 +243,7 @@ void CommandBufferGL::setGlobalTexture(const char *name, Texture *texture) {
     item.name = name;
     item.texture = texture;
     item.binding = -1;
-    m_Textures.push_back(item);
+    m_textures.push_back(item);
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -269,12 +262,4 @@ void CommandBufferGL::disableScissor() {
 
 void CommandBufferGL::finish() {
     glFinish();
-}
-
-Matrix4 CommandBufferGL::projection() const {
-    return m_global.projection;
-}
-
-Matrix4 CommandBufferGL::view() const {
-    return m_global.view;
 }

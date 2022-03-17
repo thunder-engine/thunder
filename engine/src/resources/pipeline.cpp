@@ -156,7 +156,7 @@ void Pipeline::draw(Camera &camera) {
 void Pipeline::drawUi(Camera &camera) {
     A_UNUSED(camera);
 
-    m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_Width, 0, m_Height, -500.0f, 500.0f));
+    m_Buffer->setViewProjection(Matrix4(), Matrix4::ortho(0, m_Width, 0, m_Height, 0.0f, 500.0f));
     drawComponents(CommandBuffer::UI, m_UiComponents);
 
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
@@ -270,6 +270,10 @@ void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
 
 RenderTarget *Pipeline::defaultTarget() {
     return m_pDefaultTarget;
+}
+
+void Pipeline::setDefaultTarget(RenderTarget *target) {
+    m_pDefaultTarget = target;
 }
 
 RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {

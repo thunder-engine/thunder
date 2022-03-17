@@ -28,10 +28,6 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
     updateBuffer(level);
 }
 
-void RenderTargetGL::switchState(ResourceState state) {
-    setState(state);
-}
-
 uint32_t RenderTargetGL::nativeHandle() const {
     return (uint32_t)m_Buffer;
 }

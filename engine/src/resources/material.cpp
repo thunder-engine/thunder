@@ -289,6 +289,13 @@ MaterialInstance *Material::createInstance(SurfaceType type) {
 /*!
     \internal
 */
+void Material::switchState(ResourceState state) {
+    setState(state);
+}
+
+/*!
+    \internal
+*/
 void Material::initInstance(MaterialInstance *instance) {
     if(instance) {
         for(auto &it : m_Uniforms) {

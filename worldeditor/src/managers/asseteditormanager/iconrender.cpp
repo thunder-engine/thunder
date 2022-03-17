@@ -66,11 +66,11 @@ const QImage IconRender::render(const QString &resource, const QString &) {
     }
 
     Camera::setCurrent(m_pCamera);
-    vector<uint8_t> data = PluginManager::instance()->render()->renderOffscreen(m_pScene, 128, 128);
+    ByteArray data = PluginManager::instance()->render()->renderOffscreen(m_pScene, 128, 128);
 
     delete object;
 
-    QImage result(data.data(), 128, 128, QImage::Format_RGBA8888);
+    QImage result((uint8_t *)data.data(), 128, 128, QImage::Format_RGBA8888);
 
     return result.mirrored();
 }

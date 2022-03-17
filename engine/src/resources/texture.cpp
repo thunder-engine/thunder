@@ -178,15 +178,24 @@ void Texture::readPixels(int x, int y, int width, int height) {
     A_UNUSED(height);
 }
 /*!
-    Returns pixel color at \a x and \a y position as RGBA integer for example 0x00ff00ff which can be mapped to (0, 255, 0, 255)
+    Returns pixel color from mip \a level at \a x and \a y position as RGBA integer for example 0x00ff00ff which can be mapped to (0, 255, 0, 255)
 */
-int Texture::getPixel(int x, int y) const {
+int Texture::getPixel(int x, int y, int level) const {
     uint32_t result = 0;
-    if(!p_ptr->m_Sides.empty() && !p_ptr->m_Sides[0].empty()) {
-        int8_t *ptr = &(p_ptr->m_Sides[0][0])[0] + (y * p_ptr->m_Width + x);
+    if(!p_ptr->m_Sides.empty() && p_ptr->m_Sides[0].size() > level) {
+        int8_t *ptr = p_ptr->m_Sides[0][level].data() + (y * p_ptr->m_Width + x) * 4;
         memcpy(&result, ptr, sizeof(uint32_t));
     }
     return result;
+}
+/*!
+    Returns texture data from a mip \a level.
+*/
+ByteArray Texture::getPixels(int level) const {
+    if(!p_ptr->m_Sides.empty() && p_ptr->m_Sides[0].size() > level) {
+        return p_ptr->m_Sides[0][level];
+    }
+    return ByteArray();
 }
 /*!
     Returns width for the texture.
@@ -218,20 +227,22 @@ void Texture::setHeight(int height) {
     Sets new \a width and \a height for the texture.
 */
 void Texture::resize(int width, int height) {
-    clear();
+    if(p_ptr->m_Width != width || p_ptr->m_Height != height) {
+        clear();
 
-    p_ptr->m_Width = width;
-    p_ptr->m_Height = height;
+        p_ptr->m_Width = width;
+        p_ptr->m_Height = height;
 
-    int32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
-    ByteArray pixels;
-    pixels.resize(length);
-    memset(&pixels[0], 0, length);
-    Texture::Surface s;
-    s.push_back(pixels);
-    addSurface(s);
+        int32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
+        ByteArray pixels;
+        pixels.resize(length);
+        memset(&pixels[0], 0, length);
+        Texture::Surface s;
+        s.push_back(pixels);
+        addSurface(s);
 
-    switchState(ToBeUpdated);
+        switchState(ToBeUpdated);
+    }
 }
 /*!
     Returns format type of texture.
@@ -330,6 +341,14 @@ uint8_t Texture::components() const {
     }
     return 4;
 }
+
+/*!
+    \internal
+*/
+void Texture::switchState(ResourceState state) {
+    setState(state);
+}
+
 /*!
     \internal
 */

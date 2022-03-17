@@ -50,20 +50,26 @@ void CommandBuffer::setInited() {
 }
 
 void CommandBuffer::setColor(const Vector4 &color) {
-    A_UNUSED(color);
+    m_local.color = color;
 }
 
 void CommandBuffer::setScreenProjection() {
-    setViewProjection(Matrix4(), Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f,-1.0f, 1.0f));
+    Matrix4 v;
+    v.mat[14] = -0.0001f;
+    setViewProjection(v, Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
 }
 
 void CommandBuffer::resetViewProjection() {
-
+    m_global.view = m_saveView;
+    m_global.projection = m_saveProjection;
 }
 
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    A_UNUSED(view);
-    A_UNUSED(projection);
+    m_saveView = m_global.view;
+    m_saveProjection = m_global.projection;
+
+    m_global.view = view;
+    m_global.projection = projection;
 }
 
 void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
@@ -77,11 +83,11 @@ void CommandBuffer::setGlobalTexture(const char *name, Texture *value) {
 }
 
 Matrix4 CommandBuffer::projection() const {
-    return Matrix4();
+    return m_global.projection;
 }
 
 Matrix4 CommandBuffer::view() const {
-    return Matrix4();
+    return m_global.view;
 }
 
 Texture *CommandBuffer::texture(const char *name) const {

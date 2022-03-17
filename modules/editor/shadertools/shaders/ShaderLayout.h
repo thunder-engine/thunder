@@ -8,10 +8,12 @@ layout(binding = 0) uniform Global {
     mat4 cameraProjectionInv;
     mat4 cameraScreenToWorld;
     mat4 cameraWorldToScreen;
+
     vec4 cameraPosition;
     vec4 cameraTarget;
     vec4 cameraScreen;
     vec4 lightPageSize;
+
     vec4 lightAmbient;
     float clip;
     float time;
@@ -19,6 +21,7 @@ layout(binding = 0) uniform Global {
 
 layout(binding = 1) uniform Local {
     mat4 model;
+
     vec4 color;
 } l;
 

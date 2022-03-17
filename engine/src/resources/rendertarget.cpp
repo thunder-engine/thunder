@@ -10,6 +10,8 @@ public:
     vector<Texture *> m_color;
 
     Texture *m_depth;
+
+    bool m_native = false;
 };
 
 /*!
@@ -64,4 +66,16 @@ Texture *RenderTarget::depthAttachment() const {
 */
 void RenderTarget::setDepthAttachment(Texture *texture) {
     p_ptr->m_depth = texture;
+}
+/*!
+    \internal
+*/
+void RenderTarget::makeNative() {
+    p_ptr->m_native = true;
+}
+/*!
+    \internal
+*/
+void RenderTarget::switchState(ResourceState state) {
+    setState(state);
 }

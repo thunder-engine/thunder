@@ -17,19 +17,20 @@
 
 #include "resources/pipeline.h"
 #include "resources/material.h"
+#include "resources/rendertarget.h"
 
 #include "commandbuffer.h"
 
 class RenderSystemPrivate {
 public:
     RenderSystemPrivate() :
-        m_Update(true) {
+        m_offscreen(false) {
 
     }
     static int32_t m_AtlasPageWidth;
     static int32_t m_AtlasPageHeight;
 
-    bool m_Update;
+    bool m_offscreen;
 };
 
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
@@ -121,17 +122,63 @@ void RenderSystem::composeComponent(Component *component) const {
     }
 }
 
+void RenderSystem::setOffscreenMode(bool mode) {
+    p_ptr->m_offscreen = mode;
+}
+
+bool RenderSystem::isOffscreenMode() const {
+    return p_ptr->m_offscreen;
+}
+
 #if defined(SHARED_DEFINE)
 QWindow *RenderSystem::createRhiWindow() const {
     return nullptr;
 }
 
-vector<uint8_t> RenderSystem::renderOffscreen(Scene *scene, int width, int height) {
-    A_UNUSED(width);
-    A_UNUSED(height);
+ByteArray RenderSystem::renderOffscreen(Scene *scene, int width, int height) {
+    static Texture *color = nullptr;
+    if(color == nullptr) {
+        color = Engine::objectCreate<Texture>();
+        color->setFormat(Texture::RGBA8);
+    }
+    color->resize(width, height);
 
+    static Texture *depth = nullptr;
+    if(depth == nullptr) {
+        depth = Engine::objectCreate<Texture>();
+        depth->setFormat(Texture::Depth);
+        depth->setDepthBits(24);
+    }
+    depth->resize(width, height);
+
+    static RenderTarget *target = nullptr;
+    if(target == nullptr) {
+        target = Engine::objectCreate<RenderTarget>();
+        target->setColorAttachment(0, color);
+        target->setDepthAttachment(depth);
+    }
+
+    RenderTarget *back = nullptr;
+    Camera *camera = Camera::current();
+    if(camera) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->resize(width, height);
+
+        back = pipe->defaultTarget();
+        pipe->setDefaultTarget(target);
+    }
+
+    setOffscreenMode(true);
     update(scene);
+    setOffscreenMode(false);
 
-    return vector<uint8_t>();
+    color->readPixels(0, 0, width, height);
+
+    if(back) {
+        Pipeline *pipe = camera->pipeline();
+        pipe->setDefaultTarget(back);
+    }
+
+    return color->getPixels(0);
 }
 #endif

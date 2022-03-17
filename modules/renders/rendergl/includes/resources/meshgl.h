@@ -31,8 +31,6 @@ public:
     uint32_t instance() const;
 
 protected:
-    void switchState(ResourceState state) override;
-
     void updateVao(uint32_t lod);
     void updateVbo(CommandBufferGL *buffer);
 

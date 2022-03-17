@@ -179,7 +179,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
             max.y = MAX(max.y, rotPoints[i].y);
         }
 
-        min.z =-100.0f; /// \todo Must be replaced by the calculations
+        min.z =   0.0f; /// \todo Must be replaced by the calculations
         max.z = 100.0f;
 
         Matrix4 crop = Matrix4::ortho(min.x, max.x, min.y, max.y, min.z, max.z);

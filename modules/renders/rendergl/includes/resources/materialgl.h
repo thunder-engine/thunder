@@ -8,35 +8,7 @@
 
 #include <engine.h>
 
-#define GLOBAL_BIND     0
-#define LOCAL_BIND      1
-
-#define LIGHT_BIND      3
-#define UNIFORM_BIND    4
-
 class CommandBufferGL;
-
-struct GlobalBufferObject {
-    Matrix4 view;
-    Matrix4 projection;
-    Matrix4 cameraView;
-    Matrix4 cameraProjection;
-    Matrix4 cameraProjectionInv;
-    Matrix4 cameraScreenToWorld;
-    Matrix4 cameraWorldToScreen;
-    Vector4 cameraPosition;
-    Vector4 cameraTarget;
-    Vector4 cameraScreen;
-    Vector4 lightPageSize;
-    Vector4 lightAmbient;
-    float clip;
-    float time;
-};
-
-struct LocalBufferObject {
-    Matrix4 model;
-    Vector4 color;
-};
 
 class MaterialInstanceGL : public MaterialInstance {
 public:
@@ -67,6 +39,7 @@ private:
     uint8_t *m_uniformBuffer;
 
     bool m_uniformDirty;
+
 };
 
 class MaterialGL : public Material {
@@ -103,8 +76,6 @@ public:
     uint32_t uniformSize() const;
 
 protected:
-    void switchState(ResourceState state) override;
-
     uint32_t buildShader(uint16_t type, const string &src = string());
 
     uint32_t buildProgram(uint32_t vertex, uint32_t fragment);

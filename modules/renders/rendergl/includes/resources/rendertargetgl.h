@@ -19,8 +19,6 @@ public:
     void setNativeHandle(uint32_t id);
 
 private:
-    void switchState(ResourceState state) override;
-
     bool updateBuffer(uint32_t level);
     void destroyBuffer();
 

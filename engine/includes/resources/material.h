@@ -128,6 +128,8 @@ public:
 protected:
     void initInstance(MaterialInstance *instance);
 
+    void switchState(ResourceState state) override;
+
 protected:
     int m_BlendMode;
 

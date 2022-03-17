@@ -431,7 +431,12 @@ VariantMap Mesh::saveUserData() const {
 
     return result;
 }
-
+/*!
+    \internal
+*/
+void Mesh::switchState(ResourceState state) {
+    setState(state);
+}
 /*!
     Returns the number of Levels Of Details
 */

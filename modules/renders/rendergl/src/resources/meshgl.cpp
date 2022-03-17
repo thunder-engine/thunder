@@ -53,10 +53,6 @@ void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     updateVao(lod);
 }
 
-void MeshGL::switchState(ResourceState state) {
-    setState(state);
-}
-
 void MeshGL::updateVao(uint32_t lod) {
     // indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[lod]);

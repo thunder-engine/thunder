@@ -3,12 +3,43 @@
 
 #include "engine.h"
 
+#define GLOBAL_BIND     0
+#define LOCAL_BIND      1
+#define UNIFORM_BIND    4
+
 class RenderTarget;
 class Texture;
 class Mesh;
 
 class Camera;
 class MaterialInstance;
+
+struct Global {
+    Matrix4 view;
+    Matrix4 projection;
+    Matrix4 cameraView;
+    Matrix4 cameraProjection;
+    Matrix4 cameraProjectionInv;
+    Matrix4 cameraScreenToWorld;
+    Matrix4 cameraWorldToScreen;
+
+    Vector4 cameraPosition;
+    Vector4 cameraTarget;
+    Vector4 cameraScreen;
+    Vector4 lightPageSize;
+
+    Vector4 lightAmbient;
+    float clip;
+    float time;
+    float padding[10];
+};
+
+struct Local {
+    Matrix4 model;
+
+    Vector4 color;
+    float padding[12];
+};
 
 class ENGINE_EXPORT CommandBuffer: public Object {
     A_REGISTER(CommandBuffer, Object, System)
@@ -63,6 +94,13 @@ public:
     static bool isInited();
 
     static void setInited();
+
+protected:
+    Global m_global;
+    Local m_local;
+
+    Matrix4 m_saveView;
+    Matrix4 m_saveProjection;
 
 };
 

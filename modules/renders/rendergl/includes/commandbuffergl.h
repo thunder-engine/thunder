@@ -36,8 +36,6 @@ public:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void setColor(const Vector4 &color) override;
-
     void resetViewProjection() override;
 
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection) override;
@@ -52,10 +50,6 @@ public:
 
     void disableScissor() override;
 
-    Matrix4 projection() const override;
-
-    Matrix4 view() const override;
-
     Texture *texture(const char *name) const override;
 
     void finish() override;
@@ -63,17 +57,12 @@ public:
     const VariantMap &params() const;
 
 protected:
-    GlobalBufferObject m_global;
-    LocalBufferObject m_local;
-
-    VariantMap m_Uniforms;
-    Material::TextureList m_Textures;
-
-    Matrix4 m_SaveView;
-    Matrix4 m_SaveProjection;
+    VariantMap m_uniforms;
+    Material::TextureList m_textures;
 
     uint32_t m_globalUbo;
     uint32_t m_localUbo;
+
 };
 
 #endif // COMMANDBUFFERGL_H

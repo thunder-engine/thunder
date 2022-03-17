@@ -26,6 +26,11 @@ public:
     Texture *depthAttachment() const;
     void setDepthAttachment(Texture *texture);
 
+protected:
+    void makeNative();
+
+    void switchState(ResourceState state) override;
+
 private:
     RenderTargetPrivate *p_ptr;
 

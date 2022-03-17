@@ -31,13 +31,16 @@ public:
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow() const;
 
-    virtual vector<uint8_t> renderOffscreen(Scene *scene, int width, int height);
+    virtual ByteArray renderOffscreen(Scene *scene, int width, int height);
 #endif
 
     static void atlasPageSize(int32_t &width, int32_t &height);
 
 protected:
     static void setAtlasPageSize(int32_t width, int32_t height);
+
+    void setOffscreenMode(bool mode);
+    bool isOffscreenMode() const;
 
 private:
     RenderSystemPrivate *p_ptr;

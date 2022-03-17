@@ -17,8 +17,6 @@ public:
     uint32_t nativeHandle();
 
 private:
-    void switchState(ResourceState state) override;
-
     void readPixels(int x, int y, int width, int height) override;
 
     void updateTexture();

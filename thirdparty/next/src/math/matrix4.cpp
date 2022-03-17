@@ -336,21 +336,19 @@ void Matrix4::direction(const Vector3 &direction, const Vector3 &up) {
 */
 Matrix4 Matrix4::perspective(areal fov, areal aspect, areal znear, areal zfar) {
     float sine, cotangent;
-    float radians   = fov / 2 * DEG2RAD;
+    float radians = fov / 2 * DEG2RAD;
 
-    sine        = sin(radians);
-    cotangent   = cos(radians) / sine;
-
-    //identity();
+    sine = sin(radians);
+    cotangent = cos(radians) / sine;
 
     Matrix4 result;
 
-    result[0]   = cotangent / aspect;
-    result[5]   = cotangent;
-    result[10]  = -(zfar + znear) / (zfar - znear);
-    result[11]  = -1;
-    result[14]  = -(2.0f * zfar * znear) / (zfar - znear);
-    result[15]  = 0;
+    result[0]  = cotangent / aspect;
+    result[5]  = cotangent;
+    result[10] = -(zfar + znear) / (zfar - znear);
+    result[11] = -1;
+    result[14] = -(2.0f * zfar * znear) / (zfar - znear);
+    result[15] = 0;
 
     return result;
 }
@@ -359,16 +357,14 @@ Matrix4 Matrix4::perspective(areal fov, areal aspect, areal znear, areal zfar) {
     Creates a view showing the area between \a left, \a right, \a top and \a bottom, with \a znear and \a zfar set up the depth clipping planes.
 */
 Matrix4 Matrix4::ortho(areal left, areal right, areal bottom, areal top, areal znear, areal zfar) {
-    //identity();
-
     Matrix4 result;
 
-    result[0]   =  2.0f / (right - left);
-    result[5]   =  2.0f / (top - bottom);
-    result[10]  = -2.0f / (zfar - znear);
-    result[12]  = -((right + left) / (right - left));
-    result[13]  = -((top + bottom) / (top - bottom));
-    result[14]  = -((zfar + znear) / (zfar - znear));
+    result[0]  =  2.0f / (right - left);
+    result[5]  =  2.0f / (top - bottom);
+    result[10] = -2.0f / (zfar - znear);
+    result[12] = -((right + left) / (right - left));
+    result[13] = -((top + bottom) / (top - bottom));
+    result[14] = -((zfar + znear) / (zfar - znear));
 
     return result;
 }

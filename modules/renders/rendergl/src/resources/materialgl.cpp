@@ -111,10 +111,6 @@ uint32_t MaterialGL::getProgram(uint16_t type) {
     return 0;
 }
 
-void MaterialGL::switchState(ResourceState state) {
-    setState(state);
-}
-
 uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
     int32_t b = blendMode();
 

@@ -139,16 +139,35 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                 plug.module = plugin;
 
                 for(auto &it : metaInfo["objects"].toMap()) {
+                    bool fault = false;
                     if(it.second == "system") {
                         if(!registerSystem(plugin, it.first.c_str())) {
-                            delete plugin;
-
-                            lib->unload();
-                            delete lib;
-                            return true;
+                            fault = true;
                         }
+                    } else if(it.second == "render") {
+                        QString renderName("RenderGL");
+                        if(qEnvironmentVariableIsSet("RENDER")) {
+                            renderName = qEnvironmentVariable("RENDER");
+                        }
+
+                        if(QString(it.first.c_str()) == renderName) {
+                            if(!registerRender(plugin, it.first.c_str())) {
+                                fault = true;
+                            }
+                        } else {
+                            fault = true;
+                        }
+
                     } else {
                         plug.objects.append(qMakePair(it.first.c_str(), it.second.toString().c_str()));
+                    }
+
+                    if(fault) {
+                        delete plugin;
+
+                        lib->unload();
+                        delete lib;
+                        return true;
                     }
                 }
 
@@ -258,18 +277,22 @@ void PluginManager::rescanPath(const QString &path) {
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
+        m_Systems[QString::fromStdString(system->name())] = system;
+    }
+
+    Engine::addModule(plugin);
+
+    return true;
+}
+
+bool PluginManager::registerRender(Module *plugin, const char *name) {
+    System *system = reinterpret_cast<System *>(plugin->getObject(name));
+    if(system) {
         RenderSystem *render = dynamic_cast<RenderSystem *>(system);
         if(render) {
-            QString renderName("RenderGL");
-            if(qEnvironmentVariableIsSet("RENDER")) {
-                renderName = qEnvironmentVariable("RENDER");
-            }
-
-            if(QString(render->name()) == renderName) {
-                m_pRender = render;
-            } else {
-                return false;
-            }
+            m_pRender = render;
+        } else {
+            return false;
         }
 
         m_Systems[QString::fromStdString(system->name())] = system;

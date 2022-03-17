@@ -90,6 +90,8 @@ private:
 protected:
     bool registerSystem(Module *plugin, const char *name);
 
+    bool registerRender(Module *plugin, const char *name);
+
     void serializeComponents(const QStringList &list, ComponentMap &map);
 
     void deserializeComponents(const ComponentMap &map);

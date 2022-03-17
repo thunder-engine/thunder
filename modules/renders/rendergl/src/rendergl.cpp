@@ -15,13 +15,13 @@ static const char *meta = \
 "   \"description\": \"OpenGL Render Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"RenderGLSystem\": \"system\""
+"       \"RenderGL\": \"render\""
 "   }"
 "}";
 
 RenderGL::RenderGL(Engine *engine) :
         Module(engine),
-        m_pSystem(new RenderGLSystem(engine)) {
+        m_pSystem(nullptr) {
 }
 
 RenderGL::~RenderGL() {
@@ -33,5 +33,8 @@ const char *RenderGL::metaInfo() const {
 }
 
 void *RenderGL::getObject(const char *) {
+    if(m_pSystem == nullptr) {
+        m_pSystem = new RenderGLSystem(m_engine);
+    }
     return m_pSystem;
 }

@@ -16,7 +16,7 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 3
+#define FORMAT_VERSION 4
 
 static hash<string> hash_str;
 
@@ -38,7 +38,6 @@ void copyData(int8_t *dst, const uchar *src, uint32_t size, uint8_t channels) {
 
 TextureImportSettings::TextureImportSettings() :
         m_TextureType(TextureType::Texture2D),
-        m_FormType(FormatType::Uncompressed_R8G8B8),
         m_Filtering(FilteringType::None),
         m_Wrap(WrapType::Repeat),
         m_Lod(false) {
@@ -58,16 +57,6 @@ void TextureImportSettings::setTextureType(TextureType type) {
         } else {
             setType(MetaType::type<Texture *>());
         }
-        emit updated();
-    }
-}
-
-TextureImportSettings::FormatType TextureImportSettings::formatType() const {
-    return m_FormType;
-}
-void TextureImportSettings::setFormatType(FormatType type) {
-    if(m_FormType != type) {
-        m_FormType = type;
         emit updated();
     }
 }
@@ -181,7 +170,6 @@ void TextureImportSettings::setSubItemData(const QString &name, const QJsonObjec
     rect.setWidth   (d.value("w").toInt());
     rect.setHeight  (d.value("h").toInt());
 
-    QRect border;
     m_Elements[name].m_BorderL = d.value("l").toInt();
     m_Elements[name].m_BorderR = d.value("r").toInt();
     m_Elements[name].m_BorderT = d.value("t").toInt();
@@ -207,40 +195,30 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             convertTexture(s, texture);
             resource = texture;
         }
+
+        QFile file(settings->absoluteDestination());
+        if(file.open(QIODevice::WriteOnly)) {
+            ByteArray data = Bson::save( Engine::toVariant(resource) );
+            file.write((const char *)&data[0], data.size());
+            file.close();
+        }
+
+        delete resource;
+
+        settings->setCurrentVersion(settings->version());
     }
-
-    QFile file(settings->absoluteDestination());
-    if(file.open(QIODevice::WriteOnly)) {
-        ByteArray data = Bson::save( Engine::toVariant(resource) );
-        file.write((const char *)&data[0], data.size());
-        file.close();
-    }
-
-    delete resource;
-
-    settings->setCurrentVersion(settings->version());
 
     return Success;
 }
 
 void TextureConverter::convertTexture(TextureImportSettings *settings, Texture *texture) {
-    uint8_t channels;
+    uint8_t channels = 4;
     QImage src(settings->source());
-    QImage img;
-    switch(settings->formatType()) {
-        case TextureImportSettings::FormatType::Uncompressed_R8G8B8: {
-            img = src.convertToFormat(QImage::Format_RGB32).rgbSwapped();
-            channels = 3;
-        } break;
-        default: {
-            img = src.convertToFormat(QImage::Format_RGBA8888);
-            channels = 4;
-        } break;
-    }
+    QImage img = src.convertToFormat(QImage::Format_RGBA8888);
 
     texture->clear();
 
-    texture->setFormat((channels == 3) ? Texture::RGB8 : Texture::RGBA8);
+    texture->setFormat(Texture::RGBA8);
     texture->setFiltering(Texture::FilteringType(settings->filtering()));
     texture->setWrap(Texture::WrapType(settings->wrap()));
 
@@ -345,7 +323,7 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
     uint32_t unitsPerPixel = 100;
 
     int i = 0;
-    for(auto it : settings->elements().keys()) {
+    for(auto &it : settings->elements().keys()) {
         Mesh *mesh = Engine::objectCreate<Mesh>("", sprite);
         if(mesh) {
             Lod lod;

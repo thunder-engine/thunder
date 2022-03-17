@@ -272,10 +272,10 @@ void EditorPipeline::draw(Camera &camera) {
     Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
 
     m_pSelect->readPixels(m_MouseX, m_MouseY, 1, 1);
-    m_ObjectId = m_pSelect->getPixel(0, 0);
+    m_ObjectId = m_pSelect->getPixel(0, 0, 0);
     if(m_ObjectId) {
         m_pDepth->readPixels(m_MouseX, m_MouseY, 1, 1);
-        uint32_t pixel = m_pDepth->getPixel(0, 0);
+        uint32_t pixel = m_pDepth->getPixel(0, 0, 0);
         memcpy(&screen.z, &pixel, sizeof(float));
 
         m_MouseWorld = Camera::unproject(screen, camera.viewMatrix(), camera.projectionMatrix());

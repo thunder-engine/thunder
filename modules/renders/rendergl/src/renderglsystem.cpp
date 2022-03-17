@@ -108,14 +108,15 @@ void RenderGLSystem::update(Scene *scene) {
 
     Camera *camera = Camera::current();
     if(camera && CommandBufferGL::isInited()) {
-        int32_t target;
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
-
         Pipeline *pipe = camera->pipeline();
         CommandBufferGL *cmd = static_cast<CommandBufferGL *>(pipe->buffer());
         cmd->begin();
 
-        static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
+        if(!isOffscreenMode()) {
+            int32_t target;
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
+            static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
+        }
 
         RenderSystem::update(scene);
     }
@@ -128,40 +129,10 @@ QWindow *RenderGLSystem::createRhiWindow() const {
     return createWindow();
 }
 
-vector<uint8_t> RenderGLSystem::renderOffscreen(Scene *scene, int width, int height) {
+ByteArray RenderGLSystem::renderOffscreen(Scene *scene, int width, int height) {
     makeCurrent();
-
-    static RenderTargetGL *target = nullptr;
-    if(target == nullptr) {
-        target = static_cast<RenderTargetGL *>(Engine::objectCreate<RenderTarget>());
-
-        Texture *color = Engine::objectCreate<Texture>();
-        color->setFormat(Texture::RGBA8);
-        color->setWidth(width);
-        color->setHeight(height);
-
-        Texture *depth = Engine::objectCreate<Texture>();
-        depth->setFormat(Texture::Depth);
-        depth->setDepthBits(24);
-        depth->setWidth(width);
-        depth->setHeight(height);
-
-        target->setColorAttachment(0, color);
-        target->setDepthAttachment(depth);
-    }
-
-    Camera *camera = Camera::current();
-    if(camera) {
-        Pipeline *pipe = camera->pipeline();
-        pipe->resize(width, height);
-    }
-    target->bindBuffer(0);
-
-    auto result = RenderSystem::renderOffscreen(scene, width, height);
-
-    result.resize(width * height * 4);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, result.data());
-
-    return result;
+    return RenderSystem::renderOffscreen(scene, width, height);
 }
+
 #endif
+

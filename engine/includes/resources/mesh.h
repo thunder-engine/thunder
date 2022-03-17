@@ -161,6 +161,9 @@ public:
 
     static void registerSuper(ObjectSystem *system);
 
+protected:
+    void switchState(ResourceState state) override;
+
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
