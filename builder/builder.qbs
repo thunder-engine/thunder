@@ -47,6 +47,7 @@ Project {
             result.push("QUAZIP_STATIC")
             return result
         }
+
         cpp.includePaths: builder.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
