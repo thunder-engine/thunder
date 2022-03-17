@@ -10,12 +10,6 @@
 #include <file.h>
 #include <log.h>
 
-#define VERTEX_BIND     0
-#define FRAGMENT_BIND   1
-#define CAMERA_BIND     2
-#define LIGHT_BIND      3
-#define SAMPLE_BIND     4
-
 void MaterialVk::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
@@ -289,34 +283,17 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
 
     // Create descriptor set layout
     m_layoutBindings = {
-        { VERTEX_BIND,    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT,   nullptr },
-        { FRAGMENT_BIND,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
-        { CAMERA_BIND,    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
-        { LIGHT_BIND,     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+        { GLOBAL_BIND,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+        { LOCAL_BIND,   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
     };
 
     m_layoutBindingsSizes = {
-        sizeof(VertexBufferObject),
-        sizeof(FragmentBufferObject),
-        sizeof(CameraBufferObject),
-        sizeof(LightBufferObject)
+        sizeof(Global),
+        sizeof(Local)
     };
 
-    uint32_t binding = SAMPLE_BIND;
-    for(auto &it : m_Textures) {
-        if(it.binding > 0) {
-            m_layoutBindings.push_back({ (uint32_t)it.binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                         1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr });
-
-            /// \todo Doesn't takes into account case with textures skinned meshes in vertex shader
-
-            binding = MAX((uint32_t)it.binding, binding);
-            m_layoutBindingsSizes.push_back(0);
-        }
-    }
-
+    uint32_t binding = UNIFORM_BIND;
     if(!m_Uniforms.empty()) {
-        binding++;
         m_layoutBindings.push_back({binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
 
         uint32_t size = 0;
@@ -324,9 +301,25 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
             size += it.size;
         }
         m_layoutBindingsSizes.push_back(size);
+
+        binding++;
     }
 
-    m_uniformDescSetLayout = CommandBufferVk::createDescriptorSetLayout(m_layoutBindings);
+    //for(auto &it : m_Textures) {
+    //    if(it.binding > 0) {
+    //        m_layoutBindings.push_back({ (uint32_t)it.binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    //                                     1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr });
+    //
+    //        /// \todo Doesn't takes into account case with textures skinned meshes in vertex shader
+    //
+    //        binding = MAX((uint32_t)it.binding, binding);
+    //        m_layoutBindingsSizes.push_back(0);
+    //    }
+    //    binding++;
+    //}
+    //
+
+    m_uniformDescSetLayout = CommandBufferVK::createDescriptorSetLayout(m_layoutBindings);
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -352,7 +345,7 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
     pipelineCreateInfo.layout = layout;
     pipelineCreateInfo.renderPass = RenderVkSystem::currentRenderPass();
 
-    VkDynamicState dynEnable[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, /*VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT*/ };
+    VkDynamicState dynEnable[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dyn = {};
     dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dyn.dynamicStateCount = sizeof(dynEnable) / sizeof(VkDynamicState);
@@ -393,7 +386,9 @@ MaterialInstance *MaterialVk::createInstance(SurfaceType type) {
 }
 
 MaterialInstanceVk::MaterialInstanceVk(Material *material) :
-        MaterialInstance(material) {
+        MaterialInstance(material),
+        m_descriptorPool(nullptr),
+        m_uniformDescriptorSet(nullptr) {
 
 }
 
@@ -423,49 +418,42 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
         throw runtime_error("failed to create descriptor pool!");
     }
 
-    m_uniformDescriptorSets.resize(swapChainCount);
-
     m_buffers.resize(swapChainCount);
     m_buffersMemory.resize(swapChainCount);
-    m_bufferObjects.resize(swapChainCount);
 
     // Create descriptor sets
     vector<VkDescriptorSetLayout> layouts(swapChainCount, layout);
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = m_descriptorPool;
-    allocInfo.descriptorSetCount = swapChainCount;
+    allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = layouts.data();
 
-    if(vkAllocateDescriptorSets(device, &allocInfo, m_uniformDescriptorSets.data()) != VK_SUCCESS) {
+    if(vkAllocateDescriptorSets(device, &allocInfo, &m_uniformDescriptorSet) != VK_SUCCESS) {
         throw runtime_error("failed to allocate descriptor sets!");
     }
 
-    for(size_t i = 0; i < swapChainCount; i++) {
-        uint32_t count = m->layoutBindingsCount();
+    uint32_t count = m->layoutBindingsCount();
+    for(int32_t i = 0; i < swapChainCount; i++) {
         for(uint32_t l = 0; l < count; l++) {
             VkDescriptorSetLayoutBinding binding = m->layoutBinding(l);
 
             VkWriteDescriptorSet descriptorWrite = {};
             descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = m_uniformDescriptorSets[i];
+            descriptorWrite.dstSet = m_uniformDescriptorSet;
             descriptorWrite.dstBinding = binding.binding;
             descriptorWrite.dstArrayElement = 0;
             descriptorWrite.descriptorType = binding.descriptorType;
             descriptorWrite.descriptorCount = 1;
 
-            void *dst = nullptr;
             if(binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                 VkDeviceSize size = m->layoutBindingSize(l);
 
                 VkBuffer buffer;
                 VkDeviceMemory memory;
-                CommandBufferVk::createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                CommandBufferVK::createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                               buffer, memory);
-
-                m_buffers[i].push_back(buffer);
-                m_buffersMemory[i].push_back(memory);
 
                 VkDescriptorBufferInfo bufferInfo = {};
                 bufferInfo.buffer = buffer;
@@ -474,10 +462,8 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
 
                 descriptorWrite.pBufferInfo = &bufferInfo;
 
-                vkMapMemory(device, memory, 0, size, 0, &dst);
-
-                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
-                m_bufferObjects[i].push_back(dst);
+                m_buffers[i].push_back(buffer);
+                m_buffersMemory[i].push_back(memory);
             } else {
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -490,27 +476,40 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
                 }
 
                 descriptorWrite.pImageInfo = &imageInfo;
-
-                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
-                m_bufferObjects[i].push_back(dst);
             }
+
+            vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
         }
     }
 }
 
-bool MaterialInstanceVk::bind(const VertexBufferObject &vertex, const FragmentBufferObject &fragment, VkCommandBuffer buffer, uint32_t index, uint32_t layer) {
+bool MaterialInstanceVk::bind(const Global &global, const Local &local, VkCommandBuffer buffer, uint32_t index, uint32_t layer) {
     MaterialVk *m = static_cast<MaterialVk *>(m_material);
 
     VkPipelineLayout layout;
     if(m->bind(buffer, layout, layer, surfaceType())) {
-        if(m_uniformDescriptorSets.size() == 0) {
+        if(m_buffers.size() == 0) {
             createDescriptors(m->descriptorSetLayout());
         }
-        *reinterpret_cast<VertexBufferObject *>(m_bufferObjects[index][0]) = vertex;
-        *reinterpret_cast<FragmentBufferObject *>(m_bufferObjects[index][1]) = fragment;
+
+        vector<const void *> buffers = {
+            &global,
+            &local
+        };
+
+        VkDevice device = RenderVkSystem::currentDevice();
+
+        for(int i = 0; i < buffers.size(); i++) {
+            VkDeviceSize size = m->layoutBindingSize(i);
+
+            void *dst = nullptr;
+            vkMapMemory(device, m_buffersMemory[index][i], 0, size, 0, &dst);
+                memcpy(dst, buffers[i], size);
+            vkUnmapMemory(device, m_buffersMemory[index][i]);
+        }
 
         vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                layout, 0, 1, &m_uniformDescriptorSets[index], 0, nullptr);
+                                layout, 0, 1, &m_uniformDescriptorSet, 0, nullptr);
         return true;
     }
     return false;
@@ -519,7 +518,7 @@ bool MaterialInstanceVk::bind(const VertexBufferObject &vertex, const FragmentBu
 void MaterialInstanceVk::setTexture(const char *name, Texture *value) {
     MaterialInstance::setTexture(name, value);
 
-    if(value && !m_uniformDescriptorSets.empty()) {
+    if(value && m_uniformDescriptorSet) {
         VkDescriptorImageInfo imageInfo = {};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -531,7 +530,7 @@ void MaterialInstanceVk::setTexture(const char *name, Texture *value) {
         for(int32_t i = 0; i < RenderVkSystem::swapChainImageCount(); i++) {
             VkWriteDescriptorSet descriptorWrite = {};
             descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = m_uniformDescriptorSets[i];
+            descriptorWrite.dstSet = m_uniformDescriptorSet;
             descriptorWrite.dstBinding = m->textureBinding(name);
             descriptorWrite.dstArrayElement = 0;
             descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;

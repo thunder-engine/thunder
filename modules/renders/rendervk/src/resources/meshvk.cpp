@@ -4,12 +4,6 @@
 
 #include "rendervksystem.h"
 
-#include <log.h>
-
-MeshVk::MeshVk() {
-
-}
-
 void MeshVk::bind(VkCommandBuffer buffer, uint32_t lod) {
     switch(state()) {
         case ToBeUpdated: {
@@ -65,37 +59,37 @@ void MeshVk::updateVbo() {
     {
         auto v = l->indices();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[0], m_memoryBuffers[0], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[0], m_memoryBuffers[0], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
         }
     }
     {
         auto v = l->vertices();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[1], m_memoryBuffers[1], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[1], m_memoryBuffers[1], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         }
     }
     {
         auto v = l->uv0();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[2], m_memoryBuffers[2], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[2], m_memoryBuffers[2], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         }
     }
     {
         auto v = l->normals();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[3], m_memoryBuffers[3], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[3], m_memoryBuffers[3], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         }
     }
     {
         auto v = l->tangents();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[4], m_memoryBuffers[4], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[4], m_memoryBuffers[4], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         }
     }
     {
         auto v = l->colors();
         if(!v.empty()) {
-            buildVbo(device, m_buffers[5], m_memoryBuffers[5], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            uploadVbo(device, m_buffers[5], m_memoryBuffers[5], v.data(), sizeof(v[0]) * v.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         }
     }
 
@@ -113,13 +107,13 @@ void MeshVk::destroyVbo() {
     }
 }
 
-void MeshVk::buildVbo(VkDevice device, VkBuffer &buffer, VkDeviceMemory &memory, void *data, VkDeviceSize size, VkBufferUsageFlagBits flags) const {
-    CommandBufferVk::createBuffer(size, flags, // | VK_BUFFER_USAGE_TRANSFER_DST_BIT for staged
+void MeshVk::uploadVbo(VkDevice device, VkBuffer &buffer, VkDeviceMemory &memory, void *data, VkDeviceSize size, VkBufferUsageFlagBits flags) const {
+    CommandBufferVK::createBuffer(size, flags,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                   buffer, memory);
 
     void *dst = nullptr;
     vkMapMemory(device, memory, 0, size, 0, &dst);
-    memcpy(dst, data, (size_t)size);
+        memcpy(dst, data, (size_t)size);
     vkUnmapMemory(device, memory);
 }

@@ -41,7 +41,8 @@ void VulkanWindow::render() {
     RenderVkSystem::setSwapChainImageCount(swapChainImageCount());
     RenderVkSystem::setCurrentSwapChainImageIndex(currentSwapChainImageIndex());
 
-    RenderVkSystem::setWindowSize(width(), height());
+    const QSize sz = swapChainImageSize();
+    RenderVkSystem::setWindowSize(sz.width(), sz.height());
 
     emit draw();
 

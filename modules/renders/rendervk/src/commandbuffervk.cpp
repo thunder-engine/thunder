@@ -9,7 +9,7 @@
 
 #include <timer.h>
 
-CommandBufferVk::CommandBufferVk() :
+CommandBufferVK::CommandBufferVK() :
         m_commandBuffer(nullptr),
         m_currentImageIndex(0),
         m_viewportX(0),
@@ -19,28 +19,28 @@ CommandBufferVk::CommandBufferVk() :
         m_currentTarget(nullptr) {
     PROFILE_FUNCTION();
 
-    m_fragment.m_Clip = 0.1f;
-    m_fragment.m_Time = 0.0f;
+}
+
+CommandBufferVK::~CommandBufferVK() {
 
 }
 
-CommandBufferVk::~CommandBufferVk() {
-
-}
-
-void CommandBufferVk::begin(VkCommandBuffer buffer, uint32_t index) {
+void CommandBufferVK::begin(VkCommandBuffer buffer, uint32_t index) {
     m_commandBuffer = buffer;
     m_currentImageIndex = index;
+
+    m_global.time = Timer::deltaTime();
+    m_global.clip = 0.99f;
 }
 
-void CommandBufferVk::end() {
+void CommandBufferVK::end() {
     if(m_currentTarget) {
         m_currentTarget->unbind(m_commandBuffer);
         m_currentTarget = nullptr;
     }
 }
 
-void CommandBufferVk::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
+void CommandBufferVK::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
     PROFILE_FUNCTION();
 
     if(m_currentTarget) {
@@ -48,13 +48,13 @@ void CommandBufferVk::clearRenderTarget(bool clearColor, const Vector4 &color, b
     }
 }
 
-void CommandBufferVk::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVK::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
     drawMeshInstanced(&model, 1, mesh, sub, layer, material);
 }
 
-void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVK::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
     if(mesh && material) {
@@ -65,10 +65,10 @@ void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
             return;
         }
 
-        m_vertex.m_Model = models[0];
+        m_local.model = models[0];
 
         MaterialInstanceVk *mat = static_cast<MaterialInstanceVk *>(material);
-        if(mat->bind(m_vertex, m_fragment, m_commandBuffer, m_currentImageIndex, layer)) {
+        if(mat->bind(m_global, m_local, m_commandBuffer, m_currentImageIndex, layer)) {
             m->bind(m_commandBuffer, lod);
             Mesh::TriangleTopology mode = static_cast<Mesh::TriangleTopology>(mesh->topology());
             if(mode > Mesh::Lines) {
@@ -77,7 +77,7 @@ void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
                 PROFILER_STAT(POLYGONS, vert - 2);
             } else {
                 uint32_t index = l->indices().size();
-                vkCmdDrawIndexed(m_commandBuffer, index, count, 0, 0, 0);
+                vkCmdDrawIndexed(m_commandBuffer, index, count, 0, 0, 1);
                 PROFILER_STAT(POLYGONS, index / 3);
             }
             PROFILER_STAT(DRAWCALLS, 1);
@@ -85,7 +85,7 @@ void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     }
 }
 
-void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
+void CommandBufferVK::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
     if(m_currentTarget) {
@@ -98,45 +98,25 @@ void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-Matrix4 CommandBufferVk::projection() const {
-    return m_vertex.m_Projection;
-}
-
-Matrix4 CommandBufferVk::view() const {
-    return m_vertex.m_View;
-}
-
-Texture *CommandBufferVk::texture(const char *name) const {
+Texture *CommandBufferVK::texture(const char *name) const {
     return nullptr;
 }
 
-void CommandBufferVk::setColor(const Vector4 &color) {
-    m_fragment.m_Color = color;
+void CommandBufferVK::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
+    CommandBuffer::setViewProjection(view, projection);
+
+    //m_global.projection.mat[5] *= -1.0f; // Inverse Y coordinate for Vulkan
 }
 
-void CommandBufferVk::resetViewProjection() {
-    m_vertex.m_View = m_saveView;
-    m_vertex.m_Projection = m_saveProjection;
-}
-
-void CommandBufferVk::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    m_saveView = m_vertex.m_View;
-    m_saveProjection = m_vertex.m_Projection;
-
-    m_vertex.m_View = view;
-    m_vertex.m_Projection = projection;
-    m_vertex.m_Projection.mat[5] *= -1.0f; // Inverse Y coordinate for Vulkan
-}
-
-void CommandBufferVk::setGlobalValue(const char *name, const Variant &value) {
+void CommandBufferVK::setGlobalValue(const char *name, const Variant &value) {
 
 }
 
-void CommandBufferVk::setGlobalTexture(const char *name, Texture *value) {
+void CommandBufferVK::setGlobalTexture(const char *name, Texture *value) {
 
 }
 
-void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+void CommandBufferVK::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     m_viewportX = x;
     m_viewportY = y;
     m_viewportWidth = width;
@@ -153,15 +133,15 @@ void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
     vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
 }
 
-void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+void CommandBufferVK::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
     VkRect2D scissor = {};
-    scissor.offset = {x, y};
-    scissor.extent = {(uint32_t)width, (uint32_t)height};
+    scissor.offset = { x, y };
+    scissor.extent = { (uint32_t)width, (uint32_t)height };
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
 
-void CommandBufferVk::disableScissor() {
+void CommandBufferVK::disableScissor() {
     VkRect2D scissor = {};
     scissor.offset = {m_viewportX, m_viewportY};
     scissor.extent = {(uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight};
@@ -169,7 +149,7 @@ void CommandBufferVk::disableScissor() {
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
 
-void CommandBufferVk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory) {
+void CommandBufferVK::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkBufferCreateInfo bufferInfo = {};
@@ -197,7 +177,7 @@ void CommandBufferVk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     vkBindBufferMemory(device, buffer, memory, 0);
 }
 
-VkDescriptorSetLayout CommandBufferVk::createDescriptorSetLayout(const vector<VkDescriptorSetLayoutBinding> &layoutBinding) {
+VkDescriptorSetLayout CommandBufferVK::createDescriptorSetLayout(const vector<VkDescriptorSetLayoutBinding> &layoutBinding) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkDescriptorSetLayoutCreateInfo descLayoutInfo = {};
@@ -212,7 +192,7 @@ VkDescriptorSetLayout CommandBufferVk::createDescriptorSetLayout(const vector<Vk
     return descSetLayout;
 }
 
-uint32_t CommandBufferVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t CommandBufferVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(RenderVkSystem::currentPhysicalDevice(), &memProperties);
 
@@ -224,7 +204,7 @@ uint32_t CommandBufferVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
     return 0;
 }
 
-VkCommandBuffer CommandBufferVk::beginSingleTimeCommands() {
+VkCommandBuffer CommandBufferVK::beginSingleTimeCommands() {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkCommandBufferAllocateInfo allocInfo = {};
@@ -245,7 +225,7 @@ VkCommandBuffer CommandBufferVk::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void CommandBufferVk::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void CommandBufferVK::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     vkEndCommandBuffer(commandBuffer);

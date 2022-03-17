@@ -49,13 +49,11 @@ public:
 #ifdef SHARED_DEFINE
     QWindow *createRhiWindow() const override;
 
-    vector<uint8_t> renderOffscreen(Scene *scene, int width, int height) override;
+    ByteArray renderOffscreen(Scene *scene, int width, int height) override;
 #endif
 
 private:
     Engine *m_pEngine;
-
-    bool m_registered;
 
 };
 

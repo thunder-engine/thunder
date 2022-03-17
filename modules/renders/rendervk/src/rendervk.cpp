@@ -15,13 +15,13 @@ static const char *meta = \
 "   \"description\": \"Vulkan Render Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"RenderVKSystem\": \"system\""
+"       \"RenderVK\": \"render\""
 "   }"
 "}";
 
 RenderVK::RenderVK(Engine *engine) :
         Module(engine),
-        m_pSystem(new RenderVkSystem(engine)) {
+        m_pSystem(nullptr) {
 }
 
 RenderVK::~RenderVK() {
@@ -33,5 +33,8 @@ const char *RenderVK::metaInfo() const {
 }
 
 void *RenderVK::getObject(const char *) {
+    if(m_pSystem == nullptr) {
+        m_pSystem = new RenderVkSystem(m_engine);
+    }
     return m_pSystem;
 }

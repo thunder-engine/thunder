@@ -8,7 +8,7 @@
 
 #include <vulkan/vulkan.h>
 
-class CommandBufferVk;
+class CommandBufferVK;
 
 class MeshVk : public Mesh {
     A_OVERRIDE(MeshVk, Mesh, Resources)
@@ -20,8 +20,6 @@ public:
     typedef IndexVector BufferVector;
 
 public:
-    MeshVk();
-
     void bind(VkCommandBuffer buffer, uint32_t lod);
 
 protected:
@@ -29,7 +27,7 @@ protected:
 
     void destroyVbo();
 
-    void buildVbo(VkDevice device, VkBuffer &buffer, VkDeviceMemory &memory, void *data, VkDeviceSize size, VkBufferUsageFlagBits flags) const;
+    void uploadVbo(VkDevice device, VkBuffer &buffer, VkDeviceMemory &memory, void *data, VkDeviceSize size, VkBufferUsageFlagBits flags) const;
 
 public:
     vector<VkBuffer> m_buffers;

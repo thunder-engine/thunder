@@ -8,42 +8,7 @@
 
 #include <resources/material.h>
 
-#include <engine.h>
-
-struct VertexBufferObject {
-    Matrix4 m_Model;
-    Matrix4 m_View;
-    Matrix4 m_Projection;
-};
-
-struct FragmentBufferObject {
-    Vector4 m_Color;
-    float m_Clip;
-    float m_Time;
-};
-
-struct CameraBufferObject {
-    Matrix4 m_view;
-    Matrix4 m_projection;
-    Matrix4 m_projectionInv;
-    Matrix4 m_screenToWorld;
-    Matrix4 m_worldToScreen;
-    Vector4 m_position;
-    Vector4 m_target;
-    Vector4 m_screen;
-};
-
-struct LightBufferObject {
-    Matrix4 m_matrix[6];
-    Vector4 m_tiles[6];
-    Vector4 m_color;
-    Vector4 m_lod;
-    Vector4 m_map;
-    Vector4 m_params; // x - brightness, y - radius/width, z - length/height, w - cutoff
-    Vector4 m_shadows; // x - ambient, y - bias, z - shadows
-    Vector3 m_position;
-    Vector3 m_direction;
-};
+#include <commandbuffer.h>
 
 class MaterialInstanceVk : public MaterialInstance {
 public:
@@ -51,7 +16,7 @@ public:
 
     void createDescriptors(VkDescriptorSetLayout layout);
 
-    bool bind(const VertexBufferObject &vertex, const FragmentBufferObject &fragment, VkCommandBuffer buffer, uint32_t index, uint32_t layer);
+    bool bind(const Global &global, const Local &local, VkCommandBuffer buffer, uint32_t index, uint32_t layer);
 
 private:
     void setTexture(const char *name, Texture *value) override;
@@ -59,11 +24,10 @@ private:
 private:
     VkDescriptorPool m_descriptorPool;
 
-    vector<VkDescriptorSet> m_uniformDescriptorSets;
+    VkDescriptorSet m_uniformDescriptorSet;
 
     vector<vector<VkBuffer>> m_buffers;
     vector<vector<VkDeviceMemory>> m_buffersMemory;
-    vector<vector<void *>> m_bufferObjects;
 
 };
 

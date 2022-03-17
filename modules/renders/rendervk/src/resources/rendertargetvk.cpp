@@ -13,6 +13,8 @@ RenderTargetVk::RenderTargetVk() :
 }
 
 void RenderTargetVk::bind(VkCommandBuffer &buffer, uint32_t level) {
+    PROFILE_FUNCTION();
+
     switch(state()) {
         case Suspend: {
             destroyBuffer();
@@ -36,6 +38,8 @@ void RenderTargetVk::unbind(VkCommandBuffer &buffer) {
 }
 
 void RenderTargetVk::clear(VkCommandBuffer &buffer, bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
+    PROFILE_FUNCTION();
+
     uint32_t count = colorAttachmentCount();
 
     vector<VkClearAttachment> attachments;
@@ -71,6 +75,8 @@ void RenderTargetVk::setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, ui
 }
 
 bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
+    PROFILE_FUNCTION();
+
     uint32_t count = colorAttachmentCount();
 
     if(count > 0) {
@@ -182,6 +188,8 @@ bool RenderTargetVk::updateBuffer(VkCommandBuffer &buffer, uint32_t level) {
 }
 
 void RenderTargetVk::destroyBuffer() {
+    PROFILE_FUNCTION();
+
     VkDevice device = RenderVkSystem::currentDevice();
 
     vkDestroyRenderPass(device, m_renderPass, nullptr);

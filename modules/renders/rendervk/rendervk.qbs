@@ -29,6 +29,8 @@ Project {
         Environment.getEnv("VULKAN_SDK") + "/Include"
     ]
 
+    property bool useStaging: false
+
     DynamicLibrary {
         name: "rendervk-editor"
         condition: rendervk.desktop
@@ -47,7 +49,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE"]
+        cpp.defines: ["SHARED_DEFINE", "USE_STAGING=" + useStaging]
         cpp.includePaths: rendervk.incPaths
         cpp.cxxLanguageVersion: "c++14"
         cpp.minimumMacosVersion: "10.12"
@@ -79,6 +81,8 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         bundle.isBundle: false
+
+        cpp.defines: ["USE_STAGING=" + useStaging]
 
         cpp.includePaths: rendervk.incPaths
         cpp.cxxLanguageVersion: "c++14"

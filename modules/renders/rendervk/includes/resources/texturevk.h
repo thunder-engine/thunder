@@ -21,8 +21,6 @@ public:
 private:
     void readPixels(int x, int y, int width, int height) override;
 
-    void switchState(ResourceState state) override;
-
     void updateTexture();
     void destroyTexture();
 
@@ -43,7 +41,6 @@ private:
 
     VkDeviceMemory m_deviceMemory;
 
-    bool m_useStaging;
 };
 
 #endif // TEXTUREVK_H

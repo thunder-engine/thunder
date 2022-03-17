@@ -39,10 +39,18 @@ uint32_t s_height;
 
 RenderVkSystem::RenderVkSystem(Engine *engine) :
         RenderSystem(),
-        m_pEngine(engine),
-        m_registered(false) {
+        m_pEngine(engine) {
 
     PROFILE_FUNCTION();
+
+    System *system = m_pEngine->resourceSystem();
+
+    TextureVk::registerClassFactory(system);
+    RenderTargetVk::registerClassFactory(system);
+    MaterialVk::registerClassFactory(system);
+    MeshVk::registerClassFactory(system);
+
+    CommandBufferVK::registerClassFactory(m_pEngine);
 
 }
 
@@ -56,7 +64,7 @@ RenderVkSystem::~RenderVkSystem() {
     MaterialVk::unregisterClassFactory(system);
     MeshVk::unregisterClassFactory(system);
 
-    CommandBufferVk::unregisterClassFactory(m_pEngine);
+    CommandBufferVK::unregisterClassFactory(m_pEngine);
 }
 
 const char *RenderVkSystem::name() const {
@@ -67,15 +75,6 @@ const char *RenderVkSystem::name() const {
 */
 bool RenderVkSystem::init() {
     PROFILE_FUNCTION();
-
-    System *system = m_pEngine->resourceSystem();
-
-    TextureVk::registerClassFactory(system);
-    RenderTargetVk::registerClassFactory(system);
-    MaterialVk::registerClassFactory(system);
-    MeshVk::registerClassFactory(system);
-
-    CommandBufferVk::registerClassFactory(m_pEngine);
 
 #if defined(SHARED_DEFINE)
     s_Instance.setLayers({"VK_LAYER_KHRONOS_validation"});
@@ -89,7 +88,7 @@ bool RenderVkSystem::init() {
     //texture = MIN(texture, MAX_RESOLUTION);
     //setAtlasPageSize(texture, texture);
 
-    CommandBufferVk::setInited();
+    CommandBufferVK::setInited();
 
     return true;
 }
@@ -100,9 +99,9 @@ void RenderVkSystem::update(Scene *scene) {
     PROFILE_FUNCTION();
 
     Camera *camera = Camera::current();
-    if(camera && CommandBufferVk::isInited()) {
+    if(camera && CommandBufferVK::isInited()) {
         Pipeline *pipe = camera->pipeline();
-        CommandBufferVk *cmd = static_cast<CommandBufferVk *>(pipe->buffer());
+        CommandBufferVK *cmd = static_cast<CommandBufferVK *>(pipe->buffer());
         cmd->begin(s_currentCommandBuffer, s_currentSwapChainImageIndex);
 
         static_cast<RenderTargetVk *>(pipe->defaultTarget())->setNativeHandle(s_currentRenderPass, s_frameBuffer, s_width, s_height);
@@ -186,39 +185,7 @@ QWindow *RenderVkSystem::createRhiWindow() const {
     return window;
 }
 
-vector<uint8_t> RenderVkSystem::renderOffscreen(Scene *scene, int width, int height) {
-    static RenderTarget *target = nullptr;
-    if(target == nullptr) {
-        target = Engine::objectCreate<RenderTarget>();
-
-        Texture *color = Engine::objectCreate<Texture>();
-        color->setFormat(Texture::RGBA8);
-        color->setWidth(width);
-        color->setHeight(height);
-
-        Texture *depth = Engine::objectCreate<Texture>();
-        depth->setFormat(Texture::Depth);
-        depth->setDepthBits(24);
-        depth->setWidth(width);
-        depth->setHeight(height);
-
-        target->setColorAttachment(0, color);
-        target->setDepthAttachment(depth);
-    }
-
-    Camera *camera = Camera::current();
-    if(camera) {
-        Pipeline *pipe = camera->pipeline();
-        pipe->resize(width, height);
-
-        /// \todo Bind render target
-    }
-
-    vector<uint8_t> result;// = RenderSystem::renderOffscreen(scene, width, height);
-
-    result.resize(width * height * 4);
-    //glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, result.data());
-
-    return result;
+ByteArray RenderVkSystem::renderOffscreen(Scene *scene, int width, int height) {
+    return ByteArray();
 }
 #endif

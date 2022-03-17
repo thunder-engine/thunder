@@ -12,21 +12,15 @@
 #define TANGENT_ATRIB   3
 #define COLOR_ATRIB     4
 
-#define UV1_ATRIB       5
-#define BONES_ATRIB     6
-#define WEIGHTS_ATRIB   7
-
-#define INSTANCE_ATRIB  8
-
 class RenderTargetVk;
 
-class CommandBufferVk : public CommandBuffer {
-    A_OVERRIDE(CommandBufferVk, CommandBuffer, System)
+class CommandBufferVK : public CommandBuffer {
+    A_OVERRIDE(CommandBufferVK, CommandBuffer, System)
 
 public:
-    CommandBufferVk();
+    CommandBufferVK();
 
-    ~CommandBufferVk() override;
+    ~CommandBufferVK() override;
 
     void begin(VkCommandBuffer buffer, uint32_t index);
 
@@ -51,10 +45,6 @@ private:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void setColor(const Vector4 &color) override;
-
-    void resetViewProjection() override;
-
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection) override;
 
     void setGlobalValue(const char *name, const Variant &value) override;
@@ -67,16 +57,9 @@ private:
 
     void disableScissor() override;
 
-    Matrix4 projection() const override;
-
-    Matrix4 view() const override;
-
     Texture *texture(const char *name) const override;
 
 protected:
-    VertexBufferObject m_vertex;
-    FragmentBufferObject m_fragment;
-
     Matrix4 m_saveView;
     Matrix4 m_saveProjection;
 
@@ -89,6 +72,7 @@ protected:
     int32_t m_viewportHeight;
 
     RenderTargetVk *m_currentTarget;
+
 };
 
 #endif // COMMANDBUFFERVK_H
