@@ -22,9 +22,9 @@ Project {
         cpp.includePaths: angelscript.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.cxxStandardLibrary: "libc++"
-        cpp.minimumMacosVersion: "10.12"
+        cpp.cxxLanguageVersion: angelscript.languageVersion
+        cpp.cxxStandardLibrary: angelscript.standardLibrary
+        cpp.minimumMacosVersion: angelscript.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
@@ -55,11 +55,11 @@ Project {
 
         cpp.defines: [ "ANGELSCRIPT_EXPORT", "AS_NO_COMPILER" ]
         cpp.includePaths: angelscript.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.cxxStandardLibrary: "libc++"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
+        cpp.cxxLanguageVersion: angelscript.languageVersion
+        cpp.cxxStandardLibrary: angelscript.standardLibrary
+        cpp.minimumMacosVersion: angelscript.osxVersion
+        cpp.minimumIosVersion: angelscript.iosVersion
+        cpp.minimumTvosVersion: angelscript.tvosVersion
 
         Properties {
             condition: qbs.architecture === "x86_64" && qbs.targetOS.contains("windows")

@@ -40,9 +40,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE", "BULLET_LIBRARY"]
         cpp.includePaths: bullet.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: bullet.languageVersion
+        cpp.cxxStandardLibrary: bullet.standardLibrary
+        cpp.minimumMacosVersion: bullet.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -100,11 +100,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: bullet.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: bullet.languageVersion
+        cpp.cxxStandardLibrary: bullet.standardLibrary
+        cpp.minimumMacosVersion: bullet.osxVersion
+        cpp.minimumIosVersion: bullet.iosVersion
+        cpp.minimumTvosVersion: bullet.tvosVersion
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 

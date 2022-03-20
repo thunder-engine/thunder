@@ -44,9 +44,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: angel.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: angel.languageVersion
+        cpp.cxxStandardLibrary: angel.standardLibrary
+        cpp.minimumMacosVersion: angel.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -90,11 +90,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: angel.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: angel.languageVersion
+        cpp.cxxStandardLibrary: angel.standardLibrary
+        cpp.minimumMacosVersion: angel.osxVersion
+        cpp.minimumIosVersion: angel.iosVersion
+        cpp.minimumTvosVersion: angel.tvosVersion
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 

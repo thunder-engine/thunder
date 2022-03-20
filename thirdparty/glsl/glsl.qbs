@@ -32,9 +32,9 @@ Project {
 
         cpp.includePaths: glsl.incPaths
         cpp.libraryPaths: [ ]
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: glsl.languageVersion
+        cpp.cxxStandardLibrary: glsl.standardLibrary
+        cpp.minimumMacosVersion: glsl.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")

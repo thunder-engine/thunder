@@ -53,9 +53,9 @@ QbsBuilder::QbsBuilder() :
     m_Settings << "--settings-dir" << QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/..";
 
     SettingsManager *settings = SettingsManager::instance();
-    settings->registerProperty(qPrintable(gAndroidJava), QVariant::fromValue(QFileInfo("/")));
-    settings->registerProperty(qPrintable(gAndroidSdk), QVariant::fromValue(QFileInfo("/")));
-    settings->registerProperty(qPrintable(gAndroidNdk), QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(gAndroidJava, QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(gAndroidSdk, QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(gAndroidNdk, QVariant::fromValue(QFileInfo("/")));
 
 #if defined(Q_OS_WIN)
     settings->registerProperty(qPrintable(gQBSProfile), "MSVC2015-amd64");
@@ -65,7 +65,7 @@ QbsBuilder::QbsBuilder() :
     settings->registerProperty(qPrintable(gQBSProfile), "clang");
 #endif
 
-    settings->registerProperty(qPrintable(gQBSPath), QVariant::fromValue(QFileInfo("/")));
+    settings->registerProperty(gQBSPath, QVariant::fromValue(QFileInfo("/")));
 
     connect( m_pProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()) );
     connect( m_pProcess, SIGNAL(readyReadStandardError()), this, SLOT(readError()) );
@@ -134,7 +134,7 @@ bool QbsBuilder::buildProject() {
             args << "--products" << product << "profile:" + profile;
             args << QString("config:") + gMode << "qbs.architecture:" + architecture;
 
-            aDebug() << gLabel << qPrintable(args.join(" "));
+            aInfo() << gLabel << qPrintable(args.join(" "));
 
             m_pProcess->start(m_QBSPath.absoluteFilePath(), args);
             if(!m_pProcess->waitForStarted()) {

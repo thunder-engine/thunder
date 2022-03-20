@@ -21,6 +21,13 @@ Project {
     }
     property string ANDROID_STL: "c++_shared"
 
+    property string osxVersion: "10.12"
+    property string iosVersion: "10.0"
+    property string tvosVersion: "10.0"
+
+    property string languageVersion: "c++14"
+    property string standardLibrary: "libc++"
+
     property bool desktop: !qbs.targetOS.contains("android") && !qbs.targetOS.contains("ios") && !qbs.targetOS.contains("tvos")
     property string bundle: {
         if(qbs.targetOS.contains("darwin")) {

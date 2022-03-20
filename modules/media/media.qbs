@@ -44,9 +44,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE", "MEDIA_LIBRARY"]
         cpp.includePaths: media.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: media.languageVersion
+        cpp.cxxStandardLibrary: media.standardLibrary
+        cpp.minimumMacosVersion: media.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -116,11 +116,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: media.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: media.languageVersion
+        cpp.cxxStandardLibrary: media.standardLibrary
+        cpp.minimumMacosVersion: media.osxVersion
+        cpp.minimumIosVersion: media.iosVersion
+        cpp.minimumTvosVersion: media.tvosVersion
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 

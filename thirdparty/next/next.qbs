@@ -30,9 +30,9 @@ Project {
         cpp.includePaths: next.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: next.languageVersion
+        cpp.cxxStandardLibrary: next.standardLibrary
+        cpp.minimumMacosVersion: next.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
@@ -69,11 +69,11 @@ Project {
 
         cpp.defines: ["NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: next.languageVersion
+        cpp.cxxStandardLibrary: next.standardLibrary
+        cpp.minimumMacosVersion: next.osxVersion
+        cpp.minimumIosVersion: next.iosVersion
+        cpp.minimumTvosVersion: next.tvosVersion
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 

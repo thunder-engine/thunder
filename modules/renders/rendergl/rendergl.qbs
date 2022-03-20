@@ -42,9 +42,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: rendergl.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: rendergl.languageVersion
+        cpp.cxxStandardLibrary: rendergl.standardLibrary
+        cpp.minimumMacosVersion: rendergl.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -89,11 +89,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: rendergl.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: rendergl.languageVersion
+        cpp.cxxStandardLibrary: rendergl.standardLibrary
+        cpp.minimumMacosVersion: rendergl.osxVersion
+        cpp.minimumIosVersion: rendergl.iosVersion
+        cpp.minimumTvosVersion: rendergl.tvosVersion
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 

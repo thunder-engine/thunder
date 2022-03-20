@@ -33,9 +33,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: qbstools.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: qbstools.languageVersion
+        cpp.cxxStandardLibrary: qbstools.standardLibrary
+        cpp.minimumMacosVersion: qbstools.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")

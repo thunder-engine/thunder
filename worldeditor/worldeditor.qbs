@@ -61,7 +61,7 @@ Project {
 
         cpp.includePaths: worldEditor.incPaths
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
-        cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxLanguageVersion: worldEditor.languageVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")

@@ -22,8 +22,8 @@ Project {
 
         cpp.defines: [ ]
         cpp.includePaths: spirvcross.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: spirvcross.languageVersion
+        cpp.cxxStandardLibrary: spirvcross.standardLibrary
+        cpp.minimumMacosVersion: spirvcross.osxVersion
     }
 }

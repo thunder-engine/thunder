@@ -33,9 +33,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: iostools.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: iostools.languageVersion
+        cpp.cxxStandardLibrary: iostools.standardLibrary
+        cpp.minimumMacosVersion: iostools.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")

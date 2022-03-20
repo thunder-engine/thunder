@@ -52,7 +52,7 @@ Project {
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
         cpp.dynamicLibraries: [ ]
-        cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxLanguageVersion: builder.languageVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")

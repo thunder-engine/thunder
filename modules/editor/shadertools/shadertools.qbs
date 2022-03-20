@@ -39,9 +39,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: shadertools.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: shadertools.languageVersion
+        cpp.cxxStandardLibrary: shadertools.standardLibrary
+        cpp.minimumMacosVersion: shadertools.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")

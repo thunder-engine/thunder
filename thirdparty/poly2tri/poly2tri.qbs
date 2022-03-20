@@ -18,10 +18,8 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: poly2tri.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.cxxStandardLibrary: "libc++"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
+        cpp.cxxLanguageVersion: poly2tri.languageVersion
+        cpp.cxxStandardLibrary: poly2tri.standardLibrary
+        cpp.minimumMacosVersion: poly2tri.osxVersion
     }
 }

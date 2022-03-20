@@ -35,9 +35,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: particletools.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: particletools.languageVersion
+        cpp.cxxStandardLibrary: particletools.standardLibrary
+        cpp.minimumMacosVersion: particletools.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")

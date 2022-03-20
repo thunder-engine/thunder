@@ -36,9 +36,9 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE"]
         cpp.includePaths: texturetools.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: texturetools.languageVersion
+        cpp.cxxStandardLibrary: texturetools.standardLibrary
+        cpp.minimumMacosVersion: texturetools.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")

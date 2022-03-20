@@ -124,7 +124,7 @@ void CodeEditor::saveFile(const QString &path) {
 
 void CodeEditor::setSpaceTabs(bool enable, uint32_t indent) {
     m_spaceTabs = enable;
-    m_spaceIndent = indent;
+    m_spaceIndent = (indent == 0) ? 4 : indent;
 }
 
 void CodeEditor::displayLineNumbers(bool visible) {

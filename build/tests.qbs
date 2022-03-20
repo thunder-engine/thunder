@@ -46,7 +46,7 @@ Project {
         cpp.includePaths: tests.incPaths
 
         property string prefix: qbs.targetOS.contains("windows") ? "lib" : ""
-        cpp.cxxLanguageVersion: "c++14"
+        cpp.cxxLanguageVersion: tests.languageVersion
         cpp.cxxFlags: tests.enableCoverage ? ["--coverage"] : undefined
         cpp.dynamicLibraries: tests.enableCoverage ? ["gcov"] : [ ]
 

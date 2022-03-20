@@ -55,9 +55,9 @@ Project {
         cpp.includePaths: engine.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: engine.languageVersion
+        cpp.cxxStandardLibrary: engine.standardLibrary
+        cpp.minimumMacosVersion: engine.osxVersion
 
         Properties {
             condition: engine.desktop
@@ -145,11 +145,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: engine.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: engine.languageVersion
+        cpp.cxxStandardLibrary: engine.standardLibrary
+        cpp.minimumMacosVersion: engine.osxVersion
+        cpp.minimumIosVersion: engine.iosVersion
+        cpp.minimumTvosVersion: engine.tvosVersion
         cpp.defines: ["NEXT_LIBRARY"]
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"

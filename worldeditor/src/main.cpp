@@ -52,14 +52,14 @@ int main(int argc, char *argv[]) {
 
     Log::setLogLevel(Log::DBG);
 
-    SettingsManager::instance()->loadSettings();
-
     Engine engine(file, argv[0]);
     engine.init();
     Log::overrideHandler(new QLog());
 
     PluginManager::instance()->init(&engine);
     AssetManager::instance()->init(&engine);
+
+    SettingsManager::instance()->loadSettings();
 
     MainWindow window(&engine);
 

@@ -40,9 +40,9 @@ Project {
             return result
         }
         cpp.includePaths: gui.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: gui.languageVersion
+        cpp.cxxStandardLibrary: gui.standardLibrary
+        cpp.minimumMacosVersion: gui.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("linux")
@@ -92,11 +92,11 @@ Project {
         bundle.isBundle: false
 
         cpp.includePaths: gui.incPaths
-        cpp.cxxLanguageVersion: "c++14"
-        cpp.minimumMacosVersion: "10.12"
-        cpp.minimumIosVersion: "10.0"
-        cpp.minimumTvosVersion: "10.0"
-        cpp.cxxStandardLibrary: "libc++"
+        cpp.cxxLanguageVersion: gui.languageVersion
+        cpp.cxxStandardLibrary: gui.standardLibrary
+        cpp.minimumMacosVersion: gui.osxVersion
+        cpp.minimumIosVersion: gui.iosVersion
+        cpp.minimumTvosVersion: gui.tvosVersion
 
         Properties {
             condition: !gui.desktop
