@@ -14,10 +14,10 @@ Project {
     property string ANDROID: "android-21"
     property string PLATFORM: {
         var arch = qbs.architecture;
-        if(qbs.targetOS.contains("darwin") || qbs.targetOS[0] === "linux") {
+        if(qbs.targetOS.contains("darwin") || qbs.targetOS[0] === "linux" || arch == undefined) {
             arch = "x86_64"
         }
-        return qbs.targetOS[0] + "/" + arch;
+        return qbs.targetOS[0] + "/" + arch
     }
     property string ANDROID_STL: "c++_shared"
 
@@ -33,7 +33,7 @@ Project {
         if(qbs.targetOS.contains("darwin")) {
             return EDITOR_NAME + ".app/Contents/MacOS/"
         }
-        return "";
+        return ""
     }
 
     Probe {
@@ -84,7 +84,7 @@ Project {
             "REVISION=\"" + probe.REVISION + "\"",
             "LEGAL=\"" + probe.LEGAL + "\""
         ];
-        return result;
+        return result
     }
 
     references: [
