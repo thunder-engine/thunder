@@ -344,6 +344,8 @@ bool EditorPipeline::isInHierarchy(Actor *origin, Actor *actor) {
 void EditorPipeline::resize(int32_t width, int32_t height) {
     Pipeline::resize(width, height);
     m_pController->resize(width, height);
+
+    m_pSelect->resize(width, height);
 }
 
 void EditorPipeline::drawGrid(Camera &camera) {
