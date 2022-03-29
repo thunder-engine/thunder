@@ -38,7 +38,7 @@
 */
 void File::finit(const char *argv0) {
     if(!PHYSFS_init(argv0)) {
-        Log(Log::ERR) << "[ FileIO ] Can't initialize.";
+        aError() << "[ FileIO ] Can't initialize.";
     }
 }
 /*!
@@ -50,10 +50,10 @@ void File::finit(const char *argv0) {
 */
 void File::fsearchPathAdd(const char *path, bool isFirst) {
     if(PHYSFS_addToSearchPath(path, isFirst ? 0 : 1) == 0) {
-        Log(Log::ERR) << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
+        aError() << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
     }
     if(isFirst && PHYSFS_setWriteDir(path) == 0) {
-        Log(Log::ERR) << "[ FileIO ] Can't set directory for writing.";
+        aError() << "[ FileIO ] Can't set directory for writing.";
     }
 }
 /*!
@@ -94,7 +94,7 @@ bool File::mkdir(const char *path) {
 bool File::fdelete(const char *path) {
     bool result = (PHYSFS_delete(path) != 0);
     if(!result) {
-        Log(Log::ERR) << "[ FileIO ] Can't delete file" << path;
+        aError() << "[ FileIO ] Can't delete file" << path;
     }
     return result;
 }
@@ -151,7 +151,7 @@ _FILE *File::fopen(const char *path, const char *mode) {
         default: break;
     }
     if(result == nullptr) {
-        Log(Log::ERR) << "[ FileIO ] Can't open file" << path;
+        aWarning() << "[ FileIO ] Can't open file" << path;
     }
     return result;
 }

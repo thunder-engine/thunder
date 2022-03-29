@@ -667,11 +667,17 @@ void MainWindow::build(QString platform) {
 }
 
 void MainWindow::onBuildFinished(int exitCode, QProcess::ExitStatus) {
+    QMessageBox msg;
     if(exitCode == 0) {
-        aInfo() << "Build Finished";
+        msg.setText("Build Succeeded.");
+        msg.setIcon(QMessageBox::Information);
+        aInfo() << qPrintable(msg.text());
     } else {
-        aError() << "Build Failed";
+        msg.setText("Build Failed. Please check log output for more details.");
+        msg.setIcon(QMessageBox::Critical);
+        aError() << qPrintable(msg.text());
     }
+    msg.exec();
 }
 
 void MainWindow::readOutput() {
