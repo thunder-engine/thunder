@@ -8,7 +8,7 @@ FilePathProperty::FilePathProperty(const QString &name, QObject *propertyObject,
 }
 
 QVariant FilePathProperty::value(int role) const {
-    QVariant data = Property::value();
+    QVariant data = Property::value(role);
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         return data.value<QFileInfo>().absoluteFilePath();
     }
@@ -26,7 +26,6 @@ void FilePathProperty::setValue(const QVariant &value) {
 QWidget *FilePathProperty::createEditor(QWidget *parent) const {
     m_editor = new PathEdit(parent);
     m_editor->setDisabled(isReadOnly());
-
     connect(m_editor, SIGNAL(pathChanged(QFileInfo)), this, SLOT(onPathChanged(QFileInfo)));
     return m_editor;
 }
@@ -51,5 +50,5 @@ QVariant FilePathProperty::editorData(QWidget *editor) {
 }
 
 void FilePathProperty::onPathChanged(const QFileInfo &info) {
-    setValue(QVariant::fromValue( info ));
+    setValue(QVariant::fromValue(info));
 }

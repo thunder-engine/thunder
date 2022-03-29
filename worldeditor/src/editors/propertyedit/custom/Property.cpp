@@ -93,19 +93,6 @@ QVariant Property::editorData(QWidget *) {
     return QVariant();
 }
 
-Property *Property::findPropertyObject(QObject *propertyObject) {
-    if(m_propertyObject == propertyObject) {
-        return this;
-    }
-    for(int i = 0; i < children().size(); ++i) {
-        Property *child = static_cast<Property *>(children()[i])->findPropertyObject(propertyObject);
-        if(child) {
-            return child;
-        }
-    }
-    return nullptr;
-}
-
 void Property::setChecked(bool value) {
     if(!m_override.isEmpty() && m_propertyObject) {
         m_propertyObject->setProperty(qPrintable(m_override), value);

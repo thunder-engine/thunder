@@ -68,6 +68,9 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
             if(item->isRoot()) {
                 return QApplication::palette("QTreeView").brush(QPalette::Normal, QPalette::Button).color();
             }
+            if(index.column() == 0) {
+                return QColor("#ff0000ff");
+            }
         } break;
         case Qt::DecorationRole: {
             if(index.column() == 1) {

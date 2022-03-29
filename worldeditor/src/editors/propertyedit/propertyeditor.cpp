@@ -135,7 +135,7 @@ private:
             QRegExp rx("(.*)(=\\s*)(.*)(;{1})");
             rx.setMinimal(true);
             int pos = 0;
-            while ((pos = rx.indexIn(editorHints, pos)) != -1) {
+            while((pos = rx.indexIn(editorHints, pos)) != -1) {
                 editor->setProperty(qPrintable(rx.cap(1).trimmed()), rx.cap(3).trimmed());
                 pos += rx.matchedLength();
             }
@@ -231,15 +231,22 @@ void PropertyEditor::clear() {
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
     Property *p = static_cast<Property *>(index.internalPointer());
-    if(p && p->isPersistent()) {
+    if(p) {
         QModelIndex origin = m_pFilter->mapFromSource(index);
-        if(!ui->treeView->isPersistentEditorOpen(origin)) {
-            ui->treeView->openPersistentEditor(origin);
+
+        if(p->isPersistent()) {
+            if(!ui->treeView->isPersistentEditorOpen(origin)) {
+                ui->treeView->openPersistentEditor(origin);
+            }
+
+            QWidget *e = p->editor();
+            if(e) {
+                ui->treeView->itemDelegate()->setEditorData(e, origin);
+            }
         }
 
-        QWidget *e = p->editor();
-        if(e) {
-            ui->treeView->itemDelegate()->setEditorData(e, origin);
+        if(p->isRoot()) {
+            ui->treeView->setFirstColumnSpanned(origin.row(), origin.parent(), true);
         }
     }
 

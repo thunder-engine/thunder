@@ -50,8 +50,6 @@ public:
 
     void setOverride(const QString &property);
 
-    Property *findPropertyObject(QObject *propertyObject);
-
 protected:
     virtual QWidget *createEditor(QWidget *parent) const;
 
