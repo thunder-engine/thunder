@@ -139,7 +139,7 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
         QFile file(it);
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             QByteArray data = file.readLine();
-            bool valid      = true;
+            bool valid = true;
             while(!data.isNull()) {
                 if(!valid && data.indexOf("*/") != -1) {
                     valid = true;
@@ -147,12 +147,12 @@ void CodeBuilder::generateLoader(const QString &dst, const QStringList &modules)
                 int comment = data.indexOf("/*");
                 if(comment == -1) {
                     int comment = data.indexOf("//");
-                    int index   = gClass.indexIn(QString(data));
+                    int index = gClass.indexIn(QString(data));
                     if(valid && index != -1 && !gClass.cap(1).isEmpty() && (comment == -1 || comment > index)) {
                         classes[gClass.cap(1)] = it;
                     }
                 } else if(data.indexOf("*/", comment + 2) == -1) {
-                    valid   = false;
+                    valid = false;
                 }
                 data = file.readLine();
             }

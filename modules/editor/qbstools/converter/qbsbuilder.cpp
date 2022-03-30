@@ -42,8 +42,6 @@ namespace {
     #endif
 };
 
-// generate --generator visualstudio2013
-
 QbsBuilder::QbsBuilder() :
         m_pProcess(new QProcess(this)),
         m_Progress(false) {
@@ -230,6 +228,18 @@ void QbsBuilder::generateProject() {
     m_Values[gAssetsPaths]  = ProjectManager::instance()->importPath();
 
     updateTemplate(":/templates/project.qbs", m_Project + mgr->projectName() + ".qbs", m_Values);
+
+#if defined(Q_OS_WIN)
+    QString architecture = getArchitectures(mgr->currentPlatformName()).at(0);
+
+    QProcess qbs(this);
+    qbs.setWorkingDirectory(m_Project);
+    qbs.start(m_QBSPath.absoluteFilePath(), QStringList() << "generate" << "-g" << "visualstudio2015"
+                                                          << QString("config:") + gMode << "qbs.architecture:" + architecture);
+    if(qbs.waitForStarted()) {
+        qbs.waitForFinished();
+    }
+#endif
 }
 
 QString QbsBuilder::getProfile(const QString &platform) const {

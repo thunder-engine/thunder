@@ -21,6 +21,8 @@
 namespace {
     const char *gProject("ProjectId");
     const char *gProjects("Projects");
+
+    const char *gModulesFile("/modules.txt");
 };
 
 ProjectManager *ProjectManager::m_pInstance = nullptr;
@@ -94,6 +96,14 @@ void ProjectManager::init(const QString &project, const QString &target) {
     dir.mkpath(m_iconPath.absoluteFilePath());
     dir.mkpath(m_generatedPath.absoluteFilePath());
     dir.mkpath(m_pluginsPath.absoluteFilePath());
+
+    QFile file(m_generatedPath.absolutePath() + gModulesFile);
+    if(file.open(QIODevice::ReadOnly)) {
+        for(auto &it : file.readAll().split('\n')) {
+            m_autoModules += it;
+        }
+        file.close();
+    }
 
     setCurrentPlatform();
 }
@@ -185,7 +195,8 @@ void ProjectManager::saveSettings() {
         }
     }
     if(!success) {
-        aCritical() << "The required settings was not specified:" << qPrintable(req.join(", ")) << "Please specify them in the Project Settings.";
+        aCritical() << "The required settings was not specified:" << qPrintable(req.join(", "))
+                    << "Please specify them in the Project Settings.";
     }
 
     object[gProject] = QJsonValue(m_projectId);
@@ -233,6 +244,13 @@ CodeBuilder *ProjectManager::currentBuilder(const QString &platform) const {
 
 void ProjectManager::reportModules(QSet<QString> &modules) {
     m_autoModules += modules;
+
+    QFile file(m_generatedPath.absolutePath() + gModulesFile);
+    if(file.open(QIODevice::WriteOnly)) {
+        QStringList list = m_autoModules.toList();
+        file.write(qPrintable(list.join('\n')));
+        file.close();
+    }
 }
 
 QString ProjectManager::artifact() const {
