@@ -9,7 +9,7 @@
 
 #include <editor/assetconverter.h>
 
-#include "codeeditor.h"
+#include "codeedit.h"
 
 TextEdit::TextEdit() :
         ui(new Ui::TextEdit) {
@@ -18,8 +18,8 @@ TextEdit::TextEdit() :
 
     ui->findWidget->setProperty("pannel", true);
 
-    connect(ui->editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
-    connect(ui->editor, &CodeEditor::textChanged, this, &TextEdit::onTextChanged);
+    connect(ui->editor, &CodeEdit::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
+    connect(ui->editor, &CodeEdit::textChanged, this, &TextEdit::onTextChanged);
 
     ui->editor->addAction(ui->actionFind);
 
@@ -27,8 +27,8 @@ TextEdit::TextEdit() :
 }
 
 TextEdit::~TextEdit() {
-    disconnect(ui->editor, &CodeEditor::textChanged, this, &TextEdit::onTextChanged);
-    disconnect(ui->editor, &CodeEditor::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
+    disconnect(ui->editor, &CodeEdit::textChanged, this, &TextEdit::onTextChanged);
+    disconnect(ui->editor, &CodeEdit::cursorPositionChanged, this, &TextEdit::onCursorPositionChanged);
     delete ui;
 }
 

@@ -81,6 +81,7 @@ AngelBuilder::~AngelBuilder() {
 
 void AngelBuilder::init() {
     m_pSystem->registerClasses(m_pScriptEngine);
+    m_pClassModel->update();
 }
 
 bool AngelBuilder::buildProject() {
@@ -264,7 +265,7 @@ void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
         if(method) {
             bool drop = false;
             QString name(method->GetName());
-            for(auto it : dropList) {
+            for(auto &it : dropList) {
                 if(name.contains(it)) {
                     drop = true;
                     break;
@@ -312,7 +313,7 @@ void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
         }
     }
 
-    for(auto it : nativeProperties) {
+    for(auto &it : nativeProperties) {
         classItem->appendChild(new AngelClassItem({it.first, propertyIcon, it.second}, classItem));
     }
 

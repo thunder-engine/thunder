@@ -63,7 +63,7 @@
     </layout>
    </item>
    <item>
-    <widget class="CodeEditor" name="editor" native="true">
+    <widget class="CodeEdit" name="editor" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -208,14 +208,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CodeEditor</class>
+   <class>CodeEdit</class>
    <extends>QWidget</extends>
-   <header>editors/textedit/codeeditor.h</header>
+   <header>codeedit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>
 </ui>

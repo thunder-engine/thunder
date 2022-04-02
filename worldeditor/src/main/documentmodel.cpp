@@ -11,12 +11,10 @@
 #include <editor/projectmanager.h>
 #include <editor/pluginmanager.h>
 
-#include "editors/textedit/textedit.h"
 #include "editors/animationedit/animationedit.h"
 
 DocumentModel::DocumentModel() {
     addEditor(new AnimationEdit);
-    addEditor(new TextEdit);
 
     for(auto &it : PluginManager::instance()->extensions("editor")) {
         AssetEditor *editor = reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it));

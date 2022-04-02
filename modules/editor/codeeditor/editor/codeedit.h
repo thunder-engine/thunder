@@ -12,14 +12,14 @@ namespace KSyntaxHighlighting {
     class Theme;
 }
 
-class CodeEditorSidebar;
+class CodeEditSidebar;
 class QAbstractItemModel;
 
-class CodeEditor : public QPlainTextEdit {
+class CodeEdit : public QPlainTextEdit {
     Q_OBJECT
 public:
-    explicit CodeEditor(QWidget *parent = nullptr);
-    ~CodeEditor() override;
+    explicit CodeEdit(QWidget *parent = nullptr);
+    ~CodeEdit() override;
 
     void openFile(const QString &fileName);
     void saveFile(const QString &path = QString());
@@ -51,7 +51,9 @@ private slots:
     void onClassModelChanged();
 
 private:
-    friend class CodeEditorSidebar;
+    friend class CodeEditSidebar;
+
+    void checkClassMap();
 
     void setTheme(const KSyntaxHighlighting::Theme &theme);
     int sidebarWidth() const;
@@ -102,7 +104,7 @@ private:
 
     QAbstractItemModel *m_classModel;
 
-    CodeEditorSidebar *m_sideBar;
+    CodeEditSidebar *m_sideBar;
 
     bool m_spaceTabs;
     int32_t m_spaceIndent;
@@ -120,34 +122,34 @@ private:
     bool m_cursorVisible;
 };
 
-class CodeEditorSidebar : public QWidget {
+class CodeEditSidebar : public QWidget {
     Q_OBJECT
 public:
-    explicit CodeEditorSidebar(CodeEditor *editor) :
+    explicit CodeEditSidebar(CodeEdit *editor) :
             QWidget(editor),
-            m_pCodeEditor(editor) {
+            m_pCodeEdit(editor) {
     }
     QSize sizeHint() const Q_DECL_OVERRIDE {
-        return QSize(m_pCodeEditor->sidebarWidth(), 0);
+        return QSize(m_pCodeEdit->sidebarWidth(), 0);
     }
 
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE {
-        m_pCodeEditor->sidebarPaintEvent(event);
+        m_pCodeEdit->sidebarPaintEvent(event);
     }
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE {
-        if (event->x() >= width() - m_pCodeEditor->fontMetrics().lineSpacing()) {
-            auto block = m_pCodeEditor->blockAtPosition(event->y());
-            if (!block.isValid() || !m_pCodeEditor->isFoldable(block)) {
+        if (event->x() >= width() - m_pCodeEdit->fontMetrics().lineSpacing()) {
+            auto block = m_pCodeEdit->blockAtPosition(event->y());
+            if (!block.isValid() || !m_pCodeEdit->isFoldable(block)) {
                 return;
             }
-            m_pCodeEditor->toggleFold(block);
+            m_pCodeEdit->toggleFold(block);
         }
         QWidget::mouseReleaseEvent(event);
     }
 
 private:
-    CodeEditor *m_pCodeEditor;
+    CodeEdit *m_pCodeEdit;
 };
 
 #endif // CODEEDIT_H

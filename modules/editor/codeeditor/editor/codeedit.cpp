@@ -1,4 +1,4 @@
-#include "codeeditor.h"
+#include "codeedit.h"
 
 #include <definition.h>
 #include <foldingregion.h>
@@ -19,24 +19,27 @@
 
 #include <QTextBlock>
 
-#include "assetmanager.h"
 #include <editor/settingsmanager.h>
+#include <editor/pluginmanager.h>
+#include <editor/codebuilder.h>
 
-const QString gFont("Editors/Text_Editor/Font/Font_Name");
-const QString gZoom("Editors/Text_Editor/Font/Zoom");
+namespace {
+    const char *gFont("Editors/Text_Editor/Font/Font_Name");
+    const char *gZoom("Editors/Text_Editor/Font/Zoom");
 
-const QString gLineNumbers("Editors/Text_Editor/Display/Line_Numbers");
-const QString gFoldingMarkers("Editors/Text_Editor/Display/Folding_Markers");
-const QString gWhitespaces("Editors/Text_Editor/Display/Whitespaces");
+    const char *gLineNumbers("Editors/Text_Editor/Display/Line_Numbers");
+    const char *gFoldingMarkers("Editors/Text_Editor/Display/Folding_Markers");
+    const char *gWhitespaces("Editors/Text_Editor/Display/Whitespaces");
 
-const QString gSpaces("Editors/Text_Editor/Indents/Use_Spaces");
-const QString gTabSize("Editors/Text_Editor/Indents/Tab_Size");
+    const char *gSpaces("Editors/Text_Editor/Indents/Use_Spaces");
+    const char *gTabSize("Editors/Text_Editor/Indents/Tab_Size");
+};
 
-CodeEditor::CodeEditor(QWidget *parent) :
+CodeEdit::CodeEdit(QWidget *parent) :
         QPlainTextEdit(parent),
         m_highlighter(new KSyntaxHighlighting::SyntaxHighlighter(document())),
         m_classModel(nullptr),
-        m_sideBar(new CodeEditorSidebar(this)),
+        m_sideBar(new CodeEditSidebar(this)),
         m_spaceTabs(true),
         m_spaceIndent(4),
         m_blockSelection(false),
@@ -53,9 +56,9 @@ CodeEditor::CodeEditor(QWidget *parent) :
     m_repository.addCustomSearchPath(":/Themes");
     setTheme(m_repository.theme("Thunder Dark"));
 
-    connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEditor::updateSidebarGeometry);
-    connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::updateSidebarArea);
-    connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
+    connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEdit::updateSidebarGeometry);
+    connect(this, &QPlainTextEdit::updateRequest, this, &CodeEdit::updateSidebarArea);
+    connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEdit::highlightCurrentLine);
 
     QTextOption option = document()->defaultTextOption();
     option.setFlags(option.flags() | QTextOption::AddSpaceForLineAndParagraphSeparators);
@@ -72,19 +75,19 @@ CodeEditor::CodeEditor(QWidget *parent) :
     settings->registerProperty(qPrintable(gSpaces), QVariant::fromValue(true));
     settings->registerProperty(qPrintable(gTabSize), QVariant::fromValue(4));
 
-    connect(settings, &SettingsManager::updated, this, &CodeEditor::onApplySettings);
+    connect(settings, &SettingsManager::updated, this, &CodeEdit::onApplySettings);
 
     onApplySettings();
 
     startTimer(500);
 }
 
-CodeEditor::~CodeEditor() {
+CodeEdit::~CodeEdit() {
     delete m_highlighter;
     delete m_sideBar;
 }
 
-void CodeEditor::openFile(const QString &fileName) {
+void CodeEdit::openFile(const QString &fileName) {
     m_fileName = fileName;
     QFile fp(m_fileName);
     if (!fp.open(QFile::ReadOnly)) {
@@ -95,10 +98,10 @@ void CodeEditor::openFile(const QString &fileName) {
 
     m_definition = m_repository.definitionForFileName(m_fileName);
 
-    AssetManager::ClassMap map = AssetManager::instance()->classMaps();
-    m_classModel = map.value(QFileInfo(m_fileName).suffix());
+    checkClassMap();
+
     if(m_classModel) {
-        connect(m_classModel, &QAbstractItemModel::layoutChanged, this, &CodeEditor::onClassModelChanged);
+        connect(m_classModel, &QAbstractItemModel::layoutChanged, this, &CodeEdit::onClassModelChanged);
         onClassModelChanged();
     }
     m_highlighter->setDefinition(m_definition);
@@ -106,12 +109,29 @@ void CodeEditor::openFile(const QString &fileName) {
     setPlainText(QString::fromUtf8(fp.readAll()));
 }
 
-void CodeEditor::saveFile(const QString &path) {
+void CodeEdit::checkClassMap() {
+    for(auto &it : PluginManager::instance()->extensions("converter")) {
+        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
+
+        for(QString &format : converter->suffixes()) {
+            if(format.toLower() == QFileInfo(m_fileName).suffix()) {
+
+                CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
+                if(builder) {
+                    m_classModel = builder->classMap();
+                    return;
+                }
+            }
+        }
+    }
+}
+
+void CodeEdit::saveFile(const QString &path) {
     if(!path.isEmpty()) {
         m_fileName = path;
     }
     QFile fp(m_fileName);
-    if (!fp.open(QFile::WriteOnly)) {
+    if(!fp.open(QFile::WriteOnly)) {
         qWarning() << "Failed to open" << m_fileName << ":" << fp.errorString();
         return;
     }
@@ -122,22 +142,22 @@ void CodeEditor::saveFile(const QString &path) {
     document()->setModified(false);
 }
 
-void CodeEditor::setSpaceTabs(bool enable, uint32_t indent) {
+void CodeEdit::setSpaceTabs(bool enable, uint32_t indent) {
     m_spaceTabs = enable;
     m_spaceIndent = (indent == 0) ? 4 : indent;
 }
 
-void CodeEditor::displayLineNumbers(bool visible) {
+void CodeEdit::displayLineNumbers(bool visible) {
     m_displayLineNumbers = visible;
     updateSidebarGeometry();
 }
 
-void CodeEditor::displayFoldingMarkers(bool visible) {
+void CodeEdit::displayFoldingMarkers(bool visible) {
     m_displayFoldingMarkers = visible;
     updateSidebarGeometry();
 }
 
-void CodeEditor::decorateWhitespaces(bool value) {
+void CodeEdit::decorateWhitespaces(bool value) {
     QTextOption option = document()->defaultTextOption();
     if(value) {
         option.setFlags(option.flags() | QTextOption::ShowTabsAndSpaces);
@@ -147,7 +167,7 @@ void CodeEditor::decorateWhitespaces(bool value) {
     document()->setDefaultTextOption(option);
 }
 
-void CodeEditor::highlightBlock(const QString &text) {
+void CodeEdit::highlightBlock(const QString &text) {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     QTextCursor cursor(document());
@@ -164,7 +184,7 @@ void CodeEditor::highlightBlock(const QString &text) {
     setExtraSelections(extraSelections);
 }
 
-bool CodeEditor::findString(const QString &string, bool reverse, bool casesens, bool words)  {
+bool CodeEdit::findString(const QString &string, bool reverse, bool casesens, bool words)  {
     QTextDocument::FindFlags flag;
     if(reverse) {
         flag |= QTextDocument::FindBackward;
@@ -192,7 +212,7 @@ bool CodeEditor::findString(const QString &string, bool reverse, bool casesens, 
     return true;
 }
 
-void CodeEditor::replaceSelected(const QString &string) {
+void CodeEdit::replaceSelected(const QString &string) {
     QTextCursor cursor = textCursor();
 
     int start = cursor.selectionStart();
@@ -220,23 +240,23 @@ void CodeEditor::replaceSelected(const QString &string) {
     }
 }
 
-void CodeEditor::reportIssue(int level, int line, int col, const QString &text) {
+void CodeEdit::reportIssue(int level, int line, int col, const QString &text) {
 
 }
 
-void CodeEditor::contextMenuEvent(QContextMenuEvent *event) {
+void CodeEdit::contextMenuEvent(QContextMenuEvent *event) {
     auto menu = createStandardContextMenu(event->pos());
 
     menu->exec(event->globalPos());
     delete menu;
 }
 
-void CodeEditor::resizeEvent(QResizeEvent *event) {
+void CodeEdit::resizeEvent(QResizeEvent *event) {
     QPlainTextEdit::resizeEvent(event);
     updateSidebarGeometry();
 }
 
-void CodeEditor::keyPressEvent(QKeyEvent *event) {
+void CodeEdit::keyPressEvent(QKeyEvent *event) {
     if(isReadOnly()) {
         event->accept();
 
@@ -335,7 +355,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
     QPlainTextEdit::keyPressEvent(event);
 }
 
-void CodeEditor::mousePressEvent(QMouseEvent *event) {
+void CodeEdit::mousePressEvent(QMouseEvent *event) {
     if(event->buttons() & Qt::LeftButton) {
         if(event->modifiers() & Qt::AltModifier) {
             QTextCursor cur = cursorForPosition(event->pos());
@@ -366,11 +386,11 @@ void CodeEditor::mousePressEvent(QMouseEvent *event) {
     QPlainTextEdit::mousePressEvent(event);
 }
 
-void CodeEditor::mouseReleaseEvent(QMouseEvent *event) {
+void CodeEdit::mouseReleaseEvent(QMouseEvent *event) {
     QPlainTextEdit::mouseReleaseEvent(event);
 }
 
-void CodeEditor::mouseMoveEvent(QMouseEvent *event) {
+void CodeEdit::mouseMoveEvent(QMouseEvent *event) {
     QPlainTextEdit::mouseMoveEvent(event);
 
     if(event->buttons() & Qt::LeftButton) {
@@ -419,7 +439,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent *event) {
     }
 }
 
-void CodeEditor::paintEvent(QPaintEvent *event) {
+void CodeEdit::paintEvent(QPaintEvent *event) {
     QPainter painter(viewport());
 
     QPointF offset(contentOffset());
@@ -499,12 +519,12 @@ void CodeEditor::paintEvent(QPaintEvent *event) {
     }
 }
 
-void CodeEditor::timerEvent(QTimerEvent *event) {
+void CodeEdit::timerEvent(QTimerEvent *event) {
     m_cursorVisible = !m_cursorVisible;
     update();
 }
 
-void CodeEditor::commentSelection() {
+void CodeEdit::commentSelection() {
     QTextCursor cursor = textCursor();
 
     int pos = cursor.position();
@@ -651,7 +671,7 @@ void CodeEditor::commentSelection() {
     }
 }
 
-void CodeEditor::indentSelection() {
+void CodeEdit::indentSelection() {
     QTextCursor cur = textCursor();
 
     cur.beginEditBlock();
@@ -754,7 +774,7 @@ void CodeEditor::indentSelection() {
 */
 }
 
-void CodeEditor::setTheme(const KSyntaxHighlighting::Theme &theme) {
+void CodeEdit::setTheme(const KSyntaxHighlighting::Theme &theme) {
     auto pal = qApp->palette();
     if(theme.isValid()) {
         pal.setColor(QPalette::Base, theme.editorColor(KSyntaxHighlighting::Theme::BackgroundColor));
@@ -768,7 +788,7 @@ void CodeEditor::setTheme(const KSyntaxHighlighting::Theme &theme) {
     highlightCurrentLine();
 }
 
-int CodeEditor::sidebarWidth() const {
+int CodeEdit::sidebarWidth() const {
     int digits = 1;
     auto count = blockCount();
     while(count >= 10) {
@@ -779,7 +799,7 @@ int CodeEditor::sidebarWidth() const {
     return 4 + fontMetrics().width(QLatin1Char('9')) * digits + 2 * fontMetrics().lineSpacing();
 }
 
-void CodeEditor::sidebarPaintEvent(QPaintEvent *event) {
+void CodeEdit::sidebarPaintEvent(QPaintEvent *event) {
     QPainter painter(m_sideBar);
     painter.fillRect(event->rect(), m_highlighter->theme().editorColor(KSyntaxHighlighting::Theme::IconBorder));
 
@@ -833,14 +853,14 @@ void CodeEditor::sidebarPaintEvent(QPaintEvent *event) {
     }
 }
 
-void CodeEditor::updateSidebarGeometry() {
+void CodeEdit::updateSidebarGeometry() {
     setViewportMargins(sidebarWidth(), 0, 0, 0);
     const auto r = contentsRect();
     m_sideBar->setGeometry(QRect(r.left(), r.top(), sidebarWidth(), r.height()));
     m_sideBar->repaint();
 }
 
-void CodeEditor::updateSidebarArea(const QRect& rect, int dy) {
+void CodeEdit::updateSidebarArea(const QRect& rect, int dy) {
     if(dy) {
         m_sideBar->scroll(0, dy);
     } else {
@@ -848,7 +868,7 @@ void CodeEditor::updateSidebarArea(const QRect& rect, int dy) {
     }
 }
 
-void CodeEditor::highlightCurrentLine() {
+void CodeEdit::highlightCurrentLine() {
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(QColor(m_highlighter->theme().editorColor(KSyntaxHighlighting::Theme::CurrentLine)));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -860,7 +880,7 @@ void CodeEditor::highlightCurrentLine() {
     setExtraSelections(extraSelections);
 }
 
-QTextBlock CodeEditor::blockAtPosition(int y) const {
+QTextBlock CodeEdit::blockAtPosition(int y) const {
     auto block = firstVisibleBlock();
     if (!block.isValid()) {
         return QTextBlock();
@@ -879,11 +899,11 @@ QTextBlock CodeEditor::blockAtPosition(int y) const {
     return QTextBlock();
 }
 
-bool CodeEditor::isFoldable(const QTextBlock &block) const {
+bool CodeEdit::isFoldable(const QTextBlock &block) const {
     return m_highlighter->startsFoldingRegion(block);
 }
 
-bool CodeEditor::isFolded(const QTextBlock &block) const {
+bool CodeEdit::isFolded(const QTextBlock &block) const {
     if (!block.isValid()) {
         return false;
     }
@@ -894,7 +914,7 @@ bool CodeEditor::isFolded(const QTextBlock &block) const {
     return !nextBlock.isVisible();
 }
 
-void CodeEditor::toggleFold(const QTextBlock &startBlock) {
+void CodeEdit::toggleFold(const QTextBlock &startBlock) {
     if(m_displayFoldingMarkers) {
         auto endBlock = m_highlighter->findFoldingRegionEnd(startBlock).next();
 
@@ -923,7 +943,7 @@ void CodeEditor::toggleFold(const QTextBlock &startBlock) {
     }
 }
 
-int32_t CodeEditor::column(const QString &text, int32_t pos) const {
+int32_t CodeEdit::column(const QString &text, int32_t pos) const {
     int result = 0;
     for(int i = 0; i < pos; i++) {
         if(text.at(i) == QLatin1Char('\t')) {
@@ -935,7 +955,7 @@ int32_t CodeEditor::column(const QString &text, int32_t pos) const {
     return result;
 }
 
-int32_t CodeEditor::columnPosition(const QString &text, int column, int *offset) const {
+int32_t CodeEdit::columnPosition(const QString &text, int column, int *offset) const {
     int32_t current = 0;
     int32_t result = 0;
     int32_t textSize = text.size();
@@ -954,12 +974,12 @@ int32_t CodeEditor::columnPosition(const QString &text, int column, int *offset)
     return result;
 }
 
-QString CodeEditor::indentationString(int startColumn, int targetColumn, int padding, const QTextBlock &block) const {
+QString CodeEdit::indentationString(int startColumn, int targetColumn, int padding, const QTextBlock &block) const {
     targetColumn = qMax(startColumn, targetColumn);
     return QString(targetColumn - startColumn, QLatin1Char(' '));
 }
 
-int CodeEditor::lineIndentPosition(const QString &text) const {
+int CodeEdit::lineIndentPosition(const QString &text) const {
     int i = 0;
     while(i < text.size()) {
         if(!text.at(i).isSpace()) {
@@ -971,7 +991,7 @@ int CodeEditor::lineIndentPosition(const QString &text) const {
     return i - (col % m_spaceIndent);
 }
 
-int CodeEditor::spacesLeftFromPosition(const QString &text, int position) const {
+int CodeEdit::spacesLeftFromPosition(const QString &text, int position) const {
     if(position > text.size()) {
         return 0;
     }
@@ -985,7 +1005,7 @@ int CodeEditor::spacesLeftFromPosition(const QString &text, int position) const 
     return position - i;
 }
 
-int CodeEditor::indentedColumn(int column, bool doIndent) const {
+int CodeEdit::indentedColumn(int column, bool doIndent) const {
     int aligned = (column / m_spaceIndent) * m_spaceIndent;
     if (doIndent)
         return aligned + m_spaceIndent;
@@ -994,7 +1014,7 @@ int CodeEditor::indentedColumn(int column, bool doIndent) const {
     return qMax(0, aligned - m_spaceIndent);
 }
 
-QTextCursor CodeEditor::cursor() const {
+QTextCursor CodeEdit::cursor() const {
     int32_t selectionAnchorColumn;
     int32_t selectionPositionColumn;
 
@@ -1029,7 +1049,7 @@ QTextCursor CodeEditor::cursor() const {
     return cursor;
 }
 
-void CodeEditor::enableBlockSelection(int32_t positionBlock, int32_t positionColumn, int32_t anchorBlock, int32_t anchorColumn) {
+void CodeEdit::enableBlockSelection(int32_t positionBlock, int32_t positionColumn, int32_t anchorBlock, int32_t anchorColumn) {
     m_blockPosition = positionBlock;
     m_columnPosition = positionColumn;
 
@@ -1041,7 +1061,7 @@ void CodeEditor::enableBlockSelection(int32_t positionBlock, int32_t positionCol
     viewport()->update();
 }
 
-void CodeEditor::disableBlockSelection() {
+void CodeEdit::disableBlockSelection() {
     m_blockSelection = false;
 
     m_blockPosition = 0;
@@ -1053,7 +1073,7 @@ void CodeEditor::disableBlockSelection() {
     viewport()->update();
 }
 
-void CodeEditor::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection) {
+void CodeEdit::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelection) {
     if(!keepBlockSelection && m_blockSelection) {
         m_blockSelection = false;
     }
@@ -1062,11 +1082,11 @@ void CodeEditor::doSetTextCursor(const QTextCursor &cursor, bool keepBlockSelect
     QPlainTextEdit::doSetTextCursor(c);
 }
 
-void CodeEditor::doSetTextCursor(const QTextCursor &cursor) {
+void CodeEdit::doSetTextCursor(const QTextCursor &cursor) {
     doSetTextCursor(cursor, false);
 }
 
-void CodeEditor::setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const {
+void CodeEdit::setupSelections(const QTextBlock &block, int position, int length, QVector<QTextLayout::FormatRange> &selections) const {
     auto context = getPaintContext();
 
     int blockSelectionIndex = context.selections.size() - 1;
@@ -1102,7 +1122,7 @@ void CodeEditor::setupSelections(const QTextBlock &block, int position, int leng
     }
 }
 
-void CodeEditor::paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const {
+void CodeEdit::paintBlockSelection(const QTextBlock &block, QPainter &painter, const QPointF &offset, QRectF &blockRect) const {
     if (!m_blockSelection
             || block.blockNumber() < qMin(m_blockPosition, m_blockAnchor)
             || block.blockNumber() > qMax(m_blockPosition, m_blockAnchor)) {
@@ -1155,7 +1175,7 @@ void CodeEditor::paintBlockSelection(const QTextBlock &block, QPainter &painter,
     blockRect.setWidth(cursorw);
 }
 
-QString CodeEditor::copyBlockSelection() {
+QString CodeEdit::copyBlockSelection() {
     if(!m_blockSelection) {
         return QString();
     }
@@ -1201,7 +1221,7 @@ QString CodeEditor::copyBlockSelection() {
     return selection;
 }
 
-void CodeEditor::removeBlockSelection() {
+void CodeEdit::removeBlockSelection() {
     QTextCursor cur = textCursor();
 
     const int firstColumn = qMin(m_columnPosition, m_columnAnchor);
@@ -1247,7 +1267,7 @@ void CodeEditor::removeBlockSelection() {
     doSetTextCursor(cursor(), hasSelection);
 }
 
-void CodeEditor::insertIntoBlockSelection(const QString &text) {
+void CodeEdit::insertIntoBlockSelection(const QString &text) {
     QTextCursor cur = textCursor();
     cur.beginEditBlock();
 
@@ -1330,7 +1350,7 @@ void CodeEditor::insertIntoBlockSelection(const QString &text) {
     doSetTextCursor(cursor(), true);
 }
 
-int32_t CodeEditor::firstNonIndent(const QString &text) const {
+int32_t CodeEdit::firstNonIndent(const QString &text) const {
     int32_t i = 0;
     while (i < text.size()) {
         if(text.at(i) != ' ' && text.at(i) != '\t') {
@@ -1341,7 +1361,7 @@ int32_t CodeEditor::firstNonIndent(const QString &text) const {
     return i;
 }
 
-void CodeEditor::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor::MoveMode moveMode) {
+void CodeEdit::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor::MoveMode moveMode) {
     int offset = 0;
     const int cursorPosition = cursor.position();
     const int pos = columnPosition(cursor.block().text(), column, &offset);
@@ -1352,10 +1372,10 @@ void CodeEditor::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor:
     if(offset < 0) {
         cursor.setPosition(cursor.block().position() + pos - 1, QTextCursor::KeepAnchor);
         cursor.insertText(indentationString(
-                              CodeEditor::column(cursor.block().text(), pos - 1),
-                              CodeEditor::column(cursor.block().text(), pos), 0, cursor.block()));
+                              CodeEdit::column(cursor.block().text(), pos - 1),
+                              CodeEdit::column(cursor.block().text(), pos), 0, cursor.block()));
     } else {
-        cursor.insertText(indentationString(CodeEditor::column(cursor.block().text(), pos), column, 0, cursor.block()));
+        cursor.insertText(indentationString(CodeEdit::column(cursor.block().text(), pos), column, 0, cursor.block()));
     }
     if(moveMode == QTextCursor::KeepAnchor) {
         cursor.setPosition(cursorPosition);
@@ -1363,7 +1383,7 @@ void CodeEditor::setCursorToColumn(QTextCursor &cursor, int column, QTextCursor:
     cursor.setPosition(cursor.block().position() + columnPosition(cursor.block().text(), column), moveMode);
 }
 
-void CodeEditor::insertFromMimeData(const QMimeData *source) {
+void CodeEdit::insertFromMimeData(const QMimeData *source) {
     if(!isReadOnly() && m_blockSelection) {
         insertIntoBlockSelection(source->text());
         return;
@@ -1371,7 +1391,7 @@ void CodeEditor::insertFromMimeData(const QMimeData *source) {
     QPlainTextEdit::insertFromMimeData(source);
 }
 
-void CodeEditor::onApplySettings() {
+void CodeEdit::onApplySettings() {
     SettingsManager *s = SettingsManager::instance();
     QString name = s->property(qPrintable(gFont)).toString();
     if(name.isEmpty()) {
@@ -1392,7 +1412,7 @@ void CodeEditor::onApplySettings() {
     setSpaceTabs(s->property(qPrintable(gSpaces)).toBool(), s->property(qPrintable(gTabSize)).toInt());
 }
 
-void CodeEditor::onClassModelChanged() {
+void CodeEdit::onClassModelChanged() {
     if(m_classModel) {
         QStringList classes;
         QStringList enums;

@@ -6,6 +6,7 @@ Project {
         "particletools",
 		"qbstools",
         "shadertools",
-        "texturetools"
+        "texturetools",
+		"codeeditor"
     ]
 }
