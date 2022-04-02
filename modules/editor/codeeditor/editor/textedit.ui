@@ -210,7 +210,7 @@
   <customwidget>
    <class>CodeEdit</class>
    <extends>QWidget</extends>
-   <header>codeedit.h</header>
+   <header>../editor/codeedit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
