@@ -603,7 +603,7 @@ void Engine::addModule(Module *module) {
     PROFILE_FUNCTION();
     VariantMap metaInfo = Json::load(module->metaInfo()).toMap();
     for(auto &it : metaInfo[gObjects].toMap()) {
-        if(it.second.toString() == "system") {
+        if(it.second.toString() == "system" || it.second.toString() == "render") {
             System *system = reinterpret_cast<System *>(module->getObject(it.first.c_str()));
             if(system->threadPolicy() == System::Pool) {
                 EnginePrivate::m_Pool.push_back(system);
