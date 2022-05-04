@@ -247,8 +247,9 @@ void CommandBufferGL::setGlobalTexture(const char *name, Texture *texture) {
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+    CommandBuffer::setViewport(x, y, width, height);
+
     glViewport(x, y, width, height);
-    setGlobalValue("camera.screen", Vector4(1.0f / (float)width, 1.0f / (float)height, width, height));
 }
 
 void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {

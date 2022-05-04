@@ -53,10 +53,6 @@ public:
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
-    int screenWidth() const;
-
-    int screenHeight() const;
-
 protected:
     void cameraReset(Camera &camera);
 
@@ -75,34 +71,36 @@ protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
 
-    CommandBuffer *m_Buffer;
-
-    list<Renderable *> m_SceneComponents;
-    list<Renderable *> m_SceneLights;
-    list<Renderable *> m_UiComponents;
-    list<Renderable *> m_Filter;
+    list<Renderable *> m_sceneComponents;
+    list<Renderable *> m_sceneLights;
+    list<Renderable *> m_uiComponents;
+    list<Renderable *> m_filter;
 
     list<PostProcessVolume *> m_postProcessVolume;
 
     BuffersMap m_textureBuffers;
     TargetsMap m_renderTargets;
 
-    list<PostProcessor *> m_PostEffects;
+    list<PostProcessor *> m_postEffects;
 
-    unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_Tiles;
-    unordered_map<RenderTarget *, AtlasNode *> m_ShadowPages;
+    unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
+    unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
 
-    Mesh *m_pPlane;
-    MaterialInstance *m_pSprite;
+    Matrix4 m_screenModel;
 
-    RenderTarget *m_pDefaultTarget;
+    CommandBuffer *m_buffer;
 
-    int32_t m_Width;
-    int32_t m_Height;
+    Mesh *m_plane;
+    MaterialInstance *m_sprite;
 
-    Texture *m_pFinal;
+    RenderTarget *m_defaultTarget;
 
-    RenderSystem *m_pSystem;
+    Texture *m_final;
+
+    RenderSystem *m_system;
+
+    int32_t m_width;
+    int32_t m_height;
 
 };
 

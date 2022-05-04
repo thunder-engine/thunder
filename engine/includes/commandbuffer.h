@@ -55,6 +55,8 @@ public:
     };
 
 public:
+    CommandBuffer();
+
     virtual void clearRenderTarget(bool clearColor = true, const Vector4 &color = Vector4(0.0f), bool clearDepth = true, float depth = 1.0f);
 
     virtual void drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer = CommandBuffer::DEFAULT, MaterialInstance *material = nullptr);
@@ -89,6 +91,8 @@ public:
 
     virtual void finish();
 
+    Vector2 viewport() const;
+
     static Vector4 idToColor(uint32_t id);
 
     static bool isInited();
@@ -101,6 +105,11 @@ protected:
 
     Matrix4 m_saveView;
     Matrix4 m_saveProjection;
+
+    int32_t m_viewportX;
+    int32_t m_viewportY;
+    int32_t m_viewportWidth;
+    int32_t m_viewportHeight;
 
 };
 

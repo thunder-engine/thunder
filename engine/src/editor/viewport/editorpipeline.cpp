@@ -98,20 +98,20 @@ EditorPipeline::EditorPipeline() :
         Texture *select = Engine::objectCreate<Texture>();
         select->setFormat(Texture::RGBA8);
         m_textureBuffers[SELECT_MAP] = select;
-        m_Buffer->setGlobalTexture(SELECT_MAP, select);
+        m_buffer->setGlobalTexture(SELECT_MAP, select);
     }
     {
         Texture *depth = Engine::objectCreate<Texture>();
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
         m_textureBuffers[OUTDEPTH_MAP] = depth;
-        m_Buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
+        m_buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
     }
     {
         Texture *outline = Engine::objectCreate<Texture>();
         outline->setFormat(Texture::RGBA8);
         m_textureBuffers[OUTLINE_MAP] = outline;
-        m_Buffer->setGlobalTexture(OUTLINE_MAP, outline);
+        m_buffer->setGlobalTexture(OUTLINE_MAP, outline);
     }
 
     m_pSelect = Engine::objectCreate<Texture>();
@@ -135,13 +135,13 @@ EditorPipeline::EditorPipeline() :
     m_renderTargets[OUT_TARGET] = out;
 
     RenderTarget *final = Engine::objectCreate<RenderTarget>();
-    final->setColorAttachment(0, m_pFinal);
+    final->setColorAttachment(0, m_final);
     final->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[FINAL_TARGET] = final;
 
     m_pGrid = Engine::objectCreate<Mesh>("Grid");
 
-    m_PostEffects.push_back(m_pOutline);
+    m_postEffects.push_back(m_pOutline);
 
     Lod lod;
     Vector3Vector &vertices = lod.vertices();
@@ -179,7 +179,7 @@ EditorPipeline::EditorPipeline() :
     SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
     SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
 
-    for(auto it : m_PostEffects) {
+    for(auto it : m_postEffects) {
         SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
     }
 
@@ -190,7 +190,7 @@ void EditorPipeline::onApplySettings() {
     QColor color = SettingsManager::instance()->property(gridColor).value<QColor>();
     m_SecondaryGridColor = m_PrimaryGridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
-    for(auto it : m_PostEffects) {
+    for(auto it : m_postEffects) {
         it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
     }
     m_pOutline->loadSettings();
@@ -252,24 +252,24 @@ void EditorPipeline::createMenu(QMenu *menu) {
 
 void EditorPipeline::draw(Camera &camera) {
     // Retrive object id
-    m_Buffer->setRenderTarget(m_renderTargets[SEL_TARGET]);
-    m_Buffer->clearRenderTarget();
+    m_buffer->setRenderTarget(m_renderTargets[SEL_TARGET]);
+    m_buffer->clearRenderTarget();
 
-    m_Buffer->setViewport(0, 0, m_Width, m_Height);
+    m_buffer->setViewport(0, 0, m_width, m_height);
 
     cameraReset(camera);
-    for(auto it : m_Filter) {
+    for(auto it : m_filter) {
         if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-            it->draw(*m_Buffer, CommandBuffer::RAYCAST);
+            it->draw(*m_buffer, CommandBuffer::RAYCAST);
         }
     }
-    for(auto it : m_UiComponents) {
+    for(auto it : m_uiComponents) {
         if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-            it->draw(*m_Buffer, CommandBuffer::RAYCAST);
+            it->draw(*m_buffer, CommandBuffer::RAYCAST);
         }
     }
 
-    Vector3 screen((float)m_MouseX / (float)m_Width, (float)m_MouseY / (float)m_Height, 0.0f);
+    Vector3 screen((float)m_MouseX / (float)m_width, (float)m_MouseY / (float)m_height, 0.0f);
 
     m_pSelect->readPixels(m_MouseX, m_MouseY, 1, 1);
     m_ObjectId = m_pSelect->getPixel(0, 0, 0);
@@ -285,15 +285,15 @@ void EditorPipeline::draw(Camera &camera) {
     }
     for(auto it : m_DragList) {
         it->update();
-        m_Filter.push_back(it);
+        m_filter.push_back(it);
     }
 
     // Selection outline
-    m_Buffer->setRenderTarget(m_renderTargets[OUT_TARGET]);
-    m_Buffer->clearRenderTarget();
+    m_buffer->setRenderTarget(m_renderTargets[OUT_TARGET]);
+    m_buffer->clearRenderTarget();
     RenderList filter;
     for(auto actor : m_pController->selected()) {
-        for(auto it : m_Filter) {
+        for(auto it : m_filter) {
             Renderable *component = dynamic_cast<Renderable *>(it);
             if(component && isInHierarchy(component->actor(), static_cast<Actor *>(actor))) {
                 filter.push_back(component);
@@ -305,18 +305,18 @@ void EditorPipeline::draw(Camera &camera) {
     Pipeline::draw(camera);
 
     if(m_pTarget != nullptr) {
-        m_pFinal = m_pTarget;
+        m_final = m_pTarget;
     }
 
-    m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_pFinal);
+    m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_final);
 
     if(m_pTarget == nullptr) {
         // Draw handles
         cameraReset(camera);
-        m_Buffer->setRenderTarget(m_renderTargets[FINAL_TARGET]);
+        m_buffer->setRenderTarget(m_renderTargets[FINAL_TARGET]);
         drawGrid(camera);
 
-        Handles::beginDraw(m_Buffer);
+        Handles::beginDraw(m_buffer);
         m_pController->drawHandles();
         Handles::endDraw();
     }
@@ -324,7 +324,7 @@ void EditorPipeline::draw(Camera &camera) {
 
 void EditorPipeline::drawUi(Camera &camera) {
     cameraReset(camera);
-    drawComponents(CommandBuffer::UI | CommandBuffer::TRANSLUCENT, m_UiComponents);
+    drawComponents(CommandBuffer::UI | CommandBuffer::TRANSLUCENT, m_uiComponents);
 
     postProcess(m_renderTargets["lightPass"], CommandBuffer::UI);
 }
@@ -431,16 +431,16 @@ void EditorPipeline::drawGrid(Camera &camera) {
 
     Matrix4 transform(pos, rot, scale);
 
-    m_Buffer->setColor(m_PrimaryGridColor);
-    m_Buffer->drawMesh(transform, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_buffer->setColor(m_PrimaryGridColor);
+    m_buffer->drawMesh(transform, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
 
     Matrix4 m;
     m.scale(0.1f);
 
-    m_Buffer->setColor(m_SecondaryGridColor);
-    m_Buffer->drawMesh(transform * m, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
+    m_buffer->setColor(m_SecondaryGridColor);
+    m_buffer->drawMesh(transform * m, m_pGrid, 0, CommandBuffer::TRANSLUCENT, m_pGizmo);
 
-    m_Buffer->setColor(Vector4(1.0f));
+    m_buffer->setColor(Vector4(1.0f));
 }
 
 void EditorPipeline::onBufferMenu() {
@@ -475,7 +475,7 @@ void EditorPipeline::fillEffectMenu(QMenu *menu, uint32_t layers) {
     if(menu) {
         menu->clear();
 
-        for(auto &it : m_PostEffects) {
+        for(auto &it : m_postEffects) {
             if(it->layer() & layers) {
                 static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
                 static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
@@ -509,7 +509,7 @@ void EditorPipeline::onBufferChanged() {
 void EditorPipeline::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        for(auto &it : m_PostEffects) {
+        for(auto &it : m_postEffects) {
             if(action->data().toString() == it->name()) {
                 it->setEnabled(checked);
                 SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name()), checked);

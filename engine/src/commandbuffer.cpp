@@ -2,6 +2,14 @@
 
 static bool s_Inited = false;
 
+CommandBuffer::CommandBuffer() :
+    m_viewportX(0),
+    m_viewportY(0),
+    m_viewportWidth(1),
+    m_viewportHeight(1) {
+
+}
+
 void CommandBuffer::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
      A_UNUSED(clearColor);
      A_UNUSED(color);
@@ -54,9 +62,7 @@ void CommandBuffer::setColor(const Vector4 &color) {
 }
 
 void CommandBuffer::setScreenProjection() {
-    Matrix4 v;
-    v.mat[14] = -0.0001f;
-    setViewProjection(v, Matrix4::ortho(-0.5f, 0.5f,-0.5f, 0.5f, 0.0f, 1.0f));
+    setViewProjection(Matrix4(), Matrix4::ortho(m_viewportX, m_viewportWidth, m_viewportY, m_viewportHeight, -100.0f, 100.0f));
 }
 
 void CommandBuffer::resetViewProjection() {
@@ -99,11 +105,22 @@ void CommandBuffer::finish() {
 
 }
 
+Vector2 CommandBuffer::viewport() const {
+    return Vector2(m_viewportWidth, m_viewportHeight);
+}
+
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     A_UNUSED(x);
     A_UNUSED(y);
     A_UNUSED(width);
     A_UNUSED(height);
+
+    m_viewportX = x;
+    m_viewportY = y;
+    m_viewportWidth = width;
+    m_viewportHeight = height;
+
+    setGlobalValue("camera.screen", Vector4(1.0f / (float)width, 1.0f / (float)height, width, height));
 }
 
 void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {

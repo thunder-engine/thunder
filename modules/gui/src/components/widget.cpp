@@ -40,16 +40,9 @@ void Widget::update() {
 }
 
 void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
-    A_UNUSED(buffer);
-    A_UNUSED(layer);
-
     if(p_ptr->m_pParent == nullptr && (layer == CommandBuffer::UI)) {
-        Camera *camera = Camera::current();
-        if(camera) {
-            Pipeline *pipeline = camera->pipeline();
-            if(pipeline && p_ptr->m_pTransform) {
-                p_ptr->m_pTransform->setSize(Vector2(pipeline->screenWidth(), pipeline->screenHeight()));
-            }
+        if(p_ptr->m_pTransform) {
+            p_ptr->m_pTransform->setSize(buffer.viewport());
         }
     }
 }
