@@ -5,7 +5,11 @@
 
 #include <resources/pipeline.h>
 
+#include <systems/resourcesystem.h>
+
+#include "resources/meshvk.h"
 #include "resources/texturevk.h"
+#include "resources/materialvk.h"
 #include "resources/rendertargetvk.h"
 
 #include "commandbuffervk.h"
@@ -50,21 +54,24 @@ RenderVkSystem::RenderVkSystem(Engine *engine) :
     MaterialVk::registerClassFactory(system);
     MeshVk::registerClassFactory(system);
 
-    CommandBufferVK::registerClassFactory(m_pEngine);
-
+    CommandBufferVk::registerClassFactory(m_pEngine);
 }
 
 RenderVkSystem::~RenderVkSystem() {
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
     TextureVk::unregisterClassFactory(system);
     RenderTargetVk::unregisterClassFactory(system);
     MaterialVk::unregisterClassFactory(system);
     MeshVk::unregisterClassFactory(system);
 
-    CommandBufferVK::unregisterClassFactory(m_pEngine);
+    CommandBufferVk::unregisterClassFactory(m_pEngine);
+
+#if defined(SHARED_DEFINE)
+    s_Instance.destroy();
+#endif
 }
 
 const char *RenderVkSystem::name() const {
@@ -88,7 +95,7 @@ bool RenderVkSystem::init() {
     //texture = MIN(texture, MAX_RESOLUTION);
     //setAtlasPageSize(texture, texture);
 
-    CommandBufferVK::setInited();
+    CommandBufferVk::setInited();
 
     return true;
 }
@@ -99,9 +106,9 @@ void RenderVkSystem::update(Scene *scene) {
     PROFILE_FUNCTION();
 
     Camera *camera = Camera::current();
-    if(camera && CommandBufferVK::isInited()) {
+    if(camera && CommandBufferVk::isInited()) {
         Pipeline *pipe = camera->pipeline();
-        CommandBufferVK *cmd = static_cast<CommandBufferVK *>(pipe->buffer());
+        CommandBufferVk *cmd = static_cast<CommandBufferVk *>(pipe->buffer());
         cmd->begin(s_currentCommandBuffer, s_currentSwapChainImageIndex);
 
         static_cast<RenderTargetVk *>(pipe->defaultTarget())->setNativeHandle(s_currentRenderPass, s_frameBuffer, s_width, s_height);
@@ -146,10 +153,6 @@ VkQueue RenderVkSystem::currentQueue() {
 
 void RenderVkSystem::setCurrentRenderPass(VkRenderPass pass) {
     s_currentRenderPass = pass;
-}
-
-VkRenderPass RenderVkSystem::currentRenderPass() {
-    return s_currentRenderPass;
 }
 
 void RenderVkSystem::setCurrentFrameBuffer(VkFramebuffer buffer) {

@@ -8,18 +8,25 @@
 
 #include <resources/material.h>
 
-#include <commandbuffer.h>
+class CommandBufferVk;
+struct Global;
+struct Local;
+
+class RenderTargetVk;
 
 class MaterialInstanceVk : public MaterialInstance {
 public:
     MaterialInstanceVk(Material *material);
+    ~MaterialInstanceVk() override;
 
-    void createDescriptors(VkDescriptorSetLayout layout);
+    bool bind(const Global &global, const Local &local, CommandBufferVk &buffer, uint32_t index, uint32_t layer);
 
-    bool bind(const Global &global, const Local &local, VkCommandBuffer buffer, uint32_t index, uint32_t layer);
+    void destroyDescriptors();
 
 private:
     void setTexture(const char *name, Texture *value) override;
+
+    void createDescriptors(CommandBufferVk &buffer, VkDescriptorSetLayout layout);
 
 private:
     VkDescriptorPool m_descriptorPool;
@@ -49,13 +56,21 @@ class MaterialVk : public Material {
         LastFragment
     };
 
-    typedef unordered_map<uint32_t, VkPipeline> PipelineMap;
-    typedef unordered_map<uint32_t, VkPipelineLayout> LayoutMap;
-
 public:
+    MaterialVk();
+
     void loadUserData(const VariantMap &data) override;
 
-    bool bind(VkCommandBuffer buffer, VkPipelineLayout &layout, uint32_t layer, uint16_t vertex);
+    void switchState(ResourceState state) override;
+
+    bool bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex);
+
+    VkPipelineLayout pipelineLayout() {
+        if(m_pipelineLayout == nullptr) {
+            buildPipelineLayout();
+        }
+        return m_pipelineLayout;
+    }
 
     VkDescriptorSetLayout descriptorSetLayout() const { return m_uniformDescSetLayout; }
 
@@ -74,28 +89,35 @@ public:
     string textureName(int32_t index);
     int32_t textureBinding(const string &name);
 
+    void removeInstance(MaterialInstanceVk *instance);
+
 protected:
-    bool getProgram(uint16_t type, VkPipeline &pipeline, VkPipelineLayout &layout);
+    VkPipeline getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetVk *target);
 
     void destroyPrograms();
 
     VkShaderModule buildShader(const ByteArray &src);
 
-    bool buildStage(VkShaderModule vertex, VkShaderModule fragment, uint32_t index);
+    void buildPipelineLayout();
+    VkPipeline buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *target);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
 private:
-    PipelineMap m_programs;
-    LayoutMap m_layouts;
+    unordered_map<uint32_t, VkShaderModule> m_shaders;
 
-    VkDescriptorSetLayout m_uniformDescSetLayout;
+    unordered_map<uint32_t, VkPipeline> m_pipelines;
 
     map<uint16_t, ByteArray> m_shaderSources;
 
     vector<VkDescriptorSetLayoutBinding> m_layoutBindings;
 
     vector<VkDeviceSize> m_layoutBindingsSizes;
+
+    VkPipelineLayout m_pipelineLayout;
+    VkDescriptorSetLayout m_uniformDescSetLayout;
+
+    list<MaterialInstanceVk *> m_instances;
 
 };
 

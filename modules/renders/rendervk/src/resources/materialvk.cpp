@@ -2,18 +2,23 @@
 
 #include "commandbuffervk.h"
 
-#include "resources/text.h"
 #include "resources/texturevk.h"
+#include "resources/rendertargetvk.h"
 
 #include "rendervksystem.h"
 
-#include <file.h>
 #include <log.h>
+
+MaterialVk::MaterialVk() :
+        m_pipelineLayout(nullptr),
+        m_uniformDescSetLayout(nullptr) {
+
+}
 
 void MaterialVk::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    if(m_MaterialType == Surface) {
+     if(m_materialType == Surface) {
         {
             auto it = data.find("Simple");
             if(it != data.end()) {
@@ -57,28 +62,33 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     setState(ToBeUpdated);
 }
 
-bool MaterialVk::getProgram(uint16_t type, VkPipeline &pipeline, VkPipelineLayout &layout) {
-    switch(state()) {
-        case Suspend: {
+void MaterialVk::switchState(ResourceState state) {
+    switch(state) {
+        case Unloading: {
             destroyPrograms();
 
             setState(ToBeDeleted);
         } break;
+        default: Material::switchState(state); break;
+    }
+}
+
+VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetVk *target) {
+    switch(state()) {
         case ToBeUpdated: {
             destroyPrograms();
 
             for(uint16_t v = Static; v < LastVertex; v++) {
-                auto itv = m_shaderSources.find(v);
-                if(itv != m_shaderSources.end()) {
-                    for(uint16_t f = Default; f < LastFragment; f++) {
-                        auto itf = m_shaderSources.find(f);
-                        if(itf != m_shaderSources.end()) {
-                            VkShaderModule vertex = buildShader(itv->second);
-                            VkShaderModule fragment = buildShader(itf->second);
+                auto it = m_shaderSources.find(v);
+                if(it != m_shaderSources.end()) {
+                    m_shaders[v] = buildShader(it->second);
+                }
+            }
 
-                            buildStage(vertex, fragment, v * f);
-                        }
-                    }
+            for(uint16_t f = Default; f < LastFragment; f++) {
+                auto it = m_shaderSources.find(f);
+                if(it != m_shaderSources.end()) {
+                    m_shaders[f] = buildShader(it->second);
                 }
             }
 
@@ -87,32 +97,51 @@ bool MaterialVk::getProgram(uint16_t type, VkPipeline &pipeline, VkPipelineLayou
         default: break;
     }
 
-    auto it = m_programs.find(type);
-    if(it != m_programs.end()) {
-        pipeline = it->second;
-        layout = m_layouts[type];
-        return true;
+    std::hash<RenderTargetVk *> hash;
+
+    uint32_t index = (vertex | (fragment << 16)) ^ (hash(target) << 2);
+
+    auto it = m_pipelines.find(index);
+    if(it != m_pipelines.end()) {
+        return it->second;
+    } else {
+        VkPipeline pipeline = buildPipeline(vertex, fragment, target);
+        if(pipeline) {
+            m_pipelines[index] = pipeline;
+        }
     }
-    return false;
+    return nullptr;
 }
 
 void MaterialVk::destroyPrograms() {
     VkDevice device = RenderVkSystem::currentDevice();
 
-    for(auto &it : m_programs) {
+    for(auto &it : m_pipelines) {
         vkDestroyPipeline(device, it.second, nullptr);
     }
-    m_programs.clear();
+    m_pipelines.clear();
 
-    for(auto &it : m_layouts) {
-        vkDestroyPipelineLayout(device, it.second, nullptr);
+    for(auto &it : m_shaders) {
+        vkDestroyShaderModule(device, it.second, nullptr);
     }
-    m_layouts.clear();
+    m_shaders.clear();
 
-    vkDestroyDescriptorSetLayout(device, m_uniformDescSetLayout, nullptr);
+    if(m_pipelineLayout) {
+        vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
+    }
+    m_pipelineLayout = nullptr;
+
+    if(m_uniformDescSetLayout) {
+        vkDestroyDescriptorSetLayout(device, m_uniformDescSetLayout, nullptr);
+    }
+    m_uniformDescSetLayout = nullptr;
+
+    for(auto it : m_instances) {
+        it->destroyDescriptors();
+    }
 }
 
-bool MaterialVk::bind(VkCommandBuffer buffer, VkPipelineLayout &layout, uint32_t layer, uint16_t vertex) {
+bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex) {
     int32_t b = blendMode();
 
     if((layer & CommandBuffer::DEFAULT || layer & CommandBuffer::SHADOWCAST) &&
@@ -128,8 +157,8 @@ bool MaterialVk::bind(VkCommandBuffer buffer, VkPipelineLayout &layout, uint32_t
         type = MaterialVk::Simple;
     }
 
-    VkPipeline pipeline;
-    if(getProgram(vertex * type, pipeline, layout)) {
+    VkPipeline pipeline = getPipeline(vertex, type, target);
+    if(pipeline) {
         vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
         return true;
@@ -138,7 +167,7 @@ bool MaterialVk::bind(VkCommandBuffer buffer, VkPipelineLayout &layout, uint32_t
 }
 
 void MaterialVk::textureAttributes(int32_t index, VkImageView &imageView, VkSampler &sampler) {
-    for(auto &it : m_Textures) {
+    for(auto &it : m_textures) {
         if(it.binding == index) {
             TextureVk *t = static_cast<TextureVk *>(it.texture);
             if(t) {
@@ -149,7 +178,7 @@ void MaterialVk::textureAttributes(int32_t index, VkImageView &imageView, VkSamp
 }
 
 string MaterialVk::textureName(int32_t index) {
-    for(auto &it : m_Textures) {
+    for(auto &it : m_textures) {
         if(it.binding == index) {
             return it.name;
         }
@@ -158,7 +187,7 @@ string MaterialVk::textureName(int32_t index) {
 }
 
 int32_t MaterialVk::textureBinding(const string &name) {
-    for(auto &it : m_Textures) {
+    for(auto &it : m_textures) {
         if(it.name == name) {
             return it.binding;
         }
@@ -179,20 +208,69 @@ VkShaderModule MaterialVk::buildShader(const ByteArray &src) {
     return shaderModule;
 }
 
-bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint32_t index) {
+void MaterialVk::buildPipelineLayout() {
+    if(m_pipelineLayout == nullptr && m_uniformDescSetLayout == nullptr) {
+        // Create descriptor set layout
+        m_layoutBindings = {
+            { GLOBAL_BIND,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+            { LOCAL_BIND,   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+        };
+
+        m_layoutBindingsSizes = {
+            sizeof(Global),
+            sizeof(Local)
+        };
+
+        if(!m_uniforms.empty()) {
+            m_layoutBindings.push_back({UNIFORM_BIND, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+
+            m_layoutBindingsSizes.push_back(m_uniformSize);
+        }
+
+        for(auto &it : m_textures) {
+            if(it.binding > 0) {
+                m_layoutBindings.push_back({ (uint32_t)it.binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                             1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr });
+
+                /// \todo Doesn't takes into account case with textures skinned meshes in vertex shader
+
+                m_layoutBindingsSizes.push_back(0);
+            }
+        }
+
+        m_uniformDescSetLayout = CommandBufferVk::createDescriptorSetLayout(m_layoutBindings);
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &m_uniformDescSetLayout;
+
+        if(vkCreatePipelineLayout(RenderVkSystem::currentDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
+            aWarning() << "Unable to create plipeline layout.";
+        }
+    }
+}
+
+VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *target) {
+    VkShaderModule vertex = m_shaders[v];
+    VkShaderModule fragment = m_shaders[f];
+
+    if(vertex == nullptr || fragment == nullptr) {
+        return nullptr;
+    }
     const vector<VkVertexInputBindingDescription> vertexInputBindings = {
         { 0, sizeof(Vector3), VK_VERTEX_INPUT_RATE_VERTEX },
         { 1, sizeof(Vector2), VK_VERTEX_INPUT_RATE_VERTEX },
         { 2, sizeof(Vector3), VK_VERTEX_INPUT_RATE_VERTEX },
         { 3, sizeof(Vector3), VK_VERTEX_INPUT_RATE_VERTEX },
-        { 4, sizeof(Vector4), VK_VERTEX_INPUT_RATE_VERTEX },
+        //{ 4, sizeof(Vector4), VK_VERTEX_INPUT_RATE_VERTEX },
     };
     const vector<VkVertexInputAttributeDescription> vertexAttributes = {
         { VERTEX_ATRIB,  0, VK_FORMAT_R32G32B32_SFLOAT,    0 },
         { UV0_ATRIB,     1, VK_FORMAT_R32G32_SFLOAT,       0 },
         { NORMAL_ATRIB,  0, VK_FORMAT_R32G32B32_SFLOAT,    0 },
         { TANGENT_ATRIB, 0, VK_FORMAT_R32G32B32_SFLOAT,    0 },
-        { COLOR_ATRIB,   0, VK_FORMAT_R32G32B32A32_SFLOAT, 0 },
+        //{ COLOR_ATRIB,   0, VK_FORMAT_R32G32B32A32_SFLOAT, 0 },
     };
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
@@ -274,62 +352,13 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
         defaultColorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
     }
 
+    vector<VkPipelineColorBlendAttachmentState> blendStates;
+    blendStates.resize(target->colorAttachmentCount(), defaultColorBlendAttachmentState);
+
     VkPipelineColorBlendStateCreateInfo colorBlendState = {};
     colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlendState.attachmentCount = 1;
-    colorBlendState.pAttachments = &defaultColorBlendAttachmentState;
-
-    VkDevice device = RenderVkSystem::currentDevice();
-
-    // Create descriptor set layout
-    m_layoutBindings = {
-        { GLOBAL_BIND,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
-        { LOCAL_BIND,   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
-    };
-
-    m_layoutBindingsSizes = {
-        sizeof(Global),
-        sizeof(Local)
-    };
-
-    uint32_t binding = UNIFORM_BIND;
-    if(!m_Uniforms.empty()) {
-        m_layoutBindings.push_back({binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
-
-        uint32_t size = 0;
-        for(auto &it : m_Uniforms) {
-            size += it.size;
-        }
-        m_layoutBindingsSizes.push_back(size);
-
-        binding++;
-    }
-
-    //for(auto &it : m_Textures) {
-    //    if(it.binding > 0) {
-    //        m_layoutBindings.push_back({ (uint32_t)it.binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    //                                     1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr });
-    //
-    //        /// \todo Doesn't takes into account case with textures skinned meshes in vertex shader
-    //
-    //        binding = MAX((uint32_t)it.binding, binding);
-    //        m_layoutBindingsSizes.push_back(0);
-    //    }
-    //    binding++;
-    //}
-    //
-
-    m_uniformDescSetLayout = CommandBufferVK::createDescriptorSetLayout(m_layoutBindings);
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &m_uniformDescSetLayout;
-
-    VkPipelineLayout layout;
-    if(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &layout) != VK_SUCCESS) {
-        return false;
-    }
+    colorBlendState.attachmentCount = blendStates.size();
+    colorBlendState.pAttachments = blendStates.data();
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -342,8 +371,8 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
     pipelineCreateInfo.pMultisampleState = &defaultMultisampleState;
     pipelineCreateInfo.pDepthStencilState = &depthStencilState;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
-    pipelineCreateInfo.layout = layout;
-    pipelineCreateInfo.renderPass = RenderVkSystem::currentRenderPass();
+    pipelineCreateInfo.layout = pipelineLayout();
+    pipelineCreateInfo.renderPass = target->renderPass();
 
     VkDynamicState dynEnable[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dyn = {};
@@ -353,17 +382,11 @@ bool MaterialVk::buildStage(VkShaderModule vertex, VkShaderModule fragment, uint
     pipelineCreateInfo.pDynamicState = &dyn;
 
     VkPipeline pipeline;
-    if(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
-        return false;
+    if(vkCreateGraphicsPipelines(RenderVkSystem::currentDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) == VK_SUCCESS) {
+        return pipeline;
     }
 
-    vkDestroyShaderModule(device, vertex, nullptr);
-    vkDestroyShaderModule(device, fragment, nullptr);
-
-    m_programs[index] = pipeline;
-    m_layouts[index] = layout;
-
-    return true;
+    return nullptr;
 }
 
 MaterialInstance *MaterialVk::createInstance(SurfaceType type) {
@@ -381,8 +404,14 @@ MaterialInstance *MaterialVk::createInstance(SurfaceType type) {
         }
 
         result->setSurfaceType(t);
+
+        m_instances.push_back(result);
     }
     return result;
+}
+
+void MaterialVk::removeInstance(MaterialInstanceVk *instance) {
+    m_instances.remove(instance);
 }
 
 MaterialInstanceVk::MaterialInstanceVk(Material *material) :
@@ -392,7 +421,14 @@ MaterialInstanceVk::MaterialInstanceVk(Material *material) :
 
 }
 
-void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
+MaterialInstanceVk::~MaterialInstanceVk() {
+    MaterialVk *m = static_cast<MaterialVk *>(m_material);
+    m->removeInstance(this);
+
+    destroyDescriptors();
+}
+
+void MaterialInstanceVk::createDescriptors(CommandBufferVk &buffer, VkDescriptorSetLayout layout) {
     VkDevice device = RenderVkSystem::currentDevice();
     if(device == nullptr) {
         return;
@@ -413,6 +449,7 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
     poolInfo.poolSizeCount = poolSize.size();
     poolInfo.pPoolSizes = poolSize.data();
     poolInfo.maxSets = swapChainCount;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     if(vkCreateDescriptorPool(device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) {
         throw runtime_error("failed to create descriptor pool!");
@@ -451,7 +488,7 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
 
                 VkBuffer buffer;
                 VkDeviceMemory memory;
-                CommandBufferVK::createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                CommandBufferVk::createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                               buffer, memory);
 
@@ -464,32 +501,76 @@ void MaterialInstanceVk::createDescriptors(VkDescriptorSetLayout layout) {
 
                 m_buffers[i].push_back(buffer);
                 m_buffersMemory[i].push_back(memory);
+
+                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
             } else {
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-                TextureVk *t = static_cast<TextureVk *>(texture(m->textureName(binding.binding).c_str()));
+                string name = m->textureName(binding.binding);
+                TextureVk *t = static_cast<TextureVk *>(texture(name.c_str()));
+                if(t == nullptr) {
+                    t = static_cast<TextureVk *>(buffer.texture(name.c_str()));
+                }
+
                 if(t) {
                     t->attributes(imageInfo.imageView, imageInfo.sampler);
                 } else {
                     m->textureAttributes(binding.binding, imageInfo.imageView, imageInfo.sampler);
+                    if(imageInfo.imageView == nullptr || imageInfo.sampler == nullptr) {
+                        continue;
+                    }
                 }
 
                 descriptorWrite.pImageInfo = &imageInfo;
-            }
 
-            vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+            }
         }
     }
 }
 
-bool MaterialInstanceVk::bind(const Global &global, const Local &local, VkCommandBuffer buffer, uint32_t index, uint32_t layer) {
+void MaterialInstanceVk::destroyDescriptors() {
+    VkDevice device = RenderVkSystem::currentDevice();
+
+    size_t swapChainCount = RenderVkSystem::swapChainImageCount();
+    if(!m_buffers.empty()) {
+        for(int32_t i = 0; i < swapChainCount; i++) {
+            for(auto it : m_buffers[i]) {
+                vkDestroyBuffer(device, it, nullptr);
+            }
+        }
+        m_buffers.clear();
+    }
+
+    if(!m_buffersMemory.empty()) {
+        for(int32_t i = 0; i < swapChainCount; i++) {
+            for(auto it : m_buffersMemory[i]) {
+                vkFreeMemory(device, it, nullptr);
+            }
+        }
+        m_buffersMemory.clear();
+    }
+
+    if(m_uniformDescriptorSet) {
+        vkFreeDescriptorSets(device, m_descriptorPool, 1, &m_uniformDescriptorSet);
+        m_uniformDescriptorSet = nullptr;
+    }
+
+    if(m_descriptorPool) {
+        vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
+        m_descriptorPool = nullptr;
+    }
+}
+
+bool MaterialInstanceVk::bind(const Global &global, const Local &local, CommandBufferVk &buffer, uint32_t index, uint32_t layer) {
     MaterialVk *m = static_cast<MaterialVk *>(m_material);
 
-    VkPipelineLayout layout;
-    if(m->bind(buffer, layout, layer, surfaceType())) {
+    VkCommandBuffer cmd = buffer.nativeBuffer();
+
+    if(m->bind(cmd, buffer.currentRenderTarget(), layer, surfaceType())) {
         if(m_buffers.size() == 0) {
-            createDescriptors(m->descriptorSetLayout());
+            createDescriptors(buffer, m->descriptorSetLayout());
         }
 
         vector<const void *> buffers = {
@@ -497,48 +578,37 @@ bool MaterialInstanceVk::bind(const Global &global, const Local &local, VkComman
             &local
         };
 
-        VkDevice device = RenderVkSystem::currentDevice();
-
-        for(int i = 0; i < buffers.size(); i++) {
-            VkDeviceSize size = m->layoutBindingSize(i);
-
-            void *dst = nullptr;
-            vkMapMemory(device, m_buffersMemory[index][i], 0, size, 0, &dst);
-                memcpy(dst, buffers[i], size);
-            vkUnmapMemory(device, m_buffersMemory[index][i]);
+        if(m_uniformBuffer != nullptr && m_uniformDirty) {
+            buffers.push_back(m_uniformBuffer);
+            m_uniformDirty = false;
         }
 
-        vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                layout, 0, 1, &m_uniformDescriptorSet, 0, nullptr);
+        VkDevice device = RenderVkSystem::currentDevice();
+
+        size_t swapChainCount = RenderVkSystem::swapChainImageCount();
+        for(index = 0; index < swapChainCount; index++) {
+            for(int i = 0; i < buffers.size(); i++) {
+                VkDeviceSize size = m->layoutBindingSize(i);
+
+                void *dst = nullptr;
+                vkMapMemory(device, m_buffersMemory[index][i], 0, size, 0, &dst);
+                    memcpy(dst, buffers[i], size);
+                vkUnmapMemory(device, m_buffersMemory[index][i]);
+            }
+        }
+
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m->pipelineLayout(), 0, 1, &m_uniformDescriptorSet, 0, nullptr);
+
         return true;
     }
     return false;
 }
 
 void MaterialInstanceVk::setTexture(const char *name, Texture *value) {
-    MaterialInstance::setTexture(name, value);
+    if(m_textureOverride[name] != value) {
+        MaterialInstance::setTexture(name, value);
 
-    if(value && m_uniformDescriptorSet) {
-        VkDescriptorImageInfo imageInfo = {};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        TextureVk *t = static_cast<TextureVk *>(value);
-        t->attributes(imageInfo.imageView, imageInfo.sampler);
-
-        MaterialVk *m = static_cast<MaterialVk *>(m_material);
-
-        for(int32_t i = 0; i < RenderVkSystem::swapChainImageCount(); i++) {
-            VkWriteDescriptorSet descriptorWrite = {};
-            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = m_uniformDescriptorSet;
-            descriptorWrite.dstBinding = m->textureBinding(name);
-            descriptorWrite.dstArrayElement = 0;
-            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrite.descriptorCount = 1;
-
-            descriptorWrite.pImageInfo = &imageInfo;
-
-            vkUpdateDescriptorSets(RenderVkSystem::currentDevice(), 1, &descriptorWrite, 0, nullptr);
-        }
+        destroyDescriptors();
     }
 }

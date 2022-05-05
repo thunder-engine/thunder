@@ -9,7 +9,7 @@
 
 #include <timer.h>
 
-CommandBufferVK::CommandBufferVK() :
+CommandBufferVk::CommandBufferVk() :
         m_commandBuffer(nullptr),
         m_currentImageIndex(0),
         m_viewportX(0),
@@ -21,11 +21,7 @@ CommandBufferVK::CommandBufferVK() :
 
 }
 
-CommandBufferVK::~CommandBufferVK() {
-
-}
-
-void CommandBufferVK::begin(VkCommandBuffer buffer, uint32_t index) {
+void CommandBufferVk::begin(VkCommandBuffer buffer, uint32_t index) {
     m_commandBuffer = buffer;
     m_currentImageIndex = index;
 
@@ -33,14 +29,14 @@ void CommandBufferVK::begin(VkCommandBuffer buffer, uint32_t index) {
     m_global.clip = 0.99f;
 }
 
-void CommandBufferVK::end() {
+void CommandBufferVk::end() {
     if(m_currentTarget) {
         m_currentTarget->unbind(m_commandBuffer);
         m_currentTarget = nullptr;
     }
 }
 
-void CommandBufferVK::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
+void CommandBufferVk::clearRenderTarget(bool clearColor, const Vector4 &color, bool clearDepth, float depth) {
     PROFILE_FUNCTION();
 
     if(m_currentTarget) {
@@ -48,13 +44,13 @@ void CommandBufferVK::clearRenderTarget(bool clearColor, const Vector4 &color, b
     }
 }
 
-void CommandBufferVK::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVk::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
     drawMeshInstanced(&model, 1, mesh, sub, layer, material);
 }
 
-void CommandBufferVK::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
+void CommandBufferVk::drawMeshInstanced(const Matrix4 *models, uint32_t count, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
     PROFILE_FUNCTION();
 
     if(mesh && material) {
@@ -68,7 +64,7 @@ void CommandBufferVK::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
         m_local.model = models[0];
 
         MaterialInstanceVk *mat = static_cast<MaterialInstanceVk *>(material);
-        if(mat->bind(m_global, m_local, m_commandBuffer, m_currentImageIndex, layer)) {
+        if(mat->bind(m_global, m_local, *this, m_currentImageIndex, layer)) {
             m->bind(m_commandBuffer, lod);
             Mesh::TriangleTopology mode = static_cast<Mesh::TriangleTopology>(mesh->topology());
             if(mode > Mesh::Lines) {
@@ -85,7 +81,7 @@ void CommandBufferVK::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
     }
 }
 
-void CommandBufferVK::setRenderTarget(RenderTarget *target, uint32_t level) {
+void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
     if(m_currentTarget) {
@@ -98,25 +94,21 @@ void CommandBufferVK::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-Texture *CommandBufferVK::texture(const char *name) const {
-    return nullptr;
+VkCommandBuffer CommandBufferVk::nativeBuffer() const {
+    return m_commandBuffer;
 }
 
-void CommandBufferVK::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
-    CommandBuffer::setViewProjection(view, projection);
-
-    //m_global.projection.mat[5] *= -1.0f; // Inverse Y coordinate for Vulkan
+RenderTargetVk *CommandBufferVk::currentRenderTarget() const {
+    return m_currentTarget;
 }
 
-void CommandBufferVK::setGlobalValue(const char *name, const Variant &value) {
-
+void CommandBufferVk::setScreenProjection(float x, float y, float width, float height) {
+    Matrix4 v;
+    v.mat[14] = -0.999f;
+    setViewProjection(v, Matrix4::ortho(x, width, height, y, 0.0f, 1.0f));
 }
 
-void CommandBufferVK::setGlobalTexture(const char *name, Texture *value) {
-
-}
-
-void CommandBufferVK::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     m_viewportX = x;
     m_viewportY = y;
     m_viewportWidth = width;
@@ -131,9 +123,11 @@ void CommandBufferVK::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
     viewport.maxDepth = 1.0f;
 
     vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
+
+    enableScissor(x, y, width, height);
 }
 
-void CommandBufferVK::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
     VkRect2D scissor = {};
     scissor.offset = { x, y };
     scissor.extent = { (uint32_t)width, (uint32_t)height };
@@ -141,7 +135,7 @@ void CommandBufferVK::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
 
-void CommandBufferVK::disableScissor() {
+void CommandBufferVk::disableScissor() {
     VkRect2D scissor = {};
     scissor.offset = {m_viewportX, m_viewportY};
     scissor.extent = {(uint32_t)m_viewportWidth, (uint32_t)m_viewportHeight};
@@ -149,7 +143,7 @@ void CommandBufferVK::disableScissor() {
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }
 
-void CommandBufferVK::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory) {
+void CommandBufferVk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkBufferCreateInfo bufferInfo = {};
@@ -177,7 +171,7 @@ void CommandBufferVK::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     vkBindBufferMemory(device, buffer, memory, 0);
 }
 
-VkDescriptorSetLayout CommandBufferVK::createDescriptorSetLayout(const vector<VkDescriptorSetLayoutBinding> &layoutBinding) {
+VkDescriptorSetLayout CommandBufferVk::createDescriptorSetLayout(const vector<VkDescriptorSetLayoutBinding> &layoutBinding) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkDescriptorSetLayoutCreateInfo descLayoutInfo = {};
@@ -192,7 +186,7 @@ VkDescriptorSetLayout CommandBufferVK::createDescriptorSetLayout(const vector<Vk
     return descSetLayout;
 }
 
-uint32_t CommandBufferVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t CommandBufferVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(RenderVkSystem::currentPhysicalDevice(), &memProperties);
 
@@ -204,7 +198,7 @@ uint32_t CommandBufferVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
     return 0;
 }
 
-VkCommandBuffer CommandBufferVK::beginSingleTimeCommands() {
+VkCommandBuffer CommandBufferVk::beginSingleTimeCommands() {
     VkDevice device = RenderVkSystem::currentDevice();
 
     VkCommandBufferAllocateInfo allocInfo = {};
@@ -225,7 +219,7 @@ VkCommandBuffer CommandBufferVK::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void CommandBufferVK::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void CommandBufferVk::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     VkDevice device = RenderVkSystem::currentDevice();
 
     vkEndCommandBuffer(commandBuffer);

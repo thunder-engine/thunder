@@ -2,6 +2,8 @@
 
 #include "rendervksystem.h"
 
+#include <systems/resourcesystem.h>
+
 VulkanWindowRenderer::VulkanWindowRenderer(QVulkanWindow *w)
     : m_window(w) {
 
@@ -18,10 +20,15 @@ void VulkanWindowRenderer::initResources() {
 
 void VulkanWindowRenderer::releaseSwapChainResources() {
     // Can be called during window minimization
+
+    QVulkanWindowRenderer::releaseSwapChainResources();
 }
 
 void VulkanWindowRenderer::releaseResources() {
     // Can be called during window minimization
+
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
+    system->unloadAll();
 }
 
 void VulkanWindowRenderer::startNextFrame() {

@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     ComponentModel::instance()->init(&engine);
     AssetList::instance()->init(&engine);
 
-    int result  = app.exec();
+    int result = app.exec();
 
     UndoManager::destroy();
     AssetManager::destroy();

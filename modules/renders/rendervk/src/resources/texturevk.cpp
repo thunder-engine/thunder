@@ -8,7 +8,8 @@ TextureVk::TextureVk() :
         m_sampler(nullptr),
         m_image(nullptr),
         m_view(nullptr),
-        m_deviceMemory(nullptr) {
+        m_deviceMemory(nullptr),
+        m_currentLayout(VK_IMAGE_LAYOUT_UNDEFINED) {
 
 }
 
@@ -16,10 +17,6 @@ void TextureVk::attributes(VkImageView &imageView, VkSampler &sampler) {
     PROFILE_FUNCTION();
 
     switch(state()) {
-        case Suspend: {
-            destroyTexture();
-            setState(ToBeDeleted);
-        } break;
         case ToBeUpdated: {
             updateTexture();
             setState(Ready);
@@ -36,9 +33,6 @@ VkFormat TextureVk::vkFormat() const {
     switch(format()) {
         case R8: {
             result = VK_FORMAT_R8_UNORM;
-        } break;
-        case RGB8: {
-            result = VK_FORMAT_R8G8B8_UNORM;
         } break;
         case RGB10A2: {
             result = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
@@ -85,6 +79,17 @@ void TextureVk::readPixels(int x, int y, int width, int height) {
     //CommandBufferVK::endSingleTimeCommands(commandBuffer);
 }
 
+void TextureVk::switchState(ResourceState state) {
+    switch(state) {
+        case Unloading: {
+            destroyTexture();
+
+            setState(ToBeDeleted);
+        } break;
+        default: Texture::switchState(state); break;
+    }
+}
+
 void TextureVk::updateTexture() {
     VkDevice device = RenderVkSystem::currentDevice();
 
@@ -103,7 +108,7 @@ void TextureVk::updateTexture() {
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingMemory;
 
-            CommandBufferVK::createBuffer(textureSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            CommandBufferVk::createBuffer(textureSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
             void *dst = nullptr;
@@ -122,6 +127,8 @@ void TextureVk::updateTexture() {
             vkMapMemory(device, m_deviceMemory, 0, textureSize, 0, &dst);
                 memcpy(dst, image[mip].data(), textureSize);
             vkUnmapMemory(device, m_deviceMemory);
+
+            transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
         }
     }
 
@@ -133,9 +140,25 @@ void TextureVk::updateTexture() {
 void TextureVk::destroyTexture() {
     VkDevice device = RenderVkSystem::currentDevice();
 
-    vkDestroyImageView(device, m_view, nullptr);
-    vkDestroyImage(device, m_image, nullptr);
-    vkFreeMemory(device, m_deviceMemory, nullptr);
+    if(m_sampler) {
+        vkDestroySampler(device, m_sampler, nullptr);
+        m_sampler = nullptr;
+    }
+
+    if(m_view) {
+        vkDestroyImageView(device, m_view, nullptr);
+        m_view = nullptr;
+    }
+
+    if(m_image) {
+        vkDestroyImage(device, m_image, nullptr);
+        m_image = nullptr;
+    }
+
+    if(m_deviceMemory) {
+        vkFreeMemory(device, m_deviceMemory, nullptr);
+        m_deviceMemory = nullptr;
+    }
 }
 
 void TextureVk::createImage(VkDevice device, VkFormat format) {
@@ -167,7 +190,13 @@ void TextureVk::createImage(VkDevice device, VkFormat format) {
     } else {
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 
-        imageInfo.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        if(TextureVk::format() == Depth) {
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        } else {
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            imageInfo.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        }
     }
 
     if(vkCreateImage(device, &imageInfo, nullptr, &m_image) != VK_SUCCESS) {
@@ -182,7 +211,7 @@ void TextureVk::createImage(VkDevice device, VkFormat format) {
     allocInfo.allocationSize = memRequirements.size;
     VkMemoryPropertyFlags memFlags = (isFrameBuffer || USE_STAGING) ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT :
                                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    allocInfo.memoryTypeIndex = CommandBufferVK::findMemoryType(memRequirements.memoryTypeBits, memFlags);
+    allocInfo.memoryTypeIndex = CommandBufferVk::findMemoryType(memRequirements.memoryTypeBits, memFlags);
 
     if(vkAllocateMemory(device, &allocInfo, nullptr, &m_deviceMemory) != VK_SUCCESS) {
         throw runtime_error("failed to allocate image memory!");
@@ -197,7 +226,8 @@ void TextureVk::createImageView(VkDevice device, VkFormat format) {
     viewInfo.image = m_image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = (TextureVk::format() == Depth) ?
+                (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -241,7 +271,7 @@ void TextureVk::createSampler(VkDevice device) {
 }
 
 void TextureVk::copyBufferToImage(VkBuffer buffer) {
-    VkCommandBuffer commandBuffer = CommandBufferVK::beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = CommandBufferVk::beginSingleTimeCommands();
 
     VkBufferImageCopy region = {};
     region.bufferOffset = 0;
@@ -260,11 +290,14 @@ void TextureVk::copyBufferToImage(VkBuffer buffer) {
 
     vkCmdCopyBufferToImage(commandBuffer, buffer, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    CommandBufferVK::endSingleTimeCommands(commandBuffer);
+    CommandBufferVk::endSingleTimeCommands(commandBuffer);
 }
 
 void TextureVk::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels) {
-    VkCommandBuffer commandBuffer = CommandBufferVK::beginSingleTimeCommands();
+    if(oldLayout == newLayout) {
+        return;
+    }
+    VkCommandBuffer commandBuffer = CommandBufferVk::beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -294,6 +327,18 @@ void TextureVk::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout new
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    } else if(oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_HOST_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    } else if(oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        destinationStage = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
     } else {
         throw invalid_argument("unsupported layout transition!");
     }
@@ -307,5 +352,15 @@ void TextureVk::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout new
         1, &barrier
     );
 
-    CommandBufferVK::endSingleTimeCommands(commandBuffer);
+    CommandBufferVk::endSingleTimeCommands(commandBuffer);
+
+    m_currentLayout = newLayout;
+}
+
+VkImageLayout TextureVk::currentLayout() const {
+    return m_currentLayout;
+}
+
+void TextureVk::setCurrentLayout(VkImageLayout layout) {
+    m_currentLayout = layout;
 }

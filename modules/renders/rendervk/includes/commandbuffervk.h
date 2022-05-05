@@ -3,8 +3,7 @@
 
 #include <commandbuffer.h>
 
-#include "resources/materialvk.h"
-#include "resources/meshvk.h"
+#include <vulkan/vulkan.h>
 
 #define VERTEX_ATRIB    0
 #define UV0_ATRIB       1
@@ -14,17 +13,19 @@
 
 class RenderTargetVk;
 
-class CommandBufferVK : public CommandBuffer {
-    A_OVERRIDE(CommandBufferVK, CommandBuffer, System)
+class CommandBufferVk : public CommandBuffer {
+    A_OVERRIDE(CommandBufferVk, CommandBuffer, System)
 
 public:
-    CommandBufferVK();
-
-    ~CommandBufferVK() override;
+    CommandBufferVk();
 
     void begin(VkCommandBuffer buffer, uint32_t index);
 
     void end();
+
+    VkCommandBuffer nativeBuffer() const;
+
+    RenderTargetVk *currentRenderTarget() const;
 
     static void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &memory);
 
@@ -45,19 +46,13 @@ private:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void setViewProjection(const Matrix4 &view, const Matrix4 &projection) override;
-
-    void setGlobalValue(const char *name, const Variant &value) override;
-
-    void setGlobalTexture(const char *name, Texture *value) override;
+    void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f) override;
 
     void setViewport(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
     void enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
     void disableScissor() override;
-
-    Texture *texture(const char *name) const override;
 
 protected:
     Matrix4 m_saveView;

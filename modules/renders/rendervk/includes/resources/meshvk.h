@@ -8,8 +8,6 @@
 
 #include <vulkan/vulkan.h>
 
-class CommandBufferVK;
-
 class MeshVk : public Mesh {
     A_OVERRIDE(MeshVk, Mesh, Resources)
 
@@ -23,6 +21,8 @@ public:
     void bind(VkCommandBuffer buffer, uint32_t lod);
 
 protected:
+    void switchState(ResourceState state) override;
+
     void updateVbo();
 
     void destroyVbo();

@@ -11,14 +11,7 @@ void MeshVk::bind(VkCommandBuffer buffer, uint32_t lod) {
 
             setState(Ready);
         } break;
-        case Ready: break;
-        case Suspend: {
-            destroyVbo();
-
-            setState(ToBeDeleted);
-            return;
-        }
-        default: return;
+        default: break;
     }
 
     VkDeviceSize offset = 0;
@@ -48,6 +41,17 @@ void MeshVk::bind(VkCommandBuffer buffer, uint32_t lod) {
     }
 
     //vkCmdSetPrimitiveTopologyEXT(buffer, t);
+}
+
+void MeshVk::switchState(ResourceState state) {
+    switch(state) {
+        case Unloading: {
+            destroyVbo();
+
+            setState(ToBeDeleted);
+        } break;
+        default: Mesh::switchState(state); break;
+    }
 }
 
 void MeshVk::updateVbo() {
@@ -101,14 +105,16 @@ void MeshVk::destroyVbo() {
     for(auto &it : m_buffers) {
         vkDestroyBuffer(device, it, nullptr);
     }
+    m_buffers.clear();
 
     for(auto &it : m_memoryBuffers) {
         vkFreeMemory(device, it, nullptr);
     }
+    m_memoryBuffers.clear();
 }
 
 void MeshVk::uploadVbo(VkDevice device, VkBuffer &buffer, VkDeviceMemory &memory, void *data, VkDeviceSize size, VkBufferUsageFlagBits flags) const {
-    CommandBufferVK::createBuffer(size, flags,
+    CommandBufferVk::createBuffer(size, flags,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                   buffer, memory);
 

@@ -29,7 +29,7 @@ Project {
         Environment.getEnv("VULKAN_SDK") + "/Include"
     ]
 
-    property bool useStaging: false
+    property bool useStaging: true
 
     DynamicLibrary {
         name: "rendervk-editor"

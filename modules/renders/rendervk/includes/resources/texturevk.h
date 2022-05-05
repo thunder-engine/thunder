@@ -18,8 +18,15 @@ public:
 
     VkFormat vkFormat() const;
 
+    void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
+
+    VkImageLayout currentLayout() const;
+    void setCurrentLayout(VkImageLayout layout);
+
 private:
     void readPixels(int x, int y, int width, int height) override;
+
+    void switchState(ResourceState state) override;
 
     void updateTexture();
     void destroyTexture();
@@ -32,14 +39,14 @@ private:
 
     void copyBufferToImage(VkBuffer buffer);
 
-    void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
-
     VkSampler m_sampler;
 
     VkImage m_image;
     VkImageView m_view;
 
     VkDeviceMemory m_deviceMemory;
+
+    VkImageLayout m_currentLayout;
 
 };
 

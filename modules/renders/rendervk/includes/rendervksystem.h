@@ -33,7 +33,6 @@ public:
     static VkQueue currentQueue();
 
     static void setCurrentRenderPass(VkRenderPass pass);
-    static VkRenderPass currentRenderPass();
 
     static void setCurrentFrameBuffer(VkFramebuffer buffer);
 
