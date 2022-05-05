@@ -156,7 +156,7 @@ void Pipeline::draw(Camera &camera) {
 void Pipeline::drawUi(Camera &camera) {
     A_UNUSED(camera);
 
-    m_buffer->setScreenProjection();
+    m_buffer->setScreenProjection(0, 0, m_width, m_height);
     drawComponents(CommandBuffer::UI, m_uiComponents);
 
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
@@ -168,7 +168,7 @@ void Pipeline::finish() {
     m_buffer->clearRenderTarget();
 
     m_sprite->setTexture(OVERRIDE, m_final);
-    m_buffer->drawMesh(m_screenModel, m_plane, 0, CommandBuffer::UI, m_sprite);
+    m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_sprite);
 }
 
 void Pipeline::cameraReset(Camera &camera) {
@@ -208,13 +208,6 @@ void Pipeline::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         m_width = width;
         m_height = height;
-
-        m_screenModel.mat[0] = m_width;
-        m_screenModel.mat[5] = m_height;
-        m_screenModel.mat[10] = 1.0f;
-
-        m_screenModel.mat[12] = (float)m_width * 0.5f;
-        m_screenModel.mat[13] = (float)m_height * 0.5f;
 
         for(auto &it : m_textureBuffers) {
             it.second->setWidth(width);
@@ -412,7 +405,7 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
         m_buffer->setViewport(0, 0, texture->width(), texture->height());
         m_buffer->setRenderTarget(source);
         m_sprite->setTexture(OVERRIDE, result);
-        m_buffer->drawMesh(m_screenModel, m_plane, 0, CommandBuffer::UI, m_sprite);
+        m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_sprite);
     }
 
     m_buffer->resetViewProjection();

@@ -86,8 +86,6 @@ protected:
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
 
-    Matrix4 m_screenModel;
-
     CommandBuffer *m_buffer;
 
     Mesh *m_plane;

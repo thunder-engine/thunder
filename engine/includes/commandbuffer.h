@@ -67,7 +67,7 @@ public:
 
     virtual void setColor(const Vector4 &color);
 
-    virtual void setScreenProjection();
+    virtual void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f);
 
     virtual void resetViewProjection();
 

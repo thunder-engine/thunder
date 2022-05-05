@@ -61,8 +61,8 @@ void CommandBuffer::setColor(const Vector4 &color) {
     m_local.color = color;
 }
 
-void CommandBuffer::setScreenProjection() {
-    setViewProjection(Matrix4(), Matrix4::ortho(m_viewportX, m_viewportWidth, m_viewportY, m_viewportHeight, -100.0f, 100.0f));
+void CommandBuffer::setScreenProjection(float x, float y, float width, float height) {
+    setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, -100.0f, 100.0f));
 }
 
 void CommandBuffer::resetViewProjection() {
