@@ -46,7 +46,7 @@ private:
 
     void setRenderTarget(RenderTarget *target, uint32_t level = 0) override;
 
-    void setScreenProjection(float x = -0.5f, float y = -0.5f, float width = 0.5f, float height = 0.5f) override;
+    void setScreenProjection(float l = -0.5f, float t = -0.5f, float r = 0.5f, float b = 0.5f) override;
 
     void setViewport(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
@@ -60,11 +60,6 @@ protected:
 
     VkCommandBuffer m_commandBuffer;
     uint32_t m_currentImageIndex;
-
-    int32_t m_viewportX;
-    int32_t m_viewportY;
-    int32_t m_viewportWidth;
-    int32_t m_viewportHeight;
 
     RenderTargetVk *m_currentTarget;
 

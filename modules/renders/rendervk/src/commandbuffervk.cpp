@@ -12,10 +12,6 @@
 CommandBufferVk::CommandBufferVk() :
         m_commandBuffer(nullptr),
         m_currentImageIndex(0),
-        m_viewportX(0),
-        m_viewportY(0),
-        m_viewportWidth(1),
-        m_viewportHeight(1),
         m_currentTarget(nullptr) {
     PROFILE_FUNCTION();
 
@@ -102,17 +98,14 @@ RenderTargetVk *CommandBufferVk::currentRenderTarget() const {
     return m_currentTarget;
 }
 
-void CommandBufferVk::setScreenProjection(float x, float y, float width, float height) {
+void CommandBufferVk::setScreenProjection(float l, float t, float r, float b) {
     Matrix4 v;
-    v.mat[14] = -0.999f;
-    setViewProjection(v, Matrix4::ortho(x, width, height, y, 0.0f, 1.0f));
+    v.mat[14] = -100.0f;
+    setViewProjection(v, Matrix4::ortho(l, r, b, t, 0.0f, 200.0f));
 }
 
 void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
-    m_viewportX = x;
-    m_viewportY = y;
-    m_viewportWidth = width;
-    m_viewportHeight = height;
+    CommandBuffer::setViewport(x, y, width, height);
 
     VkViewport viewport = {};
     viewport.x = (float)m_viewportX;

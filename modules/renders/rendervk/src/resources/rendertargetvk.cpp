@@ -99,7 +99,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
 
     for(uint32_t i = 0; i < count; i++) {
         VkClearValue value;
-        value.color = { { 1.0f, 0.0f, 0.0f, 0.0f } };
+        value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 
         clearValues.push_back(value);
     }
