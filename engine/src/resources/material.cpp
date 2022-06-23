@@ -1,6 +1,8 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
+#include <cstring>
+
 #define PROPERTIES  "Properties"
 #define TEXTURES    "Textures"
 #define UNIFORMS    "Uniforms"
