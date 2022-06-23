@@ -1,5 +1,7 @@
 #include "commandbuffer.h"
 
+#include <cstring>
+
 static bool s_Inited = false;
 
 CommandBuffer::CommandBuffer() :
