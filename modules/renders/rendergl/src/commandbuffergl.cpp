@@ -4,11 +4,9 @@
 
 #include "agl.h"
 
-#include "resources/materialgl.h"
 #include "resources/meshgl.h"
-#include "resources/texturegl.h"
+#include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
-#include "resources/pipeline.h"
 
 #include <log.h>
 #include <timer.h>
@@ -67,10 +65,6 @@ void CommandBufferGL::clearRenderTarget(bool clearColor, const Vector4 &color, b
         glClearDepthf(depth);
     }
     glClear(flags);
-}
-
-const VariantMap &CommandBufferGL::params() const {
-    return m_uniforms;
 }
 
 void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance *material) {
@@ -169,17 +163,6 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     }
 }
 
-Texture *CommandBufferGL::texture(const char *name) const {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            return it.texture;
-        }
-    }
-    return nullptr;
-}
-
 void CommandBufferGL::resetViewProjection() {
     PROFILE_FUNCTION();
 
@@ -198,52 +181,6 @@ void CommandBufferGL::setViewProjection(const Matrix4 &view, const Matrix4 &proj
     glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
-void CommandBufferGL::setGlobalValue(const char *name, const Variant &value) {
-    PROFILE_FUNCTION();
-
-    static const unordered_map<string, pair<size_t, size_t>> offsets = {
-        {"camera.position",      make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
-        {"camera.target",        make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
-        {"camera.view",          make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
-        {"camera.projectionInv", make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
-        {"camera.projection",    make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
-        {"camera.screenToWorld", make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
-        {"camera.worldToScreen", make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
-        {"camera.screen",        make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
-        {"light.pageSize",       make_pair(offsetof(Global, lightPageSize),       sizeof(Global::lightPageSize))},
-        {"light.ambient",        make_pair(offsetof(Global, lightAmbient),        sizeof(Global::lightAmbient))},
-    };
-
-    auto it = offsets.find(name);
-    if(it != offsets.end()) {
-        void *src = value.data();
-        memcpy((uint8_t *)&m_global + it->second.first, value.data(), it->second.second);
-
-        glBindBuffer(GL_UNIFORM_BUFFER, m_globalUbo);
-        glBufferSubData(GL_UNIFORM_BUFFER, it->second.first, it->second.second, src);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    } else {
-        m_uniforms[name] = value;
-    }
-}
-
-void CommandBufferGL::setGlobalTexture(const char *name, Texture *texture) {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            it.texture = texture;
-            return;
-        }
-    }
-
-    Material::TextureItem item;
-    item.name = name;
-    item.texture = texture;
-    item.binding = -1;
-    m_textures.push_back(item);
 }
 
 void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {

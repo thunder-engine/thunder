@@ -3,9 +3,6 @@
 
 #include <commandbuffer.h>
 
-#include "resources/materialgl.h"
-#include "resources/meshgl.h"
-
 #define VERTEX_ATRIB    0
 #define UV0_ATRIB       1
 #define NORMAL_ATRIB    2
@@ -40,26 +37,15 @@ public:
 
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection) override;
 
-    void setGlobalValue(const char *name, const Variant &value) override;
-
-    void setGlobalTexture(const char *name, Texture *texture) override;
-
     void setViewport(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
     void enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) override;
 
     void disableScissor() override;
 
-    Texture *texture(const char *name) const override;
-
     void finish() override;
 
-    const VariantMap &params() const;
-
 protected:
-    VariantMap m_uniforms;
-    Material::TextureList m_textures;
-
     uint32_t m_globalUbo;
     uint32_t m_localUbo;
 

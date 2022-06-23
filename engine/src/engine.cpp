@@ -458,7 +458,7 @@ Object *Engine::loadResource(const string &path) {
     return EnginePrivate::m_pResourceSystem->loadResource(path);
 }
 /*!
-    Force unloads the resource located along the \a path from memory.
+    Forcely unloads the resource located along the \a path from memory.
     \warning After this call, the reference on the resource may become an invalid at any time and must not be used anymore.
 
     \sa loadResource()
@@ -468,7 +468,19 @@ void Engine::unloadResource(const string &path) {
 
     if(!path.empty()) {
         string uuid = path;
-        Resource *resource = EnginePrivate::m_pResourceSystem->resource(uuid);
+        unloadResource(EnginePrivate::m_pResourceSystem->resource(uuid));
+    }
+}
+/*!
+    Forcely unloads the \a resource from memory.
+    \warning After this call, the reference on the resource may become an invalid at any time and must not be used anymore.
+
+    \sa loadResource()
+*/
+void Engine::unloadResource(Resource *resource) {
+    PROFILE_FUNCTION();
+
+    if(resource) {
         EnginePrivate::m_pResourceSystem->unloadResource(resource, true);
     }
 }

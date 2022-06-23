@@ -129,25 +129,30 @@ protected:
     void initInstance(MaterialInstance *instance);
 
     void switchState(ResourceState state) override;
+    bool isUnloadable() override;
 
 protected:
-    int m_BlendMode;
+    friend class MaterialInstance;
 
-    int m_LightModel;
+    int m_blendMode;
 
-    int m_MaterialType;
+    int m_lightModel;
 
-    bool m_DoubleSided;
+    int m_materialType;
 
-    bool m_DepthTest;
+    bool m_doubleSided;
 
-    bool m_DepthWrite;
+    bool m_depthTest;
 
-    TextureList m_Textures;
+    bool m_depthWrite;
 
-    UniformList m_Uniforms;
+    TextureList m_textures;
 
-    int32_t m_Surfaces;
+    UniformList m_uniforms;
+
+    int32_t m_surfaces;
+
+    uint32_t m_uniformSize;
 
 };
 
@@ -160,14 +165,16 @@ public:
 
     Texture *texture(const char *name);
 
-    virtual void setInteger(const char *name, const int32_t *value, int32_t count = 1);
+    void setInteger(const char *name, const int32_t *value, int32_t count = 1);
 
-    virtual void setFloat(const char *name, const float *value, int32_t count = 1);
-    virtual void setVector2(const char *name, const Vector2 *value, int32_t count = 1);
-    virtual void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
-    virtual void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
+    void setFloat(const char *name, const float *value, int32_t count = 1);
+    void setVector2(const char *name, const Vector2 *value, int32_t count = 1);
+    void setVector3(const char *name, const Vector3 *value, int32_t count = 1);
+    void setVector4(const char *name, const Vector4 *value, int32_t count = 1);
 
-    virtual void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
+    void setMatrix4(const char *name, const Matrix4 *value, int32_t count = 1);
+
+    void setValue(const char *name, const void *value);
 
     virtual void setTexture(const char *name, Texture *value);
 
@@ -177,11 +184,15 @@ public:
 protected:
     friend class Material;
 
+    map<string, Texture *> m_textureOverride;
+
     Material *m_material;
+
+    uint8_t *m_uniformBuffer;
 
     uint16_t m_surfaceType;
 
-    map<string, Texture *> m_textureOverride;
+    bool m_uniformDirty;
 
 };
 

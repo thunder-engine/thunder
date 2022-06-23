@@ -119,10 +119,12 @@ void PrefabConverter::injectResource(Variant &origin, Resource *resource) {
         }
     }
     ProjectManager::instance()->reportModules(modules);
+
+    Engine::unloadResource(resource);
 }
 
 Resource *PrefabConverter::requestResource() {
-    return Engine::objectCreate<Prefab>("");
+    return Engine::objectCreate<Prefab>();
 }
 
 bool PrefabConverter::toVersion1(Variant &variant) {

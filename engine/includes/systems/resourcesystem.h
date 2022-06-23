@@ -25,11 +25,15 @@ public:
 
     void reloadResource(Resource *resource, bool force = false);
 
+    void releaseAll();
+
     string reference(Resource *resource);
 
     Resource *resource(string &path) const;
 
     DictionaryMap &indices() const;
+
+    void deleteFromCahe(Resource *resource);
 
 private:
     bool init() override;
@@ -40,7 +44,7 @@ private:
 
     int threadPolicy() const override;
 
-    void deleteFromCahe(Resource *resource);
+    Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
 
     void processState(Resource *resource);
 

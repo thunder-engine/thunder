@@ -45,7 +45,7 @@ public:
 Sprite::Sprite() :
         p_ptr(new SpritePrivate) {
 
-    p_ptr->m_pTexture = Engine::objectCreate<Texture>("");
+    p_ptr->m_pTexture = Engine::objectCreate<Texture>();
     p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
     resize(1024, 1024);
 }
@@ -65,12 +65,12 @@ void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
 
     for(auto it : p_ptr->m_Meshes) {
-        delete it.second;
+        Engine::unloadResource(it.second);
     }
     p_ptr->m_Meshes.clear();
 
     for(auto it : p_ptr->m_Sources) {
-        delete it;
+        Engine::unloadResource(it);
     }
     p_ptr->m_Sources.clear();
 }
@@ -94,7 +94,7 @@ int Sprite::addElement(Texture *texture) {
 
     lod.setIndices({0, 1, 2, 0, 2, 3});
 
-    Mesh *mesh = Engine::objectCreate<Mesh>("Mesh");
+    Mesh *mesh = Engine::objectCreate<Mesh>();
     mesh->addLod(&lod);
 
     int index = (p_ptr->m_Sources.size() - 1);
@@ -177,7 +177,7 @@ void Sprite::loadUserData(const VariantMap &data) {
             Object *object = ObjectSystem::toObject(it->second);
             Texture *texture = dynamic_cast<Texture *>(object);
             if(texture) {
-                delete p_ptr->m_pTexture; // May lead to crash in case of m_pTexture had references
+                Engine::unloadResource(p_ptr->m_pTexture);
                 p_ptr->m_pTexture = texture;
             }
         }
@@ -185,7 +185,7 @@ void Sprite::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(MESHES);
         if(it != data.end()) {
-            for(auto mesh : it->second.toList()) {
+            for(auto &mesh : it->second.toList()) {
                 VariantList array = mesh.toList();
                 Object *object = ObjectSystem::toObject(array.back());
                 Mesh *m = dynamic_cast<Mesh *>(object);
@@ -242,7 +242,7 @@ void Sprite::setMesh(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
     if(p_ptr->m_Meshes[key]) {
-        delete p_ptr->m_Meshes[key];
+        Engine::unloadResource(p_ptr->m_Meshes[key]);
     }
     p_ptr->m_Meshes[key] = mesh;
 }
@@ -261,7 +261,7 @@ void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();
 
     if(p_ptr->m_pTexture) {
-        delete p_ptr->m_pTexture;
+        Engine::unloadResource(p_ptr->m_pTexture);
     }
     p_ptr->m_pTexture = texture;
 }

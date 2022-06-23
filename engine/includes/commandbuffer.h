@@ -3,6 +3,8 @@
 
 #include "engine.h"
 
+#include "material.h"
+
 #define GLOBAL_BIND     0
 #define LOCAL_BIND      1
 #define UNIFORM_BIND    4
@@ -38,7 +40,6 @@ struct Local {
     Matrix4 model;
 
     Vector4 color;
-    float padding[12];
 };
 
 class ENGINE_EXPORT CommandBuffer: public Object {
@@ -75,7 +76,7 @@ public:
 
     virtual void setGlobalValue(const char *name, const Variant &value);
 
-    virtual void setGlobalTexture(const char *name, Texture *value);
+    virtual void setGlobalTexture(const char *name, Texture *texture);
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -105,6 +106,8 @@ protected:
 
     Matrix4 m_saveView;
     Matrix4 m_saveProjection;
+
+    Material::TextureList m_textures;
 
     int32_t m_viewportX;
     int32_t m_viewportY;

@@ -20,7 +20,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 5
+#define FORMAT_VERSION 6
 
 #define VALUE   "value"
 #define NAME    "name"
@@ -132,7 +132,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     object.push_back(Material::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
-    object.push_back(Material::metaClass()->name()); // name
+    object.push_back(settings->destination().toStdString()); // name
 
     object.push_back(VariantMap()); // properties
 
@@ -342,7 +342,9 @@ QString ShaderBuilder::loadIncludes(const QString &path, const string &define, c
     foreach(QString it, paths) {
         QFile file(it + path);
         if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            return loadShader(file.readAll(), define, pragmas);
+            QString result = loadShader(file.readAll(), define, pragmas);
+            file.close();
+            return result;
         }
     }
 

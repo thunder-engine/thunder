@@ -21,15 +21,17 @@ public:
     uint32_t colorAttachmentCount() const;
 
     Texture *colorAttachment(uint32_t index) const;
-    uint32_t setColorAttachment(uint32_t index, Texture *texture);
+    virtual uint32_t setColorAttachment(uint32_t index, Texture *texture);
 
     Texture *depthAttachment() const;
-    void setDepthAttachment(Texture *texture);
+    virtual void setDepthAttachment(Texture *texture);
 
 protected:
     void makeNative();
+    bool isNative() const;
 
     void switchState(ResourceState state) override;
+    bool isUnloadable() override;
 
 private:
     RenderTargetPrivate *p_ptr;

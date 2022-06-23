@@ -17,7 +17,7 @@ private:
 
     int threadPolicy() const override;
 
-    Object *instantiateObject(const MetaObject *meta, Object *parent) override;
+    Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
 
     void composeComponent(Component *component) const override;
 

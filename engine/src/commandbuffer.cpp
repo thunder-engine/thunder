@@ -79,13 +79,41 @@ void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projec
 }
 
 void CommandBuffer::setGlobalValue(const char *name, const Variant &value) {
-    A_UNUSED(name);
-    A_UNUSED(value);
+    static const unordered_map<string, pair<size_t, size_t>> offsets = {
+        {"camera.position",      make_pair(offsetof(Global, cameraPosition),      sizeof(Global::cameraPosition))},
+        {"camera.target",        make_pair(offsetof(Global, cameraTarget),        sizeof(Global::cameraTarget))},
+        {"camera.view",          make_pair(offsetof(Global, cameraView),          sizeof(Global::cameraView))},
+        {"camera.projectionInv", make_pair(offsetof(Global, cameraProjectionInv), sizeof(Global::cameraProjectionInv))},
+        {"camera.projection",    make_pair(offsetof(Global, cameraProjection),    sizeof(Global::cameraProjection))},
+        {"camera.screenToWorld", make_pair(offsetof(Global, cameraScreenToWorld), sizeof(Global::cameraScreenToWorld))},
+        {"camera.worldToScreen", make_pair(offsetof(Global, cameraWorldToScreen), sizeof(Global::cameraWorldToScreen))},
+        {"camera.screen",        make_pair(offsetof(Global, cameraScreen),        sizeof(Global::cameraScreen))},
+        {"light.pageSize",       make_pair(offsetof(Global, lightPageSize),       sizeof(Global::lightPageSize))},
+        {"light.ambient",        make_pair(offsetof(Global, lightAmbient),        sizeof(Global::lightAmbient))},
+    };
+
+    auto it = offsets.find(name);
+    if(it != offsets.end()) {
+        void *src = value.data();
+        memcpy((uint8_t *)&m_global + it->second.first, src, it->second.second);
+    }
 }
 
-void CommandBuffer::setGlobalTexture(const char *name, Texture *value) {
-    A_UNUSED(name);
-    A_UNUSED(value);
+void CommandBuffer::setGlobalTexture(const char *name, Texture *texture) {
+    PROFILE_FUNCTION();
+
+    for(auto &it : m_textures) {
+        if(it.name == name) {
+            it.texture = texture;
+            return;
+        }
+    }
+
+    Material::TextureItem item;
+    item.name = name;
+    item.texture = texture;
+    item.binding = -1;
+    m_textures.push_back(item);
 }
 
 Matrix4 CommandBuffer::projection() const {
@@ -97,7 +125,13 @@ Matrix4 CommandBuffer::view() const {
 }
 
 Texture *CommandBuffer::texture(const char *name) const {
-    A_UNUSED(name);
+    PROFILE_FUNCTION();
+
+    for(auto &it : m_textures) {
+        if(it.name == name) {
+            return it.texture;
+        }
+    }
     return nullptr;
 }
 
@@ -110,11 +144,6 @@ Vector2 CommandBuffer::viewport() const {
 }
 
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
-    A_UNUSED(x);
-    A_UNUSED(y);
-    A_UNUSED(width);
-    A_UNUSED(height);
-
     m_viewportX = x;
     m_viewportY = y;
     m_viewportWidth = width;

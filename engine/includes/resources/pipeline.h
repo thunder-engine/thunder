@@ -89,7 +89,8 @@ protected:
     CommandBuffer *m_buffer;
 
     Mesh *m_plane;
-    MaterialInstance *m_sprite;
+    MaterialInstance *m_finalMaterial;
+    MaterialInstance *m_effectMaterial;
 
     RenderTarget *m_defaultTarget;
 

@@ -308,6 +308,13 @@ void Texture::setDepthBits(int depth) {
 Texture::Sides *Texture::getSides() {
     return &p_ptr->m_Sides;
 }
+
+/*!
+    Returns true if texture is attechecd to framebuffer; otherwise returns false.
+*/
+bool Texture::isFramebuffer() const {
+    return p_ptr->m_Sides.empty();
+}
 /*!
     Returns true if texture uses one of the compression formats; otherwise returns false.
 */
@@ -341,14 +348,18 @@ uint8_t Texture::components() const {
     }
     return 4;
 }
-
 /*!
     \internal
 */
 void Texture::switchState(ResourceState state) {
     setState(state);
 }
-
+/*!
+    \internal
+*/
+bool Texture::isUnloadable() {
+    return true;
+}
 /*!
     \internal
 */

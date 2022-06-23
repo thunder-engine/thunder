@@ -438,6 +438,12 @@ void Mesh::switchState(ResourceState state) {
     setState(state);
 }
 /*!
+    \internal
+*/
+bool Mesh::isUnloadable() {
+    return true;
+}
+/*!
     Returns the number of Levels Of Details
 */
 int Mesh::lodsCount() const {

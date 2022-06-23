@@ -19,10 +19,10 @@ Blur::Blur() :
         m_pBlurMaterial = material->createInstance();
     }
 
-    m_tempTexture = Engine::objectCreate<Texture>();
+    m_tempTexture = Engine::objectCreate<Texture>("blurTempTexture");
     m_tempTexture->setFormat(Texture::R11G11B10Float);
 
-    m_tempTarget = Engine::objectCreate<RenderTarget>();
+    m_tempTarget = Engine::objectCreate<RenderTarget>("blurTempTarget");
     m_tempTarget->setColorAttachment(0, m_tempTexture);
 }
 

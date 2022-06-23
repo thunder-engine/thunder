@@ -17,6 +17,7 @@ layout(binding = 0) uniform Global {
     vec4 lightAmbient;
     float clip;
     float time;
+    float padding[10];
 } g;
 
 layout(binding = 1) uniform Local {

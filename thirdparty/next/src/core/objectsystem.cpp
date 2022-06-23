@@ -130,20 +130,20 @@ Object *ObjectSystem::objectCreate(const string &uri, const string &name, Object
     FactoryPair *pair = metaFactory(uri);
     if(pair) {
         const MetaObject *meta = pair->first;
-        object = pair->second->instantiateObject(meta, parent);
+        object = pair->second->instantiateObject(meta, name, parent);
         object->setType(uri);
-        object->setName(name);
     }
     return object;
 }
 /*!
-    The basic method to spawn a new object based on the provided \a meta object and \a parent object.
+    The basic method to spawn a new object based on the provided \a meta object, \a name of object and \a parent object.
     Returns a pointer to spawned object.
 */
-Object *ObjectSystem::instantiateObject(const MetaObject *meta, Object *parent) {
+Object *ObjectSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
     Object *object = meta->createInstance();
     object->setSystem(this);
     object->setParent(parent);
+    object->setName(name);
     return object;
 }
 /*!
@@ -231,9 +231,10 @@ Variant ObjectSystem::toVariant(const Object *object, bool force) {
 /*!
     Returns object deserialized from \a variant based representation.
     The Variant representation can be loaded from BSON or JSON formats or retrieved from memory.
-    Deserialization will try to restore objects hierarchy with \a root as parent, its properties and connections.
+    Deserialization will try to restore objects hierarchy with \a parent, its properties and connections.
+    The root object will be created with a \a name in case of this parameter provided.
 */
-Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
+Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const string &name) {
     PROFILE_FUNCTION();
     Object *result  = nullptr;
 
@@ -251,28 +252,31 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
 
-            Object *parent = root;
+            Object *p = parent;
             Object *obj = nullptr;
-            if(parent) {
-                obj = findObject(static_cast<uint32_t>((*i).toInt()), parent);
+            if(p) {
+                obj = findObject(static_cast<uint32_t>((*i).toInt()), p);
             }
             if(obj == nullptr) {
                 for(auto item : array) {
                     obj = findObject(static_cast<uint32_t>((*i).toInt()), item.second);
                     if(obj) {
-                        parent = obj;
+                        p = obj;
                         break;
                     }
                 }
             } else {
-                parent = obj;
+                p = obj;
             }
 
             i++;
-            string name = (*i).toString();
+            string n = (*i).toString();
+            if(n.empty()) {
+                n = name;
+            }
             i++;
 
-            Object *object = objectCreate(type, name, parent);
+            Object *object = objectCreate(type, n, p);
             if(object) {
                 object->setUUID(uuid);
                 array[uuid] = object;
@@ -281,12 +285,12 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
                 Invalid *invalid = new Invalid();
                 invalid->loadData(o);
                 object = invalid;
-                if(parent) {
-                    object->setSystem(parent->system());
+                if(p) {
+                    object->setSystem(p->system());
                 }
                 object->setUUID(uuid);
-                object->setName(name);
-                object->setParent(parent);
+                object->setName(n);
+                object->setParent(p);
 
                 array[uuid] = object;
             }
@@ -297,7 +301,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *root) {
             VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
             object->loadObjectData(user);
 
-            if(result == nullptr && object->parent() == root) {
+            if(result == nullptr && object->parent() == parent) {
                 result = object;
             }
         }

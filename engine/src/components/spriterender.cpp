@@ -66,7 +66,7 @@ public:
                 return;
             }
         }
-        delete m_pCustomMesh;
+        Engine::unloadResource(m_pCustomMesh);
         m_pCustomMesh = nullptr;
     }
 

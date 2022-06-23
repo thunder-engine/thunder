@@ -14,7 +14,7 @@ public:
     unordered_map<string, Resource*> m_ResourceCache;
     unordered_map<Resource*, string> m_ReferenceCache;
 
-    list<Resource *> m_DeleteList;
+    set<Resource *> m_DeleteList;
 };
 
 ResourceSystem::ResourceSystem() :
@@ -37,13 +37,12 @@ const char *ResourceSystem::name() const {
 void ResourceSystem::update(Scene *) {
     PROFILE_FUNCTION();
 
-    for(auto it = p_ptr->m_ResourceCache.begin(); it != p_ptr->m_ResourceCache.end();) {
-        processState(it->second);
+    for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {
+        processState(it->first);
         ++it;
     }
 
     for(auto it : p_ptr->m_DeleteList) {
-        deleteFromCahe(it);
         delete it;
     }
     p_ptr->m_DeleteList.clear();
@@ -81,7 +80,8 @@ Resource *ResourceSystem::loadResource(const string &path) {
         _FILE *fp = file->fopen(uuid.c_str(), "r");
         if(fp) {
             ByteArray data;
-            data.resize(file->fsize(fp));
+            size_t size = file->fsize(fp);
+            data.resize(size);
             file->fread(&data[0], data.size(), 1, fp);
             file->fclose(fp);
 
@@ -90,15 +90,7 @@ Resource *ResourceSystem::loadResource(const string &path) {
                 var = Json::load(string(data.begin(), data.end()));
             }
             if(var.isValid()) {
-                Object *res = Engine::toObject(var);
-                if(res) {
-                    Resource *resource = static_cast<Resource *>(res);
-                    if(resource) {
-                        setResource(resource, uuid);
-                        resource->switchState(Resource::ToBeUpdated);
-                        return resource;
-                    }
-                }
+                return static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
             }
         }
 
@@ -109,7 +101,7 @@ Resource *ResourceSystem::loadResource(const string &path) {
 void ResourceSystem::unloadResource(Resource *resource, bool force) {
     PROFILE_FUNCTION();
     if(resource) {
-        resource->switchState(Resource::Suspend);
+        resource->switchState(Resource::Unloading);
         if(force) {
             processState(resource);
         }
@@ -125,6 +117,16 @@ void ResourceSystem::reloadResource(Resource *resource, bool force) {
         } else {
             resource->switchState(Resource::ToBeUpdated);
         }
+    }
+}
+
+void ResourceSystem::releaseAll() {
+    for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {
+        if(it->first->isUnloadable()) {
+            unloadResource(it->first, true);
+            it->first->switchState(Resource::ToBeUpdated);
+        }
+        ++it;
     }
 }
 
@@ -190,11 +192,11 @@ void ResourceSystem::processState(Resource *resource) {
                         for(auto &obj : objects) {
                             VariantList fields = obj.toList();
                             auto it = std::next(fields.begin(), 1);
-                            uint32_t uuid = it->toInt();
+                            uint32_t id = it->toInt();
 
                             Object *object = resource;
                             if(!first) {
-                                object = Engine::findObject(uuid, resource);
+                                object = Engine::findObject(id, resource);
                             } else {
                                 first = false;
                             }
@@ -215,7 +217,7 @@ void ResourceSystem::processState(Resource *resource) {
                             } else {
                                 VariantList list;
                                 list.push_back(obj);
-                                Engine::toObject(list, resource);
+                                Engine::toObject(list, resource, uuid);
                             }
                         }
 
@@ -234,7 +236,7 @@ void ResourceSystem::processState(Resource *resource) {
                 resource->switchState(Resource::Unloading);
             } break;
             case Resource::ToBeDeleted: {
-                p_ptr->m_DeleteList.push_back(resource);
+                p_ptr->m_DeleteList.insert(resource);
             } break;
             default: break;
         }
@@ -255,4 +257,16 @@ Resource *ResourceSystem::resource(string &path) const {
         }
     }
     return nullptr;
+}
+
+Object *ResourceSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
+    Object *result = System::instantiateObject(meta, name, parent);
+
+    Resource *resource = dynamic_cast<Resource *>(result);
+    if(resource) {
+        setResource(resource, name);
+        resource->switchState(Resource::ToBeUpdated);
+    }
+
+    return result;
 }

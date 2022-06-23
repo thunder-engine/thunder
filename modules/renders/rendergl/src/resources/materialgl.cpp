@@ -5,21 +5,15 @@
 #include "agl.h"
 #include "commandbuffergl.h"
 
-#include "resources/text.h"
 #include "resources/texturegl.h"
 
 #include <file.h>
 #include <log.h>
 
-MaterialGL::MaterialGL() :
-    m_uniformSize(0) {
-
-}
-
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    if(m_MaterialType == Surface) {
+    if(m_materialType == Surface) {
         {
             auto it = data.find("Simple");
             if(it != data.end()) {
@@ -58,11 +52,6 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         if(it != data.end()) {
             m_ShaderSources[Static] = (*it).second.toString();
         }
-    }
-
-    m_uniformSize = 0;
-    for(auto &it : m_Uniforms) {
-        m_uniformSize += it.size;
     }
 
     switchState(ToBeUpdated);
@@ -131,18 +120,18 @@ uint32_t MaterialGL::bind(uint32_t layer, uint16_t vertex) {
         return 0;
     }
 
-    if(!m_DepthTest) {
+    if(!m_depthTest) {
         glDisable(GL_DEPTH_TEST);
     } else {
         glEnable(GL_DEPTH_TEST);
         //glDepthFunc((layer & CommandBuffer::DEFAULT) ? GL_EQUAL : GL_LEQUAL);
 
-        glDepthMask((m_DepthWrite) ? GL_TRUE : GL_FALSE);
+        glDepthMask((m_depthWrite) ? GL_TRUE : GL_FALSE);
     }
 
     if(!doubleSided() && !(layer & CommandBuffer::RAYCAST)) {
-        glEnable( GL_CULL_FACE );
-        if(m_MaterialType == LightFunction) {
+        glEnable(GL_CULL_FACE);
+        if(m_materialType == LightFunction) {
             glCullFace(GL_FRONT);
         } else {
             glCullFace(GL_BACK);
@@ -205,7 +194,7 @@ uint32_t MaterialGL::buildProgram(uint32_t vertex, uint32_t fragment) {
 
         glUseProgram(result);
         uint8_t t = 0;
-        for(auto &it : m_Textures) {
+        for(auto &it : m_textures) {
             int32_t location = glGetUniformLocation(result, it.name.c_str());
             if(location > -1) {
                 glUniform1i(location, t);
@@ -271,21 +260,13 @@ uint32_t MaterialGL::uniformSize() const {
 }
 
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
-    MaterialInstance(material),
-    m_instanceUbo(0),
-    m_uniformBuffer(nullptr),
-    m_uniformDirty(true) {
+        MaterialInstance(material),
+        m_instanceUbo(0) {
 
-    MaterialGL *m = static_cast<MaterialGL *>(m_material);
-    uint32_t size = m->uniformSize();
-    if(size) {
-        m_uniformBuffer = new uint8_t[size];
-    }
 }
 
 MaterialInstanceGL::~MaterialInstanceGL() {
     m_instanceUbo = 0;
-    delete []m_uniformBuffer;
 }
 
 bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
@@ -293,22 +274,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
     uint32_t program = material->bind(layer, surfaceType());
     if(program) {
         glUseProgram(program);
-
-        // Push global uniform values to shader
-        /// \todo Must be removed in future. After the Light structure will be removed from shader
-        for(const auto &it : buffer->params()) {
-            int32_t location = glGetUniformLocation(program, it.first.c_str());
-            if(location > -1) {
-                const Variant &data = it.second;
-                switch(data.type()) {
-                    case MetaType::VECTOR2: glUniform2fv      (location, 1, data.toVector2().v); break;
-                    case MetaType::VECTOR3: glUniform3fv      (location, 1, data.toVector3().v); break;
-                    case MetaType::VECTOR4: glUniform4fv      (location, 1, data.toVector4().v); break;
-                    case MetaType::MATRIX4: glUniformMatrix4fv(location, 1, GL_FALSE, data.toMatrix4().mat); break;
-                    default:                glUniform1f       (location, data.toFloat()); break;
-                }
-            }
-        }
 
         uint32_t size = material->uniformSize();
         if(size) {
@@ -359,41 +324,4 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer) {
     }
 
     return false;
-}
-
-void MaterialInstanceGL::setInteger(const char *name, const int32_t *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setFloat(const char *name, const float *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setVector2(const char *name, const Vector2 *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setVector3(const char *name, const Vector3 *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setVector4(const char *name, const Vector4 *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setMatrix4(const char *name, const Matrix4 *value, int32_t count) {
-    setValue(name, value);
-}
-
-void MaterialInstanceGL::setValue(const char *name, const void *value) {
-    MaterialGL *material = static_cast<MaterialGL *>(m_material);
-    for(auto &it : material->m_Uniforms) {
-        if(it.name == name) {
-            if(m_uniformBuffer) {
-                memcpy(&m_uniformBuffer[it.offset], value, it.size);
-                m_uniformDirty = true;
-            }
-            break;
-        }
-    }
 }

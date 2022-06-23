@@ -95,46 +95,46 @@ EditorPipeline::EditorPipeline() :
         m_bufferMenu(nullptr) {
 
     {
-        Texture *select = Engine::objectCreate<Texture>();
+        Texture *select = Engine::objectCreate<Texture>(SELECT_MAP);
         select->setFormat(Texture::RGBA8);
         m_textureBuffers[SELECT_MAP] = select;
         m_buffer->setGlobalTexture(SELECT_MAP, select);
     }
     {
-        Texture *depth = Engine::objectCreate<Texture>();
+        Texture *depth = Engine::objectCreate<Texture>(OUTDEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
         m_textureBuffers[OUTDEPTH_MAP] = depth;
         m_buffer->setGlobalTexture(OUTDEPTH_MAP, depth);
     }
     {
-        Texture *outline = Engine::objectCreate<Texture>();
+        Texture *outline = Engine::objectCreate<Texture>(OUTLINE_MAP);
         outline->setFormat(Texture::RGBA8);
         m_textureBuffers[OUTLINE_MAP] = outline;
         m_buffer->setGlobalTexture(OUTLINE_MAP, outline);
     }
 
-    m_pSelect = Engine::objectCreate<Texture>();
+    m_pSelect = Engine::objectCreate<Texture>("SelectRect");
     m_pSelect->setFormat(Texture::RGBA8);
     m_pSelect->resize(1, 1);
 
-    m_pDepth = Engine::objectCreate<Texture>();
+    m_pDepth = Engine::objectCreate<Texture>("WorldDepth");
     m_pDepth->setFormat(Texture::Depth);
     m_pDepth->setDepthBits(24);
     m_pDepth->setWidth(1);
     m_pDepth->setHeight(1);
 
-    RenderTarget *object = Engine::objectCreate<RenderTarget>();
+    RenderTarget *object = Engine::objectCreate<RenderTarget>(SEL_TARGET);
     object->setColorAttachment(0, m_textureBuffers[SELECT_MAP]);
     object->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[SEL_TARGET] = object;
 
-    RenderTarget *out = Engine::objectCreate<RenderTarget>();
+    RenderTarget *out = Engine::objectCreate<RenderTarget>(OUT_TARGET);
     out->setColorAttachment(0, m_textureBuffers[OUTLINE_MAP]);
     out->setDepthAttachment(m_textureBuffers[OUTDEPTH_MAP]);
     m_renderTargets[OUT_TARGET] = out;
 
-    RenderTarget *final = Engine::objectCreate<RenderTarget>();
+    RenderTarget *final = Engine::objectCreate<RenderTarget>(FINAL_TARGET);
     final->setColorAttachment(0, m_final);
     final->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[FINAL_TARGET] = final;
@@ -308,7 +308,10 @@ void EditorPipeline::draw(Camera &camera) {
         m_final = m_pTarget;
     }
 
-    m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_final);
+    Texture *t = m_renderTargets[FINAL_TARGET]->colorAttachment(0);
+    if(t != m_final) {
+        m_renderTargets[FINAL_TARGET]->setColorAttachment(0, m_final);
+    }
 
     if(m_pTarget == nullptr) {
         // Draw handles

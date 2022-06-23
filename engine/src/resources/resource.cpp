@@ -2,6 +2,8 @@
 
 #include <mutex>
 
+#include "systems/resourcesystem.h"
+
 class ResourcePrivate {
 public:
     ResourcePrivate() :
@@ -53,6 +55,10 @@ Resource::Resource() :
 }
 
 Resource::~Resource() {
+    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
+    if(system) {
+        system->deleteFromCahe(this);
+    }
     delete p_ptr;
 }
 /*!
@@ -83,7 +89,6 @@ void Resource::unsubscribe(IObserver *observer) {
 Resource::ResourceState Resource::state() const {
     return p_ptr->m_State;
 }
-
 /*!
     Switches the current state to a new \a state for the resource.
 */
@@ -95,7 +100,12 @@ void Resource::switchState(ResourceState state) {
     }
     notifyCurrentState();
 }
-
+/*!
+    Returns true in case of resource can be unloaded from GPU; otherwise returns false.
+*/
+bool Resource::isUnloadable() {
+    return false;
+}
 /*!
     Sets new \a state for the resource.
 */

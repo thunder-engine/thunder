@@ -51,7 +51,8 @@ bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
 
 Pipeline::Pipeline() :
         m_buffer(Engine::objectCreate<CommandBuffer>()),
-        m_sprite(nullptr),
+        m_finalMaterial(nullptr),
+        m_effectMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
         m_width(64),
         m_height(64),
@@ -60,7 +61,8 @@ Pipeline::Pipeline() :
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
-        m_sprite = mtl->createInstance();
+        m_finalMaterial = mtl->createInstance();
+        m_effectMaterial = mtl->createInstance();
     }
 
     m_plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
@@ -70,38 +72,38 @@ Pipeline::Pipeline() :
     m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / pageWidth, 1.0f / pageHeight, pageWidth, pageHeight));
 
     {
-        Texture *depth = Engine::objectCreate<Texture>();
+        Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
         m_textureBuffers[DEPTH_MAP] = depth;
         m_buffer->setGlobalTexture(DEPTH_MAP, depth);
     }
     {
-        Texture *normals = Engine::objectCreate<Texture>();
+        Texture *normals = Engine::objectCreate<Texture>(G_NORMALS);
         normals->setFormat(Texture::RGB10A2);
         m_textureBuffers[G_NORMALS] = normals;
         m_buffer->setGlobalTexture(G_NORMALS, normals);
     }
     {
-        Texture *diffuse = Engine::objectCreate<Texture>();
+        Texture *diffuse = Engine::objectCreate<Texture>(G_DIFFUSE);
         diffuse->setFormat(Texture::RGBA8);
         m_textureBuffers[G_DIFFUSE] = diffuse;
         m_buffer->setGlobalTexture(G_DIFFUSE, diffuse);
     }
     {
-        Texture *params = Engine::objectCreate<Texture>();
+        Texture *params = Engine::objectCreate<Texture>(G_PARAMS);
         params->setFormat(Texture::RGBA8);
         m_textureBuffers[G_PARAMS] = params;
         m_buffer->setGlobalTexture(G_PARAMS, params);
     }
     {
-        Texture *emissive = Engine::objectCreate<Texture>();
+        Texture *emissive = Engine::objectCreate<Texture>(G_EMISSIVE);
         emissive->setFormat(Texture::R11G11B10Float);
         m_textureBuffers[G_EMISSIVE] = emissive;
         m_buffer->setGlobalTexture(G_EMISSIVE, emissive);
     }
 
-    RenderTarget *gbuffer = Engine::objectCreate<RenderTarget>();
+    RenderTarget *gbuffer = Engine::objectCreate<RenderTarget>(GBUFFER);
     gbuffer->setColorAttachment(0, m_textureBuffers[G_NORMALS]);
     gbuffer->setColorAttachment(1, m_textureBuffers[G_DIFFUSE]);
     gbuffer->setColorAttachment(2, m_textureBuffers[G_PARAMS]);
@@ -109,7 +111,7 @@ Pipeline::Pipeline() :
     gbuffer->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[GBUFFER] = gbuffer;
 
-    RenderTarget *light = Engine::objectCreate<RenderTarget>();
+    RenderTarget *light = Engine::objectCreate<RenderTarget>(LIGHPASS);
     light->setColorAttachment(0, m_textureBuffers[G_EMISSIVE]);
     light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[LIGHPASS] = light;
@@ -167,22 +169,21 @@ void Pipeline::finish() {
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
 
-    m_sprite->setTexture(OVERRIDE, m_final);
-    m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_sprite);
+    m_finalMaterial->setTexture(OVERRIDE, m_final);
+    m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_finalMaterial);
 }
 
 void Pipeline::cameraReset(Camera &camera) {
     Matrix4 v = camera.viewMatrix();
     Matrix4 p = camera.projectionMatrix();
+    Matrix4 vp = p * v;
+
     camera.setRatio((float)m_width / (float)m_height);
 
     Transform *c = camera.actor()->transform();
 
     m_buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), camera.nearPlane()));
     m_buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), camera.farPlane()));
-
-    Matrix4 vp = p * v;
-
     m_buffer->setGlobalValue("camera.view", v);
     m_buffer->setGlobalValue("camera.projectionInv", p.inverse());
     m_buffer->setGlobalValue("camera.projection", p);
@@ -404,8 +405,8 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
     if(result != texture) {
         m_buffer->setViewport(0, 0, texture->width(), texture->height());
         m_buffer->setRenderTarget(source);
-        m_sprite->setTexture(OVERRIDE, result);
-        m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_sprite);
+        m_effectMaterial->setTexture(OVERRIDE, result);
+        m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_effectMaterial);
     }
 
     m_buffer->resetViewProjection();

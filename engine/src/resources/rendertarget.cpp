@@ -76,6 +76,18 @@ void RenderTarget::makeNative() {
 /*!
     \internal
 */
+bool RenderTarget::isNative() const {
+    return p_ptr->m_native;
+}
+/*!
+    \internal
+*/
 void RenderTarget::switchState(ResourceState state) {
     setState(state);
+}
+/*!
+    \internal
+*/
+bool RenderTarget::isUnloadable() {
+    return true;
 }

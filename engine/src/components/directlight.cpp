@@ -28,6 +28,11 @@ const char *uni_tiles     = "uni.tiles";
 
 class DirectLightPrivate {
 public:
+    DirectLightPrivate() :
+        m_shadowMap(nullptr) {
+
+    }
+
     Matrix4 m_matrix[MAX_LODS];
     Vector4 m_tiles[MAX_LODS];
 

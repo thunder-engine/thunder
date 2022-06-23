@@ -163,6 +163,7 @@ public:
 
 protected:
     void switchState(ResourceState state) override;
+    bool isUnloadable() override;
 
 private:
     void loadUserData(const VariantMap &data) override;

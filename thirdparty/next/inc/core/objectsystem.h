@@ -50,7 +50,7 @@ public:
     }
 
     static Variant                      toVariant               (const Object *object, bool force = false);
-    static Object                      *toObject                (const Variant &variant, Object *root = nullptr);
+    static Object                      *toObject                (const Variant &variant, Object *parent = nullptr, const string &name = string());
 
     static uint32_t                     generateUUID            ();
 
@@ -67,7 +67,7 @@ protected:
 
     void                                deleteAllObjects        ();
 
-    virtual Object                     *instantiateObject       (const MetaObject *meta, Object *parent);
+    virtual Object                     *instantiateObject       (const MetaObject *meta, const string &name, Object *parent);
 
     virtual void                        removeObject            (Object *object);
 

@@ -56,6 +56,7 @@ public:
     static Object *loadResource(const string &path);
 
     static void unloadResource(const string &path);
+    static void unloadResource(Resource *resource);
 
     static void reloadResource(const string &path);
 

@@ -45,6 +45,7 @@ public:
 
 protected:
     virtual void switchState(ResourceState state);
+    virtual bool isUnloadable();
     void setState(ResourceState state);
 
     void notifyCurrentState();

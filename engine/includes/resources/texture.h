@@ -96,6 +96,7 @@ public:
     int height() const;
     void setHeight(int height);
 
+    bool isFramebuffer() const;
     bool isCompressed() const;
     bool isCubemap() const;
     bool isArray() const;
@@ -129,6 +130,7 @@ protected:
     VariantMap saveUserData() const override;
 
     void switchState(ResourceState state) override;
+    bool isUnloadable() override;
 
     Sides *getSides();
 

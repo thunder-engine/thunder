@@ -15,9 +15,11 @@ layout(location = 6) in vec4 _color;
 layout(location = 7) in vec3 _view;
 
 layout(location = 0) out vec4 gbuffer1;
+#ifdef BLEND_OPAQUE
 layout(location = 1) out vec4 gbuffer2;
 layout(location = 2) out vec4 gbuffer3;
 layout(location = 3) out vec4 gbuffer4;
+#endif
 
 #pragma fragment
 

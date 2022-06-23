@@ -7,7 +7,9 @@
 
 #include <resources/pipeline.h>
 
+#include "resources/meshgl.h"
 #include "resources/texturegl.h"
+#include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
 
 #include "commandbuffergl.h"

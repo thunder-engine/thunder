@@ -16,7 +16,7 @@
 #include <resources/resource.h>
 #include <resources/material.h>
 
-#define FORMAT_VERSION 4
+#define FORMAT_VERSION 5
 
 static hash<string> hash_str;
 
@@ -203,7 +203,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             file.close();
         }
 
-        delete resource;
+        Engine::unloadResource(resource);
 
         settings->setCurrentVersion(settings->version());
     }
@@ -324,7 +324,7 @@ void TextureConverter::convertSprite(TextureImportSettings *settings, Sprite *sp
 
     int i = 0;
     for(auto &it : settings->elements().keys()) {
-        Mesh *mesh = Engine::objectCreate<Mesh>("", sprite);
+        Mesh *mesh = Engine::objectCreate<Mesh>((settings->destination() + "/" + it).toStdString(), sprite);
         if(mesh) {
             Lod lod;
 

@@ -61,8 +61,8 @@ int GuiSystem::threadPolicy() const {
     return Main;
 }
 
-Object *GuiSystem::instantiateObject(const MetaObject *meta, Object *parent) {
-    Object *result = System::instantiateObject(meta, parent);
+Object *GuiSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
+    Object *result = System::instantiateObject(meta, name, parent);
     Actor *actor = dynamic_cast<Actor *>(parent);
     if(actor) {
         actor->setLayers(CommandBuffer::UI | CommandBuffer::RAYCAST);
