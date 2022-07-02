@@ -10,6 +10,7 @@
 
 #include <object.h>
 #include <invalid.h>
+#include <components/chunk.h>
 #include <components/actor.h>
 #include <components/component.h>
 
@@ -361,8 +362,9 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
         } else if(index.column() == 3) {
             actor->setHideFlags(actor->hideFlags() ^ Actor::SELECTABLE);
         }
+
+        emit selected(list);
     }
-    emit selected(list);
 }
 
 void HierarchyBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
@@ -375,13 +377,25 @@ void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
 
 void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
+
     Object::ObjectList list;
     foreach(QModelIndex it, select->selectedRows()) {
-        list.push_back(static_cast<Object *>(m_filter->mapToSource(it).internalPointer()));
+        Object *object = static_cast<Object *>(m_filter->mapToSource(it).internalPointer());
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor) {
+            list.push_back(actor);
+        }
     }
-    emit selected(list);
+    if(!list.empty()) {
+        emit selected(list);
+    }
 
-    if(m_contentMenu) {
+    QModelIndex index = ui->treeView->indexAt(pos);
+    Object *object = static_cast<Object *>(m_filter->mapToSource(index).internalPointer());
+    Chunk *chunk = dynamic_cast<Chunk *>(object);
+    if(chunk) {
+
+    } else if(m_contentMenu) {
         m_contentMenu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
     }
 }
@@ -397,4 +411,15 @@ void HierarchyBrowser::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
+}
+
+bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Delete) {
+            emit removed();
+        }
+        return true;
+    }
+    return QObject::eventFilter(obj, event);
 }

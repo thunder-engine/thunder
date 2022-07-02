@@ -278,7 +278,7 @@ void PropertyModel::updateItem(QObject *propertyObject) {
     emit layoutChanged();
 }
 
-void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyObject ) {
+void PropertyModel::updateDynamicProperties(Property *parent, QObject *propertyObject) {
     // Get dynamic property names
     QList<QByteArray> dynamicProperties = propertyObject->dynamicPropertyNames();
 

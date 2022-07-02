@@ -50,6 +50,7 @@ public slots:
     void onUpdated();
     void onParentActors(Object::ObjectList objects, Object *parent, int position);
     void onFocusActor(Object *actor);
+    void onItemDelete();
 
 private slots:
     void onLocal(bool flag);
@@ -60,7 +61,6 @@ private slots:
 
     void onCreateActor();
     void onItemDuplicate();
-    void onItemDelete();
     void onPrefabIsolate();
     void onPrefabUnpack();
     void onPrefabUnpackCompletely();

@@ -117,7 +117,7 @@ private:
     void processEvents() override;
 
 private:
-    EnginePrivate              *p_ptr;
+    EnginePrivate *p_ptr;
 
 };
 

@@ -864,6 +864,7 @@ ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *or
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
     }
+
     m_parent = origin->uuid();
     m_position = position;
 }
@@ -891,7 +892,8 @@ void ParentingObjects::redo() {
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
-            object->setParent(m_controller->findObject(m_parent), m_position);
+            Object *parent = m_controller->findObject(m_parent);
+            object->setParent(parent, m_position);
         }
     }
     emit m_controller->objectsUpdated();

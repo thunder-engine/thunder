@@ -252,14 +252,15 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const str
             uint32_t uuid = static_cast<uint32_t>((*i).toInt());
             i++;
 
+            uint32_t parentUuid = static_cast<uint32_t>((*i).toInt());
             Object *p = parent;
             Object *obj = nullptr;
             if(p) {
-                obj = findObject(static_cast<uint32_t>((*i).toInt()), p);
+                obj = findObject(parentUuid, p);
             }
             if(obj == nullptr) {
                 for(auto item : array) {
-                    obj = findObject(static_cast<uint32_t>((*i).toInt()), item.second);
+                    obj = findObject(parentUuid, item.second);
                     if(obj) {
                         p = obj;
                         break;

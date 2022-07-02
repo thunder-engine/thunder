@@ -6,17 +6,18 @@
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
         m_rootItem(nullptr),
-        m_Visible(":/Style/styles/dark/icons/eye.png"),
-        m_Invisible(":/Style/styles/dark/icons/eye_close.png"),
-        m_Select(":/Style/styles/dark/icons/select.png"),
-        m_SelectDisable(":/Style/styles/dark/icons/select_disable.png"),
-        m_Prefab(":/Style/styles/dark/icons/prefab.png"),
-        m_Actor(":/Style/styles/dark/icons/actor.png") {
+        m_visible(":/Style/styles/dark/icons/eye.png"),
+        m_invisible(":/Style/styles/dark/icons/eye_close.png"),
+        m_select(":/Style/styles/dark/icons/select.png"),
+        m_selectDisable(":/Style/styles/dark/icons/select_disable.png"),
+        m_prefab(":/Style/styles/dark/icons/prefab.png"),
+        m_actor(":/Style/styles/dark/icons/actor.png") {
 
 }
 
-void ObjectHierarchyModel::setRoot(Object *scene) {
-    m_rootItem = scene;
+void ObjectHierarchyModel::setRoot(Object *root) {
+    m_rootItem = root;
+
     beginResetModel();
     endResetModel();
 }
@@ -48,42 +49,42 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     Actor *item = dynamic_cast<Actor *>(object);
 
     switch(role) {
-        case Qt::EditRole:
-        case Qt::ToolTipRole:
-        case Qt::DisplayRole: {
-            switch(index.column()) {
-                case 0: return QString::fromStdString(object->name());
-                case 1: return QString::fromStdString(object->typeName());
-                default: break;
-            }
-        } break;
-        case Qt::DecorationRole: {
-            if(index.column() == 0) {
-                if(item) {
-                    return item->isInstance() ? m_Prefab : m_Actor;
-                }
-            }
-            if(item) {
-                if(index.column() == 2) {
-                    return (item->hideFlags() & Actor::ENABLE) ? m_Visible : m_Invisible;
-                }
-                if(index.column() == 3) {
-                    return (item->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_SelectDisable;
-                }
-            }
-        } break;
-        case Qt::TextColorRole: {
-            if(item && item->isInstance()) {
-                if(Engine::reference(item->prefab()).empty()) {
-                    return QColor(255, 95, 82);
-                }
-                return QColor(88, 165, 240);
-            }
-        } break;
-        case Qt::UserRole: {
-            return QString::number(object->uuid());
+    case Qt::EditRole:
+    case Qt::ToolTipRole:
+    case Qt::DisplayRole: {
+        switch(index.column()) {
+            case 0: return QString::fromStdString(object->name());
+            case 1: return QString::fromStdString(object->typeName());
+            default: break;
         }
-        default: break;
+    } break;
+    case Qt::DecorationRole: {
+        if(index.column() == 0) {
+            if(item) {
+                return item->isInstance() ? m_prefab : m_actor;
+            }
+        }
+        if(item) {
+            if(index.column() == 2) {
+                return (item->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
+            }
+            if(index.column() == 3) {
+                return (item->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
+            }
+        }
+    } break;
+    case Qt::TextColorRole: {
+        if(item && item->isInstance()) {
+            if(Engine::reference(item->prefab()).empty()) {
+                return QColor(255, 95, 82);
+            }
+            return QColor(88, 165, 240);
+        }
+    } break;
+    case Qt::UserRole: {
+        return QString::number(object->uuid());
+    }
+    default: break;
     }
     return QVariant();
 }
@@ -141,11 +142,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
             return QModelIndex();
         }
 
-        QList<Object *> list;
-        for(auto it : children) {
-            list.push_back(it);
-        }
-        return createIndex(row, column, list.at(row));
+        return createIndex(row, column, *std::next(children.begin(), row));
     }
     return QModelIndex();
 }

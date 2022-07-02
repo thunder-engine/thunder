@@ -54,10 +54,10 @@ public:
 
 signals:
     void selected(Object::ObjectList objects);
-    void removed(Object::ObjectList objects);
     void focused(Object *object);
     void parented(Object::ObjectList objects, Object *parent, int index);
     void updated();
+    void removed();
 
 public slots:
     void onObjectSelected(Object::ObjectList objects);
@@ -83,6 +83,8 @@ private:
     QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
 
     void changeEvent(QEvent *event) override;
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     Ui::HierarchyBrowser *ui;

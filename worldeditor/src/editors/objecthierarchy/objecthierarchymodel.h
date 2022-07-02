@@ -12,40 +12,41 @@ class ObjectHierarchyModel : public QAbstractItemModel {
 public:
     ObjectHierarchyModel(QObject *parent);
 
-    void setRoot(Object *scene);
+    void setRoot(Object *root);
 
     Object *root() const { return m_rootItem; }
 
     Object *findObject(const uint32_t uuid, Object *parent = nullptr);
 
 private:
-    QVariant data(const QModelIndex &index, int role) const;
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    QModelIndex parent(const QModelIndex &index) const;
+    QModelIndex parent(const QModelIndex &index) const override;
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 protected:
     Object *m_rootItem;
 
-    QPixmap m_Visible;
-    QPixmap m_Invisible;
+    QPixmap m_visible;
+    QPixmap m_invisible;
 
-    QPixmap m_Select;
-    QPixmap m_SelectDisable;
+    QPixmap m_select;
+    QPixmap m_selectDisable;
 
-    QPixmap m_Prefab;
-    QPixmap m_Actor;
+    QPixmap m_prefab;
+    QPixmap m_actor;
+
 };
 
 #endif // OBJECTHIERARCHYMODEL_H

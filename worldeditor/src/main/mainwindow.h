@@ -56,21 +56,21 @@ private:
 private:
     Ui::MainWindow *ui;
 
-    Engine *m_Engine;
+    Engine *m_engine;
 
-    QString m_CurrentWorkspace;
+    QString m_currentWorkspace;
 
-    ImportQueue *m_Queue;
+    ImportQueue *m_queue;
 
-    ProjectModel *m_ProjectModel;
-    FeedManager *m_FeedManager;
-    DocumentModel *m_DocumentModel;
+    ProjectModel *m_projectModel;
+    FeedManager *m_feedManager;
+    DocumentModel *m_documentModel;
 
-    QAction *m_Undo;
-    QAction *m_Redo;
+    QAction *m_undo;
+    QAction *m_redo;
 
-    AssetEditor *m_MainDocument;
-    AssetEditor *m_CurrentDocument;
+    AssetEditor *m_mainDocument;
+    AssetEditor *m_currentDocument;
 
     AboutDialog m_aboutDlg;
     PluginDialog m_pluginDlg;

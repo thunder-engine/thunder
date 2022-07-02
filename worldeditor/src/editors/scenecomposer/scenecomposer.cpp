@@ -395,9 +395,9 @@ bool SceneComposer::loadMap(QString path, bool additive) {
         }
     }
 
-    QFile loadFile(m_pSettings->source());
-    if(loadFile.open(QIODevice::ReadOnly)) {
-        QByteArray array = loadFile.readAll();
+    QFile file(path);
+    if(file.open(QIODevice::ReadOnly)) {
+        QByteArray array = file.readAll();
         Variant var = Json::load(array.constData());
         Object *chunk = Engine::toObject(var, nullptr);
         if(chunk) {
