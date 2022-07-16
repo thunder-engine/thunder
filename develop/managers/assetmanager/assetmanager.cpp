@@ -22,6 +22,7 @@
 #include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
+#include <components/scene.h>
 #include <components/actor.h>
 
 #include <systems/resourcesystem.h>
