@@ -28,9 +28,15 @@
 #define MAXIMUM     "Max"
 
 #define EMITTERS    "Emitters"
+#define FORMAT_VERSION 1
 
 EffectConverterSettings::EffectConverterSettings() {
     setType(MetaType::type<ParticleEffect *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString EffectConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/effect.svg";
 }
 
 EffectConverter::EffectConverter() {

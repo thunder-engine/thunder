@@ -66,6 +66,8 @@ public:
 class AnimationBuilderSettings : public AssetConverterSettings {
 public:
     AnimationBuilderSettings();
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 };
 
 class AnimationSchemeModel : public AbstractSchemeModel {

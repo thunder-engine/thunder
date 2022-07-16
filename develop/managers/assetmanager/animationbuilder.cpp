@@ -12,8 +12,15 @@
 
 #define MACHINE "Machine"
 
+#define FORMAT_VERSION 1
+
 AnimationBuilderSettings::AnimationBuilderSettings() {
     setType(MetaType::type<AnimationStateMachine *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString AnimationBuilderSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/machine.svg";
 }
 
 AnimationSchemeModel::AnimationSchemeModel() {

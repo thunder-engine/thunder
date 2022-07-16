@@ -10,6 +10,14 @@
 
 class QDomElement;
 
+class ShaderBuilderSettings : public AssetConverterSettings {
+public:
+    ShaderBuilderSettings();
+
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+};
+
 class ShaderBuilder : public AssetConverter {
 public:
     enum Rhi {
@@ -22,7 +30,7 @@ public:
 public:
     ShaderBuilder();
 
-    static QString loadIncludes(const QString &path, const string &define, const PragmaMap &pragmas);
+    static QString loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas);
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl", "shader"}; }
@@ -38,7 +46,7 @@ private:
 
     bool parseShaderFormat(const QString &path, VariantMap &data);
 
-    static QString loadShader(const QString &data, const string &define, const PragmaMap &pragmas);
+    static QString loadShader(const QString &data, const QString &define, const PragmaMap &pragmas);
 
 private:
     typedef QMap<QString, Rhi> RhiMap;

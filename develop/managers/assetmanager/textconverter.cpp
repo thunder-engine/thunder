@@ -5,6 +5,17 @@
 #include <bson.h>
 #include "resources/text.h"
 
+#define FORMAT_VERSION 1
+
+TextConverterSettings::TextConverterSettings() {
+    setType(MetaType::type<Text *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString TextConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/text.svg";
+}
+
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
@@ -29,7 +40,5 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
 }
 
 AssetConverterSettings *TextConverter::createSettings() const {
-    AssetConverterSettings *result = AssetConverter::createSettings();
-    result->setType(MetaType::type<Text *>());
-    return result;
+    return new TextConverterSettings();
 }

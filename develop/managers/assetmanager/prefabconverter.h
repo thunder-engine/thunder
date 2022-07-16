@@ -10,9 +10,11 @@ public:
     PrefabConverterSettings();
 
 private:
-    QString typeName() const Q_DECL_OVERRIDE;
+    QStringList typeNames() const Q_DECL_OVERRIDE;
 
     bool isReadOnly() const Q_DECL_OVERRIDE;
+
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 };
 
 class PrefabConverter : public AssetConverter {
@@ -34,6 +36,7 @@ protected:
     virtual bool toVersion1(Variant &variant);
     virtual bool toVersion2(Variant &variant);
     virtual bool toVersion3(Variant &variant);
+    virtual bool toVersion4(Variant &variant);
 };
 
 #endif // PREFABCONVERTER_H

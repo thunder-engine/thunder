@@ -7,8 +7,10 @@
 class AnimImportSettings : public AssetConverterSettings {
 public:
     AnimImportSettings();
+private:
+    bool isReadOnly() const Q_DECL_OVERRIDE;
 
-    bool isReadOnly() const override;
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 };
 
 class AnimConverter : public AssetConverter {

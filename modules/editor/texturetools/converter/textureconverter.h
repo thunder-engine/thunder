@@ -78,10 +78,14 @@ public:
     void removeElement(const QString &key);
 
 private:
-    QJsonObject subItemData(const QString &key) const override;
-    void setSubItemData(const QString &name, const QJsonObject &data) override;
+    QJsonObject subItemData(const QString &key) const Q_DECL_OVERRIDE;
+    void setSubItemData(const QString &name, const QJsonObject &data) Q_DECL_OVERRIDE;
 
     QString findFreeElementName(const QString &name);
+
+    QStringList typeNames() const Q_DECL_OVERRIDE;
+
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 
 protected:
     TextureType   m_TextureType;

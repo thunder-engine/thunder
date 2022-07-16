@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+	<defs>
+		<style>
+			.doc-1{fill:#f0f;stroke:#f0f;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}
+			.doc-2{opacity:0.75;}
+			.doc-3{font-size:20px;fill:#fff;font-family:Arial;font-weight:700;text-anchor:middle;}
+			{style}
+		</style>
+	</defs>
+        <g id="document"><path class="doc-1" d="M112.54,28,88.5,4h-61a12,12,0,0,0-12,12v96a12,12,0,0,0,12,12h73.08a12,12,0,0,0,12-12Z"/></g>
+        <g id="document_transparent"><path class="doc-2" d="M112.54,28,88.5,4h-61a12,12,0,0,0-12,12v96a12,12,0,0,0,12,12h73.08a12,12,0,0,0,12-12Z"/></g>
+        <g id="label"><text class="doc-3" x="64" y="105">{text}</text></g>
+		<g id="icon" transform="translate(32 16)">
+			{icon}
+		</g>
+</svg>

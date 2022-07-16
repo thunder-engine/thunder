@@ -6,6 +6,17 @@
 
 #define DATA    "Data"
 
+#define FORMAT_VERSION 1
+
+FontImportSettings::FontImportSettings() {
+    setType(MetaType::type<Font *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString FontImportSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/font.svg";
+}
+
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
@@ -34,7 +45,5 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
 }
 
 AssetConverterSettings *FontConverter::createSettings() const {
-    AssetConverterSettings *result = AssetConverter::createSettings();
-    result->setType(MetaType::type<Font *>());
-    return result;
+    return new FontImportSettings();
 }

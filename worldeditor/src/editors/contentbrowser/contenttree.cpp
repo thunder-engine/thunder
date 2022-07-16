@@ -115,14 +115,13 @@ bool ContentTreeFilter::checkNameFilter(int sourceRow, const QModelIndex &source
     return (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent) && (filterRegExp().isEmpty() || sourceModel()->data(index).toBool()));
 }
 
-
 ContentTree::ContentTree() :
         BaseObjectModel(nullptr) {
 
-    m_pContent = new QObject(m_rootItem);
-    m_pContent->setObjectName("Content");
+    m_content = new QObject(m_rootItem);
+    m_content->setObjectName("Content");
 
-    m_Folder = QImage(":/Style/styles/dark/images/folder.png");
+    m_folder = QImage(":/Style/styles/dark/images/folder.svg");
 
     connect(AssetManager::instance(), SIGNAL(directoryChanged(QString)), this, SLOT(update(QString)));
 }
@@ -202,7 +201,7 @@ Qt::ItemFlags ContentTree::flags(const QModelIndex &index) const {
 QString ContentTree::path(const QModelIndex &index) const {
     if(index.isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
-        if(item && item != m_pContent) {
+        if(item && item != m_content) {
             return item->objectName();
         }
     }
@@ -219,8 +218,8 @@ void ContentTree::onRendered(const QString &uuid) {
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
-            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_Folder.width()) :
-                                                                                img.scaledToHeight(m_Folder.height()));
+            item->setProperty(qPrintable(gIcon), (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
+                                                                                img.scaledToHeight(m_folder.height()));
         }
 
         emit layoutAboutToBeChanged();
@@ -251,7 +250,7 @@ bool ContentTree::removeResource(const QModelIndex &index) {
 }
 
 QModelIndex ContentTree::getContent() const {
-    return getIndex(m_pContent, QModelIndex());
+    return getIndex(m_content, QModelIndex());
 }
 
 void ContentTree::update(const QString &path) {
@@ -259,7 +258,7 @@ void ContentTree::update(const QString &path) {
 
     QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
     if(parent == nullptr) {
-        parent = m_pContent;
+        parent = m_content;
     }
     clean(parent);
 
@@ -274,7 +273,7 @@ void ContentTree::update(const QString &path) {
 
         parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(info.absolutePath()));
         if(parent == nullptr) {
-            parent = m_pContent;
+            parent = m_content;
         }
         QString source = info.absoluteFilePath().contains(dir.absolutePath()) ?
                              dir.relativeFilePath(info.absoluteFilePath()) :
@@ -286,7 +285,7 @@ void ContentTree::update(const QString &path) {
                 item->setProperty(qPrintable(gType), instance->assetTypeName(info));
                 item->setProperty(qPrintable(gIcon), instance->icon(source));
             } else {
-                item->setProperty(qPrintable(gIcon), m_Folder);
+                item->setProperty(qPrintable(gIcon), m_folder);
             }
         }
     }

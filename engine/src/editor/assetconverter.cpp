@@ -5,6 +5,9 @@
 #include <QJsonDocument>
 #include <QMetaProperty>
 #include <QFile>
+#include <QCryptographicHash>
+
+#include "editor/projectmanager.h"
 
 #include "config.h"
 
@@ -15,11 +18,11 @@ namespace {
 };
 
 AssetConverterSettings::AssetConverterSettings() :
-        m_Valid(false),
-        m_Modified(false),
-        m_Type(MetaType::INVALID),
-        m_Version(0),
-        m_CurrentVersion(0) {
+        m_valid(false),
+        m_modified(false),
+        m_type(MetaType::INVALID),
+        m_version(0),
+        m_currentVersion(0) {
 
     connect(this, &AssetConverterSettings::updated, this, &AssetConverterSettings::setModified);
 }
@@ -29,83 +32,119 @@ AssetConverterSettings::~AssetConverterSettings() {
 }
 
 uint32_t AssetConverterSettings::type() const {
-    return m_Type;
+    return m_type;
 }
 void AssetConverterSettings::setType(uint32_t type) {
-    m_Type = type;
+    m_type = type;
 }
 
 bool AssetConverterSettings::isValid() const {
-    return m_Valid;
+    return m_valid;
 }
 void AssetConverterSettings::setValid(bool valid) {
-    m_Valid = valid;
+    m_valid = valid;
 }
 
 bool AssetConverterSettings::isReadOnly() const {
     return true;
 }
 
-QString AssetConverterSettings::typeName() const {
-    if(m_Type != MetaType::INVALID) {
-        QString result = MetaType::name(m_Type);
-        result = result.replace("*", "");
-        return result.trimmed();
+bool AssetConverterSettings::isOutdated() const {
+    if(version() > currentVersion()) {
+        return true;
     }
-    return "Invalid";
+    bool result = true;
+
+    QFile file(source());
+    if(file.open(QIODevice::ReadOnly)) {
+        QByteArray md5 = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5).toHex();
+        file.close();
+
+        md5 = md5.insert(20, '-');
+        md5 = md5.insert(16, '-');
+        md5 = md5.insert(12, '-');
+        md5 = md5.insert( 8, '-');
+        md5.push_front('{');
+        md5.push_back('}');
+
+        if(hash() == md5) {
+            if(isCode() || QFileInfo::exists(absoluteDestination())) {
+                result = false;
+            }
+        }
+        m_md5 = md5;
+    }
+    return result;
+}
+
+bool AssetConverterSettings::isCode() const {
+    return false;
+}
+
+QStringList AssetConverterSettings::typeNames() const {
+    if(m_type != MetaType::INVALID) {
+        QString result = MetaType::name(m_type);
+        result = result.replace("*", "");
+        return { result.trimmed() };
+    }
+    return { "Invalid" };
+}
+
+QString AssetConverterSettings::defaultIcon(QString type) const {
+    return ":/Style/styles/dark/images/unknown.svg";
 }
 
 QString AssetConverterSettings::hash() const {
-    return m_Md5;
+    return m_md5;
 }
 void AssetConverterSettings::setHash(const QString &hash) {
-    m_Md5 = hash;
+    m_md5 = hash;
 }
 
 uint32_t AssetConverterSettings::version() const {
-    return m_Version;
+    return m_version;
 }
 
 void AssetConverterSettings::setVersion(uint32_t version) {
-    m_Version = version;
+    m_version = version;
 }
 
 uint32_t AssetConverterSettings::currentVersion() const {
-    return m_CurrentVersion;
+    return m_currentVersion;
 }
 
 void AssetConverterSettings::setCurrentVersion(uint32_t version) {
-    m_CurrentVersion = version;
+    m_currentVersion = version;
 }
 
 QString AssetConverterSettings::source() const {
-    return m_Source;
+    return m_source;
 }
 void AssetConverterSettings::setSource(const QString &source) {
-    m_Source = source;
+    m_source = source;
 }
 
 QString AssetConverterSettings::destination() const {
-    return m_Destination;
+    return m_destination;
 }
 void AssetConverterSettings::setDestination(const QString &destination) {
-    m_Destination = destination;
+    m_destination = destination;
 }
 
 QString AssetConverterSettings::absoluteDestination() const {
-    return m_AbsoluteDestination;
+    return m_absoluteDestination;
 }
 
 void AssetConverterSettings::setAbsoluteDestination(const QString &destination) {
-    m_AbsoluteDestination = destination;
+    m_absoluteDestination = destination;
 }
 
 const QStringList AssetConverterSettings::subKeys() const {
-    return m_SubItems.keys();
+    return m_subItems.keys();
 }
 
 QString AssetConverterSettings::subItem(const QString &key) const {
-    return m_SubItems.value(key);
+    return m_subItems.value(key);
 }
 
 QJsonObject AssetConverterSettings::subItemData(const QString &key) const {
@@ -120,13 +159,13 @@ QString AssetConverterSettings::subTypeName(const QString &key) const {
 }
 
 int32_t AssetConverterSettings::subType(const QString &key) const {
-    return m_SubTypes.value(key);
+    return m_subTypes.value(key);
 }
 
 void AssetConverterSettings::setSubItem(const QString &name, const QString &uuid, int32_t type) {
     if(!name.isEmpty() && !uuid.isEmpty()) {
-        m_SubItems[name] = uuid;
-        m_SubTypes[name] = type;
+        m_subItems[name] = uuid;
+        m_subTypes[name] = type;
     }
 }
 
@@ -172,7 +211,7 @@ bool AssetConverterSettings::loadSettings() {
             }
         }
         blockSignals(false);
-        m_Modified = false;
+        m_modified = false;
         return true;
     }
     return false;
@@ -218,16 +257,16 @@ void AssetConverterSettings::saveSettings() {
     if(fp.open(QIODevice::WriteOnly)) {
         fp.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
         fp.close();
-        m_Modified = false;
+        m_modified = false;
     }
 }
 
 bool AssetConverterSettings::isModified() const {
-    return m_Modified;
+    return m_modified;
 }
 
 void AssetConverterSettings::setModified() {
-    m_Modified = true;
+    m_modified = true;
 }
 
 void AssetConverter::init() {

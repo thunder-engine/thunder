@@ -240,6 +240,9 @@ private:
 class EffectConverterSettings : public AssetConverterSettings {
 public:
     EffectConverterSettings();
+
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 };
 
 class EffectConverter : public AssetConverter {

@@ -9,6 +9,9 @@ class PhysicMaterialImportSettings : public AssetConverterSettings {
 public:
     PhysicMaterialImportSettings();
 
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+
 };
 
 class PhysicMaterialConverter : public AssetConverter {

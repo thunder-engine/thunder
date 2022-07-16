@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QTimer>
 #include <QImage>
+#include <QSet>
 
 #include <engine.h>
 #include <module.h>
@@ -23,6 +24,7 @@ class CodeBuilder;
 
 class AssetManager : public QObject {
     Q_OBJECT
+
 public:
     typedef QMap<QString, AssetConverter *> ConverterMap;
     typedef QMap<QString, QAbstractItemModel *> ClassMap;
@@ -32,12 +34,11 @@ public:
     static AssetManager *instance();
     static void destroy();
 
-    void init(Engine *engine);
+    void init();
 
     void rescan(bool force);
 
     QString assetTypeName(const QFileInfo &source);
-    QStringList assetTypes() const;
 
     void removeResource(const QFileInfo &source);
     void renameResource(const QFileInfo &oldName, const QFileInfo &newName);
@@ -58,7 +59,7 @@ public:
     QImage icon(const QString &source);
     Actor *createActor(const QString &source);
 
-    QStringList labels() const;
+    QSet<QString> labels() const;
 
     AssetConverterSettings *fetchSettings(const QFileInfo &source);
 
@@ -103,39 +104,35 @@ private:
     AssetManager();
     ~AssetManager();
 
-    static AssetManager *m_pInstance;
+    static AssetManager *m_instance;
 
 protected:
-    ConverterMap m_Converters;
+    ConverterMap m_converters;
 
-    ResourceSystem::DictionaryMap &m_Indices;
+    ResourceSystem::DictionaryMap &m_indices;
 
-    VariantMap m_Paths;
-    QStringList m_Labels;
+    VariantMap m_paths;
+    QSet<QString> m_labels;
 
-    QFileSystemWatcher *m_pDirWatcher;
-    QFileSystemWatcher *m_pFileWatcher;
+    QFileSystemWatcher *m_dirWatcher;
+    QFileSystemWatcher *m_fileWatcher;
 
-    QList<AssetConverterSettings *> m_ImportQueue;
+    QList<AssetConverterSettings *> m_importQueue;
 
-    ProjectManager *m_pProjectManager;
+    ProjectManager *m_projectManager;
 
-    QTimer *m_pTimer;
+    QTimer *m_timer;
 
-    Engine *m_pEngine;
+    ClassMap m_classMaps;
+    QList<CodeBuilder *> m_builders;
 
-    ClassMap m_ClassMaps;
-    QList<CodeBuilder *> m_Builders;
+    SettingsMap m_converterSettings;
 
-    SettingsMap m_ConverterSettings;
-
-    QHash<QString, QImage> m_Icons;
+    QHash<QString, QImage> m_defaultIcons;
 
 protected:
     void cleanupBundle();
     void dumpBundle();
-
-    bool isOutdated(AssetConverterSettings *settings);
 
     void convert(AssetConverterSettings *settings);
 
@@ -143,6 +140,9 @@ protected:
 
     void registerAsset(const QFileInfo &source, const QString &guid, const QString &type);
     string unregisterAsset(const string &source);
+
+    QImage renderDocumentIcon(QFileInfo path, QString color = QString("#0277bd"));
+
 };
 
 #endif // ASSETEDITORSMANAGER_H

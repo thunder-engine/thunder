@@ -9,12 +9,16 @@ MapConverterSettings::MapConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString MapConverterSettings::typeName() const {
-    return "Map";
+QStringList MapConverterSettings::typeNames() const {
+    return { "Map" };
 }
 
 bool MapConverterSettings::isReadOnly() const {
     return false;
+}
+
+QString MapConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/map.svg";
 }
 
 AssetConverterSettings *MapConverter::createSettings() const {
@@ -48,6 +52,23 @@ bool MapConverter::toVersion3(Variant &variant) {
             } else if(type == "Transform" && *i == root) {
                 // Need to remove Transfrom from the Chunk
                 object = objects.erase(object);
+            }
+        }
+    }
+
+    return true;
+}
+
+bool MapConverter::toVersion4(Variant &variant) {
+    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+    int32_t root = 0; // First object is a root
+    for(auto object = objects.begin(); object != objects.end(); ++object) {
+        VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
+        if(o.size() >= 5) {
+            auto i = o.begin();
+            string type = i->toString();
+            if(root == 0 && type == "Chunk") {
+                *i = "Scene";
             }
         }
     }

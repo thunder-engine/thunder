@@ -11,10 +11,15 @@
 
 AnimImportSettings::AnimImportSettings() {
     setType(MetaType::type<AnimationClip *>());
+    setVersion(FORMAT_VERSION);
 }
 
 bool AnimImportSettings::isReadOnly() const {
     return false;
+}
+
+QString AnimImportSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/anim.svg";
 }
 
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {

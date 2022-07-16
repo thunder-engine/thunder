@@ -75,9 +75,9 @@ protected:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 protected:
-    QObject *m_pContent;
+    QObject *m_content;
 
-    QImage m_Folder;
+    QImage m_folder;
 };
 
 #endif // CONTENTTREE_H

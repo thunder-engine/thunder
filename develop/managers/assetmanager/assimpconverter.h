@@ -81,6 +81,11 @@ public:
 
     bool m_Flip;
 
+private:
+    QStringList typeNames() const Q_DECL_OVERRIDE;
+
+    QString defaultIcon(QString type) const Q_DECL_OVERRIDE;
+
 protected:
     bool m_UseScale;
     float m_Scale;

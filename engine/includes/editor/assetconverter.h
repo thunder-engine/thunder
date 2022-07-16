@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QImage>
 
 #include <engine.h>
 
@@ -20,12 +21,16 @@ public:
     virtual uint32_t type() const;
     virtual void setType(uint32_t type);
 
-    virtual QString typeName() const;
+    virtual QStringList typeNames() const;
 
     virtual bool isValid() const;
     virtual void setValid(bool valid);
 
     virtual bool isReadOnly() const;
+
+    virtual bool isOutdated() const;
+
+    virtual bool isCode() const;
 
     virtual QString source() const;
     virtual void setSource(const QString &source);
@@ -35,6 +40,8 @@ public:
 
     virtual QString absoluteDestination() const;
     virtual void setAbsoluteDestination(const QString &destination);
+
+    virtual QString defaultIcon(QString type) const;
 
     QString hash() const;
     void setHash(const QString &hash);
@@ -64,21 +71,21 @@ signals:
     void updated();
 
 protected:
-    bool m_Valid;
-    bool m_Modified;
+    bool m_valid;
+    bool m_modified;
 
-    uint32_t m_Type;
-    uint32_t m_Version;
-    uint32_t m_CurrentVersion;
+    uint32_t m_type;
+    uint32_t m_version;
+    uint32_t m_currentVersion;
 
-    QString m_Md5;
-    QString m_Destination;
-    QString m_AbsoluteDestination;
-    QString m_Source;
+    mutable QString m_md5;
+    QString m_destination;
+    QString m_absoluteDestination;
+    QString m_source;
 
-    QStringMap m_SubItems;
-    QStringMap m_SubTypeNames;
-    QMap<QString, int32_t> m_SubTypes;
+    QStringMap m_subItems;
+    QStringMap m_subTypeNames;
+    QMap<QString, int32_t> m_subTypes;
 };
 
 typedef QList<uint32_t> QIntegerList;

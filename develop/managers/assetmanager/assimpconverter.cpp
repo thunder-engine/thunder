@@ -74,6 +74,21 @@ AssimpImportSettings::AssimpImportSettings() :
     setVersion(FORMAT_VERSION);
 }
 
+QStringList AssimpImportSettings::typeNames() const {
+    return { "Prefab", "Mesh", "Pose", "AnimationClip" };
+}
+
+QString AssimpImportSettings::defaultIcon(QString type) const {
+    if(type == "Mesh") {
+        return ":/Style/styles/dark/images/mesh.svg";
+    } else if(type == "Pose") {
+        return ":/Style/styles/dark/images/pose.svg";
+    } else if(type == "AnimationClip") {
+        return ":/Style/styles/dark/images/anim.svg";
+    }
+    return ":/Style/styles/dark/images/prefab.svg";
+}
+
 bool AssimpImportSettings::colors() const {
     return m_Colors;
 }
