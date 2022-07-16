@@ -21,6 +21,8 @@ const QString gProjectExt(".forge");
 const QString gMetaExt(".set");
 const QString gIndex("index");
 
+const QString gRhi("rhi");
+
 #if defined(Q_OS_WIN)
 const QString gShared(".dll");
 const QString gStatic(".lib");
