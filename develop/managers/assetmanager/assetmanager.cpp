@@ -22,7 +22,6 @@
 #include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
-#include <components/scenegraph.h>
 #include <components/actor.h>
 
 #include <systems/resourcesystem.h>
@@ -413,7 +412,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     int index = source.indexOf(':');
     QString id = source.left(index);
     QString name = source.mid(index + 1);
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::sceneGraph()));
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::scene()));
     if(actor) {
         Actor *clone = static_cast<Actor *>(actor->clone(actor->parent()));
         QString path = target.absoluteFilePath() + "/" + name + ".fab";
