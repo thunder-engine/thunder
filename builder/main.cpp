@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     ProjectManager::instance()->init(parser.value(sourceFileOption), parser.value(targetDirectoryOption));
 
-    AssetManager::instance()->init(&engine);
+    AssetManager::instance()->init();
     PluginManager::instance()->rescan(ProjectManager::instance()->pluginsPath());
     /// \todo To be removed
     PluginManager::instance()->initSystems();

@@ -20,6 +20,7 @@ Actions::Actions(const QString &name, QWidget *parent) :
     ui->revertButton->hide();
 
     ui->toolButton->hide();
+    ui->toolButton->setProperty("actions", true);
 
     setMenu(nullptr);
 }

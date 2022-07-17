@@ -13,24 +13,28 @@
 
 #define HEADER      "Header"
 #define BLOCK_SIZE  1024
+#define FORMAT_VERSION 1
 
-AudioImportSettings::AudioImportSettings(QObject *parent) :
+AudioImportSettings::AudioImportSettings() :
         AssetConverterSettings(),
         m_Stream(false),
         m_Mono(false),
         m_Quality(1.0) {
 
-    Q_UNUSED(parent)
-
     setType(MetaType::type<AudioClip *>());
+    setVersion(FORMAT_VERSION);
 }
 
 bool AudioImportSettings::stream() const {
     return m_Stream;
 }
 
+QString AudioImportSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/audio.svg";
+}
+
 void AudioImportSettings::setStream(bool stream) {
-    m_Stream    = stream;
+    m_Stream = stream;
 }
 
 bool AudioImportSettings::mono() const {

@@ -260,7 +260,7 @@ void SceneComposer::newAsset() {
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
-    if(settings->typeName() == "Map") {
+    if(settings->typeNames().front() == "Map") {
         m_pSettings = settings;
         if(loadMap(m_pSettings->source(), false)) {
             UndoManager::instance()->clear();

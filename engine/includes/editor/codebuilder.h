@@ -11,7 +11,11 @@ class ENGINE_EXPORT BuilderSettings : public AssetConverterSettings {
 public:
     BuilderSettings();
 private:
-    QString typeName() const Q_DECL_OVERRIDE;
+    QStringList typeNames() const Q_DECL_OVERRIDE;
+
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+
+    bool isCode() const Q_DECL_OVERRIDE;
 };
 
 class ENGINE_EXPORT CodeBuilder : public AssetConverter {

@@ -31,8 +31,16 @@ BuilderSettings::BuilderSettings() {
     setType(MetaType::type<Text *>());
 }
 
-QString BuilderSettings::typeName() const {
-    return "Code";
+QStringList BuilderSettings::typeNames() const {
+    return { "Code" };
+}
+
+QString BuilderSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/code.svg";
+}
+
+bool BuilderSettings::isCode() const {
+    return true;
 }
 
 CodeBuilder::CodeBuilder() :

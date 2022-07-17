@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     Log::overrideHandler(new QLog());
 
     PluginManager::instance()->init(&engine);
-    AssetManager::instance()->init(&engine);
+    AssetManager::instance()->init();
 
     SettingsManager::instance()->loadSettings();
 

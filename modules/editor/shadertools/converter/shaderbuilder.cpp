@@ -17,25 +17,34 @@
 #include <editor/projectmanager.h>
 
 #include "spirvconverter.h"
+#include "../../config.h"
 
 #include <regex>
 
 #define FORMAT_VERSION 6
 
-#define VALUE   "value"
-#define NAME    "name"
+namespace  {
+    const char *gValue("value");
+    const char *gName("name");
 
-#define FRAGMENT    "Fragment"
-#define VERTEX      "Vertex"
+    const char *gFragment("Fragment");
+    const char *gVertex("Vertex");
 
-const regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
-const regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
+    const char *gTexture2D("texture2d");
+    const char *gTextureCubemap("samplercube");
+};
+
+ShaderBuilderSettings::ShaderBuilderSettings() {
+    setType(MetaType::type<Material *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString ShaderBuilderSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/material.svg";
+}
 
 AssetConverterSettings *ShaderBuilder::createSettings() const {
-    AssetConverterSettings *result = AssetConverter::createSettings();
-    result->setVersion(FORMAT_VERSION);
-    result->setType(MetaType::type<Material *>());
-    return result;
+    return new ShaderBuilderSettings();
 }
 
 ShaderBuilder::ShaderBuilder() :
@@ -45,7 +54,7 @@ ShaderBuilder::ShaderBuilder() :
         {"RenderGL", OpenGL},
         {"RenderVK", Vulkan},
         {"RenderMT", Metal},
-        {"RenderD3D", DirectX},
+        {"RenderDX", DirectX},
     };
 }
 
@@ -90,8 +99,8 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     uint32_t version = 430;
     bool es = false;
     Rhi rhi = Rhi::OpenGL;
-    if(qEnvironmentVariableIsSet("RENDER")) {
-        rhi = m_rhiMap.value(qEnvironmentVariable("RENDER"));
+    if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
+        rhi = m_rhiMap.value(qEnvironmentVariable(qPrintable(gRhi)));
     }
     if(ProjectManager::instance()->currentPlatformName() != "desktop") {
         version = 300;
@@ -186,7 +195,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
             while(!n.isNull()) {
                 QDomElement element = n.toElement();
                 if(!element.isNull()) {
-                    if(element.tagName() == FRAGMENT || element.tagName() == VERTEX) {
+                    if(element.tagName() == gFragment || element.tagName() == gVertex) {
                         shaders[element.tagName()] = element.text();
                     } else if(element.tagName() == "Properties") {
                         int textureBinding = UNIFORM;
@@ -198,20 +207,20 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                             QDomElement property = p.toElement();
                             if(!property.isNull()) {
                                 // Parse properties
-                                QString name = property.attribute(NAME);
+                                QString name = property.attribute(gName);
                                 QString type = property.attribute("type");
                                 if(name.isEmpty() || type.isEmpty()) {
                                     return false;
                                 }
 
-                                if(type.toLower() == "texture2d" || type.toLower() == "samplercube") { // Texture sampler
+                                if(type.toLower() == gTexture2D || type.toLower() == gTextureCubemap) { // Texture sampler
                                     ++textureBinding;
 
                                     int flags = 0;
                                     if(property.attribute("target", "false") == "true") {
                                         flags |= ShaderSchemeModel::Target;
                                     }
-                                    if(type.toLower() == "samplercube") {
+                                    if(type.toLower() == gTextureCubemap) {
                                         flags |= ShaderSchemeModel::Cube;
                                     }
 
@@ -235,21 +244,18 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     uint32_t count = property.attribute("count", "1").toInt();
                                     Variant value;
                                     if(type == "int") {
-                                        value = Variant(property.attribute(VALUE).toInt());
+                                        value = Variant(property.attribute(gValue).toInt());
                                         size = sizeof(int);
                                     } else if(type == "float") {
-                                        value = Variant(property.attribute(VALUE).toFloat());
+                                        value = Variant(property.attribute(gValue).toFloat());
                                         size = sizeof(float);
                                     } else if(type == "vec2") {
-                                         //QVector2D v = it.value.value<QVector2D>();
                                         value = Variant(Vector2());
                                         size = sizeof(Vector2);
                                     } else if(type == "vec3") {
-                                        //QVector3D v = it.value.value<QVector3D>();
                                         value = Variant(Vector3());
                                         size = sizeof(Vector3);
                                     } else if(type == "vec4") {
-                                        //QColor c = it.value.value<QColor>();
                                         value = Variant(Vector4());
                                         size = sizeof(Vector4);
                                     } else if(type == "mat4") {
@@ -307,19 +313,19 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
             }
 
             const PragmaMap pragmas;
-            const string define;
+            const QString define;
 
             QString str;
-            str = shaders.value(FRAGMENT);
+            str = shaders.value(gFragment);
             if(!str.isEmpty()) {
                 user[SHADER] = loadShader(str, define, pragmas).toStdString();
             } else {
                 user[SHADER] = loadIncludes("Default.frag", define, pragmas).toStdString();
             }
 
-            str = shaders.value(VERTEX);
+            str = shaders.value(gVertex);
             if(!str.isEmpty()) {
-                user[STATIC] = loadShader(shaders.value(VERTEX), define, pragmas).toStdString();
+                user[STATIC] = loadShader(shaders.value(gVertex), define, pragmas).toStdString();
             } else {
                 user[STATIC] = loadIncludes("Default.vert", define, pragmas).toStdString();
             }
@@ -330,9 +336,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
     return false;
 }
 
-QString ShaderBuilder::loadIncludes(const QString &path, const string &define, const PragmaMap &pragmas) {
-    QString output;
-
+QString ShaderBuilder::loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas) {
     QStringList paths;
     paths << ProjectManager::instance()->contentPath() + "/";
     paths << ":/shaders/";
@@ -348,12 +352,16 @@ QString ShaderBuilder::loadIncludes(const QString &path, const string &define, c
         }
     }
 
-    return output;
+    return QString();
 }
 
-QString ShaderBuilder::loadShader(const QString &data, const string &define, const PragmaMap &pragmas) {
+QString ShaderBuilder::loadShader(const QString &data, const QString &define, const PragmaMap &pragmas) {
     QString output;
     QStringList lines(data.split("\n"));
+
+    static regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
+    static regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
+
     for(auto &line : lines) {
         smatch matches;
         string data = line.simplified().toStdString();
@@ -362,7 +370,7 @@ QString ShaderBuilder::loadShader(const QString &data, const string &define, con
             output += loadIncludes(next.c_str(), define, pragmas) + "\n";
         } else if(regex_match(data, matches, pragma)) {
             if(matches[1] == "flags") {
-                output += QString(define.c_str()) + "\n";
+                output += define + "\n";
             } else {
                 auto it = pragmas.find(matches[1]);
                 if(it != pragmas.end()) {

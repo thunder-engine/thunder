@@ -36,7 +36,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
 
         bundle.isBundle: false
 

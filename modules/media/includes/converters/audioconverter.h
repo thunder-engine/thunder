@@ -21,7 +21,7 @@ class AudioImportSettings : public AssetConverterSettings {
     Q_PROPERTY(float Quality READ quality WRITE setQuality DESIGNABLE true USER true)
 
 public:
-    AudioImportSettings(QObject *parent = nullptr);
+    AudioImportSettings();
 
     bool stream() const;
     void setStream(bool stream);
@@ -31,6 +31,9 @@ public:
 
     float quality() const;
     void setQuality(float quality);
+
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 
 protected:
     bool m_Stream;

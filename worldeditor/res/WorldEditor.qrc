@@ -46,25 +46,6 @@
         <file>styles/dark/icons/arrow-right.png</file>
         <file>styles/dark/icons/arrow-up.png</file>
         <file>styles/dark/icons/revert.png</file>
-        <file>styles/dark/images/cpp.png</file>
-        <file>styles/dark/images/map.png</file>
-        <file>styles/dark/images/ttf.png</file>
-        <file>styles/dark/images/anim.png</file>
-        <file>styles/dark/images/wav.png</file>
-        <file>styles/dark/images/prefab.png</file>
-        <file>styles/dark/images/actl.png</file>
-        <file>styles/dark/images/effect.png</file>
-        <file>styles/dark/images/l10n.png</file>
-        <file>styles/dark/icons/target.png</file>
-        <file>styles/dark/images/fixture.png</file>
-        <file>styles/dark/images/pose.png</file>
-        <file>styles/dark/images/unknown.png</file>
-        <file>styles/dark/images/material.png</file>
-        <file>styles/dark/images/text.png</file>
-        <file>styles/dark/images/atlas.png</file>
-        <file>styles/dark/images/mesh.png</file>
-        <file>styles/dark/images/texture.png</file>
-        <file>styles/dark/images/pipeline.png</file>
         <file>styles/dark/icons/handle.png</file>
         <file>styles/dark/icons/separator.png</file>
         <file>styles/dark/icons/arrow-left.png</file>
@@ -79,7 +60,27 @@
         <file>styles/dark/icons/prefab.png</file>
         <file>styles/dark/icons/select.png</file>
         <file>styles/dark/icons/select_disable.png</file>
-        <file>styles/dark/images/folder.png</file>
+        <file>styles/dark/icons/target.png</file>
+        <file>styles/dark/images/map.svg</file>
+        <file>styles/dark/images/anim.svg</file>
+        <file>styles/dark/images/prefab.svg</file>
+        <file>styles/dark/images/effect.svg</file>
+        <file>styles/dark/images/l10n.svg</file>
+        <file>styles/dark/images/fixture.svg</file>
+        <file>styles/dark/images/pose.svg</file>
+        <file>styles/dark/images/unknown.svg</file>
+        <file>styles/dark/images/material.svg</file>
+        <file>styles/dark/images/text.svg</file>
+        <file>styles/dark/images/atlas.svg</file>
+        <file>styles/dark/images/mesh.svg</file>
+        <file>styles/dark/images/texture.svg</file>
+        <file>styles/dark/images/pipeline.svg</file>
+        <file>styles/dark/images/folder.svg</file>
+        <file>styles/dark/images/document.svg</file>
+        <file>styles/dark/images/audio.svg</file>
+        <file>styles/dark/images/code.svg</file>
+        <file>styles/dark/images/font.svg</file>
+        <file>styles/dark/images/machine.svg</file>
     </qresource>
     <qresource prefix="/QML">
         <file>qml/Theme.qml</file>

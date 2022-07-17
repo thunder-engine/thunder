@@ -129,10 +129,18 @@ QString TextureImportSettings::setElement(const Element &element, const QString 
 void TextureImportSettings::removeElement(const QString &key) {
     m_Elements.remove(key);
 
-    m_SubItems.remove(key);
-    m_SubTypes.remove(key);
+    m_subItems.remove(key);
+    m_subTypes.remove(key);
 
     emit updated();
+}
+
+QStringList TextureImportSettings::typeNames() const {
+    return { "Texture", "Sprite" };
+}
+
+QString TextureImportSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/texture.svg";
 }
 
 QJsonObject TextureImportSettings::subItemData(const QString &key) const {

@@ -5,6 +5,14 @@
 
 #include <resources/translator.h>
 
+class TranslatorConverterSettings : public AssetConverterSettings {
+public:
+    TranslatorConverterSettings();
+
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+};
+
 class TranslatorConverter : public AssetConverter {
 public:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"loc"}; }

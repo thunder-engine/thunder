@@ -27,8 +27,6 @@ public:
 
     Object *component(const QString &name);
 
-
-
     bool isReadOnly(const QString &key) const;
 
     QString propertyHint(const QString &name) const;

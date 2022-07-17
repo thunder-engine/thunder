@@ -18,12 +18,16 @@ PrefabConverterSettings::PrefabConverterSettings() {
     setVersion(FORMAT_VERSION);
 }
 
-QString PrefabConverterSettings::typeName() const {
-    return "Prefab";
+QStringList PrefabConverterSettings::typeNames() const {
+    return { "Prefab" };
 }
 
 bool PrefabConverterSettings::isReadOnly() const {
     return false;
+}
+
+QString PrefabConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/prefab.svg";
 }
 
 AssetConverterSettings *PrefabConverter::createSettings() const {
@@ -77,6 +81,7 @@ Variant PrefabConverter::readJson(const string &data, AssetConverterSettings *se
         case 0: update |= toVersion1(result);
         case 1: update |= toVersion2(result);
         case 2: update |= toVersion3(result);
+        case 3: update |= toVersion4(result);
         default: break;
     }
 
@@ -166,5 +171,9 @@ bool PrefabConverter::toVersion2(Variant &variant) {
 }
 
 bool PrefabConverter::toVersion3(Variant &variant) {
+    return false;
+}
+
+bool PrefabConverter::toVersion4(Variant &variant) {
     return false;
 }

@@ -42,7 +42,7 @@ Project {
         Depends { name: "vorbis-editor" }
         Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "gamepad"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "gamepad", "svg", "xml"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
             "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR

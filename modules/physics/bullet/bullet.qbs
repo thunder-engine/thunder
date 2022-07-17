@@ -28,6 +28,7 @@ Project {
             var sources = srcFiles
             sources.push("src/converters/*.cpp")
             sources.push("includes/converters/*.h")
+            sources.push("src/converters/templates.qrc")
             return sources
         }
         Depends { name: "cpp" }
@@ -91,9 +92,7 @@ Project {
 
     StaticLibrary {
         name: "bullet"
-        files: [
-            "src/converters/templates.qrc",
-        ].concat(bullet.srcFiles)
+        files: srcFiles
         Depends { name: "cpp" }
         Depends { name: "bullet3" }
         Depends { name: "bundle" }

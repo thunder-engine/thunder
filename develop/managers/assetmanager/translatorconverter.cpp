@@ -4,6 +4,17 @@
 
 #include <bson.h>
 
+#define FORMAT_VERSION 1
+
+TranslatorConverterSettings::TranslatorConverterSettings() {
+    setType(MetaType::type<Translator *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString TranslatorConverterSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/l10n.svg";
+}
+
 AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettings *settings) {
     QFile src(settings->source());
     if(src.open(QIODevice::ReadOnly)) {
@@ -29,7 +40,5 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
 }
 
 AssetConverterSettings *TranslatorConverter::createSettings() const {
-    AssetConverterSettings *result = AssetConverter::createSettings();
-    result->setType(MetaType::type<Translator *>());
-    return result;
+    return new TranslatorConverterSettings();
 }

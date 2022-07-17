@@ -7,8 +7,15 @@
 
 #define DATA "Data"
 
+#define FORMAT_VERSION 1
+
 PhysicMaterialImportSettings::PhysicMaterialImportSettings() {
     setType(MetaType::type<PhysicMaterial *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString PhysicMaterialImportSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/fixture.svg";
 }
 
 AssetConverterSettings *PhysicMaterialConverter::createSettings() const {

@@ -506,7 +506,7 @@ VariantMap ShaderSchemeModel::data(bool editor) const {
     }
     user[UNIFORMS] = uniforms;
 
-    string define;
+    QString define;
     switch(m_BlendMode) {
         case Additive: {
             define = "#define BLEND_ADDITIVE 1";
