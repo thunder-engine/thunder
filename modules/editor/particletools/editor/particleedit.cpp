@@ -12,7 +12,7 @@
 
 #include <editor/viewport/cameractrl.h>
 
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/actor.h>
 #include <components/particlerender.h>
 #include <components/camera.h>
@@ -32,10 +32,10 @@ ParticleEdit::ParticleEdit() :
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    Scene *scene = Engine::objectCreate<Scene>("Scene");
+    SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
 
     ui->preview->setController(m_controller);
-    ui->preview->setScene(scene);
+    ui->preview->setSceneGraph(scene);
 
     m_effect = Engine::composeActor("ParticleRender", "ParticleEffect", scene);
     m_render = static_cast<ParticleRender *>(m_effect->component("ParticleRender"));
@@ -84,11 +84,11 @@ void ParticleEdit::onActivated() {
 }
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
-    if(m_pSettings != settings) {
-        m_pSettings = settings;
+    if(!m_settings.contains(settings)) {
+        m_settings = { settings };
 
         m_render->setEffect(Engine::loadResource<ParticleEffect>(qPrintable(settings->destination())));
-        m_builder->load(m_pSettings->source());
+        m_builder->load(m_settings.first()->source());
 
         onNodeSelected(nullptr);
 
@@ -97,8 +97,8 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
 }
 
 void ParticleEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        m_builder->save(path.isEmpty() ? m_pSettings->source() : path);
+    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
+        m_builder->save(path.isEmpty() ? m_settings.first()->source() : path);
         m_modified = false;
     }
 }

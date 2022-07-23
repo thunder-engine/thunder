@@ -15,21 +15,17 @@ public:
     AssetEditor();
     ~AssetEditor();
 
-    virtual void newAsset();
-
     virtual void loadAsset(AssetConverterSettings *settings) = 0;
-
-    virtual void saveAsset(const QString &path = QString());
-
-    virtual bool isModified() const = 0;
 
     virtual bool isSingleInstance() const;
 
     virtual AssetEditor *createInstance();
 
-    virtual void setModified(bool flag);
-
     virtual QStringList suffixes() const = 0;
+
+    const QList<AssetConverterSettings *> &documentsSettings() const;
+
+    bool checkSave();
 
 signals:
     void dropAsset(QString);
@@ -41,8 +37,21 @@ signals:
 public slots:
     virtual void onActivated();
 
+    virtual void onNewAsset();
+    virtual void onSave();
+    virtual void onSaveAs();
+
 protected:
-    AssetConverterSettings *m_pSettings;
+    virtual void setModified(bool flag);
+
+    virtual bool isModified() const = 0;
+
+    virtual void saveAsset(const QString &path = QString());
+
+    int closeAssetDialog();
+
+protected:
+    QList<AssetConverterSettings *> m_settings;
 
 };
 

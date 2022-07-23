@@ -14,7 +14,7 @@ Module *moduleCreate(Engine *engine) {
 
 static const char *meta = \
 "{"
-"   \"module\": \"Angel\","
+"   \"module\": \"Angel Script\","
 "   \"version\": \"1.0\","
 "   \"description\": \"AngelScript Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","

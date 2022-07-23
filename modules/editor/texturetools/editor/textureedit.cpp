@@ -4,7 +4,7 @@
 #include <QWindow>
 #include <QHBoxLayout>
 
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spriterender.h>
@@ -28,7 +28,7 @@ TextureEdit::TextureEdit() :
         m_Rresource(nullptr),
         m_pRender(nullptr),
         m_pConverter(new TextureConverter),
-        m_pScene(Engine::objectCreate<Scene>("Scene")) {
+        m_pScene(Engine::objectCreate<SceneGraph>("SceneGraph")) {
 
     ui->setupUi(this);
 
@@ -66,17 +66,17 @@ TextureEdit::~TextureEdit() {
 }
 
 bool TextureEdit::isModified() const {
-    if(m_pSettings) {
-        return m_pSettings->isModified();
+    if(!m_settings.isEmpty()) {
+        return m_settings.first()->isModified();
     }
     return false;
 }
 
 void TextureEdit::loadAsset(AssetConverterSettings *settings) {
-    if(m_pSettings) {
-        disconnect(m_pSettings, &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+    if(!m_settings.isEmpty()) {
+        disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
-    m_pSettings = static_cast<TextureImportSettings *>(settings);
+    m_settings = { settings };
 
     if(m_Rresource) {
         m_Rresource->unsubscribe(this);
@@ -103,12 +103,12 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
 
     m_pRender->actor()->setEnabled(true);
 
-    m_pController->setImportSettings(dynamic_cast<TextureImportSettings *>(m_pSettings));
+    m_pController->setImportSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
     m_pController->setSize(m_pRender->texture()->width(), m_pRender->texture()->height());
 
-    ui->widget->setSettings(static_cast<TextureImportSettings*>(m_pSettings));
+    ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
 
-    connect(m_pSettings, &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
+    connect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
 }
 
 QStringList TextureEdit::suffixes() const {
@@ -116,8 +116,8 @@ QStringList TextureEdit::suffixes() const {
 }
 
 void TextureEdit::onUpdateTemplate() {
-    if(m_pSettings) {
-        m_pConverter->convertTexture(static_cast<TextureImportSettings*>(m_pSettings), m_pRender->texture());
+    if(!m_settings.isEmpty()) {
+        m_pConverter->convertTexture(static_cast<TextureImportSettings*>(m_settings.first()), m_pRender->texture());
     }
 }
 

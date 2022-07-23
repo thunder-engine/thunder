@@ -16,7 +16,7 @@ public:
     void setController(CameraCtrl *ctrl);
     CameraCtrl *controller() const { return m_pController; }
 
-    void setScene(Scene *scene);
+    void setSceneGraph(SceneGraph *scene);
 
     QImage grabFramebuffer() { return QImage(); }
 
@@ -39,7 +39,7 @@ private slots:
 private:
     CameraCtrl *m_pController;
 
-    Scene *m_pScene;
+    SceneGraph *m_pSceneGraph;
 
     QWindow *m_pRHIWindow;
 

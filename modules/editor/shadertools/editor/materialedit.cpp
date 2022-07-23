@@ -7,7 +7,7 @@
 #include <QMenu>
 
 #include <engine.h>
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/meshrender.h>
@@ -40,10 +40,10 @@ MaterialEdit::MaterialEdit() :
     ctrl->blockMovement(true);
     ctrl->setFree(false);
 
-    Scene *scene = Engine::objectCreate<Scene>("Scene");
+    SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
 
     ui->preview->setController(ctrl);
-    ui->preview->setScene(scene);
+    ui->preview->setSceneGraph(scene);
 
     m_light = Engine::composeActor("DirectLight", "LightSource", scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
@@ -81,15 +81,15 @@ void MaterialEdit::onActivated() {
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
-    if(m_pSettings != settings) {
-        m_pSettings = settings;
+    if(!m_settings.contains(settings)) {
+        m_settings = { settings };
 
         m_material = Engine::objectCreate<Material>();
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
             mesh->setMaterial(m_material);
         }
-        m_model->load(m_pSettings->source());
+        m_model->load(m_settings.first()->source());
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
 
@@ -98,8 +98,8 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
 }
 
 void MaterialEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        m_model->save(path.isEmpty() ? m_pSettings->source() : path);
+    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
+        m_model->save(path.isEmpty() ? m_settings.first()->source() : path);
 
         m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
     }

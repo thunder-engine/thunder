@@ -41,9 +41,9 @@ void TextEdit::setModified(bool flag) {
 }
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {
-    m_pSettings = settings;
-    ui->editor->openFile(m_pSettings->source());
-    setWindowTitle(QFileInfo(m_pSettings->source()).fileName());
+    m_settings = { settings };
+    ui->editor->openFile(settings->source());
+    setWindowTitle(QFileInfo(settings->source()).fileName());
 }
 
 void TextEdit::saveAsset(const QString &path) {
@@ -57,7 +57,7 @@ void TextEdit::onCursorPositionChanged() {
 }
 
 void TextEdit::onTextChanged() {
-    QString title = QFileInfo(m_pSettings->source()).fileName();
+    QString title = QFileInfo(m_settings.first()->source()).fileName();
     if(ui->editor->document() && ui->editor->document()->isModified()) {
         title.append('*');
     }

@@ -5,6 +5,8 @@
 #include <QMenu>
 #include <QDebug>
 
+#include <components/scenegraph.h>
+#include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
@@ -70,7 +72,7 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
 
     connect(SettingsManager::instance(), &SettingsManager::updated, this, &ObjectCtrl::onApplySettings);
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectCtrl::onPrefabCreated);
-    connect(this, &ObjectCtrl::mapUpdated, this, &ObjectCtrl::onUpdated);
+    connect(this, &ObjectCtrl::sceneUpdated, this, &ObjectCtrl::onUpdated);
     connect(this, &ObjectCtrl::objectsUpdated, this, &ObjectCtrl::onUpdated);
 
     SettingsManager::instance()->registerProperty(gBackgroundColor, QColor(51, 51, 51, 0));
@@ -112,8 +114,8 @@ void ObjectCtrl::drawHandles() {
     if(m_isolatedActor) {
         drawHelpers(*m_isolatedActor);
     } else {
-        for(auto it : m_editObjects) {
-            drawHelpers(*it.first);
+        for(auto it : m_sceneGraph->getChildren()) {
+            drawHelpers(*it);
         }
     }
 
@@ -148,6 +150,17 @@ void ObjectCtrl::clear(bool signal) {
     if(signal) {
         emit objectsSelected(selected());
     }
+}
+
+SceneGraph *ObjectCtrl::sceneGraph() const {
+    return m_sceneGraph;
+}
+void ObjectCtrl::setSceneGraph(SceneGraph *graph) {
+    m_sceneGraph = graph;
+}
+
+void ObjectCtrl::switchActiveScene() {
+
 }
 
 void ObjectCtrl::drawHelpers(Object &object) {
@@ -190,12 +203,14 @@ void ObjectCtrl::onApplySettings() {
 }
 
 void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
+    Scene *scene = nullptr;
     bool swapped = false;
     for(auto &it : m_selected) {
         if(it.object->uuid() == uuid) {
             Object *object = findObject(clone);
             if(object) {
                 it.object = static_cast<Actor *>(object);
+                scene = it.object->scene();
                 swapped = true;
                 break;
             }
@@ -203,7 +218,7 @@ void ObjectCtrl::onPrefabCreated(uint32_t uuid, uint32_t clone) {
     }
     if(swapped) {
         emit objectsSelected(selected());
-        emit mapUpdated();
+        emit sceneUpdated(scene);
     }
 }
 
@@ -215,25 +230,6 @@ Object::ObjectList ObjectCtrl::selected() {
         }
     }
     return result;
-}
-
-list<pair<Object *, bool> > ObjectCtrl::objects() const {
-    return m_editObjects;
-}
-
-void ObjectCtrl::addObject(Object *object) {
-    m_editObjects.push_back(make_pair(object, false));
-}
-
-void ObjectCtrl::setObject(Object *object) {
-    clear();
-    for(auto it : m_editObjects) {
-        delete it.first;
-    }
-    m_editObjects.clear();
-    if(object) {
-        m_editObjects.push_back(make_pair(object, false));
-    }
 }
 
 void ObjectCtrl::setIsolatedActor(Actor *actor) {
@@ -317,12 +313,12 @@ void ObjectCtrl::onChangeTool() {
     }
 }
 
-void ObjectCtrl::onUpdated() {
+void ObjectCtrl::onUpdated(Scene *scene) {
     if(m_isolatedActor) {
         m_isolatedActorModified = true;
     } else {
-        if(!m_editObjects.empty()) {
-            m_editObjects.front().second = true;
+        if(scene) {
+            scene->setModified(true);
         }
     }
 }
@@ -335,17 +331,17 @@ void ObjectCtrl::onPivot(bool flag) {
 
 }
 
-void ObjectCtrl::onCreateComponent(const QString &name) {
+void ObjectCtrl::onCreateComponent(const QString &type) {
     if(m_selected.size() == 1) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
-            if(actor->component(qPrintable(name)) == nullptr) {
-                UndoManager::instance()->push(new CreateObject(name, this));
+            if(actor->component(qPrintable(type)) == nullptr) {
+                UndoManager::instance()->push(new CreateObject(type, m_sceneGraph->activeScene(), this));
             } else {
                 QMessageBox msgBox;
                 msgBox.setIcon(QMessageBox::Warning);
                 msgBox.setText(tr("Creation Component Failed"));
-                msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(name));
+                msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(type));
                 msgBox.setStandardButtons(QMessageBox::Ok);
 
                 msgBox.exec();
@@ -354,11 +350,11 @@ void ObjectCtrl::onCreateComponent(const QString &name) {
     }
 }
 
-void ObjectCtrl::onDeleteComponent(const QString &name) {
-    if(!name.isEmpty()) {
+void ObjectCtrl::onDeleteComponent(const QString &type) {
+    if(!type.isEmpty()) {
         Actor *actor = m_selected.begin()->object;
         if(actor) {
-            Component *obj = actor->component(name.toStdString());
+            Component *obj = actor->component(type.toStdString());
             if(obj) {
                 UndoManager::instance()->push(new RemoveComponent(obj, this));
             }
@@ -373,7 +369,8 @@ void ObjectCtrl::onUpdateSelected() {
 void ObjectCtrl::onDrop() {
     if(!m_dragObjects.empty()) {
         for(auto it : m_dragObjects) {
-            it->setParent(m_isolatedActor ? m_isolatedActor : m_editObjects.front().first);
+            Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph->activeScene());
+            it->setParent(parent);
         }
         if(m_pipeline) {
             m_pipeline->setDragObjects({});
@@ -393,7 +390,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
 
     if(event->mimeData()->hasFormat(gMimeComponent)) {
         string name = event->mimeData()->data(gMimeComponent).toStdString();
-        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_editObjects.front().first));
+        Actor *actor = Engine::composeActor(name, findFreeObjectName(name, m_sceneGraph->activeScene()));
         if(actor) {
             actor->transform()->setPosition(Vector3(0.0f));
             m_dragObjects.push_back(actor);
@@ -414,7 +411,7 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
                 } else {
                     Actor *actor = mgr->createActor(str);
                     if(actor) {
-                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_editObjects.front().first));
+                        actor->setName(findFreeObjectName(info.baseName().toStdString(), m_sceneGraph->activeScene()));
                         m_dragObjects.push_back(actor);
                     }
                 }
@@ -481,7 +478,7 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
 
                     setDrag(false);
                     m_canceled = true;
-                    emit objectsUpdated();
+                    emit objectsUpdated(nullptr);
                 }
             }
         } break;
@@ -567,47 +564,13 @@ void ObjectCtrl::onInputEvent(QInputEvent *pe) {
 Object *ObjectCtrl::findObject(uint32_t id, Object *parent) {
     Object *result = nullptr;
 
-    if(m_isolatedActor) {
-        Object *p = parent;
-        if(p == nullptr) {
-            p = m_isolatedActor;
-        }
-        result = ObjectSystem::findObject(id, p);
-    } else {
-        for(auto it : m_editObjects) {
-            Object *p = parent;
-            if(p == nullptr) {
-                p = it.first;
-            }
-            result = ObjectSystem::findObject(id, p);
-            if(result) {
-                break;
-            }
-        }
+    Object *p = parent;
+    if(p == nullptr) {
+        p = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph);
     }
+    result = ObjectSystem::findObject(id, p);
 
     return result;
-}
-
-bool ObjectCtrl::isModified() const {
-    if(m_isolatedActor) {
-        return m_isolatedActorModified;
-    } else {
-        if(!m_editObjects.empty()) {
-            return m_editObjects.front().second;
-        }
-    }
-    return false;
-}
-
-void ObjectCtrl::resetModified() {
-    if(m_isolatedActor) {
-        m_isolatedActorModified = false;
-    } else {
-        if(!m_editObjects.empty()) {
-            m_editObjects.front().second = false;
-        }
-    }
 }
 
 void ObjectCtrl::resetSelection() {
@@ -642,31 +605,48 @@ void SelectObjects::redo() {
     }
 }
 
-CreateObject::CreateObject(const QString &type, ObjectCtrl *ctrl, QUndoCommand *group) :
+CreateObject::CreateObject(const QString &type, Scene *scene, ObjectCtrl *ctrl, QUndoCommand *group) :
         UndoObject(ctrl, QObject::tr("Create %1").arg(type), group),
-        m_type(type) {
+        m_type(type),
+        m_scene(scene->uuid()) {
 
 }
 void CreateObject::undo() {
+    QSet<Scene *> scenes;
+
     for(auto uuid : m_objects) {
         Object *object = m_controller->findObject(uuid);
         if(object) {
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
+
             delete object;
         }
     }
     emit m_controller->objectsSelected(m_controller->selected());
-    emit m_controller->objectsUpdated();
+    for(auto it : scenes) {
+        emit m_controller->objectsUpdated(it);
+    }
 }
 void CreateObject::redo() {
+    QSet<Scene *> scenes;
+
     auto list = m_controller->selected();
     if(list.empty()) {
-        list.push_back(m_controller->objects().front().first);
+        Object *object = m_controller->findObject(m_scene);
+        list.push_back(object);
     }
 
     for(auto &it : list) {
         Object *object;
         if(m_type == "Actor") {
             object = Engine::composeActor("", qPrintable(m_type), it);
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
         } else {
             object = Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), it);
         }
@@ -674,7 +654,9 @@ void CreateObject::redo() {
     }
 
     emit m_controller->objectsSelected(m_controller->selected());
-    emit m_controller->objectsUpdated();
+    for(auto it : scenes) {
+        emit m_controller->objectsUpdated(it);
+    }
 }
 
 DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
@@ -682,21 +664,24 @@ DuplicateObjects::DuplicateObjects(ObjectCtrl *ctrl, const QString &name, QUndoC
 
 }
 void DuplicateObjects::undo() {
+    Scene *scene = nullptr;
     m_dump.clear();
     for(auto it : m_objects) {
-        Object *object = m_controller->findObject(it);
-        if(object) {
-            m_dump.push_back(ObjectSystem::toVariant(object));
-            delete object;
+        Actor *actor = dynamic_cast<Actor *>(m_controller->findObject(it));
+        if(actor) {
+            scene = actor->scene();
+            m_dump.push_back(ObjectSystem::toVariant(actor));
+            delete actor;
         }
     }
     m_objects.clear();
-    emit m_controller->mapUpdated();
+    emit m_controller->sceneUpdated(scene);
 
     m_controller->clear(false);
     m_controller->selectActors(m_selected);
 }
 void DuplicateObjects::redo() {
+    Scene *scene = nullptr;
     if(m_dump.empty()) {
         for(auto it : m_controller->selected()) {
             m_selected.push_back(it->uuid());
@@ -705,16 +690,21 @@ void DuplicateObjects::redo() {
                 static_cast<Object *>(actor)->clearCloneRef();
                 actor->setName(findFreeObjectName(it->name(), it->parent()));
                 m_objects.push_back(actor->uuid());
+                scene = actor->scene();
             }
         }
     } else {
         for(auto &it : m_dump) {
             Object *obj = ObjectSystem::toObject(it);
             m_objects.push_back(obj->uuid());
+            Actor *actor = dynamic_cast<Actor *>(obj);
+            if(actor) {
+                scene = actor->scene();
+            }
         }
     }
 
-    emit m_controller->mapUpdated();
+    emit m_controller->sceneUpdated(scene);
 
     m_controller->clear(false);
     m_controller->selectActors(m_objects);
@@ -743,18 +733,24 @@ void CreateObjectSerial::redo() {
     }
     auto it = m_parents.begin();
 
+    Scene *scene = nullptr;
+
     list<uint32_t> objects;
     for(auto &ref : m_dump) {
         Object *object = Engine::toObject(ref);
         if(object) {
             object->setParent(m_controller->findObject(*it));
             objects.push_back(object->uuid());
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scene = actor->scene();
+            }
         } else {
             qWarning() << "Broken object";
         }
         ++it;
     }
-    emit m_controller->mapUpdated();
+    emit m_controller->sceneUpdated(scene);
 
     m_controller->clear(false);
     m_controller->selectActors(objects);
@@ -768,6 +764,7 @@ DeleteActors::DeleteActors(const Object::ObjectList &objects, ObjectCtrl *ctrl, 
     }
 }
 void DeleteActors::undo() {
+    QSet<Scene *> scenes;
     auto it = m_parents.begin();
     auto index = m_indices.begin();
     for(auto &ref : m_dump) {
@@ -776,11 +773,17 @@ void DeleteActors::undo() {
         if(object) {
             object->setParent(parent, *index);
             m_objects.push_back(object->uuid());
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
         }
         ++it;
         ++index;
     }
-    emit m_controller->mapUpdated();
+    for(auto it : scenes) {
+        emit m_controller->sceneUpdated(it);
+    }
     if(!m_objects.empty()) {
         auto it = m_objects.begin();
         while(it != m_objects.end()) {
@@ -795,6 +798,8 @@ void DeleteActors::undo() {
     }
 }
 void DeleteActors::redo() {
+    QSet<Scene *> scenes;
+
     m_parents.clear();
     m_dump.clear();
     for(auto it : m_objects)  {
@@ -810,6 +815,10 @@ void DeleteActors::redo() {
     for(auto it : m_objects) {
         Object *object = m_controller->findObject(it);
         if(object) {
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
             delete object;
         }
     }
@@ -817,7 +826,9 @@ void DeleteActors::redo() {
 
     m_controller->clear();
 
-    emit m_controller->mapUpdated();
+    for(auto it : scenes) {
+        emit m_controller->sceneUpdated(it);
+    }
 }
 
 RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
@@ -828,23 +839,37 @@ RemoveComponent::RemoveComponent(const Component *component, ObjectCtrl *ctrl, c
 
 }
 void RemoveComponent::undo() {
+    Scene *scene = nullptr;
+
     Object *parent = m_controller->findObject(m_parent);
     Object *object = Engine::toObject(m_dump, parent);
     if(object) {
         object->setParent(parent, m_index);
 
+        Actor *actor = dynamic_cast<Actor *>(parent);
+        if(actor) {
+            scene = actor->scene();
+        }
+
         emit m_controller->objectsSelected(m_controller->selected());
-        emit m_controller->objectsUpdated();
-        emit m_controller->mapUpdated();
+        emit m_controller->objectsUpdated(scene);
+        emit m_controller->sceneUpdated(scene);
     }
 }
 void RemoveComponent::redo() {
+    Scene *scene = nullptr;
+
     m_dump = Variant();
     m_parent = 0;
     Object *object = m_controller->findObject(m_uuid);
     if(object) {
         m_dump = Engine::toVariant(object, true);
         m_parent = object->parent()->uuid();
+
+        Actor *actor = dynamic_cast<Actor *>(object->parent());
+        if(actor) {
+            scene = actor->scene();
+        }
 
         QList<Object *> children = QList<Object *>::fromStdList(object->parent()->getChildren());
         m_index = children.indexOf(object);
@@ -855,8 +880,8 @@ void RemoveComponent::redo() {
     }
 
     emit m_controller->objectsSelected(m_controller->selected());
-    emit m_controller->objectsUpdated();
-    emit m_controller->mapUpdated();
+    emit m_controller->objectsUpdated(scene);
+    emit m_controller->sceneUpdated(scene);
 }
 
 ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
@@ -869,6 +894,8 @@ ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *or
     m_position = position;
 }
 void ParentingObjects::undo() {
+    QSet<Scene *> scenes;
+
     auto ref = m_dump.begin();
     for(auto it : m_objects) {
         Object *object = m_controller->findObject(it);
@@ -876,13 +903,23 @@ void ParentingObjects::undo() {
             if(object->uuid() == ref->first) {
                 object->setParent(m_controller->findObject(ref->second));
             }
+
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
         }
         ++ref;
     }
-    emit m_controller->objectsUpdated();
-    emit m_controller->mapUpdated();
+
+    for(auto it : scenes) {
+        emit m_controller->objectsUpdated(it);
+        emit m_controller->sceneUpdated(it);
+    }
 }
 void ParentingObjects::redo() {
+    QSet<Scene *> scenes;
+
     m_dump.clear();
     for(auto it : m_objects) {
         Object *object = m_controller->findObject(it);
@@ -892,12 +929,24 @@ void ParentingObjects::redo() {
             pair.second = object->parent()->uuid();
             m_dump.push_back(pair);
 
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
+
             Object *parent = m_controller->findObject(m_parent);
             object->setParent(parent, m_position);
+
+            if(actor) {
+                scenes.insert(actor->scene());
+            }
         }
     }
-    emit m_controller->objectsUpdated();
-    emit m_controller->mapUpdated();
+
+    for(auto it : scenes) {
+        emit m_controller->objectsUpdated(it);
+        emit m_controller->sceneUpdated(it);
+    }
 }
 
 PropertyObject::PropertyObject(Object *object, const QString &property, const Variant &value, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
@@ -913,6 +962,8 @@ void PropertyObject::undo() {
 void PropertyObject::redo() {
     Variant value = m_value;
 
+    Scene *scene = nullptr;
+
     Object *object = m_controller->findObject(m_object);
     if(object) {
         const MetaObject *meta = object->metaObject();
@@ -925,7 +976,35 @@ void PropertyObject::redo() {
                 property.write(object, value);
             }
         }
+
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor) {
+            scene = actor->scene();
+        } else {
+            Component *component = dynamic_cast<Component *>(object);
+            if(component) {
+                scene = component->actor()->scene();
+            }
+        }
     }
-    emit m_controller->objectsUpdated();
+    emit m_controller->objectsUpdated(scene);
     emit m_controller->objectsChanged({object}, m_property);
+}
+
+SelectScene::SelectScene(Scene *scene, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
+        UndoObject(ctrl, name, group),
+        m_object(scene->uuid()) {
+
+}
+void SelectScene::undo() {
+    SelectScene::redo();
+}
+void SelectScene::redo() {
+    uint32_t back = m_controller->sceneGraph()->activeScene()->uuid();
+
+    Object *object = m_controller->findObject(m_object);
+    if(object && dynamic_cast<Scene *>(object)) {
+        m_controller->sceneGraph()->setActiveScene(static_cast<Scene *>(object));
+        m_object = back;
+    }
 }

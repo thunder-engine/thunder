@@ -12,7 +12,7 @@
 #include <timer.h>
 
 #include <components/actor.h>
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/camera.h>
 
 #include <systems/rendersystem.h>
@@ -155,7 +155,8 @@ SceneView::SceneView(QWidget *parent) :
         QWidget(parent),
         m_engine(nullptr),
         m_gamepad(new QGamepad),
-        m_mouseLock(false) {
+        m_mouseLock(false),
+        m_gamePause(false) {
 
     QVBoxLayout *l = new QVBoxLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -174,19 +175,29 @@ SceneView::SceneView(QWidget *parent) :
     } else {
         qCritical() << "Unable to create rendering surface.";
     }
+
+    Engine::setPlatformAdaptor(this);
+    Input::init(this);
 }
 
 SceneView::~SceneView() {
-    m_engine->setPlatformAdaptor(nullptr);
+    Engine::setPlatformAdaptor(nullptr);
 }
 
 void SceneView::setEngine(Engine *engine) {
     m_engine = engine;
-    m_engine->setPlatformAdaptor(this);
+}
+
+bool SceneView::isGamePause() const {
+    return m_gamePause;
+}
+
+void SceneView::setGamePause(bool pause) {
+    m_gamePause = pause;
 }
 
 void SceneView::onDraw() {
-    if(m_engine) {
+    if(m_engine && !m_gamePause) {
         m_engine->update();
     }
 }

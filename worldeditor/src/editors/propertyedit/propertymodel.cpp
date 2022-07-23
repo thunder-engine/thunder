@@ -86,7 +86,7 @@ QVariant PropertyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::SizeHintRole: {
-            return QSize(1, 24);
+            return QSize(1, 26);
         }
         case Qt::CheckStateRole: {
             if(index.column() == 0 && item->isCheckable()) {

@@ -34,7 +34,7 @@ const char *ResourceSystem::name() const {
     return "ResourceSystem";
 }
 
-void ResourceSystem::update(Scene *) {
+void ResourceSystem::update(SceneGraph *) {
     PROFILE_FUNCTION();
 
     for(auto it = p_ptr->m_ReferenceCache.begin(); it != p_ptr->m_ReferenceCache.end();) {

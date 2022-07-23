@@ -18,6 +18,7 @@
 
 #include <components/scene.h>
 #include <components/actor.h>
+#include <components/scenegraph.h>
 #include <components/angelbehaviour.h>
 
 #include <cstring>
@@ -109,7 +110,7 @@ const char *AngelSystem::name() const {
     return "AngelScript";
 }
 
-void AngelSystem::update(Scene *scene) {
+void AngelSystem::update(SceneGraph *scene) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
@@ -117,7 +118,8 @@ void AngelSystem::update(Scene *scene) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
             if(object) {
-                if(component->isEnabled() && component->actor() && component->actor()->scene() == scene) {
+                if(component->isEnabled() && component->actor() && component->actor()->scene() &&
+                   component->actor()->scene()->parent() == scene) {
                     if(!component->isStarted()) {
                         execute(object, component->scriptStart());
                         component->setStarted(true);

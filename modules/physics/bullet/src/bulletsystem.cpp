@@ -10,8 +10,9 @@
 #include <log.h>
 #include <timer.h>
 
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/actor.h>
+#include <components/scene.h>
 
 #include "components/rigidbody.h"
 #include "components/collider.h"
@@ -96,7 +97,7 @@ const char *BulletSystem::name() const {
     return "Bullet Physics";
 }
 
-void BulletSystem::update(Scene *scene) {
+void BulletSystem::update(SceneGraph *scene) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
@@ -129,7 +130,8 @@ void BulletSystem::update(Scene *scene) {
 
         for(auto &it : m_ObjectList) {
             Collider *body = static_cast<Collider *>(it);
-            if(body->m_world == nullptr && body->actor()->scene() == scene) {
+            if(body->m_world == nullptr && body->actor()->scene() &&
+               body->actor()->scene()->parent() == scene) {
                 body->setWorld(world);
             }
 

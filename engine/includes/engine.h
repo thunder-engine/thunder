@@ -13,9 +13,9 @@ class EnginePrivate;
 
 class Actor;
 class Scene;
-class Chunk;
 class System;
 class Resource;
+class SceneGraph;
 class PlatformAdaptor;
 
 #if defined(SHARED_DEFINE) && defined(_WIN32)
@@ -76,11 +76,11 @@ public:
 /*
     Scene management
 */
-    static Scene *scene();
+    static SceneGraph *sceneGraph();
 
-    static Chunk *loadSceneChunk(const string &path, bool additive);
+    static Scene *loadScene(const string &path, bool additive);
 
-    static void unloadSceneChunk(Chunk *chunk);
+    static void unloadScene(Scene *scene);
 
 /*
     Misc

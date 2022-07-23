@@ -45,14 +45,6 @@ void unloadResource(const string &name) {
     Engine::unloadResource(name);
 }
 
-Chunk *loadSceneChunk(const string &name, bool additive) {
-    return Engine::loadSceneChunk(name, additive);
-}
-
-void unloadSceneChunk(Chunk *chunk) {
-    Engine::unloadSceneChunk(chunk);
-}
-
 void registerEngine(asIScriptEngine *engine) {
     engine->SetDefaultNamespace("Engine");
 
@@ -65,8 +57,8 @@ void registerEngine(asIScriptEngine *engine) {
     engine->RegisterGlobalFunction("Object @loadResource(const string &in)", asFUNCTION(loadResource), asCALL_CDECL);
     engine->RegisterGlobalFunction("void unloadResource(const string &in)", asFUNCTION(unloadResource), asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Chunk @loadSceneChunk(const string &in, bool)", asFUNCTION(loadSceneChunk), asCALL_CDECL);
-    engine->RegisterGlobalFunction("void unloadSceneChunk(Chunk &)", asFUNCTION(unloadSceneChunk), asCALL_CDECL);
+    engine->RegisterGlobalFunction("Scene @loadScene(const string &in, bool)", asFUNCTION(Engine::loadScene), asCALL_CDECL);
+    engine->RegisterGlobalFunction("void unloadScene(Scene &)", asFUNCTION(Engine::unloadScene), asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }

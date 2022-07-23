@@ -16,12 +16,12 @@ public:
 
     const char *name() const override;
 
-    void update(Scene *scene) override;
+    void update(SceneGraph *scene) override;
 
 #ifdef SHARED_DEFINE
     QWindow *createRhiWindow() const override;
 
-    ByteArray renderOffscreen(Scene *scene, int width, int height) override;
+    ByteArray renderOffscreen(SceneGraph *scene, int width, int height) override;
 #endif
 
 private:

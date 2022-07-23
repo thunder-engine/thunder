@@ -22,7 +22,7 @@
 #include <editor/assetconverter.h>
 #include <editor/codebuilder.h>
 
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/actor.h>
 
 #include <systems/resourcesystem.h>
@@ -188,7 +188,7 @@ QString AssetManager::assetTypeName(const QFileInfo &source) {
     }
     AssetConverterSettings *settings = fetchSettings(path);
     if(sub.isEmpty()) {
-        return settings->typeNames().front();
+        return settings->typeNames().constFirst();
     }
     return settings->subTypeName(sub);
 }
@@ -397,7 +397,7 @@ void AssetManager::duplicateResource(const QFileInfo &source) {
 
     if(!settings->isCode()) {
         AssetConverterSettings *s = fetchSettings(src);
-        registerAsset(settings->source(), settings->destination(), s->typeNames().front());
+        registerAsset(settings->source(), settings->destination(), s->typeNames().constFirst());
     }
     // Icon and resource
     QFile::copy(m_projectManager->iconPath() + "/" + guid,
@@ -413,7 +413,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     int index = source.indexOf(':');
     QString id = source.left(index);
     QString name = source.mid(index + 1);
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::scene()));
+    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::sceneGraph()));
     if(actor) {
         Actor *clone = static_cast<Actor *>(actor->clone(actor->parent()));
         QString path = target.absoluteFilePath() + "/" + name + ".fab";
@@ -431,7 +431,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
             clone->setPrefab(fab);
 
             if(!settings->isCode()) {
-                registerAsset(settings->source(), settings->destination(), settings->typeNames().front());
+                registerAsset(settings->source(), settings->destination(), settings->typeNames().constFirst());
 
                 string dest = settings->destination().toStdString();
                 Engine::setResource(fab, dest);
@@ -667,7 +667,7 @@ void AssetManager::onFileChanged(const QString &path, bool force) {
         } else {
             if(!settings->isCode()) {
                 QString guid = settings->destination();
-                registerAsset(info, guid, settings->typeNames().front());
+                registerAsset(info, guid, settings->typeNames().constFirst());
                 for(const QString &it : settings->subKeys()) {
                     QString value = settings->subItem(it);
                     QString path = info.absoluteFilePath() + "/" + it;
@@ -768,7 +768,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 Log(Log::INF) << "Converting:" << qPrintable(settings->source());
 
                 QString guid = settings->destination();
-                QString type = settings->typeNames().front();
+                QString type = settings->typeNames().constFirst();
                 QString source = settings->source();
                 registerAsset(source, guid, type);
 

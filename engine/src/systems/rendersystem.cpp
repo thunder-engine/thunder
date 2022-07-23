@@ -1,6 +1,6 @@
 #include "systems/rendersystem.h"
 
-#include "components/scene.h"
+#include "components/scenegraph.h"
 #include "components/meshrender.h"
 #include "components/textrender.h"
 #include "components/spriterender.h"
@@ -90,7 +90,7 @@ bool RenderSystem::init() {
     return true;
 }
 
-void RenderSystem::update(Scene *scene) {
+void RenderSystem::update(SceneGraph *sceneGraph) {
     PROFILE_FUNCTION();
 
     PROFILER_RESET(POLYGONS);
@@ -99,7 +99,7 @@ void RenderSystem::update(Scene *scene) {
     Camera *camera = Camera::current();
     if(camera) {
         Pipeline *pipe = camera->pipeline();
-        pipe->analizeScene(scene, this);
+        pipe->analizeScene(sceneGraph, this);
         pipe->draw(*camera);
         pipe->finish();
     }
@@ -135,7 +135,7 @@ QWindow *RenderSystem::createRhiWindow() const {
     return nullptr;
 }
 
-ByteArray RenderSystem::renderOffscreen(Scene *scene, int width, int height) {
+ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int height) {
     static Texture *color = nullptr;
     if(color == nullptr) {
         color = Engine::objectCreate<Texture>();
@@ -169,7 +169,7 @@ ByteArray RenderSystem::renderOffscreen(Scene *scene, int width, int height) {
     }
 
     setOffscreenMode(true);
-    update(scene);
+    update(sceneGraph);
     setOffscreenMode(false);
 
     color->readPixels(0, 0, width, height);

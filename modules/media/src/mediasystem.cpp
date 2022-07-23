@@ -49,7 +49,7 @@ const char *MediaSystem::name() const {
     return "Media";
 }
 
-void MediaSystem::update(Scene *) {
+void MediaSystem::update(SceneGraph *) {
     PROFILE_FUNCTION();
 
     Camera *camera  = Camera::current();
@@ -57,7 +57,7 @@ void MediaSystem::update(Scene *) {
         Actor *a = camera->actor();
         Transform *t = a->transform();
 
-        alListenerfv(AL_POSITION,    t->worldPosition().v);
+        alListenerfv(AL_POSITION, t->worldPosition().v);
 
         Quaternion rot = t->worldQuaternion();
 

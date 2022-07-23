@@ -350,7 +350,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -383,8 +383,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionEditor_Mode"/>
-    <addaction name="actionGame_Mode"/>
+    <addaction name="actionPlay"/>
+    <addaction name="actionPause"/>
     <addaction name="separator"/>
     <addaction name="actionTake_Screenshot"/>
    </widget>
@@ -488,26 +488,21 @@
     <string notr="true"/>
    </property>
   </action>
-  <action name="actionEditor_Mode">
+  <action name="actionPlay">
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="text">
-    <string>Editor Mode</string>
-   </property>
-   <property name="shortcut">
-    <string notr="true">Esc</string>
-   </property>
-  </action>
-  <action name="actionGame_Mode">
-   <property name="checkable">
+   <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Game Mode</string>
+    <string>Play Game</string>
+   </property>
+   <property name="toolTip">
+    <string>Play Game</string>
    </property>
    <property name="shortcut">
-    <string notr="true">Ctrl+G</string>
+    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="actionSave_As">
@@ -637,6 +632,17 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="text">
+    <string>Pause Game</string>
+   </property>
+   <property name="toolTip">
+    <string>Pause Game</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+G</string>
    </property>
   </action>
  </widget>

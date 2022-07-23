@@ -4,7 +4,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/scene.h"
+#include "components/scenegraph.h"
 #include "components/camera.h"
 #include "components/renderable.h"
 #include "components/directlight.h"
@@ -222,7 +222,7 @@ void Pipeline::resize(int32_t width, int32_t height) {
     }
 }
 
-void Pipeline::analizeScene(Scene *scene, RenderSystem *system) {
+void Pipeline::analizeScene(SceneGraph *scene, RenderSystem *system) {
     m_system = system;
 
     m_sceneComponents.clear();

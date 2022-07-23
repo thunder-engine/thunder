@@ -6,7 +6,7 @@
 
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <components/camera.h>
 #include <components/directlight.h>
 
@@ -24,7 +24,7 @@ IconRender::IconRender(Engine *engine, QObject *parent) :
         m_Init(false),
         m_pLight(nullptr) {
 
-    m_pScene = Engine::objectCreate<Scene>();
+    m_pScene = Engine::objectCreate<SceneGraph>();
     m_pActor = Engine::composeActor("Camera", "ActiveCamera", m_pScene);
     m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     m_pCamera = static_cast<Camera *>(m_pActor->component("Camera"));
@@ -66,7 +66,8 @@ const QImage IconRender::render(const QString &resource, const QString &) {
     }
 
     Camera::setCurrent(m_pCamera);
-    ByteArray data = PluginManager::instance()->render()->renderOffscreen(m_pScene, 128, 128);
+    RenderSystem *render = PluginManager::instance()->render();
+    ByteArray data = render->renderOffscreen(m_pScene, 128, 128);
 
     delete object;
 

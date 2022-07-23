@@ -18,8 +18,8 @@
 #include "timer.h"
 #include "input.h"
 
+#include "components/scenegraph.h"
 #include "components/scene.h"
-#include "components/chunk.h"
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
@@ -102,7 +102,7 @@ public:
     static list<System *>    m_Pool;
     static list<System *>    m_Serial;
 
-    static Scene            *m_Scene;
+    static SceneGraph       *m_SceneGraph;
 
     static Engine           *m_Instance;
 
@@ -140,7 +140,7 @@ string           EnginePrivate::m_ApplicationDir;
 string           EnginePrivate::m_Organization;
 string           EnginePrivate::m_Application;
 PlatformAdaptor *EnginePrivate::m_Platform = nullptr;
-Scene           *EnginePrivate::m_Scene = nullptr;
+SceneGraph      *EnginePrivate::m_SceneGraph = nullptr;
 ResourceSystem  *EnginePrivate::m_pResourceSystem = nullptr;
 Translator      *EnginePrivate::m_Translator = nullptr;
 Engine          *EnginePrivate::m_Instance = nullptr;
@@ -224,8 +224,8 @@ Engine::Engine(File *file, const char *path) :
 
     AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
 
+    SceneGraph::registerClassFactory(this);
     Scene::registerClassFactory(this);
-    Chunk::registerClassFactory(this);
     Actor::registerClassFactory(this);
     Component::registerClassFactory(this);
     Transform::registerClassFactory(this);
@@ -240,7 +240,7 @@ Engine::Engine(File *file, const char *path) :
     ControlScheme::registerClassFactory(p_ptr->m_pResourceSystem);
     PlayerInput::registerClassFactory(this);
 
-    EnginePrivate::m_Scene = Engine::objectCreate<Scene>("Scene");
+    EnginePrivate::m_SceneGraph = Engine::objectCreate<SceneGraph>("SceneGraph");
 }
 /*!
     Destructs Engine, related objects, registered object factories and platform adaptor.
@@ -300,16 +300,16 @@ bool Engine::start() {
     EnginePrivate::m_Game = true;
 
     string path = value(gEntry, "").toString();
-    if(loadSceneChunk(path, false) == nullptr) {
+    if(loadScene(path, false) == nullptr) {
         Log(Log::ERR) << "Unable to load" << path.c_str();
         p_ptr->m_Platform->stop();
         return false;
     }
 
-    Camera *component = EnginePrivate::m_Scene->findChild<Camera *>();
+    Camera *component = EnginePrivate::m_SceneGraph->findChild<Camera *>();
     if(component == nullptr) {
         Log(Log::DBG) << "Camera not found creating a new one.";
-        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_Scene);
+        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_SceneGraph);
         camera->transform()->setPosition(Vector3(0.0f));
     }
 
@@ -348,7 +348,7 @@ void Engine::update() {
 
     Camera *camera = Camera::current();
     if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {
-        for(auto it : EnginePrivate::m_Scene->findChildren<Camera *>()) {
+        for(auto it : EnginePrivate::m_SceneGraph->findChildren<Camera *>()) {
             if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
                 camera = it;
                 break;
@@ -360,19 +360,19 @@ void Engine::update() {
 
     processEvents();
 
-    EnginePrivate::m_Scene->setToBeUpdated(true);
+    EnginePrivate::m_SceneGraph->setToBeUpdated(true);
 
     for(auto it : EnginePrivate::m_Pool) {
-        it->setActiveScene(EnginePrivate::m_Scene);
+        it->setActiveScene(EnginePrivate::m_SceneGraph);
         p_ptr->m_ThreadPool.start(*it);
     }
     for(auto it : EnginePrivate::m_Serial) {
-        it->setActiveScene(EnginePrivate::m_Scene);
+        it->setActiveScene(EnginePrivate::m_SceneGraph);
         it->processEvents();
     }
     p_ptr->m_ThreadPool.waitForDone();
 
-    EnginePrivate::m_Scene->setToBeUpdated(false);
+    EnginePrivate::m_SceneGraph->setToBeUpdated(false);
 
     p_ptr->m_Platform->update();
 }
@@ -387,7 +387,8 @@ void Engine::processEvents() {
     if(isGameMode()) {
         for(auto it : m_ObjectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
-            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() == EnginePrivate::m_Scene) {
+            if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() &&
+               comp->actor()->scene()->parent() == EnginePrivate::m_SceneGraph) {
                 if(!comp->isStarted()) {
                     comp->start();
                     comp->setStarted(true);
@@ -626,43 +627,26 @@ void Engine::addModule(Module *module) {
     }
 }
 /*!
-    Returns game Scene.
-    \note The game can have only one scene. Scene is a root object, all map loads on this scene.
+    Returns game SceneGraph.
+    \note The game can have only one scene graph. SceneGraph is a root object, all map loads on this SceneGraph.
 */
-Scene *Engine::scene() {
+SceneGraph *Engine::sceneGraph() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_Scene;
+    return EnginePrivate::m_SceneGraph;
 }
 /*!
-    Loads the scene chunk stored in the .map files by the it's \a path to the Engine.
-    \note The previous chunks will be not unloaded in the case of an \a additive flag is true.
+    Loads the scene stored in the .map files by the it's \a path to the Engine.
+    \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
-Chunk *Engine::loadSceneChunk(const string &path, bool additive) {
-    Map *map = loadResource<Map>(path);
-    if(map) {
-        Chunk *chunk = map->chunk();
-        if(chunk) {
-            if(additive) {
-                chunk->setParent(EnginePrivate::m_Scene);
-            } else {
-                for(auto it : EnginePrivate::m_Scene->getChildren()) {
-                    unloadSceneChunk(dynamic_cast<Chunk *>(it));
-                }
-                chunk->setParent(EnginePrivate::m_Scene);
-            }
-
-            return chunk;
-        }
-    }
-    return nullptr;
+Scene *Engine::loadScene(const string &path, bool additive) {
+    return EnginePrivate::m_SceneGraph->loadScene(path, additive);
 }
-
-void Engine::unloadSceneChunk(Chunk *chunk) {
-    Resource *map = dynamic_cast<Resource *>(chunk->resource());
-    if(map) {
-        EnginePrivate::m_pResourceSystem->unloadResource(map);
-    }
+/*!
+    Unloads the \a scene from the SceneGraph.
+*/
+void Engine::unloadScene(Scene *scene) {
+    EnginePrivate::m_SceneGraph->unloadScene(scene);
 }
 /*!
     Returns file system module.

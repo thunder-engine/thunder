@@ -620,7 +620,7 @@ void Object::disconnect(Object *sender, const char *signal, Object *receiver, co
 }
 /*!
     Marks this object to be deleted.
-    This object will be deleted when event loop will call processEvent() method for this object.
+    This object will be deleted when event loop will call processEvents() method for this object.
 */
 void Object::deleteLater() {
     PROFILE_FUNCTION();

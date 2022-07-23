@@ -3,7 +3,7 @@
 #include "agl.h"
 
 #include <components/camera.h>
-#include <components/scene.h>
+#include <components/scenegraph.h>
 
 #include <resources/pipeline.h>
 
@@ -105,7 +105,7 @@ bool RenderGLSystem::init() {
 /*!
     Main drawing procedure.
 */
-void RenderGLSystem::update(Scene *scene) {
+void RenderGLSystem::update(SceneGraph *scene) {
     PROFILE_FUNCTION();
 
     Camera *camera = Camera::current();
@@ -131,9 +131,9 @@ QWindow *RenderGLSystem::createRhiWindow() const {
     return createWindow();
 }
 
-ByteArray RenderGLSystem::renderOffscreen(Scene *scene, int width, int height) {
+ByteArray RenderGLSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int height) {
     makeCurrent();
-    return RenderSystem::renderOffscreen(scene, width, height);
+    return RenderSystem::renderOffscreen(sceneGraph, width, height);
 }
 
 #endif

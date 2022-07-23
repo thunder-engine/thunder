@@ -50,14 +50,13 @@ public:
 
     Object *findObject(uint32_t id);
 
-    void setContextMenu(QMenu *menu);
-
 signals:
     void selected(Object::ObjectList objects);
     void focused(Object *object);
     void parented(Object::ObjectList objects, Object *parent, int index);
     void updated();
     void removed();
+    void menuRequested(Object *object, const QPoint &point);
 
 public slots:
     void onObjectSelected(Object::ObjectList objects);
@@ -93,8 +92,6 @@ private:
     QRubberBand *m_line;
 
     ObjectsFilter *m_filter;
-
-    QMenu *m_contentMenu;
 
 };
 

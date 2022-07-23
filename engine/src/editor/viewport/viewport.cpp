@@ -16,7 +16,7 @@
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_pController(nullptr),
-        m_pScene(nullptr),
+        m_pSceneGraph(nullptr),
         m_pRHIWindow(nullptr) {
 
     QVBoxLayout *l = new QVBoxLayout;
@@ -46,8 +46,8 @@ void Viewport::setController(CameraCtrl *ctrl) {
     m_pController = ctrl;
 }
 
-void Viewport::setScene(Scene *scene) {
-    m_pScene = scene;
+void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
+    m_pSceneGraph = sceneGraph;
 }
 
 void Viewport::onCursorSet(const QCursor &cursor) {
@@ -73,12 +73,12 @@ void Viewport::onDraw() {
         }
         Camera::setCurrent(camera);
     }
-    if(m_pScene) {
+    if(m_pSceneGraph) {
         Engine::resourceSystem()->processEvents();
 
         RenderSystem *render = PluginManager::instance()->render();
         if(render) {
-            render->update(m_pScene);
+            render->update(m_pSceneGraph);
         }
         Camera::setCurrent(nullptr);
     }
@@ -97,7 +97,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     case QEvent::MouseMove: {
         // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
         if(m_pController && m_pRHIWindow == QGuiApplication::focusWindow()) {
-            m_pController->onInputEvent(static_cast<QInputEvent *>(event));
+            m_pController->onInputEvent(static_cast<QMouseEvent *>(event));
         }
         return true;
     }

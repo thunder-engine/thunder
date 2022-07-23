@@ -23,7 +23,7 @@ public:
 
     virtual const char *name() const = 0;
 
-    virtual void update(Scene *scene) = 0;
+    virtual void update(SceneGraph *sceneGraph) = 0;
 
     virtual int threadPolicy() const = 0;
 
@@ -31,12 +31,12 @@ public:
 
     virtual void composeComponent(Component *component) const;
 
-    void setActiveScene(Scene *scene);
+    void setActiveScene(SceneGraph *sceneGraph);
 
     void processEvents() override;
 
 protected:
-    Scene *m_pScene;
+    SceneGraph *m_pSceneGraph;
 
 };
 

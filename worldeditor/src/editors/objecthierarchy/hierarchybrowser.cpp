@@ -10,7 +10,7 @@
 
 #include <object.h>
 #include <invalid.h>
-#include <components/chunk.h>
+#include <components/scene.h>
 #include <components/actor.h>
 #include <components/component.h>
 
@@ -133,8 +133,7 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
         ui(new Ui::HierarchyBrowser),
         m_rect(nullptr),
         m_line(nullptr),
-        m_filter(nullptr),
-        m_contentMenu(nullptr) {
+        m_filter(nullptr) {
 
     ui->setupUi(this);
 
@@ -188,10 +187,6 @@ void HierarchyBrowser::setComponentsFilter(const QStringList &list) {
 Object *HierarchyBrowser::findObject(uint32_t id) {
     ObjectHierarchyModel *model = static_cast<ObjectHierarchyModel *>(m_filter->sourceModel());
     return model->findObject(id);
-}
-
-void HierarchyBrowser::setContextMenu(QMenu *menu) {
-    m_contentMenu = menu;
 }
 
 void expandToIndex(const QModelIndex &index, QTreeView *view) {
@@ -390,14 +385,12 @@ void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos)
         emit selected(list);
     }
 
+    QPoint point = static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos);
+
     QModelIndex index = ui->treeView->indexAt(pos);
     Object *object = static_cast<Object *>(m_filter->mapToSource(index).internalPointer());
-    Chunk *chunk = dynamic_cast<Chunk *>(object);
-    if(chunk) {
 
-    } else if(m_contentMenu) {
-        m_contentMenu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
-    }
+    emit menuRequested(object, point);
 }
 
 void HierarchyBrowser::onItemRename() {

@@ -55,12 +55,15 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
             s.z += scale;
         }
 
-        for(const auto &it : m_Selected) {
+        QSet<Scene *> scenes;
+        for(const auto &it : qAsConst(m_Selected)) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {
                 parent = tr->parentTransform()->worldTransform();
             }
+
+            scenes.insert(it.object->scene());
 
             Vector3 v(it.scale + s);
             tr->setScale(v);
@@ -68,8 +71,10 @@ void ScaleTool::update(bool pivot, bool local, float snap) {
             Vector3 p(parent * it.position - m_Position);
             tr->setPosition(parent.inverse() * (v * p + m_Position));
         }
-        m_pController->objectsUpdated();
-        m_pController->objectsChanged(m_pController->selected(), "Scale");
+        for(auto it : scenes) {
+            emit m_pController->objectsUpdated(it);
+        }
+        emit m_pController->objectsChanged(m_pController->selected(), "Scale");
     }
 }
 

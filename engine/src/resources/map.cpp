@@ -1,19 +1,19 @@
 #include "resources/map.h"
 
-#include "components/chunk.h"
+#include "components/scene.h"
 
 class MapPrivate {
 public:
     MapPrivate() :
-            m_chunk(nullptr) {
+            m_scene(nullptr) {
 
     }
 
     ~MapPrivate() {
-        delete m_chunk;
+        delete m_scene;
     }
 
-    Chunk *m_chunk;
+    Scene *m_scene;
 };
 
 /*!
@@ -31,24 +31,24 @@ Map::~Map() {
     delete p_ptr;
 }
 /*!
-    Returns a scene chunk which can be added to the scene.
+    Returns a scene which can be added to the scene graph.
 */
-Chunk *Map::chunk() const {
-    if(p_ptr->m_chunk == nullptr) {
+Scene *Map::scene() const {
+    if(p_ptr->m_scene == nullptr) {
         auto &children = getChildren();
         if(!children.empty()) {
-            p_ptr->m_chunk = dynamic_cast<Chunk *>(children.front());
-            p_ptr->m_chunk->setResource(const_cast<Map *>(this));
+            p_ptr->m_scene = dynamic_cast<Scene *>(children.front());
+            p_ptr->m_scene->setResource(const_cast<Map *>(this));
         }
     }
-    return p_ptr->m_chunk;
+    return p_ptr->m_scene;
 }
 /*!
     \internal
 */
-void Map::setChunk(Chunk *chunk) {
-    p_ptr->m_chunk = chunk;
-    if(p_ptr->m_chunk) {
-        p_ptr->m_chunk->setResource(this);
+void Map::setScene(Scene *scene) {
+    p_ptr->m_scene = scene;
+    if(p_ptr->m_scene) {
+        p_ptr->m_scene->setResource(this);
     }
 }

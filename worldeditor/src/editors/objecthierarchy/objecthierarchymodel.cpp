@@ -1,6 +1,11 @@
 #include "objecthierarchymodel.h"
 
+#include <QApplication>
+#include <QFont>
+
 #include "components/actor.h"
+#include "components/scene.h"
+#include "components/scenegraph.h"
 #include "resources/prefab.h"
 
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
@@ -46,36 +51,45 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
     Object *object = static_cast<Object* >(index.internalPointer());
-    Actor *item = dynamic_cast<Actor *>(object);
+    Actor *actor = dynamic_cast<Actor *>(object);
+    Scene *scene = dynamic_cast<Scene *>(object);
 
     switch(role) {
     case Qt::EditRole:
     case Qt::ToolTipRole:
     case Qt::DisplayRole: {
         switch(index.column()) {
-            case 0: return QString::fromStdString(object->name());
+            case 0: return QString::fromStdString(object->name()) + ((scene && scene->isModified()) ? " *" : "");
             case 1: return QString::fromStdString(object->typeName());
             default: break;
         }
     } break;
     case Qt::DecorationRole: {
-        if(index.column() == 0) {
-            if(item) {
-                return item->isInstance() ? m_prefab : m_actor;
-            }
-        }
-        if(item) {
-            if(index.column() == 2) {
-                return (item->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
-            }
-            if(index.column() == 3) {
-                return (item->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
+        if(actor) {
+            switch(index.column()) {
+                case 0: return actor->isInstance() ? m_prefab : m_actor;
+                case 2: return (actor->hideFlags() & Actor::ENABLE) ? m_visible : m_invisible;
+                case 3: return (actor->hideFlags() & Actor::SELECTABLE) ? QVariant() : m_selectDisable;
+                default: break;
             }
         }
     } break;
+    case Qt::BackgroundColorRole: {
+        if(index.column() == 2 || index.column() == 3) {
+            return QColor(0, 0, 0, 128);
+        }
+    } break;
+    case Qt::FontRole: {
+        if(scene && static_cast<SceneGraph *>(m_rootItem)->activeScene() == scene) {
+            QFont font = QApplication::font("QTreeView");
+            font.setBold(true);
+            font.setPointSize(10);
+            return font;
+        }
+    } break;
     case Qt::TextColorRole: {
-        if(item && item->isInstance()) {
-            if(Engine::reference(item->prefab()).empty()) {
+        if(actor && actor->isInstance()) {
+            if(Engine::reference(actor->prefab()).empty()) {
                 return QColor(255, 95, 82);
             }
             return QColor(88, 165, 240);

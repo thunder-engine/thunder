@@ -9,11 +9,13 @@
 #include <engine.h>
 #include <module.h>
 #include <system.h>
-#include <components/scene.h>
+#include <components/scenegraph.h>
 #include <systems/rendersystem.h>
 
 #include <bson.h>
 #include <json.h>
+
+#include "config.h"
 
 #if defined(Q_OS_MAC)
 #define PLUGINS "/../../../plugins"
@@ -22,8 +24,6 @@
 #endif
 
 const char *gComponents("components");
-
-QStringList g_Suffixes = { "*.dll", "*.dylib", "*.so" };
 
 typedef Module *(*moduleHandler) (Engine *engine);
 
@@ -145,9 +145,9 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                             fault = true;
                         }
                     } else if(it.second == "render") {
-                        QString renderName("RenderGL");
-                        if(qEnvironmentVariableIsSet("RENDER")) {
-                            renderName = qEnvironmentVariable("RENDER");
+                        QString renderName("RenderGL"); // Default
+                        if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
+                            renderName = qEnvironmentVariable(qPrintable(gRhi));
                         }
 
                         if(QString(it.first.c_str()) == renderName) {
@@ -268,7 +268,7 @@ void PluginManager::reloadPlugin(const QString &path) {
 }
 
 void PluginManager::rescanPath(const QString &path) {
-    QDirIterator it(path, g_Suffixes, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(path, { QString("*") + gShared }, QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext()) {
         loadPlugin(it.next());
     }
@@ -311,8 +311,8 @@ void PluginManager::initSystems() {
     }
 }
 
-void PluginManager::addScene(Scene *scene) {
-    m_Scenes.push_back(scene);
+void PluginManager::addScene(SceneGraph *sceneGraph) {
+    m_Scenes.push_back(sceneGraph);
 }
 
 typedef list<const Object *> ObjectArray;
@@ -328,7 +328,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
 
 void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
     for(auto &type : list) {
-        foreach(Scene *scene, m_Scenes) {
+        foreach(SceneGraph *scene, m_Scenes) {
             ObjectArray array;
 
             enumComponents(scene, type, array);

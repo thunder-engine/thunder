@@ -42,6 +42,11 @@ Vector2::Vector2(areal x, areal y) :
     x(x),
     y(y) {
 }
+
+Vector2::~Vector2() {
+
+}
+
 /*!
     Returns true if this vector is equal to given \a vector; otherwise returns false.
     This operator uses an exact floating-point comparison.

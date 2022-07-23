@@ -84,7 +84,9 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
         }
         delta *= 0.5f;
 
-        for(const auto &it : m_Selected) {
+        QSet<Scene *> scenes;
+
+        for(const auto &it : qAsConst(m_Selected)) {
             Transform *tr = it.object->transform();
 
             Matrix4 parent;
@@ -129,10 +131,14 @@ void ResizeTool::update(bool pivot, bool local, float snap) {
                 tr->setScale(v);
                 tr->setPosition(parent.inverse() * (v * p + m_Position + delta * mask));
             }
+
+            scenes.insert(it.object->scene());
         }
 
-        m_pController->objectsChanged(m_pController->selected(), "Scale");
-        m_pController->objectsUpdated();
+        emit m_pController->objectsChanged(m_pController->selected(), "Scale");
+        for(auto it : scenes) {
+            emit m_pController->objectsUpdated(it);
+        }
     }
 
     Qt::CursorShape shape = Qt::ArrowCursor;

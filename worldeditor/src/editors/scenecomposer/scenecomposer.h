@@ -7,6 +7,7 @@
 
 class NextObject;
 class ObjectCtrl;
+class SceneGraphObserver;
 
 namespace Ui {
     class SceneComposer;
@@ -19,19 +20,20 @@ public:
     explicit SceneComposer(QWidget *parent = nullptr);
     ~SceneComposer();
 
-    void setEngine(Engine *engine);
+    void init();
 
     VariantList saveState();
     void restoreState(const VariantList &state);
 
-    void backupScene();
-    void restoreBackupScene();
+    void backupScenes();
+    void restoreBackupScenes();
 
     void takeScreenshot();
 
-    QString path() const;
+    QString map() const;
 
-    QMenu *contextMenu();
+    SceneGraph *currentSceneGraph() const;
+    void sceneGraphUpdated(SceneGraph *graph);
 
 signals:
     void hierarchyCreated(Object *root);
@@ -52,8 +54,12 @@ public slots:
     void onFocusActor(Object *actor);
     void onItemDelete();
 
+    void onMenuRequested(Object *object, const QPoint &point);
+
 private slots:
     void onLocal(bool flag);
+
+    void onSetActiveScene();
 
     void onRepickSelected();
 
@@ -66,15 +72,19 @@ private slots:
     void onPrefabUnpackCompletely();
 
     void onSaveIsolated();
+    void onSave() override;
+    void onSaveAs() override;
+    void onSaveAll();
 
-    void onObjectMenuAboutToShow();
+    void onRemoveScene();
+    void onDiscardChanges();
+    void onNewAsset() override;
 
     void onDropMap(QString name, bool additive);
 
     void onActivated() override;
 
 private:
-    void newAsset() override;
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path = QString()) override;
 
@@ -84,6 +94,7 @@ private:
     QStringList suffixes() const override;
 
     bool loadMap(QString path, bool additive);
+    void saveMap(QString path, Scene *scene);
 
     void enterToIsolation(AssetConverterSettings *settings);
     void quitFromIsolation();
@@ -93,24 +104,30 @@ private:
 private:
     Ui::SceneComposer *ui;
 
-    QMenu m_contentMenu;
+    QMenu m_actorMenu;
+    QMenu m_sceneMenu;
 
-    VariantList m_isolationBackState;
-
-    QList<ByteArray> m_backupScenes;
-
-    QList<QAction *> m_objectActions;
-    QList<QAction *> m_prefabActions;
-
-    AssetConverterSettings *m_isolationSettings;
+    Object *m_menuObject;
 
     NextObject *m_properties;
 
     ObjectCtrl *m_controller;
 
-    Scene *m_isolationScene;
+    SceneGraphObserver *m_sceneGraphObserver;
 
-    Engine *m_engine;
+    QList<ByteArray> m_backupScenes;
+
+    QMap<Object *, AssetConverterSettings *> m_sceneSettings;
+
+    QList<QAction *> m_objectActions;
+    QList<QAction *> m_prefabActions;
+    QAction *m_activeSceneAction;
+
+    VariantList m_isolationBackState;
+
+    AssetConverterSettings *m_isolationSettings;
+
+    SceneGraph *m_isolationScene;
 
 };
 

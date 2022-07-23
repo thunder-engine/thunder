@@ -32,20 +32,18 @@ public:
 
     void clear(bool signal = true);
 
+    SceneGraph *sceneGraph() const;
+    void setSceneGraph(SceneGraph *graph);
+
+    void switchActiveScene();
+
     void selectActors(const list<uint32_t> &list);
 
     Object::ObjectList selected() override;
 
     void createMenu(QMenu *menu) override;
 
-    list<pair<Object *, bool>> objects() const;
-    void addObject(Object *object);
-    void setObject(Object *object);
-
     Object *findObject(uint32_t id, Object *parent = nullptr);
-
-    bool isModified() const;
-    void resetModified();
 
     void setIsolatedActor(Actor *actor);
     Actor *isolatedActor() const { return m_isolatedActor; }
@@ -60,8 +58,8 @@ public:
 public slots:
     void onInputEvent(QInputEvent *) override;
 
-    void onCreateComponent(const QString &name);
-    void onDeleteComponent(const QString &name);
+    void onCreateComponent(const QString &type);
+    void onDeleteComponent(const QString &type);
     void onUpdateSelected();
 
     void onDrop();
@@ -80,7 +78,7 @@ public slots:
 
     void onChangeTool();
 
-    void onUpdated();
+    void onUpdated(Scene *scene = nullptr);
 
     void onLocal(bool flag);
     void onPivot(bool flag);
@@ -88,9 +86,9 @@ public slots:
     void drawHelpers(Object &object);
 
 signals:
-    void mapUpdated();
+    void sceneUpdated(Scene *scene);
 
-    void objectsUpdated();
+    void objectsUpdated(Scene *scene);
     void objectsChanged(Object::ObjectList objects, const QString &property);
     void objectsSelected(Object::ObjectList objects);
 
@@ -114,7 +112,7 @@ protected:
 
     Object::ObjectList m_isolationSelectedBackup;
 
-    list<pair<Object *, bool>> m_editObjects;
+    SceneGraph *m_sceneGraph;
     Object::ObjectList m_dragObjects;
 
     list<uint32_t> m_objectsList;
@@ -169,12 +167,13 @@ protected:
 
 class CreateObject : public UndoObject {
 public:
-    CreateObject(const QString &type, ObjectCtrl *ctrl, QUndoCommand *group = nullptr);
+    CreateObject(const QString &type, Scene *scene, ObjectCtrl *ctrl, QUndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 protected:
     list<uint32_t> m_objects;
     QString m_type;
+    uint32_t m_scene;
 };
 
 class DuplicateObjects : public UndoObject {
@@ -244,6 +243,15 @@ public:
 protected:
     QString m_property;
     Variant m_value;
+    uint32_t m_object;
+};
+
+class SelectScene : public UndoObject {
+public:
+    SelectScene(Scene *scene, ObjectCtrl *ctrl, const QString &name = QObject::tr("Select Scene"), QUndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+protected:
     uint32_t m_object;
 };
 
