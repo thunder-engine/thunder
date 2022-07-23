@@ -22,7 +22,6 @@ Resource *Scene::resource() const {
     \internal
 */
 void Scene::setResource(Resource *resource) {
-    string path = Engine::reference(resource);
     m_resource = resource;
 }
 /*!
