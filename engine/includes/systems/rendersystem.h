@@ -20,7 +20,7 @@ public:
 
     bool init() override;
 
-    void update(Scene *scene) override;
+    void update(SceneGraph *sceneGraph) override;
 
     int threadPolicy() const override;
 
@@ -31,7 +31,7 @@ public:
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow() const;
 
-    virtual ByteArray renderOffscreen(Scene *scene, int width, int height);
+    virtual ByteArray renderOffscreen(SceneGraph *sceneGraph, int width, int height);
 #endif
 
     static void atlasPageSize(int32_t &width, int32_t &height);

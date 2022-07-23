@@ -6,6 +6,7 @@
 #include <QVariant>
 #include <QWidgetAction>
 #include <QApplication>
+#include <QMessageBox>
 
 #include <QQmlContext>
 #include <QQuickItem>
@@ -64,8 +65,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_documentModel(nullptr),
         m_undo(nullptr),
         m_redo(nullptr),
-        m_mainDocument(nullptr),
-        m_currentDocument(nullptr),
+        m_mainEditor(nullptr),
+        m_currentEditor(nullptr),
         m_builder(new QProcess(this)) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
@@ -93,22 +94,20 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     ui->preview->setEngine(m_engine);
 
-    m_mainDocument = ui->viewportWidget;
+    m_mainEditor = ui->viewportWidget;
 
     m_undo = UndoManager::instance()->createUndoAction(ui->menuEdit);
     m_undo->setShortcut(QKeySequence("Ctrl+Z"));
-    ui->menuEdit->insertAction(ui->actionEditor_Mode, m_undo);
+    ui->menuEdit->insertAction(ui->actionPlay, m_undo);
 
     m_redo = UndoManager::instance()->createRedoAction(ui->menuEdit);
     m_redo->setShortcut(QKeySequence("Ctrl+Y"));
-    ui->menuEdit->insertAction(ui->actionEditor_Mode, m_redo);
+    ui->menuEdit->insertAction(ui->actionPlay, m_redo);
 
-    ui->menuEdit->insertSeparator(ui->actionEditor_Mode);
+    ui->menuEdit->insertSeparator(ui->actionPlay);
 
     ui->componentButton->setProperty("blue", true);
     ui->commitButton->setProperty("green", true);
-
-    ui->hierarchy->setContextMenu(ui->viewportWidget->contextMenu());
 
     connect(ui->actionBuild_All, &QAction::triggered, this, &MainWindow::onBuildProject);
 
@@ -161,6 +160,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(ui->hierarchy, &HierarchyBrowser::parented, ui->viewportWidget, &SceneComposer::onParentActors);
     connect(ui->hierarchy, &HierarchyBrowser::focused, ui->viewportWidget, &SceneComposer::onFocusActor);
     connect(ui->hierarchy, &HierarchyBrowser::removed, ui->viewportWidget, &SceneComposer::onItemDelete);
+    connect(ui->hierarchy, &HierarchyBrowser::menuRequested, ui->viewportWidget, &SceneComposer::onMenuRequested);
 
     connect(ui->contentBrowser, &ContentBrowser::assetSelected, this, &MainWindow::onItemSelected);
     connect(ui->contentBrowser, &ContentBrowser::openEditor, this, &MainWindow::onOpenEditor);
@@ -202,7 +202,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
 
     onItemSelected(nullptr);
 
-    on_actionEditor_Mode_triggered();
+    setGameMode(false);
     resetGeometry();
 
     connect(m_builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
@@ -250,7 +250,7 @@ void MainWindow::onOpenEditor(const QString &path) {
         connect(editor, SIGNAL(updateAsset()), ui->contentBrowser, SLOT(assetUpdated()), Qt::UniqueConnection);
 
         if(ui->toolWidget->areaFor(editor) == nullptr) {
-            QWidget *neighbor = m_mainDocument;
+            QWidget *neighbor = m_mainEditor;
             for(auto &it : findChildren<QWidget *>()) {
                 if(it->inherits(editor->metaObject()->className())) {
                     neighbor = it;
@@ -278,7 +278,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if(m_documentModel) {
         for(auto &it : m_documentModel->documents()) {
             ui->toolWidget->activateToolWindow(it);
-            if(!m_documentModel->checkSave(it)) {
+            if(!it->checkSave()) {
                 event->ignore();
                 return;
             }
@@ -288,7 +288,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QString str = ProjectManager::instance()->projectId();
     if(!str.isEmpty()) {
         VariantList params;
-        params.push_back(qPrintable(ui->viewportWidget->path()));
+        params.push_back(qPrintable(ui->viewportWidget->map()));
         params.push_back(ui->viewportWidget->saveState());
 
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
@@ -326,31 +326,31 @@ void MainWindow::on_revertButton_clicked() {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    m_documentModel->newFile(m_mainDocument);
+    m_documentModel->newFile(m_mainEditor);
 
     UndoManager::instance()->clear();
 }
 
 void MainWindow::on_actionSave_triggered() {
-    if(!ui->actionGame_Mode->isChecked()) {
-        m_documentModel->saveFile(dynamic_cast<AssetEditor *>(m_currentDocument));
+    if(!Engine::isGameMode()) {
+        m_currentEditor->onSave();
     } else {
         QApplication::beep();
     }
 }
 
 void MainWindow::on_actionSave_As_triggered() {
-    if(!ui->actionGame_Mode->isChecked()) {
-        m_documentModel->saveFileAs(dynamic_cast<AssetEditor *>(m_currentDocument));
+    if(!Engine::isGameMode()) {
+        m_currentEditor->onSaveAs();
     }
 }
 
-void MainWindow::on_actionEditor_Mode_triggered() {
-    setGameMode(false);
+void MainWindow::on_actionPlay_triggered() {
+    setGameMode(!Engine::isGameMode());
 }
 
-void MainWindow::on_actionGame_Mode_triggered() {
-    setGameMode(true);
+void MainWindow::on_actionPause_triggered() {
+    ui->preview->setGamePause(!ui->preview->isGamePause());
 }
 
 void MainWindow::setGameMode(bool mode) {
@@ -359,15 +359,12 @@ void MainWindow::setGameMode(bool mode) {
             ui->toolWidget->moveToolWindow(ui->preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(ui->viewportWidget));
         }
         ui->toolWidget->activateToolWindow(ui->preview);
-        ui->viewportWidget->backupScene();
+        ui->viewportWidget->backupScenes();
         Timer::reset();
     } else {
         ui->toolWidget->activateToolWindow(ui->viewportWidget);
-        ui->viewportWidget->restoreBackupScene();
+        ui->viewportWidget->restoreBackupScenes();
     }
-
-    ui->actionEditor_Mode->setChecked(!mode);
-    ui->actionGame_Mode->setChecked(mode);
 
     m_undo->setEnabled(!mode);
     m_redo->setEnabled(!mode);
@@ -434,7 +431,7 @@ void MainWindow::onImportFinished() {
     connect(m_documentModel, &DocumentModel::itemSelected, this, &MainWindow::onItemSelected);
     connect(m_documentModel, &DocumentModel::itemUpdated, ui->propertyView, &PropertyEditor::onUpdated);
 
-    ui->viewportWidget->setEngine(m_engine);
+    ui->viewportWidget->init();
     m_documentModel->addEditor(ui->viewportWidget);
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
@@ -592,23 +589,24 @@ void MainWindow::onBuildProject() {
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
     AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow);
-    if(editor == m_currentDocument) {
+    if(editor == m_currentEditor) {
         return;
     }
 
     if(editor) {
-        m_currentDocument = editor;
+        m_currentEditor = editor;
     } else {
-        m_currentDocument = m_mainDocument;
+        m_currentEditor = m_mainEditor;
     }
     ui->hierarchy->onSetRootObject(nullptr);
-    m_currentDocument->onActivated();
+    m_currentEditor->onActivated();
 }
 
 void MainWindow::on_menuFile_aboutToShow() {
     QString name;
-    if(m_currentDocument && m_currentDocument != m_mainDocument) {
-        name = QString(" \"%1\"").arg(m_documentModel->fileName(dynamic_cast<AssetEditor *>(m_currentDocument)));
+    if(m_currentEditor && m_currentEditor != m_mainEditor) {
+        AssetConverterSettings *settings = m_currentEditor->documentsSettings().first();
+        name = QString(" \"%1\"").arg(settings->source());
     }
     ui->actionSave->setText(tr("Save%1").arg(name));
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));

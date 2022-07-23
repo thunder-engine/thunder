@@ -115,7 +115,12 @@ QToolButton::menu-indicator {
     subcontrol-origin: padding;
 }
 
-QToolButton[actions="true"] { padding: 2px; }
+QToolButton[actions="true"] {
+    padding: 2px 2px;
+    background: none;
+    font: bold;
+    font-size: 12pt;
+}
 QToolButton[actions="true"]:menu-indicator { image: none; }
 
 QComboBox {

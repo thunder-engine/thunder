@@ -66,12 +66,12 @@ void AnimationEdit::onActivated() {
 }
 
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
-    if(m_pSettings != settings) {
-        m_pSettings = settings;
+    if(!m_settings.contains(settings)) {
+        m_settings = { settings };
 
         m_stateMachine = Engine::loadResource<AnimationStateMachine>(qPrintable(settings->destination()));
 
-        m_model->load(m_pSettings->source());
+        m_model->load(settings->source());
 
         onUpdateAsset(false);
         onNodesSelected(QVariantList({0}));
@@ -79,8 +79,8 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
 }
 
 void AnimationEdit::saveAsset(const QString &path) {
-    if(!path.isEmpty() || !m_pSettings->source().isEmpty()) {
-        m_model->save(path.isEmpty() ? m_pSettings->source() : path);
+    if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
+        m_model->save(path.isEmpty() ? m_settings.first()->source() : path);
         onUpdateAsset(false);
     }
 }

@@ -9,7 +9,7 @@ class ENGINE_EXPORT Map : public Resource {
     A_REGISTER(Map, Resource, Resources)
 
     A_PROPERTIES(
-        A_PROPERTY(Chunk *, chunk, Map::chunk, Map::setChunk)
+        A_PROPERTY(Scene *, scene, Map::scene, Map::setScene)
     )
     A_NOMETHODS()
 
@@ -17,8 +17,8 @@ public:
     Map();
     ~Map();
 
-    Chunk *chunk() const;
-    void setChunk(Chunk *chunk);
+    Scene *scene() const;
+    void setScene(Scene *scene);
 
 private:
     MapPrivate *p_ptr;

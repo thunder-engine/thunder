@@ -1,32 +1,33 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "engine.h"
+#include <engine.h>
 
-class ScenePrivate;
-
-class PostProcessSettings;
+class Resource;
+class Component;
 
 class ENGINE_EXPORT Scene : public Object {
     A_REGISTER(Scene, Object, General)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(Object *, Scene::find)
+    )
 
 public:
     Scene();
     ~Scene();
 
-    bool isToBeUpdated();
-    void setToBeUpdated(bool flag);
+    Resource *resource() const;
+    void setResource(Resource *resource);
 
-    bool isDirty();
-    void setDirty(bool flag = true);
-
-    PostProcessSettings &finalPostProcessSettings();
+    bool isModified() const;
+    void setModified(bool flag);
 
 private:
-    ScenePrivate *p_ptr;
+    mutable Resource *m_resource;
+
+    bool m_modified;
 
 };
 

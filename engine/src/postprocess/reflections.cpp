@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#include "components/scene.h"
+#include "components/scenegraph.h"
 
 #include "resources/pipeline.h"
 #include "resources/material.h"

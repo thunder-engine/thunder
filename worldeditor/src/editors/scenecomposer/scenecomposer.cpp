@@ -4,13 +4,15 @@
 #include <QFile>
 #include <QMenu>
 #include <QDateTime>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include <json.h>
 #include <bson.h>
 #include <engine.h>
 #include <components/actor.h>
+#include <components/scenegraph.h>
 #include <components/scene.h>
-#include <components/chunk.h>
 
 #include <resources/prefab.h>
 
@@ -32,13 +34,54 @@ namespace {
     static const char *gSingle = "single";
 };
 
+class SceneGraphObserver : public Object {
+    A_REGISTER(SceneGraphObserver, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(SceneGraphObserver::onSceneUpdated)
+    )
+
+public:
+    SceneGraphObserver() :
+        m_sceneComposer(nullptr),
+        m_sceneGraph(nullptr) {
+
+    }
+
+    void setSceneComposer(SceneComposer *composer) {
+        m_sceneComposer = composer;
+
+        SceneGraph *graph = m_sceneComposer->currentSceneGraph();
+        if(m_sceneGraph != graph) {
+            if(m_sceneGraph) {
+                disconnect(m_sceneGraph, 0, 0, 0);
+            }
+            m_sceneGraph = m_sceneComposer->currentSceneGraph();
+
+            connect(m_sceneGraph, _SIGNAL(sceneLoaded()), this, _SLOT(onSceneUpdated()));
+            connect(m_sceneGraph, _SIGNAL(sceneUnloaded()), this, _SLOT(onSceneUpdated()));
+            connect(m_sceneGraph, _SIGNAL(activeSceneChanged()), this, _SLOT(onSceneUpdated()));
+        }
+    }
+
+private:
+    void onSceneUpdated() {
+        m_sceneComposer->sceneGraphUpdated(m_sceneGraph);
+    }
+
+private:
+    SceneComposer *m_sceneComposer;
+    SceneGraph *m_sceneGraph;
+};
+
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
-        m_isolationSettings(nullptr),
+        m_menuObject(nullptr),
         m_properties(new NextObject(this)),
         m_controller(nullptr),
-        m_isolationScene(Engine::objectCreate<Scene>("Scene")),
-        m_engine(nullptr) {
+        m_sceneGraphObserver(new SceneGraphObserver),
+        m_isolationSettings(nullptr),
+        m_isolationScene(Engine::objectCreate<SceneGraph>("SceneGraph")) {
 
     ui->setupUi(this);
 
@@ -50,8 +93,12 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     m_controller = new ObjectCtrl(ui->viewport);
     m_controller->createMenu(ui->renderMode->menu());
+    m_controller->setSceneGraph(Engine::sceneGraph());
 
     ui->viewport->setController(m_controller);
+    ui->viewport->setSceneGraph(Engine::sceneGraph());
+
+    m_sceneGraphObserver->setSceneComposer(this);
 
     int index = 0;
     for(auto &it : m_controller->tools()) {
@@ -75,7 +122,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
         index++;
     }
 
-    connect(m_controller, &ObjectCtrl::mapUpdated, this, &SceneComposer::itemUpdated);
+    connect(m_controller, &ObjectCtrl::sceneUpdated, this, &SceneComposer::itemUpdated);
     connect(m_controller, &ObjectCtrl::dropMap, this, &SceneComposer::onDropMap);
     connect(m_controller, &ObjectCtrl::objectsSelected, this, &SceneComposer::onItemsSelected);
     connect(m_controller, &ObjectCtrl::objectsChanged, this, &SceneComposer::itemsChanged);
@@ -105,32 +152,40 @@ SceneComposer::SceneComposer(QWidget *parent) :
     m_objectActions.push_back((createAction(tr("Duplicate"), SLOT(onItemDuplicate()), false)));
     m_objectActions.push_back((createAction(tr("Delete"), SLOT(onItemDelete()), false, QKeySequence(Qt::Key_Delete))));
     for(auto &it : m_objectActions) {
-        m_contentMenu.addAction(it);
+        m_actorMenu.addAction(it);
     }
-    m_contentMenu.addSeparator();
+    m_actorMenu.addSeparator();
 
     m_prefabActions.push_back((createAction(tr("Edit Isolated"), SLOT(onPrefabIsolate()), true)));
     m_prefabActions.push_back((createAction(tr("Unpack"), SLOT(onPrefabUnpack()), false)));
     m_prefabActions.push_back(createAction(tr("Unpack Completely"), SLOT(onPrefabUnpackCompletely()), false));
     for(auto &it : m_prefabActions) {
-        m_contentMenu.addAction(it);
+        m_actorMenu.addAction(it);
     }
-    m_contentMenu.addSeparator();
-    m_contentMenu.addAction(createAction(tr("Create Actor"), SLOT(onCreateActor()), false));
+    m_actorMenu.addSeparator();
+    m_actorMenu.addAction(createAction(tr("Create Actor"), SLOT(onCreateActor()), false));
 
-    connect(&m_contentMenu, SIGNAL(aboutToShow()), this, SLOT(onObjectMenuAboutToShow()));
+    m_activeSceneAction = createAction(tr("Set Active Scene"), SLOT(onSetActiveScene()), false);
+    m_sceneMenu.addAction(m_activeSceneAction);
+    m_sceneMenu.addSeparator();
+    m_sceneMenu.addAction(createAction(tr("Save Scene"), SLOT(onSave()), false));
+    m_sceneMenu.addAction(createAction(tr("Save Scene As"), SLOT(onSaveAs()), false));
+    m_sceneMenu.addAction(createAction(tr("Save All"), SLOT(onSaveAll()), false));
+    m_sceneMenu.addSeparator();
+    m_sceneMenu.addAction(createAction(tr("Remove Scene"), SLOT(onRemoveScene()), false));
+    m_sceneMenu.addAction(createAction(tr("Discard Changes"), SLOT(onDiscardChanges()), false));
+    m_sceneMenu.addSeparator();
+    m_sceneMenu.addAction(createAction(tr("Add New Scene"), SLOT(onNewAsset()), false));
 }
 
 SceneComposer::~SceneComposer() {
     delete ui;
 }
 
-void SceneComposer::setEngine(Engine *engine) {
-    m_engine = engine;
+void SceneComposer::init() {
     static_cast<ObjectCtrl *>(ui->viewport->controller())->init();
 
-    PluginManager::instance()->addScene(m_engine->scene());
-    ui->viewport->setScene(m_engine->scene());
+    PluginManager::instance()->addScene(Engine::sceneGraph());
 }
 
 VariantList SceneComposer::saveState() {
@@ -147,15 +202,20 @@ void SceneComposer::takeScreenshot() {
     result.save("MainWindow-" + QDateTime::currentDateTime().toString("ddMMyy-HHmmss") + ".png");
 }
 
-QString SceneComposer::path() const {
-    if(m_pSettings) {
-        return m_pSettings->source();
+QString SceneComposer::map() const {
+    AssetConverterSettings *settings = m_sceneSettings.value(Engine::sceneGraph()->activeScene());
+    if(settings) {
+        return settings->source();
     }
     return QString();
 }
 
-QMenu *SceneComposer::contextMenu() {
-    return &m_contentMenu;
+SceneGraph *SceneComposer::currentSceneGraph() const {
+    return Engine::sceneGraph();
+}
+
+void SceneComposer::sceneGraphUpdated(SceneGraph *graph) {
+    emit itemUpdated();
 }
 
 void SceneComposer::onItemsSelected(const Object::ObjectList &objects) {
@@ -195,48 +255,61 @@ void SceneComposer::onFocusActor(Object *actor) {
     m_controller->onFocusActor(actor);
 }
 
+void SceneComposer::onSetActiveScene() {
+    if(dynamic_cast<Scene *>(m_menuObject)) {
+        UndoManager::instance()->push(new SelectScene(static_cast<Scene *>(m_menuObject), m_controller));
+    }
+}
+
 void SceneComposer::onRepickSelected() {
     onItemsSelected(m_controller->selected());
 }
 
-void SceneComposer::backupScene() {
+void SceneComposer::backupScenes() {
     m_backupScenes.clear();
-    for(auto it : m_controller->objects()) {
-        m_backupScenes.push_back(Bson::save(Engine::toVariant(it.first)));
+    for(auto it : m_controller->sceneGraph()->getChildren()) {
+        m_backupScenes.push_back(Bson::save(Engine::toVariant(it)));
     }
 }
 
-void SceneComposer::restoreBackupScene() {
+void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.isEmpty()) {
-        m_controller->setObject(nullptr);
-        emit hierarchyCreated(m_engine->scene());
-
-        list<Object *> toDelete = m_engine->scene()->getChildren();
+        list<Object *> toDelete = Engine::sceneGraph()->getChildren();
         for(auto &it : toDelete) {
             it->setParent(nullptr);
-            Engine::unloadSceneChunk(static_cast<Chunk *>(it));
+            Engine::unloadScene(static_cast<Scene *>(it));
         }
 
         for(auto &it : m_backupScenes) {
             Object *map = Engine::toObject(Bson::load(it), nullptr);
             if(map) {
-                m_controller->setObject(map);
-                map->setParent(m_engine->scene()); // Set parent after detach previous one
+                map->setParent(Engine::sceneGraph()); // Set parent after detach previous one
             }
         }
         m_backupScenes.clear();
 
-        emit hierarchyCreated(m_engine->scene());
+        emit hierarchyCreated(Engine::sceneGraph());
     }
 }
 
 bool SceneComposer::isModified() const {
-    return m_controller->isModified();
+    bool result = false;
+    for(auto it : Engine::sceneGraph()->getChildren()) {
+        Scene *scene = dynamic_cast<Scene *>(it);
+        if(scene) {
+            result |= scene->isModified();
+        }
+    }
+
+    return result;
 }
 
 void SceneComposer::setModified(bool flag) {
-    if(!flag) {
-        m_controller->resetModified();
+    for(auto it : Engine::sceneGraph()->getChildren()) {
+        Scene *scene = dynamic_cast<Scene *>(it);
+        if(scene) {
+            scene->setModified(flag);
+        }
     }
 }
 
@@ -245,24 +318,55 @@ QStringList SceneComposer::suffixes() const {
 }
 
 void SceneComposer::onActivated() {
-    emit hierarchyCreated(m_engine->scene());
+    emit hierarchyCreated(Engine::sceneGraph());
 
     emit itemSelected(!m_controller->selected().empty() ? m_properties : nullptr);
 }
 
-void SceneComposer::newAsset() {
-    AssetEditor::newAsset();
+void SceneComposer::onRemoveScene() {
+    Scene *scene = dynamic_cast<Scene *>(m_menuObject);
+    if(scene) {
+        if(scene->isModified()) {
+            onSave();
+        }
+        delete scene;
+
+        emit hierarchyCreated(Engine::sceneGraph());
+    }
+}
+
+void SceneComposer::onDiscardChanges() {
+    Scene *scene = dynamic_cast<Scene *>(m_menuObject);
+    if(scene) {
+        QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
+                .arg(scene->name().c_str());
+        QMessageBox msgBox(nullptr);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText(tr("Discard Changes."));
+        msgBox.setInformativeText(text);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        if(msgBox.exec() == QMessageBox::Yes) {
+            delete scene;
+
+            loadMap(m_sceneSettings.value(scene)->source(), true);
+        }
+    }
+}
+
+void SceneComposer::onNewAsset() {
+    AssetEditor::onNewAsset();
 
     quitFromIsolation();
 
-    m_controller->setObject(Engine::objectCreate<Chunk>("Chunk", m_engine->scene()));
-    emit hierarchyCreated(m_engine->scene());
+    Engine::sceneGraph()->createScene("Untitled");
+    emit hierarchyCreated(Engine::sceneGraph());
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
-    if(settings->typeNames().front() == "Map") {
-        m_pSettings = settings;
-        if(loadMap(m_pSettings->source(), false)) {
+    if(settings->typeNames().constFirst() == "Map") {
+        if(loadMap(settings->source(), false)) {
             UndoManager::instance()->clear();
         }
     } else {
@@ -272,27 +376,14 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    auto maps = m_controller->objects();
-    if(!maps.empty()) {
-        Object *map = maps.front().first;
-        if(map) {
-            string data = Json::save(Engine::toVariant(map), 0);
-            if(!data.empty()) {
-                QFile file(path);
-                if(file.open(QIODevice::WriteOnly)) {
-                    file.write(static_cast<const char *>(&data[0]), data.size());
-                    file.close();
-                }
-            }
-            m_controller->resetModified();
-
-            QImage result = ui->viewport->grabFramebuffer();
-            if(!result.isNull()) {
-                QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
-                result.copy(rect).scaled(128, 128).save(ProjectManager::instance()->iconPath() + "/auto.png");
-            }
-        }
+    saveMap(path, Engine::sceneGraph()->activeScene());
+/*
+    QImage result = ui->viewport->grabFramebuffer();
+    if(!result.isNull()) {
+        QRect rect((result.width() - result.height()) / 2, 0, result.height(), result.height());
+        result.copy(rect).scaled(128, 128).save(ProjectManager::instance()->iconPath() + "/auto.png");
     }
+*/
 }
 
 void SceneComposer::onLocal(bool flag) {
@@ -301,7 +392,10 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
-    UndoManager::instance()->push(new CreateObject("Actor", m_controller));
+    Actor *actor = dynamic_cast<Actor *>(m_menuObject);
+    if(actor) {
+        UndoManager::instance()->push(new CreateObject("Actor", actor->scene(), m_controller));
+    }
 }
 
 void SceneComposer::onItemDuplicate() {
@@ -312,10 +406,43 @@ void SceneComposer::onItemDelete() {
      UndoManager::instance()->push(new DeleteActors(m_controller->selected(), m_controller));
 }
 
+void SceneComposer::onMenuRequested(Object *object, const QPoint &point) {
+    m_menuObject = object;
+    if(dynamic_cast<Scene *>(object)) {
+        m_activeSceneAction->setEnabled(object != Engine::sceneGraph()->activeScene());
+        m_sceneMenu.exec(point);
+    } else {
+        auto list = m_controller->selected();
+
+        bool objectEnabled = false;
+        bool prefabEnabled = false;
+        bool single = (list.size() == 1);
+        for(auto &it : list) {
+            Actor *actor = dynamic_cast<Actor *>(it);
+            if(actor) {
+                objectEnabled = true;
+                if(actor->isInstance()) {
+                    prefabEnabled = true;
+                }
+            }
+        }
+
+        for(auto &it : m_objectActions) {
+            it->setEnabled(single && objectEnabled);
+        }
+
+        for(auto &it : m_prefabActions) {
+            it->setEnabled((!it->property(gSingle).toBool() || single) && prefabEnabled);
+        }
+
+        m_actorMenu.exec(point);
+    }
+}
+
 void SceneComposer::onPrefabIsolate() {
     Actor *actor = dynamic_cast<Actor *>(*(m_controller->selected().begin()));
     if(actor && actor->isInstance()) {
-        string guid = m_engine->reference(actor->prefab());
+        string guid = Engine::reference(actor->prefab());
         QString path = AssetManager::instance()->guidToPath(guid).c_str();
         m_isolationSettings = AssetManager::instance()->fetchSettings(path);
 
@@ -353,31 +480,6 @@ void SceneComposer::onPrefabUnpackCompletely() {
     }
 }
 
-void SceneComposer::onObjectMenuAboutToShow() {
-    auto list = m_controller->selected();
-
-    bool objectEnabled = false;
-    bool prefabEnabled = false;
-    bool single = (list.size() == 1);
-    for(auto &it : list) {
-        Actor *actor = dynamic_cast<Actor *>(it);
-        if(actor) {
-            objectEnabled = true;
-            if(actor->isInstance()) {
-                prefabEnabled = true;
-            }
-        }
-    }
-
-    for(auto &it : m_objectActions) {
-        it->setEnabled(single && objectEnabled);
-    }
-
-    for(auto &it : m_prefabActions) {
-        it->setEnabled((!it->property(gSingle).toBool() || single) && prefabEnabled);
-    }
-}
-
 void SceneComposer::onDropMap(QString name, bool additive) {
     if(!additive) {
         emit dropAsset(name);
@@ -390,31 +492,48 @@ bool SceneComposer::loadMap(QString path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
-        for(auto it : m_engine->scene()->getChildren()) {
-            it->deleteLater();
+        Object::ObjectList copyList = Engine::sceneGraph()->getChildren();
+        for(auto it : copyList) {
+            delete it;
         }
+        m_settings.clear();
+        m_sceneSettings.clear();
+        Engine::sceneGraph()->setActiveScene(nullptr);
     }
 
     QFile file(path);
     if(file.open(QIODevice::ReadOnly)) {
         QByteArray array = file.readAll();
         Variant var = Json::load(array.constData());
-        Object *chunk = Engine::toObject(var, nullptr);
-        if(chunk) {
-            chunk->setParent(m_engine->scene());
-            chunk->setName(QFileInfo(path).baseName().toStdString());
+        Object *scene = Engine::toObject(var, nullptr);
+        if(scene) {
+            scene->setParent(Engine::sceneGraph());
+            scene->setName(QFileInfo(path).baseName().toStdString());
 
-            if(additive) {
-                m_controller->addObject(chunk);
-            } else {
-                m_controller->setObject(chunk);
+            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+            if(!m_settings.contains(settings)) {
+                m_settings.push_back(settings);
+                m_sceneSettings[scene] = settings;
             }
 
-            emit hierarchyCreated(m_engine->scene());
+            emit hierarchyCreated(Engine::sceneGraph());
+            sceneGraphUpdated(Engine::sceneGraph());
             return true;
         }
     }
     return false;
+}
+
+void SceneComposer::saveMap(QString path, Scene *scene) {
+    string data = Json::save(Engine::toVariant(scene), 0);
+    if(!data.empty()) {
+        QFile file(path);
+        if(file.open(QIODevice::WriteOnly)) {
+            file.write(static_cast<const char *>(&data[0]), data.size());
+            file.close();
+            scene->setModified(false);
+        }
+    }
 }
 
 void SceneComposer::onSaveIsolated() {
@@ -428,6 +547,42 @@ void SceneComposer::onSaveIsolated() {
                     file.write(static_cast<const char *>(&data[0]), data.size());
                     file.close();
                 }
+            }
+        }
+    }
+}
+
+void SceneComposer::onSave() {
+    AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject);
+    if(settings) {
+        saveMap(settings->source(), static_cast<Scene *>(m_menuObject));
+    } else {
+        onSaveAs();
+    }
+}
+
+void SceneComposer::onSaveAs() {
+    QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
+                                                ProjectManager::instance()->contentPath(),
+                                                "Map (*.map)");
+    if(!path.isEmpty()) {
+        QFileInfo info(path);
+        m_menuObject->setName(info.baseName().toStdString());
+        saveMap(path, static_cast<Scene *>(m_menuObject));
+        m_sceneSettings[m_menuObject] = AssetManager::instance()->fetchSettings(info);
+    }
+}
+
+void SceneComposer::onSaveAll() {
+    for(auto it : Engine::sceneGraph()->getChildren()) {
+        Scene *scene = dynamic_cast<Scene *>(it);
+        if(scene) {
+            AssetConverterSettings *settings = m_sceneSettings.value(it);
+            if(settings) {
+                saveMap(settings->source(), scene);
+            } else {
+                m_menuObject = scene;
+                onSaveAs();
             }
         }
     }
@@ -451,7 +606,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
         }
 
         if(actor) {
-            ui->viewport->setScene(m_isolationScene);
+            ui->viewport->setSceneGraph(m_isolationScene);
             emit hierarchyCreated(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();
@@ -466,8 +621,8 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::quitFromIsolation() {
-    if(m_controller->isModified()) {
-        int result = DocumentModel::closeAssetDialog();
+    if(isModified()) {
+        int result = closeAssetDialog();
         if(result == QMessageBox::Cancel) {
             return;
         } else if(result == QMessageBox::Yes) {
@@ -475,10 +630,10 @@ void SceneComposer::quitFromIsolation() {
         }
     }
 
-    emit hierarchyCreated(m_engine->scene());
+    emit hierarchyCreated(Engine::sceneGraph());
 
     Actor *actor = m_controller->isolatedActor();
-    ui->viewport->setScene(m_engine->scene());
+    ui->viewport->setSceneGraph(Engine::sceneGraph());
     m_controller->blockMovement(false);
     m_controller->setFree(true);
     m_controller->setIsolatedActor(nullptr);

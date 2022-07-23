@@ -330,9 +330,9 @@ Scene *Actor::scene() {
     PROFILE_FUNCTION();
     if(p_ptr->m_scene == nullptr) {
         Object *scene = this;
-        while(scene && scene->parent() != nullptr) {
+        while(p_ptr->m_scene == nullptr && scene && scene->parent() != nullptr) {
             scene = scene->parent();
-        p_ptr->m_scene = dynamic_cast<Scene *>(scene);
+            p_ptr->m_scene = dynamic_cast<Scene *>(scene);
         }
     }
     return p_ptr->m_scene;
@@ -424,6 +424,7 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
             p_ptr->m_transform->setParentTransform(actor->transform(), force);
+            p_ptr->m_scene = actor->scene();
         }
     } else {
         Object::setParent(parent, position);

@@ -7,7 +7,7 @@
 #include <vector>
 
 class Engine;
-class Scene;
+class SceneGraph;
 class Actor;
 class Camera;
 
@@ -20,7 +20,7 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    Scene *m_pScene;
+    SceneGraph *m_pScene;
 
     Actor *m_pActor;
 

@@ -53,7 +53,7 @@ const char *GuiSystem::name() const {
     return "ThunderGui";
 }
 
-void GuiSystem::update(Scene *) {
+void GuiSystem::update(SceneGraph *) {
 
 }
 

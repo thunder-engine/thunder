@@ -13,7 +13,7 @@ public:
 private:
     const char *name() const override;
 
-    void update(Scene *) override;
+    void update(SceneGraph *) override;
 
     int threadPolicy() const override;
 

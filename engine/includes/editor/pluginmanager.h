@@ -48,7 +48,7 @@ public:
 
     void initSystems();
 
-    void addScene(Scene *scene);
+    void addScene(SceneGraph *sceneGraph);
 
     void rescanPath(const QString &path);
 
@@ -137,7 +137,7 @@ private:
 
     SystemsMap m_Systems;
 
-    QList<Scene *> m_Scenes;
+    QList<SceneGraph *> m_Scenes;
 
     QList<Plugin> m_Plugins;
 };

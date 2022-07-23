@@ -13,8 +13,6 @@ class TextureImportSettings;
 class SpriteElement;
 class SpriteController;
 
-class DocumentModel;
-
 namespace Ui {
     class TextureEdit;
 }
@@ -48,7 +46,7 @@ private:
 
     TextureConverter *m_pConverter;
 
-    Scene *m_pScene;
+    SceneGraph *m_pScene;
 
     SpriteController *m_pController;
 

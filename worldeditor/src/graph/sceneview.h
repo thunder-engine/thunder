@@ -19,6 +19,9 @@ public:
 
     void setEngine(Engine *engine);
 
+    bool isGamePause() const;
+    void setGamePause(bool pause);
+
 protected:
     bool init() override { return true; }
 
@@ -81,6 +84,8 @@ protected:
     Vector4 m_mouseDelta;
 
     bool m_mouseLock;
+
+    bool m_gamePause;
 
 };
 

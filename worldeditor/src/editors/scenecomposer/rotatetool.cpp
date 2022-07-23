@@ -29,7 +29,9 @@ void RotateTool::update(bool pivot, bool local, float snap) {
     }
 
     if(m_pController->isDrag()) {
-        for(const auto &it : m_Selected) {
+        QSet<Scene *> scenes;
+
+        for(const auto &it : qAsConst(m_Selected)) {
             Transform *tr = it.object->transform();
             Matrix4 parent;
             if(tr->parentTransform()) {
@@ -60,9 +62,13 @@ void RotateTool::update(bool pivot, bool local, float snap) {
             }
             tr->setPosition(parent.inverse() * (m_Position + q * p));
             tr->setRotation(euler);
+
+            scenes.insert(it.object->scene());
         }
-        m_pController->objectsUpdated();
-        m_pController->objectsChanged(m_pController->selected(), "Rotation");
+        for(auto it : scenes) {
+            emit m_pController->objectsUpdated(it);
+        }
+        emit m_pController->objectsChanged(m_pController->selected(), "Rotation");
     }
 }
 

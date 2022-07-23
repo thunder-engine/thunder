@@ -69,8 +69,8 @@ private:
     QAction *m_undo;
     QAction *m_redo;
 
-    AssetEditor *m_mainDocument;
-    AssetEditor *m_currentDocument;
+    AssetEditor *m_mainEditor;
+    AssetEditor *m_currentEditor;
 
     AboutDialog m_aboutDlg;
     PluginDialog m_pluginDlg;
@@ -98,8 +98,8 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
 
-    void on_actionEditor_Mode_triggered();
-    void on_actionGame_Mode_triggered();
+    void on_actionPlay_triggered();
+    void on_actionPause_triggered();
 
     void on_actionTake_Screenshot_triggered();
 

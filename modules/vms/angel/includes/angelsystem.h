@@ -26,7 +26,7 @@ public:
 
     const char *name() const;
 
-    void update(Scene *);
+    void update(SceneGraph *);
 
     int threadPolicy() const;
 
