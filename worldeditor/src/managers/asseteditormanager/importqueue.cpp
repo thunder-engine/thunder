@@ -14,10 +14,9 @@
 
 #include "iconrender.h"
 
-ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
+ImportQueue::ImportQueue(QWidget *parent) :
         QDialog(parent),
-        ui(new Ui::ImportQueue),
-        m_pEngine(engine) {
+        ui(new Ui::ImportQueue) {
     ui->setupUi(this);
 
     AssetManager *manager = AssetManager::instance();
@@ -31,7 +30,7 @@ ImportQueue::ImportQueue(Engine *engine, QWidget *parent) :
     QRect r = QApplication::desktop()->screenGeometry();
     move(r.center() - rect().center());
 
-    m_pRender = new IconRender(m_pEngine);
+    m_render = new IconRender;
 }
 
 ImportQueue::~ImportQueue() {
@@ -42,7 +41,7 @@ void ImportQueue::onProcessed(const QString &path, const QString &type) {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
 
     QString guid = QString::fromStdString(AssetManager::instance()->pathToGuid(path.toStdString()));
-    m_UpdateQueue[guid] = type;
+    m_updateQueue[guid] = type;
 }
 
 void ImportQueue::onStarted(int count, const QString &action) {
@@ -53,21 +52,21 @@ void ImportQueue::onStarted(int count, const QString &action) {
 }
 
 void ImportQueue::onImportFinished() {
-    auto i = m_UpdateQueue.constBegin();
-    while(i != m_UpdateQueue.constEnd()) {
-        QImage image = m_pRender->render(i.key(), i.value());
+    auto i = m_updateQueue.constBegin();
+    while(i != m_updateQueue.constEnd()) {
+        QImage image = m_render->render(i.key(), i.value());
         if(!image.isNull()) {
             image.save(ProjectManager::instance()->iconPath() + QDir::separator() + i.key() + ".png", "PNG");
         }
         emit rendered(i.key());
         ++i;
     }
-    m_UpdateQueue.clear();
+    m_updateQueue.clear();
 
     AssetList::instance()->update();
 
     hide();
-    emit finished();
+    emit importFinished();
 }
 
 void ImportQueue::keyPressEvent(QKeyEvent *e) {

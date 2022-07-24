@@ -12,12 +12,9 @@
 #include <engine.h>
 
 class Actor;
-class Scene;
 class Camera;
 
-class QOpenGLWidget;
 class QMenu;
-class CommandBuffer;
 
 class ENGINE_EXPORT CameraCtrl : public QObject {
     Q_OBJECT

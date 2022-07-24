@@ -19,32 +19,32 @@
 
 #include "assetmanager.h"
 
-IconRender::IconRender(Engine *engine, QObject *parent) :
+IconRender::IconRender(QObject *parent) :
         QObject(parent),
-        m_Init(false),
-        m_pLight(nullptr) {
+        m_init(false),
+        m_light(nullptr) {
 
-    m_pScene = Engine::objectCreate<SceneGraph>();
-    m_pActor = Engine::composeActor("Camera", "ActiveCamera", m_pScene);
-    m_pActor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
-    m_pCamera = static_cast<Camera *>(m_pActor->component("Camera"));
+    m_scene = Engine::objectCreate<SceneGraph>();
+    m_actor = Engine::composeActor("Camera", "ActiveCamera", m_scene);
+    m_actor->transform()->setPosition(Vector3(0.0f, 0.0f, 0.0f));
+    m_camera = static_cast<Camera *>(m_actor->component("Camera"));
 }
 
 IconRender::~IconRender() {
-    delete m_pScene;
+    delete m_scene;
 }
 
 const QImage IconRender::render(const QString &resource, const QString &) {
-    if(!m_Init) {
-        m_pLight = Engine::composeActor("DirectLight", "LightSource", m_pScene);
-        m_pLight->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
+    if(!m_init) {
+        m_light = Engine::composeActor("DirectLight", "LightSource", m_scene);
+        m_light->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
 
-        m_Init = true;
+        m_init = true;
     }
 
     Actor *object = AssetManager::instance()->createActor(resource);
     if(object) {
-        object->setParent(m_pScene);
+        object->setParent(m_scene);
 
         AABBox bb;
         bool first = true;
@@ -57,17 +57,17 @@ const QImage IconRender::render(const QString &resource, const QString &) {
             }
         }
 
-        m_pCamera->setOrthographic(false);
-        float radius = (bb.radius * 2.0f) / sinf(m_pCamera->fov() * DEG2RAD);
-        Vector3 cameraPosition(bb.center + m_pActor->transform()->quaternion() * Vector3(0.0, 0.0, radius));
-        m_pActor->transform()->setPosition(cameraPosition);
+        m_camera->setOrthographic(false);
+        float radius = (bb.radius * 2.0f) / sinf(m_camera->fov() * DEG2RAD);
+        Vector3 cameraPosition(bb.center + m_actor->transform()->quaternion() * Vector3(0.0, 0.0, radius));
+        m_actor->transform()->setPosition(cameraPosition);
     } else {
         return QImage();
     }
 
-    Camera::setCurrent(m_pCamera);
+    Camera::setCurrent(m_camera);
     RenderSystem *render = PluginManager::instance()->render();
-    ByteArray data = render->renderOffscreen(m_pScene, 128, 128);
+    ByteArray data = render->renderOffscreen(m_scene, 128, 128);
 
     delete object;
 

@@ -6,29 +6,28 @@
 #include <stdint.h>
 #include <vector>
 
-class Engine;
 class SceneGraph;
 class Actor;
 class Camera;
 
 class IconRender : public QObject {
 public:
-    IconRender(Engine *engine, QObject *parent = nullptr);
+    IconRender(QObject *parent = nullptr);
 
     ~IconRender();
 
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    SceneGraph *m_pScene;
+    SceneGraph *m_scene;
 
-    Actor *m_pActor;
+    Actor *m_actor;
 
-    Actor *m_pLight;
+    Actor *m_light;
 
-    Camera *m_pCamera;
+    Camera *m_camera;
 
-    bool m_Init;
+    bool m_init;
 };
 
 #endif // ICONRENDER_H

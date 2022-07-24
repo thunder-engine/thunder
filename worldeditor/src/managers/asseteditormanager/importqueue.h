@@ -12,20 +12,18 @@ namespace Ui {
 
 class BaseConverterSettings;
 class IconRender;
-class Engine;
-class QOpenGLContext;
 
 class ImportQueue : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ImportQueue(Engine *engine, QWidget *parent = nullptr);
+    explicit ImportQueue(QWidget *parent = nullptr);
     ~ImportQueue();
 
     void init(IconRender *render);
 
 signals:
-    void finished();
+    void importFinished();
 
     void rendered(const QString &uuid);
 
@@ -39,14 +37,12 @@ private:
     void keyPressEvent(QKeyEvent *e) override;
     void changeEvent(QEvent *event) override;
 
+private:
+    Ui::ImportQueue *ui;
 
-    Ui::ImportQueue        *ui;
+    QMap<QString, QString> m_updateQueue;
 
-    QMap<QString, QString> m_UpdateQueue;
-
-    Engine                 *m_pEngine;
-
-    IconRender             *m_pRender;
+    IconRender             *m_render;
 };
 
 #endif // IMPORTQUEUE_H

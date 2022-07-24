@@ -56,8 +56,6 @@ private:
 private:
     Ui::MainWindow *ui;
 
-    Engine *m_engine;
-
     QString m_currentWorkspace;
 
     ImportQueue *m_queue;

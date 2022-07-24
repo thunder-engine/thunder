@@ -13,9 +13,9 @@ class ENGINE_EXPORT Viewport : public QWidget {
 public:
     Viewport(QWidget *parent = 0);
 
-    void setController(CameraCtrl *ctrl);
-    CameraCtrl *controller() const { return m_pController; }
+    void init();
 
+    void setController(CameraCtrl *ctrl);
     void setSceneGraph(SceneGraph *scene);
 
     QImage grabFramebuffer() { return QImage(); }
@@ -37,11 +37,11 @@ private slots:
     void onDraw();
 
 private:
-    CameraCtrl *m_pController;
+    CameraCtrl *m_controller;
 
-    SceneGraph *m_pSceneGraph;
+    SceneGraph *m_sceneGraph;
 
-    QWindow *m_pRHIWindow;
+    QWindow *m_rhiWindow;
 
 };
 

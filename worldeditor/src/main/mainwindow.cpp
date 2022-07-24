@@ -57,9 +57,8 @@ namespace  {
 MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
-        m_engine(engine),
         m_currentWorkspace(":/Workspaces/Default.ws"),
-        m_queue(new ImportQueue(engine)),
+        m_queue(new ImportQueue),
         m_projectModel(new ProjectModel),
         m_feedManager(new FeedManager),
         m_documentModel(nullptr),
@@ -92,7 +91,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->classMapView->setWindowTitle(tr("Class View"));
     ui->preview->setWindowTitle(tr("Preview"));
 
-    ui->preview->setEngine(m_engine);
+    ui->preview->setEngine(engine);
 
     m_mainEditor = ui->viewportWidget;
 
@@ -377,7 +376,7 @@ void MainWindow::on_actionTake_Screenshot_triggered() {
 }
 
 void MainWindow::onOpenProject(const QString &path) {
-    connect(m_queue, &ImportQueue::finished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
+    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
 
     ui->quickWidget->setVisible(false);
     resetWorkspace();

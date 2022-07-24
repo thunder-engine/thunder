@@ -33,16 +33,16 @@ MaterialEdit::MaterialEdit() :
         m_material(nullptr),
         m_model(new ShaderSchemeModel),
         m_builder(new ShaderBuilder()),
+        m_controller(new CameraCtrl),
         m_lastCommand(nullptr) {
 
     ui->setupUi(this);
-    CameraCtrl *ctrl = new CameraCtrl();
-    ctrl->blockMovement(true);
-    ctrl->setFree(false);
+    m_controller->blockMovement(true);
+    m_controller->setFree(false);
 
     SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
 
-    ui->preview->setController(ctrl);
+    ui->preview->setController(m_controller);
     ui->preview->setSceneGraph(scene);
 
     m_light = Engine::composeActor("DirectLight", "LightSource", scene);
@@ -123,7 +123,7 @@ void MaterialEdit::changeMesh(const string &path) {
             mesh->setMaterial(m_material);
         }
         float bottom;
-        static_cast<CameraCtrl *>(ui->preview->controller())->setFocusOn(m_mesh, bottom);
+        m_controller->setFocusOn(m_mesh, bottom);
     }
 }
 

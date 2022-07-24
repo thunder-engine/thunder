@@ -183,18 +183,18 @@ SceneComposer::~SceneComposer() {
 }
 
 void SceneComposer::init() {
-    static_cast<ObjectCtrl *>(ui->viewport->controller())->init();
-
+    m_controller->init();
+    ui->viewport->init();
     PluginManager::instance()->addScene(Engine::sceneGraph());
 }
 
 VariantList SceneComposer::saveState() {
     quitFromIsolation();
-    return ui->viewport->controller()->saveState();
+    return m_controller->saveState();
 }
 
 void SceneComposer::restoreState(const VariantList &state) {
-    ui->orthoButton->setChecked(ui->viewport->controller()->restoreState(state));
+    ui->orthoButton->setChecked(m_controller->restoreState(state));
 }
 
 void SceneComposer::takeScreenshot() {

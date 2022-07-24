@@ -7,6 +7,7 @@
 
 class ShaderBuilder;
 class ShaderSchemeModel;
+class CameraCtrl;
 
 class ComponentBrowser;
 class UndoCommand;
@@ -54,6 +55,8 @@ private:
 
     ShaderSchemeModel *m_model;
     ShaderBuilder *m_builder;
+
+    CameraCtrl *m_controller;
 
     const UndoCommand *m_lastCommand;
 };
