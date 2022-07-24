@@ -65,6 +65,24 @@ Vector3::Vector3(const areal *v) :
     z(v[2]) {
 }
 /*!
+    Copy constructor.
+*/
+Vector3::Vector3(const Vector3 &vector) {
+    x = vector.x;
+    y = vector.y;
+    z = vector.z;
+}
+/*!
+    Assignment operator.
+*/
+Vector3 &Vector3::operator=(const Vector3 &vector) {
+    x = vector.x;
+    y = vector.y;
+    z = vector.z;
+
+    return *this;
+}
+/*!
     Returns true if this vector is equal to given \a vector; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */

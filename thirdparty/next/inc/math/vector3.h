@@ -31,6 +31,9 @@ public:
     Vector3                     (areal x, areal y, areal z);
     Vector3                     (const Vector2 &v, areal z);
     Vector3                     (const areal *v);
+    Vector3                     (const Vector3 &vector);
+
+    Vector3                    &operator=                   (const Vector3 &vector);
 
     bool                        operator==                  (const Vector3 &vector) const;
     bool                        operator!=                  (const Vector3 &vector) const;

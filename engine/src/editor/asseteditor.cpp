@@ -73,7 +73,7 @@ bool AssetEditor::checkSave() {
 
 void AssetEditor::onSave() {
     if(!m_settings.isEmpty()) {
-        if(m_settings.first()->source().isEmpty()) {
+        if(!m_settings.first()->source().isEmpty()) {
             saveAsset(m_settings.first()->source());
         } else {
             onSaveAs();

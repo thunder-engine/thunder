@@ -32,6 +32,9 @@ public:
     Vector4                     (areal x, areal y, areal z, areal w);
     Vector4                     (const Vector2 &v, areal z, areal w);
     Vector4                     (const Vector3 &v, areal w);
+    Vector4                     (const Vector4 &vector);
+
+    Vector4                    &operator=                   (const Vector4 &vector);
 
     bool                        operator==                  (const Vector4 &vector) const;
     bool                        operator!=                  (const Vector4 &vector) const;

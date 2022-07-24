@@ -73,6 +73,26 @@ Vector4::Vector4(const Vector3 &v, areal w) :
     w(w) {
 }
 /*!
+    Copy constructor.
+*/
+Vector4::Vector4(const Vector4 &vector) {
+    x = vector.x;
+    y = vector.y;
+    z = vector.z;
+    w = vector.w;
+}
+/*!
+    Assignment operator.
+*/
+Vector4 &Vector4::operator=(const Vector4 &vector) {
+    x = vector.x;
+    y = vector.y;
+    z = vector.z;
+    w = vector.w;
+
+    return *this;
+}
+/*!
     Returns true if this vector is equal to given \a vector; otherwise returns false.
     This operator uses an exact floating-point comparison.
 */
