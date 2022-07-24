@@ -74,7 +74,7 @@ public:
         delete m_finishedMapper;
     }
 
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const {
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const override {
         QWidget *editor = nullptr;
         if(index.isValid()) {
             QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
@@ -91,7 +91,7 @@ public:
         return editor;
     }
 
-    virtual void setEditorData(QWidget *editor, const QModelIndex &index) const {
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override {
         m_finishedMapper->blockSignals(true);
         if(index.isValid()) {
             const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
@@ -106,7 +106,7 @@ public:
         m_finishedMapper->blockSignals(false);
     }
 
-    virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override {
         const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(model);
         QModelIndex origin = filter->mapToSource(index);
         QVariant data = static_cast<Property *>(origin.internalPointer())->editorData(editor);
@@ -117,7 +117,7 @@ public:
         }
     }
 
-    virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
         QSize result = QStyledItemDelegate::sizeHint(option, index);
         if(origin.isValid()) {

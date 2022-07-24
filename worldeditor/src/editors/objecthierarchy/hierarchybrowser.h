@@ -29,11 +29,12 @@ signals:
     void drop(QDropEvent *e);
 
 protected:
-    void startDrag(Qt::DropActions supportedActions) { emit dragStarted(supportedActions); }
-    void dragEnterEvent(QDragEnterEvent *e) { emit dragEnter(e); }
-    void dragLeaveEvent(QDragLeaveEvent *e) { emit dragLeave(e); }
-    void dragMoveEvent(QDragMoveEvent *e) { emit dragMove(e); }
-    void dropEvent(QDropEvent *e) { emit drop(e); }
+    void startDrag(Qt::DropActions supportedActions) override { emit dragStarted(supportedActions); }
+    void dragEnterEvent(QDragEnterEvent *e) override { emit dragEnter(e); }
+    void dragLeaveEvent(QDragLeaveEvent *e) override { emit dragLeave(e); }
+    void dragMoveEvent(QDragMoveEvent *e) override { emit dragMove(e); }
+    void dropEvent(QDropEvent *e) override { emit drop(e); }
+    void paintEvent(QPaintEvent *ev) override;
 };
 
 class ObjectsFilter;

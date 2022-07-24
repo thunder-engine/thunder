@@ -50,7 +50,7 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Object *object = static_cast<Object* >(index.internalPointer());
+    Object *object = static_cast<Object *>(index.internalPointer());
     Actor *actor = dynamic_cast<Actor *>(object);
     Scene *scene = dynamic_cast<Scene *>(object);
 

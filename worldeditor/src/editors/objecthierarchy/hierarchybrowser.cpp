@@ -104,7 +104,35 @@ public:
         Q_UNUSED(index)
         editor->setGeometry(option.rect);
     }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        QModelIndex origin = index;
+        const ObjectsFilter *filter = dynamic_cast<const ObjectsFilter *>(index.model());
+        if(filter) {
+            origin = filter->mapToSource(origin);
+        }
+        Object *object = static_cast<Object *>(origin.internalPointer());
+        Scene *scene = dynamic_cast<Scene *>(object);
+        if(scene && index.column() < 2) {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(QColor(0, 0, 0, 64));
+            painter->drawRect(option.rect);
+        }
+        QStyledItemDelegate::paint(painter, option, index);
+    }
 };
+
+void TreeView::paintEvent(QPaintEvent *ev) {
+    int size = header()->defaultSectionSize();
+    int count = header()->count() - 2;
+
+    QPainter painter(viewport());
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(0, 0, 0, 64));
+    painter.drawRect(0, 0, size * count, height());
+
+    QTreeView::paintEvent(ev);
+}
 
 class RubberBand : public QRubberBand {
 public:
@@ -125,7 +153,7 @@ public:
         }
     }
 
-    QColor blue = QColor("#0277bd");
+    QColor blue = QColor(2, 119, 189); // #0277bd
 };
 
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
