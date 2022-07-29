@@ -11,26 +11,42 @@
 class QDomElement;
 
 class ShaderBuilderSettings : public AssetConverterSettings {
-public:
-    ShaderBuilderSettings();
+    Q_OBJECT
 
-private:
-    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
-};
+    Q_PROPERTY(Rhi CurrentRHI READ rhi WRITE setRhi DESIGNABLE true USER true)
 
-class ShaderBuilder : public AssetConverter {
 public:
-    enum Rhi {
-        OpenGL = 1,
+    enum class Rhi {
+        Invalid = 0,
+        OpenGL,
         Vulkan,
         Metal,
         DirectX
     };
+    Q_ENUM(Rhi)
 
+public:
+    ShaderBuilderSettings();
+
+    Rhi rhi() const;
+    void setRhi(Rhi rhi);
+
+private:
+    QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+
+    bool isOutdated() const Q_DECL_OVERRIDE;
+
+    Rhi m_rhi;
+
+};
+
+class ShaderBuilder : public AssetConverter {
 public:
     ShaderBuilder();
 
     static QString loadIncludes(const QString &path, const QString &define, const PragmaMap &pragmas);
+
+    static ShaderBuilderSettings::Rhi currentRhi();
 
 private:
     QStringList suffixes() const Q_DECL_OVERRIDE { return {"mtl", "shader"}; }
@@ -42,18 +58,16 @@ private:
 
     QString templatePath() const Q_DECL_OVERRIDE { return ":/templates/Material.mtl"; }
 
-    Variant compile(int32_t rhi, const string &buff, int stage) const;
+    Variant compile(ShaderBuilderSettings::Rhi rhi, const string &buff, int stage) const;
 
     bool parseShaderFormat(const QString &path, VariantMap &data);
 
     static QString loadShader(const QString &data, const QString &define, const PragmaMap &pragmas);
 
 private:
-    typedef QMap<QString, Rhi> RhiMap;
+    typedef QMap<QString, ShaderBuilderSettings::Rhi> RhiMap;
 
     ShaderSchemeModel m_schemeModel;
-
-    RhiMap m_rhiMap;
 
 };
 

@@ -37,10 +37,24 @@ namespace  {
 ShaderBuilderSettings::ShaderBuilderSettings() {
     setType(MetaType::type<Material *>());
     setVersion(FORMAT_VERSION);
+    setRhi(Rhi::OpenGL);
+}
+
+ShaderBuilderSettings::Rhi ShaderBuilderSettings::rhi() const {
+    return m_rhi;
+}
+void ShaderBuilderSettings::setRhi(Rhi rhi) {
+    m_rhi = rhi;
 }
 
 QString ShaderBuilderSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/material.svg";
+}
+
+bool ShaderBuilderSettings::isOutdated() const {
+    bool result = AssetConverterSettings::isOutdated();
+    result |= (m_rhi != ShaderBuilder::currentRhi());
+    return result;
 }
 
 AssetConverterSettings *ShaderBuilder::createSettings() const {
@@ -50,12 +64,26 @@ AssetConverterSettings *ShaderBuilder::createSettings() const {
 ShaderBuilder::ShaderBuilder() :
         AssetConverter() {
 
-    m_rhiMap = {
-        {"RenderGL", OpenGL},
-        {"RenderVK", Vulkan},
-        {"RenderMT", Metal},
-        {"RenderDX", DirectX},
+}
+
+ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
+    static RhiMap rhiMap = {
+        {"RenderGL", ShaderBuilderSettings::Rhi::OpenGL},
+        {"RenderVK", ShaderBuilderSettings::Rhi::Vulkan},
+        {"RenderMT", ShaderBuilderSettings::Rhi::Metal},
+        {"RenderDX", ShaderBuilderSettings::Rhi::DirectX},
     };
+
+    static ShaderBuilderSettings::Rhi rhi = ShaderBuilderSettings::Rhi::Invalid;
+    if(rhi == ShaderBuilderSettings::Rhi::Invalid) {
+        if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
+            rhi = rhiMap.value(qEnvironmentVariable(qPrintable(gRhi)));
+        } else {
+            rhi = ShaderBuilderSettings::Rhi::OpenGL;
+        }
+    }
+
+    return rhi;
 }
 
 Actor *ShaderBuilder::createActor(const QString &guid) const {
@@ -79,17 +107,19 @@ Actor *ShaderBuilder::createActor(const QString &guid) const {
 AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *settings) {
     VariantMap data;
 
-    QFileInfo info(settings->source());
+    ShaderBuilderSettings *builderSettings = static_cast<ShaderBuilderSettings *>(settings);
+
+    QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
-        m_schemeModel.load(settings->source());
+        m_schemeModel.load(builderSettings->source());
         if(m_schemeModel.buildGraph()) {
-            if(settings->currentVersion() != settings->version()) {
-                m_schemeModel.save(settings->source());
+            if(builderSettings->currentVersion() != builderSettings->version()) {
+                m_schemeModel.save(builderSettings->source());
             }
             data = m_schemeModel.data();
         }
     } else if(info.suffix() == "shader") {
-        parseShaderFormat(settings->source(), data);
+        parseShaderFormat(builderSettings->source(), data);
     }
 
     if(data.empty()) {
@@ -98,10 +128,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     uint32_t version = 430;
     bool es = false;
-    Rhi rhi = Rhi::OpenGL;
-    if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-        rhi = m_rhiMap.value(qEnvironmentVariable(qPrintable(gRhi)));
-    }
+
+    ShaderBuilderSettings::Rhi rhi = currentRhi();
+
     if(ProjectManager::instance()->currentPlatformName() != "desktop") {
         version = 300;
         es = true;
@@ -141,7 +170,7 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     object.push_back(Material::metaClass()->name()); // type
     object.push_back(0); // id
     object.push_back(0); // parent
-    object.push_back(settings->destination().toStdString()); // name
+    object.push_back(builderSettings->destination().toStdString()); // name
 
     object.push_back(VariantMap()); // properties
 
@@ -150,27 +179,28 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     result.push_back(object);
 
-    QFile file(settings->absoluteDestination());
+    QFile file(builderSettings->absoluteDestination());
     if(file.open(QIODevice::WriteOnly)) {
         ByteArray data = Bson::save(result);
         file.write(reinterpret_cast<const char *>(&data[0]), data.size());
         file.close();
-        settings->setCurrentVersion(settings->version());
+        builderSettings->setCurrentVersion(builderSettings->version());
+        builderSettings->setRhi(rhi);
         return Success;
     }
 
     return InternalError;
 }
 
-Variant ShaderBuilder::compile(int32_t rhi, const string &buff, int stage) const {
+Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const string &buff, int stage) const {
     Variant data;
 
     vector<uint32_t> spv = SpirVConverter::glslToSpv(buff, static_cast<EShLanguage>(stage));
     if(!spv.empty()) {
         switch(rhi) {
-            case Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
-            case Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
-            case Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
+            case ShaderBuilderSettings::Rhi::OpenGL: data = SpirVConverter::spvToGlsl(spv); break;
+            case ShaderBuilderSettings::Rhi::Metal: data = SpirVConverter::spvToMetal(spv); break;
+            case ShaderBuilderSettings::Rhi::DirectX: data = SpirVConverter::spvToHlsl(spv); break;
             default: {
                 ByteArray array;
                 array.resize(spv.size() * sizeof(uint32_t));
