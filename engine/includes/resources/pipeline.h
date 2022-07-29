@@ -41,7 +41,7 @@ public:
 
     virtual void resize(int32_t width, int32_t height);
 
-    virtual void analizeScene(SceneGraph *scene, RenderSystem *render);
+    virtual void analizeScene(SceneGraph *graph, RenderSystem *render);
 
     Texture *renderTexture(const string &name) const;
     void setRenderTexture(const string &name, Texture *texture);

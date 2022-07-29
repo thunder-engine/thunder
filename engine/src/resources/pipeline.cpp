@@ -222,7 +222,7 @@ void Pipeline::resize(int32_t width, int32_t height) {
     }
 }
 
-void Pipeline::analizeScene(SceneGraph *scene, RenderSystem *system) {
+void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
     m_system = system;
 
     m_sceneComponents.clear();
@@ -231,14 +231,14 @@ void Pipeline::analizeScene(SceneGraph *scene, RenderSystem *system) {
 
     m_postProcessVolume.clear();
 
-    combineComponents(scene, scene->isToBeUpdated());
+    combineComponents(graph, graph->isToBeUpdated());
 
     Camera *camera = Camera::current();
     m_filter = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
     sortByDistance(m_filter, camera->actor()->transform()->position());
 
     // Post process settings mixer
-    PostProcessSettings &settings = scene->finalPostProcessSettings();
+    PostProcessSettings &settings = graph->finalPostProcessSettings();
     settings.resetDefault();
 
     //std::sort(m_postProcessVolume.begin(), m_postProcessVolume.end(), typeLessThan);

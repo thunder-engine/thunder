@@ -79,14 +79,14 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
             return;
         }
 
-        m_local.model = model;
-
-        glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
         MaterialInstanceGL *instance = static_cast<MaterialInstanceGL *>(material);
         if(instance->bind(this, layer)) {
+            m_local.model = model;
+
+            glBindBuffer(GL_UNIFORM_BUFFER, m_localUbo);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Local), &m_local);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
             m->bindVao(this, lod);
 
             Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
