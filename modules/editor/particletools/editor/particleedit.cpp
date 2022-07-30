@@ -34,6 +34,7 @@ ParticleEdit::ParticleEdit() :
 
     SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
 
+    ui->preview->init();
     ui->preview->setController(m_controller);
     ui->preview->setSceneGraph(scene);
 
