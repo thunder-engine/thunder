@@ -60,7 +60,7 @@ protected:
 
     void postProcess(RenderTarget *source, uint32_t layer);
 
-    void sortByDistance(list<Renderable *> &in, const Vector3 &origin);
+    void sortRenderables(list<Renderable *> &in, const Vector3 &origin);
 
     void cleanShadowCache();
     void updateShadows(Camera &camera);

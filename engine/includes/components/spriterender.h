@@ -74,6 +74,8 @@ private:
 
     void composeComponent() override;
 
+    int priority() const override;
+
 private:
     SpriteRenderPrivate *p_ptr;
 

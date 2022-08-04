@@ -43,3 +43,10 @@ bool Renderable::isRenderable() const {
 void Renderable::composeComponent() {
 
 }
+/*!
+    Returns the prority value used to sort renadarble components before drawing.
+    Lower values are rendered first and higher are rendered last.
+*/
+int Renderable::priority() const {
+    return 0;
+}

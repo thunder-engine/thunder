@@ -553,6 +553,9 @@ void SceneComposer::onSaveIsolated() {
 }
 
 void SceneComposer::onSave() {
+    if(m_menuObject == nullptr) {
+        m_menuObject = Engine::sceneGraph()->activeScene();
+    }
     AssetConverterSettings *settings = m_sceneSettings.value(m_menuObject);
     if(settings) {
         saveMap(settings->source(), static_cast<Scene *>(m_menuObject));

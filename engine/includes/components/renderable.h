@@ -27,6 +27,8 @@ public:
 
     virtual void composeComponent();
 
+    virtual int priority() const;
+
 private:
     bool isRenderable() const override;
 

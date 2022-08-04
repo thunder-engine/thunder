@@ -234,8 +234,9 @@ void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
     combineComponents(graph, graph->isToBeUpdated());
 
     Camera *camera = Camera::current();
+    Transform *cameraTransform = camera->actor()->transform();
     m_filter = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
-    sortByDistance(m_filter, camera->actor()->transform()->position());
+    sortRenderables(m_filter, cameraTransform->position());
 
     // Post process settings mixer
     PostProcessSettings &settings = graph->finalPostProcessSettings();
@@ -244,12 +245,8 @@ void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
     //std::sort(m_postProcessVolume.begin(), m_postProcessVolume.end(), typeLessThan);
     for(auto &it : m_postProcessVolume) {
         if(!it->unbound()) {
-            Actor *a = camera->actor();
-            if(a) {
-                Transform *t = a->transform();
-                if(!it->bound().intersect(t->worldPosition(), camera->nearPlane())) {
-                    continue;
-                }
+            if(!it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+                continue;
             }
         }
         settings.lerp(it->settings(), it->blendWeight());
@@ -444,14 +441,20 @@ void Pipeline::combineComponents(Object *object, bool update) {
 
 struct ObjectComp {
     bool operator() (const Renderable *left, const Renderable *right) {
-        Matrix4 m1 = left->actor()->transform()->worldTransform();
-        Matrix4 m2 = right->actor()->transform()->worldTransform();
-        return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+        int p1 = left->priority();
+        int p2 = right->priority();
+        if(p1 == p2) {
+            const Matrix4 &m1 = left->actor()->transform()->worldTransform();
+            const Matrix4 &m2 = right->actor()->transform()->worldTransform();
+
+            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+        }
+        return p1 < p2;
     }
     Vector3 origin;
 };
 
-void Pipeline::sortByDistance(list<Renderable *> &in, const Vector3 &origin) {
+void Pipeline::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
     ObjectComp comp;
     comp.origin = origin;
 
