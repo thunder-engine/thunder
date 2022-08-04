@@ -6,7 +6,7 @@
 
 #include <editor/assetconverter.h>
 
-#include "shaderschememodel.h"
+#include "shadernodegraph.h"
 
 class QDomElement;
 
@@ -67,7 +67,7 @@ private:
 private:
     typedef QMap<QString, ShaderBuilderSettings::Rhi> RhiMap;
 
-    ShaderSchemeModel m_schemeModel;
+    ShaderNodeGraph m_nodeGraph;
 
 };
 

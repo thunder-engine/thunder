@@ -5,7 +5,7 @@
 
 #include <editor/asseteditor.h>
 
-class AbstractSchemeModel;
+class AbstractNodeGraph;
 class AnimationStateMachine;
 class AssetConverter;
 
@@ -46,7 +46,7 @@ private:
 private:
     Ui::AnimationEdit *ui;
 
-    AbstractSchemeModel *m_model;
+    AbstractNodeGraph *m_model;
     AssetConverter *m_assetConverter;
 
     AnimationStateMachine *m_stateMachine;

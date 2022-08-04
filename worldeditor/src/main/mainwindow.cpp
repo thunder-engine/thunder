@@ -217,7 +217,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onItemSelected(QObject *item) {
-    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(ui->propertyView->object());
+    QObject *object = ui->propertyView->object();
+    AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(object);
     if(settings && settings != item) {
         AssetManager::instance()->checkImportSettings(settings);
         disconnect(settings, &AssetConverterSettings::updated, this, &MainWindow::onSettingsUpdated);

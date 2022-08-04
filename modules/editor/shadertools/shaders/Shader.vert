@@ -41,13 +41,13 @@ layout(location = 6) out vec4 _color;
 
 layout(location = 7) out vec3 _view;
 
-struct Vertex {
-    vec3    v;
-    vec3    t;
-    vec3    n;
-};
+#pragma uniforms
 
-#pragma vertex
+struct Vertex {
+    vec3 v;
+    vec3 t;
+    vec3 n;
+};
 
 #ifdef TYPE_STATIC
 Vertex staticMesh(vec3 v, vec3 t, vec3 n, mat3 r) {
@@ -109,18 +109,18 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
     result.n = n;
 
     float angle = posRot.w;  // rotation
-    float x     = cos(angle) * v.x + sin(angle) * v.y;
-    float y     = sin(angle) * v.x - cos(angle) * v.y;
+    float x = cos(angle) * v.x + sin(angle) * v.y;
+    float y = sin(angle) * v.x - cos(angle) * v.y;
 
     vec3 target = g.cameraTarget.xyz;
     if(g.cameraProjection[2].w < 0.0) {
         target = posRot.xyz;
     }
     vec3 normal = normalize(g.cameraPosition.xyz - target);
-    vec3 right  = normalize(cross(vec3(0.0, 1.0, 0.0), normal));
-    vec3 up     = normalize(cross(normal, right));
+    vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), normal));
+    vec3 up = normalize(cross(normal, right));
 
-    result.v    = (up * x + right * y) * sizeDist.xyz + posRot.xyz ;
+    result.v = (up * x + right * y) * sizeDist.xyz + posRot.xyz ;
 
     return result;
 }
@@ -128,39 +128,38 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
 
 void main(void) {
 #ifdef INSTANCING
-    mat4 model  = instanceMatrix;
+    mat4 model = instanceMatrix;
 #else
-    mat4 model  = l.model;
+    mat4 model = l.model;
 #endif
-    mat4 mv     = g.view * model;
-    mat3 rot    = mat3(model);
+    mat4 mv = g.view * model;
+    mat3 rot = mat3(model);
 
     vec3 camera = vec3(g.view[0].w,
                        g.view[1].w,
                        g.view[2].w);
 
+#pragma vertex
+
 #ifdef TYPE_STATIC
     Vertex vert = staticMesh(vertex, tangent, normal, rot);
-    params.normal = vert.n;
-    vert.v += getWorldPositionOffset(params);
+    vert.v += WorldPositionOffset;
     _vertex = g.projection * (mv * vec4(vert.v, 1.0));
-    _view = (model * vec4(vert.v, 1.0)).xyz - camera;
+    _view = normalize((model * vec4(vert.v, 1.0)).xyz - g.cameraPosition.xyz);
 #endif
 
 #ifdef TYPE_BILLBOARD
     Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist );
-    params.normal = vert.n;
-    vert.v += getWorldPositionOffset(params);
+    vert.v += WorldPositionOffset;
     _vertex = g.projection * (mv * vec4(vert.v, 1.0));
-    _view = (model * vec4(vert.v, 1.0)).xyz - camera;
+    _view = normalize((model * vec4(vert.v, 1.0)).xyz - camera);
 #endif
 
 #ifdef TYPE_SKINNED
     Vertex vert = skinnedMesh(vertex, tangent, normal, bones, weights);
-    params.normal = vert.n;
-    vert.v += getWorldPositionOffset(params);
+    vert.v += WorldPositionOffset;
     _vertex = g.projection * (g.view * vec4(vert.v, 1.0));
-    _view = vert.v - camera;
+    _view = normalize(vert.v - g.cameraPosition.xyz);
 #endif
 
     gl_Position = _vertex;

@@ -5,7 +5,7 @@
 
 #include <engine.h>
 
-class AbstractSchemeModel;
+class AbstractNodeGraph;
 class QMenu;
 
 class ENGINE_EXPORT SchemeView : public QQuickWidget {
@@ -14,7 +14,7 @@ class ENGINE_EXPORT SchemeView : public QQuickWidget {
 public:
     explicit SchemeView(QWidget *parent = nullptr);
 
-    void setModel(AbstractSchemeModel *model, bool state = false);
+    void setModel(AbstractNodeGraph *graph, bool state = false);
 
     void reselect();
 
@@ -32,7 +32,7 @@ private slots:
 protected:
     QMenu *m_createMenu;
 
-    AbstractSchemeModel *m_model;
+    AbstractNodeGraph *m_graph;
 
     QObject *m_selectedItem;
 

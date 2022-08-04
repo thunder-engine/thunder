@@ -111,12 +111,12 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     QFileInfo info(builderSettings->source());
     if(info.suffix() == "mtl") {
-        m_schemeModel.load(builderSettings->source());
-        if(m_schemeModel.buildGraph()) {
+        m_nodeGraph.load(builderSettings->source());
+        if(m_nodeGraph.buildGraph()) {
             if(builderSettings->currentVersion() != builderSettings->version()) {
-                m_schemeModel.save(builderSettings->source());
+                m_nodeGraph.save(builderSettings->source());
             }
-            data = m_schemeModel.data();
+            data = m_nodeGraph.data();
         }
     } else if(info.suffix() == "shader") {
         parseShaderFormat(builderSettings->source(), data);
@@ -248,10 +248,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
 
                                     int flags = 0;
                                     if(property.attribute("target", "false") == "true") {
-                                        flags |= ShaderSchemeModel::Target;
+                                        flags |= ShaderRootNode::Target;
                                     }
                                     if(type.toLower() == gTextureCubemap) {
-                                        flags |= ShaderSchemeModel::Cube;
+                                        flags |= ShaderRootNode::Cube;
                                     }
 
                                     int binding = textureBinding;
@@ -261,7 +261,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     }
 
                                     VariantList texture;
-                                    texture.push_back((flags & ShaderSchemeModel::Target) ? "" : property.attribute("path").toStdString()); // path
+                                    texture.push_back((flags & ShaderRootNode::Target) ? "" : property.attribute("path").toStdString()); // path
                                     texture.push_back(binding); // binding
                                     texture.push_back(name.toStdString()); // name
                                     texture.push_back(flags); // flags
@@ -329,7 +329,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                         int materialType = types.value(element.attribute("type"), Material::Surface);
                         properties.push_back(materialType);
                         properties.push_back(element.attribute("twoSided", "true") == "true");
-                        properties.push_back((materialType != ShaderSchemeModel::Surface) ? Material::Static :
+                        properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
                                              (Material::Static | Material::Skinned | Material::Billboard | Material::Oriented));
                         properties.push_back(blend.value(element.attribute("blendMode"), Material::Opaque));
                         properties.push_back(light.value(element.attribute("lightModel"), Material::Unlit));

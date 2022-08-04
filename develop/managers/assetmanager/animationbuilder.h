@@ -1,7 +1,9 @@
 #ifndef ANIMATIONBUILDER_H
 #define ANIMATIONBUILDER_H
 
-#include "editor/scheme/abstractschememodel.h"
+#include "editor/scheme/abstractnodegraph.h"
+
+#include "editor/scheme/graphnode.h"
 
 #include <QVariant>
 
@@ -12,45 +14,35 @@
 
 class Animator;
 
-class BaseState : public QObject {
+class BaseState : public GraphNode {
     Q_OBJECT
     Q_CLASSINFO("Group", "States")
 
-    Q_PROPERTY(QString Name READ name WRITE setName NOTIFY updated DESIGNABLE true USER true)
+    Q_PROPERTY(QString Name READ objectName WRITE setObjectName NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(Template Clip READ clip WRITE setClip NOTIFY updated DESIGNABLE true USER true)
     Q_PROPERTY(bool Loop READ loop WRITE setLoop NOTIFY updated DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE BaseState(AbstractSchemeModel::Node *parent) {
-        m_pParent = parent;
-        m_Path = Template("", MetaType::type<AnimationClip *>());
-        m_Loop = false;
-    }
-
-    QString name() const {
-        return m_pParent->name;
-    }
-
-    void setName(const QString &name) {
-        m_pParent->name = name;
-        emit updated();
+    Q_INVOKABLE BaseState() {
+        m_path = Template("", MetaType::type<AnimationClip *>());
+        m_loop = false;
     }
 
     Template clip() const {
-        return m_Path;
+        return m_path;
     }
 
     void setClip(const Template &path) {
-        m_Path.path = path.path;
+        m_path.path = path.path;
         emit updated();
     }
 
     bool loop() const {
-        return m_Loop;
+        return m_loop;
     }
 
     void setLoop(bool loop) {
-        m_Loop = loop;
+        m_loop = loop;
         emit updated();
     }
 
@@ -58,9 +50,9 @@ signals:
     void updated();
 
 public:
-    AbstractSchemeModel::Node *m_pParent;
-    Template m_Path;
-    bool m_Loop;
+    Template m_path;
+    bool m_loop;
+
 };
 
 class AnimationBuilderSettings : public AssetConverterSettings {
@@ -70,11 +62,11 @@ private:
     QString defaultIcon(QString) const Q_DECL_OVERRIDE;
 };
 
-class AnimationSchemeModel : public AbstractSchemeModel {
+class AnimationNodeGraph : public AbstractNodeGraph {
     Q_OBJECT
 
 public:
-    AnimationSchemeModel();
+    AnimationNodeGraph();
 
     void load(const QString &path) Q_DECL_OVERRIDE;
     void save(const QString &path) Q_DECL_OVERRIDE;
@@ -84,19 +76,20 @@ public:
     QStringList nodeList() const Q_DECL_OVERRIDE;
 
 private:
-    Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
-    Link *linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) Q_DECL_OVERRIDE;
+    GraphNode *createRoot() Q_DECL_OVERRIDE;
+    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
+    Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) Q_DECL_OVERRIDE;
 
-    void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
+    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
+    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
 protected:
     Variant data() const;
 
-    Node *m_pEntry;
-    QString m_Path;
+    GraphNode *m_entry;
+    QString m_path;
 
-    QStringList m_Functions;
+    QStringList m_functions;
 
 };
 
@@ -110,7 +103,7 @@ private:
     QString templatePath() const Q_DECL_OVERRIDE { return ":/Templates/Animation_Controller.actl"; }
 
 private:
-    AnimationSchemeModel m_model;
+    AnimationNodeGraph m_model;
 };
 
 #endif // ANIMATIONBUILDER_H

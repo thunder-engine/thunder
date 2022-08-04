@@ -6,7 +6,7 @@
 #include <components/meshrender.h>
 
 class ShaderBuilder;
-class ShaderSchemeModel;
+class ShaderNodeGraph;
 class CameraCtrl;
 
 class ComponentBrowser;
@@ -53,7 +53,7 @@ private:
 
     Material *m_material;
 
-    ShaderSchemeModel *m_model;
+    ShaderNodeGraph *m_graph;
     ShaderBuilder *m_builder;
 
     CameraCtrl *m_controller;

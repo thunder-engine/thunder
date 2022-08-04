@@ -13,38 +13,35 @@ class ConstFloat : public ShaderFunction {
     Q_PROPERTY(double Value READ value WRITE setValue DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE ConstFloat() { m_Value    = 0.0; }
+    Q_INVOKABLE ConstFloat() {
+        m_value = 0.0;
 
-    AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out      = new AbstractSchemeModel::Port;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::Double;
-        result->list.push_back(out);
-
-        return result;
+        ports.push_back(new NodePort(true, QMetaType::Double, 0, ""));
     }
 
     double value() const {
-        return m_Value;
+        return m_value;
     }
 
     void setValue(double value) {
-        m_Value = value;
+        m_value = value;
         emit updated();
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::Double;
-            value  += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_Value);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            if(graph->isSingleConnection(link.oport)) {
+                stack.push(QString::number(m_value));
+            } else {
+                code += QString("\tfloat local%1 = %2;\n").arg(depth).arg(m_value);
+            }
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
+
 protected:
-    double      m_Value;
+    double m_value;
+
 };
 
 class ConstVector2 : public ShaderFunction {
@@ -55,47 +52,45 @@ class ConstVector2 : public ShaderFunction {
     Q_PROPERTY(double G READ valueG WRITE setValueG DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE ConstVector2() { m_Value = QVector2D(); }
+    Q_INVOKABLE ConstVector2() {
+        m_value = QVector2D();
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
-        out->name = "";
-        out->out  = true;
-        out->pos  = 0;
-        out->type = QMetaType::QVector2D;
-        result->list.push_back(out);
-
-        return result;
+        ports.push_back(new NodePort(true, QMetaType::QVector2D, 0, ""));
     }
 
     double valueR() const {
-        return m_Value.x();
+        return m_value.x();
     }
 
     void setValueR(const double value) {
-        m_Value.setX(value);
+        m_value.setX(value);
         emit updated();
     }
 
     double valueG() const {
-        return m_Value.y();
+        return m_value.y();
     }
 
     void setValueG(const double value) {
-        m_Value.setY(value);
+        m_value.setY(value);
         emit updated();
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size   = QMetaType::QVector2D;
-            value += QString("\tvec2 local%1 = vec2(%2, %3);\n").arg(depth).arg(m_Value.x()).arg(m_Value.y());
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            QString value = QString("vec2(%1, %2)").arg(m_value.x()).arg(m_value.y());
+            if(graph->isSingleConnection(link.oport)) {
+                stack.push(value);
+            } else {
+                code += QString("\tvec2 local%1 = %2;\n").arg(depth).arg(value);
+            }
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
+
 protected:
-    QVector2D   m_Value;
+    QVector2D m_value;
+
 };
 
 class ConstVector3 : public ShaderFunction {
@@ -105,38 +100,36 @@ class ConstVector3 : public ShaderFunction {
     Q_PROPERTY(QColor Value READ value WRITE setValue DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE ConstVector3() { m_Value    = QColor(0, 0, 0); }
+    Q_INVOKABLE ConstVector3() {
+        m_value = QColor(0, 0, 0);
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out      = new AbstractSchemeModel::Port;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::QVector3D;
-        result->list.push_back(out);
-
-        return result;
+        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
     }
 
     QColor value() const {
-        return m_Value;
+        return m_value;
     }
 
     void setValue(const QColor &value) {
-        m_Value = value.rgb();
+        m_value = value.rgb();
         emit updated();
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size   = QMetaType::QVector3D;
-            value += QString("\tvec3 local%1 = vec3(%2, %3, %4);\n").arg(depth).arg(m_Value.redF()).arg(m_Value.greenF()).arg(m_Value.blueF());
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            QString value = QString("vec3(%1, %2, %3)").arg(m_value.redF()).arg(m_value.greenF()).arg(m_value.blueF());
+            if(graph->isSingleConnection(link.oport)) {
+                stack.push(value);
+            } else {
+                code += QString("\tvec3 local%1 = %2;\n").arg(depth).arg(value);
+            }
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
+
 protected:
-    QColor m_Value;
+    QColor m_value;
+
 };
 
 class ConstVector4 : public ShaderFunction {
@@ -146,38 +139,36 @@ class ConstVector4 : public ShaderFunction {
     Q_PROPERTY(QColor Value READ value WRITE setValue DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE ConstVector4() { m_Value = QColor(0, 0, 0, 0); }
+    Q_INVOKABLE ConstVector4() :
+            m_value(QColor(0, 0, 0, 0)) {
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::QVector4D;
-        result->list.push_back(out);
-
-        return result;
+        ports.push_back(new NodePort(true, QMetaType::QVector4D, 0, ""));
     }
 
     QColor value() const {
-        return m_Value;
+        return m_value;
     }
 
     void setValue(const QColor &value) {
-        m_Value = value;
+        m_value = value;
         emit updated();
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size   = QMetaType::QVector4D;
-            value += QString("\tvec4 local%1 = vec4(%2, %3, %4, %5);\n").arg(depth).arg(m_Value.redF()).arg(m_Value.greenF()).arg(m_Value.blueF()).arg(m_Value.alphaF());
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            QString value = QString("vec4(%1, %2, %3, %4)").arg(m_value.redF()).arg(m_value.greenF()).arg(m_value.blueF()).arg(m_value.alphaF());
+            if(graph->isSingleConnection(link.oport)) {
+                stack.push(value);
+            } else {
+                code += QString("\tvec4 local%1 = %2;\n").arg(depth).arg(value);
+            }
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
+
 protected:
-    QColor m_Value;
+    QColor m_value;
+
 };
 
 #endif // CONSTVALUE_H

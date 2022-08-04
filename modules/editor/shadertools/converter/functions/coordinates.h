@@ -10,104 +10,99 @@ class ProjectionCoord : public ShaderFunction {
     Q_CLASSINFO("Group", "Coordinates")
 
 public:
-    Q_INVOKABLE ProjectionCoord() { }
-
-    AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
-        out->name   = "";
-        out->out    = true;
-        out->pos    = 0;
-        out->type   = QMetaType::QVector2D;
-        result->list.push_back(out);
-
-        return result;
+    Q_INVOKABLE ProjectionCoord() {
+        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 =(0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            code += QString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(depth);
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 };
 
-class TexCoord : public ProjectionCoord {
+class TexCoord : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
-    Q_PROPERTY(uint32_t Index READ index WRITE setIndex DESIGNABLE true USER true)
+    Q_PROPERTY(int Index READ index WRITE setIndex DESIGNABLE true USER true)
 
 public:
     Q_INVOKABLE TexCoord() :
-            m_Index(0) {
+            m_index(0) {
+
+        ports.push_back(new NodePort(true, QMetaType::QVector2D, 0, ""));
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::QVector2D;
-            value  += QString("\tvec2 local%1 = _uv%2;\n").arg(depth).arg(m_Index);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            stack.push(QString("_uv%1").arg(m_index));
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 
     uint32_t index() const {
-        return m_Index;
+        return m_index;
     }
 
     void setIndex(uint32_t index) {
-        m_Index = index;
+        m_index = index;
     }
+
 protected:
-    uint32_t m_Index;
+    uint32_t m_index;
+
 };
 
-class NormalVectorWS : public ProjectionCoord {
+class NormalVectorWS : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
 public:
-    Q_INVOKABLE NormalVectorWS() { }
+    Q_INVOKABLE NormalVectorWS() {
+        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+    }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size   = QMetaType::QVector3D;
-            value += QString("\tvec3 local%1 = _n;\n").arg(depth);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            stack.push("_n");
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 };
 
-class CameraPosition : public ProjectionCoord {
+class CameraPosition : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
 public:
-    Q_INVOKABLE CameraPosition() { }
+    Q_INVOKABLE CameraPosition() {
+        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+    }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = g.cameraPosition.xyz;\n").arg(depth);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            stack.push("g.cameraPosition.xyz");
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 };
 
-class CameraDirection : public ProjectionCoord {
+class CameraDirection : public ShaderFunction {
     Q_OBJECT
     Q_CLASSINFO("Group", "Coordinates")
 
 public:
-    Q_INVOKABLE CameraDirection() { }
+    Q_INVOKABLE CameraDirection() {
+        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+    }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::QVector3D;
-            value  += QString("\tvec3 local%1 = g.cameraTarget.xyz;\n").arg(depth);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            stack.push("g.cameraTarget.xyz");
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 };
 
@@ -119,71 +114,63 @@ class CoordPanner : public ShaderFunction {
     Q_PROPERTY(double Y READ valueY WRITE setValueY DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE CoordPanner() { m_Speed = Vector2(); }
+    Q_INVOKABLE CoordPanner() {
+        m_speed = Vector2();
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        {
-            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
-            out->name   = "";
-            out->out    = true;
-            out->pos    = 0;
-            out->type   = QMetaType::QVector2D;
-            result->list.push_back(out);
-        }
-        {
-            AbstractSchemeModel::Port *out  = new AbstractSchemeModel::Port;
-            out->name   = UV;
-            out->out    = false;
-            out->pos    = 0;
-            out->type   = QMetaType::QVector2D;
-            result->list.push_back(out);
-        }
-
-        return result;
+        ports.push_back(new NodePort(false, QMetaType::QVector2D, 0, UV));
+        ports.push_back(new NodePort(true,  QMetaType::QVector2D, 0, ""));
     }
 
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            const AbstractSchemeModel::Link *l = m_pModel->findLink(m_pNode, UV);
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            const AbstractNodeGraph::Link *l = graph->findLink(this, ports.front()); // UV
             if(l) {
-                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender->ptr);
+                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                 if(node) {
-                    uint8_t type;
-                    int32_t index = node->build(value, *l, depth, type);
+                    int32_t type = 0;
+                    int32_t index = node->build(code, stack, graph, *l, depth, type);
                     if(index >= 0) {
-                        size = type;
-                        QString sub = convert("local" + QString::number(index), type, size);
-                        depth++;
-                        value += QString("\tvec2 local%1 = %2").arg(depth).arg(sub);
-                        value += QString(" + vec2(%1, %2) * p.time;\n").arg(m_Speed.x).arg(m_Speed.y);
+                        size = link.oport->m_type;
+
+                        QString value;
+                        if(graph->isSingleConnection(link.oport)) {
+                            value = convert(stack.pop(), type, size);
+                        } else {
+                            value = convert("local" + QString::number(index), type, size);
+                        }
+                        value.append(QString(" + vec2(%1, %2) * g.time").arg(QString::number(m_speed.x), QString::number(m_speed.y)));
+
+                        code.append(QString("\tvec2 local%1 = %2;\n").arg(QString::number(depth), value));
                     }
                 }
+            } else {
+                graph->reportMessage(this, QString("Missing argument ") + UV);
+                return m_position;
             }
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 
     double valueX() const {
-        return m_Speed.x;
+        return m_speed.x;
     }
 
     void setValueX(const double value) {
-        m_Speed.x = value;
+        m_speed.x = value;
         emit updated();
     }
 
     double valueY() const {
-        return m_Speed.y;
+        return m_speed.y;
     }
 
     void setValueY(const double value) {
-        m_Speed.y = value;
+        m_speed.y = value;
         emit updated();
     }
 
 protected:
-    Vector2 m_Speed;
+    Vector2 m_speed;
 
 };
 
