@@ -31,7 +31,7 @@ MaterialEdit::MaterialEdit() :
         m_mesh(nullptr),
         m_light(nullptr),
         m_material(nullptr),
-        m_model(new ShaderSchemeModel),
+        m_graph(new ShaderNodeGraph),
         m_builder(new ShaderBuilder()),
         m_controller(new CameraCtrl),
         m_lastCommand(nullptr) {
@@ -53,10 +53,10 @@ MaterialEdit::MaterialEdit() :
 
     on_actionSphere_triggered();
 
-    connect(m_model, &ShaderSchemeModel::schemeUpdated, this, &MaterialEdit::onSchemeUpdated);
+    connect(m_graph, &ShaderNodeGraph::schemeUpdated, this, &MaterialEdit::onSchemeUpdated);
     connect(ui->schemeWidget, &SchemeView::itemSelected, this, &MaterialEdit::itemSelected);
 
-    ui->schemeWidget->setModel(m_model);
+    ui->schemeWidget->setModel(m_graph);
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
@@ -70,7 +70,7 @@ MaterialEdit::~MaterialEdit() {
 }
 
 bool MaterialEdit::isModified() const {
-    return (UndoManager::instance()->lastCommand(m_builder) != m_lastCommand);
+    return (UndoManager::instance()->lastCommand(m_graph) != m_lastCommand);
 }
 
 QStringList MaterialEdit::suffixes() const {
@@ -90,9 +90,9 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
         if(mesh) {
             mesh->setMaterial(m_material);
         }
-        m_model->load(m_settings.first()->source());
+        m_graph->load(m_settings.first()->source());
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
+        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
 
         ui->schemeWidget->onNodesSelected(QVariantList({0}));
     }
@@ -100,17 +100,17 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
 
 void MaterialEdit::saveAsset(const QString &path) {
     if(!path.isEmpty() || !m_settings.first()->source().isEmpty()) {
-        m_model->save(path.isEmpty() ? m_settings.first()->source() : path);
+        m_graph->save(path.isEmpty() ? m_settings.first()->source() : path);
 
-        m_lastCommand = UndoManager::instance()->lastCommand(m_builder);
+        m_lastCommand = UndoManager::instance()->lastCommand(m_graph);
     }
 }
 
 void MaterialEdit::onSchemeUpdated() {
-    if(m_builder && m_model->buildGraph()) {
+    if(m_builder && m_graph->buildGraph()) {
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {
-            VariantMap map = m_model->data(true);
+            VariantMap map = m_graph->data(true);
             m_material->loadUserData(map);
         }
     }

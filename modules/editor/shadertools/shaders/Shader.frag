@@ -21,62 +21,49 @@ layout(location = 2) out vec4 gbuffer3;
 layout(location = 3) out vec4 gbuffer4;
 #endif
 
+#pragma uniforms
+
+void main(void) {
 #pragma fragment
 
-void simpleMode() {
-    float alpha = getOpacity(params);
+#ifdef SIMPLE
+    float alpha = Opacity;
     if(g.clip >= alpha) {
         discard;
     }
     gbuffer1 = l.color;
-}
+#elif LIGHT
+    gbuffer1 = vec4(Emissive, 1.0);
+#else
+    vec3 normal = Normal * 2.0 - 1.0;
+    normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
+    vec3 reflect = reflect(_view, normal);
 
-void passMode() {
-    vec3 emit = getEmissive(params) * l.color.xyz;
-    float alpha = getOpacity(params) * l.color.w;
+    vec3 emit = Emissive * l.color.xyz;
+    float alpha = Opacity * l.color.w;
 
-#ifdef BLEND_OPAQUE
+    #ifdef BLEND_OPAQUE
     if(g.clip >= alpha) {
         discard;
     }
     vec3 norm = vec3(1.0);
-    vec3 matv = vec3(0.0, 0.0, getMetallic(params));
+    vec3 matv = vec3(0.0, 0.0, Metallic);
     float model = 0.0;
     #ifdef MODEL_LIT
     model = 0.34;
-    norm = params.normal * 0.5 + 0.5;
-    matv.x = max(0.01, getRoughness(params));
+    norm = normal * 0.5 + 0.5;
+    matv.x = max(0.01, Roughness);
     #endif
 
-    vec3 albd = getDiffuse(params) * l.color.xyz;
+    vec3 albd = Diffuse * l.color.xyz;
 
     float spec = 1.0;
     gbuffer1 = vec4(norm, model);
     gbuffer2 = vec4(albd, 1.0);
     gbuffer3 = vec4(matv, spec);
     gbuffer4 = vec4(emit, 0.0);
-#else
+    #else
     gbuffer1 = vec4(emit, alpha);
-#endif
-}
-
-void lightMode() {
-    gbuffer1 = vec4(getEmissive(params), 1.0);
-}
-
-void main(void) {
-    params.reflect  = vec3(0.0);
-    params.normal   = _n;
-
-#ifdef SIMPLE
-    simpleMode();
-#elif LIGHT
-    lightMode();
-#else
-    params.normal = getNormal(params) * 2.0 - 1.0;
-    params.normal = normalize(params.normal.x * _t + params.normal.y * _b + params.normal.z * _n);
-    params.reflect = reflect(_view, params.normal);
-
-    passMode();
+    #endif
 #endif
 }

@@ -124,8 +124,9 @@ Rectangle {
             focusLink = -1
         } else {
             if(selection.length > 0) {
-                schemeModel.deleteNodes(selection)
+                var sel = selection
                 nodeSelect(0)
+                schemeModel.deleteNodes(sel)
             }
         }
     }

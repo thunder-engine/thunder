@@ -1,11 +1,12 @@
-#ifndef SHADERSCHEMEMODEL_H
-#define SHADERSCHEMEMODEL_H
+#ifndef SHADERNODEGRAPH_H
+#define SHADERNODEGRAPH_H
 
 #include <QFileInfo>
 
 #include <resources/material.h>
 
-#include "editor/scheme/abstractschememodel.h"
+#include <editor/scheme/graphnode.h>
+#include <editor/scheme/abstractnodegraph.h>
 
 #define SHADER      "Shader"
 #define SIMPLE      "Simple"
@@ -23,14 +24,11 @@
 #define SIDE        "Side"
 #define DEPTH       "Depth"
 #define DEPTHWRITE  "DepthWrite"
-#define RAW         "Raw"
 #define TEXTURES    "Textures"
 #define UNIFORMS    "Uniforms"
 #define PROPERTIES  "Properties"
 
-typedef map<string, string> PragmaMap;
-
-class ShaderSchemeModel : public AbstractSchemeModel {
+class ShaderRootNode : public GraphNode {
     Q_OBJECT
 
     Q_PROPERTY(Type Material_Type READ materialType WRITE setMaterialType DESIGNABLE true USER true)
@@ -38,7 +36,7 @@ class ShaderSchemeModel : public AbstractSchemeModel {
     Q_PROPERTY(LightModel Lighting_Model READ lightModel WRITE setLightModel DESIGNABLE true USER true)
     Q_PROPERTY(bool Two_Sided READ isDoubleSided WRITE setDoubleSided DESIGNABLE true USER true)
     Q_PROPERTY(bool Depth_Test READ isDepthTest WRITE setDepthTest DESIGNABLE true USER true)
-    Q_PROPERTY(QFileInfo Raw_Path READ rawPath WRITE setRawPath DESIGNABLE true USER true)
+    Q_PROPERTY(bool Depth_Write READ isDepthWrite WRITE setDepthWrite DESIGNABLE true USER true)
 
 public:
     enum LightModel {
@@ -68,38 +66,75 @@ public:
     Q_ENUM(LightModel)
     Q_ENUM(Blend)
 
+    ShaderRootNode() :
+        m_blendMode(Opaque),
+        m_lightModel(Lit),
+        m_materialType(Surface),
+        m_doubleSided(false),
+        m_depthTest(true),
+        m_depthWrite(true),
+        m_viewSpace(true) {
+
+    }
+
+    bool isDoubleSided() const { return m_doubleSided; }
+    void setDoubleSided(bool value) { m_doubleSided = value; emit schemeUpdated(); }
+
+    bool isDepthTest() const { return m_depthTest; }
+    void setDepthTest(bool value) { m_depthTest = value; emit schemeUpdated(); }
+
+    bool isDepthWrite() const { return m_depthWrite; }
+    void setDepthWrite(bool value) { m_depthWrite = value; emit schemeUpdated(); }
+
+    Type materialType() const { return m_materialType; }
+    void setMaterialType(Type type) { m_materialType = type; }
+
+    Blend blend() const { return m_blendMode; }
+    void setBlend(Blend mode) { m_blendMode = mode; emit schemeUpdated(); }
+
+    LightModel lightModel() const { return m_lightModel; }
+    void setLightModel(LightModel model) { m_lightModel = model; emit schemeUpdated(); }
+
+signals:
+    void schemeUpdated();
+
+private:
+    Blend m_blendMode;
+
+    LightModel m_lightModel;
+
+    Type m_materialType;
+
+    bool m_doubleSided;
+
+    bool m_depthTest;
+
+    bool m_depthWrite;
+
+    bool m_viewSpace;
+
+};
+
+Q_DECLARE_METATYPE(ShaderRootNode::LightModel)
+Q_DECLARE_METATYPE(ShaderRootNode::Blend)
+Q_DECLARE_METATYPE(ShaderRootNode::Type)
+
+typedef map<string, string> PragmaMap;
+
+class ShaderNodeGraph : public AbstractNodeGraph {
+    Q_OBJECT
+
 public:
-    ShaderSchemeModel();
-    ~ShaderSchemeModel() Q_DECL_OVERRIDE;
+    ShaderNodeGraph();
+    ~ShaderNodeGraph() Q_DECL_OVERRIDE;
 
     VariantMap data(bool editor = false) const;
 
     bool buildGraph();
 
-    bool isDoubleSided() const { return m_DoubleSided; }
-    void setDoubleSided(bool value) { m_DoubleSided = value; emit schemeUpdated(); }
-
-    bool isDepthTest() const { return m_DepthTest; }
-    void setDepthTest(bool value) { m_DepthTest = value; emit schemeUpdated(); }
-
-    bool isDepthWrite() const { return m_DepthWrite; }
-    void setDepthWrite(bool value) { m_DepthWrite = value; emit schemeUpdated(); }
-
-    Type materialType() const { return m_MaterialType; }
-    void setMaterialType(Type type) { m_MaterialType = type; }
-
-    Blend blend() const { return m_BlendMode; }
-    void setBlend(Blend mode) { m_BlendMode = mode; emit schemeUpdated(); }
-
-    LightModel lightModel() const { return m_LightModel; }
-    void setLightModel(LightModel model) { m_LightModel = model; emit schemeUpdated(); }
-
     int setTexture(const QString &path, Vector4 &sub, uint8_t flags = 0);
 
     void addUniform(const QString &name, uint8_t type, const QVariant &value);
-
-    QFileInfo rawPath() const { return m_RawPath; }
-    void setRawPath(const QFileInfo &path) { m_RawPath = path; }
 
     QStringList nodeList() const Q_DECL_OVERRIDE;
 
@@ -122,8 +157,8 @@ private:
         bool m_vertex;
     };
 
-    void loadUserValues(Node *node, const QVariantMap &values) Q_DECL_OVERRIDE;
-    void saveUserValues(Node *node, QVariantMap &values) Q_DECL_OVERRIDE;
+    void loadUserValues(GraphNode *node, const QVariantMap &values) Q_DECL_OVERRIDE;
+    void saveUserValues(GraphNode *node, QVariantMap &values) Q_DECL_OVERRIDE;
 
     void loadTextures(const QVariantMap &data);
     QVariantMap saveTextures() const;
@@ -131,7 +166,8 @@ private:
     void loadUniforms(const QVariantList &data);
     QVariantList saveUniforms() const;
 
-    Node *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
+    GraphNode *nodeCreate(const QString &path, int &index) Q_DECL_OVERRIDE;
+    GraphNode *createRoot() Q_DECL_OVERRIDE;
 
     Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
 
@@ -160,36 +196,16 @@ private:
 
     typedef QList<MaterialInput> InputList;
 
-    QStringList m_Functions;
+    QStringList m_functions;
 
-    UniformList m_Uniforms;
+    UniformList m_uniforms;
 
-    TextureList m_Textures;
+    TextureList m_textures;
 
-    PragmaMap m_Pragmas;
+    PragmaMap m_pragmas;
 
-    InputList m_Inputs;
-
-    Blend m_BlendMode;
-
-    LightModel m_LightModel;
-
-    Type m_MaterialType;
-
-    bool m_DoubleSided;
-
-    bool m_DepthTest;
-
-    bool m_DepthWrite;
-
-    bool m_ViewSpace;
-
-    QFileInfo m_RawPath;
+    InputList m_inputs;
 
 };
 
-Q_DECLARE_METATYPE(ShaderSchemeModel::LightModel)
-Q_DECLARE_METATYPE(ShaderSchemeModel::Blend)
-Q_DECLARE_METATYPE(ShaderSchemeModel::Type)
-
-#endif // SHADERSCHEMEMODEL_H
+#endif // SHADERNODEGRAPH_H

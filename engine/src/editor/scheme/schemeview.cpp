@@ -2,7 +2,8 @@
 
 #include <QMenu>
 
-#include "scheme/abstractschememodel.h"
+#include "scheme/abstractnodegraph.h"
+#include "scheme/graphnode.h"
 
 #include <QQmlContext>
 #include <QQuickItem>
@@ -10,7 +11,7 @@
 SchemeView::SchemeView(QWidget *parent) :
         QQuickWidget(parent),
         m_createMenu(new QMenu(this)),
-        m_model(nullptr),
+        m_graph(nullptr),
         m_selectedItem(nullptr),
         m_node(-1),
         m_port(-1),
@@ -21,10 +22,10 @@ SchemeView::SchemeView(QWidget *parent) :
 
 }
 
-void SchemeView::setModel(AbstractSchemeModel *model, bool state) {
-    m_model = model;
+void SchemeView::setModel(AbstractNodeGraph *graph, bool state) {
+    m_graph = graph;
 
-    rootContext()->setContextProperty("schemeModel", m_model);
+    rootContext()->setContextProperty("schemeModel", m_graph);
     rootContext()->setContextProperty("stateMachine", QVariant(state));
     setSource(QUrl("qrc:/QML/qml/SchemeEditor.qml"));
 
@@ -32,7 +33,7 @@ void SchemeView::setModel(AbstractSchemeModel *model, bool state) {
     connect(item, SIGNAL(nodesSelected(QVariant)), this, SLOT(onNodesSelected(QVariant)));
     connect(item, SIGNAL(showContextMenu(int,int,bool)), this, SLOT(onShowContextMenu(int,int,bool)));
 
-    for(auto &it : m_model->nodeList()) {
+    for(auto &it : m_graph->nodeList()) {
         QMenu *menu = m_createMenu;
         QStringList list = it.split("/", QString::SkipEmptyParts);
 
@@ -83,9 +84,9 @@ void SchemeView::onComponentSelected() {
             y = (float)(mouseY - y) * scale;
 
             if(m_node > -1 && m_port > -1) {
-                m_model->createAndLink(action->objectName(), x, y, m_node, m_port, m_out);
+                m_graph->createAndLink(action->objectName(), x, y, m_node, m_port, m_out);
             } else {
-                m_model->createNode(action->objectName(), x, y);
+                m_graph->createNode(action->objectName(), x, y);
             }
         }
     }
@@ -94,9 +95,9 @@ void SchemeView::onComponentSelected() {
 void SchemeView::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
-        const AbstractSchemeModel::Node *node = m_model->node(list.front().toInt());
+        GraphNode *node = m_graph->node(list.front().toInt());
         if(node) {
-            m_selectedItem = static_cast<QObject *>(node->ptr);
+            m_selectedItem = node;
             emit itemSelected(m_selectedItem);
         }
     }

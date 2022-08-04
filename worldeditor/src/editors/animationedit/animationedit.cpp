@@ -15,7 +15,7 @@
 
 AnimationEdit::AnimationEdit() :
         ui(new Ui::AnimationEdit),
-        m_model(new AnimationSchemeModel),
+        m_model(new AnimationNodeGraph),
         m_assetConverter(new AnimationBuilder),
         m_stateMachine(nullptr),
         m_createMenu(new QMenu(this)),
@@ -88,9 +88,9 @@ void AnimationEdit::saveAsset(const QString &path) {
 void AnimationEdit::onNodesSelected(const QVariant &indices) {
     QVariantList list = indices.toList();
     if(!list.isEmpty()) {
-        const AbstractSchemeModel::Node *node = m_model->node(list.front().toInt());
+        GraphNode *node = m_model->node(list.front().toInt());
         if(node) {
-            m_selectedItem = static_cast<QObject *>(node->ptr);
+            m_selectedItem = node;
             emit itemSelected(m_selectedItem);
         }
     }

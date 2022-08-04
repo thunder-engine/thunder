@@ -23,71 +23,74 @@ QString AnimationBuilderSettings::defaultIcon(QString) const {
     return ":/Style/styles/dark/images/machine.svg";
 }
 
-AnimationSchemeModel::AnimationSchemeModel() {
-    m_pEntry = nullptr;
-    m_pRootNode->name = "Entry";
+AnimationNodeGraph::AnimationNodeGraph() {
+    m_entry = nullptr;
 
     qRegisterMetaType<BaseState*>("BaseState");
 
-    m_Functions << "BaseState";
+    m_functions << "BaseState";
 }
 
-void AnimationSchemeModel::load(const QString &path) {
-    AbstractSchemeModel::load(path);
+void AnimationNodeGraph::load(const QString &path) {
+    AbstractNodeGraph::load(path);
 
-    m_pEntry = m_Nodes.at(m_Data[ENTRY].toInt());
-    if(m_pEntry) {
-        linkCreate(m_pRootNode, nullptr, m_pEntry, nullptr);
+    m_entry = m_nodes.at(m_data[ENTRY].toInt());
+    if(m_entry) {
+        linkCreate(m_rootNode, nullptr, m_entry, nullptr);
     }
 }
 
-void AnimationSchemeModel::save(const QString &path) {
-    m_Data[ENTRY] = m_Nodes.indexOf(m_pEntry);
+void AnimationNodeGraph::save(const QString &path) {
+    m_data[ENTRY] = m_nodes.indexOf(m_entry);
 
-    AbstractSchemeModel::save(path);
+    AbstractNodeGraph::save(path);
 }
 
-AbstractSchemeModel::Node *AnimationSchemeModel::nodeCreate(const QString &path, int &index) {
-    Node *node = new Node;
-    node->root = false;
-    node->name = path;
+GraphNode *AnimationNodeGraph::createRoot() {
+    GraphNode *result = new GraphNode;
 
-    BaseState *data = new BaseState(node);
-    connect(data, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
-    node->ptr = data;
+    result->setObjectName("Entry");
+
+    return result;
+}
+
+GraphNode *AnimationNodeGraph::nodeCreate(const QString &path, int &index) {
+    BaseState *node = new BaseState();
+    connect(node, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
+    node->setObjectName(path);
 
     if(index == -1) {
-        index = m_Nodes.size();
-        m_Nodes.push_back(node);
+        index = m_nodes.size();
+        m_nodes.push_back(node);
     } else {
-        m_Nodes.insert(index, node);
+        m_nodes.insert(index, node);
     }
 
     return node;
 }
 
-AbstractSchemeModel::Link *AnimationSchemeModel::linkCreate(Node *sender, Port *oport, Node *receiver, Port *iport) {
-    if(receiver == m_pRootNode) {
+AnimationNodeGraph::Link *AnimationNodeGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
+    if(receiver == m_rootNode) {
         return nullptr;
     }
-    if(sender == m_pRootNode) {
-        auto it = m_Links.begin();
-        while(it != m_Links.end()) {
+    if(sender == m_rootNode) {
+        auto it = m_links.begin();
+        while(it != m_links.end()) {
             Link *link = *it;
             if(link->sender == sender) {
-                it  = m_Links.erase(it);
+                it  = m_links.erase(it);
                 delete link;
             } else {
                 ++it;
             }
         }
     }
-    return AbstractSchemeModel::linkCreate(sender, oport, receiver, iport);
+    return AbstractNodeGraph::linkCreate(sender, oport, receiver, iport);
 }
 
-void AnimationSchemeModel::loadUserValues(AbstractSchemeModel::Node *node, const QVariantMap &values) {
-    BaseState *ptr = reinterpret_cast<BaseState *>(node->ptr);
-    node->name = values[NAME].toString();
+void AnimationNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
+    BaseState *ptr = reinterpret_cast<BaseState *>(node);
+    node->setObjectName(values[NAME].toString());
 
     Template tpl;
     tpl.path = values[CLIP].toString();
@@ -96,14 +99,14 @@ void AnimationSchemeModel::loadUserValues(AbstractSchemeModel::Node *node, const
     ptr->setLoop(values[LOOP].toBool());
 }
 
-void AnimationSchemeModel::saveUserValues(Node *node, QVariantMap &values) {
-    BaseState *ptr = reinterpret_cast<BaseState *>(node->ptr);
-    values[NAME] = node->name;
+void AnimationNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
+    BaseState *ptr = reinterpret_cast<BaseState *>(node);
+    values[NAME] = node->objectName();
     values[CLIP] = ptr->clip().path;
     values[LOOP] = ptr->loop();
 }
 
-Variant AnimationSchemeModel::object() const {
+Variant AnimationNodeGraph::object() const {
     VariantList result;
 
     VariantList object;
@@ -123,9 +126,9 @@ Variant AnimationSchemeModel::object() const {
     return result;
 }
 
-QStringList AnimationSchemeModel::nodeList() const {
+QStringList AnimationNodeGraph::nodeList() const {
     QStringList result;
-    for(auto &it : m_Functions) {
+    for(auto &it : m_functions) {
         const int type = QMetaType::type( qPrintable(it) );
         const QMetaObject *meta = QMetaType::metaObjectForType(type);
         if(meta) {
@@ -139,19 +142,19 @@ QStringList AnimationSchemeModel::nodeList() const {
     return result;
 }
 
-Variant AnimationSchemeModel::data() const {
+Variant AnimationNodeGraph::data() const {
     VariantMap result;
 
     VariantList machine;
     // Pack states
     VariantList states;
-    for(auto it : m_Nodes) {
-        if(it != m_pRootNode) {
-            BaseState *ptr = reinterpret_cast<BaseState *>(it->ptr);
+    for(auto it : m_nodes) {
+        if(it != m_rootNode) {
+            BaseState *ptr = reinterpret_cast<BaseState *>(it);
 
             VariantList state;
             state.push_back(0); // Default state
-            state.push_back(qPrintable(it->name)); // Name of state
+            state.push_back(qPrintable(it->objectName())); // Name of state
             state.push_back(qPrintable(ptr->clip().path));
             state.push_back(ptr->loop());
 
@@ -165,19 +168,19 @@ Variant AnimationSchemeModel::data() const {
     machine.push_back(variables);
     // Pack transitions
     VariantList transitions;
-    for(auto it : m_Links) {
+    for(auto it : m_links) {
         VariantList transition;
-        transition.push_back(qPrintable(it->sender->name));
-        transition.push_back(qPrintable(it->receiver->name));
+        transition.push_back(qPrintable(it->sender->objectName()));
+        transition.push_back(qPrintable(it->receiver->objectName()));
 
         transitions.push_back(transition);
     }
     machine.push_back(transitions);
     // Set initial state
     QString entry;
-    for(const auto it : m_Links) {
-        if(it->sender == m_pRootNode) {
-            entry = it->receiver->name;
+    for(const auto it : m_links) {
+        if(it->sender == m_rootNode) {
+            entry = it->receiver->objectName();
             break;
         }
     }

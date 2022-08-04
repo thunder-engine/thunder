@@ -12,29 +12,18 @@ class ParamFloat : public ShaderFunction {
 
 public:
     Q_INVOKABLE ParamFloat() :
-        m_defaultValue(0.0f) {
+            m_defaultValue(0.0f) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
+
+        ports.push_back(new NodePort(true, QMetaType::Double, 0, ""));
     }
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out = new AbstractSchemeModel::Port;
-        out->name = "";
-        out->out  = true;
-        out->pos  = 0;
-        out->type = QMetaType::Double;
-        result->list.push_back(out);
-
-        return result;
-    }
-
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::Double;
-            m_pModel->addUniform(objectName(), size, m_defaultValue);
-            value  += QString("\tfloat local%1 = uni.%2;\n").arg(depth).arg(objectName());
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            graph->addUniform(objectName(), size, m_defaultValue);
+            stack.push(QString("uni.%1").arg(objectName()));
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 
     float defaultValue() const {
@@ -50,6 +39,7 @@ public:
 
 private:
     float m_defaultValue;
+
 };
 
 class ParamVector : public ShaderFunction {
@@ -61,29 +51,18 @@ class ParamVector : public ShaderFunction {
 
 public:
     Q_INVOKABLE ParamVector() :
-        m_defaultValue(QColor(0, 0, 0, 0)) {
+            m_defaultValue(QColor(0, 0, 0, 0)) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
+
+        ports.push_back(new NodePort(true, QMetaType::QVector4D, 0, ""));
     }
 
-    virtual AbstractSchemeModel::Node *createNode(ShaderSchemeModel *model, const QString &path) override {
-        AbstractSchemeModel::Node *result   = ShaderFunction::createNode(model, path);
-        AbstractSchemeModel::Port *out      = new AbstractSchemeModel::Port;
-        out->name = "";
-        out->out  = true;
-        out->pos  = 0;
-        out->type = QMetaType::QVector4D;
-        result->list.push_back(out);
-
-        return result;
-    }
-
-    int32_t build(QString &value, const AbstractSchemeModel::Link &link, int32_t &depth, uint8_t &size) override {
-        if(m_Position == -1) {
-            size    = QMetaType::QVector4D;
-            m_pModel->addUniform(objectName(), size, m_defaultValue);
-            value  += QString("\tvec4 local%1 = uni.%2;\n").arg(depth).arg(objectName());
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+        if(m_position == -1) {
+            graph->addUniform(objectName(), size, m_defaultValue);
+            stack.push(QString("uni.%1").arg(objectName()));
         }
-        return ShaderFunction::build(value, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 
     QColor defaultValue() const {

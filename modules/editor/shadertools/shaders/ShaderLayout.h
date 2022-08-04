@@ -26,12 +26,6 @@ layout(binding = 1) uniform Local {
     vec4 color;
 } l;
 
-struct Params {
-    vec3 reflect;
-    vec3 normal;
-    float time;
-} params;
-
 float sqr(float v) {
     return v * v;
 }
