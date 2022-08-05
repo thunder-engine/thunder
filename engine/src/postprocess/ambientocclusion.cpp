@@ -92,7 +92,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
-        Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.mtl");
+        Material *mtl = Engine::loadResource<Material>(".embedded/CombineOcclusion.shader");
         if(mtl) {
             m_combine = mtl->createInstance();
             m_combine->setTexture("ssaoMap", m_resultTexture);
@@ -120,7 +120,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setRenderTarget(m_ssaoTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
 
-            pipeline->setRenderTexture("ssao_sample", m_ssaoTexture);
+            pipeline->setRenderTexture("SSAOSample", m_ssaoTexture);
         }
 
         if(m_blur) {
@@ -129,7 +129,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setRenderTarget(m_blurTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blur);
 
-            pipeline->setRenderTexture("ssao_blur", m_resultTexture);
+            pipeline->setRenderTexture("SSAOBlur", m_resultTexture);
         }
 
         if(m_combine) {
@@ -140,7 +140,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_combine);
 
-            pipeline->setRenderTexture("ssao_combine", source);
+            pipeline->setRenderTexture("SSAOCombine", source);
         }
     }
     return source;
@@ -171,5 +171,5 @@ uint32_t AmbientOcclusion::layer() const {
 }
 
 const char *AmbientOcclusion::name() const {
-    return "ScreenSpaceAmbientOcclusion";
+    return "AmbientOcclusion";
 }
