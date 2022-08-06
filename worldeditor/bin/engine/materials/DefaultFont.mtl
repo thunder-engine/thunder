@@ -5,7 +5,7 @@
     "Links": [
         {
             "IPort": 2,
-            "OPort": -1,
+            "OPort": 0,
             "Receiver": 1,
             "Sender": 3
         },
@@ -29,7 +29,7 @@
         },
         {
             "IPort": 3,
-            "OPort": -1,
+            "OPort": 2,
             "Receiver": 4,
             "Sender": 0
         },

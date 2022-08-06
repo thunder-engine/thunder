@@ -165,6 +165,8 @@ public:
 
     Texture *texture(const char *name);
 
+    void setBool(const char *name, const bool *value, int32_t count = 1);
+
     void setInteger(const char *name, const int32_t *value, int32_t count = 1);
 
     void setFloat(const char *name, const float *value, int32_t count = 1);

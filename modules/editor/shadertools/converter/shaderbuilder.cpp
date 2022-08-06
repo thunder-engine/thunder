@@ -273,7 +273,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                     uint32_t size = 0;
                                     uint32_t count = property.attribute("count", "1").toInt();
                                     Variant value;
-                                    if(type == "int") {
+                                    if(type == "bool") {
+                                        value = Variant(bool(property.attribute(gValue).toInt() != 0));
+                                        size = sizeof(bool);
+                                    } else if(type == "int") {
                                         value = Variant(property.attribute(gValue).toInt());
                                         size = sizeof(int);
                                     } else if(type == "float") {

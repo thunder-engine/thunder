@@ -288,6 +288,8 @@ void SceneComposer::restoreBackupScenes() {
         }
         m_backupScenes.clear();
 
+        m_menuObject = Engine::sceneGraph()->activeScene();
+
         emit hierarchyCreated(Engine::sceneGraph());
     }
 }

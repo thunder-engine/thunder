@@ -19,10 +19,11 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        if(m_position == -1) {
-            graph->addUniform(objectName(), size, m_defaultValue);
-            stack.push(QString("uni.%1").arg(objectName()));
+        if(size == 0) {
+            size = link.oport->m_type;
         }
+        graph->addUniform(objectName(), size, m_defaultValue);
+        stack.push(QString("uni.%1").arg(objectName()));
         return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 
@@ -58,10 +59,12 @@ public:
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        if(m_position == -1) {
-            graph->addUniform(objectName(), size, m_defaultValue);
-            stack.push(QString("uni.%1").arg(objectName()));
+        if(size == 0) {
+            size = link.oport->m_type;
         }
+        graph->addUniform(objectName(), size, m_defaultValue);
+        stack.push(QString("uni.%1").arg(objectName()));
+
         return ShaderFunction::build(code, stack, graph, link, depth, size);
     }
 

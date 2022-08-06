@@ -44,7 +44,7 @@ public:
         int32_t result = ShaderFunction::build(code, stack, graph, link, depth, size);
 
         QString channel = "lt" + QString::number(result);
-        if(link.oport->m_name == g) {
+        if(link.oport->m_name == r) {
             channel.append(".x");
         } else if(link.oport->m_name == g) {
             channel.append(".y");

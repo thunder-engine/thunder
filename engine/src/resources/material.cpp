@@ -34,6 +34,11 @@ Texture *MaterialInstance::texture(const char *name) {
     return nullptr;
 }
 
+void MaterialInstance::setBool(const char *name, const bool *value, int32_t count) {
+    A_UNUSED(count);
+    setValue(name, value);
+}
+
 void MaterialInstance::setInteger(const char *name, const int32_t *value, int32_t count) {
     A_UNUSED(count);
     setValue(name, value);

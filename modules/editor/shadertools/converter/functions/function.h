@@ -35,7 +35,7 @@ public:
         Q_UNUSED(code)
         Q_UNUSED(link)
 
-        if(!size) {
+        if(size == 0) {
             size = link.oport->m_type;
         }
 
