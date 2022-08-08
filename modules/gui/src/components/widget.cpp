@@ -6,8 +6,6 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <resources/pipeline.h>
-
 #include <commandbuffer.h>
 
 class WidgetPrivate {

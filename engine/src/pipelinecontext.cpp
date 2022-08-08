@@ -1,4 +1,4 @@
-#include "pipeline.h"
+#include "pipelinecontext.h"
 
 #include "systems/rendersystem.h"
 
@@ -49,7 +49,7 @@ bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
     return left->priority() < right->priority();
 }
 
-Pipeline::Pipeline() :
+PipelineContext::PipelineContext() :
         m_buffer(Engine::objectCreate<CommandBuffer>()),
         m_finalMaterial(nullptr),
         m_effectMaterial(nullptr),
@@ -119,11 +119,11 @@ Pipeline::Pipeline() :
     m_postEffects = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
 }
 
-Pipeline::~Pipeline() {
+PipelineContext::~PipelineContext() {
     m_textureBuffers.clear();
 }
 
-void Pipeline::draw(Camera &camera) {
+void PipelineContext::draw(Camera &camera) {
     updateShadows(camera);
 
     m_buffer->setViewport(0, 0, m_width, m_height);
@@ -155,7 +155,7 @@ void Pipeline::draw(Camera &camera) {
     drawUi(camera);
 }
 
-void Pipeline::drawUi(Camera &camera) {
+void PipelineContext::drawUi(Camera &camera) {
     A_UNUSED(camera);
 
     m_buffer->setScreenProjection(0, 0, m_width, m_height);
@@ -164,7 +164,7 @@ void Pipeline::drawUi(Camera &camera) {
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
 }
 
-void Pipeline::finish() {
+void PipelineContext::finish() {
     m_buffer->setScreenProjection();
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
@@ -173,7 +173,7 @@ void Pipeline::finish() {
     m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_finalMaterial);
 }
 
-void Pipeline::cameraReset(Camera &camera) {
+void PipelineContext::cameraReset(Camera &camera) {
     Matrix4 v = camera.viewMatrix();
     Matrix4 p = camera.projectionMatrix();
     Matrix4 vp = p * v;
@@ -193,7 +193,7 @@ void Pipeline::cameraReset(Camera &camera) {
     m_buffer->setViewProjection(v, p);
 }
 
-Texture *Pipeline::renderTexture(const string &name) const {
+Texture *PipelineContext::renderTexture(const string &name) const {
     auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
         return it->second;
@@ -201,11 +201,11 @@ Texture *Pipeline::renderTexture(const string &name) const {
     return nullptr;
 }
 
-void Pipeline::setRenderTexture(const string &name, Texture *texture) {
+void PipelineContext::setRenderTexture(const string &name, Texture *texture) {
     m_textureBuffers[name] = texture;
 }
 
-void Pipeline::resize(int32_t width, int32_t height) {
+void PipelineContext::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         m_width = width;
         m_height = height;
@@ -222,7 +222,7 @@ void Pipeline::resize(int32_t width, int32_t height) {
     }
 }
 
-void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
+void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
     m_system = system;
 
     m_sceneComponents.clear();
@@ -258,15 +258,15 @@ void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
     }
 }
 
-RenderTarget *Pipeline::defaultTarget() {
+RenderTarget *PipelineContext::defaultTarget() {
     return m_defaultTarget;
 }
 
-void Pipeline::setDefaultTarget(RenderTarget *target) {
+void PipelineContext::setDefaultTarget(RenderTarget *target) {
     m_defaultTarget = target;
 }
 
-RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
+RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
         if(tile->second.second.size() == count) {
@@ -342,17 +342,17 @@ RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x
     return target;
 }
 
-CommandBuffer *Pipeline::buffer() const {
+CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
 }
 
-void Pipeline::drawComponents(uint32_t layer, list<Renderable *> &list) {
+void PipelineContext::drawComponents(uint32_t layer, list<Renderable *> &list) {
     for(auto it : list) {
         it->draw(*m_buffer, layer);
     }
 }
 
-void Pipeline::cleanShadowCache() {
+void PipelineContext::cleanShadowCache() {
     for(auto tiles = m_tiles.begin(); tiles != m_tiles.end(); ) {
         bool outdate = false;
         for(auto &it : tiles->second.second) {
@@ -382,7 +382,7 @@ void Pipeline::cleanShadowCache() {
     }
 }
 
-void Pipeline::updateShadows(Camera &camera) {
+void PipelineContext::updateShadows(Camera &camera) {
     cleanShadowCache();
 
     for(auto &it : m_sceneLights) {
@@ -390,7 +390,7 @@ void Pipeline::updateShadows(Camera &camera) {
     }
 }
 
-void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
+void PipelineContext::postProcess(RenderTarget *source, uint32_t layer) {
     m_buffer->setScreenProjection();
     Texture *result = source->colorAttachment(0);
     for(auto it : m_postEffects) {
@@ -409,7 +409,7 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
     m_buffer->resetViewProjection();
 }
 
-void Pipeline::combineComponents(Object *object, bool update) {
+void PipelineContext::combineComponents(Object *object, bool update) {
     for(auto &it : object->getChildren()) {
         Object *child = it;
         if(child->isComponent()) {
@@ -454,7 +454,7 @@ struct ObjectComp {
     Vector3 origin;
 };
 
-void Pipeline::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
+void PipelineContext::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
     ObjectComp comp;
     comp.origin = origin;
 

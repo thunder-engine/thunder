@@ -11,7 +11,7 @@
 #include <systems/rendersystem.h>
 
 #include <components/camera.h>
-#include <resources/pipeline.h>
+#include <pipelinecontext.h>
 
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
@@ -70,7 +70,7 @@ void Viewport::onDraw() {
 
         Camera *camera = m_controller->camera();
         if(camera) {
-            Pipeline *pipe = camera->pipeline();
+            PipelineContext *pipe = camera->pipeline();
             pipe->resize(width(), height());
         }
         Camera::setCurrent(camera);

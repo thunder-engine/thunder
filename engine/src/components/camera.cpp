@@ -4,8 +4,9 @@
 #include "components/transform.h"
 #include "components/meshrender.h"
 
-#include "resources/pipeline.h"
 #include "resources/texture.h"
+
+#include "pipelinecontext.h"
 
 class CameraPrivate {
 public:
@@ -75,7 +76,7 @@ public:
 
     Vector4 m_Color;
 
-    Pipeline *m_pPipeline;
+    PipelineContext *m_pPipeline;
 
     static Camera *s_pCurrent;
 };
@@ -101,16 +102,16 @@ Camera::~Camera() {
 /*!
     Returns render pipline which attached to the camera.
 */
-Pipeline *Camera::pipeline() {
+PipelineContext *Camera::pipeline() {
     if(p_ptr->m_pPipeline == nullptr) {
-        p_ptr->m_pPipeline = Engine::objectCreate<Pipeline>("Pipeline");
+        p_ptr->m_pPipeline = Engine::objectCreate<PipelineContext>("Pipeline");
     }
     return p_ptr->m_pPipeline;
 }
 /*!
     Attaches render \a pipeline to the camera.
 */
-void Camera::setPipeline(Pipeline *pipeline) {
+void Camera::setPipeline(PipelineContext *pipeline) {
     p_ptr->m_pPipeline = pipeline;
 }
 /*!

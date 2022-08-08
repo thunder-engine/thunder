@@ -12,7 +12,8 @@
 
 #include <resources/texture.h>
 #include <resources/material.h>
-#include <resources/pipeline.h>
+
+#include <pipelinecontext.h>
 
 #include <systems/rendersystem.h>
 
@@ -153,7 +154,7 @@ void TextureEdit::onDraw() {
 
         Camera *camera = m_pController->camera();
         if(camera) {
-            Pipeline *pipe = camera->pipeline();
+            PipelineContext *pipe = camera->pipeline();
             pipe->resize(width(), height());
         }
         Camera::setCurrent(camera);

@@ -42,7 +42,6 @@
 #include "resources/font.h"
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
-#include "resources/pipeline.h"
 #include "resources/translator.h"
 #include "resources/particleeffect.h"
 #include "resources/pose.h"
@@ -52,6 +51,8 @@
 #include "resources/controlscheme.h"
 
 #include "systems/resourcesystem.h"
+
+#include "pipelinecontext.h"
 
 #include "log.h"
 
@@ -213,7 +214,6 @@ Engine::Engine(File *file, const char *path) :
     AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
     RenderTarget::registerClassFactory(p_ptr->m_pResourceSystem);
 
-    Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
     Translator::registerClassFactory(p_ptr->m_pResourceSystem);
     Pose::registerSuper(p_ptr->m_pResourceSystem);
 
@@ -363,11 +363,11 @@ void Engine::update() {
     EnginePrivate::m_SceneGraph->setToBeUpdated(true);
 
     for(auto it : EnginePrivate::m_Pool) {
-        it->setActiveScene(EnginePrivate::m_SceneGraph);
+        it->setActiveGraph(EnginePrivate::m_SceneGraph);
         p_ptr->m_ThreadPool.start(*it);
     }
     for(auto it : EnginePrivate::m_Serial) {
-        it->setActiveScene(EnginePrivate::m_SceneGraph);
+        it->setActiveGraph(EnginePrivate::m_SceneGraph);
         it->processEvents();
     }
     p_ptr->m_ThreadPool.waitForDone();

@@ -15,10 +15,10 @@
 
 #include "components/camera.h"
 
-#include "resources/pipeline.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 class RenderSystemPrivate {
@@ -56,6 +56,8 @@ RenderSystem::RenderSystem() :
     CommandBuffer::registerClassFactory(this);
 
     PostProcessVolume::registerClassFactory(this);
+
+    PipelineContext::registerClassFactory(this);
 }
 
 RenderSystem::~RenderSystem() {
@@ -98,7 +100,7 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
 
     Camera *camera = Camera::current();
     if(camera) {
-        Pipeline *pipe = camera->pipeline();
+        PipelineContext *pipe = camera->pipeline();
         pipe->analizeScene(sceneGraph, this);
         pipe->draw(*camera);
         pipe->finish();
@@ -161,7 +163,7 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
     RenderTarget *back = nullptr;
     Camera *camera = Camera::current();
     if(camera) {
-        Pipeline *pipe = camera->pipeline();
+        PipelineContext *pipe = camera->pipeline();
         pipe->resize(width, height);
 
         back = pipe->defaultTarget();
@@ -175,7 +177,7 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
     color->readPixels(0, 0, width, height);
 
     if(back) {
-        Pipeline *pipe = camera->pipeline();
+        PipelineContext *pipe = camera->pipeline();
         pipe->setDefaultTarget(back);
     }
 

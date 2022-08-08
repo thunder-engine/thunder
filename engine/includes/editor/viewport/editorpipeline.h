@@ -1,7 +1,7 @@
 #ifndef EDITORPIPELINE_H
 #define EDITORPIPELINE_H
 
-#include "pipeline.h"
+#include "pipelinecontext.h"
 
 #include <QObject>
 
@@ -12,7 +12,7 @@ class Outline;
 
 class QMenu;
 
-class ENGINE_EXPORT EditorPipeline : public QObject, public Pipeline {
+class ENGINE_EXPORT EditorPipeline : public QObject, public PipelineContext {
 public:
     EditorPipeline();
 

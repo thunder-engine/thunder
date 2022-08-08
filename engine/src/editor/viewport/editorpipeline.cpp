@@ -79,7 +79,6 @@ protected:
 };
 
 EditorPipeline::EditorPipeline() :
-        Pipeline(),
         m_pTarget(nullptr),
         m_pGrid(nullptr),
         m_pGizmo(nullptr),
@@ -302,7 +301,7 @@ void EditorPipeline::draw(Camera &camera) {
     }
     drawComponents(CommandBuffer::RAYCAST, filter);
 
-    Pipeline::draw(camera);
+    PipelineContext::draw(camera);
 
     if(m_pTarget != nullptr) {
         m_final = m_pTarget;
@@ -345,7 +344,7 @@ bool EditorPipeline::isInHierarchy(Actor *origin, Actor *actor) {
 }
 
 void EditorPipeline::resize(int32_t width, int32_t height) {
-    Pipeline::resize(width, height);
+    PipelineContext::resize(width, height);
     m_pController->resize(width, height);
 
     m_pSelect->resize(width, height);

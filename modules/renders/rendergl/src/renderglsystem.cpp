@@ -5,13 +5,12 @@
 #include <components/camera.h>
 #include <components/scenegraph.h>
 
-#include <resources/pipeline.h>
-
 #include "resources/meshgl.h"
 #include "resources/texturegl.h"
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
 
+#include <pipelinecontext.h>
 #include "commandbuffergl.h"
 
 #include <log.h>
@@ -110,7 +109,7 @@ void RenderGLSystem::update(SceneGraph *scene) {
 
     Camera *camera = Camera::current();
     if(camera && CommandBufferGL::isInited()) {
-        Pipeline *pipe = camera->pipeline();
+        PipelineContext *pipe = camera->pipeline();
         CommandBufferGL *cmd = static_cast<CommandBufferGL *>(pipe->buffer());
         cmd->begin();
 

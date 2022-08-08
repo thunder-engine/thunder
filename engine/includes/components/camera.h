@@ -5,7 +5,7 @@
 
 #include "renderable.h"
 
-class Pipeline;
+class PipelineContext;
 class CameraPrivate;
 
 class ENGINE_EXPORT Camera : public Component {
@@ -36,8 +36,8 @@ public:
     Camera();
     ~Camera();
 
-    Pipeline *pipeline();
-    void setPipeline(Pipeline *pipeline);
+    PipelineContext *pipeline();
+    void setPipeline(PipelineContext *pipeline);
 
     Matrix4 viewMatrix() const;
     Matrix4 projectionMatrix() const;

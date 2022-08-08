@@ -10,8 +10,6 @@
 #include <components/camera.h>
 #include <components/directlight.h>
 
-#include <resources/pipeline.h>
-
 #include <editor/assetconverter.h>
 #include <editor/pluginmanager.h>
 

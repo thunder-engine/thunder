@@ -1,5 +1,5 @@
-#ifndef PIPELINE
-#define PIPELINE
+#ifndef PIPELINECONTEXT
+#define PIPELINECONTEXT
 
 #include <cstdint>
 #include <unordered_map>
@@ -26,12 +26,12 @@ class AtlasNode;
 
 class Renderable;
 
-class ENGINE_EXPORT Pipeline : public Resource {
-    A_REGISTER(Pipeline, Resource, Resources)
+class ENGINE_EXPORT PipelineContext : public Object {
+    A_REGISTER(PipelineContext, Object, System)
 
 public:
-    Pipeline();
-    ~Pipeline();
+    PipelineContext();
+    ~PipelineContext();
 
     virtual void draw(Camera &camera);
 
