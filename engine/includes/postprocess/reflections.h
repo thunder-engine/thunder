@@ -16,7 +16,7 @@ public:
     ~Reflections () override;
 
 private:
-    Texture *draw(Texture *source, Pipeline *pipeline) override;
+    Texture *draw(Texture *source, PipelineContext *context) override;
 
     void resize(int32_t width, int32_t height) override;
 

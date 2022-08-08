@@ -4,14 +4,14 @@
 #include "components/transform.h"
 #include "components/camera.h"
 
-#include "commandbuffer.h"
-
 #include "resources/material.h"
 #include "resources/mesh.h"
-#include "resources/pipeline.h"
 #include "resources/rendertarget.h"
 
 #include "systems/rendersystem.h"
+
+#include "pipelinecontext.h"
+#include "commandbuffer.h"
 
 #include <float.h>
 
@@ -89,7 +89,7 @@ void DirectLight::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
+void DirectLight::shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) {
     if(!castShadows()) {
         p_ptr->m_shadowMap = nullptr;
         return;
@@ -99,7 +99,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
 
     float nearPlane = camera.nearPlane();
 
-    CommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = context->buffer();
     Matrix4 p = buffer->projection();
 
     {
@@ -142,7 +142,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, Render
     Quaternion wRotation = t->worldRotation();
 
     int32_t x[MAX_LODS], y[MAX_LODS], w[MAX_LODS], h[MAX_LODS];
-    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
+    p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
 
     int32_t pageWidth, pageHeight;
     RenderSystem::atlasPageSize(pageWidth, pageHeight);

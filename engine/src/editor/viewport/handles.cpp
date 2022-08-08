@@ -97,13 +97,13 @@ void Handles::init() {
         }
     }
     if(s_Gizmo == nullptr) {
-        Material *m = Engine::loadResource<Material>(".embedded/gizmo.mtl");
+        Material *m = Engine::loadResource<Material>(".embedded/gizmo.shader");
         if(m) {
             s_Gizmo = m->createInstance();
         }
     }
     if(s_Solid == nullptr) {
-        Material *m = Engine::loadResource<Material>(".embedded/solid.mtl");
+        Material *m = Engine::loadResource<Material>(".embedded/solid.shader");
         if(m) {
             s_Solid = m->createInstance();
         }

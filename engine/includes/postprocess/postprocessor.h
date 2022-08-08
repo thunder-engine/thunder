@@ -12,7 +12,7 @@ class MaterialInstance;
 
 class Blur;
 
-class Pipeline;
+class PipelineContext;
 
 class PostProcessSettings;
 
@@ -21,7 +21,7 @@ public:
     PostProcessor();
     virtual ~PostProcessor();
 
-    virtual Texture *draw(Texture *source, Pipeline *pipeline);
+    virtual Texture *draw(Texture *source, PipelineContext *context);
 
     virtual void resize(int32_t width, int32_t height);
 

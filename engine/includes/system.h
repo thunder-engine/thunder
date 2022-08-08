@@ -31,7 +31,7 @@ public:
 
     virtual void composeComponent(Component *component) const;
 
-    void setActiveScene(SceneGraph *sceneGraph);
+    void setActiveGraph(SceneGraph *sceneGraph);
 
     void processEvents() override;
 

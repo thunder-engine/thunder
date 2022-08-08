@@ -3,8 +3,8 @@
 #include "resources/mesh.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"
-#include "resources/pipeline.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 #include "filters/blur.h"
@@ -36,11 +36,11 @@ PostProcessor::~PostProcessor() {
     The main method to apply post effect.
     The effect will be applied to \a source buffer for the provided \a pipeline.
 */
-Texture *PostProcessor::draw(Texture *source, Pipeline *pipeline) {
+Texture *PostProcessor::draw(Texture *source, PipelineContext *context) {
     if(m_enabled && m_material) {
         m_material->setTexture("rgbMap", source);
 
-        CommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = context->buffer();
 
         buffer->setRenderTarget(m_resultTarget);
         buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);

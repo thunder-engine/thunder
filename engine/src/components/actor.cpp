@@ -445,6 +445,20 @@ bool Actor::isInstance() const {
     return (p_ptr->m_prefab != nullptr);
 }
 /*!
+    Return true if \a actor is a part of hiearhy.
+*/
+bool Actor::isInHierarchy(Actor *actor) const {
+    if(this == actor) {
+        return true;
+    }
+    Actor *p = static_cast<Actor *>(parent());
+    if(p) {
+        return p->isInHierarchy(actor);
+    }
+
+    return false;
+}
+/*!
     Returns a Prefab object from which the Actor was instanced.
     \internal
 */

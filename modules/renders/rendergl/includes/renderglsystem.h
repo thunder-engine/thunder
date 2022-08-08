@@ -16,7 +16,7 @@ public:
 
     const char *name() const override;
 
-    void update(SceneGraph *scene) override;
+    void update(SceneGraph *graph) override;
 
 #ifdef SHARED_DEFINE
     QWindow *createRhiWindow() const override;

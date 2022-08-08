@@ -13,9 +13,6 @@ class RenderTarget;
 class Texture;
 class Mesh;
 
-class Camera;
-class MaterialInstance;
-
 struct Global {
     Matrix4 view;
     Matrix4 projection;

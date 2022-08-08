@@ -66,6 +66,8 @@ public:
 
     bool isInstance() const;
 
+    bool isInHierarchy(Actor *actor) const;
+
     Prefab *prefab() const;
     void setPrefab(Prefab *prefab);
 
