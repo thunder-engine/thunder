@@ -20,6 +20,7 @@
 
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 class RenderSystemPrivate {
 public:
@@ -31,6 +32,8 @@ public:
     static int32_t m_AtlasPageHeight;
 
     bool m_offscreen;
+
+    map<SceneGraph *, PipelineContext *> m_pipelineContext;
 };
 
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
@@ -103,6 +106,7 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
         PipelineContext *pipe = camera->pipeline();
         pipe->analizeScene(sceneGraph, this);
         pipe->draw(*camera);
+        pipe->drawUi(*camera);
         pipe->finish();
     }
 }
@@ -122,6 +126,19 @@ void RenderSystem::composeComponent(Component *component) const {
     if(renderable) {
         renderable->composeComponent();
     }
+}
+
+PipelineContext *RenderSystem::pipelineContext(SceneGraph *sceneGraph) {
+    PipelineContext *context = nullptr;
+    auto it = p_ptr->m_pipelineContext.find(sceneGraph);
+    if(it == p_ptr->m_pipelineContext.end()) {
+        context = new PipelineContext;
+        //context->setSceneGraph(sceneGraph);
+    } else {
+        context = it->second;
+    }
+
+    return context;
 }
 
 void RenderSystem::setOffscreenMode(bool mode) {

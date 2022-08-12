@@ -43,19 +43,28 @@ public:
 
     virtual void analizeScene(SceneGraph *graph, RenderSystem *render);
 
+    void cameraReset(Camera &camera);
+
+    void setRenderTarget(const string &name);
+
     Texture *renderTexture(const string &name) const;
     void setRenderTexture(const string &name, Texture *texture);
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
 
+    Texture *debugTexture() const;
+    void setDebugTexture(const string &string);
+
     CommandBuffer *buffer() const;
+
+    const list<PostProcessor *> &postEffects() const;
+
+    list<string> renderTextures() const;
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 protected:
-    void cameraReset(Camera &camera);
-
     void drawComponents(uint32_t layer, list<Renderable *> &list);
 
     void postProcess(RenderTarget *source, uint32_t layer);
@@ -95,6 +104,7 @@ protected:
     RenderTarget *m_defaultTarget;
 
     Texture *m_final;
+    Texture *m_debugTexture;
 
     RenderSystem *m_system;
 

@@ -21,11 +21,13 @@ class Texture;
 
 class EditorPipeline;
 
+class Viewport;
+
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
 public:
-    ObjectCtrl(QWidget *view);
+    ObjectCtrl(Viewport *view);
     ~ObjectCtrl();
 
     void init();
@@ -40,8 +42,6 @@ public:
     void selectActors(const list<uint32_t> &list);
 
     Object::ObjectList selected() override;
-
-    void createMenu(QMenu *menu) override;
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
@@ -133,8 +133,6 @@ protected:
     Actor *m_isolatedActor;
 
     EditorTool *m_activeTool;
-
-    QMenu *m_menu;
 
     uint8_t m_axes;
 

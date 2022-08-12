@@ -104,22 +104,22 @@ bool RenderGLSystem::init() {
 /*!
     Main drawing procedure.
 */
-void RenderGLSystem::update(SceneGraph *scene) {
+void RenderGLSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
     Camera *camera = Camera::current();
     if(camera && CommandBufferGL::isInited()) {
-        PipelineContext *pipe = camera->pipeline();
-        CommandBufferGL *cmd = static_cast<CommandBufferGL *>(pipe->buffer());
+        PipelineContext *context = camera->pipeline();
+        CommandBufferGL *cmd = static_cast<CommandBufferGL *>(context->buffer());
         cmd->begin();
 
         if(!isOffscreenMode()) {
             int32_t target;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
-            static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
+            static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(target);
         }
 
-        RenderSystem::update(scene);
+        RenderSystem::update(graph);
     }
 }
 

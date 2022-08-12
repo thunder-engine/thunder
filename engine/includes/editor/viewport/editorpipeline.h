@@ -10,8 +10,6 @@ class Texture;
 class Renderable;
 class Outline;
 
-class QMenu;
-
 class ENGINE_EXPORT EditorPipeline : public QObject, public PipelineContext {
 public:
     EditorPipeline();
@@ -26,61 +24,35 @@ public:
 
     void setDragObjects(const ObjectList &list);
 
-    void debugRenderTexture(const QString &string = QString());
-    QStringList renderTextures() const;
-
-    void createMenu(QMenu *menu);
-
     static void registerSettings();
 
 private slots:
-    void onBufferMenu();
-
-    void onBufferChanged();
-    void onPostEffectChanged(bool checked);
-
     void onApplySettings();
 
 protected:
-    void fillEffectMenu(QMenu *menu, uint32_t layers);
-
-    void drawGrid(Camera &camera);
-
     void draw(Camera &camera) override;
-
-    void resize(int32_t width, int32_t height) override;
 
     void drawUi(Camera &camera) override;
 
-    bool isInHierarchy(Actor *origin, Actor *actor);
+    void drawGrid(Camera &camera);
 
-    Texture *m_pTarget;
+    Vector3 m_mouseWorld;
 
-    Vector4 m_PrimaryGridColor;
-    Vector4 m_SecondaryGridColor;
+    Vector4 m_gridColor;
 
-    Vector3 m_MouseWorld;
+    list<Renderable *> m_dragList;
 
-    Mesh *m_pGrid;
+    CameraCtrl *m_controller;
 
-    MaterialInstance *m_pGizmo;
+    Outline *m_outline;
 
-    CameraCtrl *m_pController;
+    Texture *m_depth;
 
-    Outline *m_pOutline;
+    MaterialInstance *m_grid;
 
-    list<Renderable *> m_DragList;
-
-    Texture *m_pDepth;
-    Texture *m_pSelect;
-
-    uint32_t m_ObjectId;
-    int32_t m_MouseX;
-    int32_t m_MouseY;
-
-    QMenu *m_postMenu;
-    QMenu *m_lightMenu;
-    QMenu *m_bufferMenu;
+    uint32_t m_objectId;
+    int32_t m_mouseX;
+    int32_t m_mouseY;
 };
 
 #endif // EDITORPIPELINE_H

@@ -11,6 +11,7 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
+#include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
 #include <editor/viewport/editorpipeline.h>
 
@@ -53,12 +54,11 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-ObjectCtrl::ObjectCtrl(QWidget *view) :
+ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
         m_pipeline(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
-        m_menu(nullptr),
         m_axes(0),
         m_isolatedActorModified(false),
         m_drag(false),
@@ -94,7 +94,6 @@ ObjectCtrl::~ObjectCtrl() {
 void ObjectCtrl::init() {
     m_pipeline = new EditorPipeline;
     m_pipeline->setController(this);
-    m_pipeline->createMenu(m_menu);
     m_activeCamera->setPipeline(m_pipeline);
 }
 
@@ -577,12 +576,6 @@ void ObjectCtrl::resetSelection() {
     for(auto &it : m_selected) {
         it.renderable = nullptr;
     }
-}
-
-void ObjectCtrl::createMenu(QMenu *menu) {
-    CameraCtrl::createMenu(menu);
-    menu->addSeparator();
-    m_menu = menu;
 }
 
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :

@@ -6,8 +6,7 @@
 
 class RenderSystemPrivate;
 
-class Renderable;
-class PostProcessSettings;
+class PipelineContext;
 
 #if defined(SHARED_DEFINE)
 class QWindow;
@@ -27,6 +26,8 @@ public:
     const char *name() const override;
 
     void composeComponent(Component *component) const override;
+
+    PipelineContext *pipelineContext(SceneGraph *sceneGraph);
 
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow() const;

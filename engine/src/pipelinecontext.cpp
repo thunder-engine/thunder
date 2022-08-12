@@ -57,6 +57,7 @@ PipelineContext::PipelineContext() :
         m_width(64),
         m_height(64),
         m_final(nullptr),
+        m_debugTexture(nullptr),
         m_system(nullptr) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
@@ -151,8 +152,6 @@ void PipelineContext::draw(Camera &camera) {
     // Step 3.2 - Transparent pass post processing
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
     m_final = m_textureBuffers[G_EMISSIVE];
-
-    drawUi(camera);
 }
 
 void PipelineContext::drawUi(Camera &camera) {
@@ -165,6 +164,10 @@ void PipelineContext::drawUi(Camera &camera) {
 }
 
 void PipelineContext::finish() {
+    if(m_debugTexture != nullptr) {
+        m_final = m_debugTexture;
+    }
+
     m_buffer->setScreenProjection();
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
@@ -193,6 +196,10 @@ void PipelineContext::cameraReset(Camera &camera) {
     m_buffer->setViewProjection(v, p);
 }
 
+void PipelineContext::setRenderTarget(const string &name) {
+    m_buffer->setRenderTarget(m_renderTargets[name]);
+}
+
 Texture *PipelineContext::renderTexture(const string &name) const {
     auto it = m_textureBuffers.find(name);
     if(it != m_textureBuffers.end()) {
@@ -211,8 +218,12 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         m_height = height;
 
         for(auto &it : m_textureBuffers) {
-            it.second->setWidth(width);
-            it.second->setHeight(height);
+            if(it.second->isFramebuffer()) {
+                it.second->setWidth(width);
+                it.second->setHeight(height);
+            } else {
+                it.second->resize(width, height);
+            }
         }
         for(auto &it : m_postEffects) {
             it->resize(width, height);
@@ -264,6 +275,18 @@ RenderTarget *PipelineContext::defaultTarget() {
 
 void PipelineContext::setDefaultTarget(RenderTarget *target) {
     m_defaultTarget = target;
+}
+
+Texture *PipelineContext::debugTexture() const {
+    return m_debugTexture;
+}
+
+void PipelineContext::setDebugTexture(const string &string) {
+    m_debugTexture = nullptr;
+    auto it = m_textureBuffers.find(string);
+    if(it != m_textureBuffers.end()) {
+        m_debugTexture = it->second;
+    }
 }
 
 RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
@@ -344,6 +367,19 @@ RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int
 
 CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
+}
+
+const list<PostProcessor *> &PipelineContext::postEffects() const {
+    return m_postEffects;
+}
+
+list<string> PipelineContext::renderTextures() const {
+    list<string> result;
+    for(auto &it : m_textureBuffers) {
+        result.push_back(it.first);
+    }
+
+    return result;
 }
 
 void PipelineContext::drawComponents(uint32_t layer, list<Renderable *> &list) {
