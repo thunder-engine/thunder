@@ -13,5 +13,5 @@ void main(void) {
 }
 ]]>
     </Fragment>
-    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="true" depthWrite="false" twoSided="true"/>
+    <Pass type="Surface" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
 </Shader>

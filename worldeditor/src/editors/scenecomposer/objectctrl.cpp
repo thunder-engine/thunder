@@ -11,6 +11,9 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
+#include <resources/texture.h>
+#include <resources/rendertarget.h>
+
 #include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
 #include <editor/viewport/editorpipeline.h>
@@ -98,10 +101,9 @@ void ObjectCtrl::init() {
 }
 
 void ObjectCtrl::drawHandles() {
-    Vector2 position, size;
-    selectGeometry(position, size);
+    Vector2 size(1, 1);
 
-    Vector3 screen = Vector3(position.x / m_screenSize.x, position.y / m_screenSize.y, 0.0f);
+    Vector3 screen = Vector3(m_mousePosition.x / m_screenSize.x, m_mousePosition.y / m_screenSize.y, 0.0f);
     Handles::s_Mouse = Vector2(screen.x, screen.y);
     Handles::s_Screen = m_screenSize;
 
@@ -118,8 +120,6 @@ void ObjectCtrl::drawHandles() {
         }
     }
 
-    Handles::cleanDepth();
-
     if(!m_selected.empty()) {
         if(m_activeTool) {
             m_activeTool->update(false, m_local, 0.0f);
@@ -128,19 +128,31 @@ void ObjectCtrl::drawHandles() {
 
     if(m_pipeline) {
         uint32_t result = 0;
-        if(position.x >= 0.0f && position.y >= 0.0f &&
-           position.x < m_screenSize.x && position.y < m_screenSize.y) {
+        if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
+           m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
-            m_pipeline->setMousePosition(int32_t(position.x), int32_t(position.y));
-            result = m_pipeline->objectId();
-        }
+            Ray ray = m_activeCamera->castRay(screen.x, screen.y);
+            m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
 
-        if(result) {
-            if(m_objectsList.empty()) {
-                m_objectsList = { result };
+            RenderTarget *objectSelect = m_pipeline->renderTarget("objectSelect");
+            if(objectSelect) {
+                objectSelect->readPixels(0, int32_t(m_mousePosition.x), int32_t(m_mousePosition.y), 1, 1);
+
+                Texture *texture = objectSelect->colorAttachment(0);
+                result = texture->getPixel(0, 0, 0);
+                if(result) {
+                    objectSelect->readPixels(-1, int32_t(m_mousePosition.x), int32_t(m_mousePosition.y), 1, 1);
+                    texture = objectSelect->depthAttachment();
+                    int pixel = texture->getPixel(0, 0, 0);
+                    memcpy(&screen.z, &pixel, sizeof(float));
+                    m_mouseWorld = Camera::unproject(screen, m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
+
+                    if(m_objectsList.empty()) {
+                        m_objectsList = { result };
+                    }
+                }
             }
         }
-        m_mouseWorld = m_pipeline->mouseWorld();
     }
 }
 
@@ -156,10 +168,6 @@ SceneGraph *ObjectCtrl::sceneGraph() const {
 }
 void ObjectCtrl::setSceneGraph(SceneGraph *graph) {
     m_sceneGraph = graph;
-}
-
-void ObjectCtrl::switchActiveScene() {
-
 }
 
 void ObjectCtrl::drawHelpers(Object &object) {
@@ -180,11 +188,6 @@ void ObjectCtrl::drawHelpers(Object &object) {
             }
         }
     }
-}
-
-void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
-    pos = Vector2(m_mousePosition.x, m_mousePosition.y);
-    size = Vector2(1, 1);
 }
 
 void ObjectCtrl::setDrag(bool drag) {

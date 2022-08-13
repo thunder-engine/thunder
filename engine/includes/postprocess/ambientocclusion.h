@@ -1,7 +1,7 @@
 #ifndef AMBIENTOCCLUSION_H
 #define AMBIENTOCCLUSION_H
 
-#include "postprocessor.h"
+#include "renderpass.h"
 
 #include <amath.h>
 
@@ -9,7 +9,7 @@
 
 class Texture;
 
-class AmbientOcclusion : public PostProcessor {
+class AmbientOcclusion : public RenderPass {
 public:
     AmbientOcclusion ();
 

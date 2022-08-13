@@ -268,12 +268,6 @@ void Handles::endDraw() {
     }
 }
 
-void Handles::cleanDepth() {
-    if(CommandBuffer::isInited() && s_Buffer) {
-        s_Buffer->clearRenderTarget(false, Vector4(), true, 1.0f);
-    }
-}
-
 void Handles::drawArrow(const Matrix4 &transform) {
     if(CommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);

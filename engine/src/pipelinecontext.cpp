@@ -76,6 +76,7 @@ PipelineContext::PipelineContext() :
         Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
+        depth->resize(2, 2);
         m_textureBuffers[DEPTH_MAP] = depth;
         m_buffer->setGlobalTexture(DEPTH_MAP, depth);
     }
@@ -134,20 +135,20 @@ void PipelineContext::draw(Camera &camera) {
     m_buffer->clearRenderTarget(true, camera.color());
 
     cameraReset(camera);
-    drawComponents(CommandBuffer::DEFAULT, m_filter);
+    drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
 
     // Step 2.1 - Light pass
     m_buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
-    drawComponents(CommandBuffer::LIGHT, m_sceneLights);
+    drawRenderers(CommandBuffer::LIGHT, m_sceneLights);
 
     // Step 2.2 - Light pass post processing
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
 
     // Step 3.1 - Transparent pass
-    drawComponents(CommandBuffer::TRANSLUCENT, m_filter);
+    drawRenderers(CommandBuffer::TRANSLUCENT, m_culledComponents);
 
     // Step 3.2 - Transparent pass post processing
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
@@ -158,7 +159,7 @@ void PipelineContext::drawUi(Camera &camera) {
     A_UNUSED(camera);
 
     m_buffer->setScreenProjection(0, 0, m_width, m_height);
-    drawComponents(CommandBuffer::UI, m_uiComponents);
+    drawRenderers(CommandBuffer::UI, m_uiComponents);
 
     postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
 }
@@ -212,6 +213,14 @@ void PipelineContext::setRenderTexture(const string &name, Texture *texture) {
     m_textureBuffers[name] = texture;
 }
 
+RenderTarget *PipelineContext::renderTarget(const string &name) const {
+    auto it = m_renderTargets.find(name);
+    if(it != m_renderTargets.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
 void PipelineContext::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         m_width = width;
@@ -246,8 +255,8 @@ void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
 
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->actor()->transform();
-    m_filter = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
-    sortRenderables(m_filter, cameraTransform->position());
+    m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
+    sortRenderables(m_culledComponents, cameraTransform->position());
 
     // Post process settings mixer
     PostProcessSettings &settings = graph->finalPostProcessSettings();
@@ -369,7 +378,7 @@ CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
 }
 
-const list<PostProcessor *> &PipelineContext::postEffects() const {
+const list<RenderPass *> &PipelineContext::postEffects() const {
     return m_postEffects;
 }
 
@@ -382,10 +391,14 @@ list<string> PipelineContext::renderTextures() const {
     return result;
 }
 
-void PipelineContext::drawComponents(uint32_t layer, list<Renderable *> &list) {
+void PipelineContext::drawRenderers(uint32_t layer, const list<Renderable *> &list) {
     for(auto it : list) {
         it->draw(*m_buffer, layer);
     }
+}
+
+const list<Renderable *> &PipelineContext::culledComponents() const {
+    return m_culledComponents;
 }
 
 void PipelineContext::cleanShadowCache() {

@@ -19,6 +19,7 @@ const char *bloom("graphics.bloom");
 const char *bloomThreshold("bloom/Threshold");
 };
 
+
 Bloom::Bloom() :
         m_threshold(1.0f),
         m_width(0),
@@ -68,11 +69,11 @@ Texture *Bloom::draw(Texture *source, PipelineContext *context) {
 
         m_resultTarget->setColorAttachment(0, source);
 
-        Blur *blur = PostProcessor::blur();
+        static Blur blur;
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            blur->setParameters(Vector2(1.0f / m_bloomPasses[i].m_downTexture->width(), 1.0f / m_bloomPasses[i].m_downTexture->height()),
+            blur.setParameters(Vector2(1.0f / m_bloomPasses[i].m_downTexture->width(), 1.0f / m_bloomPasses[i].m_downTexture->height()),
                                 m_bloomPasses[i].m_blurSteps, m_bloomPasses[i].m_blurPoints);
-            blur->draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
+            blur.draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
         }
     }
 
@@ -80,7 +81,7 @@ Texture *Bloom::draw(Texture *source, PipelineContext *context) {
 }
 
 void Bloom::resize(int32_t width, int32_t height) {
-    PostProcessor::resize(width, height);
+    RenderPass::resize(width, height);
 
     if(m_width != width || m_height != height) {
         m_width = width;

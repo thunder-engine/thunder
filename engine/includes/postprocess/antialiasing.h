@@ -1,11 +1,11 @@
 #ifndef ANTIALIASING_H
 #define ANTIALIASING_H
 
-#include "postprocessor.h"
+#include "renderpass.h"
 
 class Engine;
 
-class AntiAliasing : public PostProcessor {
+class AntiAliasing : public RenderPass {
 public:
     AntiAliasing();
 

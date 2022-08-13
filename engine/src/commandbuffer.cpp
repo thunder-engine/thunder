@@ -5,6 +5,7 @@
 static bool s_Inited = false;
 
 CommandBuffer::CommandBuffer() :
+    m_screenProjection(false),
     m_viewportX(0),
     m_viewportY(0),
     m_viewportWidth(1),
@@ -64,12 +65,16 @@ void CommandBuffer::setColor(const Vector4 &color) {
 }
 
 void CommandBuffer::setScreenProjection(float x, float y, float width, float height) {
-    setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, -100.0f, 100.0f));
+    if(!m_screenProjection) {
+        setViewProjection(Matrix4(), Matrix4::ortho(x, width, y, height, -100.0f, 100.0f));
+        m_screenProjection = true;
+    }
 }
 
 void CommandBuffer::resetViewProjection() {
     m_global.view = m_saveView;
     m_global.projection = m_saveProjection;
+    m_screenProjection = false;
 }
 
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {

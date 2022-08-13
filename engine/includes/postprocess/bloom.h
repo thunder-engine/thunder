@@ -3,7 +3,7 @@
 
 #include <amath.h>
 
-#include "postprocessor.h"
+#include "renderpass.h"
 
 #include "filters/blur.h"
 
@@ -11,7 +11,7 @@
 
 class Engine;
 
-class Bloom : public PostProcessor {
+class Bloom : public RenderPass {
     struct BloomPass {
         Vector3 m_blurSize;
 

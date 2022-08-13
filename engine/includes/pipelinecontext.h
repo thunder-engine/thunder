@@ -18,7 +18,7 @@ class Mesh;
 class MaterialInstance;
 class Texture;
 class RenderTarget;
-class PostProcessor;
+class RenderPass;
 
 class PostProcessVolume;
 
@@ -45,10 +45,14 @@ public:
 
     void cameraReset(Camera &camera);
 
+    void drawRenderers(uint32_t layer, const list<Renderable *> &list);
+
     void setRenderTarget(const string &name);
 
     Texture *renderTexture(const string &name) const;
     void setRenderTexture(const string &name, Texture *texture);
+
+    RenderTarget *renderTarget(const string &name) const;
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
@@ -58,15 +62,15 @@ public:
 
     CommandBuffer *buffer() const;
 
-    const list<PostProcessor *> &postEffects() const;
+    const list<RenderPass *> &postEffects() const;
 
     list<string> renderTextures() const;
+
+    const list<Renderable *> &culledComponents() const;
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 protected:
-    void drawComponents(uint32_t layer, list<Renderable *> &list);
-
     void postProcess(RenderTarget *source, uint32_t layer);
 
     void sortRenderables(list<Renderable *> &in, const Vector3 &origin);
@@ -83,14 +87,14 @@ protected:
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_sceneLights;
     list<Renderable *> m_uiComponents;
-    list<Renderable *> m_filter;
+    list<Renderable *> m_culledComponents;
 
     list<PostProcessVolume *> m_postProcessVolume;
 
     BuffersMap m_textureBuffers;
     TargetsMap m_renderTargets;
 
-    list<PostProcessor *> m_postEffects;
+    list<RenderPass *> m_postEffects;
 
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;

@@ -16,12 +16,6 @@ public:
 
     void setController(CameraCtrl *ctrl);
 
-    uint32_t objectId() const;
-
-    Vector3 mouseWorld() const;
-
-    void setMousePosition(int32_t x, int32_t y);
-
     void setDragObjects(const ObjectList &list);
 
     static void registerSettings();
@@ -46,13 +40,8 @@ protected:
 
     Outline *m_outline;
 
-    Texture *m_depth;
-
     MaterialInstance *m_grid;
 
-    uint32_t m_objectId;
-    int32_t m_mouseX;
-    int32_t m_mouseY;
 };
 
 #endif // EDITORPIPELINE_H

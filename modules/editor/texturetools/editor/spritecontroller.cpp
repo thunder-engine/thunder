@@ -74,7 +74,6 @@ void SpriteController::drawHandles() {
     if(m_pSettings) {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
-        Handles::cleanDepth();
         for(auto it : m_pSettings->elements().keys()) {
             QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
             if(m_List.indexOf(it) > -1) {

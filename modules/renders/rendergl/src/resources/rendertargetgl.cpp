@@ -5,7 +5,7 @@
 #include "resources/texturegl.h"
 
 RenderTargetGL::RenderTargetGL() :
-        m_Buffer(-1) {
+        m_buffer(-1) {
 
 }
 
@@ -29,23 +29,37 @@ void RenderTargetGL::bindBuffer(uint32_t level) {
 }
 
 uint32_t RenderTargetGL::nativeHandle() const {
-    return (uint32_t)m_Buffer;
+    return (uint32_t)m_buffer;
 }
 
 void RenderTargetGL::setNativeHandle(uint32_t id) {
-    if(m_Buffer == -1) {
-        m_Buffer = id;
+    if(m_buffer == -1) {
+        m_buffer = id;
+    }
+}
+
+void RenderTargetGL::readPixels(int index, int x, int y, int width, int height) {
+    glBindFramebuffer(GL_FRAMEBUFFER, m_buffer);
+
+    if(index < 0) {
+        glReadBuffer(GL_DEPTH_ATTACHMENT);
+
+        depthAttachment()->readPixels(x, y, width, height);
+    } else {
+        glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
+
+        colorAttachment(index)->readPixels(x, y, width, height);
     }
 }
 
 bool RenderTargetGL::updateBuffer(uint32_t level) {
-    if(m_Buffer == -1) {
-        glGenFramebuffers(1, (GLuint *)&m_Buffer);
+    if(m_buffer == -1) {
+        glGenFramebuffers(1, (GLuint *)&m_buffer);
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_Buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_buffer);
 
-    if(m_Buffer == 0) {
+    if(m_buffer == 0) {
         return true;
     }
 
@@ -83,8 +97,8 @@ bool RenderTargetGL::updateBuffer(uint32_t level) {
 }
 
 void RenderTargetGL::destroyBuffer() {
-    if(m_Buffer) {
-        glDeleteFramebuffers(1, (GLuint *)&m_Buffer);
+    if(m_buffer) {
+        glDeleteFramebuffers(1, (GLuint *)&m_buffer);
     }
-    m_Buffer = -1;
+    m_buffer = -1;
 }

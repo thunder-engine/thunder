@@ -10,7 +10,7 @@
 #include <QGuiApplication>
 #include <QRegularExpression>
 
-#include <postprocess/postprocessor.h>
+#include <postprocess/renderpass.h>
 
 #include <systems/rendersystem.h>
 

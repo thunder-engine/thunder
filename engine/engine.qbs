@@ -95,7 +95,6 @@ Project {
                 "*.h",
                 "components/*.h",
                 "resources/*.h",
-                "postprocess/postprocessor.h",
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"

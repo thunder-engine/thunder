@@ -37,8 +37,6 @@ public:
     SceneGraph *sceneGraph() const;
     void setSceneGraph(SceneGraph *graph);
 
-    void switchActiveScene();
-
     void selectActors(const list<uint32_t> &list);
 
     Object::ObjectList selected() override;
@@ -99,8 +97,6 @@ signals:
 
 protected:
     void drawHandles() override;
-
-    void selectGeometry(Vector2 &, Vector2 &size);
 
 private slots:
     void onApplySettings();

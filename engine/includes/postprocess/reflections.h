@@ -1,7 +1,7 @@
 #ifndef REFLECTIONS_H
 #define REFLECTIONS_H
 
-#include "postprocessor.h"
+#include "renderpass.h"
 
 #include <amath.h>
 
@@ -9,7 +9,7 @@
 
 class Texture;
 
-class Reflections : public PostProcessor {
+class Reflections : public RenderPass {
 public:
     Reflections ();
 

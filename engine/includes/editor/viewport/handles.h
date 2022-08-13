@@ -32,7 +32,6 @@ public:
 
     static void beginDraw(CommandBuffer *buffer);
     static void endDraw();
-    static void cleanDepth();
 
     static void drawArrow(const Matrix4 &transform);
     static void drawBone(const Transform *begin, const Transform *end);

@@ -1,5 +1,5 @@
-#ifndef POSTPROCESSOR_H
-#define POSTPROCESSOR_H
+#ifndef RENDERPASS_H
+#define RENDERPASS_H
 
 #include <stdint.h>
 
@@ -16,10 +16,10 @@ class PipelineContext;
 
 class PostProcessSettings;
 
-class ENGINE_EXPORT PostProcessor {
+class ENGINE_EXPORT RenderPass {
 public:
-    PostProcessor();
-    virtual ~PostProcessor();
+    RenderPass();
+    virtual ~RenderPass();
 
     virtual Texture *draw(Texture *source, PipelineContext *context);
 
@@ -35,9 +35,6 @@ public:
     bool isEnabled() const;
 
 protected:
-    static Blur *blur();
-
-protected:
     bool m_enabled;
 
     MaterialInstance *m_material;
@@ -48,4 +45,4 @@ protected:
     RenderTarget *m_resultTarget;
 };
 
-#endif // POSTPROCESSOR_H
+#endif // RENDERPASS_H

@@ -98,6 +98,8 @@ public:
     static void setInited();
 
 protected:
+    bool m_screenProjection;
+
     Global m_global;
     Local m_local;
 
