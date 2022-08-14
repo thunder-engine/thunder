@@ -21,11 +21,6 @@
 #include <QVariant>
 #include <QColor>
 
-#define SELECT_MAP   "selectMap"
-#define DEPTH_MAP    "depthMap"
-
-#define SEL_TARGET   "objectSelect"
-
 namespace {
     const char *gridColor("General/Colors/Grid_Color");
 };
@@ -33,21 +28,6 @@ namespace {
 EditorPipeline::EditorPipeline() :
         m_controller(nullptr),
         m_grid(nullptr) {
-
-    {
-        Texture *select = Engine::objectCreate<Texture>(SELECT_MAP);
-        select->setFormat(Texture::RGBA8);
-        select->resize(2, 2);
-        m_textureBuffers[SELECT_MAP] = select;
-        m_buffer->setGlobalTexture(SELECT_MAP, select);
-    }
-
-    RenderTarget *object = Engine::objectCreate<RenderTarget>(SEL_TARGET);
-    object->setColorAttachment(0, m_textureBuffers[SELECT_MAP]);
-    object->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
-    m_renderTargets[SEL_TARGET] = object;
-
-    Handles::init();
 
     Material *m = Engine::loadResource<Material>(".embedded/grid.shader");
     if(m) {
@@ -68,39 +48,7 @@ void EditorPipeline::setController(CameraCtrl *ctrl) {
     m_controller = ctrl;
 }
 
-void EditorPipeline::setDragObjects(const ObjectList &list) {
-    m_dragList.clear();
-    for(auto it : list) {
-        auto result = it->findChildren<Renderable *>();
-
-        m_dragList.insert(m_dragList.end(), result.begin(), result.end());
-    }
-}
-
 void EditorPipeline::draw(Camera &camera) {
-    // Retrive object id
-    m_buffer->setRenderTarget(m_renderTargets[SEL_TARGET]);
-    m_buffer->clearRenderTarget();
-
-    m_buffer->setViewport(0, 0, m_width, m_height);
-
-    cameraReset(camera);
-    for(auto it : m_culledComponents) {
-        if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-            it->draw(*m_buffer, CommandBuffer::RAYCAST);
-        }
-    }
-    for(auto it : m_uiComponents) {
-        if(it->actor()->hideFlags() & Actor::SELECTABLE) {
-            it->draw(*m_buffer, CommandBuffer::RAYCAST);
-        }
-    }
-
-    for(auto it : m_dragList) {
-        it->update();
-        m_culledComponents.push_back(it);
-    }
-
     PipelineContext::draw(camera);
 
     if(debugTexture() == nullptr) {

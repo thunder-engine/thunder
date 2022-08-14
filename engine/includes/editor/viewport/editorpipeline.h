@@ -14,8 +14,6 @@ public:
 
     void setController(CameraCtrl *ctrl);
 
-    void setDragObjects(const ObjectList &list);
-
 private slots:
     void onApplySettings();
 
@@ -27,8 +25,6 @@ protected:
     void drawGrid(Camera &camera);
 
     Vector4 m_gridColor;
-
-    list<Renderable *> m_dragList;
 
     CameraCtrl *m_controller;
 

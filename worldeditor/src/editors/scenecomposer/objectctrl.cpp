@@ -18,6 +18,9 @@
 #include <editor/viewport/handles.h>
 #include <editor/viewport/editorpipeline.h>
 
+#include <renderpass.h>
+#include <commandbuffer.h>
+
 #include "selecttool.h"
 #include "movetool.h"
 #include "rotatetool.h"
@@ -57,11 +60,117 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
+class ViewportRaycast : public RenderPass {
+public:
+    ViewportRaycast() :
+            m_objectId(0),
+            m_controller(nullptr) {
+        m_resultTexture = Engine::objectCreate<Texture>();
+        m_resultTexture->setFormat(Texture::RGBA8);
+        m_resultTexture->resize(2, 2);
+
+        m_depth = Engine::objectCreate<Texture>();
+        m_depth->setFormat(Texture::Depth);
+        m_depth->setDepthBits(24);
+        m_depth->resize(2, 2);
+
+        m_resultTarget->setColorAttachment(0, m_resultTexture);
+        m_resultTarget->setDepthAttachment(m_depth);
+    }
+
+    Texture *draw(Texture *source, PipelineContext *context) override {
+        CommandBuffer *buffer = context->buffer();
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->clearRenderTarget();
+
+        context->cameraReset(*Camera::current());
+        for(auto it : context->culledComponents()) {
+            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+                it->draw(*buffer, CommandBuffer::RAYCAST);
+            }
+        }
+
+        for(auto it : context->uiComponents()) {
+            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+                it->draw(*buffer, CommandBuffer::RAYCAST);
+            }
+        }
+
+        Camera *activeCamera = m_controller->activeCamera();
+
+        Vector2 mousePosition = m_controller->mousePosition();
+
+        Vector3 screen(mousePosition.x / (float)m_resultTexture->width(),
+                       mousePosition.y / (float)m_resultTexture->height(), 0.0f);
+
+        m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+        m_objectId = m_resultTexture->getPixel(0, 0, 0);
+        if(m_objectId) {
+            m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+            int pixel = m_depth->getPixel(0, 0, 0);
+            memcpy(&screen.z, &pixel, sizeof(float));
+            m_mouseWorld = Camera::unproject(screen, activeCamera->viewMatrix(), activeCamera->projectionMatrix());
+        } else {
+            Ray ray = activeCamera->castRay(screen.x, screen.y);
+            m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+        }
+
+        for(auto it : m_dragList) {
+            it->update();
+            context->culledComponents().push_back(it);
+        }
+
+        return source;
+    }
+
+    uint32_t layer() const override {
+        return CommandBuffer::RAYCAST;
+    }
+
+    void resize(int32_t width, int32_t height) override {
+        m_resultTexture->resize(width, height);
+        m_depth->resize(width, height);
+    }
+
+    void setDragObjects(const Object::ObjectList &list) {
+        m_dragList.clear();
+        for(auto it : list) {
+            auto result = it->findChildren<Renderable *>();
+
+            m_dragList.insert(m_dragList.end(), result.begin(), result.end());
+        }
+    }
+
+    void setController(ObjectCtrl *ctrl) {
+        m_controller = ctrl;
+    }
+
+    uint32_t objectId() const {
+        return m_objectId;
+    }
+
+    Vector3 mouseWorld() const {
+        return m_mouseWorld;
+    }
+
+private:
+    Vector3 m_mouseWorld;
+
+    list<Renderable *> m_dragList;
+
+    uint32_t m_objectId;
+
+    Texture *m_depth;
+
+    ObjectCtrl *m_controller;
+};
+
 ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
         m_pipeline(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
+        m_rayCast(nullptr),
         m_axes(0),
         m_isolatedActorModified(false),
         m_drag(false),
@@ -97,6 +206,9 @@ ObjectCtrl::~ObjectCtrl() {
 void ObjectCtrl::init() {
     m_pipeline = new EditorPipeline;
     m_pipeline->setController(this);
+    m_rayCast = new ViewportRaycast;
+    m_rayCast->setController(this);
+    m_pipeline->addRenderPass(m_rayCast);
     m_activeCamera->setPipeline(m_pipeline);
 }
 
@@ -127,31 +239,15 @@ void ObjectCtrl::drawHandles() {
     }
 
     if(m_pipeline) {
-        uint32_t result = 0;
         if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
            m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
-            Ray ray = m_activeCamera->castRay(screen.x, screen.y);
-            m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+            uint32_t result = m_rayCast->objectId();
 
-            RenderTarget *objectSelect = m_pipeline->renderTarget("objectSelect");
-            if(objectSelect) {
-                objectSelect->readPixels(0, int32_t(m_mousePosition.x), int32_t(m_mousePosition.y), 1, 1);
-
-                Texture *texture = objectSelect->colorAttachment(0);
-                result = texture->getPixel(0, 0, 0);
-                if(result) {
-                    objectSelect->readPixels(-1, int32_t(m_mousePosition.x), int32_t(m_mousePosition.y), 1, 1);
-                    texture = objectSelect->depthAttachment();
-                    int pixel = texture->getPixel(0, 0, 0);
-                    memcpy(&screen.z, &pixel, sizeof(float));
-                    m_mouseWorld = Camera::unproject(screen, m_activeCamera->viewMatrix(), m_activeCamera->projectionMatrix());
-
-                    if(m_objectsList.empty()) {
-                        m_objectsList = { result };
-                    }
-                }
+            if(m_objectsList.empty() && result) {
+                m_objectsList = { result };
             }
+            m_mouseWorld = m_rayCast->mouseWorld();
         }
     }
 }
@@ -374,8 +470,8 @@ void ObjectCtrl::onDrop() {
             Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph->activeScene());
             it->setParent(parent);
         }
-        if(m_pipeline) {
-            m_pipeline->setDragObjects({});
+        if(m_rayCast) {
+            m_rayCast->setDragObjects({});
         }
         UndoManager::instance()->push(new CreateObjectSerial(m_dragObjects, this));
     }
@@ -425,8 +521,8 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         a->transform()->setPosition(m_mouseWorld);
     }
 
-    if(m_pipeline) {
-        m_pipeline->setDragObjects(m_dragObjects);
+    if(m_rayCast) {
+        m_rayCast->setDragObjects(m_dragObjects);
     }
 
     if(!m_dragObjects.empty() || !m_dragMap.name.isEmpty()) {
@@ -446,8 +542,8 @@ void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
 }
 
 void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
-    if(m_pipeline) {
-        m_pipeline->setDragObjects({});
+    if(m_rayCast) {
+        m_rayCast->setDragObjects({});
     }
     for(Object *o : m_dragObjects) {
         delete o;
@@ -646,7 +742,9 @@ void CreateObject::redo() {
         } else {
             object = Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), it);
         }
-        m_objects.push_back(object->uuid());
+        if(object) {
+            m_objects.push_back(object->uuid());
+        }
     }
 
     emit m_controller->objectsSelected(m_controller->selected());

@@ -130,11 +130,12 @@ void PipelineContext::draw(Camera &camera) {
 
     m_buffer->setViewport(0, 0, m_width, m_height);
 
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::RAYCAST);
+
     // Step 1.1 - Fill G buffer pass draw opaque geometry
     m_buffer->setRenderTarget(m_renderTargets[GBUFFER]);
     m_buffer->clearRenderTarget(true, camera.color());
 
-    cameraReset(camera);
     drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
@@ -185,6 +186,8 @@ void PipelineContext::cameraReset(Camera &camera) {
     camera.setRatio((float)m_width / (float)m_height);
 
     Transform *c = camera.actor()->transform();
+
+    m_buffer->resetViewProjection();
 
     m_buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), camera.nearPlane()));
     m_buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), camera.farPlane()));
@@ -276,6 +279,8 @@ void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
     for(auto &it : m_renderPasses) {
         it->setSettings(settings);
     }
+
+    cameraReset(*camera);
 }
 
 RenderTarget *PipelineContext::defaultTarget() {
@@ -401,8 +406,12 @@ void PipelineContext::drawRenderers(uint32_t layer, const list<Renderable *> &li
     }
 }
 
-const list<Renderable *> &PipelineContext::culledComponents() const {
+list<Renderable *> &PipelineContext::culledComponents() {
     return m_culledComponents;
+}
+
+list<Renderable *> &PipelineContext::uiComponents() {
+    return m_uiComponents;
 }
 
 void PipelineContext::cleanShadowCache() {
@@ -441,6 +450,7 @@ void PipelineContext::updateShadows(Camera &camera) {
     for(auto &it : m_sceneLights) {
         static_cast<BaseLight *>(it)->shadowsUpdate(camera, this, m_sceneComponents);
     }
+    m_buffer->resetViewProjection();
 }
 
 void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {

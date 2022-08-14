@@ -123,9 +123,9 @@ public:
     }
 
 protected:
-    float m_width;
-
     Vector4 m_color;
+
+    float m_width;
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;
@@ -154,7 +154,6 @@ Viewport::Viewport(QWidget *parent) :
     RenderSystem *render = PluginManager::instance()->render();
     if(render) {
         m_rhiWindow = PluginManager::instance()->render()->createRhiWindow();
-
         m_rhiWindow->installEventFilter(this);
         layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
     }
@@ -194,6 +193,8 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
         for(auto it : m_pipelineContext->renderPasses()) {
             SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
         }
+
+        Handles::init();
     }
 }
 

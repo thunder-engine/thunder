@@ -21,6 +21,8 @@ class Texture;
 
 class EditorPipeline;
 
+class ViewportRaycast;
+
 class Viewport;
 
 class ObjectCtrl : public CameraCtrl {
@@ -52,6 +54,10 @@ public:
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
+
+    Camera *activeCamera() const { return m_activeCamera; }
+
+    Vector2 mousePosition() const { return m_mousePosition; }
 
 public slots:
     void onInputEvent(QInputEvent *) override;
@@ -129,6 +135,8 @@ protected:
     Actor *m_isolatedActor;
 
     EditorTool *m_activeTool;
+
+    ViewportRaycast *m_rayCast;
 
     uint8_t m_axes;
 

@@ -67,7 +67,8 @@ public:
 
     list<string> renderTextures() const;
 
-    const list<Renderable *> &culledComponents() const;
+    list<Renderable *> &culledComponents();
+    list<Renderable *> &uiComponents();
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
