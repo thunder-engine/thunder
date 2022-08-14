@@ -33,34 +33,27 @@ public:
     PipelineContext();
     ~PipelineContext();
 
-    virtual void draw(Camera &camera);
+    CommandBuffer *buffer() const;
 
-    virtual void drawUi(Camera &camera);
+    void analizeScene(SceneGraph *graph, RenderSystem *render);
 
-    virtual void finish();
+    void drawMain(Camera &camera);
 
-    virtual void resize(int32_t width, int32_t height);
+    void drawUi(Camera &camera);
 
-    virtual void analizeScene(SceneGraph *graph, RenderSystem *render);
+    void finish();
 
     void cameraReset(Camera &camera);
 
     void drawRenderers(uint32_t layer, const list<Renderable *> &list);
 
-    void setRenderTarget(const string &name);
-
-    Texture *renderTexture(const string &name) const;
     void setRenderTexture(const string &name, Texture *texture);
-
-    RenderTarget *renderTarget(const string &name) const;
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
 
     Texture *debugTexture() const;
     void setDebugTexture(const string &string);
-
-    CommandBuffer *buffer() const;
 
     void addRenderPass(RenderPass *pass);
     const list<RenderPass *> &renderPasses() const;
@@ -69,6 +62,10 @@ public:
 
     list<Renderable *> &culledComponents();
     list<Renderable *> &uiComponents();
+
+    void showUiAsSceneView();
+
+    void resize(int32_t width, int32_t height);
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
@@ -116,6 +113,8 @@ protected:
 
     int32_t m_width;
     int32_t m_height;
+
+    bool m_uiAsSceneView;
 
 };
 

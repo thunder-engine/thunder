@@ -26,37 +26,34 @@
 
 TextureEdit::TextureEdit() :
         ui(new Ui::TextureEdit),
-        m_Rresource(nullptr),
-        m_pRender(nullptr),
-        m_pConverter(new TextureConverter),
-        m_pScene(Engine::objectCreate<SceneGraph>("SceneGraph")) {
+        m_resource(nullptr),
+        m_render(nullptr),
+        m_converter(new TextureConverter),
+        m_graph(Engine::objectCreate<SceneGraph>("SceneGraph")) {
 
     ui->setupUi(this);
 
-    m_pController = new SpriteController(this);
-    m_pController->blockRotations(true);
-    m_pController->init();
+    m_controller = new SpriteController(this);
+    m_controller->blockRotations(true);
 
-    connect(m_pController, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
-    connect(m_pController, &SpriteController::setCursor, this, &TextureEdit::onCursorSet, Qt::DirectConnection);
-    connect(m_pController, &SpriteController::unsetCursor, this, &TextureEdit::onCursorUnset, Qt::DirectConnection);
+    ui->viewport->init();
+    ui->viewport->setController(m_controller);
+    ui->viewport->setSceneGraph(m_graph);
 
-    Camera *camera = m_pController->camera();
+    connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
+    connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
+    connect(m_controller, &SpriteController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
+
+    Camera *camera = m_controller->camera();
     if(camera) {
         camera->setOrthographic(true);
     }
 
-    Actor *object = Engine::composeActor("SpriteRender", "Sprite", m_pScene);
-    m_pRender = static_cast<SpriteRender *>(object->component("SpriteRender"));
-    if(m_pRender) {
-        m_pRender->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
+    Actor *object = Engine::composeActor("SpriteRender", "Sprite", m_graph);
+    m_render = static_cast<SpriteRender *>(object->component("SpriteRender"));
+    if(m_render) {
+        m_render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
     }
-
-    m_pRHIWindow = PluginManager::instance()->render()->createRhiWindow();
-    m_pRHIWindow->installEventFilter(this);
-    static_cast<QHBoxLayout *>(layout())->insertWidget(0, QWidget::createWindowContainer(m_pRHIWindow));
-
-    connect(m_pRHIWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -79,33 +76,33 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
     }
     m_settings = { settings };
 
-    if(m_Rresource) {
-        m_Rresource->unsubscribe(this);
+    if(m_resource) {
+        m_resource->unsubscribe(this);
     }
 
-    m_Rresource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
-    if(m_Rresource) {
-        m_Rresource->subscribe(this);
+    m_resource = Engine::loadResource<Resource>(qPrintable(settings->destination()));
+    if(m_resource) {
+        m_resource->subscribe(this);
     }
 
-    Sprite *sprite = dynamic_cast<Sprite *>(m_Rresource);
+    Sprite *sprite = dynamic_cast<Sprite *>(m_resource);
     if(sprite) {
-         m_pRender->setSprite(sprite);
+         m_render->setSprite(sprite);
     } else {
-        Texture *texture = dynamic_cast<Texture *>(m_Rresource);
+        Texture *texture = dynamic_cast<Texture *>(m_resource);
         if(texture) {
-            m_pRender->setTexture(texture);
+            m_render->setTexture(texture);
         }
     }
 
-    float ratio = (float)m_pRender->texture()->width() / (float)m_pRender->texture()->height();
-    Transform *t = m_pRender->actor()->transform();
+    float ratio = (float)m_render->texture()->width() / (float)m_render->texture()->height();
+    Transform *t = m_render->actor()->transform();
     t->setScale(Vector3(SCALE * ratio, SCALE, SCALE));
 
-    m_pRender->actor()->setEnabled(true);
+    m_render->actor()->setEnabled(true);
 
-    m_pController->setImportSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
-    m_pController->setSize(m_pRender->texture()->width(), m_pRender->texture()->height());
+    m_controller->setImportSettings(dynamic_cast<TextureImportSettings *>(m_settings.first()));
+    m_controller->setSize(m_render->texture()->width(), m_render->texture()->height());
 
     ui->widget->setSettings(static_cast<TextureImportSettings*>(m_settings.first()));
 
@@ -113,12 +110,12 @@ void TextureEdit::loadAsset(AssetConverterSettings *settings) {
 }
 
 QStringList TextureEdit::suffixes() const {
-    return static_cast<AssetConverter *>(m_pConverter)->suffixes();
+    return static_cast<AssetConverter *>(m_converter)->suffixes();
 }
 
 void TextureEdit::onUpdateTemplate() {
     if(!m_settings.isEmpty()) {
-        m_pConverter->convertTexture(static_cast<TextureImportSettings*>(m_settings.first()), m_pRender->texture());
+        m_converter->convertTexture(static_cast<TextureImportSettings*>(m_settings.first()), m_render->texture());
     }
 }
 
@@ -132,41 +129,11 @@ void TextureEdit::resizeEvent(QResizeEvent *event) {
 }
 
 void TextureEdit::resourceUpdated(const Resource *resource, Resource::ResourceState state) {
-    if(m_Rresource == resource && state == Resource::ToBeDeleted) {
-        m_pRender->actor()->setEnabled(false);
-        m_Rresource = nullptr;
+    if(m_resource == resource && state == Resource::ToBeDeleted) {
+        m_render->actor()->setEnabled(false);
+        m_resource = nullptr;
 
-        m_pController->setImportSettings(nullptr);
-    }
-}
-
-void TextureEdit::onCursorSet(const QCursor &cursor) {
-    m_pRHIWindow->setCursor(cursor);
-}
-
-void TextureEdit::onCursorUnset() {
-    m_pRHIWindow->unsetCursor();
-}
-
-void TextureEdit::onDraw() {
-    if(m_pController) {
-        m_pController->update();
-
-        Camera *camera = m_pController->camera();
-        if(camera) {
-            PipelineContext *pipe = camera->pipeline();
-            pipe->resize(width(), height());
-        }
-        Camera::setCurrent(camera);
-    }
-    if(m_pScene) {
-        Engine::resourceSystem()->processEvents();
-
-        RenderSystem *render = PluginManager::instance()->render();
-        if(render) {
-            render->update(m_pScene);
-        }
-        Camera::setCurrent(nullptr);
+        m_controller->setImportSettings(nullptr);
     }
 }
 
@@ -174,23 +141,4 @@ void TextureEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
-}
-
-bool TextureEdit::eventFilter(QObject *object, QEvent *event) {
-     // Workaround for the modal dialogs on top of RHI window and events propagation on to RHI
-    if(m_pRHIWindow == QGuiApplication::focusWindow()) {
-        switch(event->type()) {
-        case QEvent::Wheel:
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove: {
-            if(m_pController) {
-                m_pController->onInputEvent(static_cast<QInputEvent *>(event));
-            }
-            return true;
-        }
-        default: break;
-        }
-    }
-    return QObject::eventFilter(object, event);
 }

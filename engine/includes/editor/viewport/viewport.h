@@ -9,6 +9,7 @@ class CameraCtrl;
 
 class PipelineContext;
 class Outline;
+class GizmoRender;
 
 class QMenu;
 
@@ -59,6 +60,7 @@ private:
     PipelineContext *m_pipelineContext;
 
     Outline *m_outlinePass;
+    GizmoRender *m_gizmoRender;
 
     QWindow *m_rhiWindow;
 

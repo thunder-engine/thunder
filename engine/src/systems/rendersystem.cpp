@@ -105,7 +105,7 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
     if(camera) {
         PipelineContext *pipe = camera->pipeline();
         pipe->analizeScene(sceneGraph, this);
-        pipe->draw(*camera);
+        pipe->drawMain(*camera);
         pipe->drawUi(*camera);
         pipe->finish();
     }

@@ -5,12 +5,9 @@
 
 #include <resources/resource.h>
 
-class Sprite;
 class SpriteRender;
 class TextureConverter;
-class TextureImportSettings;
 
-class SpriteElement;
 class SpriteController;
 
 namespace Ui {
@@ -32,33 +29,24 @@ private:
     void resizeEvent(QResizeEvent *event) override;
     void changeEvent(QEvent *event) override;
 
-    bool eventFilter(QObject *object, QEvent *event) override;
-
     bool isModified() const override;
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override;
 
     Ui::TextureEdit *ui;
 
-    Resource *m_Rresource;
+    Resource *m_resource;
 
-    SpriteRender *m_pRender;
+    SpriteRender *m_render;
 
-    TextureConverter *m_pConverter;
+    TextureConverter *m_converter;
 
-    SceneGraph *m_pScene;
+    SceneGraph *m_graph;
 
-    SpriteController *m_pController;
-
-    QWindow *m_pRHIWindow;
+    SpriteController *m_controller;
 
 private slots:
     void onUpdateTemplate();
-
-    void onCursorSet(const QCursor &cursor);
-    void onCursorUnset();
-
-    void onDraw();
 
 };
 

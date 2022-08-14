@@ -130,8 +130,6 @@ protected:
 
     Vector3 m_mouseWorld;
 
-    EditorPipeline *m_pipeline;
-
     Actor *m_isolatedActor;
 
     EditorTool *m_activeTool;

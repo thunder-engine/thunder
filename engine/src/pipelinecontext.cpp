@@ -54,11 +54,12 @@ PipelineContext::PipelineContext() :
         m_finalMaterial(nullptr),
         m_effectMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
-        m_width(64),
-        m_height(64),
+        m_system(nullptr),
         m_final(nullptr),
         m_debugTexture(nullptr),
-        m_system(nullptr) {
+        m_width(64),
+        m_height(64),
+        m_uiAsSceneView(false) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
     if(mtl) {
@@ -125,7 +126,11 @@ PipelineContext::~PipelineContext() {
     m_textureBuffers.clear();
 }
 
-void PipelineContext::draw(Camera &camera) {
+CommandBuffer *PipelineContext::buffer() const {
+    return m_buffer;
+}
+
+void PipelineContext::drawMain(Camera &camera) {
     updateShadows(camera);
 
     m_buffer->setViewport(0, 0, m_width, m_height);
@@ -136,6 +141,7 @@ void PipelineContext::draw(Camera &camera) {
     m_buffer->setRenderTarget(m_renderTargets[GBUFFER]);
     m_buffer->clearRenderTarget(true, camera.color());
 
+    cameraReset(camera);
     drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
@@ -157,9 +163,11 @@ void PipelineContext::draw(Camera &camera) {
 }
 
 void PipelineContext::drawUi(Camera &camera) {
-    A_UNUSED(camera);
-
-    m_buffer->setScreenProjection(0, 0, m_width, m_height);
+    if(m_uiAsSceneView) {
+        cameraReset(camera);
+    } else {
+        m_buffer->setScreenProjection(0, 0, m_width, m_height);
+    }
     drawRenderers(CommandBuffer::UI, m_uiComponents);
 
     renderPass(m_renderTargets[LIGHPASS], CommandBuffer::UI);
@@ -200,28 +208,8 @@ void PipelineContext::cameraReset(Camera &camera) {
     m_buffer->setViewProjection(v, p);
 }
 
-void PipelineContext::setRenderTarget(const string &name) {
-    m_buffer->setRenderTarget(m_renderTargets[name]);
-}
-
-Texture *PipelineContext::renderTexture(const string &name) const {
-    auto it = m_textureBuffers.find(name);
-    if(it != m_textureBuffers.end()) {
-        return it->second;
-    }
-    return nullptr;
-}
-
 void PipelineContext::setRenderTexture(const string &name, Texture *texture) {
     m_textureBuffers[name] = texture;
-}
-
-RenderTarget *PipelineContext::renderTarget(const string &name) const {
-    auto it = m_renderTargets.find(name);
-    if(it != m_renderTargets.end()) {
-        return it->second;
-    }
-    return nullptr;
 }
 
 void PipelineContext::resize(int32_t width, int32_t height) {
@@ -279,8 +267,6 @@ void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
     for(auto &it : m_renderPasses) {
         it->setSettings(settings);
     }
-
-    cameraReset(*camera);
 }
 
 RenderTarget *PipelineContext::defaultTarget() {
@@ -379,8 +365,8 @@ RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int
     return target;
 }
 
-CommandBuffer *PipelineContext::buffer() const {
-    return m_buffer;
+void PipelineContext::showUiAsSceneView() {
+    m_uiAsSceneView = true;
 }
 
 void PipelineContext::addRenderPass(RenderPass *pass) {

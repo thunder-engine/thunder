@@ -16,7 +16,6 @@ class SpriteController : public CameraCtrl {
     Q_OBJECT
 public:
     explicit SpriteController(QWidget *view);
-    ~SpriteController();
 
     void setImportSettings(TextureImportSettings *settings);
 
@@ -26,8 +25,6 @@ public:
     QStringList &selectedElements();
 
     TextureImportSettings *settings() const { return m_pSettings; }
-
-    void init();
 
     void onInputEvent(QInputEvent *) override;
 
@@ -49,8 +46,6 @@ private:
     QPoint m_StartPoint;
     QPoint m_CurrentPoint;
     QPoint m_Save;
-
-    EditorPipeline *m_pPipeline;
 
     TextureImportSettings *m_pSettings;
 

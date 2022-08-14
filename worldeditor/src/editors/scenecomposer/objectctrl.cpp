@@ -16,9 +16,9 @@
 
 #include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
-#include <editor/viewport/editorpipeline.h>
 
 #include <renderpass.h>
+#include <pipelinecontext.h>
 #include <commandbuffer.h>
 
 #include "selecttool.h"
@@ -97,7 +97,6 @@ public:
         }
 
         Camera *activeCamera = m_controller->activeCamera();
-
         Vector2 mousePosition = m_controller->mousePosition();
 
         Vector3 screen(mousePosition.x / (float)m_resultTexture->width(),
@@ -167,7 +166,6 @@ private:
 
 ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
-        m_pipeline(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
@@ -200,16 +198,15 @@ ObjectCtrl::ObjectCtrl(Viewport *view) :
 }
 
 ObjectCtrl::~ObjectCtrl() {
-    delete m_pipeline;
+
 }
 
 void ObjectCtrl::init() {
-    m_pipeline = new EditorPipeline;
-    m_pipeline->setController(this);
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
-    m_pipeline->addRenderPass(m_rayCast);
-    m_activeCamera->setPipeline(m_pipeline);
+
+    PipelineContext *pipeline = m_activeCamera->pipeline();
+    pipeline->addRenderPass(m_rayCast);
 }
 
 void ObjectCtrl::drawHandles() {
@@ -238,17 +235,14 @@ void ObjectCtrl::drawHandles() {
         }
     }
 
-    if(m_pipeline) {
-        if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
-           m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
+    if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
+       m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
-            uint32_t result = m_rayCast->objectId();
-
-            if(m_objectsList.empty() && result) {
-                m_objectsList = { result };
-            }
-            m_mouseWorld = m_rayCast->mouseWorld();
+        uint32_t result = m_rayCast->objectId();
+        if(m_objectsList.empty() && result) {
+            m_objectsList = { result };
         }
+        m_mouseWorld = m_rayCast->mouseWorld();
     }
 }
 
