@@ -6,11 +6,9 @@
 #include <engine.h>
 
 class CameraCtrl;
-class Scene;
-class Camera;
 
-class MaterialInstance;
 class PipelineContext;
+class Outline;
 
 class QMenu;
 
@@ -59,6 +57,8 @@ private:
     SceneGraph *m_sceneGraph;
 
     PipelineContext *m_pipelineContext;
+
+    Outline *m_outlinePass;
 
     QWindow *m_rhiWindow;
 

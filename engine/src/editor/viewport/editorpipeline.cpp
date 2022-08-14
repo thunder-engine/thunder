@@ -16,135 +16,22 @@
 #include <resources/material.h>
 #include <resources/mesh.h>
 
-#include <postprocess/renderpass.h>
+#include <renderpass.h>
 
 #include <QVariant>
 #include <QColor>
 
 #define SELECT_MAP   "selectMap"
 #define DEPTH_MAP    "depthMap"
-#define OUTLINE_MAP  "outlineMap"
-#define OUTDEPTH_MAP "outdepthMap"
 
 #define SEL_TARGET   "objectSelect"
-#define OUT_TARGET   "outLine"
-
-#define OUTLINE      "Outline"
 
 namespace {
     const char *gridColor("General/Colors/Grid_Color");
-    const char *outlineWidth("General/Colors/Outline_Width");
-    const char *outlineColor("General/Colors/Outline_Color");
-};
-
-class Outline : public RenderPass {
-public:
-    Outline() :
-        m_width(1.0f) {
-
-        m_resultTexture = Engine::objectCreate<Texture>();
-        m_resultTexture->setFormat(Texture::RGBA8);
-
-        m_resultTarget->setColorAttachment(0, m_resultTexture);
-
-        m_outlineDepth = Engine::objectCreate<Texture>();
-        m_outlineDepth->setFormat(Texture::Depth);
-        m_outlineDepth->setDepthBits(24);
-
-        m_outlineMap = Engine::objectCreate<Texture>();
-        m_outlineMap->setFormat(Texture::RGBA8);
-
-        m_outlineTarget = Engine::objectCreate<RenderTarget>();
-        m_outlineTarget->setColorAttachment(0, m_outlineMap);
-        m_outlineTarget->setDepthAttachment(m_outlineDepth);
-
-        Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
-        if(material) {
-            m_material = material->createInstance();
-            m_material->setTexture("outlineMap", m_outlineMap);
-        }
-
-        SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
-        SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
-    }
-
-    Texture *draw(Texture *source, PipelineContext *context) override {
-        if(m_enabled && m_material) {
-            m_material->setTexture("rgbMap", source);
-
-            CommandBuffer *buffer = context->buffer();
-
-            buffer->resetViewProjection();
-            buffer->setRenderTarget(m_outlineTarget);
-            buffer->clearRenderTarget();
-            RenderList filter;
-            for(auto actor : m_controller->selected()) {
-                for(auto it : context->culledComponents()) {
-                    Renderable *component = dynamic_cast<Renderable *>(it);
-                    if(component && component->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
-                        filter.push_back(component);
-                    }
-                }
-            }
-            context->drawRenderers(CommandBuffer::RAYCAST, filter);
-
-            buffer->setScreenProjection();
-
-            buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
-
-            return m_resultTexture;
-        }
-
-        return source;
-    }
-
-    void resize(int32_t width, int32_t height) override {
-        m_outlineMap->setWidth(width);
-        m_outlineMap->setHeight(height);
-
-        m_outlineDepth->setWidth(width);
-        m_outlineDepth->setHeight(height);
-
-        RenderPass::resize(width, height);
-    }
-
-    const char *name() const override {
-        return "Outline";
-    }
-
-    void loadSettings() {
-        QColor color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
-        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
-
-        if(m_material) {
-            m_material->setFloat("uni.width", &m_width);
-            m_material->setVector4("uni.color", &m_color);
-        }
-    }
-
-    void setController(CameraCtrl *controller) {
-        m_controller = controller;
-    }
-
-protected:
-    float m_width;
-
-    Vector4 m_color;
-
-    Texture *m_outlineMap;
-    Texture *m_outlineDepth;
-
-    RenderTarget *m_outlineTarget;
-
-    CameraCtrl *m_controller;
-
 };
 
 EditorPipeline::EditorPipeline() :
         m_controller(nullptr),
-        m_outline(new Outline()),
         m_grid(nullptr) {
 
     {
@@ -155,13 +42,10 @@ EditorPipeline::EditorPipeline() :
         m_buffer->setGlobalTexture(SELECT_MAP, select);
     }
 
-
     RenderTarget *object = Engine::objectCreate<RenderTarget>(SEL_TARGET);
     object->setColorAttachment(0, m_textureBuffers[SELECT_MAP]);
     object->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[SEL_TARGET] = object;
-
-    m_postEffects.push_back(m_outline);
 
     Handles::init();
 
@@ -176,15 +60,12 @@ EditorPipeline::EditorPipeline() :
 }
 
 void EditorPipeline::onApplySettings() {
-    m_outline->loadSettings();
-
     QColor color = SettingsManager::instance()->property(gridColor).value<QColor>();
     m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 }
 
 void EditorPipeline::setController(CameraCtrl *ctrl) {
     m_controller = ctrl;
-    m_outline->setController(m_controller);
 }
 
 void EditorPipeline::setDragObjects(const ObjectList &list) {
@@ -239,7 +120,7 @@ void EditorPipeline::drawUi(Camera &camera) {
     cameraReset(camera);
     drawRenderers(CommandBuffer::UI, m_uiComponents);
 
-    postProcess(m_renderTargets["lightPass"], CommandBuffer::UI);
+    renderPass(m_renderTargets["lightPass"], CommandBuffer::UI);
 }
 
 void EditorPipeline::drawGrid(Camera &camera) {

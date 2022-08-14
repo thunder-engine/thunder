@@ -118,7 +118,7 @@ PipelineContext::PipelineContext() :
     light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[LIGHPASS] = light;
 
-    m_postEffects = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
+    m_renderPasses = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
 }
 
 PipelineContext::~PipelineContext() {
@@ -138,20 +138,20 @@ void PipelineContext::draw(Camera &camera) {
     drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
 
     // Step 2.1 - Light pass
     m_buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
     drawRenderers(CommandBuffer::LIGHT, m_sceneLights);
 
     // Step 2.2 - Light pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
 
     // Step 3.1 - Transparent pass
     drawRenderers(CommandBuffer::TRANSLUCENT, m_culledComponents);
 
     // Step 3.2 - Transparent pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
     m_final = m_textureBuffers[G_EMISSIVE];
 }
 
@@ -161,7 +161,7 @@ void PipelineContext::drawUi(Camera &camera) {
     m_buffer->setScreenProjection(0, 0, m_width, m_height);
     drawRenderers(CommandBuffer::UI, m_uiComponents);
 
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::UI);
 }
 
 void PipelineContext::finish() {
@@ -234,7 +234,7 @@ void PipelineContext::resize(int32_t width, int32_t height) {
                 it.second->resize(width, height);
             }
         }
-        for(auto &it : m_postEffects) {
+        for(auto &it : m_renderPasses) {
             it->resize(width, height);
         }
 
@@ -273,7 +273,7 @@ void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
     }
 
     m_buffer->setGlobalValue("light.ambient", 0.1f/*settings.ambientLightIntensity()*/);
-    for(auto &it : m_postEffects) {
+    for(auto &it : m_renderPasses) {
         it->setSettings(settings);
     }
 }
@@ -378,8 +378,12 @@ CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
 }
 
-const list<RenderPass *> &PipelineContext::postEffects() const {
-    return m_postEffects;
+void PipelineContext::addRenderPass(RenderPass *pass) {
+    m_renderPasses.push_back(pass);
+}
+
+const list<RenderPass *> &PipelineContext::renderPasses() const {
+    return m_renderPasses;
 }
 
 list<string> PipelineContext::renderTextures() const {
@@ -439,10 +443,10 @@ void PipelineContext::updateShadows(Camera &camera) {
     }
 }
 
-void PipelineContext::postProcess(RenderTarget *source, uint32_t layer) {
+void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
     m_buffer->setScreenProjection();
     Texture *result = source->colorAttachment(0);
-    for(auto it : m_postEffects) {
+    for(auto it : m_renderPasses) {
         if(it->layer() == layer) {
             result = it->draw(result, this);
         }

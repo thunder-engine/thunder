@@ -62,7 +62,8 @@ public:
 
     CommandBuffer *buffer() const;
 
-    const list<RenderPass *> &postEffects() const;
+    void addRenderPass(RenderPass *pass);
+    const list<RenderPass *> &renderPasses() const;
 
     list<string> renderTextures() const;
 
@@ -71,7 +72,7 @@ public:
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 protected:
-    void postProcess(RenderTarget *source, uint32_t layer);
+    void renderPass(RenderTarget *source, uint32_t layer);
 
     void sortRenderables(list<Renderable *> &in, const Vector3 &origin);
 
@@ -94,7 +95,7 @@ protected:
     BuffersMap m_textureBuffers;
     TargetsMap m_renderTargets;
 
-    list<RenderPass *> m_postEffects;
+    list<RenderPass *> m_renderPasses;
 
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;

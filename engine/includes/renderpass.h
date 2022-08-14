@@ -10,8 +10,6 @@ class Texture;
 class RenderTarget;
 class MaterialInstance;
 
-class Blur;
-
 class PipelineContext;
 
 class PostProcessSettings;
