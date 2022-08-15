@@ -51,9 +51,6 @@ TextureEdit::TextureEdit() :
 
     Actor *object = Engine::composeActor("SpriteRender", "Sprite", m_graph);
     m_render = static_cast<SpriteRender *>(object->component("SpriteRender"));
-    if(m_render) {
-        m_render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.mtl"));
-    }
 
     setAcceptDrops(true);
     setMouseTracking(true);

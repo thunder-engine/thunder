@@ -69,7 +69,6 @@ public:
 
             CommandBuffer *buffer = context->buffer();
 
-            buffer->resetViewProjection();
             buffer->setRenderTarget(m_outlineTarget);
             buffer->clearRenderTarget();
             RenderList filter;
@@ -82,8 +81,6 @@ public:
                 }
             }
             context->drawRenderers(CommandBuffer::RAYCAST, filter);
-
-            buffer->setScreenProjection();
 
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
@@ -166,7 +163,6 @@ private:
         if(context->debugTexture() == nullptr) {
             // Draw handles
             CommandBuffer *buffer = context->buffer();
-            buffer->resetViewProjection();
             drawGrid(*Camera::current(), buffer);
 
             Handles::beginDraw(buffer);
@@ -174,7 +170,6 @@ private:
                 m_controller->drawHandles();
             }
             Handles::endDraw();
-            buffer->setScreenProjection();
         }
         return source;
     }

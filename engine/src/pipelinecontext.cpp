@@ -61,7 +61,7 @@ PipelineContext::PipelineContext() :
         m_height(64),
         m_uiAsSceneView(false) {
 
-    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_effectMaterial = mtl->createInstance();
@@ -134,6 +134,7 @@ void PipelineContext::drawMain(Camera &camera) {
     updateShadows(camera);
 
     m_buffer->setViewport(0, 0, m_width, m_height);
+    cameraReset(camera);
 
     renderPass(m_renderTargets[LIGHPASS], CommandBuffer::RAYCAST);
 
@@ -141,7 +142,6 @@ void PipelineContext::drawMain(Camera &camera) {
     m_buffer->setRenderTarget(m_renderTargets[GBUFFER]);
     m_buffer->clearRenderTarget(true, camera.color());
 
-    cameraReset(camera);
     drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
@@ -163,9 +163,7 @@ void PipelineContext::drawMain(Camera &camera) {
 }
 
 void PipelineContext::drawUi(Camera &camera) {
-    if(m_uiAsSceneView) {
-        cameraReset(camera);
-    } else {
+    if(!m_uiAsSceneView) {
         m_buffer->setScreenProjection(0, 0, m_width, m_height);
     }
     drawRenderers(CommandBuffer::UI, m_uiComponents);
@@ -178,7 +176,6 @@ void PipelineContext::finish() {
         m_final = m_debugTexture;
     }
 
-    m_buffer->setScreenProjection();
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
 
@@ -440,7 +437,6 @@ void PipelineContext::updateShadows(Camera &camera) {
 }
 
 void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
-    m_buffer->setScreenProjection();
     Texture *result = source->colorAttachment(0);
     for(auto it : m_renderPasses) {
         if(it->layer() == layer) {
@@ -454,8 +450,6 @@ void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
         m_effectMaterial->setTexture(OVERRIDE, result);
         m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_effectMaterial);
     }
-
-    m_buffer->resetViewProjection();
 }
 
 void PipelineContext::combineComponents(Object *object, bool update) {

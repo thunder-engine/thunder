@@ -127,39 +127,43 @@ Vertex billboard(vec3 v, vec3 t, vec3 n, vec4 posRot, vec4 sizeDist) {
 #endif
 
 void main(void) {
-#ifdef INSTANCING
-    mat4 model = instanceMatrix;
+#ifdef TYPE_FULLSCREEN
+    _vertex = vec4(vertex * 2.0, 1.0);
 #else
-    mat4 model = l.model;
-#endif
-    mat4 mv = g.view * model;
-    mat3 rot = mat3(model);
+    #ifdef INSTANCING
+        mat4 model = instanceMatrix;
+    #else
+        mat4 model = l.model;
+    #endif
+        mat4 mv = g.view * model;
+        mat3 rot = mat3(model);
 
-    vec3 camera = vec3(g.view[0].w,
-                       g.view[1].w,
-                       g.view[2].w);
+        vec3 camera = vec3(g.view[0].w,
+                           g.view[1].w,
+                           g.view[2].w);
 
-#pragma vertex
+    #pragma vertex
 
-#ifdef TYPE_STATIC
-    Vertex vert = staticMesh(vertex, tangent, normal, rot);
-    vert.v += WorldPositionOffset;
-    _vertex = g.projection * (mv * vec4(vert.v, 1.0));
-    _view = normalize((model * vec4(vert.v, 1.0)).xyz - g.cameraPosition.xyz);
-#endif
+    #ifdef TYPE_STATIC
+        Vertex vert = staticMesh(vertex, tangent, normal, rot);
+        vert.v += WorldPositionOffset;
+        _vertex = g.projection * (mv * vec4(vert.v, 1.0));
+        _view = normalize((model * vec4(vert.v, 1.0)).xyz - g.cameraPosition.xyz);
+    #endif
 
-#ifdef TYPE_BILLBOARD
-    Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist );
-    vert.v += WorldPositionOffset;
-    _vertex = g.projection * (mv * vec4(vert.v, 1.0));
-    _view = normalize((model * vec4(vert.v, 1.0)).xyz - camera);
-#endif
+    #ifdef TYPE_BILLBOARD
+        Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist );
+        vert.v += WorldPositionOffset;
+        _vertex = g.projection * (mv * vec4(vert.v, 1.0));
+        _view = normalize((model * vec4(vert.v, 1.0)).xyz - camera);
+    #endif
 
-#ifdef TYPE_SKINNED
-    Vertex vert = skinnedMesh(vertex, tangent, normal, bones, weights);
-    vert.v += WorldPositionOffset;
-    _vertex = g.projection * (g.view * vec4(vert.v, 1.0));
-    _view = normalize(vert.v - g.cameraPosition.xyz);
+    #ifdef TYPE_SKINNED
+        Vertex vert = skinnedMesh(vertex, tangent, normal, bones, weights);
+        vert.v += WorldPositionOffset;
+        _vertex = g.projection * (g.view * vec4(vert.v, 1.0));
+        _view = normalize(vert.v - g.cameraPosition.xyz);
+    #endif
 #endif
 
     gl_Position = _vertex;

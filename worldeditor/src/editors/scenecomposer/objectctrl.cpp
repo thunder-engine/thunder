@@ -83,7 +83,6 @@ public:
         buffer->setRenderTarget(m_resultTarget);
         buffer->clearRenderTarget();
 
-        context->cameraReset(*Camera::current());
         for(auto it : context->culledComponents()) {
             if(it->actor()->hideFlags() & Actor::SELECTABLE) {
                 it->draw(*buffer, CommandBuffer::RAYCAST);
