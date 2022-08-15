@@ -302,30 +302,32 @@ void Viewport::setController(CameraCtrl *ctrl) {
 }
 
 void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
-    m_sceneGraph = sceneGraph;
+    if(m_sceneGraph != sceneGraph) {
+        m_sceneGraph = sceneGraph;
 
-    //RenderSystem *render = PluginManager::instance()->render();
-    //m_pipelineContext = render->pipelineContext(m_sceneGraph);
+        //RenderSystem *render = PluginManager::instance()->render();
+        //m_pipelineContext = render->pipelineContext(m_sceneGraph);
 
-    Camera *camera = m_controller->camera();
-    if(camera) {
-        m_outlinePass = new Outline;
-        m_outlinePass->setController(m_controller);
-        m_outlinePass->loadSettings();
+        Camera *camera = m_controller->camera();
+        if(camera) {
+            m_outlinePass = new Outline;
+            m_outlinePass->setController(m_controller);
+            m_outlinePass->loadSettings();
 
-        m_gizmoRender = new GizmoRender;
-        m_gizmoRender->setController(m_controller);
-        m_gizmoRender->loadSettings();
+            m_gizmoRender = new GizmoRender;
+            m_gizmoRender->setController(m_controller);
+            m_gizmoRender->loadSettings();
 
-        m_pipelineContext = camera->pipeline();
-        m_pipelineContext->addRenderPass(m_outlinePass);
-        m_pipelineContext->addRenderPass(m_gizmoRender);
-        m_pipelineContext->showUiAsSceneView();
-        for(auto it : m_pipelineContext->renderPasses()) {
-            SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
+            m_pipelineContext = camera->pipeline();
+            m_pipelineContext->addRenderPass(m_outlinePass);
+            m_pipelineContext->addRenderPass(m_gizmoRender);
+            m_pipelineContext->showUiAsSceneView();
+            for(auto it : m_pipelineContext->renderPasses()) {
+                SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
+            }
+
+            Handles::init();
         }
-
-        Handles::init();
     }
 }
 

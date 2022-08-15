@@ -34,11 +34,11 @@ TextureEdit::TextureEdit() :
     ui->setupUi(this);
 
     m_controller = new SpriteController(this);
+    m_controller->frontSide();
     m_controller->blockRotations(true);
 
     ui->viewport->init();
     ui->viewport->setController(m_controller);
-    ui->viewport->setSceneGraph(m_graph);
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
@@ -71,6 +71,8 @@ bool TextureEdit::isModified() const {
 }
 
 void TextureEdit::loadAsset(AssetConverterSettings *settings) {
+    ui->viewport->setSceneGraph(m_graph);
+
     if(!m_settings.isEmpty()) {
         disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }
