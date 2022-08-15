@@ -103,12 +103,6 @@ PipelineContext *Camera::pipeline() {
     return p_ptr->m_pipeline;
 }
 /*!
-    Attaches render \a pipeline to the camera.
-*/
-void Camera::setPipeline(PipelineContext *pipeline) {
-    p_ptr->m_pipeline = pipeline;
-}
-/*!
     Returns view matrix for the camera.
 */
 Matrix4 Camera::viewMatrix() const {
