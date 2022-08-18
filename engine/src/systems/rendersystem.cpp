@@ -26,11 +26,13 @@ class RenderSystemPrivate {
 public:
     RenderSystemPrivate() :
         m_offscreen(false),
-        m_pipelineContext(new PipelineContext) {
+        m_pipelineContext(nullptr) {
 
     }
     static int32_t m_AtlasPageWidth;
     static int32_t m_AtlasPageHeight;
+
+    static int32_t m_registered;
 
     bool m_offscreen;
 
@@ -40,48 +42,57 @@ public:
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
 int32_t RenderSystemPrivate::m_AtlasPageHeight = 1024;
 
+int32_t RenderSystemPrivate::m_registered = 0;
+
 RenderSystem::RenderSystem() :
         p_ptr(new RenderSystemPrivate()) {
 
-    Renderable::registerClassFactory(this);
-    MeshRender::registerClassFactory(this);
-    TextRender::registerClassFactory(this);
-    SpriteRender::registerClassFactory(this);
-    SkinnedMeshRender::registerClassFactory(this);
+    if(RenderSystemPrivate::m_registered == 0) {
+        Renderable::registerClassFactory(this);
+        MeshRender::registerClassFactory(this);
+        TextRender::registerClassFactory(this);
+        SpriteRender::registerClassFactory(this);
+        SkinnedMeshRender::registerClassFactory(this);
 
-    BaseLight::registerClassFactory(this);
-    DirectLight::registerClassFactory(this);
-    PointLight::registerClassFactory(this);
-    SpotLight::registerClassFactory(this);
-    AreaLight::registerClassFactory(this);
+        BaseLight::registerClassFactory(this);
+        DirectLight::registerClassFactory(this);
+        PointLight::registerClassFactory(this);
+        SpotLight::registerClassFactory(this);
+        AreaLight::registerClassFactory(this);
 
-    ParticleRender::registerClassFactory(this);
+        ParticleRender::registerClassFactory(this);
 
-    CommandBuffer::registerClassFactory(this);
+        CommandBuffer::registerClassFactory(this);
 
-    PostProcessVolume::registerClassFactory(this);
+        PostProcessVolume::registerClassFactory(this);
 
-    PipelineContext::registerClassFactory(this);
+        PipelineContext::registerClassFactory(this);
+    }
+    ++RenderSystemPrivate::m_registered;
 }
 
 RenderSystem::~RenderSystem() {
-    Renderable::unregisterClassFactory(this);
-    MeshRender::unregisterClassFactory(this);
-    TextRender::unregisterClassFactory(this);
-    SpriteRender::unregisterClassFactory(this);
-    SkinnedMeshRender::unregisterClassFactory(this);
+    --RenderSystemPrivate::m_registered;
 
-    BaseLight::unregisterClassFactory(this);
-    DirectLight::unregisterClassFactory(this);
-    PointLight::unregisterClassFactory(this);
-    SpotLight::unregisterClassFactory(this);
-    AreaLight::unregisterClassFactory(this);
+    if(RenderSystemPrivate::m_registered) {
+        Renderable::unregisterClassFactory(this);
+        MeshRender::unregisterClassFactory(this);
+        TextRender::unregisterClassFactory(this);
+        SpriteRender::unregisterClassFactory(this);
+        SkinnedMeshRender::unregisterClassFactory(this);
 
-    ParticleRender::unregisterClassFactory(this);
+        BaseLight::unregisterClassFactory(this);
+        DirectLight::unregisterClassFactory(this);
+        PointLight::unregisterClassFactory(this);
+        SpotLight::unregisterClassFactory(this);
+        AreaLight::unregisterClassFactory(this);
 
-    CommandBuffer::unregisterClassFactory(this);
+        ParticleRender::unregisterClassFactory(this);
 
-    PostProcessVolume::unregisterClassFactory(this);
+        CommandBuffer::unregisterClassFactory(this);
+
+        PostProcessVolume::unregisterClassFactory(this);
+    }
 }
 
 int RenderSystem::threadPolicy() const {
@@ -93,6 +104,7 @@ const char *RenderSystem::name() const {
 }
 
 bool RenderSystem::init() {
+    p_ptr->m_pipelineContext = new PipelineContext;
     return true;
 }
 
@@ -103,12 +115,11 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
     PROFILER_RESET(DRAWCALLS);
 
     Camera *camera = Camera::current();
-    if(camera) {
-        PipelineContext *pipe = camera->pipeline();
-        pipe->analizeScene(sceneGraph, this);
-        pipe->drawMain(*camera);
-        pipe->drawUi(*camera);
-        pipe->finish();
+    if(camera && p_ptr->m_pipelineContext) {
+        p_ptr->m_pipelineContext->analizeScene(sceneGraph, this);
+        p_ptr->m_pipelineContext->drawMain(*camera);
+        p_ptr->m_pipelineContext->drawUi(*camera);
+        p_ptr->m_pipelineContext->finish();
     }
 }
 
@@ -168,17 +179,14 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
         target->setColorAttachment(0, color);
         target->setDepthAttachment(depth);
     }
-
-    PipelineContext *pipeline = nullptr;
     RenderTarget *back = nullptr;
 
     Camera *camera = Camera::current();
-    if(camera) {
-        pipeline = camera->pipeline();
-        pipeline->resize(width, height);
+    if(camera && p_ptr->m_pipelineContext) {
+        p_ptr->m_pipelineContext->resize(width, height);
 
-        back = pipeline->defaultTarget();
-        pipeline->setDefaultTarget(target);
+        back = p_ptr->m_pipelineContext->defaultTarget();
+        p_ptr->m_pipelineContext->setDefaultTarget(target);
     }
 
     setOffscreenMode(true);
@@ -187,8 +195,8 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
 
     color->readPixels(0, 0, width, height);
 
-    if(pipeline && back) {
-        pipeline->setDefaultTarget(back);
+    if(p_ptr->m_pipelineContext && back) {
+        p_ptr->m_pipelineContext->setDefaultTarget(back);
     }
 
     return color->getPixels(0);

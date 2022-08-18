@@ -27,6 +27,8 @@ public:
 
     void createMenu(QMenu *menu);
 
+    PipelineContext *pipelineContext() const;
+
 public slots:
     void onCursorSet(const QCursor &cursor);
     void onCursorUnset();
@@ -56,8 +58,6 @@ private:
     CameraCtrl *m_controller;
 
     SceneGraph *m_sceneGraph;
-
-    PipelineContext *m_pipelineContext;
 
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;

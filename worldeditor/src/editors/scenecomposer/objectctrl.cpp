@@ -200,11 +200,11 @@ ObjectCtrl::~ObjectCtrl() {
 
 }
 
-void ObjectCtrl::init() {
+void ObjectCtrl::init(Viewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
-    PipelineContext *pipeline = m_activeCamera->pipeline();
+    PipelineContext *pipeline = viewport->pipelineContext();
     pipeline->addRenderPass(m_rayCast);
 }
 

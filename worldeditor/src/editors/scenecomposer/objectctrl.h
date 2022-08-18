@@ -32,7 +32,7 @@ public:
     ObjectCtrl(Viewport *view);
     ~ObjectCtrl();
 
-    void init();
+    void init(Viewport *viewport);
 
     void clear(bool signal = true);
 

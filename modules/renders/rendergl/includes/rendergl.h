@@ -13,9 +13,6 @@ public:
 
     void *getObject(const char *name) override;
 
-protected:
-    System *m_pSystem;
-
 };
 #ifdef SHARED_DEFINE
 extern "C" {

@@ -94,15 +94,6 @@ Camera::~Camera() {
     p_ptr = nullptr;
 }
 /*!
-    Returns render pipline which attached to the camera.
-*/
-PipelineContext *Camera::pipeline() {
-    if(p_ptr->m_pipeline == nullptr) {
-        p_ptr->m_pipeline = Engine::objectCreate<PipelineContext>("Pipeline");
-    }
-    return p_ptr->m_pipeline;
-}
-/*!
     Returns view matrix for the camera.
 */
 Matrix4 Camera::viewMatrix() const {

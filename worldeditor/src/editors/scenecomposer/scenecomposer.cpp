@@ -184,8 +184,8 @@ SceneComposer::~SceneComposer() {
 }
 
 void SceneComposer::init() {
-    m_controller->init();
     ui->viewport->init();
+    m_controller->init(ui->viewport);
     ui->viewport->setSceneGraph(Engine::sceneGraph());
     ui->viewport->createMenu(ui->renderMode->menu());
 

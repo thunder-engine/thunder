@@ -36,8 +36,6 @@ public:
     Camera();
     ~Camera();
 
-    PipelineContext *pipeline();
-
     Matrix4 viewMatrix() const;
     Matrix4 projectionMatrix() const;
 

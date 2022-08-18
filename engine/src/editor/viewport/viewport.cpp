@@ -259,7 +259,6 @@ Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
         m_sceneGraph(nullptr),
-        m_pipelineContext(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
         m_renderSystem(PluginManager::instance()->createRenderer()),
@@ -299,9 +298,6 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
     if(m_sceneGraph != sceneGraph) {
         m_sceneGraph = sceneGraph;
 
-        //RenderSystem *render = PluginManager::instance()->render();
-        //m_pipelineContext = render->pipelineContext(m_sceneGraph);
-
         Camera *camera = m_controller->camera();
         if(camera) {
             m_outlinePass = new Outline;
@@ -312,11 +308,11 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
             m_gizmoRender->setController(m_controller);
             m_gizmoRender->loadSettings();
 
-            m_pipelineContext = camera->pipeline();
-            m_pipelineContext->addRenderPass(m_outlinePass);
-            m_pipelineContext->addRenderPass(m_gizmoRender);
-            m_pipelineContext->showUiAsSceneView();
-            for(auto it : m_pipelineContext->renderPasses()) {
+            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+            pipelineContext->addRenderPass(m_outlinePass);
+            pipelineContext->addRenderPass(m_gizmoRender);
+            pipelineContext->showUiAsSceneView();
+            for(auto it : pipelineContext->renderPasses()) {
                 SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
             }
 
@@ -338,8 +334,9 @@ void Viewport::onCursorUnset() {
 }
 
 void Viewport::onApplySettings() {
-    if(m_pipelineContext) {
-        for(auto it : m_pipelineContext->renderPasses()) {
+    PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+    if(pipelineContext) {
+        for(auto it : pipelineContext->renderPasses()) {
             it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
         }
     }
@@ -356,7 +353,7 @@ void Viewport::onDraw() {
         m_controller->update();
         m_controller->resize(width(), height());
 
-        m_pipelineContext->resize(width(), height());
+        m_renderSystem->pipelineContext()->resize(width(), height());
 
         Camera::setCurrent(m_controller->camera());
     }
@@ -380,11 +377,15 @@ void Viewport::createMenu(QMenu *menu) {
     QObject::connect(m_bufferMenu, &QMenu::aboutToShow, this, &Viewport::onBufferMenu);
 }
 
+PipelineContext *Viewport::pipelineContext() const {
+    return m_renderSystem->pipelineContext();
+}
+
 void Viewport::onBufferMenu() {
     if(m_bufferMenu) {
         m_bufferMenu->clear();
 
-        list<string> list = m_pipelineContext->renderTextures();
+        list<string> list = m_renderSystem->pipelineContext()->renderTextures();
         list.push_front("Final Buffer");
 
         bool first = true;
@@ -412,7 +413,7 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
     if(menu) {
         menu->clear();
 
-        for(auto &it : m_pipelineContext->renderPasses()) {
+        for(auto &it : m_renderSystem->pipelineContext()->renderPasses()) {
             if(it->layer() & layers) {
                 static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
                 static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
@@ -439,14 +440,14 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
 void Viewport::onBufferChanged() {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        m_pipelineContext->setDebugTexture(action->data().toString().toStdString());
+        m_renderSystem->pipelineContext()->setDebugTexture(action->data().toString().toStdString());
     }
 }
 
 void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        for(auto &it : m_pipelineContext->renderPasses()) {
+        for(auto &it : m_renderSystem->pipelineContext()->renderPasses()) {
             if(action->data().toString() == it->name()) {
                 it->setEnabled(checked);
                 SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name()), checked);

@@ -21,7 +21,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 6
+#define FORMAT_VERSION 7
 
 namespace  {
     const char *gValue("value");

@@ -193,6 +193,10 @@ void SceneView::setGamePause(bool pause) {
 
 void SceneView::onDraw() {
     if(m_engine && !m_gamePause) {
+        RenderSystem *system = m_engine->renderSystem();
+        if(system && system->pipelineContext() == nullptr) {
+            system->init();
+        }
         m_engine->update();
     }
 }

@@ -334,9 +334,13 @@ bool Engine::start() {
 void Engine::resize() {
     PROFILE_FUNCTION();
 
+    PipelineContext *pipeline = EnginePrivate::m_renderSystem->pipelineContext();
+    if(pipeline) {
+        pipeline->resize(p_ptr->m_platform->screenWidth(), p_ptr->m_platform->screenHeight());
+    }
+
     Camera *component = Camera::current();
     if(component) {
-        component->pipeline()->resize(p_ptr->m_platform->screenWidth(), p_ptr->m_platform->screenHeight());
         component->setRatio(float(p_ptr->m_platform->screenWidth()) / float(p_ptr->m_platform->screenHeight()));
     }
 }

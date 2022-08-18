@@ -43,14 +43,19 @@ RenderGLSystem::RenderGLSystem(Engine *engine) :
 
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
+    static bool registered = false;
+    if(!registered) {
+        System *system = m_pEngine->resourceSystem();
 
-    TextureGL::registerClassFactory(system);
-    RenderTargetGL::registerClassFactory(system);
-    MaterialGL::registerClassFactory(system);
-    MeshGL::registerClassFactory(system);
+        TextureGL::registerClassFactory(system);
+        RenderTargetGL::registerClassFactory(system);
+        MaterialGL::registerClassFactory(system);
+        MeshGL::registerClassFactory(system);
 
-    CommandBufferGL::registerClassFactory(m_pEngine);
+        CommandBufferGL::registerClassFactory(m_pEngine);
+
+        registered = true;
+    }
 }
 
 RenderGLSystem::~RenderGLSystem() {
@@ -101,7 +106,7 @@ bool RenderGLSystem::init() {
 
     CommandBufferGL::setInited();
 
-    return true;
+    return RenderSystem::init();
 }
 /*!
     Main drawing procedure.
@@ -109,9 +114,8 @@ bool RenderGLSystem::init() {
 void RenderGLSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
-    Camera *camera = Camera::current();
-    if(camera && CommandBufferGL::isInited()) {
-        PipelineContext *context = camera->pipeline();
+    PipelineContext *context = pipelineContext();
+    if(context && CommandBufferGL::isInited()) {
         CommandBufferGL *cmd = static_cast<CommandBufferGL *>(context->buffer());
         cmd->begin();
 
