@@ -133,7 +133,6 @@ PipelineContext *RenderSystem::pipelineContext(SceneGraph *sceneGraph) {
     auto it = p_ptr->m_pipelineContext.find(sceneGraph);
     if(it == p_ptr->m_pipelineContext.end()) {
         context = new PipelineContext;
-        //context->setSceneGraph(sceneGraph);
     } else {
         context = it->second;
     }
@@ -177,14 +176,16 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
         target->setDepthAttachment(depth);
     }
 
+    PipelineContext *pipeline = nullptr;
     RenderTarget *back = nullptr;
+
     Camera *camera = Camera::current();
     if(camera) {
-        PipelineContext *pipe = camera->pipeline();
-        pipe->resize(width, height);
+        pipeline = camera->pipeline();
+        pipeline->resize(width, height);
 
-        back = pipe->defaultTarget();
-        pipe->setDefaultTarget(target);
+        back = pipeline->defaultTarget();
+        pipeline->setDefaultTarget(target);
     }
 
     setOffscreenMode(true);
@@ -193,9 +194,8 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
 
     color->readPixels(0, 0, width, height);
 
-    if(back) {
-        PipelineContext *pipe = camera->pipeline();
-        pipe->setDefaultTarget(back);
+    if(pipeline && back) {
+        pipeline->setDefaultTarget(back);
     }
 
     return color->getPixels(0);

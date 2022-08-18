@@ -339,13 +339,9 @@ void Viewport::onCursorUnset() {
 }
 
 void Viewport::onApplySettings() {
-    if(m_controller) {
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            PipelineContext *pipe = camera->pipeline();
-            for(auto it : pipe->renderPasses()) {
-                it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
-            }
+    if(m_pipelineContext) {
+        for(auto it : m_pipelineContext->renderPasses()) {
+            it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
         }
     }
     if(m_outlinePass) {
@@ -361,12 +357,9 @@ void Viewport::onDraw() {
         m_controller->update();
         m_controller->resize(width(), height());
 
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            PipelineContext *pipe = camera->pipeline();
-            pipe->resize(width(), height());
-        }
-        Camera::setCurrent(camera);
+        m_pipelineContext->resize(width(), height());
+
+        Camera::setCurrent(m_controller->camera());
     }
     if(m_sceneGraph) {
         Engine::resourceSystem()->processEvents();
@@ -394,15 +387,7 @@ void Viewport::onBufferMenu() {
     if(m_bufferMenu) {
         m_bufferMenu->clear();
 
-        PipelineContext *pipe = nullptr;
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            pipe = camera->pipeline();
-        } else {
-            return;
-        }
-
-        list<string> list = pipe->renderTextures();
+        list<string> list = m_pipelineContext->renderTextures();
         list.push_front("Final Buffer");
 
         bool first = true;
@@ -430,15 +415,7 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
     if(menu) {
         menu->clear();
 
-        PipelineContext *pipe = nullptr;
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            pipe = camera->pipeline();
-        } else {
-            return;
-        }
-
-        for(auto &it : pipe->renderPasses()) {
+        for(auto &it : m_pipelineContext->renderPasses()) {
             if(it->layer() & layers) {
                 static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
                 static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
@@ -465,30 +442,14 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
 void Viewport::onBufferChanged() {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        PipelineContext *pipe = nullptr;
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            pipe = camera->pipeline();
-        } else {
-            return;
-        }
-
-        pipe->setDebugTexture(action->data().toString().toStdString());
+        m_pipelineContext->setDebugTexture(action->data().toString().toStdString());
     }
 }
 
 void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        PipelineContext *pipe = nullptr;
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            pipe = camera->pipeline();
-        } else {
-            return;
-        }
-
-        for(auto &it : pipe->renderPasses()) {
+        for(auto &it : m_pipelineContext->renderPasses()) {
             if(action->data().toString() == it->name()) {
                 it->setEnabled(checked);
                 SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name()), checked);

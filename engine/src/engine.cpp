@@ -146,6 +146,7 @@ string           EnginePrivate::m_application;
 PlatformAdaptor *EnginePrivate::m_platform = nullptr;
 SceneGraph      *EnginePrivate::m_sceneGraph = nullptr;
 ResourceSystem  *EnginePrivate::m_resourceSystem = nullptr;
+RenderSystem    *EnginePrivate::m_renderSystem = nullptr;
 Translator      *EnginePrivate::m_translator = nullptr;
 Engine          *EnginePrivate::m_instance = nullptr;
 
