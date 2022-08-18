@@ -64,7 +64,11 @@ const QImage IconRender::render(const QString &resource, const QString &) {
     }
 
     Camera::setCurrent(m_camera);
-    RenderSystem *render = PluginManager::instance()->render();
+    static RenderSystem *render = nullptr;
+    if(render == nullptr) {
+        render = PluginManager::instance()->createRenderer();
+        render->init();
+    }
     ByteArray data = render->renderOffscreen(m_scene, 128, 128);
 
     delete object;

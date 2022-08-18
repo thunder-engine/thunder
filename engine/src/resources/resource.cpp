@@ -55,7 +55,7 @@ Resource::Resource() :
 }
 
 Resource::~Resource() {
-    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
+    ResourceSystem *system = Engine::resourceSystem();
     if(system) {
         system->deleteFromCahe(this);
     }

@@ -25,7 +25,8 @@
 class RenderSystemPrivate {
 public:
     RenderSystemPrivate() :
-        m_offscreen(false) {
+        m_offscreen(false),
+        m_pipelineContext(new PipelineContext) {
 
     }
     static int32_t m_AtlasPageWidth;
@@ -33,7 +34,7 @@ public:
 
     bool m_offscreen;
 
-    map<SceneGraph *, PipelineContext *> m_pipelineContext;
+    PipelineContext *m_pipelineContext;
 };
 
 int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
@@ -128,16 +129,8 @@ void RenderSystem::composeComponent(Component *component) const {
     }
 }
 
-PipelineContext *RenderSystem::pipelineContext(SceneGraph *sceneGraph) {
-    PipelineContext *context = nullptr;
-    auto it = p_ptr->m_pipelineContext.find(sceneGraph);
-    if(it == p_ptr->m_pipelineContext.end()) {
-        context = new PipelineContext;
-    } else {
-        context = it->second;
-    }
-
-    return context;
+PipelineContext *RenderSystem::pipelineContext() const {
+    return p_ptr->m_pipelineContext;
 }
 
 void RenderSystem::setOffscreenMode(bool mode) {

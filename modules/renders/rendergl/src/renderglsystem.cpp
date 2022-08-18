@@ -10,6 +10,8 @@
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
 
+#include "systems/resourcesystem.h"
+
 #include <pipelinecontext.h>
 #include "commandbuffergl.h"
 

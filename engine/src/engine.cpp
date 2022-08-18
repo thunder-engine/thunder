@@ -588,8 +588,14 @@ bool Engine::reloadBundle() {
 /*!
     Returns the resource management system which can be used in external modules.
 */
-System *Engine::resourceSystem() {
+ResourceSystem *Engine::resourceSystem() {
     return EnginePrivate::m_resourceSystem;
+}
+/*!
+    Returns the render system which can be used in external modules.
+*/
+RenderSystem *Engine::renderSystem() {
+    return EnginePrivate::m_renderSystem;
 }
 /*!
     Returns true if game started; otherwise returns false.

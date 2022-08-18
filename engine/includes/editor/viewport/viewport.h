@@ -62,6 +62,7 @@ private:
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;
 
+    RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;
 
     QMenu *m_postMenu;

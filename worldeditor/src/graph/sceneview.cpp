@@ -164,17 +164,12 @@ SceneView::SceneView(QWidget *parent) :
 
     connect(m_gamepad, &QGamepad::connectedChanged, this, &SceneView::onGamepadConnected);
 
-    RenderSystem *render = PluginManager::instance()->render();
-    if(render) {
-        m_rhiWindow = render->createRhiWindow();
-        m_rhiWindow->installEventFilter(this);
+    m_rhiWindow = Engine::renderSystem()->createRhiWindow();
+    m_rhiWindow->installEventFilter(this);
 
-        connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
+    connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
 
-        layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
-    } else {
-        qCritical() << "Unable to create rendering surface.";
-    }
+    layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
 
     Engine::setPlatformAdaptor(this);
     Input::init(this);

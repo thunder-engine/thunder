@@ -14,6 +14,8 @@
 #include <components/actor.h>
 #include <components/scene.h>
 
+#include <systems/resourcesystem.h>
+
 #include "components/rigidbody.h"
 #include "components/collider.h"
 #include "components/boxcollider.h"

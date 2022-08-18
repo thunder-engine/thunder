@@ -52,7 +52,7 @@ public:
 
     void rescanPath(const QString &path);
 
-    RenderSystem *render() const;
+    RenderSystem *createRenderer() const;
 
     QStringList plugins() const;
 
@@ -89,8 +89,6 @@ private:
 
 protected:
     bool registerSystem(Module *plugin, const char *name);
-
-    bool registerRender(Module *plugin, const char *name);
 
     void serializeComponents(const QStringList &list, ComponentMap &map);
 
@@ -129,17 +127,19 @@ private:
         Module *module;
     };
 
-    Engine *m_pEngine;
+    Engine *m_engine;
 
-    RenderSystem *m_pRender;
+    Module *m_renderFactory;
 
-    QString m_PluginPath;
+    QString m_pluginPath;
 
-    SystemsMap m_Systems;
+    QString m_renderName;
 
-    QList<SceneGraph *> m_Scenes;
+    SystemsMap m_systems;
 
-    QList<Plugin> m_Plugins;
+    QList<SceneGraph *> m_scenes;
+
+    QList<Plugin> m_plugins;
 };
 
 #endif // PLUGINMANAGER_H

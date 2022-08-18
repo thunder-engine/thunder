@@ -27,7 +27,7 @@ public:
 
     void composeComponent(Component *component) const override;
 
-    PipelineContext *pipelineContext(SceneGraph *sceneGraph);
+    PipelineContext *pipelineContext() const;
 
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow() const;

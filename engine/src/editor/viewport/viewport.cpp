@@ -13,6 +13,7 @@
 #include <renderpass.h>
 
 #include <systems/rendersystem.h>
+#include <systems/resourcesystem.h>
 
 #include <components/actor.h>
 #include <components/camera.h>
@@ -261,7 +262,8 @@ Viewport::Viewport(QWidget *parent) :
         m_pipelineContext(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
-        m_rhiWindow(nullptr),
+        m_renderSystem(PluginManager::instance()->createRenderer()),
+        m_rhiWindow(m_renderSystem->createRhiWindow()),
         m_postMenu(nullptr),
         m_lightMenu(nullptr),
         m_bufferMenu(nullptr) {
@@ -270,12 +272,8 @@ Viewport::Viewport(QWidget *parent) :
     l->setContentsMargins(0, 0, 0, 0);
     setLayout(l);
 
-    RenderSystem *render = PluginManager::instance()->render();
-    if(render) {
-        m_rhiWindow = PluginManager::instance()->render()->createRhiWindow();
-        m_rhiWindow->installEventFilter(this);
-        layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
-    }
+    m_rhiWindow->installEventFilter(this);
+    layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
 
     setAcceptDrops(true);
     setAutoFillBackground(false);
@@ -288,6 +286,7 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::init() {
     if(m_rhiWindow) {
+        m_renderSystem->init();
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
     }
 }
@@ -364,10 +363,8 @@ void Viewport::onDraw() {
     if(m_sceneGraph) {
         Engine::resourceSystem()->processEvents();
 
-        RenderSystem *render = PluginManager::instance()->render();
-        if(render) {
-            render->update(m_sceneGraph);
-        }
+        m_renderSystem->update(m_sceneGraph);
+
         Camera::setCurrent(nullptr);
     }
 }

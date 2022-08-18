@@ -114,7 +114,7 @@ void AssetList::update() {
     }
 
     AssetManager *inst = AssetManager::instance();
-    for(auto &it : static_cast<ResourceSystem *>(m_pEngine->resourceSystem())->indices()) {
+    for(auto &it : m_pEngine->resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
         QString path = inst->guidToPath(it.second.second).c_str();
