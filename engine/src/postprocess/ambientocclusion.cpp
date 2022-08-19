@@ -4,12 +4,12 @@
 
 #include "components/private/postprocessorsettings.h"
 
-#include "resources/pipeline.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
 #include "filters/blur.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 #include "amath.h"
@@ -17,11 +17,11 @@
 #include <cstring>
 
 namespace {
-const char *AMBIENT_OCCLUSION("graphics.ambientocclusion");
+const char *ambientOcclusion("graphics.ambientocclusion");
 
-const char *AMBIENT_RADIUS("ambientOcclusion/Radius");
-const char *AMBIENT_BIAS("ambientOcclusion/Bias");
-const char *AMBIENT_POWER("ambientOcclusion/Power");
+const char *ambientRadius("ambientOcclusion/Radius");
+const char *ambientBias("ambientOcclusion/Bias");
+const char *ambientPower("ambientOcclusion/Power");
 };
 
 AmbientOcclusion::AmbientOcclusion() :
@@ -99,11 +99,11 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
 
-    Engine::setValue(AMBIENT_OCCLUSION, true);
+    Engine::setValue(ambientOcclusion, true);
 
-    PostProcessSettings::registerSetting(AMBIENT_RADIUS, m_radius);
-    PostProcessSettings::registerSetting(AMBIENT_BIAS, m_bias);
-    PostProcessSettings::registerSetting(AMBIENT_POWER, m_power);
+    PostProcessSettings::registerSetting(ambientRadius, m_radius);
+    PostProcessSettings::registerSetting(ambientBias, m_bias);
+    PostProcessSettings::registerSetting(ambientPower, m_power);
 
 }
 
@@ -111,16 +111,16 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_noiseTexture->deleteLater();
 }
 
-Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
+Texture *AmbientOcclusion::draw(Texture *source, PipelineContext *context) {
     if(m_enabled) {
-        CommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = context->buffer();
         if(m_material) {
             buffer->setViewport(0, 0, m_ssaoTexture->width(), m_ssaoTexture->height());
 
             buffer->setRenderTarget(m_ssaoTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
 
-            pipeline->setRenderTexture("SSAOSample", m_ssaoTexture);
+            context->setRenderTexture("SSAOSample", m_ssaoTexture);
         }
 
         if(m_blur) {
@@ -129,7 +129,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setRenderTarget(m_blurTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blur);
 
-            pipeline->setRenderTexture("SSAOBlur", m_resultTexture);
+            context->setRenderTexture("SSAOBlur", m_resultTexture);
         }
 
         if(m_combine) {
@@ -140,7 +140,7 @@ Texture *AmbientOcclusion::draw(Texture *source, Pipeline *pipeline) {
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_combine);
 
-            pipeline->setRenderTexture("SSAOCombine", source);
+            context->setRenderTexture("SSAOCombine", source);
         }
     }
     return source;
@@ -155,9 +155,9 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
 }
 
 void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
-    m_radius = settings.readValue(AMBIENT_RADIUS).toFloat();
-    m_bias = settings.readValue(AMBIENT_BIAS).toFloat();
-    m_power = settings.readValue(AMBIENT_POWER).toFloat();
+    m_radius = settings.readValue(ambientRadius).toFloat();
+    m_bias = settings.readValue(ambientBias).toFloat();
+    m_power = settings.readValue(ambientPower).toFloat();
 
     if(m_material) {
         m_material->setFloat("uni.radius", &m_radius);

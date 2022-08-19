@@ -11,8 +11,15 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
+#include <resources/texture.h>
+#include <resources/rendertarget.h>
+
+#include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
-#include <editor/viewport/editorpipeline.h>
+
+#include <renderpass.h>
+#include <pipelinecontext.h>
+#include <commandbuffer.h>
 
 #include "selecttool.h"
 #include "movetool.h"
@@ -53,12 +60,114 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-ObjectCtrl::ObjectCtrl(QWidget *view) :
+class ViewportRaycast : public RenderPass {
+public:
+    ViewportRaycast() :
+            m_objectId(0),
+            m_controller(nullptr) {
+        m_resultTexture = Engine::objectCreate<Texture>();
+        m_resultTexture->setFormat(Texture::RGBA8);
+        m_resultTexture->resize(2, 2);
+
+        m_depth = Engine::objectCreate<Texture>();
+        m_depth->setFormat(Texture::Depth);
+        m_depth->setDepthBits(24);
+        m_depth->resize(2, 2);
+
+        m_resultTarget->setColorAttachment(0, m_resultTexture);
+        m_resultTarget->setDepthAttachment(m_depth);
+    }
+
+    Texture *draw(Texture *source, PipelineContext *context) override {
+        CommandBuffer *buffer = context->buffer();
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->clearRenderTarget();
+
+        for(auto it : context->culledComponents()) {
+            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+                it->draw(*buffer, CommandBuffer::RAYCAST);
+            }
+        }
+
+        for(auto it : context->uiComponents()) {
+            if(it->actor()->hideFlags() & Actor::SELECTABLE) {
+                it->draw(*buffer, CommandBuffer::RAYCAST);
+            }
+        }
+
+        Camera *activeCamera = m_controller->activeCamera();
+        Vector2 mousePosition = m_controller->mousePosition();
+
+        Vector3 screen(mousePosition.x / (float)m_resultTexture->width(),
+                       mousePosition.y / (float)m_resultTexture->height(), 0.0f);
+
+        m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+        m_objectId = m_resultTexture->getPixel(0, 0, 0);
+        if(m_objectId) {
+            m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+            int pixel = m_depth->getPixel(0, 0, 0);
+            memcpy(&screen.z, &pixel, sizeof(float));
+            m_mouseWorld = Camera::unproject(screen, activeCamera->viewMatrix(), activeCamera->projectionMatrix());
+        } else {
+            Ray ray = activeCamera->castRay(screen.x, screen.y);
+            m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+        }
+
+        for(auto it : m_dragList) {
+            it->update();
+            context->culledComponents().push_back(it);
+        }
+
+        return source;
+    }
+
+    uint32_t layer() const override {
+        return CommandBuffer::RAYCAST;
+    }
+
+    void resize(int32_t width, int32_t height) override {
+        m_resultTexture->resize(width, height);
+        m_depth->resize(width, height);
+    }
+
+    void setDragObjects(const Object::ObjectList &list) {
+        m_dragList.clear();
+        for(auto it : list) {
+            auto result = it->findChildren<Renderable *>();
+
+            m_dragList.insert(m_dragList.end(), result.begin(), result.end());
+        }
+    }
+
+    void setController(ObjectCtrl *ctrl) {
+        m_controller = ctrl;
+    }
+
+    uint32_t objectId() const {
+        return m_objectId;
+    }
+
+    Vector3 mouseWorld() const {
+        return m_mouseWorld;
+    }
+
+private:
+    Vector3 m_mouseWorld;
+
+    list<Renderable *> m_dragList;
+
+    uint32_t m_objectId;
+
+    Texture *m_depth;
+
+    ObjectCtrl *m_controller;
+};
+
+ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
-        m_pipeline(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
-        m_menu(nullptr),
+        m_rayCast(nullptr),
         m_axes(0),
         m_isolatedActorModified(false),
         m_drag(false),
@@ -88,21 +197,21 @@ ObjectCtrl::ObjectCtrl(QWidget *view) :
 }
 
 ObjectCtrl::~ObjectCtrl() {
-    delete m_pipeline;
+
 }
 
-void ObjectCtrl::init() {
-    m_pipeline = new EditorPipeline;
-    m_pipeline->setController(this);
-    m_pipeline->createMenu(m_menu);
-    m_activeCamera->setPipeline(m_pipeline);
+void ObjectCtrl::init(Viewport *viewport) {
+    m_rayCast = new ViewportRaycast;
+    m_rayCast->setController(this);
+
+    PipelineContext *pipeline = viewport->pipelineContext();
+    pipeline->addRenderPass(m_rayCast);
 }
 
 void ObjectCtrl::drawHandles() {
-    Vector2 position, size;
-    selectGeometry(position, size);
+    Vector2 size(1, 1);
 
-    Vector3 screen = Vector3(position.x / m_screenSize.x, position.y / m_screenSize.y, 0.0f);
+    Vector3 screen = Vector3(m_mousePosition.x / m_screenSize.x, m_mousePosition.y / m_screenSize.y, 0.0f);
     Handles::s_Mouse = Vector2(screen.x, screen.y);
     Handles::s_Screen = m_screenSize;
 
@@ -119,29 +228,20 @@ void ObjectCtrl::drawHandles() {
         }
     }
 
-    Handles::cleanDepth();
-
     if(!m_selected.empty()) {
         if(m_activeTool) {
             m_activeTool->update(false, m_local, 0.0f);
         }
     }
 
-    if(m_pipeline) {
-        uint32_t result = 0;
-        if(position.x >= 0.0f && position.y >= 0.0f &&
-           position.x < m_screenSize.x && position.y < m_screenSize.y) {
+    if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
+       m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
 
-            m_pipeline->setMousePosition(int32_t(position.x), int32_t(position.y));
-            result = m_pipeline->objectId();
+        uint32_t result = m_rayCast->objectId();
+        if(m_objectsList.empty() && result) {
+            m_objectsList = { result };
         }
-
-        if(result) {
-            if(m_objectsList.empty()) {
-                m_objectsList = { result };
-            }
-        }
-        m_mouseWorld = m_pipeline->mouseWorld();
+        m_mouseWorld = m_rayCast->mouseWorld();
     }
 }
 
@@ -157,10 +257,6 @@ SceneGraph *ObjectCtrl::sceneGraph() const {
 }
 void ObjectCtrl::setSceneGraph(SceneGraph *graph) {
     m_sceneGraph = graph;
-}
-
-void ObjectCtrl::switchActiveScene() {
-
 }
 
 void ObjectCtrl::drawHelpers(Object &object) {
@@ -181,11 +277,6 @@ void ObjectCtrl::drawHelpers(Object &object) {
             }
         }
     }
-}
-
-void ObjectCtrl::selectGeometry(Vector2 &pos, Vector2 &size) {
-    pos = Vector2(m_mousePosition.x, m_mousePosition.y);
-    size = Vector2(1, 1);
 }
 
 void ObjectCtrl::setDrag(bool drag) {
@@ -372,8 +463,8 @@ void ObjectCtrl::onDrop() {
             Object *parent = m_isolatedActor ? m_isolatedActor : static_cast<Object *>(m_sceneGraph->activeScene());
             it->setParent(parent);
         }
-        if(m_pipeline) {
-            m_pipeline->setDragObjects({});
+        if(m_rayCast) {
+            m_rayCast->setDragObjects({});
         }
         UndoManager::instance()->push(new CreateObjectSerial(m_dragObjects, this));
     }
@@ -423,8 +514,8 @@ void ObjectCtrl::onDragEnter(QDragEnterEvent *event) {
         a->transform()->setPosition(m_mouseWorld);
     }
 
-    if(m_pipeline) {
-        m_pipeline->setDragObjects(m_dragObjects);
+    if(m_rayCast) {
+        m_rayCast->setDragObjects(m_dragObjects);
     }
 
     if(!m_dragObjects.empty() || !m_dragMap.name.isEmpty()) {
@@ -444,8 +535,8 @@ void ObjectCtrl::onDragMove(QDragMoveEvent *e) {
 }
 
 void ObjectCtrl::onDragLeave(QDragLeaveEvent * /*event*/) {
-    if(m_pipeline) {
-        m_pipeline->setDragObjects({});
+    if(m_rayCast) {
+        m_rayCast->setDragObjects({});
     }
     for(Object *o : m_dragObjects) {
         delete o;
@@ -579,12 +670,6 @@ void ObjectCtrl::resetSelection() {
     }
 }
 
-void ObjectCtrl::createMenu(QMenu *menu) {
-    CameraCtrl::createMenu(menu);
-    menu->addSeparator();
-    m_menu = menu;
-}
-
 SelectObjects::SelectObjects(const list<uint32_t> &objects, ObjectCtrl *ctrl, const QString &name, QUndoCommand *group) :
         UndoObject(ctrl, name, group),
         m_objects(objects) {
@@ -650,7 +735,9 @@ void CreateObject::redo() {
         } else {
             object = Engine::objectCreate(qPrintable(m_type), qPrintable(m_type), it);
         }
-        m_objects.push_back(object->uuid());
+        if(object) {
+            m_objects.push_back(object->uuid());
+        }
     }
 
     emit m_controller->objectsSelected(m_controller->selected());

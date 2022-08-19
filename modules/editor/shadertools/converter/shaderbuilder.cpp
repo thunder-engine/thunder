@@ -21,7 +21,7 @@
 
 #include <regex>
 
-#define FORMAT_VERSION 6
+#define FORMAT_VERSION 7
 
 namespace  {
     const char *gValue("value");
@@ -220,6 +220,8 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
         if(doc.setContent(&file)) {
             QMap<QString, QString> shaders;
 
+            int materialType = Material::Surface;
+
             QDomElement shader = doc.documentElement();
             QDomNode n = shader.firstChild();
             while(!n.isNull()) {
@@ -283,13 +285,13 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                                         value = Variant(property.attribute(gValue).toFloat());
                                         size = sizeof(float);
                                     } else if(type == "vec2") {
-                                        value = Variant(Vector2());
+                                        value = Variant(Vector2(1.0f));
                                         size = sizeof(Vector2);
                                     } else if(type == "vec3") {
-                                        value = Variant(Vector3());
+                                        value = Variant(Vector3(1.0f));
                                         size = sizeof(Vector3);
                                     } else if(type == "vec4") {
-                                        value = Variant(Vector4());
+                                        value = Variant(Vector4(1.0f));
                                         size = sizeof(Vector4);
                                     } else if(type == "mat4") {
                                         value = Variant(Matrix4());
@@ -329,7 +331,7 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
                             {"Subsurface", Material::Subsurface},
                         };
 
-                        int materialType = types.value(element.attribute("type"), Material::Surface);
+                        materialType = types.value(element.attribute("type"), Material::Surface);
                         properties.push_back(materialType);
                         properties.push_back(element.attribute("twoSided", "true") == "true");
                         properties.push_back((materialType != ShaderRootNode::Surface) ? Material::Static :
@@ -346,7 +348,10 @@ bool ShaderBuilder::parseShaderFormat(const QString &path, VariantMap &user) {
             }
 
             const PragmaMap pragmas;
-            const QString define;
+            QString define;
+            if(materialType == Material::PostProcess) {
+                define += "#define TYPE_FULLSCREEN";
+            }
 
             QString str;
             str = shaders.value(gFragment);

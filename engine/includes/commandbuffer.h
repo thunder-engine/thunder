@@ -13,9 +13,6 @@ class RenderTarget;
 class Texture;
 class Mesh;
 
-class Camera;
-class MaterialInstance;
-
 struct Global {
     Matrix4 view;
     Matrix4 projection;
@@ -101,6 +98,8 @@ public:
     static void setInited();
 
 protected:
+    bool m_screenProjection;
+
     Global m_global;
     Local m_local;
 

@@ -96,7 +96,8 @@ SceneComposer::SceneComposer(QWidget *parent) :
     m_controller->setSceneGraph(Engine::sceneGraph());
 
     ui->viewport->setController(m_controller);
-    ui->viewport->setSceneGraph(Engine::sceneGraph());
+
+    ui->renderMode->menu()->addSeparator();
 
     m_sceneGraphObserver->setSceneComposer(this);
 
@@ -183,8 +184,11 @@ SceneComposer::~SceneComposer() {
 }
 
 void SceneComposer::init() {
-    m_controller->init();
     ui->viewport->init();
+    m_controller->init(ui->viewport);
+    ui->viewport->setSceneGraph(Engine::sceneGraph());
+    ui->viewport->createMenu(ui->renderMode->menu());
+
     PluginManager::instance()->addScene(Engine::sceneGraph());
 }
 

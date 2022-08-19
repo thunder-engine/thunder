@@ -1,4 +1,4 @@
-#include "pipeline.h"
+#include "pipelinecontext.h"
 
 #include "systems/rendersystem.h"
 
@@ -49,17 +49,21 @@ bool typeLessThan(PostProcessVolume *left, PostProcessVolume *right) {
     return left->priority() < right->priority();
 }
 
-Pipeline::Pipeline() :
+PipelineContext::PipelineContext() :
         m_buffer(Engine::objectCreate<CommandBuffer>()),
         m_finalMaterial(nullptr),
         m_effectMaterial(nullptr),
         m_defaultTarget(Engine::objectCreate<RenderTarget>()),
+        m_system(nullptr),
+        m_final(nullptr),
+        m_debugTexture(nullptr),
         m_width(64),
         m_height(64),
-        m_final(nullptr),
-        m_system(nullptr) {
+        m_shadowPageWidth(64),
+        m_shadowPageHeight(64),
+        m_uiAsSceneView(false) {
 
-    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultSprite.mtl");
+    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_effectMaterial = mtl->createInstance();
@@ -67,14 +71,11 @@ Pipeline::Pipeline() :
 
     m_plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
 
-    int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
-    m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / pageWidth, 1.0f / pageHeight, pageWidth, pageHeight));
-
     {
         Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
+        depth->resize(2, 2);
         m_textureBuffers[DEPTH_MAP] = depth;
         m_buffer->setGlobalTexture(DEPTH_MAP, depth);
     }
@@ -116,56 +117,63 @@ Pipeline::Pipeline() :
     light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[LIGHPASS] = light;
 
-    m_postEffects = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
+    m_renderPasses = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
 }
 
-Pipeline::~Pipeline() {
+PipelineContext::~PipelineContext() {
     m_textureBuffers.clear();
 }
 
-void Pipeline::draw(Camera &camera) {
+CommandBuffer *PipelineContext::buffer() const {
+    return m_buffer;
+}
+
+void PipelineContext::drawMain(Camera &camera) {
     updateShadows(camera);
 
     m_buffer->setViewport(0, 0, m_width, m_height);
+    cameraReset(camera);
+
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::RAYCAST);
 
     // Step 1.1 - Fill G buffer pass draw opaque geometry
     m_buffer->setRenderTarget(m_renderTargets[GBUFFER]);
     m_buffer->clearRenderTarget(true, camera.color());
 
-    cameraReset(camera);
-    drawComponents(CommandBuffer::DEFAULT, m_filter);
+    drawRenderers(CommandBuffer::DEFAULT, m_culledComponents);
 
     // Step 1.2 - Opaque pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::DEFAULT);
 
     // Step 2.1 - Light pass
     m_buffer->setRenderTarget(m_renderTargets[LIGHPASS]);
-    drawComponents(CommandBuffer::LIGHT, m_sceneLights);
+    drawRenderers(CommandBuffer::LIGHT, m_sceneLights);
 
     // Step 2.2 - Light pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::LIGHT);
 
     // Step 3.1 - Transparent pass
-    drawComponents(CommandBuffer::TRANSLUCENT, m_filter);
+    drawRenderers(CommandBuffer::TRANSLUCENT, m_culledComponents);
 
     // Step 3.2 - Transparent pass post processing
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
     m_final = m_textureBuffers[G_EMISSIVE];
-
-    drawUi(camera);
 }
 
-void Pipeline::drawUi(Camera &camera) {
-    A_UNUSED(camera);
+void PipelineContext::drawUi(Camera &camera) {
+    if(!m_uiAsSceneView) {
+        m_buffer->setScreenProjection(0, 0, m_width, m_height);
+    }
+    drawRenderers(CommandBuffer::UI, m_uiComponents);
 
-    m_buffer->setScreenProjection(0, 0, m_width, m_height);
-    drawComponents(CommandBuffer::UI, m_uiComponents);
-
-    postProcess(m_renderTargets[LIGHPASS], CommandBuffer::UI);
+    renderPass(m_renderTargets[LIGHPASS], CommandBuffer::UI);
 }
 
-void Pipeline::finish() {
-    m_buffer->setScreenProjection();
+void PipelineContext::finish() {
+    if(m_debugTexture != nullptr) {
+        m_final = m_debugTexture;
+    }
+
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
 
@@ -173,7 +181,7 @@ void Pipeline::finish() {
     m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_finalMaterial);
 }
 
-void Pipeline::cameraReset(Camera &camera) {
+void PipelineContext::cameraReset(Camera &camera) {
     Matrix4 v = camera.viewMatrix();
     Matrix4 p = camera.projectionMatrix();
     Matrix4 vp = p * v;
@@ -181,6 +189,8 @@ void Pipeline::cameraReset(Camera &camera) {
     camera.setRatio((float)m_width / (float)m_height);
 
     Transform *c = camera.actor()->transform();
+
+    m_buffer->resetViewProjection();
 
     m_buffer->setGlobalValue("camera.position", Vector4(c->worldPosition(), camera.nearPlane()));
     m_buffer->setGlobalValue("camera.target", Vector4(c->worldTransform().rotation() * Vector3(0.0f, 0.0f, 1.0f), camera.farPlane()));
@@ -193,28 +203,24 @@ void Pipeline::cameraReset(Camera &camera) {
     m_buffer->setViewProjection(v, p);
 }
 
-Texture *Pipeline::renderTexture(const string &name) const {
-    auto it = m_textureBuffers.find(name);
-    if(it != m_textureBuffers.end()) {
-        return it->second;
-    }
-    return nullptr;
-}
-
-void Pipeline::setRenderTexture(const string &name, Texture *texture) {
+void PipelineContext::setRenderTexture(const string &name, Texture *texture) {
     m_textureBuffers[name] = texture;
 }
 
-void Pipeline::resize(int32_t width, int32_t height) {
+void PipelineContext::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         m_width = width;
         m_height = height;
 
         for(auto &it : m_textureBuffers) {
-            it.second->setWidth(width);
-            it.second->setHeight(height);
+            if(it.second->isFramebuffer()) {
+                it.second->setWidth(width);
+                it.second->setHeight(height);
+            } else {
+                it.second->resize(width, height);
+            }
         }
-        for(auto &it : m_postEffects) {
+        for(auto &it : m_renderPasses) {
             it->resize(width, height);
         }
 
@@ -222,7 +228,7 @@ void Pipeline::resize(int32_t width, int32_t height) {
     }
 }
 
-void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
+void PipelineContext::analizeScene(SceneGraph *graph, RenderSystem *system) {
     m_system = system;
 
     m_sceneComponents.clear();
@@ -235,8 +241,8 @@ void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
 
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->actor()->transform();
-    m_filter = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
-    sortRenderables(m_filter, cameraTransform->position());
+    m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
+    sortRenderables(m_culledComponents, cameraTransform->position());
 
     // Post process settings mixer
     PostProcessSettings &settings = graph->finalPostProcessSettings();
@@ -253,20 +259,43 @@ void Pipeline::analizeScene(SceneGraph *graph, RenderSystem *system) {
     }
 
     m_buffer->setGlobalValue("light.ambient", 0.1f/*settings.ambientLightIntensity()*/);
-    for(auto &it : m_postEffects) {
+    for(auto &it : m_renderPasses) {
         it->setSettings(settings);
     }
 }
 
-RenderTarget *Pipeline::defaultTarget() {
+RenderTarget *PipelineContext::defaultTarget() {
     return m_defaultTarget;
 }
 
-void Pipeline::setDefaultTarget(RenderTarget *target) {
+void PipelineContext::setDefaultTarget(RenderTarget *target) {
     m_defaultTarget = target;
 }
 
-RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
+Texture *PipelineContext::debugTexture() const {
+    return m_debugTexture;
+}
+
+void PipelineContext::setDebugTexture(const string &string) {
+    m_debugTexture = nullptr;
+    auto it = m_textureBuffers.find(string);
+    if(it != m_textureBuffers.end()) {
+        m_debugTexture = it->second;
+    }
+}
+
+void PipelineContext::shadowPageSize(int32_t &width, int32_t &height) {
+    width = m_shadowPageWidth;
+    height = m_shadowPageHeight;
+}
+
+void PipelineContext::setShadowPageSize(int32_t width, int32_t height) {
+    m_shadowPageWidth = width;
+    m_shadowPageHeight = height;
+    m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / m_shadowPageWidth, 1.0f / m_shadowPageHeight, m_shadowPageWidth, m_shadowPageHeight));
+}
+
+RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
         if(tile->second.second.size() == count) {
@@ -302,13 +331,10 @@ RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x
     }
 
     if(sub == nullptr) {
-        int32_t pageWidth, pageHeight;
-        RenderSystem::atlasPageSize(pageWidth, pageHeight);
-
         Texture *map = Engine::objectCreate<Texture>();
         map->setFormat(Texture::Depth);
-        map->setWidth(pageWidth);
-        map->setHeight(pageHeight);
+        map->setWidth(m_shadowPageWidth);
+        map->setHeight(m_shadowPageHeight);
         map->setDepthBits(24);
 
         target = Engine::objectCreate<RenderTarget>();
@@ -316,8 +342,8 @@ RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x
 
         AtlasNode *root = new AtlasNode;
 
-        root->w = pageWidth;
-        root->h = pageHeight;
+        root->w = m_shadowPageWidth;
+        root->h = m_shadowPageHeight;
 
         m_shadowPages[target] = root;
 
@@ -342,17 +368,42 @@ RenderTarget *Pipeline::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x
     return target;
 }
 
-CommandBuffer *Pipeline::buffer() const {
-    return m_buffer;
+void PipelineContext::showUiAsSceneView() {
+    m_uiAsSceneView = true;
 }
 
-void Pipeline::drawComponents(uint32_t layer, list<Renderable *> &list) {
+void PipelineContext::addRenderPass(RenderPass *pass) {
+    m_renderPasses.push_back(pass);
+}
+
+const list<RenderPass *> &PipelineContext::renderPasses() const {
+    return m_renderPasses;
+}
+
+list<string> PipelineContext::renderTextures() const {
+    list<string> result;
+    for(auto &it : m_textureBuffers) {
+        result.push_back(it.first);
+    }
+
+    return result;
+}
+
+void PipelineContext::drawRenderers(uint32_t layer, const list<Renderable *> &list) {
     for(auto it : list) {
         it->draw(*m_buffer, layer);
     }
 }
 
-void Pipeline::cleanShadowCache() {
+list<Renderable *> &PipelineContext::culledComponents() {
+    return m_culledComponents;
+}
+
+list<Renderable *> &PipelineContext::uiComponents() {
+    return m_uiComponents;
+}
+
+void PipelineContext::cleanShadowCache() {
     for(auto tiles = m_tiles.begin(); tiles != m_tiles.end(); ) {
         bool outdate = false;
         for(auto &it : tiles->second.second) {
@@ -382,18 +433,18 @@ void Pipeline::cleanShadowCache() {
     }
 }
 
-void Pipeline::updateShadows(Camera &camera) {
+void PipelineContext::updateShadows(Camera &camera) {
     cleanShadowCache();
 
     for(auto &it : m_sceneLights) {
         static_cast<BaseLight *>(it)->shadowsUpdate(camera, this, m_sceneComponents);
     }
+    m_buffer->resetViewProjection();
 }
 
-void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
-    m_buffer->setScreenProjection();
+void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
     Texture *result = source->colorAttachment(0);
-    for(auto it : m_postEffects) {
+    for(auto it : m_renderPasses) {
         if(it->layer() == layer) {
             result = it->draw(result, this);
         }
@@ -405,11 +456,9 @@ void Pipeline::postProcess(RenderTarget *source, uint32_t layer) {
         m_effectMaterial->setTexture(OVERRIDE, result);
         m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_effectMaterial);
     }
-
-    m_buffer->resetViewProjection();
 }
 
-void Pipeline::combineComponents(Object *object, bool update) {
+void PipelineContext::combineComponents(Object *object, bool update) {
     for(auto &it : object->getChildren()) {
         Object *child = it;
         if(child->isComponent()) {
@@ -454,7 +503,7 @@ struct ObjectComp {
     Vector3 origin;
 };
 
-void Pipeline::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
+void PipelineContext::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
     ObjectComp comp;
     comp.origin = origin;
 

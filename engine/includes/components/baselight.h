@@ -8,7 +8,7 @@
 class Mesh;
 class MaterialInstance;
 class BaseLightPrivate;
-class Pipeline;
+class PipelineContext;
 
 class Camera;
 
@@ -31,7 +31,7 @@ public:
     BaseLight();
     ~BaseLight() override;
 
-    virtual void shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components);
+    virtual void shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components);
 
     bool castShadows() const;
     void setCastShadows(const bool shadows);

@@ -19,10 +19,12 @@ public:
     void setNativeHandle(uint32_t id);
 
 private:
+    void readPixels(int index, int x, int y, int width, int height) override;
+
     bool updateBuffer(uint32_t level);
     void destroyBuffer();
 
-    int32_t m_Buffer;
+    int32_t m_buffer;
 
 };
 

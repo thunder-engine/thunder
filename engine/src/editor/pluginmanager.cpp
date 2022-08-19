@@ -25,27 +25,31 @@
 
 const char *gComponents("components");
 
-typedef Module *(*moduleHandler) (Engine *engine);
+typedef Module *(*ModuleHandler) (Engine *engine);
 
 PluginManager *PluginManager::m_pInstance = nullptr;
 
 PluginManager::PluginManager() :
         QAbstractItemModel(),
-        m_pEngine(nullptr),
-        m_pRender(nullptr) {
+        m_engine(nullptr),
+        m_renderFactory(nullptr) {
 
+    m_renderName = QString("RenderGL"); // Default
+    if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
+        m_renderName = qEnvironmentVariable(qPrintable(gRhi));
+    }
 }
 
 PluginManager::~PluginManager() {
-    m_Scenes.clear();
+    m_scenes.clear();
 
-    m_Systems.clear();
+    m_systems.clear();
 
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         delete it.module;
         delete it.library;
     }
-    m_Plugins.clear();
+    m_plugins.clear();
 }
 
 int PluginManager::columnCount(const QModelIndex &) const {
@@ -63,7 +67,7 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
 
     switch(role) {
         case Qt::DisplayRole: {
-            Plugin plugin = m_Plugins.at(index.row());
+            Plugin plugin = m_plugins.at(index.row());
             switch(index.column()) {
                 case PLUGIN_NAME:        return plugin.name;
                 case PLUGIN_DESCRIPTION: return plugin.description;
@@ -81,7 +85,7 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
 
 int PluginManager::rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
-    return m_Plugins.size();
+    return m_plugins.size();
 }
 
 QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent) const {
@@ -107,23 +111,23 @@ void PluginManager::destroy() {
 }
 
 void PluginManager::init(Engine *engine) {
-    m_pEngine = engine;
+    m_engine = engine;
 
     rescanPath(QString(QCoreApplication::applicationDirPath() + PLUGINS));
 }
 
 void PluginManager::rescan(QString path) {
-    m_PluginPath = path;
+    m_pluginPath = path;
 
-    rescanPath(m_PluginPath);
+    rescanPath(m_pluginPath);
 }
 
 bool PluginManager::loadPlugin(const QString &path, bool reload) {
     QLibrary *lib = new QLibrary(path);
     if(lib->load()) {
-        moduleHandler moduleCreate = reinterpret_cast<moduleHandler>(lib->resolve("moduleCreate"));
+        ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
-            Module *plugin = moduleCreate(m_pEngine);
+            Module *plugin = moduleCreate(m_engine);
             if(plugin) {
                 VariantMap metaInfo = Json::load(plugin->metaInfo()).toMap();
 
@@ -145,15 +149,9 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                             fault = true;
                         }
                     } else if(it.second == "render") {
-                        QString renderName("RenderGL"); // Default
-                        if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-                            renderName = qEnvironmentVariable(qPrintable(gRhi));
-                        }
-
-                        if(QString(it.first.c_str()) == renderName) {
-                            if(!registerRender(plugin, it.first.c_str())) {
-                                fault = true;
-                            }
+                        if(QString(it.first.c_str()) == m_renderName) {
+                            m_renderFactory = plugin;
+                            Engine::addModule(plugin);
                         } else {
                             fault = true;
                         }
@@ -182,14 +180,14 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
                     deserializeComponents(result);
                 }
 
-                int index = m_Plugins.indexOf(plug);
+                int index = m_plugins.indexOf(plug);
                 if(index == -1) {
                     int start = rowCount();
                     beginInsertRows(QModelIndex(), start, start);
-                        m_Plugins.push_back(plug);
+                        m_plugins.push_back(plug);
                     endInsertRows();
                 } else {
-                    m_Plugins[index] = plug;
+                    m_plugins[index] = plug;
                 }
                 return true;
             } else {
@@ -208,7 +206,7 @@ bool PluginManager::loadPlugin(const QString &path, bool reload) {
 void PluginManager::reloadPlugin(const QString &path) {
     QFileInfo info(path);
 
-    QFileInfo dest = m_PluginPath + QDir::separator() + info.fileName();
+    QFileInfo dest = m_pluginPath + QDir::separator() + info.fileName();
     QFileInfo temp = dest.absoluteFilePath() + ".tmp";
 
     // Rename old version of plugin
@@ -218,7 +216,7 @@ void PluginManager::reloadPlugin(const QString &path) {
     }
 
     Plugin *plugin = nullptr;
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         if(it.path == dest.absoluteFilePath()) {
             plugin = &it;
         }
@@ -277,25 +275,7 @@ void PluginManager::rescanPath(const QString &path) {
 bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
-        m_Systems[QString::fromStdString(system->name())] = system;
-    }
-
-    Engine::addModule(plugin);
-
-    return true;
-}
-
-bool PluginManager::registerRender(Module *plugin, const char *name) {
-    System *system = reinterpret_cast<System *>(plugin->getObject(name));
-    if(system) {
-        RenderSystem *render = dynamic_cast<RenderSystem *>(system);
-        if(render) {
-            m_pRender = render;
-        } else {
-            return false;
-        }
-
-        m_Systems[QString::fromStdString(system->name())] = system;
+        m_systems[QString::fromStdString(system->name())] = system;
     }
 
     Engine::addModule(plugin);
@@ -304,7 +284,7 @@ bool PluginManager::registerRender(Module *plugin, const char *name) {
 }
 
 void PluginManager::initSystems() {
-    foreach(auto it, m_Systems) {
+    foreach(auto it, m_systems) {
         if(it) {
             it->init();
         }
@@ -312,7 +292,7 @@ void PluginManager::initSystems() {
 }
 
 void PluginManager::addScene(SceneGraph *sceneGraph) {
-    m_Scenes.push_back(sceneGraph);
+    m_scenes.push_back(sceneGraph);
 }
 
 typedef list<const Object *> ObjectArray;
@@ -328,7 +308,7 @@ void enumComponents(const Object *object, const QString &type, ObjectArray &list
 
 void PluginManager::serializeComponents(const QStringList &list, ComponentMap &map) {
     for(auto &type : list) {
-        foreach(SceneGraph *scene, m_Scenes) {
+        foreach(SceneGraph *scene, m_scenes) {
             ObjectArray array;
 
             enumComponents(scene, type, array);
@@ -355,14 +335,14 @@ void PluginManager::deserializeComponents(const ComponentMap &map) {
     emit pluginReloaded();
 }
 
-RenderSystem *PluginManager::render() const {
-    return m_pRender;
+RenderSystem *PluginManager::createRenderer() const {
+    return reinterpret_cast<RenderSystem *>(m_renderFactory->getObject(qPrintable(m_renderName)));
 }
 
 QStringList PluginManager::plugins() const {
     QStringList result;
 
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         result << it.path;
     }
 
@@ -372,7 +352,7 @@ QStringList PluginManager::plugins() const {
 QStringList PluginManager::extensions(const QString &type) const {
     QStringList result;
 
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         for(auto &object : it.objects) {
             if(object.second == type) {
                 result << object.first;
@@ -384,7 +364,7 @@ QStringList PluginManager::extensions(const QString &type) const {
 }
 
 void *PluginManager::getPluginObject(const QString &name) {
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         for(auto &object : it.objects) {
             if(object.first == name) {
                 return it.module->getObject(qPrintable(name));
@@ -396,7 +376,7 @@ void *PluginManager::getPluginObject(const QString &name) {
 }
 
 QString PluginManager::getModuleName(const QString &type) const {
-    for(auto &it : m_Plugins) {
+    for(auto &it : m_plugins) {
         if(it.components.indexOf(type) != -1) {
             return it.name;
         }

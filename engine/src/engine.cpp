@@ -42,7 +42,6 @@
 #include "resources/font.h"
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
-#include "resources/pipeline.h"
 #include "resources/translator.h"
 #include "resources/particleeffect.h"
 #include "resources/pose.h"
@@ -52,6 +51,9 @@
 #include "resources/controlscheme.h"
 
 #include "systems/resourcesystem.h"
+#include "systems/rendersystem.h"
+
+#include "pipelinecontext.h"
 
 #include "log.h"
 
@@ -81,72 +83,75 @@ public:
     }
 
     ~EnginePrivate() {
-        m_Values.clear();
+        m_values.clear();
 
-        if(m_Platform) {
-            m_Platform->destroy();
-            delete m_Platform;
+        if(m_platform) {
+            m_platform->destroy();
+            delete m_platform;
         }
 
-        //for(auto it : m_Pool) {
+        //for(auto it : m_pool) {
         //    delete it;
         //}
-        m_Pool.clear();
+        m_pool.clear();
 
-        //for(auto it : m_Serial) {
+        //for(auto it : m_serial) {
         //    delete it;
         //}
-        m_Serial.clear();
+        m_serial.clear();
     }
 
-    static list<System *>    m_Pool;
-    static list<System *>    m_Serial;
+    static list<System *>    m_pool;
+    static list<System *>    m_serial;
 
-    static SceneGraph       *m_SceneGraph;
+    static SceneGraph       *m_sceneGraph;
 
-    static Engine           *m_Instance;
+    static Engine           *m_instance;
 
-    static File             *m_File;
+    static File             *m_file;
 
-    string                   m_EntryLevel;
+    string                   m_entryLevel;
 
-    static bool              m_Game;
+    static bool              m_game;
 
-    static string            m_ApplicationPath;
+    static string            m_applicationPath;
 
-    static string            m_ApplicationDir;
+    static string            m_applicationDir;
 
-    static string            m_Organization;
+    static string            m_organization;
 
-    static string            m_Application;
+    static string            m_application;
 
-    static PlatformAdaptor  *m_Platform;
+    static PlatformAdaptor  *m_platform;
 
-    static VariantMap        m_Values;
+    static VariantMap        m_values;
 
-    ThreadPool               m_ThreadPool;
+    ThreadPool               m_threadPool;
 
-    static ResourceSystem   *m_pResourceSystem;
+    static ResourceSystem   *m_resourceSystem;
 
-    static Translator       *m_Translator;
+    static RenderSystem     *m_renderSystem;
+
+    static Translator       *m_translator;
 };
 
-File            *EnginePrivate::m_File = nullptr;
+File            *EnginePrivate::m_file = nullptr;
 
-bool             EnginePrivate::m_Game = false;
-VariantMap       EnginePrivate::m_Values;
-string           EnginePrivate::m_ApplicationPath;
-string           EnginePrivate::m_ApplicationDir;
-string           EnginePrivate::m_Organization;
-string           EnginePrivate::m_Application;
-PlatformAdaptor *EnginePrivate::m_Platform = nullptr;
-SceneGraph      *EnginePrivate::m_SceneGraph = nullptr;
-ResourceSystem  *EnginePrivate::m_pResourceSystem = nullptr;
-Translator      *EnginePrivate::m_Translator = nullptr;
-Engine          *EnginePrivate::m_Instance = nullptr;
+bool             EnginePrivate::m_game = false;
+VariantMap       EnginePrivate::m_values;
+string           EnginePrivate::m_applicationPath;
+string           EnginePrivate::m_applicationDir;
+string           EnginePrivate::m_organization;
+string           EnginePrivate::m_application;
+PlatformAdaptor *EnginePrivate::m_platform = nullptr;
+SceneGraph      *EnginePrivate::m_sceneGraph = nullptr;
+ResourceSystem  *EnginePrivate::m_resourceSystem = nullptr;
+RenderSystem    *EnginePrivate::m_renderSystem = nullptr;
+Translator      *EnginePrivate::m_translator = nullptr;
+Engine          *EnginePrivate::m_instance = nullptr;
 
-list<System *>  EnginePrivate::m_Pool;
-list<System *>  EnginePrivate::m_Serial;
+list<System *>  EnginePrivate::m_pool;
+list<System *>  EnginePrivate::m_serial;
 
 typedef Vector4 Color;
 
@@ -190,39 +195,38 @@ Engine::Engine(File *file, const char *path) :
         p_ptr(new EnginePrivate()) {
     PROFILE_FUNCTION();
 
-    EnginePrivate::m_Instance = this;
+    EnginePrivate::m_instance = this;
 
-    EnginePrivate::m_pResourceSystem = new ResourceSystem;
-    EnginePrivate::m_Serial.push_back(p_ptr->m_pResourceSystem);
-    EnginePrivate::m_ApplicationPath = path;
-    Uri uri(EnginePrivate::m_ApplicationPath);
-    EnginePrivate::m_ApplicationDir = uri.dir();
-    EnginePrivate::m_Application = uri.baseName();
+    EnginePrivate::m_resourceSystem = new ResourceSystem;
+    EnginePrivate::m_serial.push_back(p_ptr->m_resourceSystem);
+    EnginePrivate::m_applicationPath = path;
+    Uri uri(EnginePrivate::m_applicationPath);
+    EnginePrivate::m_applicationDir = uri.dir();
+    EnginePrivate::m_application = uri.baseName();
 
-    EnginePrivate::m_File = file;
+    EnginePrivate::m_file = file;
 
     // The order is critical for the import
-    Resource::registerClassFactory(p_ptr->m_pResourceSystem);
+    Resource::registerClassFactory(p_ptr->m_resourceSystem);
 
-    Text::registerClassFactory(p_ptr->m_pResourceSystem);
-    Texture::registerClassFactory(p_ptr->m_pResourceSystem);
-    Material::registerClassFactory(p_ptr->m_pResourceSystem);
-    Mesh::registerSuper(p_ptr->m_pResourceSystem);
-    Sprite::registerClassFactory(p_ptr->m_pResourceSystem);
-    Font::registerClassFactory(p_ptr->m_pResourceSystem);
-    AnimationClip::registerClassFactory(p_ptr->m_pResourceSystem);
-    RenderTarget::registerClassFactory(p_ptr->m_pResourceSystem);
+    Text::registerClassFactory(p_ptr->m_resourceSystem);
+    Texture::registerClassFactory(p_ptr->m_resourceSystem);
+    Material::registerClassFactory(p_ptr->m_resourceSystem);
+    Mesh::registerSuper(p_ptr->m_resourceSystem);
+    Sprite::registerClassFactory(p_ptr->m_resourceSystem);
+    Font::registerClassFactory(p_ptr->m_resourceSystem);
+    AnimationClip::registerClassFactory(p_ptr->m_resourceSystem);
+    RenderTarget::registerClassFactory(p_ptr->m_resourceSystem);
 
-    Pipeline::registerClassFactory(p_ptr->m_pResourceSystem);
-    Translator::registerClassFactory(p_ptr->m_pResourceSystem);
-    Pose::registerSuper(p_ptr->m_pResourceSystem);
+    Translator::registerClassFactory(p_ptr->m_resourceSystem);
+    Pose::registerSuper(p_ptr->m_resourceSystem);
 
-    Prefab::registerClassFactory(p_ptr->m_pResourceSystem);
-    Map::registerClassFactory(p_ptr->m_pResourceSystem);
+    Prefab::registerClassFactory(p_ptr->m_resourceSystem);
+    Map::registerClassFactory(p_ptr->m_resourceSystem);
 
-    ParticleEffect::registerSuper(p_ptr->m_pResourceSystem);
+    ParticleEffect::registerSuper(p_ptr->m_resourceSystem);
 
-    AnimationStateMachine::registerSuper(p_ptr->m_pResourceSystem);
+    AnimationStateMachine::registerSuper(p_ptr->m_resourceSystem);
 
     SceneGraph::registerClassFactory(this);
     Scene::registerClassFactory(this);
@@ -237,10 +241,10 @@ Engine::Engine(File *file, const char *path) :
 
     Armature::registerClassFactory(this);
 
-    ControlScheme::registerClassFactory(p_ptr->m_pResourceSystem);
+    ControlScheme::registerClassFactory(p_ptr->m_resourceSystem);
     PlayerInput::registerClassFactory(this);
 
-    EnginePrivate::m_SceneGraph = Engine::objectCreate<SceneGraph>("SceneGraph");
+    EnginePrivate::m_sceneGraph = Engine::objectCreate<SceneGraph>("SceneGraph");
 }
 /*!
     Destructs Engine, related objects, registered object factories and platform adaptor.
@@ -259,16 +263,16 @@ bool Engine::init() {
     PROFILE_FUNCTION();
 
 #ifdef THUNDER_MOBILE
-    EnginePrivate::m_Platform = new MobileAdaptor(this);
+    EnginePrivate::m_platform = new MobileAdaptor(this);
 #else
-    EnginePrivate::m_Platform = new DesktopAdaptor(this);
+    EnginePrivate::m_platform = new DesktopAdaptor(this);
 #endif
-    bool result = EnginePrivate::m_Platform->init();
+    bool result = EnginePrivate::m_platform->init();
 
     Timer::reset();
-    Input::init(EnginePrivate::m_Platform);
+    Input::init(EnginePrivate::m_platform);
 
-    p_ptr->m_ThreadPool.setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
+    p_ptr->m_threadPool.setMaxThreads(MAX(ThreadPool::optimalThreadCount() - 1, 1));
 
     return result;
 }
@@ -280,46 +284,46 @@ bool Engine::init() {
 bool Engine::start() {
     PROFILE_FUNCTION();
 
-    p_ptr->m_Platform->start();
+    p_ptr->m_platform->start();
 
-    for(auto it : EnginePrivate::m_Pool) {
+    for(auto it : EnginePrivate::m_pool) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
-            p_ptr->m_Platform->stop();
+            p_ptr->m_platform->stop();
             return false;
         }
     }
-    for(auto it : EnginePrivate::m_Serial) {
+    for(auto it : EnginePrivate::m_serial) {
         if(!it->init()) {
             Log(Log::ERR) << "Failed to initialize system:" << it->name();
-            p_ptr->m_Platform->stop();
+            p_ptr->m_platform->stop();
             return false;
         }
     }
 
-    EnginePrivate::m_Game = true;
+    EnginePrivate::m_game = true;
 
     string path = value(gEntry, "").toString();
     if(loadScene(path, false) == nullptr) {
         Log(Log::ERR) << "Unable to load" << path.c_str();
-        p_ptr->m_Platform->stop();
+        p_ptr->m_platform->stop();
         return false;
     }
 
-    Camera *component = EnginePrivate::m_SceneGraph->findChild<Camera *>();
+    Camera *component = EnginePrivate::m_sceneGraph->findChild<Camera *>();
     if(component == nullptr) {
         Log(Log::DBG) << "Camera not found creating a new one.";
-        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_SceneGraph);
+        Actor *camera = Engine::composeActor("Camera", "ActiveCamera", EnginePrivate::m_sceneGraph);
         camera->transform()->setPosition(Vector3(0.0f));
     }
 
     resize();
 
 #ifndef THUNDER_MOBILE
-    while(p_ptr->m_Platform->isValid()) {
+    while(p_ptr->m_platform->isValid()) {
         update();
     }
-    p_ptr->m_Platform->stop();
+    p_ptr->m_platform->stop();
 #endif
     return true;
 }
@@ -330,10 +334,14 @@ bool Engine::start() {
 void Engine::resize() {
     PROFILE_FUNCTION();
 
+    PipelineContext *pipeline = EnginePrivate::m_renderSystem->pipelineContext();
+    if(pipeline) {
+        pipeline->resize(p_ptr->m_platform->screenWidth(), p_ptr->m_platform->screenHeight());
+    }
+
     Camera *component = Camera::current();
     if(component) {
-        component->pipeline()->resize(p_ptr->m_Platform->screenWidth(), p_ptr->m_Platform->screenHeight());
-        component->setRatio(float(p_ptr->m_Platform->screenWidth()) / float(p_ptr->m_Platform->screenHeight()));
+        component->setRatio(float(p_ptr->m_platform->screenWidth()) / float(p_ptr->m_platform->screenHeight()));
     }
 }
 /*!
@@ -348,7 +356,7 @@ void Engine::update() {
 
     Camera *camera = Camera::current();
     if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {
-        for(auto it : EnginePrivate::m_SceneGraph->findChildren<Camera *>()) {
+        for(auto it : EnginePrivate::m_sceneGraph->findChildren<Camera *>()) {
             if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
                 camera = it;
                 break;
@@ -360,21 +368,21 @@ void Engine::update() {
 
     processEvents();
 
-    EnginePrivate::m_SceneGraph->setToBeUpdated(true);
+    EnginePrivate::m_sceneGraph->setToBeUpdated(true);
 
-    for(auto it : EnginePrivate::m_Pool) {
-        it->setActiveScene(EnginePrivate::m_SceneGraph);
-        p_ptr->m_ThreadPool.start(*it);
+    for(auto it : EnginePrivate::m_pool) {
+        it->setActiveGraph(EnginePrivate::m_sceneGraph);
+        p_ptr->m_threadPool.start(*it);
     }
-    for(auto it : EnginePrivate::m_Serial) {
-        it->setActiveScene(EnginePrivate::m_SceneGraph);
+    for(auto it : EnginePrivate::m_serial) {
+        it->setActiveGraph(EnginePrivate::m_sceneGraph);
         it->processEvents();
     }
-    p_ptr->m_ThreadPool.waitForDone();
+    p_ptr->m_threadPool.waitForDone();
 
-    EnginePrivate::m_SceneGraph->setToBeUpdated(false);
+    EnginePrivate::m_sceneGraph->setToBeUpdated(false);
 
-    p_ptr->m_Platform->update();
+    p_ptr->m_platform->update();
 }
 /*!
     \internal
@@ -388,7 +396,7 @@ void Engine::processEvents() {
         for(auto it : m_ObjectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
             if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() &&
-               comp->actor()->scene()->parent() == EnginePrivate::m_SceneGraph) {
+               comp->actor()->scene()->parent() == EnginePrivate::m_sceneGraph) {
                 if(!comp->isStarted()) {
                     comp->start();
                     comp->setStarted(true);
@@ -418,8 +426,8 @@ bool Engine::event(Event *event) {
 Variant Engine::value(const string &key, const Variant &defaultValue) {
     PROFILE_FUNCTION();
 
-    auto it = EnginePrivate::m_Values.find(key);
-    if(it != EnginePrivate::m_Values.end()) {
+    auto it = EnginePrivate::m_values.find(key);
+    if(it != EnginePrivate::m_values.end()) {
         return it->second;
     }
     return defaultValue;
@@ -430,7 +438,7 @@ Variant Engine::value(const string &key, const Variant &defaultValue) {
 void Engine::setValue(const string &key, const Variant &value) {
     PROFILE_FUNCTION();
 
-    EnginePrivate::m_Values[key] = value;
+    EnginePrivate::m_values[key] = value;
 }
 /*!
     Applies all unsaved settings.
@@ -438,14 +446,14 @@ void Engine::setValue(const string &key, const Variant &value) {
 void Engine::syncValues() {
     PROFILE_FUNCTION();
 
-    for(auto it : EnginePrivate::m_Pool) {
+    for(auto it : EnginePrivate::m_pool) {
         it->syncSettings();
     }
-    for(auto it : EnginePrivate::m_Serial) {
+    for(auto it : EnginePrivate::m_serial) {
         it->syncSettings();
     }
 
-    EnginePrivate::m_Platform->syncConfiguration(EnginePrivate::m_Values);
+    EnginePrivate::m_platform->syncConfiguration(EnginePrivate::m_values);
 }
 /*!
     Returns an instance for loading resource by the provided \a path.
@@ -456,7 +464,7 @@ void Engine::syncValues() {
 Object *Engine::loadResource(const string &path) {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_pResourceSystem->loadResource(path);
+    return EnginePrivate::m_resourceSystem->loadResource(path);
 }
 /*!
     Forcely unloads the resource located along the \a path from memory.
@@ -469,7 +477,7 @@ void Engine::unloadResource(const string &path) {
 
     if(!path.empty()) {
         string uuid = path;
-        unloadResource(EnginePrivate::m_pResourceSystem->resource(uuid));
+        unloadResource(EnginePrivate::m_resourceSystem->resource(uuid));
     }
 }
 /*!
@@ -482,7 +490,7 @@ void Engine::unloadResource(Resource *resource) {
     PROFILE_FUNCTION();
 
     if(resource) {
-        EnginePrivate::m_pResourceSystem->unloadResource(resource, true);
+        EnginePrivate::m_resourceSystem->unloadResource(resource, true);
     }
 }
 /*!
@@ -495,15 +503,15 @@ void Engine::reloadResource(const string &path) {
 
     if(!path.empty()) {
         string uuid = path;
-        Resource *resource = EnginePrivate::m_pResourceSystem->resource(uuid);
-        EnginePrivate::m_pResourceSystem->reloadResource(resource, true);
+        Resource *resource = EnginePrivate::m_resourceSystem->resource(uuid);
+        EnginePrivate::m_resourceSystem->reloadResource(resource, true);
     }
 }
 /*!
     Returns true if resource with \a path exists; otherwise returns false.
 */
 bool Engine::isResourceExist(const string &path) {
-    return EnginePrivate::m_pResourceSystem->isResourceExist(path);
+    return EnginePrivate::m_resourceSystem->isResourceExist(path);
 }
 /*!
     Register resource \a object by \a uuid path.
@@ -513,14 +521,14 @@ bool Engine::isResourceExist(const string &path) {
 void Engine::setResource(Object *object, const string &uuid) {
     PROFILE_FUNCTION();
 
-    EnginePrivate::m_pResourceSystem->setResource(static_cast<Resource *>(object), uuid);
+    EnginePrivate::m_resourceSystem->setResource(static_cast<Resource *>(object), uuid);
 }
 /*!
     Replaces a current \a platform adaptor with new one;
     \note The previous one will not be deleted.
 */
 void Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
-    EnginePrivate::m_Platform = platform;
+    EnginePrivate::m_platform = platform;
 }
 /*!
     Returns resource path for the provided resource \a object.
@@ -530,7 +538,7 @@ void Engine::setPlatformAdaptor(PlatformAdaptor *platform) {
 string Engine::reference(Object *object) {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_pResourceSystem->reference(static_cast<Resource *>(object));
+    return EnginePrivate::m_resourceSystem->reference(static_cast<Resource *>(object));
 }
 /*!
     This method reads the index file for the resource bundle.
@@ -539,7 +547,7 @@ string Engine::reference(Object *object) {
 */
 bool Engine::reloadBundle() {
     PROFILE_FUNCTION();
-    ResourceSystem::DictionaryMap &indices = EnginePrivate::m_pResourceSystem->indices();
+    ResourceSystem::DictionaryMap &indices = EnginePrivate::m_resourceSystem->indices();
     indices.clear();
 
     File *file = Engine::file();
@@ -569,11 +577,11 @@ bool Engine::reloadBundle() {
                 }
 
                 for(auto &it : root[gSettings].toMap()) {
-                    EnginePrivate::m_Values[it.first] = it.second;
+                    EnginePrivate::m_values[it.first] = it.second;
                 }
 
-                EnginePrivate::m_Application = value(gProject, "").toString();
-                EnginePrivate::m_Organization = value(gCompany, "").toString();
+                EnginePrivate::m_application = value(gProject, "").toString();
+                EnginePrivate::m_organization = value(gCompany, "").toString();
 
                 return true;
             }
@@ -584,20 +592,26 @@ bool Engine::reloadBundle() {
 /*!
     Returns the resource management system which can be used in external modules.
 */
-System *Engine::resourceSystem() {
-    return EnginePrivate::m_pResourceSystem;
+ResourceSystem *Engine::resourceSystem() {
+    return EnginePrivate::m_resourceSystem;
+}
+/*!
+    Returns the render system which can be used in external modules.
+*/
+RenderSystem *Engine::renderSystem() {
+    return EnginePrivate::m_renderSystem;
 }
 /*!
     Returns true if game started; otherwise returns false.
 */
 bool Engine::isGameMode() {
-    return EnginePrivate::m_Game;
+    return EnginePrivate::m_game;
 }
 /*!
     Set game \a flag to true if game started; otherwise set false.
 */
 void Engine::setGameMode(bool flag) {
-    EnginePrivate::m_Game = flag;
+    EnginePrivate::m_game = flag;
 }
 /*!
     Adds a game \a module to pool.
@@ -619,9 +633,13 @@ void Engine::addModule(Module *module) {
         if(it.second.toString() == "system" || it.second.toString() == "render") {
             System *system = reinterpret_cast<System *>(module->getObject(it.first.c_str()));
             if(system->threadPolicy() == System::Pool) {
-                EnginePrivate::m_Pool.push_back(system);
+                EnginePrivate::m_pool.push_back(system);
             } else {
-                EnginePrivate::m_Serial.push_back(system);
+                EnginePrivate::m_serial.push_back(system);
+            }
+
+            if(dynamic_cast<RenderSystem *>(system) != nullptr) {
+                EnginePrivate::m_renderSystem = static_cast<RenderSystem *>(system);
             }
         }
     }
@@ -633,20 +651,20 @@ void Engine::addModule(Module *module) {
 SceneGraph *Engine::sceneGraph() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_SceneGraph;
+    return EnginePrivate::m_sceneGraph;
 }
 /*!
     Loads the scene stored in the .map files by the it's \a path to the Engine.
     \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
 */
 Scene *Engine::loadScene(const string &path, bool additive) {
-    return EnginePrivate::m_SceneGraph->loadScene(path, additive);
+    return EnginePrivate::m_sceneGraph->loadScene(path, additive);
 }
 /*!
     Unloads the \a scene from the SceneGraph.
 */
 void Engine::unloadScene(Scene *scene) {
-    EnginePrivate::m_SceneGraph->unloadScene(scene);
+    EnginePrivate::m_sceneGraph->unloadScene(scene);
 }
 /*!
     Returns file system module.
@@ -654,7 +672,7 @@ void Engine::unloadScene(Scene *scene) {
 File *Engine::file() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_File;
+    return EnginePrivate::m_file;
 }
 /*!
     Returns path to application binary directory.
@@ -662,7 +680,7 @@ File *Engine::file() {
 string Engine::locationAppDir() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_ApplicationDir;
+    return EnginePrivate::m_applicationDir;
 }
 /*!
     Returns path to application config directory.
@@ -670,13 +688,13 @@ string Engine::locationAppDir() {
 string Engine::locationAppConfig() {
     PROFILE_FUNCTION();
 
-    string result = EnginePrivate::m_Platform->locationLocalDir();
+    string result = EnginePrivate::m_platform->locationLocalDir();
 #ifndef THUNDER_MOBILE
-    if(!EnginePrivate::m_Organization.empty()) {
-        result  += "/" + EnginePrivate::m_Organization;
+    if(!EnginePrivate::m_organization.empty()) {
+        result  += "/" + EnginePrivate::m_organization;
     }
-    if(!EnginePrivate::m_Application.empty()) {
-        result  += "/" + EnginePrivate::m_Application;
+    if(!EnginePrivate::m_application.empty()) {
+        result  += "/" + EnginePrivate::m_application;
     }
 #endif
     return result;
@@ -690,13 +708,13 @@ string Engine::locationAppConfig() {
 bool Engine::loadTranslator(const string &name) {
     PROFILE_FUNCTION();
 
-    if(EnginePrivate::m_Translator) {
-        EnginePrivate::m_pResourceSystem->unloadResource(EnginePrivate::m_Translator);
+    if(EnginePrivate::m_translator) {
+        EnginePrivate::m_resourceSystem->unloadResource(EnginePrivate::m_translator);
     }
 
-    EnginePrivate::m_Translator = Engine::loadResource<Translator>(name);
-    if(EnginePrivate::m_Translator) {
-        EnginePrivate::m_Instance->postEvent(new Event(Event::LanguageChange));
+    EnginePrivate::m_translator = Engine::loadResource<Translator>(name);
+    if(EnginePrivate::m_translator) {
+        EnginePrivate::m_instance->postEvent(new Event(Event::LanguageChange));
         return true;
     }
     return false;
@@ -707,8 +725,8 @@ bool Engine::loadTranslator(const string &name) {
 string Engine::translate(const string &source) {
     PROFILE_FUNCTION();
 
-    if(EnginePrivate::m_Translator) {
-        return EnginePrivate::m_Translator->translate(source);
+    if(EnginePrivate::m_translator) {
+        return EnginePrivate::m_translator->translate(source);
     }
     return source;
 }
@@ -718,7 +736,7 @@ string Engine::translate(const string &source) {
 string Engine::applicationName() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_Application;
+    return EnginePrivate::m_application;
 }
 /*!
     Returns organization name.
@@ -726,7 +744,7 @@ string Engine::applicationName() {
 string Engine::organizationName() {
     PROFILE_FUNCTION();
 
-    return EnginePrivate::m_Organization;
+    return EnginePrivate::m_organization;
 }
 /*!
     Creates an Actor with \a name and attached \a component.

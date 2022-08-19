@@ -65,7 +65,7 @@ bool typeLessThan(AssetConverterSettings *left, AssetConverterSettings *right) {
 }
 
 AssetManager::AssetManager() :
-        m_indices(static_cast<ResourceSystem *>(Engine::resourceSystem())->indices()),
+        m_indices(Engine::resourceSystem()->indices()),
         m_dirWatcher(new QFileSystemWatcher(this)),
         m_fileWatcher(new QFileSystemWatcher(this)),
         m_projectManager(ProjectManager::instance()),
@@ -781,13 +781,13 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                     if(QFileInfo::exists(m_projectManager->importPath() + "/" + value)) {
                         Object *res = Engine::loadResource(value.toStdString());
-                        static_cast<ResourceSystem *>(Engine::resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
+                        Engine::resourceSystem()->reloadResource(static_cast<Resource *>(res), true);
                         emit imported(path, type);
                     }
                 }
 
                 Object *res = Engine::loadResource(guid.toStdString());
-                static_cast<ResourceSystem *>(Engine::resourceSystem())->reloadResource(static_cast<Resource *>(res), true);
+                Engine::resourceSystem()->reloadResource(static_cast<Resource *>(res), true);
                 emit imported(source, type);
 
                 settings->saveSettings();

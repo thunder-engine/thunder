@@ -5,18 +5,21 @@
 #include <components/camera.h>
 #include <components/scenegraph.h>
 
-#include <resources/pipeline.h>
-
 #include "resources/meshgl.h"
 #include "resources/texturegl.h"
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
 
+#include "systems/resourcesystem.h"
+
+#include <pipelinecontext.h>
 #include "commandbuffergl.h"
 
 #include <log.h>
 
 #define MAX_RESOLUTION 8192
+
+static int32_t registered = 0;
 
 void _CheckGLError(const char* file, int line) {
     GLenum err ( glGetError() );
@@ -24,11 +27,11 @@ void _CheckGLError(const char* file, int line) {
     while(err != GL_NO_ERROR) {
         std::string error;
         switch ( err ) {
-            case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION"; break;
-            case GL_INVALID_ENUM:       error="GL_INVALID_ENUM"; break;
-            case GL_INVALID_VALUE:      error="GL_INVALID_VALUE"; break;
-            case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+            case GL_INVALID_OPERATION: error="GL_INVALID_OPERATION"; break;
+            case GL_INVALID_ENUM:      error="GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:     error="GL_INVALID_VALUE"; break;
+            case GL_OUT_OF_MEMORY:     error="OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
         }
         Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;
         err = glGetError();
@@ -38,31 +41,37 @@ void _CheckGLError(const char* file, int line) {
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderSystem(),
-        m_pEngine(engine) {
+        m_engine(engine) {
 
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
+    if(registered == 0) {
+        System *system = Engine::resourceSystem();
 
-    TextureGL::registerClassFactory(system);
-    RenderTargetGL::registerClassFactory(system);
-    MaterialGL::registerClassFactory(system);
-    MeshGL::registerClassFactory(system);
+        TextureGL::registerClassFactory(system);
+        RenderTargetGL::registerClassFactory(system);
+        MaterialGL::registerClassFactory(system);
+        MeshGL::registerClassFactory(system);
 
-    CommandBufferGL::registerClassFactory(m_pEngine);
+        CommandBufferGL::registerClassFactory(m_engine);
+    }
+    ++registered;
 }
 
 RenderGLSystem::~RenderGLSystem() {
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
+    --registered;
+    if(registered == 0) {
+        System *system = Engine::resourceSystem();
 
-    TextureGL::unregisterClassFactory(system);
-    RenderTargetGL::unregisterClassFactory(system);
-    MaterialGL::unregisterClassFactory(system);
-    MeshGL::unregisterClassFactory(system);
+        TextureGL::unregisterClassFactory(system);
+        RenderTargetGL::unregisterClassFactory(system);
+        MaterialGL::unregisterClassFactory(system);
+        MeshGL::unregisterClassFactory(system);
 
-    CommandBufferGL::unregisterClassFactory(m_pEngine);
+        CommandBufferGL::unregisterClassFactory(m_engine);
+    }
 }
 
 const char *RenderGLSystem::name() const {
@@ -96,31 +105,33 @@ bool RenderGLSystem::init() {
     CheckGLError();
 
     texture = MIN(texture, MAX_RESOLUTION);
-    setAtlasPageSize(texture, texture);
+
+    bool result = RenderSystem::init();
+
+    pipelineContext()->setShadowPageSize(texture, texture);
 
     CommandBufferGL::setInited();
 
-    return true;
+    return result;
 }
 /*!
     Main drawing procedure.
 */
-void RenderGLSystem::update(SceneGraph *scene) {
+void RenderGLSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
-    Camera *camera = Camera::current();
-    if(camera && CommandBufferGL::isInited()) {
-        Pipeline *pipe = camera->pipeline();
-        CommandBufferGL *cmd = static_cast<CommandBufferGL *>(pipe->buffer());
+    PipelineContext *context = pipelineContext();
+    if(context && CommandBufferGL::isInited()) {
+        CommandBufferGL *cmd = static_cast<CommandBufferGL *>(context->buffer());
         cmd->begin();
 
         if(!isOffscreenMode()) {
             int32_t target;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &target);
-            static_cast<RenderTargetGL *>(pipe->defaultTarget())->setNativeHandle(target);
+            static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(target);
         }
 
-        RenderSystem::update(scene);
+        RenderSystem::update(graph);
     }
 }
 

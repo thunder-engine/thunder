@@ -2,25 +2,23 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/meshrender.h"
 
-#include "resources/pipeline.h"
 #include "resources/texture.h"
+
+#include "pipelinecontext.h"
 
 class CameraPrivate {
 public:
     CameraPrivate() :
-        m_Ortho(false),
-        m_FOV(45.0), // 2*arctan(height/(2*distance))
-        m_Near(0.1f),
-        m_Far(1000.0f),
-        m_Ratio(1.0f),
-        m_Focal(1.0f),
-        m_OrthoSize(1.0f),
-        m_Width(0),
-        m_Height(0),
-        m_Color(Vector4()),
-        m_pPipeline(nullptr) {
+        m_ortho(false),
+        m_fov(45.0), // 2*arctan(height/(2*distance))
+        m_near(0.1f),
+        m_far(1000.0f),
+        m_ratio(1.0f),
+        m_focal(1.0f),
+        m_orthoSize(1.0f),
+        m_color(Vector4()),
+        m_pipeline(nullptr) {
 
     }
 
@@ -55,32 +53,29 @@ public:
         return true;
     }
 
-    bool m_Ortho;
+    bool m_ortho;
 
-    float m_FOV;
+    float m_fov;
 
-    float m_Near;
+    float m_near;
 
-    float m_Far;
+    float m_far;
 
-    float m_Ratio;
+    float m_ratio;
 
-    float m_Focal;
+    float m_focal;
 
-    float m_OrthoSize;
+    float m_orthoSize;
 
-    int m_Width;
+    Vector4 m_color;
 
-    int m_Height;
+    static Camera *s_current;
 
-    Vector4 m_Color;
+    PipelineContext *m_pipeline;
 
-    Pipeline *m_pPipeline;
-
-    static Camera *s_pCurrent;
 };
 
-Camera *CameraPrivate::s_pCurrent  = nullptr;
+Camera *CameraPrivate::s_current  = nullptr;
 
 /*!
     \class Camera
@@ -99,21 +94,6 @@ Camera::~Camera() {
     p_ptr = nullptr;
 }
 /*!
-    Returns render pipline which attached to the camera.
-*/
-Pipeline *Camera::pipeline() {
-    if(p_ptr->m_pPipeline == nullptr) {
-        p_ptr->m_pPipeline = Engine::objectCreate<Pipeline>("Pipeline");
-    }
-    return p_ptr->m_pPipeline;
-}
-/*!
-    Attaches render \a pipeline to the camera.
-*/
-void Camera::setPipeline(Pipeline *pipeline) {
-    p_ptr->m_pPipeline = pipeline;
-}
-/*!
     Returns view matrix for the camera.
 */
 Matrix4 Camera::viewMatrix() const {
@@ -126,11 +106,11 @@ Matrix4 Camera::viewMatrix() const {
     Returns projection matrix for the camera.
 */
 Matrix4 Camera::projectionMatrix() const {
-    if(p_ptr->m_Ortho) {
-        float width = p_ptr->m_OrthoSize * p_ptr->m_Ratio;
-        return Matrix4::ortho(-width / 2, width / 2, -p_ptr->m_OrthoSize / 2, p_ptr->m_OrthoSize / 2, p_ptr->m_Near, p_ptr->m_Far);
+    if(p_ptr->m_ortho) {
+        float width = p_ptr->m_orthoSize * p_ptr->m_ratio;
+        return Matrix4::ortho(-width / 2, width / 2, -p_ptr->m_orthoSize / 2, p_ptr->m_orthoSize / 2, p_ptr->m_near, p_ptr->m_far);
     }
-    return Matrix4::perspective(p_ptr->m_FOV, p_ptr->m_Ratio, p_ptr->m_Near, p_ptr->m_Far);
+    return Matrix4::perspective(p_ptr->m_fov, p_ptr->m_ratio, p_ptr->m_near, p_ptr->m_far);
 }
 /*!
     Transforms position from \a worldSpace into screen space using \a modelView and \a projection matrices.
@@ -188,14 +168,14 @@ Ray Camera::castRay(float x, float y) {
     dir.normalize();
 
     Vector3 view;
-    if(p_ptr->m_Ortho) {
-        p += t->quaternion() * Vector3((x - 0.5f) * p_ptr->m_OrthoSize * p_ptr->m_Ratio,
-                                       (y - 0.5f) * p_ptr->m_OrthoSize, 0.0f);
+    if(p_ptr->m_ortho) {
+        p += t->quaternion() * Vector3((x - 0.5f) * p_ptr->m_orthoSize * p_ptr->m_ratio,
+                                       (y - 0.5f) * p_ptr->m_orthoSize, 0.0f);
     } else {
-        float tang    = tan(p_ptr->m_FOV * DEG2RAD);
+        float tang    = tan(p_ptr->m_fov * DEG2RAD);
         Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
         Vector3 up    = right.cross(dir);
-        view = Vector3((x - 0.5f) * tang * p_ptr->m_Ratio) * right +
+        view = Vector3((x - 0.5f) * tang * p_ptr->m_ratio) * right +
                Vector3((y - 0.5f) * tang) * up + p + dir;
 
         dir = (view - p);
@@ -207,110 +187,110 @@ Ray Camera::castRay(float x, float y) {
     Returns field of view angle for the camera in degrees.
 */
 float Camera::fov() const {
-    return p_ptr->m_FOV;
+    return p_ptr->m_fov;
 }
 /*!
     Sets field of view \a angle for the camera in degrees.
     \note Applicable only for the perspective mode.
 */
 void Camera::setFov(const float angle) {
-    p_ptr->m_FOV   = angle;
+    p_ptr->m_fov   = angle;
 }
 /*!
     Returns a distance to near cut plane.
 */
 float Camera::nearPlane() const {
-    return p_ptr->m_Near;
+    return p_ptr->m_near;
 }
 /*!
     Sets a \a distance to near cut plane.
 */
 void Camera::setNear(const float distance) {
-    p_ptr->m_Near = distance;
+    p_ptr->m_near = distance;
 }
 /*!
     Returns a distance to far cut plane.
 */
 float Camera::farPlane() const {
-    return p_ptr->m_Far;
+    return p_ptr->m_far;
 }
 /*!
     Sets a \a distance to far cut plane.
 */
 void Camera::setFar(const float distance) {
-    p_ptr->m_Far = distance;
+    p_ptr->m_far = distance;
 }
 /*!
     Returns the aspect ratio (width divided by height).
 */
 float Camera::ratio() const {
-    return p_ptr->m_Ratio;
+    return p_ptr->m_ratio;
 }
 /*!
     Sets the aspect \a ratio (width divided by height).
 */
 void Camera::setRatio(float ratio) {
-    p_ptr->m_Ratio = ratio;
+    p_ptr->m_ratio = ratio;
 }
 /*!
     Returns a focal distance for the camera.
 */
 float Camera::focal() const {
-    return p_ptr->m_Focal;
+    return p_ptr->m_focal;
 }
 /*!
     Sets a \a focal distance for the camera.
 */
 void Camera::setFocal(const float focal) {
-    p_ptr->m_Focal = focal;
+    p_ptr->m_focal = focal;
 }
 /*!
     Returns the color with which the screen will be cleared.
 */
 Vector4 &Camera::color() const {
-    return p_ptr->m_Color;
+    return p_ptr->m_color;
 }
 /*!
     Sets the \a color with which the screen will be cleared.
 */
 void Camera::setColor(const Vector4 color) {
-    p_ptr->m_Color = color;
+    p_ptr->m_color = color;
 }
 /*!
     Returns camera size for orthographic mode.
 */
 float Camera::orthoSize() const {
-    return p_ptr->m_OrthoSize;
+    return p_ptr->m_orthoSize;
 }
 /*!
     Sets camera \a size for orthographic mode.
 */
 void Camera::setOrthoSize(const float size) {
-    p_ptr->m_OrthoSize = size;
+    p_ptr->m_orthoSize = size;
 }
 /*!
     Returns true for the orthographic mode; for the perspective mode, returns false.
 */
 bool Camera::orthographic() const {
-    return p_ptr->m_Ortho;
+    return p_ptr->m_ortho;
 }
 /*!
     Sets orthographic \a mode.
 */
 void Camera::setOrthographic(const bool mode) {
-    p_ptr->m_Ortho = mode;
+    p_ptr->m_ortho = mode;
 }
 /*!
     Returns current active camera.
 */
 Camera *Camera::current() {
-    return CameraPrivate::s_pCurrent;
+    return CameraPrivate::s_current;
 }
 /*!
     Sets \a current active camera.
 */
 void Camera::setCurrent(Camera *current) {
-    CameraPrivate::s_pCurrent = current;
+    CameraPrivate::s_current = current;
 }
 /*!
     Returns frustum corners for the \a camera.
@@ -318,12 +298,12 @@ void Camera::setCurrent(Camera *current) {
 array<Vector3, 8> Camera::frustumCorners(const Camera &camera) {
     Transform *t = camera.actor()->transform();
 
-    return Camera::frustumCorners(camera.p_ptr->m_Ortho, (camera.p_ptr->m_Ortho) ?
-                                                          camera.p_ptr->m_OrthoSize :
-                                                          camera.p_ptr->m_FOV,
-                                                          camera.p_ptr->m_Ratio,
+    return Camera::frustumCorners(camera.p_ptr->m_ortho, (camera.p_ptr->m_ortho) ?
+                                                          camera.p_ptr->m_orthoSize :
+                                                          camera.p_ptr->m_fov,
+                                                          camera.p_ptr->m_ratio,
                                   t->worldPosition(), t->worldRotation(),
-                                  camera.p_ptr->m_Near, camera.p_ptr->m_Far);
+                                  camera.p_ptr->m_near, camera.p_ptr->m_far);
 }
 /*!
     Returns frustum corners with provided parameters.
@@ -400,8 +380,8 @@ RenderList Camera::frustumCulling(RenderList &list, const array<Vector3, 8> &fru
 bool Camera::drawHandles(ObjectList &selected) {
     Transform *t = actor()->transform();
     if(isSelected(selected)) {
-        array<Vector3, 8> a = frustumCorners(p_ptr->m_Ortho, (p_ptr->m_Ortho) ? p_ptr->m_OrthoSize : p_ptr->m_FOV,
-                                             p_ptr->m_Ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
+        array<Vector3, 8> a = frustumCorners(p_ptr->m_ortho, (p_ptr->m_ortho) ? p_ptr->m_orthoSize : p_ptr->m_fov,
+                                             p_ptr->m_ratio, t->worldPosition(), t->worldRotation(), nearPlane(), farPlane());
 
         Handles::s_Color = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
         Vector3Vector points(a.begin(), a.end());

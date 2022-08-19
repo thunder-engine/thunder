@@ -12,6 +12,8 @@
 #include <scriptstdstring/scriptstdstring.h>
 #include <scriptmath/scriptmath.h>
 
+#include <systems/resourcesystem.h>
+
 #ifdef SHARED_DEFINE
     #include <debugger/debugger.h>
 #endif

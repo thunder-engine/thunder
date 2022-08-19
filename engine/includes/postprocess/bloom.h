@@ -3,7 +3,7 @@
 
 #include <amath.h>
 
-#include "postprocessor.h"
+#include "renderpass.h"
 
 #include "filters/blur.h"
 
@@ -11,7 +11,7 @@
 
 class Engine;
 
-class Bloom : public PostProcessor {
+class Bloom : public RenderPass {
     struct BloomPass {
         Vector3 m_blurSize;
 
@@ -26,7 +26,7 @@ public:
     Bloom();
 
 private:
-    Texture *draw(Texture *source, Pipeline *pipeline) override;
+    Texture *draw(Texture *source, PipelineContext *context) override;
 
     void resize(int32_t width, int32_t height) override;
 

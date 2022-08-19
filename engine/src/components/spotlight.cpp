@@ -1,17 +1,15 @@
 #include "components/spotlight.h"
 
-#include "systems/rendersystem.h"
-
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
 
-#include "commandbuffer.h"
-
 #include "resources/material.h"
 #include "resources/mesh.h"
-#include "resources/pipeline.h"
 #include "resources/rendertarget.h"
+
+#include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 namespace {
 const char *uni_position  = "uni.position";
@@ -97,14 +95,14 @@ void SpotLight::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
+void SpotLight::shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) {
     A_UNUSED(camera);
 
     if(!castShadows()) {
         p_ptr->m_shadowMap = nullptr;
         return;
     }
-    CommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = context->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
@@ -124,10 +122,10 @@ void SpotLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderLi
     Matrix4 crop = Matrix4::perspective(p_ptr->m_angle * 2.0f, 1.0f, p_ptr->m_near, zFar);
 
     int32_t x, y, w, h;
-    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
+    p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
 
     int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    context->shadowPageSize(pageWidth, pageHeight);
 
     p_ptr->m_matrix = scale * crop * rot;
     p_ptr->m_tiles = Vector4(static_cast<float>(x) / pageWidth,

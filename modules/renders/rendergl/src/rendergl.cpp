@@ -20,12 +20,11 @@ static const char *meta = \
 "}";
 
 RenderGL::RenderGL(Engine *engine) :
-        Module(engine),
-        m_pSystem(nullptr) {
+        Module(engine) {
 }
 
 RenderGL::~RenderGL() {
-    delete m_pSystem;
+
 }
 
 const char *RenderGL::metaInfo() const {
@@ -33,8 +32,5 @@ const char *RenderGL::metaInfo() const {
 }
 
 void *RenderGL::getObject(const char *) {
-    if(m_pSystem == nullptr) {
-        m_pSystem = new RenderGLSystem(m_engine);
-    }
-    return m_pSystem;
+    return new RenderGLSystem(m_engine);
 }

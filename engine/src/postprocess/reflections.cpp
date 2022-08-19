@@ -4,12 +4,12 @@
 
 #include "components/scenegraph.h"
 
-#include "resources/pipeline.h"
 #include "resources/material.h"
 #include "resources/rendertarget.h"
 
 #include "filters/blur.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 #include "amath.h"
@@ -57,9 +57,9 @@ Reflections::~Reflections() {
 
 }
 
-Texture *Reflections::draw(Texture *source, Pipeline *pipeline) {
+Texture *Reflections::draw(Texture *source, PipelineContext *context) {
     if(m_enabled) {
-        CommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = context->buffer();
         if(m_material) { // sslr step
             buffer->setRenderTarget(m_sslrTarget);
             buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);

@@ -13,7 +13,8 @@ class EnginePrivate;
 
 class Actor;
 class Scene;
-class System;
+class ResourceSystem;
+class RenderSystem;
 class Resource;
 class SceneGraph;
 class PlatformAdaptor;
@@ -71,7 +72,9 @@ public:
 
     static bool reloadBundle();
 
-    static System *resourceSystem();
+    static ResourceSystem *resourceSystem();
+
+    static RenderSystem *renderSystem();
 
 /*
     Scene management

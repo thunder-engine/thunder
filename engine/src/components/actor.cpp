@@ -445,6 +445,20 @@ bool Actor::isInstance() const {
     return (p_ptr->m_prefab != nullptr);
 }
 /*!
+    Return true if \a actor is a part of hiearhy.
+*/
+bool Actor::isInHierarchy(Actor *actor) const {
+    if(this == actor) {
+        return true;
+    }
+    Actor *p = static_cast<Actor *>(parent());
+    if(p) {
+        return p->isInHierarchy(actor);
+    }
+
+    return false;
+}
+/*!
     Returns a Prefab object from which the Actor was instanced.
     \internal
 */
@@ -474,11 +488,10 @@ void Actor::setPrefab(Prefab *prefab) {
 */
 void Actor::loadObjectData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
     auto it = data.find(PREFAB);
     if(it != data.end()) {
-        setPrefab(dynamic_cast<Prefab *>(system->loadResource((*it).second.toString())));
+        setPrefab(dynamic_cast<Prefab *>(Engine::resourceSystem()->loadResource((*it).second.toString())));
 
         if(p_ptr->m_prefab) {
             Actor *actor = static_cast<Actor *>(p_ptr->m_prefab->actor()->clone());
@@ -523,7 +536,6 @@ void Actor::loadObjectData(const VariantMap &data) {
 */
 void Actor::loadUserData(const VariantMap &data) {
     PROFILE_FUNCTION();
-    ResourceSystem *system = static_cast<ResourceSystem *>(Engine::resourceSystem());
 
     auto it = data.find(FLAGS);
     if(it != data.end()) {
@@ -557,7 +569,7 @@ void Actor::loadUserData(const VariantMap &data) {
                             Variant var = property.second;
                             if(prop.type().flags() & MetaType::BASE_OBJECT) {
                                 if(var.type() == MetaType::STRING) { // Asset
-                                    Object *res = system->loadResource(var.toString());
+                                    Object *res = Engine::resourceSystem()->loadResource(var.toString());
                                     if(res) {
                                         var = Variant(prop.read((*object).second).userType(), &res);
                                     }

@@ -2,10 +2,10 @@
 
 #include "engine.h"
 
-#include "pipeline.h"
-#include "rendertarget.h"
-#include "material.h"
+#include "resources/rendertarget.h"
+#include "resources/material.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 #include "components/private/postprocessorsettings.h"
@@ -14,10 +14,11 @@
 #include <cstring>
 
 namespace {
-const char *BLOOM("graphics.bloom");
+const char *bloom("graphics.bloom");
 
-const char *BLOOM_THRESHOLD("bloom/Threshold");
+const char *bloomThreshold("bloom/Threshold");
 };
+
 
 Bloom::Bloom() :
         m_threshold(1.0f),
@@ -39,7 +40,7 @@ Bloom::Bloom() :
 
     m_resultTarget = Engine::objectCreate<RenderTarget>();
 
-    Engine::setValue(BLOOM, true);
+    Engine::setValue(bloom, true);
 
     m_bloomPasses[0].m_blurSize = Vector3(1.0f,  0.0f,  4.0f);
     m_bloomPasses[1].m_blurSize = Vector3(4.0f,  0.0f,  8.0f);
@@ -47,12 +48,12 @@ Bloom::Bloom() :
     m_bloomPasses[3].m_blurSize = Vector3(32.0f, 0.0f, 32.0f);
     m_bloomPasses[4].m_blurSize = Vector3(64.0f, 0.0f, 64.0f);
 
-    PostProcessSettings::registerSetting(BLOOM_THRESHOLD, m_threshold);
+    PostProcessSettings::registerSetting(bloomThreshold, m_threshold);
 }
 
-Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
+Texture *Bloom::draw(Texture *source, PipelineContext *context) {
     if(m_enabled && m_material) {
-        CommandBuffer *buffer = pipeline->buffer();
+        CommandBuffer *buffer = context->buffer();
 
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
             m_material->setTexture("rgbMap", (i == 0) ? source : m_bloomPasses[i - 1].m_downTexture);
@@ -68,11 +69,11 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
 
         m_resultTarget->setColorAttachment(0, source);
 
-        Blur *blur = PostProcessor::blur();
+        static Blur blur;
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            blur->setParameters(Vector2(1.0f / m_bloomPasses[i].m_downTexture->width(), 1.0f / m_bloomPasses[i].m_downTexture->height()),
+            blur.setParameters(Vector2(1.0f / m_bloomPasses[i].m_downTexture->width(), 1.0f / m_bloomPasses[i].m_downTexture->height()),
                                 m_bloomPasses[i].m_blurSteps, m_bloomPasses[i].m_blurPoints);
-            blur->draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
+            blur.draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
         }
     }
 
@@ -80,7 +81,7 @@ Texture *Bloom::draw(Texture *source, Pipeline *pipeline) {
 }
 
 void Bloom::resize(int32_t width, int32_t height) {
-    PostProcessor::resize(width, height);
+    RenderPass::resize(width, height);
 
     if(m_width != width || m_height != height) {
         m_width = width;
@@ -102,7 +103,7 @@ void Bloom::resize(int32_t width, int32_t height) {
 }
 
 void Bloom::setSettings(const PostProcessSettings &settings) {
-    m_threshold = settings.readValue(BLOOM_THRESHOLD).toFloat();
+    m_threshold = settings.readValue(bloomThreshold).toFloat();
     m_material->setFloat("uni.threshold", &m_threshold);
 }
 

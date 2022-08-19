@@ -30,6 +30,9 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="Viewport" name="viewport" native="true"/>
+   </item>
+   <item>
     <widget class="QWidget" name="tools" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -96,6 +99,12 @@
   </action>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>Viewport</class>
+   <extends>QWidget</extends>
+   <header>editor/viewport/viewport.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>SpriteElement</class>
    <extends>QWidget</extends>

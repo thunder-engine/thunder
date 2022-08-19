@@ -21,27 +21,27 @@ class Texture;
 
 class EditorPipeline;
 
+class ViewportRaycast;
+
+class Viewport;
+
 class ObjectCtrl : public CameraCtrl {
     Q_OBJECT
 
 public:
-    ObjectCtrl(QWidget *view);
+    ObjectCtrl(Viewport *view);
     ~ObjectCtrl();
 
-    void init();
+    void init(Viewport *viewport);
 
     void clear(bool signal = true);
 
     SceneGraph *sceneGraph() const;
     void setSceneGraph(SceneGraph *graph);
 
-    void switchActiveScene();
-
     void selectActors(const list<uint32_t> &list);
 
     Object::ObjectList selected() override;
-
-    void createMenu(QMenu *menu) override;
 
     Object *findObject(uint32_t id, Object *parent = nullptr);
 
@@ -54,6 +54,10 @@ public:
 
     bool isDrag() const { return m_drag; }
     void setDrag(bool drag);
+
+    Camera *activeCamera() const { return m_activeCamera; }
+
+    Vector2 mousePosition() const { return m_mousePosition; }
 
 public slots:
     void onInputEvent(QInputEvent *) override;
@@ -100,8 +104,6 @@ signals:
 protected:
     void drawHandles() override;
 
-    void selectGeometry(Vector2 &, Vector2 &size);
-
 private slots:
     void onApplySettings();
 
@@ -128,13 +130,11 @@ protected:
 
     Vector3 m_mouseWorld;
 
-    EditorPipeline *m_pipeline;
-
     Actor *m_isolatedActor;
 
     EditorTool *m_activeTool;
 
-    QMenu *m_menu;
+    ViewportRaycast *m_rayCast;
 
     uint8_t m_axes;
 

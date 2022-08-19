@@ -2,13 +2,13 @@
 
 #include "engine.h"
 
-#include "pipeline.h"
+#include "pipelinecontext.h"
 #include "material.h"
 
 #include "resources/rendertarget.h"
 
 namespace {
-    const char *ANTIALIASING("graphics.antialiasing");
+    const char *antialiasing("graphics.antialiasing");
 };
 
 #include "commandbuffer.h"
@@ -24,7 +24,7 @@ AntiAliasing::AntiAliasing() {
 
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
-    Engine::setValue(ANTIALIASING, true);
+    Engine::setValue(antialiasing, true);
 }
 
 uint32_t AntiAliasing::layer() const {

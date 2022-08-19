@@ -127,7 +127,7 @@ void Prefab_serialization() {
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
+    system.resourceSystem()->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
     QCOMPARE(clone != nullptr, true);
@@ -183,7 +183,7 @@ void Cross_reference_prefab() {
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
+    system.resourceSystem()->setResource(fab, "TestPrefab");
 
     Actor *root = Engine::objectCreate<Actor>("Root");
 
@@ -240,7 +240,7 @@ void Remove_component_from_prefab_instance() {
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
+    system.resourceSystem()->setResource(fab, "TestPrefab");
 
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());
     QCOMPARE(clone != nullptr, true);
@@ -282,7 +282,7 @@ void Update_prefab_instance() {
     Prefab *fab = Engine::objectCreate<Prefab>("");
     fab->setActor(prefab);
 
-    static_cast<ResourceSystem *>(system.resourceSystem())->setResource(fab, "TestPrefab");
+    system.resourceSystem()->setResource(fab, "TestPrefab");
 
     // Create an instance before do changes in prefab
     Actor *clone = dynamic_cast<Actor *>(prefab->clone());

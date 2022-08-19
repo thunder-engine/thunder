@@ -1,17 +1,15 @@
 #include "components/pointlight.h"
 
-#include "systems/rendersystem.h"
-
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
 
-#include "commandbuffer.h"
-
 #include "resources/material.h"
 #include "resources/mesh.h"
-#include "resources/pipeline.h"
 #include "resources/rendertarget.h"
+
+#include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 #define SIDES 6
 
@@ -109,7 +107,7 @@ void PointLight::draw(CommandBuffer &buffer, uint32_t layer) {
 /*!
     \internal
 */
-void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderList &components) {
+void PointLight::shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) {
     A_UNUSED(camera);
 
     if(!castShadows()) {
@@ -117,7 +115,7 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
         return;
     }
 
-    CommandBuffer *buffer = pipeline->buffer();
+    CommandBuffer *buffer = context->buffer();
 
     Transform *t = actor()->transform();
     Vector3 pos = t->worldPosition();
@@ -132,10 +130,10 @@ void PointLight::shadowsUpdate(const Camera &camera, Pipeline *pipeline, RenderL
     scale[14] = 0.5f;
 
     int32_t x[SIDES], y[SIDES], w[SIDES], h[SIDES];
-    p_ptr->m_shadowMap = pipeline->requestShadowTiles(uuid(), 1, x, y, w, h, SIDES);
+    p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 1, x, y, w, h, SIDES);
 
     int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    context->shadowPageSize(pageWidth, pageHeight);
 
     float zFar = attenuationRadius();
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_near, zFar);

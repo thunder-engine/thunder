@@ -530,7 +530,11 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
     }
 
     QString vertex = "Shader.vert";
-    define = "#define TYPE_STATIC 1";
+    if(root->materialType() == ShaderRootNode::PostProcess) {
+        define = "#define TYPE_FULLSCREEN 1";
+    } else {
+        define = "#define TYPE_STATIC 1";
+    }
     {
         Variant data = ShaderBuilder::loadIncludes(vertex, define, m_pragmas).toStdString();
         if(data.isValid()) {

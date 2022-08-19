@@ -9,11 +9,9 @@
 
 #include <editor/viewport/handles.h>
 #include <editor/viewport/handletools.h>
-#include <editor/viewport/editorpipeline.h>
 
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(),
-        m_pPipeline(nullptr),
         m_pSettings(nullptr),
         m_Width(0),
         m_Height(0),
@@ -25,19 +23,6 @@ SpriteController::SpriteController(QWidget *view) :
         cam->setOrthoSize(SCALE);
         cam->setFocal(SCALE);
     }
-}
-
-SpriteController::~SpriteController() {
-    delete m_pPipeline;
-}
-
-void SpriteController::init() {
-    if(m_pPipeline) {
-        delete m_pPipeline;
-    }
-    m_pPipeline = new EditorPipeline;
-    m_pPipeline->setController(this);
-    m_activeCamera->setPipeline(m_pPipeline);
 }
 
 void SpriteController::setImportSettings(TextureImportSettings *settings) {
@@ -74,7 +59,6 @@ void SpriteController::drawHandles() {
     if(m_pSettings) {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
-        Handles::cleanDepth();
         for(auto it : m_pSettings->elements().keys()) {
             QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
             if(m_List.indexOf(it) > -1) {

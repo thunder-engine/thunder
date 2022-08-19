@@ -65,7 +65,7 @@ void System::composeComponent(Component *component) const {
 /*!
     Sets active \a scene.
 */
-void System::setActiveScene(SceneGraph *sceneGraph) {
+void System::setActiveGraph(SceneGraph *sceneGraph) {
     m_pSceneGraph = sceneGraph;
 }
 /*!
