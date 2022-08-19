@@ -19,17 +19,19 @@
 
 #define MAX_RESOLUTION 8192
 
+static int32_t registered = 0;
+
 void _CheckGLError(const char* file, int line) {
     GLenum err ( glGetError() );
 
     while(err != GL_NO_ERROR) {
         std::string error;
         switch ( err ) {
-            case GL_INVALID_OPERATION:  error="GL_INVALID_OPERATION"; break;
-            case GL_INVALID_ENUM:       error="GL_INVALID_ENUM"; break;
-            case GL_INVALID_VALUE:      error="GL_INVALID_VALUE"; break;
-            case GL_OUT_OF_MEMORY:      error="OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+            case GL_INVALID_OPERATION: error="GL_INVALID_OPERATION"; break;
+            case GL_INVALID_ENUM:      error="GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:     error="GL_INVALID_VALUE"; break;
+            case GL_OUT_OF_MEMORY:     error="OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
         }
         Log(Log::DBG) << error.c_str() <<" - " << file << ":" << line;
         err = glGetError();
@@ -39,36 +41,37 @@ void _CheckGLError(const char* file, int line) {
 
 RenderGLSystem::RenderGLSystem(Engine *engine) :
         RenderSystem(),
-        m_pEngine(engine) {
+        m_engine(engine) {
 
     PROFILE_FUNCTION();
 
-    static bool registered = false;
-    if(!registered) {
-        System *system = m_pEngine->resourceSystem();
+    if(registered == 0) {
+        System *system = Engine::resourceSystem();
 
         TextureGL::registerClassFactory(system);
         RenderTargetGL::registerClassFactory(system);
         MaterialGL::registerClassFactory(system);
         MeshGL::registerClassFactory(system);
 
-        CommandBufferGL::registerClassFactory(m_pEngine);
-
-        registered = true;
+        CommandBufferGL::registerClassFactory(m_engine);
     }
+    ++registered;
 }
 
 RenderGLSystem::~RenderGLSystem() {
     PROFILE_FUNCTION();
 
-    System *system = m_pEngine->resourceSystem();
+    --registered;
+    if(registered == 0) {
+        System *system = Engine::resourceSystem();
 
-    TextureGL::unregisterClassFactory(system);
-    RenderTargetGL::unregisterClassFactory(system);
-    MaterialGL::unregisterClassFactory(system);
-    MeshGL::unregisterClassFactory(system);
+        TextureGL::unregisterClassFactory(system);
+        RenderTargetGL::unregisterClassFactory(system);
+        MaterialGL::unregisterClassFactory(system);
+        MeshGL::unregisterClassFactory(system);
 
-    CommandBufferGL::unregisterClassFactory(m_pEngine);
+        CommandBufferGL::unregisterClassFactory(m_engine);
+    }
 }
 
 const char *RenderGLSystem::name() const {
@@ -102,11 +105,14 @@ bool RenderGLSystem::init() {
     CheckGLError();
 
     texture = MIN(texture, MAX_RESOLUTION);
-    setAtlasPageSize(texture, texture);
+
+    bool result = RenderSystem::init();
+
+    pipelineContext()->setShadowPageSize(texture, texture);
 
     CommandBufferGL::setInited();
 
-    return RenderSystem::init();
+    return result;
 }
 /*!
     Main drawing procedure.

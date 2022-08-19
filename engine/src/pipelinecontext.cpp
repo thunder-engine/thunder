@@ -59,6 +59,8 @@ PipelineContext::PipelineContext() :
         m_debugTexture(nullptr),
         m_width(64),
         m_height(64),
+        m_shadowPageWidth(64),
+        m_shadowPageHeight(64),
         m_uiAsSceneView(false) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
@@ -68,10 +70,6 @@ PipelineContext::PipelineContext() :
     }
 
     m_plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
-
-    int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
-    m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / pageWidth, 1.0f / pageHeight, pageWidth, pageHeight));
 
     {
         Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
@@ -286,6 +284,17 @@ void PipelineContext::setDebugTexture(const string &string) {
     }
 }
 
+void PipelineContext::shadowPageSize(int32_t &width, int32_t &height) {
+    width = m_shadowPageWidth;
+    height = m_shadowPageHeight;
+}
+
+void PipelineContext::setShadowPageSize(int32_t width, int32_t height) {
+    m_shadowPageWidth = width;
+    m_shadowPageHeight = height;
+    m_buffer->setGlobalValue("light.pageSize", Vector4(1.0f / m_shadowPageWidth, 1.0f / m_shadowPageHeight, m_shadowPageWidth, m_shadowPageHeight));
+}
+
 RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count) {
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
@@ -322,13 +331,10 @@ RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int
     }
 
     if(sub == nullptr) {
-        int32_t pageWidth, pageHeight;
-        RenderSystem::atlasPageSize(pageWidth, pageHeight);
-
         Texture *map = Engine::objectCreate<Texture>();
         map->setFormat(Texture::Depth);
-        map->setWidth(pageWidth);
-        map->setHeight(pageHeight);
+        map->setWidth(m_shadowPageWidth);
+        map->setHeight(m_shadowPageHeight);
         map->setDepthBits(24);
 
         target = Engine::objectCreate<RenderTarget>();
@@ -336,8 +342,8 @@ RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int
 
         AtlasNode *root = new AtlasNode;
 
-        root->w = pageWidth;
-        root->h = pageHeight;
+        root->w = m_shadowPageWidth;
+        root->h = m_shadowPageHeight;
 
         m_shadowPages[target] = root;
 

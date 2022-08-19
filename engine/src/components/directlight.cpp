@@ -8,8 +8,6 @@
 #include "resources/mesh.h"
 #include "resources/rendertarget.h"
 
-#include "systems/rendersystem.h"
-
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
@@ -145,7 +143,7 @@ void DirectLight::shadowsUpdate(const Camera &camera, PipelineContext *context, 
     p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 0, x, y, w, h, MAX_LODS);
 
     int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    context->shadowPageSize(pageWidth, pageHeight);
 
     for(int32_t lod = 0; lod < MAX_LODS; lod++) {
         float dist = distance[lod];

@@ -1,11 +1,8 @@
 #include "components/spotlight.h"
 
-#include "systems/rendersystem.h"
-
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/camera.h"
-
 
 #include "resources/material.h"
 #include "resources/mesh.h"
@@ -128,7 +125,7 @@ void SpotLight::shadowsUpdate(const Camera &camera, PipelineContext *context, Re
     p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 1, &x, &y, &w, &h, 1);
 
     int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    context->shadowPageSize(pageWidth, pageHeight);
 
     p_ptr->m_matrix = scale * crop * rot;
     p_ptr->m_tiles = Vector4(static_cast<float>(x) / pageWidth,

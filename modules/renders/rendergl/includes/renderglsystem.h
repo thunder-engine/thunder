@@ -25,7 +25,7 @@ public:
 #endif
 
 private:
-    Engine *m_pEngine;
+    Engine *m_engine;
 
 };
 

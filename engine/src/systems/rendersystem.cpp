@@ -29,8 +29,6 @@ public:
         m_pipelineContext(nullptr) {
 
     }
-    static int32_t m_AtlasPageWidth;
-    static int32_t m_AtlasPageHeight;
 
     static int32_t m_registered;
 
@@ -38,9 +36,6 @@ public:
 
     PipelineContext *m_pipelineContext;
 };
-
-int32_t RenderSystemPrivate::m_AtlasPageWidth = 1024;
-int32_t RenderSystemPrivate::m_AtlasPageHeight = 1024;
 
 int32_t RenderSystemPrivate::m_registered = 0;
 
@@ -121,16 +116,6 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
         p_ptr->m_pipelineContext->drawUi(*camera);
         p_ptr->m_pipelineContext->finish();
     }
-}
-
-void RenderSystem::atlasPageSize(int32_t &width, int32_t &height) {
-    width = RenderSystemPrivate::m_AtlasPageWidth;
-    height = RenderSystemPrivate::m_AtlasPageHeight;
-}
-
-void RenderSystem::setAtlasPageSize(int32_t width, int32_t height) {
-    RenderSystemPrivate::m_AtlasPageWidth = width;
-    RenderSystemPrivate::m_AtlasPageHeight = height;
 }
 
 void RenderSystem::composeComponent(Component *component) const {

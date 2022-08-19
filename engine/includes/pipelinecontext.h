@@ -67,6 +67,9 @@ public:
 
     void resize(int32_t width, int32_t height);
 
+    // Shadow map management functions
+    void shadowPageSize(int32_t &width, int32_t &height);
+    void setShadowPageSize(int32_t width, int32_t height);
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 protected:
@@ -113,6 +116,9 @@ protected:
 
     int32_t m_width;
     int32_t m_height;
+
+    int32_t m_shadowPageWidth;
+    int32_t m_shadowPageHeight;
 
     bool m_uiAsSceneView;
 

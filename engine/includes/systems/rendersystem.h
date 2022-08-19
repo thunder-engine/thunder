@@ -35,11 +35,7 @@ public:
     virtual ByteArray renderOffscreen(SceneGraph *sceneGraph, int width, int height);
 #endif
 
-    static void atlasPageSize(int32_t &width, int32_t &height);
-
 protected:
-    static void setAtlasPageSize(int32_t width, int32_t height);
-
     void setOffscreenMode(bool mode);
     bool isOffscreenMode() const;
 

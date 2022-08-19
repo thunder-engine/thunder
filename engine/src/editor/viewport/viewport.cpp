@@ -36,21 +36,22 @@ namespace {
 class Outline : public RenderPass {
 public:
     Outline() :
-        m_width(1.0f) {
+            m_width(1.0f),
+            m_outlineMap(Engine::objectCreate<Texture>()),
+            m_outlineDepth(Engine::objectCreate<Texture>()),
+            m_outlineTarget(Engine::objectCreate<RenderTarget>()),
+            m_controller(nullptr) {
 
         m_resultTexture = Engine::objectCreate<Texture>();
         m_resultTexture->setFormat(Texture::RGBA8);
 
         m_resultTarget->setColorAttachment(0, m_resultTexture);
 
-        m_outlineDepth = Engine::objectCreate<Texture>();
         m_outlineDepth->setFormat(Texture::Depth);
         m_outlineDepth->setDepthBits(24);
 
-        m_outlineMap = Engine::objectCreate<Texture>();
         m_outlineMap->setFormat(Texture::RGBA8);
 
-        m_outlineTarget = Engine::objectCreate<RenderTarget>();
         m_outlineTarget->setColorAttachment(0, m_outlineMap);
         m_outlineTarget->setDepthAttachment(m_outlineDepth);
 

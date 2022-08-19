@@ -143,7 +143,7 @@ void AreaLight::shadowsUpdate(const Camera &camera, PipelineContext *context, Re
     p_ptr->m_shadowMap = context->requestShadowTiles(uuid(), 1, x, y, w, h, SIDES);
 
     int32_t pageWidth, pageHeight;
-    RenderSystem::atlasPageSize(pageWidth, pageHeight);
+    context->shadowPageSize(pageWidth, pageHeight);
 
     float zFar = radius();
     Matrix4 crop = Matrix4::perspective(90.0f, 1.0f, p_ptr->m_near, zFar);
