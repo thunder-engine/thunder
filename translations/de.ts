@@ -11,7 +11,7 @@
     <message>
         <location line="+68"/>
         <source>Copy system information to clipboard...</source>
-        <translation type="unfinished"></translation>
+        <translation>Systeminformationen in die Zwischenablage kopieren...</translation>
     </message>
     <message>
         <location filename="../worldeditor/src/main/aboutdialog.cpp" line="+16"/>
@@ -36,7 +36,7 @@
     <message>
         <location line="+35"/>
         <source>Copied...</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiert...</translation>
     </message>
 </context>
 <context>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../worldeditor/src/editors/propertyedit/editors/Actions.ui" line="+57"/>
         <source>Saves your changes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichert Ihre Änderungen.</translation>
     </message>
     <message>
         <location line="+3"/>
