@@ -46,6 +46,7 @@ public:
     virtual void resize(int32_t width, int32_t height);
 
     virtual Object::ObjectList selected();
+    virtual void select(Object &object);
 
     void update();
 
@@ -66,6 +67,8 @@ public:
     bool restoreState(const VariantList &list);
     VariantList saveState() const;
 
+    void setActiveRootObject(Object *object);
+
 public slots:
     virtual void onInputEvent(QInputEvent *);
 
@@ -84,6 +87,8 @@ protected:
     void cameraRotate(const Vector3 &delta);
 
     void cameraMove(const Vector3 &delta);
+
+    void drawHelpers(Object &object);
 
 private:
     void doRotation(const Vector3 &vector);
@@ -118,6 +123,8 @@ protected:
     Actor *m_camera;
 
     Camera *m_activeCamera;
+
+    Object *m_activeRootObject;
 };
 
 #endif // CAMERACTRL_H

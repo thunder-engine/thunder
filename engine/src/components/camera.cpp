@@ -154,9 +154,8 @@ Vector3 Camera::unproject(const Vector3 &screenSpace, const Matrix4 &modelView, 
     if(out.w == 0.0f) {
         return Vector3(); // false
     }
-    out.w = 1.0f / out.w;
 
-    return Vector3(out.x * out.w, out.y * out.w, out.z * out.w);
+    return Vector3(out.x / out.w, out.y / out.w, out.z / out.w);
 }
 /*!
     Returns ray with origin point in camera position and direction to projection plane with \a x and \a y coordinates.

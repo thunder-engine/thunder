@@ -283,6 +283,7 @@ void SceneComposer::restoreBackupScenes() {
             it->setParent(nullptr);
             Engine::unloadScene(static_cast<Scene *>(it));
         }
+        Engine::sceneGraph()->setActiveScene(nullptr);
 
         for(auto &it : m_backupScenes) {
             Object *map = Engine::toObject(Bson::load(it), nullptr);

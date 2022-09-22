@@ -87,8 +87,6 @@ public slots:
     void onLocal(bool flag);
     void onPivot(bool flag);
 
-    void drawHelpers(Object &object);
-
 signals:
     void sceneUpdated(Scene *scene);
 
@@ -103,6 +101,8 @@ signals:
 
 protected:
     void drawHandles() override;
+
+    void select(Object &object) override;
 
 private slots:
     void onApplySettings();

@@ -209,7 +209,7 @@ void ObjectCtrl::init(Viewport *viewport) {
 }
 
 void ObjectCtrl::drawHandles() {
-    Vector2 size(1, 1);
+    m_objectsList.clear();
 
     Vector3 screen = Vector3(m_mousePosition.x / m_screenSize.x, m_mousePosition.y / m_screenSize.y, 0.0f);
     Handles::s_Mouse = Vector2(screen.x, screen.y);
@@ -219,14 +219,13 @@ void ObjectCtrl::drawHandles() {
         Handles::s_Axes = m_axes;
     }
 
-    m_objectsList.clear();
     if(m_isolatedActor) {
-        drawHelpers(*m_isolatedActor);
+        m_activeRootObject = m_isolatedActor;
     } else {
-        for(auto it : m_sceneGraph->getChildren()) {
-            drawHelpers(*it);
-        }
+        m_activeRootObject = m_sceneGraph;
     }
+
+    CameraCtrl::drawHandles();
 
     if(!m_selected.empty()) {
         if(m_activeTool) {
@@ -257,26 +256,6 @@ SceneGraph *ObjectCtrl::sceneGraph() const {
 }
 void ObjectCtrl::setSceneGraph(SceneGraph *graph) {
     m_sceneGraph = graph;
-}
-
-void ObjectCtrl::drawHelpers(Object &object) {
-    Object::ObjectList list;
-    for(auto &it : m_selected) {
-        list.push_back(it.object);
-    }
-
-    for(auto &it : object.getChildren()) {
-        Component *component = dynamic_cast<Component *>(it);
-        if(component) {
-            if(component->drawHandles(list)) {
-                m_objectsList = {object.uuid()};
-            }
-        } else {
-            if(it) {
-                drawHelpers(*it);
-            }
-        }
-    }
 }
 
 void ObjectCtrl::setDrag(bool drag) {
@@ -321,6 +300,10 @@ Object::ObjectList ObjectCtrl::selected() {
         }
     }
     return result;
+}
+
+void ObjectCtrl::select(Object &object) {
+    m_objectsList = {object.uuid()};
 }
 
 void ObjectCtrl::setIsolatedActor(Actor *actor) {

@@ -227,7 +227,7 @@ void Texture::setHeight(int height) {
     Sets new \a width and \a height for the texture.
 */
 void Texture::resize(int width, int height) {
-    if(p_ptr->m_Width != width || p_ptr->m_Height != height) {
+    if((p_ptr->m_Width != width || p_ptr->m_Height != height) && width > 0 && height > 0) {
         clear();
 
         p_ptr->m_Width = width;

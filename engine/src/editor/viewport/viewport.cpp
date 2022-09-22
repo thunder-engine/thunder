@@ -18,6 +18,7 @@
 #include <components/actor.h>
 #include <components/camera.h>
 #include <components/transform.h>
+#include <components/scenegraph.h>
 
 #include <resources/rendertarget.h>
 
@@ -161,6 +162,10 @@ public:
     }
 
 private:
+    uint32_t layer() const override {
+        return CommandBuffer::UI;
+    }
+
     Texture *draw(Texture *source, PipelineContext *context) override {
         if(context->debugTexture() == nullptr) {
             // Draw handles
@@ -298,6 +303,8 @@ void Viewport::setController(CameraCtrl *ctrl) {
 void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
     if(m_sceneGraph != sceneGraph) {
         m_sceneGraph = sceneGraph;
+
+        m_controller->setActiveRootObject(m_sceneGraph);
 
         Camera *camera = m_controller->camera();
         if(camera) {

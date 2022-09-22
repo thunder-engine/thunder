@@ -68,6 +68,8 @@ public:
 
     static void composeMesh(Font *font, Mesh *mesh, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
 
+    static Vector2 cursorPosition(Font *font, int size, const string &text, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
+
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 

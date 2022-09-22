@@ -44,17 +44,17 @@ protected:
 
     void fillEffectMenu(QMenu *menu, uint32_t layers);
 
-private slots:
+protected slots:
     void onApplySettings();
 
-    void onDraw();
+    virtual void onDraw();
 
     void onBufferMenu();
 
     void onBufferChanged();
     void onPostEffectChanged(bool checked);
 
-private:
+protected:
     CameraCtrl *m_controller;
 
     SceneGraph *m_sceneGraph;

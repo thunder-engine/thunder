@@ -7,6 +7,7 @@ class Sprite;
 class Texture;
 class Material;
 class Mesh;
+class Lod;
 class SpriteRenderPrivate;
 
 class ENGINE_EXPORT SpriteRender : public Renderable {
@@ -24,13 +25,15 @@ class ENGINE_EXPORT SpriteRender : public Renderable {
     A_NOMETHODS()
     A_ENUMS(
         A_ENUM(DrawMode,
+               A_VALUE(Simple),
                A_VALUE(Sliced),
                A_VALUE(Tiled))
     )
 
 public:
     enum DrawMode {
-        Sliced = 0,
+        Simple = 0,
+        Sliced,
         Tiled
     };
 
@@ -62,7 +65,7 @@ public:
     int layer() const;
     void setLayer(int layer);
 
-    static bool composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize, float scale = 1.0f);
+    static bool composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, int mode, bool resetSize, float scale = 1.0f);
 
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
@@ -75,6 +78,9 @@ private:
     void composeComponent() override;
 
     int priority() const override;
+
+    static bool composeSliced(Lod *lod, Vector2 &size, Vector3 &delta, float scale);
+    static bool SpriteRender::composeTiled(Lod *lod, Vector2 &size, Vector3 &delta, float scale);
 
 private:
     SpriteRenderPrivate *p_ptr;

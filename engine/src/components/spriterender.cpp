@@ -61,7 +61,7 @@ public:
                 m_customMesh = Engine::objectCreate<Mesh>("");
             }
 
-            bool result = SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_size, (m_drawMode == SpriteRender::Tiled), resetSize);
+            bool result = SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_size, m_drawMode, resetSize);
             if(result) {
                 return;
             }
@@ -322,134 +322,184 @@ VariantMap SpriteRender::saveUserData() const {
 /*!
     \internal
 */
-bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, bool tiled, bool resetSize, float scale) {
-    Mesh *m = sprite->mesh(key);
-    if(m) {
-        Lod *lod = m->lod(0);
-        spriteMesh->setLod(0, lod);
-        lod = spriteMesh->lod(0);
-        Vector3Vector &vetrs = lod->vertices();
-
-        Vector3 delta(vetrs[15] * scale - vetrs[0] * scale);
-        if(resetSize) {
-            size = Vector2(delta.x, delta.y);
+bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector2 &size, int mode, bool resetSize, float scale) {
+    if(mode == Sliced || mode == Tiled) {
+        if(!sprite) {
+            return false;
         }
+        Mesh *m = sprite->mesh(key);
+        if(m) {
+            Lod *lod = m->lod(0);
+            spriteMesh->setLod(0, lod);
+            lod = spriteMesh->lod(0);
+            Vector3Vector &verts = lod->vertices();
 
-        if(tiled) {
-            Vector2Vector &uvs = lod->uv0();
-            IndexVector &indices = lod->indices();
+            Vector3 delta(verts[15] * scale - verts[0] * scale);
+            if(resetSize) {
+                size = Vector2(delta.x, delta.y);
+            }
 
-            Vector2 ubl(uvs[0]);
-            Vector2 utr(uvs[15]);
-
-            int width = ceilf(size.x / delta.x);
-            int height = ceilf(size.y / delta.y);
-
-            if(width == 0 || height == 0) {
+            if(mode == Sliced && !composeSliced(lod, size, delta, scale)) {
+                return false;
+            } else if(mode == Tiled && !composeTiled(lod, size, delta, scale)) {
                 return false;
             }
 
-            vetrs.resize(width * height * 4);
-            uvs.resize(width * height * 4);
-            indices.resize(width * height * 6);
-
-            Vector3 bl(Vector3(size, 0.0f) * -0.5f);
-
-            int i = 0;
-            for(int y = 0; y < height; y++) {
-                for(int x = 0; x < width; x++) {
-                    int index = (y * width + x) * 4;
-
-                    Vector2 f(1.0f);
-                    if(x == width - 1) {
-                        f.x = MIN((size.x * 0.5f - bl.x) / delta.x, 1.0f);
-                    }
-                    if(y == height - 1) {
-                        f.y = MIN((size.y * 0.5f - bl.y) / delta.y, 1.0f);
-                    }
-
-                    vetrs[index] = bl;
-                    vetrs[index + 1] = bl + Vector3(delta.x * f.x, 0.0f, 0.0f);
-                    vetrs[index + 2] = bl + Vector3(delta.x * f.x, delta.y * f.y, 0.0f);
-                    vetrs[index + 3] = bl + Vector3(0.0f, delta.y * f.y, 0.0f);
-
-                    uvs[index] = ubl;
-                    uvs[index + 1] = ubl + Vector2((utr.x - ubl.x) * f.x, 0.0f);
-                    uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
-                    uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
-
-                    indices[i]     = index;
-                    indices[i + 1] = index + 1;
-                    indices[i + 2] = index + 2;
-                    indices[i + 3] = index;
-                    indices[i + 4] = index + 2;
-                    indices[i + 5] = index + 3;
-
-                    bl.x += delta.x;
-
-                    i += 6;
-                }
-                bl.x = size.x * -0.5f;
-                bl.y += delta.y;
+            spriteMesh->setFlags(m->flags());
+            spriteMesh->setTopology(m->topology());
+            spriteMesh->recalcBounds();
+            return true;
+        }
+    } else if(mode == Simple) {
+        if(sprite) {
+            Mesh *m = sprite->mesh(key);
+            if(m) {
+                Lod *lod = m->lod(0);
+                spriteMesh->setLod(0, lod);
+                spriteMesh->setFlags(m->flags());
+                spriteMesh->setTopology(m->topology());
+            } else {
+                return false;
             }
         } else {
-            if(scale != 1.0f) {
-                for(int i = 0; i < 16; i++) {
-                    vetrs[i] *= scale;
-                }
-            }
-
-            Vector2 scl(size.x / delta.x, size.y / delta.y);
-            {
-                float wl = (vetrs[1].x - vetrs[0].x);
-                float wr = (vetrs[3].x - vetrs[2].x);
-                float borders = wl + wr;
-
-                float vl = vetrs[0].x * scl.x;
-                float vr = vetrs[3].x * scl.x;
-
-                vetrs[ 0].x = vl; vetrs[ 3].x = vr;
-                vetrs[ 4].x = vl; vetrs[ 7].x = vr;
-                vetrs[ 8].x = vl; vetrs[11].x = vr;
-                vetrs[12].x = vl; vetrs[15].x = vr;
-
-                float dl = vetrs[0].x + MIN(size.x * (wl / borders), wl);
-                float dr = vetrs[3].x - MIN(size.x * (wr / borders), wr);
-
-                vetrs[ 1].x = dl; vetrs[ 2].x = dr;
-                vetrs[ 5].x = dl; vetrs[ 6].x = dr;
-                vetrs[ 9].x = dl; vetrs[10].x = dr;
-                vetrs[13].x = dl; vetrs[14].x = dr;
-            }
-            {
-                float hb = (vetrs[ 4].y - vetrs[0].y);
-                float ht = (vetrs[12].y - vetrs[8].y);
-                float borders = hb + ht;
-
-                float vb = vetrs[ 0].y * scl.y;
-                float vt = vetrs[12].y * scl.y;
-
-                vetrs[ 0].y = vb; vetrs[12].y = vt;
-                vetrs[ 1].y = vb; vetrs[13].y = vt;
-                vetrs[ 2].y = vb; vetrs[14].y = vt;
-                vetrs[ 3].y = vb; vetrs[15].y = vt;
-
-                float db = vetrs[ 0].y + MIN(size.y * (hb / borders), hb);
-                float dt = vetrs[12].y - MIN(size.y * (ht / borders), ht);
-
-                vetrs[ 4].y = db; vetrs[ 8].y = dt;
-                vetrs[ 5].y = db; vetrs[ 9].y = dt;
-                vetrs[ 6].y = db; vetrs[10].y = dt;
-                vetrs[ 7].y = db; vetrs[11].y = dt;
-            }
+            Lod lod;
+            lod.vertices() = {
+                {  0.0f,   0.0f, 0.0f},
+                {  0.0f, size.y, 0.0f},
+                {size.x, size.y, 0.0f},
+                {size.x,   0.0f, 0.0f}
+            };
+            lod.uv0() = {
+                {0.0f, 0.0f},
+                {0.0f, 1.0f},
+                {1.0f, 1.0f},
+                {1.0f, 0.0f}
+            };
+            lod.indices() = {0, 1, 2, 0, 3, 2};
+            spriteMesh->setLod(0, &lod);
+            spriteMesh->setFlags(Mesh::Uv0);
+            spriteMesh->setTopology(Mesh::Triangles);
         }
-
-        spriteMesh->setFlags(m->flags());
-        spriteMesh->setTopology(m->topology());
         spriteMesh->recalcBounds();
         return true;
     }
     return false;
+}
+
+bool SpriteRender::composeSliced(Lod *lod, Vector2 &size, Vector3 &delta, float scale) {
+    Vector3Vector &verts = lod->vertices();
+
+    if(scale != 1.0f) {
+        for(int i = 0; i < 16; i++) {
+            verts[i] *= scale;
+        }
+    }
+
+    Vector2 scl(size.x / delta.x, size.y / delta.y);
+    {
+        float wl = (verts[1].x - verts[0].x);
+        float wr = (verts[3].x - verts[2].x);
+        float borders = wl + wr;
+
+        float vl = verts[0].x * scl.x;
+        float vr = verts[3].x * scl.x;
+
+        verts[ 0].x = vl; verts[ 3].x = vr;
+        verts[ 4].x = vl; verts[ 7].x = vr;
+        verts[ 8].x = vl; verts[11].x = vr;
+        verts[12].x = vl; verts[15].x = vr;
+
+        float dl = verts[0].x + MIN(size.x * (wl / borders), wl);
+        float dr = verts[3].x - MIN(size.x * (wr / borders), wr);
+
+        verts[ 1].x = dl; verts[ 2].x = dr;
+        verts[ 5].x = dl; verts[ 6].x = dr;
+        verts[ 9].x = dl; verts[10].x = dr;
+        verts[13].x = dl; verts[14].x = dr;
+    }
+    {
+        float hb = (verts[ 4].y - verts[0].y);
+        float ht = (verts[12].y - verts[8].y);
+        float borders = hb + ht;
+
+        float vb = verts[ 0].y * scl.y;
+        float vt = verts[12].y * scl.y;
+
+        verts[ 0].y = vb; verts[12].y = vt;
+        verts[ 1].y = vb; verts[13].y = vt;
+        verts[ 2].y = vb; verts[14].y = vt;
+        verts[ 3].y = vb; verts[15].y = vt;
+
+        float db = verts[ 0].y + MIN(size.y * (hb / borders), hb);
+        float dt = verts[12].y - MIN(size.y * (ht / borders), ht);
+
+        verts[ 4].y = db; verts[ 8].y = dt;
+        verts[ 5].y = db; verts[ 9].y = dt;
+        verts[ 6].y = db; verts[10].y = dt;
+        verts[ 7].y = db; verts[11].y = dt;
+    }
+    return true;
+}
+
+bool SpriteRender::composeTiled(Lod *lod, Vector2 &size, Vector3 &delta, float scale) {
+    Vector3Vector &verts = lod->vertices();
+    Vector2Vector &uvs = lod->uv0();
+    IndexVector &indices = lod->indices();
+
+    Vector2 ubl(uvs[0]);
+    Vector2 utr(uvs[15]);
+
+    int width = ceilf(size.x / delta.x);
+    int height = ceilf(size.y / delta.y);
+
+    if(width == 0 || height == 0) {
+        return false;
+    }
+
+    verts.resize(width * height * 4);
+    uvs.resize(width * height * 4);
+    indices.resize(width * height * 6);
+
+    Vector3 bl(Vector3(size, 0.0f) * -0.5f);
+
+    int i = 0;
+    for(int y = 0; y < height; y++) {
+        for(int x = 0; x < width; x++) {
+            int index = (y * width + x) * 4;
+
+            Vector2 f(1.0f);
+            if(x == width - 1) {
+                f.x = MIN((size.x * 0.5f - bl.x) / delta.x, 1.0f);
+            }
+            if(y == height - 1) {
+                f.y = MIN((size.y * 0.5f - bl.y) / delta.y, 1.0f);
+            }
+
+            verts[index] = bl;
+            verts[index + 1] = bl + Vector3(delta.x * f.x, 0.0f, 0.0f);
+            verts[index + 2] = bl + Vector3(delta.x * f.x, delta.y * f.y, 0.0f);
+            verts[index + 3] = bl + Vector3(0.0f, delta.y * f.y, 0.0f);
+
+            uvs[index] = ubl;
+            uvs[index + 1] = ubl + Vector2((utr.x - ubl.x) * f.x, 0.0f);
+            uvs[index + 2] = ubl + Vector2((utr.x - ubl.x) * f.x, (utr.y - ubl.y) * f.y);
+            uvs[index + 3] = ubl + Vector2(0.0f, (utr.y - ubl.y) * f.y);
+
+            indices[i]     = index;
+            indices[i + 1] = index + 1;
+            indices[i + 2] = index + 2;
+            indices[i + 3] = index;
+            indices[i + 4] = index + 2;
+            indices[i + 5] = index + 3;
+
+            bl.x += delta.x;
+
+            i += 6;
+        }
+        bl.x = size.x * -0.5f;
+        bl.y += delta.y;
+    }
+    return true;
 }
 
 void SpriteRender::composeComponent() {

@@ -3,8 +3,6 @@
 
 #include "abstractbutton.h"
 
-class SwitchPrivate;
-
 class GUI_EXPORT Switch : public AbstractButton {
     A_REGISTER(Switch, AbstractButton, Components/UI)
 
@@ -21,13 +19,11 @@ class GUI_EXPORT Switch : public AbstractButton {
     float switchDuration() const;
     void setSwitchDuration(float duration);
 
-    Image *knobGraphic() const;
-    void setKnobGraphic(Image *image);
+    Frame *knobGraphic() const;
+    void setKnobGraphic(Frame *image);
 
     Vector4 knobColor() const;
     void setKnobColor(const Vector4 color);
-
-    bool isOn() const;
 
 private:
     void update() override;
@@ -35,14 +31,21 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    void onClicked() override;
+    void setMirrored(bool flag) override;
+
+    void checkStateSet() override;
 
     void composeComponent() override;
 
-    void onReferenceDestroyed();
+    void onReferenceDestroyed() override;
 
 private:
-    SwitchPrivate *p_ptr;
+    Vector4 m_knobColor;
+
+    Frame *m_knobGraphic;
+
+    float m_switchDuration;
+    float m_currentFade;
 
 };
 

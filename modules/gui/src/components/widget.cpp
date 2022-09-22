@@ -8,69 +8,78 @@
 
 #include <commandbuffer.h>
 
-class WidgetPrivate {
-public:
-    WidgetPrivate() :
-        m_pParent(nullptr),
-        m_pTransform(nullptr) {
-
-    }
-
-    Widget *m_pParent;
-    RectTransform *m_pTransform;
-};
+Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
-    p_ptr(new WidgetPrivate) {
+    m_parent(nullptr),
+    m_transform(nullptr) {
 
 }
 
 Widget::~Widget() {
-    if(p_ptr->m_pTransform) {
-        p_ptr->m_pTransform->unsubscribe(this);
+    if(m_transform) {
+        m_transform->unsubscribe(this);
     }
-    delete p_ptr;
-    p_ptr = nullptr;
 }
-
+/*!
+    \internal
+*/
 void Widget::update() {
     Renderable::update();
 }
-
+/*!
+    \internal
+*/
 void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
-    if(p_ptr->m_pParent == nullptr && (layer == CommandBuffer::UI)) {
-        if(p_ptr->m_pTransform) {
-            p_ptr->m_pTransform->setSize(buffer.viewport());
+    if(m_parent == nullptr && (layer == CommandBuffer::UI)) {
+        if(m_transform) {
+            m_transform->setSize(buffer.viewport());
         }
     }
 }
-
+/*!
+    \internal
+*/
 AABBox Widget::bound() const {
     AABBox result;
 
-    result.extent = (p_ptr->m_pTransform) ? Vector3(p_ptr->m_pTransform->size() * 0.5f, 0.0f) : Vector3();
+    result.extent = (m_transform) ? Vector3(m_transform->size() * 0.5f, 0.0f) : Vector3();
     result.center = result.extent;
 
     return result * actor()->transform()->worldTransform();
 }
 
-void Widget::boundChanged() {
-
+void Widget::boundChanged(const Vector2 &size) {
+    A_UNUSED(size);
 }
 
 Widget *Widget::parentWidget() {
-    return p_ptr->m_pParent;
+    return m_parent;
+}
+
+RectTransform *Widget::rectTransform() const {
+    return m_transform;
+}
+
+Widget *Widget::focusWidget() {
+    return m_focusWidget;
+}
+/*!
+    \internal
+*/
+void Widget::setFocusWidget(Widget *widget) {
+    m_focusWidget = widget;
 }
 /*!
     \internal
 */
 void Widget::setRectTransform(RectTransform *transform) {
-    if(p_ptr->m_pTransform) {
-        p_ptr->m_pTransform->unsubscribe(this);
+    if(m_transform) {
+        m_transform->unsubscribe(this);
     }
-    p_ptr->m_pTransform = transform;
-    if(p_ptr->m_pTransform) {
-        p_ptr->m_pTransform->subscribe(this);
+    m_transform = transform;
+    if(m_transform) {
+        m_transform->subscribe(this);
     }
 }
 
@@ -79,7 +88,9 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
 
     actorParentChanged();
 }
-
+/*!
+    \internal
+*/
 void Widget::actorParentChanged() {
     Actor *object = actor();
     if(object) {
@@ -87,13 +98,13 @@ void Widget::actorParentChanged() {
 
         object = dynamic_cast<Actor *>(object->parent());
         if(object) {
-            p_ptr->m_pParent = static_cast<Widget *>(object->component("Widget"));
+            m_parent = static_cast<Widget *>(object->component("Widget"));
         }
     }
 }
 
 void Widget::composeComponent() {
-    Engine::objectCreate<RectTransform>("RectTransform", actor());
+    setRectTransform(Engine::objectCreate<RectTransform>("RectTransform", actor()));
 }
 
 #ifdef SHARED_DEFINE
@@ -102,9 +113,10 @@ void Widget::composeComponent() {
 bool Widget::drawHandles(ObjectList &selected) {
     if(isSelected(selected)) {
         AABBox box = bound();
+        Handles::s_Color = Vector4(0.5f, 1.0f, 0.5f, 1.0f);
         Handles::drawBox(box.center, Quaternion(), box.extent * 2.0f);
+        Handles::s_Color = Handles::s_Normal;
     }
-
     return false;
 }
 #endif

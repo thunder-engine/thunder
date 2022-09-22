@@ -1,140 +1,105 @@
 #include "components/progressbar.h"
-#include "components/image.h"
+#include "components/frame.h"
 #include "components/recttransform.h"
 
 #include <components/actor.h>
 
-#include <resources/sprite.h>
-
 namespace  {
-    const char *BACKGROUND = "BackgroundGraphic";
-    const char *PROGRESS = "ProgressGraphic";
-    const char *IMAGE = "Image";
-    const char *RECTANGLE = "Rectangle";
-    const char *PATH = ".embedded/ui.png";
+    const char *gBackground = "Background";
+    const char *gProgress = "Progress";
+    const char *gFrame = "Frame";
 }
-
-class ProgressBarPrivate {
-public:
-    ProgressBarPrivate() :
-        m_From(0.0f),
-        m_To(1.0f),
-        m_Value(0.0f),
-        m_backgroundGraphic(nullptr),
-        m_progressGraphic(nullptr),
-        m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-        m_progressColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)) {
-
-    }
-
-    void recalcProgress() {
-        if(m_progressGraphic && m_backgroundGraphic) {
-            RectTransform *parent = static_cast<RectTransform *>(m_backgroundGraphic->actor()->transform());
-            RectTransform *progress = static_cast<RectTransform *>(m_progressGraphic->actor()->transform());
-            Vector2 size = parent->size();
-            float f = CLAMP((m_From - m_Value) / (m_From - m_To), 0.0f, 1.0f);
-            size.x *= f;
-            progress->setSize(size);
-            progress->setMaxAnchors(Vector2(f, 1.0f));
-        }
-    }
-
-    float m_From;
-    float m_To;
-    float m_Value;
-
-    Image *m_backgroundGraphic;
-    Image *m_progressGraphic;
-
-    Vector4 m_backgroundColor;
-    Vector4 m_progressColor;
-};
 
 ProgressBar::ProgressBar() :
     Widget(),
-    p_ptr(new ProgressBarPrivate) {
+    m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+    m_progressColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
+    m_from(0.0f),
+    m_to(1.0f),
+    m_value(0.0f),
+    m_background(nullptr),
+    m_progress(nullptr) {
 
 }
 
 ProgressBar::~ProgressBar() {
-    delete p_ptr;
-    p_ptr = nullptr;
+
 }
 
 float ProgressBar::from() const {
-    return p_ptr->m_From;
+    return m_from;
 }
 void ProgressBar::setFrom(float value) {
-    p_ptr->m_From = value;
+    m_from = value;
 
-    p_ptr->recalcProgress();
+    recalcProgress();
 }
 
 float ProgressBar::to() const {
-    return p_ptr->m_To;
+    return m_to;
 }
 void ProgressBar::setTo(float value) {
-    p_ptr->m_To = value;
+    m_to = value;
 
-    p_ptr->recalcProgress();
+    recalcProgress();
 }
 
 float ProgressBar::value() const {
-    return p_ptr->m_Value;
+    return m_value;
 }
 void ProgressBar::setValue(float value) {
-    p_ptr->m_Value = value;
+    m_value = value;
 
-    p_ptr->recalcProgress();
+    recalcProgress();
 }
 
-Image *ProgressBar::backgroundGraphic() const {
-    return p_ptr->m_backgroundGraphic;
+Frame *ProgressBar::background() const {
+    return m_background;
 }
-void ProgressBar::setBackgroundGraphic(Image *image) {
-    if(p_ptr->m_backgroundGraphic != image) {
-        disconnect(p_ptr->m_backgroundGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        p_ptr->m_backgroundGraphic = image;
-        if(p_ptr->m_backgroundGraphic) {
-            connect(p_ptr->m_backgroundGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            p_ptr->m_backgroundGraphic->setColor(p_ptr->m_backgroundColor);
+void ProgressBar::setBackground(Frame *frame) {
+    if(m_background != frame) {
+        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_background = frame;
+        if(m_background) {
+            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            m_background->setColor(m_backgroundColor);
         }
     }
 }
 
-Image *ProgressBar::progressGraphic() const {
-    return p_ptr->m_progressGraphic;
+Frame *ProgressBar::progress() const {
+    return m_progress;
 }
-void ProgressBar::setProgressGraphic(Image *image) {
-    if(p_ptr->m_progressGraphic != image) {
-        disconnect(p_ptr->m_progressGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        p_ptr->m_progressGraphic = image;
-        if(p_ptr->m_progressGraphic) {
-            connect(p_ptr->m_progressGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            p_ptr->m_progressGraphic->setColor(p_ptr->m_progressColor);
+void ProgressBar::setProgress(Frame *image) {
+    if(m_progress != image) {
+        disconnect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_progress = image;
+        if(m_progress) {
+            connect(m_progress, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            m_progress->setColor(m_progressColor);
 
-            p_ptr->recalcProgress();
+            recalcProgress();
         }
     }
 }
 
 Vector4 ProgressBar::backgroundColor() const {
-    return p_ptr->m_backgroundColor;
+    return m_backgroundColor;
 }
 void ProgressBar::setBackgroundColor(const Vector4 color) {
-    p_ptr->m_backgroundColor = color;
-    if(p_ptr->m_backgroundGraphic) {
-        p_ptr->m_backgroundGraphic->setColor(p_ptr->m_backgroundColor);
+    m_backgroundColor = color;
+    if(m_background) {
+        m_background->setColor(m_backgroundColor);
     }
 }
 
 Vector4 ProgressBar::progressColor() const {
-    return p_ptr->m_progressColor;
+    return m_progressColor;
 }
 void ProgressBar::setProgressColor(const Vector4 color) {
-    p_ptr->m_progressColor = color;
-    if(p_ptr->m_progressGraphic) {
-        p_ptr->m_progressGraphic->setColor(p_ptr->m_progressColor);
+    m_progressColor = color;
+    if(m_progress) {
+        m_progress->setColor(m_progressColor);
     }
 }
 /*!
@@ -143,19 +108,19 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 void ProgressBar::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(BACKGROUND);
+        auto it = data.find(gBackground);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
             Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setBackgroundGraphic(dynamic_cast<Image *>(object));
+            setBackground(dynamic_cast<Frame *>(object));
         }
     }
     {
-        auto it = data.find(PROGRESS);
+        auto it = data.find(gProgress);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
             Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setProgressGraphic(dynamic_cast<Image *>(object));
+            setProgress(dynamic_cast<Frame *>(object));
         }
     }
 }
@@ -165,13 +130,13 @@ void ProgressBar::loadUserData(const VariantMap &data) {
 VariantMap ProgressBar::saveUserData() const {
     VariantMap result = Widget::saveUserData();
     {
-        if(p_ptr->m_backgroundGraphic) {
-            result[BACKGROUND] = int(p_ptr->m_backgroundGraphic->uuid());
+        if(m_background) {
+            result[gBackground] = int(m_background->uuid());
         }
     }
     {
-        if(p_ptr->m_progressGraphic) {
-            result[PROGRESS] = int(p_ptr->m_progressGraphic->uuid());
+        if(m_progress) {
+            result[gProgress] = int(m_progress->uuid());
         }
     }
     return result;
@@ -182,43 +147,38 @@ VariantMap ProgressBar::saveUserData() const {
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
-    {
-        Image *image = Engine::objectCreate<Image>(IMAGE, actor());
-        image->setSprite(Engine::loadResource<Sprite>(PATH));
-        image->setItem(RECTANGLE);
-        setBackgroundGraphic(image);
-    }
-    {
-        Actor *progress = Engine::composeActor(IMAGE, "Progress", actor());
-        Image *image = static_cast<Image *>(progress->component(IMAGE));
-        image->setParent(progress);
-        image->setSprite(Engine::loadResource<Sprite>(PATH));
-        image->setItem(RECTANGLE);
-        setProgressGraphic(image);
+    Frame *frame = Engine::objectCreate<Frame>(gFrame, actor());
+    frame->setCorners(Vector4(3.0f));
+    setBackground(frame);
 
-        RectTransform *rect = dynamic_cast<RectTransform *>(progress->transform());
-        if(rect) {
-            rect->setMinAnchors(Vector2(0.0f, 0.0f));
-        }
-    }
+    Actor *progress = Engine::composeActor(gFrame, "Progress", actor());
+    frame = static_cast<Frame *>(progress->component(gFrame));
+    frame->setCorners(Vector4(3.0f));
+    frame->rectTransform()->setMinAnchors(Vector2(0.0f, 0.0f));
+    setProgress(frame);
 
-    RectTransform *parent = dynamic_cast<RectTransform *>(actor()->transform());
-    if(parent) {
-        parent->setSize(Vector2(100.0f, 20.0f));
-    }
+    setValue(0.5f);
+
+    rectTransform()->setSize(Vector2(100.0f, 30.0f));
 }
 /*!
     \internal
 */
 void ProgressBar::onReferenceDestroyed() {
     Object *object = sender();
-    if(p_ptr->m_backgroundGraphic == object) {
-        p_ptr->m_backgroundGraphic = nullptr;
+    if(m_background == object) {
+        m_background = nullptr;
         return;
     }
 
-    if(p_ptr->m_progressGraphic == object) {
-        p_ptr->m_progressGraphic = nullptr;
+    if(m_progress == object) {
+        m_progress = nullptr;
         return;
+    }
+}
+
+void ProgressBar::recalcProgress() {
+    if(m_progress) {
+        m_progress->rectTransform()->setMaxAnchors(Vector2(CLAMP((m_from - m_value) / (m_from - m_to), 0.0f, 1.0f), 1.0f));
     }
 }

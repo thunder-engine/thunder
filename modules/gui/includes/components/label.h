@@ -4,6 +4,7 @@
 #include "widget.h"
 
 class Font;
+class Mesh;
 class Material;
 
 class LabelPrivate;
@@ -48,6 +49,10 @@ public:
     bool kerning() const;
     void setKerning(const bool kerning);
 
+    Vector2 cursorAt(int position);
+
+    void setClipOffset(const Vector2 &offset);
+
 private:
     void draw(CommandBuffer &buffer, uint32_t layer) override;
 
@@ -57,7 +62,7 @@ private:
 
     bool event(Event *ev) override;
 
-    void boundChanged() override;
+    void boundChanged(const Vector2 &size) override;
 
     void composeComponent() override;
 

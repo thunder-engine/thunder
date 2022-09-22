@@ -4,7 +4,6 @@
 #include "transform.h"
 #include "gui.h"
 
-class RectTransformPrivate;
 class Widget;
 
 class GUI_EXPORT RectTransform : public Transform {
@@ -12,9 +11,11 @@ class GUI_EXPORT RectTransform : public Transform {
 
     A_PROPERTIES(
         A_PROPERTY(Vector2, size, RectTransform::size, RectTransform::setSize),
-        A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot),
         A_PROPERTY(Vector2, minAnchors, RectTransform::minAnchors, RectTransform::setMinAnchors),
-        A_PROPERTY(Vector2, maxAnchors, RectTransform::maxAnchors, RectTransform::setMaxAnchors)
+        A_PROPERTY(Vector2, maxAnchors, RectTransform::maxAnchors, RectTransform::setMaxAnchors),
+        A_PROPERTY(Vector2, offsetMin, RectTransform::offsetMin, RectTransform::setOffsetMin),
+        A_PROPERTY(Vector2, offsetMax, RectTransform::offsetMax, RectTransform::setOffsetMax),
+        A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot)
     )
     A_NOMETHODS()
 
@@ -33,6 +34,16 @@ class GUI_EXPORT RectTransform : public Transform {
     Vector2 maxAnchors() const;
     void setMaxAnchors(const Vector2 anchors);
 
+    void setAnchors(const Vector2 min, const Vector2 max);
+
+    Vector2 offsetMin() const;
+    void setOffsetMin(const Vector2 offset);
+
+    Vector2 offsetMax() const;
+    void setOffsetMax(const Vector2 offset);
+
+    void setOffsets(const Vector2 min, const Vector2 max);
+
     bool isHovered(float x, float y) const;
 
     void subscribe(Widget *widget);
@@ -47,8 +58,25 @@ private:
 
     void cleanDirty() const;
 
+    void notify();
+
+    void recalcSize();
+
 private:
-    RectTransformPrivate *p_ptr;
+    mutable Matrix4 m_worldTransform;
+
+    Vector2 m_bottomLeft;
+    Vector2 m_topRight;
+    Vector2 m_pivot;
+    Vector2 m_minAnchors;
+    Vector2 m_maxAnchors;
+    Vector2 m_size;
+    list<Widget *> m_subscribers;
+
+    RectTransform *m_parent;
+
+    mutable bool m_dirty;
+
 };
 
 #endif // RECTTRANSFORM_H

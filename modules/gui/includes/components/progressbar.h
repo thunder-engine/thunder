@@ -3,9 +3,7 @@
 
 #include "widget.h"
 
-class Image;
-
-class ProgressBarPrivate;
+class Frame;
 
 class GUI_EXPORT ProgressBar : public Widget {
     A_REGISTER(ProgressBar, Widget, Components/UI)
@@ -14,8 +12,8 @@ class GUI_EXPORT ProgressBar : public Widget {
         A_PROPERTY(float, from, ProgressBar::from, ProgressBar::setFrom),
         A_PROPERTY(float, to, ProgressBar::to, ProgressBar::setTo),
         A_PROPERTY(float, value, ProgressBar::value, ProgressBar::setValue),
-        A_PROPERTYEX(Image *, backgroundGraphic, ProgressBar::backgroundGraphic, ProgressBar::setBackgroundGraphic, "editor=Component"),
-        A_PROPERTYEX(Image *, progressGraphic, ProgressBar::progressGraphic, ProgressBar::setProgressGraphic, "editor=Component"),
+        A_PROPERTYEX(Frame *, background, ProgressBar::background, ProgressBar::setBackground, "editor=Component"),
+        A_PROPERTYEX(Frame *, progress, ProgressBar::progress, ProgressBar::setProgress, "editor=Component"),
         A_PROPERTYEX(Vector4, backgroundColor, ProgressBar::backgroundColor, ProgressBar::setBackgroundColor, "editor=Color"),
         A_PROPERTYEX(Vector4, progressColor, ProgressBar::progressColor, ProgressBar::setProgressColor, "editor=Color")
     )
@@ -34,11 +32,11 @@ public:
     float value() const;
     void setValue(float value);
 
-    Image *backgroundGraphic() const;
-    void setBackgroundGraphic(Image *image);
+    Frame *background() const;
+    void setBackground(Frame *frame);
 
-    Image *progressGraphic() const;
-    void setProgressGraphic(Image *image);
+    Frame *progress() const;
+    void setProgress(Frame *frame);
 
     Vector4 backgroundColor() const;
     void setBackgroundColor(const Vector4 color);
@@ -54,8 +52,18 @@ private:
 
     void onReferenceDestroyed() override;
 
+    void recalcProgress();
+
 private:
-    ProgressBarPrivate *p_ptr;
+    Vector4 m_backgroundColor;
+    Vector4 m_progressColor;
+
+    float m_from;
+    float m_to;
+    float m_value;
+
+    Frame *m_background;
+    Frame *m_progress;
 
 };
 

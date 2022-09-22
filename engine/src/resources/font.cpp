@@ -15,28 +15,27 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-#define DF_GLYPH_SIZE 128
-#define DF_DEFAULT_SCALE 4
+#define DF_GLYPH_SIZE 64
 
 class FontPrivate {
 public:
     FontPrivate() :
-        m_pFace(nullptr),
-        m_Scale(DF_GLYPH_SIZE * DF_DEFAULT_SCALE),
-        m_UseKerning(false) {
+        m_face(nullptr),
+        m_scale(DF_GLYPH_SIZE),
+        m_useKerning(false) {
     }
 
     typedef unordered_map<uint32_t, uint32_t> GlyphMap;
     typedef unordered_map<uint32_t, Vector2> SpecialMap;
 
-    GlyphMap m_GlyphMap;
-    ByteArray m_Data;
+    GlyphMap m_glyphMap;
+    ByteArray m_data;
 
-    FT_FaceRec_ *m_pFace;
+    FT_FaceRec_ *m_face;
 
-    int32_t m_Scale;
+    int32_t m_scale;
 
-    bool m_UseKerning;
+    bool m_useKerning;
 };
 
 struct Point {
@@ -113,62 +112,6 @@ static void generateSDF(Grid &g) {
     }
 }
 
-void calculateDF(int8_t *dst, const FT_Bitmap &src, int32_t dw, int32_t dh) {
-    PROFILE_FUNCTION();
-
-    Grid grid[2];
-
-    int32_t w = src.width;
-    int32_t h = src.rows;
-    grid[0].w = grid[1].w = w;
-    grid[0].h = grid[1].h = h;
-    grid[0].grid = static_cast<Point*>(malloc(sizeof(Point) * (w + 2) * (h + 2)));
-    grid[1].grid = static_cast<Point*>(malloc(sizeof(Point) * (w + 2) * (h + 2)));
-
-    for(int32_t x = 0; x < w + 2; x++) {
-        put(grid[0], x, 0, pointInside);
-        put(grid[1], x, 0, pointEmpty);
-    }
-    for(int32_t y = 1; y <= h; y++) {
-        put(grid[0], 0, y, pointInside);
-        put(grid[1], 0, y, pointEmpty);
-
-        for(int32_t x = 1; x <= w; x++) {
-            uint32_t index = (y - 1) * w + (x - 1);
-
-            if(src.buffer[index] > 128) {
-                put(grid[0], x, y, pointEmpty);
-                put(grid[1], x, y, pointInside);
-            } else {
-                put(grid[0], x, y, pointInside);
-                put(grid[1], x, y, pointEmpty);
-            }
-        }
-        put(grid[0], w + 1, y, pointInside);
-        put(grid[1], w + 1, y, pointEmpty);
-    }
-    for(int32_t x = 0; x < w + 2; x++) {
-        put(grid[0], x, h + 1, pointInside);
-        put(grid[1], x, h + 1, pointEmpty);
-    }
-    generateSDF(grid[0]);
-    generateSDF(grid[1]);
-
-    for(int32_t y = 0; y < dh; y++) {
-        for(int32_t x = 0; x < dw; x++) {
-            int gx = x * w / (dw - 1);
-            int gy = y * h / (dh - 1);
-            double dist1 = sqrt((double)(get(grid[0], gx, gy).f + 1));
-            double dist2 = sqrt((double)(get(grid[1], gx, gy).f + 1));
-            double dist = dist1 - dist2;
-            uint32_t index = y * dw + x;
-            dst[index] = CLAMP(dist * 64 / 2.0f + 128, 0, 255);
-        }
-    }
-    free(grid[0].grid);
-    free(grid[1].grid);
-}
-
 /*!
     \class Font
     \brief The Font resource provides support for vector fonts.
@@ -194,8 +137,8 @@ Font::~Font() {
 int Font::atlasIndex(int glyph) const {
     PROFILE_FUNCTION();
 
-    auto it = p_ptr->m_GlyphMap.find(glyph);
-    if(it != p_ptr->m_GlyphMap.end()) {
+    auto it = p_ptr->m_glyphMap.find(glyph);
+    if(it != p_ptr->m_glyphMap.end()) {
         return (*it).second;
     }
     return 0;
@@ -211,46 +154,49 @@ void Font::requestCharacters(const string &characters) {
     bool isNew = false;
     for(auto it : u32) {
         uint32_t ch = it;
-        if(p_ptr->m_GlyphMap.find(ch) == p_ptr->m_GlyphMap.end() && p_ptr->m_pFace) {
-            FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, it ), FT_LOAD_DEFAULT );
+        if(p_ptr->m_glyphMap.find(ch) == p_ptr->m_glyphMap.end() && p_ptr->m_face) {
+            FT_Error error = FT_Load_Glyph(p_ptr->m_face, FT_Get_Char_Index(p_ptr->m_face, it), FT_LOAD_RENDER);
             if(!error) {
-                FT_Glyph glyph;
-                error = FT_Get_Glyph(p_ptr->m_pFace->glyph, &glyph);
-                if(!error) {
-                    FT_Glyph_To_Bitmap(&glyph, ft_render_mode_normal, nullptr, true);
-                    FT_Bitmap &bitmap = reinterpret_cast<FT_BitmapGlyph>(glyph)->bitmap;
+                int index = -1;
 
-                    uint32_t w = bitmap.width / DF_DEFAULT_SCALE;
-                    uint32_t h = bitmap.rows / DF_DEFAULT_SCALE;
-                    if(w && h) {
+                FT_GlyphSlot slot = p_ptr->m_face->glyph;
+                error = FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
+                if(!error) {
+                    if(slot->bitmap.width && slot->bitmap.rows) {
                         Texture::Surface s;
                         ByteArray buffer;
-                        buffer.resize(w * h);
-                        calculateDF(&buffer[0], bitmap, w, h); /// \todo Must be moved into separate thread
+                        buffer.resize(slot->bitmap.width * slot->bitmap.rows);
+
+                        memcpy(buffer.data(), slot->bitmap.buffer, buffer.size());
 
                         s.push_back(buffer);
 
-                        FT_BBox bbox;
-                        FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
-
                         Texture *t  = Engine::objectCreate<Texture>("", this);
-                        t->setWidth(w);
-                        t->setHeight(h);
+                        t->setWidth(slot->bitmap.width);
+                        t->setHeight(slot->bitmap.rows);
                         t->addSurface(s);
 
-                        int index = addElement(t);
-                        Mesh *m = mesh(index);
-                        Lod *lod = m->lod(0);
-                        if(lod) {
-                            lod->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_Scale,
-                                              Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_Scale,
-                                              Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_Scale,
-                                              Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_Scale});
-                        }
-                        p_ptr->m_GlyphMap[ch] = index;
-
-                        isNew = true;
+                        index = addElement(t);
                     }
+                }
+
+                FT_Glyph glyph;
+                error = FT_Get_Glyph(slot, &glyph);
+                if(!error && index > -1) {
+                    FT_BBox bbox;
+                    FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
+
+                    Mesh *m = mesh(index);
+                    Lod *lod = m->lod(0);
+                    if(lod) {
+                        lod->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_scale,
+                                          Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_scale,
+                                          Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_scale,
+                                          Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_scale});
+                    }
+                    p_ptr->m_glyphMap[ch] = index;
+
+                    isNew = true;
                 }
             }
         }
@@ -266,9 +212,9 @@ void Font::requestCharacters(const string &characters) {
 int Font::requestKerning(int glyph, int previous) const {
     PROFILE_FUNCTION();
 
-    if(p_ptr->m_UseKerning && previous)  {
+    if(p_ptr->m_useKerning && previous)  {
         FT_Vector delta;
-        FT_Get_Kerning( p_ptr->m_pFace, previous, glyph, FT_KERNING_DEFAULT, &delta );
+        FT_Get_Kerning( p_ptr->m_face, previous, glyph, FT_KERNING_DEFAULT, &delta );
         return delta.x >> 6;
     }
     return 0;
@@ -286,9 +232,9 @@ int Font::length(const string &characters) const {
 float Font::spaceWidth() const {
     PROFILE_FUNCTION();
 
-    FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, ' ' ), FT_LOAD_DEFAULT );
+    FT_Error error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, ' ' ), FT_LOAD_DEFAULT );
     if(!error) {
-        return static_cast<float>(p_ptr->m_pFace->glyph->advance.x) / p_ptr->m_Scale / 64.0f;
+        return static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
     }
     return 0;
 }
@@ -298,9 +244,9 @@ float Font::spaceWidth() const {
 float Font::lineHeight() const {
     PROFILE_FUNCTION();
 
-    FT_Error error = FT_Load_Glyph( p_ptr->m_pFace, FT_Get_Char_Index( p_ptr->m_pFace, '\n' ), FT_LOAD_DEFAULT );
+    FT_Error error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '\n' ), FT_LOAD_DEFAULT );
     if(!error) {
-        return static_cast<float>(p_ptr->m_pFace->glyph->metrics.height) / p_ptr->m_Scale / 32.0f;
+        return static_cast<float>(p_ptr->m_face->glyph->metrics.height) / p_ptr->m_scale / 32.0f;
     }
     return 0;
 }
@@ -315,18 +261,18 @@ void Font::loadUserData(const VariantMap &data) {
     {
         auto it = data.find(DATA);
         if(it != data.end()) {
-            p_ptr->m_Data = (*it).second.toByteArray();
-            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_Data[0]), p_ptr->m_Data.size(), 0, &p_ptr->m_pFace);
+            p_ptr->m_data = (*it).second.toByteArray();
+            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&p_ptr->m_data[0]), p_ptr->m_data.size(), 0, &p_ptr->m_face);
             if(error) {
                 Log(Log::ERR) << "Can't load font. System returned error:" << error;
                 return;
             }
-            error = FT_Set_Char_Size( p_ptr->m_pFace, p_ptr->m_Scale * 64, 0, 0, 0 );
+            error = FT_Set_Char_Size( p_ptr->m_face, p_ptr->m_scale * 64, 0, 0, 0 );
             if(error) {
                 Log(Log::ERR) << "Can't set default font size. System returned error:" << error;
                 return;
             }
-            p_ptr->m_UseKerning = FT_HAS_KERNING( p_ptr->m_pFace );
+            p_ptr->m_useKerning = FT_HAS_KERNING( p_ptr->m_face );
         }
     }
 }
@@ -343,7 +289,7 @@ VariantMap Font::saveUserData() const {
         result[HEADER]  = header;
     }
     {
-        result[DATA] = p_ptr->m_Data;
+        result[DATA] = p_ptr->m_data;
     }
     return result;
 }
@@ -354,6 +300,6 @@ VariantMap Font::saveUserData() const {
 void Font::clear() {
     PROFILE_FUNCTION();
 
-    p_ptr->m_GlyphMap.clear();
-    FT_Done_Face(p_ptr->m_pFace);
+    p_ptr->m_glyphMap.clear();
+    FT_Done_Face(p_ptr->m_face);
 }

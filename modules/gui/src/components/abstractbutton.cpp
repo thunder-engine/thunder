@@ -1,109 +1,151 @@
 #include "components/abstractbutton.h"
 
 #include "components/recttransform.h"
-#include "components/image.h"
+#include "components/frame.h"
+#include "components/label.h"
 
 #include <components/actor.h>
-
-#include <resources/sprite.h>
+#include <components/textrender.h>
 
 #include <input.h>
 #include <timer.h>
 #include <log.h>
 
 namespace  {
-const char *TARGET = "TargetGraphic";
+    const char *gTarget = "TargetGraphic";
+    const char *gLabel = "Label";
+    const char *gBackground = "Frame";
 }
-
-class AbstractButtonPrivate {
-public:
-    AbstractButtonPrivate() :
-        m_Hovered(false),
-        m_fadeDuration(0.2f),
-        m_currentFade(1.0f),
-        m_targetGraphic(nullptr),
-        m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
-        m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
-        m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)) {
-
-    }
-
-    bool m_Hovered;
-    float m_fadeDuration;
-    float m_currentFade;
-    Image *m_targetGraphic;
-    Vector4 m_normalColor;
-    Vector4 m_highlightedColor;
-    Vector4 m_pressedColor;
-};
 
 AbstractButton::AbstractButton() :
     Widget(),
-    p_ptr(new AbstractButtonPrivate) {
+    m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+    m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
+    m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
+    m_label(nullptr),
+    m_background(nullptr),
+    m_fadeDuration(0.2f),
+    m_currentFade(1.0f),
+    m_hovered(false),
+    m_mirrored(false),
+    m_checkable(false),
+    m_checked(false),
+    m_exclusive(false) {
 
 }
 
 AbstractButton::~AbstractButton() {
-    delete p_ptr;
-    p_ptr = nullptr;
+
+}
+
+string AbstractButton::text() const {
+    return m_text;
+}
+void AbstractButton::setText(const string text) {
+    m_text = text;
+    if(m_label) {
+        m_label->setText(text);
+    }
+}
+
+Frame *AbstractButton::background() const {
+    return m_background;
+}
+void AbstractButton::setBackground(Frame *frame) {
+    if(m_background != frame) {
+        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_background = frame;
+        if(m_background) {
+            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+            m_background->setColor(m_normalColor);
+        }
+    }
+}
+
+Label *AbstractButton::label() const {
+    return m_label;
+}
+void AbstractButton::setLabel(Label *label) {
+    if(m_label != label) {
+        disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_label = label;
+        if(m_label) {
+            connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+    }
 }
 
 float AbstractButton::fadeDuration() const {
-    return p_ptr->m_fadeDuration;
+    return m_fadeDuration;
 }
-
 void AbstractButton::setFadeDuration(float duration) {
-    p_ptr->m_fadeDuration = duration;
+    m_fadeDuration = duration;
 }
 
 Vector4 AbstractButton::highlightedColor() const {
-    return p_ptr->m_highlightedColor;
+    return m_highlightedColor;
 }
-
 void AbstractButton::setHighlightedColor(const Vector4 color) {
-    p_ptr->m_highlightedColor = color;
+    m_highlightedColor = color;
 }
 
 Vector4 AbstractButton::normalColor() const {
-    return p_ptr->m_normalColor;
+    return m_normalColor;
 }
-
 void AbstractButton::setNormalColor(const Vector4 color) {
-    p_ptr->m_normalColor = color;
-    if(p_ptr->m_targetGraphic) {
-        p_ptr->m_targetGraphic->setColor(p_ptr->m_normalColor);
+    m_normalColor = color;
+    if(m_background) {
+        m_background->setColor(m_normalColor);
     }
 }
 
 Vector4 AbstractButton::pressedColor() const {
-    return p_ptr->m_pressedColor;
+    return m_pressedColor;
 }
-
 void AbstractButton::setPressedColor(const Vector4 color) {
-    p_ptr->m_pressedColor = color;
+    m_pressedColor = color;
 }
 
-Image *AbstractButton::targetGraphic() const {
-    return p_ptr->m_targetGraphic;
+bool AbstractButton::isCheckable() const {
+    return m_checkable;
+}
+void AbstractButton::setCheckable(bool checkable) {
+    m_checkable = checkable;
 }
 
-void AbstractButton::setTargetGraphic(Image *image) {
-    if(p_ptr->m_targetGraphic != image) {
-        disconnect(p_ptr->m_targetGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        p_ptr->m_targetGraphic = image;
-        if(p_ptr->m_targetGraphic) {
-            connect(p_ptr->m_targetGraphic, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            p_ptr->m_targetGraphic->setColor(p_ptr->m_normalColor);
-        }
-    }
+bool AbstractButton::isChecked() const {
+    return m_checked;
 }
+void AbstractButton::setChecked(bool checked) {
+    m_checked = checked;
+    checkStateSet();
+}
+
+bool AbstractButton::isExclusive() const {
+    return m_exclusive;
+}
+void AbstractButton::setExclusive(bool exclusive) {
+    m_exclusive = exclusive;
+}
+
+bool AbstractButton::isMirrored() const {
+    return m_mirrored;
+}
+void AbstractButton::setMirrored(bool flag) {
+    m_mirrored = flag;
+}
+
 /*!
     \internal
 */
 void AbstractButton::onReferenceDestroyed() {
     Object *object = sender();
-    if(p_ptr->m_targetGraphic == object) {
-        p_ptr->m_targetGraphic = nullptr;
+    if(m_background == object) {
+        m_background = nullptr;
+    }
+
+    if(m_label == object) {
+        m_label = nullptr;
     }
 }
 /*!
@@ -114,43 +156,36 @@ void AbstractButton::update() {
     if(Input::touchCount() > 0) {
         pos = Input::touchPosition(0);
     }
+    Vector4 color(m_normalColor);
 
-    Actor *a = actor();
-    if(a) {
-        RectTransform *t = dynamic_cast<RectTransform *>(a->transform());
-        if(t) {
-            Vector4 color(p_ptr->m_normalColor);
+    bool hover = rectTransform()->isHovered(pos.x, pos.y);
+    if(m_hovered != hover) {
+        m_currentFade = 0.0f;
+        m_hovered = hover;
+    }
 
-            bool hover = t->isHovered(pos.x, pos.y);
-            if(p_ptr->m_Hovered != hover) {
-                p_ptr->m_currentFade = 0.0f;
-                p_ptr->m_Hovered = hover;
-            }
+    if(m_hovered) {
+        color = m_highlightedColor;
+        if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+            m_currentFade = 0.0f;
+            onClicked();
+        }
 
-            if(p_ptr->m_Hovered) {
-                color = p_ptr->m_highlightedColor;
-                if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
-                    p_ptr->m_currentFade = 0.0f;
-                    onClicked();
-                }
+        if(Input::isMouseButtonUp(0)) {
+            m_currentFade = 0.0f;
+        }
 
-                if(Input::isMouseButtonUp(0)) {
-                    p_ptr->m_currentFade = 0.0f;
-                }
+        if(Input::isMouseButton(0) || Input::touchCount() > 0) {
+            color = m_pressedColor;
+        }
+    }
 
-                if(Input::isMouseButton(0) || Input::touchCount() > 0) {
-                    color = p_ptr->m_pressedColor;
-                }
-            }
+    if(m_background) {
+        if(m_currentFade < 1.0f) {
+            m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
+            m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-            if(p_ptr->m_targetGraphic) {
-                if(p_ptr->m_currentFade < 1.0f) {
-                    p_ptr->m_currentFade += 1.0f / p_ptr->m_fadeDuration * Timer::deltaTime();
-                    p_ptr->m_currentFade = CLAMP(p_ptr->m_currentFade, 0.0f, 1.0f);
-
-                    p_ptr->m_targetGraphic->setColor(MIX(p_ptr->m_targetGraphic->color(), color, p_ptr->m_currentFade));
-                }
-            }
+            m_background->setColor(MIX(m_background->color(), color, m_currentFade));
         }
     }
 
@@ -158,7 +193,24 @@ void AbstractButton::update() {
 }
 
 void AbstractButton::onClicked() {
+    if(m_checkable) {
+        setChecked(!m_checked);
+    }
     emitSignal(_SIGNAL(clicked()));
+}
+
+void AbstractButton::checkStateSet() {
+    if(m_exclusive && m_checked) {
+        for(auto it : actor()->getChildren()) {
+            Actor *actor = dynamic_cast<Actor *>(it);
+            if(actor) {
+                AbstractButton *btn = static_cast<AbstractButton *>(actor->component("AbstractButton"));
+                if(btn && btn != this) {
+                    btn->setChecked(false);
+                }
+            }
+        }
+    }
 }
 
 /*!
@@ -167,11 +219,17 @@ void AbstractButton::onClicked() {
 void AbstractButton::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(TARGET);
+        auto it = data.find(gTarget);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
             Object *object = Engine::findObject(uuid, Engine::findRoot(this));
-            setTargetGraphic(dynamic_cast<Image *>(object));
+            setBackground(dynamic_cast<Frame *>(object));
+        }
+        it = data.find(gLabel);
+        if(it != data.end()) {
+            uint32_t uuid = uint32_t((*it).second.toInt());
+            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+            setLabel(dynamic_cast<Label *>(object));
         }
     }
 }
@@ -181,8 +239,11 @@ void AbstractButton::loadUserData(const VariantMap &data) {
 VariantMap AbstractButton::saveUserData() const {
     VariantMap result = Widget::saveUserData();
     {
-        if(p_ptr->m_targetGraphic) {
-            result[TARGET] = int(p_ptr->m_targetGraphic->uuid());
+        if(m_background) {
+            result[gTarget] = int(m_background->uuid());
+        }
+        if(m_label) {
+            result[gLabel] = int(m_label->uuid());
         }
     }
     return result;
@@ -191,8 +252,16 @@ VariantMap AbstractButton::saveUserData() const {
 void AbstractButton::composeComponent() {
     Widget::composeComponent();
 
-    Image *image = Engine::objectCreate<Image>("Image", actor());
-    image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
-    image->setItem("Rectangle");
-    setTargetGraphic(image);
+    // Add background
+    Actor *background = Engine::composeActor(gBackground, "Background", actor());
+    Frame *frame = static_cast<Frame *>(background->component(gBackground));
+    frame->setCorners(Vector4(3.0f));
+    setBackground(frame);
+
+    // Add label
+    Actor *text = Engine::composeActor(gLabel, gLabel, actor());
+    Label *label = static_cast<Label *>(text->component(gLabel));
+    label->setAlign(label->align() | Alignment::Center);
+    setLabel(label);
+    setText("Text");
 }

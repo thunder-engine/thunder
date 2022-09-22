@@ -12,74 +12,75 @@
 #include <resources/font.h>
 
 #include <commandbuffer.h>
+#include <utils.h>
 
-#define FONT     "Font"
-#define MATERIAL "Material"
-
-#define OVERRIDE "texture0"
-#define COLOR "uni.color0"
+namespace  {
+    const char *gFont = "Font";
+    const char *gOverride = "texture0";
+    const char *gClipRect = "uni.clipRect";
+};
 
 class LabelPrivate : public Resource::IObserver {
 public:
     explicit LabelPrivate(Label *label) :
-        m_Color(1.0f),
-        m_pLabel(label),
-        m_pFont(nullptr),
-        m_pMaterial(nullptr),
-        m_pMesh(Engine::objectCreate<Mesh>()),
-        m_Size(16),
-        m_Alignment(Left),
-        m_Kerning(true),
-        m_Wrap(false) {
+        m_color(1.0f),
+        m_label(label),
+        m_font(nullptr),
+        m_material(nullptr),
+        m_mesh(Engine::objectCreate<Mesh>()),
+        m_size(16),
+        m_alignment(Left),
+        m_kerning(true),
+        m_wrap(false) {
 
-        m_pMesh->makeDynamic();
-        m_pMesh->setFlags(Mesh::Uv0);
+        m_mesh->makeDynamic();
+        m_mesh->setFlags(Mesh::Uv0);
 
-        Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.mtl");
+        Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
         if(material) {
-            m_pMaterial = material->createInstance();
-            m_pMaterial->setVector4(COLOR, &m_Color);
+            m_material = material->createInstance();
         }
     }
 
     ~LabelPrivate() {
-        if(m_pFont) {
-            m_pFont->unsubscribe(this);
+        if(m_font) {
+            m_font->unsubscribe(this);
         }
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_pFont && state == Resource::Ready) {
+        if(resource == m_font && state == Resource::Ready) {
             composeMesh();
         }
     }
 
     void composeMesh() {
-        RectTransform *t = dynamic_cast<RectTransform *>(m_pLabel->actor()->transform());
-        if(t) {
-            TextRender::composeMesh(m_pFont, m_pMesh, m_Size, m_Text, m_Alignment, m_Kerning, m_Wrap, t->size());
-        }
+        TextRender::composeMesh(m_font, m_mesh, m_size, m_text, m_alignment, m_kerning, m_wrap, m_meshSize);
     }
 
-    string m_Text;
+    string m_text;
 
-    Vector4 m_Color;
+    Vector4 m_color;
 
-    Label *m_pLabel;
+    Vector2 m_meshSize;
 
-    Font *m_pFont;
+    Vector2 m_clipOffset;
 
-    MaterialInstance *m_pMaterial;
+    Label *m_label;
 
-    Mesh *m_pMesh;
+    Font *m_font;
 
-    int32_t m_Size;
+    MaterialInstance *m_material;
 
-    int m_Alignment;
+    Mesh *m_mesh;
 
-    bool m_Kerning;
+    int32_t m_size;
 
-    bool m_Wrap;
+    int m_alignment;
+
+    bool m_kerning;
+
+    bool m_wrap;
 };
 
 /*!
@@ -104,11 +105,13 @@ Label::~Label() {
 */
 void Label::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pMesh && !p_ptr->m_Text.empty()) {
+    if(p_ptr->m_mesh && !p_ptr->m_text.empty()) {
         if(layer & CommandBuffer::RAYCAST) {
             buffer.setColor(CommandBuffer::idToColor(a->uuid()));
+        } else {
+            buffer.setColor(p_ptr->m_color);
         }
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, 0, layer, p_ptr->m_pMaterial);
+        buffer.drawMesh(rectTransform()->worldTransform(), p_ptr->m_mesh, 0, layer, p_ptr->m_material);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -116,33 +119,33 @@ void Label::draw(CommandBuffer &buffer, uint32_t layer) {
     Returns the text which will be drawn.
 */
 string Label::text() const {
-    return p_ptr->m_Text;
+    return p_ptr->m_text;
 }
 /*!
     Changes the \a text which will be drawn.
 */
 void Label::setText(const string text) {
-    p_ptr->m_Text = text;
+    p_ptr->m_text = text;
     p_ptr->composeMesh();
 }
 /*!
     Returns the font which will be used to draw a text.
 */
 Font *Label::font() const {
-    return p_ptr->m_pFont;
+    return p_ptr->m_font;
 }
 /*!
     Changes the \a font which will be used to draw a text.
 */
 void Label::setFont(Font *font) {
-    if(p_ptr->m_pFont) {
-        p_ptr->m_pFont->unsubscribe(p_ptr);
+    if(p_ptr->m_font) {
+        p_ptr->m_font->unsubscribe(p_ptr);
     }
-    p_ptr->m_pFont = font;
-    if(p_ptr->m_pFont) {
-        p_ptr->m_pFont->subscribe(p_ptr);
-        if(p_ptr->m_pMaterial) {
-            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pFont->texture());
+    p_ptr->m_font = font;
+    if(p_ptr->m_font) {
+        p_ptr->m_font->subscribe(p_ptr);
+        if(p_ptr->m_material) {
+            p_ptr->m_material->setTexture(gOverride, p_ptr->m_font->texture());
         }
     }
     p_ptr->composeMesh();
@@ -151,69 +154,85 @@ void Label::setFont(Font *font) {
     Returns the size of the font.
 */
 int Label::fontSize() const {
-    return p_ptr->m_Size;
+    return p_ptr->m_size;
 }
 /*!
     Changes the \a size of the font.
 */
 void Label::setFontSize(int size) {
-    p_ptr->m_Size = size;
+    p_ptr->m_size = size;
     p_ptr->composeMesh();
 }
 /*!
     Returns the color of the text to be drawn.
 */
 Vector4 Label::color() const {
-    return p_ptr->m_Color;
+    return p_ptr->m_color;
 }
 /*!
     Changes the \a color of the text to be drawn.
 */
 void Label::setColor(const Vector4 color) {
-    p_ptr->m_Color = color;
-    if(p_ptr->m_pMaterial) {
-        p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
-    }
+    p_ptr->m_color = color;
 }
 /*!
     Returns true if word wrap enabled; otherwise returns false.
 */
 bool Label::wordWrap() const {
-    return p_ptr->m_Wrap;
+    return p_ptr->m_wrap;
 }
 /*!
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
 void Label::setWordWrap(bool wrap) {
-    p_ptr->m_Wrap = wrap;
+    p_ptr->m_wrap = wrap;
     p_ptr->composeMesh();
 }
 /*!
     Returns text alignment policy.
 */
 int Label::align() const {
-    return p_ptr->m_Alignment;
+    return p_ptr->m_alignment;
 }
 /*!
     Sets text \a alignment policy.
 */
 void Label::setAlign(int alignment) {
-    p_ptr->m_Alignment = alignment;
+    p_ptr->m_alignment = alignment;
     p_ptr->composeMesh();
 }
 /*!
     Returns true if glyph kerning enabled; otherwise returns false.
 */
 bool Label::kerning() const {
-    return p_ptr->m_Kerning;
+    return p_ptr->m_kerning;
 }
 /*!
     Set true to enable glyph \a kerning and false to disable.
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
 void Label::setKerning(const bool kerning) {
-    p_ptr->m_Kerning = kerning;
+    p_ptr->m_kerning = kerning;
     p_ptr->composeMesh();
+}
+/*!
+    Returns a \a position for virtual cursor.
+*/
+Vector2 Label::cursorAt(int position) {
+    u32string u32 = Utils::utf8ToUtf32(p_ptr->m_text);
+    return TextRender::cursorPosition(p_ptr->m_font, p_ptr->m_size, Utils::utf32ToUtf8(u32.substr(0, position)),
+                                      p_ptr->m_alignment, p_ptr->m_kerning, p_ptr->m_wrap, p_ptr->m_meshSize);
+}
+/*!
+    \internal
+*/
+void Label::setClipOffset(const Vector2 &offset) {
+    p_ptr->m_clipOffset = offset;
+    if(p_ptr->m_material) {
+        Vector4 clipRect(p_ptr->m_clipOffset, p_ptr->m_meshSize.x + p_ptr->m_clipOffset.x, p_ptr->m_meshSize.y + p_ptr->m_clipOffset.y);
+
+        p_ptr->m_material->setVector4(gClipRect, &clipRect);
+    }
 }
 /*!
     \internal
@@ -228,7 +247,7 @@ void Label::loadData(const VariantList &data) {
 void Label::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(FONT);
+        auto it = data.find(gFont);
         if(it != data.end()) {
             setFont(Engine::loadResource<Font>((*it).second.toString()));
         }
@@ -243,7 +262,7 @@ VariantMap Label::saveUserData() const {
         Font *o = font();
         string ref = Engine::reference(o);
         if(!ref.empty()) {
-            result[FONT] = ref;
+            result[gFont] = ref;
         }
     }
     return result;
@@ -260,9 +279,17 @@ bool Label::event(Event *ev) {
 /*!
     \internal
 */
-void Label::boundChanged() {
-    Widget::boundChanged();
+void Label::boundChanged(const Vector2 &size) {
+    Widget::boundChanged(size);
+    p_ptr->m_meshSize = size;
     p_ptr->composeMesh();
+
+
+    if(p_ptr->m_material) {
+        Vector4 clipRect(p_ptr->m_clipOffset, p_ptr->m_meshSize.x + p_ptr->m_clipOffset.x, p_ptr->m_meshSize.y + p_ptr->m_clipOffset.y);
+
+        p_ptr->m_material->setVector4(gClipRect, &clipRect);
+    }
 }
 /*!
     \internal
@@ -272,12 +299,12 @@ void Label::composeComponent() {
 
     setFontSize(14);
     setColor(Vector4(0.20f, 0.20f, 0.20f, 1.0f));
-    setAlign(Alignment::Center | Alignment::Middle);
+    setAlign(Alignment::Middle);
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
 
     RectTransform *t = dynamic_cast<RectTransform *>(actor()->transform());
     if(t) {
-        t->setSize(Vector2(100.0f, 30.0f));
+        t->setAnchors(Vector2(0, 0), Vector2(1, 1));
     }
 }

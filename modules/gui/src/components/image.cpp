@@ -7,85 +7,63 @@
 #include <resources/sprite.h>
 
 #include <components/actor.h>
-#include <components/transform.h>
 #include <components/spriterender.h>
 #include <commandbuffer.h>
 
-#define MATERIAL "Material"
-#define BASEMAP "BaseMap"
+namespace {
+    const char *gMaterial = "Material";
+    const char *gBasemap = "BaseMap";
 
-#define OVERRIDE "texture0"
-#define COLOR "uni.color0"
-
-#define DEFAULTSPRITE ".embedded/DefaultSprite.mtl"
+    const char *gOverride = "texture0";
+    const char *gColor = "uni.color0";
+    const char *gDefaultSprite = ".embedded/DefaultSprite.mtl";
+};
 
 static hash<string> hash_str;
 
 class ImagePrivate : public Resource::IObserver {
 public:
     explicit ImagePrivate(Image *image) :
-        m_Color(1.0f),
-        m_pImage(image),
-        m_pCustomMesh(Engine::objectCreate<Mesh>("")),
-        m_pMaterial(nullptr),
-        m_pCustomMaterial(nullptr),
-        m_pSprite(nullptr),
-        m_Hash(0) {
+        m_image(image) {
 
-        Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(DEFAULTSPRITE));
-        if(m) {
-            m_pMaterial = m->createInstance();
-            m_pMaterial->setVector4(COLOR, &m_Color);
-        }
     }
 
     void resourceUpdated(const Resource *resource, Resource::ResourceState state) override {
-        if(resource == m_pSprite) {
+        if(resource == m_image->m_sprite) {
             if(state == Resource::Ready) {
-                if(m_pCustomMaterial) {
-                    m_pCustomMaterial->setTexture(OVERRIDE, m_pSprite->texture());
+                if(m_image->m_customMaterial) {
+                    m_image->m_customMaterial->setTexture(gOverride, m_image->m_sprite->texture());
                 }
-                composeMesh();
+                m_image->composeMesh();
             } else if(state == Resource::ToBeDeleted) {
-                m_pSprite = nullptr;
-                m_pMaterial->setTexture(OVERRIDE, nullptr);
-                if(m_pCustomMaterial) {
-                    m_pCustomMaterial->setTexture(OVERRIDE, nullptr);
+                m_image->m_sprite = nullptr;
+                m_image->m_material->setTexture(gOverride, nullptr);
+                if(m_image->m_customMaterial) {
+                    m_image->m_customMaterial->setTexture(gOverride, nullptr);
                 }
-                composeMesh();
+                m_image->composeMesh();
             }
         }
     }
 
-    void composeMesh() {
-        RectTransform *t = dynamic_cast<RectTransform *>(m_pImage->actor()->transform());
-        if(t) {
-            if(m_pCustomMesh && m_pSprite) {
-                Vector2 size = t->size();
-                SpriteRender::composeMesh(m_pSprite, m_Hash, m_pCustomMesh, size, false, false, 100.0f);
-            }
-        }
-    }
-
-    Vector4 m_Color;
-
-    string m_Item;
-
-    Image *m_pImage;
-
-    Mesh *m_pCustomMesh;
-
-    MaterialInstance *m_pMaterial;
-    MaterialInstance *m_pCustomMaterial;
-
-    Sprite *m_pSprite;
-
-    int m_Hash;
+    Image *m_image;
 };
 
 Image::Image() :
+    m_color(1.0f),
+    m_customMesh(Engine::objectCreate<Mesh>("")),
+    m_material(nullptr),
+    m_customMaterial(nullptr),
+    m_sprite(nullptr),
+    m_hash(0),
+    m_drawMode(SpriteRender::Sliced),
     p_ptr(new ImagePrivate(this)) {
 
+    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(gDefaultSprite));
+    if(m) {
+        m_material = m->createInstance();
+        m_material->setVector4(gColor, &m_color);
+    }
 }
 
 Image::~Image() {
@@ -98,23 +76,24 @@ Image::~Image() {
 */
 void Image::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pCustomMesh) {
+    if(m_customMesh) {
         if(layer & CommandBuffer::RAYCAST) {
             buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
-        buffer.drawMesh(a->transform()->worldTransform(),
-                        p_ptr->m_pCustomMesh,
-                        0, layer, (p_ptr->m_pCustomMaterial) ? p_ptr->m_pCustomMaterial : p_ptr->m_pMaterial);
+
+        buffer.drawMesh(rectTransform()->worldTransform(),
+                        m_customMesh,
+                        0, layer, (m_customMaterial) ? m_customMaterial : m_material);
         buffer.setColor(Vector4(1.0f));
     }
 }
 
 /*!
-    Returns an instantiated Material assigned to SpriteRender.
+    Returns an instantiated Material assigned to Image.
 */
 Material *Image::material() const {
-    if(p_ptr->m_pCustomMaterial) {
-        return p_ptr->m_pCustomMaterial->material();
+    if(m_customMaterial) {
+        return m_customMaterial->material();
     }
     return nullptr;
 }
@@ -122,17 +101,17 @@ Material *Image::material() const {
     Creates a new instance of \a material and assigns it.
 */
 void Image::setMaterial(Material *material) {
-    if(!p_ptr->m_pCustomMaterial || p_ptr->m_pCustomMaterial->material() != material) {
-        if(p_ptr->m_pCustomMaterial) {
-            delete p_ptr->m_pCustomMaterial;
-            p_ptr->m_pCustomMaterial = nullptr;
+    if(!m_customMaterial || m_customMaterial->material() != material) {
+        if(m_customMaterial) {
+            delete m_customMaterial;
+            m_customMaterial = nullptr;
         }
 
         if(material) {
-            p_ptr->m_pCustomMaterial = material->createInstance();
-            p_ptr->m_pCustomMaterial->setVector4(COLOR, &p_ptr->m_Color);
-            if(p_ptr->m_pSprite) {
-                p_ptr->m_pCustomMaterial->setTexture(OVERRIDE, p_ptr->m_pSprite->texture());
+            m_customMaterial = material->createInstance();
+            m_customMaterial->setVector4(gColor, &m_color);
+            if(m_sprite) {
+                m_customMaterial->setTexture(gOverride, m_sprite->texture());
             }
         }
     }
@@ -141,24 +120,24 @@ void Image::setMaterial(Material *material) {
     Returns a sprite.
 */
 Sprite *Image::sprite() const {
-    return p_ptr->m_pSprite;
+    return m_sprite;
 }
 /*!
     Replaces current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
-    if(p_ptr->m_pSprite) {
-        p_ptr->m_pSprite->unsubscribe(p_ptr);
+    if(m_sprite) {
+        m_sprite->unsubscribe(p_ptr);
     }
-    p_ptr->m_pSprite = sprite;
-    if(p_ptr->m_pSprite) {
-        p_ptr->m_pSprite->subscribe(p_ptr);
-        p_ptr->composeMesh();
-        if(p_ptr->m_pMaterial) {
-            p_ptr->m_pMaterial->setTexture(OVERRIDE, p_ptr->m_pSprite->texture());
+    m_sprite = sprite;
+    if(m_sprite) {
+        m_sprite->subscribe(p_ptr);
+        composeMesh();
+        if(m_material) {
+            m_material->setTexture(gOverride, m_sprite->texture());
         }
-        if(p_ptr->m_pCustomMaterial) {
-            p_ptr->m_pCustomMaterial->setTexture(OVERRIDE, p_ptr->m_pSprite->texture());
+        if(m_customMaterial) {
+            m_customMaterial->setTexture(gOverride, m_sprite->texture());
         }
     }
 }
@@ -166,38 +145,55 @@ void Image::setSprite(Sprite *sprite) {
     Returns the color of the image to be drawn.
 */
 Vector4 Image::color() const {
-    return p_ptr->m_Color;
+    return m_color;
 }
 /*!
     Changes the \a color of the image to be drawn.
 */
 void Image::setColor(const Vector4 color) {
-    p_ptr->m_Color = color;
-    if(p_ptr->m_pCustomMaterial) {
-        p_ptr->m_pCustomMaterial->setVector4(COLOR, &p_ptr->m_Color);
-    } else if(p_ptr->m_pMaterial) {
-        p_ptr->m_pMaterial->setVector4(COLOR, &p_ptr->m_Color);
+    m_color = color;
+    if(m_customMaterial) {
+        m_customMaterial->setVector4(gColor, &m_color);
+    } else if(m_material) {
+        m_material->setVector4(gColor, &m_color);
     }
 }
 /*!
     Returns the current item name of sprite from the sprite sheet.
 */
 string Image::item() const {
-    return p_ptr->m_Item;
+    return m_item;
 }
 /*!
     Sets the current sub \a item name of sprite from the sprite sheet.
 */
 void Image::setItem(const string item) {
-    p_ptr->m_Item = item;
-    p_ptr->m_Hash = hash_str(p_ptr->m_Item);
-    p_ptr->composeMesh();
+    m_item = item;
+    m_hash = hash_str(m_item);
+    composeMesh();
 }
+/*!
+    Returns a draw mode for the image.
+    Please check Image::DrawMode for more details.
+*/
+int Image::drawMode() const {
+    return m_drawMode;
+}
+/*!
+    Sets a draw \a mode for the image.
+    Please check Image::DrawMode for more details.
+*/
+void Image::setDrawMode(int type) {
+    m_drawMode = type;
+    composeMesh();
+}
+
 /*!
     \internal
 */
-void Image::boundChanged() {
-    p_ptr->composeMesh();
+void Image::boundChanged(const Vector2 &size) {
+    m_meshSize = size;
+    composeMesh();
 }
 /*!
     \internal
@@ -214,13 +210,13 @@ void Image::composeComponent() {
 void Image::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(MATERIAL);
+        auto it = data.find(gMaterial);
         if(it != data.end()) {
             setMaterial(Engine::loadResource<Material>((*it).second.toString()));
         }
     }
     {
-        auto it = data.find(BASEMAP);
+        auto it = data.find(gBasemap);
         if(it != data.end()) {
             setSprite(Engine::loadResource<Sprite>((*it).second.toString()));
         }
@@ -235,15 +231,23 @@ VariantMap Image::saveUserData() const {
         Material *m = material();
         string ref = Engine::reference(m);
         if(!ref.empty()) {
-            result[MATERIAL] = ref;
+            result[gMaterial] = ref;
         }
     }
     {
         Sprite *t = sprite();
         string ref = Engine::reference(t);
         if(!ref.empty()) {
-            result[BASEMAP] = ref;
+            result[gBasemap] = ref;
         }
     }
     return result;
+}
+/*!
+    \internal
+*/
+void Image::composeMesh() {
+    if(m_customMesh) {
+        SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_meshSize, m_drawMode, false, 100.0f);
+    }
 }

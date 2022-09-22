@@ -7,15 +7,11 @@
 
 #include <cstring>
 
-#define HEADER  "Header"
 #define DATA    "Data"
 #define MESHES  "Meshes"
 
 typedef deque<Texture *> Textures;
 typedef unordered_map<int, Mesh *> Meshes;
-
-static Vector3Vector vertEmpty;
-static IndexVector trisEmpty;
 
 class SpritePrivate {
 public:
@@ -47,7 +43,7 @@ Sprite::Sprite() :
 
     p_ptr->m_pTexture = Engine::objectCreate<Texture>();
     p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
-    resize(1024, 1024);
+    resize(2048, 2048);
 }
 
 Sprite::~Sprite() {

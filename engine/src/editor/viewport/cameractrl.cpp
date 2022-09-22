@@ -1,4 +1,5 @@
 #include "editor/viewport/cameractrl.h"
+#include "editor/viewport/handles.h"
 
 #include <QMenu>
 
@@ -28,7 +29,8 @@ CameraCtrl::CameraCtrl() :
         m_focalLengthTarget(-1.0f),
         m_transferProgress(1.0f),
         m_camera(nullptr),
-        m_activeCamera(nullptr) {
+        m_activeCamera(nullptr),
+        m_activeRootObject(nullptr) {
 
     m_camera = Engine::composeActor("Camera", "Camera", nullptr);
     m_activeCamera = static_cast<Camera *>(m_camera->component("Camera"));
@@ -41,7 +43,7 @@ CameraCtrl::CameraCtrl() :
 }
 
 void CameraCtrl::drawHandles() {
-
+    drawHelpers(*m_activeRootObject);
 }
 
 void CameraCtrl::resize(int32_t width, int32_t height) {
@@ -50,6 +52,10 @@ void CameraCtrl::resize(int32_t width, int32_t height) {
 
 Object::ObjectList CameraCtrl::selected() {
     return Object::ObjectList();
+}
+
+void CameraCtrl::select(Object &object) {
+
 }
 
 void CameraCtrl::update() {
@@ -373,4 +379,25 @@ VariantList CameraCtrl::saveState() const {
         result.push_back(m_activeCamera->orthoSize());
     }
     return result;
+}
+
+void CameraCtrl::setActiveRootObject(Object *object) {
+    m_activeRootObject = object;
+}
+
+void CameraCtrl::drawHelpers(Object &object) {
+    auto list = selected();
+
+    for(auto &it : object.getChildren()) {
+        Component *component = dynamic_cast<Component *>(it);
+        if(component) {
+            if(component->drawHandles(list)) {
+                select(object);
+            }
+        } else {
+            if(it) {
+                drawHelpers(*it);
+            }
+        }
+    }
 }

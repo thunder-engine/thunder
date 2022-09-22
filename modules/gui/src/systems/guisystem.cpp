@@ -14,6 +14,8 @@
 #include "components/button.h"
 #include "components/switch.h"
 #include "components/progressbar.h"
+#include "components/frame.h"
+#include "components/textinput.h"
 
 GuiSystem::GuiSystem() :
         System() {
@@ -22,6 +24,7 @@ GuiSystem::GuiSystem() :
 
     Widget::registerClassFactory(this);
     Image::registerClassFactory(this);
+    Frame::registerClassFactory(this);
     Label::registerClassFactory(this);
 
     AbstractButton::registerClassFactory(this);
@@ -29,9 +32,13 @@ GuiSystem::GuiSystem() :
     Switch::registerClassFactory(this);
 
     ProgressBar::registerClassFactory(this);
+
+    TextInput::registerClassFactory(this);
 }
 
 GuiSystem::~GuiSystem() {
+    TextInput::unregisterClassFactory(this);
+
     ProgressBar::unregisterClassFactory(this);
 
     Switch::unregisterClassFactory(this);
@@ -40,6 +47,7 @@ GuiSystem::~GuiSystem() {
 
     Label::unregisterClassFactory(this);
     Image::unregisterClassFactory(this);
+    Frame::unregisterClassFactory(this);
     Widget::unregisterClassFactory(this);
 
     RectTransform::unregisterClassFactory(this);
@@ -71,7 +79,7 @@ Object *GuiSystem::instantiateObject(const MetaObject *meta, const string &name,
 }
 
 void GuiSystem::composeComponent(Component *component) const {
-    Widget *widget = dynamic_cast<Widget *>(component);
+    Renderable *widget = dynamic_cast<Renderable *>(component);
     if(widget) {
         widget->composeComponent();
     }
