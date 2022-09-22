@@ -15,6 +15,8 @@
 #include <commandbuffer.h>
 #include <utils.h>
 
+#include <algorithm>
+
 namespace {
     const char *gLabel = "Label";
     const char *gFrame = "Frame";
