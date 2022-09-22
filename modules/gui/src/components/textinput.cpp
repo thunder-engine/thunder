@@ -128,14 +128,13 @@ void TextInput::update() {
             m_cursorPosition++;
             recalcCursor();
         } else {
-            u32string sub = Utils::utf8ToUtf32(Input::inputString());
-            auto removed = std::remove(sub.begin(), sub.end(), '\r');
-            sub.erase(removed, sub.end());
-            removed = std::remove(sub.begin(), sub.end(), '\n');
-            sub.erase(removed, sub.end());
+            string sub = Input::inputString();
+            sub.erase(std::remove(sub.begin(), sub.end(), '\r'), sub.end());
+            sub.erase(std::remove(sub.begin(), sub.end(), '\n'), sub.end());
             if(!sub.empty()) {
-                u32.insert(m_cursorPosition, sub);
-                m_cursorPosition += sub.size();
+                u32string u32sub = Utils::utf8ToUtf32(sub);
+                u32.insert(m_cursorPosition, u32sub);
+                m_cursorPosition += u32sub.size();
                 setText(Utils::utf32ToUtf8(u32));
                 recalcCursor();
             }
