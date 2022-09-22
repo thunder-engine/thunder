@@ -80,7 +80,7 @@ private:
     int priority() const override;
 
     static bool composeSliced(Lod *lod, Vector2 &size, Vector3 &delta, float scale);
-    static bool SpriteRender::composeTiled(Lod *lod, Vector2 &size, Vector3 &delta, float scale);
+    static bool composeTiled(Lod *lod, Vector2 &size, Vector3 &delta, float scale);
 
 private:
     SpriteRenderPrivate *p_ptr;
