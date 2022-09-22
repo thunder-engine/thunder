@@ -129,8 +129,10 @@ void TextInput::update() {
             recalcCursor();
         } else {
             u32string sub = Utils::utf8ToUtf32(Input::inputString());
-            sub.erase(std::remove(sub.begin(), sub.end(), "\r"), sub.end());
-            sub.erase(std::remove(sub.begin(), sub.end(), "\n"), sub.end());
+            auto removed = std::remove(sub.begin(), sub.end(), '\r');
+            sub.erase(removed, sub.end());
+            removed = std::remove(sub.begin(), sub.end(), '\n');
+            sub.erase(removed, sub.end());
             if(!sub.empty()) {
                 u32.insert(m_cursorPosition, sub);
                 m_cursorPosition += sub.size();
