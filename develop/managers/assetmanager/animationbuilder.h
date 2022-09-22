@@ -1,9 +1,8 @@
 #ifndef ANIMATIONBUILDER_H
 #define ANIMATIONBUILDER_H
 
-#include "editor/scheme/abstractnodegraph.h"
-
-#include "editor/scheme/graphnode.h"
+#include <editor/graph/abstractnodegraph.h>
+#include <editor/graph/graphnode.h>
 
 #include <QVariant>
 

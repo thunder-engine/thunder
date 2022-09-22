@@ -15,7 +15,7 @@ public:
             m_defaultValue(0.0f) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        ports.push_back(new NodePort(true, QMetaType::Double, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::Double, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -55,7 +55,7 @@ public:
             m_defaultValue(QColor(0, 0, 0, 0)) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        ports.push_back(new NodePort(true, QMetaType::QVector4D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector4D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {

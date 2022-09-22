@@ -16,7 +16,7 @@ public:
     Q_INVOKABLE ConstFloat() {
         m_value = 0.0;
 
-        ports.push_back(new NodePort(true, QMetaType::Double, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::Double, 0, "Output"));
     }
 
     double value() const {
@@ -55,7 +55,7 @@ public:
     Q_INVOKABLE ConstVector2() {
         m_value = QVector2D();
 
-        ports.push_back(new NodePort(true, QMetaType::QVector2D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector2D, 0, "Output"));
     }
 
     double valueR() const {
@@ -103,7 +103,7 @@ public:
     Q_INVOKABLE ConstVector3() {
         m_value = QColor(0, 0, 0);
 
-        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector3D, 0, "Output"));
     }
 
     QColor value() const {
@@ -142,7 +142,7 @@ public:
     Q_INVOKABLE ConstVector4() :
             m_value(QColor(0, 0, 0, 0)) {
 
-        ports.push_back(new NodePort(true, QMetaType::QVector4D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector4D, 0, "Output"));
     }
 
     QColor value() const {

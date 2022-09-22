@@ -16,7 +16,7 @@ Rectangle {
 
     Connections {
         target: schemeModel
-        onSchemeUpdated: {
+        onGraphUpdated: {
             nodes = schemeModel.nodes()
             links = schemeModel.links()
             canvas.requestPaint()

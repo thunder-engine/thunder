@@ -53,10 +53,12 @@ MaterialEdit::MaterialEdit() :
 
     on_actionSphere_triggered();
 
-    connect(m_graph, &ShaderNodeGraph::schemeUpdated, this, &MaterialEdit::onSchemeUpdated);
-    connect(ui->schemeWidget, &SchemeView::itemSelected, this, &MaterialEdit::itemSelected);
+    connect(m_graph, &ShaderNodeGraph::graphUpdated, this, &MaterialEdit::onGraphUpdated);
+    connect(ui->schemeWidget, &GraphView::itemSelected, this, &MaterialEdit::itemSelected);
 
-    ui->schemeWidget->setModel(m_graph);
+    ui->schemeWidget->init();
+    ui->schemeWidget->setSceneGraph(Engine::objectCreate<SceneGraph>("SceneGraph"));
+    ui->schemeWidget->setGraph(m_graph);
 
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
@@ -106,7 +108,7 @@ void MaterialEdit::saveAsset(const QString &path) {
     }
 }
 
-void MaterialEdit::onSchemeUpdated() {
+void MaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         MeshRender *mesh = static_cast<MeshRender *>(m_mesh->component(gMeshRender));
         if(mesh) {

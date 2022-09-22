@@ -5,8 +5,8 @@
 
 #include <resources/material.h>
 
-#include <editor/scheme/graphnode.h>
-#include <editor/scheme/abstractnodegraph.h>
+#include <editor/graph/graphnode.h>
+#include <editor/graph/abstractnodegraph.h>
 
 #define SHADER      "Shader"
 #define SIMPLE      "Simple"
@@ -78,25 +78,25 @@ public:
     }
 
     bool isDoubleSided() const { return m_doubleSided; }
-    void setDoubleSided(bool value) { m_doubleSided = value; emit schemeUpdated(); }
+    void setDoubleSided(bool value) { m_doubleSided = value; emit graphUpdated(); }
 
     bool isDepthTest() const { return m_depthTest; }
-    void setDepthTest(bool value) { m_depthTest = value; emit schemeUpdated(); }
+    void setDepthTest(bool value) { m_depthTest = value; emit graphUpdated(); }
 
     bool isDepthWrite() const { return m_depthWrite; }
-    void setDepthWrite(bool value) { m_depthWrite = value; emit schemeUpdated(); }
+    void setDepthWrite(bool value) { m_depthWrite = value; emit graphUpdated(); }
 
     Type materialType() const { return m_materialType; }
     void setMaterialType(Type type) { m_materialType = type; }
 
     Blend blend() const { return m_blendMode; }
-    void setBlend(Blend mode) { m_blendMode = mode; emit schemeUpdated(); }
+    void setBlend(Blend mode) { m_blendMode = mode; emit graphUpdated(); }
 
     LightModel lightModel() const { return m_lightModel; }
-    void setLightModel(LightModel model) { m_lightModel = model; emit schemeUpdated(); }
+    void setLightModel(LightModel model) { m_lightModel = model; emit graphUpdated(); }
 
 signals:
-    void schemeUpdated();
+    void graphUpdated();
 
 private:
     Blend m_blendMode;

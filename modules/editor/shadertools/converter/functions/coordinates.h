@@ -11,7 +11,7 @@ class ProjectionCoord : public ShaderFunction {
 
 public:
     Q_INVOKABLE ProjectionCoord() {
-        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector3D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -32,7 +32,7 @@ public:
     Q_INVOKABLE TexCoord() :
             m_index(0) {
 
-        ports.push_back(new NodePort(true, QMetaType::QVector2D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector2D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -61,7 +61,7 @@ class NormalVectorWS : public ShaderFunction {
 
 public:
     Q_INVOKABLE NormalVectorWS() {
-        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector3D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -78,7 +78,7 @@ class CameraPosition : public ShaderFunction {
 
 public:
     Q_INVOKABLE CameraPosition() {
-        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector3D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -95,7 +95,7 @@ class CameraDirection : public ShaderFunction {
 
 public:
     Q_INVOKABLE CameraDirection() {
-        ports.push_back(new NodePort(true, QMetaType::QVector3D, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::QVector3D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
@@ -117,13 +117,13 @@ public:
     Q_INVOKABLE CoordPanner() {
         m_speed = Vector2();
 
-        ports.push_back(new NodePort(false, QMetaType::QVector2D, 0, UV));
-        ports.push_back(new NodePort(true,  QMetaType::QVector2D, 0, ""));
+        m_ports.push_back(new NodePort(this, false, QMetaType::QVector2D, 1, UV));
+        m_ports.push_back(new NodePort(this, true,  QMetaType::QVector2D, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *l = graph->findLink(this, ports.front()); // UV
+            const AbstractNodeGraph::Link *l = graph->findLink(this, m_ports.at(1)); // UV
             if(l) {
                 ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                 if(node) {

@@ -4,7 +4,7 @@
 #include "../shadernodegraph.h"
 
 #include <editor/assetconverter.h>
-#include <editor/scheme/graphnode.h>
+#include <editor/graph/graphnode.h>
 
 #include <QStack>
 

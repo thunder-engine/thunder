@@ -16,11 +16,11 @@ public:
             QString args;
 
             int i = 0;
-            for(NodePort *it : qAsConst(ports)) {
+            for(NodePort *it : qAsConst(m_ports)) {
                 if(it->m_out == true) {
                     continue;
                 }
-                const AbstractNodeGraph::Link *l = graph->findLink(this, ports.at(i));
+                const AbstractNodeGraph::Link *l = graph->findLink(this, m_ports.at(i));
                 if(l) {
                     ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
                     if(node) {
@@ -72,11 +72,11 @@ public:
     void createParams() {
         int i = 0;
         for(QString &it : m_params) {
-            ports.push_back(new NodePort(false, QMetaType::Void, i, it));
+            m_ports.push_back(new NodePort(this, false, QMetaType::Void, i + 1, it));
             i++;
         }
 
-        ports.push_back(new NodePort(true, QMetaType::Void, 0, ""));
+        m_ports.push_back(new NodePort(this, true, QMetaType::Void, 0, "Output"));
     }
 
 protected:

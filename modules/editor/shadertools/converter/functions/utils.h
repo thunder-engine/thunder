@@ -3,8 +3,6 @@
 
 #include "function.h"
 
-#define IN  "In"
-
 #define AGB "A>B"
 #define BGA "A<B"
 #define AEB "A==B"
@@ -25,12 +23,12 @@ public:
         m_b(true),
         m_a(true) {
 
-        ports.push_back(new NodePort(false, QMetaType::Void, 0, IN));
-        ports.push_back(new NodePort(true, QMetaType::Void, 0, ""));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 1, "Input"));
+        m_ports.push_back(new NodePort(this, true, QMetaType::Void, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        const AbstractNodeGraph::Link *l = graph->findLink(this, ports.front());
+        const AbstractNodeGraph::Link *l = graph->findLink(this, m_ports.front());
         if(l) {
             ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
 
@@ -129,18 +127,18 @@ public:
     Q_INVOKABLE Fresnel() :
         m_power(5.0f) {
 
-        ports.push_back(new NodePort(false, QMetaType::QVector3D, 0, "Normal"));
-        ports.push_back(new NodePort(false, QMetaType::QVector3D, 1, "View Dir"));
-        ports.push_back(new NodePort(false, QMetaType::Double, 2, "Power"));
+        m_ports.push_back(new NodePort(this, false, QMetaType::QVector3D, 1, "Normal"));
+        m_ports.push_back(new NodePort(this, false, QMetaType::QVector3D, 2, "View Dir"));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 3, "Power"));
 
-        ports.push_back(new NodePort(true,  QMetaType::Double, 0, ""));
+        m_ports.push_back(new NodePort(this, true,  QMetaType::Double, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *nl = graph->findLink(this, ports.at(0));
-            const AbstractNodeGraph::Link *vl = graph->findLink(this, ports.at(1));
-            const AbstractNodeGraph::Link *pl = graph->findLink(this, ports.at(2));
+            const AbstractNodeGraph::Link *nl = graph->findLink(this, m_ports.at(0));
+            const AbstractNodeGraph::Link *vl = graph->findLink(this, m_ports.at(1));
+            const AbstractNodeGraph::Link *pl = graph->findLink(this, m_ports.at(2));
 
             QString normal("_n");
             if(nl) {
@@ -208,21 +206,21 @@ class If : public ShaderFunction {
 
 public:
     Q_INVOKABLE If() {
-        ports.push_back(new NodePort(false, QMetaType::Double, 0, a));
-        ports.push_back(new NodePort(false, QMetaType::Double, 1, b));
-        ports.push_back(new NodePort(false, QMetaType::Void, 2, AGB));
-        ports.push_back(new NodePort(false, QMetaType::Void, 3, AEB));
-        ports.push_back(new NodePort(false, QMetaType::Void, 4, BGA));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 1, a));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 2, b));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 3, AGB));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 4, AEB));
+        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 5, BGA));
 
-        ports.push_back(new NodePort(true,  QMetaType::Void, 0, ""));
+        m_ports.push_back(new NodePort(this, true,  QMetaType::Void, 0, "Output"));
     }
 
     int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        const AbstractNodeGraph::Link *al  = graph->findLink(this, ports.at(0));
-        const AbstractNodeGraph::Link *bl  = graph->findLink(this, ports.at(1));
-        const AbstractNodeGraph::Link *agbl= graph->findLink(this, ports.at(2)); // AGB
-        const AbstractNodeGraph::Link *aebl= graph->findLink(this, ports.at(3)); // AEB
-        const AbstractNodeGraph::Link *bgal= graph->findLink(this, ports.at(4)); // BGA
+        const AbstractNodeGraph::Link *al  = graph->findLink(this, m_ports.at(1));
+        const AbstractNodeGraph::Link *bl  = graph->findLink(this, m_ports.at(2));
+        const AbstractNodeGraph::Link *agbl= graph->findLink(this, m_ports.at(3)); // AGB
+        const AbstractNodeGraph::Link *aebl= graph->findLink(this, m_ports.at(4)); // AEB
+        const AbstractNodeGraph::Link *bgal= graph->findLink(this, m_ports.at(5)); // BGA
 
         if(al && agbl && bgal) {
             ShaderFunction *aNode = static_cast<ShaderFunction *>(al->sender);

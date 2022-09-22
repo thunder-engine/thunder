@@ -21,7 +21,8 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/spirvcross/src",
-        "../../../thirdparty/glsl"
+        "../../../thirdparty/glsl",
+        "../../../modules/editor/grapheditor"
     ]
 
     DynamicLibrary {
@@ -34,6 +35,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
+        Depends { name: "graph-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets", "xml"]; }
         bundle.isBundle: false
 

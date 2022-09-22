@@ -117,9 +117,9 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
     if(meta) {
         ShaderFunction *function = dynamic_cast<ShaderFunction *>(meta->newInstance());
         if(function) {
-            function->setObjectName(path);
-            function->type = path;
-            connect(function, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
+            function->m_graph = this;
+            function->m_type = path;
+            connect(function, SIGNAL(updated()), this, SIGNAL(graphUpdated()));
 
             if(index == -1) {
                 index = m_nodes.size();
@@ -136,11 +136,11 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
 
 GraphNode *ShaderNodeGraph::createRoot() {
     ShaderRootNode *result = new ShaderRootNode;
-    connect(result, &ShaderRootNode::schemeUpdated, this, &ShaderNodeGraph::schemeUpdated);
+    connect(result, &ShaderRootNode::graphUpdated, this, &ShaderNodeGraph::graphUpdated);
 
     int i = 0;
     for(auto &it : m_inputs) {
-        result->ports.push_back( new NodePort(false, (uint32_t)it.m_value.type(), i, it.m_name, it.m_value) );
+        result->m_ports.push_back( new NodePort(result, false, (uint32_t)it.m_value.type(), i, it.m_name, it.m_value) );
         i++;
     }
 
@@ -181,7 +181,7 @@ void ShaderNodeGraph::load(const QString &path) {
     loadUniforms(m_data[UNIFORMS].toList());
     blockSignals(false);
 
-    emit schemeUpdated();
+    emit graphUpdated();
 }
 
 void ShaderNodeGraph::save(const QString &path) {
@@ -597,7 +597,7 @@ QStringList ShaderNodeGraph::buildRoot() {
     }
 
     QStringList result;
-    for(NodePort *port : qAsConst(m_rootNode->ports)) { // Iterate all ports for the root node
+    for(NodePort *port : qAsConst(m_rootNode->m_ports)) { // Iterate all ports for the root node
         QString name = port->m_name;
         name.replace(" ", "");
 

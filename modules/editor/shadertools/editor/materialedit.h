@@ -28,7 +28,7 @@ public:
 private slots:
     void onActivated() override;
 
-    void onSchemeUpdated();
+    void onGraphUpdated();
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();

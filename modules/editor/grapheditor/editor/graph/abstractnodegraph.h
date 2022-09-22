@@ -1,19 +1,16 @@
 #ifndef ABSTRACTNODEGRAPH_H
 #define ABSTRACTNODEGRAPH_H
 
-#include <QImage>
 #include <QVariant>
 #include <QJsonDocument>
 
 #include <stdint.h>
 
 #include <editor/undomanager.h>
-#include <engine.h>
 
-class GraphNode;
-class NodePort;
+#include <editor/graph/graphnode.h>
 
-class ENGINE_EXPORT AbstractNodeGraph : public QObject {
+class NODEGRAPH_EXPORT AbstractNodeGraph : public QObject {
     Q_OBJECT
 
 public:
@@ -61,7 +58,7 @@ public:
 
     virtual QStringList nodeList() const;
 
-    Q_INVOKABLE QVariant nodes() const;
+    const NodeList &nodes() const;
     Q_INVOKABLE QVariant links() const;
 
     Q_INVOKABLE void createNode(const QString &path, int x, int y);
@@ -79,7 +76,7 @@ public:
     void reportMessage(GraphNode *node, const QString &text);
 
 signals:
-    void schemeUpdated();
+    void graphUpdated();
 
     void nodeMoved();
 
@@ -123,12 +120,12 @@ public:
     void redo() override;
 private:
     GraphNode *m_node;
-    QString m_Path;
-    int m_Index;
-    int m_Node;
-    int m_Port;
-    bool m_Out;
-    QPoint m_Point;
+    QString m_path;
+    int m_linkIndex;
+    int m_fromNode;
+    int m_fromPort;
+    bool m_out;
+    QPoint m_point;
 };
 
 class MoveNode : public UndoScheme {
@@ -138,8 +135,8 @@ public:
     void undo() override;
     void redo() override;
 private:
-    QList<int> m_Indices;
-    QList<QPoint> m_Points;
+    QList<int> m_indices;
+    QList<QPoint> m_points;
 };
 
 class DeleteNodes : public UndoScheme {
@@ -149,8 +146,8 @@ public:
     void undo() override;
     void redo() override;
 private:
-    QList<int> m_Indices;
-    QJsonDocument m_Document;
+    QList<int> m_indices;
+    QJsonDocument m_document;
 };
 
 class PasteNodes : public UndoScheme {
@@ -160,13 +157,13 @@ public:
     void undo() override;
     void redo() override;
 
-    QVariant list() const { return m_List; }
+    QVariant list() const { return m_list; }
 
 private:
-    QJsonDocument m_Document;
-    int32_t m_X;
-    int32_t m_Y;
-    QVariantList m_List;
+    QJsonDocument m_document;
+    int32_t m_x;
+    int32_t m_y;
+    QVariantList m_list;
 };
 
 class CreateLink : public UndoScheme {
@@ -177,12 +174,12 @@ public:
     void redo() override;
 
 private:
-    int m_Sender;
-    int m_OPort;
-    int m_Receiver;
-    int m_IPort;
+    int m_sender;
+    int m_oPort;
+    int m_receiver;
+    int m_iPort;
 
-    int m_Index;
+    int m_index;
 };
 
 class DeleteLink : public UndoScheme {
@@ -193,12 +190,12 @@ public:
     void redo() override;
 
 private:
-    int m_Sender;
-    int m_OPort;
-    int m_Receiver;
-    int m_IPort;
+    int m_sender;
+    int m_oPort;
+    int m_receiver;
+    int m_iPort;
 
-    int m_Index;
+    int m_index;
 };
 
 class DeleteLinksByPort : public UndoScheme {

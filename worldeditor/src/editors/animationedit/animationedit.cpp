@@ -28,7 +28,7 @@ AnimationEdit::AnimationEdit() :
 
     ui->setupUi(this);
 
-    connect(m_model, SIGNAL(schemeUpdated()), this, SLOT(onUpdateAsset()));
+    connect(m_model, SIGNAL(graphUpdated()), this, SLOT(onUpdateAsset()));
     connect(m_model, SIGNAL(nodeMoved()), this, SLOT(onUpdateAsset()));
 
     ui->quickWidget->rootContext()->setContextProperty("schemeModel", m_model);

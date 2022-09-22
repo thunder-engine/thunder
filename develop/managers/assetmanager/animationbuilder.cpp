@@ -58,7 +58,7 @@ GraphNode *AnimationNodeGraph::nodeCreate(const QString &path, int &index) {
     BaseState *node = new BaseState();
     connect(node, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
     node->setObjectName(path);
-
+    node->m_graph = this;
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
