@@ -10,12 +10,11 @@ Project {
         "src/base/ftbdf.c",
         "src/base/ftbitmap.c",
         "src/base/ftcid.c",
-        "src/base/ftfntfmt.c",
+        "src/base/ftdebug.c",
         "src/base/ftfstype.c",
         "src/base/ftgasp.c",
         "src/base/ftglyph.c",
         "src/base/ftgxval.c",
-        "src/base/ftlcdfil.c",
         "src/base/ftmm.c",
         "src/base/ftotval.c",
         "src/base/ftpatent.c",
@@ -36,8 +35,10 @@ Project {
         "src/pshinter/pshinter.c",
         "src/psnames/psmodule.c",
         "src/raster/raster.c",
+        "src/sdf/sdf.c",
         "src/sfnt/sfnt.c",
         "src/smooth/smooth.c",
+        "src/svg/svg.c",
         "src/truetype/truetype.c",
         "src/type1/type1.c",
         "src/cid/type1cid.c",
@@ -58,7 +59,7 @@ Project {
         Depends { name: "bundle" }
         bundle.isBundle: false
 
-        cpp.defines: ["FT2_BUILD_LIBRARY"]
+        cpp.defines: ["FT2_BUILD_LIBRARY", "DLL_EXPORT"]
         cpp.includePaths: freetype.incPaths
         cpp.libraryPaths: [ ]
         cpp.dynamicLibraries: [ ]

@@ -1,33 +1,31 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afcjk.c                                                                */
-/*                                                                         */
-/*    Auto-fitter hinting routines for CJK writing system (body).          */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afcjk.c
+ *
+ *   Auto-fitter hinting routines for CJK writing system (body).
+ *
+ * Copyright (C) 2006-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
   /*
-   *  The algorithm is based on akito's autohint patch, archived at
+   * The algorithm is based on akito's autohint patch, archived at
    *
-   *  https://web.archive.org/web/20051219160454/http://www.kde.gr.jp:80/~akito/patch/freetype2/2.1.7/
+   * https://web.archive.org/web/20051219160454/http://www.kde.gr.jp:80/~akito/patch/freetype2/2.1.7/
    *
    */
 
-#include <ft2build.h>
-#include FT_ADVANCES_H
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/ftadvanc.h>
+#include <freetype/internal/ftdebug.h>
 
 #include "afglobal.h"
-#include "afpic.h"
 #include "aflatin.h"
 #include "afcjk.h"
 
@@ -39,19 +37,14 @@
 #include "aferrors.h"
 
 
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-#include "afwarp.h"
-#endif
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afcjk
+#define FT_COMPONENT  afcjk
 
 
   /*************************************************************************/
@@ -74,11 +67,11 @@
     AF_GlyphHintsRec  hints[1];
 
 
-    FT_TRACE5(( "\n"
-                "cjk standard widths computation (style `%s')\n"
-                "===================================================\n"
-                "\n",
+    FT_TRACE5(( "\n" ));
+    FT_TRACE5(( "cjk standard widths computation (style `%s')\n",
                 af_style_names[metrics->root.style_class->style] ));
+    FT_TRACE5(( "===================================================\n" ));
+    FT_TRACE5(( "\n" ));
 
     af_glyph_hints_init( hints, face->memory );
 
@@ -92,23 +85,29 @@
       AF_CJKMetricsRec  dummy[1];
       AF_Scaler         scaler = &dummy->root.scaler;
 
-#ifdef FT_CONFIG_OPTION_PIC
-      AF_FaceGlobals  globals = metrics->root.globals;
+      AF_StyleClass   style_class  = metrics->root.style_class;
+      AF_ScriptClass  script_class = af_script_classes[style_class->script];
+
+      /* If HarfBuzz is not available, we need a pointer to a single */
+      /* unsigned long value.                                        */
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+      void*     shaper_buf;
+#else
+      FT_ULong  shaper_buf_;
+      void*     shaper_buf = &shaper_buf_;
 #endif
 
-      AF_StyleClass   style_class  = metrics->root.style_class;
-      AF_ScriptClass  script_class = AF_SCRIPT_CLASSES_GET
-                                       [style_class->script];
-
-      void*        shaper_buf;
       const char*  p;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
       FT_ULong  ch = 0;
 #endif
 
-      p          = script_class->standard_charstring;
+      p = script_class->standard_charstring;
+
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
       shaper_buf = af_shaper_buf_create( face );
+#endif
 
       /* We check a list of standard characters.  The first match wins. */
 
@@ -153,7 +152,7 @@
       if ( !glyph_index )
         goto Exit;
 
-      FT_TRACE5(( "standard character: U+%04lX (glyph index %d)\n",
+      FT_TRACE5(( "standard character: U+%04lX (glyph index %ld)\n",
                   ch, glyph_index ));
 
       error = FT_Load_Glyph( face, glyph_index, FT_LOAD_NO_SCALE );
@@ -193,10 +192,10 @@
           goto Exit;
 
         /*
-         *  We assume that the glyphs selected for the stem width
-         *  computation are `featureless' enough so that the linking
-         *  algorithm works fine without adjustments of its scoring
-         *  function.
+         * We assume that the glyphs selected for the stem width
+         * computation are `featureless' enough so that the linking
+         * algorithm works fine without adjustments of its scoring
+         * function.
          */
         af_latin_hints_link_segments( hints,
                                       0,
@@ -256,9 +255,9 @@
                       dim == AF_DIMENSION_VERT ? "horizontal"
                                                : "vertical" ));
 
-          FT_TRACE5(( "  %d (standard)", axis->standard_width ));
+          FT_TRACE5(( "  %ld (standard)", axis->standard_width ));
           for ( i = 1; i < axis->width_count; i++ )
-            FT_TRACE5(( " %d", axis->widths[i].org ));
+            FT_TRACE5(( " %ld", axis->widths[i].org ));
 
           FT_TRACE5(( "\n" ));
         }
@@ -296,18 +295,27 @@
     AF_Blue_Stringset         bss = sc->blue_stringset;
     const AF_Blue_StringRec*  bs  = &af_blue_stringsets[bss];
 
-    void*  shaper_buf;
+    /* If HarfBuzz is not available, we need a pointer to a single */
+    /* unsigned long value.                                        */
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+    void*     shaper_buf;
+#else
+    FT_ULong  shaper_buf_;
+    void*     shaper_buf = &shaper_buf_;
+#endif
 
 
     /* we walk over the blue character strings as specified in the   */
     /* style's entry in the `af_blue_stringset' array, computing its */
     /* extremum points (depending on the string properties)          */
 
-    FT_TRACE5(( "cjk blue zones computation\n"
-                "==========================\n"
-                "\n" ));
+    FT_TRACE5(( "cjk blue zones computation\n" ));
+    FT_TRACE5(( "==========================\n" ));
+    FT_TRACE5(( "\n" ));
 
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     shaper_buf = af_shaper_buf_create( face );
+#endif
 
     for ( ; bs->string != AF_BLUE_STRING_MAX; bs++ )
     {
@@ -483,8 +491,8 @@
       if ( num_flats == 0 && num_fills == 0 )
       {
         /*
-         *  we couldn't find a single glyph to compute this blue zone,
-         *  we will simply ignore it then
+         * we couldn't find a single glyph to compute this blue zone,
+         * we will simply ignore it then
          */
         FT_TRACE5(( "  empty\n" ));
         continue;
@@ -542,9 +550,8 @@
       if ( AF_CJK_IS_TOP_BLUE( bs ) )
         blue->flags |= AF_CJK_BLUE_TOP;
 
-      FT_TRACE5(( "    -> reference = %ld\n"
-                  "       overshoot = %ld\n",
-                  *blue_ref, *blue_shoot ));
+      FT_TRACE5(( "    -> reference = %ld\n", *blue_ref ));
+      FT_TRACE5(( "       overshoot = %ld\n", *blue_shoot ));
 
     } /* end for loop */
 
@@ -565,15 +572,25 @@
     FT_Bool   started = 0, same_width = 1;
     FT_Fixed  advance = 0, old_advance = 0;
 
-    void*  shaper_buf;
+    /* If HarfBuzz is not available, we need a pointer to a single */
+    /* unsigned long value.                                        */
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+    void*     shaper_buf;
+#else
+    FT_ULong  shaper_buf_;
+    void*     shaper_buf = &shaper_buf_;
+#endif
 
     /* in all supported charmaps, digits have character codes 0x30-0x39 */
     const char   digits[] = "0 1 2 3 4 5 6 7 8 9";
     const char*  p;
 
 
-    p          = digits;
+    p = digits;
+
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     shaper_buf = af_shaper_buf_create( face );
+#endif
 
     while ( *p )
     {
@@ -704,7 +721,7 @@
 
         delta2 = FT_MulFix( delta2, scale );
 
-        FT_TRACE5(( "delta: %d", delta1 ));
+        FT_TRACE5(( "delta: %ld", delta1 ));
         if ( delta2 < 32 )
           delta2 = 0;
 #if 0
@@ -713,19 +730,19 @@
 #endif
         else
           delta2 = FT_PIX_ROUND( delta2 );
-        FT_TRACE5(( "/%d\n", delta2 ));
+        FT_TRACE5(( "/%ld\n", delta2 ));
 
         if ( delta1 < 0 )
           delta2 = -delta2;
 
         blue->shoot.fit = blue->ref.fit - delta2;
 
-        FT_TRACE5(( ">> active cjk blue zone %c%d[%ld/%ld]:\n"
-                    "     ref:   cur=%.2f fit=%.2f\n"
-                    "     shoot: cur=%.2f fit=%.2f\n",
+        FT_TRACE5(( ">> active cjk blue zone %c%d[%ld/%ld]:\n",
                     ( dim == AF_DIMENSION_HORZ ) ? 'H' : 'V',
-                    nn, blue->ref.org, blue->shoot.org,
-                    blue->ref.cur / 64.0, blue->ref.fit / 64.0,
+                    nn, blue->ref.org, blue->shoot.org ));
+        FT_TRACE5(( "     ref:   cur=%.2f fit=%.2f\n",
+                    blue->ref.cur / 64.0, blue->ref.fit / 64.0 ));
+        FT_TRACE5(( "     shoot: cur=%.2f fit=%.2f\n",
                     blue->shoot.cur / 64.0, blue->shoot.fit / 64.0 ));
 
         blue->flags |= AF_CJK_BLUE_ACTIVE;
@@ -782,7 +799,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     FT_Error      error;
     AF_Segment    seg;
 
@@ -826,7 +843,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Direction  major_dir     = axis->major_dir;
     AF_Segment    seg1, seg2;
     FT_Pos        len_threshold;
@@ -890,11 +907,11 @@
     }
 
     /*
-     *  now compute the `serif' segments
+     * now compute the `serif' segments
      *
-     *  In Hanzi, some strokes are wider on one or both of the ends.
-     *  We either identify the stems on the ends as serifs or remove
-     *  the linkage, depending on the length of the stems.
+     * In Hanzi, some strokes are wider on one or both of the ends.
+     * We either identify the stems on the ends as serifs or remove
+     * the linkage, depending on the length of the stems.
      *
      */
 
@@ -988,7 +1005,7 @@
     AF_CJKAxis    laxis  = &((AF_CJKMetrics)hints->metrics)->axis[dim];
 
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;
 
     FT_Fixed      scale;
@@ -1000,21 +1017,21 @@
     scale = ( dim == AF_DIMENSION_HORZ ) ? hints->x_scale
                                          : hints->y_scale;
 
-    /*********************************************************************/
-    /*                                                                   */
-    /* We begin by generating a sorted table of edges for the current    */
-    /* direction.  To do so, we simply scan each segment and try to find */
-    /* an edge in our table that corresponds to its position.            */
-    /*                                                                   */
-    /* If no edge is found, we create and insert a new edge in the       */
-    /* sorted table.  Otherwise, we simply add the segment to the edge's */
-    /* list which is then processed in the second step to compute the    */
-    /* edge's properties.                                                */
-    /*                                                                   */
-    /* Note that the edges table is sorted along the segment/edge        */
-    /* position.                                                         */
-    /*                                                                   */
-    /*********************************************************************/
+    /**********************************************************************
+     *
+     * We begin by generating a sorted table of edges for the current
+     * direction.  To do so, we simply scan each segment and try to find
+     * an edge in our table that corresponds to its position.
+     *
+     * If no edge is found, we create and insert a new edge in the
+     * sorted table.  Otherwise, we simply add the segment to the edge's
+     * list which is then processed in the second step to compute the
+     * edge's properties.
+     *
+     * Note that the edges table is sorted along the segment/edge
+     * position.
+     *
+     */
 
     edge_distance_threshold = FT_MulFix( laxis->edge_distance_threshold,
                                          scale );
@@ -1114,17 +1131,17 @@
       }
     }
 
-    /******************************************************************/
-    /*                                                                */
-    /* Good, we now compute each edge's properties according to the   */
-    /* segments found on its position.  Basically, these are          */
-    /*                                                                */
-    /*  - the edge's main direction                                   */
-    /*  - stem edge, serif edge or both (which defaults to stem then) */
-    /*  - rounded edge, straight or both (which defaults to straight) */
-    /*  - link for edge                                               */
-    /*                                                                */
-    /******************************************************************/
+    /*******************************************************************
+     *
+     * Good, we now compute each edge's properties according to the
+     * segments found on its position.  Basically, these are
+     *
+     * - the edge's main direction
+     * - stem edge, serif edge or both (which defaults to stem then)
+     * - rounded edge, straight or both (which defaults to straight)
+     * - link for edge
+     *
+     */
 
     /* first of all, set the `edge' field in each segment -- this is */
     /* required in order to compute edge links                       */
@@ -1136,7 +1153,7 @@
      */
     {
       AF_Edge  edges      = axis->edges;
-      AF_Edge  edge_limit = edges + axis->num_edges;
+      AF_Edge  edge_limit = FT_OFFSET( edges, axis->num_edges );
       AF_Edge  edge;
 
 
@@ -1160,6 +1177,8 @@
 
 
         seg = edge->first;
+        if ( !seg )
+          goto Skip_Loop;
 
         do
         {
@@ -1174,7 +1193,7 @@
 
           /* check for links -- if seg->serif is set, then seg->link must */
           /* be ignored                                                   */
-          is_serif = (FT_Bool)( seg->serif && seg->serif->edge != edge );
+          is_serif = FT_BOOL( seg->serif && seg->serif->edge != edge );
 
           if ( seg->link || is_serif )
           {
@@ -1215,13 +1234,14 @@
               edge2->flags |= AF_EDGE_SERIF;
             }
             else
-              edge->link  = edge2;
+              edge->link = edge2;
           }
 
           seg = seg->edge_next;
 
         } while ( seg != edge->first );
 
+      Skip_Loop:
         /* set the round/straight flags */
         edge->flags = AF_EDGE_NORMAL;
 
@@ -1271,7 +1291,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edge       = axis->edges;
-    AF_Edge       edge_limit = edge + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edge, axis->num_edges );
     AF_CJKAxis    cjk        = &metrics->axis[dim];
     FT_Fixed      scale      = cjk->scale;
     FT_Pos        best_dist0;  /* initial threshold */
@@ -1364,8 +1384,8 @@
     af_glyph_hints_rescale( hints, (AF_StyleMetrics)metrics );
 
     /*
-     *  correct x_scale and y_scale when needed, since they may have
-     *  been modified af_cjk_scale_dim above
+     * correct x_scale and y_scale when needed, since they may have
+     * been modified af_cjk_scale_dim above
      */
     hints->x_scale = metrics->axis[AF_DIMENSION_HORZ].scale;
     hints->x_delta = metrics->axis[AF_DIMENSION_HORZ].delta;
@@ -1375,30 +1395,25 @@
     /* compute flags depending on render mode, etc. */
     mode = metrics->root.scaler.render_mode;
 
-#if 0 /* AF_CONFIG_OPTION_USE_WARPER */
-    if ( mode == FT_RENDER_MODE_LCD || mode == FT_RENDER_MODE_LCD_V )
-      metrics->root.scaler.render_mode = mode = FT_RENDER_MODE_NORMAL;
-#endif
-
     scaler_flags = hints->scaler_flags;
     other_flags  = 0;
 
     /*
-     *  We snap the width of vertical stems for the monochrome and
-     *  horizontal LCD rendering targets only.
+     * We snap the width of vertical stems for the monochrome and
+     * horizontal LCD rendering targets only.
      */
     if ( mode == FT_RENDER_MODE_MONO || mode == FT_RENDER_MODE_LCD )
       other_flags |= AF_LATIN_HINTS_HORZ_SNAP;
 
     /*
-     *  We snap the width of horizontal stems for the monochrome and
-     *  vertical LCD rendering targets only.
+     * We snap the width of horizontal stems for the monochrome and
+     * vertical LCD rendering targets only.
      */
     if ( mode == FT_RENDER_MODE_MONO || mode == FT_RENDER_MODE_LCD_V )
       other_flags |= AF_LATIN_HINTS_VERT_SNAP;
 
     /*
-     *  We adjust stems to full pixels unless in `light' or `lcd' mode.
+     * We adjust stems to full pixels unless in `light' or `lcd' mode.
      */
     if ( mode != FT_RENDER_MODE_LIGHT && mode != FT_RENDER_MODE_LCD )
       other_flags |= AF_LATIN_HINTS_STEM_ADJUST;
@@ -1407,12 +1422,6 @@
       other_flags |= AF_LATIN_HINTS_MONO;
 
     scaler_flags |= AF_SCALER_FLAG_NO_ADVANCE;
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    /* get (global) warper flag */
-    if ( !metrics->root.globals->module->warping )
-      scaler_flags |= AF_SCALER_FLAG_NO_WARPER;
-#endif
 
     hints->scaler_flags = scaler_flags;
     hints->other_flags  = other_flags;
@@ -1617,7 +1626,7 @@
 
     stem_edge->pos = base_edge->pos + fitted_width;
 
-    FT_TRACE5(( "  CJKLINK: edge %d @%d (opos=%.2f) linked to %.2f,"
+    FT_TRACE5(( "  CJKLINK: edge %ld @%d (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
                 stem_edge - hints->axis[dim].edges, stem_edge->fpos,
                 stem_edge->opos / 64.0, stem_edge->pos / 64.0,
@@ -1789,7 +1798,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     FT_PtrDist    n_edges;
     AF_Edge       edge;
     AF_Edge       anchor   = NULL;
@@ -1839,7 +1848,7 @@
           continue;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-        FT_TRACE5(( "  CJKBLUE: edge %d @%d (opos=%.2f) snapped to %.2f,"
+        FT_TRACE5(( "  CJKBLUE: edge %ld @%d (opos=%.2f) snapped to %.2f,"
                     " was %.2f\n",
                     edge1 - edges, edge1->fpos, edge1->opos / 64.0,
                     blue->fit / 64.0, edge1->pos / 64.0 ));
@@ -1903,7 +1912,7 @@
       /* this should not happen, but it's better to be safe */
       if ( edge2->blue_edge )
       {
-        FT_TRACE5(( "ASSERTION FAILED for edge %d\n", edge2-edges ));
+        FT_TRACE5(( "ASSERTION FAILED for edge %ld\n", edge2-edges ));
 
         af_cjk_align_linked_edge( hints, dim, edge2, edge );
         edge->flags |= AF_EDGE_DONE;
@@ -2094,8 +2103,8 @@
       goto Exit;
 
     /*
-     *  now hint the remaining edges (serifs and single) in order
-     *  to complete our processing
+     * now hint the remaining edges (serifs and single) in order
+     * to complete our processing
      */
     for ( edge = edges; edge < edge_limit; edge++ )
     {
@@ -2168,7 +2177,7 @@
   {
     AF_AxisHints  axis       = & hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     AF_Edge       edge;
     FT_Bool       snapping;
 
@@ -2296,25 +2305,6 @@
       if ( ( dim == AF_DIMENSION_HORZ && AF_HINTS_DO_HORIZONTAL( hints ) ) ||
            ( dim == AF_DIMENSION_VERT && AF_HINTS_DO_VERTICAL( hints ) )   )
       {
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-        if ( dim == AF_DIMENSION_HORZ                                  &&
-             metrics->root.scaler.render_mode == FT_RENDER_MODE_NORMAL &&
-             AF_HINTS_DO_WARP( hints )                                 )
-        {
-          AF_WarperRec  warper;
-          FT_Fixed      scale;
-          FT_Pos        delta;
-
-
-          af_warper_compute( &warper, hints, (AF_Dimension)dim,
-                             &scale, &delta );
-          af_glyph_hints_scale_dim( hints, (AF_Dimension)dim,
-                                    scale, delta );
-          continue;
-        }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
-
         af_cjk_hint_edges( hints, (AF_Dimension)dim );
         af_cjk_align_edge_points( hints, (AF_Dimension)dim );
         af_glyph_hints_align_strong_points( hints, (AF_Dimension)dim );

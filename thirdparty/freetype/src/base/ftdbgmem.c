@@ -1,28 +1,28 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftdbgmem.c                                                             */
-/*                                                                         */
-/*    Memory debugger (body).                                              */
-/*                                                                         */
-/*  Copyright 2001-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftdbgmem.c
+ *
+ *   Memory debugger (body).
+ *
+ * Copyright (C) 2001-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_SYSTEM_H
-#include FT_ERRORS_H
-#include FT_TYPES_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/ftsystem.h>
+#include <freetype/fterrors.h>
+#include <freetype/fttypes.h>
 
 
 #ifdef FT_DEBUG_MEMORY
@@ -50,9 +50,9 @@
 #define FT_MEM_VAL( addr )  ( (FT_PtrDist)(FT_Pointer)( addr ) )
 
   /*
-   *  This structure holds statistics for a single allocation/release
-   *  site.  This is useful to know where memory operations happen the
-   *  most.
+   * This structure holds statistics for a single allocation/release
+   * site.  This is useful to know where memory operations happen the
+   * most.
    */
   typedef struct  FT_MemSourceRec_
   {
@@ -76,17 +76,17 @@
 
 
   /*
-   *  We don't need a resizable array for the memory sources because
-   *  their number is pretty limited within FreeType.
+   * We don't need a resizable array for the memory sources because
+   * their number is pretty limited within FreeType.
    */
 #define FT_MEM_SOURCE_BUCKETS  128
 
   /*
-   *  This structure holds information related to a single allocated
-   *  memory block.  If KEEPALIVE is defined, blocks that are freed by
-   *  FreeType are never released to the system.  Instead, their `size'
-   *  field is set to `-size'.  This is mainly useful to detect double
-   *  frees, at the price of a large memory footprint during execution.
+   * This structure holds information related to a single allocated
+   * memory block.  If KEEPALIVE is defined, blocks that are freed by
+   * FreeType are never released to the system.  Instead, their `size'
+   * field is set to `-size'.  This is mainly useful to detect double
+   * frees, at the price of a large memory footprint during execution.
    */
   typedef struct  FT_MemNodeRec_
   {
@@ -106,8 +106,8 @@
 
 
   /*
-   *  The global structure, containing compound statistics and all hash
-   *  tables.
+   * The global structure, containing compound statistics and all hash
+   * tables.
    */
   typedef struct  FT_MemTableRec_
   {
@@ -146,8 +146,8 @@
 
 
   /*
-   *  Prime numbers are ugly to handle.  It would be better to implement
-   *  L-Hashing, which is 10% faster and doesn't require divisions.
+   * Prime numbers are ugly to handle.  It would be better to implement
+   * L-Hashing, which is 10% faster and doesn't require divisions.
    */
   static const FT_Int  ft_mem_primes[] =
   {
@@ -302,46 +302,6 @@
   }
 
 
-  static FT_MemTable
-  ft_mem_table_new( FT_Memory  memory )
-  {
-    FT_MemTable  table;
-
-
-    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
-    if ( !table )
-      goto Exit;
-
-    FT_ZERO( table );
-
-    table->size  = FT_MEM_SIZE_MIN;
-    table->nodes = 0;
-
-    table->memory = memory;
-
-    table->memory_user = memory->user;
-
-    table->alloc   = memory->alloc;
-    table->realloc = memory->realloc;
-    table->free    = memory->free;
-
-    table->buckets = (FT_MemNode *)
-                       memory->alloc(
-                         memory,
-                         table->size * (FT_Long)sizeof ( FT_MemNode ) );
-    if ( table->buckets )
-      FT_ARRAY_ZERO( table->buckets, table->size );
-    else
-    {
-      memory->free( memory, table );
-      table = NULL;
-    }
-
-  Exit:
-    return table;
-  }
-
-
   static void
   ft_mem_table_destroy( FT_MemTable  table )
   {
@@ -349,8 +309,6 @@
     FT_Long  leak_count = 0;
     FT_Long  leaks      = 0;
 
-
-    FT_DumpMemory( table->memory );
 
     /* remove all blocks from the table, revealing leaked ones */
     for ( i = 0; i < table->size; i++ )
@@ -412,8 +370,6 @@
             table->alloc_total );
     printf( "FreeType: maximum memory footprint = %ld\n",
             table->alloc_max );
-
-    ft_mem_table_free( table, table );
 
     if ( leak_count > 0 )
       ft_mem_debug_panic(
@@ -621,8 +577,10 @@
 
         if ( node->size < 0 )
           ft_mem_debug_panic(
-            "freeing memory block at %p more than once at (%s:%ld)\n"
-            "block allocated at (%s:%ld) and released at (%s:%ld)",
+            "freeing memory block at %p more than once\n"
+            "  at (%s:%ld)!\n"
+            "  Block was allocated at (%s:%ld)\n"
+            "  and released at (%s:%ld).",
             address,
             FT_FILENAME( _ft_debug_file ), _ft_debug_lineno,
             FT_FILENAME( node->source->file_name ), node->source->line_no,
@@ -819,17 +777,30 @@
   }
 
 
-  extern FT_Int
+  extern void
   ft_mem_debug_init( FT_Memory  memory )
   {
     FT_MemTable  table;
-    FT_Int       result = 0;
 
 
-    if ( ft_getenv( "FT2_DEBUG_MEMORY" ) )
+    if ( !ft_getenv( "FT2_DEBUG_MEMORY" ) )
+      return;
+
+    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
+
+    if ( table )
     {
-      table = ft_mem_table_new( memory );
-      if ( table )
+      FT_ZERO( table );
+
+      table->memory      = memory;
+      table->memory_user = memory->user;
+      table->alloc       = memory->alloc;
+      table->realloc     = memory->realloc;
+      table->free        = memory->free;
+
+      ft_mem_table_resize( table );
+
+      if ( table->size )
       {
         const char*  p;
 
@@ -874,28 +845,31 @@
           if ( keep_alive > 0 )
             table->keep_alive = 1;
         }
-
-        result = 1;
       }
+      else
+        memory->free( memory, table );
     }
-    return result;
   }
 
 
   extern void
   ft_mem_debug_done( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable  table = (FT_MemTable)memory->user;
+
+
+      FT_DumpMemory( memory );
+
+      ft_mem_table_destroy( table );
+
       memory->free    = table->free;
       memory->realloc = table->realloc;
       memory->alloc   = table->alloc;
+      memory->user    = table->memory_user;
 
-      ft_mem_table_destroy( table );
-      memory->user = NULL;
+      memory->free( memory, table );
     }
   }
 
@@ -920,11 +894,9 @@
   extern void
   FT_DumpMemory( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable    table = (FT_MemTable)memory->user;
       FT_MemSource*  bucket = table->sources;
       FT_MemSource*  limit  = bucket + FT_MEM_SOURCE_BUCKETS;
       FT_MemSource*  sources;

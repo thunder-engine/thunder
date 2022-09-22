@@ -1,38 +1,33 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftcmanag.c                                                             */
-/*                                                                         */
-/*    FreeType Cache Manager (body).                                       */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftcmanag.c
+ *
+ *   FreeType Cache Manager (body).
+ *
+ * Copyright (C) 2000-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
+#include <freetype/ftcache.h>
 #include "ftcmanag.h"
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_SIZES_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftsizes.h>
 
 #include "ftccback.h"
 #include "ftcerror.h"
 
-#ifdef FT_CONFIG_OPTION_PIC
-#error "cache system does not support PIC yet"
-#endif
-
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cache
+#define FT_COMPONENT  cache
 
 
   static FT_Error
@@ -362,7 +357,7 @@
   {
     FT_Error     error;
     FT_Memory    memory;
-    FTC_Manager  manager = 0;
+    FTC_Manager  manager = NULL;
 
 
     if ( !library )
@@ -373,7 +368,7 @@
 
     memory = library->memory;
 
-    if ( FT_NEW( manager ) )
+    if ( FT_QNEW( manager ) )
       goto Exit;
 
     if ( max_faces == 0 )
@@ -403,6 +398,10 @@
                       max_sizes,
                       manager,
                       memory );
+
+    manager->nodes_list = NULL;
+    manager->num_nodes  = 0;
+    manager->num_caches = 0;
 
     *amanager = manager;
 
@@ -598,7 +597,7 @@
         goto Exit;
       }
 
-      if ( !FT_ALLOC( cache, clazz->cache_size ) )
+      if ( !FT_QALLOC( cache, clazz->cache_size ) )
       {
         cache->manager   = manager;
         cache->memory    = memory;

@@ -18,7 +18,7 @@
 ## freetype
 
 - Link: https://www.freetype.org
-- Version: 2.9
+- Version: 2.12.1
 - License: FreeType License (BSD-like)
 
 ## glad

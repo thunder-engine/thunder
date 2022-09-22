@@ -1,26 +1,25 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afmodule.c                                                             */
-/*                                                                         */
-/*    Auto-fitter module implementation (body).                            */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afmodule.c
+ *
+ *   Auto-fitter module implementation (body).
+ *
+ * Copyright (C) 2003-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "afglobal.h"
 #include "afmodule.h"
 #include "afloader.h"
 #include "aferrors.h"
-#include "afpic.h"
 
 #ifdef FT_DEBUG_AUTOFIT
 
@@ -49,25 +48,25 @@
   int  _af_debug_disable_blue_hints;
 
   /* we use a global object instead of a local one for debugging */
-  AF_GlyphHintsRec  _af_debug_hints_rec[1];
+  static AF_GlyphHintsRec  _af_debug_hints_rec[1];
 
   void*  _af_debug_hints = _af_debug_hints_rec;
 #endif
 
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_DRIVER_H
-#include FT_SERVICE_PROPERTIES_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftdriver.h>
+#include <freetype/internal/services/svprop.h>
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afmodule
+#define FT_COMPONENT  afmodule
 
 
   static FT_Error
@@ -104,19 +103,6 @@
   }
 
 
-#ifdef FT_CONFIG_OPTION_PIC
-
-#undef  AF_SCRIPT_CLASSES_GET
-#define AF_SCRIPT_CLASSES_GET  \
-          ( GET_PIC( ft_module->library )->af_script_classes )
-
-#undef  AF_STYLE_CLASSES_GET
-#define AF_STYLE_CLASSES_GET  \
-          ( GET_PIC( ft_module->library )->af_style_classes )
-
-#endif
-
-
   static FT_Error
   af_property_set( FT_Module    ft_module,
                    const char*  property_name,
@@ -147,9 +133,9 @@
       /* We translate the fallback script to a fallback style that uses */
       /* `fallback-script' as its script and `AF_COVERAGE_NONE' as its  */
       /* coverage value.                                                */
-      for ( ss = 0; AF_STYLE_CLASSES_GET[ss]; ss++ )
+      for ( ss = 0; af_style_classes[ss]; ss++ )
       {
-        AF_StyleClass  style_class = AF_STYLE_CLASSES_GET[ss];
+        AF_StyleClass  style_class = af_style_classes[ss];
 
 
         if ( (FT_UInt)style_class->script == *fallback_script &&
@@ -160,10 +146,10 @@
         }
       }
 
-      if ( !AF_STYLE_CLASSES_GET[ss] )
+      if ( !af_style_classes[ss] )
       {
-        FT_TRACE0(( "af_property_set: Invalid value %d for property `%s'\n",
-                    fallback_script, property_name ));
+        FT_TRACE2(( "af_property_set: Invalid value %d for property `%s'\n",
+                    *fallback_script, property_name ));
         return FT_THROW( Invalid_Argument );
       }
 
@@ -204,35 +190,6 @@
 
       return error;
     }
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    else if ( !ft_strcmp( property_name, "warping" ) )
-    {
-#ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
-      if ( value_is_string )
-      {
-        const char*  s = (const char*)value;
-        long         w = ft_strtol( s, NULL, 10 );
-
-
-        if ( w == 0 )
-          module->warping = 0;
-        else if ( w == 1 )
-          module->warping = 1;
-        else
-          return FT_THROW( Invalid_Argument );
-      }
-      else
-#endif
-      {
-        FT_Bool*  warping = (FT_Bool*)value;
-
-
-        module->warping = *warping;
-      }
-
-      return error;
-    }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
     else if ( !ft_strcmp( property_name, "darkening-parameters" ) )
     {
       FT_Int*  darken_params;
@@ -321,7 +278,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_set: missing property `%s'\n",
+    FT_TRACE2(( "af_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -336,9 +293,6 @@
     AF_Module  module         = (AF_Module)ft_module;
     FT_UInt    fallback_style = module->fallback_style;
     FT_UInt    default_script = module->default_script;
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    FT_Bool    warping        = module->warping;
-#endif
 
 
     if ( !ft_strcmp( property_name, "glyph-to-script-map" ) )
@@ -357,7 +311,7 @@
     {
       FT_UInt*  val = (FT_UInt*)value;
 
-      AF_StyleClass  style_class = AF_STYLE_CLASSES_GET[fallback_style];
+      AF_StyleClass  style_class = af_style_classes[fallback_style];
 
 
       *val = style_class->script;
@@ -385,17 +339,6 @@
 
       return error;
     }
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    else if ( !ft_strcmp( property_name, "warping" ) )
-    {
-      FT_Bool*  val = (FT_Bool*)value;
-
-
-      *val = warping;
-
-      return error;
-    }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
     else if ( !ft_strcmp( property_name, "darkening-parameters" ) )
     {
       FT_Int*  darken_params = module->darken_params;
@@ -424,7 +367,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_get: missing property `%s'\n",
+    FT_TRACE2(( "af_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -440,28 +383,16 @@
   FT_DEFINE_SERVICEDESCREC1(
     af_services,
 
-    FT_SERVICE_ID_PROPERTIES, &AF_SERVICE_PROPERTIES_GET )
+    FT_SERVICE_ID_PROPERTIES, &af_service_properties )
 
 
   FT_CALLBACK_DEF( FT_Module_Interface )
   af_get_interface( FT_Module    module,
                     const char*  module_interface )
   {
-    /* AF_SERVICES_GET dereferences `library' in PIC mode */
-#ifdef FT_CONFIG_OPTION_PIC
-    FT_Library  library;
-
-
-    if ( !module )
-      return NULL;
-    library = module->library;
-    if ( !library )
-      return NULL;
-#else
     FT_UNUSED( module );
-#endif
 
-    return ft_service_list_lookup( AF_SERVICES_GET, module_interface );
+    return ft_service_list_lookup( af_services, module_interface );
   }
 
 
@@ -473,9 +404,6 @@
 
     module->fallback_style    = AF_STYLE_FALLBACK;
     module->default_script    = AF_SCRIPT_DEFAULT;
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    module->warping           = 0;
-#endif
     module->no_stem_darkening = TRUE;
 
     module->darken_params[0]  = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X1;
@@ -533,7 +461,7 @@
                                   glyph_index, load_flags );
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-    if ( ft_trace_levels[FT_COMPONENT] )
+    if ( ft_trace_levels[FT_TRACE_COMP( FT_COMPONENT )] )
     {
 #endif
       af_glyph_hints_dump_points( hints, 0 );
@@ -576,8 +504,8 @@
     NULL,                                                    /* reset_face */
     NULL,                                              /* get_global_hints */
     NULL,                                             /* done_global_hints */
-    (FT_AutoHinter_GlyphLoadFunc)af_autofitter_load_glyph )  /* load_glyph */
-
+    (FT_AutoHinter_GlyphLoadFunc)af_autofitter_load_glyph    /* load_glyph */
+  )
 
   FT_DEFINE_MODULE(
     autofit_module_class,
@@ -589,7 +517,7 @@
     0x10000L,   /* version 1.0 of the autofitter  */
     0x20000L,   /* requires FreeType 2.0 or above */
 
-    (const void*)&AF_INTERFACE_GET,
+    (const void*)&af_autofitter_interface,
 
     (FT_Module_Constructor)af_autofitter_init,  /* module_init   */
     (FT_Module_Destructor) af_autofitter_done,  /* module_done   */

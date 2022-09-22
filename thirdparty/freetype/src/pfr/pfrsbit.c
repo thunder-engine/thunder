@@ -1,30 +1,30 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pfrsbit.c                                                              */
-/*                                                                         */
-/*    FreeType PFR bitmap loader (body).                                   */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pfrsbit.c
+ *
+ *   FreeType PFR bitmap loader (body).
+ *
+ * Copyright (C) 2002-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "pfrsbit.h"
 #include "pfrload.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
 
 #include "pfrerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_pfr
+#define FT_COMPONENT  pfr
 
 
   /*************************************************************************/
@@ -310,8 +310,8 @@
       if ( lim > limit )
       {
         FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                    " number of bitmap records too large,\n"
-                    "                       "
+                    " number of bitmap records too large,\n" ));
+        FT_TRACE0(( "                       "
                     " thus ignoring all bitmaps in this strike\n" ));
         *flags &= ~PFR_BITMAP_VALID_CHARCODES;
       }
@@ -328,8 +328,8 @@
           if ( (FT_Long)code <= prev_code )
           {
             FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                        " bitmap records are not sorted,\n"
-                        "                       "
+                        " bitmap records are not sorted,\n" ));
+            FT_TRACE0(( "                       "
                         " thus ignoring all bitmaps in this strike\n" ));
             *flags &= ~PFR_BITMAP_VALID_CHARCODES;
             break;
@@ -745,7 +745,7 @@
            ypos + (FT_Long)ysize < FT_INT_MIN )
       {
         FT_TRACE1(( "pfr_slot_load_bitmap:" ));
-        FT_TRACE1(( "huge bitmap glyph %dx%d over FT_GlyphSlot\n",
+        FT_TRACE1(( "huge bitmap glyph %ldx%ld over FT_GlyphSlot\n",
                      xpos, ypos ));
         error = FT_THROW( Invalid_Pixel_Size );
       }
