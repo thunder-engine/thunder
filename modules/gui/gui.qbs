@@ -73,14 +73,6 @@ Project {
         }
 
         Group {
-            name: "Install Dynamic gui"
-            fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
-            qbs.install: true
-            qbs.installDir: gui.PLUGINS_PATH
-            qbs.installPrefix: gui.PREFIX
-        }
-
-        Group {
             name: "Module includes"
             prefix: "includes/"
             files: [
