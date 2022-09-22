@@ -49,7 +49,7 @@ private:
     Label *m_cursor;
     Label *m_label;
 
-    int m_cursorPosition;
+    size_t m_cursorPosition;
 
     float m_fadeDuration;
     float m_currentFade;
