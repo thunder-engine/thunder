@@ -108,7 +108,7 @@ void ParticleRender::update() {
     \internal
 */
 void ParticleRender::deltaUpdate(float dt) {
-    Matrix4 &m = actor()->transform()->worldTransform();
+    const Matrix4 &m = actor()->transform()->worldTransform();
 
     Camera *camera = Camera::current();
     if(!camera) {
