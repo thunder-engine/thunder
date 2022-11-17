@@ -93,8 +93,8 @@ void RigidBody::update() {
     if(m_collisionObject && p_ptr->m_Kinematic) {
         Transform *t = actor()->transform();
 
-        Quaternion &q = t->worldQuaternion();
-        Vector3 &p = t->worldPosition();
+        Quaternion q = t->worldQuaternion();
+        Vector3 p = t->worldPosition();
 
         static_cast<btRigidBody *>(m_collisionObject)->setWorldTransform(btTransform(btQuaternion(q.x, q.y, q.z, q.w),
                                                                                       btVector3(p.x, p.y, p.z)));
