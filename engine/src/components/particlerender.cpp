@@ -108,13 +108,13 @@ void ParticleRender::update() {
     \internal
 */
 void ParticleRender::deltaUpdate(float dt) {
-    const Matrix4 &m = actor()->transform()->worldTransform();
+    Matrix4 m(actor()->transform()->worldTransform());
 
     Camera *camera = Camera::current();
     if(!camera) {
         return;
     }
-    Vector3 pos = camera->actor()->transform()->worldPosition();
+    Vector3 pos(camera->actor()->transform()->worldPosition());
 
     if(p_ptr->m_pEffect) {
         p_ptr->m_AABB.setBox(Vector3(FLT_MAX), Vector3(-FLT_MAX));
