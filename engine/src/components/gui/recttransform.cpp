@@ -1,6 +1,7 @@
-#include "components/recttransform.h"
+#include "components/gui/recttransform.h"
 
-#include "components/widget.h"
+#include "components/gui/widget.h"
+#include "components/gui/layout.h"
 #include "components/actor.h"
 
 RectTransform::RectTransform() :
@@ -9,8 +10,8 @@ RectTransform::RectTransform() :
     m_pivot(0.5f),
     m_minAnchors(0.5f),
     m_maxAnchors(0.5f),
-    m_parent(nullptr),
-    m_dirty(true) {
+    m_layout(nullptr),
+    m_attachedLayout(nullptr) {
 
 }
 
@@ -19,6 +20,12 @@ RectTransform::~RectTransform() {
     for(auto it : list) {
         it->setRectTransform(nullptr);
     }
+
+    if(m_attachedLayout) {
+        m_attachedLayout->removeTransform(this);
+    }
+
+    delete m_layout;
 }
 
 Vector2 RectTransform::size() const {
@@ -28,13 +35,14 @@ void RectTransform::setSize(const Vector2 size) {
     Vector2 s = RectTransform::size();
     if(s != size) {
         Vector2 p;
-        if(m_parent) {
-            p = m_parent->size();
+        RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+        if(parentRect) {
+            p = parentRect->size();
         }
 
         if(m_minAnchors.x == m_maxAnchors.x) {
             m_size.x = size.x;
-            if(m_parent) {
+            if(parentRect) {
                 m_bottomLeft.x = (p.x - size.x) * m_pivot.x;
                 m_topRight.x = (p.x - size.x) * (1.0 - m_pivot.x);
             } else {
@@ -45,7 +53,7 @@ void RectTransform::setSize(const Vector2 size) {
 
         if(m_minAnchors.y == m_maxAnchors.y) {
             m_size.y = size.y;
-            if(m_parent) {
+            if(parentRect) {
                 m_bottomLeft.y = (p.y - size.y) * m_pivot.y;
                 m_topRight.y = (p.y - size.y) * (1.0 - m_pivot.y);
             } else {
@@ -153,13 +161,17 @@ void RectTransform::unsubscribe(Widget *widget) {
     m_subscribers.remove(widget);
 }
 
-void RectTransform::setParentTransform(Transform *parent, bool force) {
-    m_parent = dynamic_cast<RectTransform *>(parent);
-
-    Transform::setParentTransform(parent, force);
+Layout *RectTransform::layout() const {
+    return m_layout;
+}
+void RectTransform::setLayout(Layout *layout) {
+    m_layout = layout;
+    if(m_layout) {
+        m_layout->m_parentTransform = this;
+    }
 }
 
-Matrix4 &RectTransform::worldTransform() const {
+Matrix4 RectTransform::worldTransform() const {
     if(m_dirty) {
         m_worldTransform = Transform::worldTransform();
         cleanDirty();
@@ -177,16 +189,18 @@ void RectTransform::setDirty() {
 }
 
 void RectTransform::cleanDirty() const {
-    if(m_parent) {
-        Vector2 parentCenter = m_parent->m_size * (m_minAnchors + m_maxAnchors) * 0.5f;
+    Transform::cleanDirty();
+
+    RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+    if(parentRect) {
+        Vector2 parentCenter = parentRect->m_size * (m_minAnchors + m_maxAnchors) * 0.5f;
         Vector2 rectCenter = m_size * m_pivot;
+
         Vector2 v1 = parentCenter - rectCenter;
+        Vector2 v2 = parentRect->m_size * m_minAnchors + m_bottomLeft;
 
-        Vector2 v2 = m_parent->m_size * m_minAnchors + m_bottomLeft;
-
-        m_worldTransform.mat[12] += (m_minAnchors.x == m_maxAnchors.x) ? v1.x : v2.x;
-        m_worldTransform.mat[13] += (m_minAnchors.y == m_maxAnchors.y) ? v1.y : v2.y;
-        m_dirty = false;
+        m_worldTransform[12] += (m_minAnchors.x == m_maxAnchors.x) ? v1.x : v2.x;
+        m_worldTransform[13] += (m_minAnchors.y == m_maxAnchors.y) ? v1.y : v2.y;
     }
 }
 
@@ -197,8 +211,9 @@ void RectTransform::notify() {
 }
 
 void RectTransform::recalcSize() {
-    if(m_parent) {
-        Vector2 s = m_parent->size();
+    RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+    if(parentRect) {
+        Vector2 s = parentRect->size();
         if(m_maxAnchors.x != m_minAnchors.x) {
             m_size.x = s.x * (m_maxAnchors.x - m_minAnchors.x) - (m_topRight.x + m_bottomLeft.x);
         }

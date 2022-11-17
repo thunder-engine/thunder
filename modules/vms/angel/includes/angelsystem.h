@@ -22,13 +22,11 @@ public:
     AngelSystem(Engine *engine);
     ~AngelSystem();
 
-    bool init();
+    bool init() override;
 
-    const char *name() const;
+    void update(SceneGraph *) override;
 
-    void update(SceneGraph *);
-
-    int threadPolicy() const;
+    int threadPolicy() const override;
 
     void reload();
 
@@ -50,15 +48,15 @@ protected:
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 
-    asIScriptEngine *m_pScriptEngine;
+    asIScriptEngine *m_scriptEngine;
 
-    asIScriptModule *m_pScriptModule;
+    asIScriptModule *m_scriptModule;
 
-    asIScriptContext *m_pContext;
+    asIScriptContext *m_context;
 
-    AngelScript *m_pScript;
+    AngelScript *m_script;
 
-    bool m_Inited;
+    bool m_inited;
 };
 
 #endif // ANGELSYSTEM_H

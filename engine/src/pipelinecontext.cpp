@@ -30,6 +30,7 @@
 #include "commandbuffer.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include <float.h>
 
@@ -63,16 +64,18 @@ PipelineContext::PipelineContext() :
         m_shadowPageHeight(64),
         m_uiAsSceneView(false) {
 
+    std::ostringstream ss;
+    ss << uuid();
+    setName(ss.str());
+
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_effectMaterial = mtl->createInstance();
     }
 
-    m_plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
-
     {
-        Texture *depth = Engine::objectCreate<Texture>(DEPTH_MAP);
+        Texture *depth = Engine::objectCreate<Texture>(name() + "/" + DEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
         depth->resize(2, 2);
@@ -80,31 +83,31 @@ PipelineContext::PipelineContext() :
         m_buffer->setGlobalTexture(DEPTH_MAP, depth);
     }
     {
-        Texture *normals = Engine::objectCreate<Texture>(G_NORMALS);
+        Texture *normals = Engine::objectCreate<Texture>(name() + "/" + G_NORMALS);
         normals->setFormat(Texture::RGB10A2);
         m_textureBuffers[G_NORMALS] = normals;
         m_buffer->setGlobalTexture(G_NORMALS, normals);
     }
     {
-        Texture *diffuse = Engine::objectCreate<Texture>(G_DIFFUSE);
+        Texture *diffuse = Engine::objectCreate<Texture>(name() + "/" + G_DIFFUSE);
         diffuse->setFormat(Texture::RGBA8);
         m_textureBuffers[G_DIFFUSE] = diffuse;
         m_buffer->setGlobalTexture(G_DIFFUSE, diffuse);
     }
     {
-        Texture *params = Engine::objectCreate<Texture>(G_PARAMS);
+        Texture *params = Engine::objectCreate<Texture>(name() + "/" + G_PARAMS);
         params->setFormat(Texture::RGBA8);
         m_textureBuffers[G_PARAMS] = params;
         m_buffer->setGlobalTexture(G_PARAMS, params);
     }
     {
-        Texture *emissive = Engine::objectCreate<Texture>(G_EMISSIVE);
+        Texture *emissive = Engine::objectCreate<Texture>(name() + "/" + G_EMISSIVE);
         emissive->setFormat(Texture::R11G11B10Float);
         m_textureBuffers[G_EMISSIVE] = emissive;
         m_buffer->setGlobalTexture(G_EMISSIVE, emissive);
     }
 
-    RenderTarget *gbuffer = Engine::objectCreate<RenderTarget>(GBUFFER);
+    RenderTarget *gbuffer = Engine::objectCreate<RenderTarget>(name() + "/" + GBUFFER);
     gbuffer->setColorAttachment(0, m_textureBuffers[G_NORMALS]);
     gbuffer->setColorAttachment(1, m_textureBuffers[G_DIFFUSE]);
     gbuffer->setColorAttachment(2, m_textureBuffers[G_PARAMS]);
@@ -112,12 +115,12 @@ PipelineContext::PipelineContext() :
     gbuffer->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[GBUFFER] = gbuffer;
 
-    RenderTarget *light = Engine::objectCreate<RenderTarget>(LIGHPASS);
+    RenderTarget *light = Engine::objectCreate<RenderTarget>(name() + "/" + LIGHPASS);
     light->setColorAttachment(0, m_textureBuffers[G_EMISSIVE]);
     light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[LIGHPASS] = light;
 
-    m_renderPasses = { new AmbientOcclusion(), new Reflections(), new AntiAliasing(), new Bloom() };
+    m_renderPasses = { new AmbientOcclusion(this), new Reflections(this), new AntiAliasing(this), new Bloom(this) };
 }
 
 PipelineContext::~PipelineContext() {
@@ -178,7 +181,7 @@ void PipelineContext::finish() {
     m_buffer->clearRenderTarget();
 
     m_finalMaterial->setTexture(OVERRIDE, m_final);
-    m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_finalMaterial);
+    m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
 }
 
 void PipelineContext::cameraReset(Camera &camera) {
@@ -368,6 +371,14 @@ RenderTarget *PipelineContext::requestShadowTiles(uint32_t id, uint32_t lod, int
     return target;
 }
 
+Mesh *PipelineContext::defaultPlane() {
+    static Mesh *plane = nullptr;
+    if(plane == nullptr) {
+        plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+    }
+    return plane;
+}
+
 void PipelineContext::showUiAsSceneView() {
     m_uiAsSceneView = true;
 }
@@ -445,7 +456,7 @@ void PipelineContext::updateShadows(Camera &camera) {
 void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
     Texture *result = source->colorAttachment(0);
     for(auto it : m_renderPasses) {
-        if(it->layer() == layer) {
+        if(it->layer() == layer && it->isEnabled()) {
             result = it->draw(result, this);
         }
     }
@@ -454,7 +465,7 @@ void PipelineContext::renderPass(RenderTarget *source, uint32_t layer) {
         m_buffer->setViewport(0, 0, texture->width(), texture->height());
         m_buffer->setRenderTarget(source);
         m_effectMaterial->setTexture(OVERRIDE, result);
-        m_buffer->drawMesh(Matrix4(), m_plane, 0, CommandBuffer::UI, m_effectMaterial);
+        m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_effectMaterial);
     }
 }
 

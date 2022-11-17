@@ -94,6 +94,7 @@ Project {
             files: [
                 "*.h",
                 "components/*.h",
+                "components/gui/*.h",
                 "resources/*.h",
             ]
             qbs.install: true

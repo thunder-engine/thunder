@@ -3,6 +3,8 @@
 
 #include "component.h"
 
+#include <mutex>
+
 class TransformPrivate;
 
 class ENGINE_EXPORT Transform : public Component {
@@ -29,41 +31,60 @@ public:
     Transform();
     ~Transform();
 
-    Vector3 &position() const;
+    Vector3 position() const;
     void setPosition(const Vector3 position);
 
-    Vector3 &rotation() const;
+    Vector3 rotation() const;
     void setRotation(const Vector3 angles);
 
-    virtual Quaternion &quaternion() const;
+    virtual Quaternion quaternion() const;
     void setQuaternion(const Quaternion quaternion);
 
-    Vector3 &scale() const;
+    Vector3 scale() const;
     void setScale(const Vector3 scale);
 
     Transform *parentTransform() const;
-    virtual void setParentTransform(Transform *parent, bool force = false);
+    void setParentTransform(Transform *parent, bool force = false);
 
-    virtual Matrix4 &localTransform() const;
-    virtual Matrix4 &worldTransform() const;
+    virtual Matrix4 localTransform() const;
+    virtual Matrix4 worldTransform() const;
 
-    Vector3 &worldPosition() const;
-    Vector3 &worldRotation() const;
-    Quaternion &worldQuaternion() const;
-    Vector3 &worldScale() const;
+    Vector3 worldPosition() const;
+    Vector3 worldRotation() const;
+    Quaternion worldQuaternion() const;
+    Vector3 worldScale() const;
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
 protected:
-    list<Transform *> &children() const;
+    const list<Transform *> &children() const;
 
 protected:
     virtual void setDirty();
+    virtual void cleanDirty() const;
 
-private:
-    friend class TransformPrivate;
-
+protected:
     TransformPrivate *p_ptr;
+
+    Vector3 m_position;
+    Vector3 m_rotation;
+    Vector3 m_scale;
+
+    mutable Vector3 m_worldPosition;
+    mutable Vector3 m_worldRotation;
+    mutable Vector3 m_worldScale;
+
+    Quaternion m_quaternion;
+    mutable Quaternion m_worldQuaternion;
+
+    mutable Matrix4 m_transform;
+    mutable Matrix4 m_worldTransform;
+
+    list<Transform *> m_children;
+
+    Transform *m_parent;
+
+    mutable bool m_dirty;
 
 };
 

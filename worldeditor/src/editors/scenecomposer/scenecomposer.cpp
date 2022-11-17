@@ -325,7 +325,7 @@ QStringList SceneComposer::suffixes() const {
 }
 
 void SceneComposer::onActivated() {
-    emit hierarchyCreated(Engine::sceneGraph());
+    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationScene : Engine::sceneGraph());
 
     emit itemSelected(!m_controller->selected().empty() ? m_properties : nullptr);
 }

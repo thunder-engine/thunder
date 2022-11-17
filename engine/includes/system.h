@@ -21,8 +21,6 @@ public:
 
     virtual bool init() = 0;
 
-    virtual const char *name() const = 0;
-
     virtual void update(SceneGraph *sceneGraph) = 0;
 
     virtual int threadPolicy() const = 0;

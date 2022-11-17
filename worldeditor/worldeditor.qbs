@@ -64,14 +64,6 @@ Project {
         cpp.cxxLanguageVersion: worldEditor.languageVersion
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: outer.concat([
-                "opengl32",
-                "glu32"
-            ])
-        }
-
-        Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
         }
@@ -80,7 +72,6 @@ Project {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@rpath"
             cpp.rpaths: "@executable_path/../Frameworks/"
-            cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {

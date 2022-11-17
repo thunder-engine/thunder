@@ -5,7 +5,7 @@
 
 class Frame;
 
-class GUI_EXPORT ProgressBar : public Widget {
+class ENGINE_EXPORT ProgressBar : public Widget {
     A_REGISTER(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(

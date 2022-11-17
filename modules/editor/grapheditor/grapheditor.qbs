@@ -29,7 +29,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "gui-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets"]; }
         bundle.isBundle: false
 
@@ -59,7 +58,7 @@ Project {
             name: "Install Dynamic Platform"
             fileTagsFilter: ["dynamiclibrary", "dynamiclibrary_import"]
             qbs.install: true
-            qbs.installDir: grapheditor.PLUGINS_PATH
+            qbs.installDir: grapheditor.LIB_PATH + "/" + grapheditor.bundle
             qbs.installPrefix: grapheditor.PREFIX
         }
     }

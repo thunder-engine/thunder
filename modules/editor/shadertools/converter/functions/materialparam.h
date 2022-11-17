@@ -15,16 +15,16 @@ public:
             m_defaultValue(0.0f) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_ports.push_back(new NodePort(this, true, QMetaType::Double, 0, "Output"));
+        m_ports.push_back(NodePort(this, true, QMetaType::Float, 0, "Output", m_portColors[QMetaType::Float]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        if(size == 0) {
-            size = link.oport->m_type;
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        if(type == 0) {
+            type = link.oport->m_type;
         }
-        graph->addUniform(objectName(), size, m_defaultValue);
+        graph->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
-        return ShaderFunction::build(code, stack, graph, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
     }
 
     float defaultValue() const {
@@ -55,17 +55,17 @@ public:
             m_defaultValue(QColor(0, 0, 0, 0)) {
         connect(this, SIGNAL(objectNameChanged(QString)), this, SIGNAL(updated()));
 
-        m_ports.push_back(new NodePort(this, true, QMetaType::QVector4D, 0, "Output"));
+        m_ports.push_back(NodePort(this, true, QMetaType::QVector4D, 0, "Output", m_portColors[QMetaType::QVector4D]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        if(size == 0) {
-            size = link.oport->m_type;
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        if(type == 0) {
+            type = link.oport->m_type;
         }
-        graph->addUniform(objectName(), size, m_defaultValue);
+        graph->addUniform(objectName(), type, m_defaultValue);
         stack.push(QString("uni.%1").arg(objectName()));
 
-        return ShaderFunction::build(code, stack, graph, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
     }
 
     QColor defaultValue() const {

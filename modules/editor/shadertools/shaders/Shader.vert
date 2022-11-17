@@ -146,21 +146,21 @@ void main(void) {
 
     #ifdef TYPE_STATIC
         Vertex vert = staticMesh(vertex, tangent, normal, rot);
-        vert.v += WorldPositionOffset;
+        vert.v += PositionOffset;
         _vertex = g.projection * (mv * vec4(vert.v, 1.0));
         _view = normalize((model * vec4(vert.v, 1.0)).xyz - g.cameraPosition.xyz);
     #endif
 
     #ifdef TYPE_BILLBOARD
         Vertex vert = billboard( vertex, tangent, normal, particlePosRot, particleSizeDist );
-        vert.v += WorldPositionOffset;
+        vert.v += PositionOffset;
         _vertex = g.projection * (mv * vec4(vert.v, 1.0));
         _view = normalize((model * vec4(vert.v, 1.0)).xyz - camera);
     #endif
 
     #ifdef TYPE_SKINNED
         Vertex vert = skinnedMesh(vertex, tangent, normal, bones, weights);
-        vert.v += WorldPositionOffset;
+        vert.v += PositionOffset;
         _vertex = g.projection * (g.view * vec4(vert.v, 1.0));
         _view = normalize(vert.v - g.cameraPosition.xyz);
     #endif

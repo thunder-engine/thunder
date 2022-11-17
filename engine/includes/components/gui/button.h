@@ -3,7 +3,7 @@
 
 #include "abstractbutton.h"
 
-class GUI_EXPORT Button : public AbstractButton {
+class ENGINE_EXPORT Button : public AbstractButton {
     A_REGISTER(Button, AbstractButton, Components/UI)
 
     A_NOPROPERTIES()

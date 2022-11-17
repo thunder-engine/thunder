@@ -33,12 +33,6 @@
 */
 
 /*!
-    \fn char *System::name() const
-
-    Returns the name of system.
-*/
-
-/*!
     \fn int System::threadPolicy() const
 
     Returns the thread policy of the system.

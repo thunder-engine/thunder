@@ -9,7 +9,7 @@ class Material;
 
 class LabelPrivate;
 
-class GUI_EXPORT Label : public Widget {
+class ENGINE_EXPORT Label : public Widget {
     A_REGISTER(Label, Widget, Components/UI)
 
     A_PROPERTIES(

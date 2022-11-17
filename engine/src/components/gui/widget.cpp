@@ -1,12 +1,13 @@
-#include "components/widget.h"
+#include "components/gui/widget.h"
 
-#include "components/recttransform.h"
+#include "components/gui/recttransform.h"
+#include "components/gui/layout.h"
 
-#include <components/actor.h>
-#include <components/transform.h>
-#include <components/camera.h>
+#include "components/actor.h"
+#include "components/transform.h"
+#include "components/camera.h"
 
-#include <commandbuffer.h>
+#include "commandbuffer.h"
 
 Widget *Widget::m_focusWidget = nullptr;
 
@@ -26,15 +27,20 @@ Widget::~Widget() {
 */
 void Widget::update() {
     Renderable::update();
+
+    if(m_transform) {
+        Layout *layout = m_transform->layout();
+        if(layout) {
+            layout->update();
+        }
+    }
 }
 /*!
     \internal
 */
 void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
-    if(m_parent == nullptr && (layer == CommandBuffer::UI)) {
-        if(m_transform) {
-            m_transform->setSize(buffer.viewport());
-        }
+    if(m_parent == nullptr && layer == CommandBuffer::UI && m_transform) {
+        m_transform->setSize(buffer.viewport());
     }
 }
 /*!
@@ -43,8 +49,13 @@ void Widget::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox Widget::bound() const {
     AABBox result;
 
-    result.extent = (m_transform) ? Vector3(m_transform->size() * 0.5f, 0.0f) : Vector3();
-    result.center = result.extent;
+    if(m_transform) {
+        Vector2 size(m_transform->size());
+        result.extent = Vector3(size * 0.5f, 0.0f);
+        result.center = result.extent;
+    } else {
+        result.extent = Vector3();
+    }
 
     return result * actor()->transform()->worldTransform();
 }

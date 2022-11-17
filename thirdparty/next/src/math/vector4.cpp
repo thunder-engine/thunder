@@ -28,7 +28,7 @@ Vector4::Vector4() :
     x(0),
     y(0),
     z(0),
-    w(1) {
+    w(0) {
 }
 /*!
     Constructs a vector with coordinates (\a v).

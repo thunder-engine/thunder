@@ -306,6 +306,15 @@ void Handles::drawBox(const Vector3 &center, const Quaternion &rotation, const V
     }
 }
 
+Vector3Vector Handles::makeCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps) {
+    Vector3Vector points;
+    points.resize(steps);
+    for(int i = 0; i < steps; i++) {
+        points[i] = CMIX(startPosition, startTangent, endTangent, endPosition, (float)i / float(steps-1));
+    }
+    return points;
+}
+
 void Handles::drawBone(const Transform *begin, const Transform *end) {
     if(CommandBuffer::isInited()) {
         s_Buffer->setColor(s_Color);

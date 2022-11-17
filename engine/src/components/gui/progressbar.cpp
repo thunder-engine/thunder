@@ -1,8 +1,8 @@
-#include "components/progressbar.h"
-#include "components/frame.h"
-#include "components/recttransform.h"
+#include "components/gui/progressbar.h"
+#include "components/gui/frame.h"
+#include "components/gui/recttransform.h"
 
-#include <components/actor.h>
+#include "components/actor.h"
 
 namespace  {
     const char *gBackground = "Background";

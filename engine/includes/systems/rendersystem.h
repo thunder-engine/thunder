@@ -23,8 +23,6 @@ public:
 
     int threadPolicy() const override;
 
-    const char *name() const override;
-
     void composeComponent(Component *component) const override;
 
     PipelineContext *pipelineContext() const;
@@ -38,6 +36,8 @@ public:
 protected:
     void setOffscreenMode(bool mode);
     bool isOffscreenMode() const;
+
+    Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
 
 private:
     RenderSystemPrivate *p_ptr;

@@ -48,6 +48,10 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "opengl32",
+                "glu32"
+            ])
         }
 
         Properties {
@@ -57,8 +61,8 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["OpenGL"]
             cpp.sonamePrefix: "@executable_path"
+            cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {
@@ -106,6 +110,14 @@ Project {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: rendergl.ANDROID_STL
             Android.ndk.platform: rendergl.ANDROID
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "opengl32",
+                "glu32"
+            ])
         }
 
         Properties {

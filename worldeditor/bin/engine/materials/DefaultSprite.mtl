@@ -4,44 +4,44 @@
     "DepthWrite": false,
     "Links": [
         {
-            "IPort": 0,
+            "IPort": 2,
             "OPort": 0,
             "Receiver": 3,
             "Sender": 2
         },
         {
             "IPort": 1,
-            "OPort": 2,
+            "OPort": 0,
             "Receiver": 0,
             "Sender": 3
         },
         {
             "IPort": 1,
-            "OPort": 1,
+            "OPort": 0,
             "Receiver": 3,
             "Sender": 1
         },
         {
-            "IPort": 0,
+            "IPort": 1,
             "OPort": 0,
             "Receiver": 4,
             "Sender": 2
         },
         {
             "IPort": 5,
-            "OPort": 2,
+            "OPort": 0,
             "Receiver": 0,
             "Sender": 5
         },
         {
-            "IPort": 0,
-            "OPort": 1,
+            "IPort": 2,
+            "OPort": 0,
             "Receiver": 5,
             "Sender": 4
         },
         {
             "IPort": 1,
-            "OPort": 5,
+            "OPort": 4,
             "Receiver": 5,
             "Sender": 1
         }
@@ -101,7 +101,6 @@
             "Y": 160
         }
     ],
-    "Raw": "",
     "Side": true,
     "Textures": {
         ".embedded/invalid.png": 0

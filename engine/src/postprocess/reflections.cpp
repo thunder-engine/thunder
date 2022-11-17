@@ -18,13 +18,15 @@
 
 const char *REFLECTIONS("graphics.reflections");
 
-Reflections::Reflections() :
+Reflections::Reflections(PipelineContext *context) :
+        RenderPass(context),
         m_iblMaterial(nullptr),
         m_environmentTexture(nullptr) {
 
     m_resultTexture = Engine::objectCreate<Texture>();
     m_resultTexture->setFormat(Texture::RGBA32Float);
 
+    m_resultTarget = Engine::objectCreate<RenderTarget>();
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
     m_sslrTexture = Engine::objectCreate<Texture>();
@@ -58,23 +60,19 @@ Reflections::~Reflections() {
 }
 
 Texture *Reflections::draw(Texture *source, PipelineContext *context) {
-    if(m_enabled) {
-        CommandBuffer *buffer = context->buffer();
-        if(m_material) { // sslr step
-            buffer->setRenderTarget(m_sslrTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
-        }
-
-        if(m_iblMaterial) { // combine step
-            buffer->setRenderTarget(m_resultTarget);
-            buffer->clearRenderTarget();
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_iblMaterial);
-        }
-
-        return m_resultTexture;
+    CommandBuffer *buffer = context->buffer();
+    if(m_material) { // sslr step
+        buffer->setRenderTarget(m_sslrTarget);
+        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
     }
 
-    return source;
+    if(m_iblMaterial) { // combine step
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->clearRenderTarget();
+        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_iblMaterial);
+    }
+
+    return m_resultTexture;
 }
 
 void Reflections::resize(int32_t width, int32_t height) {

@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QVariant>
-#include <QPoint>
+
+#include <amath.h>
 
 #if defined(SHARED_DEFINE) && defined(_WIN32)
     #ifdef NODEGRAPH_LIBRARY
@@ -20,15 +21,19 @@ class GraphNode;
 
 class NODEGRAPH_EXPORT NodePort {
 public:
-    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, QString name, QVariant var = QVariant()) :
-        m_out(out),
-        m_type(type),
-        m_pos(pos),
-        m_name(name),
-        m_var(var),
-        m_node(node) {
+    explicit NodePort(GraphNode *node, bool out, uint32_t type, int32_t pos, std::string name, const Vector4 &color, QVariant var = QVariant()) :
+            m_out(out),
+            m_type(type),
+            m_pos(pos),
+            m_name(name),
+            m_var(var),
+            m_node(node),
+            m_userData(nullptr),
+            m_color(color) {
 
     }
+
+    GraphNode *m_node;
 
     bool m_out;
 
@@ -36,30 +41,59 @@ public:
 
     int32_t m_pos;
 
-    QString m_name;
+    std::string m_name;
 
-    QVariant m_var;
+    Vector4 m_color;
 
-    GraphNode *m_node;
+    std::string m_hints;
+
+    QVariant m_var = QVariant();
+
+    void *m_userData = nullptr;
+
 };
 
 class NODEGRAPH_EXPORT GraphNode : public QObject {
 public:
-    GraphNode() :
-        m_root(false),
-        m_graph(nullptr) {
+    GraphNode();
 
-    }
+    AbstractNodeGraph *graph() const;
+    void setGraph(AbstractNodeGraph *graph);
 
-    bool m_root;
+    NodePort *port(int position);
 
-    QString m_type;
+    int portPosition(NodePort *port);
 
-    QPoint m_pos;
+    std::string type() const;
+    void setType(const std::string &type);
 
-    QList<NodePort *> m_ports;
+    virtual Vector2 defaultSize() const;
+    virtual Vector4 color() const;
+
+    Vector2 position() const;
+
+    void setPosition(const Vector2 &position);
+
+    void *widget() const;
+    void setWidget(void *widget);
+
+    virtual bool isPreview() const;
+
+    virtual bool isState() const;
+
+    std::vector<NodePort> &ports();
+
+protected:
+    std::string m_type;
+
+    Vector2 m_pos;
+
+    void *m_userData;
+
+    std::vector<NodePort> m_ports;
 
     AbstractNodeGraph *m_graph;
+
 };
 
 #endif // GRAPHNODE_H

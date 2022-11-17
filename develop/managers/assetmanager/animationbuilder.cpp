@@ -5,6 +5,11 @@
 
 #include <bson.h>
 
+#include <editor/graph/graphnode.h>
+
+#include <resources/animationstatemachine.h>
+#include <resources/animationclip.h>
+
 #define ENTRY "Entry"
 #define NAME "Name"
 #define CLIP "Clip"
@@ -14,14 +19,42 @@
 
 #define FORMAT_VERSION 1
 
-AnimationBuilderSettings::AnimationBuilderSettings() {
-    setType(MetaType::type<AnimationStateMachine *>());
-    setVersion(FORMAT_VERSION);
+Vector2 EntryState::defaultSize() const {
+    return Vector2(170.0f, 40.0f);
 }
 
-QString AnimationBuilderSettings::defaultIcon(QString) const {
-    return ":/Style/styles/dark/images/machine.svg";
+Vector4 EntryState::color() const {
+    return Vector4(0.1f, 0.1f, 0.1f, 1.0f);
 }
+
+bool EntryState::isState() const {
+    return true;
+}
+
+
+BaseState::BaseState() {
+    m_path = Template("", MetaType::type<AnimationClip *>());
+    m_loop = false;
+}
+
+Template BaseState::clip() const {
+    return m_path;
+}
+
+void BaseState::setClip(const Template &path) {
+    m_path.path = path.path;
+    emit updated();
+}
+
+bool BaseState::loop() const {
+    return m_loop;
+}
+
+void BaseState::setLoop(bool loop) {
+    m_loop = loop;
+    emit updated();
+}
+
 
 AnimationNodeGraph::AnimationNodeGraph() {
     m_entry = nullptr;
@@ -47,18 +80,19 @@ void AnimationNodeGraph::save(const QString &path) {
 }
 
 GraphNode *AnimationNodeGraph::createRoot() {
-    GraphNode *result = new GraphNode;
+    EntryState *result = new EntryState;
 
-    result->setObjectName("Entry");
+    result->setObjectName(ENTRY);
 
     return result;
 }
 
 GraphNode *AnimationNodeGraph::nodeCreate(const QString &path, int &index) {
     BaseState *node = new BaseState();
-    connect(node, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
+    connect(node, &BaseState::updated, this, &AnimationNodeGraph::graphUpdated);
     node->setObjectName(path);
-    node->m_graph = this;
+    node->setGraph(this);
+    node->setType(qPrintable(path));
     if(index == -1) {
         index = m_nodes.size();
         m_nodes.push_back(node);
@@ -188,6 +222,15 @@ Variant AnimationNodeGraph::data() const {
 
     result[MACHINE] = machine;
     return result;
+}
+
+AnimationBuilderSettings::AnimationBuilderSettings() {
+    setType(MetaType::type<AnimationStateMachine *>());
+    setVersion(FORMAT_VERSION);
+}
+
+QString AnimationBuilderSettings::defaultIcon(QString) const {
+    return ":/Style/styles/dark/images/machine.svg";
 }
 
 AssetConverter::ReturnCode AnimationBuilder::convertFile(AssetConverterSettings *settings) {

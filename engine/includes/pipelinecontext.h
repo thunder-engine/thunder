@@ -72,6 +72,8 @@ public:
     void setShadowPageSize(int32_t width, int32_t height);
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
+    static Mesh *defaultPlane();
+
 protected:
     void renderPass(RenderTarget *source, uint32_t layer);
 
@@ -103,7 +105,6 @@ protected:
 
     CommandBuffer *m_buffer;
 
-    Mesh *m_plane;
     MaterialInstance *m_finalMaterial;
     MaterialInstance *m_effectMaterial;
 
@@ -124,4 +125,4 @@ protected:
 
 };
 
-#endif // PIPELINE
+#endif // PIPELINECONTEXT

@@ -78,6 +78,8 @@ BulletSystem::~BulletSystem() {
     MeshCollider::unregisterClassFactory(this);
 
     CharacterController::unregisterClassFactory(this);
+
+    setName("Bullet Physics");
 }
 
 bool BulletSystem::init() {
@@ -93,10 +95,6 @@ bool BulletSystem::init() {
     }
 
     return true;
-}
-
-const char *BulletSystem::name() const {
-    return "Bullet Physics";
 }
 
 void BulletSystem::update(SceneGraph *scene) {

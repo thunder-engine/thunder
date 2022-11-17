@@ -25,6 +25,10 @@ AbstractNodeGraph::AbstractNodeGraph() :
         m_rootNode(nullptr) {
 }
 
+GraphNode *AbstractNodeGraph::rootNode() const {
+    return m_rootNode;
+}
+
 void AbstractNodeGraph::nodeDelete(GraphNode *node) {
     if(node == m_rootNode) {
         return;
@@ -32,9 +36,8 @@ void AbstractNodeGraph::nodeDelete(GraphNode *node) {
     auto it = m_nodes.begin();
     while(it != m_nodes.end()) {
         if(*it == node) {
-            for(NodePort *item : qAsConst(node->m_ports)) {
-                linkDelete(item);
-                delete item;
+            for(NodePort &item : node->ports()) {
+                linkDelete(&item);
             }
             linkDelete(node);
 
@@ -184,18 +187,20 @@ void AbstractNodeGraph::load(const QString &path) {
     m_nodes.push_back(m_rootNode);
 
     QFile loadFile(path);
-    if (!loadFile.open(QIODevice::ReadOnly)) {
+    if(!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open file.");
         return;
     }
-    m_data = QJsonDocument::fromJson(loadFile.readAll()).toVariant().toMap();
+    QByteArray data(loadFile.readAll());
+
+    m_data = QJsonDocument::fromJson(data).toVariant().toMap();
 
     QVariantList nodes = m_data[NODES].toList();
     for(int i = 0; i < nodes.size(); ++i) {
         QVariantMap n = nodes[i].toMap();
         int32_t index = -1;
         GraphNode *node = nodeCreate(n[TYPE].toString(), index);
-        node->m_pos = QPoint(n[X].toInt(), n[Y].toInt());
+        node->setPosition(Vector2(n[X].toInt(), n[Y].toInt()));
         loadUserValues(node, n[VALUES].toMap());
     }
 
@@ -207,18 +212,15 @@ void AbstractNodeGraph::load(const QString &path) {
         GraphNode *rcv = node(l[RECEIVER].toInt());
         if(snd && rcv) {
             int index1 = l[OPORT].toInt();
-            NodePort *op = (index1 > -1) ? snd->m_ports.at(index1) : nullptr;
+            NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
             int index2 = l[IPORT].toInt();
-            NodePort *ip = (index2 > -1) ? rcv->m_ports.at(index2) : nullptr;
+            NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
 
             linkCreate(snd, op, rcv, ip);
         }
     }
-    emit graphUpdated();
-}
 
-QStringList AbstractNodeGraph::nodeList() const {
-    return QStringList();
+    emit graphUpdated();
 }
 
 void AbstractNodeGraph::save(const QString &path) {
@@ -234,9 +236,9 @@ void AbstractNodeGraph::save(const QString &path) {
     foreach(Link *it, m_links) {
         QVariantMap link;
         link[SENDER] = node(it->sender);
-        link[OPORT] = (it->oport != nullptr) ? it->sender->m_ports.indexOf(it->oport) : -1;
+        link[OPORT] = (it->oport != nullptr) ? it->sender->portPosition(it->oport) : -1;
         link[RECEIVER] = node(it->receiver);
-        link[IPORT] = (it->iport != nullptr) ? it->receiver->m_ports.indexOf(it->iport) : -1;
+        link[IPORT] = (it->iport != nullptr) ? it->receiver->portPosition(it->iport) : -1;
 
         links.push_back(link);
     }
@@ -249,11 +251,15 @@ void AbstractNodeGraph::save(const QString &path) {
     }
 }
 
+QStringList AbstractNodeGraph::nodeList() const {
+    return QStringList();
+}
+
 QVariant AbstractNodeGraph::saveNode(GraphNode *node) {
     QVariantMap result;
-    result[TYPE] = node->m_type;
-    result[X] = node->m_pos.x();
-    result[Y] = node->m_pos.y();
+    result[TYPE] = node->type().c_str();
+    result[X] = (int)node->position().x;
+    result[Y] = (int)node->position().y;
 
     QVariantMap values;
     saveUserValues(node, values);
@@ -274,20 +280,8 @@ const AbstractNodeGraph::NodeList &AbstractNodeGraph::nodes() const {
     return m_nodes;
 }
 
-QVariant AbstractNodeGraph::links() const {
-    QVariantList result;
-
-    foreach(auto it, m_links) {
-        QVariantMap link;
-        link["sender"] = node(it->sender);
-        link["receiver"] = node(it->receiver);
-        link["oport"] = it->sender->m_ports.indexOf(it->oport);
-        link["iport"] = it->receiver->m_ports.indexOf(it->iport);
-
-        result.push_back(link);
-    }
-
-    return result;
+const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
+    return m_links;
 }
 
 void AbstractNodeGraph::reportMessage(GraphNode *node, const QString &text) {
@@ -306,22 +300,14 @@ void AbstractNodeGraph::deleteLinksByPort(int node, int port) {
     UndoManager::instance()->push(new DeleteLinksByPort(node, port, this));
 }
 
-void AbstractNodeGraph::moveNode(const QVariant selection, const QVariant nodes) {
-    UndoManager::instance()->push(new MoveNode(selection, nodes, this));
+void AbstractNodeGraph::deleteNodes(const vector<int32_t> &selection) {
+    UndoManager::instance()->push(new DeleteNodes(selection, this));
 }
 
-void AbstractNodeGraph::deleteNodes(QVariant selection) {
-    QVariantList list = selection.toList();
-    list.removeAll(QVariant(0));
-    if(!list.isEmpty()) {
-        UndoManager::instance()->push(new DeleteNodes(list, this));
-    }
-}
-
-void AbstractNodeGraph::copyNodes(QVariant list) {
+void AbstractNodeGraph::copyNodes(const vector<int32_t> &selection) {
     QJsonArray array;
-    for(QVariant &it : list.toList()) {
-        GraphNode *node = m_nodes.at(it.toInt());
+    for(auto it : selection) {
+        GraphNode *node = m_nodes.at(it);
 
         if(node) {
             array.push_back(QJsonValue::fromVariant(saveNode(node)));
@@ -338,7 +324,7 @@ QVariant AbstractNodeGraph::pasteNodes(int x, int y) {
 }
 
 CreateNode::CreateNode(const QString &path, int x, int y, AbstractNodeGraph *graph, int node, int port, bool out, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent),
+        UndoGraph(graph, name, parent),
         m_node(nullptr),
         m_path(path),
         m_linkIndex(-1),
@@ -355,7 +341,7 @@ void CreateNode::undo() {
 void CreateNode::redo() {
     m_node = m_graph->nodeCreate(m_path, m_linkIndex);
     if(m_node) {
-        m_node->m_pos = m_point;
+        m_node->setPosition(m_point);
     }
 
     if(m_fromNode > -1) {
@@ -364,10 +350,10 @@ void CreateNode::redo() {
         if(m_fromPort > -1) {
             if(node) {
                 int index = 0;
-                for(auto &it : node->m_ports) {
-                    if(it->m_out == m_out) {
+                for(auto &it : node->ports()) {
+                    if(it.m_out == m_out) {
                         if(index == m_fromPort) {
-                            item = it;
+                            item = &it;
                             break;
                         } else {
                             index++;
@@ -380,8 +366,8 @@ void CreateNode::redo() {
         GraphNode *snd = (m_out) ? node : m_node;
         GraphNode *rcv = (m_out) ? m_node : node;
         if(snd && rcv) {
-            NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->m_ports.at(0)) : nullptr;
-            NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->m_ports.at(0) : item) : nullptr;
+            NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->port(0)) : nullptr;
+            NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->port(0) : item) : nullptr;
 
             AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, sp, rcv, rp);
             m_linkIndex = m_graph->link(link);
@@ -391,37 +377,11 @@ void CreateNode::redo() {
     emit m_graph->graphUpdated();
 }
 
-MoveNode::MoveNode(const QVariant &selection, const QVariant &nodes, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent) {
+DeleteNodes::DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *model, const QString &name, QUndoCommand *parent) :
+    m_indices(selection),
+    UndoGraph(model, name, parent) {
 
-    QVariantList list = nodes.toList();
-    for(auto &it : selection.toList()) {
-        m_indices.push_back(it.toInt());
 
-        QVariantMap map = list.at(it.toInt()).toMap();
-        m_points.push_back(map["pos"].toPoint());
-    }
-}
-void MoveNode::undo() {
-    redo();
-}
-void MoveNode::redo() {
-    QList<QPoint> positions;
-    for(int i = 0; i < m_indices.size(); i++) {
-        GraphNode *node = m_graph->node(m_indices.at(i));
-        positions.push_back(node->m_pos);
-        node->m_pos = m_points.at(i);
-    }
-    m_points = positions;
-    emit m_graph->nodeMoved();
-}
-
-DeleteNodes::DeleteNodes(const QVariant &selection, AbstractNodeGraph *model, const QString &name, QUndoCommand *parent) :
-        UndoScheme(model, name, parent) {
-
-    for(QVariant &it : selection.toList()) {
-        m_indices.push_back(it.toInt());
-    }
 }
 void DeleteNodes::undo() {
     QVariantMap data = m_document.toVariant().toMap();
@@ -431,7 +391,7 @@ void DeleteNodes::undo() {
         QVariantMap n = nodes[i].toMap();
         int32_t index = m_indices.at(i);
         GraphNode *node = m_graph->nodeCreate(n[TYPE].toString(), index);
-        node->m_pos = QPoint(n[X].toInt(), n[Y].toInt());
+        node->setPosition(Vector2(n[X].toInt(), n[Y].toInt()));
         m_graph->loadUserValues(node, n[VALUES].toMap());
     }
 
@@ -443,9 +403,9 @@ void DeleteNodes::undo() {
         GraphNode *rcv = m_graph->node(l[RECEIVER].toInt());
         if(snd && rcv) {
             int index1 = l[OPORT].toInt();
-            NodePort *op = (index1 > -1) ? snd->m_ports.at(index1) : nullptr;
+            NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
             int index2 = l[IPORT].toInt();
-            NodePort *ip = (index2 > -1) ? rcv->m_ports.at(index2) : nullptr;
+            NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
 
             m_graph->linkCreate(snd, op, rcv, ip);
         }
@@ -463,9 +423,9 @@ void DeleteNodes::redo() {
         for(auto l : m_graph->findLinks(node)) {
             QVariantMap link;
             link[SENDER] = m_graph->node(l->sender);
-            link[OPORT] = (l->oport != nullptr) ? l->sender->m_ports.indexOf(l->oport) : -1;
+            link[OPORT] = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
             link[RECEIVER] = m_graph->node(l->receiver);
-            link[IPORT] = (l->iport != nullptr) ? l->receiver->m_ports.indexOf(l->iport) : -1;
+            link[IPORT] = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
 
             links.push_back(link);
         }
@@ -487,10 +447,10 @@ void DeleteNodes::redo() {
 }
 
 PasteNodes::PasteNodes(const QString &data, int x, int y, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent),
-        m_document(QJsonDocument::fromJson(data.toLocal8Bit())),
-        m_x(x),
-        m_y(y) {
+    UndoGraph(graph, name, parent),
+    m_document(QJsonDocument::fromJson(data.toLocal8Bit())),
+    m_x(x),
+    m_y(y) {
 
 }
 void PasteNodes::undo() {
@@ -516,7 +476,7 @@ void PasteNodes::redo () {
         GraphNode *node = m_graph->nodeCreate(n[TYPE].toString(), index);
         int deltaX = maxX - n[X].toInt();
         int deltaY = maxY - n[Y].toInt();
-        node->m_pos = QPoint(m_x + deltaX, m_y + deltaY);
+        node->setPosition(Vector2(m_x + deltaX, m_y + deltaY));
         m_graph->loadUserValues(node, n[VALUES].toMap());
 
         m_list.push_back(index);
@@ -525,7 +485,7 @@ void PasteNodes::redo () {
 }
 
 CreateLink::CreateLink(int sender, int oport, int receiver, int iport, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent),
+        UndoGraph(graph, name, parent),
         m_sender(sender),
         m_oPort(oport),
         m_receiver(receiver),
@@ -544,8 +504,8 @@ void CreateLink::redo() {
     GraphNode *snd = m_graph->node(m_sender);
     GraphNode *rcv = m_graph->node(m_receiver);
     if(snd && rcv) {
-        NodePort *op = (m_oPort > -1) ? snd->m_ports.at(m_oPort) : nullptr;
-        NodePort *ip = (m_iPort > -1) ? rcv->m_ports.at(m_iPort) : nullptr;
+        NodePort *op = (m_oPort > -1) ? snd->port(m_oPort) : nullptr;
+        NodePort *ip = (m_iPort > -1) ? rcv->port(m_iPort) : nullptr;
 
         AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, op, rcv, ip);
         m_index = m_graph->link(link);
@@ -554,7 +514,7 @@ void CreateLink::redo() {
 }
 
 DeleteLink::DeleteLink(int index, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent),
+        UndoGraph(graph, name, parent),
         m_sender(0),
         m_oPort(0),
         m_receiver(0),
@@ -566,8 +526,8 @@ void DeleteLink::undo() {
     GraphNode *snd = m_graph->node(m_sender);
     GraphNode *rcv = m_graph->node(m_receiver);
     if(snd && rcv) {
-        NodePort *op = (m_oPort > -1) ? snd->m_ports.at(m_oPort) : nullptr;
-        NodePort *ip = (m_iPort > -1) ? rcv->m_ports.at(m_iPort) : nullptr;
+        NodePort *op = (m_oPort > -1) ? snd->port(m_oPort) : nullptr;
+        NodePort *ip = (m_iPort > -1) ? rcv->port(m_iPort) : nullptr;
 
         AbstractNodeGraph::Link *link = m_graph->linkCreate(snd, op, rcv, ip);
         m_index = m_graph->link(link);
@@ -580,8 +540,8 @@ void DeleteLink::redo() {
         m_sender = m_graph->node(link->sender);
         m_receiver = m_graph->node(link->receiver);
 
-        m_oPort = link->sender->m_ports.indexOf(link->oport);
-        m_iPort = link->receiver->m_ports.indexOf(link->iport);
+        m_oPort = link->sender->portPosition(link->oport);
+        m_iPort = link->receiver->portPosition(link->iport);
 
         m_graph->linkDelete(link);
         emit m_graph->graphUpdated();
@@ -589,22 +549,20 @@ void DeleteLink::redo() {
 }
 
 DeleteLinksByPort::DeleteLinksByPort(int node, int port, AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent) :
-        UndoScheme(graph, name, parent),
+        UndoGraph(graph, name, parent),
         m_node(node),
         m_port(port) {
 
 }
 void DeleteLinksByPort::undo() {
     for(int i = 0; i < m_links.size(); ++i) {
-        QVariantMap l = m_links[i].toMap();
+        Link link = *std::next(m_links.begin(), i);
 
-        GraphNode *snd = m_graph->node(l[SENDER].toInt());
-        GraphNode *rcv = m_graph->node(l[RECEIVER].toInt());
+        GraphNode *snd = m_graph->node(link.sender);
+        GraphNode *rcv = m_graph->node(link.receiver);
         if(snd && rcv) {
-            int index1 = l[OPORT].toInt();
-            NodePort *op = (index1 > -1) ? snd->m_ports.at(index1) : nullptr;
-            int index2 = l[IPORT].toInt();
-            NodePort *ip = (index2 > -1) ? rcv->m_ports.at(index2) : nullptr;
+            NodePort *op = (link.oport > -1) ? snd->port(link.oport) : nullptr;
+            NodePort *ip = (link.iport > -1) ? rcv->port(link.iport) : nullptr;
 
             m_graph->linkCreate(snd, op, rcv, ip);
         }
@@ -617,25 +575,21 @@ void DeleteLinksByPort::redo() {
         m_links.clear();
         if(m_port == -1) {
             for(auto l : m_graph->findLinks(node)) {
-                QVariantMap link;
-                link[SENDER] = m_graph->node(l->sender);
-                link[OPORT] = (l->oport != nullptr) ? l->sender->m_ports.indexOf(l->oport) : -1;
-                link[RECEIVER] = m_graph->node(l->receiver);
-                link[IPORT] = (l->iport != nullptr) ? l->receiver->m_ports.indexOf(l->iport) : -1;
-
-                m_links.push_back(link);
+                m_links.push_back({
+                    m_graph->node(l->sender),
+                    (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1,
+                    m_graph->node(l->receiver),
+                    (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1 });
             }
             m_graph->linkDelete(node);
         } else {
-            NodePort *item = node->m_ports.at(m_port);
+            NodePort *item = node->port(m_port);
             for(auto l : m_graph->findLinks(item)) {
-                QVariantMap link;
-                link[SENDER] = m_graph->node(l->sender);
-                link[OPORT] = (l->oport != nullptr) ? l->sender->m_ports.indexOf(l->oport) : -1;
-                link[RECEIVER] = m_graph->node(l->receiver);
-                link[IPORT] = (l->iport != nullptr) ? l->receiver->m_ports.indexOf(l->iport) : -1;
-
-                m_links.push_back(link);
+                m_links.push_back({
+                    m_graph->node(l->sender),
+                    (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1,
+                    m_graph->node(l->receiver),
+                    (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1 });
             }
             m_graph->linkDelete(item);
         }

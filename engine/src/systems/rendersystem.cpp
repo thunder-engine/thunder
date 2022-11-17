@@ -14,6 +14,18 @@
 #include "components/postprocessvolume.h"
 
 #include "components/camera.h"
+#include "components/actor.h"
+
+#include "components/gui/recttransform.h"
+#include "components/gui/widget.h"
+#include "components/gui/image.h"
+#include "components/gui/label.h"
+#include "components/gui/button.h"
+#include "components/gui/switch.h"
+#include "components/gui/progressbar.h"
+#include "components/gui/frame.h"
+#include "components/gui/textinput.h"
+#include "components/gui/floatinput.h"
 
 #include "resources/material.h"
 #include "resources/rendertarget.h"
@@ -62,8 +74,26 @@ RenderSystem::RenderSystem() :
         PostProcessVolume::registerClassFactory(this);
 
         PipelineContext::registerClassFactory(this);
+
+        RectTransform::registerClassFactory(this);
+
+        Widget::registerClassFactory(this);
+        Image::registerClassFactory(this);
+        Frame::registerClassFactory(this);
+        Label::registerClassFactory(this);
+
+        AbstractButton::registerClassFactory(this);
+        Button::registerClassFactory(this);
+        Switch::registerClassFactory(this);
+
+        ProgressBar::registerClassFactory(this);
+
+        TextInput::registerClassFactory(this);
+        FloatInput::registerClassFactory(this);
     }
     ++RenderSystemPrivate::m_registered;
+
+    setName("Render");
 }
 
 RenderSystem::~RenderSystem() {
@@ -87,15 +117,27 @@ RenderSystem::~RenderSystem() {
         CommandBuffer::unregisterClassFactory(this);
 
         PostProcessVolume::unregisterClassFactory(this);
+
+        RectTransform::unregisterClassFactory(this);
+
+        Widget::unregisterClassFactory(this);
+        Image::unregisterClassFactory(this);
+        Frame::unregisterClassFactory(this);
+        Label::unregisterClassFactory(this);
+
+        AbstractButton::unregisterClassFactory(this);
+        Button::unregisterClassFactory(this);
+        Switch::unregisterClassFactory(this);
+
+        ProgressBar::unregisterClassFactory(this);
+
+        TextInput::unregisterClassFactory(this);
+        FloatInput::unregisterClassFactory(this);
     }
 }
 
 int RenderSystem::threadPolicy() const {
     return Main;
-}
-
-const char *RenderSystem::name() const {
-    return "Render";
 }
 
 bool RenderSystem::init() {
@@ -123,6 +165,15 @@ void RenderSystem::composeComponent(Component *component) const {
     if(renderable) {
         renderable->composeComponent();
     }
+}
+
+Object *RenderSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
+    Object *result = ObjectSystem::instantiateObject(meta, name, parent);
+    Widget *widget = dynamic_cast<Widget *>(result);
+    if(widget) {
+        widget->actor()->setLayers(CommandBuffer::UI | CommandBuffer::RAYCAST);
+    }
+    return result;
 }
 
 PipelineContext *RenderSystem::pipelineContext() const {

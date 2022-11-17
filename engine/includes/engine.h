@@ -13,6 +13,7 @@ class EnginePrivate;
 
 class Actor;
 class Scene;
+class Component;
 class ResourceSystem;
 class RenderSystem;
 class Resource;

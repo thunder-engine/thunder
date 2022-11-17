@@ -1,15 +1,15 @@
-#include "components/label.h"
+#include "components/gui/label.h"
 
-#include "components/recttransform.h"
+#include "components/gui/recttransform.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-#include <components/transform.h>
+#include "components/actor.h"
+#include "components/textrender.h"
+#include "components/transform.h"
 
-#include <resources/resource.h>
-#include <resources/material.h>
-#include <resources/mesh.h>
-#include <resources/font.h>
+#include "resources/resource.h"
+#include "resources/material.h"
+#include "resources/mesh.h"
+#include "resources/font.h"
 
 #include <commandbuffer.h>
 #include <utils.h>

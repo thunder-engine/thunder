@@ -72,10 +72,8 @@ RenderGLSystem::~RenderGLSystem() {
 
         CommandBufferGL::unregisterClassFactory(m_engine);
     }
-}
 
-const char *RenderGLSystem::name() const {
-    return "RenderGL";
+    setName("RenderGL");
 }
 /*!
     Initialization of render.

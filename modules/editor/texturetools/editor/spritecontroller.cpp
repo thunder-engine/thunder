@@ -12,10 +12,10 @@
 
 SpriteController::SpriteController(QWidget *view) :
         CameraCtrl(),
-        m_pSettings(nullptr),
-        m_Width(0),
-        m_Height(0),
-        m_Drag(false) {
+        m_settings(nullptr),
+        m_width(0),
+        m_height(0),
+        m_drag(false) {
 
     Camera *cam = camera();
     if(cam) {
@@ -26,53 +26,53 @@ SpriteController::SpriteController(QWidget *view) :
 }
 
 void SpriteController::setImportSettings(TextureImportSettings *settings) {
-    m_pSettings = settings;
+    m_settings = settings;
 }
 
 void SpriteController::setSize(uint32_t width, uint32_t height) {
-    m_Width = width;
-    m_Height = height;
+    m_width = width;
+    m_height = height;
 }
 
 void SpriteController::selectElements(const QStringList &list) {
-    m_List = list;
+    m_list = list;
 
-    m_ElementList.clear();
-    if(m_pSettings) {
-        for(auto &it : m_List) {
-            m_ElementList.push_back(m_pSettings->elements().value(it));
+    m_elementList.clear();
+    if(m_settings) {
+        for(auto &it : m_list) {
+            m_elementList.push_back(m_settings->elements().value(it));
         }
     }
 
-    if(m_List.isEmpty()) {
+    if(m_list.isEmpty()) {
         emit selectionChanged(QString());
     } else {
-        emit selectionChanged(m_List.front());
+        emit selectionChanged(m_list.front());
     }
 }
 
 QStringList &SpriteController::selectedElements() {
-    return m_List;
+    return m_list;
 }
 
 void SpriteController::drawHandles() {
-    if(m_pSettings) {
+    if(m_settings) {
         Qt::CursorShape shape = Qt::ArrowCursor;
 
-        for(auto it : m_pSettings->elements().keys()) {
-            QRectF r = mapRect(m_pSettings->elements().value(it).m_Rect);
-            if(m_List.indexOf(it) > -1) {
-                QRect tmp = m_pSettings->elements().value(it).m_Rect;
-                tmp.setLeft(tmp.left()     + m_pSettings->elements().value(it).m_BorderL);
-                tmp.setRight(tmp.right()   - m_pSettings->elements().value(it).m_BorderR);
-                tmp.setTop(tmp.top()       + m_pSettings->elements().value(it).m_BorderB);
-                tmp.setBottom(tmp.bottom() - m_pSettings->elements().value(it).m_BorderT);
+        for(auto it : m_settings->elements().keys()) {
+            QRectF r = mapRect(m_settings->elements().value(it).m_Rect);
+            if(m_list.indexOf(it) > -1) {
+                QRect tmp = m_settings->elements().value(it).m_Rect;
+                tmp.setLeft(tmp.left()     + m_settings->elements().value(it).m_BorderL);
+                tmp.setRight(tmp.right()   - m_settings->elements().value(it).m_BorderR);
+                tmp.setTop(tmp.top()       + m_settings->elements().value(it).m_BorderB);
+                tmp.setBottom(tmp.bottom() - m_settings->elements().value(it).m_BorderT);
 
                 QRectF b = mapRect(tmp);
 
                 int axis;
                 Handles::s_Color = Handles::s_zColor;
-                Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector3(r.width(), r.height(), 0), axis, m_Drag);
+                Handles::rectTool(Vector3(r.x(), r.y(), 0.0f), Vector3(r.width(), r.height(), 0), axis, m_drag);
 
                 Handles::s_Color = Handles::s_yColor;
                 Handles::drawRectangle(Vector3(b.x(), b.y(), 0.0f), Quaternion(), b.width(), b.height());
@@ -109,17 +109,17 @@ void SpriteController::drawHandles() {
                 Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
             }
         }
-        if(m_CurrentPoint != m_StartPoint) {
+        if(m_currentPoint != m_startPoint) {
             Handles::s_Color = Handles::s_zColor;
 
-            QRectF r = mapRect(makeRect(m_StartPoint, m_CurrentPoint));
+            QRectF r = mapRect(makeRect(m_startPoint, m_currentPoint));
             Handles::drawRectangle(Vector3(r.x(), r.y(), 0.0f), Quaternion(), r.width(), r.height());
         }
         Handles::s_Color = Handles::s_Normal;
 
         if(shape != Qt::ArrowCursor) {
             emit setCursor(QCursor(shape));
-        } else if(!m_Drag) {
+        } else if(!m_drag) {
             emit unsetCursor();
         }
     }
@@ -132,8 +132,8 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
             QKeyEvent *e = static_cast<QKeyEvent *>(pe);
             switch(e->key()) {
                 case Qt::Key_Delete: {
-                    if(!m_List.isEmpty()) {
-                        UndoManager::instance()->push(new DestroySprites(m_List, this));
+                    if(!m_list.isEmpty()) {
+                        UndoManager::instance()->push(new DestroySprites(m_list, this));
                     }
                 } break;
                 default: break;
@@ -141,12 +141,12 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         } break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(m_pSettings && e->buttons() == Qt::LeftButton) {
+            if(m_settings && e->buttons() == Qt::LeftButton) {
                 if(Handles::s_Axes == 0) {
                     QString key;
                     QPoint world = mapToScene(e->pos());
-                    for(auto &it : m_pSettings->elements().keys()) {
-                        QRect r = m_pSettings->elements().value(it).m_Rect;
+                    for(auto &it : m_settings->elements().keys()) {
+                        QRect r = m_settings->elements().value(it).m_Rect;
                         if(r.contains(world)) {
                             key = it;
                             break;
@@ -155,8 +155,8 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
 
                     if(key.isEmpty()) {
                         selectElements({});
-                        m_StartPoint = world;
-                        m_CurrentPoint = world;
+                        m_startPoint = world;
+                        m_currentPoint = world;
                     } else {
                         UndoManager::instance()->push(new SelectSprites({key}, this));
                     }
@@ -166,21 +166,21 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
         case QEvent::MouseButtonRelease: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
             if(e->button() == Qt::LeftButton) {
-                if(m_Drag && m_pSettings && !m_List.isEmpty()) {
+                if(m_drag && m_settings && !m_list.isEmpty()) {
                     QList<TextureImportSettings::Element> temp;
-                    for(int i = 0; i < m_List.size(); i++) {
-                        temp.push_back(m_pSettings->elements().value(m_List.at(i)));
-                        m_pSettings->setElement(m_ElementList.at(i), m_List.at(i));
+                    for(int i = 0; i < m_list.size(); i++) {
+                        temp.push_back(m_settings->elements().value(m_list.at(i)));
+                        m_settings->setElement(m_elementList.at(i), m_list.at(i));
                     }
-                    UndoManager::instance()->push(new UpdateSprites(m_List, temp, this));
+                    UndoManager::instance()->push(new UpdateSprites(m_list, temp, this));
                 }
-                m_Drag = false;
-                if(m_CurrentPoint.x() != m_StartPoint.x() && m_CurrentPoint.y() != m_StartPoint.y()) {
+                m_drag = false;
+                if(m_currentPoint.x() != m_startPoint.x() && m_currentPoint.y() != m_startPoint.y()) {
                     TextureImportSettings::Element element;
-                    element.m_Rect = makeRect(m_StartPoint, m_CurrentPoint);
+                    element.m_Rect = makeRect(m_startPoint, m_currentPoint);
                     UndoManager::instance()->push(new CreateSprite(element, this));
                 }
-                m_StartPoint = m_CurrentPoint;
+                m_startPoint = m_currentPoint;
             }
         } break;
         case QEvent::MouseMove: {
@@ -190,16 +190,16 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
             Handles::s_Mouse = Vector2(screen.x, screen.y);
             Handles::s_Screen = m_screenSize;
 
-            if(m_pSettings && e->buttons() & Qt::LeftButton) {
-                m_Drag = true;
+            if(m_settings && e->buttons() & Qt::LeftButton) {
+                m_drag = true;
 
-                if(m_List.isEmpty()) {
-                    m_CurrentPoint = mapToScene(e->pos());
+                if(m_list.isEmpty()) {
+                    m_currentPoint = mapToScene(e->pos());
                 } else {
                     QPoint p = mapToScene(e->pos());
-                    int32_t dx = p.x() - m_Save.x();
-                    int32_t dy = p.y() - m_Save.y();
-                    TextureImportSettings::Element element = m_pSettings->elements().value(m_List.front());
+                    int32_t dx = p.x() - m_save.x();
+                    int32_t dy = p.y() - m_save.y();
+                    TextureImportSettings::Element element = m_settings->elements().value(m_list.front());
                     QRect rect = element.m_Rect;
 
                     if(Handles::s_Axes == (Handles::POINT_T | Handles::POINT_B | Handles::POINT_L | Handles::POINT_R)) {
@@ -234,10 +234,10 @@ void SpriteController::onInputEvent(QInputEvent *pe) {
                     }
 
                     element.m_Rect = makeRect(rect.topLeft(), rect.bottomRight());
-                    m_pSettings->setElement(element, m_List.front());
+                    m_settings->setElement(element, m_list.front());
                 }
             }
-            m_Save = mapToScene(e->pos());
+            m_save = mapToScene(e->pos());
         } break;
         default: break;
     }
@@ -250,8 +250,8 @@ QPoint SpriteController::mapToScene(const QPoint &pos) {
     world.x += SCALE * 0.5f;
     world.y += SCALE * 0.5f;
 
-    world.x = world.x / SCALE * m_Width;
-    world.y = world.y / SCALE * m_Height;
+    world.x = world.x / SCALE * m_width;
+    world.y = world.y / SCALE * m_height;
 
     return QPoint(world.x, world.y);
 }
@@ -299,10 +299,10 @@ QRect SpriteController::makeRect(const QPoint &p1, const QPoint &p2) {
 
 QRectF SpriteController::mapRect(const QRectF &rect) {
     QRectF result;
-    float width = (rect.width() / m_Width) * SCALE;
-    float height = (rect.height() / m_Height) * SCALE;
-    result.setX((rect.x() / m_Width - 0.5f) * SCALE + width * 0.5f);
-    result.setY((rect.y() / m_Height - 0.5f) * SCALE + height * 0.5f);
+    float width = (rect.width() / m_width) * SCALE;
+    float height = (rect.height() / m_height) * SCALE;
+    result.setX((rect.x() / m_width - 0.5f) * SCALE + width * 0.5f);
+    result.setY((rect.y() / m_height - 0.5f) * SCALE + height * 0.5f);
     result.setWidth(width);
     result.setHeight(height);
     return result;
@@ -310,78 +310,78 @@ QRectF SpriteController::mapRect(const QRectF &rect) {
 
 SelectSprites::SelectSprites(const QStringList &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
-    m_List(elements) {
+    m_list(elements) {
 }
 void SelectSprites::undo() {
     redo();
 }
 void SelectSprites::redo() {
-    QStringList temp = m_pController->selectedElements();
-    m_pController->selectElements(m_List);
-    m_List = temp;
+    QStringList temp = m_controller->selectedElements();
+    m_controller->selectElements(m_list);
+    m_list = temp;
 }
 
 CreateSprite::CreateSprite(const TextureImportSettings::Element &rect, SpriteController *ctrl, QUndoCommand *group) :
     UndoSprite(ctrl, QObject::tr("Create Sprite Element"), group),
-    m_Rect(rect) {
+    m_rect(rect) {
 }
 void CreateSprite::undo() {
-    TextureImportSettings *settings = m_pController->settings();
+    TextureImportSettings *settings = m_controller->settings();
     if(settings) {
         settings->removeElement(m_Uuid);
-        m_pController->selectElements(m_List);
+        m_controller->selectElements(m_list);
     }
 }
 void CreateSprite::redo() {
-    TextureImportSettings *settings = m_pController->settings();
+    TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        m_Uuid = settings->setElement(m_Rect, m_Uuid);
-        m_List = m_pController->selectedElements();
-        m_pController->selectElements({m_Uuid});
+        m_Uuid = settings->setElement(m_rect, m_Uuid);
+        m_list = m_controller->selectedElements();
+        m_controller->selectElements({m_Uuid});
     }
 }
 
 DestroySprites::DestroySprites(const QStringList &elements, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
-    m_List(elements) {
+    m_list(elements) {
 }
 void DestroySprites::undo() {
-    TextureImportSettings *settings = m_pController->settings();
+    TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        for(int32_t i = 0; i < m_Rects.size(); i++) {
-            settings->setElement(m_Rects.at(i), m_List.at(i));
+        for(int32_t i = 0; i < m_rects.size(); i++) {
+            settings->setElement(m_rects.at(i), m_list.at(i));
         }
-        m_pController->selectElements(m_List);
+        m_controller->selectElements(m_list);
     }
 }
 void DestroySprites::redo() {
-    TextureImportSettings *settings = m_pController->settings();
+    TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        m_Rects.clear();
-        for(auto &it : m_List) {
-            m_Rects.push_back(settings->elements().value(it));
+        m_rects.clear();
+        for(auto &it : m_list) {
+            m_rects.push_back(settings->elements().value(it));
             settings->removeElement(it);
         }
-        m_pController->selectElements({});
+        m_controller->selectElements({});
     }
 }
 
 UpdateSprites::UpdateSprites(const QStringList &elements, const QList<TextureImportSettings::Element> &list, SpriteController *ctrl, const QString &name, QUndoCommand *group) :
     UndoSprite(ctrl, name, group),
-    m_List(elements),
-    m_Rects(list) {
+    m_list(elements),
+    m_rects(list) {
 }
 void UpdateSprites::undo() {
     redo();
 }
 void UpdateSprites::redo() {
-    TextureImportSettings *settings = m_pController->settings();
+    TextureImportSettings *settings = m_controller->settings();
     if(settings) {
         QList<TextureImportSettings::Element> temp;
-        for(int32_t i = 0; i < m_Rects.size(); i++) {
-            temp.push_back(settings->elements().value(m_List.at(i)));
-            settings->setElement(m_Rects.at(i), m_List.at(i));
+        for(int32_t i = 0; i < m_rects.size(); i++) {
+            temp.push_back(settings->elements().value(m_list.at(i)));
+            settings->setElement(m_rects.at(i), m_list.at(i));
         }
-        m_Rects = temp;
+        m_rects = temp;
     }
 }

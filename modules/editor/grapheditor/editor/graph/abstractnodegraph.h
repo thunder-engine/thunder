@@ -33,6 +33,8 @@ public:
 
     AbstractNodeGraph(const AbstractNodeGraph &) { assert(false && "DONT EVER USE THIS"); }
 
+    GraphNode *rootNode() const;
+
     virtual GraphNode *nodeCreate(const QString &path, int &index) = 0;
     virtual void nodeDelete(GraphNode *node);
 
@@ -59,26 +61,23 @@ public:
     virtual QStringList nodeList() const;
 
     const NodeList &nodes() const;
-    Q_INVOKABLE QVariant links() const;
+    const LinkList &links() const;
 
-    Q_INVOKABLE void createNode(const QString &path, int x, int y);
-    Q_INVOKABLE void moveNode(const QVariant selection, const QVariant nodes);
-    Q_INVOKABLE void deleteNodes(QVariant list);
-    Q_INVOKABLE void copyNodes(QVariant list);
-    Q_INVOKABLE QVariant pasteNodes(int x, int y);
-    Q_INVOKABLE void createAndLink(const QString &path, int x, int y, int node, int port, bool out);
+    void createNode(const QString &path, int x, int y);
+    void deleteNodes(const vector<int32_t> &selection);
+    void copyNodes(const vector<int32_t> &selection);
+    QVariant pasteNodes(int x, int y);
+    void createAndLink(const QString &path, int x, int y, int node, int port, bool out);
 
-    Q_INVOKABLE void createLink(int sender, int oport, int receiver, int iport);
-    Q_INVOKABLE void deleteLink(int index);
+    void createLink(int sender, int oport, int receiver, int iport);
+    void deleteLink(int index);
 
-    Q_INVOKABLE void deleteLinksByPort(int node, int port);
+    void deleteLinksByPort(int node, int port);
 
     void reportMessage(GraphNode *node, const QString &text);
 
 signals:
     void graphUpdated();
-
-    void nodeMoved();
 
     void messageReported(int node, const QString &text);
 
@@ -102,9 +101,9 @@ protected:
     QVariantMap m_data;
 };
 
-class UndoScheme : public UndoCommand {
+class UndoGraph : public UndoCommand {
 public:
-    UndoScheme(AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent = nullptr) :
+    UndoGraph(AbstractNodeGraph *graph, const QString &name, QUndoCommand *parent = nullptr) :
             UndoCommand(name, graph, parent) {
         m_graph = graph;
     }
@@ -112,7 +111,7 @@ protected:
     AbstractNodeGraph *m_graph;
 };
 
-class CreateNode : public UndoScheme {
+class CreateNode : public UndoGraph {
 public:
     CreateNode(const QString &path, int x, int y, AbstractNodeGraph *graph, int node = -1, int port = -1, bool out = false, const QString &name = QObject::tr("Create Node"), QUndoCommand *parent = nullptr);
 
@@ -125,32 +124,21 @@ private:
     int m_fromNode;
     int m_fromPort;
     bool m_out;
-    QPoint m_point;
+    Vector2 m_point;
 };
 
-class MoveNode : public UndoScheme {
+class DeleteNodes : public UndoGraph {
 public:
-    MoveNode(const QVariant &selection, const QVariant &nodes, AbstractNodeGraph *graph, const QString &name = QObject::tr("Move Node"), QUndoCommand *parent = nullptr);
+    DeleteNodes(const vector<int32_t> &selection, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
 private:
-    QList<int> m_indices;
-    QList<QPoint> m_points;
-};
-
-class DeleteNodes : public UndoScheme {
-public:
-    DeleteNodes(const QVariant &selection, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Node"), QUndoCommand *parent = nullptr);
-
-    void undo() override;
-    void redo() override;
-private:
-    QList<int> m_indices;
+    vector<int32_t> m_indices;
     QJsonDocument m_document;
 };
 
-class PasteNodes : public UndoScheme {
+class PasteNodes : public UndoGraph {
 public:
     PasteNodes(const QString &data, int x, int y, AbstractNodeGraph *graph, const QString &name = QObject::tr("Paste Node"), QUndoCommand *parent = nullptr);
 
@@ -161,12 +149,13 @@ public:
 
 private:
     QJsonDocument m_document;
+    QVariantList m_list;
+
     int32_t m_x;
     int32_t m_y;
-    QVariantList m_list;
 };
 
-class CreateLink : public UndoScheme {
+class CreateLink : public UndoGraph {
 public:
     CreateLink(int sender, int oport, int receiver, int iport, AbstractNodeGraph *graph, const QString &name = QObject::tr("Create Link"), QUndoCommand *parent = nullptr);
 
@@ -182,7 +171,7 @@ private:
     int m_index;
 };
 
-class DeleteLink : public UndoScheme {
+class DeleteLink : public UndoGraph {
 public:
     DeleteLink(int index, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Link"), QUndoCommand *parent = nullptr);
 
@@ -198,7 +187,7 @@ private:
     int m_index;
 };
 
-class DeleteLinksByPort : public UndoScheme {
+class DeleteLinksByPort : public UndoGraph {
 public:
     DeleteLinksByPort(int node, int port, AbstractNodeGraph *graph, const QString &name = QObject::tr("Delete Links"), QUndoCommand *parent = nullptr);
 
@@ -209,7 +198,14 @@ private:
     int m_node;
     int m_port;
 
-    QVariantList m_links;
+    struct Link {
+        int sender;
+        int oport;
+        int receiver;
+        int iport;
+    };
+
+    list<Link> m_links;
 };
 
 #endif // ABSTRACTNODEGRAPH_H

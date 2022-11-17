@@ -10,19 +10,17 @@ public:
     MediaSystem();
     ~MediaSystem();
 
-    bool init();
+    bool init() override;
 
-    const char *name() const;
+    void update(SceneGraph *) override;
 
-    void update(SceneGraph *);
-
-    int threadPolicy() const;
+    int threadPolicy() const override;
 
 protected:
-    ALCdevice                  *m_pDevice;
-    ALCcontext                 *m_pContext;
+    ALCdevice  *m_device;
+    ALCcontext *m_context;
 
-    bool                        m_Inited;
+    bool m_inited;
 };
 
 #endif // MEDIASYSTEM_H

@@ -1,19 +1,18 @@
-#include <components/textinput.h>
+#include "components/gui/textinput.h"
 
-#include "components/frame.h"
-#include "components/label.h"
-#include "components/recttransform.h"
+#include "components/gui/frame.h"
+#include "components/gui/label.h"
+#include "components/gui/recttransform.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "components/actor.h"
+#include "components/textrender.h"
 
-#include <resources/mesh.h>
-#include <resources/font.h>
+#include "resources/mesh.h"
+#include "resources/font.h"
 
-#include <input.h>
-#include <timer.h>
-#include <commandbuffer.h>
-#include <utils.h>
+#include "input.h"
+#include "timer.h"
+#include "utils.h"
 
 #include <algorithm>
 
@@ -21,14 +20,14 @@ namespace {
     const char *gLabel = "Label";
     const char *gFrame = "Frame";
 
-    const float gCorner = 3.0f;
+    const float gCorner = 4.0f;
 }
 
 TextInput::TextInput() :
     m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
     m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
     m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
-    m_textColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f)),
+    m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
     m_background(nullptr),
     m_cursor(nullptr),
     m_label(nullptr),
@@ -113,7 +112,7 @@ void TextInput::update() {
         u32string u32 = Utils::utf8ToUtf32(text());
         bool isBackspace = Input::isKeyDown(Input::KEY_BACKSPACE);
         if(isBackspace || Input::isKeyDown(Input::KEY_DELETE)) {
-            if(isBackspace) {
+            if(isBackspace && m_cursorPosition > 0) {
                 m_cursorPosition--;
             }
             if(m_cursorPosition >= 0) {
@@ -131,8 +130,7 @@ void TextInput::update() {
             recalcCursor();
         } else {
             string sub = Input::inputString();
-            sub.erase(std::remove(sub.begin(), sub.end(), '\r'), sub.end());
-            sub.erase(std::remove(sub.begin(), sub.end(), '\n'), sub.end());
+            sub.erase(remove_if(sub.begin(), sub.end(), [](unsigned char c) { return (c >= 0 && c < 32);}), sub.end());
             if(!sub.empty()) {
                 u32string u32sub = Utils::utf8ToUtf32(sub);
                 u32.insert(m_cursorPosition, u32sub);

@@ -85,6 +85,9 @@ Qt::CursorShape EditorTool::cursor() const {
 }
 
 Vector3 EditorTool::objectPosition() {
+    if(m_Selected.size() == 1) {
+        return m_Selected.front().object->transform()->worldPosition();
+    }
     return objectBound().center;
 }
 

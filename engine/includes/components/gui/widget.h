@@ -2,11 +2,10 @@
 #define WIDGET_H
 
 #include "renderable.h"
-#include "gui.h"
 
 class RectTransform;
 
-class GUI_EXPORT Widget : public Renderable {
+class ENGINE_EXPORT Widget : public Renderable {
     A_REGISTER(Widget, Renderable, Components/UI)
 
     A_NOPROPERTIES()

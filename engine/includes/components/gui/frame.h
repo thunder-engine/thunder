@@ -3,7 +3,7 @@
 
 #include "image.h"
 
-class GUI_EXPORT Frame : public Image {
+class ENGINE_EXPORT Frame : public Image {
     A_REGISTER(Frame, Image, Components/UI)
 
     A_NOPROPERTIES()
@@ -19,12 +19,13 @@ public:
     float borderWidth() const;
     void setBorderWidth(float width);
 
+    Vector4 borderColor() const;
+    void setBorderColor(Vector4 color);
+
     void setMaterial(Material *material) override;
 
 protected:
     void boundChanged(const Vector2 &size) override;
-
-    void composeComponent() override;
 
 private:
     Vector4 m_borderColor;

@@ -17,14 +17,15 @@
 #include <cstring>
 
 namespace {
-const char *ambientOcclusion("graphics.ambientocclusion");
+    const char *ambientOcclusion("graphics.ambientocclusion");
 
-const char *ambientRadius("ambientOcclusion/Radius");
-const char *ambientBias("ambientOcclusion/Bias");
-const char *ambientPower("ambientOcclusion/Power");
+    const char *ambientRadius("ambientOcclusion/Radius");
+    const char *ambientBias("ambientOcclusion/Bias");
+    const char *ambientPower("ambientOcclusion/Power");
 };
 
-AmbientOcclusion::AmbientOcclusion() :
+AmbientOcclusion::AmbientOcclusion(PipelineContext *context) :
+        RenderPass(context),
         m_radius(0.2f),
         m_bias(0.025f),
         m_power(2.0f),
@@ -72,6 +73,8 @@ AmbientOcclusion::AmbientOcclusion() :
     m_resultTexture = Engine::objectCreate<Texture>();
     m_resultTexture->setFormat(Texture::R8);
 
+    m_resultTarget = Engine::objectCreate<RenderTarget>();
+
     m_blurTarget = Engine::objectCreate<RenderTarget>();
     m_blurTarget->setColorAttachment(0, m_resultTexture);
 
@@ -112,37 +115,36 @@ AmbientOcclusion::~AmbientOcclusion() {
 }
 
 Texture *AmbientOcclusion::draw(Texture *source, PipelineContext *context) {
-    if(m_enabled) {
-        CommandBuffer *buffer = context->buffer();
-        if(m_material) {
-            buffer->setViewport(0, 0, m_ssaoTexture->width(), m_ssaoTexture->height());
+    CommandBuffer *buffer = context->buffer();
+    if(m_material) {
+        buffer->setViewport(0, 0, m_ssaoTexture->width(), m_ssaoTexture->height());
 
-            buffer->setRenderTarget(m_ssaoTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
+        buffer->setRenderTarget(m_ssaoTarget);
+        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
 
-            context->setRenderTexture("SSAOSample", m_ssaoTexture);
-        }
-
-        if(m_blur) {
-            buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
-
-            buffer->setRenderTarget(m_blurTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blur);
-
-            context->setRenderTexture("SSAOBlur", m_resultTexture);
-        }
-
-        if(m_combine) {
-            m_resultTarget->setColorAttachment(0, source);
-
-            buffer->setViewport(0, 0, source->width(), source->height());
-
-            buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_combine);
-
-            context->setRenderTexture("SSAOCombine", source);
-        }
+        context->setRenderTexture("SSAOSample", m_ssaoTexture);
     }
+
+    if(m_blur) {
+        buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
+
+        buffer->setRenderTarget(m_blurTarget);
+        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_blur);
+
+        context->setRenderTexture("SSAOBlur", m_resultTexture);
+    }
+
+    if(m_combine) {
+        m_resultTarget->setColorAttachment(0, source);
+
+        buffer->setViewport(0, 0, source->width(), source->height());
+
+        buffer->setRenderTarget(m_resultTarget);
+        buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_combine);
+
+        context->setRenderTexture("SSAOCombine", source);
+    }
+
     return source;
 }
 

@@ -3,10 +3,11 @@
 
 #include "widget.h"
 
+class Image;
 class Frame;
 class Label;
 
-class GUI_EXPORT AbstractButton : public Widget {
+class ENGINE_EXPORT AbstractButton : public Widget {
     A_REGISTER(AbstractButton, Widget, General)
 
     A_PROPERTIES(
@@ -16,12 +17,14 @@ class GUI_EXPORT AbstractButton : public Widget {
         A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive),
         A_PROPERTYEX(Frame *, background, AbstractButton::background, AbstractButton::setBackground, "editor=Component"),
         A_PROPERTYEX(Label *, label, AbstractButton::label, AbstractButton::setLabel, "editor=Component"),
+        A_PROPERTYEX(Image *, icon, AbstractButton::icon, AbstractButton::setIcon, "editor=Component"),
         A_PROPERTY(float, fadeDuration, AbstractButton::fadeDuration, AbstractButton::setFadeDuration),
         A_PROPERTYEX(Vector4, highlightedColor, AbstractButton::highlightedColor, AbstractButton::setHighlightedColor, "editor=Color"),
         A_PROPERTYEX(Vector4, normalColor, AbstractButton::normalColor, AbstractButton::setNormalColor, "editor=Color"),
         A_PROPERTYEX(Vector4, pressedColor, AbstractButton::pressedColor, AbstractButton::setPressedColor, "editor=Color")
     )
     A_METHODS(
+        A_SIGNAL(AbstractButton::pressed),
         A_SIGNAL(AbstractButton::clicked)
     )
 
@@ -37,6 +40,12 @@ public:
 
     Label *label() const;
     void setLabel(Label *label);
+
+    Image *icon() const;
+    void setIcon(Image *image);
+
+    Vector2 iconSize() const;
+    void setIconSize(Vector2 size);
 
     float fadeDuration() const;
     void setFadeDuration(float duration);
@@ -62,6 +71,7 @@ public:
     bool isMirrored() const;
     virtual void setMirrored(bool flag);
 
+    void pressed();
     void clicked();
 
 protected:
@@ -74,8 +84,6 @@ protected:
 
     void update() override;
 
-    virtual void onClicked();
-
     virtual void checkStateSet();
 
 protected:
@@ -85,6 +93,9 @@ protected:
     Vector4 m_highlightedColor;
     Vector4 m_pressedColor;
 
+    Vector2 m_iconSize;
+
+    Image *m_icon;
     Label *m_label;
     Frame *m_background;
 

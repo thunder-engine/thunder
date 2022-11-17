@@ -23,81 +23,90 @@ public:
         m_b(true),
         m_a(true) {
 
-        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 1, "Input"));
-        m_ports.push_back(new NodePort(this, true, QMetaType::Void, 0, "Output"));
+        m_ports.push_back(NodePort(this, false, QMetaType::Void, 1, "Input", m_portColors[QMetaType::Void]));
+        m_ports.push_back(NodePort(this, true, QMetaType::Void, 0, "Output", m_portColors[QMetaType::Void]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        const AbstractNodeGraph::Link *l = graph->findLink(this, m_ports.front());
-        if(l) {
-            ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
 
-            int32_t type = 0;
-            int32_t index = node->build(code, stack, graph, *l, depth, type);
-            if(index >= 0) {
-                QString mask;
-                if(m_r && type > 0) {
-                    mask += "r";
-                    size = QMetaType::Double;
-                }
-                if(m_g && type > 1) {
-                    mask += "g";
-                    if(size == 0) {
-                        size = QMetaType::Double;
-                    } else {
-                        size = QMetaType::QVector2D;
-                    }
-                }
-                if(m_b && type > 2) {
-                    mask += "b";
-                    if(size == 0) {
-                        size = QMetaType::Double;
-                    } else if(size == QMetaType::Double) {
-                        size = QMetaType::QVector2D;
-                    } else {
-                        size++;
-                    }
-                }
-                if(m_a && type > 3) {
-                    mask += "a";
-                    if(size == 0) {
-                        size = QMetaType::Double;
-                    } else if(size == QMetaType::Double) {
-                        size = QMetaType::QVector2D;
-                    } else {
-                        size++;
-                    }
-                }
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        if(m_position == -1) {
+            const AbstractNodeGraph::Link *l = graph->findLink(this, &m_ports.front());
+            if(l) {
+                ShaderFunction *node = static_cast<ShaderFunction *>(l->sender);
 
-                QString value;
-                if(stack.isEmpty()) {
-                    value = QString("local%1.%2").arg(QString::number(index), mask);
+                int32_t l_type = 0;
+                int32_t index = node->build(code, stack, graph, *l, depth, l_type);
+                if(index >= 0) {
+                    QString mask;
+                    if(m_r && l_type > 0) {
+                        mask += "r";
+                        type = QMetaType::Float;
+                    }
+                    if(m_g && l_type > 1) {
+                        mask += "g";
+                        if(type == 0) {
+                            type = QMetaType::Float;
+                        } else {
+                            type = QMetaType::QVector2D;
+                        }
+                    }
+                    if(m_b && l_type > 2) {
+                        mask += "b";
+                        if(type == 0) {
+                            type = QMetaType::Float;
+                        } else if(type == QMetaType::Float) {
+                            type = QMetaType::QVector2D;
+                        } else {
+                            type++;
+                        }
+                    }
+                    if(m_a && l_type > 3) {
+                        mask += "a";
+                        if(type == 0) {
+                            type = QMetaType::Float;
+                        } else if(type == QMetaType::Float) {
+                            type = QMetaType::QVector2D;
+                        } else {
+                            type++;
+                        }
+                    }
+
+                    QString value;
+                    if(stack.isEmpty()) {
+                        value = QString("local%1.%2").arg(QString::number(index), mask);
+                    } else {
+                        value = QString("%1.%2").arg(stack.pop(), mask);
+                    }
+
+                    if(graph->isSingleConnection(link.oport)) {
+                        stack.push(value);
+                    } else {
+                        QString s_type;
+                        switch(type) {
+                            case QMetaType::QVector2D: s_type = "\tvec2";  break;
+                            case QMetaType::QVector3D: s_type = "\tvec3";  break;
+                            case QMetaType::QVector4D: s_type = "\tvec4";  break;
+                            default: s_type = "\tfloat"; break;
+                        }
+
+                        code.append(QString("%1 local%2 = %3;\n").arg(s_type, QString::number(depth), value));
+                    }
+
+                    m_type = type;
                 } else {
-                    value = QString("%1.%2").arg(stack.pop(), mask);
+                    return m_position;
                 }
-
-                if(graph->isSingleConnection(link.oport)) {
-                    stack.push(value);
-                } else {
-                    QString type;
-                    switch(size) {
-                        case QMetaType::QVector2D: type = "\tvec2";  break;
-                        case QMetaType::QVector3D: type = "\tvec3";  break;
-                        case QMetaType::QVector4D: type = "\tvec4";  break;
-                        default: type = "\tfloat"; break;
-                    }
-
-                    code.append(QString("%1 local%2 = %3;\n").arg(type, QString::number(depth), value));
-                }
-
             } else {
-                return -1;
+                graph->reportMessage(this, "Missing argument");
+                return m_position;
             }
         } else {
-            graph->reportMessage(this, "Missing argument");
-            return m_position;
+            type = m_type;
         }
-        return ShaderFunction::build(code, stack, graph, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
     }
 
     bool r() const { return m_r; }
@@ -127,18 +136,22 @@ public:
     Q_INVOKABLE Fresnel() :
         m_power(5.0f) {
 
-        m_ports.push_back(new NodePort(this, false, QMetaType::QVector3D, 1, "Normal"));
-        m_ports.push_back(new NodePort(this, false, QMetaType::QVector3D, 2, "View Dir"));
-        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 3, "Power"));
+        m_ports.push_back(NodePort(this, false, QMetaType::QVector3D, 1, "Normal", m_portColors[QMetaType::QVector3D]));
+        m_ports.push_back(NodePort(this, false, QMetaType::QVector3D, 2, "View Dir", m_portColors[QMetaType::QVector3D]));
+        m_ports.push_back(NodePort(this, false, QMetaType::Float, 3, "Power", m_portColors[QMetaType::Float]));
 
-        m_ports.push_back(new NodePort(this, true,  QMetaType::Double, 0, "Output"));
+        m_ports.push_back(NodePort(this, true,  QMetaType::Float, 0, "Output", m_portColors[QMetaType::Float]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *nl = graph->findLink(this, m_ports.at(0));
-            const AbstractNodeGraph::Link *vl = graph->findLink(this, m_ports.at(1));
-            const AbstractNodeGraph::Link *pl = graph->findLink(this, m_ports.at(2));
+            const AbstractNodeGraph::Link *nl = graph->findLink(this, port(1));
+            const AbstractNodeGraph::Link *vl = graph->findLink(this, port(2));
+            const AbstractNodeGraph::Link *pl = graph->findLink(this, port(3));
 
             QString normal("_n");
             if(nl) {
@@ -173,9 +186,9 @@ public:
                 uint32_t index = node->build(code, stack, graph, *pl, depth, type);
 
                 if(stack.isEmpty()) {
-                    power = convert("local" + QString::number(index), type, QMetaType::Double);
+                    power = convert("local" + QString::number(index), type, QMetaType::Float);
                 } else {
-                    power = convert(stack.pop(), type, QMetaType::Double);
+                    power = convert(stack.pop(), type, QMetaType::Float);
                 }
             }
 
@@ -183,7 +196,7 @@ public:
             code.append(QString("float local%1 = 0.04 + (1.0 - 0.04) * pow(1.0 - dot(%2, -%3), %4);\n").arg(QString::number(depth), normal, view, power));
         }
 
-        return ShaderFunction::build(code, stack, graph, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
     }
 
     float power() const {
@@ -206,25 +219,29 @@ class If : public ShaderFunction {
 
 public:
     Q_INVOKABLE If() {
-        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 1, a));
-        m_ports.push_back(new NodePort(this, false, QMetaType::Double, 2, b));
-        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 3, AGB));
-        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 4, AEB));
-        m_ports.push_back(new NodePort(this, false, QMetaType::Void, 5, BGA));
+        m_ports.push_back(NodePort(this, false, QMetaType::Float, 1, a,  m_portColors[QMetaType::Float]));
+        m_ports.push_back(NodePort(this, false, QMetaType::Float, 2, b,  m_portColors[QMetaType::Float]));
+        m_ports.push_back(NodePort(this, false, QMetaType::Void, 3, AGB, m_portColors[QMetaType::Void]));
+        m_ports.push_back(NodePort(this, false, QMetaType::Void, 4, AEB, m_portColors[QMetaType::Void]));
+        m_ports.push_back(NodePort(this, false, QMetaType::Void, 5, BGA, m_portColors[QMetaType::Void]));
 
-        m_ports.push_back(new NodePort(this, true,  QMetaType::Void, 0, "Output"));
+        m_ports.push_back(NodePort(this, true,  QMetaType::Void, 0, "Output", m_portColors[QMetaType::Void]));
     }
 
-    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &size) override {
-        const AbstractNodeGraph::Link *al  = graph->findLink(this, m_ports.at(1));
-        const AbstractNodeGraph::Link *bl  = graph->findLink(this, m_ports.at(2));
-        const AbstractNodeGraph::Link *agbl= graph->findLink(this, m_ports.at(3)); // AGB
-        const AbstractNodeGraph::Link *aebl= graph->findLink(this, m_ports.at(4)); // AEB
-        const AbstractNodeGraph::Link *bgal= graph->findLink(this, m_ports.at(5)); // BGA
+    Vector2 defaultSize() const override {
+        return Vector2(150.0f, 30.0f);
+    }
+
+    int32_t build(QString &code, QStack<QString> &stack, ShaderNodeGraph *graph, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+        const AbstractNodeGraph::Link *al  = graph->findLink(this, port(1));
+        const AbstractNodeGraph::Link *bl  = graph->findLink(this, port(2));
+        const AbstractNodeGraph::Link *agbl= graph->findLink(this, port(3)); // AGB
+        const AbstractNodeGraph::Link *aebl= graph->findLink(this, port(4)); // AEB
+        const AbstractNodeGraph::Link *bgal= graph->findLink(this, port(5)); // BGA
 
         if(al && agbl && bgal) {
             ShaderFunction *aNode = static_cast<ShaderFunction *>(al->sender);
-            uint32_t aIndex = aNode->build(code, stack, graph, *al, depth, size);
+            uint32_t aIndex = aNode->build(code, stack, graph, *al, depth, type);
             QString aValue;
             if(stack.isEmpty()) {
                 aValue = "local" + QString::number(aIndex);
@@ -235,7 +252,7 @@ public:
             QString bValue("0.0");
             if(bl) {
                 ShaderFunction *bNode = static_cast<ShaderFunction *>(bl->sender);
-                uint32_t bIndex = bNode->build(code, stack, graph, *bl, depth, size);
+                uint32_t bIndex = bNode->build(code, stack, graph, *bl, depth, type);
 
                 if(stack.isEmpty()) {
                     bValue = "local" + QString::number(bIndex);
@@ -245,7 +262,7 @@ public:
             }
 
             ShaderFunction *agbNode = static_cast<ShaderFunction *>(agbl->sender);
-            uint32_t agbIndex = agbNode->build(code, stack, graph, *agbl, depth, size);
+            uint32_t agbIndex = agbNode->build(code, stack, graph, *agbl, depth, type);
             QString agbValue;
             if(stack.isEmpty()) {
                 agbValue = "local" + QString::number(agbIndex);
@@ -256,7 +273,7 @@ public:
             QString aebValue;
             if(aebl) {
                 ShaderFunction *aebNode = static_cast<ShaderFunction *>(aebl->sender);
-                uint32_t aebIndex = aebNode->build(code, stack, graph, *aebl, depth, size);
+                uint32_t aebIndex = aebNode->build(code, stack, graph, *aebl, depth, type);
                 if(stack.isEmpty()) {
                     aebValue = "local" + QString::number(aebIndex);
                 } else {
@@ -265,7 +282,7 @@ public:
             }
 
             ShaderFunction *bgaNode = static_cast<ShaderFunction *>(bgal->sender);
-            uint32_t bgaIndex = bgaNode->build(code, stack, graph, *bgal, depth, size);
+            uint32_t bgaIndex = bgaNode->build(code, stack, graph, *bgal, depth, type);
             QString bgaValue;
             if(stack.isEmpty()) {
                 bgaValue = "local" + QString::number(bgaIndex);
@@ -277,7 +294,7 @@ public:
             if(aebl) {
                 args = QString("((abs(%1 - %2) > 0.00001) ? (%3) : %4)").arg(aValue, bValue, args, aebValue);
             }
-            switch(size) {
+            switch(type) {
                 case QMetaType::QVector2D: code.append("\tvec2"); break;
                 case QMetaType::QVector3D: code.append("\tvec3"); break;
                 case QMetaType::QVector4D: code.append("\tvec4"); break;
@@ -290,7 +307,7 @@ public:
             return m_position;
         }
 
-        return ShaderFunction::build(code, stack, graph, link, depth, size);
+        return ShaderFunction::build(code, stack, graph, link, depth, type);
     }
 };
 #endif // UTILS

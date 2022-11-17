@@ -2,18 +2,22 @@
 #define ANIMATIONBUILDER_H
 
 #include <editor/graph/abstractnodegraph.h>
-#include <editor/graph/graphnode.h>
 
 #include <QVariant>
 
 #include "assetmanager.h"
 
-#include <resources/animationclip.h>
-#include <resources/animationstatemachine.h>
+class EntryState : public GraphNode {
+    Q_OBJECT
+public:
+    Vector2 defaultSize() const override;
+    Vector4 color() const override;
 
-class Animator;
+    bool isState() const override;
 
-class BaseState : public GraphNode {
+};
+
+class BaseState : public EntryState {
     Q_OBJECT
     Q_CLASSINFO("Group", "States")
 
@@ -22,28 +26,13 @@ class BaseState : public GraphNode {
     Q_PROPERTY(bool Loop READ loop WRITE setLoop NOTIFY updated DESIGNABLE true USER true)
 
 public:
-    Q_INVOKABLE BaseState() {
-        m_path = Template("", MetaType::type<AnimationClip *>());
-        m_loop = false;
-    }
+    Q_INVOKABLE BaseState();
 
-    Template clip() const {
-        return m_path;
-    }
+    Template clip() const;
+    void setClip(const Template &path);
 
-    void setClip(const Template &path) {
-        m_path.path = path.path;
-        emit updated();
-    }
-
-    bool loop() const {
-        return m_loop;
-    }
-
-    void setLoop(bool loop) {
-        m_loop = loop;
-        emit updated();
-    }
+    bool loop() const;
+    void setLoop(bool loop);
 
 signals:
     void updated();
@@ -59,6 +48,7 @@ public:
     AnimationBuilderSettings();
 private:
     QString defaultIcon(QString) const Q_DECL_OVERRIDE;
+
 };
 
 class AnimationNodeGraph : public AbstractNodeGraph {

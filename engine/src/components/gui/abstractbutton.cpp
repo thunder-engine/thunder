@@ -1,19 +1,21 @@
-#include "components/abstractbutton.h"
+#include "components/gui/abstractbutton.h"
 
-#include "components/recttransform.h"
-#include "components/frame.h"
-#include "components/label.h"
+#include "components/gui/recttransform.h"
+#include "components/gui/frame.h"
+#include "components/gui/label.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "components/actor.h"
+#include "components/textrender.h"
 
-#include <input.h>
-#include <timer.h>
-#include <log.h>
+#include "input.h"
+#include "timer.h"
+#include "log.h"
 
 namespace  {
     const char *gTarget = "TargetGraphic";
     const char *gLabel = "Label";
+    const char *gImage = "Image";
+    const char *gIcon = "Icon";
     const char *gBackground = "Frame";
 }
 
@@ -22,6 +24,8 @@ AbstractButton::AbstractButton() :
     m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
     m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
     m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
+    m_iconSize(16.0f),
+    m_icon(nullptr),
     m_label(nullptr),
     m_background(nullptr),
     m_fadeDuration(0.2f),
@@ -70,8 +74,38 @@ void AbstractButton::setLabel(Label *label) {
         disconnect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         m_label = label;
         if(m_label) {
+            m_label->actor()->setParent(actor());
             connect(m_label, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         }
+    }
+}
+
+Image *AbstractButton::icon() const {
+    return m_icon;
+}
+void AbstractButton::setIcon(Image *image) {
+    if(m_icon != image) {
+        disconnect(m_icon, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        m_icon = image;
+        if(m_icon) {
+            m_icon->actor()->setParent(actor());
+            RectTransform *rect = m_icon->rectTransform();
+            if(rect) {
+                rect->setAnchors(Vector2(0.5f), Vector2(0.5f));
+                rect->setSize(m_iconSize);
+            }
+            connect(m_icon, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        }
+    }
+}
+
+Vector2 AbstractButton::iconSize() const {
+    return m_iconSize;
+}
+void AbstractButton::setIconSize(Vector2 size) {
+    m_iconSize = size;
+    if(m_icon) {
+        m_icon->rectTransform()->setSize(m_iconSize);
     }
 }
 
@@ -168,11 +202,17 @@ void AbstractButton::update() {
         color = m_highlightedColor;
         if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
             m_currentFade = 0.0f;
-            onClicked();
+
+            if(m_checkable) {
+                setChecked(!m_checked);
+            }
+            emitSignal(_SIGNAL(pressed()));
         }
 
-        if(Input::isMouseButtonUp(0)) {
+        if(Input::isMouseButtonUp(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED)) {
             m_currentFade = 0.0f;
+
+            emitSignal(_SIGNAL(clicked()));
         }
 
         if(Input::isMouseButton(0) || Input::touchCount() > 0) {
@@ -190,13 +230,6 @@ void AbstractButton::update() {
     }
 
     Widget::update();
-}
-
-void AbstractButton::onClicked() {
-    if(m_checkable) {
-        setChecked(!m_checked);
-    }
-    emitSignal(_SIGNAL(clicked()));
 }
 
 void AbstractButton::checkStateSet() {
@@ -231,6 +264,12 @@ void AbstractButton::loadUserData(const VariantMap &data) {
             Object *object = Engine::findObject(uuid, Engine::findRoot(this));
             setLabel(dynamic_cast<Label *>(object));
         }
+        it = data.find(gIcon);
+        if(it != data.end()) {
+            uint32_t uuid = uint32_t((*it).second.toInt());
+            Object *object = Engine::findObject(uuid, Engine::findRoot(this));
+            setIcon(dynamic_cast<Image *>(object));
+        }
     }
 }
 /*!
@@ -244,6 +283,9 @@ VariantMap AbstractButton::saveUserData() const {
         }
         if(m_label) {
             result[gLabel] = int(m_label->uuid());
+        }
+        if(m_icon) {
+            result[gIcon] = int(m_icon->uuid());
         }
     }
     return result;
@@ -264,4 +306,9 @@ void AbstractButton::composeComponent() {
     label->setAlign(label->align() | Alignment::Center);
     setLabel(label);
     setText("Text");
+
+    // Add icon
+    Actor *icon = Engine::composeActor(gImage, gImage, actor());
+    Image *image = static_cast<Image *>(icon->component(gImage));
+    setIcon(image);
 }

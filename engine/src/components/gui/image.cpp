@@ -1,10 +1,10 @@
-#include "components/image.h"
+#include "components/gui/image.h"
 
-#include "components/recttransform.h"
+#include "components/gui/recttransform.h"
 
-#include <resources/mesh.h>
-#include <resources/material.h>
-#include <resources/sprite.h>
+#include "resources/mesh.h"
+#include "resources/material.h"
+#include "resources/sprite.h"
 
 #include <components/actor.h>
 #include <components/spriterender.h>
@@ -51,7 +51,7 @@ public:
 
 Image::Image() :
     m_color(1.0f),
-    m_customMesh(Engine::objectCreate<Mesh>("")),
+    m_mesh(Engine::objectCreate<Mesh>("")),
     m_material(nullptr),
     m_customMaterial(nullptr),
     m_sprite(nullptr),
@@ -75,15 +75,18 @@ Image::~Image() {
     \internal
 */
 void Image::draw(CommandBuffer &buffer, uint32_t layer) {
-    Actor *a = actor();
-    if(m_customMesh) {
+    if(m_mesh) {
         if(layer & CommandBuffer::RAYCAST) {
-            buffer.setColor(CommandBuffer::idToColor(a->uuid()));
+            buffer.setColor(CommandBuffer::idToColor(actor()->uuid()));
         }
 
-        buffer.drawMesh(rectTransform()->worldTransform(),
-                        m_customMesh,
-                        0, layer, (m_customMaterial) ? m_customMaterial : m_material);
+        Matrix4 mat(rectTransform()->worldTransform());
+        Lod *lod = m_mesh->lod(0);
+        Vector3Vector &verts = lod->vertices();
+        mat[12] -= verts[0].x;
+        mat[13] -= verts[0].y;
+        buffer.drawMesh(mat, m_mesh, 0, layer,
+                        (m_customMaterial) ? m_customMaterial : m_material);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -198,15 +201,6 @@ void Image::boundChanged(const Vector2 &size) {
 /*!
     \internal
 */
-void Image::composeComponent() {
-    Widget::composeComponent();
-
-    setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
-    setItem("Rectangle");
-}
-/*!
-    \internal
-*/
 void Image::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
@@ -247,7 +241,7 @@ VariantMap Image::saveUserData() const {
     \internal
 */
 void Image::composeMesh() {
-    if(m_customMesh) {
-        SpriteRender::composeMesh(m_sprite, m_hash, m_customMesh, m_meshSize, m_drawMode, false, 100.0f);
+    if(m_mesh) {
+        SpriteRender::composeMesh(m_sprite, m_hash, m_mesh, m_meshSize, m_drawMode, false, 100.0f);
     }
 }

@@ -1,6 +1,6 @@
-#include "components/frame.h"
+#include "components/gui/frame.h"
 
-#include <resources/material.h>
+#include "resources/material.h"
 
 namespace {
     const char *gBorderColor = "uni.borderColor";
@@ -40,6 +40,16 @@ void Frame::setBorderWidth(float width) {
     }
 }
 
+Vector4 Frame::borderColor() const {
+    return m_borderColor;
+}
+void Frame::setBorderColor(Vector4 color) {
+    m_borderColor = color;
+    if(m_customMaterial) {
+        m_customMaterial->setVector4(gBorderColor, &m_borderColor);
+    }
+}
+
 void Frame::setMaterial(Material *material) {
     Image::setMaterial(material);
     if(m_customMaterial) {
@@ -63,8 +73,4 @@ void Frame::boundChanged(const Vector2 &size) {
         float width = m_borderWidth / m_meshSize.y;
         m_customMaterial->setFloat(gBorderWidth, &width);
     }
-}
-
-void Frame::composeComponent() {
-    Widget::composeComponent();
 }

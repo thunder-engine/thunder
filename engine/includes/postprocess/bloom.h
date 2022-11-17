@@ -9,7 +9,7 @@
 
 #define BLOOM_PASSES 5
 
-class Engine;
+class RenderTarget;
 
 class Bloom : public RenderPass {
     struct BloomPass {
@@ -23,7 +23,7 @@ class Bloom : public RenderPass {
     };
 
 public:
-    Bloom();
+    Bloom(PipelineContext *context);
 
 private:
     Texture *draw(Texture *source, PipelineContext *context) override;
@@ -41,6 +41,10 @@ private:
     int32_t m_height;
 
     BloomPass m_bloomPasses[BLOOM_PASSES];
+
+    MaterialInstance *m_material;
+
+    RenderTarget *m_resultTarget;
 
 };
 

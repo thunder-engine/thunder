@@ -10,7 +10,7 @@ class Sprite;
 
 class ImagePrivate;
 
-class GUI_EXPORT Image : public Widget {
+class ENGINE_EXPORT Image : public Widget {
     A_REGISTER(Image, Widget, Components/UI)
 
     A_PROPERTIES(
@@ -62,12 +62,10 @@ protected:
 
     void boundChanged(const Vector2 &size) override;
 
-    void composeComponent() override;
-
     void composeMesh();
 
 protected:
-    Mesh *m_customMesh;
+    Mesh *m_mesh;
 
     MaterialInstance *m_material;
     MaterialInstance *m_customMaterial;

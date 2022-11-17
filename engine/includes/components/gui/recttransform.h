@@ -2,11 +2,11 @@
 #define RECTTRANSFORM_H
 
 #include "transform.h"
-#include "gui.h"
 
 class Widget;
+class Layout;
 
-class GUI_EXPORT RectTransform : public Transform {
+class ENGINE_EXPORT RectTransform : public Transform {
     A_REGISTER(RectTransform, Transform, General)
 
     A_PROPERTIES(
@@ -49,21 +49,22 @@ class GUI_EXPORT RectTransform : public Transform {
     void subscribe(Widget *widget);
     void unsubscribe(Widget *widget);
 
-    void setParentTransform(Transform *parent, bool force = false) override;
+    Layout *layout() const;
+    void setLayout(Layout *layout);
 
-    Matrix4 &worldTransform() const override;
+    Matrix4 worldTransform() const override;
 
 private:
     void setDirty() override;
 
-    void cleanDirty() const;
+    void cleanDirty() const override;
 
     void notify();
 
     void recalcSize();
 
 private:
-    mutable Matrix4 m_worldTransform;
+    friend class Layout;
 
     Vector2 m_bottomLeft;
     Vector2 m_topRight;
@@ -73,9 +74,8 @@ private:
     Vector2 m_size;
     list<Widget *> m_subscribers;
 
-    RectTransform *m_parent;
-
-    mutable bool m_dirty;
+    Layout *m_layout;
+    Layout *m_attachedLayout;
 
 };
 

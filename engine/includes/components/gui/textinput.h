@@ -6,10 +6,7 @@
 class Frame;
 class Label;
 
-class Mesh;
-class MaterialInstance;
-
-class GUI_EXPORT TextInput : public Widget {
+class ENGINE_EXPORT TextInput : public Widget {
     A_REGISTER(TextInput, Widget, Components/UI)
 
 public:

@@ -54,6 +54,7 @@
 #include "systems/rendersystem.h"
 
 #include "pipelinecontext.h"
+#include "commandbuffer.h"
 
 #include "log.h"
 
@@ -288,14 +289,14 @@ bool Engine::start() {
 
     for(auto it : EnginePrivate::m_pool) {
         if(!it->init()) {
-            Log(Log::ERR) << "Failed to initialize system:" << it->name();
+            Log(Log::ERR) << "Failed to initialize system:" << it->name().c_str();
             p_ptr->m_platform->stop();
             return false;
         }
     }
     for(auto it : EnginePrivate::m_serial) {
         if(!it->init()) {
-            Log(Log::ERR) << "Failed to initialize system:" << it->name();
+            Log(Log::ERR) << "Failed to initialize system:" << it->name().c_str();
             p_ptr->m_platform->stop();
             return false;
         }
@@ -321,6 +322,7 @@ bool Engine::start() {
 
 #ifndef THUNDER_MOBILE
     while(p_ptr->m_platform->isValid()) {
+        Timer::update();
         update();
     }
     p_ptr->m_platform->stop();
@@ -351,8 +353,6 @@ void Engine::resize() {
 */
 void Engine::update() {
     PROFILE_FUNCTION();
-
-    Timer::update();
 
     Camera *camera = Camera::current();
     if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {

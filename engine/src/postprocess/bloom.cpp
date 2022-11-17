@@ -14,13 +14,14 @@
 #include <cstring>
 
 namespace {
-const char *bloom("graphics.bloom");
+    const char *bloom("graphics.bloom");
 
-const char *bloomThreshold("bloom/Threshold");
+    const char *bloomThreshold("bloom/Threshold");
 };
 
 
-Bloom::Bloom() :
+Bloom::Bloom(PipelineContext *context) :
+        RenderPass(context),
         m_threshold(1.0f),
         m_width(0),
         m_height(0) {
@@ -52,7 +53,7 @@ Bloom::Bloom() :
 }
 
 Texture *Bloom::draw(Texture *source, PipelineContext *context) {
-    if(m_enabled && m_material) {
+    if(m_material) {
         CommandBuffer *buffer = context->buffer();
 
         for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
@@ -63,7 +64,7 @@ Texture *Bloom::draw(Texture *source, PipelineContext *context) {
             m_resultTarget->setColorAttachment(0, m_bloomPasses[i].m_downTexture);
             buffer->setRenderTarget(m_resultTarget);
 
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
         }
         buffer->setViewport(0, 0, source->width(), source->height());
 

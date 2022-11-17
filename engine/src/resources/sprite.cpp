@@ -16,17 +16,17 @@ typedef unordered_map<int, Mesh *> Meshes;
 class SpritePrivate {
 public:
     SpritePrivate() :
-        m_pTexture(nullptr),
-        m_pRoot(new AtlasNode) {
+        m_texture(nullptr),
+        m_root(new AtlasNode) {
 
     }
-    Meshes m_Meshes;
+    Meshes m_meshes;
 
-    Texture *m_pTexture;
+    Texture *m_texture;
 
-    Textures m_Sources;
+    Textures m_sources;
 
-    AtlasNode *m_pRoot;
+    AtlasNode *m_root;
 };
 
 /*!
@@ -41,8 +41,8 @@ public:
 Sprite::Sprite() :
         p_ptr(new SpritePrivate) {
 
-    p_ptr->m_pTexture = Engine::objectCreate<Texture>();
-    p_ptr->m_pTexture->setFiltering(Texture::Bilinear);
+    p_ptr->m_texture = Engine::objectCreate<Texture>();
+    p_ptr->m_texture->setFiltering(Texture::Bilinear);
     resize(2048, 2048);
 }
 
@@ -60,15 +60,15 @@ Sprite::~Sprite() {
 void Sprite::clearAtlas() {
     PROFILE_FUNCTION();
 
-    for(auto it : p_ptr->m_Meshes) {
+    for(auto it : p_ptr->m_meshes) {
         Engine::unloadResource(it.second);
     }
-    p_ptr->m_Meshes.clear();
+    p_ptr->m_meshes.clear();
 
-    for(auto it : p_ptr->m_Sources) {
+    for(auto it : p_ptr->m_sources) {
         Engine::unloadResource(it);
     }
-    p_ptr->m_Sources.clear();
+    p_ptr->m_sources.clear();
 }
 /*!
     Adds new sub \a texture as element to current sprite sheet.
@@ -80,7 +80,7 @@ void Sprite::clearAtlas() {
 int Sprite::addElement(Texture *texture) {
     PROFILE_FUNCTION();
 
-    p_ptr->m_Sources.push_back(texture);
+    p_ptr->m_sources.push_back(texture);
 
     Lod lod;
     lod.setVertices({Vector3(0.0f, 0.0f, 0.0f),
@@ -93,8 +93,8 @@ int Sprite::addElement(Texture *texture) {
     Mesh *mesh = Engine::objectCreate<Mesh>();
     mesh->addLod(&lod);
 
-    int index = (p_ptr->m_Sources.size() - 1);
-    p_ptr->m_Meshes[index] = mesh;
+    int index = (p_ptr->m_sources.size() - 1);
+    p_ptr->m_meshes[index] = mesh;
 
     return index;
 }
@@ -107,30 +107,30 @@ int Sprite::addElement(Texture *texture) {
 void Sprite::pack(int padding) {
     PROFILE_FUNCTION();
 
-    for(size_t i = 0; i < p_ptr->m_Sources.size(); i++) {
-        Texture *it = p_ptr->m_Sources[i];
+    for(size_t i = 0; i < p_ptr->m_sources.size(); i++) {
+        Texture *it = p_ptr->m_sources[i];
         Mesh *m = mesh(i);
         Lod *lod = m->lod(0);
 
         int32_t width  = (it->width() + padding * 2);
         int32_t height = (it->height() + padding * 2);
 
-        AtlasNode *n = p_ptr->m_pRoot->insert(width, height);
+        AtlasNode *n = p_ptr->m_root->insert(width, height);
         if(n && lod) {
             n->fill = true;
             int32_t w = n->w - padding * 2;
             int32_t h = n->h - padding * 2;
 
             Vector4 uv;
-            uv.x = n->x / static_cast<float>(p_ptr->m_pRoot->w);
-            uv.y = (n->y + padding) / static_cast<float>(p_ptr->m_pRoot->h);
-            uv.z = uv.x + w / static_cast<float>(p_ptr->m_pRoot->w);
-            uv.w = uv.y + h / static_cast<float>(p_ptr->m_pRoot->h);
+            uv.x = n->x / static_cast<float>(p_ptr->m_root->w);
+            uv.y = (n->y + padding) / static_cast<float>(p_ptr->m_root->h);
+            uv.z = uv.x + w / static_cast<float>(p_ptr->m_root->w);
+            uv.w = uv.y + h / static_cast<float>(p_ptr->m_root->h);
 
             int8_t *src = &(it->surface(0)[0])[0];
-            int8_t *dst = &(p_ptr->m_pTexture->surface(0)[0])[0];
+            int8_t *dst = &(p_ptr->m_texture->surface(0)[0])[0];
             for(int32_t y = 0; y < h; y++) {
-                memcpy(&dst[(y + n->y + padding) * p_ptr->m_pRoot->w + n->x], &src[y * w], w);
+                memcpy(&dst[(y + n->y + padding) * p_ptr->m_root->w + n->x], &src[y * w], w);
             }
 
             lod->setUv0({Vector2(uv.x, uv.y),
@@ -138,12 +138,12 @@ void Sprite::pack(int padding) {
                          Vector2(uv.z, uv.w),
                          Vector2(uv.x, uv.w)});
         } else {
-            resize(p_ptr->m_pRoot->w * 2, p_ptr->m_pRoot->h * 2);
+            resize(p_ptr->m_root->w * 2, p_ptr->m_root->h * 2);
             pack(padding);
         }
     }
 
-    p_ptr->m_pTexture->setDirty();
+    p_ptr->m_texture->setDirty();
 }
 
 /*!
@@ -153,14 +153,14 @@ void Sprite::pack(int padding) {
 void Sprite::resize(int32_t width, int32_t height) {
     PROFILE_FUNCTION();
 
-    if(p_ptr->m_pRoot) {
-        delete p_ptr->m_pRoot;
-        p_ptr->m_pRoot = new AtlasNode;
+    if(p_ptr->m_root) {
+        delete p_ptr->m_root;
+        p_ptr->m_root = new AtlasNode;
     }
-    p_ptr->m_pRoot->w = width;
-    p_ptr->m_pRoot->h = height;
+    p_ptr->m_root->w = width;
+    p_ptr->m_root->h = height;
 
-    p_ptr->m_pTexture->resize(width, height);
+    p_ptr->m_texture->resize(width, height);
 }
 /*!
     \internal
@@ -173,8 +173,8 @@ void Sprite::loadUserData(const VariantMap &data) {
             Object *object = ObjectSystem::toObject(it->second);
             Texture *texture = dynamic_cast<Texture *>(object);
             if(texture) {
-                Engine::unloadResource(p_ptr->m_pTexture);
-                p_ptr->m_pTexture = texture;
+                Engine::unloadResource(p_ptr->m_texture);
+                p_ptr->m_texture = texture;
             }
         }
     }
@@ -199,15 +199,15 @@ void Sprite::loadUserData(const VariantMap &data) {
 VariantMap Sprite::saveUserData() const {
     VariantMap result;
 
-    Variant data = ObjectSystem::toVariant(p_ptr->m_pTexture);
+    Variant data = ObjectSystem::toVariant(p_ptr->m_texture);
     if(data.isValid()) {
         result[DATA] = data;
     }
 
-    if(!p_ptr->m_Meshes.empty()) {
+    if(!p_ptr->m_meshes.empty()) {
         VariantList meshes;
 
-        for(auto it : p_ptr->m_Meshes) {
+        for(auto it : p_ptr->m_meshes) {
             VariantList mesh;
             mesh.push_back(it.first);
             mesh.push_back(ObjectSystem::toVariant(it.second));
@@ -224,8 +224,8 @@ VariantMap Sprite::saveUserData() const {
 Mesh *Sprite::mesh(int key) const {
     PROFILE_FUNCTION();
 
-    auto it = p_ptr->m_Meshes.find(key);
-    if(it != p_ptr->m_Meshes.end()) {
+    auto it = p_ptr->m_meshes.find(key);
+    if(it != p_ptr->m_meshes.end()) {
         return it->second;
     }
     return nullptr;
@@ -237,10 +237,10 @@ Mesh *Sprite::mesh(int key) const {
 void Sprite::setMesh(int key, Mesh *mesh) {
     PROFILE_FUNCTION();
 
-    if(p_ptr->m_Meshes[key]) {
-        Engine::unloadResource(p_ptr->m_Meshes[key]);
+    if(p_ptr->m_meshes[key]) {
+        Engine::unloadResource(p_ptr->m_meshes[key]);
     }
-    p_ptr->m_Meshes[key] = mesh;
+    p_ptr->m_meshes[key] = mesh;
 }
 /*!
     Returns a sprite sheet texture.
@@ -248,7 +248,7 @@ void Sprite::setMesh(int key, Mesh *mesh) {
 Texture *Sprite::texture() const {
     PROFILE_FUNCTION();
 
-    return p_ptr->m_pTexture;
+    return p_ptr->m_texture;
 }
 /*!
     Sets a new sprite sheet \a texture.
@@ -256,8 +256,8 @@ Texture *Sprite::texture() const {
 void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();
 
-    if(p_ptr->m_pTexture) {
-        Engine::unloadResource(p_ptr->m_pTexture);
+    if(p_ptr->m_texture) {
+        Engine::unloadResource(p_ptr->m_texture);
     }
-    p_ptr->m_pTexture = texture;
+    p_ptr->m_texture = texture;
 }
