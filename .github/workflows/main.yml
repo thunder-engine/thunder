@@ -132,7 +132,7 @@ jobs:
     
   osx:
     name: MacOS
-    runs-on: macos-latest
+    runs-on: macos-11
     needs: version
     
     env:
@@ -211,7 +211,7 @@ jobs:
     
   tvos:
     name: tvOS
-    runs-on: macos-11
+    runs-on: macos-latest
     needs: version
 
     env:
