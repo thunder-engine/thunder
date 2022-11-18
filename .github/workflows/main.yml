@@ -15,7 +15,7 @@ on:
     - '.travis.yml'
 
 env:
-  QT_VERSION: 5.12.10
+  QT_VERSION: 5.15.7
   QTCREATOR_VERSION: 6.0.2
   VERSION: 2022.2
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
