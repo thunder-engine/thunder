@@ -23,7 +23,8 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
         "../thirdparty/zlib/src",
-        "../thirdparty/quazip/src"
+        "../thirdparty/quazip/src",
+        "../modules/editor/grapheditor"
     ]
 
     QtApplication {
@@ -36,6 +37,7 @@ Project {
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "graph-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg", "xml"]; }
 
         bundle.isBundle: false

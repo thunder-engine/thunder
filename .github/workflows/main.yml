@@ -15,7 +15,7 @@ on:
     - '.travis.yml'
 
 env:
-  QT_VERSION: 5.12.10
+  QT_VERSION: 5.12.12
   QTCREATOR_VERSION: 5.0.3
   VERSION: 2022.2
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
@@ -132,12 +132,13 @@ jobs:
     
   osx:
     name: MacOS
-    runs-on: macos-latest
+    runs-on: macos-11
     needs: version
     
     env:
         QT_INSTALL_DIR: ~/Qt
         QT_BIN: ${QT_INSTALL_DIR}/${QT_VERSION}/clang_64/bin
+        QTCREATOR_VERSION: 7.0.2
     
     steps:
     - name: Checkout repository
@@ -178,6 +179,9 @@ jobs:
     runs-on: macos-latest
     needs: version
 
+    env:
+        QTCREATOR_VERSION: 7.0.2
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -209,6 +213,9 @@ jobs:
     name: tvOS
     runs-on: macos-latest
     needs: version
+
+    env:
+        QTCREATOR_VERSION: 7.0.2
 
     steps:
     - name: Checkout repository

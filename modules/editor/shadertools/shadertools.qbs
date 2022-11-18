@@ -21,7 +21,8 @@ Project {
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/spirvcross/src",
-        "../../../thirdparty/glsl"
+        "../../../thirdparty/glsl",
+        "../../../modules/editor/grapheditor"
     ]
 
     DynamicLibrary {
@@ -34,10 +35,15 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "glsl" }
         Depends { name: "spirvcross" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "quickwidgets", "xml"]; }
+        Depends { name: "graph-editor" }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "xml"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE"]
+        cpp.defines: {
+            var result  = shadertools.defines
+            result.push("SHARED_DEFINE")
+            return result
+        }
         cpp.includePaths: shadertools.incPaths
         cpp.cxxLanguageVersion: shadertools.languageVersion
         cpp.cxxStandardLibrary: shadertools.standardLibrary

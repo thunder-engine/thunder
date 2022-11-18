@@ -60,6 +60,8 @@ public:
 
     Camera *camera() const { return m_activeCamera; }
 
+    bool cameraInMove() const { return m_cameraInMove; }
+
     virtual void createMenu(QMenu *menu);
 
     ViewSide viewSide() const { return m_viewSide; }
@@ -103,6 +105,8 @@ protected:
     bool m_cameraFree;
     bool m_cameraFreeSaved;
     bool m_rotationTransfer;
+
+    bool m_cameraInMove;
 
     Vector2 m_screenSize;
 

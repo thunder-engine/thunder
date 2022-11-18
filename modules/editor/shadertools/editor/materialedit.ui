@@ -52,7 +52,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="Viewport" name="preview" native="true"/>
-     <widget class="SchemeView" name="schemeWidget" native="true"/>
+     <widget class="GraphView" name="schemeWidget" native="true"/>
     </widget>
    </item>
   </layout>
@@ -89,9 +89,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>SchemeView</class>
+   <class>GraphView</class>
    <extends>QWidget</extends>
-   <header>editor/scheme/schemeview.h</header>
+   <header>editor/graph/graphview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

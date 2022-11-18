@@ -18,8 +18,6 @@ public:
 
     bool init() override;
 
-    const char *name() const override;
-
     void update(SceneGraph *) override;
 
     int threadPolicy() const override;

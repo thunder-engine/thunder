@@ -36,7 +36,8 @@ namespace {
 
 class Outline : public RenderPass {
 public:
-    Outline() :
+    Outline(PipelineContext *context) :
+            RenderPass(context),
             m_width(1.0f),
             m_outlineMap(Engine::objectCreate<Texture>()),
             m_outlineDepth(Engine::objectCreate<Texture>()),
@@ -46,6 +47,7 @@ public:
         m_resultTexture = Engine::objectCreate<Texture>();
         m_resultTexture->setFormat(Texture::RGBA8);
 
+        m_resultTarget = Engine::objectCreate<RenderTarget>();
         m_resultTarget->setColorAttachment(0, m_resultTexture);
 
         m_outlineDepth->setFormat(Texture::Depth);
@@ -66,8 +68,28 @@ public:
         SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
     }
 
+    void loadSettings() {
+        QColor color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
+        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+        m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
+
+        if(m_material) {
+            m_material->setFloat("uni.width", &m_width);
+            m_material->setVector4("uni.color", &m_color);
+        }
+    }
+
+    void setController(CameraCtrl *controller) {
+        m_controller = controller;
+    }
+
+private:
+    const char *name() const override {
+        return "Outline";
+    }
+
     Texture *draw(Texture *source, PipelineContext *context) override {
-        if(m_enabled && m_material) {
+        if(m_material) {
             m_material->setTexture("rgbMap", source);
 
             CommandBuffer *buffer = context->buffer();
@@ -86,7 +108,7 @@ public:
             context->drawRenderers(CommandBuffer::RAYCAST, filter);
 
             buffer->setRenderTarget(m_resultTarget);
-            buffer->drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_material);
+            buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
 
             return m_resultTexture;
         }
@@ -101,26 +123,10 @@ public:
         m_outlineDepth->setWidth(width);
         m_outlineDepth->setHeight(height);
 
+        m_resultTexture->setWidth(width);
+        m_resultTexture->setHeight(height);
+
         RenderPass::resize(width, height);
-    }
-
-    const char *name() const override {
-        return "Outline";
-    }
-
-    void loadSettings() {
-        QColor color = SettingsManager::instance()->property(qPrintable(outlineColor)).value<QColor>();
-        m_color = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-        m_width = SettingsManager::instance()->property(qPrintable(outlineWidth)).toFloat();
-
-        if(m_material) {
-            m_material->setFloat("uni.width", &m_width);
-            m_material->setVector4("uni.color", &m_color);
-        }
-    }
-
-    void setController(CameraCtrl *controller) {
-        m_controller = controller;
     }
 
 protected:
@@ -130,19 +136,25 @@ protected:
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;
+    Texture *m_resultTexture;
 
     RenderTarget *m_outlineTarget;
+    RenderTarget *m_resultTarget;
+
+    MaterialInstance *m_material;
 
     CameraCtrl *m_controller;
 
 };
 
-class GizmoRender : public RenderPass {
+class GridRender : public RenderPass {
 public:
-    GizmoRender() :
+    GridRender(PipelineContext *context) :
+            RenderPass(context),
             m_controller(nullptr),
             m_plane(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
-            m_grid(nullptr) {
+            m_grid(nullptr),
+            m_scale(1.0f) {
 
         Material *m = Engine::loadResource<Material>(".embedded/grid.shader");
         if(m) {
@@ -161,93 +173,85 @@ public:
         m_gridColor = Vector4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }
 
-private:
-    uint32_t layer() const override {
-        return CommandBuffer::UI;
+    float scale() const {
+        return m_scale;
     }
 
+private:
     Texture *draw(Texture *source, PipelineContext *context) override {
         if(context->debugTexture() == nullptr) {
-            // Draw handles
-            CommandBuffer *buffer = context->buffer();
-            drawGrid(*Camera::current(), buffer);
+            Camera *camera = Camera::current();
 
-            Handles::beginDraw(buffer);
-            if(m_controller) {
-                m_controller->drawHandles();
+            Transform *t = camera->actor()->transform();
+            Vector3 cam = t->position();
+            Vector3 pos(cam.x, 0.0f, cam.z);
+
+            Quaternion rot;
+
+            m_scale = 1.0f;
+            float width = 0.5f;
+
+            bool ortho = camera->orthographic();
+            if(ortho) {
+                float length = camera->orthoSize() * 10.0f;
+
+                m_scale = 0.01f;
+                while(m_scale < length) {
+                    m_scale *= 10.0f;
+                }
+
+                width = length / m_scale;
+
+                float depth = camera->farPlane() - camera->nearPlane();
+                CameraCtrl::ViewSide side = m_controller->viewSide();
+                switch(side) {
+                    case CameraCtrl::ViewSide::VIEW_FRONT:
+                    case CameraCtrl::ViewSide::VIEW_BACK: {
+                        rot = Quaternion();
+                        pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
+                        pos = Vector3(m_scale * int32_t(pos.x / m_scale),
+                                      m_scale * int32_t(pos.y / m_scale),
+                                      pos.z);
+                    } break;
+                    case CameraCtrl::ViewSide::VIEW_LEFT:
+                    case CameraCtrl::ViewSide::VIEW_RIGHT: {
+                        rot = Quaternion(Vector3(0, 1, 0), 90.0f);
+                        pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
+                        pos = Vector3(pos.x,
+                                      m_scale * int32_t(pos.y / m_scale),
+                                      m_scale * int32_t(pos.z / m_scale));
+                    } break;
+                    case CameraCtrl::ViewSide::VIEW_TOP:
+                    case CameraCtrl::ViewSide::VIEW_BOTTOM: {
+                        rot = Quaternion(Vector3(1, 0, 0), 90.0f);
+                        pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
+                        pos = Vector3(m_scale * int32_t(pos.x / m_scale),
+                                      pos.y,
+                                      m_scale * int32_t(pos.z / m_scale));
+                    } break;
+                    default: break;
+                }
+            } else {
+                m_scale = 100.0f;
+
+                pos = Vector3(m_scale * int32_t(pos.x / m_scale),
+                              0.0f,
+                              m_scale * int32_t(pos.z / m_scale));
+
+                rot = Quaternion(Vector3(1, 0, 0), 90.0f);
             }
-            Handles::endDraw();
+
+            m_grid->setBool("uni.ortho", &ortho);
+            m_grid->setFloat("uni.scale", &m_scale);
+            m_grid->setFloat("uni.width", &width);
+
+            CommandBuffer *buffer = context->buffer();
+
+            buffer->setColor(m_gridColor);
+            buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
+            buffer->setColor(Vector4(1.0f));
         }
         return source;
-    }
-
-    void drawGrid(Camera &camera, CommandBuffer *buffer) {
-        Transform *t = camera.actor()->transform();
-        Vector3 cam = t->position();
-        Vector3 pos(cam.x, 0.0f, cam.z);
-
-        Quaternion rot;
-
-        float scale = 1.0f;
-        float width = 0.5f;
-
-        bool ortho = camera.orthographic();
-        if(ortho) {
-            float length = camera.orthoSize() * 10.0f;
-
-            scale = 0.01f;
-            while(scale < length) {
-                scale *= 10.0f;
-            }
-
-            width = length / scale;
-
-            float depth = camera.farPlane() - camera.nearPlane();
-            CameraCtrl::ViewSide side = m_controller->viewSide();
-            switch(side) {
-                case CameraCtrl::ViewSide::VIEW_FRONT:
-                case CameraCtrl::ViewSide::VIEW_BACK: {
-                    rot = Quaternion();
-                    pos = Vector3(cam.x, cam.y, cam.z + ((side == CameraCtrl::ViewSide::VIEW_FRONT) ? -depth : depth));
-                    pos = Vector3(scale * int32_t(pos.x / scale),
-                                  scale * int32_t(pos.y / scale),
-                                  pos.z);
-                } break;
-                case CameraCtrl::ViewSide::VIEW_LEFT:
-                case CameraCtrl::ViewSide::VIEW_RIGHT: {
-                    rot = Quaternion(Vector3(0, 1, 0), 90.0f);
-                    pos = Vector3(cam.x + ((side == CameraCtrl::ViewSide::VIEW_LEFT) ? depth : -depth), cam.y, cam.z);
-                    pos = Vector3(pos.x,
-                                  scale * int32_t(pos.y / scale),
-                                  scale * int32_t(pos.z / scale));
-                } break;
-                case CameraCtrl::ViewSide::VIEW_TOP:
-                case CameraCtrl::ViewSide::VIEW_BOTTOM: {
-                    rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-                    pos = Vector3(cam.x, cam.y + ((side == CameraCtrl::ViewSide::VIEW_TOP) ? -depth : depth), cam.z);
-                    pos = Vector3(scale * int32_t(pos.x / scale),
-                                  pos.y,
-                                  scale * int32_t(pos.z / scale));
-                } break;
-                default: break;
-            }
-        } else {
-            scale = 100.0f;
-
-            pos = Vector3(scale * int32_t(pos.x / scale),
-                          0.0f,
-                          scale * int32_t(pos.z / scale));
-
-            rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-        }
-
-        m_grid->setBool("uni.ortho", &ortho);
-        m_grid->setFloat("uni.scale", &scale);
-        m_grid->setFloat("uni.width", &width);
-
-        buffer->setColor(m_gridColor);
-        buffer->drawMesh(Matrix4(pos, rot, scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
-        buffer->setColor(Vector4(1.0f));
     }
 
 private:
@@ -259,6 +263,43 @@ private:
 
     MaterialInstance *m_grid;
 
+    float m_scale;
+
+};
+
+class GizmoRender : public RenderPass {
+public:
+    GizmoRender(PipelineContext *context) :
+            RenderPass(context),
+            m_controller(nullptr) {
+    }
+
+    void setController(CameraCtrl *ctrl) {
+        m_controller = ctrl;
+    }
+
+private:
+    uint32_t layer() const override {
+        return CommandBuffer::UI;
+    }
+
+    Texture *draw(Texture *source, PipelineContext *context) override {
+        if(context->debugTexture() == nullptr) {
+            // Draw handles
+            CommandBuffer *buffer = context->buffer();
+
+            Handles::beginDraw(buffer);
+            if(m_controller) {
+                m_controller->drawHandles();
+            }
+            Handles::endDraw();
+        }
+        return source;
+    }
+
+private:
+    CameraCtrl *m_controller;
+
 };
 
 Viewport::Viewport(QWidget *parent) :
@@ -267,6 +308,7 @@ Viewport::Viewport(QWidget *parent) :
         m_sceneGraph(nullptr),
         m_outlinePass(nullptr),
         m_gizmoRender(nullptr),
+        m_gridRender(nullptr),
         m_renderSystem(PluginManager::instance()->createRenderer()),
         m_rhiWindow(m_renderSystem->createRhiWindow()),
         m_postMenu(nullptr),
@@ -284,7 +326,7 @@ Viewport::Viewport(QWidget *parent) :
     setAutoFillBackground(false);
 
     setMouseTracking(true);
-    setFocusPolicy(Qt::StrongFocus);
+    //setFocusPolicy(Qt::StrongFocus);
 
     QObject::connect(SettingsManager::instance(), &SettingsManager::updated, this, &Viewport::onApplySettings);
 }
@@ -308,18 +350,25 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
 
         Camera *camera = m_controller->camera();
         if(camera) {
-            m_outlinePass = new Outline;
+            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+
+            m_outlinePass = new Outline(pipelineContext);
             m_outlinePass->setController(m_controller);
             m_outlinePass->loadSettings();
 
-            m_gizmoRender = new GizmoRender;
+            m_gizmoRender = new GizmoRender(pipelineContext);
             m_gizmoRender->setController(m_controller);
-            m_gizmoRender->loadSettings();
 
-            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+            m_gridRender = new GridRender(pipelineContext);
+            m_gridRender->setController(m_controller);
+            m_gridRender->loadSettings();
+
             pipelineContext->addRenderPass(m_outlinePass);
             pipelineContext->addRenderPass(m_gizmoRender);
+            pipelineContext->addRenderPass(m_gridRender);
+
             pipelineContext->showUiAsSceneView();
+
             for(auto it : pipelineContext->renderPasses()) {
                 SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
             }
@@ -345,14 +394,16 @@ void Viewport::onApplySettings() {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     if(pipelineContext) {
         for(auto it : pipelineContext->renderPasses()) {
-            it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
+            if(it->name()) {
+                it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
+            }
         }
     }
     if(m_outlinePass) {
         m_outlinePass->loadSettings();
     }
-    if(m_gizmoRender) {
-        m_gizmoRender->loadSettings();
+    if(m_gridRender) {
+        m_gridRender->loadSettings();
     }
 }
 
@@ -387,6 +438,20 @@ void Viewport::createMenu(QMenu *menu) {
 
 PipelineContext *Viewport::pipelineContext() const {
     return m_renderSystem->pipelineContext();
+}
+
+float Viewport::gridCell() {
+    return m_gridRender->scale() * 0.001f;
+}
+
+void Viewport::setGridEnabled(bool enabled) {
+    m_gridRender->setEnabled(enabled);
+}
+void Viewport::setGizmoEnabled(bool enabled) {
+    m_gizmoRender->setEnabled(enabled);
+}
+void Viewport::setOutlineEnabled(bool enabled) {
+    m_outlinePass->setEnabled(enabled);
 }
 
 void Viewport::onBufferMenu() {

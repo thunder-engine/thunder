@@ -24,7 +24,7 @@ public:
     void selectElements(const QStringList &list);
     QStringList &selectedElements();
 
-    TextureImportSettings *settings() const { return m_pSettings; }
+    TextureImportSettings *settings() const { return m_settings; }
 
     void onInputEvent(QInputEvent *) override;
 
@@ -43,29 +43,29 @@ private:
     QRectF mapRect(const QRectF &rect);
 
 private:
-    QPoint m_StartPoint;
-    QPoint m_CurrentPoint;
-    QPoint m_Save;
+    QPoint m_startPoint;
+    QPoint m_currentPoint;
+    QPoint m_save;
 
-    TextureImportSettings *m_pSettings;
+    TextureImportSettings *m_settings;
 
-    uint32_t m_Width;
-    uint32_t m_Height;
+    uint32_t m_width;
+    uint32_t m_height;
 
-    QStringList m_List;
-    QList<TextureImportSettings::Element> m_ElementList;
+    QStringList m_list;
+    QList<TextureImportSettings::Element> m_elementList;
 
-    bool m_Drag;
+    bool m_drag;
 };
 
 class UndoSprite : public QUndoCommand {
 public:
     UndoSprite(SpriteController *ctrl, const QString &name, QUndoCommand *group = nullptr) :
             QUndoCommand(name, group) {
-        m_pController = ctrl;
+        m_controller = ctrl;
     }
 protected:
-    SpriteController *m_pController;
+    SpriteController *m_controller;
 };
 
 class SelectSprites : public UndoSprite {
@@ -74,7 +74,7 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    QStringList m_List;
+    QStringList m_list;
 };
 
 class CreateSprite : public UndoSprite {
@@ -83,9 +83,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    TextureImportSettings::Element m_Rect;
+    TextureImportSettings::Element m_rect;
     QString m_Uuid;
-    QStringList m_List;
+    QStringList m_list;
 };
 
 class DestroySprites : public UndoSprite {
@@ -94,9 +94,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    QStringList m_List;
-    QStringList m_Uuids;
-    QList<TextureImportSettings::Element> m_Rects;
+    QStringList m_list;
+    QStringList m_uuids;
+    QList<TextureImportSettings::Element> m_rects;
 };
 
 class UpdateSprites : public UndoSprite {
@@ -105,9 +105,9 @@ public:
     void undo() override;
     void redo() override;
 protected:
-    QStringList m_List;
-    QStringList m_Uuids;
-    QList<TextureImportSettings::Element> m_Rects;
+    QStringList m_list;
+    QStringList m_uuids;
+    QList<TextureImportSettings::Element> m_rects;
 };
 
 #endif // SPRITECONTROLLER_H

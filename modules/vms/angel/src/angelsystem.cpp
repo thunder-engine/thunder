@@ -58,16 +58,18 @@ protected:
 
 AngelSystem::AngelSystem(Engine *engine) :
         System(),
-        m_pScriptEngine(nullptr),
-        m_pScriptModule(nullptr),
-        m_pContext(nullptr),
-        m_pScript(nullptr),
-        m_Inited(false) {
+        m_scriptEngine(nullptr),
+        m_scriptModule(nullptr),
+        m_context(nullptr),
+        m_script(nullptr),
+        m_inited(false) {
     PROFILE_FUNCTION();
 
     AngelBehaviour::registerClassFactory(this);
 
     AngelScript::registerClassFactory(engine->resourceSystem());
+
+    setName("AngelScript");
 }
 
 AngelSystem::~AngelSystem() {
@@ -75,16 +77,16 @@ AngelSystem::~AngelSystem() {
 
     deleteAllObjects();
 
-    if(m_pContext) {
-        m_pContext->Release();
+    if(m_context) {
+        m_context->Release();
     }
 
-    if(m_pScriptModule) {
-        m_pScriptModule->Discard();
+    if(m_scriptModule) {
+        m_scriptModule->Discard();
     }
 
-    if(m_pScriptEngine) {
-        m_pScriptEngine->ShutDownAndRelease();
+    if(m_scriptEngine) {
+        m_scriptEngine->ShutDownAndRelease();
     }
 
     AngelBehaviour::unregisterClassFactory(this);
@@ -92,24 +94,20 @@ AngelSystem::~AngelSystem() {
 
 bool AngelSystem::init() {
     PROFILE_FUNCTION();
-    if(!m_Inited) {
-        m_pScriptEngine = asCreateScriptEngine();
+    if(!m_inited) {
+        m_scriptEngine = asCreateScriptEngine();
 
-        int32_t r = m_pScriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
+        int32_t r = m_scriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
         if(r >= 0) {
-            m_pContext = m_pScriptEngine->CreateContext();
+            m_context = m_scriptEngine->CreateContext();
 
-            registerClasses(m_pScriptEngine);
+            registerClasses(m_scriptEngine);
 
             reload();
         }
-        m_Inited = (r >= 0);
+        m_inited = (r >= 0);
     }
-    return m_Inited;
-}
-
-const char *AngelSystem::name() const {
-    return "AngelScript";
+    return m_inited;
 }
 
 void AngelSystem::update(SceneGraph *scene) {
@@ -142,24 +140,24 @@ void AngelSystem::reload() {
     PROFILE_FUNCTION();
 
     unload();
-    m_pScriptModule = m_pScriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
+    m_scriptModule = m_scriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
 
     if(Engine::isResourceExist(TEMPALTE)) {
-        if(m_pScript) {
+        if(m_script) {
             Engine::reloadResource(TEMPALTE);
         } else {
-            m_pScript = Engine::loadResource<AngelScript>(TEMPALTE);
+            m_script = Engine::loadResource<AngelScript>(TEMPALTE);
         }
     } else {
         return;
     }
 
-    if(m_pScript) {
-        AngelStream stream(m_pScript->m_Array);
-        m_pScriptModule->LoadByteCode(&stream);
+    if(m_script) {
+        AngelStream stream(m_script->m_Array);
+        m_scriptModule->LoadByteCode(&stream);
 
-        for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
+        for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
                 {
                     MetaType::Table staticTable = {
@@ -226,31 +224,31 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
     PROFILE_FUNCTION();
 
     if(func) {
-        m_pContext->Prepare(func);
+        m_context->Prepare(func);
         if(object) {
-            m_pContext->SetObject(object);
+            m_context->SetObject(object);
         }
-        if(m_pContext->Execute() == asEXECUTION_EXCEPTION) {
+        if(m_context->Execute() == asEXECUTION_EXCEPTION) {
             int column;
-            m_pContext->GetExceptionLineNumber(&column);
-            Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_pContext->GetExceptionString() << m_pContext->GetExceptionFunction()->GetName() << "Line:" << column;
+            m_context->GetExceptionLineNumber(&column);
+            Log(Log::ERR) << __FUNCTION__ << "Unhandled Exception:" << m_context->GetExceptionString() << m_context->GetExceptionFunction()->GetName() << "Line:" << column;
         }
     } else {
         return nullptr;
     }
-    return m_pContext->GetAddressOfReturnValue();
+    return m_context->GetAddressOfReturnValue();
 }
 
 asIScriptModule *AngelSystem::module() const {
     PROFILE_FUNCTION();
 
-    return m_pScriptModule;
+    return m_scriptModule;
 }
 
 asIScriptContext *AngelSystem::context() const {
     PROFILE_FUNCTION();
 
-    return m_pContext;
+    return m_context;
 }
 
 bool AngelSystem::isBehaviour(asITypeInfo *info) const {
@@ -265,14 +263,14 @@ bool AngelSystem::isBehaviour(asITypeInfo *info) const {
 }
 
 void AngelSystem::unload() {
-    if(m_pScriptModule) {
-        for(uint32_t i = 0; i < m_pScriptModule->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = m_pScriptModule->GetObjectTypeByIndex(i);
+    if(m_scriptModule) {
+        for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
                 factoryRemove(info->GetName(), string(URI) + info->GetName());
             }
         }
-        m_pScriptModule->Discard();
+        m_scriptModule->Discard();
     }
 }
 

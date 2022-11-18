@@ -14,8 +14,6 @@ public:
 
     bool init() override;
 
-    const char *name() const override;
-
     void update(SceneGraph *graph) override;
 
 #ifdef SHARED_DEFINE

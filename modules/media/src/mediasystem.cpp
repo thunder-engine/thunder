@@ -13,40 +13,38 @@
 
 MediaSystem::MediaSystem() :
         System(),
-        m_pDevice(nullptr),
-        m_pContext(nullptr),
-        m_Inited(false) {
+        m_device(nullptr),
+        m_context(nullptr),
+        m_inited(false) {
     PROFILE_FUNCTION();
 
     AudioSource::registerClassFactory(this);
 
     AudioClip::registerClassFactory(this);
+
+    setName("Media");
 }
 
 MediaSystem::~MediaSystem() {
     PROFILE_FUNCTION();
 
-    alcDestroyContext(m_pContext);
-    alcCloseDevice(m_pDevice);
+    alcDestroyContext(m_context);
+    alcCloseDevice(m_device);
 }
 
 bool MediaSystem::init() {
     PROFILE_FUNCTION();
-    if(!m_Inited) {
-        m_pDevice   = alcOpenDevice(nullptr);
-        if(m_pDevice) {
-            m_pContext  = alcCreateContext(m_pDevice, nullptr);
-            if(alcGetError(m_pDevice) == AL_NO_ERROR) {
-                alcMakeContextCurrent(m_pContext);
-                return m_Inited;
+    if(!m_inited) {
+        m_device   = alcOpenDevice(nullptr);
+        if(m_device) {
+            m_context  = alcCreateContext(m_device, nullptr);
+            if(alcGetError(m_device) == AL_NO_ERROR) {
+                alcMakeContextCurrent(m_context);
+                return m_inited;
             }
         }
     }
-    return m_Inited;
-}
-
-const char *MediaSystem::name() const {
-    return "Media";
+    return m_inited;
 }
 
 void MediaSystem::update(SceneGraph *) {

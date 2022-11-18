@@ -7,13 +7,13 @@
 
 #define KERNEL_SIZE 16
 
-class Texture;
+class RenderTarget;
+class MaterialInstance;
 
 class AmbientOcclusion : public RenderPass {
 public:
-    AmbientOcclusion ();
-
-    ~AmbientOcclusion () override;
+    AmbientOcclusion(PipelineContext *context);
+    ~AmbientOcclusion();
 
     Texture *draw(Texture *source, PipelineContext *context) override;
 
@@ -34,12 +34,16 @@ protected:
 
     Texture *m_noiseTexture;
     Texture *m_ssaoTexture;
+    Texture *m_resultTexture;
 
     RenderTarget *m_ssaoTarget;
     RenderTarget *m_blurTarget;
+    RenderTarget *m_resultTarget;
 
     MaterialInstance *m_blur;
     MaterialInstance *m_combine;
+    MaterialInstance *m_material;
+
 };
 
 #endif // AMBIENTOCCLUSION_H

@@ -27,6 +27,7 @@ Project {
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
+        "../modules/editor/grapheditor"
     ]
 
     QtGuiApplication {
@@ -42,7 +43,8 @@ Project {
         Depends { name: "vorbis-editor" }
         Depends { name: "ogg-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "gamepad", "svg", "xml"]; }
+        Depends { name: "graph-editor" }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "multimedia", "quickwidgets", "svg", "xml"]; }
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle
         bundle.infoPlist: ({
             "NSHumanReadableCopyright": "(C) 2007-" + worldEditor.COPYRIGHT_YEAR + " by " + worldEditor.COPYRIGHT_AUTHOR
@@ -62,14 +64,6 @@ Project {
         cpp.cxxLanguageVersion: worldEditor.languageVersion
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: outer.concat([
-                "opengl32",
-                "glu32"
-            ])
-        }
-
-        Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
         }
@@ -78,7 +72,6 @@ Project {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@rpath"
             cpp.rpaths: "@executable_path/../Frameworks/"
-            cpp.weakFrameworks: ["OpenGL"]
         }
 
         Group {

@@ -210,6 +210,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     connect(m_builder, &QProcess::readyReadStandardError, this, &MainWindow::readError);
 
     connect(this, &MainWindow::readBuildLogs, ui->consoleOutput, &ConsoleManager::parseLogs);
+
+    startTimer(16);
 }
 
 MainWindow::~MainWindow() {
@@ -683,4 +685,8 @@ void MainWindow::readOutput() {
 
 void MainWindow::readError() {
     emit readBuildLogs(m_builder->readAllStandardError());
+}
+
+void MainWindow::timerEvent(QTimerEvent *) {
+    Timer::update();
 }

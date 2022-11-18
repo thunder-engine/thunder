@@ -3,65 +3,15 @@
 #include "components/actor.h"
 
 #include <algorithm>
-#include <mutex>
 
 class TransformPrivate {
 public:
-    TransformPrivate() :
-        m_Position(Vector3()),
-        m_Rotation(Vector3()),
-        m_Scale(Vector3(1.0f)),
-        m_WorldPosition(Vector3()),
-        m_WorldRotation(Vector3()),
-        m_WorldScale(Vector3(1.0f)),
-        m_Quaternion(Quaternion()),
-        m_WorldQuaternion(Quaternion()),
-        m_Transform(Matrix4()),
-        m_WorldTransform(Matrix4()),
-        m_pParent(nullptr),
-        m_Dirty(true) {
+    TransformPrivate()  {
 
     }
 
-    void cleanDirty() {
-        unique_lock<mutex> locker(m_Mutex);
-        m_Transform = Matrix4(m_Position, m_Quaternion, m_Scale);
-        m_WorldTransform = m_Transform;
-        m_WorldRotation = m_Rotation;
-        m_WorldPosition = m_Position;
-        m_WorldQuaternion = m_Quaternion;
-        m_WorldScale = m_Scale;
-        if(m_pParent) {
-            m_WorldPosition = m_pParent->worldTransform() * m_WorldPosition;
-            m_WorldScale = m_pParent->worldScale() * m_WorldScale;
-            m_WorldRotation = m_pParent->worldRotation() + m_WorldRotation;
-            m_WorldQuaternion = m_pParent->worldQuaternion() * m_WorldQuaternion;
-            m_WorldTransform = m_pParent->worldTransform() * m_WorldTransform;
-        }
-        m_Dirty = false;
-    }
+    mutex m_mutex;
 
-    Vector3 m_Position;
-    Vector3 m_Rotation;
-    Vector3 m_Scale;
-
-    Vector3 m_WorldPosition;
-    Vector3 m_WorldRotation;
-    Vector3 m_WorldScale;
-
-    Quaternion m_Quaternion;
-    Quaternion m_WorldQuaternion;
-
-    Matrix4 m_Transform;
-    Matrix4 m_WorldTransform;
-
-    list<Transform *> m_Children;
-
-    Transform *m_pParent;
-
-    mutex m_Mutex;
-
-    bool m_Dirty;
 };
 /*!
     \class Transform
@@ -74,13 +24,25 @@ public:
 */
 
 Transform::Transform() :
-        p_ptr(new TransformPrivate) {
+    p_ptr(new TransformPrivate),
+    m_position(Vector3()),
+    m_rotation(Vector3()),
+    m_scale(Vector3(1.0f)),
+    m_worldPosition(Vector3()),
+    m_worldRotation(Vector3()),
+    m_worldScale(Vector3(1.0f)),
+    m_quaternion(Quaternion()),
+    m_worldQuaternion(Quaternion()),
+    m_transform(Matrix4()),
+    m_worldTransform(Matrix4()),
+    m_parent(nullptr),
+    m_dirty(true) {
 }
 
 Transform::~Transform() {
     setParentTransform(nullptr, true);
 
-    list<Transform *> temp = p_ptr->m_Children;
+    list<Transform *> temp = m_children;
     for(auto it : temp) {
         it->setParentTransform(nullptr, true);
     }
@@ -91,68 +53,68 @@ Transform::~Transform() {
 /*!
     Returns current position of the Transform in local space.
 */
-Vector3 &Transform::position() const {
-    return p_ptr->m_Position;
+Vector3 Transform::position() const {
+    return m_position;
 }
 /*!
     Changes \a position of the Transform in local space.
 */
 void Transform::setPosition(const Vector3 position) {
-    unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_Position = position;
+    unique_lock<mutex> locker(p_ptr->m_mutex);
+    m_position = position;
     setDirty();
 }
 /*!
     Returns current rotation of the Transform in local space as Euler angles in degrees.
 */
-Vector3 &Transform::rotation() const {
-    return p_ptr->m_Rotation;
+Vector3 Transform::rotation() const {
+    return m_rotation;
 }
 /*!
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
 void Transform::setRotation(const Vector3 angles) {
-    unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_Rotation = angles;
-    p_ptr->m_Quaternion = Quaternion(p_ptr->m_Rotation);
+    unique_lock<mutex> locker(p_ptr->m_mutex);
+    m_rotation = angles;
+    m_quaternion = Quaternion(m_rotation);
     setDirty();
 }
 /*!
     Returns current rotation of the Transform in local space as Quaternion.
 */
-Quaternion &Transform::quaternion() const {
-    return p_ptr->m_Quaternion;
+Quaternion Transform::quaternion() const {
+    return m_quaternion;
 }
 /*!
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
 void Transform::setQuaternion(const Quaternion quaternion) {
-    unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_Quaternion = quaternion;
+    unique_lock<mutex> locker(p_ptr->m_mutex);
+    m_quaternion = quaternion;
 #ifdef SHARED_DEFINE
-    //p_ptr->m_Rotation = p_ptr->m_Quaternion.euler();
+    //m_rotation = m_quaternion.euler();
 #endif
     setDirty();
 }
 /*!
     Returns current scale of the Transform in local space.
 */
-Vector3 &Transform::scale() const {
-    return p_ptr->m_Scale;
+Vector3 Transform::scale() const {
+    return m_scale;
 }
 /*!
     Changes the \a scale of the Transform in local space.
 */
 void Transform::setScale(const Vector3 scale) {
-    unique_lock<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_Scale = scale;
+    unique_lock<mutex> locker(p_ptr->m_mutex);
+    m_scale = scale;
     setDirty();
 }
 /*!
     Returns parent of the transform.
 */
 Transform *Transform::parentTransform() const {
-    return p_ptr->m_pParent;
+    return m_parent;
 }
 /*!
     Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
@@ -169,25 +131,25 @@ void Transform::setParentTransform(Transform *parent, bool force) {
         s = worldScale();
     }
 
-    if(p_ptr->m_pParent) {
-        auto it = std::find(p_ptr->m_pParent->p_ptr->m_Children.begin(),
-                            p_ptr->m_pParent->p_ptr->m_Children.end(),
+    if(m_parent) {
+        auto it = std::find(m_parent->m_children.begin(),
+                            m_parent->m_children.end(),
                             this);
-        if(it != p_ptr->m_pParent->p_ptr->m_Children.end()) {
-            p_ptr->m_pParent->p_ptr->m_Children.erase(it);
+        if(it != m_parent->m_children.end()) {
+            m_parent->m_children.erase(it);
         }
     }
 
-    p_ptr->m_pParent = parent;
-    if(p_ptr->m_pParent) {
-        p_ptr->m_pParent->p_ptr->m_Children.push_back(this);
+    m_parent = parent;
+    if(m_parent) {
+        m_parent->m_children.push_back(this);
         if(!force) {
-            Vector3 scale = p_ptr->m_pParent->worldScale();
+            Vector3 scale = m_parent->worldScale();
             scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
 
-            p_ptr->m_Position = p_ptr->m_pParent->worldQuaternion().inverse() * ((p - p_ptr->m_pParent->worldPosition()) * scale);
-            p_ptr->m_Scale = s * scale;
-            setRotation(e - p_ptr->m_pParent->worldRotation());
+            m_position = m_parent->worldQuaternion().inverse() * ((p - m_parent->worldPosition()) * scale);
+            m_scale = s * scale;
+            setRotation(e - m_parent->worldRotation());
         } else {
             setDirty();
         }
@@ -196,56 +158,62 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 /*!
     Returns current transform matrix in local space.
 */
-Matrix4 &Transform::localTransform() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Matrix4 Transform::localTransform() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_Transform;
+    return m_transform;
 }
 /*!
     Returns current transform matrix in world space.
 */
-Matrix4 &Transform::worldTransform() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Matrix4 Transform::worldTransform() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_WorldTransform;
+    return m_worldTransform;
 }
 /*!
     Returns current position of the transform in world space.
 */
-Vector3 &Transform::worldPosition() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Vector3 Transform::worldPosition() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_WorldPosition;
+    return m_worldPosition;
 }
 /*!
     Returns current rotation of the transform in world space as Euler angles in degrees.
 */
-Vector3 &Transform::worldRotation() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Vector3 Transform::worldRotation() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_WorldRotation;
+    return m_worldRotation;
 }
 /*!
     Returns current rotation of the transform in world space as Quaternion.
 */
-Quaternion &Transform::worldQuaternion() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Quaternion Transform::worldQuaternion() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_WorldQuaternion;
+    return m_worldQuaternion;
 }
 /*!
     Returns current scale of the transform in world space.
 */
-Vector3 &Transform::worldScale() const {
-    if(p_ptr->m_Dirty) {
-        p_ptr->cleanDirty();
+Vector3 Transform::worldScale() const {
+    if(m_dirty) {
+        unique_lock<mutex> locker(p_ptr->m_mutex);
+        cleanDirty();
     }
-    return p_ptr->m_WorldScale;
+    return m_worldScale;
 }
 /*!
     Makes the Transform a child of \a parent at given \a position.
@@ -266,15 +234,32 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
 /*!
     \internal
 */
-list<Transform *> &Transform::children() const {
-    return p_ptr->m_Children;
+const list<Transform *> &Transform::children() const {
+    return m_children;
 }
 /*!
     \internal
 */
 void Transform::setDirty() {
-    p_ptr->m_Dirty = true;
-    for(auto it : p_ptr->m_Children) {
+    m_dirty = true;
+    for(auto it : m_children) {
         it->setDirty();
     }
+}
+
+void Transform::cleanDirty() const {
+    m_transform = Matrix4(m_position, m_quaternion, m_scale);
+    m_worldTransform = m_transform;
+    m_worldRotation = m_rotation;
+    m_worldPosition = m_position;
+    m_worldQuaternion = m_quaternion;
+    m_worldScale = m_scale;
+    if(m_parent) {
+        m_worldPosition = m_parent->worldTransform() * m_worldPosition;
+        m_worldScale = m_parent->worldScale() * m_worldScale;
+        m_worldRotation = m_parent->worldRotation() + m_worldRotation;
+        m_worldQuaternion = m_parent->worldQuaternion() * m_worldQuaternion;
+        m_worldTransform = m_parent->worldTransform() * m_worldTransform;
+    }
+    m_dirty = false;
 }

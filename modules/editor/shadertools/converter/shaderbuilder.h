@@ -1,14 +1,29 @@
 #ifndef SHADERBUILDER_H
 #define SHADERBUILDER_H
 
-#include <map>
-#include <list>
-
 #include <editor/assetconverter.h>
 
 #include "shadernodegraph.h"
 
-class QDomElement;
+#define SHADER      "Shader"
+#define SIMPLE      "Simple"
+
+#define STATIC      "Static"
+#define INSTANCED   "StaticInst"
+#define PARTICLE    "Particle"
+#define SKINNED     "Skinned"
+
+#define UNIFORM 4
+
+#define TYPE        "Type"
+#define BLEND       "Blend"
+#define MODEL       "Model"
+#define SIDE        "Side"
+#define DEPTH       "Depth"
+#define DEPTHWRITE  "DepthWrite"
+#define TEXTURES    "Textures"
+#define UNIFORMS    "Uniforms"
+#define PROPERTIES  "Properties"
 
 class ShaderBuilderSettings : public AssetConverterSettings {
     Q_OBJECT

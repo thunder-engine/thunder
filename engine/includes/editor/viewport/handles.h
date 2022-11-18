@@ -45,6 +45,8 @@ public:
     static void drawCapsule(const Vector3 &center, const Quaternion &rotation, float radius, float height);
     static void drawBox(const Vector3 &center, const Quaternion &rotation, const Vector3 &size);
 
+    static Vector3Vector makeCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps);
+
     static Vector3 moveTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static float rotationTool(const Vector3 &position, const Quaternion &rotation, bool locked);
     static Vector3 scaleTool(const Vector3 &position, const Quaternion &rotation, bool locked);

@@ -5,21 +5,16 @@
 
 #include <engine.h>
 
-class Mesh;
 class Texture;
-class RenderTarget;
-class MaterialInstance;
-
 class PipelineContext;
-
 class PostProcessSettings;
 
 class ENGINE_EXPORT RenderPass {
 public:
-    RenderPass();
+    RenderPass(PipelineContext *context);
     virtual ~RenderPass();
 
-    virtual Texture *draw(Texture *source, PipelineContext *context);
+    virtual Texture *draw(Texture *source, PipelineContext *context) = 0;
 
     virtual void resize(int32_t width, int32_t height);
 
@@ -35,12 +30,6 @@ public:
 protected:
     bool m_enabled;
 
-    MaterialInstance *m_material;
-
-    Mesh *m_mesh;
-
-    Texture *m_resultTexture;
-    RenderTarget *m_resultTarget;
 };
 
 #endif // RENDERPASS_H

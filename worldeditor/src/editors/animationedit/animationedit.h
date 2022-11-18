@@ -9,7 +9,7 @@ class AbstractNodeGraph;
 class AnimationStateMachine;
 class AssetConverter;
 
-class ComponentBrowser;
+class UndoCommand;
 
 namespace Ui {
     class AnimationEdit;
@@ -23,14 +23,6 @@ public:
     ~AnimationEdit();
 
 private slots:
-    void onNodesSelected(const QVariant &);
-
-    void onUpdateAsset(bool update = true);
-
-    void onShowContextMenu(int node, int port, bool out);
-
-    void onComponentSelected(const QString &path);
-
     void onActivated() override;
 
 private:
@@ -46,22 +38,12 @@ private:
 private:
     Ui::AnimationEdit *ui;
 
-    AbstractNodeGraph *m_model;
+    AbstractNodeGraph *m_graph;
     AssetConverter *m_assetConverter;
 
     AnimationStateMachine *m_stateMachine;
 
-    QMenu *m_createMenu;
-
-    ComponentBrowser *m_browser;
-
-    QObject *m_selectedItem;
-
-    int m_node;
-    int m_port;
-    bool m_out;
-
-    bool m_modified;
+    const UndoCommand *m_lastCommand;
 
 };
 

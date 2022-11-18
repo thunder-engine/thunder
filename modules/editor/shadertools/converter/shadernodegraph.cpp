@@ -5,16 +5,12 @@
 #include <QVector4D>
 #include <QMatrix4x4>
 
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QStack>
 
 #include <QMetaProperty>
 
 #include <sstream>
-
-#include <editor/projectmanager.h>
+#include <algorithm>
 
 #include "functions/constvalue.h"
 #include "functions/coordinates.h"
@@ -95,15 +91,15 @@ ShaderNodeGraph::ShaderNodeGraph() {
     qRegisterMetaType<If*>("If");
     m_functions << "Mask" << "Fresnel" << "If";
 
-    m_inputs.append({ "Diffuse",   QVector3D(1.0, 1.0, 1.0), false });
-    m_inputs.append({ "Emissive",  QVector3D(0.0, 0.0, 0.0), false });
-    m_inputs.append({ "Normal",    QVector3D(0.5, 0.5, 1.0), false });
-    m_inputs.append({ "Metallic",  0.0, false });
-    m_inputs.append({ "Roughness", 0.0, false });
-    m_inputs.append({ "Opacity",   1.0, false });
-    m_inputs.append({ "IOR",       1.0, false });
+    m_inputs.push_back({ "Diffuse",   QVector3D(1.0, 1.0, 1.0), false });
+    m_inputs.push_back({ "Emissive",  QVector3D(0.0, 0.0, 0.0), false });
+    m_inputs.push_back({ "Normal",    QVector3D(0.5, 0.5, 1.0), false });
+    m_inputs.push_back({ "Metallic",  0.0f, false });
+    m_inputs.push_back({ "Roughness", 0.0f, false });
+    m_inputs.push_back({ "Opacity",   1.0f, false });
+    m_inputs.push_back({ "IOR",       1.0f, false });
 
-    m_inputs.append({ "World Position Offset", QVector3D(0.0, 0.0, 0.0), true });
+    m_inputs.push_back({ "Position Offset", QVector3D(0.0, 0.0, 0.0), true });
 }
 
 ShaderNodeGraph::~ShaderNodeGraph() {
@@ -117,9 +113,9 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
     if(meta) {
         ShaderFunction *function = dynamic_cast<ShaderFunction *>(meta->newInstance());
         if(function) {
-            function->setObjectName(path);
-            function->type = path;
-            connect(function, SIGNAL(updated()), this, SIGNAL(schemeUpdated()));
+            function->setGraph(this);
+            function->setType(qPrintable(path));
+            connect(function, SIGNAL(updated()), this, SIGNAL(graphUpdated()));
 
             if(index == -1) {
                 index = m_nodes.size();
@@ -136,11 +132,12 @@ GraphNode *ShaderNodeGraph::nodeCreate(const QString &path, int &index) {
 
 GraphNode *ShaderNodeGraph::createRoot() {
     ShaderRootNode *result = new ShaderRootNode;
-    connect(result, &ShaderRootNode::schemeUpdated, this, &ShaderNodeGraph::schemeUpdated);
+    result->setGraph(this);
+    connect(result, &ShaderRootNode::graphUpdated, this, &ShaderNodeGraph::graphUpdated);
 
     int i = 0;
     for(auto &it : m_inputs) {
-        result->ports.push_back( new NodePort(false, (uint32_t)it.m_value.type(), i, it.m_name, it.m_value) );
+        result->ports().push_back( NodePort(result, false, (uint32_t)it.m_value.type(), i, qPrintable(it.m_name), m_portColors[(uint32_t)it.m_value.type()], it.m_value) );
         i++;
     }
 
@@ -181,7 +178,7 @@ void ShaderNodeGraph::load(const QString &path) {
     loadUniforms(m_data[UNIFORMS].toList());
     blockSignals(false);
 
-    emit schemeUpdated();
+    emit graphUpdated();
 }
 
 void ShaderNodeGraph::save(const QString &path) {
@@ -201,7 +198,7 @@ void ShaderNodeGraph::save(const QString &path) {
 
 void ShaderNodeGraph::loadUserValues(GraphNode *node, const QVariantMap &values) {
     node->blockSignals(true);
-    foreach(QString key, values.keys()) {
+    for(QString key : values.keys()) {
         if(static_cast<QMetaType::Type>(values[key].type()) == QMetaType::QVariantList) {
             QVariantList array = values[key].toList();
             switch(array.first().toInt()) {
@@ -229,18 +226,18 @@ void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
         QMetaProperty property  = meta->property(i);
         if(property.isUser(node)) {
             QVariant value = property.read(node);
-            switch(value.type()) {
-                case QVariant::Bool: {
+            switch(value.userType()) {
+                case QMetaType::Bool: {
                     values[property.name()] = value.toBool();
                 } break;
-                case QVariant::String: {
+                case QMetaType::QString: {
                     values[property.name()] = value.toString();
                 } break;
-                case QVariant::Double: {
-                    values[property.name()] = value.toDouble();
+                case QMetaType::Float: {
+                    values[property.name()] = value.toFloat();
                 } break;
-                case QVariant::Color: {
-                    QJsonArray v;
+                case QMetaType::QColor: {
+                    QVariantList v;
                     v.push_back(static_cast<int32_t>(QVariant::Color));
                     QColor col = value.value<QColor>();
                     v.push_back(col.red());
@@ -252,7 +249,7 @@ void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
                 default: {
                     if(value.canConvert<Template>()) {
                         Template tmp = value.value<Template>();
-                        QJsonArray v;
+                        QVariantList v;
                         v.push_back(value.typeName());
                         v.push_back(tmp.path);
                         v.push_back(QJsonValue::fromVariant(tmp.type));
@@ -266,8 +263,8 @@ void ShaderNodeGraph::saveUserValues(GraphNode *node, QVariantMap &values) {
 
 void ShaderNodeGraph::loadTextures(const QVariantMap &data) {
     m_textures.clear();
-    foreach(auto it, data.keys()) {
-        m_textures.push_back(TexturePair(it, data.value(it).toInt()));
+    for(auto it : data.keys()) {
+        m_textures.push_back({it, data.value(it).toInt()});
     }
 }
 
@@ -306,9 +303,6 @@ void ShaderNodeGraph::loadUniforms(const QVariantList &data) {
             case QMetaType::QVector4D: {
                 m_uniforms.push_back({name, type, count, QColor()});
             } break;
-            case QMetaType::QMatrix4x4: {
-                m_uniforms.push_back({name, type, count, QMatrix4x4()});
-            } break;
             default: break;
         }
     }
@@ -336,9 +330,6 @@ QVariantList ShaderNodeGraph::saveUniforms() const {
             case QMetaType::QVector4D: {
                 value.push_back((int)QMetaType::QVector4D);
             } break;
-            case QMetaType::QMatrix4x4: {
-                value.push_back((int)QMetaType::QMatrix4x4);
-            } break;
             default: break;
         }
         value.push_back((uint32_t)it.count);
@@ -351,7 +342,7 @@ bool ShaderNodeGraph::buildGraph() {
     cleanup();
 
     // Nodes
-    QStringList functions = buildRoot();
+    QStringList functions = buildFrom(m_rootNode);
 
     QString layout;
     uint32_t binding = UNIFORM;
@@ -359,7 +350,7 @@ bool ShaderNodeGraph::buildGraph() {
         layout += QString("layout(binding = %1) uniform Uniforms {\n").arg(binding);
 
         // Make uniforms
-        foreach(const auto &it, m_uniforms) {
+        for(const auto &it : m_uniforms) {
             switch(it.type) {
                 case QMetaType::Float:     layout += "\tfloat " + it.name + ";\n"; break;
                 case QMetaType::QVector2D: layout += "\tvec2 " + it.name + ";\n"; break;
@@ -397,7 +388,7 @@ bool ShaderNodeGraph::buildGraph() {
     QString vertex, fragment;
 
     for(int i = 0; i < m_inputs.size(); i++) {
-        if(m_inputs.at(i).m_vertex) {
+        if(std::next(m_inputs.begin(), i)->m_vertex) {
             vertex.append(functions.at(i));
         } else {
             fragment.append(functions.at(i));
@@ -428,7 +419,7 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
 
     VariantList textures;
     uint16_t i = 0;
-    uint32_t binding = (m_uniforms.isEmpty()) ? UNIFORM : UNIFORM + 1;
+    uint32_t binding = (m_uniforms.empty()) ? UNIFORM : UNIFORM + 1;
     for(auto &it : m_textures) {
         VariantList data;
 
@@ -475,10 +466,6 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
                 QColor c = it.value.value<QColor>();
                 value = Variant(Vector4(c.redF(), c.greenF(), c.blueF(), c.alphaF()));
                 size = sizeof(Vector4);
-            } break;
-            case QMetaType::QMatrix4x4: {
-                value = Variant(Matrix4());
-                size = sizeof(Matrix4);
             } break;
             default: break;
         }
@@ -566,13 +553,13 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
     return user;
 }
 
-int ShaderNodeGraph::setTexture(const QString &path, Vector4 &sub, uint8_t flags) {
+int ShaderNodeGraph::setTexture(const QString &path, Vector4 &sub, int32_t flags) {
     sub = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    int index = m_textures.indexOf(TexturePair(path, flags));
+    int index = m_textures.indexOf({ path, flags });
     if(index == -1) {
         index = m_textures.size();
-        m_textures.push_back(TexturePair(path, flags));
+        m_textures.push_back({ path, flags });
     }
     return index;
 }
@@ -588,7 +575,7 @@ void ShaderNodeGraph::addUniform(const QString &name, uint8_t type, const QVaria
     m_uniforms.push_back({name, type, 1, value});
 }
 
-QStringList ShaderNodeGraph::buildRoot() {
+QStringList ShaderNodeGraph::buildFrom(GraphNode *node) {
     for(auto &it : m_nodes) {
         ShaderFunction *node = dynamic_cast<ShaderFunction *>(it);
         if(node) {
@@ -596,61 +583,64 @@ QStringList ShaderNodeGraph::buildRoot() {
         }
     }
 
+    int32_t depth = 0;
+
     QStringList result;
-    for(NodePort *port : qAsConst(m_rootNode->ports)) { // Iterate all ports for the root node
-        QString name = port->m_name;
-        name.replace(" ", "");
+    for(NodePort &port : node->ports()) { // Iterate all ports for the node
+        if(port.m_out == false) {
+            QString name = port.m_name.c_str();
+            name.replace(" ", "");
 
-        QString type;
-        switch(port->m_type) {
-            case QMetaType::Double:    type = QString("\tfloat " + name); break;
-            case QMetaType::QVector2D: type = QString("\tvec2 "  + name); break;
-            case QMetaType::QVector3D: type = QString("\tvec3 "  + name); break;
-            case QMetaType::QVector4D: type = QString("\tvec4 "  + name); break;
-            default: break;
-        }
-
-        QString function;
-        const Link *link = findLink(m_rootNode, port);
-        if(link) {
-            ShaderFunction *node = dynamic_cast<ShaderFunction *>(link->sender);
-            if(node) {
-                QStack<QString> stack;
-                int32_t size = 0;
-                int32_t depth = 0;
-                int32_t index = node->build(function, stack, this, *link, depth, size);
-
-                if(index >= 0) {
-                    if(stack.isEmpty()) {
-                        function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, port->m_type)));
-                    } else {
-                        function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, port->m_type)));
-                    }
-                }
-            }
-        } else { // Default value
-            function.append(type);
-            switch(port->m_type) {
-                case QMetaType::Double: {
-                    function.append(" = " + QString::number(port->m_var.toDouble()) + ";\n");
-                } break;
-                case QMetaType::QVector2D: {
-                    QVector2D v = port->m_var.value<QVector2D>();
-                    function.append(QString(" = vec2(%1, %2);\n").arg(v.x()).arg(v.y()));
-                } break;
-                case QMetaType::QVector3D: {
-                    QVector3D v = port->m_var.value<QVector3D>();
-                    function.append(QString(" = vec3(%1, %2, %3);\n").arg(v.x()).arg(v.y()).arg(v.z()));
-                } break;
-                case QMetaType::QVector4D: {
-                    QVector4D v = port->m_var.value<QVector4D>();
-                    function.append(QString(" = vec4(%1, %2, %3, %4);\n").arg(v.x()).arg(v.y()).arg(v.z()).arg(v.w()));
-                } break;
+            QString type;
+            switch(port.m_type) {
+                case QMetaType::Float:     type = QString("\tfloat " + name); break;
+                case QMetaType::QVector2D: type = QString("\tvec2 "  + name); break;
+                case QMetaType::QVector3D: type = QString("\tvec3 "  + name); break;
+                case QMetaType::QVector4D: type = QString("\tvec4 "  + name); break;
                 default: break;
             }
-        }
 
-        result << function;
+            QString function;
+            const Link *link = findLink(node, &port);
+            if(link) {
+                ShaderFunction *node = dynamic_cast<ShaderFunction *>(link->sender);
+                if(node) {
+                    QStack<QString> stack;
+                    int32_t size = 0;
+                    int32_t index = node->build(function, stack, this, *link, depth, size);
+
+                    if(index >= 0) {
+                        if(stack.isEmpty()) {
+                            function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert("local" + QString::number(index), size, port.m_type)));
+                        } else {
+                            function.append(QString("%1 = %2;\n").arg(type, ShaderFunction::convert(stack.pop(), size, port.m_type)));
+                        }
+                    }
+                }
+            } else { // Default value
+                function.append(type);
+                switch(port.m_type) {
+                    case QMetaType::Float: {
+                        function.append(" = " + QString::number(port.m_var.toFloat()) + ";\n");
+                    } break;
+                    case QMetaType::QVector2D: {
+                        QVector2D v = port.m_var.value<QVector2D>();
+                        function.append(QString(" = vec2(%1, %2);\n").arg(v.x()).arg(v.y()));
+                    } break;
+                    case QMetaType::QVector3D: {
+                        QVector3D v = port.m_var.value<QVector3D>();
+                        function.append(QString(" = vec3(%1, %2, %3);\n").arg(v.x()).arg(v.y()).arg(v.z()));
+                    } break;
+                    case QMetaType::QVector4D: {
+                        QVector4D v = port.m_var.value<QVector4D>();
+                        function.append(QString(" = vec4(%1, %2, %3, %4);\n").arg(v.x()).arg(v.y()).arg(v.z()).arg(v.w()));
+                    } break;
+                    default: break;
+                }
+            }
+            qDebug() << qPrintable(function);
+            result << function;
+        }
     }
     return result;
 }
@@ -662,5 +652,5 @@ void ShaderNodeGraph::cleanup() {
 }
 
 void ShaderNodeGraph::addPragma(const string &key, const string &value) {
-    m_pragmas[key] = m_pragmas[key].append(value).append("\r\n");
+    m_pragmas[key] = m_pragmas[key].append(value).append("\n");
 }

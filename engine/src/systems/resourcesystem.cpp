@@ -20,6 +20,7 @@ public:
 ResourceSystem::ResourceSystem() :
     p_ptr(new ResourceSystemPrivate) {
 
+    setName("ResourceSystem");
 }
 
 ResourceSystem::~ResourceSystem() {
@@ -28,10 +29,6 @@ ResourceSystem::~ResourceSystem() {
 
 bool ResourceSystem::init() {
     return true;
-}
-
-const char *ResourceSystem::name() const {
-    return "ResourceSystem";
 }
 
 void ResourceSystem::update(SceneGraph *) {

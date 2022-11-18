@@ -7,6 +7,7 @@ Project {
 		"qbstools",
         "shadertools",
         "texturetools",
-		"codeeditor"
+        "codeeditor",
+        "grapheditor",
     ]
 }

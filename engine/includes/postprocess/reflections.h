@@ -3,17 +3,14 @@
 
 #include "renderpass.h"
 
-#include <amath.h>
-
-#define KERNEL_SIZE 16
-
 class Texture;
+class MaterialInstance;
+class RenderTarget;
 
 class Reflections : public RenderPass {
 public:
-    Reflections ();
-
-    ~Reflections () override;
+    Reflections(PipelineContext *context);
+    ~Reflections();
 
 private:
     Texture *draw(Texture *source, PipelineContext *context) override;
@@ -26,10 +23,13 @@ private:
 
 private:
     MaterialInstance *m_iblMaterial;
+    MaterialInstance *m_material;
 
+    Texture *m_resultTexture;
     Texture *m_environmentTexture;
     Texture *m_sslrTexture;
 
+    RenderTarget *m_resultTarget;
     RenderTarget *m_sslrTarget;
 };
 

@@ -10,6 +10,7 @@ class CameraCtrl;
 class PipelineContext;
 class Outline;
 class GizmoRender;
+class GridRender;
 
 class QMenu;
 
@@ -28,6 +29,12 @@ public:
     void createMenu(QMenu *menu);
 
     PipelineContext *pipelineContext() const;
+
+    float gridCell();
+
+    void setGridEnabled(bool enabled);
+    void setGizmoEnabled(bool enabled);
+    void setOutlineEnabled(bool enabled);
 
 public slots:
     void onCursorSet(const QCursor &cursor);
@@ -61,6 +68,7 @@ protected:
 
     Outline *m_outlinePass;
     GizmoRender *m_gizmoRender;
+    GridRender *m_gridRender;
 
     RenderSystem *m_renderSystem;
     QWindow *m_rhiWindow;

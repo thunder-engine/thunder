@@ -2,7 +2,6 @@
 
 #include <QMessageBox>
 #include <QMimeData>
-#include <QMenu>
 #include <QDebug>
 
 #include <components/scenegraph.h>
@@ -62,7 +61,8 @@ string findFreeObjectName(const string &name, Object *parent) {
 
 class ViewportRaycast : public RenderPass {
 public:
-    ViewportRaycast() :
+    ViewportRaycast(PipelineContext *context) :
+            RenderPass(context),
             m_objectId(0),
             m_controller(nullptr) {
         m_resultTexture = Engine::objectCreate<Texture>();
@@ -74,6 +74,7 @@ public:
         m_depth->setDepthBits(24);
         m_depth->resize(2, 2);
 
+        m_resultTarget = Engine::objectCreate<RenderTarget>();
         m_resultTarget->setColorAttachment(0, m_resultTexture);
         m_resultTarget->setDepthAttachment(m_depth);
     }
@@ -159,6 +160,9 @@ private:
     uint32_t m_objectId;
 
     Texture *m_depth;
+    Texture *m_resultTexture;
+
+    RenderTarget *m_resultTarget;
 
     ObjectCtrl *m_controller;
 };
@@ -201,10 +205,11 @@ ObjectCtrl::~ObjectCtrl() {
 }
 
 void ObjectCtrl::init(Viewport *viewport) {
-    m_rayCast = new ViewportRaycast;
+    PipelineContext *pipeline = viewport->pipelineContext();
+
+    m_rayCast = new ViewportRaycast(pipeline);
     m_rayCast->setController(this);
 
-    PipelineContext *pipeline = viewport->pipelineContext();
     pipeline->addRenderPass(m_rayCast);
 }
 

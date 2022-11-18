@@ -25,6 +25,7 @@ CameraCtrl::CameraCtrl() :
         m_cameraFree(true),
         m_cameraFreeSaved(true),
         m_rotationTransfer(false),
+        m_cameraInMove(false),
         m_orthoWidthTarget(-1.0f),
         m_focalLengthTarget(-1.0f),
         m_transferProgress(1.0f),
@@ -280,8 +281,14 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
         } break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *e = static_cast<QMouseEvent *>(pe);
-            if(e->buttons() & Qt::RightButton) {
+            if(e->buttons() & Qt::RightButton || e->buttons() & Qt::MiddleButton) {
                 m_saved = e->globalPos();
+            }
+        } break;
+        case QEvent::MouseButtonRelease: {
+            QMouseEvent *e = static_cast<QMouseEvent *>(pe);
+            if(e->button() == Qt::RightButton || e->button() == Qt::MiddleButton) {
+                m_cameraInMove = false;
             }
         } break;
         case QEvent::MouseMove: {
@@ -296,6 +303,8 @@ void CameraCtrl::onInputEvent(QInputEvent *pe) {
                 if(m_activeCamera->orthographic()) {
                     Transform *t = m_camera->transform();
                     cameraMove(t->quaternion() * p);
+
+                    m_cameraInMove = true;
                 } else {
                     if(!m_blockRotation)  {
                         cameraRotate(Vector3(delta.y(), delta.x(), 0.0f) * 0.1f);

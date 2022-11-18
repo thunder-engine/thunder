@@ -9,10 +9,7 @@ class ShaderBuilder;
 class ShaderNodeGraph;
 class CameraCtrl;
 
-class ComponentBrowser;
 class UndoCommand;
-
-class QMenu;
 
 namespace Ui {
     class MaterialEdit;
@@ -28,13 +25,16 @@ public:
 private slots:
     void onActivated() override;
 
-    void onSchemeUpdated();
+    void onGraphUpdated();
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();
     void on_actionSphere_triggered();
 
 private:
+    void readSettings();
+    void writeSettings();
+
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const QString &path) override;
 
@@ -59,6 +59,7 @@ private:
     CameraCtrl *m_controller;
 
     const UndoCommand *m_lastCommand;
+
 };
 
 #endif // MATERIALEDIT_H

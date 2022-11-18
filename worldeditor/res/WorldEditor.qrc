@@ -86,12 +86,9 @@
         <file>qml/Theme.qml</file>
         <file>qml/CurveEditor.qml</file>
         <file>qml/Startup.qml</file>
-        <file>qml/SchemeEditor.qml</file>
-        <file>qml/SchemePort.qml</file>
         <file>qml/Projects.qml</file>
         <file>qml/Blog.qml</file>
         <file>qml/BlogTile.qml</file>
-        <file>qml/GridLines.qml</file>
         <file>qml/ResizableScrollBar.qml</file>
     </qresource>
     <qresource prefix="/Workspaces">

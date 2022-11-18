@@ -5,28 +5,10 @@
 
 #include <resources/material.h>
 
-#include <editor/scheme/graphnode.h>
-#include <editor/scheme/abstractnodegraph.h>
+#include <editor/graph/graphnode.h>
+#include <editor/graph/abstractnodegraph.h>
 
-#define SHADER      "Shader"
-#define SIMPLE      "Simple"
-
-#define STATIC      "Static"
-#define INSTANCED   "StaticInst"
-#define PARTICLE    "Particle"
-#define SKINNED     "Skinned"
-
-#define UNIFORM 4
-
-#define TYPE        "Type"
-#define BLEND       "Blend"
-#define MODEL       "Model"
-#define SIDE        "Side"
-#define DEPTH       "Depth"
-#define DEPTHWRITE  "DepthWrite"
-#define TEXTURES    "Textures"
-#define UNIFORMS    "Uniforms"
-#define PROPERTIES  "Properties"
+typedef map<string, string> PragmaMap;
 
 class ShaderRootNode : public GraphNode {
     Q_OBJECT
@@ -78,25 +60,27 @@ public:
     }
 
     bool isDoubleSided() const { return m_doubleSided; }
-    void setDoubleSided(bool value) { m_doubleSided = value; emit schemeUpdated(); }
+    void setDoubleSided(bool value) { m_doubleSided = value; emit graphUpdated(); }
 
     bool isDepthTest() const { return m_depthTest; }
-    void setDepthTest(bool value) { m_depthTest = value; emit schemeUpdated(); }
+    void setDepthTest(bool value) { m_depthTest = value; emit graphUpdated(); }
 
     bool isDepthWrite() const { return m_depthWrite; }
-    void setDepthWrite(bool value) { m_depthWrite = value; emit schemeUpdated(); }
+    void setDepthWrite(bool value) { m_depthWrite = value; emit graphUpdated(); }
 
     Type materialType() const { return m_materialType; }
     void setMaterialType(Type type) { m_materialType = type; }
 
     Blend blend() const { return m_blendMode; }
-    void setBlend(Blend mode) { m_blendMode = mode; emit schemeUpdated(); }
+    void setBlend(Blend mode) { m_blendMode = mode; emit graphUpdated(); }
 
     LightModel lightModel() const { return m_lightModel; }
-    void setLightModel(LightModel model) { m_lightModel = model; emit schemeUpdated(); }
+    void setLightModel(LightModel model) { m_lightModel = model; emit graphUpdated(); }
+
+    Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
 
 signals:
-    void schemeUpdated();
+    void graphUpdated();
 
 private:
     Blend m_blendMode;
@@ -119,8 +103,6 @@ Q_DECLARE_METATYPE(ShaderRootNode::LightModel)
 Q_DECLARE_METATYPE(ShaderRootNode::Blend)
 Q_DECLARE_METATYPE(ShaderRootNode::Type)
 
-typedef map<string, string> PragmaMap;
-
 class ShaderNodeGraph : public AbstractNodeGraph {
     Q_OBJECT
 
@@ -132,7 +114,9 @@ public:
 
     bool buildGraph();
 
-    int setTexture(const QString &path, Vector4 &sub, uint8_t flags = 0);
+    QStringList buildFrom(GraphNode *node);
+
+    int setTexture(const QString &path, Vector4 &sub, int32_t flags = 0);
 
     void addUniform(const QString &name, uint8_t type, const QVariant &value);
 
@@ -171,8 +155,6 @@ private:
 
     Variant compile(int32_t rhi, const QString &source, const string &define, int stage) const;
 
-    QStringList buildRoot();
-
     void cleanup();
 
     void addPragma(const string &key, const string &value);
@@ -188,23 +170,15 @@ private:
         QVariant value;
     };
 
-    typedef QList<Uniform> UniformList;
-
-    typedef QPair<QString, uint8_t> TexturePair;
-
-    typedef QList<TexturePair> TextureList;
-
-    typedef QList<MaterialInput> InputList;
-
     QStringList m_functions;
 
-    UniformList m_uniforms;
+    list<Uniform> m_uniforms;
 
-    TextureList m_textures;
+    QList<QPair<QString, int32_t>> m_textures;
 
     PragmaMap m_pragmas;
 
-    InputList m_inputs;
+    list<MaterialInput> m_inputs;
 
 };
 
