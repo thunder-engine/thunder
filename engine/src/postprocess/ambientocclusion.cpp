@@ -24,8 +24,7 @@ namespace {
     const char *ambientPower("ambientOcclusion/Power");
 };
 
-AmbientOcclusion::AmbientOcclusion(PipelineContext *context) :
-        RenderPass(context),
+AmbientOcclusion::AmbientOcclusion() :
         m_radius(0.2f),
         m_bias(0.025f),
         m_power(2.0f),
@@ -102,6 +101,8 @@ AmbientOcclusion::AmbientOcclusion(PipelineContext *context) :
         }
     }
 
+    setName("AmbientOcclusion");
+
     Engine::setValue(ambientOcclusion, true);
 
     PostProcessSettings::registerSetting(ambientRadius, m_radius);
@@ -170,8 +171,4 @@ void AmbientOcclusion::setSettings(const PostProcessSettings &settings) {
 
 uint32_t AmbientOcclusion::layer() const {
     return CommandBuffer::DEFAULT;
-}
-
-const char *AmbientOcclusion::name() const {
-    return "AmbientOcclusion";
 }

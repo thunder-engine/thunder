@@ -25,12 +25,13 @@ public:
 protected:
     Vector2 m_direction;
 
-    MaterialInstance *m_pBlurMaterial;
+    MaterialInstance *m_blurMaterial;
 
-    Mesh *m_pMesh;
+    Mesh *m_mesh;
 
     Texture *m_tempTexture;
     RenderTarget *m_tempTarget;
+
 };
 
 #endif // BLUR_H

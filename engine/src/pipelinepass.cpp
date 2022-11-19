@@ -1,65 +1,71 @@
-#include "renderpass.h"
+#include "pipelinepass.h"
 
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 /*!
-    \class RenderPass
+    \class PipelinePass
     \brief A base class for all custom render passes.
     \inmodule Engine
 
     All render passes must be inherited from this class.
 */
 
-RenderPass::RenderPass(PipelineContext *context) :
+PipelinePass::PipelinePass() :
         m_enabled(true) {
 
 }
 
-RenderPass::~RenderPass() {
+PipelinePass::~PipelinePass() {
 
 }
 /*!
     The main method to apply post effect.
     The effect will be applied to \a source buffer for the provided \a pipeline.
 */
-Texture *RenderPass::draw(Texture *source, PipelineContext *context) {
+Texture *PipelinePass::draw(Texture *source, PipelineContext *context) {
     return source;
 }
 /*!
     A callback to react on screen \a width and \a height changed.
 */
-void RenderPass::resize(int32_t width, int32_t height) {
+void PipelinePass::resize(int32_t width, int32_t height) {
 
+}
+/*!
+    Set a \a source texture to use it in the render pass.
+*/
+void PipelinePass::setInput(uint32_t index, Texture *source) {
+    m_inputs[index] = source;
+}
+/*!
+    Returns a result of pass.
+*/
+Texture *PipelinePass::output() {
+    return nullptr;
 }
 /*!
     A callback to react on chage of post effect \a settings.
 */
-void RenderPass::setSettings(const PostProcessSettings &settings) {
+void PipelinePass::setSettings(const PostProcessSettings &settings) {
     A_UNUSED(settings);
 }
 /*!
     Returns a layer where post effect will be called.
 */
-uint32_t RenderPass::layer() const {
+uint32_t PipelinePass::layer() const {
     return CommandBuffer::TRANSLUCENT;
-}
-/*!
-    Returns a name of post effect.
-*/
-const char *RenderPass::name() const {
-    return nullptr;
 }
 /*!
     Sets post effect to \a enable or disable.
     The disabled effect will not be applied.
 */
-void RenderPass::setEnabled(bool enable) {
+void PipelinePass::setEnabled(bool enable) {
     m_enabled = enable;
 }
 /*!
     Returns true if post effect is enabled; otherwise returns false.
 */
-bool RenderPass::isEnabled() const {
+bool PipelinePass::isEnabled() const {
     return m_enabled;
 }

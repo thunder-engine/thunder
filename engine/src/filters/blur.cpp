@@ -6,17 +6,18 @@
 
 #include "engine.h"
 #include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 #define OVERRIDE "rgbMap"
 
 Blur::Blur() :
-        m_pBlurMaterial(nullptr) {
+        m_blurMaterial(nullptr) {
 
-    m_pMesh = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+    m_mesh = PipelineContext::defaultPlane();
 
     Material *material = Engine::loadResource<Material>(".embedded/Blur.shader");
     if(material) {
-        m_pBlurMaterial = material->createInstance();
+        m_blurMaterial = material->createInstance();
     }
 
     m_tempTexture = Engine::objectCreate<Texture>("blurTempTexture");
@@ -27,37 +28,37 @@ Blur::Blur() :
 }
 
 void Blur::draw(CommandBuffer &buffer, Texture *source, RenderTarget *target) {
-    if(m_pBlurMaterial) {
+    if(m_blurMaterial) {
         Texture *t = target->colorAttachment(0);
         m_tempTexture->setWidth(t->width());
         m_tempTexture->setHeight(t->height());
 
         m_direction.x = 1.0f;
         m_direction.y = 0.0f;
-        m_pBlurMaterial->setVector2("uni.direction", &m_direction);
+        m_blurMaterial->setVector2("uni.direction", &m_direction);
 
-        m_pBlurMaterial->setTexture(OVERRIDE, source);
+        m_blurMaterial->setTexture(OVERRIDE, source);
 
         buffer.setRenderTarget(m_tempTarget);
         buffer.clearRenderTarget();
-        buffer.drawMesh(Matrix4(), m_pMesh, 0, CommandBuffer::UI, m_pBlurMaterial);
+        buffer.drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blurMaterial);
 
         m_direction.x = 0.0f;
         m_direction.y = 1.0f;
-        m_pBlurMaterial->setVector2("uni.direction", &m_direction);
+        m_blurMaterial->setVector2("uni.direction", &m_direction);
 
-        m_pBlurMaterial->setTexture(OVERRIDE, m_tempTexture);
+        m_blurMaterial->setTexture(OVERRIDE, m_tempTexture);
 
         buffer.setRenderTarget(target);
-        buffer.drawMesh(Matrix4(), m_pMesh, 0, CommandBuffer::UI, m_pBlurMaterial);
+        buffer.drawMesh(Matrix4(), m_mesh, 0, CommandBuffer::UI, m_blurMaterial);
     }
 }
 
 void Blur::setParameters(const Vector2 &size, int32_t steps, const float *points) {
-    if(m_pBlurMaterial) {
-        m_pBlurMaterial->setInteger("uni.steps", &steps);
-        m_pBlurMaterial->setFloat("uni.curve", points);
-        m_pBlurMaterial->setVector2("uni.size", &size);
+    if(m_blurMaterial) {
+        m_blurMaterial->setInteger("uni.steps", &steps);
+        m_blurMaterial->setFloat("uni.curve", points);
+        m_blurMaterial->setVector2("uni.size", &size);
     }
 }
 

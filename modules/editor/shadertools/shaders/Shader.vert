@@ -33,7 +33,6 @@ layout(location = 4) in vec4 color;
 
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec2 _uv0;
-layout(location = 2) out vec2 _uv1;
 layout(location = 3) out vec3 _n;
 layout(location = 4) out vec3 _t;
 layout(location = 5) out vec3 _b;

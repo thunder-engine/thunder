@@ -1,15 +1,15 @@
 #ifndef REFLECTIONS_H
 #define REFLECTIONS_H
 
-#include "renderpass.h"
+#include "pipelinepass.h"
 
 class Texture;
 class MaterialInstance;
 class RenderTarget;
 
-class Reflections : public RenderPass {
+class Reflections : public PipelinePass {
 public:
-    Reflections(PipelineContext *context);
+    Reflections();
     ~Reflections();
 
 private:
@@ -18,8 +18,6 @@ private:
     void resize(int32_t width, int32_t height) override;
 
     uint32_t layer() const override;
-
-    const char *name() const override;
 
 private:
     MaterialInstance *m_iblMaterial;
@@ -31,6 +29,7 @@ private:
 
     RenderTarget *m_resultTarget;
     RenderTarget *m_sslrTarget;
+
 };
 
 #endif // REFLECTIONS_H

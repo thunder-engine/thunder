@@ -20,8 +20,7 @@ namespace {
 };
 
 
-Bloom::Bloom(PipelineContext *context) :
-        RenderPass(context),
+Bloom::Bloom() :
         m_threshold(1.0f),
         m_width(0),
         m_height(0) {
@@ -48,6 +47,8 @@ Bloom::Bloom(PipelineContext *context) :
     m_bloomPasses[2].m_blurSize = Vector3(16.0f, 0.0f, 16.0f);
     m_bloomPasses[3].m_blurSize = Vector3(32.0f, 0.0f, 32.0f);
     m_bloomPasses[4].m_blurSize = Vector3(64.0f, 0.0f, 64.0f);
+
+    setName("Bloom");
 
     PostProcessSettings::registerSetting(bloomThreshold, m_threshold);
 }
@@ -82,7 +83,7 @@ Texture *Bloom::draw(Texture *source, PipelineContext *context) {
 }
 
 void Bloom::resize(int32_t width, int32_t height) {
-    RenderPass::resize(width, height);
+    PipelinePass::resize(width, height);
 
     if(m_width != width || m_height != height) {
         m_width = width;
@@ -106,8 +107,4 @@ void Bloom::resize(int32_t width, int32_t height) {
 void Bloom::setSettings(const PostProcessSettings &settings) {
     m_threshold = settings.readValue(bloomThreshold).toFloat();
     m_material->setFloat("uni.threshold", &m_threshold);
-}
-
-const char *Bloom::name() const {
-    return "Bloom";
 }

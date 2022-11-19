@@ -29,7 +29,6 @@ layout(binding = UNIFORM + 3) uniform sampler2D noiseMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
-layout(location = 7) in vec3 _view;
 
 layout(location = 0) out float color;
 

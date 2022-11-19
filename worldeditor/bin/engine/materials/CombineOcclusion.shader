@@ -1,7 +1,7 @@
 <Shader>
     <Properties>
-        <Property name="ssaoMap" type="texture2D" binding="4" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
+        <Property name="ssaoMap" type="texture2D" binding="5" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[
@@ -9,8 +9,8 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D ssaoMap;
-layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 1) uniform sampler2D ssaoMap;
+layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
 
 layout(location = 1) in vec2 _uv0;
 

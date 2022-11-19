@@ -419,7 +419,7 @@ VariantMap ShaderNodeGraph::data(bool editor) const {
 
     VariantList textures;
     uint16_t i = 0;
-    uint32_t binding = (m_uniforms.empty()) ? UNIFORM : UNIFORM + 1;
+    uint32_t binding = UNIFORM + 1;
     for(auto &it : m_textures) {
         VariantList data;
 
@@ -638,7 +638,6 @@ QStringList ShaderNodeGraph::buildFrom(GraphNode *node) {
                     default: break;
                 }
             }
-            qDebug() << qPrintable(function);
             result << function;
         }
     }

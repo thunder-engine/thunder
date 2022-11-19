@@ -7,6 +7,7 @@
 #include "resources/sprite.h"
 
 #include "commandbuffer.h"
+#include "pipelinecontext.h"
 
 #include <math.h>
 
@@ -26,7 +27,7 @@ public:
             m_sprite(nullptr),
             m_texture(nullptr),
             m_material(nullptr),
-            m_mesh(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
+            m_mesh(PipelineContext::defaultPlane()),
             m_customMesh(nullptr),
             m_color(1.0f),
             m_size(1.0f),

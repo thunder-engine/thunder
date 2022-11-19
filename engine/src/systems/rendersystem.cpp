@@ -154,9 +154,7 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
     Camera *camera = Camera::current();
     if(camera && p_ptr->m_pipelineContext) {
         p_ptr->m_pipelineContext->analizeScene(sceneGraph, this);
-        p_ptr->m_pipelineContext->drawMain(*camera);
-        p_ptr->m_pipelineContext->drawUi(*camera);
-        p_ptr->m_pipelineContext->finish();
+        p_ptr->m_pipelineContext->draw(*camera);
     }
 }
 
@@ -189,7 +187,7 @@ bool RenderSystem::isOffscreenMode() const {
 }
 
 #if defined(SHARED_DEFINE)
-QWindow *RenderSystem::createRhiWindow() const {
+QWindow *RenderSystem::createRhiWindow() {
     return nullptr;
 }
 

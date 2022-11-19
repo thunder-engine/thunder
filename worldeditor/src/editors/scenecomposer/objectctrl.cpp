@@ -16,7 +16,7 @@
 #include <editor/viewport/viewport.h>
 #include <editor/viewport/handles.h>
 
-#include <renderpass.h>
+#include <pipelinepass.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 
@@ -59,10 +59,9 @@ string findFreeObjectName(const string &name, Object *parent) {
     return "Object";
 }
 
-class ViewportRaycast : public RenderPass {
+class ViewportRaycast : public PipelinePass {
 public:
-    ViewportRaycast(PipelineContext *context) :
-            RenderPass(context),
+    ViewportRaycast() :
             m_objectId(0),
             m_controller(nullptr) {
         m_resultTexture = Engine::objectCreate<Texture>();
@@ -207,7 +206,7 @@ ObjectCtrl::~ObjectCtrl() {
 void ObjectCtrl::init(Viewport *viewport) {
     PipelineContext *pipeline = viewport->pipelineContext();
 
-    m_rayCast = new ViewportRaycast(pipeline);
+    m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
     pipeline->addRenderPass(m_rayCast);

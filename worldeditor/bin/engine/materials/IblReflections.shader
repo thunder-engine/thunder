@@ -1,10 +1,10 @@
 <Shader>
     <Properties>
-        <Property name="depthMap" type="texture2D" binding="4" target="true"/>
-        <Property name="normalsMap" type="texture2D" binding="5" target="true"/>
-        <Property name="paramsMap" type="texture2D" binding="6" target="true"/>
-        <Property name="rgbMap" type="texture2D" binding="7" target="true"/>
-        <Property name="environmentMap" type="samplerСube" binding="8"/>
+        <Property name="depthMap" type="texture2D" binding="5" target="true"/>
+        <Property name="normalsMap" type="texture2D" binding="6" target="true"/>
+        <Property name="paramsMap" type="texture2D" binding="7" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="8" target="true"/>
+        <Property name="environmentMap" type="samplerСube" binding="9"/>
     </Properties>
     <Fragment>
 <![CDATA[
@@ -12,15 +12,14 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D depthMap;
-layout(binding = UNIFORM + 1) uniform sampler2D normalsMap;
-layout(binding = UNIFORM + 2) uniform sampler2D paramsMap;
-layout(binding = UNIFORM + 3) uniform sampler2D rgbMap;
-layout(binding = UNIFORM + 4) uniform samplerCube environmentMap;
+layout(binding = UNIFORM + 1) uniform sampler2D depthMap;
+layout(binding = UNIFORM + 2) uniform sampler2D normalsMap;
+layout(binding = UNIFORM + 3) uniform sampler2D paramsMap;
+layout(binding = UNIFORM + 4) uniform sampler2D rgbMap;
+layout(binding = UNIFORM + 5) uniform samplerCube environmentMap;
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
-layout(location = 7) in vec3 _view;
 
 layout(location = 0) out vec4 color;
 

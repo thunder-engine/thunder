@@ -2,6 +2,7 @@
 #include "editor/viewport/handletools.h"
 
 #include "commandbuffer.h"
+#include "pipelinecontext.h"
 #include "components/camera.h"
 #include "components/actor.h"
 #include "components/transform.h"
@@ -76,9 +77,6 @@ enum {
 };
 
 void Handles::init() {
-    if(s_Quad == nullptr) {
-        s_Quad = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
-    }
     if(s_Cone == nullptr) {
         s_Cone = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
     }
@@ -429,7 +427,7 @@ bool Handles::drawBillboard(const Vector3 &position, const Vector2 &size, Textur
         s_Sprite->setTexture(OVERRIDE, texture);
         if(s_Buffer) {
             s_Buffer->setColor(s_Color);
-            s_Buffer->drawMesh(q, s_Quad, 0, CommandBuffer::TRANSLUCENT, s_Sprite);
+            s_Buffer->drawMesh(q, PipelineContext::defaultPlane(), 0, CommandBuffer::TRANSLUCENT, s_Sprite);
         }
     }
     return result;

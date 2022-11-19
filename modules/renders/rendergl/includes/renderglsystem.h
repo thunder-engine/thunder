@@ -17,7 +17,7 @@ public:
     void update(SceneGraph *graph) override;
 
 #ifdef SHARED_DEFINE
-    QWindow *createRhiWindow() const override;
+    QWindow *createRhiWindow() override;
 
     ByteArray renderOffscreen(SceneGraph *scene, int width, int height) override;
 #endif

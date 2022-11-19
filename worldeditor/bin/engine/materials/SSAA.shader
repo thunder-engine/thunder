@@ -1,6 +1,6 @@
 <Shader>
     <Properties>
-        <Property name="rgbMap" type="texture2D" binding="4" target="true"/>
+        <Property name="rgbMap" type="texture2D" binding="5" target="true"/>
     </Properties>
     <Fragment>
 <![CDATA[
@@ -8,7 +8,7 @@
 
 #include "ShaderLayout.h"
 
-layout(binding = UNIFORM) uniform sampler2D rgbMap;
+layout(binding = UNIFORM + 1) uniform sampler2D rgbMap;
 
 layout(location = 1) in vec2 _uv0;
 

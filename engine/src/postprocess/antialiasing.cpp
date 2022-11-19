@@ -13,8 +13,7 @@ namespace {
 
 #include "commandbuffer.h"
 
-AntiAliasing::AntiAliasing(PipelineContext *context) :
-        RenderPass(context) {
+AntiAliasing::AntiAliasing() {
 
     Material *material = Engine::loadResource<Material>(".embedded/SSAA.shader");
     if(material) {
@@ -26,6 +25,8 @@ AntiAliasing::AntiAliasing(PipelineContext *context) :
 
     m_resultTarget = Engine::objectCreate<RenderTarget>();
     m_resultTarget->setColorAttachment(0, m_resultTexture);
+
+    setName("AntiAliasing");
 
     Engine::setValue(antialiasing, true);
 }
@@ -53,8 +54,3 @@ void AntiAliasing::resize(int32_t width, int32_t height) {
 uint32_t AntiAliasing::layer() const {
     return CommandBuffer::UI;
 }
-
-const char *AntiAliasing::name() const {
-    return "AntiAliasing";
-}
-

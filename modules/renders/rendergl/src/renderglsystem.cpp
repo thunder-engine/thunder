@@ -136,7 +136,7 @@ void RenderGLSystem::update(SceneGraph *graph) {
 #if defined(SHARED_DEFINE)
 #include "editor/rhiwrapper.h"
 
-QWindow *RenderGLSystem::createRhiWindow() const {
+QWindow *RenderGLSystem::createRhiWindow() {
     return createWindow();
 }
 

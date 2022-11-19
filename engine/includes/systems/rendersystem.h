@@ -28,7 +28,7 @@ public:
     PipelineContext *pipelineContext() const;
 
 #if defined(SHARED_DEFINE)
-    virtual QWindow *createRhiWindow() const;
+    virtual QWindow *createRhiWindow();
 
     virtual ByteArray renderOffscreen(SceneGraph *sceneGraph, int width, int height);
 #endif

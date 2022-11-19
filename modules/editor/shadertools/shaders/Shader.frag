@@ -6,7 +6,6 @@
 
 layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
-layout(location = 2) in vec2 _uv1;
 layout(location = 3) in vec3 _n;
 layout(location = 4) in vec3 _t;
 layout(location = 5) in vec3 _b;
@@ -37,7 +36,6 @@ void main(void) {
 #else
     vec3 normal = Normal * 2.0 - 1.0;
     normal = normalize(normal.x * _t + normal.y * _b + normal.z * _n);
-    vec3 reflect = reflect(_view, normal);
 
     vec3 emit = Emissive * l.color.xyz;
     float alpha = Opacity * l.color.w;

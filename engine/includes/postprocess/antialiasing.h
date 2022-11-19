@@ -1,22 +1,20 @@
 #ifndef ANTIALIASING_H
 #define ANTIALIASING_H
 
-#include "renderpass.h"
+#include "pipelinepass.h"
 
 class RenderTarget;
 class MaterialInstance;
 
-class AntiAliasing : public RenderPass {
+class AntiAliasing : public PipelinePass {
 public:
-    AntiAliasing(PipelineContext *context);
+    AntiAliasing();
 
     Texture *draw(Texture *source, PipelineContext *context) override;
 
     uint32_t layer() const override;
 
     void resize(int32_t width, int32_t height) override;
-
-    const char *name() const override;
 
 private:
     Texture *m_resultTexture;

@@ -10,7 +10,7 @@
 #include <QGuiApplication>
 #include <QRegularExpression>
 
-#include <renderpass.h>
+#include <pipelinepass.h>
 
 #include <systems/rendersystem.h>
 #include <systems/resourcesystem.h>
@@ -34,10 +34,9 @@ namespace {
     const char *gridColor("General/Colors/Grid_Color");
 }
 
-class Outline : public RenderPass {
+class Outline : public PipelinePass {
 public:
-    Outline(PipelineContext *context) :
-            RenderPass(context),
+    Outline() :
             m_width(1.0f),
             m_outlineMap(Engine::objectCreate<Texture>()),
             m_outlineDepth(Engine::objectCreate<Texture>()),
@@ -64,6 +63,8 @@ public:
             m_material->setTexture("outlineMap", m_outlineMap);
         }
 
+        setName("Outline");
+
         SettingsManager::instance()->registerProperty(outlineWidth, 1.0f);
         SettingsManager::instance()->registerProperty(outlineColor, QColor(255, 128, 0, 255));
     }
@@ -84,10 +85,6 @@ public:
     }
 
 private:
-    const char *name() const override {
-        return "Outline";
-    }
-
     Texture *draw(Texture *source, PipelineContext *context) override {
         if(m_material) {
             m_material->setTexture("rgbMap", source);
@@ -126,7 +123,7 @@ private:
         m_resultTexture->setWidth(width);
         m_resultTexture->setHeight(height);
 
-        RenderPass::resize(width, height);
+        PipelinePass::resize(width, height);
     }
 
 protected:
@@ -147,12 +144,11 @@ protected:
 
 };
 
-class GridRender : public RenderPass {
+class GridRender : public PipelinePass {
 public:
-    GridRender(PipelineContext *context) :
-            RenderPass(context),
+    GridRender() :
             m_controller(nullptr),
-            m_plane(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001")),
+            m_plane(PipelineContext::defaultPlane()),
             m_grid(nullptr),
             m_scale(1.0f) {
 
@@ -178,6 +174,10 @@ public:
     }
 
 private:
+    uint32_t layer() const override {
+        return CommandBuffer::TRANSLUCENT;
+    }
+
     Texture *draw(Texture *source, PipelineContext *context) override {
         if(context->debugTexture() == nullptr) {
             Camera *camera = Camera::current();
@@ -267,10 +267,9 @@ private:
 
 };
 
-class GizmoRender : public RenderPass {
+class GizmoRender : public PipelinePass {
 public:
-    GizmoRender(PipelineContext *context) :
-            RenderPass(context),
+    GizmoRender() :
             m_controller(nullptr) {
     }
 
@@ -352,25 +351,27 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
         if(camera) {
             PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
-            m_outlinePass = new Outline(pipelineContext);
+            m_outlinePass = new Outline;
             m_outlinePass->setController(m_controller);
             m_outlinePass->loadSettings();
 
-            m_gizmoRender = new GizmoRender(pipelineContext);
+            m_gizmoRender = new GizmoRender;
             m_gizmoRender->setController(m_controller);
 
-            m_gridRender = new GridRender(pipelineContext);
+            m_gridRender = new GridRender;
             m_gridRender->setController(m_controller);
             m_gridRender->loadSettings();
 
+            pipelineContext->addRenderPass(m_gridRender);
             pipelineContext->addRenderPass(m_outlinePass);
             pipelineContext->addRenderPass(m_gizmoRender);
-            pipelineContext->addRenderPass(m_gridRender);
 
             pipelineContext->showUiAsSceneView();
 
             for(auto it : pipelineContext->renderPasses()) {
-                SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name()), it->isEnabled());
+                if(!it->name().empty()) {
+                    SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
+                }
             }
 
             Handles::init();
@@ -394,8 +395,8 @@ void Viewport::onApplySettings() {
     PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
     if(pipelineContext) {
         for(auto it : pipelineContext->renderPasses()) {
-            if(it->name()) {
-                it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name())).toBool());
+            if(!it->name().empty()) {
+                it->setEnabled(SettingsManager::instance()->property(qPrintable(QString(postSettings) + it->name().c_str())).toBool());
             }
         }
     }
@@ -491,7 +492,7 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
                 static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
                 static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
-                QString result = it->name();
+                QString result(it->name().c_str());
                 if(result.isEmpty()) {
                     continue;
                 }
@@ -502,7 +503,7 @@ void Viewport::fillEffectMenu(QMenu *menu, uint32_t layers) {
                 QAction *action = menu->addAction(result);
                 action->setCheckable(true);
                 action->setChecked(it->isEnabled());
-                action->setData(it->name());
+                action->setData(it->name().c_str());
 
                 QObject::connect(action, &QAction::toggled, this, &Viewport::onPostEffectChanged);
             }
@@ -521,9 +522,9 @@ void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
         for(auto &it : m_renderSystem->pipelineContext()->renderPasses()) {
-            if(action->data().toString() == it->name()) {
+            if(action->data().toString().toStdString() == it->name()) {
                 it->setEnabled(checked);
-                SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name()), checked);
+                SettingsManager::instance()->setProperty(qPrintable(QString(postSettings) + it->name().c_str()), checked);
             }
         }
     }

@@ -286,7 +286,7 @@ EffectEmitter *EffectConverter::createEmitter() {
         it++;
     }
     obj->setObjectName(base + QString::number(it));
-    obj->setMeshPath(".embedded/sphere.fbx/Sphere001"); // .embedded/plane.fbx/Plane001
+    obj->setMeshPath(".embedded/sphere.fbx/Sphere001");
     connect(obj, &EffectEmitter::updated, this, &EffectConverter::effectUpdated);
     emit effectUpdated();
     return obj;

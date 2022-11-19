@@ -78,7 +78,8 @@ PipelineContext::PipelineContext() :
         Texture *depth = Engine::objectCreate<Texture>(name() + "/" + DEPTH_MAP);
         depth->setFormat(Texture::Depth);
         depth->setDepthBits(24);
-        depth->resize(2, 2);
+        depth->setWidth(2);
+        depth->setHeight(2);
         m_textureBuffers[DEPTH_MAP] = depth;
         m_buffer->setGlobalTexture(DEPTH_MAP, depth);
     }
@@ -120,7 +121,9 @@ PipelineContext::PipelineContext() :
     light->setDepthAttachment(m_textureBuffers[DEPTH_MAP]);
     m_renderTargets[LIGHPASS] = light;
 
-    m_renderPasses = { new AmbientOcclusion(this), new Reflections(this), new AntiAliasing(this), new Bloom(this) };
+    m_renderPasses = { new AmbientOcclusion, new Reflections, new AntiAliasing, new Bloom };
+
+    m_final = m_textureBuffers[G_EMISSIVE];
 }
 
 PipelineContext::~PipelineContext() {
@@ -131,7 +134,7 @@ CommandBuffer *PipelineContext::buffer() const {
     return m_buffer;
 }
 
-void PipelineContext::drawMain(Camera &camera) {
+void PipelineContext::draw(Camera &camera) {
     updateShadows(camera);
 
     m_buffer->setViewport(0, 0, m_width, m_height);
@@ -160,27 +163,20 @@ void PipelineContext::drawMain(Camera &camera) {
 
     // Step 3.2 - Transparent pass post processing
     renderPass(m_renderTargets[LIGHPASS], CommandBuffer::TRANSLUCENT);
-    m_final = m_textureBuffers[G_EMISSIVE];
-}
 
-void PipelineContext::drawUi(Camera &camera) {
+    // Step 4.1 - UI pass
     if(!m_uiAsSceneView) {
         m_buffer->setScreenProjection(0, 0, m_width, m_height);
     }
     drawRenderers(CommandBuffer::UI, m_uiComponents);
 
     renderPass(m_renderTargets[LIGHPASS], CommandBuffer::UI);
-}
 
-void PipelineContext::finish() {
-    if(m_debugTexture != nullptr) {
-        m_final = m_debugTexture;
-    }
-
+    // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
     m_buffer->clearRenderTarget();
 
-    m_finalMaterial->setTexture(OVERRIDE, m_final);
+    m_finalMaterial->setTexture(OVERRIDE, (m_debugTexture != nullptr) ? m_debugTexture : m_final);
     m_buffer->drawMesh(Matrix4(), defaultPlane(), 0, CommandBuffer::UI, m_finalMaterial);
 }
 
@@ -383,11 +379,11 @@ void PipelineContext::showUiAsSceneView() {
     m_uiAsSceneView = true;
 }
 
-void PipelineContext::addRenderPass(RenderPass *pass) {
+void PipelineContext::addRenderPass(PipelinePass *pass) {
     m_renderPasses.push_back(pass);
 }
 
-const list<RenderPass *> &PipelineContext::renderPasses() const {
+const list<PipelinePass *> &PipelineContext::renderPasses() const {
     return m_renderPasses;
 }
 

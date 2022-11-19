@@ -18,8 +18,7 @@
 
 const char *REFLECTIONS("graphics.reflections");
 
-Reflections::Reflections(PipelineContext *context) :
-        RenderPass(context),
+Reflections::Reflections() :
         m_iblMaterial(nullptr),
         m_environmentTexture(nullptr) {
 
@@ -49,6 +48,8 @@ Reflections::Reflections(PipelineContext *context) :
             m_iblMaterial->setTexture("environmentMap", m_environmentTexture);
         }
     }
+
+    setName("ScreenSpaceLocalReflections");
 
     Engine::setValue(REFLECTIONS, true);
 
@@ -85,8 +86,4 @@ void Reflections::resize(int32_t width, int32_t height) {
 
 uint32_t Reflections::layer() const {
     return CommandBuffer::LIGHT;
-}
-
-const char *Reflections::name() const {
-    return "ScreenSpaceLocalReflections";
 }

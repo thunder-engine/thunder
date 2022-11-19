@@ -45,7 +45,6 @@ void main() {
     } else {
         discard;
     }
-
 }
 ]]>
     </Fragment>

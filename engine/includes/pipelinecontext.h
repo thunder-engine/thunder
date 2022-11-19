@@ -18,7 +18,7 @@ class Mesh;
 class MaterialInstance;
 class Texture;
 class RenderTarget;
-class RenderPass;
+class PipelinePass;
 
 class PostProcessVolume;
 
@@ -37,11 +37,7 @@ public:
 
     void analizeScene(SceneGraph *graph, RenderSystem *render);
 
-    void drawMain(Camera &camera);
-
-    void drawUi(Camera &camera);
-
-    void finish();
+    void draw(Camera &camera);
 
     void cameraReset(Camera &camera);
 
@@ -55,8 +51,8 @@ public:
     Texture *debugTexture() const;
     void setDebugTexture(const string &string);
 
-    void addRenderPass(RenderPass *pass);
-    const list<RenderPass *> &renderPasses() const;
+    void addRenderPass(PipelinePass *pass);
+    const list<PipelinePass *> &renderPasses() const;
 
     list<string> renderTextures() const;
 
@@ -98,7 +94,7 @@ protected:
     BuffersMap m_textureBuffers;
     TargetsMap m_renderTargets;
 
-    list<RenderPass *> m_renderPasses;
+    list<PipelinePass *> m_renderPasses;
 
     unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
     unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;

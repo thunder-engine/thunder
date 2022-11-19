@@ -50,7 +50,7 @@ public:
 
 DirectLight::DirectLight() :
         p_ptr(new DirectLightPrivate) {
-    setShape(Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001"));
+    setShape(PipelineContext::defaultPlane());
 
     Material *material = Engine::loadResource<Material>(".embedded/DirectLight.shader");
     if(material) {

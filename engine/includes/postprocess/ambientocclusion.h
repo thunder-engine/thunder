@@ -1,7 +1,7 @@
 #ifndef AMBIENTOCCLUSION_H
 #define AMBIENTOCCLUSION_H
 
-#include "renderpass.h"
+#include "pipelinepass.h"
 
 #include <amath.h>
 
@@ -10,9 +10,9 @@
 class RenderTarget;
 class MaterialInstance;
 
-class AmbientOcclusion : public RenderPass {
+class AmbientOcclusion : public PipelinePass {
 public:
-    AmbientOcclusion(PipelineContext *context);
+    AmbientOcclusion();
     ~AmbientOcclusion();
 
     Texture *draw(Texture *source, PipelineContext *context) override;
@@ -22,8 +22,6 @@ public:
     void setSettings(const PostProcessSettings &settings) override;
 
     uint32_t layer() const override;
-
-    const char *name() const override;
 
 protected:
     Vector3 m_samplesKernel[KERNEL_SIZE];
