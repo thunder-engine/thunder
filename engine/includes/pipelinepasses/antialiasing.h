@@ -10,6 +10,7 @@ class AntiAliasing : public PipelinePass {
 public:
     AntiAliasing();
 
+private:
     Texture *draw(Texture *source, PipelineContext *context) override;
 
     uint32_t layer() const override;

@@ -16,13 +16,14 @@ public:
     PipelinePass();
     ~PipelinePass();
 
-    virtual Texture *draw(Texture *source, PipelineContext *context);
+    virtual Texture *draw(Texture *surce, PipelineContext *context);
 
     virtual void resize(int32_t width, int32_t height);
 
     virtual void setInput(uint32_t index, Texture *source);
 
-    virtual Texture *output();
+    virtual uint32_t outputCount() const;
+    virtual Texture *output(uint32_t index);
 
     virtual void setSettings(const PostProcessSettings &settings);
 
@@ -33,8 +34,6 @@ public:
 
 protected:
     bool m_enabled;
-
-    unordered_map<uint32_t, Texture *> m_inputs;
 
 };
 

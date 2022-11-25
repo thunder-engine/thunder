@@ -10,7 +10,6 @@ class RenderTarget;
 class Reflections : public PipelinePass {
 public:
     Reflections();
-    ~Reflections();
 
 private:
     Texture *draw(Texture *source, PipelineContext *context) override;
@@ -19,16 +18,20 @@ private:
 
     uint32_t layer() const override;
 
+    uint32_t outputCount() const override;
+
+    Texture *output(uint32_t index) override;
+
 private:
+    MaterialInstance *m_slrMaterial;
     MaterialInstance *m_iblMaterial;
-    MaterialInstance *m_material;
 
-    Texture *m_resultTexture;
+    Texture *m_slrTexture;
     Texture *m_environmentTexture;
-    Texture *m_sslrTexture;
+    Texture *m_resultTexture;
 
+    RenderTarget *m_slrTarget;
     RenderTarget *m_resultTarget;
-    RenderTarget *m_sslrTarget;
 
 };
 

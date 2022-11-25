@@ -16,7 +16,6 @@ class ENGINE_EXPORT SpotLight : public BaseLight {
 
 public:
     SpotLight();
-    ~SpotLight();
 
     float attenuationDistance() const;
     void setAttenuationDistance(float distance);
@@ -25,9 +24,7 @@ public:
     void setOuterAngle(float value);
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
-
-    void shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) override;
+    int lightType() const override;
 
     AABBox bound() const override;
 #ifdef SHARED_DEFINE
@@ -35,7 +32,9 @@ private:
 #endif
 
 private:
-    SpotLightPrivate *p_ptr;
+    AABBox m_box;
+
+    float m_angle;
 
 };
 

@@ -8,7 +8,7 @@ Project {
         "src/resources/*.cpp",
         "src/systems/*.cpp",
         "src/filters/*.cpp",
-        "src/postprocess/*.cpp"
+        "src/pipelinepasses/*.cpp"
     ]
 
     property stringList incPaths: [

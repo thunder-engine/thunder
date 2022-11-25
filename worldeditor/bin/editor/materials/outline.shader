@@ -36,9 +36,9 @@ void main(void) {
         vec2 n = vec2(-(t - b), (r - l));
         float v = (length( n ) > 0.1) ? 1.0 : 0.0;
 
-        rgb = mix(texture(rgbMap, _uv0), uni.color, v);
+        rgb = vec4(uni.color.xyz, v);
 }
 ]]>
     </Fragment>
-    <Pass type="PostProcess" blendMode="Opaque" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
+    <Pass type="PostProcess" blendMode="Translucent" lightModel="Unlit" depthTest="false" depthWrite="false" twoSided="true"/>
 </Shader>

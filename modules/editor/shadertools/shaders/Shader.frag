@@ -56,10 +56,10 @@ void main(void) {
     vec3 albd = Diffuse * l.color.xyz;
 
     float spec = 1.0;
-    gbuffer1 = vec4(norm, model);
-    gbuffer2 = vec4(albd, 1.0);
-    gbuffer3 = vec4(matv, spec);
-    gbuffer4 = vec4(emit, 0.0);
+    gbuffer1 = vec4(emit, 0.0);
+    gbuffer2 = vec4(norm, model);
+    gbuffer3 = vec4(albd, 1.0);
+    gbuffer4 = vec4(matv, spec);
     #else
     gbuffer1 = vec4(emit, alpha);
     #endif

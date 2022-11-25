@@ -20,28 +20,38 @@ PipelinePass::~PipelinePass() {
 
 }
 /*!
-    The main method to apply post effect.
-    The effect will be applied to \a source buffer for the provided \a pipeline.
+    The pass will be applied to \a source for the provided \a context.
 */
-Texture *PipelinePass::draw(Texture *source, PipelineContext *context) {
-    return source;
+Texture *PipelinePass::draw(Texture *surce, PipelineContext *context) {
+    A_UNUSED(context);
+
+    return surce;
 }
 /*!
     A callback to react on screen \a width and \a height changed.
 */
 void PipelinePass::resize(int32_t width, int32_t height) {
-
+    A_UNUSED(width);
+    A_UNUSED(height);
 }
 /*!
     Set a \a source texture to use it in the render pass.
 */
 void PipelinePass::setInput(uint32_t index, Texture *source) {
-    m_inputs[index] = source;
+    A_UNUSED(index);
+    A_UNUSED(source);
+}
+/*!
+    Return the number of outputs.
+*/
+uint32_t PipelinePass::outputCount() const {
+    return 0;
 }
 /*!
     Returns a result of pass.
 */
-Texture *PipelinePass::output() {
+Texture *PipelinePass::output(uint32_t index) {
+    A_UNUSED(index);
     return nullptr;
 }
 /*!

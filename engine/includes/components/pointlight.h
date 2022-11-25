@@ -3,8 +3,6 @@
 
 #include "baselight.h"
 
-class PointLightPrivate;
-
 class ENGINE_EXPORT PointLight : public BaseLight {
     A_REGISTER(PointLight, BaseLight, Components/Lights)
 
@@ -17,7 +15,6 @@ class ENGINE_EXPORT PointLight : public BaseLight {
 
 public:
     PointLight();
-    ~PointLight() override;
 
     float attenuationRadius() const;
     void setAttenuationRadius(float radius);
@@ -29,9 +26,7 @@ public:
     void setSourceLength(float length);
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
-
-    void shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) override;
+    int lightType() const override;
 
     AABBox bound() const override;
 
@@ -40,7 +35,7 @@ private:
 #endif
 
 private:
-    PointLightPrivate *p_ptr;
+    AABBox m_box;
 
 };
 

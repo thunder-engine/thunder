@@ -122,8 +122,28 @@ public:
 
     void clear();
 
+    static uint32_t maxTextureSize();
+    static void setMaxTextureSize(uint32_t size);
+
+    static uint32_t maxCubemapSize();
+    static void setMaxCubemapSize(uint32_t size);
+
 private:
-    TexturePrivate *p_ptr;
+    int32_t m_format;
+    int32_t m_compress;
+    int32_t m_filtering;
+    int32_t m_wrap;
+
+    int32_t m_width;
+    int32_t m_height;
+
+    int32_t m_depth;
+
+    Vector2Vector m_shape;
+    Texture::Sides m_sides;
+
+    static uint32_t s_maxTextureSize;
+    static uint32_t s_maxCubemapSize;
 
 protected:
     void loadUserData(const VariantMap &data) override;

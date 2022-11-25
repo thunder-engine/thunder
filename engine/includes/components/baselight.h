@@ -5,16 +5,7 @@
 
 #include <amath.h>
 
-class Mesh;
 class MaterialInstance;
-class BaseLightPrivate;
-class PipelineContext;
-
-class Camera;
-
-#define SM_RESOLUTION_DEFAULT 2048
-
-#define SHADOW_MAP  "shadowMap"
 
 class ENGINE_EXPORT BaseLight : public Renderable {
     A_REGISTER(BaseLight, Renderable, General)
@@ -28,10 +19,16 @@ class ENGINE_EXPORT BaseLight : public Renderable {
     A_NOMETHODS()
 
 public:
-    BaseLight();
-    ~BaseLight() override;
+    enum LightType {
+        Invalid,
+        DirectLight,
+        AreaLight,
+        PointLight,
+        SpotLight
+    };
 
-    virtual void shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components);
+public:
+    BaseLight();
 
     bool castShadows() const;
     void setCastShadows(const bool shadows);
@@ -39,18 +36,18 @@ public:
     float brightness() const;
     void setBrightness(const float brightness);
 
-    Vector4 &color() const;
+    Vector4 color() const;
     void setColor(const Vector4 color);
 
-    Vector4 &bias() const;
+    Vector4 bias() const;
     void setBias(const Vector4 bias);
 
-protected:
-    MaterialInstance *material() const;
-    void setMaterial(MaterialInstance *instance);
+    virtual int lightType() const;
 
-    Mesh *shape() const;
-    void setShape(Mesh *shape);
+    MaterialInstance *material() const;
+
+protected:
+    void setMaterial(MaterialInstance *instance);
 
     Vector4 params() const;
     void setParams(Vector4 &params);
@@ -59,7 +56,15 @@ private:
     bool isLight() const override;
 
 private:
-    BaseLightPrivate *p_ptr;
+    float m_shadows;
+
+    Vector4 m_bias;
+
+    Vector4 m_params;
+
+    Vector4 m_color;
+
+    MaterialInstance *m_materialInstance;
 
 };
 

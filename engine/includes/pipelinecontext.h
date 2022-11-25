@@ -26,6 +26,8 @@ class AtlasNode;
 
 class Renderable;
 
+class ShadowMap;
+
 class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
 
@@ -35,54 +37,59 @@ public:
 
     CommandBuffer *buffer() const;
 
-    void analizeScene(SceneGraph *graph, RenderSystem *render);
+    void analizeScene(SceneGraph *graph);
 
-    void draw(Camera &camera);
+    void draw(Camera *camera);
 
-    void cameraReset(Camera &camera);
+    void cameraReset();
 
     void drawRenderers(uint32_t layer, const list<Renderable *> &list);
 
-    void setRenderTexture(const string &name, Texture *texture);
+    void setMaxTexture(uint32_t size);
 
     RenderTarget *defaultTarget();
     void setDefaultTarget(RenderTarget *target);
+
+    Texture *textureBuffer(const string &string);
 
     Texture *debugTexture() const;
     void setDebugTexture(const string &string);
 
     void addRenderPass(PipelinePass *pass);
+
     const list<PipelinePass *> &renderPasses() const;
 
     list<string> renderTextures() const;
 
+    list<Renderable *> &sceneComponents();
+    list<Renderable *> &sceneLights();
     list<Renderable *> &culledComponents();
     list<Renderable *> &uiComponents();
+
+    void setCurrentCamera(Camera *camera);
+    Camera *currentCamera() const;
 
     void showUiAsSceneView();
 
     void resize(int32_t width, int32_t height);
 
     // Shadow map management functions
-    void shadowPageSize(int32_t &width, int32_t &height);
-    void setShadowPageSize(int32_t width, int32_t height);
+
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
     static Mesh *defaultPlane();
 
 protected:
-    void renderPass(RenderTarget *source, uint32_t layer);
-
     void sortRenderables(list<Renderable *> &in, const Vector3 &origin);
-
-    void cleanShadowCache();
-    void updateShadows(Camera &camera);
 
     void combineComponents(Object *object, bool update);
 
 protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
+
+    Matrix4 m_cameraView;
+    Matrix4 m_cameraProjection;
 
     list<Renderable *> m_sceneComponents;
     list<Renderable *> m_sceneLights;
@@ -92,30 +99,22 @@ protected:
     list<PostProcessVolume *> m_postProcessVolume;
 
     BuffersMap m_textureBuffers;
-    TargetsMap m_renderTargets;
 
     list<PipelinePass *> m_renderPasses;
-
-    unordered_map<uint32_t, pair<RenderTarget *, vector<AtlasNode *>>> m_tiles;
-    unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
 
     CommandBuffer *m_buffer;
 
     MaterialInstance *m_finalMaterial;
-    MaterialInstance *m_effectMaterial;
 
     RenderTarget *m_defaultTarget;
 
     Texture *m_final;
     Texture *m_debugTexture;
 
-    RenderSystem *m_system;
+    Camera *m_camera;
 
     int32_t m_width;
     int32_t m_height;
-
-    int32_t m_shadowPageWidth;
-    int32_t m_shadowPageHeight;
 
     bool m_uiAsSceneView;
 

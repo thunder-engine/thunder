@@ -153,8 +153,8 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
 
     Camera *camera = Camera::current();
     if(camera && p_ptr->m_pipelineContext) {
-        p_ptr->m_pipelineContext->analizeScene(sceneGraph, this);
-        p_ptr->m_pipelineContext->draw(*camera);
+        p_ptr->m_pipelineContext->analizeScene(sceneGraph);
+        p_ptr->m_pipelineContext->draw(camera);
     }
 }
 
