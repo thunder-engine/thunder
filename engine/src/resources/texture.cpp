@@ -7,32 +7,8 @@
 #define HEADER  "Header"
 #define DATA    "Data"
 
-class TexturePrivate {
-public:
-    TexturePrivate() :
-            m_Format(Texture::R8),
-            m_Compress(Texture::Uncompressed),
-            m_Filtering(Texture::None),
-            m_Wrap(Texture::Clamp),
-            m_Width(1),
-            m_Height(1),
-            m_Depth(0) {
-
-    }
-
-    int32_t m_Format;
-    int32_t m_Compress;
-    int32_t m_Filtering;
-    int32_t m_Wrap;
-
-    int32_t m_Width;
-    int32_t m_Height;
-
-    int32_t m_Depth;
-
-    Vector2Vector m_Shape;
-    Texture::Sides m_Sides;
-};
+uint32_t Texture::s_maxTextureSize = 1024;
+uint32_t Texture::s_maxCubemapSize = 512;
 
 /*!
     \class Texture
@@ -84,15 +60,18 @@ public:
 */
 
 Texture::Texture() :
-        p_ptr(new TexturePrivate) {
+    m_format(Texture::R8),
+    m_compress(Texture::Uncompressed),
+    m_filtering(Texture::None),
+    m_wrap(Texture::Clamp),
+    m_width(1),
+    m_height(1),
+    m_depth(0) {
 
 }
 
 Texture::~Texture() {
     clear();
-
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     \internal
@@ -106,8 +85,8 @@ void Texture::loadUserData(const VariantMap &data) {
             const VariantList &surfaces = (*it).second.value<VariantList>();
             for(auto &s : surfaces) {
                 Surface img;
-                int32_t w = p_ptr->m_Width;
-                int32_t h = p_ptr->m_Height;
+                int32_t w = m_width;
+                int32_t h = m_height;
                 const VariantList &lods = s.value<VariantList>();
                 for(auto &l : lods) {
                     ByteArray bits = l.toByteArray();
@@ -121,7 +100,7 @@ void Texture::loadUserData(const VariantMap &data) {
                     w = MAX(w / 2, 1);
                     h = MAX(h / 2, 1);
                 }
-                p_ptr->m_Sides.push_back(img);
+                m_sides.push_back(img);
             }
         }
     }
@@ -133,7 +112,7 @@ VariantMap Texture::saveUserData() const {
     VariantMap result;
 
     VariantList surfaces;
-    for(auto &side : p_ptr->m_Sides) {
+    for(auto &side : m_sides) {
         VariantList surface;
         for(auto &lod : side) {
             surface.push_back(lod);
@@ -151,7 +130,7 @@ VariantMap Texture::saveUserData() const {
     Commonly used to set surfaces for the cube maps.
 */
 Texture::Surface &Texture::surface(int face) {
-    return p_ptr->m_Sides[face];
+    return m_sides[face];
 }
 /*!
     Adds \a surface to the texture.
@@ -159,7 +138,7 @@ Texture::Surface &Texture::surface(int face) {
     Commonly used to set surfaces for the cube maps.
 */
 void Texture::addSurface(const Surface &surface) {
-    p_ptr->m_Sides.push_back(surface);
+    m_sides.push_back(surface);
 }
 /*!
     Marks texture as dirty.
@@ -182,8 +161,8 @@ void Texture::readPixels(int x, int y, int width, int height) {
 */
 int Texture::getPixel(int x, int y, int level) const {
     uint32_t result = 0;
-    if(!p_ptr->m_Sides.empty() && p_ptr->m_Sides[0].size() > level) {
-        int8_t *ptr = p_ptr->m_Sides[0][level].data() + (y * p_ptr->m_Width + x) * 4;
+    if(!m_sides.empty() && m_sides[0].size() > level) {
+        const int8_t *ptr = m_sides[0][level].data() + (y * m_width + x) * 4;
         memcpy(&result, ptr, sizeof(uint32_t));
     }
     return result;
@@ -192,8 +171,8 @@ int Texture::getPixel(int x, int y, int level) const {
     Returns texture data from a mip \a level.
 */
 ByteArray Texture::getPixels(int level) const {
-    if(!p_ptr->m_Sides.empty() && p_ptr->m_Sides[0].size() > level) {
-        return p_ptr->m_Sides[0][level];
+    if(!m_sides.empty() && m_sides[0].size() > level) {
+        return m_sides[0][level];
     }
     return ByteArray();
 }
@@ -201,39 +180,39 @@ ByteArray Texture::getPixels(int level) const {
     Returns width for the texture.
 */
 int Texture::width() const {
-    return p_ptr->m_Width;
+    return m_width;
 }
 /*!
     Returns height for the texture.
 */
 int Texture::height() const {
-    return p_ptr->m_Height;
+    return m_height;
 }
 /*!
     Sets new \a width for the texture.
 */
 void Texture::setWidth(int width) {
-    p_ptr->m_Width = width;
+    m_width = width;
     switchState(ToBeUpdated);
 }
 /*!
     Sets new \a height for the texture.
 */
 void Texture::setHeight(int height) {
-    p_ptr->m_Height = height;
+    m_height = height;
     switchState(ToBeUpdated);
 }
 /*!
     Sets new \a width and \a height for the texture.
 */
 void Texture::resize(int width, int height) {
-    if((p_ptr->m_Width != width || p_ptr->m_Height != height) && width > 0 && height > 0) {
+    if((m_width != width || m_height != height) && width > 0 && height > 0) {
         clear();
 
-        p_ptr->m_Width = width;
-        p_ptr->m_Height = height;
+        m_width = width;
+        m_height = height;
 
-        int32_t length = size(p_ptr->m_Width, p_ptr->m_Height);
+        int32_t length = size(m_width, m_height);
         ByteArray pixels;
         pixels.resize(length);
         memset(&pixels[0], 0, length);
@@ -249,56 +228,56 @@ void Texture::resize(int width, int height) {
     For more details please see the Texture::FormatType enum.
 */
 int Texture::format() const {
-    return p_ptr->m_Format;
+    return m_format;
 }
 /*!
     Sets format \a type of texture.
     For more details please see the Texture::FormatType enum.
 */
 void Texture::setFormat(int type) {
-    p_ptr->m_Format = type;
+    m_format = type;
 }
 /*!
     Returns filtering type of texture.
     For more details please see the Texture::FilteringType enum.
 */
 int Texture::filtering() const {
-    return p_ptr->m_Filtering;
+    return m_filtering;
 }
 /*!
     Sets filtering \a type of texture.
     For more details please see the Texture::FilteringType enum.
 */
 void Texture::setFiltering(int type) {
-    p_ptr->m_Filtering = type;
+    m_filtering = type;
 }
 /*!
     Returns the type of warp policy.
     For more details please see the Texture::WrapType enum.
 */
 int Texture::wrap() const {
-    return p_ptr->m_Wrap;
+    return m_wrap;
 }
 /*!
     Sets the \a type of warp policy.
     For more details please see the Texture::WrapType enum.
 */
 void Texture::setWrap(int type) {
-    p_ptr->m_Wrap = type;
+    m_wrap = type;
 }
 /*!
     Returns the number of depth bits.
     \note This value is valid only for the depth textures.
 */
 int Texture::depthBits() const {
-    return p_ptr->m_Depth;
+    return m_depth;
 }
 /*!
     Sets the number of \a depth bits.
     \note This value is valid only for the depth textures.
 */
 void Texture::setDepthBits(int depth) {
-    p_ptr->m_Depth = depth;
+    m_depth = depth;
 }
 /*!
     \internal
@@ -306,26 +285,26 @@ void Texture::setDepthBits(int depth) {
     In most cases returns 1 but for the cube map will return 6
 */
 Texture::Sides *Texture::getSides() {
-    return &p_ptr->m_Sides;
+    return &m_sides;
 }
 
 /*!
     Returns true if texture is attechecd to framebuffer; otherwise returns false.
 */
 bool Texture::isFramebuffer() const {
-    return p_ptr->m_Sides.empty();
+    return m_sides.empty();
 }
 /*!
     Returns true if texture uses one of the compression formats; otherwise returns false.
 */
 bool Texture::isCompressed() const {
-    return p_ptr->m_Compress != Uncompressed;
+    return m_compress != Uncompressed;
 }
 /*!
     Returns true if the texture is a cube map; otherwise returns false.
 */
 bool Texture::isCubemap() const {
-    return (p_ptr->m_Sides.size() == 6);
+    return (m_sides.size() == 6);
 }
 /*!
     Returns true if texture provides a set of textures; otherwise returns false.
@@ -339,7 +318,7 @@ bool Texture::isArray() const {
     Returns the number of the color channels(components)
 */
 uint8_t Texture::components() const {
-    switch(p_ptr->m_Format) {
+    switch(m_format) {
         case R8: return 1;
         case RGB8:
         case RGB16Float:
@@ -364,8 +343,32 @@ bool Texture::isUnloadable() {
     \internal
 */
 void Texture::clear() {
-    p_ptr->m_Sides.clear();
-    p_ptr->m_Shape.clear();
+    m_sides.clear();
+    m_shape.clear();
+}
+/*!
+    Returns the maximum texure size.
+*/
+uint32_t Texture::maxTextureSize() {
+    return s_maxTextureSize;
+}
+/*!
+    \internal
+*/
+void Texture::setMaxTextureSize(uint32_t size) {
+    s_maxTextureSize = size;
+}
+/*!
+    Returns the maximum cubemap size.
+*/
+uint32_t Texture::maxCubemapSize() {
+    return s_maxCubemapSize;
+}
+/*!
+    \internal
+*/
+void Texture::setMaxCubemapSize(uint32_t size) {
+    s_maxCubemapSize = size;
 }
 /*!
     \internal
@@ -380,14 +383,14 @@ int32_t Texture::size(int32_t width, int32_t height) const {
     \internal
 */
 inline int32_t Texture::sizeDXTc(int32_t width, int32_t height) const {
-    return ((width + 3) / 4) * ((height + 3) / 4) * (p_ptr->m_Compress == DXT1 ? 8 : 16);
+    return ((width + 3) / 4) * ((height + 3) / 4) * (m_compress == DXT1 ? 8 : 16);
 }
 /*!
     \internal
 */
 inline int32_t Texture::sizeRGB(int32_t width, int32_t height) const {
-    int32_t s = ((p_ptr->m_Format == RGB16Float ||
-                  p_ptr->m_Format == RGBA32Float) ? 4 : 1);
+    int32_t s = ((m_format == RGB16Float ||
+                  m_format == RGBA32Float) ? 4 : 1);
     return width * height * components() * s;
 }
 /*!

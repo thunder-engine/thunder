@@ -117,7 +117,6 @@ public:
             it->update();
             context->culledComponents().push_back(it);
         }
-
         return source;
     }
 

@@ -36,18 +36,19 @@ namespace {
 
 class Outline : public PipelinePass {
 public:
+    enum Inputs {
+        Source,
+        Depth
+    };
+
+public:
     Outline() :
             m_width(1.0f),
             m_outlineMap(Engine::objectCreate<Texture>()),
             m_outlineDepth(Engine::objectCreate<Texture>()),
             m_outlineTarget(Engine::objectCreate<RenderTarget>()),
+            m_resultTarget(Engine::objectCreate<RenderTarget>()),
             m_controller(nullptr) {
-
-        m_resultTexture = Engine::objectCreate<Texture>();
-        m_resultTexture->setFormat(Texture::RGBA8);
-
-        m_resultTarget = Engine::objectCreate<RenderTarget>();
-        m_resultTarget->setColorAttachment(0, m_resultTexture);
 
         m_outlineDepth->setFormat(Texture::Depth);
         m_outlineDepth->setDepthBits(24);
@@ -84,11 +85,24 @@ public:
         m_controller = controller;
     }
 
+    void setInput(uint32_t index, Texture *texture) override {
+        switch(index) {
+        case Source: {
+            if(m_material) {
+                m_material->setTexture("rgbMap", texture);
+            }
+
+        } break;
+        case Depth: {
+            m_resultTarget->setDepthAttachment(texture);
+        } break;
+        default: break;
+        }
+    }
+
 private:
     Texture *draw(Texture *source, PipelineContext *context) override {
         if(m_material) {
-            m_material->setTexture("rgbMap", source);
-
             CommandBuffer *buffer = context->buffer();
 
             buffer->setRenderTarget(m_outlineTarget);
@@ -104,12 +118,10 @@ private:
             }
             context->drawRenderers(CommandBuffer::RAYCAST, filter);
 
+            m_resultTarget->setColorAttachment(Source, source);
             buffer->setRenderTarget(m_resultTarget);
             buffer->drawMesh(Matrix4(), PipelineContext::defaultPlane(), 0, CommandBuffer::UI, m_material);
-
-            return m_resultTexture;
         }
-
         return source;
     }
 
@@ -119,9 +131,6 @@ private:
 
         m_outlineDepth->setWidth(width);
         m_outlineDepth->setHeight(height);
-
-        m_resultTexture->setWidth(width);
-        m_resultTexture->setHeight(height);
 
         PipelinePass::resize(width, height);
     }
@@ -133,7 +142,6 @@ protected:
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;
-    Texture *m_resultTexture;
 
     RenderTarget *m_outlineTarget;
     RenderTarget *m_resultTarget;
@@ -146,8 +154,15 @@ protected:
 
 class GridRender : public PipelinePass {
 public:
+    enum Inputs {
+        Source,
+        Depth
+    };
+
+public:
     GridRender() :
             m_controller(nullptr),
+            m_resultTarget(Engine::objectCreate<RenderTarget>()),
             m_plane(PipelineContext::defaultPlane()),
             m_grid(nullptr),
             m_scale(1.0f) {
@@ -171,6 +186,15 @@ public:
 
     float scale() const {
         return m_scale;
+    }
+
+    void setInput(uint32_t index, Texture *texture) override {
+        switch(index) {
+        case Depth: {
+            m_resultTarget->setDepthAttachment(texture);
+        } break;
+        default: break;
+        }
     }
 
 private:
@@ -247,6 +271,9 @@ private:
 
             CommandBuffer *buffer = context->buffer();
 
+            m_resultTarget->setColorAttachment(Source, source);
+
+            buffer->setRenderTarget(m_resultTarget);
             buffer->setColor(m_gridColor);
             buffer->drawMesh(Matrix4(pos, rot, m_scale), m_plane, 0, CommandBuffer::TRANSLUCENT, m_grid);
             buffer->setColor(Vector4(1.0f));
@@ -259,6 +286,8 @@ private:
 
     CameraCtrl *m_controller;
 
+    RenderTarget *m_resultTarget;
+
     Mesh *m_plane;
 
     MaterialInstance *m_grid;
@@ -268,6 +297,12 @@ private:
 };
 
 class GizmoRender : public PipelinePass {
+public:
+    enum Inputs {
+        Source,
+        Depth
+    };
+
 public:
     GizmoRender() :
             m_controller(nullptr) {
@@ -351,16 +386,21 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
         if(camera) {
             PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
+            m_gridRender = new GridRender;
+            m_gridRender->setInput(GridRender::Depth, pipelineContext->textureBuffer("depthMap"));
+            m_gridRender->setController(m_controller);
+            m_gridRender->loadSettings();
+
             m_outlinePass = new Outline;
             m_outlinePass->setController(m_controller);
+            m_outlinePass->setInput(Outline::Source, pipelineContext->textureBuffer("emissiveMap"));
+            m_outlinePass->setInput(Outline::Depth, pipelineContext->textureBuffer("depthMap"));
             m_outlinePass->loadSettings();
 
             m_gizmoRender = new GizmoRender;
+            m_gizmoRender->setInput(GizmoRender::Source, pipelineContext->textureBuffer("emissiveMap"));
+            m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
             m_gizmoRender->setController(m_controller);
-
-            m_gridRender = new GridRender;
-            m_gridRender->setController(m_controller);
-            m_gridRender->loadSettings();
 
             pipelineContext->addRenderPass(m_gridRender);
             pipelineContext->addRenderPass(m_outlinePass);

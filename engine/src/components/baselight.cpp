@@ -7,36 +7,12 @@
 #include "mesh.h"
 
 namespace {
-const char *uni_params  = "uni.params";
-const char *uni_shadows = "uni.shadows";
-const char *uni_color   = "uni.color";
-const char *uni_bias    = "uni.bias";
+const char *uniParams  = "uni.params";
+const char *uniShadows = "uni.shadows";
+const char *uniColor   = "uni.color";
+const char *uniBias    = "uni.bias";
 };
 
-class BaseLightPrivate {
-public:
-    BaseLightPrivate() :
-            m_Shadows(0.0f),
-            m_Bias(0.001f),
-            m_Params(1.0f, 1.0f, 0.5f, 1.0f),
-            m_Color(1.0f),
-            m_pShape(nullptr),
-            m_pMaterialInstance(nullptr) {
-
-    }
-
-    float m_Shadows;
-
-    Vector4 m_Bias;
-
-    Vector4 m_Params;
-
-    Vector4 m_Color;
-
-    Mesh *m_pShape;
-
-    MaterialInstance *m_pMaterialInstance;
-};
 /*!
     \class BaseLight
     \brief Base class for every light source.
@@ -46,130 +22,111 @@ public:
 */
 
 BaseLight::BaseLight() :
-        p_ptr(new BaseLightPrivate) {
+        m_shadows(0.0f),
+        m_bias(0.001f),
+        m_params(1.0f, 1.0f, 0.5f, 1.0f),
+        m_color(1.0f),
+        m_materialInstance(nullptr) {
 
-}
-
-BaseLight::~BaseLight() {
-    delete p_ptr;
-    p_ptr = nullptr;
-}
-
-/*!
-    Updates the shadowmaps for the particular lightsource.
-
-    \internal
-*/
-void BaseLight::shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) {
-    A_UNUSED(camera);
-    A_UNUSED(context);
-    A_UNUSED(components);
 }
 
 /*!
     Returns true if the light source can cast shadows; otherwise returns false.
 */
 bool BaseLight::castShadows() const {
-    return (p_ptr->m_Shadows == 1.0f);
+    return (m_shadows == 1.0f);
 }
 /*!
     Enables or disables cast \a shadows ability for the light source.
 */
 void BaseLight::setCastShadows(const bool shadows) {
-    p_ptr->m_Shadows = (shadows) ? 1.0f : 0.0f;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    m_shadows = (shadows) ? 1.0f : 0.0f;
+    if(m_materialInstance) {
+        m_materialInstance->setFloat(uniShadows, &m_shadows);
     }
 }
 /*!
     Returns a brightness of emitting light.
 */
 float BaseLight::brightness() const {
-    return p_ptr->m_Params.x;
+    return m_params.x;
 }
 /*!
     Changes a \a brightness of emitting light.
 */
 void BaseLight::setBrightness(const float brightness) {
-    p_ptr->m_Params.x = brightness;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
+    m_params.x = brightness;
+    if(m_materialInstance) {
+        m_materialInstance->setVector4(uniParams, &m_params);
     }
 }
 /*!
     Returns a color of emitting light.
 */
-Vector4 &BaseLight::color() const {
-    return p_ptr->m_Color;
+Vector4 BaseLight::color() const {
+    return m_color;
 }
 /*!
     Changes a \a color of emitting light.
 */
 void BaseLight::setColor(const Vector4 color) {
-    p_ptr->m_Color = color;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
+    m_color = color;
+    if(m_materialInstance) {
+        m_materialInstance->setVector4(uniColor, &m_color);
     }
 }
 /*!
     Returns shadow map bias value.
 */
-Vector4 &BaseLight::bias() const {
-    return p_ptr->m_Bias;
+Vector4 BaseLight::bias() const {
+    return m_bias;
 }
 /*!
     Changes shadow map \a bias value.
     You can use this value to mitigate the shadow map acne effect.
 */
 void BaseLight::setBias(const Vector4 bias) {
-    p_ptr->m_Bias = bias;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
+    m_bias = bias;
+    if(m_materialInstance) {
+        m_materialInstance->setVector4(uniBias, &m_bias);
     }
 }
+
+int BaseLight::lightType() const {
+    return Invalid;
+}
+
 /*!
     \internal
 */
 MaterialInstance *BaseLight::material() const {
-    return p_ptr->m_pMaterialInstance;
+    return m_materialInstance;
 }
 /*!
     \internal
 */
 void BaseLight::setMaterial(MaterialInstance *instance) {
-    p_ptr->m_pMaterialInstance = instance;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setVector4(uni_bias, &p_ptr->m_Bias);
-        p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
-        p_ptr->m_pMaterialInstance->setVector4(uni_color, &p_ptr->m_Color);
-        p_ptr->m_pMaterialInstance->setFloat(uni_shadows, &p_ptr->m_Shadows);
+    m_materialInstance = instance;
+    if(m_materialInstance) {
+        m_materialInstance->setVector4(uniBias, &m_bias);
+        m_materialInstance->setVector4(uniParams, &m_params);
+        m_materialInstance->setVector4(uniColor, &m_color);
+        m_materialInstance->setFloat(uniShadows, &m_shadows);
     }
 }
 /*!
     \internal
 */
-Mesh *BaseLight::shape() const {
-    return p_ptr->m_pShape;
-}
-/*!
-    \internal
-*/
-void BaseLight::setShape(Mesh *shape) {
-    p_ptr->m_pShape = shape;
-}
-/*!
-    \internal
-*/
 Vector4 BaseLight::params() const {
-    return p_ptr->m_Params;
+    return m_params;
 }
 /*!
     \internal
 */
 void BaseLight::setParams(Vector4 &params) {
-    p_ptr->m_Params = params;
-    if(p_ptr->m_pMaterialInstance) {
-        p_ptr->m_pMaterialInstance->setVector4(uni_params, &p_ptr->m_Params);
+    m_params = params;
+    if(m_materialInstance) {
+        m_materialInstance->setVector4(uniParams, &m_params);
     }
 }
 

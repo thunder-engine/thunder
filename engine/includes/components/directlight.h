@@ -3,10 +3,6 @@
 
 #include "baselight.h"
 
-class DirectLightPrivate;
-
-class Camera;
-
 class ENGINE_EXPORT DirectLight : public BaseLight {
     A_REGISTER(DirectLight, BaseLight, Components/Lights)
 
@@ -15,21 +11,15 @@ class ENGINE_EXPORT DirectLight : public BaseLight {
 
 public:
     DirectLight();
-    ~DirectLight();
 
 private:
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
-
-    void shadowsUpdate(const Camera &camera, PipelineContext *context, RenderList &components) override;
+    int lightType() const override;
 
     AABBox bound() const override;
 
 #ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif
-
-private:
-    DirectLightPrivate *p_ptr;
 
 };
 

@@ -90,13 +90,7 @@ bool RenderGLSystem::init() {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     CheckGLError();
 #endif
-
-    int32_t targets;
-    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &targets);
-    CheckGLError();
-
-    int32_t attribs;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &attribs);
+    bool result = RenderSystem::init();
 
     int32_t texture;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
@@ -104,9 +98,13 @@ bool RenderGLSystem::init() {
 
     texture = MIN(texture, MAX_RESOLUTION);
 
-    bool result = RenderSystem::init();
+    Texture::setMaxTextureSize(texture);
+    pipelineContext()->setMaxTexture(texture);
 
-    pipelineContext()->setShadowPageSize(texture, texture);
+    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &texture);
+    CheckGLError();
+
+    Texture::setMaxCubemapSize(texture);
 
     CommandBufferGL::setInited();
 

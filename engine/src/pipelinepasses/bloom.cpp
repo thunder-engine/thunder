@@ -1,4 +1,4 @@
-#include "postprocess/bloom.h"
+#include "pipelinepasses/bloom.h"
 
 #include "engine.h"
 
@@ -15,15 +15,18 @@
 
 namespace {
     const char *bloom("graphics.bloom");
-
     const char *bloomThreshold("bloom/Threshold");
 };
-
 
 Bloom::Bloom() :
         m_threshold(1.0f),
         m_width(0),
         m_height(0) {
+
+    setName("Bloom");
+
+    PostProcessSettings::registerSetting(bloomThreshold, m_threshold);
+    Engine::setValue(bloom, true);
 
     Material *material = Engine::loadResource<Material>(".embedded/Downsample.shader");
     if(material) {
@@ -40,17 +43,11 @@ Bloom::Bloom() :
 
     m_resultTarget = Engine::objectCreate<RenderTarget>();
 
-    Engine::setValue(bloom, true);
-
     m_bloomPasses[0].m_blurSize = Vector3(1.0f,  0.0f,  4.0f);
     m_bloomPasses[1].m_blurSize = Vector3(4.0f,  0.0f,  8.0f);
     m_bloomPasses[2].m_blurSize = Vector3(16.0f, 0.0f, 16.0f);
     m_bloomPasses[3].m_blurSize = Vector3(32.0f, 0.0f, 32.0f);
     m_bloomPasses[4].m_blurSize = Vector3(64.0f, 0.0f, 64.0f);
-
-    setName("Bloom");
-
-    PostProcessSettings::registerSetting(bloomThreshold, m_threshold);
 }
 
 Texture *Bloom::draw(Texture *source, PipelineContext *context) {
@@ -78,7 +75,6 @@ Texture *Bloom::draw(Texture *source, PipelineContext *context) {
             blur.draw(*buffer, m_bloomPasses[i].m_downTexture, m_resultTarget);
         }
     }
-
     return source;
 }
 
