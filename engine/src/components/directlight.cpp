@@ -11,8 +11,6 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#include <float.h>
-
 namespace {
 const char *uni_direction = "uni.direction";
 };

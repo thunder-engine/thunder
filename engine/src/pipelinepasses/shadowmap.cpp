@@ -18,6 +18,8 @@
 #include "resources/atlas.h"
 #include "resources/rendertarget.h"
 
+#include <float.h>
+
 #define SIDES 6
 #define MAX_LODS 4
 
