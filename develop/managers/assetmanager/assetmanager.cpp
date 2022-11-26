@@ -416,7 +416,7 @@ void AssetManager::makePrefab(const QString &source, const QFileInfo &target) {
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toUInt(), Engine::sceneGraph()));
     if(actor) {
         Actor *clone = static_cast<Actor *>(actor->clone(actor->parent()));
-        QString path = target.absoluteFilePath() + "/" + name + ".fab";
+        QString path = m_projectManager->contentPath() + "/" + target.filePath() + "/" + name + ".fab";
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)) {
             string str = Json::save(Engine::toVariant(actor), 0);

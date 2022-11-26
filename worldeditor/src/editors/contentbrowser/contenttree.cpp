@@ -31,18 +31,23 @@ bool ContentTreeFilter::canDropMimeData(const QMimeData *data, Qt::DropAction, i
     QFileInfo target(ProjectManager::instance()->contentPath());
     if(index.isValid()) {
         QObject *item = static_cast<QObject *>(index.internalPointer());
-        target = QFileInfo(item->objectName());
+        target = QFileInfo(ProjectManager::instance()->contentPath() + QDir::separator() + item->objectName());
     }
 
     bool result = target.isDir();
-    if(result && data->hasFormat(gMimeContent)) {
-        QStringList list = QString(data->data(gMimeContent)).split(";");
-        foreach(QString path, list) {
-            if( !path.isEmpty() ) {
-                QFileInfo source(ProjectManager::instance()->contentPath() + QDir::separator() + path);
-                result &= (source.absolutePath() != target.absoluteFilePath());
-                result &= (source != target);
+    if(result) {
+        if(data->hasFormat(gMimeContent)) {
+            QStringList list = QString(data->data(gMimeContent)).split(";");
+            foreach(QString path, list) {
+                if( !path.isEmpty() ) {
+                    QFileInfo source(ProjectManager::instance()->contentPath() + QDir::separator() + path);
+                    result &= (source.absolutePath() != target.absoluteFilePath());
+                    result &= (source != target);
+                }
             }
+        }
+        if(data->hasFormat(gMimeObject)) {
+            result = true;
         }
     }
     return result;
@@ -59,7 +64,7 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
     }
 
     if(data->hasUrls()) {
-        foreach (const QUrl &url, data->urls()) {
+        foreach(const QUrl &url, data->urls()) {
             AssetManager::instance()->import(QFileInfo(url.toLocalFile()), target);
         }
     } else if(data->hasFormat(gMimeContent)) {
@@ -70,6 +75,13 @@ bool ContentTreeFilter::dropMimeData(const QMimeData *data, Qt::DropAction, int,
                 AssetManager::instance()->renameResource(dir.relativeFilePath(source.filePath()),
                                                          ((!target.filePath().isEmpty()) ? (target.filePath() + "/") :
                                                                                            QString("")) + source.fileName());
+            }
+        }
+    } else if(data->hasFormat(gMimeObject)) {
+        QStringList list = QString(data->data(gMimeObject)).split(";");
+        foreach(QString path, list) {
+            if( !path.isEmpty() ) {
+                AssetManager::instance()->makePrefab(path, target.filePath());
             }
         }
     }
