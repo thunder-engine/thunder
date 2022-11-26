@@ -300,6 +300,10 @@ void SceneComposer::restoreBackupScenes() {
 }
 
 bool SceneComposer::isModified() const {
+    if(m_controller->isolatedActor()) {
+        return m_controller->isIsolatedModified();
+    }
+
     bool result = false;
     for(auto it : Engine::sceneGraph()->getChildren()) {
         Scene *scene = dynamic_cast<Scene *>(it);
@@ -312,10 +316,14 @@ bool SceneComposer::isModified() const {
 }
 
 void SceneComposer::setModified(bool flag) {
-    for(auto it : Engine::sceneGraph()->getChildren()) {
-        Scene *scene = dynamic_cast<Scene *>(it);
-        if(scene) {
-            scene->setModified(flag);
+    if(m_controller->isolatedActor()) {
+        m_controller->setIsolatedModified(flag);
+    } else {
+        for(auto it : Engine::sceneGraph()->getChildren()) {
+            Scene *scene = dynamic_cast<Scene *>(it);
+            if(scene) {
+                scene->setModified(flag);
+            }
         }
     }
 }
@@ -383,7 +391,8 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    saveMap(path, Engine::sceneGraph()->activeScene());
+    SceneGraph *graph = m_controller->isolatedActor() ? m_isolationScene : Engine::sceneGraph();
+    saveMap(path, graph->activeScene());
 /*
     QImage result = ui->viewport->grabFramebuffer();
     if(!result.isNull()) {

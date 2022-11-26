@@ -37,7 +37,7 @@ public:
     Vector3 rotation() const;
     void setRotation(const Vector3 angles);
 
-    virtual Quaternion quaternion() const;
+    Quaternion quaternion() const;
     void setQuaternion(const Quaternion quaternion);
 
     Vector3 scale() const;

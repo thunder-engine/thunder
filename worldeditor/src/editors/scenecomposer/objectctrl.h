@@ -48,6 +48,9 @@ public:
     void setIsolatedActor(Actor *actor);
     Actor *isolatedActor() const { return m_isolatedActor; }
 
+    void setIsolatedModified(bool flag) { m_isolatedActorModified = flag; }
+    bool isIsolatedModified() const { return m_isolatedActorModified; }
+
     void resetSelection();
 
     QList<EditorTool *> tools() const { return m_tools; }
