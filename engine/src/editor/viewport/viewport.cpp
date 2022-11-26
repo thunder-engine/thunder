@@ -369,6 +369,38 @@ void Viewport::init() {
     if(m_rhiWindow) {
         m_renderSystem->init();
         connect(m_rhiWindow, SIGNAL(draw()), this, SLOT(onDraw()), Qt::DirectConnection);
+
+        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+
+        m_gridRender = new GridRender;
+        m_gridRender->setInput(GridRender::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_gridRender->setController(m_controller);
+        m_gridRender->loadSettings();
+
+        m_outlinePass = new Outline;
+        m_outlinePass->setController(m_controller);
+        m_outlinePass->setInput(Outline::Source, pipelineContext->textureBuffer("emissiveMap"));
+        m_outlinePass->setInput(Outline::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_outlinePass->loadSettings();
+
+        m_gizmoRender = new GizmoRender;
+        m_gizmoRender->setInput(GizmoRender::Source, pipelineContext->textureBuffer("emissiveMap"));
+        m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
+        m_gizmoRender->setController(m_controller);
+
+        pipelineContext->addRenderPass(m_gridRender);
+        pipelineContext->addRenderPass(m_outlinePass);
+        pipelineContext->addRenderPass(m_gizmoRender);
+
+        pipelineContext->showUiAsSceneView();
+
+        for(auto it : pipelineContext->renderPasses()) {
+            if(!it->name().empty()) {
+                SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
+            }
+        }
+
+        Handles::init();
     }
 }
 
@@ -382,40 +414,6 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
 
         m_controller->setActiveRootObject(m_sceneGraph);
 
-        Camera *camera = m_controller->camera();
-        if(camera) {
-            PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-
-            m_gridRender = new GridRender;
-            m_gridRender->setInput(GridRender::Depth, pipelineContext->textureBuffer("depthMap"));
-            m_gridRender->setController(m_controller);
-            m_gridRender->loadSettings();
-
-            m_outlinePass = new Outline;
-            m_outlinePass->setController(m_controller);
-            m_outlinePass->setInput(Outline::Source, pipelineContext->textureBuffer("emissiveMap"));
-            m_outlinePass->setInput(Outline::Depth, pipelineContext->textureBuffer("depthMap"));
-            m_outlinePass->loadSettings();
-
-            m_gizmoRender = new GizmoRender;
-            m_gizmoRender->setInput(GizmoRender::Source, pipelineContext->textureBuffer("emissiveMap"));
-            m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
-            m_gizmoRender->setController(m_controller);
-
-            pipelineContext->addRenderPass(m_gridRender);
-            pipelineContext->addRenderPass(m_outlinePass);
-            pipelineContext->addRenderPass(m_gizmoRender);
-
-            pipelineContext->showUiAsSceneView();
-
-            for(auto it : pipelineContext->renderPasses()) {
-                if(!it->name().empty()) {
-                    SettingsManager::instance()->registerProperty(qPrintable(QString(postSettings) + it->name().c_str()), it->isEnabled());
-                }
-            }
-
-            Handles::init();
-        }
     }
 }
 
