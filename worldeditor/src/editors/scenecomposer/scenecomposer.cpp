@@ -399,10 +399,12 @@ void SceneComposer::onLocal(bool flag) {
 }
 
 void SceneComposer::onCreateActor() {
+    Scene *scene = Engine::sceneGraph()->activeScene();
     Actor *actor = dynamic_cast<Actor *>(m_menuObject);
     if(actor) {
-        UndoManager::instance()->push(new CreateObject("Actor", actor->scene(), m_controller));
+        scene = actor->scene();
     }
+    UndoManager::instance()->push(new CreateObject("Actor", scene, m_controller));
 }
 
 void SceneComposer::onItemDuplicate() {
