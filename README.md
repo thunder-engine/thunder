@@ -13,7 +13,7 @@ So developers can focus on the creation, and the Thunder Engine will do the rout
 
 ### Attention
 
-This engine still in the development and stuff will break.
+This engine still in the development and stuff **will break**.
 If this happens, the first thing to do is clear your project's cache directory and restart the editor.
 If this doesnt helped please rize an issue.
 Remember, by reporting problems or asking questions in public, you are **helping other people**!
