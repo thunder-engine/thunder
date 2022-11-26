@@ -29,7 +29,6 @@ public:
         m_wrap(false) {
 
         m_mesh->makeDynamic();
-        m_mesh->setFlags(Mesh::Uv0);
 
         Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
         if(material) {
@@ -314,7 +313,7 @@ void TextRender::composeComponent() {
 */
 AABBox TextRender::bound() const {
     if(p_ptr->m_mesh) {
-        return p_ptr->m_mesh->bound() * actor()->transform()->worldTransform();
+        return p_ptr->m_mesh->lod(0)->bound() * actor()->transform()->worldTransform();
     }
     return Renderable::bound();
 }
@@ -466,8 +465,9 @@ void TextRender::composeMesh(Font *font, Mesh *mesh, int size, const string &tex
 
             AABBox box;
             box.setBox(bb[0], bb[1]);
-            mesh->setBound(box);
-            mesh->setTopology(Mesh::Triangles);
+            lod.setBound(box);
+            lod.setTopology(Mesh::Triangles);
+            lod.setFlags(Mesh::Uv0);
             mesh->setLod(0, &lod);
         }
     }

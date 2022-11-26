@@ -102,7 +102,7 @@ public:
 
 private:
     Texture *draw(Texture *source, PipelineContext *context) override {
-        if(m_material) {
+        if(m_material && m_controller) {
             CommandBuffer *buffer = context->buffer();
 
             buffer->setRenderTarget(m_outlineTarget);
@@ -388,10 +388,6 @@ void Viewport::init() {
         m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
         m_gizmoRender->setController(m_controller);
 
-        pipelineContext->addRenderPass(m_gridRender);
-        pipelineContext->addRenderPass(m_outlinePass);
-        pipelineContext->addRenderPass(m_gizmoRender);
-
         pipelineContext->showUiAsSceneView();
 
         for(auto it : pipelineContext->renderPasses()) {
@@ -413,6 +409,12 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
         m_sceneGraph = sceneGraph;
 
         m_controller->setActiveRootObject(m_sceneGraph);
+
+        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
+
+        pipelineContext->addRenderPass(m_gridRender);
+        pipelineContext->addRenderPass(m_outlinePass);
+        pipelineContext->addRenderPass(m_gizmoRender);
 
     }
 }

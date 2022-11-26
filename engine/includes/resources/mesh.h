@@ -51,29 +51,50 @@ public:
     Vector2Vector &uv1();
     void setUv1(const Vector2Vector &uv1);
 
+    int topology() const;
+    void setTopology(int mode);
+
+    int flags() const;
+    void setFlags(int flags);
+
+    AABBox bound() const;
+    void setBound(const AABBox &box);
+
+    void recalcNormals();
+
+    void recalcBounds();
+
+    void batchMesh(Lod &mesh, Matrix4 *transform = nullptr);
+
 private:
     friend class Mesh;
 
 private:
-    Vector4Vector m_Colors;
+    AABBox m_box;
 
-    Vector4Vector m_Weights;
+    Vector4Vector m_colors;
 
-    Vector4Vector m_Bones;
+    Vector4Vector m_weights;
 
-    Vector3Vector m_Normals;
+    Vector4Vector m_bones;
 
-    Vector3Vector m_Tangents;
+    Vector3Vector m_normals;
 
-    Vector3Vector m_Vertices;
+    Vector3Vector m_tangents;
 
-    Vector2Vector m_Uv0;
+    Vector3Vector m_vertices;
 
-    Vector2Vector m_Uv1;
+    Vector2Vector m_uv0;
 
-    IndexVector m_Indices;
+    Vector2Vector m_uv1;
 
-    Material *m_Material;
+    IndexVector m_indices;
+
+    Material *m_material;
+
+    uint8_t m_flags;
+
+    int m_topology;
 
 };
 typedef deque<Lod> LodQueue;
@@ -81,11 +102,6 @@ typedef deque<Lod> LodQueue;
 class ENGINE_EXPORT Mesh : public Resource {
     A_REGISTER(Mesh, Resource, Resources)
 
-    A_PROPERTIES(
-        A_PROPERTY(AABBox, bound, Mesh::bound, Mesh::setBound),
-        A_PROPERTY(int, topology, Mesh::topology, Mesh::setTopology),
-        A_PROPERTY(int, flags, Mesh::flags, Mesh::setFlags)
-    )
     A_METHODS(
         A_METHOD(void, Mesh::clear),
         A_METHOD(bool, Mesh::isDynamic),
@@ -141,23 +157,10 @@ public:
 
     int lodsCount() const;
 
-    AABBox bound() const;
-    void setBound(AABBox box);
-
-    int topology() const;
-    void setTopology(int mode);
-
-    int flags() const;
-    void setFlags(int flags);
-
     int addLod(Lod *lod);
 
     Lod *lod(int lod) const;
     void setLod(int lod, Lod *data);
-
-    void batchMesh(Mesh *mesh, Matrix4 *transform = nullptr);
-
-    void recalcBounds();
 
     static void registerSuper(ObjectSystem *system);
 

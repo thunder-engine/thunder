@@ -124,8 +124,10 @@ void BulletSystem::update(SceneGraph *scene) {
             Collider *colliderA = reinterpret_cast<Collider *>(a->getUserPointer());
             Collider *colliderB = reinterpret_cast<Collider *>(b->getUserPointer());
 
-            colliderA->setContact(colliderB);
-            colliderB->setContact(colliderA);
+            if(colliderA && colliderB) {
+                colliderA->setContact(colliderB);
+                colliderB->setContact(colliderA);
+            }
         }
 
         for(auto &it : m_ObjectList) {

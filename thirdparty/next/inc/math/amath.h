@@ -50,31 +50,29 @@ typedef std::vector<Vector2>    Vector2Vector;
 typedef std::vector<Vector3>    Vector3Vector;
 typedef std::vector<Vector4>    Vector4Vector;
 
-template<typename T>
-float distanceToSegment(const T &a, const T &b, const T &p) {
-    T v = b - a;
-    T w = p - a;
+class NEXT_LIBRARY_EXPORT Mathf {
+public:
+    static int gausianKernel(areal radius, areal *samples, uint8_t maxSamples);
+    static areal perlinNoise(areal x, areal y);
 
-    float c1 = w.dot(v);
-    if(c1 <= 0.0f) {
-        return w.sqrLength();
+    template<typename T>
+    static float distanceToSegment(const T &a, const T &b, const T &p) {
+        T v = b - a;
+        T w = p - a;
+
+        float c1 = w.dot(v);
+        if(c1 <= 0.0f) {
+            return w.sqrLength();
+        }
+
+        float c2 = v.dot(v);
+        if( c2 <= c1 ) {
+            return (p - b).sqrLength();
+        }
+
+        T l = a + v * (c1 / c2);
+        return (p - l).sqrLength();
     }
-
-    float c2 = v.dot(v);
-    if( c2 <= c1 ) {
-        return (p - b).sqrLength();
-    }
-
-    T l = a + v * (c1 / c2);
-    return (p - l).sqrLength();
-}
-
-extern "C" {
-    namespace amath {
-        NEXT_LIBRARY_EXPORT int gausianKernel(areal radius, areal *samples, uint8_t maxSamples);
-
-        NEXT_LIBRARY_EXPORT areal perlinNoise(areal x, areal y);
-    }
-}
+};
 
 #endif /* AMATH_H_HEADER_INCLUDED */

@@ -137,9 +137,9 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox SpriteRender::bound() const {
     AABBox result = Renderable::bound();
     if(p_ptr->m_customMesh) {
-        result = p_ptr->m_customMesh->bound();
+        result = p_ptr->m_customMesh->lod(0)->bound();
     } else if(p_ptr->m_mesh) {
-        result = p_ptr->m_mesh->bound();
+        result = p_ptr->m_mesh->lod(0)->bound();
     }
     result = result * actor()->transform()->worldTransform();
 
@@ -346,19 +346,14 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 return false;
             }
 
-            spriteMesh->setFlags(m->flags());
-            spriteMesh->setTopology(m->topology());
-            spriteMesh->recalcBounds();
+            lod->recalcBounds();
             return true;
         }
     } else if(mode == Simple) {
         if(sprite) {
             Mesh *m = sprite->mesh(key);
             if(m) {
-                Lod *lod = m->lod(0);
-                spriteMesh->setLod(0, lod);
-                spriteMesh->setFlags(m->flags());
-                spriteMesh->setTopology(m->topology());
+                spriteMesh->setLod(0, m->lod(0));
             } else {
                 return false;
             }
@@ -377,11 +372,11 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
                 {1.0f, 0.0f}
             };
             lod.indices() = {0, 1, 2, 0, 3, 2};
+            lod.recalcBounds();
+            lod.setFlags(Mesh::Uv0);
             spriteMesh->setLod(0, &lod);
-            spriteMesh->setFlags(Mesh::Uv0);
-            spriteMesh->setTopology(Mesh::Triangles);
+
         }
-        spriteMesh->recalcBounds();
         return true;
     }
     return false;

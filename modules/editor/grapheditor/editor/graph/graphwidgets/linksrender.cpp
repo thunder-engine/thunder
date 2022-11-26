@@ -26,12 +26,8 @@ LinksRender::LinksRender() :
     m_portWidget(nullptr) {
 
     m_linksMesh->makeDynamic();
-    m_linksMesh->setTopology(Mesh::Triangles);
-    m_linksMesh->setFlags(Mesh::Uv0);
 
     m_creationMesh->makeDynamic();
-    m_creationMesh->setTopology(Mesh::Triangles);
-    m_creationMesh->setFlags(Mesh::Uv0);
 
     Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(".embedded/Link.shader"));
     if(m) {
@@ -88,6 +84,8 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
             lod.setVertices(vertices);
             lod.setUv0(uvs);
             lod.setIndices(indices);
+            lod.setTopology(Mesh::Triangles);
+            lod.setFlags(Mesh::Uv0);
 
             m_creationMesh->setLod(0, &lod);
         }
@@ -178,6 +176,8 @@ void LinksRender::composeLinks() {
         lod.setUv0(uvs);
         lod.setIndices(indices);
     }
+    lod.setTopology(Mesh::Triangles);
+    lod.setFlags(Mesh::Uv0);
     m_linksMesh->setLod(0, &lod);
 }
 

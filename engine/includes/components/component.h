@@ -31,7 +31,9 @@ public:
     bool isStarted() const;
     void setStarted(bool started);
 
-    string tr(const string &source);
+    Component *component(const string type);
+
+    string tr(const string source);
 
 #ifdef SHARED_DEFINE
     virtual bool drawHandles(ObjectList &selected);

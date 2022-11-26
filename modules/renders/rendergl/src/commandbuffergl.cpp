@@ -89,7 +89,7 @@ void CommandBufferGL::drawMesh(const Matrix4 &model, Mesh *mesh, uint32_t sub, u
 
             m->bindVao(this, lod);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(l->topology());
             if(topology > Mesh::Lines) {
                 uint32_t vert = l->vertices().size();
                 int32_t glMode = GL_TRIANGLE_STRIP;
@@ -137,7 +137,7 @@ void CommandBufferGL::drawMeshInstanced(const Matrix4 *models, uint32_t count, M
 
             m->bindVao(this, lod);
 
-            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(mesh->topology());
+            Mesh::TriangleTopology topology = static_cast<Mesh::TriangleTopology>(l->topology());
             if(topology > Mesh::Lines) {
                 uint32_t vert = l->vertices().size();
                 glDrawArraysInstanced((topology == Mesh::TriangleStrip) ? GL_TRIANGLE_STRIP : GL_LINE_STRIP, 0, vert, count);

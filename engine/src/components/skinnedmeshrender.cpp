@@ -69,7 +69,7 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox SkinnedMeshRender::bound() const {
     AABBox result;
     if(p_ptr->m_pMesh) {
-        result = p_ptr->m_pMesh->bound();
+        result = p_ptr->m_pMesh->lod(0)->bound();
     }
     if(p_ptr->m_pArmature) {
         result = p_ptr->m_pArmature->recalcBounds(result);
