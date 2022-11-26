@@ -312,7 +312,7 @@ void ObjectCtrl::select(Object &object) {
 void ObjectCtrl::setIsolatedActor(Actor *actor) {
     m_isolatedActor = actor;
     if(actor) {
-        m_isolatedActorModified = false;
+        setIsolatedModified(false);
         m_isolationSelectedBackup = selected();
         onSelectActor({actor});
     } else {
@@ -392,7 +392,7 @@ void ObjectCtrl::onChangeTool() {
 
 void ObjectCtrl::onUpdated(Scene *scene) {
     if(m_isolatedActor) {
-        m_isolatedActorModified = true;
+        setIsolatedModified(true);
     } else {
         if(scene) {
             scene->setModified(true);

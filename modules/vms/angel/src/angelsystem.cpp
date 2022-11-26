@@ -110,7 +110,7 @@ bool AngelSystem::init() {
     return m_inited;
 }
 
-void AngelSystem::update(SceneGraph *scene) {
+void AngelSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
@@ -118,13 +118,18 @@ void AngelSystem::update(SceneGraph *scene) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
             if(object) {
-                if(component->isEnabled() && component->actor() && component->actor()->scene() &&
-                   component->actor()->scene()->parent() == scene) {
-                    if(!component->isStarted()) {
-                        execute(object, component->scriptStart());
-                        component->setStarted(true);
+                if(component->isEnabled()) {
+                    Actor *actor = component->actor();
+                    if(actor) {
+                        Scene *scene = actor->scene();
+                        if(scene && scene->parent() == graph) {
+                            if(!component->isStarted()) {
+                                execute(object, component->scriptStart());
+                                component->setStarted(true);
+                            }
+                            execute(object, component->scriptUpdate());
+                        }
                     }
-                    execute(object, component->scriptUpdate());
                 }
                 object->Release();
             }

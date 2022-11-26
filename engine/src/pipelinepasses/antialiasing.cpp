@@ -15,7 +15,8 @@ namespace {
 
 AntiAliasing::AntiAliasing() :
         m_resultTexture(Engine::objectCreate<Texture>("AA Result")),
-        m_resultTarget(Engine::objectCreate<RenderTarget>()) {
+        m_resultTarget(Engine::objectCreate<RenderTarget>()),
+        m_material(nullptr) {
 
     setName("AntiAliasing");
 
