@@ -4,15 +4,17 @@ Thunder Engine is free for all purposes an open-source multi-functional lightwei
 It provides a basic framework and extensible tools.
 So developers can focus on the creation, and the Thunder Engine will do the routine.
 
-#### Build Status
+#### Status
 
 ![Build Status](https://github.com/thunder-engine/thunder/actions/workflows/main.yml/badge.svg)
-
-#### Code Quality Status
-
 [![Coverity Status](https://img.shields.io/coverity/scan/15068.svg)](https://scan.coverity.com/projects/eprikazchikov-thunder)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8874a5f2ddb84eb1bbaebe00f5562c23)](https://www.codacy.com/gh/thunder-engine/thunder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=thunder-engine/thunder&amp;utm_campaign=Badge_Grade)
 [![Translation Status](https://hosted.weblate.org/widgets/thunder-engine/-/editor-translation/svg-badge.svg)](https://hosted.weblate.org/engage/thunder-engine/)
+
+### Attention
+
+This engine still in the development and stuff will break.
+If this happens, the first thing to do is clear your project's cache directory and restart the editor.
 
 ### About
 
