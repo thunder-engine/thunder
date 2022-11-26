@@ -372,6 +372,8 @@ void Viewport::init() {
 
         PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
 
+        pipelineContext->showUiAsSceneView();
+
         m_gridRender = new GridRender;
         m_gridRender->setInput(GridRender::Depth, pipelineContext->textureBuffer("depthMap"));
         m_gridRender->setController(m_controller);
@@ -388,7 +390,13 @@ void Viewport::init() {
         m_gizmoRender->setInput(GizmoRender::Depth, pipelineContext->textureBuffer("depthMap"));
         m_gizmoRender->setController(m_controller);
 
-        pipelineContext->showUiAsSceneView();
+        if(m_controller) {
+            m_controller->init(this);
+        }
+
+        pipelineContext->addRenderPass(m_gridRender);
+        pipelineContext->addRenderPass(m_outlinePass);
+        pipelineContext->addRenderPass(m_gizmoRender);
 
         for(auto it : pipelineContext->renderPasses()) {
             if(!it->name().empty()) {
@@ -409,13 +417,6 @@ void Viewport::setSceneGraph(SceneGraph *sceneGraph) {
         m_sceneGraph = sceneGraph;
 
         m_controller->setActiveRootObject(m_sceneGraph);
-
-        PipelineContext *pipelineContext = m_renderSystem->pipelineContext();
-
-        pipelineContext->addRenderPass(m_gridRender);
-        pipelineContext->addRenderPass(m_outlinePass);
-        pipelineContext->addRenderPass(m_gizmoRender);
-
     }
 }
 

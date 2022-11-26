@@ -13,6 +13,7 @@
 
 class Actor;
 class Camera;
+class Viewport;
 
 class QMenu;
 
@@ -40,6 +41,8 @@ public:
 
 public:
     CameraCtrl();
+
+    virtual void init(Viewport *view) {};
 
     virtual void drawHandles();
 
