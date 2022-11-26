@@ -68,9 +68,16 @@ void Component::setStarted(bool started) {
     p_ptr->m_Started = started;
 }
 /*!
+    Returns a component with \a type attached to the same Actor.
+    If no such component with this \a type returns nullptr.
+*/
+Component *Component::component(const string type) {
+    return actor()->component(type);
+}
+/*!
     Returns a translated version of \a source text; otherwise returns source text if no appropriate translated string is available.
 */
-string Component::tr(const string &source) {
+string Component::tr(const string source) {
     return Engine::translate(source);
 }
 /*!

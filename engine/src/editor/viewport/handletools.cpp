@@ -60,7 +60,7 @@ float HandleTools::distanceToPath(const Matrix4 &matrix, const Vector3Vector &po
         Vector3 ssp = Camera::project(it, mv, s_Projection);
         Vector2 ss(ssp.x, ssp.y);
         if(!first) {
-            result = std::min(distanceToSegment(back, ss, Handles::s_Mouse), result);
+            result = std::min(Mathf::distanceToSegment(back, ss, Handles::s_Mouse), result);
         } else {
             first = false;
         }
@@ -83,7 +83,7 @@ float HandleTools::distanceToMesh(const Matrix4 &matrix, const IndexVector &indi
             Vector2 ssa(a.x, a.y);
             Vector2 ssb(b.x, b.y);
 
-            result = std::min(distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
+            result = std::min(Mathf::distanceToSegment(ssa, ssb, Handles::s_Mouse), result);
         }
     }
     return sqrtf(result);

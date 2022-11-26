@@ -120,9 +120,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0.0f), Vector3(0, 5, 0)});
         lod.setIndices({0, 1});
+        lod.setTopology(Mesh::Lines);
 
         s_Axis = Engine::objectCreate<Mesh>("Axis");
-        s_Axis->setTopology(Mesh::Lines);
         s_Axis->addLod(&lod);
     }
 
@@ -130,9 +130,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
         lod.setIndices({0, 1, 2, 3});
+        lod.setTopology(Mesh::Lines);
 
         s_Scale = Engine::objectCreate<Mesh>("Scale");
-        s_Scale->setTopology(Mesh::Lines);
         s_Scale->addLod(&lod);
     }
 
@@ -140,9 +140,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
         lod.setIndices({0, 1, 2, 1, 3, 2});
+        lod.setTopology(Mesh::Triangles);
 
         s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");
-        s_ScaleXY->setTopology(Mesh::Triangles);
         s_ScaleXY->addLod(&lod);
     }
 
@@ -150,9 +150,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)});
         lod.setIndices({0, 1, 2});
+        lod.setTopology(Mesh::Triangles);
 
         s_ScaleXYZ = Engine::objectCreate<Mesh>("ScaleXYZ");
-        s_ScaleXYZ->setTopology(Mesh::Triangles);
         s_ScaleXYZ->addLod(&lod);
     }
 
@@ -160,9 +160,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0, 1, 0), Vector3(2, 1, 0)});
         lod.setIndices({0, 1});
+        lod.setTopology(Mesh::Lines);
 
         s_Move = Engine::objectCreate<Mesh>("Move");
-        s_Move->setTopology(Mesh::Lines);
         s_Move->addLod(&lod);
     }
 
@@ -170,9 +170,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices({Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)});
         lod.setIndices({0, 1, 2, 1, 3, 2});
+        lod.setTopology(Mesh::Triangles);
 
         s_MoveXY = Engine::objectCreate<Mesh>("MoveXY");
-        s_MoveXY->setTopology(Mesh::Triangles);
         s_MoveXY->addLod(&lod);
     }
 
@@ -180,9 +180,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 180));
         lod.indices().clear();
+        lod.setTopology(Mesh::LineStrip);
 
         s_Arc = Engine::objectCreate<Mesh>("Arc");
-        s_Arc->setTopology(Mesh::LineStrip);
         s_Arc->addLod(&lod);
     }
 
@@ -190,9 +190,9 @@ void Handles::init() {
         Lod lod;
         lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 360));
         lod.indices().clear();
+        lod.setTopology(Mesh::LineStrip);
 
         s_Circle = Engine::objectCreate<Mesh>("Circle");
-        s_Circle->setTopology(Mesh::LineStrip);
         s_Circle->addLod(&lod);
     }
 
@@ -210,9 +210,9 @@ void Handles::init() {
             Vector3(min.x, min.y, 0.0f)
         });
         lod.indices().clear();
+        lod.setTopology(Mesh::LineStrip);
 
         s_Rectangle = Engine::objectCreate<Mesh>("Rectangle");
-        s_Rectangle->setTopology(Mesh::LineStrip);
         s_Rectangle->addLod(&lod);
     }
 
@@ -236,9 +236,9 @@ void Handles::init() {
         lod.setIndices({0, 1, 1, 2, 2, 3, 3, 0,
                         4, 5, 5, 6, 6, 7, 7, 4,
                         0, 4, 1, 5, 2, 6, 3, 7});
+        lod.setTopology(Mesh::Lines);
 
         s_Box = Engine::objectCreate<Mesh>("Box");
-        s_Box->setTopology(Mesh::Lines);
         s_Box->addLod(&lod);
     }
 }
@@ -283,8 +283,8 @@ void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, c
         Lod lod;
         lod.setVertices(points);
         lod.setIndices(indices);
+        lod.setTopology(Mesh::Lines);
         {
-            s_Lines->setTopology(Mesh::Lines);
             s_Lines->setLod(0, &lod);
         }
         if(s_Buffer) {
@@ -332,8 +332,8 @@ void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float 
     if(CommandBuffer::isInited()) {
         Lod lod;
         lod.setVertices(HandleTools::pointsArc(rotation, radius, start, angle, true));
+        lod.setTopology(Mesh::TriangleFan);
         {
-            s_Lines->setTopology(Mesh::TriangleFan);
             s_Lines->setLod(0, &lod);
         }
         if(s_Buffer) {

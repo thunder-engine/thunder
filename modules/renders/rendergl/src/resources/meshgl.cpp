@@ -61,7 +61,7 @@ void MeshGL::updateVao(uint32_t lod) {
     glEnableVertexAttribArray(VERTEX_ATRIB);
     glVertexAttribPointer(VERTEX_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    uint8_t flag = flags();
+    uint8_t flag = Mesh::lod(lod)->flags();
 
     if(flag & Mesh::Normals) {
         glBindBuffer(GL_ARRAY_BUFFER, m_normals[lod]);
@@ -107,7 +107,7 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
     }
 
     uint32_t count = lodsCount();
-    uint8_t flag = flags();
+    uint8_t flag = lod(0)->flags();
 
     if(m_triangles.size() < count) {
         m_triangles.resize(count);
@@ -203,7 +203,7 @@ void MeshGL::destroyVbo() {
     glDeleteBuffers(static_cast<int32_t>(m_vertices.size()), &m_vertices[0]);
     glDeleteBuffers(static_cast<int32_t>(m_triangles.size()), &m_triangles[0]);
 
-    uint8_t flag = flags();
+    uint8_t flag = lod(0)->flags();
 
     if(flag & Mesh::Normals) {
         glDeleteBuffers(static_cast<int32_t>(m_normals.size()), &m_normals[0]);

@@ -8,7 +8,6 @@
 #include <cstring>
 #include <cfloat>
 
-#define HEADER      "Header"
 #define DATA        "Data"
 #define DEFAULTMESH ".embedded/DefaultMesh.mtl"
 
@@ -19,162 +18,274 @@
 */
 
 Lod::Lod() :
-    m_Material(nullptr) {
+    m_material(nullptr),
+    m_flags(0),
+    m_topology(Mesh::Triangles) {
 
 }
 
 bool Lod::operator== (const Lod &right) const {
-    return (m_Material == right.m_Material) &&
-           (m_Indices == right.m_Indices) &&
-           (m_Colors == right.m_Colors) &&
-           (m_Weights == right.m_Weights) &&
-           (m_Bones == right.m_Bones) &&
-           (m_Vertices == right.m_Vertices) &&
-           (m_Normals == right.m_Normals) &&
-           (m_Tangents == right.m_Tangents) &&
-           (m_Uv0 == right.m_Uv0) &&
-           (m_Uv1 == right.m_Uv1);
+    return (m_material == right.m_material) &&
+           (m_indices == right.m_indices) &&
+           (m_colors == right.m_colors) &&
+           (m_weights == right.m_weights) &&
+           (m_bones == right.m_bones) &&
+           (m_vertices == right.m_vertices) &&
+           (m_normals == right.m_normals) &&
+           (m_tangents == right.m_tangents) &&
+           (m_uv0 == right.m_uv0) &&
+           (m_uv1 == right.m_uv1);
 }
 
 /*!
     Returns a material for the particular Lod.
 */
 Material *Lod::material() const {
-    return m_Material;
+    return m_material;
 }
 /*!
     Sets a \a material for the particular Lod.
 */
 void Lod::setMaterial(Material *material) {
-    m_Material = material;
+    m_material = material;
 }
 /*!
     Returns an array of mesh indices for the particular Lod.
 */
 IndexVector &Lod::indices() {
-    return m_Indices;
+    return m_indices;
 }
 /*!
     Sets an array of mesh \a indices for the particular Lod.
 */
 void Lod::setIndices(const IndexVector &indices) {
-    m_Indices = indices;
+    m_indices = indices;
 }
 /*!
     Returns an array of colors for vertices for the particular Lod.
 */
 Vector4Vector &Lod::colors() {
-    return m_Colors;
+    return m_colors;
 }
 /*!
     Sets an array of \a colors for vertices for the particular Lod.
 */
 void Lod::setColors(const Vector4Vector &colors) {
-    m_Colors = colors;
+    m_colors = colors;
 }
 /*!
     Returns an array of bone weights for the particular Lod.
 */
 Vector4Vector &Lod::weights() {
-    return m_Weights;
+    return m_weights;
 }
 /*!
     Sets an array of bone \a weights for the particular Lod.
 */
 void Lod::setWeights(const Vector4Vector &weights) {
-    m_Weights = weights;
+    m_weights = weights;
 }
 /*!
     Returns an array of bones for vertices for the particular Lod.
 */
 Vector4Vector &Lod::bones() {
-    return m_Bones;
+    return m_bones;
 }
 /*!
     Sets an array of \a bones for vertices for the particular Lod.
 */
 void Lod::setBones(const Vector4Vector &bones) {
-    m_Bones = bones;
+    m_bones = bones;
 }
 /*!
     Returns an array of mesh vertices for the particular Lod.
 */
 Vector3Vector &Lod::vertices() {
-    return m_Vertices;
+    return m_vertices;
 }
 /*!
     Sets an array of mesh \a vertices for the particular Lod.
 */
 void Lod::setVertices(const Vector3Vector &vertices) {
-    m_Vertices = vertices;
+    m_vertices = vertices;
 }
 /*!
     Returns an array of mesh normals for the particular Lod.
 */
 Vector3Vector &Lod::normals() {
-    return m_Normals;
+    return m_normals;
 }
 /*!
     Sets an array of mesh \a normals for the particular Lod.
 */
 void Lod::setNormals(const Vector3Vector &normals) {
-    m_Normals = normals;
+    m_normals = normals;
 }
 /*!
     Returns an array of mesh tangents for the particular Lod.
 */
 Vector3Vector &Lod::tangents() {
-    return m_Tangents;
+    return m_tangents;
 }
 /*!
     Sets an array of mesh \a tangents for the particular Lod.
 */
 void Lod::setTangents(const Vector3Vector &tangents) {
-    m_Tangents = tangents;
+    m_tangents = tangents;
 }
 /*!
     Returns an array of mesh uv0 (base) texture coordinates for the particular Lod.
 */
 Vector2Vector &Lod::uv0() {
-    return m_Uv0;
+    return m_uv0;
 }
 /*!
     Sets an array of mesh \a uv0 (base) texture coordinates for the particular Lod.
 */
 void Lod::setUv0(const Vector2Vector &uv0) {
-    m_Uv0 = uv0;
+    m_uv0 = uv0;
 }
 /*!
     Returns an array of mesh uv1 texture coordinates for the particular Lod.
 */
 Vector2Vector &Lod::uv1() {
-    return m_Uv1;
+    return m_uv1;
 }
 /*!
     Sets an array of mesh \a uv1 texture coordinates for the particular Lod.
 */
 void Lod::setUv1(const Vector2Vector &uv1) {
-    m_Uv1 = uv1;
+    m_uv1 = uv1;
+}
+/*!
+    Returns poligon topology for the mesh.
+    For more details please see the Mesh::TriangleTopology enum.
+*/
+int Lod::topology() const {
+    return m_topology;
+}
+/*!
+    Sets poligon \a topology for the mesh.
+    For more details please see the Mesh::TriangleTopology enum.
+*/
+void Lod::setTopology(int topology) {
+    m_topology = topology;
+}
+/*!
+    Returns vertex attributes flags.
+    For more details please see the Mesh::Attributes enum.
+*/
+int Lod::flags() const {
+    return m_flags;
+}
+/*!
+    Sets vertex attributes \a flags.
+    For more details please see the Mesh::Attributes enum.
+*/
+void Lod::setFlags(int flags) {
+    m_flags = flags;
+}
+/*!
+    Returns bounding box for the Mesh.
+*/
+AABBox Lod::bound() const {
+    return m_box;
+}
+/*!
+    Sets new bounding \a box for the Mesh.
+*/
+void Lod::setBound(const AABBox &box) {
+    m_box = box;
+}
+/*!
+    Recalculates the normals of the Mesh from the triangles and vertices.
+*/
+void Lod::recalcNormals() {
+    m_normals.clear();
+    m_normals.resize(m_vertices.size());
+    for(uint32_t i = 0; i < m_indices.size(); i += 3) {
+        uint32_t index1 = m_indices[i];
+        uint32_t index2 = m_indices[i + 1];
+        uint32_t index3 = m_indices[i + 2];
+
+        Vector3 n = (m_vertices[index2] - m_vertices[index1]).cross(m_vertices[index3] - m_vertices[index1]);
+        n.normalize();
+        m_normals[index1] += n;
+        m_normals[index2] += n;
+        m_normals[index3] += n;
+    }
+    for(auto it : m_normals) {
+        it.normalize();
+    }
+}
+/*!
+    Generates bound box according new geometry.
+*/
+void Lod::recalcBounds() {
+    Vector3 min( FLT_MAX);
+    Vector3 max(-FLT_MAX);
+
+    for(uint32_t i = 0; i < m_vertices.size(); i++) {
+        min.x = MIN(min.x, m_vertices[i].x);
+        min.y = MIN(min.y, m_vertices[i].y);
+        min.z = MIN(min.z, m_vertices[i].z);
+
+        max.x = MAX(max.x, m_vertices[i].x);
+        max.y = MAX(max.y, m_vertices[i].y);
+        max.z = MAX(max.z, m_vertices[i].z);
+    }
+
+
+    m_box.setBox(min, max);
+}
+/*!
+    Merges current with provided \a mesh.
+    In the case of the \a transform, the matrix is not nullptr it will be applied to \a mesh before merging.
+*/
+void Lod::batchMesh(Lod &mesh, Matrix4 *transform) {
+    if(transform) {
+        for(auto &v : mesh.vertices()) {
+            v = *transform * v;
+        }
+
+        Matrix3 rotation = transform->rotation();
+        for(auto &n : mesh.normals()) {
+            n = rotation * n;
+        }
+        for(auto &t : mesh.tangents()) {
+            t = rotation * t;
+        }
+    }
+
+    // Indices
+    uint32_t size = vertices().size();
+    auto &srcIndex = mesh.indices();
+    for(auto &it : srcIndex) {
+        it += size;
+    }
+    indices().insert(indices().end(), srcIndex.begin(), srcIndex.end());
+    // Vertex attributes
+    vertices().insert(vertices().end(), mesh.vertices().begin(), mesh.vertices().end());
+    tangents().insert(tangents().end(), mesh.tangents().begin(), mesh.tangents().end());
+    normals().insert(normals().end(), mesh.normals().begin(), mesh.normals().end());
+    colors().insert(colors().end(), mesh.colors().begin(), mesh.colors().end());
+    uv0().insert(uv0().end(), mesh.uv0().begin(), mesh.uv0().end());
+    uv1().insert(uv1().end(), mesh.uv1().begin(), mesh.uv1().end());
+
+    recalcBounds();
 }
 
 class MeshPrivate {
 public:
     MeshPrivate() :
-            m_Dynamic(false),
-            m_Flags(0),
-            m_Topology(Mesh::Triangles) {
+            m_dynamic(false) {
 
     }
 
-    bool m_Dynamic;
+    bool m_dynamic;
 
-    uint8_t m_Flags;
+    LodQueue m_lods;
 
-    int m_Topology;
-
-    LodQueue m_Lods;
-
-    AABBox m_Box;
 };
 
 /*!
@@ -218,19 +329,19 @@ Mesh::~Mesh() {
     Removes all attached Levels Of Detal
 */
 void Mesh::clear() {
-    p_ptr->m_Lods.clear();
+    p_ptr->m_lods.clear();
 }
 /*!
     Returns true in case of mesh can by changed at the runtime; otherwise returns false.
 */
 bool Mesh::isDynamic() const {
-    return p_ptr->m_Dynamic;
+    return p_ptr->m_dynamic;
 }
 /*!
     Marks mesh as dynamic that means it's can be changed at the runtime.
 */
 void Mesh::makeDynamic() {
-    p_ptr->m_Dynamic = true;
+    p_ptr->m_dynamic = true;
 }
 /*!
     \internal
@@ -238,30 +349,21 @@ void Mesh::makeDynamic() {
 void Mesh::loadUserData(const VariantMap &data) {
     clear();
 
-    auto it = data.find(HEADER);
-    if(it != data.end()) {
-        VariantList header = (*it).second.value<VariantList>();
-
-        auto i = header.begin();
-        p_ptr->m_Flags = (*i).toInt();
-    }
-
     auto mesh = data.find(DATA);
     if(mesh != data.end()) {
-        Vector3 min( FLT_MAX);
-        Vector3 max(-FLT_MAX);
-
         VariantList surface = (*mesh).second.value<VariantList>();
         auto x = surface.begin();
-        p_ptr->m_Topology = static_cast<Mesh::TriangleTopology>((*x).toInt());
-        x++;
         while(x != surface.end()) {
-            Lod l;
-
             VariantList lod = (*x).value<VariantList>();
             auto y = lod.begin();
+
+            Lod l;
+            l.m_topology = static_cast<Mesh::TriangleTopology>((*y).toInt());
+            y++;
+            l.m_flags = (*y).toInt();
+            y++;
             string path = (*y).toString();
-            l.m_Material = Engine::loadResource<Material>(path.empty() ? DEFAULTMESH : path);
+            l.m_material = Engine::loadResource<Material>(path.empty() ? DEFAULTMESH : path);
             y++;
 
             uint32_t vCount = (*y).toInt();
@@ -270,74 +372,77 @@ void Mesh::loadUserData(const VariantMap &data) {
             uint32_t tCount = (*y).toInt();
             y++;
 
+            Vector3 min( FLT_MAX);
+            Vector3 max(-FLT_MAX);
+
             ByteArray data;
             { // Required field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Vertices.resize(vCount);
-                memcpy(&l.m_Vertices[0],  &data[0], sizeof(Vector3) * vCount);
+                l.m_vertices.resize(vCount);
+                memcpy(&l.m_vertices[0],  &data[0], sizeof(Vector3) * vCount);
                 for(uint32_t i = 0; i < vCount; i++) {
-                    min.x = MIN(min.x, l.m_Vertices[i].x);
-                    min.y = MIN(min.y, l.m_Vertices[i].y);
-                    min.z = MIN(min.z, l.m_Vertices[i].z);
+                    min.x = MIN(min.x, l.m_vertices[i].x);
+                    min.y = MIN(min.y, l.m_vertices[i].y);
+                    min.z = MIN(min.z, l.m_vertices[i].z);
 
-                    max.x = MAX(max.x, l.m_Vertices[i].x);
-                    max.y = MAX(max.y, l.m_Vertices[i].y);
-                    max.z = MAX(max.z, l.m_Vertices[i].z);
+                    max.x = MAX(max.x, l.m_vertices[i].x);
+                    max.y = MAX(max.y, l.m_vertices[i].y);
+                    max.z = MAX(max.z, l.m_vertices[i].z);
                 }
             }
             { // Required field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Indices.resize(tCount * 3);
-                memcpy(&l.m_Indices[0], &data[0], sizeof(uint32_t) * tCount * 3);
+                l.m_indices.resize(tCount * 3);
+                memcpy(&l.m_indices[0], &data[0], sizeof(uint32_t) * tCount * 3);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Color) { // Optional field
+            if(l.m_flags & MeshAttributes::Color) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Colors.resize(vCount);
-                memcpy(&l.m_Colors[0], &data[0], sizeof(Vector4) * vCount);
+                l.m_colors.resize(vCount);
+                memcpy(&l.m_colors[0], &data[0], sizeof(Vector4) * vCount);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Uv0) { // Optional field
+            if(l.m_flags & MeshAttributes::Uv0) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Uv0.resize(vCount);
-                memcpy(&l.m_Uv0[0], &data[0], sizeof(Vector2) * vCount);
+                l.m_uv0.resize(vCount);
+                memcpy(&l.m_uv0[0], &data[0], sizeof(Vector2) * vCount);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Uv1) { // Optional field
+            if(l.m_flags & MeshAttributes::Uv1) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Uv1.resize(vCount);
-                memcpy(&l.m_Uv1[0], &data[0], sizeof(Vector2) * vCount);
+                l.m_uv1.resize(vCount);
+                memcpy(&l.m_uv1[0], &data[0], sizeof(Vector2) * vCount);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Normals) { // Optional field
+            if(l.m_flags & MeshAttributes::Normals) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Normals.resize(vCount);
-                memcpy(&l.m_Normals[0], &data[0], sizeof(Vector3) * vCount);
+                l.m_normals.resize(vCount);
+                memcpy(&l.m_normals[0], &data[0], sizeof(Vector3) * vCount);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Tangents) { // Optional field
+            if(l.m_flags & MeshAttributes::Tangents) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Tangents.resize(vCount);
-                memcpy(&l.m_Tangents[0], &data[0],  sizeof(Vector3) * vCount);
+                l.m_tangents.resize(vCount);
+                memcpy(&l.m_tangents[0], &data[0],  sizeof(Vector3) * vCount);
             }
-            if(p_ptr->m_Flags & MeshAttributes::Skinned) { // Optional field
+            if(l.m_flags & MeshAttributes::Skinned) { // Optional field
                 data = (*y).toByteArray();
                 y++;
-                l.m_Weights.resize(vCount);
-                memcpy(&l.m_Weights[0], &data[0],  sizeof(Vector4) * vCount);
+                l.m_weights.resize(vCount);
+                memcpy(&l.m_weights[0], &data[0],  sizeof(Vector4) * vCount);
 
                 data = (*y).toByteArray();
                 y++;
-                l.m_Bones.resize(vCount);
-                memcpy(&l.m_Bones[0], &data[0],  sizeof(Vector4) * vCount);
+                l.m_bones.resize(vCount);
+                memcpy(&l.m_bones[0], &data[0],  sizeof(Vector4) * vCount);
             }
-            p_ptr->m_Lods.push_back(l);
+            l.m_box.setBox(min, max);
+            p_ptr->m_lods.push_back(l);
 
             x++;
         }
-        p_ptr->m_Box.setBox(min, max);
     }
     switchState(ToBeUpdated);
 }
@@ -347,19 +452,15 @@ void Mesh::loadUserData(const VariantMap &data) {
 VariantMap Mesh::saveUserData() const {
     VariantMap result;
 
-    int32_t flag = flags();
-
-    VariantList header;
-    header.push_back(flag);
-    result[HEADER]  = header;
-
     VariantList surface;
-    surface.push_back(topology());
 
-    for(size_t index = 0; index < p_ptr->m_Lods.size(); index++) {
+    for(size_t index = 0; index < p_ptr->m_lods.size(); index++) {
         Lod *l = lod(index);
 
         VariantList lod;
+        lod.push_back(l->topology());
+        lod.push_back(l->flags());
+
         // Push material
         lod.push_back("{00000000-0402-0000-0000-000000000000}");
 
@@ -380,38 +481,38 @@ VariantMap Mesh::saveUserData() const {
             lod.push_back(buffer);
         }
 
-        if(flag & Color) { // Optional field
+        if(l->flags() & Color) { // Optional field
             ByteArray buffer;
             buffer.resize(sizeof(Vector4) * vCount);
             memcpy(&buffer[0], &l->colors()[0], sizeof(Vector4) * vCount);
             lod.push_back(buffer);
         }
-        if(flag & Uv0) { // Optional field
+        if(l->flags() & Uv0) { // Optional field
             ByteArray buffer;
             buffer.resize(sizeof(Vector2) * vCount);
             memcpy(&buffer[0], &l->uv0()[0], sizeof(Vector2) * vCount);
             lod.push_back(buffer);
         }
-        if(flag & Uv1) { // Optional field
+        if(l->flags() & Uv1) { // Optional field
             ByteArray buffer;
             buffer.resize(sizeof(Vector2) * vCount);
             memcpy(&buffer[0], &l->uv1()[0], sizeof(Vector2) * vCount);
             lod.push_back(buffer);
         }
 
-        if(flag & Normals) { // Optional field
+        if(l->flags() & Normals) { // Optional field
             ByteArray buffer;
             buffer.resize(sizeof(Vector3) * vCount);
             memcpy(&buffer[0], &l->normals()[0], sizeof(Vector3) * vCount);
             lod.push_back(buffer);
         }
-        if(flag & Tangents) { // Optional field
+        if(l->flags() & Tangents) { // Optional field
             ByteArray buffer;
             buffer.resize(sizeof(Vector3) * vCount);
             memcpy(&buffer[0], &l->tangents()[0], sizeof(Vector3) * vCount);
             lod.push_back(buffer);
         }
-        if(flag & Skinned) { // Optional field
+        if(l->flags() & Skinned) { // Optional field
             {
                 ByteArray buffer;
                 buffer.resize(sizeof(Vector4) * vCount);
@@ -447,47 +548,7 @@ bool Mesh::isUnloadable() {
     Returns the number of Levels Of Details
 */
 int Mesh::lodsCount() const {
-    return p_ptr->m_Lods.size();
-}
-/*!
-    Returns bounding box for the Mesh.
-*/
-AABBox Mesh::bound() const {
-    return p_ptr->m_Box;
-}
-/*!
-    Sets new bounding \a box for the Mesh.
-*/
-void Mesh::setBound(AABBox box) {
-    p_ptr->m_Box = box;
-}
-/*!
-    Returns poligon topology for the mesh.
-    For more details please see the Mesh::TriangleTopology enum.
-*/
-int Mesh::topology() const {
-    return p_ptr->m_Topology;
-}
-/*!
-    Sets poligon \a topology for the mesh.
-    For more details please see the Mesh::TriangleTopology enum.
-*/
-void Mesh::setTopology(int topology) {
-    p_ptr->m_Topology = topology;
-}
-/*!
-    Returns vertex attributes flags.
-    For more details please see the Mesh::Attributes enum.
-*/
-int Mesh::flags() const {
-    return p_ptr->m_Flags;
-}
-/*!
-    Sets vertex attributes \a flags.
-    For more details please see the Mesh::Attributes enum.
-*/
-void Mesh::setFlags(int flags) {
-    p_ptr->m_Flags = flags;
+    return p_ptr->m_lods.size();
 }
 /*!
     Adds the new \a lod data for the Mesh.
@@ -495,10 +556,9 @@ void Mesh::setFlags(int flags) {
 */
 int Mesh::addLod(Lod *lod) {
     if(lod) {
-        p_ptr->m_Lods.push_back(*lod);
-        recalcBounds();
+        p_ptr->m_lods.push_back(*lod);
         switchState(ToBeUpdated);
-        return p_ptr->m_Lods.size() - 1;
+        return p_ptr->m_lods.size() - 1;
     }
     return -1;
 }
@@ -509,8 +569,7 @@ int Mesh::addLod(Lod *lod) {
 void Mesh::setLod(int lod, Lod *data) {
     if(lod < lodsCount()) {
         if(data) {
-            p_ptr->m_Lods[lod] = *data;
-            recalcBounds();
+            p_ptr->m_lods[lod] = *data;
             switchState(ToBeUpdated);
         }
     } else {
@@ -518,78 +577,11 @@ void Mesh::setLod(int lod, Lod *data) {
     }
 }
 /*!
-    Merges current with provided \a mesh.
-    In the case of the \a transform, the matrix is not nullptr it will be applied to \a mesh before merging.
-*/
-void Mesh::batchMesh(Mesh *mesh, Matrix4 *transform) {
-    if(mesh) {
-        for(size_t i = 0; i < mesh->p_ptr->m_Lods.size(); i++) {
-            Lod lod = mesh->p_ptr->m_Lods[i];
-            if(transform) {
-                for(auto &v : lod.vertices()) {
-                    v = *transform * v;
-                }
-
-                Matrix3 rotation = transform->rotation();
-                for(auto &n : lod.normals()) {
-                    n = rotation * n;
-                }
-                for(auto &t : lod.tangents()) {
-                    t = rotation * t;
-                }
-            }
-
-            if(i < p_ptr->m_Lods.size()) {
-                Lod &current = p_ptr->m_Lods[i];
-                // Indices
-                auto &curIndex = current.indices();
-                uint32_t size = current.vertices().size();
-                auto &srcIndex = lod.indices();
-                for(auto &it : srcIndex) {
-                    it += size;
-                }
-                curIndex.insert(curIndex.end(), srcIndex.begin(), srcIndex.end());
-                // Vertex attributes
-                current.vertices().insert(current.vertices().end(), lod.vertices().begin(), lod.vertices().end());
-                current.tangents().insert(current.tangents().end(), lod.tangents().begin(), lod.tangents().end());
-                current.normals().insert(current.normals().end(), lod.normals().begin(), lod.normals().end());
-                current.colors().insert(current.colors().end(), lod.colors().begin(), lod.colors().end());
-                current.uv0().insert(current.uv0().end(), lod.uv0().begin(), lod.uv0().end());
-                current.uv1().insert(current.uv1().end(), lod.uv1().begin(), lod.uv1().end());
-            } else {
-                p_ptr->m_Lods.push_back(lod);
-            }
-        }
-        recalcBounds();
-    }
-}
-/*!
-    Generates bound box according new geometry.
-*/
-void Mesh::recalcBounds() {
-    Vector3 min( FLT_MAX);
-    Vector3 max(-FLT_MAX);
-
-    for(auto l : p_ptr->m_Lods) {
-        for(uint32_t i = 0; i < l.vertices().size(); i++) {
-            min.x = MIN(min.x, l.m_Vertices[i].x);
-            min.y = MIN(min.y, l.m_Vertices[i].y);
-            min.z = MIN(min.z, l.m_Vertices[i].z);
-
-            max.x = MAX(max.x, l.m_Vertices[i].x);
-            max.y = MAX(max.y, l.m_Vertices[i].y);
-            max.z = MAX(max.z, l.m_Vertices[i].z);
-        }
-    }
-
-    p_ptr->m_Box.setBox(min, max);
-}
-/*!
     Returns Lod data for the \a lod index if exists; othewise returns nullptr.
 */
 Lod *Mesh::lod(int lod) const {
     if(lod < lodsCount()) {
-        return &p_ptr->m_Lods[lod];
+        return &p_ptr->m_lods[lod];
     }
     return nullptr;
 }

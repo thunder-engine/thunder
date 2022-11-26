@@ -60,7 +60,7 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox MeshRender::bound() const {
     Transform *t = actor()->transform();
     if(p_ptr->m_pMesh && t) {
-        return p_ptr->m_pMesh->bound() * t->worldTransform();
+        return p_ptr->m_pMesh->lod(0)->bound() * t->worldTransform();
     }
     return Renderable::bound();
 }

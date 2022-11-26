@@ -34,7 +34,6 @@ public:
         m_wrap(false) {
 
         m_mesh->makeDynamic();
-        m_mesh->setFlags(Mesh::Uv0);
 
         Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
         if(material) {
