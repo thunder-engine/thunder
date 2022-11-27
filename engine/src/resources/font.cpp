@@ -22,6 +22,9 @@ public:
     FontPrivate() :
         m_face(nullptr),
         m_scale(DF_GLYPH_SIZE),
+        m_spaceWidth(0.0f),
+        m_lineHeight(0.0f),
+        m_cursorWidth(0.0f),
         m_useKerning(false) {
     }
 
@@ -34,6 +37,10 @@ public:
     FT_FaceRec_ *m_face;
 
     int32_t m_scale;
+
+    float m_spaceWidth;
+    float m_lineHeight;
+    float m_cursorWidth;
 
     bool m_useKerning;
 };
@@ -232,11 +239,7 @@ int Font::length(const string &characters) const {
 float Font::spaceWidth() const {
     PROFILE_FUNCTION();
 
-    FT_Error error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, ' ' ), FT_LOAD_DEFAULT );
-    if(!error) {
-        return static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
-    }
-    return 0;
+    return p_ptr->m_spaceWidth;
 }
 /*!
     Returns visual height for the font in world units.
@@ -244,11 +247,15 @@ float Font::spaceWidth() const {
 float Font::lineHeight() const {
     PROFILE_FUNCTION();
 
-    FT_Error error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '\n' ), FT_LOAD_DEFAULT );
-    if(!error) {
-        return static_cast<float>(p_ptr->m_face->glyph->metrics.height) / p_ptr->m_scale / 32.0f;
-    }
-    return 0;
+    return p_ptr->m_lineHeight;
+}
+/*!
+    Returns visual width of the cursor for the font in world units.
+*/
+float Font::cursorWidth() const {
+    PROFILE_FUNCTION();
+
+    return p_ptr->m_cursorWidth;
 }
 /*!
     \internal
@@ -273,6 +280,23 @@ void Font::loadUserData(const VariantMap &data) {
                 return;
             }
             p_ptr->m_useKerning = FT_HAS_KERNING( p_ptr->m_face );
+
+            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, ' ' ), FT_LOAD_DEFAULT );
+            if(!error) {
+                p_ptr->m_spaceWidth = static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
+            }
+
+            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '\n' ), FT_LOAD_DEFAULT );
+            if(!error) {
+                p_ptr->m_lineHeight = static_cast<float>(p_ptr->m_face->glyph->metrics.height) / p_ptr->m_scale / 32.0f;
+            }
+
+            error = FT_Load_Glyph( p_ptr->m_face, FT_Get_Char_Index( p_ptr->m_face, '|' ), FT_LOAD_DEFAULT );
+            if(!error) {
+                p_ptr->m_cursorWidth = static_cast<float>(p_ptr->m_face->glyph->advance.x) / p_ptr->m_scale / 64.0f;
+            }
+
+
         }
     }
 }

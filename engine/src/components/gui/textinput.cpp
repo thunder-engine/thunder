@@ -36,7 +36,8 @@ TextInput::TextInput() :
     m_currentFade(1.0f),
     m_cursorBlinkRate(0.85f),
     m_cursorBlinkCurrent(0.0f),
-    m_hovered(false) {
+    m_hovered(false),
+    m_focused(false) {
 }
 
 Frame *TextInput::background() const {
@@ -76,6 +77,9 @@ string TextInput::text() const {
 void TextInput::setText(const string text) {
     if(m_label) {
         m_label->setText(text);
+        u32string u32 = Utils::utf8ToUtf32(text);
+        m_cursorPosition = u32.size();
+        recalcCursor();
     }
 }
 
@@ -112,7 +116,7 @@ void TextInput::update() {
         u32string u32 = Utils::utf8ToUtf32(text());
         bool isBackspace = Input::isKeyDown(Input::KEY_BACKSPACE);
         if(isBackspace || Input::isKeyDown(Input::KEY_DELETE)) {
-            if(isBackspace && m_cursorPosition > 0) {
+            if(isBackspace && m_cursorPosition >= 0) {
                 m_cursorPosition--;
             }
             if(m_cursorPosition >= 0) {
@@ -128,6 +132,8 @@ void TextInput::update() {
         } else if(Input::isKeyDown(Input::KEY_RIGHT) && m_cursorPosition < u32.size()) {
             m_cursorPosition++;
             recalcCursor();
+        } else if(Input::isKeyDown(Input::KEY_ENTER) || Input::isKeyDown(Input::KEY_KP_ENTER)) {
+            emitSignal(_SIGNAL(editingFinished()));
         } else {
             string sub = Input::inputString();
             sub.erase(remove_if(sub.begin(), sub.end(), [](unsigned char c) { return (c >= 0 && c < 32);}), sub.end());
@@ -143,6 +149,11 @@ void TextInput::update() {
         if(m_cursor) {
             m_cursor->setEnabled(false);
         }
+
+        if(m_focused) {
+            emitSignal(_SIGNAL(focusOut()));
+            m_focused = false;
+        }
     }
 
     bool hover = rectTransform()->isHovered(pos.x, pos.y);
@@ -155,7 +166,14 @@ void TextInput::update() {
         color = m_highlightedColor;
         if(Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
             m_currentFade = 0.0f;
-            onClicked();
+
+            Widget::setFocusWidget(this);
+
+            if(m_cursor) {
+                m_cursor->setEnabled(true);
+            }
+            emitSignal(_SIGNAL(focusIn()));
+            m_focused = true;
         }
 
         if(Input::isMouseButtonUp(0)) {
@@ -225,18 +243,6 @@ void TextInput::onReferenceDestroyed() {
         m_label = nullptr;
         return;
     }
-}
-/*!
-    \internal
-*/
-void TextInput::onClicked() {
-    setFocusWidget(this);
-
-    if(m_cursor) {
-        m_cursor->setEnabled(true);
-    }
-
-    emitSignal(_SIGNAL(clicked()));
 }
 
 void TextInput::recalcCursor() {

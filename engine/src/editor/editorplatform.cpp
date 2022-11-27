@@ -64,7 +64,7 @@ Input::KeyCode mapToInput(int32_t key) {
         //result = Input::KEY_WORLD_1
         //result = Input::KEY_WORLD_2
         { Qt::Key_Escape, Input::KEY_ESCAPE },
-        { Qt::Key_Enter, Input::KEY_ENTER },
+        { Qt::Key_Return, Input::KEY_ENTER },
         { Qt::Key_Tab, Input::KEY_TAB },
         { Qt::Key_Backspace, Input::KEY_BACKSPACE },
         { Qt::Key_Insert, Input::KEY_INSERT },
@@ -122,7 +122,7 @@ Input::KeyCode mapToInput(int32_t key) {
         //result = Input::KEY_KP_MULTIPLY
         //result = Input::KEY_KP_SUBTRACT
         //result = Input::KEY_KP_ADD
-        //result = Input::KEY_KP_ENTER
+        {Qt::Key_Enter, Input::KEY_KP_ENTER },
         //result = Input::KEY_KP_EQUAL
         { Qt::Key_Shift, Input::KEY_LEFT_SHIFT },
         { Qt::Key_Control, Input::KEY_LEFT_CONTROL },
