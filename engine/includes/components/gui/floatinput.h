@@ -11,7 +11,8 @@ class ENGINE_EXPORT FloatInput : public Widget {
 
     A_METHODS(
         A_SLOT(FloatInput::onIncrease),
-        A_SLOT(FloatInput::onDecrease)
+        A_SLOT(FloatInput::onDecrease),
+        A_SLOT(FloatInput::onEditingFinished)
     )
 
 public:
@@ -32,9 +33,11 @@ public:
     Vector4 corners() const;
     void setCorners(Vector4 corners);
 
-protected:
+protected: // slots
     void onIncrease();
     void onDecrease();
+
+    void onEditingFinished();
 
     void composeComponent() override;
 

@@ -25,7 +25,7 @@ FloatInput::FloatInput() :
     m_value(0.0f),
     m_singleStep(1.0f),
     m_minimum(0.0f),
-    m_maximum(9.99f) {
+    m_maximum(99.99f) {
 }
 
 float FloatInput::value() const {
@@ -98,6 +98,15 @@ void FloatInput::onDecrease() {
     setValue(m_value - m_singleStep);
 }
 
+void FloatInput::onEditingFinished() {
+    string text = m_input->text();
+    if(!text.empty()) {
+        setValue(stof(text));
+    } else {
+        setValue(value());
+    }
+}
+
 void FloatInput::composeComponent() {
     Widget::composeComponent();
 
@@ -106,6 +115,9 @@ void FloatInput::composeComponent() {
     Actor *text = Engine::composeActor(gTextInput, gTextInput, actor());
     m_input = static_cast<TextInput *>(text->component(gTextInput));
     if(m_input) {
+        connect(m_input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
+        connect(m_input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
+
         Frame *frame = m_input->background();
         if(frame) {
             frame->setCorners(Vector4());

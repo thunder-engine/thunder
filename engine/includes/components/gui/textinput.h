@@ -9,6 +9,12 @@ class Label;
 class ENGINE_EXPORT TextInput : public Widget {
     A_REGISTER(TextInput, Widget, Components/UI)
 
+    A_METHODS(
+        A_SIGNAL(TextInput::focusIn),
+        A_SIGNAL(TextInput::focusOut),
+        A_SIGNAL(TextInput::editingFinished)
+    )
+
 public:
     TextInput();
 
@@ -24,14 +30,18 @@ public:
     Vector4 textColor() const;
     void setTextColor(Vector4 color);
 
+public: // signals
+    void focusIn();
+    void focusOut();
+
+    void editingFinished();
+
 protected:
     void update() override;
 
     void composeComponent() override;
 
     void onReferenceDestroyed() override;
-
-    virtual void onClicked();
 
     void recalcCursor();
 
@@ -46,7 +56,7 @@ private:
     Label *m_cursor;
     Label *m_label;
 
-    size_t m_cursorPosition;
+    int32_t m_cursorPosition;
 
     float m_fadeDuration;
     float m_currentFade;
@@ -54,6 +64,7 @@ private:
     float m_cursorBlinkCurrent;
 
     bool m_hovered;
+    bool m_focused;
 
 };
 

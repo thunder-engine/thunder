@@ -477,15 +477,17 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, int
     if(font) {
         float spaceWidth = font->spaceWidth() * size;
         float spaceLine = font->lineHeight() * size;
+        float cursorMid = font->cursorWidth() * 0.5f * size;
 
         string data = Engine::translate(text);
         font->requestCharacters(data);
+
+        Vector2 pos(0.0, boundaries.y - size);
 
         uint32_t length = font->length(data);
         if(length) {
             u32string u32 = Utils::utf8ToUtf32(data);
 
-            Vector2 pos(0.0, boundaries.y - size);
             uint32_t previous = 0;
             uint32_t it = 0;
 
@@ -521,9 +523,11 @@ Vector2 TextRender::cursorPosition(Font *font, int size, const string &text, int
                 }
                 previous = ch;
             }
-
-            return pos;
         }
+
+        pos.x -= cursorMid;
+
+        return pos;
     }
     return Vector2();
 }

@@ -34,6 +34,8 @@ public:
 
     float lineHeight() const;
 
+    float cursorWidth() const;
+
     void loadUserData(const VariantMap &data) override;
 private:
     void clear();
