@@ -3,9 +3,9 @@
 
 #include "renderable.h"
 
-class Material;
 class Mesh;
-class MeshRenderPrivate;
+class Material;
+class MaterialInstance;
 
 class ENGINE_EXPORT MeshRender : public Renderable {
     A_REGISTER(MeshRender, Renderable, Components/3D);
@@ -18,7 +18,6 @@ class ENGINE_EXPORT MeshRender : public Renderable {
 
 public:
     MeshRender();
-    ~MeshRender() override;
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
@@ -35,8 +34,11 @@ private:
     VariantMap saveUserData() const override;
 
     void composeComponent() override;
+
 private:
-    MeshRenderPrivate *p_ptr;
+    Mesh *m_mesh;
+
+    MaterialInstance *m_material;
 
 };
 

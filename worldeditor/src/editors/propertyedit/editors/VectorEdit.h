@@ -29,6 +29,9 @@ protected slots:
     void onValueChanged();
 
 private:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private:
     Ui::VectorEdit *ui;
 };
 

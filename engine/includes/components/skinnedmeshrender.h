@@ -4,9 +4,9 @@
 #include "renderable.h"
 
 class Armature;
-class Material;
 class Mesh;
-class SkinnedMeshRenderPrivate;
+class Material;
+class MaterialInstance;
 
 class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
     A_REGISTER(SkinnedMeshRender, Renderable, Components/3D);
@@ -20,7 +20,6 @@ class ENGINE_EXPORT SkinnedMeshRender : public Renderable {
 
 public:
     SkinnedMeshRender();
-    ~SkinnedMeshRender() override;
 
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
@@ -44,7 +43,11 @@ private:
     bool drawHandles(ObjectList &selected) override;
 #endif
 private:
-    SkinnedMeshRenderPrivate *p_ptr;
+    Mesh *m_mesh;
+
+    MaterialInstance *m_material;
+
+    Armature *m_armature;
 
 };
 

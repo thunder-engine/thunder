@@ -27,6 +27,9 @@ private slots:
     void onValueChanged(int value);
 
 private:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private:
     Ui::FloatEdit *ui;
 };
 

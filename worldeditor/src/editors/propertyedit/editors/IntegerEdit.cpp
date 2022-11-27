@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include <QIntValidator>
+#include <QTimer>
 
 IntegerEdit::IntegerEdit(QWidget *parent) :
         QWidget(parent),
@@ -16,6 +17,8 @@ IntegerEdit::IntegerEdit(QWidget *parent) :
 
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &IntegerEdit::editingFinished);
     connect(ui->horizontalSlider, &QSlider::valueChanged, this, &IntegerEdit::onValueChanged);
+
+    ui->lineEdit->installEventFilter(this);
 
     ui->horizontalSlider->setVisible(false);
 }
@@ -45,4 +48,12 @@ void IntegerEdit::onValueChanged(int value) {
     ui->lineEdit->setText(QString::number(value));
 
     emit editingFinished();
+}
+
+bool IntegerEdit::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::FocusIn) {
+        QLineEdit *line = static_cast<QLineEdit *>(obj);
+        QTimer::singleShot(0, line, SLOT(selectAll()));
+    }
+    return QObject::eventFilter(obj, event);
 }

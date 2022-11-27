@@ -11,27 +11,12 @@
 #include "material.h"
 
 namespace  {
-const char *MESH = "Mesh";
-const char *MATERIAL = "Material";
-const char *ARMATURE = "Armature";
-const char *MATRICES = "skinMatrices";
+const char *gMesh = "Mesh";
+const char *gMaterial = "Material";
+const char *gArmature= "Armature";
+const char *gMatrices = "skinMatrices";
 }
 
-class SkinnedMeshRenderPrivate {
-public:
-    SkinnedMeshRenderPrivate() :
-            m_pMesh(nullptr),
-            m_pMaterial(nullptr),
-            m_pArmature(nullptr) {
-
-    }
-
-    Mesh *m_pMesh;
-
-    MaterialInstance *m_pMaterial;
-
-    Armature *m_pArmature;
-};
 /*!
     \class SkinnedMeshRender
     \brief Draws an animated skeletal mesh for the 3D graphics.
@@ -41,25 +26,22 @@ public:
 */
 
 SkinnedMeshRender::SkinnedMeshRender() :
-        p_ptr(new SkinnedMeshRenderPrivate) {
+    m_mesh(nullptr),
+    m_material(nullptr),
+    m_armature(nullptr) {
 
-}
-
-SkinnedMeshRender::~SkinnedMeshRender() {
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     \internal
 */
 void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pMesh && layer & a->layers()) {
+    if(m_mesh && layer & a->layers()) {
         if(layer & CommandBuffer::RAYCAST) {
             buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, 0, layer, p_ptr->m_pMaterial);
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -68,11 +50,11 @@ void SkinnedMeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 */
 AABBox SkinnedMeshRender::bound() const {
     AABBox result;
-    if(p_ptr->m_pMesh) {
-        result = p_ptr->m_pMesh->lod(0)->bound();
+    if(m_mesh) {
+        result = m_mesh->lod(0)->bound();
     }
-    if(p_ptr->m_pArmature) {
-        result = p_ptr->m_pArmature->recalcBounds(result);
+    if(m_armature) {
+        result = m_armature->recalcBounds(result);
     }
     return result;
 }
@@ -80,14 +62,14 @@ AABBox SkinnedMeshRender::bound() const {
     Returns a Mesh assigned to this component.
 */
 Mesh *SkinnedMeshRender::mesh() const {
-    return p_ptr->m_pMesh;
+    return m_mesh;
 }
 /*!
     Assigns a new \a mesh to draw.
 */
 void SkinnedMeshRender::setMesh(Mesh *mesh) {
-    p_ptr->m_pMesh = mesh;
-    if(p_ptr->m_pMesh) {
+    m_mesh = mesh;
+    if(m_mesh) {
         Lod *lod = mesh->lod(0);
         if(lod) {
             setMaterial(lod->material());
@@ -98,8 +80,8 @@ void SkinnedMeshRender::setMesh(Mesh *mesh) {
     Returns an instantiated Material assigned to SkinnedMeshRender.
 */
 Material *SkinnedMeshRender::material() const {
-    if(p_ptr->m_pMaterial) {
-        return p_ptr->m_pMaterial->material();
+    if(m_material) {
+        return m_material->material();
     }
     return nullptr;
 }
@@ -108,13 +90,13 @@ Material *SkinnedMeshRender::material() const {
 */
 void SkinnedMeshRender::setMaterial(Material *material) {
     if(material) {
-        if(p_ptr->m_pMaterial) {
-            delete p_ptr->m_pMaterial;
+        if(m_material) {
+            delete m_material;
         }
-        p_ptr->m_pMaterial = material->createInstance(Material::Skinned);
-        if(p_ptr->m_pArmature) {
-            Texture *t = p_ptr->m_pArmature->texture();
-            p_ptr->m_pMaterial->setTexture(MATRICES, t);
+        m_material = material->createInstance(Material::Skinned);
+        if(m_armature) {
+            Texture *t = m_armature->texture();
+            m_material->setTexture(gMatrices, t);
         }
     }
 }
@@ -122,18 +104,18 @@ void SkinnedMeshRender::setMaterial(Material *material) {
     Returns a Armature component for the attached skeleton.
 */
 Armature *SkinnedMeshRender::armature() const {
-    return p_ptr->m_pArmature;
+    return m_armature;
 }
 /*!
     Attaches an \a armature skeleton.
 */
 void SkinnedMeshRender::setArmature(Armature *armature) {
-    p_ptr->m_pArmature = armature;
-    if(p_ptr->m_pArmature) {
-        connect(p_ptr->m_pArmature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        if(p_ptr->m_pMaterial) {
-            Texture *t = p_ptr->m_pArmature->texture();
-            p_ptr->m_pMaterial->setTexture(MATRICES, t);
+    m_armature = armature;
+    if(m_armature) {
+        connect(m_armature, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
+        if(m_material) {
+            Texture *t = m_armature->texture();
+            m_material->setTexture(gMatrices, t);
         }
     }
 }
@@ -143,19 +125,19 @@ void SkinnedMeshRender::setArmature(Armature *armature) {
 void SkinnedMeshRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(MESH);
+        auto it = data.find(gMesh);
         if(it != data.end()) {
             setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
         }
     }
-    if(p_ptr->m_pMesh) {
-        auto it = data.find(MATERIAL);
+    if(m_mesh) {
+        auto it = data.find(gMaterial);
         if(it != data.end()) {
             setMaterial(Engine::loadResource<Material>((*it).second.toString()));
         }
     }
     {
-        auto it = data.find(ARMATURE);
+        auto it = data.find(gArmature);
         if(it != data.end()) {
             uint32_t uuid = uint32_t((*it).second.toInt());
             Object *object = Engine::findObject(uuid, Engine::findRoot(this));
@@ -171,25 +153,25 @@ VariantMap SkinnedMeshRender::saveUserData() const {
     {
         string ref = Engine::reference(mesh());
         if(!ref.empty()) {
-            result[MESH] = ref;
+            result[gMesh] = ref;
         }
     }
     {
         string ref = Engine::reference(material());
         if(!ref.empty()) {
-            result[MATERIAL] = ref;
+            result[gMaterial] = ref;
         }
     }
     {
-        if(p_ptr->m_pArmature) {
-            result[ARMATURE] = int(p_ptr->m_pArmature->uuid());
+        if(m_armature) {
+            result[gArmature] = int(m_armature->uuid());
         }
     }
     return result;
 }
 
 void SkinnedMeshRender::onReferenceDestroyed() {
-    if(sender() == p_ptr->m_pArmature) {
+    if(sender() == m_armature) {
         setArmature(nullptr);
     }
 }

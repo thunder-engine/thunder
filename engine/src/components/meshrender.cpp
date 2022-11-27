@@ -8,21 +8,10 @@
 #include "material.h"
 
 namespace {
-const char *MESH = "Mesh";
-const char *MATERIAL = "Material";
+const char *gMesh = "Mesh";
+const char *gMaterial = "Material";
 }
 
-class MeshRenderPrivate {
-public:
-    MeshRenderPrivate() :
-            m_pMesh(nullptr),
-            m_pMaterial(nullptr) {
-    }
-
-    Mesh *m_pMesh;
-
-    MaterialInstance *m_pMaterial;
-};
 /*!
     \class MeshRender
     \brief Draws a mesh for the 3D graphics.
@@ -32,25 +21,21 @@ public:
 */
 
 MeshRender::MeshRender() :
-        p_ptr(new MeshRenderPrivate) {
+    m_mesh(nullptr),
+    m_material(nullptr) {
 
-}
-
-MeshRender::~MeshRender() {
-    delete p_ptr;
-    p_ptr = nullptr;
 }
 /*!
     \internal
 */
 void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
     Actor *a = actor();
-    if(p_ptr->m_pMesh && layer & a->layers() && a->transform()) {
+    if(m_mesh && layer & a->layers() && a->transform()) {
         if(layer & CommandBuffer::RAYCAST) {
             buffer.setColor(CommandBuffer::idToColor(a->uuid()));
         }
 
-        buffer.drawMesh(a->transform()->worldTransform(), p_ptr->m_pMesh, 0, layer, p_ptr->m_pMaterial);
+        buffer.drawMesh(a->transform()->worldTransform(), m_mesh, 0, layer, m_material);
         buffer.setColor(Vector4(1.0f));
     }
 }
@@ -59,8 +44,8 @@ void MeshRender::draw(CommandBuffer &buffer, uint32_t layer) {
 */
 AABBox MeshRender::bound() const {
     Transform *t = actor()->transform();
-    if(p_ptr->m_pMesh && t) {
-        return p_ptr->m_pMesh->lod(0)->bound() * t->worldTransform();
+    if(m_mesh && t) {
+        return m_mesh->lod(0)->bound() * t->worldTransform();
     }
     return Renderable::bound();
 }
@@ -68,14 +53,14 @@ AABBox MeshRender::bound() const {
     Returns a Mesh assigned to this component.
 */
 Mesh *MeshRender::mesh() const {
-    return p_ptr->m_pMesh;
+    return m_mesh;
 }
 /*!
     Assigns a new \a mesh to draw.
 */
 void MeshRender::setMesh(Mesh *mesh) {
-    p_ptr->m_pMesh = mesh;
-    if(p_ptr->m_pMesh) {
+    m_mesh = mesh;
+    if(m_mesh) {
         Lod *lod = mesh->lod(0);
         if(lod) {
             setMaterial(lod->material());
@@ -86,8 +71,8 @@ void MeshRender::setMesh(Mesh *mesh) {
     Returns an instantiated Material assigned to MeshRender.
 */
 Material *MeshRender::material() const {
-    if(p_ptr->m_pMaterial) {
-        return p_ptr->m_pMaterial->material();
+    if(m_material) {
+        return m_material->material();
     }
     return nullptr;
 }
@@ -96,10 +81,10 @@ Material *MeshRender::material() const {
 */
 void MeshRender::setMaterial(Material *material) {
     if(material) {
-        if(p_ptr->m_pMaterial) {
-            delete p_ptr->m_pMaterial;
+        if(m_material) {
+            delete m_material;
         }
-        p_ptr->m_pMaterial = material->createInstance();
+        m_material = material->createInstance();
     }
 }
 /*!
@@ -108,13 +93,13 @@ void MeshRender::setMaterial(Material *material) {
 void MeshRender::loadUserData(const VariantMap &data) {
     Component::loadUserData(data);
     {
-        auto it = data.find(MESH);
+        auto it = data.find(gMesh);
         if(it != data.end()) {
             setMesh(Engine::loadResource<Mesh>((*it).second.toString()));
         }
     }
-    if(p_ptr->m_pMesh) {
-        auto it = data.find(MATERIAL);
+    if(m_mesh) {
+        auto it = data.find(gMaterial);
         if(it != data.end()) {
             setMaterial(Engine::loadResource<Material>((*it).second.toString()));
         }
@@ -128,13 +113,13 @@ VariantMap MeshRender::saveUserData() const {
     {
         string ref = Engine::reference(mesh());
         if(!ref.empty()) {
-            result[MESH] = ref;
+            result[gMesh] = ref;
         }
     }
     {
         string ref = Engine::reference(material());
         if(!ref.empty()) {
-            result[MATERIAL] = ref;
+            result[gMaterial] = ref;
         }
     }
     return result;

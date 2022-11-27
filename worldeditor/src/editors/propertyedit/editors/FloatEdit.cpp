@@ -4,6 +4,7 @@
 #include <float.h>
 
 #include <QDoubleValidator>
+#include <QTimer>
 
 #define SCALE 100
 
@@ -19,6 +20,8 @@ FloatEdit::FloatEdit(QWidget *parent) :
 
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &FloatEdit::editingFinished);
     connect(ui->horizontalSlider, &QSlider::valueChanged, this, &FloatEdit::onValueChanged);
+
+    ui->lineEdit->installEventFilter(this);
 
     ui->horizontalSlider->setVisible(false);
 }
@@ -49,4 +52,12 @@ void FloatEdit::onValueChanged(int value) {
     ui->lineEdit->setText(QString::number((double)value / (double)SCALE, 'f', 4));
 
     emit editingFinished();
+}
+
+bool FloatEdit::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::FocusIn) {
+        QLineEdit *line = static_cast<QLineEdit *>(obj);
+        QTimer::singleShot(0, line, SLOT(selectAll()));
+    }
+    return QObject::eventFilter(obj, event);
 }

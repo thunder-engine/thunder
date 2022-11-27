@@ -3,6 +3,7 @@
 
 #include <QDoubleValidator>
 #include <QLocale>
+#include <QTimer>
 
 #include <float.h>
 
@@ -22,10 +23,15 @@ VectorEdit::VectorEdit(QWidget *parent) :
     ui->z->setValidator(validator);
     ui->w->setValidator(validator);
 
-    connect(ui->x, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
-    connect(ui->y, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
-    connect(ui->z, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
-    connect(ui->w, SIGNAL(editingFinished()), this, SLOT(onValueChanged()));
+    connect(ui->x, &QLineEdit::editingFinished, this, &VectorEdit::onValueChanged);
+    connect(ui->y, &QLineEdit::editingFinished, this, &VectorEdit::onValueChanged);
+    connect(ui->z, &QLineEdit::editingFinished, this, &VectorEdit::onValueChanged);
+    connect(ui->w, &QLineEdit::editingFinished, this, &VectorEdit::onValueChanged);
+
+    ui->x->installEventFilter(this);
+    ui->y->installEventFilter(this);
+    ui->z->installEventFilter(this);
+    ui->w->installEventFilter(this);
 }
 
 VectorEdit::~VectorEdit() {
@@ -62,4 +68,12 @@ void VectorEdit::setComponents(uint8_t value) {
 void VectorEdit::onValueChanged() {
     Vector4 value = data();
     emit dataChanged(QVariant::fromValue(value));
+}
+
+bool VectorEdit::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::FocusIn) {
+        QLineEdit *line = static_cast<QLineEdit *>(obj);
+        QTimer::singleShot(0, line, SLOT(selectAll()));
+    }
+    return QObject::eventFilter(obj, event);
 }
