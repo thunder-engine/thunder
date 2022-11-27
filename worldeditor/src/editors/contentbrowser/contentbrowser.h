@@ -45,11 +45,11 @@ protected:
     void writeSettings();
     void createContextMenus();
 
-    ContentItemDeligate *m_pContentDeligate;
-    ContentTreeFilter *m_pListProxy;
-    ContentTreeFilter *m_pTreeProxy;
+    ContentItemDeligate *m_contentDeligate;
+    ContentTreeFilter *m_listProxy;
+    ContentTreeFilter *m_treeProxy;
 
-    QMenu *m_pFilterMenu;
+    QMenu *m_filterMenu;
 
 private slots:
     void onCreationMenuTriggered(QAction *);
@@ -81,8 +81,8 @@ private:
 private:
     Ui::ContentBrowser  *ui;
 
-    QMenu m_ContentMenu;
-    QMenu m_CreationMenu;
+    QMenu m_contentMenu;
+    QMenu m_creationMenu;
     QMenu m_contentTreeMenu;
 
 };

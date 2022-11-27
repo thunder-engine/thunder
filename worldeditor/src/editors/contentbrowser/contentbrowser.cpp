@@ -23,10 +23,6 @@
 
 #define ICON_SIZE 128
 
-namespace {
-    const char *gTemplateName("${templateName}");
-}
-
 class ContentItemDeligate : public QStyledItemDelegate  {
 public:
     explicit ContentItemDeligate(QObject *parent = nullptr) :
@@ -95,35 +91,35 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     ContentItemDeligate *treeDeligate = new ContentItemDeligate;
     treeDeligate->setItemScale(20.0f / ICON_SIZE);
 
-    m_pTreeProxy = new ContentTreeFilter(this);
-    m_pTreeProxy->setSourceModel(ContentTree::instance());
-    m_pTreeProxy->setContentTypes({0});
-    m_pTreeProxy->sort(0);
+    m_treeProxy = new ContentTreeFilter(this);
+    m_treeProxy->setSourceModel(ContentTree::instance());
+    m_treeProxy->setContentTypes({0});
+    m_treeProxy->sort(0);
 
     ui->contentTree->setItemDelegate(treeDeligate);
-    ui->contentTree->setModel(m_pTreeProxy);
+    ui->contentTree->setModel(m_treeProxy);
     ui->contentTree->expandToDepth(1);
 
     // Content list
-    m_pContentDeligate = new ContentItemDeligate;
-    m_pContentDeligate->setItemScale(0.75f);
+    m_contentDeligate = new ContentItemDeligate;
+    m_contentDeligate->setItemScale(0.75f);
 
-    m_pListProxy = new ContentTreeFilter(this);
-    m_pListProxy->setSourceModel(ContentTree::instance());
-    m_pListProxy->sort(0);
+    m_listProxy = new ContentTreeFilter(this);
+    m_listProxy->setSourceModel(ContentTree::instance());
+    m_listProxy->sort(0);
 
-    ui->contentList->setItemDelegate(m_pContentDeligate);
-    ui->contentList->setModel(m_pListProxy);
+    ui->contentList->setItemDelegate(m_contentDeligate);
+    ui->contentList->setModel(m_listProxy);
 
-    ui->contentList->setRootIndex(m_pListProxy->mapFromSource(ContentTree::instance()->getContent()));
+    ui->contentList->setRootIndex(m_listProxy->mapFromSource(ContentTree::instance()->getContent()));
 
-    connect(ContentTree::instance(), &ContentTree::layoutChanged, m_pTreeProxy, &ContentTreeFilter::invalidate);
+    connect(ContentTree::instance(), &ContentTree::layoutChanged, m_treeProxy, &ContentTreeFilter::invalidate);
 
-    m_pFilterMenu = new QMenu(this);
+    m_filterMenu = new QMenu(this);
 
-    ui->filterButton->setMenu(m_pFilterMenu);
-    connect(m_pFilterMenu, &QMenu::triggered, this, &ContentBrowser::onFilterMenuTriggered);
-    connect(m_pFilterMenu, &QMenu::aboutToShow, this, &ContentBrowser::onFilterMenuAboutToShow);
+    ui->filterButton->setMenu(m_filterMenu);
+    connect(m_filterMenu, &QMenu::triggered, this, &ContentBrowser::onFilterMenuTriggered);
+    connect(m_filterMenu, &QMenu::aboutToShow, this, &ContentBrowser::onFilterMenuAboutToShow);
 
     readSettings();
     createContextMenus();
@@ -151,13 +147,13 @@ void ContentBrowser::writeSettings() {
 void ContentBrowser::createContextMenus() {
     QString showIn(tr("Show in Explorer"));
     QLabel *label = new QLabel(tr("Create Asset"), this);
-    QWidgetAction *a = new QWidgetAction(&m_CreationMenu);
+    QWidgetAction *a = new QWidgetAction(&m_creationMenu);
     a->setDefaultWidget(label);
 
-    m_CreationMenu.addAction(tr("New Folder"))->setData(true);
-    m_CreationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
-    m_CreationMenu.addSeparator();
-    m_CreationMenu.addAction(a);
+    m_creationMenu.addAction(tr("New Folder"))->setData(true);
+    m_creationMenu.addAction(showIn, this, SLOT(showInGraphicalShell()));
+    m_creationMenu.addSeparator();
+    m_creationMenu.addAction(a);
 
     QStringList paths;
     foreach(auto it, AssetManager::instance()->converters()) {
@@ -171,7 +167,7 @@ void ContentBrowser::createContextMenus() {
     for(auto &it : paths) {
         QFileInfo info(it);
         QString name = fromCamelCase(info.baseName().replace('_', ""));
-        m_CreationMenu.addAction(name)->setData(it);
+        m_creationMenu.addAction(name)->setData(it);
     }
 
     createAction(tr("Open"), SLOT(onItemOpen()))->setData(QVariant::fromValue(ui->contentList));
@@ -179,7 +175,7 @@ void ContentBrowser::createContextMenus() {
     createAction(tr("Duplicate"), SLOT(onItemDuplicate()))->setData(QVariant::fromValue(ui->contentList));
     createAction(tr("Rename"), SLOT(onItemRename()), QKeySequence(Qt::Key_F2))->setData(QVariant::fromValue(ui->contentList));
     createAction(tr("Delete"), SLOT(onItemDelete()), QKeySequence(Qt::Key_Delete))->setData(QVariant::fromValue(ui->contentList));
-    m_ContentMenu.addSeparator();
+    m_contentMenu.addSeparator();
     createAction(tr("Reimport"), SLOT(onItemReimport()));
 
     m_contentTreeMenu.addAction(tr("New Folder"))->setData(true);
@@ -190,12 +186,12 @@ void ContentBrowser::createContextMenus() {
     m_contentTreeMenu.addAction(tr("Rename"), this, SLOT(onItemRename()))->setData(QVariant::fromValue(ui->contentTree));
     m_contentTreeMenu.addAction(tr("Delete"), this, SLOT(onItemDelete()))->setData(QVariant::fromValue(ui->contentTree));
 
-    connect(&m_CreationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
+    connect(&m_creationMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
     connect(&m_contentTreeMenu, SIGNAL(triggered(QAction*)), this, SLOT(onCreationMenuTriggered(QAction*)));
 }
 
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
-    const QModelIndex origin = m_pListProxy->mapToSource(ui->contentList->rootIndex());
+    const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
     QString path = ProjectManager::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
     QDir dir(path);
@@ -203,7 +199,11 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
         case QVariant::Bool: {
             QString name("NewFolder");
             AssetManager::findFreeName(name, dir.path());
-            dir.mkdir(name);
+
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + QDir::separator() + name, "", true);
+            QModelIndex mapped = m_listProxy->mapFromSource(index);
+            ui->contentList->setCurrentIndex(mapped);
+            ui->contentList->edit(mapped);
         } break;
         case QVariant::String: {
             QFileInfo info(action->data().toString());
@@ -211,19 +211,10 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             QString suff = QString(".") + info.suffix();
             AssetManager::findFreeName(name, dir.path(), suff);
 
-            QFile file(action->data().toString());
-            if(file.open(QFile::ReadOnly | QFile::Text)) {
-                QByteArray data(file.readAll());
-                file.close();
-
-                data.replace(gTemplateName, qPrintable(name));
-
-                QFile gen(dir.path() + QDir::separator() + name + suff);
-                if(gen.open(QFile::ReadWrite | QFile::Text | QFile::Truncate)) {
-                    gen.write(data);
-                    gen.close();
-                }
-            }
+            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + QDir::separator() + name, action->data().toString());
+            QModelIndex mapped = m_listProxy->mapFromSource(index);
+            ui->contentList->setCurrentIndex(mapped);
+            ui->contentList->edit(mapped);
         } break;
         default: break;
     }
@@ -231,23 +222,23 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
 
 void ContentBrowser::onFilterMenuTriggered(QAction *) {
     QStringList list;
-    foreach(QAction *it, m_pFilterMenu->findChildren<QAction *>()) {
+    foreach(QAction *it, m_filterMenu->findChildren<QAction *>()) {
         if(it->isChecked()) {
             list.append(it->text());
         }
     }
-    m_pListProxy->setContentTypes(list);
+    m_listProxy->setContentTypes(list);
 }
 
 void ContentBrowser::onFilterMenuAboutToShow() {
     for(auto &it : AssetManager::instance()->labels()) {
         if(!it.isEmpty()) {
-            QAction *child = m_pFilterMenu->findChild<QAction *>(it);
+            QAction *child = m_filterMenu->findChild<QAction *>(it);
             if(child == nullptr) {
-                QAction *a = new QAction(it, m_pFilterMenu);
+                QAction *a = new QAction(it, m_filterMenu);
                 a->setCheckable(true);
                 a->setObjectName(it);
-                m_pFilterMenu->addAction(a);
+                m_filterMenu->addAction(a);
             }
         }
     }
@@ -285,7 +276,7 @@ void ContentBrowser::onItemDuplicate() {
 }
 
 void ContentBrowser::onItemReimport() {
-    QModelIndex index = m_pListProxy->mapToSource(ui->contentList->currentIndex());
+    QModelIndex index = m_listProxy->mapToSource(ui->contentList->currentIndex());
     ContentTree::instance()->reimportResource(index);
 }
 
@@ -311,17 +302,17 @@ void ContentBrowser::assetUpdated() {
 }
 
 void ContentBrowser::on_findContent_textChanged(const QString &arg1) {
-    m_pListProxy->setFilterFixedString(arg1);
+    m_listProxy->setFilterFixedString(arg1);
 }
 
 void ContentBrowser::on_contentTree_clicked(const QModelIndex &index) {
     ui->findContent->clear();
-    QModelIndex origin = m_pTreeProxy->mapToSource(index);
-    ui->contentList->setRootIndex(m_pListProxy->mapFromSource(origin));
+    QModelIndex origin = m_treeProxy->mapToSource(index);
+    ui->contentList->setRootIndex(m_listProxy->mapFromSource(origin));
 }
 
 void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
-    const QModelIndex origin = m_pListProxy->mapToSource(index);
+    const QModelIndex origin = m_listProxy->mapToSource(index);
 
     ContentTree *inst = ContentTree::instance();
     if(inst->isDir(origin)) {
@@ -337,16 +328,16 @@ QAction* ContentBrowser::createAction(const QString &name, const char *member, c
     a->setShortcut(shortcut);
     connect(a, SIGNAL(triggered(bool)), this, member);
     ui->contentList->addAction(a);
-    m_ContentMenu.addAction(a);
+    m_contentMenu.addAction(a);
     return a;
 }
 
 void ContentBrowser::on_contentList_customContextMenuRequested(const QPoint &pos) {
     QWidget *w = static_cast<QWidget*>(QObject::sender());
     if(ui->contentList->selectionModel()->selectedIndexes().empty()) {
-        m_CreationMenu.exec(w->mapToGlobal(pos));
+        m_creationMenu.exec(w->mapToGlobal(pos));
     } else {
-        m_ContentMenu.exec(w->mapToGlobal(pos));
+        m_contentMenu.exec(w->mapToGlobal(pos));
     }
 }
 
@@ -359,7 +350,7 @@ void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos
 }
 
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
-    const QModelIndex origin = m_pListProxy->mapToSource(index);
+    const QModelIndex origin = m_listProxy->mapToSource(index);
 
     QString source = ContentTree::instance()->path(origin);
     QFileInfo path(source);
@@ -380,9 +371,9 @@ void ContentBrowser::showInGraphicalShell() {
     QString path;
     QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();
     if(list.empty()) {
-        path = ContentTree::instance()->path(m_pListProxy->mapToSource(ui->contentList->rootIndex()));
+        path = ContentTree::instance()->path(m_listProxy->mapToSource(ui->contentList->rootIndex()));
     } else {
-        path = ContentTree::instance()->path(m_pListProxy->mapToSource(list.first()));
+        path = ContentTree::instance()->path(m_listProxy->mapToSource(list.first()));
     }
 
     path = ProjectManager::instance()->contentPath() + QDir::separator() + path;

@@ -36,8 +36,6 @@ class ContentTree : public BaseObjectModel {
 public:
     static ContentTree *instance();
 
-    static void destroy();
-
     bool isDir(const QModelIndex &index) const;
 
     QString path(const QModelIndex &index) const override;
@@ -48,6 +46,8 @@ public:
 
     QModelIndex getContent() const;
 
+    QModelIndex setNewAsset(const QString &name, const QString &source = QString(), bool directory = false);
+
 public slots:
     void onRendered(const QString &uuid);
 
@@ -55,11 +55,11 @@ public slots:
 
     void clean(QObject *parent);
 
+    void revert() override;
+
 private:
     ContentTree();
     ~ContentTree() {}
-
-    static ContentTree *m_pInstance;
 
 protected:
     Qt::DropActions supportedDropActions() const override;
@@ -76,6 +76,8 @@ protected:
 
 protected:
     QObject *m_content;
+
+    QObject *m_newAsset;
 
     QImage m_folder;
 };

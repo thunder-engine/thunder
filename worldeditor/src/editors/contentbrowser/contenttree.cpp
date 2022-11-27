@@ -12,7 +12,9 @@
 
 #include <editor/projectmanager.h>
 
-ContentTree *ContentTree::m_pInstance = nullptr;
+namespace {
+    const char *gTemplateName("${templateName}");
+}
 
 ContentTreeFilter::ContentTreeFilter(QObject *parent) :
         QSortFilterProxyModel(parent) {
@@ -128,9 +130,10 @@ bool ContentTreeFilter::checkNameFilter(int sourceRow, const QModelIndex &source
 }
 
 ContentTree::ContentTree() :
-        BaseObjectModel(nullptr) {
+        BaseObjectModel(nullptr),
+        m_content(new QObject(m_rootItem)),
+        m_newAsset(new QObject) {
 
-    m_content = new QObject(m_rootItem);
     m_content->setObjectName("Content");
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
@@ -139,15 +142,8 @@ ContentTree::ContentTree() :
 }
 
 ContentTree *ContentTree::instance() {
-    if(!m_pInstance) {
-        m_pInstance = new ContentTree;
-    }
-    return m_pInstance;
-}
-
-void ContentTree::destroy() {
-    delete m_pInstance;
-    m_pInstance = nullptr;
+    static ContentTree instance;
+    return &instance;
 }
 
 bool ContentTree::isDir(const QModelIndex &index) const {
@@ -184,18 +180,45 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-bool ContentTree::setData(const QModelIndex& index, const QVariant& value, int role) {
+bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(role)
     switch(index.column()) {
         case 0: {
-            QDir dir(ProjectManager::instance()->contentPath());
             QObject *item = static_cast<QObject *>(index.internalPointer());
             QFileInfo info(item->objectName());
-            QString path = (info.path() != ".") ? (info.path() + QDir::separator()) : "";
-            QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
-            QFileInfo dest(path + value.toString() + suff);
-            AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()),
-                                            dir.relativeFilePath(dest.filePath()));
+            if(item == m_newAsset) {
+                QString source(m_newAsset->property(qPrintable(gImport)).toString());
+                QString path = ProjectManager::instance()->contentPath() + "/" + info.path();
+                if(source.isEmpty()) {
+                    QDir dir(path);
+                    dir.mkdir(value.toString());
+                } else {
+                    QFileInfo sourceInfo(source);
+
+                    QFile file(source);
+                    if(file.open(QFile::ReadOnly)) {
+                        QByteArray data(file.readAll());
+                        file.close();
+
+                        data.replace(gTemplateName, qPrintable(value.toString()));
+
+                        QFile gen(path + QDir::separator() + value.toString() + "." + sourceInfo.suffix());
+                        if(gen.open(QFile::ReadWrite)) {
+                            gen.write(data);
+                            gen.close();
+                        }
+                    }
+                }
+
+                m_newAsset->setParent(nullptr);
+            } else {
+                QDir dir(ProjectManager::instance()->contentPath());
+                QString path = (info.path() != ".") ? (info.path() + QDir::separator()) : "";
+                QString suff = (!info.suffix().isEmpty()) ? ("." + info.suffix()) : "";
+                QFileInfo dest(path + value.toString() + suff);
+                AssetManager::instance()->renameResource(dir.relativeFilePath(info.filePath()),
+                                                dir.relativeFilePath(dest.filePath()));
+            }
         } break;
         default: break;
     }
@@ -265,6 +288,32 @@ QModelIndex ContentTree::getContent() const {
     return getIndex(m_content, QModelIndex());
 }
 
+QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source, bool directory) {
+    if(!name.isEmpty()) {
+        QFileInfo info(name);
+
+        QDir dir(ProjectManager::instance()->contentPath());
+
+        QString path = dir.relativeFilePath(info.path());
+        QObject *parent = m_rootItem->findChild<QObject *>(path);
+        if(parent == nullptr) {
+            parent = m_content;
+        }
+
+        m_newAsset->setParent(parent);
+        m_newAsset->setObjectName(dir.relativeFilePath(info.filePath()));
+        m_newAsset->setProperty(qPrintable(gIcon), (directory) ? m_folder : AssetManager::instance()->defaultIcon(source));
+        m_newAsset->setProperty(qPrintable(gImport), source);
+    } else {
+        m_newAsset->setParent(nullptr);
+    }
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
+
+    return getIndex(m_newAsset);
+}
+
 void ContentTree::update(const QString &path) {
     QDir dir(ProjectManager::instance()->contentPath());
 
@@ -316,6 +365,13 @@ void ContentTree::clean(QObject *parent) {
             clean(it);
         }
     }
+}
+
+void ContentTree::revert() {
+    m_newAsset->setParent(nullptr);
+
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 Qt::DropActions ContentTree::supportedDropActions() const {

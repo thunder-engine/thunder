@@ -551,10 +551,13 @@ QImage AssetManager::icon(const QString &source) {
     string guid = pathToGuid(source.toStdString()).c_str();
 
     if(!icon.load(m_projectManager->iconPath() + "/" + guid.c_str() + ".png")) {
-        QString type = assetTypeName(source);
-        icon = m_defaultIcons.value(type, m_defaultIcons.value("Invalid"));
+        icon = defaultIcon(source);
     }
     return icon;
+}
+
+QImage AssetManager::defaultIcon(const QString &source) {
+    return m_defaultIcons.value(assetTypeName(source), m_defaultIcons.value("Invalid"));
 }
 
 Actor *AssetManager::createActor(const QString &source) {
