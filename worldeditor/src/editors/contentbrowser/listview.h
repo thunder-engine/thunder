@@ -9,6 +9,7 @@ public:
 
 protected:
     void startDrag(Qt::DropActions supportedActions) override;
+
 };
 
 #endif // LISTVIEW_H

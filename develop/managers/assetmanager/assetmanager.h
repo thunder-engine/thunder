@@ -57,6 +57,8 @@ public:
     string pathToGuid(const string &path);
 
     QImage icon(const QString &source);
+    QImage defaultIcon(const QString &source);
+
     Actor *createActor(const QString &source);
 
     QSet<QString> labels() const;
