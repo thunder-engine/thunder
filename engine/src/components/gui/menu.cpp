@@ -9,13 +9,15 @@
 
 #include "input.h"
 
+#include <stdint.h>
+
 namespace {
 const char *gFrame = "Frame";
 const char *gLabel = "Label";
 
 const float gCorner = 4.0f;
 const float gRowHeight = 20.0f;
-const int gPriority = INT_MAX;
+const int gPriority = INT32_MAX;
 };
 
 Menu::Menu() :
