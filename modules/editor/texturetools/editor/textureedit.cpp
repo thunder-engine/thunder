@@ -37,8 +37,8 @@ TextureEdit::TextureEdit() :
     m_controller->frontSide();
     m_controller->blockRotations(true);
 
-    ui->viewport->init();
     ui->viewport->setController(m_controller);
+    ui->viewport->init();
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);

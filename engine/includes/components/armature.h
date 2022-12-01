@@ -1,13 +1,13 @@
 #ifndef ARMATURE_H
 #define ARMATURE_H
 
-#include "renderable.h"
+#include "nativebehaviour.h"
 
 class Texture;
 class Pose;
 class ArmaturePrivate;
 
-class ENGINE_EXPORT Armature : public Renderable {
+class ENGINE_EXPORT Armature : public NativeBehaviour {
     A_REGISTER(Armature, NativeBehaviour, Components/Animation);
 
     A_PROPERTIES(

@@ -1,18 +1,15 @@
 #ifndef PROGRESSBAR_H
 #define PROGRESSBAR_H
 
-#include "widget.h"
+#include "frame.h"
 
-class Frame;
-
-class ENGINE_EXPORT ProgressBar : public Widget {
+class ENGINE_EXPORT ProgressBar : public Frame {
     A_REGISTER(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTY(float, from, ProgressBar::from, ProgressBar::setFrom),
         A_PROPERTY(float, to, ProgressBar::to, ProgressBar::setTo),
         A_PROPERTY(float, value, ProgressBar::value, ProgressBar::setValue),
-        A_PROPERTYEX(Frame *, background, ProgressBar::background, ProgressBar::setBackground, "editor=Component"),
         A_PROPERTYEX(Frame *, progress, ProgressBar::progress, ProgressBar::setProgress, "editor=Component"),
         A_PROPERTYEX(Vector4, backgroundColor, ProgressBar::backgroundColor, ProgressBar::setBackgroundColor, "editor=Color"),
         A_PROPERTYEX(Vector4, progressColor, ProgressBar::progressColor, ProgressBar::setProgressColor, "editor=Color")
@@ -21,7 +18,6 @@ class ENGINE_EXPORT ProgressBar : public Widget {
 
 public:
     ProgressBar();
-    ~ProgressBar();
 
     float from() const;
     void setFrom(float value);
@@ -31,9 +27,6 @@ public:
 
     float value() const;
     void setValue(float value);
-
-    Frame *background() const;
-    void setBackground(Frame *frame);
 
     Frame *progress() const;
     void setProgress(Frame *frame);
@@ -62,7 +55,6 @@ private:
     float m_to;
     float m_value;
 
-    Frame *m_background;
     Frame *m_progress;
 
 };

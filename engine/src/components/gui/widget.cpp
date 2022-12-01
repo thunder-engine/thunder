@@ -12,6 +12,7 @@
 Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
+    m_priority(0),
     m_parent(nullptr),
     m_transform(nullptr) {
 
@@ -63,15 +64,21 @@ AABBox Widget::bound() const {
 void Widget::boundChanged(const Vector2 &size) {
     A_UNUSED(size);
 }
-
+/*!
+    Returns parent Widget.
+*/
 Widget *Widget::parentWidget() {
     return m_parent;
 }
-
+/*!
+    Returns RectTransform component attached to parent Actor.
+*/
 RectTransform *Widget::rectTransform() const {
     return m_transform;
 }
-
+/*!
+    Returns the application widget that has the keyboard input focus, or nullptr if no widget in this application has the focus.
+*/
 Widget *Widget::focusWidget() {
     return m_focusWidget;
 }
@@ -93,11 +100,25 @@ void Widget::setRectTransform(RectTransform *transform) {
         m_transform->subscribe(this);
     }
 }
-
+/*!
+    \internal
+*/
 void Widget::setParent(Object *parent, int32_t position, bool force) {
     Renderable::setParent(parent, position, force);
 
     actorParentChanged();
+}
+/*!
+    \internal
+*/
+int Widget::priority() const {
+    return m_priority;
+}
+/*!
+    \internal
+*/
+void Widget::setPriority(int proprity) {
+    m_priority = proprity;
 }
 /*!
     \internal
@@ -113,7 +134,9 @@ void Widget::actorParentChanged() {
         }
     }
 }
-
+/*!
+    \internal
+*/
 void Widget::composeComponent() {
     setRectTransform(Engine::objectCreate<RectTransform>("RectTransform", actor()));
 }

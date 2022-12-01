@@ -9,6 +9,7 @@ class Button;
 class ENGINE_EXPORT FloatInput : public Widget {
     A_REGISTER(FloatInput, Widget, Components/UI)
 
+    A_NOPROPERTIES()
     A_METHODS(
         A_SLOT(FloatInput::onIncrease),
         A_SLOT(FloatInput::onDecrease),

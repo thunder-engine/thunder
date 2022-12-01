@@ -1,6 +1,5 @@
 #include "components/gui/textinput.h"
 
-#include "components/gui/frame.h"
 #include "components/gui/label.h"
 #include "components/gui/recttransform.h"
 
@@ -18,7 +17,6 @@
 
 namespace {
     const char *gLabel = "Label";
-    const char *gFrame = "Frame";
 
     const float gCorner = 4.0f;
 }
@@ -28,7 +26,6 @@ TextInput::TextInput() :
     m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
     m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
     m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-    m_background(nullptr),
     m_cursor(nullptr),
     m_label(nullptr),
     m_cursorPosition(0),
@@ -38,20 +35,6 @@ TextInput::TextInput() :
     m_cursorBlinkCurrent(0.0f),
     m_hovered(false),
     m_focused(false) {
-}
-
-Frame *TextInput::background() const {
-    return m_background;
-}
-void TextInput::setBackground(Frame *frame) {
-    if(m_background != frame) {
-        disconnect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        m_background = frame;
-        if(m_background) {
-            connect(m_background, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-            m_background->setColor(m_normalColor);
-        }
-    }
 }
 
 Label *TextInput::textComponent() const {
@@ -185,30 +168,29 @@ void TextInput::update() {
         }
     }
 
-    if(m_background) {
-        if(m_currentFade < 1.0f) {
-            m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
-            m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
+    if(m_currentFade < 1.0f) {
+        m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
+        m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-            m_background->setColor(MIX(m_background->color(), color, m_currentFade));
-        }
+        setColor(MIX(Frame::color(), color, m_currentFade));
     }
 
     Widget::update();
 }
-
+/*!
+    \internal
+*/
 void TextInput::composeComponent() {
     Widget::composeComponent();
 
     // Add Background
-    Frame *frame = Engine::objectCreate<Frame>(gFrame, actor());
-    frame->setCorners(Vector4(gCorner));
-    setBackground(frame);
+    setCorners(Vector4(gCorner));
+    setColor(m_normalColor);
 
     // Add label
     Actor *text = Engine::composeActor(gLabel, gLabel, actor());
     Label *label = static_cast<Label *>(text->component(gLabel));
-    label->setAlign(Alignment::Top | Alignment::Left);
+    label->setAlign(Alignment::Middle | Alignment::Left);
     label->rectTransform()->setOffsets(Vector2(gCorner, 0.0f), Vector2(gCorner, 0.0f));
     label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
     setTextComponent(label);
@@ -235,16 +217,14 @@ void TextInput::composeComponent() {
 */
 void TextInput::onReferenceDestroyed() {
     Object *object = sender();
-    if(m_background == object) {
-        m_background = nullptr;
-        return;
-    }
     if(m_label == object) {
         m_label = nullptr;
         return;
     }
 }
-
+/*!
+    \internal
+*/
 void TextInput::recalcCursor() {
     if(m_label && m_cursor) {
         Vector2 pos = m_label->cursorAt(m_cursorPosition);

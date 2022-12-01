@@ -24,8 +24,10 @@
 #include "components/gui/switch.h"
 #include "components/gui/progressbar.h"
 #include "components/gui/frame.h"
+#include "components/gui/menu.h"
 #include "components/gui/textinput.h"
 #include "components/gui/floatinput.h"
+#include "components/gui/toolbutton.h"
 
 #include "resources/material.h"
 #include "resources/rendertarget.h"
@@ -88,8 +90,12 @@ RenderSystem::RenderSystem() :
 
         ProgressBar::registerClassFactory(this);
 
+        Menu::registerClassFactory(this);
+
         TextInput::registerClassFactory(this);
         FloatInput::registerClassFactory(this);
+
+        ToolButton::registerClassFactory(this);
     }
     ++RenderSystemPrivate::m_registered;
 
@@ -131,8 +137,12 @@ RenderSystem::~RenderSystem() {
 
         ProgressBar::unregisterClassFactory(this);
 
+        Menu::unregisterClassFactory(this);
+
         TextInput::unregisterClassFactory(this);
         FloatInput::unregisterClassFactory(this);
+
+        ToolButton::unregisterClassFactory(this);
     }
 }
 
