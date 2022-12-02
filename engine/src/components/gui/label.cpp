@@ -17,6 +17,7 @@
 namespace  {
     const char *gFont = "Font";
     const char *gOverride = "texture0";
+
     const char *gClipRect = "uni.clipRect";
 };
 
@@ -297,7 +298,7 @@ void Label::composeComponent() {
     Widget::composeComponent();
 
     setFontSize(14);
-    setColor(Vector4(0.20f, 0.20f, 0.20f, 1.0f));
+    setColor(Vector4(1.0f));
     setAlign(Alignment::Middle);
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");

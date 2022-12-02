@@ -1,14 +1,14 @@
 #ifndef TEXTINPUT_H
 #define TEXTINPUT_H
 
-#include "widget.h"
+#include "frame.h"
 
-class Frame;
 class Label;
 
-class ENGINE_EXPORT TextInput : public Widget {
-    A_REGISTER(TextInput, Widget, Components/UI)
+class ENGINE_EXPORT TextInput : public Frame {
+    A_REGISTER(TextInput, Frame, Components/UI)
 
+    A_NOPROPERTIES()
     A_METHODS(
         A_SIGNAL(TextInput::focusIn),
         A_SIGNAL(TextInput::focusOut),
@@ -17,9 +17,6 @@ class ENGINE_EXPORT TextInput : public Widget {
 
 public:
     TextInput();
-
-    Frame *background() const;
-    void setBackground(Frame *frame);
 
     Label *textComponent() const;
     void setTextComponent(Label *label);
@@ -52,7 +49,6 @@ private:
 
     Vector4 m_textColor;
 
-    Frame *m_background;
     Label *m_cursor;
     Label *m_label;
 

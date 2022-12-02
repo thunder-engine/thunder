@@ -25,10 +25,6 @@ Switch::Switch() :
     setCheckable(true);
 }
 
-Switch::~Switch() {
-
-}
-
 float Switch::switchDuration() const {
     return m_switchDuration;
 }
@@ -60,7 +56,9 @@ void Switch::setKnobColor(const Vector4 color) {
         m_knobGraphic->setColor(m_knobColor);
     }
 }
-
+/*!
+    \internal
+*/
 void Switch::update() {
     AbstractButton::update();
 
@@ -79,7 +77,9 @@ void Switch::update() {
         }
     }
 }
-
+/*!
+    \internal
+*/
 void Switch::checkStateSet() {
     AbstractButton::checkStateSet();
     m_currentFade = 0.0f;
@@ -110,7 +110,9 @@ VariantMap Switch::saveUserData() const {
     }
     return result;
 }
-
+/*!
+    \internal
+*/
 void Switch::setMirrored(bool flag) {
     Label *lbl = label();
     if(lbl) {
@@ -142,21 +144,19 @@ void Switch::setMirrored(bool flag) {
 void Switch::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = dynamic_cast<RectTransform *>(actor()->transform());
-    if(rect) {
-        rect->setSize(Vector2(100.0f, 30.0f));
-
-        RectTransform *labelRect = static_cast<RectTransform *>(label()->actor()->transform());
-        labelRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
-        labelRect->setOffsetMin(Vector2(43.0f, 1.0f));
-        labelRect->setOffsetMax(Vector2(5.0f, 2.0f));
-
-        label()->setAlign(label()->align() | Alignment::Left);
-
-        RectTransform *backRect = static_cast<RectTransform *>(background()->actor()->transform());
+    Frame *back = background();
+    if(back) {
+        RectTransform *backRect = static_cast<RectTransform *>(back->actor()->transform());
         backRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
         backRect->setPivot(Vector2(0.0f, 0.5f));
         backRect->setSize(Vector2(40.0f, 20.0f));
+
+        Label *label = AbstractButton::label();
+        if(label) {
+            label->setAlign(Alignment::Middle | Alignment::Left);
+            RectTransform *labelRect = static_cast<RectTransform *>(label->actor()->transform());
+            labelRect->setOffsets(Vector2(backRect->size().x + back->corners().x, 0.0f), Vector2(0.0f, 0.0f));
+        }
 
         // Add knob
         Actor *knob = Engine::composeActor("Frame", "Knob", background()->actor());

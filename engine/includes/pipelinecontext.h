@@ -80,8 +80,6 @@ public:
     static Mesh *defaultPlane();
 
 protected:
-    void sortRenderables(list<Renderable *> &in, const Vector3 &origin);
-
     void combineComponents(Object *object, bool update);
 
 protected:

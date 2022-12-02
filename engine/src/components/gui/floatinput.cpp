@@ -118,10 +118,7 @@ void FloatInput::composeComponent() {
         connect(m_input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
         connect(m_input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
 
-        Frame *frame = m_input->background();
-        if(frame) {
-            frame->setCorners(Vector4());
-        }
+        m_input->setCorners(Vector4());
 
         setValue(m_value);
     }

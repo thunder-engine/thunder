@@ -16,11 +16,8 @@ namespace  {
 void Button::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        background()->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
-        label()->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-        rect->setSize(Vector2(100.0f, 30.0f));
+    Frame *back = background();
+    if(back) {
+        back->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
     }
 }

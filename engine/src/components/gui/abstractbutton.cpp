@@ -17,6 +17,8 @@ namespace  {
     const char *gImage = "Image";
     const char *gIcon = "Icon";
     const char *gBackground = "Frame";
+
+    const float gCorner = 4.0f;
 }
 
 AbstractButton::AbstractButton() :
@@ -24,6 +26,7 @@ AbstractButton::AbstractButton() :
     m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
     m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
     m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
+    m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
     m_iconSize(16.0f),
     m_icon(nullptr),
     m_label(nullptr),
@@ -35,10 +38,6 @@ AbstractButton::AbstractButton() :
     m_checkable(false),
     m_checked(false),
     m_exclusive(false) {
-
-}
-
-AbstractButton::~AbstractButton() {
 
 }
 
@@ -297,13 +296,15 @@ void AbstractButton::composeComponent() {
     // Add background
     Actor *background = Engine::composeActor(gBackground, "Background", actor());
     Frame *frame = static_cast<Frame *>(background->component(gBackground));
-    frame->setCorners(Vector4(3.0f));
+    frame->setCorners(Vector4(gCorner));
     setBackground(frame);
 
     // Add label
     Actor *text = Engine::composeActor(gLabel, gLabel, actor());
     Label *label = static_cast<Label *>(text->component(gLabel));
-    label->setAlign(label->align() | Alignment::Center);
+    label->setAlign(Alignment::Middle | Alignment::Center);
+    label->setColor(m_textColor);
+    label->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
     setLabel(label);
     setText("Text");
 
@@ -311,4 +312,6 @@ void AbstractButton::composeComponent() {
     Actor *icon = Engine::composeActor(gImage, gImage, actor());
     Image *image = static_cast<Image *>(icon->component(gImage));
     setIcon(image);
+
+    rectTransform()->setSize(Vector2(100.0f, 30.0f));
 }

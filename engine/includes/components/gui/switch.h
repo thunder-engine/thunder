@@ -13,8 +13,8 @@ class ENGINE_EXPORT Switch : public AbstractButton {
     )
     A_NOMETHODS()
 
+public:
     Switch();
-    ~Switch();
 
     float switchDuration() const;
     void setSwitchDuration(float duration);

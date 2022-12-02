@@ -224,7 +224,7 @@ void GraphView::composeLinks() {
 void GraphView::onGraphUpdated() {
     if(m_linksRender == nullptr) {
         Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_sceneGraph);
-        m_linksRender = dynamic_cast<LinksRender *>(actor->component(gLinksRender));
+        m_linksRender = static_cast<LinksRender *>(actor->component(gLinksRender));
         m_linksRender->setGraph(m_graph);
     }
 

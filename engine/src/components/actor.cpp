@@ -132,15 +132,6 @@ public:
         }
     }
 
-    static bool isPointer(const char *name) {
-        for(uint32_t i = 0; i < strlen(name); i++) {
-            if(name[i] == '*') {
-                return true;
-            }
-        }
-        return false;
-    }
-
     typedef list<Object *> List;
     static void enumObjects(Object *object, List &list) {
         PROFILE_FUNCTION();
@@ -268,7 +259,7 @@ void Actor::setHideFlags(int flags) {
     }
 }
 /*!
-    Returns false in case of one of Actors in hierarchy was disabled; otherwise returns true.
+    Returns false in case of one of Actors in top hierarchy was disabled; otherwise returns true.
 */
 bool Actor::isEnabledInHierarchy() const {
     return (p_ptr->m_hierarchyEnable && isEnabled());
@@ -280,7 +271,7 @@ void Actor::setHierarchyEnabled(bool enabled) {
     p_ptr->m_hierarchyEnable = enabled;
     for(auto it : getChildren()) {
         Actor *actor = dynamic_cast<Actor *>(it);
-        if(actor) {
+        if(actor && isEnabled() == enabled) {
             actor->setHierarchyEnabled(enabled);
         }
     }
@@ -414,17 +405,19 @@ void Actor::clearCloneRef() {
 */
 void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
-    if(parent == this) {
+    if(parent == this || Object::parent() == parent) {
         return;
     }
 
+    Actor *actor = dynamic_cast<Actor *>(parent);
+    if(actor) {
+        p_ptr->m_scene = actor->scene();
+        p_ptr->m_hierarchyEnable = actor->p_ptr->m_hierarchyEnable;
+    }
     if(p_ptr->m_transform) {
         Object::setParent(parent, position, force);
-
-        Actor *actor = dynamic_cast<Actor *>(parent);
         if(actor) {
             p_ptr->m_transform->setParentTransform(actor->transform(), force);
-            p_ptr->m_scene = actor->scene();
         }
     } else {
         Object::setParent(parent, position);

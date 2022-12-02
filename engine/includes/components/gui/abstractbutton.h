@@ -30,7 +30,6 @@ class ENGINE_EXPORT AbstractButton : public Widget {
 
 public:
     AbstractButton();
-    ~AbstractButton();
 
     string text() const;
     void setText(const string text);
@@ -92,6 +91,7 @@ protected:
     Vector4 m_normalColor;
     Vector4 m_highlightedColor;
     Vector4 m_pressedColor;
+    Vector4 m_textColor;
 
     Vector2 m_iconSize;
 

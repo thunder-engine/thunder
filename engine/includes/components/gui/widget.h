@@ -19,6 +19,8 @@ public:
 
     RectTransform *rectTransform() const;
 
+    void setPriority(int proprity);
+
     static Widget *focusWidget();
 
 protected:
@@ -38,6 +40,8 @@ protected:
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
+    int priority() const override;
+
     static void setFocusWidget(Widget *widget);
 
 #ifdef SHARED_DEFINE
@@ -46,6 +50,8 @@ protected:
 
 private:
     friend class RectTransform;
+
+    int m_priority;
 
     Widget *m_parent;
     RectTransform *m_transform;

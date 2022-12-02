@@ -23,6 +23,7 @@
 
 namespace {
     const char *gMeshRender("MeshRender");
+    const char *gDirectLight("DirectLight");
 };
 
 MaterialEdit::MaterialEdit() :
@@ -41,16 +42,16 @@ MaterialEdit::MaterialEdit() :
 
     SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
 
-    ui->preview->init();
     ui->preview->setController(m_controller);
+    ui->preview->init();
     ui->preview->setSceneGraph(scene);
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
 
-    m_light = Engine::composeActor("DirectLight", "LightSource", scene);
+    m_light = Engine::composeActor(gDirectLight, gDirectLight, scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
-    m_mesh = Engine::composeActor("MeshRender", "MeshRender", scene);
+    m_mesh = Engine::composeActor(gMeshRender, gMeshRender, scene);
 
     on_actionSphere_triggered();
 

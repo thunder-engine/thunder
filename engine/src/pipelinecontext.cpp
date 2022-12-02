@@ -154,8 +154,27 @@ void PipelineContext::analizeScene(SceneGraph *graph) {
 
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->actor()->transform();
+
+    // Scene objects cull and sort
     m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
-    sortRenderables(m_culledComponents, cameraTransform->position());
+
+    Vector3 origin = cameraTransform->position();
+    m_culledComponents.sort([origin](const Renderable *left, const Renderable *right) {
+        int p1 = left->priority();
+        int p2 = right->priority();
+        if(p1 == p2) {
+            const Matrix4 &m1 = left->actor()->transform()->worldTransform();
+            const Matrix4 &m2 = right->actor()->transform()->worldTransform();
+
+            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
+        }
+        return p1 < p2;
+    });
+
+    // UI widgets sort
+    m_uiComponents.sort([](const Renderable *left, const Renderable *right) {
+        return  left->priority() < right->priority();
+    });
 
     // Post process settings mixer
     PostProcessSettings &settings = graph->finalPostProcessSettings();
@@ -293,26 +312,4 @@ void PipelineContext::combineComponents(Object *object, bool update) {
             combineComponents(child, update);
         }
     }
-}
-
-struct ObjectComp {
-    bool operator() (const Renderable *left, const Renderable *right) {
-        int p1 = left->priority();
-        int p2 = right->priority();
-        if(p1 == p2) {
-            const Matrix4 &m1 = left->actor()->transform()->worldTransform();
-            const Matrix4 &m2 = right->actor()->transform()->worldTransform();
-
-            return origin.dot(Vector3(m1[12], m1[13], m1[14])) < origin.dot(Vector3(m2[12], m2[13], m2[14]));
-        }
-        return p1 < p2;
-    }
-    Vector3 origin;
-};
-
-void PipelineContext::sortRenderables(list<Renderable *> &in, const Vector3 &origin) {
-    ObjectComp comp;
-    comp.origin = origin;
-
-    in.sort(comp);
 }
