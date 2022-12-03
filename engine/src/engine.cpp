@@ -393,7 +393,7 @@ void Engine::processEvents() {
     ObjectSystem::processEvents();
 
     if(isGameMode()) {
-        for(auto it : m_ObjectList) {
+        for(auto it : m_objectList) {
             NativeBehaviour *comp = dynamic_cast<NativeBehaviour *>(it);
             if(comp && comp->isEnabled() && comp->actor() && comp->actor()->scene() &&
                comp->actor()->scene()->parent() == EnginePrivate::m_sceneGraph) {
@@ -412,7 +412,7 @@ void Engine::processEvents() {
 bool Engine::event(Event *event) {
     switch(event->type()) {
     case Event::LanguageChange: {
-        for(auto it : m_ObjectList) {
+        for(auto it : m_objectList) {
             it->event(event);
         }
     } break;

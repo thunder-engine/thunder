@@ -427,6 +427,11 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
         Component *component = dynamic_cast<Component *>(it);
         if(component) {
             component->actorParentChanged();
+        } else {
+            Actor *child = dynamic_cast<Actor *>(it);
+            if(child && actor) {
+                child->p_ptr->m_scene = actor->p_ptr->m_scene;
+            }
         }
     }
 }

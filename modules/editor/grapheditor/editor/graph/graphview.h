@@ -17,6 +17,8 @@ class NODEGRAPH_EXPORT GraphView : public Viewport {
 public:
     explicit GraphView(QWidget *parent = nullptr);
 
+    void setSceneGraph(SceneGraph *scene) override;
+
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph, bool state = false);
 
@@ -46,6 +48,8 @@ private:
 protected:
     Vector3 m_originMousePos;
     Vector3 m_originNodePos;
+
+    Scene *m_scene;
 
     QMenu *m_createMenu;
 

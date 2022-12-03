@@ -22,7 +22,7 @@ public:
     void init();
 
     void setController(CameraCtrl *ctrl);
-    void setSceneGraph(SceneGraph *scene);
+    virtual void setSceneGraph(SceneGraph *scene);
 
     QImage grabFramebuffer() { return QImage(); }
 

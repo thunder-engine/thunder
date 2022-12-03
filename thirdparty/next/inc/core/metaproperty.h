@@ -8,36 +8,36 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaProperty {
 public:
-    typedef Variant             (*ReadMem)              (const void *);
-    typedef void                (*WriteMem)             (void *, const Variant&);
-    typedef void                (*AddressMem)           (char *, size_t);
-    typedef Variant             (*ReadProperty)         (const void *, const MetaProperty&);
-    typedef void                (*WriteProperty)        (void *, const MetaProperty&, const Variant&);
+    typedef Variant(*ReadMem)(const void *);
+    typedef void(*WriteMem)(void *, const Variant&);
+    typedef void(*AddressMem)(char *, size_t);
+    typedef Variant(*ReadProperty)(const void *, const MetaProperty&);
+    typedef void(*WriteProperty)(void *, const MetaProperty&, const Variant&);
 
     struct Table {
-        const char             *name;
-        const MetaType::Table  *type;
-        const char             *annotation;
-        ReadMem                 reader;
-        WriteMem                writer;
-        AddressMem              readmem;
-        AddressMem              writemem;
-        ReadProperty            readproperty;
-        WriteProperty           writeproperty;
+        const char *name;
+        const MetaType::Table *type;
+        const char *annotation;
+        ReadMem reader;
+        WriteMem writer;
+        AddressMem readmem;
+        AddressMem writemem;
+        ReadProperty readproperty;
+        WriteProperty writeproperty;
     };
 
 public:
-    explicit MetaProperty   (const Table *table);
+    explicit MetaProperty(const Table *table);
 
-    const char             *name                        () const;
-    bool                    isValid                     () const;
-    const MetaType          type                        () const;
+    const char *name() const;
+    bool isValid() const;
+    const MetaType type() const;
 
-    Variant                 read                        (const void *object) const;
-    void                    write                       (void *object, const Variant &value) const;
+    Variant read(const void *object) const;
+    void write(void *object, const Variant &value) const;
 
     template<typename T>
-    void                    write                       (void *object, const T &value) const {
+    void write(void *object, const T &value) const {
         uint32_t type = MetaType::type<T>();
         Variant arg;
         if(type < MetaType::VARIANTMAP && type >= MetaType::USERTYPE) {
@@ -48,10 +48,10 @@ public:
         write(object, arg);
     }
 
-    const Table            *table                       () const;
+    const Table *table() const;
 
 private:
-    const Table            *m_pTable;
+    const Table *m_table;
 
 };
 
@@ -94,7 +94,7 @@ struct Reader<T(Class::*)()const, ReadFunc> {
     }
 
     inline static Variant read(const void *obj) {
-        auto value = (reinterpret_cast<const Class *>(obj)->*ReadFunc)();
+        auto value =(reinterpret_cast<const Class *>(obj)->*ReadFunc)();
         return Variant(MetaType::type<decltype(value)>(), &value);
     }
 
@@ -117,7 +117,7 @@ struct Reader<T(Class::*)(const MetaProperty &), ReadFunc> {
     }
 
     inline static Variant read(const void *obj, const MetaProperty &property) {
-        return (reinterpret_cast<Class *>(obj)->*ReadFunc)(property);
+        return(reinterpret_cast<Class *>(obj)->*ReadFunc)(property);
     }
 };
 template<typename T, typename Class, T(Class::*ReadFunc)(const MetaProperty &)const>
@@ -130,7 +130,7 @@ struct Reader<T(Class::*)(const MetaProperty &)const, ReadFunc> {
     }
 
     inline static Variant read(const void *obj, const MetaProperty &property) {
-        return (reinterpret_cast<const Class *>(obj)->*ReadFunc)(property);
+        return(reinterpret_cast<const Class *>(obj)->*ReadFunc)(property);
     }
 };
 
@@ -146,7 +146,7 @@ struct Writer<void(Class::*)(T), WriteFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static void write(void *obj, const Variant &value) {
-        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
+        return(reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
     }
 
     template<Fun fun>
@@ -165,7 +165,7 @@ struct Writer<void(Class::*)(const T&), WriteFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static void write(void *obj, const Variant &value) {
-        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
+        return(reinterpret_cast<Class *>(obj)->*WriteFunc)(value.value<T_no_cv>());
     }
 
     template<Fun fun>
@@ -182,7 +182,7 @@ struct Writer<void(Class::*)(const MetaProperty &, T), WriteFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static void write(void *obj, const MetaProperty &property, const Variant &value) {
-        return (reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
+        return(reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
     }
 };
 template<typename T, typename Class, void(Class::*WriteFunc)(const MetaProperty &, const T&)>
@@ -191,7 +191,7 @@ struct Writer<void(Class::*)(const MetaProperty &, const T&), WriteFunc> {
     typedef typename CheckType<T, is_pointer>::type T_no_cv;
 
     inline static void write(void *obj, const MetaProperty &property, const Variant &value) {
-        (reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
+(reinterpret_cast<Class *>(obj)->*WriteFunc)(property, value);
     }
 };
 

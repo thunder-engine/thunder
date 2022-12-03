@@ -10,6 +10,7 @@
 #include "graphwidgets/linksrender.h"
 
 #include <components/actor.h>
+#include <components/scene.h>
 #include <components/scenegraph.h>
 #include <components/camera.h>
 #include <components/gui/recttransform.h>
@@ -76,6 +77,7 @@ private:
 
 GraphView::GraphView(QWidget *parent) :
         Viewport(parent),
+        m_scene(nullptr),
         m_createMenu(new QMenu(this)),
         m_graph(nullptr),
         m_selectedItem(nullptr),
@@ -106,6 +108,12 @@ GraphView::GraphView(QWidget *parent) :
 
     ObjectObserver::registerClassFactory(Engine::renderSystem());
     m_objectObserver->setView(this);
+}
+
+void GraphView::setSceneGraph(SceneGraph *scene) {
+    Viewport::setSceneGraph(scene);
+
+    m_scene = dynamic_cast<Scene *>(Engine::objectCreate("Scene", "Scene", m_sceneGraph));
 }
 
 AbstractNodeGraph *GraphView::graph() const {
@@ -223,13 +231,13 @@ void GraphView::composeLinks() {
 
 void GraphView::onGraphUpdated() {
     if(m_linksRender == nullptr) {
-        Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_sceneGraph);
+        Actor *actor = Engine::composeActor(gLinksRender, gLinksRender, m_scene);
         m_linksRender = static_cast<LinksRender *>(actor->component(gLinksRender));
         m_linksRender->setGraph(m_graph);
     }
 
     // Clean scene graph
-    Object::ObjectList children = m_sceneGraph->getChildren();
+    Object::ObjectList children = m_scene->getChildren();
     for(auto it : children) {
         if(it == m_linksRender->actor()) {
             children.remove(it);
@@ -249,7 +257,7 @@ void GraphView::onGraphUpdated() {
         }
 
         if(create) {
-            Actor *nodeActor = Engine::composeActor(gNodeWidget, qPrintable(node->objectName()), m_sceneGraph);
+            Actor *nodeActor = Engine::composeActor(gNodeWidget, qPrintable(node->objectName()), m_scene);
             if(nodeActor) {
                 NodeWidget *widget = dynamic_cast<NodeWidget *>(nodeActor->component(gNodeWidget));
                 if(widget) {

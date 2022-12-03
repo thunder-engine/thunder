@@ -12,26 +12,26 @@
 class NEXT_LIBRARY_EXPORT Profiler {
 public:
     struct CallPoint {
-        const char             *name;
+        const char *name;
 
-        TimePoint               started;
+        TimePoint started;
 
-        TimePoint               stoped;
+        TimePoint stoped;
     };
 
 public:
-    Profiler                    (const char *name);
+    Profiler(const char *name);
 
-    ~Profiler                   ();
+    ~Profiler();
 
-    static uint32_t             stat                (const char *name);
+    static uint32_t stat(const char *name);
 
-    static void                 statAdd             (const char *name, uint32_t value);
+    static void statAdd(const char *name, uint32_t value);
 
-    static void                 statReset           (const char *name);
+    static void statReset(const char *name);
 
 protected:
-    Profiler::CallPoint         m_Current;
+    Profiler::CallPoint  m_current;
 
 };
 

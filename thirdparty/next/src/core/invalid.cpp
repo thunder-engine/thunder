@@ -5,13 +5,13 @@ Invalid::Invalid() {
 }
 
 void Invalid::loadData(const VariantList &data) {
-    m_Data = data;
+    m_data = data;
 }
 
 VariantList Invalid::saveData() const {
-    return m_Data;
+    return m_data;
 }
 
 string Invalid::typeName() const {
-    return m_Data.begin()->toString();
+    return m_data.begin()->toString();
 }

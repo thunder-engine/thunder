@@ -62,7 +62,7 @@ static ObjectSystem::GroupMap   s_Groups;
     Constructs ObjectSystem.
 */
 ObjectSystem::ObjectSystem() :
-        m_SuspendObject(nullptr) {
+        m_suspendObject(nullptr) {
     PROFILE_FUNCTION();
 }
 /*!
@@ -85,7 +85,7 @@ ObjectSystem::~ObjectSystem() {
     }
     {
         deleteAllObjects();
-        m_SuspendObject = nullptr;
+        m_suspendObject = nullptr;
     }
 }
 /*!
@@ -98,14 +98,14 @@ void ObjectSystem::processEvents() {
 
     Object::processEvents();
 
-    auto it = m_ObjectList.begin();
-    while(it != m_ObjectList.end()) {
+    auto it = m_objectList.begin();
+    while(it != m_objectList.end()) {
         Object *o = *it;
         o->processEvents();
 
-        if(m_SuspendObject != nullptr) {
-            m_SuspendObject = nullptr;
-            it = m_ObjectList.erase(it);
+        if(m_suspendObject != nullptr) {
+            m_suspendObject = nullptr;
+            it = m_objectList.erase(it);
         } else {
             ++it;
         }
@@ -166,10 +166,10 @@ void ObjectSystem::factoryRemove(const string &name, const string &uri) {
     \internal
 */
 void ObjectSystem::deleteAllObjects() {
-    auto it = m_ObjectList.begin();
-    while(it != m_ObjectList.end()) {
+    auto it = m_objectList.begin();
+    while(it != m_objectList.end()) {
         delete *it;
-        it = m_ObjectList.begin();
+        it = m_objectList.begin();
     }
 }
 /*!
@@ -195,11 +195,11 @@ ObjectSystem::FactoryPair *ObjectSystem::metaFactory(const string &uri) {
 }
 
 typedef list<const Object *> ObjectArray;
-void enumObjects(const Object *object, ObjectArray &list) {
+void enumConstObjects(const Object *object, ObjectArray &list) {
     PROFILE_FUNCTION();
     list.push_back(object);
     for(const auto &it : object->getChildren()) {
-        enumObjects(it, list);
+        enumConstObjects(it, list);
     }
 }
 /*!
@@ -216,7 +216,7 @@ Variant ObjectSystem::toVariant(const Object *object, bool force) {
     VariantList result;
 
     ObjectArray list;
-    enumObjects(object, list);
+    enumConstObjects(object, list);
 
     for(auto it : list) {
         // Save Object
@@ -427,20 +427,20 @@ Object *ObjectSystem::findObject(uint32_t uuid, Object *root) {
 */
 void ObjectSystem::addObject(Object *object) {
     PROFILE_FUNCTION();
-    m_ObjectList.push_back(object);
+    m_objectList.push_back(object);
 }
 /*!
     \internal
 */
 void ObjectSystem::removeObject(Object *object) {
     PROFILE_FUNCTION();
-    if(m_SuspendObject == nullptr) {
-        m_ObjectList.remove(object);
+    if(m_suspendObject == nullptr) {
+        m_objectList.remove(object);
     }
 }
 /*!
     \internal
 */
 void ObjectSystem::suspendObject(Object *object) {
-    m_SuspendObject = object;
+    m_suspendObject = object;
 }

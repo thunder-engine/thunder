@@ -24,24 +24,24 @@
 */
 MetaObject::MetaObject(const char *name, const MetaObject *super, const Constructor constructor,
                        const MetaMethod::Table *methods, const MetaProperty::Table *props, const MetaEnum::Table *enums) :
-        m_Constructor(constructor),
-        m_pName(name),
-        m_pSuper(super),
-        m_pMethods(methods),
-        m_pProperties(props),
-        m_pEnums(enums),
-        m_MethodCount(0),
-        m_PropCount(0),
-        m_EnumCount(0) {
+        m_constructor(constructor),
+        m_name(name),
+        m_super(super),
+        m_methods(methods),
+        m_properties(props),
+        m_enums(enums),
+        m_methodCount(0),
+        m_propCount(0),
+        m_enumCount(0) {
     PROFILE_FUNCTION();
-    while(methods && methods[m_MethodCount].name) {
-        m_MethodCount++;
+    while(methods && methods[m_methodCount].name) {
+        m_methodCount++;
     }
-    while(props && props[m_PropCount].type) {
-        m_PropCount++;
+    while(props && props[m_propCount].type) {
+        m_propCount++;
     }
-    while(enums && enums[m_EnumCount].name) {
-        m_EnumCount++;
+    while(enums && enums[m_enumCount].name) {
+        m_enumCount++;
     }
 }
 /*!
@@ -49,21 +49,21 @@ MetaObject::MetaObject(const char *name, const MetaObject *super, const Construc
 */
 const char *MetaObject::name() const {
     PROFILE_FUNCTION();
-    return m_pName;
+    return m_name;
 }
 /*!
     Returns an introspection object for parent class.
 */
 const MetaObject *MetaObject::super() const {
     PROFILE_FUNCTION();
-    return m_pSuper;
+    return m_super;
 }
 /*!
     Constructs and return a new instance of associated class.
 */
 Object *MetaObject::createInstance() const {
     PROFILE_FUNCTION();
-    return (*m_Constructor)();
+    return (*m_constructor)();
 }
 /*!
     Returns index of class method by provided \a signature; otherwise returns -1.
@@ -74,12 +74,12 @@ int MetaObject::indexOfMethod(const char *signature) const {
     const MetaObject *s = this;
 
     while(s) {
-        for(int i = 0; i < s->m_MethodCount; ++i) {
-            if(MetaMethod(s->m_pMethods + i).signature() == signature) {
+        for(int i = 0; i < s->m_methodCount; ++i) {
+            if(MetaMethod(s->m_methods + i).signature() == signature) {
                 return i + s->methodOffset();
             }
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return -1;
 }
@@ -92,13 +92,13 @@ int MetaObject::indexOfSignal(const char *signature) const {
     const MetaObject *s = this;
 
     while(s) {
-        for(int i = 0; i < s->m_MethodCount; ++i) {
-            MetaMethod m(s->m_pMethods + i);
+        for(int i = 0; i < s->m_methodCount; ++i) {
+            MetaMethod m(s->m_methods + i);
             if(m.type() == MetaMethod::Signal && m.signature() == signature) {
                 return i + s->methodOffset();
             }
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return -1;
 }
@@ -111,13 +111,13 @@ int MetaObject::indexOfSlot(const char *signature) const {
     const MetaObject *s = this;
 
     while(s) {
-        for(int i = 0; i < s->m_MethodCount; ++i) {
-            MetaMethod m(s->m_pMethods + i);
+        for(int i = 0; i < s->m_methodCount; ++i) {
+            MetaMethod m(s->m_methods + i);
             if(m.type() == MetaMethod::Slot && m.signature() == signature) {
                 return i + s->methodOffset();
             }
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return -1;
 }
@@ -128,12 +128,12 @@ int MetaObject::indexOfSlot(const char *signature) const {
 MetaMethod MetaObject::method(int index) const {
     PROFILE_FUNCTION();
     int i = index - methodOffset();
-    if(i < 0 && m_pSuper) {
-        return m_pSuper->method(index);
+    if(i < 0 && m_super) {
+        return m_super->method(index);
     }
 
-    if(i >= 0 && i < m_MethodCount) {
-        return MetaMethod(m_pMethods + i);
+    if(i >= 0 && i < m_methodCount) {
+        return MetaMethod(m_methods + i);
     }
     return MetaMethod(nullptr);
 }
@@ -142,11 +142,11 @@ MetaMethod MetaObject::method(int index) const {
 */
 int MetaObject::methodCount() const {
     PROFILE_FUNCTION();
-    int count = m_MethodCount;
-    const MetaObject *s = m_pSuper;
+    int count = m_methodCount;
+    const MetaObject *s = m_super;
     while(s) {
-        count += s->m_MethodCount;
-        s = s->m_pSuper;
+        count += s->m_methodCount;
+        s = s->m_super;
     }
     return count;
 }
@@ -156,10 +156,10 @@ int MetaObject::methodCount() const {
 int MetaObject::methodOffset() const {
     PROFILE_FUNCTION();
     int offset = 0;
-    const MetaObject *s = m_pSuper;
+    const MetaObject *s = m_super;
     while(s) {
-        offset += s->m_MethodCount;
-        s = s->m_pSuper;
+        offset += s->m_methodCount;
+        s = s->m_super;
     }
     return offset;
 }
@@ -172,12 +172,12 @@ int MetaObject::indexOfProperty(const char *name) const {
     const MetaObject *s = this;
 
     while(s) {
-        for(int i = 0; i < s->m_PropCount; ++i) {
-            if(strcmp(s->m_pProperties[i].name, name) == 0) {
+        for(int i = 0; i < s->m_propCount; ++i) {
+            if(strcmp(s->m_properties[i].name, name) == 0) {
                 return i + s->propertyOffset();
             }
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return -1;
 }
@@ -188,11 +188,11 @@ int MetaObject::indexOfProperty(const char *name) const {
 MetaProperty MetaObject::property(int index) const {
     PROFILE_FUNCTION();
     int i = index - propertyOffset();
-    if(i < 0 && m_pSuper) {
-        return m_pSuper->property(index);
+    if(i < 0 && m_super) {
+        return m_super->property(index);
     }
-    if(i >= 0 && i < m_PropCount) {
-        return MetaProperty(m_pProperties + i);
+    if(i >= 0 && i < m_propCount) {
+        return MetaProperty(m_properties + i);
     }
     return MetaProperty(nullptr);
 }
@@ -201,11 +201,11 @@ MetaProperty MetaObject::property(int index) const {
 */
 int MetaObject::propertyCount() const {
     PROFILE_FUNCTION();
-    int count = m_PropCount;
-    const MetaObject *s = m_pSuper;
+    int count = m_propCount;
+    const MetaObject *s = m_super;
     while(s) {
-        count  += s->m_PropCount;
-        s = s->m_pSuper;
+        count  += s->m_propCount;
+        s = s->m_super;
     }
     return count;
 }
@@ -215,10 +215,10 @@ int MetaObject::propertyCount() const {
 int MetaObject::propertyOffset() const {
     PROFILE_FUNCTION();
     int offset = 0;
-    const MetaObject *s = m_pSuper;
+    const MetaObject *s = m_super;
     while(s) {
-        offset += s->m_PropCount;
-        s = s->m_pSuper;
+        offset += s->m_propCount;
+        s = s->m_super;
     }
     return offset;
 }
@@ -231,12 +231,12 @@ int MetaObject::indexOfEnumerator(const char *name) const {
     const MetaObject *s = this;
 
     while(s) {
-        for(int i = 0; i < s->m_EnumCount; ++i) {
-            if(strcmp(s->m_pEnums[i].name, name) == 0) {
+        for(int i = 0; i < s->m_enumCount; ++i) {
+            if(strcmp(s->m_enums[i].name, name) == 0) {
                 return i + s->enumeratorOffset();
             }
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return -1;
 }
@@ -246,8 +246,8 @@ int MetaObject::indexOfEnumerator(const char *name) const {
 */
 MetaEnum MetaObject::enumerator(int index) const {
     PROFILE_FUNCTION();
-    if(index >= 0 && index < m_EnumCount) {
-        return MetaEnum(m_pEnums + index);
+    if(index >= 0 && index < m_enumCount) {
+        return MetaEnum(m_enums + index);
     }
     return MetaEnum(nullptr);
 }
@@ -256,7 +256,7 @@ MetaEnum MetaObject::enumerator(int index) const {
 */
 int MetaObject::enumeratorCount() const {
     PROFILE_FUNCTION();
-    return m_EnumCount;
+    return m_enumCount;
 }
 /*!
     Returns the first index of enumerator for current class. The offset is the sum of all enumerator in parent classes.
@@ -277,10 +277,10 @@ bool MetaObject::canCastTo(const char *type) const {
     const MetaObject *s = this;
 
     while(s) {
-        if(strcmp(s->m_pName, type) == 0) {
+        if(strcmp(s->m_name, type) == 0) {
             return true;
         }
-        s = s->m_pSuper;
+        s = s->m_super;
     }
     return false;
 }

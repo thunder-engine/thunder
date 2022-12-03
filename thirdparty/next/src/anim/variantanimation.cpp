@@ -1,18 +1,5 @@
 #include "anim/variantanimation.h"
 
-class VariantAnimationPrivate {
-public:
-    VariantAnimationPrivate() :
-        m_Duration(-1) {
-
-    }
-
-    map<int32_t, AnimationCurve *> m_KeyFrames;
-
-    Variant m_CurrentValue;
-
-    int32_t m_Duration;
-};
 /*!
     \class VariantAnimation
     \brief The VariantAnimation is a base class for all animation tracks.
@@ -35,44 +22,44 @@ public:
 */
 
 VariantAnimation::VariantAnimation() :
-        p_ptr(new VariantAnimationPrivate()) {
+        m_duration(-1) {
 
 }
 
 VariantAnimation::~VariantAnimation() {
-    delete p_ptr;
+
 }
 /*!
     Returns the duration of the animation (in milliseconds).
 */
 int32_t VariantAnimation::duration() const {
-    return p_ptr->m_Duration;
+    return m_duration;
 }
 /*!
     Sets a new \a duration of the animation in milliseconds.
 */
 void VariantAnimation::setDuration(int32_t duration) {
-    if(duration < 0 || p_ptr->m_Duration == duration) {
+    if(duration < 0 || m_duration == duration) {
        return;
     }
-    p_ptr->m_Duration = duration;
+    m_duration = duration;
 }
 /*!
     Returns the current value for the animated Variant.
 */
 Variant VariantAnimation::currentValue() const {
-    return p_ptr->m_CurrentValue;
+    return m_currentValue;
 }
 /*!
     Sets the new current \a value for the animated Variant.
 */
 void VariantAnimation::setCurrentValue(const Variant &value) {
-    p_ptr->m_CurrentValue = value;
+    m_currentValue = value;
 }
 
 AnimationCurve *VariantAnimation::curve(int32_t component) const {
-    auto it = p_ptr->m_KeyFrames.find(component);
-    if(it != p_ptr->m_KeyFrames.end()) {
+    auto it = m_keyFrames.find(component);
+    if(it != m_keyFrames.end()) {
         return it->second;
     }
     return nullptr;
@@ -81,7 +68,7 @@ AnimationCurve *VariantAnimation::curve(int32_t component) const {
     Sets the new sequence of the key frames as \a curve for the provided \a component.
 */
 void VariantAnimation::setCurve(AnimationCurve *curve, int32_t component) {
-    p_ptr->m_KeyFrames[component] = curve;
+    m_keyFrames[component] = curve;
 }
 /*!
     \overload
@@ -92,30 +79,30 @@ void VariantAnimation::setCurrentTime(uint32_t position) {
     if(!isValid()) {
         return;
     }
-    float time = (float)loopTime() / (float)p_ptr->m_Duration;
+    float time = (float)loopTime() / (float)m_duration;
     Variant data = currentValue();
-    switch(p_ptr->m_CurrentValue.type()) {
+    switch(m_currentValue.type()) {
         case MetaType::BOOLEAN: {
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 float value = it.second->value(time);
                 data = Variant(static_cast<bool>(value));
             }
         } break;
         case MetaType::INTEGER: {
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 float value = it.second->value(time);
                 data = Variant(static_cast<int>(value));
             }
         } break;
         case MetaType::FLOAT: {
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 float value = it.second->value(time);
                 data = Variant(value);
             }
         } break;
         case MetaType::VECTOR2: {
             Vector2 v = data.toVector2();
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 int32_t component = it.first;
                 float value = it.second->value(time);
                 v[component] = value;
@@ -124,7 +111,7 @@ void VariantAnimation::setCurrentTime(uint32_t position) {
         } break;
         case MetaType::VECTOR3: {
             Vector3 v = data.toVector3();
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 int32_t component = it.first;
                 float value = it.second->value(time);
                 v[component] = value;
@@ -133,7 +120,7 @@ void VariantAnimation::setCurrentTime(uint32_t position) {
         } break;
         case MetaType::VECTOR4: {
             Vector4 v = data.toVector4();
-            for(auto it : p_ptr->m_KeyFrames) {
+            for(auto it : m_keyFrames) {
                 int32_t component = it.first;
                 float value = it.second->value(time);
                 v[component] = value;

@@ -9,6 +9,7 @@
 #include <components/transform.h>
 #include <components/spriterender.h>
 #include <components/camera.h>
+#include <components/scene.h>
 
 #include <resources/texture.h>
 #include <resources/material.h>
@@ -24,12 +25,17 @@
 #include "spritecontroller.h"
 #include "spriteelement.h"
 
+namespace {
+    const char *gSpriteRender("SpriteRender");
+};
+
 TextureEdit::TextureEdit() :
         ui(new Ui::TextureEdit),
         m_resource(nullptr),
         m_render(nullptr),
         m_converter(new TextureConverter),
-        m_graph(Engine::objectCreate<SceneGraph>("SceneGraph")) {
+        m_graph(Engine::objectCreate<SceneGraph>("SceneGraph")),
+        m_scene(Engine::objectCreate<Scene>("Scene", m_graph)) {
 
     ui->setupUi(this);
 
@@ -39,6 +45,7 @@ TextureEdit::TextureEdit() :
 
     ui->viewport->setController(m_controller);
     ui->viewport->init();
+    ui->viewport->setSceneGraph(m_graph);
 
     connect(m_controller, &SpriteController::selectionChanged, ui->widget, &SpriteElement::onSelectionChanged);
     connect(m_controller, &SpriteController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
@@ -49,7 +56,7 @@ TextureEdit::TextureEdit() :
         camera->setOrthographic(true);
     }
 
-    Actor *object = Engine::composeActor("SpriteRender", "Sprite", m_graph);
+    Actor *object = Engine::composeActor("SpriteRender", "SpriteRender", m_scene);
     m_render = static_cast<SpriteRender *>(object->component("SpriteRender"));
 
     setAcceptDrops(true);
@@ -68,8 +75,6 @@ bool TextureEdit::isModified() const {
 }
 
 void TextureEdit::loadAsset(AssetConverterSettings *settings) {
-    ui->viewport->setSceneGraph(m_graph);
-
     if(!m_settings.isEmpty()) {
         disconnect(m_settings.first(), &AssetConverterSettings::updated, this, &TextureEdit::onUpdateTemplate);
     }

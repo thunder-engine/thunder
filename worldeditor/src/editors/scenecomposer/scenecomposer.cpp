@@ -81,7 +81,8 @@ SceneComposer::SceneComposer(QWidget *parent) :
         m_controller(nullptr),
         m_sceneGraphObserver(new SceneGraphObserver),
         m_isolationSettings(nullptr),
-        m_isolationScene(Engine::objectCreate<SceneGraph>("SceneGraph")) {
+        m_isolationSceneGraph(Engine::objectCreate<SceneGraph>("SceneGraph")),
+        m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationSceneGraph)) {
 
     ui->setupUi(this);
 
@@ -332,7 +333,7 @@ QStringList SceneComposer::suffixes() const {
 }
 
 void SceneComposer::onActivated() {
-    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationScene : Engine::sceneGraph());
+    emit hierarchyCreated(m_controller->isolatedActor() ? m_isolationSceneGraph : Engine::sceneGraph());
 
     emit itemSelected(!m_controller->selected().empty() ? m_properties : nullptr);
 }
@@ -390,7 +391,7 @@ void SceneComposer::loadAsset(AssetConverterSettings *settings) {
 }
 
 void SceneComposer::saveAsset(const QString &path) {
-    SceneGraph *graph = m_controller->isolatedActor() ? m_isolationScene : Engine::sceneGraph();
+    SceneGraph *graph = m_controller->isolatedActor() ? m_isolationSceneGraph : Engine::sceneGraph();
     saveMap(path, graph->activeScene());
 /*
     QImage result = ui->viewport->grabFramebuffer();
@@ -626,7 +627,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
         }
 
         if(actor) {
-            ui->viewport->setSceneGraph(m_isolationScene);
+            ui->viewport->setSceneGraph(m_isolationSceneGraph);
             emit hierarchyCreated(m_isolationScene);
 
             m_isolationBackState = m_controller->saveState();

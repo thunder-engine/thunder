@@ -38,8 +38,6 @@ private:
 
     void composeComponent() override;
 
-    int priority() const override;
-
 private:
     string m_title;
 

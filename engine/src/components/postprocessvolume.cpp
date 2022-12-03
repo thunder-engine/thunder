@@ -179,12 +179,6 @@ void PostProcessVolume::writeProperty(const MetaProperty &property, const Varian
 
     p_ptr->m_settings.writeValue(property.name(), value);
 }
-/*!
-    \internal
-*/
-bool PostProcessVolume::isPostProcessVolume() const {
-    return true;
-}
 
 #ifdef SHARED_DEFINE
 #include "viewport/handles.h"

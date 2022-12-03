@@ -37,12 +37,6 @@ DirectLight::DirectLight() {
 int DirectLight::lightType() const {
     return BaseLight::DirectLight;
 }
-/*!
-    \internal
-*/
-AABBox DirectLight::bound() const {
-    return AABBox(0.0f, -1.0f);
-}
 
 #ifdef SHARED_DEFINE
 #include "viewport/handles.h"

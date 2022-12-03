@@ -17,7 +17,6 @@ const char *gLabel = "Label";
 
 const float gCorner = 4.0f;
 const float gRowHeight = 20.0f;
-const int gPriority = INT32_MAX;
 };
 
 Menu::Menu() :
@@ -31,7 +30,6 @@ void Menu::addSection(const string &text) {
     Label *label = static_cast<Label *>(actor->component(gLabel));
     if(label) {
         label->setText(text);
-        label->setPriority(gPriority);
         label->setAlign(Alignment::Middle | Alignment::Left);
 
         RectTransform *labelRect = label->rectTransform();
@@ -141,7 +139,6 @@ void Menu::composeComponent() {
     Actor *actor = Engine::composeActor(gFrame, gFrame, Menu::actor());
     m_select = static_cast<Frame *>(actor->component(gFrame));
     m_select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
-    m_select->setPriority(gPriority);
     m_select->setCorners(0.0f);
     m_select->setBorderColor(0.0f);
     r = m_select->rectTransform();
@@ -151,8 +148,4 @@ void Menu::composeComponent() {
     }
 
     hide();
-}
-
-int Menu::priority() const {
-    return gPriority;
 }

@@ -9,6 +9,7 @@
 class SceneGraph;
 class Actor;
 class Camera;
+class Scene;
 
 class IconRender : public QObject {
 public:
@@ -19,7 +20,9 @@ public:
     const QImage render(const QString &resource, const QString &);
 
 protected:
-    SceneGraph *m_scene;
+    SceneGraph *m_graph;
+
+    Scene *m_scene;
 
     Actor *m_actor;
 

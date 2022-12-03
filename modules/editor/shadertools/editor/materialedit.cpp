@@ -7,6 +7,7 @@
 
 #include <engine.h>
 #include <components/scenegraph.h>
+#include <components/scene.h>
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/meshrender.h>
@@ -40,11 +41,12 @@ MaterialEdit::MaterialEdit() :
     m_controller->blockMovement(true);
     m_controller->setFree(false);
 
-    SceneGraph *scene = Engine::objectCreate<SceneGraph>("SceneGraph");
+    SceneGraph *graph = Engine::objectCreate<SceneGraph>("SceneGraph");
+    Scene *scene = Engine::objectCreate<Scene>("Scene", graph);
 
     ui->preview->setController(m_controller);
     ui->preview->init();
-    ui->preview->setSceneGraph(scene);
+    ui->preview->setSceneGraph(graph);
     ui->preview->setGizmoEnabled(false);
     ui->preview->setGridEnabled(false);
 

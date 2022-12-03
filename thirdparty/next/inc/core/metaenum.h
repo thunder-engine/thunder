@@ -6,33 +6,33 @@
 class NEXT_LIBRARY_EXPORT MetaEnum {
 public:
     struct EnumTable {
-        const char     *name;
-        int             value;
+        const char *name;
+        int value;
     };
 
     struct Table {
-        const char      *name;
+        const char *name;
         const EnumTable *table;
     };
 
 public:
-    explicit MetaEnum   (const Table *table);
+    explicit MetaEnum(const Table *table);
 
-    bool                isValid         () const;
+    bool isValid() const;
 
-    const char         *name            () const;
+    const char *name() const;
 
-    int                 keyCount        () const;
-    const char         *key             (int index) const;
+    int keyCount() const;
+    const char *key(int index) const;
 
-    int                 value           (int index) const;
+    int value(int index) const;
 
-    const Table        *table           () const;
+    const Table *table() const;
 
 private:
-    const Table        *m_pTable;
+    const Table *m_table;
 
-    int                 m_EnumCount;
+    int m_enumCount;
 
 };
 

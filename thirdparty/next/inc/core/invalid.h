@@ -5,16 +5,16 @@
 
 class NEXT_LIBRARY_EXPORT Invalid : public Object {
 public:
-    Invalid                             ();
+    Invalid();
 
-    void                                loadData                (const VariantList &data);
+    void loadData(const VariantList &data);
 
-    VariantList                         saveData                () const;
+    VariantList saveData() const;
 
-    string                              typeName                () const;
+    string typeName() const;
 
 protected:
-    VariantList                         m_Data;
+    VariantList m_data;
 
 };
 

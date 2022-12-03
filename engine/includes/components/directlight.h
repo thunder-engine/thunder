@@ -15,8 +15,6 @@ public:
 private:
     int lightType() const override;
 
-    AABBox bound() const override;
-
 #ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif

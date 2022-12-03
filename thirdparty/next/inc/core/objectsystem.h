@@ -13,79 +13,79 @@ class MetaObject;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
-    typedef pair<const MetaObject *, ObjectSystem *>    FactoryPair;
-    typedef unordered_map<string, FactoryPair>          FactoryMap;
-    typedef unordered_map<string, string>               GroupMap;
+    typedef pair<const MetaObject *, ObjectSystem *> FactoryPair;
+    typedef unordered_map<string, FactoryPair> FactoryMap;
+    typedef unordered_map<string, string> GroupMap;
 
 public:
-    ObjectSystem                        ();
-    ~ObjectSystem                       () override;
+    ObjectSystem();
+    ~ObjectSystem() override;
 
-    GroupMap                            factories               () const;
+    GroupMap factories() const;
 
-    static FactoryPair                 *metaFactory             (const string &uri);
+    static FactoryPair *metaFactory(const string &uri);
 
-    void                                processEvents           () override;
+    void processEvents() override;
 
-    bool                                compareTreads           (ObjectSystem *system) const;
+    bool compareTreads(ObjectSystem *system) const;
 
 public:
     template<typename T>
-    static T                           *objectCreate            (const string &name = string(), Object *parent = nullptr) {
+    static T *objectCreate(const string &name = string(), Object *parent = nullptr) {
         return dynamic_cast<T *>(objectCreate(T::metaClass()->name(), name, parent));
     }
 
-    static Object                      *objectCreate            (const string &uri, const string &name = string(), Object *parent = nullptr);
+    static Object *objectCreate(const string &uri, const string &name = string(), Object *parent = nullptr);
 
     template<typename T>
-    void                                factoryAdd              (const string &group, const MetaObject *meta) {
+    void factoryAdd(const string &group, const MetaObject *meta) {
         string name = T::metaClass()->name();
         factoryAdd(name, string("thor://") + group + "/" + name, meta);
     }
 
     template<typename T>
-    void                                factoryRemove           (const string &group) {
+    void factoryRemove(const string &group) {
         const char *name = T::metaClass()->name();
         factoryRemove(name, string("thor://") + group + "/" + name);
     }
 
-    static Variant                      toVariant               (const Object *object, bool force = false);
-    static Object                      *toObject                (const Variant &variant, Object *parent = nullptr, const string &name = string());
+    static Variant toVariant(const Object *object, bool force = false);
+    static Object *toObject(const Variant &variant, Object *parent = nullptr, const string &name = string());
 
-    static uint32_t                     generateUUID            ();
+    static uint32_t generateUUID();
 
-    static void                         replaceUUID             (Object *object, uint32_t uuid);
+    static void replaceUUID(Object *object, uint32_t uuid);
 
-    static Object                      *findRoot                (Object *object);
+    static Object *findRoot(Object *object);
 
-    static Object                      *findObject              (uint32_t uuid, Object *root);
+    static Object *findObject(uint32_t uuid, Object *root);
 
 protected:
-    void                                factoryAdd              (const string &name, const string &uri, const MetaObject *meta);
+    void factoryAdd(const string &name, const string &uri, const MetaObject *meta);
 
-    void                                factoryRemove           (const string &name, const string &uri);
+    void factoryRemove(const string &name, const string &uri);
 
-    void                                deleteAllObjects        ();
+    void deleteAllObjects();
 
-    virtual Object                     *instantiateObject       (const MetaObject *meta, const string &name, Object *parent);
+    virtual Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent);
 
-    virtual void                        removeObject            (Object *object);
+    virtual void removeObject(Object *object);
 
 private:
     friend class ObjectSystemTest;
     friend class Object;
 
-    void                                addObject               (Object *object);
+    void addObject(Object *object);
 
-    void                                suspendObject           (Object *object);
+    void suspendObject(Object *object);
 
 protected:
-    Object::ObjectList                  m_ObjectList;
+    Object::ObjectList m_objectList;
 
-    Object                             *m_SuspendObject;
+    Object *m_suspendObject;
 
 
-    thread::id                          m_threadId;
+    thread::id m_threadId;
 
 };
 

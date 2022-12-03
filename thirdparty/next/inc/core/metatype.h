@@ -18,7 +18,7 @@ class NEXT_LIBRARY_EXPORT MetaType {
 public:
     /*! \enum Type */
     enum Type {
-        INVALID                 = 0,
+        INVALID      = 0,
         BOOLEAN,
         INTEGER,
         FLOAT,
@@ -27,7 +27,7 @@ public:
         VARIANTLIST,
         BYTEARRAY,
 
-        VECTOR2                 = 10,
+        VECTOR2      = 10,
         VECTOR3,
         VECTOR4,
         QUATERNION,
@@ -35,82 +35,82 @@ public:
         MATRIX4,
         RAY,
 
-        OBJECT                  = 30,
+        OBJECT       = 30,
 
-        USERTYPE                = 40
+        USERTYPE     = 40
     };
 
     /*! \enum Flags */
     enum Flags {
-        POINTER     = (1<<0),
-        BASE_OBJECT = (1<<1)
+        POINTER     =(1<<0),
+        BASE_OBJECT =(1<<1)
     };
 
     struct Table {
-        const void         *properties;
-        const void         *methods;
-        const void         *enums;
-        int                 (*get_size)                 ();
-        void               *(*static_new)               ();
-        void                (*construct)                (void *);
-        void                (*static_delete)            (void **);
-        void                (*destruct)                 (void *);
-        void                (*clone)                    (const void **, void **);
-        bool                (*compare)                  (const void **, const void **);
-        type_index const    (*index)                    ();
-        const char         *name;
-        int                 flags;
+        const void *properties;
+        const void *methods;
+        const void *enums;
+        int (*get_size)();
+        void *(*static_new)();
+        void (*construct)(void *);
+        void (*static_delete)(void **);
+        void (*destruct)(void *);
+        void (*clone)(const void **, void **);
+        bool (*compare)(const void **, const void **);
+        type_index const(*index)();
+        const char *name;
+        int flags;
     };
 
-    typedef bool            (*converterCallback)        (void *to, const void *from, const uint32_t fromType);
+    typedef bool (*converterCallback)(void *to, const void *from, const uint32_t fromType);
 
-    typedef unordered_map<uint32_t, Table>              TypeMap;
+    typedef unordered_map<uint32_t, Table> TypeMap;
 
 public:
-    MetaType               (const Table *table);
+    MetaType(const Table *table);
 
-    const char             *name                        () const;
-    int                     size                        () const;
-    void                   *construct                   (void *where, const void *copy = nullptr) const;
-    void                   *create                      (const void *copy = nullptr) const;
-    void                    destroy                     (void *data) const;
-    void                    destruct                    (void *data) const;
-    bool                    compare                     (const void *left, const void *right) const;
-    bool                    isValid                     () const;
-    int                     flags                       () const;
+    const char *name() const;
+    int size() const;
+    void *construct(void *where, const void *copy = nullptr) const;
+    void *create(const void *copy = nullptr) const;
+    void destroy(void *data) const;
+    void destruct(void *data) const;
+    bool compare(const void *left, const void *right) const;
+    bool isValid() const;
+    int flags() const;
 
-    static uint32_t         registerType                (Table &table);
-    static void             unregisterType              (Table &table);
+    static uint32_t         registerType(Table &table);
+    static void             unregisterType(Table &table);
 
-    static uint32_t         type                        (const char *name);
+    static uint32_t         type(const char *name);
 
-    static uint32_t         type                        (const type_info &type);
+    static uint32_t         type(const type_info &type);
 
     template<typename T>
-    static uint32_t         type                        () {
+    static uint32_t type() {
         return type(typeid(T));
     }
 
-    static const char      *name                        (uint32_t type);
-    static int              size                        (uint32_t type);
-    static void            *construct                   (uint32_t type, void *where, const void *copy = nullptr);
-    static void            *create                      (uint32_t type, const void *copy = nullptr);
-    static void             destroy                     (uint32_t type, void *data);
-    static void             destruct                    (uint32_t type, void *data);
+    static const char *name(uint32_t type);
+    static int size(uint32_t type);
+    static void *construct(uint32_t type, void *where, const void *copy = nullptr);
+    static void *create(uint32_t type, const void *copy = nullptr);
+    static void destroy(uint32_t type, void *data);
+    static void destruct(uint32_t type, void *data);
 
-    static bool             compare                     (const void *left, const void *right, uint32_t type);
-    static bool             convert                     (const void *from, uint32_t fromType, void *to, uint32_t toType);
-    static bool             registerConverter           (uint32_t from, uint32_t to, converterCallback function);
-    static bool             hasConverter                (uint32_t from, uint32_t to);
+    static bool compare(const void *left, const void *right, uint32_t type);
+    static bool convert(const void *from, uint32_t fromType, void *to, uint32_t toType);
+    static bool registerConverter(uint32_t from, uint32_t to, converterCallback function);
+    static bool hasConverter(uint32_t from, uint32_t to);
 
-    static Table           *table                       (uint32_t type);
+    static Table *table(uint32_t type);
 
-    static TypeMap          types                       ();
+    static TypeMap types();
 
 private:
-    const Table            *m_pTable;
+    const Table *m_table;
 
-    static uint32_t         s_NextId;
+    static uint32_t s_nextId;
 };
 
 template<typename T>
@@ -122,19 +122,19 @@ struct TypeFuncs {
         return new T();
     }
     static void static_delete(void **x) {
-        delete (*reinterpret_cast<T **>(x));
+        delete(*reinterpret_cast<T **>(x));
     }
     static void construct(void *dest) {
-        new (dest) T();
+        new(dest) T();
     }
     static void destruct(void *x) {
-        (reinterpret_cast<T *>(x))->~T();
+(reinterpret_cast<T *>(x))->~T();
     }
     static void clone(const void **src, void **dest) {
         *dest = new T(**reinterpret_cast<const T **>(src));
     }
     static bool compare(const void **left, const void **right) {
-        return (**reinterpret_cast<const T **>(left) == **reinterpret_cast<const T **>(right));
+        return(**reinterpret_cast<const T **>(left) == **reinterpret_cast<const T **>(right));
     }
     static type_index const index() {
         return type_index(typeid(T));

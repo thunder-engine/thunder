@@ -27,40 +27,51 @@ public:
     };
 
 public:
-    Animation                       ();
+    Animation();
 
-    ~Animation                      ();
+    ~Animation();
 
-    uint32_t                        currentTime                 () const;
-    virtual void                    setCurrentTime              (uint32_t msecs);
+    uint32_t currentTime() const;
+    virtual void setCurrentTime(uint32_t msecs);
 
-    int32_t                         loopCount                   () const;
-    void                            setLoopCount                (int32_t loops);
+    int32_t loopCount() const;
+    void setLoopCount(int32_t loops);
 
-    uint32_t                        currentLoop                 () const;
+    uint32_t currentLoop() const;
 
-    uint32_t                        loopTime                    () const;
+    uint32_t loopTime() const;
 
-    State                           state                       () const;
+    State state() const;
 
-    virtual int32_t                 duration                    () const;
+    virtual int32_t duration() const;
 
-    int32_t                         totalDuration               () const;
+    int32_t totalDuration() const;
 
-    bool                            isValid                     () const;
-    virtual void                    setValid                    (bool valid);
+    bool isValid() const;
+    virtual void setValid(bool valid);
 
 public:
-    void                            start                       ();
+    void start();
 
-    void                            stop                        ();
+    void stop();
 
-    void                            pause                       ();
+    void pause();
 
-    void                            resume                      ();
+    void resume();
 
 private:
-    AnimationPrivate               *p_ptr;
+    Animation::State m_state;
+
+    uint32_t m_currentLoop;
+
+    uint32_t m_currentTime;
+
+    uint32_t m_totalCurrentTime;
+
+    int32_t  m_loopCount;
+
+    bool m_valid;
+
 };
 
 #endif // ANIMATION_H
