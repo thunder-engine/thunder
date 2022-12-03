@@ -7,12 +7,13 @@
 #include "components/transform.h"
 #include "components/camera.h"
 
+#include "systems/rendersystem.h"
+
 #include "commandbuffer.h"
 
 Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
-    m_priority(0),
     m_parent(nullptr),
     m_transform(nullptr) {
 
@@ -22,12 +23,13 @@ Widget::~Widget() {
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
+    static_cast<RenderSystem *>(system())->removeWidget(this);
 }
 /*!
     \internal
 */
 void Widget::update() {
-    Renderable::update();
+    NativeBehaviour::update();
 
     if(m_transform) {
         Layout *layout = m_transform->layout();
@@ -104,21 +106,9 @@ void Widget::setRectTransform(RectTransform *transform) {
     \internal
 */
 void Widget::setParent(Object *parent, int32_t position, bool force) {
-    Renderable::setParent(parent, position, force);
+    NativeBehaviour::setParent(parent, position, force);
 
     actorParentChanged();
-}
-/*!
-    \internal
-*/
-int Widget::priority() const {
-    return m_priority;
-}
-/*!
-    \internal
-*/
-void Widget::setPriority(int proprity) {
-    m_priority = proprity;
 }
 /*!
     \internal
@@ -139,6 +129,15 @@ void Widget::actorParentChanged() {
 */
 void Widget::composeComponent() {
     setRectTransform(Engine::objectCreate<RectTransform>("RectTransform", actor()));
+}
+/*!
+    \internal
+*/
+void Widget::setSystem(ObjectSystem *system) {
+    Object::setSystem(system);
+
+    RenderSystem *render = static_cast<RenderSystem *>(system);
+    render->addWidget(this);
 }
 
 #ifdef SHARED_DEFINE

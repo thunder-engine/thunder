@@ -261,7 +261,7 @@ bool toQuaternion(void *to, const void *from, const uint32_t fromType) {
     return result;
 }
 
-uint32_t MetaType::s_NextId = MetaType::USERTYPE;
+uint32_t MetaType::s_nextId = MetaType::USERTYPE;
 static MetaType::TypeMap s_Types = {
     {MetaType::BOOLEAN,     DECLARE_BUILT_TYPE(bool)},
     {MetaType::INTEGER,     DECLARE_BUILT_TYPE(int)},
@@ -279,7 +279,7 @@ static MetaType::TypeMap s_Types = {
     {MetaType::RAY,         DECLARE_BUILT_TYPE(Ray)}
 };
 
-static ConverterMap s_Converters= {
+static ConverterMap s_Converters = {
     {MetaType::BOOLEAN,    {{MetaType::INTEGER,     &toBoolean},
                             {MetaType::FLOAT,       &toBoolean},
                             {MetaType::STRING,      &toBoolean}}},
@@ -405,7 +405,7 @@ static NameMap s_Names = {
     Constructs MetaType object which will contain information provided in a \a table.
 */
 MetaType::MetaType(const Table *table) :
-        m_pTable(table) {
+        m_table(table) {
     PROFILE_FUNCTION();
 }
 /*!
@@ -413,14 +413,14 @@ MetaType::MetaType(const Table *table) :
 */
 const char *MetaType::name() const {
     PROFILE_FUNCTION();
-    return m_pTable->name;
+    return m_table->name;
 }
 /*!
     Returns the size of type.
 */
 int MetaType::size() const {
     PROFILE_FUNCTION();
-    return m_pTable->get_size();
+    return m_table->get_size();
 }
 /*!
     Constructs a value of the given type, which represented by current MetaType object in the existing memory addressed by \a where, that is a copy of \a copy, and returns where.
@@ -429,9 +429,9 @@ int MetaType::size() const {
 void *MetaType::construct(void *where, const void *copy) const {
     PROFILE_FUNCTION();
     if(copy) {
-        m_pTable->clone(&copy, &where);
+        m_table->clone(&copy, &where);
     } else {
-        m_pTable->construct(where);
+        m_table->construct(where);
     }
     return where;
 }
@@ -443,9 +443,9 @@ void *MetaType::create(const void *copy) const {
     PROFILE_FUNCTION();
     void *where = nullptr;
     if(copy) {
-        m_pTable->clone(&copy, &where);
+        m_table->clone(&copy, &where);
     } else {
-        where = m_pTable->static_new();
+        where = m_table->static_new();
     }
     return where;
 }
@@ -455,7 +455,7 @@ void *MetaType::create(const void *copy) const {
 */
 void MetaType::destroy(void *data) const {
     PROFILE_FUNCTION();
-    m_pTable->static_delete(&data);
+    m_table->static_delete(&data);
 }
 /*!
     Destructs the value with type, which represented by current MetaType object, located at \a data.
@@ -463,27 +463,27 @@ void MetaType::destroy(void *data) const {
 */
 void MetaType::destruct(void *data) const {
     PROFILE_FUNCTION();
-    m_pTable->destruct(data);
+    m_table->destruct(data);
 }
 /*!
     Returns true in case of \a left value is equal to \a right value; otherwise returns false.
 */
 bool MetaType::compare(const void *left, const void *right) const {
     PROFILE_FUNCTION();
-    return m_pTable->compare(&left, &right);
+    return m_table->compare(&left, &right);
 }
 /*!
     Returns true in case of this MetaType object contain valid information; otherwise returns false.
 */
 bool MetaType::isValid() const {
     PROFILE_FUNCTION();
-    return (m_pTable != nullptr);
+    return (m_table != nullptr);
 }
 /*!
     Returns flags for the type.
 */
 int MetaType::flags() const {
-    return m_pTable->flags;
+    return m_table->flags;
 }
 /*!
     Registers type by type MetaType::Table \a table. Use registerMetaType() instead this function.
@@ -491,7 +491,7 @@ int MetaType::flags() const {
 */
 uint32_t MetaType::registerType(Table &table) {
     PROFILE_FUNCTION();
-    uint32_t result = ++MetaType::s_NextId;
+    uint32_t result = ++MetaType::s_nextId;
     s_Types[result] = table;
     s_Names[table.name] = result;
     return result;

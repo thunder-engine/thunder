@@ -14,48 +14,48 @@ class Object;
 
 class NEXT_LIBRARY_EXPORT MetaObject {
 public:
-    typedef Object             *(*Constructor)              ();
+    typedef Object *(*Constructor)();
 
 public:
-    explicit MetaObject         (const char *, const MetaObject *, const Constructor, const MetaMethod::Table *, const MetaProperty::Table *, const MetaEnum::Table *);
+    explicit MetaObject(const char *, const MetaObject *, const Constructor, const MetaMethod::Table *, const MetaProperty::Table *, const MetaEnum::Table *);
 
-    const char                 *name                        () const;
-    const MetaObject           *super                       () const;
+    const char *name() const;
+    const MetaObject *super() const;
 
-    Object                     *createInstance              () const;
+    Object *createInstance() const;
 
-    int                         indexOfMethod               (const char *) const;
-    int                         indexOfSignal               (const char *) const;
-    int                         indexOfSlot                 (const char *) const;
+    int indexOfMethod(const char *) const;
+    int indexOfSignal(const char *) const;
+    int indexOfSlot(const char *) const;
 
-    MetaMethod                  method                      (int) const;
-    int                         methodCount                 () const;
-    int                         methodOffset                () const;
+    MetaMethod method(int) const;
+    int methodCount() const;
+    int methodOffset() const;
 
-    int                         indexOfProperty             (const char *) const;
+    int indexOfProperty(const char *) const;
 
-    MetaProperty                property                    (int) const;
-    int                         propertyCount               () const;
-    int                         propertyOffset              () const;
+    MetaProperty property(int) const;
+    int propertyCount() const;
+    int propertyOffset() const;
 
-    int                         indexOfEnumerator           (const char *) const;
+    int indexOfEnumerator(const char *) const;
 
-    MetaEnum                    enumerator                  (int) const;
-    int                         enumeratorCount             () const;
-    int                         enumeratorOffset            () const;
+    MetaEnum enumerator(int) const;
+    int enumeratorCount() const;
+    int enumeratorOffset() const;
 
-    bool                        canCastTo                   (const char *) const;
+    bool canCastTo(const char *) const;
 
 private:
-    Constructor                 m_Constructor;
-    const char                 *m_pName;
-    const MetaObject           *m_pSuper;
-    const MetaMethod::Table    *m_pMethods;
-    const MetaProperty::Table  *m_pProperties;
-    const MetaEnum::Table      *m_pEnums;
-    int                         m_MethodCount;
-    int                         m_PropCount;
-    int                         m_EnumCount;
+    Constructor m_constructor;
+    const char *m_name;
+    const MetaObject *m_super;
+    const MetaMethod::Table *m_methods;
+    const MetaProperty::Table *m_properties;
+    const MetaEnum::Table *m_enums;
+    int m_methodCount;
+    int m_propCount;
+    int m_enumCount;
 
 };
 

@@ -3,6 +3,8 @@
 #include "components/actor.h"
 #include "components/transform.h"
 
+#include "systems/rendersystem.h"
+
 #include "material.h"
 #include "mesh.h"
 
@@ -22,11 +24,11 @@ const char *uniBias    = "uni.bias";
 */
 
 BaseLight::BaseLight() :
-        m_shadows(0.0f),
-        m_bias(0.001f),
-        m_params(1.0f, 1.0f, 0.5f, 1.0f),
-        m_color(1.0f),
-        m_materialInstance(nullptr) {
+    m_shadows(0.0f),
+    m_bias(0.001f),
+    m_params(1.0f, 1.0f, 0.5f, 1.0f),
+    m_color(1.0f),
+    m_materialInstance(nullptr) {
 
 }
 
@@ -102,6 +104,10 @@ int BaseLight::lightType() const {
 MaterialInstance *BaseLight::material() const {
     return m_materialInstance;
 }
+
+AABBox BaseLight::bound() const {
+    return AABBox(0.0f, -1.0f);
+}
 /*!
     \internal
 */
@@ -129,7 +135,12 @@ void BaseLight::setParams(Vector4 &params) {
         m_materialInstance->setVector4(uniParams, &m_params);
     }
 }
+/*!
+    \internal
+*/
+void BaseLight::setSystem(ObjectSystem *system) {
+    Object::setSystem(system);
 
-bool BaseLight::isLight() const {
-    return true;
+    RenderSystem *render = static_cast<RenderSystem *>(system);
+    render->addLight(this);
 }

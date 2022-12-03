@@ -46,8 +46,6 @@ private:
 
     void writeProperty(const MetaProperty &property, const Variant value);
 
-    bool isPostProcessVolume() const override;
-
 #ifdef SHARED_DEFINE
     bool drawHandles(ObjectList &selected) override;
 #endif

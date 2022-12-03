@@ -4,9 +4,11 @@
 #include "engine.h"
 #include "system.h"
 
-class RenderSystemPrivate;
-
 class PipelineContext;
+class Widget;
+class BaseLight;
+class Renderable;
+class PostProcessVolume;
 
 #if defined(SHARED_DEFINE)
 class QWindow;
@@ -33,6 +35,26 @@ public:
     virtual ByteArray renderOffscreen(SceneGraph *sceneGraph, int width, int height);
 #endif
 
+    void addRenderable(Renderable *renderable);
+    void removeRenderable(Renderable *renderable);
+
+    static list<Renderable *> &renderables();
+
+    void addWidget(Widget *widget);
+    void removeWidget(Widget *widget);
+
+    static list<Widget *> &widgets();
+
+    void addLight(BaseLight *light);
+    void removeLight(BaseLight *light);
+
+    static list<BaseLight *> &lights();
+
+    void addPostProcessVolume(PostProcessVolume *volume);
+    void removePostProcessVolume(PostProcessVolume *volume);
+
+    static list<PostProcessVolume *> &postProcessVolumes();
+
 protected:
     void setOffscreenMode(bool mode);
     bool isOffscreenMode() const;
@@ -40,8 +62,16 @@ protected:
     Object *instantiateObject(const MetaObject *meta, const string &name, Object *parent) override;
 
 private:
-    RenderSystemPrivate *p_ptr;
+    static int32_t m_registered;
 
+    static list<Widget *> m_uiComponents;
+    static list<BaseLight *> m_lightComponents;
+    static list<Renderable *> m_renderableComponents;
+    static list<PostProcessVolume *> m_postProcessVolumes;
+
+    bool m_offscreen;
+
+    PipelineContext *m_pipelineContext;
 };
 
 #endif // RENDERSYSTEM_H

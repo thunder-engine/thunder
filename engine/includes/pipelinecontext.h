@@ -8,7 +8,6 @@
 
 #include "resource.h"
 
-class RenderSystem;
 class CommandBuffer;
 
 class Scene;
@@ -20,13 +19,10 @@ class Texture;
 class RenderTarget;
 class PipelinePass;
 
-class PostProcessVolume;
-
-class AtlasNode;
-
+class Widget;
+class BaseLight;
 class Renderable;
-
-class ShadowMap;
+class PostProcessVolume;
 
 class ENGINE_EXPORT PipelineContext : public Object {
     A_REGISTER(PipelineContext, Object, System)
@@ -37,7 +33,7 @@ public:
 
     CommandBuffer *buffer() const;
 
-    void analizeScene(SceneGraph *graph);
+    void analizeGraph(SceneGraph *graph);
 
     void draw(Camera *camera);
 
@@ -62,9 +58,9 @@ public:
     list<string> renderTextures() const;
 
     list<Renderable *> &sceneComponents();
-    list<Renderable *> &sceneLights();
     list<Renderable *> &culledComponents();
-    list<Renderable *> &uiComponents();
+    list<BaseLight *> &sceneLights();
+    list<Widget *> &uiComponents();
 
     void setCurrentCamera(Camera *camera);
     Camera *currentCamera() const;
@@ -80,9 +76,6 @@ public:
     static Mesh *defaultPlane();
 
 protected:
-    void combineComponents(Object *object, bool update);
-
-protected:
     typedef map<string, Texture *> BuffersMap;
     typedef map<string, RenderTarget *> TargetsMap;
 
@@ -90,9 +83,9 @@ protected:
     Matrix4 m_cameraProjection;
 
     list<Renderable *> m_sceneComponents;
-    list<Renderable *> m_sceneLights;
-    list<Renderable *> m_uiComponents;
     list<Renderable *> m_culledComponents;
+    list<BaseLight *> m_sceneLights;
+    list<Widget *> m_uiComponents;
 
     list<PostProcessVolume *> m_postProcessVolume;
 
@@ -115,6 +108,8 @@ protected:
     int32_t m_height;
 
     bool m_uiAsSceneView;
+
+    bool m_frustumCulling;
 
 };
 

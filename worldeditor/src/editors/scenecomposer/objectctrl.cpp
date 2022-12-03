@@ -9,6 +9,7 @@
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/camera.h>
+#include <components/gui/widget.h>
 
 #include <resources/texture.h>
 #include <resources/rendertarget.h>
@@ -33,8 +34,8 @@
 #include <editor/settingsmanager.h>
 
 namespace  {
-    static const char *gBackgroundColor("General/Colors/Background_Color");
-    static const char *gIsolationColor("General/Colors/Isolation_Color");
+    const char *gBackgroundColor("General/Colors/Background_Color");
+    const char *gIsolationColor("General/Colors/Isolation_Color");
 }
 
 string findFreeObjectName(const string &name, Object *parent) {
@@ -167,6 +168,7 @@ private:
 
 ObjectCtrl::ObjectCtrl(Viewport *view) :
         CameraCtrl(),
+        m_sceneGraph(nullptr),
         m_isolatedActor(nullptr),
         m_activeTool(nullptr),
         m_rayCast(nullptr),
@@ -311,10 +313,10 @@ void ObjectCtrl::select(Object &object) {
 
 void ObjectCtrl::setIsolatedActor(Actor *actor) {
     m_isolatedActor = actor;
-    if(actor) {
+    if(m_isolatedActor) {
         setIsolatedModified(false);
         m_isolationSelectedBackup = selected();
-        onSelectActor({actor});
+        onSelectActor({m_isolatedActor});
     } else {
         std::list<uint32_t> local;
         for(auto it : m_isolationSelectedBackup) {

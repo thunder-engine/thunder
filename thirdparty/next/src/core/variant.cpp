@@ -79,23 +79,23 @@ Variant::Variant() {
 */
 Variant::Variant(MetaType::Type type) {
     PROFILE_FUNCTION();
-    mData.type = type;
+    m_data.type = type;
 }
 /*!
     Constructs a new variant with a boolean \a value.
 */
 Variant::Variant(bool value) {
     PROFILE_FUNCTION();
-    mData.type = MetaType::BOOLEAN;
-    mData.b = value;
+    m_data.type = MetaType::BOOLEAN;
+    m_data.b = value;
 }
 /*!
     Constructs a new variant with an integer \a value.
 */
 Variant::Variant(int value) {
     PROFILE_FUNCTION();
-    mData.type = MetaType::INTEGER;
-    mData.i = value;
+    m_data.type = MetaType::INTEGER;
+    m_data.i = value;
 }
 
 /*!
@@ -103,16 +103,16 @@ Variant::Variant(int value) {
 */
 Variant::Variant(unsigned int value) {
     PROFILE_FUNCTION();
-    mData.type = MetaType::INTEGER;
-    mData.i = value;
+    m_data.type = MetaType::INTEGER;
+    m_data.i = value;
 }
 /*!
     Constructs a new variant with a floating point \a value.
 */
 Variant::Variant(float value) {
     PROFILE_FUNCTION();
-    mData.type = MetaType::FLOAT;
-    mData.f = value;
+    m_data.type = MetaType::FLOAT;
+    m_data.f = value;
 }
 /*!
     Constructs a new variant with a string \a value.
@@ -196,16 +196,16 @@ Variant::Variant(const Matrix4 &value) {
 */
 Variant::Variant(uint32_t type, void *copy) {
     PROFILE_FUNCTION();
-    mData.type = type;
+    m_data.type = type;
 
     if(type == MetaType::INVALID) {
         return;
     }
     switch(type) {
-        case MetaType::BOOLEAN: mData.b = *reinterpret_cast<bool *>(copy); break;
-        case MetaType::INTEGER: mData.i = *reinterpret_cast<int *>(copy); break;
-        case MetaType::FLOAT: mData.f = *reinterpret_cast<float *>(copy); break;
-        default: mData.ptr = MetaType::create(type, copy); break;
+        case MetaType::BOOLEAN: m_data.b = *reinterpret_cast<bool *>(copy); break;
+        case MetaType::INTEGER: m_data.i = *reinterpret_cast<int *>(copy); break;
+        case MetaType::FLOAT: m_data.f = *reinterpret_cast<float *>(copy); break;
+        default: m_data.ptr = MetaType::create(type, copy); break;
     }
 }
 
@@ -226,26 +226,26 @@ Variant::Variant(const Variant &value) {
 Variant &Variant::operator=(const Variant &value) {
     PROFILE_FUNCTION();
     clear();
-    mData.type  = value.mData.type;
-    if(mData.type < MetaType::STRING) {
-        mData.ptr = value.mData.ptr;
+    m_data.type  = value.m_data.type;
+    if(m_data.type < MetaType::STRING) {
+        m_data.ptr = value.m_data.ptr;
     } else {
-        if(value.mData.is_shared) {
-            mData = value.mData;
-            ++mData.shared->ref;
+        if(value.m_data.is_shared) {
+            m_data = value.m_data;
+            ++m_data.shared->ref;
         } else { // Make shared
-            mData.is_shared = true;
-            if(value.mData.ptr == nullptr) {
-                mData.is_shared = true;
+            m_data.is_shared = true;
+            if(value.m_data.ptr == nullptr) {
+                m_data.is_shared = true;
             }
-            if(value.mData.ptr == nullptr) {
-                value.mData.ptr = MetaType::create(mData.type, value.mData.ptr);
+            if(value.m_data.ptr == nullptr) {
+                value.m_data.ptr = MetaType::create(m_data.type, value.m_data.ptr);
             }
-            mData.shared = new Variant::SharedPrivate(value.mData.ptr);
+            m_data.shared = new Variant::SharedPrivate(value.m_data.ptr);
 
-            value.mData.is_shared = true;
-            value.mData.shared = mData.shared;
-            ++value.mData.shared->ref;
+            value.m_data.is_shared = true;
+            value.m_data.shared = m_data.shared;
+            ++value.m_data.shared->ref;
         }
     }
     return *this;
@@ -256,11 +256,11 @@ Variant &Variant::operator=(const Variant &value) {
 */
 bool Variant::operator==(const Variant &right) const {
     PROFILE_FUNCTION();
-    if(mData.type == right.mData.type) {
-        if(mData.type < MetaType::STRING) {
-            return MetaType::compare(&mData.ptr, &right.mData.ptr, mData.type);
+    if(m_data.type == right.m_data.type) {
+        if(m_data.type < MetaType::STRING) {
+            return MetaType::compare(&m_data.ptr, &right.m_data.ptr, m_data.type);
         } else {
-            return MetaType::compare(data(), right.data(), mData.type);
+            return MetaType::compare(data(), right.data(), m_data.type);
         }
     }
     return false;
@@ -277,18 +277,18 @@ bool Variant::operator!=(const Variant &right) const {
     Frees used resources and make this variant an invalid.
 */
 void Variant::clear() {
-    if(mData.type >= MetaType::STRING) {
-        if(mData.is_shared) {
-            --mData.shared->ref;
-            if(mData.shared->ref == 0) {
-                MetaType::destroy(mData.type, mData.shared->ptr);
+    if(m_data.type >= MetaType::STRING) {
+        if(m_data.is_shared) {
+            --m_data.shared->ref;
+            if(m_data.shared->ref == 0) {
+                MetaType::destroy(m_data.type, m_data.shared->ptr);
             }
         } else {
-            MetaType::destroy(mData.type, mData.ptr);
+            MetaType::destroy(m_data.type, m_data.ptr);
         }
     }
-    mData.type = 0;
-    mData.ptr  = nullptr;
+    m_data.type = 0;
+    m_data.ptr  = nullptr;
 }
 /*!
     Returns type of variant value.
@@ -298,7 +298,7 @@ void Variant::clear() {
 */
 uint32_t Variant::type() const {
     PROFILE_FUNCTION();
-    return (mData.type < MetaType::USERTYPE) ? mData.type : MetaType::USERTYPE;
+    return (m_data.type < MetaType::USERTYPE) ? m_data.type : MetaType::USERTYPE;
 }
 /*!
     Returns user type of variant value.
@@ -307,34 +307,34 @@ uint32_t Variant::type() const {
 */
 uint32_t Variant::userType() const {
     PROFILE_FUNCTION();
-    return mData.type;
+    return m_data.type;
 }
 /*!
     Returns pure pointer to value data.
 */
 void *Variant::data() const {
     PROFILE_FUNCTION();
-    if(mData.is_shared) {
-        return mData.shared->ptr;
+    if(m_data.is_shared) {
+        return m_data.shared->ptr;
     }
-    if(mData.type < MetaType::STRING) {
-        return &mData.b;
+    if(m_data.type < MetaType::STRING) {
+        return &m_data.b;
     }
-    return mData.ptr;
+    return m_data.ptr;
 }
 /*!
     Returns true if variant value is valid; otherwise return false.
 */
 bool Variant::isValid() const {
     PROFILE_FUNCTION();
-    return (mData.type != MetaType::INVALID);
+    return (m_data.type != MetaType::INVALID);
 }
 /*!
     Returns true if variant converted to a \a type; otherwise return false.
 */
 bool Variant::canConvert(uint32_t type) const {
     PROFILE_FUNCTION();
-    return MetaType::hasConverter(mData.type, type);
+    return MetaType::hasConverter(m_data.type, type);
 }
 
 // Conversion and getters

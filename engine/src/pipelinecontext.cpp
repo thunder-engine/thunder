@@ -2,12 +2,15 @@
 
 #include "systems/rendersystem.h"
 
+#include "components/scene.h"
 #include "components/actor.h"
 #include "components/transform.h"
 #include "components/scenegraph.h"
 #include "components/camera.h"
 #include "components/renderable.h"
+#include "components/baselight.h"
 #include "components/postprocessvolume.h"
+#include "components/gui/widget.h"
 
 #include "components/private/postprocessorsettings.h"
 
@@ -44,7 +47,8 @@ PipelineContext::PipelineContext() :
         m_debugTexture(nullptr),
         m_width(64),
         m_height(64),
-        m_uiAsSceneView(false) {
+        m_uiAsSceneView(false),
+        m_frustumCulling(true) {
 
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
@@ -92,7 +96,9 @@ void PipelineContext::draw(Camera *camera) {
     if(!m_uiAsSceneView) {
         m_buffer->setScreenProjection(0, 0, m_width, m_height);
     }
-    drawRenderers(CommandBuffer::UI, m_uiComponents);
+    for(auto it : m_uiComponents) {
+        it->draw(*m_buffer, CommandBuffer::UI);
+    }
 
     // Finish
     m_buffer->setRenderTarget(m_defaultTarget);
@@ -143,23 +149,34 @@ void PipelineContext::resize(int32_t width, int32_t height) {
     }
 }
 
-void PipelineContext::analizeScene(SceneGraph *graph) {
-    m_sceneComponents.clear();
-    m_sceneLights.clear();
-    m_uiComponents.clear();
-
-    m_postProcessVolume.clear();
-
-    combineComponents(graph, graph->isToBeUpdated());
-
+void PipelineContext::analizeGraph(SceneGraph *graph) {
     Camera *camera = Camera::current();
     Transform *cameraTransform = camera->actor()->transform();
 
-    // Scene objects cull and sort
-    m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
+    bool update = graph->isToBeUpdated();
+
+    // Add renderables
+    m_sceneComponents.clear();
+    for(auto it : RenderSystem::renderables()) {
+        if(it->isEnabled()) {
+            Actor *actor = it->actor();
+            if(actor->isEnabledInHierarchy()) {
+                if((actor->scene() && actor->scene()->parent() == graph)) {
+                    if(update) {
+                        it->update();
+                    }
+                    m_sceneComponents.push_back(it);
+                }
+            }
+        }
+    }
+    // Renderables cull and sort
+    if(m_frustumCulling) {
+        m_culledComponents = Camera::frustumCulling(m_sceneComponents, Camera::frustumCorners(*camera));
+    }
 
     Vector3 origin = cameraTransform->position();
-    m_culledComponents.sort([origin](const Renderable *left, const Renderable *right) {
+    culledComponents().sort([origin](const Renderable *left, const Renderable *right) {
         int p1 = left->priority();
         int p2 = right->priority();
         if(p1 == p2) {
@@ -171,23 +188,56 @@ void PipelineContext::analizeScene(SceneGraph *graph) {
         return p1 < p2;
     });
 
-    // UI widgets sort
-    m_uiComponents.sort([](const Renderable *left, const Renderable *right) {
-        return  left->priority() < right->priority();
-    });
+    // Add lights
+    m_sceneLights.clear();
+    for(auto it : RenderSystem::lights()) {
+        if(it->isEnabled()) {
+            Actor *actor = it->actor();
+            if(actor->isEnabledInHierarchy()) {
+                if((actor->scene() && actor->scene()->parent() == graph)) {
+                    m_sceneLights.push_back(it);
+                }
+            }
+        }
+    }
 
-    // Post process settings mixer
+    // Add widgets
+    m_uiComponents.clear();
+    for(auto it : RenderSystem::widgets()) {
+        if(it->isEnabled()) {
+            Actor *actor = it->actor();
+            if(actor->isEnabledInHierarchy()) {
+                if((actor->scene() && actor->scene()->parent() == graph)) {
+                    if(update) {
+                        static_cast<NativeBehaviour *>(it)->update();
+                    }
+                    m_uiComponents.push_back(it);
+                }
+            }
+        }
+    }
+
+    // Add Post process volumes
     PostProcessSettings &settings = graph->finalPostProcessSettings();
     settings.resetDefault();
 
-    //std::sort(m_postProcessVolume.begin(), m_postProcessVolume.end(), typeLessThan);
-    for(auto &it : m_postProcessVolume) {
-        if(!it->unbound()) {
-            if(!it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
-                continue;
+    m_postProcessVolume.clear();
+    for(auto it : RenderSystem::postProcessVolumes()) {
+        if(it->isEnabled()) {
+            Actor *actor = it->actor();
+            if(actor->isEnabledInHierarchy()) {
+                if((actor->scene() && actor->scene()->parent() == graph)) {
+                    m_postProcessVolume.push_back(it);
+
+                    if(!it->unbound()) {
+                        if(!it->bound().intersect(cameraTransform->worldPosition(), camera->nearPlane())) {
+                            continue;
+                        }
+                    }
+                    settings.lerp(it->settings(), it->blendWeight());
+                }
             }
         }
-        settings.lerp(it->settings(), it->blendWeight());
     }
 
     m_buffer->setGlobalValue("light.ambient", 0.1f/*settings.ambientLightIntensity()*/);
@@ -268,48 +318,18 @@ list<Renderable *> &PipelineContext::sceneComponents() {
     return m_sceneComponents;
 }
 
-list<Renderable *> &PipelineContext::sceneLights() {
+list<Renderable *> &PipelineContext::culledComponents() {
+    return m_frustumCulling ? m_culledComponents : m_sceneComponents;
+}
+
+list<BaseLight *> &PipelineContext::sceneLights() {
     return m_sceneLights;
 }
 
-list<Renderable *> &PipelineContext::culledComponents() {
-    return m_culledComponents;
-}
-
-list<Renderable *> &PipelineContext::uiComponents() {
+list<Widget *> &PipelineContext::uiComponents() {
     return m_uiComponents;
 }
 
 Camera *PipelineContext::currentCamera() const {
     return m_camera;
-}
-
-void PipelineContext::combineComponents(Object *object, bool update) {
-    for(auto &it : object->getChildren()) {
-        Object *child = it;
-        if(child->isComponent()) {
-            Component *component = static_cast<Component *>(child);
-            if(component->isRenderable()) {
-                Renderable *comp = static_cast<Renderable *>(child);
-                if(comp->isEnabled() && comp->actor()->isEnabledInHierarchy()) {
-                    if(update) {
-                        comp->update();
-                    }
-                    if(comp->isLight()) {
-                        m_sceneLights.push_back(comp);
-                    } else {
-                        if(comp->actor()->layers() & CommandBuffer::UI) {
-                            m_uiComponents.push_back(comp);
-                        } else {
-                            m_sceneComponents.push_back(comp);
-                        }
-                    }
-                }
-            } else if(component->isPostProcessVolume()){
-                m_postProcessVolume.push_back(static_cast<PostProcessVolume *>(component));
-            }
-        } else {
-            combineComponents(child, update);
-        }
-    }
 }

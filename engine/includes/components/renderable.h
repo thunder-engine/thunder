@@ -5,7 +5,6 @@
 
 #include <amath.h>
 
-class RenderablePrivate;
 class CommandBuffer;
 
 class ENGINE_EXPORT Renderable : public NativeBehaviour {
@@ -18,19 +17,16 @@ class ENGINE_EXPORT Renderable : public NativeBehaviour {
 
 public:
     Renderable();
+    ~Renderable();
 
     virtual void draw(CommandBuffer &buffer, uint32_t layer);
 
     virtual AABBox bound() const;
 
-    virtual bool isLight() const;
-
-    virtual void composeComponent();
-
     virtual int priority() const;
 
 private:
-    bool isRenderable() const override;
+    void setSystem(ObjectSystem *system) override;
 
 };
 

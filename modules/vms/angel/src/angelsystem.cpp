@@ -114,7 +114,7 @@ void AngelSystem::update(SceneGraph *graph) {
     PROFILE_FUNCTION();
 
     if(Engine::isGameMode()) {
-        for(auto it : m_ObjectList) {
+        for(auto it : m_objectList) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
             asIScriptObject *object = component->scriptObject();
             if(object) {
@@ -214,7 +214,7 @@ void AngelSystem::reload() {
                 factoryAdd(info->GetName(), string(URI) + info->GetName(), AngelBehaviour::metaClass());
             }
         }
-        for(auto it : m_ObjectList) {
+        for(auto it : m_objectList) {
             AngelBehaviour *behaviour = static_cast<AngelBehaviour *>(it);
             VariantMap data = behaviour->saveUserData();
             behaviour->createObject();

@@ -8,25 +8,6 @@
     \brief Contains classes to work with animation.
 */
 
-class AnimationPrivate {
-public:
-    AnimationPrivate() :
-            m_State(Animation::STOPPED),
-            m_CurrentLoop(0),
-            m_CurrentTime(0),
-            m_TotalCurrentTime(0),
-            m_LoopCount(-1),
-            m_Valid(true) {
-
-    }
-
-    Animation::State        m_State;
-    uint32_t                m_CurrentLoop;
-    uint32_t                m_CurrentTime;
-    uint32_t                m_TotalCurrentTime;
-    int32_t                 m_LoopCount;
-    bool                    m_Valid;
-};
 /*!
     \class Animation
     \brief The Animation class provides base class interface for animations.
@@ -46,18 +27,23 @@ public:
 */
 
 Animation::Animation() :
-        p_ptr(new AnimationPrivate()) {
+    m_state(Animation::STOPPED),
+    m_currentLoop(0),
+    m_currentTime(0),
+    m_totalCurrentTime(0),
+    m_loopCount(-1),
+    m_valid(true) {
 
 }
 
 Animation::~Animation() {
-    delete p_ptr;
+
 }
 /*!
     Returns the current time (in milliseconds) in scope of current loop.
 */
 uint32_t Animation::currentTime() const {
-    return p_ptr->m_TotalCurrentTime;
+    return m_totalCurrentTime;
 }
 /*!
     Sets the new position of animation to provided \a msecs position.
@@ -69,17 +55,17 @@ void Animation::setCurrentTime(uint32_t msecs) {
         if(total > -1) {
             msecs = MIN(static_cast<uint32_t>(total), msecs);
         }
-        p_ptr->m_TotalCurrentTime = msecs;
+        m_totalCurrentTime = msecs;
 
         int32_t length = duration();
-        p_ptr->m_CurrentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
-        if(p_ptr->m_CurrentLoop == static_cast<uint32_t>(p_ptr->m_LoopCount)) {
-            p_ptr->m_CurrentTime = static_cast<uint32_t>(MAX(0, length));
-            p_ptr->m_CurrentLoop = static_cast<uint32_t>(MAX(0, p_ptr->m_LoopCount - 1));
+        m_currentLoop = ((length > 0) ? (msecs / static_cast<uint32_t>(length)) : 0);
+        if(m_currentLoop == static_cast<uint32_t>(m_loopCount)) {
+            m_currentTime = static_cast<uint32_t>(MAX(0, length));
+            m_currentLoop = static_cast<uint32_t>(MAX(0, m_loopCount - 1));
         } else {
-            p_ptr->m_CurrentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
+            m_currentTime = (length > 0) ? (msecs % static_cast<uint32_t>(length)) : msecs;
         }
-        if(p_ptr->m_TotalCurrentTime == static_cast<uint32_t>(total)) {
+        if(m_totalCurrentTime == static_cast<uint32_t>(total)) {
             stop();
         }
     }
@@ -88,31 +74,31 @@ void Animation::setCurrentTime(uint32_t msecs) {
     Returns the number of repetitions of animation; -1 in case of infinite animation.
 */
 int32_t Animation::loopCount() const {
-    return p_ptr->m_LoopCount;
+    return m_loopCount;
 }
 /*!
     Sets the new number of \a loops of animation; -1 in case of infinite animation.
 */
 void Animation::setLoopCount(int32_t loops) {
-    p_ptr->m_LoopCount = loops;
+    m_loopCount = loops;
 }
 /*!
     Returns the number of repetitions of animation which already has played.
 */
 uint32_t Animation::currentLoop() const {
-    return p_ptr->m_CurrentLoop;
+    return m_currentLoop;
 }
 /*!
     Returns the current time for the current loop (in milliseconds).
 */
 uint32_t Animation::loopTime() const {
-    return p_ptr->m_CurrentTime;
+    return m_currentTime;
 }
 /*!
     Returns the current state of animation.
 */
 Animation::State Animation::state() const {
-    return p_ptr->m_State;
+    return m_state;
 }
 /*!
     Returns the duration of the animation (in milliseconds).
@@ -139,26 +125,26 @@ int32_t Animation::totalDuration() const {
     Returns true in case of animation is valid; otherwise returns false.
 */
 bool Animation::isValid() const {
-    return p_ptr->m_Valid;
+    return m_valid;
 }
 /*!
     Sets the \a valid state of animation. The invalid animations will not affect anything.
 */
 void Animation::setValid(bool valid) {
-    p_ptr->m_Valid = valid;
+    m_valid = valid;
 }
 
 /*!
     Starts the animation from the beginning.
 */
 void Animation::start() {
-    if(p_ptr->m_State == RUNNING) {
+    if(m_state == RUNNING) {
         return;
     }
-    p_ptr->m_State = RUNNING;
-    p_ptr->m_CurrentLoop = 0;
-    p_ptr->m_CurrentTime = 0;
-    p_ptr->m_TotalCurrentTime = 0;
+    m_state = RUNNING;
+    m_currentLoop = 0;
+    m_currentTime = 0;
+    m_totalCurrentTime = 0;
     setCurrentTime(0);
 }
 /*!
@@ -166,26 +152,26 @@ void Animation::start() {
     \note Animation can't be continued.
 */
 void Animation::stop() {
-    p_ptr->m_State = STOPPED;
+    m_state = STOPPED;
 }
 /*!
     Stops the animation.
     \note Animation CAN be continued by resume().
 */
 void Animation::pause() {
-    if(p_ptr->m_State == STOPPED) {
+    if(m_state == STOPPED) {
         return;
     }
-    p_ptr->m_State = PAUSED;
+    m_state = PAUSED;
 }
 /*!
     Continues the animation which was paused earlier.
 */
 void Animation::resume() {
-    if(p_ptr->m_State != PAUSED) {
+    if(m_state != PAUSED) {
         return;
     }
-    p_ptr->m_State = RUNNING;
+    m_state = RUNNING;
 }
 
 

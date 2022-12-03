@@ -1,12 +1,13 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include "renderable.h"
+#include "../nativebehaviour.h"
 
 class RectTransform;
+class CommandBuffer;
 
-class ENGINE_EXPORT Widget : public Renderable {
-    A_REGISTER(Widget, Renderable, Components/UI)
+class ENGINE_EXPORT Widget : public NativeBehaviour {
+    A_REGISTER(Widget, NativeBehaviour, Components/UI)
 
     A_NOPROPERTIES()
     A_NOMETHODS()
@@ -19,9 +20,9 @@ public:
 
     RectTransform *rectTransform() const;
 
-    void setPriority(int proprity);
-
     static Widget *focusWidget();
+
+    virtual void draw(CommandBuffer &buffer, uint32_t layer);
 
 protected:
     void setRectTransform(RectTransform *transform);
@@ -30,17 +31,13 @@ protected:
 
     void update() override;
 
-    void draw(CommandBuffer &buffer, uint32_t layer) override;
-
-    AABBox bound() const override;
+    virtual AABBox bound() const;
 
     void actorParentChanged() override;
 
     void composeComponent() override;
 
     void setParent(Object *parent, int32_t position = -1, bool force = false) override;
-
-    int priority() const override;
 
     static void setFocusWidget(Widget *widget);
 
@@ -49,9 +46,10 @@ protected:
 #endif
 
 private:
-    friend class RectTransform;
+    void setSystem(ObjectSystem *system) override;
 
-    int m_priority;
+private:
+    friend class RectTransform;
 
     Widget *m_parent;
     RectTransform *m_transform;

@@ -127,7 +127,8 @@ private:
 
     AssetConverterSettings *m_isolationSettings;
 
-    SceneGraph *m_isolationScene;
+    SceneGraph *m_isolationSceneGraph;
+    Scene *m_isolationScene;
 
 };
 

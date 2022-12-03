@@ -36,27 +36,18 @@
 #include "commandbuffer.h"
 #include "pipelinecontext.h"
 
-class RenderSystemPrivate {
-public:
-    RenderSystemPrivate() :
+int32_t RenderSystem::m_registered = 0;
+
+list<Widget *> RenderSystem::m_uiComponents;
+list<BaseLight *> RenderSystem::m_lightComponents;
+list<Renderable *> RenderSystem::m_renderableComponents;
+list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
+
+RenderSystem::RenderSystem() :
         m_offscreen(false),
         m_pipelineContext(nullptr) {
 
-    }
-
-    static int32_t m_registered;
-
-    bool m_offscreen;
-
-    PipelineContext *m_pipelineContext;
-};
-
-int32_t RenderSystemPrivate::m_registered = 0;
-
-RenderSystem::RenderSystem() :
-        p_ptr(new RenderSystemPrivate()) {
-
-    if(RenderSystemPrivate::m_registered == 0) {
+    if(m_registered == 0) {
         Renderable::registerClassFactory(this);
         MeshRender::registerClassFactory(this);
         TextRender::registerClassFactory(this);
@@ -97,15 +88,15 @@ RenderSystem::RenderSystem() :
 
         ToolButton::registerClassFactory(this);
     }
-    ++RenderSystemPrivate::m_registered;
+    ++m_registered;
 
     setName("Render");
 }
 
 RenderSystem::~RenderSystem() {
-    --RenderSystemPrivate::m_registered;
+    --m_registered;
 
-    if(RenderSystemPrivate::m_registered) {
+    if(m_registered) {
         Renderable::unregisterClassFactory(this);
         MeshRender::unregisterClassFactory(this);
         TextRender::unregisterClassFactory(this);
@@ -151,7 +142,7 @@ int RenderSystem::threadPolicy() const {
 }
 
 bool RenderSystem::init() {
-    p_ptr->m_pipelineContext = new PipelineContext;
+    m_pipelineContext = new PipelineContext;
     return true;
 }
 
@@ -162,17 +153,14 @@ void RenderSystem::update(SceneGraph *sceneGraph) {
     PROFILER_RESET(DRAWCALLS);
 
     Camera *camera = Camera::current();
-    if(camera && p_ptr->m_pipelineContext) {
-        p_ptr->m_pipelineContext->analizeScene(sceneGraph);
-        p_ptr->m_pipelineContext->draw(camera);
+    if(camera && m_pipelineContext) {
+        m_pipelineContext->analizeGraph(sceneGraph);
+        m_pipelineContext->draw(camera);
     }
 }
 
 void RenderSystem::composeComponent(Component *component) const {
-    Renderable *renderable = dynamic_cast<Renderable *>(component);
-    if(renderable) {
-        renderable->composeComponent();
-    }
+    component->composeComponent();
 }
 
 Object *RenderSystem::instantiateObject(const MetaObject *meta, const string &name, Object *parent) {
@@ -185,15 +173,62 @@ Object *RenderSystem::instantiateObject(const MetaObject *meta, const string &na
 }
 
 PipelineContext *RenderSystem::pipelineContext() const {
-    return p_ptr->m_pipelineContext;
+    return m_pipelineContext;
 }
 
 void RenderSystem::setOffscreenMode(bool mode) {
-    p_ptr->m_offscreen = mode;
+    m_offscreen = mode;
 }
 
 bool RenderSystem::isOffscreenMode() const {
-    return p_ptr->m_offscreen;
+    return m_offscreen;
+}
+
+void RenderSystem::addRenderable(Renderable *renderable) {
+    m_renderableComponents.push_back(renderable);
+}
+
+void RenderSystem::removeRenderable(Renderable *renderable) {
+    m_renderableComponents.remove(renderable);
+}
+
+list<Renderable *> &RenderSystem::renderables() {
+    return m_renderableComponents;
+}
+
+void RenderSystem::addWidget(Widget *widget) {
+    m_uiComponents.push_back(widget);
+}
+
+void RenderSystem::removeWidget(Widget *widget) {
+    m_uiComponents.remove(widget);
+}
+
+list<Widget *> &RenderSystem::widgets() {
+    return m_uiComponents;
+}
+
+void RenderSystem::addLight(BaseLight *light) {
+    m_lightComponents.push_back(light);
+}
+void RenderSystem::removeLight(BaseLight *light) {
+    m_lightComponents.remove(light);
+}
+
+list<BaseLight *> &RenderSystem::lights() {
+    return m_lightComponents;
+}
+
+void RenderSystem::addPostProcessVolume(PostProcessVolume *volume) {
+    m_postProcessVolumes.push_back(volume);
+}
+
+void RenderSystem::removePostProcessVolume(PostProcessVolume *volume) {
+    m_postProcessVolumes.remove(volume);
+}
+
+list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
+    return m_postProcessVolumes;
 }
 
 #if defined(SHARED_DEFINE)
@@ -226,11 +261,11 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
     RenderTarget *back = nullptr;
 
     Camera *camera = Camera::current();
-    if(camera && p_ptr->m_pipelineContext) {
-        p_ptr->m_pipelineContext->resize(width, height);
+    if(camera && m_pipelineContext) {
+        m_pipelineContext->resize(width, height);
 
-        back = p_ptr->m_pipelineContext->defaultTarget();
-        p_ptr->m_pipelineContext->setDefaultTarget(target);
+        back = m_pipelineContext->defaultTarget();
+        m_pipelineContext->setDefaultTarget(target);
     }
 
     setOffscreenMode(true);
@@ -239,8 +274,8 @@ ByteArray RenderSystem::renderOffscreen(SceneGraph *sceneGraph, int width, int h
 
     color->readPixels(0, 0, width, height);
 
-    if(p_ptr->m_pipelineContext && back) {
-        p_ptr->m_pipelineContext->setDefaultTarget(back);
+    if(m_pipelineContext && back) {
+        m_pipelineContext->setDefaultTarget(back);
     }
 
     return color->getPixels(0);

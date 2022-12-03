@@ -42,54 +42,9 @@ Object::Link::Link() :
 
 class ObjectPrivate {
 public:
-    ObjectPrivate() :
-        m_pParent(nullptr),
-        m_pCurrentSender(nullptr),
-        m_pSystem(nullptr),
-        m_UUID(0),
-        m_Cloned(0) {
+    mutex m_mutex;
 
-    }
-
-    bool isLinkExist(const Object::Link &link) const {
-        PROFILE_FUNCTION();
-        for(const auto &it : m_lRecievers) {
-            if(it == link) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    static void enumObjects(Object *object, Object::ObjectList &list) {
-        PROFILE_FUNCTION();
-        list.push_back(object);
-        for(const auto &it : object->getChildren()) {
-            enumObjects(it, list);
-        }
-    }
-
-    Object *m_pParent;
-
-    string m_sName;
-
-    Object::ObjectList m_mChildren;
-    Object::LinkList m_lRecievers;
-    Object::LinkList m_lSenders;
-
-    mutex m_Mutex;
-
-    Object *m_pCurrentSender;
-
-    typedef queue<Event *> EventQueue;
-    EventQueue m_EventQueue;
-
-    ObjectSystem *m_pSystem;
-
-    uint32_t m_UUID;
-    uint32_t m_Cloned;
 };
-
 
 /*!
     \class Object
@@ -283,7 +238,12 @@ public:
     By default Object create without parent to assign the parent object use setParent().
 */
 Object::Object() :
-        p_ptr(new ObjectPrivate) {
+    p_ptr(new ObjectPrivate),
+    m_parent(nullptr),
+    m_currentSender(nullptr),
+    m_system(nullptr),
+    m_uuid(0),
+    m_cloned(0) {
     PROFILE_FUNCTION();
 
     setUUID(ObjectSystem::generateUUID());
@@ -294,59 +254,58 @@ Object::~Object() {
 
     emitSignal(_SIGNAL(destroyed()));
 
-    if(p_ptr->m_pSystem) {
-        p_ptr->m_pSystem->removeObject(this);
+    if(m_system) {
+         m_system->removeObject(this);
     }
-
     {
-        lock_guard<mutex> locker(p_ptr->m_Mutex);
-        while(!p_ptr->m_EventQueue.empty()) {
-            delete p_ptr->m_EventQueue.front();
-            p_ptr->m_EventQueue.pop();
+        lock_guard<mutex> locker(p_ptr->m_mutex);
+        while(!m_eventQueue.empty()) {
+            delete m_eventQueue.front();
+            m_eventQueue.pop();
         }
     }
 
-    for(auto it : p_ptr->m_lSenders) {
-        lock_guard<mutex> locker(it.sender->p_ptr->m_Mutex);
-        for(auto rcv = it.sender->p_ptr->m_lRecievers.begin(); rcv != it.sender->p_ptr->m_lRecievers.end(); ) {
+    for(auto it : m_senders) {
+        lock_guard<mutex> locker(it.sender->p_ptr->m_mutex);
+        for(auto rcv = it.sender->m_recievers.begin(); rcv != it.sender->m_recievers.end(); ) {
             if(*rcv == it) {
-                rcv = it.sender->p_ptr->m_lRecievers.erase(rcv);
+                rcv = it.sender->m_recievers.erase(rcv);
             } else {
                 rcv++;
             }
         }
     }
     {
-        lock_guard<mutex> locker(p_ptr->m_Mutex);
-        p_ptr->m_lSenders.clear();
+        lock_guard<mutex> locker(p_ptr->m_mutex);
+        m_senders.clear();
     }
 
-    for(auto it : p_ptr->m_lRecievers) {
-        lock_guard<mutex> locker(it.receiver->p_ptr->m_Mutex);
-        for(auto snd = it.receiver->p_ptr->m_lSenders.begin(); snd != it.receiver->p_ptr->m_lSenders.end(); ) {
+    for(auto it : m_recievers) {
+        lock_guard<mutex> locker(it.receiver->p_ptr->m_mutex);
+        for(auto snd = it.receiver->m_senders.begin(); snd != it.receiver->m_senders.end(); ) {
             if(*snd == it) {
-                snd = it.receiver->p_ptr->m_lSenders.erase(snd);
+                snd = it.receiver->m_senders.erase(snd);
             } else {
                 snd++;
             }
         }
     }
     {
-        lock_guard<mutex> locker(p_ptr->m_Mutex);
-        p_ptr->m_lRecievers.clear();
+        lock_guard<mutex> locker(p_ptr->m_mutex);
+        m_recievers.clear();
     }
 
-    for(const auto &it : p_ptr->m_mChildren) {
+    for(const auto &it : m_children) {
         Object *c = it;
         if(c) {
-            c->p_ptr->m_pParent = nullptr;
+            c->m_parent = nullptr;
             c->deleteLater();
         }
     }
-    p_ptr->m_mChildren.clear();
+    m_children.clear();
 
-    if(p_ptr->m_pParent) {
-        p_ptr->m_pParent->removeChild(this);
+    if(m_parent) {
+        m_parent->removeChild(this);
     }
 
     delete p_ptr;
@@ -399,18 +358,18 @@ Object *Object::clone(Object *parent) {
     PROFILE_FUNCTION();
 
     ObjectList list;
-    ObjectPrivate::enumObjects(this, list);
+    enumObjects(this, list);
 
-    std::list<pair<Object *, Object *>> array;
+    std::list<pair<const Object *, Object *>> array;
 
     for(auto it : list) {
         const MetaObject *meta = it->metaObject();
         Object *result = meta->createInstance();
-        result->p_ptr->m_UUID = ObjectSystem::generateUUID();
+        result->m_uuid = ObjectSystem::generateUUID();
 
-        result->p_ptr->m_Cloned = it->p_ptr->m_Cloned;
-        if(result->p_ptr->m_Cloned == 0) {
-            result->p_ptr->m_Cloned = it->p_ptr->m_UUID;
+        result->m_cloned = it->m_cloned;
+        if(result->m_cloned == 0) {
+            result->m_cloned = it->m_uuid;
         }
 
         Object *p = parent;
@@ -422,10 +381,10 @@ Object *Object::clone(Object *parent) {
             }
         }
         result->setParent(p);
-        result->setSystem(it->p_ptr->m_pSystem);
+        result->setSystem(it->m_system);
         result->setName(it->name());
 
-        array.push_back(pair<Object *, Object *>(it, result));
+        array.push_back(pair<const Object *, Object *>(it, result));
     }
 
     for(auto it : array) {
@@ -458,28 +417,28 @@ Object *Object::clone(Object *parent) {
 */
 uint32_t Object::clonedFrom() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_Cloned;
+    return m_cloned;
 }
 /*!
     Returns a pointer to the parent object.
 */
 Object *Object::parent() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_pParent;
+    return m_parent;
 }
 /*!
     Returns name of the object.
 */
 string Object::name() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_sName;
+    return m_name;
 }
 /*!
     Returns unique ID of the object.
 */
 uint32_t Object::uuid() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_UUID;
+    return m_uuid;
 }
 /*!
     Returns class name the object.
@@ -547,14 +506,14 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
             link.receiver = receiver;
             link.method = rcv;
 
-            if(!sender->p_ptr->isLinkExist(link)) {
+            if(!sender->isLinkExist(link)) {
                 {
-                    lock_guard<mutex> locker(sender->p_ptr->m_Mutex);
-                    sender->p_ptr->m_lRecievers.push_back(link);
+                    lock_guard<mutex> locker(sender->p_ptr->m_mutex);
+                    sender->m_recievers.push_back(link);
                 }
                 {
-                    lock_guard<mutex> locker(receiver->p_ptr->m_Mutex);
-                    receiver->p_ptr->m_lSenders.push_back(link);
+                    lock_guard<mutex> locker(receiver->p_ptr->m_mutex);
+                    receiver->m_senders.push_back(link);
                 }
                 return true;
             }
@@ -587,28 +546,28 @@ bool Object::connect(Object *sender, const char *signal, Object *receiver, const
 void Object::disconnect(Object *sender, const char *signal, Object *receiver, const char *method) {
     PROFILE_FUNCTION();
     if(sender) {
-        lock_guard<mutex> slocker(sender->p_ptr->m_Mutex);
-        for(auto snd = sender->p_ptr->m_lRecievers.begin(); snd != sender->p_ptr->m_lRecievers.end(); ) {
+        lock_guard<mutex> slocker(sender->p_ptr->m_mutex);
+        for(auto snd = sender->m_recievers.begin(); snd != sender->m_recievers.end(); ) {
             Link data = *snd;
             if(data.sender == sender) {
                 if(signal == nullptr || data.signal == sender->metaObject()->indexOfMethod(&signal[1])) {
                     if(receiver == nullptr || data.receiver == receiver) {
                         if(method == nullptr || (receiver && data.method == receiver->metaObject()->indexOfMethod(&method[1]))) {
                             if(data.receiver != sender) {
-                                data.receiver->p_ptr->m_Mutex.lock();
+                                data.receiver->p_ptr->m_mutex.lock();
                             }
-                            for(auto rcv = data.receiver->p_ptr->m_lSenders.begin(); rcv != data.receiver->p_ptr->m_lSenders.end(); ) {
+                            for(auto rcv = data.receiver->m_senders.begin(); rcv != data.receiver->m_senders.end(); ) {
                                 if(*rcv == data) {
-                                    rcv = data.receiver->p_ptr->m_lSenders.erase(rcv);
+                                    rcv = data.receiver->m_senders.erase(rcv);
                                 } else {
                                     rcv++;
                                 }
                             }
                             if(data.receiver != sender) {
-                                data.receiver->p_ptr->m_Mutex.unlock();
+                                data.receiver->p_ptr->m_mutex.unlock();
                             }
 
-                            snd = sender->p_ptr->m_lRecievers.erase(snd);
+                            snd = sender->m_recievers.erase(snd);
                             continue;
                         }
                     }
@@ -631,14 +590,14 @@ void Object::deleteLater() {
 */
 const Object::ObjectList &Object::getChildren() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_mChildren;
+    return m_children;
 }
 /*!
     Returns list of links to receivers objects for this object.
 */
 const Object::LinkList &Object::getReceivers() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_lRecievers;
+    return m_recievers;
 }
 
 /*!
@@ -660,14 +619,14 @@ const Object::LinkList &Object::getReceivers() const {
 
     \sa findChild()
 */
-Object *Object::find(const string &path) {
+Object *Object::find(const string &path) const {
     PROFILE_FUNCTION();
 
     unsigned int start = 0;
 
     if(path[0] == '/') {
-        if(p_ptr->m_pParent) {
-            return p_ptr->m_pParent->find(path);
+        if(m_parent) {
+            return m_parent->find(path);
         } else {
             start = 1;
         }
@@ -676,14 +635,14 @@ Object *Object::find(const string &path) {
     int index = path.find('/', start);
     string first = path.substr(start, index - start);
 
-    if(first == p_ptr->m_sName) {
+    if(first == m_name) {
         start = index + 1;
         index = path.find('/', start);
         first = path.substr(start, index - start);
     }
 
-    for(const auto &it : p_ptr->m_mChildren) {
-        if(it->p_ptr->m_sName == first) {
+    for(const auto &it : m_children) {
+        if(it->m_name == first) {
             if(index > -1) {
                 Object *o = it->find(path.substr(index + 1));
                 if(o) {
@@ -711,13 +670,13 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
         return;
     }
 
-    if(p_ptr->m_pParent) {
-        p_ptr->m_pParent->removeChild(this);
+    if(m_parent) {
+        m_parent->removeChild(this);
     }
     if(parent) {
         parent->addChild(this, position);
     }
-    p_ptr->m_pParent = parent;
+    m_parent = parent;
 }
 /*!
     Set object name by provided \a name.
@@ -727,7 +686,7 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 void Object::setName(const string &name) {
     PROFILE_FUNCTION();
     if(!name.empty()) {
-        p_ptr->m_sName = name;
+        m_name = name;
     }
 }
 /*!
@@ -736,10 +695,10 @@ void Object::setName(const string &name) {
 void Object::addChild(Object *child, int32_t position) {
     PROFILE_FUNCTION();
     if(child) {
-        if(position == -1 || p_ptr->m_mChildren.size() < position) {
-            p_ptr->m_mChildren.push_back(child);
+        if(position == -1 || m_children.size() < position) {
+            m_children.push_back(child);
         } else {
-            p_ptr->m_mChildren.insert(next(p_ptr->m_mChildren.begin(), position), child);
+            m_children.insert(next(m_children.begin(), position), child);
         }
     }
 }
@@ -748,10 +707,10 @@ void Object::addChild(Object *child, int32_t position) {
 */
 void Object::removeChild(Object *child) {
     PROFILE_FUNCTION();
-    auto it = p_ptr->m_mChildren.begin();
-    while(it != p_ptr->m_mChildren.end()) {
+    auto it = m_children.begin();
+    while(it != m_children.end()) {
         if(*it == child) {
-            p_ptr->m_mChildren.erase(it);
+            m_children.erase(it);
             return;
         }
         it++;
@@ -770,8 +729,8 @@ void Object::removeChild(Object *child) {
 void Object::emitSignal(const char *signal, const Variant &args) {
     PROFILE_FUNCTION();
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
-    lock_guard<mutex>(p_ptr->m_Mutex);
-    for(auto &it : p_ptr->m_lRecievers) {
+    lock_guard<mutex> locker(p_ptr->m_mutex);
+    for(auto &it : m_recievers) {
         Link *link = &(it);
         if(link->signal == index) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
@@ -779,8 +738,8 @@ void Object::emitSignal(const char *signal, const Variant &args) {
                 if(method.type() == MetaMethod::Signal) {
                     link->receiver->emitSignal(string(char(method.type() + 0x30) + method.signature()).c_str(), args);
                 } else {
-                    if(p_ptr->m_pSystem && link->receiver->p_ptr->m_pSystem &&
-                       !p_ptr->m_pSystem->compareTreads(link->receiver->p_ptr->m_pSystem)) { // Queued Connection
+                    if(m_system && link->receiver->m_system &&
+                       !m_system->compareTreads(link->receiver->m_system)) { // Queued Connection
 
                         link->receiver->postEvent(new MethodCallEvent(link->method, link->sender, args));
                     } else { // Direct call
@@ -798,19 +757,19 @@ void Object::emitSignal(const char *signal, const Variant &args) {
 */
 void Object::postEvent(Event *event) {
     PROFILE_FUNCTION();
-    lock_guard<mutex> locker(p_ptr->m_Mutex);
-    p_ptr->m_EventQueue.push(event);
+    lock_guard<mutex> locker(p_ptr->m_mutex);
+    m_eventQueue.push(event);
 }
 
 void Object::processEvents() {
     PROFILE_FUNCTION();
 
-    while(!p_ptr->m_EventQueue.empty()) {
+    while(!m_eventQueue.empty()) {
         Event *e = nullptr;
         {
-            lock_guard<mutex> locker(p_ptr->m_Mutex);
-            e = p_ptr->m_EventQueue.front();
-            p_ptr->m_EventQueue.pop();
+            lock_guard<mutex> locker(p_ptr->m_mutex);
+            e = m_eventQueue.front();
+            m_eventQueue.pop();
         }
 
         switch (e->type()) {
@@ -818,8 +777,8 @@ void Object::processEvents() {
                 methodCallEvent(reinterpret_cast<MethodCallEvent *>(e));
             } break;
             case Event::Destroy: {
-                if(p_ptr->m_pSystem) {
-                    p_ptr->m_pSystem->suspendObject(this);
+                if(m_system) {
+                    m_system->suspendObject(this);
                 }
 
                 delete e;
@@ -890,12 +849,6 @@ bool Object::isSerializable() const {
     return true;
 }
 /*!
-    Returns true if the object is component; otherwise returns false.
-*/
-bool Object::isComponent() const {
-    return false;
-}
-/*!
     Returns the value of the object's property by \a name.
 
     If property not found returns invalid Variant.
@@ -935,44 +888,44 @@ void Object::setProperty(const char *name, const Variant &value) {
 */
 Object *Object::sender() const {
     PROFILE_FUNCTION();
-    return p_ptr->m_pCurrentSender;
+    return m_currentSender;
 }
 /*!
     Returns System which handles this object.
 */
 ObjectSystem *Object::system() const {
     PROFILE_FUNCTION()
-    return p_ptr->m_pSystem;
+    return m_system;
 }
 /*!
     Method call \a event handler. Can be reimplemented to support different logic.
 */
 void Object::methodCallEvent(MethodCallEvent *event) {
-    p_ptr->m_pCurrentSender = event->sender();
+    m_currentSender = event->sender();
     Variant result;
     if(event->args()->isValid()) {
         metaObject()->method(event->method()).invoke(this, result, 1, event->args());
     } else {
         metaObject()->method(event->method()).invoke(this, result, 0, nullptr);
     }
-    p_ptr->m_pCurrentSender = nullptr;
+    m_currentSender = nullptr;
 }
 /*!
     \internal
 */
 void Object::clearCloneRef() {
-    p_ptr->m_Cloned = 0;
+    m_cloned = 0;
 }
 
 void Object::setUUID(uint32_t id) {
     PROFILE_FUNCTION();
-    p_ptr->m_UUID = id;
+    m_uuid = id;
 }
 
 void Object::setSystem(ObjectSystem *system) {
     PROFILE_FUNCTION();
-    p_ptr->m_pSystem = system;
-    p_ptr->m_pSystem->addObject(this);
+    m_system = system;
+    m_system->addObject(this);
 }
 /*!
     \internal
@@ -1022,4 +975,22 @@ VariantList Object::serializeData(const MetaObject *meta) const {
     result.push_back(saveUserData());
 
     return result;
+}
+
+bool Object::isLinkExist(const Object::Link &link) const {
+    PROFILE_FUNCTION();
+    for(const auto &it : m_recievers) {
+        if(it == link) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Object::enumObjects(Object *object, Object::ObjectList &list) {
+    PROFILE_FUNCTION();
+    list.push_back(object);
+    for(const auto &it : object->getChildren()) {
+        enumObjects(it, list);
+    }
 }

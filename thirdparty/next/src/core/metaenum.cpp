@@ -15,13 +15,13 @@
     Constructs MetaEnum object which will contain information provided in a \a table.
 */
 MetaEnum::MetaEnum(const Table *table) :
-        m_pTable(table),
-        m_EnumCount(0) {
+        m_table(table),
+        m_enumCount(0) {
     PROFILE_FUNCTION();
 
-    if(m_pTable) {
-        while(m_pTable->table && m_pTable->table[m_EnumCount].name) {
-            m_EnumCount++;
+    if(m_table) {
+        while(m_table->table && m_table->table[m_enumCount].name) {
+            m_enumCount++;
         }
     }
 }
@@ -30,29 +30,29 @@ MetaEnum::MetaEnum(const Table *table) :
 */
 bool MetaEnum::isValid() const {
     PROFILE_FUNCTION();
-    return (m_pTable != nullptr);
+    return (m_table != nullptr);
 }
 /*!
     Returns a name of enumerator.
 */
 const char *MetaEnum::name() const {
     PROFILE_FUNCTION();
-    return m_pTable->name;
+    return m_table->name;
 }
 /*!
     Returns the number of keys.
 */
 int MetaEnum::keyCount() const {
     PROFILE_FUNCTION();
-    return m_EnumCount;
+    return m_enumCount;
 }
 /*!
     Returns the key with the given \a index, or nullptr if no such key exists.
 */
 const char *MetaEnum::key(int index) const {
     PROFILE_FUNCTION();
-    if(index <= m_EnumCount) {
-        return m_pTable->table[index].name;
+    if(index <= m_enumCount) {
+        return m_table->table[index].name;
     }
     return nullptr;
 }
@@ -61,8 +61,8 @@ const char *MetaEnum::key(int index) const {
 */
 int MetaEnum::value(int index) const {
     PROFILE_FUNCTION();
-    if(index <= m_EnumCount) {
-        return m_pTable->table[index].value;
+    if(index <= m_enumCount) {
+        return m_table->table[index].value;
     }
     return -1;
 }
@@ -71,5 +71,5 @@ int MetaEnum::value(int index) const {
 */
 const MetaEnum::Table *MetaEnum::table() const {
     PROFILE_FUNCTION();
-    return m_pTable;
+    return m_table;
 }

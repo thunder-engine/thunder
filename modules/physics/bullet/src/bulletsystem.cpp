@@ -57,7 +57,7 @@ BulletSystem::~BulletSystem() {
         delete it.second;
     }
 
-    for(auto &it : m_ObjectList) {
+    for(auto &it : m_objectList) {
         static_cast<Collider *>(it)->setWorld(nullptr);
     }
 
@@ -110,7 +110,7 @@ void BulletSystem::update(SceneGraph *scene) {
             world = it->second;
         }
 
-        for(auto &it : m_ObjectList) {
+        for(auto &it : m_objectList) {
             Collider *body = static_cast<Collider *>(it);
             body->dirtyContacts();
         }
@@ -130,7 +130,7 @@ void BulletSystem::update(SceneGraph *scene) {
             }
         }
 
-        for(auto &it : m_ObjectList) {
+        for(auto &it : m_objectList) {
             Collider *body = static_cast<Collider *>(it);
             if(body->m_world == nullptr && body->actor()->scene() &&
                body->actor()->scene()->parent() == scene) {

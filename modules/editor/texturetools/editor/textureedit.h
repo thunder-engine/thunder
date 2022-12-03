@@ -43,6 +43,8 @@ private:
 
     SceneGraph *m_graph;
 
+    Scene *m_scene;
+
     SpriteController *m_controller;
 
 private slots:

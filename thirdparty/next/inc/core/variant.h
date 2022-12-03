@@ -4,7 +4,7 @@
     Thunder Next is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+(at your option) any later version.
 
     Thunder Next is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,108 +35,108 @@ using namespace std;
 
 class Variant;
 
-typedef map<string, Variant>    VariantMap;
-typedef list<Variant>           VariantList;
-typedef vector<int8_t>          ByteArray;
+typedef map<string, Variant> VariantMap;
+typedef list<Variant> VariantList;
+typedef vector<int8_t> ByteArray;
 
 class NEXT_LIBRARY_EXPORT Variant {
 public:
     class NEXT_LIBRARY_EXPORT SharedPrivate {
     public:
-        explicit SharedPrivate (void *value);
+        explicit SharedPrivate(void *value);
 
-        void                   *ptr;
-        uint32_t                ref;
+        void *ptr;
+        uint32_t ref;
     };
 
     struct NEXT_LIBRARY_EXPORT Data {
-        Data                    ();
+        Data();
 
-        bool                    is_shared;
-        uint32_t                type;
+        bool is_shared;
+        uint32_t type;
         union {
-            float               f;
-            int                 i;
-            bool                b;
-            void               *ptr;
-            SharedPrivate      *shared;
+            float f;
+            int i;
+            bool b;
+            void *ptr;
+            SharedPrivate *shared;
         };
     };
 
 public:
-    Variant                     ();
-    Variant                     (MetaType::Type type);
-    Variant                     (bool value);
-    Variant                     (int value);
-    Variant                     (unsigned int value);
-    Variant                     (float value);
-    Variant                     (const char *value);
-    Variant                     (const string &value);
-    Variant                     (const VariantMap &value);
-    Variant                     (const VariantList &value);
-    Variant                     (const ByteArray &value);
+    Variant();
+    Variant(MetaType::Type type);
+    Variant(bool value);
+    Variant(int value);
+    Variant(unsigned int value);
+    Variant(float value);
+    Variant(const char *value);
+    Variant(const string &value);
+    Variant(const VariantMap &value);
+    Variant(const VariantList &value);
+    Variant(const ByteArray &value);
 
-    Variant                     (const Vector2 &value);
-    Variant                     (const Vector3 &value);
-    Variant                     (const Vector4 &value);
-    Variant                     (const Quaternion &value);
-    Variant                     (const Matrix3 &value);
-    Variant                     (const Matrix4 &value);
+    Variant(const Vector2 &value);
+    Variant(const Vector3 &value);
+    Variant(const Vector4 &value);
+    Variant(const Quaternion &value);
+    Variant(const Matrix3 &value);
+    Variant(const Matrix4 &value);
 
-    Variant                     (uint32_t type, void *copy);
+    Variant(uint32_t type, void *copy);
 
-    ~Variant                    ();
+    ~Variant();
 
-    Variant                     (const Variant &value);
+    Variant(const Variant &value);
 
-    Variant                    &operator=                   (const Variant &value);
+    Variant &operator=(const Variant &value);
 
-    bool                        operator==                  (const Variant &right) const;
-    bool                        operator!=                  (const Variant &right) const;
+    bool operator==(const Variant &right) const;
+    bool operator!=(const Variant &right) const;
 
-    void                        clear                       ();
+    void clear();
 
-    uint32_t                    type                        () const;
+    uint32_t type() const;
 
-    uint32_t                    userType                    () const;
+    uint32_t userType() const;
 
-    void                       *data                        () const;
+    void *data() const;
 
-    bool                        isValid                     () const;
+    bool isValid() const;
 
-    bool                        canConvert                  (uint32_t type) const;
+    bool canConvert(uint32_t type) const;
 
     template<typename T>
-    bool                        canConvert                  () const {
+    bool canConvert() const {
         return Variant::canConvert(MetaType::type<T>());
     }
 
     template<typename T>
-    T                           value                       () const {
+    T value() const {
         uint32_t type = MetaType::type<T>();
 
-        if(mData.type < MetaType::STRING) {
-            if(mData.type == type) {
-                return *reinterpret_cast<const T *>(&mData.ptr);
+        if(m_data.type < MetaType::STRING) {
+            if(m_data.type == type) {
+                return *reinterpret_cast<const T *>(&m_data.ptr);
             } else if(canConvert(type)) {
                 T result;
-                MetaType::convert(&mData.ptr, mData.type, &result, type);
+                MetaType::convert(&m_data.ptr, m_data.type, &result, type);
                 return result;
             }
         } else {
-            if(mData.ptr) {
-                if(mData.type == type) {
-                    if(mData.is_shared) {
-                        return *reinterpret_cast<const T *>(mData.shared->ptr);
+            if(m_data.ptr) {
+                if(m_data.type == type) {
+                    if(m_data.is_shared) {
+                        return *reinterpret_cast<const T *>(m_data.shared->ptr);
                     } else {
-                        return *reinterpret_cast<const T *>(mData.ptr);
+                        return *reinterpret_cast<const T *>(m_data.ptr);
                     }
                 } else if(canConvert(type)) {
                     T result;
-                    if(mData.is_shared) {
-                        MetaType::convert(mData.shared->ptr, mData.type, &result, type);
+                    if(m_data.is_shared) {
+                        MetaType::convert(m_data.shared->ptr, m_data.type, &result, type);
                     } else {
-                        MetaType::convert(mData.ptr, mData.type, &result, type);
+                        MetaType::convert(m_data.ptr, m_data.type, &result, type);
                     }
                     return result;
                 }
@@ -146,7 +146,7 @@ public:
     }
 
     template<typename T>
-    static Variant             fromValue                   (const T &value) {
+    static Variant fromValue(const T &value) {
         uint32_t type = MetaType::type<T>();
         if(type != MetaType::INVALID) {
             if(type < MetaType::STRING) {
@@ -154,32 +154,32 @@ public:
             }
 
             Variant result;
-            result.mData.type = type;
-            result.mData.ptr = MetaType::create(result.mData.type, reinterpret_cast<const void *>(&value));
+            result.m_data.type = type;
+            result.m_data.ptr = MetaType::create(result.m_data.type, reinterpret_cast<const void *>(&value));
             return result;
         }
         return Variant();
     }
 
     // Conversion and getters
-    bool                        toBool                      () const;
-    int                         toInt                       () const;
-    float                       toFloat                     () const;
-    const string                toString                    () const;
+    bool toBool() const;
+    int toInt() const;
+    float toFloat() const;
+    const string toString() const;
 
-    const VariantMap            toMap                       () const;
-    const VariantList           toList                      () const;
-    const ByteArray             toByteArray                 () const;
+    const VariantMap toMap() const;
+    const VariantList toList() const;
+    const ByteArray toByteArray() const;
 
-    const Vector2               toVector2                   () const;
-    const Vector3               toVector3                   () const;
-    const Vector4               toVector4                   () const;
-    const Quaternion            toQuaternion                () const;
-    const Matrix3               toMatrix3                   () const;
-    const Matrix4               toMatrix4                   () const;
+    const Vector2 toVector2() const;
+    const Vector3 toVector3() const;
+    const Vector4 toVector4() const;
+    const Quaternion toQuaternion() const;
+    const Matrix3 toMatrix3() const;
+    const Matrix4 toMatrix4() const;
 
 protected:
-    mutable Data                mData;
+    mutable Data m_data;
 
 };
 

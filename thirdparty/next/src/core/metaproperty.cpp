@@ -32,7 +32,7 @@
     Constructs MetaProperty object which will contain information provided in a \a table.
 */
 MetaProperty::MetaProperty(const Table *table) :
-        m_pTable(table) {
+        m_table(table) {
     PROFILE_FUNCTION();
 }
 /*!
@@ -40,31 +40,31 @@ MetaProperty::MetaProperty(const Table *table) :
 */
 const char *MetaProperty::name() const {
     PROFILE_FUNCTION();
-    return m_pTable->name;
+    return m_table->name;
 }
 /*!
     Returns true if property is valid; otherwise returns false.
 */
 bool MetaProperty::isValid() const {
     PROFILE_FUNCTION();
-    return (m_pTable != nullptr);
+    return (m_table != nullptr);
 }
 /*!
     Returns a type of property.
 */
 const MetaType MetaProperty::type() const {
     PROFILE_FUNCTION();
-    return MetaType(m_pTable->type);
+    return MetaType(m_table->type);
 }
 /*!
     Returns the value as Variant which contain current property of provided \a object.
 */
 Variant MetaProperty::read(const void *object) const {
     PROFILE_FUNCTION();
-    if(m_pTable->reader) {
-        return m_pTable->reader(object);
-    } else if(m_pTable->readproperty) {
-        return m_pTable->readproperty(object, *this);
+    if(m_table->reader) {
+        return m_table->reader(object);
+    } else if(m_table->readproperty) {
+        return m_table->readproperty(object, *this);
     }
     return Variant();
 }
@@ -73,10 +73,10 @@ Variant MetaProperty::read(const void *object) const {
 */
 void MetaProperty::write(void *object, const Variant &value) const {
     PROFILE_FUNCTION();
-    if(m_pTable->writer) {
-        m_pTable->writer(object, value);
-    } else if(m_pTable->writeproperty) {
-        m_pTable->writeproperty(object, *this, value);
+    if(m_table->writer) {
+        m_table->writer(object, value);
+    } else if(m_table->writeproperty) {
+        m_table->writeproperty(object, *this, value);
     }
 }
 /*!
@@ -84,5 +84,5 @@ void MetaProperty::write(void *object, const Variant &value) const {
 */
 const MetaProperty::Table *MetaProperty::table() const {
     PROFILE_FUNCTION();
-    return m_pTable;
+    return m_table;
 }

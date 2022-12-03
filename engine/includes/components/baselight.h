@@ -7,8 +7,8 @@
 
 class MaterialInstance;
 
-class ENGINE_EXPORT BaseLight : public Renderable {
-    A_REGISTER(BaseLight, Renderable, General)
+class ENGINE_EXPORT BaseLight : public NativeBehaviour {
+    A_REGISTER(BaseLight, NativeBehaviour, General)
 
     A_PROPERTIES(
         A_PROPERTY(bool, castShadows, BaseLight::castShadows, BaseLight::setCastShadows),
@@ -46,6 +46,8 @@ public:
 
     MaterialInstance *material() const;
 
+    virtual AABBox bound() const;
+
 protected:
     void setMaterial(MaterialInstance *instance);
 
@@ -53,7 +55,7 @@ protected:
     void setParams(Vector4 &params);
 
 private:
-    bool isLight() const override;
+    void setSystem(ObjectSystem *system) override;
 
 private:
     float m_shadows;
