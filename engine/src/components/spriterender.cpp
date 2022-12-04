@@ -11,8 +11,8 @@
 
 #include <math.h>
 
-#define MATERIAL    "Material"
-#define BASEMAP     "BaseMap"
+#define MATERIAL "Material"
+#define BASEMAP "BaseMap"
 
 #define OVERRIDE "texture0"
 #define COLOR "uni.color0"
@@ -137,9 +137,9 @@ void SpriteRender::draw(CommandBuffer &buffer, uint32_t layer) {
 AABBox SpriteRender::bound() const {
     AABBox result = Renderable::bound();
     if(p_ptr->m_customMesh) {
-        result = p_ptr->m_customMesh->lod(0)->bound();
+        result = p_ptr->m_customMesh->bound();
     } else if(p_ptr->m_mesh) {
-        result = p_ptr->m_mesh->lod(0)->bound();
+        result = p_ptr->m_mesh->bound();
     }
     result = result * actor()->transform()->worldTransform();
 
@@ -330,60 +330,65 @@ bool SpriteRender::composeMesh(Sprite *sprite, int key, Mesh *spriteMesh, Vector
         }
         Mesh *m = sprite->mesh(key);
         if(m) {
-            Lod *lod = m->lod(0);
-            spriteMesh->setLod(0, lod);
-            lod = spriteMesh->lod(0);
-            Vector3Vector &verts = lod->vertices();
+            spriteMesh->setVertices(m->vertices());
+            spriteMesh->setIndices(m->indices());
+            spriteMesh->setColors(m->colors());
+            spriteMesh->setUv0(m->uv0());
+            spriteMesh->setFlags(Mesh::Uv0);
+
+            Vector3Vector &verts = spriteMesh->vertices();
 
             Vector3 delta(verts[15] * scale - verts[0] * scale);
             if(resetSize) {
                 size = Vector2(delta.x, delta.y);
             }
 
-            if(mode == Sliced && !composeSliced(lod, size, delta, scale)) {
+            if(mode == Sliced && !composeSliced(spriteMesh, size, delta, scale)) {
                 return false;
-            } else if(mode == Tiled && !composeTiled(lod, size, delta, scale)) {
+            } else if(mode == Tiled && !composeTiled(spriteMesh, size, delta, scale)) {
                 return false;
             }
 
-            lod->recalcBounds();
+            spriteMesh->recalcBounds();
             return true;
         }
     } else if(mode == Simple) {
         if(sprite) {
             Mesh *m = sprite->mesh(key);
             if(m) {
-                spriteMesh->setLod(0, m->lod(0));
+                spriteMesh->setVertices(m->vertices());
+                spriteMesh->setIndices(m->indices());
+                spriteMesh->setColors(m->colors());
+                spriteMesh->setUv0(m->uv0());
+                spriteMesh->setFlags(Mesh::Uv0);
+                spriteMesh->recalcBounds();
             } else {
                 return false;
             }
         } else {
-            Lod lod;
-            lod.vertices() = {
+            spriteMesh->setVertices({
                 {  0.0f,   0.0f, 0.0f},
                 {  0.0f, size.y, 0.0f},
                 {size.x, size.y, 0.0f},
                 {size.x,   0.0f, 0.0f}
-            };
-            lod.uv0() = {
+            });
+            spriteMesh->setUv0({
                 {0.0f, 0.0f},
                 {0.0f, 1.0f},
                 {1.0f, 1.0f},
                 {1.0f, 0.0f}
-            };
-            lod.indices() = {0, 1, 2, 0, 3, 2};
-            lod.recalcBounds();
-            lod.setFlags(Mesh::Uv0);
-            spriteMesh->setLod(0, &lod);
-
+            });
+            spriteMesh->setIndices({0, 1, 2, 0, 3, 2});
+            spriteMesh->setFlags(Mesh::Uv0);
+            spriteMesh->recalcBounds();
         }
         return true;
     }
     return false;
 }
 
-bool SpriteRender::composeSliced(Lod *lod, Vector2 &size, Vector3 &delta, float scale) {
-    Vector3Vector &verts = lod->vertices();
+bool SpriteRender::composeSliced(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale) {
+    Vector3Vector &verts = mesh->vertices();
 
     if(scale != 1.0f) {
         for(int i = 0; i < 16; i++) {
@@ -437,10 +442,10 @@ bool SpriteRender::composeSliced(Lod *lod, Vector2 &size, Vector3 &delta, float 
     return true;
 }
 
-bool SpriteRender::composeTiled(Lod *lod, Vector2 &size, Vector3 &delta, float scale) {
-    Vector3Vector &verts = lod->vertices();
-    Vector2Vector &uvs = lod->uv0();
-    IndexVector &indices = lod->indices();
+bool SpriteRender::composeTiled(Mesh *mesh, Vector2 &size, Vector3 &delta, float scale) {
+    Vector3Vector &verts = mesh->vertices();
+    Vector2Vector &uvs = mesh->uv0();
+    IndexVector &indices = mesh->indices();
 
     Vector2 ubl(uvs[0]);
     Vector2 utr(uvs[15]);

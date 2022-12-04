@@ -13,8 +13,9 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
+
 DeferredLighting::DeferredLighting() :
-    m_lightPass(Engine::objectCreate<RenderTarget>(LIGHPASS)),
+    m_lightPass(Engine::objectCreate<RenderTarget>("lightPass")),
     m_box(Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001")) {
 
 }

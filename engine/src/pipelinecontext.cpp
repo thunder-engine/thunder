@@ -160,7 +160,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
     for(auto it : RenderSystem::renderables()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor->isEnabledInHierarchy()) {
+            if(actor && actor->isEnabledInHierarchy()) {
                 if((actor->scene() && actor->scene()->parent() == graph)) {
                     if(update) {
                         it->update();
@@ -193,7 +193,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
     for(auto it : RenderSystem::lights()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor->isEnabledInHierarchy()) {
+            if(actor && actor->isEnabledInHierarchy()) {
                 if((actor->scene() && actor->scene()->parent() == graph)) {
                     m_sceneLights.push_back(it);
                 }
@@ -206,7 +206,7 @@ void PipelineContext::analizeGraph(SceneGraph *graph) {
     for(auto it : RenderSystem::widgets()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();
-            if(actor->isEnabledInHierarchy()) {
+            if(actor && actor->isEnabledInHierarchy()) {
                 if((actor->scene() && actor->scene()->parent() == graph)) {
                     if(update) {
                         static_cast<NativeBehaviour *>(it)->update();

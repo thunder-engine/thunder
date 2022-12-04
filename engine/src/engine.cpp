@@ -213,7 +213,8 @@ Engine::Engine(File *file, const char *path) :
     Text::registerClassFactory(p_ptr->m_resourceSystem);
     Texture::registerClassFactory(p_ptr->m_resourceSystem);
     Material::registerClassFactory(p_ptr->m_resourceSystem);
-    Mesh::registerSuper(p_ptr->m_resourceSystem);
+    Mesh::registerClassFactory(p_ptr->m_resourceSystem);
+    MeshGroup::registerClassFactory(p_ptr->m_resourceSystem);
     Sprite::registerClassFactory(p_ptr->m_resourceSystem);
     Font::registerClassFactory(p_ptr->m_resourceSystem);
     AnimationClip::registerClassFactory(p_ptr->m_resourceSystem);

@@ -5,7 +5,7 @@
 #include "mesh.h"
 
 class Texture;
-class SpritePrivate;
+class AtlasNode;
 
 class ENGINE_EXPORT Sprite : public Resource {
     A_REGISTER(Sprite, Resource, Resources)
@@ -39,7 +39,17 @@ private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
-    SpritePrivate *p_ptr;
+private:
+    typedef unordered_map<int, Mesh *> Meshes;
+    typedef deque<Texture *> Textures;
+
+    Meshes m_meshes;
+
+    Texture *m_texture;
+
+    Textures m_sources;
+
+    AtlasNode *m_root;
 
 };
 

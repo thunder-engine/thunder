@@ -11,19 +11,18 @@
 #define OVERRIDE "rgbMap"
 
 Blur::Blur() :
-        m_blurMaterial(nullptr) {
-
-    m_mesh = PipelineContext::defaultPlane();
+        m_blurMaterial(nullptr),
+        m_mesh(PipelineContext::defaultPlane()),
+        m_tempTexture(Engine::objectCreate<Texture>("blurTempTexture")),
+        m_tempTarget(Engine::objectCreate<RenderTarget>("blurTempTarget")) {
 
     Material *material = Engine::loadResource<Material>(".embedded/Blur.shader");
     if(material) {
         m_blurMaterial = material->createInstance();
     }
 
-    m_tempTexture = Engine::objectCreate<Texture>("blurTempTexture");
     m_tempTexture->setFormat(Texture::R11G11B10Float);
 
-    m_tempTarget = Engine::objectCreate<RenderTarget>("blurTempTarget");
     m_tempTarget->setColorAttachment(0, m_tempTexture);
 }
 

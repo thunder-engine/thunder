@@ -5,10 +5,19 @@
 #include "commandbuffergl.h"
 
 MeshGL::MeshGL() :
-        m_InstanceBuffer(0) {
+    m_triangles(0),
+    m_uv0(0),
+    m_uv1(0),
+    m_normals(0),
+    m_tangents(0),
+    m_vertices(0),
+    m_colors(0),
+    m_weights(0),
+    m_bones(0),
+    m_instanceBuffer(0) {
 }
 
-void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
+void MeshGL::bindVao(CommandBufferGL *buffer) {
     switch(state()) {
         case ToBeUpdated: {
             updateVbo(buffer);
@@ -27,7 +36,7 @@ void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
     }
 
     uint32_t *id = nullptr;
-    for(auto &it : m_Vao[lod]) {
+    for(auto &it : m_vao) {
         if(it->buffer == buffer) {
             if(it->dirty) {
                 id = &(it->vao);
@@ -44,39 +53,44 @@ void MeshGL::bindVao(CommandBufferGL *buffer, uint32_t lod) {
         vao->buffer = buffer;
         vao->dirty = false;
         id = &(vao->vao);
-        m_Vao[lod].push_back(vao);
+        m_vao.push_back(vao);
     }
 
     glGenVertexArrays(1, id);
     glBindVertexArray(*id);
 
-    updateVao(lod);
+    updateVao();
 }
 
-void MeshGL::updateVao(uint32_t lod) {
+void MeshGL::updateVao() {
     // indices
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[lod]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles);
     // vertices
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertices[lod]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
     glEnableVertexAttribArray(VERTEX_ATRIB);
     glVertexAttribPointer(VERTEX_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    uint8_t flag = Mesh::lod(lod)->flags();
+    int flag = flags();
 
     if(flag & Mesh::Normals) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_normals[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_normals);
         glEnableVertexAttribArray(NORMAL_ATRIB);
         glVertexAttribPointer(NORMAL_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(flag & Mesh::Tangents) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_tangents[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
         glEnableVertexAttribArray(TANGENT_ATRIB);
         glVertexAttribPointer(TANGENT_ATRIB, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(flag & Mesh::Uv0) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_uv0[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
         glEnableVertexAttribArray(UV0_ATRIB);
         glVertexAttribPointer(UV0_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    }
+    if(flag & Mesh::Uv1) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_uv1);
+        glEnableVertexAttribArray(UV1_ATRIB);
+        glVertexAttribPointer(UV1_ATRIB, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(flag & Mesh::Color) {
         //glBindBuffer(GL_ARRAY_BUFFER, m_colors[lod]);
@@ -84,16 +98,16 @@ void MeshGL::updateVao(uint32_t lod) {
         //glVertexAttribPointer(COLOR_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
     if(flag & Mesh::Skinned) {
-        glBindBuffer(GL_ARRAY_BUFFER, m_bones[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bones);
         glEnableVertexAttribArray(BONES_ATRIB);
         glVertexAttribPointer(BONES_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_weights[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_weights);
         glEnableVertexAttribArray(WEIGHTS_ATRIB);
         glVertexAttribPointer(WEIGHTS_ATRIB, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_instanceBuffer);
     for(uint32_t i = 0; i < 4; i++) {
         glEnableVertexAttribArray(INSTANCE_ATRIB + i);
         glVertexAttribPointer(INSTANCE_ATRIB + i, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix4), reinterpret_cast<void *>(i * sizeof(Vector4)));
@@ -102,82 +116,71 @@ void MeshGL::updateVao(uint32_t lod) {
 }
 
 void MeshGL::updateVbo(CommandBufferGL *buffer) {
-    if(!m_InstanceBuffer) {
-        glGenBuffers(1, &m_InstanceBuffer);
+    if(!m_instanceBuffer) {
+        glGenBuffers(1, &m_instanceBuffer);
     }
 
-    uint32_t count = lodsCount();
-    uint8_t flag = lod(0)->flags();
-
-    if(m_triangles.size() < count) {
-        m_triangles.resize(count);
-        m_vertices.resize(count);
-
-        glGenBuffers(count, &m_triangles[0]);
-        glGenBuffers(count, &m_vertices[0]);
+    uint8_t flag = flags();
+    if(m_triangles == 0) {
+        glGenBuffers(1, &m_triangles);
+        glGenBuffers(1, &m_vertices);
 
         if(flag & Mesh::Normals) {
-            m_normals.resize(count);
-            glGenBuffers(count, &m_normals[0]);
+            glGenBuffers(1, &m_normals);
         }
         if(flag & Mesh::Tangents) {
-            m_tangents.resize(count);
-            glGenBuffers(count, &m_tangents[0]);
+            glGenBuffers(1, &m_tangents);
         }
         if(flag & Mesh::Uv0) {
-            m_uv0.resize(count);
-            glGenBuffers(count, &m_uv0[0]);
+            glGenBuffers(1, &m_uv0);
+        }
+        if(flag & Mesh::Uv1) {
+            glGenBuffers(1, &m_uv0);
         }
         if(flag & Mesh::Skinned) {
-            m_weights.resize(count);
-            glGenBuffers(count, &m_weights[0]);
-
-            m_bones.resize(count);
-            glGenBuffers(count, &m_bones[0]);
+            glGenBuffers(1, &m_weights);
+            glGenBuffers(1, &m_bones);
         }
     }
 
     bool dynamic = isDynamic();
+    uint32_t vCount = vertices().size();
+    if(!vertices().empty()) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, vertices().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(!indices().empty()) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices().size(), indices().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(flag & Mesh::Normals) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_normals);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, normals().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(flag & Mesh::Tangents) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_tangents);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, tangents().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(flag & Mesh::Uv0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_uv0);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv0().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(flag & Mesh::Uv1) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_uv1);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, uv1().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    if(flag & Mesh::Skinned) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_weights);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, weights().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
-    for(uint32_t i = 0; i < count; i++) {
-        Lod *l = lod(i);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bones);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, bones().data(), (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
 
-        uint32_t vCount = l->vertices().size();
-        if(!l->vertices().empty()) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_vertices[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &l->vertices()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(!l->indices().empty()) {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_triangles[i]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * l->indices().size(), &l->indices()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::Normals) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_normals[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &l->normals()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::Tangents) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_tangents[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vCount, &l->tangents()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::Uv0) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_uv0[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * vCount, &l->uv0()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(flag & Mesh::Skinned) {
-            glBindBuffer(GL_ARRAY_BUFFER, m_weights[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, &l->weights()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-
-            glBindBuffer(GL_ARRAY_BUFFER, m_bones[i]);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector4) * vCount, &l->bones()[0], (dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-        if(m_Vao.size() <= i) {
-            m_Vao.push_back(list<VaoStruct *>());
-        }
-        if(dynamic) {
-            for(auto &it : m_Vao[i]) {
-                if(it->buffer == buffer) {
-                    it->dirty = true;
-                }
+    if(dynamic) {
+        for(auto &it : m_vao) {
+            if(it->buffer == buffer) {
+                it->dirty = true;
             }
         }
     }
@@ -187,54 +190,53 @@ void MeshGL::updateVbo(CommandBufferGL *buffer) {
 }
 
 void MeshGL::destroyVao(CommandBufferGL *buffer) {
-    for(int32_t l = 0; l < lodsCount(); l++) {
-        for(auto &it : m_Vao[l]) {
-            if(it->buffer == buffer) {
-                glDeleteVertexArrays(1, &(it->vao));
-            }
+    for(auto &it : m_vao) {
+        if(it->buffer == buffer) {
+            glDeleteVertexArrays(1, &(it->vao));
         }
     }
 }
 
 void MeshGL::destroyVbo() {
-    if(m_vertices.empty() && m_triangles.empty()) {
+    if(m_vertices == 0 && m_triangles == 0) {
         return;
     }
-    glDeleteBuffers(static_cast<int32_t>(m_vertices.size()), &m_vertices[0]);
-    glDeleteBuffers(static_cast<int32_t>(m_triangles.size()), &m_triangles[0]);
+    glDeleteBuffers(1, &m_vertices);
+    glDeleteBuffers(1, &m_triangles);
 
-    uint8_t flag = lod(0)->flags();
+    uint8_t flag = flags();
 
     if(flag & Mesh::Normals) {
-        glDeleteBuffers(static_cast<int32_t>(m_normals.size()), &m_normals[0]);
+        glDeleteBuffers(1, &m_normals);
     }
 
     if(flag & Mesh::Tangents) {
-        glDeleteBuffers(static_cast<int32_t>(m_tangents.size()), &m_tangents[0]);
+        glDeleteBuffers(1, &m_tangents);
     }
 
     if(flag & Mesh::Uv0) {
-        glDeleteBuffers(static_cast<int32_t>(m_uv0.size()), &m_uv0[0]);
+        glDeleteBuffers(1, &m_uv0);
     }
 
     if(flag & Mesh::Skinned) {
-        glDeleteBuffers(static_cast<int32_t>(m_weights.size()), &m_weights[0]);
-        glDeleteBuffers(static_cast<int32_t>(m_bones.size()), &m_bones[0]);
+        glDeleteBuffers(1, &m_weights);
+        glDeleteBuffers(1, &m_bones);
     }
 
-    glDeleteBuffers(1, &m_InstanceBuffer);
+    glDeleteBuffers(1, &m_instanceBuffer);
 
-    m_triangles.clear();
-    m_vertices.clear();
+    m_triangles = 0;
+    m_vertices = 0;
 
-    m_normals.clear();
-    m_tangents.clear();
-    m_uv0.clear();
+    m_normals = 0;
+    m_tangents = 0;
+    m_uv0 = 0;
+    m_uv1 = 0;
 
-    m_weights.clear();
-    m_bones.clear();
+    m_weights = 0;
+    m_bones = 0;
 }
 
 uint32_t MeshGL::instance() const {
-    return m_InstanceBuffer;
+    return m_instanceBuffer;
 }

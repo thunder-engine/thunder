@@ -45,12 +45,11 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
     \internal
 */
 void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
-    if(m_linksMesh && !m_linksMesh->lod(0)->vertices().empty()) {
+    if(m_linksMesh && !m_linksMesh->vertices().empty()) {
         buffer.drawMesh(rectTransform()->worldTransform(),
                         m_linksMesh, 0, layer, m_material);
     }
     if(m_creationMesh && m_portWidget) {
-        Lod lod;
         Vector3Vector vertices;
         Vector2Vector uvs;
         IndexVector indices;
@@ -81,13 +80,11 @@ void LinksRender::draw(CommandBuffer &buffer, uint32_t layer) {
         }
 
         if(!vertices.empty()) {
-            lod.setVertices(vertices);
-            lod.setUv0(uvs);
-            lod.setIndices(indices);
-            lod.setTopology(Mesh::Triangles);
-            lod.setFlags(Mesh::Uv0);
-
-            m_creationMesh->setLod(0, &lod);
+            m_creationMesh->setVertices(vertices);
+            m_creationMesh->setUv0(uvs);
+            m_creationMesh->setIndices(indices);
+            m_creationMesh->setTopology(Mesh::Triangles);
+            m_creationMesh->setFlags(Mesh::Uv0);
         }
 
         buffer.drawMesh(rectTransform()->worldTransform(),
@@ -104,7 +101,6 @@ void LinksRender::setCreationLink(Widget *widget) {
 }
 
 void LinksRender::composeLinks() {
-    Lod lod;
     Vector3Vector vertices;
     Vector2Vector uvs;
     IndexVector indices;
@@ -172,13 +168,12 @@ void LinksRender::composeLinks() {
     }
 
     if(!vertices.empty()) {
-        lod.setVertices(vertices);
-        lod.setUv0(uvs);
-        lod.setIndices(indices);
+        m_linksMesh->setVertices(vertices);
+        m_linksMesh->setUv0(uvs);
+        m_linksMesh->setIndices(indices);
     }
-    lod.setTopology(Mesh::Triangles);
-    lod.setFlags(Mesh::Uv0);
-    m_linksMesh->setLod(0, &lod);
+    m_linksMesh->setTopology(Mesh::Triangles);
+    m_linksMesh->setFlags(Mesh::Uv0);
 }
 
 void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, IndexVector &indices, int32_t link) {

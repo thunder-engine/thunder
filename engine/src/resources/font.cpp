@@ -194,12 +194,11 @@ void Font::requestCharacters(const string &characters) {
                     FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
 
                     Mesh *m = mesh(index);
-                    Lod *lod = m->lod(0);
-                    if(lod) {
-                        lod->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_scale,
-                                          Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_scale,
-                                          Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_scale,
-                                          Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_scale});
+                    if(m) {
+                        m->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / p_ptr->m_scale,
+                                        Vector3(bbox.xMax, bbox.yMax, 0.0f) / p_ptr->m_scale,
+                                        Vector3(bbox.xMax, bbox.yMin, 0.0f) / p_ptr->m_scale,
+                                        Vector3(bbox.xMin, bbox.yMin, 0.0f) / p_ptr->m_scale});
                     }
                     p_ptr->m_glyphMap[ch] = index;
 

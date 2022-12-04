@@ -72,32 +72,29 @@ void MeshCollider::createCollider() {
 
 btCollisionShape *MeshCollider::shape() {
     if(m_collisionShape == nullptr && m_mesh != nullptr) {
+        btTriangleMesh *triangleMesh = new btTriangleMesh();
 
-        Lod *lod = m_mesh->lod(0);
-        if(lod != nullptr) {
-            btTriangleMesh *triangleMesh = new btTriangleMesh();
+        Vector3Vector &v = m_mesh->vertices();
+        IndexVector &i = m_mesh->indices();
+        for(size_t index = 0; index < i.size(); index += 3) {
+            Vector3 v1 = v[i[index]];
+            Vector3 v2 = v[i[index + 1]];
+            Vector3 v3 = v[i[index + 2]];
 
-            Vector3Vector &v = lod->vertices();
-            IndexVector &i = lod->indices();
-            for(size_t index = 0; index < i.size(); index += 3) {
-                Vector3 v1 = v[i[index]];
-                Vector3 v2 = v[i[index + 1]];
-                Vector3 v3 = v[i[index + 2]];
+            btVector3 bv1 = btVector3(v1.x, v1.y, v1.z);
+            btVector3 bv2 = btVector3(v2.x, v2.y, v2.z);
+            btVector3 bv3 = btVector3(v3.x, v3.y, v3.z);
 
-                btVector3 bv1 = btVector3(v1.x, v1.y, v1.z);
-                btVector3 bv2 = btVector3(v2.x, v2.y, v2.z);
-                btVector3 bv3 = btVector3(v3.x, v3.y, v3.z);
-
-                triangleMesh->addTriangle(bv1, bv2, bv3);
-            }
-
-            m_collisionShape = new btBvhTriangleMeshShape(triangleMesh, true);
-
-            Transform *t = actor()->transform();
-
-            Vector3 p = t->scale();
-            m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+            triangleMesh->addTriangle(bv1, bv2, bv3);
         }
+
+        m_collisionShape = new btBvhTriangleMeshShape(triangleMesh, true);
+
+        Transform *t = actor()->transform();
+
+        Vector3 p = t->scale();
+        m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
+
     }
     return m_collisionShape;
 }

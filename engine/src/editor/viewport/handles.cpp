@@ -46,12 +46,9 @@ static float s_AngleTotal = 0.0f;
 Mesh *Handles::s_Cone = nullptr;
 Mesh *Handles::s_Quad = nullptr;
 Mesh *Handles::s_Sphere = nullptr;
+Mesh *Handles::s_Bone = nullptr;
+
 Mesh *Handles::s_Lines = nullptr;
-
-MaterialInstance *Handles::s_Gizmo = nullptr;
-MaterialInstance *Handles::s_Solid = nullptr;
-MaterialInstance *Handles::s_Sprite = nullptr;
-
 Mesh *Handles::s_Axis = nullptr;
 Mesh *Handles::s_Scale = nullptr;
 Mesh *Handles::s_ScaleXY = nullptr;
@@ -62,7 +59,10 @@ Mesh *Handles::s_Arc = nullptr;
 Mesh *Handles::s_Circle = nullptr;
 Mesh *Handles::s_Rectangle = nullptr;
 Mesh *Handles::s_Box = nullptr;
-Mesh *Handles::s_Bone = nullptr;
+
+MaterialInstance *Handles::s_Gizmo = nullptr;
+MaterialInstance *Handles::s_Solid = nullptr;
+MaterialInstance *Handles::s_Sprite = nullptr;
 
 Texture *Handles::s_Corner = nullptr;
 
@@ -117,112 +117,85 @@ void Handles::init() {
     }
 
     if(s_Axis == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0.0f), Vector3(0, 5, 0)});
-        lod.setIndices({0, 1});
-        lod.setTopology(Mesh::Lines);
-
         s_Axis = Engine::objectCreate<Mesh>("Axis");
-        s_Axis->addLod(&lod);
+        s_Axis->setVertices({Vector3(0.0f), Vector3(0, 5, 0)});
+        s_Axis->setIndices({0, 1});
+        s_Axis->setTopology(Mesh::Lines);
     }
 
     if(s_Scale == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
-        lod.setIndices({0, 1, 2, 3});
-        lod.setTopology(Mesh::Lines);
-
         s_Scale = Engine::objectCreate<Mesh>("Scale");
-        s_Scale->addLod(&lod);
+        s_Scale->setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
+        s_Scale->setIndices({0, 1, 2, 3});
+        s_Scale->setTopology(Mesh::Lines);
     }
 
     if(s_ScaleXY == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
-        lod.setIndices({0, 1, 2, 1, 3, 2});
-        lod.setTopology(Mesh::Triangles);
-
         s_ScaleXY = Engine::objectCreate<Mesh>("ScaleXY");
-        s_ScaleXY->addLod(&lod);
+        s_ScaleXY->setVertices({Vector3(0, 2, 0), Vector3(1, 1, 0), Vector3(0, 3, 0), Vector3(1.5, 1.5, 0)});
+        s_ScaleXY->setIndices({0, 1, 2, 1, 3, 2});
+        s_ScaleXY->setTopology(Mesh::Triangles);
     }
 
     if(s_ScaleXYZ == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)});
-        lod.setIndices({0, 1, 2});
-        lod.setTopology(Mesh::Triangles);
-
         s_ScaleXYZ = Engine::objectCreate<Mesh>("ScaleXYZ");
-        s_ScaleXYZ->addLod(&lod);
+        s_ScaleXYZ->setVertices({Vector3(0, 2, 0), Vector3(0, 0, 0), Vector3(1, 1, 0)});
+        s_ScaleXYZ->setIndices({0, 1, 2});
+        s_ScaleXYZ->setTopology(Mesh::Triangles);
     }
 
     if(s_Move == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0, 1, 0), Vector3(2, 1, 0)});
-        lod.setIndices({0, 1});
-        lod.setTopology(Mesh::Lines);
-
         s_Move = Engine::objectCreate<Mesh>("Move");
-        s_Move->addLod(&lod);
+        s_Move->setVertices({Vector3(0, 1, 0), Vector3(2, 1, 0)});
+        s_Move->setIndices({0, 1});
+        s_Move->setTopology(Mesh::Lines);
     }
 
     if(s_MoveXY == nullptr) {
-        Lod lod;
-        lod.setVertices({Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)});
-        lod.setIndices({0, 1, 2, 1, 3, 2});
-        lod.setTopology(Mesh::Triangles);
-
         s_MoveXY = Engine::objectCreate<Mesh>("MoveXY");
-        s_MoveXY->addLod(&lod);
+        s_MoveXY->setVertices({Vector3(0,-1, 0), Vector3(2,-1, 0), Vector3(0, 1, 0), Vector3(2, 1, 0)});
+        s_MoveXY->setIndices({0, 1, 2, 1, 3, 2});
+        s_MoveXY->setTopology(Mesh::Triangles);
     }
 
     if(s_Arc == nullptr) {
-        Lod lod;
-        lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 180));
-        lod.indices().clear();
-        lod.setTopology(Mesh::LineStrip);
-
         s_Arc = Engine::objectCreate<Mesh>("Arc");
-        s_Arc->addLod(&lod);
+        s_Arc->setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 180));
+        s_Arc->indices().clear();
+        s_Arc->setTopology(Mesh::LineStrip);
     }
 
     if(s_Circle == nullptr) {
-        Lod lod;
-        lod.setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 360));
-        lod.indices().clear();
-        lod.setTopology(Mesh::LineStrip);
-
         s_Circle = Engine::objectCreate<Mesh>("Circle");
-        s_Circle->addLod(&lod);
+        s_Circle->setVertices(HandleTools::pointsArc(Quaternion(), 1.0, 0, 360));
+        s_Circle->indices().clear();
+        s_Circle->setTopology(Mesh::LineStrip);
     }
 
     if(s_Rectangle == nullptr) {
-        Lod lod;
+        s_Rectangle = Engine::objectCreate<Mesh>("Rectangle");
 
         Vector3 min(-0.5);
         Vector3 max( 0.5);
 
-        lod.setVertices({
+        s_Rectangle->setVertices({
             Vector3(min.x, min.y, 0.0f),
             Vector3(max.x, min.y, 0.0f),
             Vector3(max.x, max.y, 0.0f),
             Vector3(min.x, max.y, 0.0f),
             Vector3(min.x, min.y, 0.0f)
         });
-        lod.indices().clear();
-        lod.setTopology(Mesh::LineStrip);
-
-        s_Rectangle = Engine::objectCreate<Mesh>("Rectangle");
-        s_Rectangle->addLod(&lod);
+        s_Rectangle->indices().clear();
+        s_Rectangle->setTopology(Mesh::LineStrip);
     }
 
     if(s_Box == nullptr) {
-        Lod lod;
+        s_Box = Engine::objectCreate<Mesh>("Box");
 
         Vector3 min(-0.5);
         Vector3 max( 0.5);
 
-        lod.setVertices({
+        s_Box->setVertices({
             Vector3(min.x, min.y, min.z),
             Vector3(max.x, min.y, min.z),
             Vector3(max.x, min.y, max.z),
@@ -233,13 +206,10 @@ void Handles::init() {
             Vector3(max.x, max.y, max.z),
             Vector3(min.x, max.y, max.z)
         });
-        lod.setIndices({0, 1, 1, 2, 2, 3, 3, 0,
+        s_Box->setIndices({0, 1, 1, 2, 2, 3, 3, 0,
                         4, 5, 5, 6, 6, 7, 7, 4,
                         0, 4, 1, 5, 2, 6, 3, 7});
-        lod.setTopology(Mesh::Lines);
-
-        s_Box = Engine::objectCreate<Mesh>("Box");
-        s_Box->addLod(&lod);
+        s_Box->setTopology(Mesh::Lines);
     }
 }
 
@@ -280,13 +250,9 @@ void Handles::drawArrow(const Matrix4 &transform) {
 
 void Handles::drawLines(const Matrix4 &transform, const Vector3Vector &points, const IndexVector &indices) {
     if(CommandBuffer::isInited()) {
-        Lod lod;
-        lod.setVertices(points);
-        lod.setIndices(indices);
-        lod.setTopology(Mesh::Lines);
-        {
-            s_Lines->setLod(0, &lod);
-        }
+        s_Lines->setVertices(points);
+        s_Lines->setIndices(indices);
+        s_Lines->setTopology(Mesh::Lines);
         if(s_Buffer) {
             s_Buffer->setColor(s_Color);
             s_Buffer->drawMesh(transform, s_Lines, 0, CommandBuffer::TRANSLUCENT, s_Gizmo);
@@ -330,12 +296,8 @@ void Handles::drawBone(const Transform *begin, const Transform *end) {
 
 void Handles::drawDisk(const Vector3 &center, const Quaternion &rotation, float radius, float start, float angle) {
     if(CommandBuffer::isInited()) {
-        Lod lod;
-        lod.setVertices(HandleTools::pointsArc(rotation, radius, start, angle, true));
-        lod.setTopology(Mesh::TriangleFan);
-        {
-            s_Lines->setLod(0, &lod);
-        }
+        s_Lines->setVertices(HandleTools::pointsArc(rotation, radius, start, angle, true));
+        s_Lines->setTopology(Mesh::TriangleFan);
         if(s_Buffer) {
             Matrix4 transform;
             transform.translate(center);
@@ -453,24 +415,22 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
             if(!locked) {
-                Lod *move = s_Move->lod(0);
-                Lod *axis = s_Axis->lod(0);
                 if(HandleTools::distanceToPoint(model, Vector3()) <= s_Sense) {
                     s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, move->indices(), move->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(z * r, move->indices(), move->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(x, s_Move->indices(), s_Move->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Move->indices(), s_Move->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, move->indices(), move->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(x * r, move->indices(), move->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(y, s_Move->indices(), s_Move->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Move->indices(), s_Move->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, move->indices(), move->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(y * r, move->indices(), move->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(z, s_Move->indices(), s_Move->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Move->indices(), s_Move->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Z;
                 }
             }
@@ -586,15 +546,13 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             m.scale(1.2f);
 
             if(!locked) {
-                Lod *circle = s_Circle->lod(0);
-                Lod *arc = s_Arc->lod(0);
-                if(HandleTools::distanceToMesh(q1 * m, circle->indices(), circle->vertices()) <= s_Sense) {
+                if(HandleTools::distanceToMesh(q1 * m, s_Circle->indices(), s_Circle->vertices()) <= s_Sense) {
                     s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if(HandleTools::distanceToMesh(x, arc->indices(), arc->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Arc->indices(), s_Arc->vertices()) <= s_Sense) {
                     s_Axes = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, arc->indices(), arc->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Arc->indices(), s_Arc->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, arc->indices(), arc->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Arc->indices(), s_Arc->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Z;
                 }
             }
@@ -703,25 +661,22 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
             Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
             if(!locked) {
-                Lod *scale = s_Scale->lod(0);
-                Lod *axis = s_Axis->lod(0);
-
                 if(HandleTools::distanceToPoint(model, Vector3()) <= s_Sense) {
                     s_Axes = AXIS_X | AXIS_Y | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(x, scale->indices(), scale->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(z * r, scale->indices(), scale->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(x, s_Scale->indices(), s_Scale->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(z * r, s_Scale->indices(), s_Scale->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_X | AXIS_Z;
-                } else if((HandleTools::distanceToMesh(y, scale->indices(), scale->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(x * r, scale->indices(), scale->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(y, s_Scale->indices(), s_Scale->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(x * r, s_Scale->indices(), s_Scale->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_Y | AXIS_X;
-                } else if((HandleTools::distanceToMesh(z, scale->indices(), scale->vertices()) <= s_Sense) ||
-                          (HandleTools::distanceToMesh(y * r, scale->indices(), scale->vertices()) <= s_Sense)) {
+                } else if((HandleTools::distanceToMesh(z, s_Scale->indices(), s_Scale->vertices()) <= s_Sense) ||
+                          (HandleTools::distanceToMesh(y * r, s_Scale->indices(), s_Scale->vertices()) <= s_Sense)) {
                     s_Axes = AXIS_Z | AXIS_Y;
-                } else if(HandleTools::distanceToMesh(x, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(x, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_X;
-                } else if(HandleTools::distanceToMesh(y, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(y, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Y;
-                } else if(HandleTools::distanceToMesh(z, axis->indices(), axis->vertices()) <= s_Sense) {
+                } else if(HandleTools::distanceToMesh(z, s_Axis->indices(), s_Axis->vertices()) <= s_Sense) {
                     s_Axes = AXIS_Z;
                 }
             }
