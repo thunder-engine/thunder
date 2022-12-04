@@ -290,7 +290,21 @@ void Mesh::batchMesh(Mesh &mesh, Matrix4 *transform) {
 
     recalcBounds();
 }
-
+/*!
+    \internal
+*/
+void Mesh::switchState(ResourceState state) {
+    setState(state);
+}
+/*!
+    \internal
+*/
+bool Mesh::isUnloadable() {
+    return true;
+}
+/*!
+    \internal
+*/
 void Mesh::loadUserData(const VariantMap &data) {
     auto meshData = data.find(DATA);
     if(meshData != data.end()) {
@@ -334,42 +348,41 @@ void Mesh::loadUserData(const VariantMap &data) {
             vertexData = (*i).toByteArray();
             i++;
             m_indices.resize(tCount * 3);
-            memcpy(m_indices.data(), &vertexData[0], sizeof(uint32_t) * tCount * 3);
+            memcpy(m_indices.data(), vertexData.data(), sizeof(uint32_t) * tCount * 3);
         }
         if(flags & MeshAttributes::Color) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_colors.resize(vCount);
-            memcpy(m_colors.data(), &vertexData[0], sizeof(Vector4) * vCount);
+            memcpy(m_colors.data(), vertexData.data(), sizeof(Vector4) * vCount);
         }
         if(flags & MeshAttributes::Uv0) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_uv0.resize(vCount);
-            memcpy(m_uv0.data(), &vertexData[0], sizeof(Vector2) * vCount);
+            memcpy(m_uv0.data(), vertexData.data(), sizeof(Vector2) * vCount);
         }
         if(flags & MeshAttributes::Normals) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_normals.resize(vCount);
-            memcpy(m_normals.data(), &vertexData[0], sizeof(Vector3) * vCount);
+            memcpy(m_normals.data(), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Tangents) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_tangents.resize(vCount);
-            memcpy(m_tangents.data(), &vertexData[0],  sizeof(Vector3) * vCount);
+            memcpy(m_tangents.data(), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Skinned) { // Optional field
             vertexData = (*i).toByteArray();
             i++;
             m_weights.resize(vCount);
-            memcpy(m_weights.data(), &vertexData[0],  sizeof(Vector4) * vCount);
+            memcpy(m_weights.data(), vertexData.data(), sizeof(Vector4) * vCount);
 
             vertexData = (*i).toByteArray();
-            i++;
             m_bones.resize(vCount);
-            memcpy(m_bones.data(), &vertexData[0],  sizeof(Vector4) * vCount);
+            memcpy(m_bones.data(), vertexData.data(), sizeof(Vector4) * vCount);
         }
         m_box.setBox(min, max);
     }
@@ -378,23 +391,13 @@ void Mesh::loadUserData(const VariantMap &data) {
 /*!
     \internal
 */
-void Mesh::switchState(ResourceState state) {
-    setState(state);
-}
-/*!
-    \internal
-*/
-bool Mesh::isUnloadable() {
-    return true;
-}
-
 VariantMap Mesh::saveUserData() const {
     VariantMap result;
 
     VariantList mesh;
     mesh.push_back(topology());
 
-    int flags;
+    int flags = 0;
     flags = m_colors.empty() ? flags : (flags | Color);
     flags = m_uv0.empty() ? flags : (flags | Uv0);
     flags = m_normals.empty() ? flags : (flags | Normals);

@@ -29,7 +29,7 @@ LinksRender::LinksRender() :
 
     m_creationMesh->makeDynamic();
 
-    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(".embedded/Link.shader"));
+    Material *m = dynamic_cast<Material *>(Engine::loadResource<Material>(".embedded/Line.shader"));
     if(m) {
         m_material = m->createInstance();
 
